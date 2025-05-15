@@ -374,7 +374,8 @@ object SimplePlayer {
             playerResponse.streamingData?.adaptiveFormats?.find { it.itag == playedFormat.itag }
         } else {
             playerResponse.streamingData?.adaptiveFormats
-                ?.filter { it.isAudio }
+                //?.filter { it.isAudio }
+                ?.filter { it.isVideo }
                 ?.maxByOrNull {
                     it.bitrate *
                             when (audioQuality) {

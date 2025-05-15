@@ -59,9 +59,9 @@ import kotlinx.coroutines.launch
 import it.fast4x.rimusic.colorPalette
 import it.fast4x.rimusic.typography
 import org.jetbrains.compose.resources.painterResource
-import rimusic.composeapp.generated.resources.Res
-import rimusic.composeapp.generated.resources.app_icon
-import rimusic.composeapp.generated.resources.play
+import riplaymusic.composeapp.generated.resources.Res
+import riplaymusic.composeapp.generated.resources.app_icon
+import riplaymusic.composeapp.generated.resources.play
 
 @OptIn(UnstableApi::class)
 @Composable

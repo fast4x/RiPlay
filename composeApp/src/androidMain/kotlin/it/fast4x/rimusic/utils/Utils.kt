@@ -201,6 +201,34 @@ val Environment.SongItem.asMediaItem: MediaItem
         )
         .build()
 
+val Environment.SongItem.asVideoMediaItem: MediaItem
+    @UnstableApi
+    get() = MediaItem.Builder()
+        .setMediaId(key)
+        .setUri(key)
+        .setCustomCacheKey(key)
+        .setMediaMetadata(
+            MediaMetadata.Builder()
+                .setTitle(info?.name)
+                .setArtist(authors?.filter {it.name?.matches(Regex("\\s*([,&])\\s*")) == false }?.joinToString(", ") { it.name ?: "" })
+                .setAlbumTitle(album?.name)
+                .setArtworkUri(thumbnail?.url?.toUri())
+                .setExtras(
+                    bundleOf(
+                        "albumId" to album?.endpoint?.browseId,
+                        "durationText" to durationText,
+                        "artistNames" to authors?.filter { it.endpoint != null }
+                            ?.mapNotNull { it.name },
+                        "artistIds" to authors?.mapNotNull { it.endpoint?.browseId },
+                        EXPLICIT_BUNDLE_TAG to explicit,
+                        "setVideoId" to setVideoId,
+                        "isVideo" to true,
+                    )
+                )
+                .build()
+        )
+        .build()
+
 val Environment.SongItem.asSong: Song
     @UnstableApi
     get() = Song (
@@ -252,6 +280,33 @@ val Song.asMediaItem: MediaItem
                     bundleOf(
                         "durationText" to durationText,
                         EXPLICIT_BUNDLE_TAG to title.startsWith( EXPLICIT_PREFIX, true )
+                    )
+                )
+                .build()
+        )
+        .setMediaId(id)
+        .setUri(
+            if (isLocal) ContentUris.withAppendedId(
+                MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+                id.substringAfter(LOCAL_KEY_PREFIX).toLong()
+            ) else id.toUri()
+        )
+        .setCustomCacheKey(id)
+        .build()
+
+val Song.asVideoMediaItem: MediaItem
+    @UnstableApi
+    get() = MediaItem.Builder()
+        .setMediaMetadata(
+            MediaMetadata.Builder()
+                .setTitle(title)
+                .setArtist(artistsText)
+                .setArtworkUri(thumbnailUrl?.toUri())
+                .setExtras(
+                    bundleOf(
+                        "durationText" to durationText,
+                        EXPLICIT_BUNDLE_TAG to title.startsWith( EXPLICIT_PREFIX, true ),
+                        "isVideo" to true,
                     )
                 )
                 .build()

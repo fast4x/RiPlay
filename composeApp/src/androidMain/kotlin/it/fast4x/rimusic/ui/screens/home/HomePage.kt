@@ -142,6 +142,7 @@ import it.fast4x.rimusic.typography
 import it.fast4x.rimusic.ui.components.themed.TitleMiniSection
 import it.fast4x.rimusic.ui.items.VideoItem
 import it.fast4x.rimusic.ui.screens.settings.isYouTubeLoggedIn
+import it.fast4x.rimusic.utils.asVideoMediaItem
 import it.fast4x.rimusic.utils.playVideo
 import it.fast4x.rimusic.utils.quickPicsHomePageKey
 import timber.log.Timber
@@ -152,7 +153,7 @@ import kotlin.time.Duration.Companion.days
 @OptIn(ExperimentalMaterial3Api::class)
 @ExperimentalMaterialApi
 @ExperimentalTextApi
-@SuppressLint("SuspiciousIndentation")
+@SuppressLint("SuspiciousIndentation", "UnusedBoxWithConstraintsScope")
 @ExperimentalFoundationApi
 @ExperimentalAnimationApi
 @ExperimentalComposeUiApi
@@ -640,9 +641,11 @@ fun HomePage(
                                                 )
                                             },
                                             onClick = {
-                                                val mediaItem = song.asMediaItem
+
+                                                val mediaItem = song.asVideoMediaItem
                                                 binder?.stopRadio()
-                                                binder?.player?.forcePlay(mediaItem)
+                                                //binder?.player?.forcePlay(mediaItem)
+                                                binder?.player?.playVideo(mediaItem)
                                                 binder?.setupRadio(
                                                     NavigationEndpoint.Endpoint.Watch(videoId = mediaItem.mediaId)
                                                 )
@@ -736,7 +739,8 @@ fun HomePage(
                                                 )
                                             },
                                             onClick = {
-                                                val mediaItem = song.asMediaItem
+                                                println("HomePage Clicked on song")
+                                                val mediaItem = song.asVideoMediaItem
                                                 binder?.stopRadio()
                                                 binder?.player?.forcePlay(mediaItem)
                                                 binder?.setupRadio(

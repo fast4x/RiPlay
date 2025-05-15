@@ -105,6 +105,7 @@ math3 = {group = "org.apache.commons", name = "commons-math3", version.ref = "ma
 toasty = {group = "com.github.GrenderG", name = "Toasty", version.ref = "toasty"}
 haze = {group = "dev.chrisbanes.haze", name = "haze", version.ref = "haze"}
 androidyoutubeplayer = {group = "com.pierfrancescosoffritti.androidyoutubeplayer", name = "core", version.ref = "androidyoutubeplayer"}
+androidyoutubeplayer-custom-ui = {group = "com.pierfrancescosoffritti.androidyoutubeplayer", name = "custom-ui", version.ref = "androidyoutubeplayer"}
 glance-widgets = {group = "androidx.glance", name = "glance-appwidget", version.ref = "glance"}
 kizzy-rpc = {group = "com.github.dead8309", name = "KizzyRPC", version.ref = "kizzyrpc"}
 gson = {group = "com.google.code.gson", name = "gson", version.ref = "gson"}

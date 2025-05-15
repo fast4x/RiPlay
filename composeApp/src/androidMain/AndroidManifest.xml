@@ -40,7 +40,7 @@
         </intent>
     </queries>
     <queries>
-        <package android:name="it.fast4x.rimusic" />
+        <package android:name="it.fast4x.riplaymusic" />
     </queries>
     <queries>
         <intent>

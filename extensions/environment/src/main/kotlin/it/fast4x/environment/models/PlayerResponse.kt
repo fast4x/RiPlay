@@ -120,6 +120,9 @@ data class PlayerResponse(
         ) {
             val isAudio: Boolean
                 get() = width == null
+
+            val isVideo: Boolean
+                get() = width != null
         }
     }
 

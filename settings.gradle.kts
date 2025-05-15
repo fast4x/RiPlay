@@ -25,7 +25,8 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "RiMusic"
+rootProject.name = "RiPlayMusic"
+
 include(":composeApp")
 include(":compose-persist")
 // Projects from extensions

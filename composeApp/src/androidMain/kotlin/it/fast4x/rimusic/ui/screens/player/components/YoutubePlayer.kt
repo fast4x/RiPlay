@@ -16,16 +16,18 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.zIndex
 import androidx.lifecycle.LifecycleOwner
+import com.pierfrancescosoffritti.androidyoutubeplayer.core.customui.DefaultPlayerUiController
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.AbstractYouTubePlayerListener
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.options.IFramePlayerOptions
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
 import it.fast4x.rimusic.R
+import it.fast4x.rimusic.colorPalette
+import it.fast4x.rimusic.ui.screens.player.CustomPlayerUiController
 import it.fast4x.rimusic.ui.styling.collapsedPlayerProgressBar
 import it.fast4x.rimusic.utils.lastVideoIdKey
 import it.fast4x.rimusic.utils.lastVideoSecondsKey
 import it.fast4x.rimusic.utils.rememberPreference
-import it.fast4x.rimusic.colorPalette
 
 
 @Composable
@@ -68,13 +70,38 @@ fun YoutubePlayer(
                 //.clip(RoundedCornerShape(10.dp))
                 .zIndex(2f),
             factory = {
+
+                val youtubePlayerView = YouTubePlayerView(context = it)
+                val customPLayerUi = youtubePlayerView.inflateCustomPlayerUi(R.layout.ayp_default_player_ui)
+
+
+//                val iFramePlayerOptions = IFramePlayerOptions.Builder()
+//                    .controls(1) // show/hide controls
+//                    .rel(0) // related video at the end
+//                    .ivLoadPolicy(0) // show/hide annotations
+//                    .ccLoadPolicy(0) // show/hide captions
+//                    // Play a playlist by id
+//                    //.listType("playlist")
+//                    //.list(PLAYLIST_ID)
+//                    .build()
+
+                // Disable default view controls to set custom view
                 val iFramePlayerOptions = IFramePlayerOptions.Builder()
-                    .controls(1)
+                    .controls(0) // show/hide controls
                     .build()
 
                 val listener = object : AbstractYouTubePlayerListener() {
+
                     override fun onReady(youTubePlayer: YouTubePlayer) {
-                        //println("mediaItem youtubePlayer onReady called lastYTVideoSeconds $lastYTVideoSeconds")
+
+                        val customPlayerUiController = CustomPlayerUiController(
+                            it,
+                            customPLayerUi,
+                            youTubePlayer,
+                            youtubePlayerView
+                        )
+                        youTubePlayer.addListener(customPlayerUiController)
+
                         youTubePlayer.loadVideo(ytVideoId, lastYTVideoSeconds)
                     }
 
@@ -86,28 +113,14 @@ fun YoutubePlayer(
 
                 }
 
-
-                YouTubePlayerView(context = it).apply {
+                youtubePlayerView.apply {
                     enableAutomaticInitialization = false
 
                     lifecycleOwner.lifecycle.addObserver(this)
-                    /*
-                addYouTubePlayerListener(object: AbstractYouTubePlayerListener() {
-                    override fun onReady(youTubePlayer: YouTubePlayer) {
-                        //println("mediaItem youtubePlayer onReady called lastYTVideoSeconds $lastYTVideoSeconds")
-                        youTubePlayer.loadVideo(ytVideoId, lastYTVideoSeconds)
-                    }
 
-                    override fun onCurrentSecond(youTubePlayer: YouTubePlayer, second: Float) {
-                        super.onCurrentSecond(youTubePlayer, second)
-                        onCurrentSecond(second)
-                        lastYTVideoSeconds = second
-                        lastYTVideoId = ytVideoId
-                    }
-                })
-                 */
                     initialize(listener, true, iFramePlayerOptions)
                 }
+
             }
         )
     }

@@ -12,13 +12,11 @@ plugins {
     alias(libs.plugins.jetbrainsCompose)
     alias(libs.plugins.room)
     alias(libs.plugins.hilt)
-    //alias(libs.plugins.conveyor)
 }
 
 repositories {
     google()
     mavenCentral()
-    //mavenLocal()
     maven { url = uri("https://jitpack.io") }
     maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
 }
@@ -132,11 +130,11 @@ android {
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "it.fast4x.rimusic"
+        applicationId = "it.fast4x.riplaymusic"
         minSdk = 21
         targetSdk = 35
-        versionCode = 89
-        versionName = "0.6.76"
+        versionCode = 1
+        versionName = "0.1.1"
 
         // INIT ENVIRONMENT
         resValue(
@@ -374,14 +372,14 @@ android {
     buildTypes {
         debug {
             applicationIdSuffix = ".debug"
-            manifestPlaceholders["appName"] = "RiMusic-Debug"
+            manifestPlaceholders["appName"] = "RiPlayMusic-Debug"
         }
 
         release {
             vcsInfo.include = false
             isMinifyEnabled = true
             isShrinkResources = true
-            manifestPlaceholders["appName"] = "RiMusic"
+            manifestPlaceholders["appName"] = "RiPlayMusic"
             signingConfig = signingConfigs.getByName("debug")
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
@@ -393,7 +391,7 @@ android {
             .map { it as com.android.build.gradle.internal.api.BaseVariantOutputImpl }
             .forEach { output ->
                 //val outputFileName = "app-${variant.baseName}-${variant.versionName}-${variant.versionCode}.apk"
-                val outputFileName = "rimusic-${variant.baseName}.apk"
+                val outputFileName = "riplaymusic-${variant.baseName}.apk"
                 output.outputFileName = outputFileName
             }
     }
@@ -407,7 +405,7 @@ android {
     productFlavors {
         create("accrescent") {
             dimension = "version"
-            manifestPlaceholders["appName"] = "RiMusic-Acc"
+            manifestPlaceholders["appName"] = "RiPlayMusic-Acc"
         }
     }
 
@@ -449,7 +447,7 @@ compose.desktop {
 
         //conveyor
         version = "0.0.1"
-        group = "rimusic"
+        group = "riplaymusic"
 /*
 
         nativeDistributions {
@@ -461,11 +459,11 @@ compose.desktop {
         //jpackage
         nativeDistributions {
             //conveyor
-            vendor = "RiMusic.DesktopApp"
-            description = "RiMusic Desktop Music Player"
+            vendor = "RiPlayMusic.DesktopApp"
+            description = "RiPlayMusic Desktop Video Music Player"
 
             targetFormats(TargetFormat.Msi, TargetFormat.Deb, TargetFormat.Rpm)
-            packageName = "RiMusic.DesktopApp"
+            packageName = "RiPLayMusic.DesktopApp"
             packageVersion = "0.0.1"
 
             /*
@@ -541,6 +539,7 @@ dependencies {
     implementation(libs.toasty)
     implementation(libs.haze)
     implementation(libs.androidyoutubeplayer)
+    implementation(libs.androidyoutubeplayer.custom.ui)
     implementation(libs.glance.widgets)
     implementation(libs.kizzy.rpc)
     implementation(libs.gson)
