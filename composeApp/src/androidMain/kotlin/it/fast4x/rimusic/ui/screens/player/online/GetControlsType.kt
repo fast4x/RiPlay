@@ -1,4 +1,4 @@
-package it.fast4x.rimusic.utils
+package it.fast4x.rimusic.ui.screens.player.online
 
 import androidx.annotation.OptIn
 import androidx.compose.animation.core.animateFloatAsState
@@ -14,27 +14,44 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.media3.common.MediaItem
 import androidx.media3.common.util.UnstableApi
+import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
 import it.fast4x.rimusic.enums.PlayerBackgroundColors
 import it.fast4x.rimusic.enums.PlayerControlsType
 import it.fast4x.rimusic.enums.PlayerPlayButtonType
-import it.fast4x.rimusic.service.modern.PlayerServiceModern
 import it.fast4x.rimusic.ui.components.themed.PlaybackParamsDialog
-import it.fast4x.rimusic.ui.screens.player.offline.components.controls.ControlsEssential
-import it.fast4x.rimusic.ui.screens.player.offline.components.controls.ControlsModern
+import it.fast4x.rimusic.ui.screens.player.online.components.controls.ControlsEssential
+import it.fast4x.rimusic.ui.screens.player.online.components.controls.ControlsModern
+import it.fast4x.rimusic.utils.MedleyMode
+import it.fast4x.rimusic.utils.playbackDurationKey
+import it.fast4x.rimusic.utils.playbackSpeedKey
+import it.fast4x.rimusic.utils.playerBackgroundColorsKey
+import it.fast4x.rimusic.utils.playerControlsTypeKey
+import it.fast4x.rimusic.utils.playerPlayButtonTypeKey
+import it.fast4x.rimusic.utils.rememberPreference
 import kotlin.math.roundToInt
 
 @OptIn(UnstableApi::class)
 @Composable
 fun GetControls(
-    binder: PlayerServiceModern.Binder,
     position: Long,
     shouldBePlaying: Boolean,
     likedAt: Long?,
-    mediaId: String,
-    onBlurScaleChange: (Float) -> Unit
+    mediaItem: MediaItem,
+    onBlurScaleChange: (Float) -> Unit,
+    onPlay: () -> Unit,
+    onPause: () -> Unit,
+    onSeekTo: (Float) -> Unit,
+    onNext: () -> Unit,
+    onPrevious: () -> Unit,
+    onToggleRepeatMode: () -> Unit,
+    onToggleShuffleMode: () -> Unit,
 ) {
-    val playerControlsType by rememberPreference(playerControlsTypeKey, PlayerControlsType.Essential)
+    val playerControlsType by rememberPreference(
+        playerControlsTypeKey,
+        PlayerControlsType.Essential
+    )
     val playerPlayButtonType by rememberPreference(
         playerPlayButtonTypeKey,
         PlayerPlayButtonType.Disabled
@@ -73,11 +90,11 @@ fun GetControls(
         )
     }
 
-
-        MedleyMode(
-            binder = binder,
-            seconds = if (playbackDuration < 1f) 0 else playbackDuration.roundToInt()
-        )
+//TODO CHECK MEDLEY MODE
+//    MedleyMode(
+//        binder = binder,
+//        seconds = if (playbackDuration < 1f) 0 else playbackDuration.roundToInt()
+//    )
 
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -90,26 +107,38 @@ fun GetControls(
 
         if (playerControlsType == PlayerControlsType.Essential)
             ControlsEssential(
-                binder = binder,
                 position = position,
                 playbackSpeed = playbackSpeed,
                 shouldBePlaying = shouldBePlaying,
                 likedAt = likedAt,
-                mediaId = mediaId,
+                mediaItem = mediaItem,
                 playerPlayButtonType = playerPlayButtonType,
                 isGradientBackgroundEnabled = isGradientBackgroundEnabled,
-                onShowSpeedPlayerDialog = { showSpeedPlayerDialog = true }
+                onShowSpeedPlayerDialog = { showSpeedPlayerDialog = true },
+                onPlay = onPlay,
+                onPause = onPause,
+                onSeekTo = onSeekTo,
+                onNext = onNext,
+                onPrevious = onPrevious,
+                onToggleRepeatMode = onToggleRepeatMode,
+                onToggleShuffleMode = onToggleShuffleMode,
             )
 
         if (playerControlsType == PlayerControlsType.Modern)
             ControlsModern(
-                binder = binder,
                 position = position,
                 playbackSpeed = playbackSpeed,
                 shouldBePlaying = shouldBePlaying,
                 playerPlayButtonType = playerPlayButtonType,
                 isGradientBackgroundEnabled = isGradientBackgroundEnabled,
-                onShowSpeedPlayerDialog = { showSpeedPlayerDialog = true }
+                onShowSpeedPlayerDialog = { showSpeedPlayerDialog = true },
+                onPlay = onPlay,
+                onPause = onPause,
+                onSeekTo = onSeekTo,
+                onNext = onNext,
+                onPrevious = onPrevious,
+                onToggleRepeatMode = onToggleRepeatMode,
+                onToggleShuffleMode = onToggleShuffleMode,
             )
     }
 }

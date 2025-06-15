@@ -197,6 +197,7 @@ import it.fast4x.rimusic.ui.components.PullToRefreshBox
 import it.fast4x.rimusic.ui.components.themed.FilterMenu
 import it.fast4x.rimusic.ui.components.themed.InProgressDialog
 import it.fast4x.rimusic.ui.components.themed.SongMatchingDialog
+import it.fast4x.rimusic.ui.screens.player.fastPlay
 import it.fast4x.rimusic.utils.addToYtLikedSongs
 import it.fast4x.rimusic.utils.addToYtPlaylist
 import it.fast4x.rimusic.utils.asSong
@@ -2319,7 +2320,8 @@ fun LocalPlaylistSongs(
                                     modifier = Modifier
                                         .clickable {
                                             binder?.stopRadio()
-                                            binder?.player?.forcePlay(it)
+                                            //binder?.player?.forcePlay(it)
+                                            fastPlay(it, binder)
                                         },
                                     disableScrollingText = disableScrollingText,
                                     isNowPlaying = binder?.player?.isNowPlaying(it.mediaId) ?: false

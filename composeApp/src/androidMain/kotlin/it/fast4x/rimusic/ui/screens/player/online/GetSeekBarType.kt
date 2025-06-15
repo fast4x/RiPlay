@@ -1,4 +1,4 @@
-package it.fast4x.rimusic.utils
+package it.fast4x.rimusic.ui.screens.player.online
 
 import androidx.annotation.OptIn
 import androidx.compose.animation.core.Animatable
@@ -41,6 +41,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.C
 import androidx.media3.common.util.UnstableApi
+import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
 import it.fast4x.rimusic.LocalPlayerServiceBinder
 import it.fast4x.rimusic.enums.ColorPaletteMode
 import it.fast4x.rimusic.enums.PauseBetweenSongs
@@ -58,6 +59,17 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import it.fast4x.rimusic.colorPalette
 import it.fast4x.rimusic.typography
+import it.fast4x.rimusic.utils.colorPaletteModeKey
+import it.fast4x.rimusic.utils.formatAsDuration
+import it.fast4x.rimusic.utils.isCompositionLaunched
+import it.fast4x.rimusic.utils.pauseBetweenSongsKey
+import it.fast4x.rimusic.utils.playerTimelineTypeKey
+import it.fast4x.rimusic.utils.positionAndDurationState
+import it.fast4x.rimusic.utils.rememberPreference
+import it.fast4x.rimusic.utils.semiBold
+import it.fast4x.rimusic.utils.showRemainingSongTimeKey
+import it.fast4x.rimusic.utils.textoutlineKey
+import it.fast4x.rimusic.utils.transparentbarKey
 import org.jetbrains.compose.resources.painterResource
 import riplay.composeapp.generated.resources.Res
 import riplay.composeapp.generated.resources.app_icon
@@ -66,15 +78,22 @@ import riplay.composeapp.generated.resources.play
 @OptIn(UnstableApi::class)
 @Composable
 fun GetSeekBar(
+    //player: YouTubePlayer?,
     position: Long,
     duration: Long,
     mediaId: String,
     media: UiMedia
-    ) {
+) {
+
     println("Controls GetSeekBar")
-    val binder = LocalPlayerServiceBinder.current
-    binder?.player ?: return
-    val playerTimelineType by rememberPreference(playerTimelineTypeKey, PlayerTimelineType.FakeAudioBar)
+    //val binder = LocalPlayerServiceBinder.current
+    //binder?.player ?: return
+
+
+    val playerTimelineType by rememberPreference(
+        playerTimelineTypeKey,
+        PlayerTimelineType.FakeAudioBar
+    )
     var scrubbingPosition by remember(mediaId) {
         mutableStateOf<Long?>(null)
     }
@@ -137,7 +156,7 @@ fun GetSeekBar(
                     }
                 },
                 onDragEnd = {
-                    scrubbingPosition?.let(binder.player::seekTo)
+                    //scrubbingPosition?.let(binder.player::seekTo)
                     scrubbingPosition = null
                 },
                 color = colorPalette().collapsedPlayerProgressBar,
@@ -162,7 +181,7 @@ fun GetSeekBar(
                     }
                 },
                 onDragEnd = {
-                    scrubbingPosition?.let(binder.player::seekTo)
+                    //scrubbingPosition?.let(binder.player::seekTo)
                     scrubbingPosition = null
                 },
                 color = colorPalette().collapsedPlayerProgressBar,
@@ -187,7 +206,7 @@ fun GetSeekBar(
                     }
                 },
                 onDragEnd = {
-                    scrubbingPosition?.let(binder.player::seekTo)
+                    //scrubbingPosition?.let(binder.player::seekTo)
                     scrubbingPosition = null
                 },
                 color = colorPalette().collapsedPlayerProgressBar,
@@ -229,7 +248,7 @@ fun GetSeekBar(
 
                 },
                 onSeekFinished = {
-                    scrubbingPosition?.let(binder.player::seekTo)
+                    //scrubbingPosition?.let(binder.player::seekTo)
                     scrubbingPosition = null
                     /*
                 isSeeking = false
@@ -239,7 +258,7 @@ fun GetSeekBar(
                  */
                 },
                 color = colorPalette().collapsedPlayerProgressBar,
-                isActive = binder.player.isPlaying,
+                isActive = true,
                 backgroundColor = if (transparentbar) Color.Transparent else colorPalette().textSecondary,
                 shape = RoundedCornerShape(8.dp),
                 //modifier = Modifier.pulsatingEffect(currentValue = scrubbingPosition?.toFloat() ?: position.toFloat(), isVisible = true)
@@ -253,7 +272,7 @@ fun GetSeekBar(
                 notPlayedColor = if (transparentbar) Color.Transparent else colorPalette().textSecondary,
                 waveInteraction = {
                     scrubbingPosition = (it.value * duration.toFloat()).toLong()
-                    binder.player.seekTo(scrubbingPosition!!)
+                    //binder.player.seekTo(scrubbingPosition!!)
                     scrubbingPosition = null
                 },
                 modifier = Modifier
@@ -278,7 +297,7 @@ fun GetSeekBar(
                     }
                 },
                 onDragEnd = {
-                    scrubbingPosition?.let(binder.player::seekTo)
+                    //scrubbingPosition?.let(binder.player::seekTo)
                     scrubbingPosition = null
                 },
                 color = colorPalette().collapsedPlayerProgressBar,
@@ -307,7 +326,9 @@ fun GetSeekBar(
                 .clickable(
                     interactionSource = remember { MutableInteractionSource() },
                     indication = ripple(false),
-                    onClick = {binder.player.seekTo(position - 5000)}
+                    onClick = {
+                        //binder.player.seekTo(position - 5000)
+                    }
                 )
         ){
             Box(
@@ -351,129 +372,131 @@ fun GetSeekBar(
             }
         }
 
-
-        if (duration != C.TIME_UNSET) {
-            val positionAndDuration = binder.player.positionAndDurationState()
-            var timeRemaining by remember { mutableIntStateOf(0) }
-            timeRemaining =
-                positionAndDuration.value.second.toInt() - positionAndDuration.value.first.toInt()
-            var paused by remember { mutableStateOf(false) }
-
-            if (pauseBetweenSongs != PauseBetweenSongs.`0`)
-                LaunchedEffect(timeRemaining) {
-                    if (
-                    //formatAsDuration(timeRemaining.toLong()) == "0:00"
-                        timeRemaining.toLong() < 500
-                    ) {
-                        paused = true
-                        binder.player.pause()
-                        delay(pauseBetweenSongs.number)
-                        //binder.player.seekTo(position+2000)
-                        binder.player.play()
-                        paused = false
-                    }
-                }
-
-            if (!paused) {
-
-                if (showRemainingSongTime)
-                    Box(
-
-                    ){
-                    BasicText(
-                        text = "-${formatAsDuration(timeRemaining.toLong())}",
-                        style = typography().xxs.semiBold,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier
-                            .padding(horizontal = 5.dp)
-                    )
-                    BasicText(
-                        text = "-${formatAsDuration(timeRemaining.toLong())}",
-                        style = typography().xxs.semiBold.merge(TextStyle(
-                            drawStyle = Stroke(width = 1.0f, join = StrokeJoin.Round),
-                            color = if (!textoutline) Color.Transparent else if (colorPaletteMode == ColorPaletteMode.Light || (colorPaletteMode == ColorPaletteMode.System && (!isSystemInDarkTheme()))) Color.White.copy(0.5f)
-                            else Color.Black)),
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier
-                            .padding(horizontal = 5.dp)
-                    )
-
-            } else {
-               /* Image(
-                    painter = painterResource(R.drawable.pause),
-                    colorFilter = ColorFilter.tint(colorPalette().accent),
-                    modifier = Modifier
-                        .size(20.dp),
-                    contentDescription = "Background Image",
-                    contentScale = ContentScale.Fit
-                ) */
-            }
-
-            /*
-            BasicText(
-                text = "-${formatAsDuration(timeRemaining.toLong())} / ${formatAsDuration(duration)}",
-                style = typography().xxs.semiBold,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-            )
-             */
-            Row(
-                modifier = Modifier
-                    .clickable(
-                        interactionSource = remember { MutableInteractionSource() },
-                        indication = ripple(false),
-                        onClick = {binder.player.seekTo(position + 5000)}
-                    )
-            ){
-                Box{
-                    BasicText(
-                        text = formatAsDuration(duration),
-                        style = typography().xxs.semiBold,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                    )
-                    BasicText(
-                        text = formatAsDuration(duration),
-                        style = typography().xxs.semiBold.merge(
-                            TextStyle(
-                                drawStyle = Stroke(width = 1.0f, join = StrokeJoin.Round),
-                                color = if (!textoutline) Color.Transparent else if (colorPaletteMode == ColorPaletteMode.Light || (colorPaletteMode == ColorPaletteMode.System && (!isSystemInDarkTheme()))) Color.White.copy(
-                                    0.5f
-                                )
-                                else Color.Black
-                            )
-                        ),
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                    )
-                }
-                Box(
-                    modifier = Modifier
-                        .align(Alignment.CenterVertically)
-                ){
-                    Icon(
-                        painter =  painterResource(Res.drawable.play),
-                        contentDescription = "",
-                        tint = colorPalette().text,
-                        modifier = Modifier
-                            .size(10.dp)
-                            .offset((5).dp,0.dp)
-                    )
-                    Icon(
-                        painter =  painterResource(Res.drawable.play),
-                        contentDescription = "",
-                        tint = colorPalette().text,
-                        modifier = Modifier
-                            .size(10.dp)
-                    )
-                }
-            }
-
-          }
-
-        }
+// TODO CHECK SEEKBAR TYPE
+//        if (duration != C.TIME_UNSET) {
+//            val positionAndDuration = binder.player.positionAndDurationState()
+//            var timeRemaining by remember { mutableIntStateOf(0) }
+//            timeRemaining =
+//                positionAndDuration.value.second.toInt() - positionAndDuration.value.first.toInt()
+//            var paused by remember { mutableStateOf(false) }
+//
+//            if (pauseBetweenSongs != PauseBetweenSongs.`0`)
+//                LaunchedEffect(timeRemaining) {
+//                    if (
+//                    //formatAsDuration(timeRemaining.toLong()) == "0:00"
+//                        timeRemaining.toLong() < 500
+//                    ) {
+//                        paused = true
+//                        player.pause()
+//                        delay(pauseBetweenSongs.number)
+//                        //binder.player.seekTo(position+2000)
+//                        player.play()
+//                        paused = false
+//                    }
+//                }
+//
+//            if (!paused) {
+//
+//                if (showRemainingSongTime)
+//                    Box(
+//
+//                    ){
+//                    BasicText(
+//                        text = "-${formatAsDuration(timeRemaining.toLong())}",
+//                        style = typography().xxs.semiBold,
+//                        maxLines = 1,
+//                        overflow = TextOverflow.Ellipsis,
+//                        modifier = Modifier
+//                            .padding(horizontal = 5.dp)
+//                    )
+//                    BasicText(
+//                        text = "-${formatAsDuration(timeRemaining.toLong())}",
+//                        style = typography().xxs.semiBold.merge(TextStyle(
+//                            drawStyle = Stroke(width = 1.0f, join = StrokeJoin.Round),
+//                            color = if (!textoutline) Color.Transparent else if (colorPaletteMode == ColorPaletteMode.Light || (colorPaletteMode == ColorPaletteMode.System && (!isSystemInDarkTheme()))) Color.White.copy(0.5f)
+//                            else Color.Black)),
+//                        maxLines = 1,
+//                        overflow = TextOverflow.Ellipsis,
+//                        modifier = Modifier
+//                            .padding(horizontal = 5.dp)
+//                    )
+//
+//            } else {
+//               /* Image(
+//                    painter = painterResource(R.drawable.pause),
+//                    colorFilter = ColorFilter.tint(colorPalette().accent),
+//                    modifier = Modifier
+//                        .size(20.dp),
+//                    contentDescription = "Background Image",
+//                    contentScale = ContentScale.Fit
+//                ) */
+//            }
+//
+//            /*
+//            BasicText(
+//                text = "-${formatAsDuration(timeRemaining.toLong())} / ${formatAsDuration(duration)}",
+//                style = typography().xxs.semiBold,
+//                maxLines = 1,
+//                overflow = TextOverflow.Ellipsis,
+//            )
+//             */
+//            Row(
+//                modifier = Modifier
+//                    .clickable(
+//                        interactionSource = remember { MutableInteractionSource() },
+//                        indication = ripple(false),
+//                        onClick = {
+//                           // binder.player.seekTo(position + 5000)
+//                        }
+//                    )
+//            ){
+//                Box{
+//                    BasicText(
+//                        text = formatAsDuration(duration),
+//                        style = typography().xxs.semiBold,
+//                        maxLines = 1,
+//                        overflow = TextOverflow.Ellipsis,
+//                    )
+//                    BasicText(
+//                        text = formatAsDuration(duration),
+//                        style = typography().xxs.semiBold.merge(
+//                            TextStyle(
+//                                drawStyle = Stroke(width = 1.0f, join = StrokeJoin.Round),
+//                                color = if (!textoutline) Color.Transparent else if (colorPaletteMode == ColorPaletteMode.Light || (colorPaletteMode == ColorPaletteMode.System && (!isSystemInDarkTheme()))) Color.White.copy(
+//                                    0.5f
+//                                )
+//                                else Color.Black
+//                            )
+//                        ),
+//                        maxLines = 1,
+//                        overflow = TextOverflow.Ellipsis,
+//                    )
+//                }
+//                Box(
+//                    modifier = Modifier
+//                        .align(Alignment.CenterVertically)
+//                ){
+//                    Icon(
+//                        painter =  painterResource(Res.drawable.play),
+//                        contentDescription = "",
+//                        tint = colorPalette().text,
+//                        modifier = Modifier
+//                            .size(10.dp)
+//                            .offset((5).dp,0.dp)
+//                    )
+//                    Icon(
+//                        painter =  painterResource(Res.drawable.play),
+//                        contentDescription = "",
+//                        tint = colorPalette().text,
+//                        modifier = Modifier
+//                            .size(10.dp)
+//                    )
+//                }
+//            }
+//
+//          }
+//
+//        }
     }
 
 

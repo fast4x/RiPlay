@@ -1,4 +1,4 @@
-package it.fast4x.rimusic.ui.screens.player.components
+package it.fast4x.rimusic.ui.screens.player.offline.components
 
 /*
 @OptIn(UnstableApi::class)

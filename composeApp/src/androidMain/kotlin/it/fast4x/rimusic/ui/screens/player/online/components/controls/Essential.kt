@@ -1,4 +1,4 @@
-package it.fast4x.rimusic.ui.screens.player.components.controls
+package it.fast4x.rimusic.ui.screens.player.online.components.controls
 
 import android.annotation.SuppressLint
 import androidx.compose.animation.core.LinearEasing
@@ -50,8 +50,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.media3.common.MediaItem
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
+import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
 import it.fast4x.rimusic.Database
 import it.fast4x.rimusic.R
 import it.fast4x.rimusic.appContext
@@ -76,7 +78,7 @@ import it.fast4x.rimusic.typography
 import it.fast4x.rimusic.ui.components.themed.IconButton
 import it.fast4x.rimusic.ui.components.themed.SelectorArtistsDialog
 import it.fast4x.rimusic.ui.components.themed.SmartMessage
-import it.fast4x.rimusic.ui.screens.player.bounceClick
+import it.fast4x.rimusic.ui.screens.player.offline.bounceClick
 import it.fast4x.rimusic.ui.screens.settings.isYouTubeSyncEnabled
 import it.fast4x.rimusic.ui.styling.favoritesIcon
 import it.fast4x.rimusic.utils.HorizontalfadingEdge2
@@ -101,7 +103,6 @@ import it.fast4x.rimusic.utils.queueLoopTypeKey
 import it.fast4x.rimusic.utils.rememberPreference
 import it.fast4x.rimusic.utils.semiBold
 import it.fast4x.rimusic.utils.setDisLikeState
-import it.fast4x.rimusic.utils.setLikeState
 import it.fast4x.rimusic.utils.setQueueLoopState
 import it.fast4x.rimusic.utils.showthumbnailKey
 import it.fast4x.rimusic.utils.shuffleQueue
@@ -118,18 +119,17 @@ import kotlinx.coroutines.launch
 @ExperimentalFoundationApi
 @Composable
 fun InfoAlbumAndArtistEssential(
-    binder: PlayerServiceModern.Binder,
     navController: NavController,
     albumId: String?,
     media: UiMedia,
-    mediaId: String,
     title: String?,
     likedAt: Long?,
     artistIds: List<Info>?,
     artist: String?,
     isExplicit: Boolean,
     onCollapse: () -> Unit,
-    disableScrollingText: Boolean = false
+    disableScrollingText: Boolean = false,
+    mediaItem: MediaItem
 ) {
     val playerControlsType by rememberPreference(playerControlsTypeKey, PlayerControlsType.Essential)
     val colorPaletteMode by rememberPreference(colorPaletteModeKey, ColorPaletteMode.Dark)
@@ -141,7 +141,7 @@ fun InfoAlbumAndArtistEssential(
     val buttonState by rememberPreference(buttonStateKey, ButtonState.Idle)
     val playerBackgroundColors by rememberPreference(playerBackgroundColorsKey,PlayerBackgroundColors.BlurredCoverColor)
     var likeButtonWidth by remember{ mutableStateOf(0.dp) }
-    val currentMediaItem = binder.player.currentMediaItem
+    //val currentMediaItem = binder.player.currentMediaItem
 
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -267,26 +267,26 @@ fun InfoAlbumAndArtistEssential(
                     likeButtonWidth = maxWidth
                     IconButton(
                         color = colorPalette().favoritesIcon,
-                        icon = getLikeState(mediaId),
+                        icon = getLikeState(mediaItem.mediaId),
                         onClick = {
                             if (!isNetworkConnected(appContext()) && isYouTubeSyncEnabled()) {
                                 SmartMessage(appContext().resources.getString(R.string.no_connection), context = appContext(), type = PopupType.Error)
                             } else if (!isYouTubeSyncEnabled()){
                                 Database.asyncTransaction {
                                     CoroutineScope(Dispatchers.IO).launch {
-                                        currentMediaItem.takeIf { it?.mediaId == mediaId }.let { mediaItem ->
-                                            if(mediaItem != null){
+                                        //mediaItem.takeIf { it?.mediaId == mediaId }.let { mediaItem ->
+                                           // if(mediaItem != null){
                                                 mediaItemToggleLike(mediaItem)
                                                 MyDownloadHelper.autoDownloadWhenLiked(context(), mediaItem)
-                                            }
-                                        }
+                                            //}
+                                        //}
                                     }
                                 }
                             } else {
                                 CoroutineScope(Dispatchers.IO).launch {
-                                    if (currentMediaItem != null) {
-                                        addToYtLikedSong(currentMediaItem)
-                                    }
+                                    //if (currentMediaItem != null) {
+                                        addToYtLikedSong(mediaItem)
+                                    //}
                                 }
                             }
                             if (effectRotationEnabled) isRotated = !isRotated
@@ -297,24 +297,24 @@ fun InfoAlbumAndArtistEssential(
                             } else if (!isYouTubeSyncEnabled()){
                                 Database.asyncTransaction {
                                     CoroutineScope(Dispatchers.IO).launch {
-                                        if (like(mediaId, setDisLikeState(likedAt)) == 0) {
-                                            currentMediaItem
-                                                ?.takeIf { it.mediaId == mediaId }
+                                        if (like(mediaItem.mediaId, setDisLikeState(likedAt)) == 0) {
+                                            mediaItem
+                                                //.takeIf { it.mediaId == mediaId }
                                                 ?.let {
-                                                    insert(currentMediaItem, Song::toggleDislike)
+                                                    insert(mediaItem, Song::toggleDislike)
                                                 }
                                         }
-                                        if(currentMediaItem != null){
-                                            MyDownloadHelper.autoDownloadWhenLiked(context(), currentMediaItem)
-                                        }
+                                        //if(currentMediaItem != null){
+                                            MyDownloadHelper.autoDownloadWhenLiked(context(), mediaItem)
+                                        //}
                                     }
                                 }
                             } else {
                                 CoroutineScope(Dispatchers.IO).launch {
-                                    if (currentMediaItem != null) {
+                                    //if (currentMediaItem != null) {
                                         // currently can not implement disliking for sync, so only unliking the song
-                                        unlikeYtVideoOrSong(currentMediaItem)
-                                    }
+                                        unlikeYtVideoOrSong(mediaItem)
+                                    //}
                                 }
                             }
                             if (effectRotationEnabled) isRotated = !isRotated
@@ -436,16 +436,23 @@ fun InfoAlbumAndArtistEssential(
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ControlsEssential(
-    binder: PlayerServiceModern.Binder,
     position: Long,
     playbackSpeed: Float,
     shouldBePlaying: Boolean,
     likedAt: Long?,
-    mediaId: String,
+    mediaItem: MediaItem,
     playerPlayButtonType: PlayerPlayButtonType,
     isGradientBackgroundEnabled: Boolean,
     onShowSpeedPlayerDialog: () -> Unit,
+    onPlay: () -> Unit,
+    onPause: () -> Unit,
+    onSeekTo: (Float) -> Unit,
+    onNext: () -> Unit,
+    onPrevious: () -> Unit,
+    onToggleRepeatMode: () -> Unit,
+    onToggleShuffleMode: () -> Unit,
 ) {
+    println("Controls essential called")
     val colorPaletteName by rememberPreference(colorPaletteNameKey, ColorPaletteName.Dynamic)
     val colorPaletteMode by rememberPreference(colorPaletteModeKey, ColorPaletteMode.Dark)
     var effectRotationEnabled by rememberPreference(effectRotationKey, true)
@@ -464,31 +471,31 @@ fun ControlsEssential(
     var queueLoopType by rememberPreference(queueLoopTypeKey, defaultValue = QueueLoopType.Default)
     val playerBackgroundColors by rememberPreference(playerBackgroundColorsKey,PlayerBackgroundColors.BlurredCoverColor)
     var jumpPrevious by rememberPreference(jumpPreviousKey,"3")
-    val currentMediaItem = binder.player.currentMediaItem
+    val currentMediaItem = mediaItem
     var lightTheme = colorPaletteMode == ColorPaletteMode.Light || (colorPaletteMode == ColorPaletteMode.System && (!isSystemInDarkTheme()))
 
     Box {
         if (playerBackgroundColors != PlayerBackgroundColors.MidnightOdyssey){
             IconButton(
                 color = colorPalette().favoritesIcon,
-                icon = getLikeState(mediaId),
+                icon = getLikeState(mediaItem.mediaId),
                 onClick = {
                     if (!isNetworkConnected(appContext()) && isYouTubeSyncEnabled()) {
                         SmartMessage(appContext().resources.getString(R.string.no_connection), context = appContext(), type = PopupType.Error)
                     } else if (!isYouTubeSyncEnabled()){
                         Database.asyncTransaction {
                             CoroutineScope(Dispatchers.IO).launch {
-                                currentMediaItem?.takeIf { it.mediaId == mediaId }?.let { mediaItem ->
+                                //currentMediaItem?.takeIf { it.mediaId == mediaId }?.let { mediaItem ->
                                     mediaItemToggleLike(mediaItem)
                                     MyDownloadHelper.autoDownloadWhenLiked(context(), currentMediaItem)
-                                }
+                                //}
                             }
                         }
                     } else {
                         CoroutineScope(Dispatchers.IO).launch {
-                            if (currentMediaItem != null) {
+                            //if (currentMediaItem != null) {
                                 addToYtLikedSong(currentMediaItem)
-                            }
+                            //}
                         }
                     }
                     if (effectRotationEnabled) isRotated = !isRotated
@@ -499,12 +506,12 @@ fun ControlsEssential(
                     } else if (!isYouTubeSyncEnabled()){
                         Database.asyncTransaction {
                             CoroutineScope(Dispatchers.IO).launch {
-                                currentMediaItem?.takeIf { it.mediaId == mediaId }?.let { mediaItem ->
-                                    if (like(mediaId, setDisLikeState(likedAt)) == 0){
+                                //currentMediaItem?.takeIf { it.mediaId == mediaId }?.let { mediaItem ->
+                                    if (like(mediaItem.mediaId, setDisLikeState(likedAt)) == 0){
                                         insert(currentMediaItem, Song::toggleDislike)
                                     }
                                     MyDownloadHelper.autoDownloadWhenLiked(context(), currentMediaItem)
-                                }
+                                //}
                             }
                         }
                     } else {
@@ -527,7 +534,8 @@ fun ControlsEssential(
                 color = colorPalette().text,
                 enabled = true,
                 onClick = {
-                    binder.player.shuffleQueue()
+                    //TODO CHECK SHUFFLE
+                    //binder.player.shuffleQueue()
                 },
                 modifier = Modifier
                     .size(26.dp),
@@ -547,6 +555,8 @@ fun ControlsEssential(
 
     }
 
+    println("Controls essential called end")
+
     Image(
         painter = painterResource(R.drawable.play_skip_back),
         contentDescription = null,
@@ -557,10 +567,10 @@ fun ControlsEssential(
                 interactionSource = remember { MutableInteractionSource() },
                 onClick = {
                     if (jumpPrevious == "") jumpPrevious = "0"
-                    if(!binder.player.hasPreviousMediaItem() || (jumpPrevious != "0" && binder.player.currentPosition > jumpPrevious.toInt()*1000)){
-                        binder.player.seekTo(0)
-                    }
-                    else binder.player.playPrevious()
+//                    if(!binder.player.hasPreviousMediaItem() || (jumpPrevious != "0" && binder.player.currentPosition > jumpPrevious.toInt()*1000)){
+//                        binder.player.seekTo(0)
+//                    }
+//                    else binder.player.playPrevious()
                     if (effectRotationEnabled) isRotated = !isRotated
                 },
                 onLongClick = {}
@@ -580,15 +590,14 @@ fun ControlsEssential(
                 interactionSource = remember { MutableInteractionSource() },
                 onClick = {
                     if (shouldBePlaying) {
-                        //binder.player.pause()
-                        binder.callPause({} )
+                        onPause()
                     } else {
                         /*
                         if (binder.player.playbackState == Player.STATE_IDLE) {
                             binder.player.prepare()
                         }
                          */
-                        binder.player.play()
+                        onPlay()
                     }
                     if (effectRotationEnabled) isRotated = !isRotated
                 },
@@ -673,7 +682,7 @@ fun ControlsEssential(
                 interactionSource = remember { MutableInteractionSource() },
                 onClick = {
                     //binder.player.forceSeekToNext()
-                    binder.player.playNext()
+                    //binder.player.playNext()
                     if (effectRotationEnabled) isRotated = !isRotated
                 },
                 onLongClick = {}

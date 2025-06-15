@@ -35,6 +35,7 @@ import it.fast4x.rimusic.ui.items.VideoItemPlaceholder
 import it.fast4x.rimusic.ui.screens.searchresult.ItemsPage
 import it.fast4x.rimusic.colorPalette
 import it.fast4x.rimusic.ui.components.themed.SmartMessage
+import it.fast4x.rimusic.ui.screens.player.fastPlay
 
 @ExperimentalAnimationApi
 @ExperimentalTextApi
@@ -134,11 +135,12 @@ fun SearchYoutubeEntity (
                                     },
                                     onClick = {
                                         binder?.stopRadio()
-                                        if (isVideoEnabled)
-                                            binder?.player?.playVideo(video.asMediaItem)
-                                        else
-                                            binder?.player?.forcePlay(video.asMediaItem)
+//                                        if (isVideoEnabled)
+//                                            binder?.player?.playOnline(video.asMediaItem)
+//                                        else
+//                                            binder?.player?.forcePlay(video.asMediaItem)
                                         //binder?.setupRadio(video.info?.endpoint)
+                                        fastPlay(video.asMediaItem, binder)
                                         onDismiss()
                                     }
                                 ),

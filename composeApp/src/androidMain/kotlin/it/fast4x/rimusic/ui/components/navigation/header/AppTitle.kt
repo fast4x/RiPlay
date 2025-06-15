@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.BasicText
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableIntState
 import androidx.compose.runtime.mutableIntStateOf
@@ -108,15 +109,22 @@ private fun AppLogoText( navController: NavController ) {
     }
 
 
-
-    Button(
-        iconId = R.drawable.app_logo_text,
-        color = AppBar.contentColor(),
-        padding = 0.dp,
-        size = 36.dp,
-        forceWidth = 100.dp,
+    Text(
+        text = "Play",
+        style = typography().xxl.copy(
+            color = colorPalette().text
+        ),
         modifier = Modifier.clickable { iconTextClick() }
-    ).Draw()
+    )
+
+//    Button(
+//        iconId = R.drawable.app_logo_text,
+//        color = AppBar.contentColor(),
+//        padding = 0.dp,
+//        size = 36.dp,
+//        forceWidth = 100.dp,
+//        modifier = Modifier.clickable { iconTextClick() }
+//    ).Draw()
 }
 
 
@@ -129,9 +137,15 @@ fun AppTitle(
         horizontalArrangement = Arrangement.spacedBy( 5.dp ),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        AppLogo( navController, context )
-        Box {
-            AppLogoText( navController )
+        Column {
+            AppLogo(navController, context)
+        }
+        Column {
+
+                AppLogoText(navController)
+
+        }
+        Column {
             if (isAtLeastAndroid7) {
                 val dataTypeIcon = when (getNetworkType(context)) {
                     "WIFI" -> R.drawable.datawifi
@@ -144,7 +158,7 @@ fun AppTitle(
                     colorFilter = ColorFilter.tint(colorPalette().text),
                     modifier = Modifier
                         .size(12.dp)
-                        .align(Alignment.TopEnd)
+                       // .align(Alignment.TopEnd)
                 )
             }
             Image(
@@ -153,7 +167,7 @@ fun AppTitle(
                 colorFilter = ColorFilter.tint(getAudioQualityFormat().color),
                 modifier = Modifier
                     .size(12.dp)
-                    .align(Alignment.TopEnd)
+                    //.align(Alignment.TopEnd)
                     .absoluteOffset(0.dp, (-10).dp)
             )
 
@@ -164,7 +178,7 @@ fun AppTitle(
                     colorFilter = ColorFilter.tint(colorPalette().red),
                     modifier = Modifier
                         .size(12.dp)
-                        .align(Alignment.BottomEnd)
+                       // .align(Alignment.BottomEnd)
                 )
         }
 

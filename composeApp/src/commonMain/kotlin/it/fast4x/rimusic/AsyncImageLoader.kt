@@ -10,9 +10,9 @@ import coil3.request.crossfade
 import coil3.util.DebugLogger
 import okio.FileSystem
 import org.jetbrains.compose.resources.painterResource
-import riplaymusic.composeapp.generated.resources.Res
-import riplaymusic.composeapp.generated.resources.app_icon
-import riplaymusic.composeapp.generated.resources.loader
+import riplay.composeapp.generated.resources.Res
+import riplay.composeapp.generated.resources.app_icon
+import riplay.composeapp.generated.resources.loader
 
 @OptIn(ExperimentalCoilApi::class)
 fun getAsyncImageLoader(context: PlatformContext) =

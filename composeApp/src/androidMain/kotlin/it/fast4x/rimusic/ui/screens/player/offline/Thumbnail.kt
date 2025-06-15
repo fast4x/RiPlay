@@ -1,4 +1,4 @@
-package it.fast4x.rimusic.ui.screens.player
+package it.fast4x.rimusic.ui.screens.player.offline
 
 import androidx.annotation.OptIn
 import androidx.compose.animation.AnimatedContent
@@ -43,6 +43,7 @@ import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
+import coil.size.Size
 import it.fast4x.rimusic.Database
 import it.fast4x.rimusic.LocalPlayerServiceBinder
 import it.fast4x.rimusic.R
@@ -168,7 +169,7 @@ fun Thumbnail(
     val coverPainter = rememberAsyncImagePainter(
         model = ImageRequest.Builder(LocalContext.current)
             .data(window.mediaItem.mediaMetadata.artworkUri.thumbnail(1200))
-            .size(coil.size.Size.ORIGINAL)
+            .size(Size.ORIGINAL)
             .build(),
         onError = { artImageAvailable = false },
         onSuccess = { artImageAvailable = true }

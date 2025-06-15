@@ -94,6 +94,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import it.fast4x.rimusic.colorPalette
 import it.fast4x.rimusic.typography
+import it.fast4x.rimusic.ui.screens.player.fastPlay
 
 @UnstableApi
 @ExperimentalFoundationApi
@@ -255,7 +256,8 @@ fun OnlineSearch(
                                             hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
                                         },
                                         onClick = {
-                                            binder?.player?.forcePlay(mediaItem)
+                                            //binder?.player?.forcePlay(mediaItem)
+                                            fastPlay(mediaItem, binder)
                                         }
                                     ),
                                 disableScrollingText = disableScrollingText,

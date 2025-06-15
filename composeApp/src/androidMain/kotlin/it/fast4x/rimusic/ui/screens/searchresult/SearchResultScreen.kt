@@ -61,6 +61,7 @@ import it.fast4x.rimusic.ui.items.SongItem
 import it.fast4x.rimusic.ui.items.SongItemPlaceholder
 import it.fast4x.rimusic.ui.items.VideoItem
 import it.fast4x.rimusic.ui.items.VideoItemPlaceholder
+import it.fast4x.rimusic.ui.screens.player.fastPlay
 import it.fast4x.rimusic.ui.styling.Dimensions
 import it.fast4x.rimusic.ui.styling.px
 import it.fast4x.rimusic.utils.addNext
@@ -73,7 +74,7 @@ import it.fast4x.rimusic.utils.isDownloadedSong
 import it.fast4x.rimusic.utils.isNowPlaying
 import it.fast4x.rimusic.utils.manageDownload
 import it.fast4x.rimusic.utils.parentalControlEnabledKey
-import it.fast4x.rimusic.utils.playVideo
+import it.fast4x.rimusic.utils.playOnline
 import it.fast4x.rimusic.utils.preferences
 import it.fast4x.rimusic.utils.rememberPreference
 import it.fast4x.rimusic.utils.searchResultScreenTabIndexKey
@@ -275,7 +276,8 @@ fun SearchResultScreen(
                                                     },
                                                     onClick = {
                                                         localBinder?.stopRadio()
-                                                        localBinder?.player?.forcePlay(song.asMediaItem)
+                                                        //localBinder?.player?.forcePlay(song.asMediaItem)
+                                                        fastPlay(song.asMediaItem, localBinder)
                                                         forceRecompose = true
                                                         localBinder?.setupRadio(song.info?.endpoint)
                                                     }
@@ -634,11 +636,12 @@ fun SearchResultScreen(
                                                     },
                                                     onClick = {
                                                         localBinder?.stopRadio()
-                                                        if (isVideoEnabled)
-                                                            localBinder?.player?.playVideo(video.asMediaItem)
-                                                        else
-                                                            localBinder?.player?.forcePlay(video.asMediaItem)
+//                                                        if (isVideoEnabled)
+//                                                            localBinder?.player?.playOnline(video.asMediaItem)
+//                                                        else
+//                                                            localBinder?.player?.forcePlay(video.asMediaItem)
                                                         //binder?.setupRadio(video.info?.endpoint)
+                                                        fastPlay(video.asMediaItem, localBinder)
                                                     }
                                                 ),
                                             disableScrollingText = disableScrollingText

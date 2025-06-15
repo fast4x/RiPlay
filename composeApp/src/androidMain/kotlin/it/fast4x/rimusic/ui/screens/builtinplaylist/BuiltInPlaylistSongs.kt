@@ -149,6 +149,7 @@ import kotlinx.coroutines.launch
 import it.fast4x.rimusic.colorPalette
 import it.fast4x.rimusic.thumbnailShape
 import it.fast4x.rimusic.typography
+import it.fast4x.rimusic.ui.screens.player.fastPlay
 import java.text.SimpleDateFormat
 import java.util.Date
 
@@ -1173,7 +1174,8 @@ fun BuiltInPlaylistSongs(
                             modifier = Modifier
                                 .clickable {
                                     binder?.stopRadio()
-                                    binder?.player?.forcePlay(it)
+                                    //binder?.player?.forcePlay(it)
+                                    fastPlay(it, binder)
                                 },
                             disableScrollingText = disableScrollingText,
                             isNowPlaying = binder?.player?.isNowPlaying(it.mediaId) ?: false

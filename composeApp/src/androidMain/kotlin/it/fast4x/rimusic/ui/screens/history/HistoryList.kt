@@ -74,6 +74,7 @@ import it.fast4x.rimusic.colorPalette
 import it.fast4x.rimusic.enums.HistoryType
 import it.fast4x.rimusic.enums.NavRoutes
 import it.fast4x.rimusic.ui.components.ButtonsRow
+import it.fast4x.rimusic.ui.screens.player.fastPlay
 import it.fast4x.rimusic.ui.screens.settings.isYouTubeLoggedIn
 import it.fast4x.rimusic.utils.historyTypeKey
 import java.time.DayOfWeek
@@ -303,7 +304,8 @@ fun HistoryList(
                                                 }
                                             },
                                             onClick = {
-                                                binder?.player?.forcePlay(event.song.asMediaItem)
+                                                //binder?.player?.forcePlay(event.song.asMediaItem)
+                                                fastPlay(event.song.asMediaItem, binder)
                                             }
                                         )
                                         .background(color = colorPalette().background0)
@@ -399,7 +401,8 @@ fun HistoryList(
                                         }
                                     },
                                     onClick = {
-                                        binder?.player?.forcePlay(song)
+                                        //binder?.player?.forcePlay(song)
+                                        fastPlay(song, binder)
                                     }
                                 )
                                 .background(color = colorPalette().background0)

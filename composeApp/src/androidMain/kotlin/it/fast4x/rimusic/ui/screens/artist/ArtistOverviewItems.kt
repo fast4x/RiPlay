@@ -91,6 +91,7 @@ import it.fast4x.rimusic.ui.components.themed.NowPlayingSongIndicator
 import it.fast4x.rimusic.ui.components.themed.TitleSection
 import it.fast4x.rimusic.ui.items.ArtistItem
 import it.fast4x.rimusic.ui.items.VideoItem
+import it.fast4x.rimusic.ui.screens.player.fastPlay
 import it.fast4x.rimusic.ui.screens.settings.isYouTubeSyncEnabled
 import it.fast4x.rimusic.utils.addNext
 import it.fast4x.rimusic.utils.addToYtLikedSongs
@@ -106,7 +107,7 @@ import org.dailyislam.android.utilities.isNetworkConnected
 import it.fast4x.rimusic.utils.isNowPlaying
 import it.fast4x.rimusic.utils.manageDownload
 import it.fast4x.rimusic.utils.maxSongsInQueueKey
-import it.fast4x.rimusic.utils.playVideo
+import it.fast4x.rimusic.utils.playOnline
 import it.fast4x.rimusic.utils.setLikeState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -817,10 +818,11 @@ fun ArtistOverviewItems(
                                 disableScrollingText = disableScrollingText,
                                 modifier = Modifier.clickable(onClick = {
                                     binder?.stopRadio()
-                                    if (isVideoEnabled())
-                                        binder?.player?.playVideo(item.asMediaItem)
-                                    else
-                                        binder?.player?.forcePlay(item.asMediaItem)
+//                                    if (isVideoEnabled())
+//                                        binder?.player?.playOnline(item.asMediaItem)
+//                                    else
+//                                        binder?.player?.forcePlay(item.asMediaItem)
+                                    fastPlay(item.asMediaItem, binder)
                                 })
                             )
                         }

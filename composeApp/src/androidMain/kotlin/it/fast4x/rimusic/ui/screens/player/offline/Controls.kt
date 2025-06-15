@@ -1,4 +1,4 @@
-package it.fast4x.rimusic.ui.screens.player
+package it.fast4x.rimusic.ui.screens.player.offline
 
 import android.annotation.SuppressLint
 import androidx.compose.animation.ExperimentalAnimationApi
@@ -45,8 +45,8 @@ import it.fast4x.rimusic.enums.PlayerType
 import it.fast4x.rimusic.models.Info
 import it.fast4x.rimusic.models.Song
 import it.fast4x.rimusic.models.ui.UiMedia
-import it.fast4x.rimusic.ui.screens.player.components.controls.InfoAlbumAndArtistEssential
-import it.fast4x.rimusic.ui.screens.player.components.controls.InfoAlbumAndArtistModern
+import it.fast4x.rimusic.ui.screens.player.offline.components.controls.InfoAlbumAndArtistEssential
+import it.fast4x.rimusic.ui.screens.player.offline.components.controls.InfoAlbumAndArtistModern
 import it.fast4x.rimusic.utils.GetControls
 import it.fast4x.rimusic.utils.GetSeekBar
 import it.fast4x.rimusic.utils.buttonzoomoutKey
@@ -230,6 +230,7 @@ fun Controls(
                 modifier = Modifier
                     .padding(horizontal = playerTimelineSize.size.dp)
             ) {
+
                 if (!isShowingLyrics || titleExpanded) {
                     if (playerInfoType == PlayerInfoType.Modern)
                         InfoAlbumAndArtistModern(
@@ -308,7 +309,7 @@ fun Controls(
                     .padding(horizontal = playerTimelineSize.size.dp)
                     //.fillMaxHeight(0.40f)
             ) {
-
+                println("Controls sono qui")
                 if (playerInfoType == PlayerInfoType.Modern)
                     InfoAlbumAndArtistModern(
                         binder = binder,
@@ -347,6 +348,7 @@ fun Controls(
                 )
 
                 if (!playerSwapControlsWithTimeline) {
+                    println("Controls sono qui 2")
                     GetSeekBar(
                         position = position,
                         duration = duration,
@@ -370,6 +372,7 @@ fun Controls(
                             .weight(0.5f)
                     )
                 } else {
+                    println("Controls sono qui 3")
                     GetControls(
                         binder = binder,
                         position = position,

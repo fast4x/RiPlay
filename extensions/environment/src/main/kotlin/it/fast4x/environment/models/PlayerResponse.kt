@@ -119,10 +119,10 @@ data class PlayerResponse(
             val signatureCipher: String?,
         ) {
             val isAudio: Boolean
-                get() = width == null
+                get() = mimeType.startsWith("audio/")
 
             val isVideo: Boolean
-                get() = width != null
+                get() = mimeType.startsWith("video/")
         }
     }
 

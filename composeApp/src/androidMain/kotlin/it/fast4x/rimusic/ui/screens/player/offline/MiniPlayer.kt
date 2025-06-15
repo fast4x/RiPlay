@@ -1,4 +1,4 @@
-package it.fast4x.rimusic.ui.screens.player
+package it.fast4x.rimusic.ui.screens.player.offline
 
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateDp
@@ -78,6 +78,7 @@ import it.fast4x.rimusic.models.Song
 import it.fast4x.rimusic.service.MyDownloadHelper
 import it.fast4x.rimusic.thumbnailShape
 import it.fast4x.rimusic.typography
+import it.fast4x.rimusic.ui.components.themed.IconButton
 import it.fast4x.rimusic.ui.components.themed.NowPlayingSongIndicator
 import it.fast4x.rimusic.ui.components.themed.SmartMessage
 import it.fast4x.rimusic.ui.screens.settings.isYouTubeSyncEnabled
@@ -387,7 +388,7 @@ fun MiniPlayer(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     if ( mediaItem.isExplicit )
-                        it.fast4x.rimusic.ui.components.themed.IconButton(
+                        IconButton(
                             icon = R.drawable.explicit,
                             color = colorPalette().text,
                             enabled = true,
@@ -427,18 +428,18 @@ fun MiniPlayer(
                     .height(Dimensions.miniPlayerHeight)
             ) {
                if (miniPlayerType == MiniPlayerType.Essential)
-                it.fast4x.rimusic.ui.components.themed.IconButton(
-                    icon = R.drawable.play_skip_back,
-                    color = colorPalette().iconButtonPlayer,
-                    onClick = {
-                        binder.player.playPrevious()
-                        if (effectRotationEnabled) isRotated = !isRotated
-                    },
-                    modifier = Modifier
-                        .rotate(rotationAngle)
-                        .padding(horizontal = 2.dp, vertical = 8.dp)
-                        .size(24.dp)
-                )
+                   IconButton(
+                       icon = R.drawable.play_skip_back,
+                       color = colorPalette().iconButtonPlayer,
+                       onClick = {
+                           binder.player.playPrevious()
+                           if (effectRotationEnabled) isRotated = !isRotated
+                       },
+                       modifier = Modifier
+                           .rotate(rotationAngle)
+                           .padding(horizontal = 2.dp, vertical = 8.dp)
+                           .size(24.dp)
+                   )
 
                 if (positionAndDuration.second != C.TIME_UNSET) {
                     Box(
@@ -475,33 +476,33 @@ fun MiniPlayer(
                 )
 
                if (miniPlayerType == MiniPlayerType.Essential)
-                it.fast4x.rimusic.ui.components.themed.IconButton(
-                    icon = R.drawable.play_skip_forward,
-                    color = colorPalette().iconButtonPlayer,
-                    onClick = {
-                        binder.player.playNext()
-                        if (effectRotationEnabled) isRotated = !isRotated
-                    },
-                    modifier = Modifier
-                        .rotate(rotationAngle)
-                        .padding(horizontal = 2.dp, vertical = 8.dp)
-                        .size(24.dp)
-                )
+                   IconButton(
+                       icon = R.drawable.play_skip_forward,
+                       color = colorPalette().iconButtonPlayer,
+                       onClick = {
+                           binder.player.playNext()
+                           if (effectRotationEnabled) isRotated = !isRotated
+                       },
+                       modifier = Modifier
+                           .rotate(rotationAngle)
+                           .padding(horizontal = 2.dp, vertical = 8.dp)
+                           .size(24.dp)
+                   )
                 if (miniPlayerType == MiniPlayerType.Modern)
-                 it.fast4x.rimusic.ui.components.themed.IconButton(
-                     icon = getLikeState(mediaItem.mediaId),
-                     color = colorPalette().favoritesIcon,
-                     onClick = {
-                         updateLike = true
-                     },
-                     onLongClick = {
-                         updateDislike = true
-                     },
-                     modifier = Modifier
-                         .rotate(rotationAngle)
-                         .padding(horizontal = 2.dp, vertical = 8.dp)
-                         .size(24.dp)
-                 )
+                    IconButton(
+                        icon = getLikeState(mediaItem.mediaId),
+                        color = colorPalette().favoritesIcon,
+                        onClick = {
+                            updateLike = true
+                        },
+                        onLongClick = {
+                            updateDislike = true
+                        },
+                        modifier = Modifier
+                            .rotate(rotationAngle)
+                            .padding(horizontal = 2.dp, vertical = 8.dp)
+                            .size(24.dp)
+                    )
 
             }
 

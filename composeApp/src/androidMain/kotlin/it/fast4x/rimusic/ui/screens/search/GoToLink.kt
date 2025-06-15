@@ -58,6 +58,7 @@ import kotlinx.coroutines.plus
 import kotlinx.coroutines.withContext
 import it.fast4x.rimusic.colorPalette
 import it.fast4x.rimusic.typography
+import it.fast4x.rimusic.ui.screens.player.fastPlay
 
 @ExperimentalTextApi
 @SuppressLint("SuspiciousIndentation")
@@ -182,7 +183,8 @@ fun GoToLink(
                                     Environment.song(videoId)?.getOrNull()?.let { song ->
                                         val binder = snapshotFlow { binder }.filterNotNull().first()
                                         withContext(Dispatchers.Main) {
-                                            binder.player.forcePlay(song.asMediaItem)
+                                            //binder.player.forcePlay(song.asMediaItem)
+                                            fastPlay(song.asMediaItem, binder)
                                         }
                                     }
                                 }

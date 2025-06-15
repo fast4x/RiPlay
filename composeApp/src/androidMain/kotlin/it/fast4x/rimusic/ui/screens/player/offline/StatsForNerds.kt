@@ -1,7 +1,6 @@
-package it.fast4x.rimusic.ui.screens.player
+package it.fast4x.rimusic.ui.screens.player.offline
 
 import android.annotation.SuppressLint
-import android.net.ConnectivityManager
 import android.text.format.Formatter
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
@@ -34,21 +33,18 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.core.content.ContextCompat.getSystemService
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.cache.Cache
 import androidx.media3.datasource.cache.CacheSpan
 import it.fast4x.rimusic.Database
 import it.fast4x.rimusic.LocalPlayerServiceBinder
 import it.fast4x.rimusic.R
-import it.fast4x.rimusic.enums.AudioQualityFormat
 import it.fast4x.rimusic.enums.PlayerBackgroundColors
 import it.fast4x.rimusic.enums.PlayerType
 import it.fast4x.rimusic.models.Format
 import it.fast4x.rimusic.service.LOCAL_KEY_PREFIX
 import it.fast4x.rimusic.ui.styling.onOverlay
 import it.fast4x.rimusic.ui.styling.overlay
-import it.fast4x.rimusic.utils.audioQualityFormatKey
 import it.fast4x.rimusic.utils.blackgradientKey
 import it.fast4x.rimusic.utils.color
 import it.fast4x.rimusic.utils.isLandscape

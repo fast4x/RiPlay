@@ -1,4 +1,4 @@
-package it.fast4x.rimusic.ui.screens.player
+package it.fast4x.rimusic.ui.screens.player.offline
 
 import android.app.SearchManager
 import android.content.ActivityNotFoundException
@@ -481,7 +481,7 @@ fun Lyrics(
                             }
                         }
 
-                        kotlin.runCatching {
+                        runCatching {
                             LrcLib.lyrics(
                                 artist = artistName ?: "",
                                 title = title ?: "",
@@ -532,7 +532,7 @@ fun Lyrics(
 
                                 checkedLyricsLrc = true
 
-                                kotlin.runCatching {
+                                runCatching {
                                     KuGou.lyrics(
                                         artist = mediaMetadata.artist?.toString() ?: "",
                                         title = cleanPrefix(mediaMetadata.title?.toString() ?: ""),
@@ -592,7 +592,7 @@ fun Lyrics(
                     } else if (!isShowingSynchronizedLyrics && currentLyrics?.fixed == null) {
                         isError = false
                         lyrics = null
-                        kotlin.runCatching {
+                        runCatching {
                             Environment.lyrics(NextBody(videoId = mediaId))
                                 ?.onSuccess { fixedLyrics ->
                                     Database.upsert(
@@ -734,7 +734,7 @@ fun Lyrics(
             var error by remember { mutableStateOf(false) }
 
             LaunchedEffect(Unit) {
-                kotlin.runCatching {
+                runCatching {
                     LrcLib.lyrics(
                         artist = artistName,
                         title = title

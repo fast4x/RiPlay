@@ -62,8 +62,8 @@ import it.fast4x.rimusic.ui.screens.mood.MoodScreen
 import it.fast4x.rimusic.ui.screens.mood.MoodsPageScreen
 import it.fast4x.rimusic.ui.screens.newreleases.NewreleasesScreen
 import it.fast4x.rimusic.ui.screens.ondevice.DeviceListSongsScreen
-import it.fast4x.rimusic.ui.screens.player.Player
-import it.fast4x.rimusic.ui.screens.player.Queue
+import it.fast4x.rimusic.ui.screens.player.offline.Player
+import it.fast4x.rimusic.ui.screens.player.offline.Queue
 import it.fast4x.rimusic.ui.screens.playlist.PlaylistScreen
 import it.fast4x.rimusic.ui.screens.podcast.PodcastScreen
 import it.fast4x.rimusic.ui.screens.search.SearchScreen

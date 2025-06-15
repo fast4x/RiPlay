@@ -1,9 +1,10 @@
-package it.fast4x.rimusic.ui.screens.player
+package it.fast4x.rimusic.ui.screens.player.offline
 
 import android.annotation.SuppressLint
 import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.graphics.RenderEffect
+import android.graphics.Shader
 import android.media.audiofx.AudioEffect
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -2797,7 +2798,7 @@ fun Player(
                                         val blur = (startOffset * 20f).coerceAtLeast(0.1f)
                                         renderEffect = RenderEffect
                                             .createBlurEffect(
-                                                blur, blur, android.graphics.Shader.TileMode.DECAL
+                                                blur, blur, Shader.TileMode.DECAL
                                             ).asComposeRenderEffect()
                                         val scale = 1f - (startOffset * .1f)
                                         scaleX = scale

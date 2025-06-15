@@ -100,6 +100,7 @@ import it.fast4x.rimusic.ui.items.ArtistItem
 import it.fast4x.rimusic.ui.items.PlaylistItem
 import it.fast4x.rimusic.ui.items.SongItem
 import it.fast4x.rimusic.ui.items.VideoItem
+import it.fast4x.rimusic.ui.screens.player.fastPlay
 import it.fast4x.rimusic.ui.screens.settings.isYouTubeSyncEnabled
 import it.fast4x.rimusic.ui.styling.Dimensions
 import it.fast4x.rimusic.ui.styling.px
@@ -719,7 +720,8 @@ fun ArtistOverview(
 
                                                                     //if (artistSongs?.contains(item.asMediaItem) == false){
                                                                         withContext(Dispatchers.Main) {
-                                                                            binder?.player?.forcePlay(item.asMediaItem)
+                                                                            //binder?.player?.forcePlay(item.asMediaItem)
+                                                                            fastPlay(item.asMediaItem, binder)
                                                                             if (filteredArtistSongs != null) {
                                                                                 binder?.player?.addMediaItems(filteredArtistSongs.filterNot { it.mediaId == item.key })
                                                                             }

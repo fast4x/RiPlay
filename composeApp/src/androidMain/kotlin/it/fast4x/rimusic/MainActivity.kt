@@ -19,8 +19,6 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.IBinder
-import android.view.Window
-import android.view.WindowInsetsController
 import android.view.WindowManager
 import android.window.OnBackInvokedDispatcher
 import androidx.activity.ComponentActivity
@@ -89,10 +87,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.edit
 import androidx.core.net.toUri
 import androidx.core.os.LocaleListCompat
-import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
-import androidx.core.view.WindowInsetsCompat
-import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.MediaItem
@@ -133,7 +128,6 @@ import it.fast4x.rimusic.enums.PipModule
 import it.fast4x.rimusic.enums.PlayerBackgroundColors
 import it.fast4x.rimusic.enums.PopupType
 import it.fast4x.rimusic.enums.ThumbnailRoundness
-import it.fast4x.rimusic.extensions.pip.PipEventContainer
 import it.fast4x.rimusic.extensions.pip.PipModuleContainer
 import it.fast4x.rimusic.extensions.pip.PipModuleCover
 import it.fast4x.rimusic.service.MyDownloadHelper
@@ -143,10 +137,10 @@ import it.fast4x.rimusic.ui.components.LocalMenuState
 import it.fast4x.rimusic.ui.components.themed.CrossfadeContainer
 import it.fast4x.rimusic.ui.components.themed.SmartMessage
 import it.fast4x.rimusic.ui.screens.AppNavigation
-import it.fast4x.rimusic.ui.screens.player.MiniPlayer
-import it.fast4x.rimusic.ui.screens.player.Player
-import it.fast4x.rimusic.ui.screens.player.components.YoutubePlayer
-import it.fast4x.rimusic.ui.screens.player.rememberPlayerSheetState
+import it.fast4x.rimusic.ui.screens.player.offline.MiniPlayer
+import it.fast4x.rimusic.ui.screens.player.offline.Player
+import it.fast4x.rimusic.ui.screens.player.online.OnlinePlayer
+import it.fast4x.rimusic.ui.screens.player.offline.rememberPlayerSheetState
 import it.fast4x.rimusic.ui.styling.Appearance
 import it.fast4x.rimusic.ui.styling.Dimensions
 import it.fast4x.rimusic.ui.styling.LocalAppearance
@@ -159,6 +153,8 @@ import it.fast4x.rimusic.utils.InitDownloader
 import it.fast4x.rimusic.utils.LocalMonetCompat
 import it.fast4x.rimusic.utils.OkHttpRequest
 import it.fast4x.rimusic.extensions.rescuecenter.RescueScreen
+import it.fast4x.rimusic.service.modern.isLocal
+import it.fast4x.rimusic.ui.screens.player.fastPlay
 import it.fast4x.rimusic.ui.screens.settings.isYouTubeLoggedIn
 import it.fast4x.rimusic.utils.UiTypeKey
 import it.fast4x.rimusic.utils.animatedGradientKey
@@ -195,7 +191,6 @@ import it.fast4x.rimusic.utils.disableClosingPlayerSwipingDownKey
 import it.fast4x.rimusic.utils.disablePlayerHorizontalSwipeKey
 import it.fast4x.rimusic.utils.effectRotationKey
 import it.fast4x.rimusic.utils.fontTypeKey
-import it.fast4x.rimusic.utils.forcePlay
 import it.fast4x.rimusic.utils.getEnum
 import it.fast4x.rimusic.utils.getSystemlanguage
 import it.fast4x.rimusic.utils.invokeOnReady
@@ -554,6 +549,7 @@ class MainActivity :
                 val isSystemInDarkTheme = isSystemInDarkTheme()
                 val navController = rememberNavController()
                 var showPlayer by rememberSaveable { mutableStateOf(false) }
+                var mediaItemIsLocal = rememberSaveable { mutableStateOf(false) }
                 var switchToAudioPlayer by rememberSaveable { mutableStateOf(false) }
                 var animatedGradient by rememberPreference(
                     animatedGradientKey,
@@ -1115,8 +1111,7 @@ class MainActivity :
                                                     )}.db")
                                                     .apply {
                                                         onCompleteListener { success, message, exitCode ->
-                                                            Timber.d(
-                                                                TAG,
+                                                            Timber.d(TAG,
                                                                 "Rescue backup success: $success, message: $message, exitCode: $exitCode"
                                                             )
                                                             println("Rescue backup success: $success, message: $message, exitCode: $exitCode")
@@ -1176,17 +1171,29 @@ class MainActivity :
                                         )
                                     }
 
-                                    val youtubePlayer: @Composable () -> Unit = {
-                                        binder?.player?.currentMediaItem?.mediaId?.let {
-                                            YoutubePlayer(
-                                                ytVideoId = it,
+                                    val onlinePlayer: @Composable () -> Unit = {
+                                        binder?.player?.currentMediaItem?.let {
+                                            OnlinePlayer(
+                                                mediaItem = it,
                                                 lifecycleOwner = LocalLifecycleOwner.current,
-                                                onCurrentSecond = {},
                                                 showPlayer = showPlayer,
+                                                onCurrentSecond = {
+                                                    println("MainActivity.OnlinePlayer onCurrentSecond $it")
+                                                },
+                                                onVideoDuration = {
+                                                    println("MainActivity.OnlinePlayer onVideoDuration $it")
+                                                },
+                                                onVideoEnded = {
+                                                    println("MainActivity.OnlinePlayer onVideoEnded")
+                                                },
                                                 onSwitchToAudioPlayer = {
                                                     showPlayer = false
                                                     switchToAudioPlayer = true
-                                                }
+                                                },
+                                                onDismiss = {
+                                                    showPlayer = false
+                                                },
+                                                navController = navController
                                             )
                                         }
                                     }
@@ -1237,7 +1244,10 @@ class MainActivity :
                                         },
                                         shape = thumbnailRoundness.shape()
                                     ) {
-                                        youtubePlayer()
+                                        if (mediaItemIsLocal.value)
+                                            player()
+                                        else
+                                            onlinePlayer()
                                     }
 
                                     val menuState = LocalMenuState.current
@@ -1283,6 +1293,7 @@ class MainActivity :
 
                         val listener = object : Player.Listener {
                             override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
+                                mediaItemIsLocal.value = mediaItem?.isLocal == true
                                 if (reason == Player.MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED && mediaItem != null) {
                                     if (mediaItem.mediaMetadata.extras?.getBoolean("isFromPersistentQueue") != true) {
                                         if (preferences.getBoolean(keepPlayerMinimizedKey, false))
@@ -1297,8 +1308,6 @@ class MainActivity :
                                     ).toString()
                                 )
                             }
-
-
                         }
 
                         player.addListener(listener)
@@ -1362,7 +1371,8 @@ class MainActivity :
                                                 false
                                             )
                                         )
-                                            binder?.player?.forcePlay(song.asMediaItem)
+                                            //binder?.player?.forcePlay(song.asMediaItem)
+                                            fastPlay(song.asMediaItem, binder)
                                         else
                                             SmartMessage(
                                                 "Parental control is enabled",

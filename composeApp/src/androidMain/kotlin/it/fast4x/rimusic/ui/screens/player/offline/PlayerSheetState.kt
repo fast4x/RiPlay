@@ -1,4 +1,4 @@
-package it.fast4x.rimusic.ui.screens.player
+package it.fast4x.rimusic.ui.screens.player.offline
 
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.Animatable

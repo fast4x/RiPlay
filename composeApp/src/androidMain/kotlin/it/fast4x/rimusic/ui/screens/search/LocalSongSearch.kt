@@ -71,6 +71,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import it.fast4x.rimusic.colorPalette
 import it.fast4x.rimusic.typography
+import it.fast4x.rimusic.ui.screens.player.fastPlay
 
 @ExperimentalTextApi
 @SuppressLint("SuspiciousIndentation")
@@ -209,7 +210,8 @@ fun LocalSongSearch(
                             onClick = {
                                 val mediaItem = song.asMediaItem
                                 binder?.stopRadio()
-                                binder?.player?.forcePlay(mediaItem)
+                                //binder?.player?.forcePlay(mediaItem)
+                                fastPlay(mediaItem, binder)
                                 binder?.setupRadio(
                                     NavigationEndpoint.Endpoint.Watch(videoId = mediaItem.mediaId)
                                 )

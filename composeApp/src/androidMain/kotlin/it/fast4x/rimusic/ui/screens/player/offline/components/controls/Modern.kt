@@ -1,4 +1,4 @@
-package it.fast4x.rimusic.ui.screens.player.components.controls
+package it.fast4x.rimusic.ui.screens.player.offline.components.controls
 
 import android.os.Build
 import androidx.compose.animation.core.animateFloatAsState
@@ -70,7 +70,7 @@ import it.fast4x.rimusic.ui.components.themed.CustomElevatedButton
 import it.fast4x.rimusic.ui.components.themed.IconButton
 import it.fast4x.rimusic.ui.components.themed.SelectorArtistsDialog
 import it.fast4x.rimusic.ui.components.themed.SmartMessage
-import it.fast4x.rimusic.ui.screens.player.bounceClick
+import it.fast4x.rimusic.ui.screens.player.offline.bounceClick
 import it.fast4x.rimusic.ui.screens.settings.isYouTubeSyncEnabled
 import it.fast4x.rimusic.ui.styling.favoritesIcon
 import it.fast4x.rimusic.utils.addToYtLikedSong
@@ -92,7 +92,6 @@ import it.fast4x.rimusic.utils.playerInfoShowIconsKey
 import it.fast4x.rimusic.utils.rememberPreference
 import it.fast4x.rimusic.utils.semiBold
 import it.fast4x.rimusic.utils.setDisLikeState
-import it.fast4x.rimusic.utils.setLikeState
 import it.fast4x.rimusic.utils.showthumbnailKey
 import it.fast4x.rimusic.utils.textCopyToClipboard
 import it.fast4x.rimusic.utils.textoutlineKey

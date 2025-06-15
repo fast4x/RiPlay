@@ -25,7 +25,7 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "RiPlayMusic"
+rootProject.name = "RiPlay"
 
 include(":composeApp")
 include(":compose-persist")

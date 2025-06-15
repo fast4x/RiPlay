@@ -1,10 +1,8 @@
-package it.fast4x.rimusic.ui.screens.player
+package it.fast4x.rimusic.ui.screens.player.online
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.graphics.ColorFilter
 import android.view.View
-import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.compose.ui.graphics.Color
@@ -56,13 +54,23 @@ internal class CustomPlayerUiController (
         youtubeButton?.visibility = View.GONE
         youtubePlayerSeekBar = customPlayerUi.findViewById<YouTubePlayerSeekBar?>(R.id.youtube_player_seekbar)
         playPauseButton = customPlayerUi.findViewById<ImageView?>(R.id.play_pause_button)
-        playPauseButton?.setColorFilter(Color.White.hashCode())
+        playPauseButton?.setColorFilter(Color.Companion.White.hashCode())
         customActionLeft = customPlayerUi.findViewById<ImageView?>(R.id.custom_action_left_button)
         customActionRight = customPlayerUi.findViewById<ImageView?>(R.id.custom_action_right_button)
         customActionLeft?.setImageResource(R.drawable.play_skip_back)
-        customActionLeft?.setColorFilter(Color.White.hashCode())
+        customActionLeft?.setColorFilter(Color.Companion.White.hashCode())
         customActionRight?.setImageResource(R.drawable.play_skip_forward)
-        customActionRight?.setColorFilter(Color.White.hashCode())
+        customActionRight?.setColorFilter(Color.Companion.White.hashCode())
+
+        customActionLeft?.visibility = View.GONE
+        customActionRight?.visibility = View.GONE
+        playPauseButton?.visibility = View.GONE
+        youtubePlayerSeekBar?.visibility = View.GONE
+        youtubeButton?.visibility = View.GONE
+        videoCurrentTimeTextView?.visibility = View.GONE
+        videoDurationTextView?.visibility = View.GONE
+        progressbar?.visibility = View.GONE
+        panel?.visibility = View.VISIBLE
 
         enterExitFullscreenButton =
             customPlayerUi.findViewById<ImageView?>(R.id.fullscreen_button)
@@ -105,11 +113,11 @@ internal class CustomPlayerUiController (
     override fun onStateChange(youTubePlayer: YouTubePlayer, state: PlayerConstants.PlayerState) {
         if (state === PlayerConstants.PlayerState.PLAYING || state === PlayerConstants.PlayerState.PAUSED || state === PlayerConstants.PlayerState.VIDEO_CUED) {
             panel?.setBackgroundColor(ContextCompat.getColor(panel!!.context, android.R.color.transparent))
-            progressbar?.visibility = View.GONE
-
-            playPauseButton?.visibility = View.VISIBLE
-            customActionLeft?.visibility = View.VISIBLE
-            customActionRight?.visibility = View.VISIBLE
+//            progressbar?.visibility = View.GONE
+//
+//            playPauseButton?.visibility = View.VISIBLE
+//            customActionLeft?.visibility = View.VISIBLE
+//            customActionRight?.visibility = View.VISIBLE
 
             updatePlayPauseButtonIcon(state === PlayerConstants.PlayerState.PLAYING)
         }
@@ -117,23 +125,23 @@ internal class CustomPlayerUiController (
             updatePlayPauseButtonIcon(false)
 
             if (state === PlayerConstants.PlayerState.BUFFERING) {
-                progressbar?.visibility = View.VISIBLE
+               //progressbar?.visibility = View.VISIBLE
                 panel?.setBackgroundColor(
                     ContextCompat.getColor(
                         panel!!.context,
                         android.R.color.transparent
                     )
                 )
-                playPauseButton?.visibility = View.INVISIBLE
-
-                customActionLeft?.visibility = View.GONE
-                customActionRight?.visibility = View.GONE
+//                playPauseButton?.visibility = View.INVISIBLE
+//
+//                customActionLeft?.visibility = View.GONE
+//                customActionRight?.visibility = View.GONE
             }
 
-            if (state === PlayerConstants.PlayerState.UNSTARTED) {
-                progressbar?.visibility = View.GONE
-                playPauseButton?.visibility = View.VISIBLE
-            }
+//            if (state === PlayerConstants.PlayerState.UNSTARTED) {
+//                progressbar?.visibility = View.GONE
+//                playPauseButton?.visibility = View.VISIBLE
+//            }
         }
     }
 

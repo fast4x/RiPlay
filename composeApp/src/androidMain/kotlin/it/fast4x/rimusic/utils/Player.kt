@@ -108,7 +108,7 @@ fun Player.forcePlay(mediaItem: MediaItem) {
     playWhenReady = true
 }
 
-fun Player.playVideo(mediaItem: MediaItem) {
+fun Player.playOnline(mediaItem: MediaItem) {
     setMediaItem(mediaItem.cleaned, true)
     pause()
 }

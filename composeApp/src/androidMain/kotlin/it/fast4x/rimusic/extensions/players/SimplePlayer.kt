@@ -307,6 +307,7 @@ object SimplePlayer {
                         audioQuality,
                         //connectivityManager,
                     ) ?: continue
+
                 streamUrl = findUrlOrNull(format, videoId) ?: continue
                 streamExpiresInSeconds =
                     streamPlayerResponse.streamingData?.expiresInSeconds ?: continue
@@ -369,8 +370,11 @@ object SimplePlayer {
         playerResponse: PlayerResponse,
         playedFormat: Format?,
         audioQuality: AudioQualityFormat,
-    ): PlayerResponse.StreamingData.Format? =
-        if (playedFormat != null) {
+    ): PlayerResponse.StreamingData.Format? {
+        val formats = playerResponse.streamingData?.adaptiveFormats?.filter { it.mimeType.startsWith("video/") }?.map { it.itag }
+        println("SimplePlayer findFormat: $formats")
+
+        return if (playedFormat != null) {
             playerResponse.streamingData?.adaptiveFormats?.find { it.itag == playedFormat.itag }
         } else {
             playerResponse.streamingData?.adaptiveFormats
@@ -383,9 +387,11 @@ object SimplePlayer {
                                 AudioQualityFormat.High -> 1
                                 AudioQualityFormat.Medium -> -1
                                 AudioQualityFormat.Low -> -2
-                            } + (if (it.mimeType.startsWith("audio/webm")) 10240 else 0) // prefer opus stream
+                            } + (if (it.mimeType.startsWith("video/webm")) 10240 else 0) // prefer opus stream
                 }
         }
+
+    }
 
     /**
      * Checks if the stream url returns a successful status.

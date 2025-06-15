@@ -1,4 +1,4 @@
-package it.fast4x.rimusic.ui.screens.player
+package it.fast4x.rimusic.ui.screens.player.offline
 
 
 import android.annotation.SuppressLint
@@ -81,6 +81,7 @@ import androidx.compose.ui.zIndex
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.common.Timeline
+import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.offline.Download
 import androidx.navigation.NavController
 import com.github.doyaaaaaken.kotlincsv.dsl.csvWriter
@@ -91,7 +92,6 @@ import it.fast4x.rimusic.LocalPlayerServiceBinder
 import it.fast4x.rimusic.R
 import it.fast4x.rimusic.cleanPrefix
 import it.fast4x.rimusic.colorPalette
-import it.fast4x.rimusic.enums.BackgroundProgress
 import it.fast4x.rimusic.enums.NavRoutes
 import it.fast4x.rimusic.enums.PopupType
 import it.fast4x.rimusic.enums.QueueLoopType
@@ -121,7 +121,6 @@ import it.fast4x.rimusic.utils.DisposableListener
 import it.fast4x.rimusic.utils.addNext
 import it.fast4x.rimusic.utils.addToYtPlaylist
 import it.fast4x.rimusic.utils.asSong
-import it.fast4x.rimusic.utils.backgroundProgressKey
 import it.fast4x.rimusic.utils.currentWindow
 import it.fast4x.rimusic.utils.disableScrollingTextKey
 import it.fast4x.rimusic.utils.discoverKey
@@ -133,7 +132,6 @@ import it.fast4x.rimusic.utils.isLandscape
 import it.fast4x.rimusic.utils.isNowPlaying
 import it.fast4x.rimusic.utils.manageDownload
 import it.fast4x.rimusic.utils.medium
-import it.fast4x.rimusic.utils.positionAndDurationState
 import it.fast4x.rimusic.utils.queueLoopTypeKey
 import it.fast4x.rimusic.utils.queueTypeKey
 import it.fast4x.rimusic.utils.rememberPreference
@@ -161,7 +159,7 @@ import java.util.Date
 @SuppressLint("SuspiciousIndentation")
 @ExperimentalFoundationApi
 @ExperimentalAnimationApi
-@androidx.media3.common.util.UnstableApi
+@UnstableApi
 @Composable
 fun Queue(
     navController: NavController,
@@ -483,27 +481,27 @@ fun Queue(
                                             .size(16.dp)
                                     )
                                 }
-                                Box(
-                                    contentAlignment = Alignment.CenterStart,
-                                    modifier = Modifier
-                                        .weight(1f)
-                                        .padding(horizontal = 30.dp)
-                                ) {
-                                    androidx.compose.animation.AnimatedVisibility(
-                                        visible = filter?.isEmpty() ?: true,
-                                        enter = fadeIn(tween(100)),
-                                        exit = fadeOut(tween(100)),
-                                    ) {
-                                        BasicText(
-                                            text = stringResource(R.string.search),
-                                            maxLines = 1,
-                                            overflow = TextOverflow.Ellipsis,
-                                            style = typography().xs.semiBold.secondary.copy(color = colorPalette().textDisabled)
-                                        )
-                                    }
-
-                                    innerTextField()
-                                }
+//                                Box(
+//                                    contentAlignment = Alignment.CenterStart,
+//                                    modifier = Modifier
+//                                        .weight(1f)
+//                                        .padding(horizontal = 30.dp)
+//                                ) {
+//                                    AnimatedVisibility(
+//                                        visible = filter?.isEmpty() ?: true,
+//                                        enter = fadeIn(tween(100)),
+//                                        exit = fadeOut(tween(100)),
+//                                    ) {
+//                                        BasicText(
+//                                            text = stringResource(R.string.search),
+//                                            maxLines = 1,
+//                                            overflow = TextOverflow.Ellipsis,
+//                                            style = typography().xs.semiBold.secondary.copy(color = colorPalette().textDisabled)
+//                                        )
+//                                    }
+//
+//                                    innerTextField()
+//                                }
                             },
                             modifier = Modifier
                                 .height(30.dp)

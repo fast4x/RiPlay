@@ -1,4 +1,4 @@
-package it.fast4x.rimusic.ui.screens.player
+package it.fast4x.rimusic.ui.screens.player.offline
 
 import android.Manifest
 import android.content.Intent
@@ -30,6 +30,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.util.UnstableApi
 import it.fast4x.rimusic.R
+import it.fast4x.rimusic.extensions.nextvisualizer.NextVisualizer
 import it.fast4x.rimusic.ui.components.themed.SecondaryTextButton
 import it.fast4x.rimusic.utils.hasPermission
 import it.fast4x.rimusic.utils.isCompositionLaunched
@@ -107,7 +108,7 @@ fun NextVisualizer(
             enter = fadeIn(tween(500)),
             exit = fadeOut(tween(500)),
         ) {
-            it.fast4x.rimusic.extensions.nextvisualizer.NextVisualizer()
+            NextVisualizer()
         }
 
     }

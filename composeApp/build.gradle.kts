@@ -130,7 +130,7 @@ android {
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "it.fast4x.riplaymusic"
+        applicationId = "it.fast4x.riplay"
         minSdk = 21
         targetSdk = 35
         versionCode = 1
@@ -372,14 +372,14 @@ android {
     buildTypes {
         debug {
             applicationIdSuffix = ".debug"
-            manifestPlaceholders["appName"] = "RiPlayMusic-Debug"
+            manifestPlaceholders["appName"] = "RiPlay-Debug"
         }
 
         release {
             vcsInfo.include = false
             isMinifyEnabled = true
             isShrinkResources = true
-            manifestPlaceholders["appName"] = "RiPlayMusic"
+            manifestPlaceholders["appName"] = "RiPlay"
             signingConfig = signingConfigs.getByName("debug")
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
@@ -391,7 +391,7 @@ android {
             .map { it as com.android.build.gradle.internal.api.BaseVariantOutputImpl }
             .forEach { output ->
                 //val outputFileName = "app-${variant.baseName}-${variant.versionName}-${variant.versionCode}.apk"
-                val outputFileName = "riplaymusic-${variant.baseName}.apk"
+                val outputFileName = "riplay-${variant.baseName}.apk"
                 output.outputFileName = outputFileName
             }
     }
@@ -405,7 +405,7 @@ android {
     productFlavors {
         create("accrescent") {
             dimension = "version"
-            manifestPlaceholders["appName"] = "RiPlayMusic-Acc"
+            manifestPlaceholders["appName"] = "RiPlay-Acc"
         }
     }
 
@@ -447,7 +447,7 @@ compose.desktop {
 
         //conveyor
         version = "0.0.1"
-        group = "riplaymusic"
+        group = "riplay"
 /*
 
         nativeDistributions {
@@ -459,11 +459,11 @@ compose.desktop {
         //jpackage
         nativeDistributions {
             //conveyor
-            vendor = "RiPlayMusic.DesktopApp"
-            description = "RiPlayMusic Desktop Video Music Player"
+            vendor = "RiPlay.DesktopApp"
+            description = "RiPlay Desktop Video Music Player"
 
             targetFormats(TargetFormat.Msi, TargetFormat.Deb, TargetFormat.Rpm)
-            packageName = "RiPLayMusic.DesktopApp"
+            packageName = "RiPLay.DesktopApp"
             packageVersion = "0.0.1"
 
             /*
