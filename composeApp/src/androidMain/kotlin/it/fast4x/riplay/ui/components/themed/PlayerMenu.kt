@@ -28,16 +28,13 @@ import it.fast4x.riplay.models.SongPlaylistMap
 import it.fast4x.riplay.service.modern.PlayerServiceModern
 import it.fast4x.riplay.ui.screens.settings.isYouTubeSyncEnabled
 import it.fast4x.riplay.utils.addSongToYtPlaylist
-import it.fast4x.riplay.utils.addToPipedPlaylist
 import it.fast4x.riplay.utils.addToYtLikedSong
 import it.fast4x.riplay.utils.addToYtPlaylist
-import it.fast4x.riplay.utils.getPipedSession
 import org.dailyislam.android.utilities.isNetworkConnected
 import it.fast4x.riplay.utils.isPipedEnabledKey
 import it.fast4x.riplay.utils.menuStyleKey
 import it.fast4x.riplay.utils.rememberEqualizerLauncher
 import it.fast4x.riplay.utils.rememberPreference
-import it.fast4x.riplay.utils.removeFromPipedPlaylist
 import it.fast4x.riplay.utils.removeYTSongFromPlaylist
 import it.fast4x.riplay.utils.seamlessPlay
 import kotlinx.coroutines.CoroutineScope
@@ -278,10 +275,7 @@ fun AddToPlaylistPlayerMenu(
     onDismiss: () -> Unit,
     onClosePlayer: () -> Unit,
 ) {
-    val isPipedEnabled by rememberPreference(isPipedEnabledKey, false)
-    val pipedSession = getPipedSession()
-    val context = LocalContext.current
-    val coroutineScope = rememberCoroutineScope()
+
     AddToPlaylistItemMenu(
         navController = navController,
         mediaItem = mediaItem,
@@ -305,29 +299,8 @@ fun AddToPlaylistPlayerMenu(
                     addSongToYtPlaylist(playlist.id, position, playlist.browseId ?: "", mediaItem)
                 }
             }
-            if (playlist.name.startsWith(PIPED_PREFIX) && isPipedEnabled && pipedSession.token.isNotEmpty()) {
-                Timber.d("BaseMediaItemMenu onAddToPlaylist mediaItem ${mediaItem.mediaId}")
-                addToPipedPlaylist(
-                    context = context,
-                    coroutineScope = coroutineScope,
-                    pipedSession = pipedSession.toApiSession(),
-                    id = UUID.fromString(playlist.browseId),
-                    videos = listOf(mediaItem.mediaId)
-                )
-            }
         },
         onRemoveFromPlaylist = { playlist ->
-            Database.asyncTransaction {
-                if (playlist.name.startsWith(PIPED_PREFIX) && isPipedEnabled && pipedSession.token.isNotEmpty()) {
-                    Timber.d("MediaItemMenu InPlaylistMediaItemMenu onRemoveFromPlaylist browseId ${playlist.browseId}")
-                    removeFromPipedPlaylist(
-                        context = context,
-                        coroutineScope = coroutineScope,
-                        pipedSession = pipedSession.toApiSession(),
-                        id = UUID.fromString(cleanPrefix(playlist.browseId ?: "")),positionInPlaylist(mediaItem.mediaId,playlist.id)
-                    )
-                }
-            }
             if(isYouTubeSyncEnabled() && playlist.isYoutubePlaylist && playlist.isEditable) {
                 Database.asyncTransaction {
                     CoroutineScope(Dispatchers.IO).launch {
@@ -361,8 +334,6 @@ fun AddToPlaylistArtistSongs(
     onDismiss: () -> Unit,
     onClosePlayer: () -> Unit,
 ) {
-    val isPipedEnabled by rememberPreference(isPipedEnabledKey, false)
-    val pipedSession = getPipedSession()
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
     var position by remember {
@@ -393,16 +364,7 @@ fun AddToPlaylistArtistSongs(
                         addToYtPlaylist(playlistPreview.playlist.id, position, playlistPreview.playlist.browseId ?: "", mediaItems)
                     }
                 }
-                if (playlistPreview.playlist.name.startsWith(PIPED_PREFIX) && isPipedEnabled && pipedSession.token.isNotEmpty()) {
-                    Timber.d("BaseMediaItemMenu onAddToPlaylist mediaItem ${mediaItem.mediaId}")
-                    addToPipedPlaylist(
-                        context = context,
-                        coroutineScope = coroutineScope,
-                        pipedSession = pipedSession.toApiSession(),
-                        id = UUID.fromString(playlistPreview.playlist.browseId),
-                        videos = listOf(mediaItem.mediaId)
-                    )
-                }
+
             }
             onDismiss()
         },

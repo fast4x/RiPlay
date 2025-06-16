@@ -60,13 +60,9 @@ import it.fast4x.riplay.ui.components.themed.MultiFloatingActionsContainer
 import it.fast4x.riplay.ui.items.PlaylistItem
 import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.utils.CheckMonthlyPlaylist
-import it.fast4x.riplay.utils.ImportPipedPlaylists
 import it.fast4x.riplay.utils.asMediaItem
-import it.fast4x.riplay.utils.createPipedPlaylist
 import it.fast4x.riplay.utils.disableScrollingTextKey
 import it.fast4x.riplay.utils.enableCreateMonthlyPlaylistsKey
-import it.fast4x.riplay.utils.getPipedSession
-import it.fast4x.riplay.utils.isPipedEnabledKey
 import it.fast4x.riplay.utils.playlistSortByKey
 import it.fast4x.riplay.utils.playlistSortOrderKey
 import it.fast4x.riplay.utils.playlistTypeKey
@@ -124,10 +120,8 @@ fun HomeLibrary(
     val lazyGridState = rememberLazyGridState()
 
     // Non-vital
-    val pipedSession = getPipedSession()
     var plistId by remember { mutableLongStateOf( 0L ) }
     var playlistType by rememberPreference(playlistTypeKey, PlaylistsType.Playlist)
-    val isPipedEnabled by rememberPreference(isPipedEnabledKey, false)
     val disableScrollingText by rememberPreference(disableScrollingTextKey, false)
 
     var items by persistList<PlaylistPreview>("home/playlists")
@@ -197,16 +191,6 @@ fun HomeLibrary(
                     }
                 }
             }
-
-            if ( isPipedEnabled && pipedSession.token.isNotEmpty() )
-                createPipedPlaylist(
-                    context = context,
-                    coroutineScope = coroutineScope,
-                    pipedSession = pipedSession.toApiSession(),
-                    name = newValue
-                )
-
-
 
             onDismiss()
         }
@@ -290,10 +274,6 @@ fun HomeLibrary(
         if ((!justSynced) && importYTMPrivatePlaylists())
             justSynced = true
     }
-
-    // START: Import Piped playlists
-    if (isPipedEnabled)
-        ImportPipedPlaylists()
 
     LaunchedEffect( sort.sortBy, sort.sortOrder ) {
         Database.playlistPreviews(sort.sortBy, sort.sortOrder).collect { items = it }

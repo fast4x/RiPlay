@@ -19,7 +19,6 @@ import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.MenuStyle
 import it.fast4x.riplay.enums.PlaylistSongSortBy
 import it.fast4x.riplay.enums.SortOrder
-import it.fast4x.riplay.models.PipedSession
 import it.fast4x.riplay.models.PlaylistPreview
 import it.fast4x.riplay.models.Song
 import it.fast4x.riplay.ui.components.LocalMenuState
@@ -236,9 +235,7 @@ class RenameDialog private constructor(
     private val menuState: MenuState,
     private val playlistNameState: MutableState<String>,
     private val activeState: MutableState<Boolean>,
-    private val pipedSession: PipedSession,
     private val coroutineScope: CoroutineScope,
-    private val isPipedEnabled: () -> Boolean,
     private val playlistPreview: () -> PlaylistPreview?
 ): IDialog, Descriptive, MenuIcon {
 
@@ -246,7 +243,6 @@ class RenameDialog private constructor(
         @JvmStatic
         @Composable
         fun init(
-            pipedSession: PipedSession,
             coroutineScope: CoroutineScope,
             isPipedEnabled: () -> Boolean,
             playlistNameState: MutableState<String>,
@@ -255,9 +251,7 @@ class RenameDialog private constructor(
             LocalMenuState.current,
             playlistNameState,
             rememberSaveable { mutableStateOf( false ) },
-            pipedSession,
             coroutineScope,
-            isPipedEnabled,
             playlistPreview
         )
     }
@@ -292,25 +286,10 @@ class RenameDialog private constructor(
     override fun onSet( newValue: String ) {
         val playlist = playlistPreview()?.playlist ?: return
 
-        val isPipedPlaylist =
-            playlist.name.startsWith(PIPED_PREFIX)
-                    && isPipedEnabled()
-                    && pipedSession.token.isNotEmpty()
-        val prefix = if( isPipedPlaylist ) PIPED_PREFIX else ""
-
         Database.asyncTransaction {
-            playlist.copy( name = "$prefix$newValue" )
+            playlist.copy( name = newValue)
                     .let( ::update )
         }
-
-        if ( isPipedPlaylist )
-            renamePipedPlaylist(
-                context = appContext(),
-                coroutineScope = coroutineScope,
-                pipedSession = pipedSession.toApiSession(),
-                id = UUID.fromString( cleanPrefix(playlist.browseId ?: "") ),
-                name = "$PIPED_PREFIX$newValue"
-            )
 
         onDismiss()
         menuState.hide()

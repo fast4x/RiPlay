@@ -76,6 +76,7 @@ kotlin {
             implementation(libs.nanojson)
             implementation(libs.androidx.webkit)
             implementation(libs.room.backup)
+
         }
         commonMain.dependencies {
             implementation(compose.runtime)
@@ -86,8 +87,6 @@ kotlin {
             implementation(compose.components.uiToolingPreview)
 
             implementation(projects.environment)
-            implementation(projects.piped)
-            implementation(projects.invidious)
 
             implementation(libs.room)
             implementation(libs.room.runtime)
@@ -555,10 +554,7 @@ dependencies {
     implementation(projects.environment)
     implementation(projects.kugou)
     implementation(projects.lrclib)
-    implementation(projects.piped)
 
-
-//    coreLibraryDesugaring(libs.desugaring)
     coreLibraryDesugaring(libs.desugaring.nio)
 
 }

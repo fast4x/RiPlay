@@ -91,20 +91,16 @@ import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.ui.styling.favoritesIcon
 import it.fast4x.riplay.ui.styling.px
 import it.fast4x.riplay.utils.addNext
-import it.fast4x.riplay.utils.addToPipedPlaylist
 import it.fast4x.riplay.utils.asMediaItem
 import it.fast4x.riplay.utils.enqueue
 import it.fast4x.riplay.utils.formatAsDuration
 import it.fast4x.riplay.utils.getLikeState
-import it.fast4x.riplay.utils.getPipedSession
-import it.fast4x.riplay.utils.isPipedEnabledKey
 import it.fast4x.riplay.utils.medium
 import it.fast4x.riplay.utils.menuStyleKey
 import it.fast4x.riplay.utils.playlistSortByKey
 import it.fast4x.riplay.utils.playlistSortOrderKey
 import it.fast4x.riplay.utils.positionAndDurationState
 import it.fast4x.riplay.utils.rememberPreference
-import it.fast4x.riplay.utils.removeFromPipedPlaylist
 import it.fast4x.riplay.utils.semiBold
 import it.fast4x.riplay.utils.thumbnail
 import kotlinx.coroutines.CoroutineScope
@@ -191,9 +187,7 @@ fun InPlaylistMediaItemMenu(
     modifier: Modifier = Modifier,
     disableScrollingText: Boolean
 ) {
-    val isPipedEnabled by rememberPreference(isPipedEnabledKey, false)
     val coroutineScope = rememberCoroutineScope()
-    val pipedSession = getPipedSession()
     val context = LocalContext.current
 
     NonQueuedMediaItemMenu(
@@ -221,17 +215,7 @@ fun InPlaylistMediaItemMenu(
                     }
                 }
 
-                if (playlist.playlist.name.startsWith(PIPED_PREFIX) && isPipedEnabled && pipedSession.token.isNotEmpty()) {
-                    Timber.d("MediaItemMenu InPlaylistMediaItemMenu onRemoveFromPlaylist browseId ${playlist.playlist.browseId}")
-                    removeFromPipedPlaylist(
-                        context = context,
-                        coroutineScope = coroutineScope,
-                        pipedSession = pipedSession.toApiSession(),
-                        id = UUID.fromString(cleanPrefix(playlist.playlist.browseId ?: "")),
-                        positionInPlaylist
-                    )
-                }
-            }else {
+            } else {
                 SmartMessage(
                     context.resources.getString(R.string.cannot_delete_from_online_playlists),
                     type = PopupType.Warning,
@@ -656,10 +640,6 @@ fun BaseMediaItemMenu(
 ) {
     val context = LocalContext.current
 
-    val coroutineScope = rememberCoroutineScope()
-    val isPipedEnabled by rememberPreference(isPipedEnabledKey, false)
-    val pipedSession = getPipedSession()
-
     //println("mediaItem in BaseMediaItemMenu albumId ${mediaItem.mediaMetadata.extras?.getString("albumId")}")
 
     MediaItemMenu(
@@ -691,18 +671,6 @@ fun BaseMediaItemMenu(
                     addSongToYtPlaylist(playlist.id, position, playlist.browseId ?: "", mediaItem)
                 }
             }
-            if (playlist.name.startsWith(PIPED_PREFIX) && isPipedEnabled && pipedSession.token.isNotEmpty()) {
-                Timber.d("BaseMediaItemMenu onAddToPlaylist mediaItem ${mediaItem.mediaId}")
-                addToPipedPlaylist(
-                    context = context,
-                    coroutineScope = coroutineScope,
-                    pipedSession = pipedSession.toApiSession(),
-                    id = UUID.fromString(cleanPrefix(playlist.browseId ?: "")),
-                    videos = listOf(mediaItem.mediaId)
-                )
-            }
-
-
 
         },
         onHideFromDatabase = onHideFromDatabase,

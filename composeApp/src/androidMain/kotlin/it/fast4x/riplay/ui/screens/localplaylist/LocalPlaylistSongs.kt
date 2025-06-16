@@ -131,17 +131,14 @@ import it.fast4x.riplay.ui.styling.overlay
 import it.fast4x.riplay.ui.styling.px
 import it.fast4x.riplay.utils.UiTypeKey
 import it.fast4x.riplay.utils.addNext
-import it.fast4x.riplay.utils.addToPipedPlaylist
 import it.fast4x.riplay.utils.asMediaItem
 import it.fast4x.riplay.utils.center
 import it.fast4x.riplay.utils.color
-import it.fast4x.riplay.utils.deletePipedPlaylist
 import it.fast4x.riplay.utils.durationTextToMillis
 import it.fast4x.riplay.utils.enqueue
 import it.fast4x.riplay.utils.forcePlayAtIndex
 import it.fast4x.riplay.utils.forcePlayFromBeginning
 import it.fast4x.riplay.utils.formatAsTime
-import it.fast4x.riplay.utils.getPipedSession
 import it.fast4x.riplay.utils.isLandscape
 import it.fast4x.riplay.utils.isPipedEnabledKey
 import it.fast4x.riplay.utils.isRecommendationEnabledKey
@@ -150,14 +147,11 @@ import it.fast4x.riplay.utils.navigationBarPositionKey
 import it.fast4x.riplay.utils.playlistSongSortByKey
 import it.fast4x.riplay.utils.recommendationsNumberKey
 import it.fast4x.riplay.utils.rememberPreference
-import it.fast4x.riplay.utils.removeFromPipedPlaylist
-import it.fast4x.riplay.utils.renamePipedPlaylist
 import it.fast4x.riplay.utils.reorderInQueueEnabledKey
 import it.fast4x.riplay.utils.secondary
 import it.fast4x.riplay.utils.semiBold
 import it.fast4x.riplay.utils.showFloatingIconKey
 import it.fast4x.riplay.utils.songSortOrderKey
-import it.fast4x.riplay.utils.syncSongsInPipedPlaylist
 import it.fast4x.riplay.utils.thumbnailRoundnessKey
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -457,9 +451,8 @@ fun LocalPlaylistSongs(
         mutableStateOf(false)
     }
 
-    val isPipedEnabled by rememberPreference(isPipedEnabledKey, false)
     val coroutineScope = rememberCoroutineScope()
-    val pipedSession = getPipedSession()
+
 
 
 
@@ -481,14 +474,6 @@ fun LocalPlaylistSongs(
                         playlistPreview?.playlist?.let(Database::delete)
                     }
                 }
-
-                if (playlistPreview?.playlist?.name?.startsWith(PIPED_PREFIX) == true && isPipedEnabled && pipedSession.token.isNotEmpty())
-                    deletePipedPlaylist(
-                        context = context,
-                        coroutineScope = coroutineScope,
-                        pipedSession = pipedSession.toApiSession(),
-                        id = UUID.fromString(cleanPrefix(playlistPreview?.playlist?.browseId ?: ""))
-                    )
 
                 navController.popBackStack()
             }
@@ -524,12 +509,7 @@ fun LocalPlaylistSongs(
             context = context,
         )
         playlistPreview?.let { playlistPreview ->
-            if (!playlistPreview.playlist.name.startsWith(
-                    PIPED_PREFIX,
-                    0,
-                    true
-                )
-            ) {
+
                 Database.asyncTransaction {
                     runBlocking(Dispatchers.IO) {
                         withContext(Dispatchers.IO) {
@@ -559,18 +539,7 @@ fun LocalPlaylistSongs(
                             .also { SmartMessage(context.resources.getString(R.string.done), context = context) }
                     }
                 }
-            } else {
-                syncSongsInPipedPlaylist(
-                    context = context,
-                    coroutineScope = coroutineScope,
-                    pipedSession = pipedSession.toApiSession(),
-                    idPipedPlaylist = UUID.fromString(
-                        cleanPrefix(playlistPreview.playlist.browseId ?: "")
-                    ),
-                    playlistId = playlistPreview.playlist.id
 
-                )
-            }
         }
     }
 
@@ -831,16 +800,6 @@ fun LocalPlaylistSongs(
                             playlistPreview?.playlist?.copy(name = text)?.let(Database::update)
                         }
                     }
-
-
-                    if (playlistPreview?.playlist?.name?.startsWith(PIPED_PREFIX) == true && isPipedEnabled && pipedSession.token.isNotEmpty())
-                        renamePipedPlaylist(
-                            context = context,
-                            coroutineScope = coroutineScope,
-                            pipedSession = pipedSession.toApiSession(),
-                            id = UUID.fromString(cleanPrefix(playlistPreview?.playlist?.browseId ?: "")),
-                            name = text
-                        )
 
                 }
                 if (isExporting) {
@@ -1667,23 +1626,7 @@ fun LocalPlaylistSongs(
                                                                 }
                                                             }
                                                         }
-                                                        if (toPlaylistPreview.playlist.name.startsWith(
-                                                                PIPED_PREFIX
-                                                            ) && isPipedEnabled && pipedSession.token.isNotEmpty()
-                                                        )
-                                                            addToPipedPlaylist(
-                                                                context = context,
-                                                                coroutineScope = coroutineScope,
-                                                                pipedSession = pipedSession.toApiSession(),
-                                                                id = UUID.fromString(
-                                                                    cleanPrefix(
-                                                                        toPlaylistPreview.playlist.browseId
-                                                                            ?: ""
-                                                                    )
-                                                                ),
-                                                                videos = playlistSongs.map { it.asMediaItem.mediaId }
-                                                                    .toList()
-                                                            )
+
                                                     }
                                                 } else {
                                                     CoroutineScope(Dispatchers.IO).launch {
@@ -1736,23 +1679,7 @@ fun LocalPlaylistSongs(
                                                         }
                                                         println("pipedInfo mediaitemmenu uuid ${playlistPreview.playlist.browseId}")
 
-                                                        if (toPlaylistPreview.playlist.name.startsWith(
-                                                                PIPED_PREFIX
-                                                            ) && isPipedEnabled && pipedSession.token.isNotEmpty()
-                                                        )
-                                                            addToPipedPlaylist(
-                                                                context = context,
-                                                                coroutineScope = coroutineScope,
-                                                                pipedSession = pipedSession.toApiSession(),
-                                                                id = UUID.fromString(
-                                                                    cleanPrefix(
-                                                                        toPlaylistPreview.playlist.browseId
-                                                                            ?: ""
-                                                                    )
-                                                                ),
-                                                                videos = listMediaItems.map { it.mediaId }
-                                                                    .toList()
-                                                            )
+
                                                         listMediaItems.clear()
                                                         selectItems = false
                                                     }
@@ -2270,15 +2197,6 @@ fun LocalPlaylistSongs(
                                             }
                                         }
 
-                                        if (playlistPreview?.playlist?.name?.startsWith(PIPED_PREFIX) == true && isPipedEnabled && pipedSession.token.isNotEmpty()) {
-                                            removeFromPipedPlaylist(
-                                                context = context,
-                                                coroutineScope = coroutineScope,
-                                                pipedSession = pipedSession.toApiSession(),
-                                                id = UUID.fromString(playlistPreview?.playlist?.browseId),
-                                                positionInPlaylist
-                                            )
-                                        }
                                         coroutineScope.launch {
                                             SmartMessage(
                                                 context.resources.getString(R.string.deleted) + " \"" + song.asMediaItem.mediaMetadata.title.toString() + " - " + song.asMediaItem.mediaMetadata.artist.toString() + "\" ",
