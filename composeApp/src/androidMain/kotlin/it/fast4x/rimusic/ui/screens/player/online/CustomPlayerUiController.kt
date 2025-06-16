@@ -62,15 +62,6 @@ internal class CustomPlayerUiController (
         customActionRight?.setImageResource(R.drawable.play_skip_forward)
         customActionRight?.setColorFilter(Color.Companion.White.hashCode())
 
-        customActionLeft?.visibility = View.GONE
-        customActionRight?.visibility = View.GONE
-        playPauseButton?.visibility = View.GONE
-        youtubePlayerSeekBar?.visibility = View.GONE
-        youtubeButton?.visibility = View.GONE
-        videoCurrentTimeTextView?.visibility = View.GONE
-        videoDurationTextView?.visibility = View.GONE
-        progressbar?.visibility = View.GONE
-        panel?.visibility = View.VISIBLE
 
         enterExitFullscreenButton =
             customPlayerUi.findViewById<ImageView?>(R.id.fullscreen_button)
@@ -99,6 +90,18 @@ internal class CustomPlayerUiController (
         }
 
         panel?.setOnClickListener { fadeControlsContainer?.toggleVisibility() }
+
+        //Disable controls in view
+        customActionLeft?.visibility = View.GONE
+        customActionRight?.visibility = View.GONE
+        playPauseButton?.visibility = View.GONE
+        youtubePlayerSeekBar?.visibility = View.GONE
+        youtubeButton?.visibility = View.GONE
+        videoCurrentTimeTextView?.visibility = View.GONE
+        videoDurationTextView?.visibility = View.GONE
+        progressbar?.visibility = View.GONE
+        enterExitFullscreenButton?.visibility = View.GONE
+        panel?.visibility = View.VISIBLE
 
         youTubePlayer.addListener(youtubePlayerSeekBar as YouTubePlayerListener)
         youTubePlayer.addListener(playerTracker)

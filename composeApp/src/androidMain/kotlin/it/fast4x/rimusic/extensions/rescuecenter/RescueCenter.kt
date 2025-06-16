@@ -71,7 +71,7 @@ fun RescueScreen(
 
             val file =
                 File(context.filesDir.resolve("logs"),
-                    "RiMusic_crash_log.txt"
+                    "RiPlay_crash_log.txt"
                 )
             if (!file.exists()) {
                 SmartMessage(noLogAvailable, type = PopupType.Info, context = context)
@@ -100,7 +100,7 @@ fun RescueScreen(
                 try {
                     @SuppressLint("SimpleDateFormat")
                     val dateFormat = SimpleDateFormat("yyyyMMddHHmmss")
-                    exportLauncher.launch("RiMusic_CrashLog_${txt.take(20)}_${dateFormat.format(
+                    exportLauncher.launch("RiPlay_CrashLog_${txt.take(20)}_${dateFormat.format(
                         Date()
                     )}")
                 } catch (e: ActivityNotFoundException) {

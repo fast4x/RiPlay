@@ -48,7 +48,7 @@ import it.fast4x.rimusic.MONTHLY_PREFIX
 import it.fast4x.rimusic.cleanPrefix
 import it.fast4x.rimusic.utils.checkFileExists
 import it.fast4x.rimusic.utils.color
-import it.fast4x.rimusic.utils.conditional
+import it.fast4x.rimusic.utils.applyIf
 import it.fast4x.rimusic.utils.medium
 import it.fast4x.rimusic.utils.secondary
 import it.fast4x.rimusic.utils.semiBold
@@ -59,8 +59,6 @@ import kotlinx.coroutines.flow.map
 import it.fast4x.rimusic.colorPalette
 import it.fast4x.rimusic.thumbnailShape
 import it.fast4x.rimusic.typography
-import it.fast4x.rimusic.ui.components.tab.ItemSize
-import it.fast4x.rimusic.utils.Preference.HOME_LIBRARY_ITEM_SIZE
 import timber.log.Timber
 
 @Composable
@@ -411,7 +409,7 @@ fun PlaylistItem(
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                         modifier = Modifier
-                            .conditional(!disableScrollingText) { basicMarquee(iterations = Int.MAX_VALUE) }
+                            .applyIf(!disableScrollingText) { basicMarquee(iterations = Int.MAX_VALUE) }
                     )
                 }
 
@@ -422,7 +420,7 @@ fun PlaylistItem(
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                     modifier = Modifier
-                        .conditional(!disableScrollingText) { basicMarquee(iterations = Int.MAX_VALUE) }
+                        .applyIf(!disableScrollingText) { basicMarquee(iterations = Int.MAX_VALUE) }
                 )
             }
         }

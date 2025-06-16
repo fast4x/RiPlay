@@ -108,10 +108,9 @@ import it.fast4x.rimusic.utils.addNext
 import it.fast4x.rimusic.utils.align
 import it.fast4x.rimusic.utils.asMediaItem
 import it.fast4x.rimusic.utils.color
-import it.fast4x.rimusic.utils.conditional
+import it.fast4x.rimusic.utils.applyIf
 import it.fast4x.rimusic.utils.enqueue
 import it.fast4x.rimusic.utils.fadingEdge
-import it.fast4x.rimusic.utils.forcePlay
 import it.fast4x.rimusic.utils.getDownloadState
 import it.fast4x.rimusic.utils.isDownloadedSong
 import it.fast4x.rimusic.utils.isLandscape
@@ -279,7 +278,7 @@ fun ArtistOverview(
                         modifier = Modifier
                             .align(Alignment.BottomCenter)
                             .padding(horizontal = 30.dp)
-                            .conditional(!disableScrollingText) {
+                            .applyIf(!disableScrollingText) {
                                 basicMarquee(
                                     iterations = Int.MAX_VALUE
                                 )

@@ -163,7 +163,7 @@ import it.fast4x.rimusic.thumbnailShape
 import it.fast4x.rimusic.typography
 import it.fast4x.rimusic.ui.components.themed.LyricsSizeDialog
 import it.fast4x.rimusic.utils.colorPaletteNameKey
-import it.fast4x.rimusic.utils.conditional
+import it.fast4x.rimusic.utils.applyIf
 import it.fast4x.rimusic.utils.effectRotationKey
 import it.fast4x.rimusic.utils.jumpPreviousKey
 import it.fast4x.rimusic.utils.landscapeControlsKey
@@ -1168,9 +1168,9 @@ fun Lyrics(
                                             ),
                                             modifier = Modifier
                                                 .padding(vertical = 4.dp, horizontal = 32.dp)
-                                                .conditional(lyricsSizeAnimate) { padding(vertical = 4.dp) }
+                                                .applyIf(lyricsSizeAnimate) { padding(vertical = 4.dp) }
                                                 .align(if (lyricsAlignment == LyricsAlignment.Left) Alignment.CenterStart else if (lyricsAlignment == LyricsAlignment.Right) Alignment.CenterEnd else Alignment.Center)
-                                                .conditional(lyricsSizeAnimate) {
+                                                .applyIf(lyricsSizeAnimate) {
                                                     graphicsLayer {
                                                         transformOrigin =
                                                             if (lyricsAlignment == LyricsAlignment.Center) TransformOrigin(
@@ -1213,9 +1213,9 @@ fun Lyrics(
                                             ),
                                             modifier = Modifier
                                                 .padding(vertical = 4.dp, horizontal = 32.dp)
-                                                .conditional(lyricsSizeAnimate) { padding(vertical = 4.dp) }
+                                                .applyIf(lyricsSizeAnimate) { padding(vertical = 4.dp) }
                                                 .align(if (lyricsAlignment == LyricsAlignment.Left) Alignment.CenterStart else if (lyricsAlignment == LyricsAlignment.Right) Alignment.CenterEnd else Alignment.Center)
-                                                .conditional(lyricsSizeAnimate) {
+                                                .applyIf(lyricsSizeAnimate) {
                                                     graphicsLayer {
                                                         transformOrigin =
                                                             if (lyricsAlignment == LyricsAlignment.Center) TransformOrigin(
@@ -1269,9 +1269,9 @@ fun Lyrics(
                                             ),
                                             modifier = Modifier
                                                 .padding(vertical = 4.dp, horizontal = 32.dp)
-                                                .conditional(lyricsSizeAnimate) { padding(vertical = 4.dp) }
+                                                .applyIf(lyricsSizeAnimate) { padding(vertical = 4.dp) }
                                                 .align(if (lyricsAlignment == LyricsAlignment.Left) Alignment.CenterStart else if (lyricsAlignment == LyricsAlignment.Right) Alignment.CenterEnd else Alignment.Center)
-                                                .conditional(lyricsSizeAnimate) {
+                                                .applyIf(lyricsSizeAnimate) {
                                                     graphicsLayer {
                                                         transformOrigin =
                                                             if (lyricsAlignment == LyricsAlignment.Center) TransformOrigin(
@@ -1335,9 +1335,9 @@ fun Lyrics(
                                         ),
                                         modifier = Modifier
                                             .padding(vertical = 4.dp, horizontal = 32.dp)
-                                            .conditional(lyricsSizeAnimate) { padding(vertical = 4.dp) }
+                                            .applyIf(lyricsSizeAnimate) { padding(vertical = 4.dp) }
                                             .align(if (lyricsAlignment == LyricsAlignment.Left) Alignment.CenterStart else if (lyricsAlignment == LyricsAlignment.Right) Alignment.CenterEnd else Alignment.Center)
-                                            .conditional(lyricsSizeAnimate) {
+                                            .applyIf(lyricsSizeAnimate) {
                                                 graphicsLayer {
                                                     transformOrigin =
                                                         if (lyricsAlignment == LyricsAlignment.Center) TransformOrigin(
@@ -1373,7 +1373,7 @@ fun Lyrics(
                                                 ) else Color.Transparent else Color.Transparent,
                                                 RoundedCornerShape(6.dp)
                                             )
-                                            .conditional(lyricsHighlight != LyricsHighlight.None) { fillMaxWidth() }
+                                            .applyIf(lyricsHighlight != LyricsHighlight.None) { fillMaxWidth() }
                                     )
                                 }
                                 else
@@ -1391,9 +1391,9 @@ fun Lyrics(
                                         ),
                                         modifier = Modifier
                                             .padding(vertical = 4.dp, horizontal = 32.dp)
-                                            .conditional(lyricsSizeAnimate){padding(vertical = 4.dp)}
+                                            .applyIf(lyricsSizeAnimate){padding(vertical = 4.dp)}
                                             .align(if (lyricsAlignment == LyricsAlignment.Left) Alignment.CenterStart else if (lyricsAlignment == LyricsAlignment.Right) Alignment.CenterEnd else Alignment.Center)
-                                            .conditional(lyricsSizeAnimate){
+                                            .applyIf(lyricsSizeAnimate){
                                                 graphicsLayer {
                                                     transformOrigin = if (lyricsAlignment == LyricsAlignment.Center) TransformOrigin(0.5f,0.5f)
                                                     else if (lyricsAlignment == LyricsAlignment.Left) TransformOrigin(0f,0.5f)

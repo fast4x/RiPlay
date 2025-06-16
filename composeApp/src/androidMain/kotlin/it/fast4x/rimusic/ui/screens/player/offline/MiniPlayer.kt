@@ -90,7 +90,7 @@ import it.fast4x.rimusic.ui.styling.px
 import it.fast4x.rimusic.utils.DisposableListener
 import it.fast4x.rimusic.utils.addToYtLikedSong
 import it.fast4x.rimusic.utils.backgroundProgressKey
-import it.fast4x.rimusic.utils.conditional
+import it.fast4x.rimusic.utils.applyIf
 import it.fast4x.rimusic.utils.disableClosingPlayerSwipingDownKey
 import it.fast4x.rimusic.utils.disableScrollingTextKey
 import it.fast4x.rimusic.utils.effectRotationKey
@@ -402,7 +402,7 @@ fun MiniPlayer(
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                         modifier = Modifier
-                            .conditional(!disableScrollingText) { basicMarquee(iterations = Int.MAX_VALUE) }
+                            .applyIf(!disableScrollingText) { basicMarquee(iterations = Int.MAX_VALUE) }
                     )
                 }
 
@@ -412,7 +412,7 @@ fun MiniPlayer(
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                     modifier = Modifier
-                        .conditional(!disableScrollingText) { basicMarquee(iterations = Int.MAX_VALUE) }
+                        .applyIf(!disableScrollingText) { basicMarquee(iterations = Int.MAX_VALUE) }
                 )
             }
 

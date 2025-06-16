@@ -1159,17 +1159,17 @@ class MainActivity :
                                         ThumbnailRoundness.Heavy
                                     )
 
-                                    val isVideo = binder?.player?.currentMediaItem?.isVideo ?: false
-                                    val isVideoEnabled =
-                                        preferences.getBoolean(showButtonPlayerVideoKey, false)
-                                    val player: @Composable () -> Unit = {
-                                        Player(
-                                            navController = navController,
-                                            onDismiss = {
-                                                showPlayer = false
-                                            }
-                                        )
-                                    }
+//                                    val isVideo = binder?.player?.currentMediaItem?.isVideo ?: false
+//                                    val isVideoEnabled =
+//                                        preferences.getBoolean(showButtonPlayerVideoKey, false)
+//                                    val player: @Composable () -> Unit = {
+//                                        Player(
+//                                            navController = navController,
+//                                            onDismiss = {
+//                                                showPlayer = false
+//                                            }
+//                                        )
+//                                    }
 
                                     val onlinePlayer: @Composable () -> Unit = {
                                         binder?.player?.currentMediaItem?.let {

@@ -53,7 +53,6 @@ import androidx.compose.ui.unit.dp
 import androidx.media3.common.MediaItem
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
-import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
 import it.fast4x.rimusic.Database
 import it.fast4x.rimusic.R
 import it.fast4x.rimusic.appContext
@@ -73,7 +72,6 @@ import it.fast4x.rimusic.models.Info
 import it.fast4x.rimusic.models.Song
 import it.fast4x.rimusic.models.ui.UiMedia
 import it.fast4x.rimusic.service.MyDownloadHelper
-import it.fast4x.rimusic.service.modern.PlayerServiceModern
 import it.fast4x.rimusic.typography
 import it.fast4x.rimusic.ui.components.themed.IconButton
 import it.fast4x.rimusic.ui.components.themed.SelectorArtistsDialog
@@ -87,7 +85,7 @@ import it.fast4x.rimusic.utils.bold
 import it.fast4x.rimusic.utils.buttonStateKey
 import it.fast4x.rimusic.utils.colorPaletteModeKey
 import it.fast4x.rimusic.utils.colorPaletteNameKey
-import it.fast4x.rimusic.utils.conditional
+import it.fast4x.rimusic.utils.applyIf
 import it.fast4x.rimusic.utils.effectRotationKey
 import it.fast4x.rimusic.utils.getIconQueueLoopState
 import it.fast4x.rimusic.utils.getLikeState
@@ -95,8 +93,6 @@ import it.fast4x.rimusic.utils.getUnlikedIcon
 import org.dailyislam.android.utilities.isNetworkConnected
 import it.fast4x.rimusic.utils.jumpPreviousKey
 import it.fast4x.rimusic.utils.mediaItemToggleLike
-import it.fast4x.rimusic.utils.playNext
-import it.fast4x.rimusic.utils.playPrevious
 import it.fast4x.rimusic.utils.playerBackgroundColorsKey
 import it.fast4x.rimusic.utils.playerControlsTypeKey
 import it.fast4x.rimusic.utils.queueLoopTypeKey
@@ -105,7 +101,6 @@ import it.fast4x.rimusic.utils.semiBold
 import it.fast4x.rimusic.utils.setDisLikeState
 import it.fast4x.rimusic.utils.setQueueLoopState
 import it.fast4x.rimusic.utils.showthumbnailKey
-import it.fast4x.rimusic.utils.shuffleQueue
 import it.fast4x.rimusic.utils.textCopyToClipboard
 import it.fast4x.rimusic.utils.textoutlineKey
 import it.fast4x.rimusic.utils.unlikeYtVideoOrSong
@@ -196,13 +191,13 @@ fun InfoAlbumAndArtistEssential(
             BoxWithConstraints(
                 modifier = Modifier
                     .weight(1f)
-                    .conditional(!disableScrollingText){HorizontalfadingEdge2(0.025f)},
+                    .applyIf(!disableScrollingText){HorizontalfadingEdge2(0.025f)},
                 contentAlignment = Alignment.Center
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically,
                     modifier = modifierTitle
-                    .conditional(!disableScrollingText) {padding(horizontal = maxWidth * 0.025f)}
-                    .conditional(playerControlsType == PlayerControlsType.Modern){padding(start = likeButtonWidth)}
+                    .applyIf(!disableScrollingText) {padding(horizontal = maxWidth * 0.025f)}
+                    .applyIf(playerControlsType == PlayerControlsType.Modern){padding(start = likeButtonWidth)}
                 ) {
                     if (isExplicit) {
                         IconButton(
@@ -387,7 +382,7 @@ fun InfoAlbumAndArtistEssential(
 
         BoxWithConstraints(
             modifier = Modifier
-                .conditional(!disableScrollingText){HorizontalfadingEdge2(0.025f)},
+                .applyIf(!disableScrollingText){HorizontalfadingEdge2(0.025f)},
             contentAlignment = Alignment.Center
         ) {
             BasicText(
@@ -406,7 +401,7 @@ fun InfoAlbumAndArtistEssential(
                 ),
                 maxLines = 1,
                 modifier = modifierArtist
-                    .conditional(!disableScrollingText){padding(horizontal = maxWidth*0.025f)}
+                    .applyIf(!disableScrollingText){padding(horizontal = maxWidth*0.025f)}
 
             )
             BasicText(
@@ -423,7 +418,7 @@ fun InfoAlbumAndArtistEssential(
                 ),
                 maxLines = 1,
                 modifier = modifierArtist
-                    .conditional(!disableScrollingText){padding(horizontal = maxWidth*0.025f)}
+                    .applyIf(!disableScrollingText){padding(horizontal = maxWidth*0.025f)}
 
             )
         }
@@ -604,8 +599,8 @@ fun ControlsEssential(
                 onLongClick = onShowSpeedPlayerDialog
             )
             .bounceClick()
-            .conditional(playerPlayButtonType != PlayerPlayButtonType.Circle){clip(RoundedCornerShape(playPauseRoundness))}
-            .conditional(playerPlayButtonType == PlayerPlayButtonType.Circle){clip(CircleShape)}
+            .applyIf(playerPlayButtonType != PlayerPlayButtonType.Circle){clip(RoundedCornerShape(playPauseRoundness))}
+            .applyIf(playerPlayButtonType == PlayerPlayButtonType.Circle){clip(CircleShape)}
             .background(
                 when (playerPlayButtonType) {
                     PlayerPlayButtonType.CircularRibbed, PlayerPlayButtonType.Disabled -> Color.Transparent

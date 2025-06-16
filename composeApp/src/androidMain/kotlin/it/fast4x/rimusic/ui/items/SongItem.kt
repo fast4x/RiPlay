@@ -69,7 +69,7 @@ import it.fast4x.rimusic.ui.styling.shimmer
 import it.fast4x.rimusic.utils.asMediaItem
 import it.fast4x.rimusic.utils.asSong
 import it.fast4x.rimusic.utils.colorPaletteNameKey
-import it.fast4x.rimusic.utils.conditional
+import it.fast4x.rimusic.utils.applyIf
 import it.fast4x.rimusic.utils.downloadedStateMedia
 import it.fast4x.rimusic.utils.getLikeState
 import it.fast4x.rimusic.utils.isExplicit
@@ -381,7 +381,7 @@ fun SongItem(
         modifier = modifier
             .padding(end = 8.dp)
             .clip(RoundedCornerShape(10.dp))
-            .conditional(isNowPlaying){
+            .applyIf(isNowPlaying){
                 background(colorPalette.favoritesOverlay)
             }
 
@@ -515,7 +515,7 @@ fun SongItem(
                         overflow = TextOverflow.Ellipsis,
                         modifier = Modifier
                             .weight(1f)
-                            .conditional(!disableScrollingText) { basicMarquee(iterations = Int.MAX_VALUE) }
+                            .applyIf(!disableScrollingText) { basicMarquee(iterations = Int.MAX_VALUE) }
                     )
 
                     /*
@@ -567,7 +567,7 @@ fun SongItem(
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                         modifier = Modifier
-                            .conditional(!disableScrollingText) { basicMarquee(iterations = Int.MAX_VALUE) }
+                            .applyIf(!disableScrollingText) { basicMarquee(iterations = Int.MAX_VALUE) }
                             .weight(1f)
                     )
                 if (playlistindicator && (songPlaylist > 0)) {
@@ -669,7 +669,7 @@ fun SongItem(
                     overflow = TextOverflow.Clip,
                     modifier = Modifier
                         .weight(1f)
-                        .conditional(!disableScrollingText) { basicMarquee(iterations = Int.MAX_VALUE) }
+                        .applyIf(!disableScrollingText) { basicMarquee(iterations = Int.MAX_VALUE) }
                 )
 
                 duration?.let {

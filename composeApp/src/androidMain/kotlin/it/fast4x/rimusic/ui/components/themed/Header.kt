@@ -38,7 +38,7 @@ import it.fast4x.rimusic.enums.UiType
 import it.fast4x.rimusic.ui.styling.Dimensions
 import it.fast4x.rimusic.ui.styling.shimmer
 import it.fast4x.rimusic.utils.bold
-import it.fast4x.rimusic.utils.conditional
+import it.fast4x.rimusic.utils.applyIf
 import it.fast4x.rimusic.utils.medium
 import it.fast4x.rimusic.utils.semiBold
 import it.fast4x.rimusic.colorPalette
@@ -61,7 +61,7 @@ fun Header(
                 style = typography().xxl.medium,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.conditional(!disableScrollingText) { basicMarquee(iterations = Int.MAX_VALUE) }
+                modifier = Modifier.applyIf(!disableScrollingText) { basicMarquee(iterations = Int.MAX_VALUE) }
             )
         },
         actionsContent = actionsContent

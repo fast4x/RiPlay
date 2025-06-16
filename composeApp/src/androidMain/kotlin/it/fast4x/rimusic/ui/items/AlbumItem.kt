@@ -29,7 +29,7 @@ import it.fast4x.rimusic.cleanPrefix
 import it.fast4x.rimusic.models.Album
 import it.fast4x.rimusic.ui.components.themed.TextPlaceholder
 import it.fast4x.rimusic.ui.styling.shimmer
-import it.fast4x.rimusic.utils.conditional
+import it.fast4x.rimusic.utils.applyIf
 import it.fast4x.rimusic.utils.secondary
 import it.fast4x.rimusic.utils.semiBold
 import it.fast4x.rimusic.utils.thumbnail
@@ -147,7 +147,7 @@ fun AlbumItem(
                 maxLines = 1, //if (alternative) 1 else 2,
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier
-                    .conditional(!disableScrollingText) { basicMarquee(iterations = Int.MAX_VALUE) }
+                    .applyIf(!disableScrollingText) { basicMarquee(iterations = Int.MAX_VALUE) }
             )
 
             if (!alternative || showAuthors == true) {
@@ -158,7 +158,7 @@ fun AlbumItem(
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                         modifier = Modifier
-                            .conditional(!disableScrollingText) { basicMarquee(iterations = Int.MAX_VALUE) }
+                            .applyIf(!disableScrollingText) { basicMarquee(iterations = Int.MAX_VALUE) }
                             .align(
                                 if (yearCentered == true) Alignment.CenterHorizontally else Alignment.Start)
                     )

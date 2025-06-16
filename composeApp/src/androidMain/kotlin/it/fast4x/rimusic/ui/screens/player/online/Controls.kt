@@ -35,7 +35,6 @@ import androidx.compose.ui.unit.dp
 import androidx.media3.common.MediaItem
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
-import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
 import it.fast4x.rimusic.Database
 import it.fast4x.rimusic.enums.ButtonState
 import it.fast4x.rimusic.enums.PlayerControlsType
@@ -49,7 +48,7 @@ import it.fast4x.rimusic.models.ui.UiMedia
 import it.fast4x.rimusic.ui.screens.player.online.components.controls.InfoAlbumAndArtistEssential
 import it.fast4x.rimusic.ui.screens.player.online.components.controls.InfoAlbumAndArtistModern
 import it.fast4x.rimusic.utils.buttonzoomoutKey
-import it.fast4x.rimusic.utils.conditional
+import it.fast4x.rimusic.utils.applyIf
 import it.fast4x.rimusic.utils.disableScrollingTextKey
 import it.fast4x.rimusic.utils.isCompositionLaunched
 import it.fast4x.rimusic.utils.isDownloadedSong
@@ -234,7 +233,7 @@ fun Controls(
         if ((!isLandscape) and ((expandedplayer || isShowingLyrics) && !showlyricsthumbnail))
             Column(
                 horizontalAlignment = Alignment.Start,
-                verticalArrangement = Arrangement.Bottom,
+                verticalArrangement = Arrangement.Top,
                 modifier = Modifier
                     .padding(horizontal = playerTimelineSize.size.dp)
             ) {
@@ -317,6 +316,7 @@ fun Controls(
         else if (!isLandscape)
             Column(
                 horizontalAlignment = Alignment.Start,
+                verticalArrangement = Arrangement.Top,
                 modifier = modifier
                     .fillMaxWidth()
                     .padding(horizontal = playerTimelineSize.size.dp)
@@ -368,7 +368,7 @@ fun Controls(
                     )
                     Spacer(
                         modifier = Modifier
-                            .weight(0.4f)
+                            //.weight(0.4f)
                     )
                     GetControls(
                         position = position,
@@ -386,7 +386,7 @@ fun Controls(
                     )
                     Spacer(
                         modifier = Modifier
-                            .weight(0.5f)
+                           // .weight(0.5f)
                     )
                 } else {
                     println("Controls sono qui 3")
@@ -406,7 +406,7 @@ fun Controls(
                     )
                     Spacer(
                         modifier = Modifier
-                            .weight(0.5f)
+                            //.weight(0.5f)
                     )
                     GetSeekBar(
                         position = position,
@@ -416,7 +416,7 @@ fun Controls(
                     )
                     Spacer(
                         modifier = Modifier
-                            .weight(0.4f)
+                            //.weight(0.4f)
                     )
                 }
 
@@ -477,8 +477,8 @@ fun Controls(
                 Spacer(
                     modifier = Modifier
                         .animateContentSize()
-                        .conditional(!expandedlandscape) { weight(0.4f) }
-                        .conditional(expandedlandscape) { height(15.dp) }
+                        .applyIf(!expandedlandscape) { weight(0.4f) }
+                        .applyIf(expandedlandscape) { height(15.dp) }
                 )
                 GetControls(
                     position = position,
@@ -497,8 +497,8 @@ fun Controls(
                 Spacer(
                     modifier = Modifier
                         .animateContentSize()
-                        .conditional(!expandedlandscape) { weight(0.5f) }
-                        .conditional(expandedlandscape) { height(15.dp) }
+                        .applyIf(!expandedlandscape) { weight(0.5f) }
+                        .applyIf(expandedlandscape) { height(15.dp) }
                 )
             } else {
                 GetControls(
@@ -518,8 +518,8 @@ fun Controls(
                 Spacer(
                     modifier = Modifier
                         .animateContentSize()
-                        .conditional(!expandedlandscape) { weight(0.5f) }
-                        .conditional(expandedlandscape) { height(15.dp) }
+                        .applyIf(!expandedlandscape) { weight(0.5f) }
+                        .applyIf(expandedlandscape) { height(15.dp) }
                 )
                 GetSeekBar(
                     position = position,
@@ -530,8 +530,8 @@ fun Controls(
                 Spacer(
                     modifier = Modifier
                         .animateContentSize()
-                        .conditional(!expandedlandscape) { weight(0.4f) }
-                        .conditional(expandedlandscape) { height(15.dp) }
+                        .applyIf(!expandedlandscape) { weight(0.4f) }
+                        .applyIf(expandedlandscape) { height(15.dp) }
                 )
             }
         }

@@ -85,7 +85,7 @@ import it.fast4x.rimusic.utils.bold
 import it.fast4x.rimusic.utils.buttonStateKey
 import it.fast4x.rimusic.utils.colorPaletteModeKey
 import it.fast4x.rimusic.utils.colorPaletteNameKey
-import it.fast4x.rimusic.utils.conditional
+import it.fast4x.rimusic.utils.applyIf
 import it.fast4x.rimusic.utils.effectRotationKey
 import it.fast4x.rimusic.utils.getIconQueueLoopState
 import it.fast4x.rimusic.utils.getLikeState
@@ -195,13 +195,13 @@ fun InfoAlbumAndArtistEssential(
             BoxWithConstraints(
                 modifier = Modifier
                     .weight(1f)
-                    .conditional(!disableScrollingText){HorizontalfadingEdge2(0.025f)},
+                    .applyIf(!disableScrollingText){HorizontalfadingEdge2(0.025f)},
                 contentAlignment = Alignment.Center
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically,
                     modifier = modifierTitle
-                    .conditional(!disableScrollingText) {padding(horizontal = maxWidth * 0.025f)}
-                    .conditional(playerControlsType == PlayerControlsType.Modern){padding(start = likeButtonWidth)}
+                    .applyIf(!disableScrollingText) {padding(horizontal = maxWidth * 0.025f)}
+                    .applyIf(playerControlsType == PlayerControlsType.Modern){padding(start = likeButtonWidth)}
                 ) {
                     if (isExplicit) {
                         IconButton(
@@ -386,7 +386,7 @@ fun InfoAlbumAndArtistEssential(
 
         BoxWithConstraints(
             modifier = Modifier
-                .conditional(!disableScrollingText){HorizontalfadingEdge2(0.025f)},
+                .applyIf(!disableScrollingText){HorizontalfadingEdge2(0.025f)},
             contentAlignment = Alignment.Center
         ) {
             BasicText(
@@ -405,7 +405,7 @@ fun InfoAlbumAndArtistEssential(
                 ),
                 maxLines = 1,
                 modifier = modifierArtist
-                    .conditional(!disableScrollingText){padding(horizontal = maxWidth*0.025f)}
+                    .applyIf(!disableScrollingText){padding(horizontal = maxWidth*0.025f)}
 
             )
             BasicText(
@@ -422,7 +422,7 @@ fun InfoAlbumAndArtistEssential(
                 ),
                 maxLines = 1,
                 modifier = modifierArtist
-                    .conditional(!disableScrollingText){padding(horizontal = maxWidth*0.025f)}
+                    .applyIf(!disableScrollingText){padding(horizontal = maxWidth*0.025f)}
 
             )
         }
@@ -597,8 +597,8 @@ fun ControlsEssential(
                 onLongClick = onShowSpeedPlayerDialog
             )
             .bounceClick()
-            .conditional(playerPlayButtonType != PlayerPlayButtonType.Circle){clip(RoundedCornerShape(playPauseRoundness))}
-            .conditional(playerPlayButtonType == PlayerPlayButtonType.Circle){clip(CircleShape)}
+            .applyIf(playerPlayButtonType != PlayerPlayButtonType.Circle){clip(RoundedCornerShape(playPauseRoundness))}
+            .applyIf(playerPlayButtonType == PlayerPlayButtonType.Circle){clip(CircleShape)}
             .background(
                 when (playerPlayButtonType) {
                     PlayerPlayButtonType.CircularRibbed, PlayerPlayButtonType.Disabled -> Color.Transparent

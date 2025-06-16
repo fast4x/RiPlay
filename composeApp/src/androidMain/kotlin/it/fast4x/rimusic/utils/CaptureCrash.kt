@@ -25,7 +25,7 @@ class CaptureCrash (private val LOG_PATH: String) : Thread.UncaughtExceptionHand
 
             val logFile = File(
                 LOG_PATH,
-                "RiMusic_crash_log.txt"
+                "RiPlay_crash_log.txt"
             )
             if (!logFile.exists()) {
                 logFile.createNewFile()

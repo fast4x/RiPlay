@@ -133,7 +133,7 @@ fun OtherSettings() {
 
             val file =
                 File(context.filesDir.resolve("logs"),
-                    if (exportCrashlog) "RiMusic_crash_log.txt" else  "RiMusic_log.txt"
+                    if (exportCrashlog) "RiPlay_crash_log.txt" else  "RiMusic_log.txt"
                 )
             if (file.exists()) {
                 text = file.readText()
@@ -416,11 +416,11 @@ fun OtherSettings() {
         onCheckedChange = {
             logDebugEnabled = it
             if (!it) {
-                val file = File(context.filesDir.resolve("logs"), "RiMusic_log.txt")
+                val file = File(context.filesDir.resolve("logs"), "RiPlay_log.txt")
                 if (file.exists())
                     file.delete()
 
-                val filec = File(context.filesDir.resolve("logs"), "RiMusic_crash_log.txt")
+                val filec = File(context.filesDir.resolve("logs"), "RiPlay_crash_log.txt")
                 if (filec.exists())
                     filec.delete()
 
@@ -460,7 +460,7 @@ fun OtherSettings() {
             onClick = {
                 exportCrashlog = true
                 isExporting = true
-//                val file = File(context.filesDir.resolve("logs"), "RiMusic_crash_log.txt")
+//                val file = File(context.filesDir.resolve("logs"), "RiPlay_crash_log.txt")
 //                if (file.exists()) {
 //                    text = file.readText()
 //                    text?.let {

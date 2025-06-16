@@ -18,7 +18,7 @@ import androidx.compose.ui.unit.dp
 import androidx.media3.common.util.UnstableApi
 import it.fast4x.rimusic.R
 import it.fast4x.rimusic.models.Folder
-import it.fast4x.rimusic.utils.conditional
+import it.fast4x.rimusic.utils.applyIf
 import it.fast4x.rimusic.utils.semiBold
 import it.fast4x.rimusic.colorPalette
 import it.fast4x.rimusic.typography
@@ -60,7 +60,7 @@ fun FolderItem(
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                     modifier = Modifier
-                        .conditional(!disableScrollingText){ basicMarquee(iterations = Int.MAX_VALUE) }
+                        .applyIf(!disableScrollingText){ basicMarquee(iterations = Int.MAX_VALUE) }
                 )
             }
 

@@ -30,7 +30,7 @@ import it.fast4x.rimusic.cleanPrefix
 import it.fast4x.rimusic.models.Artist
 import it.fast4x.rimusic.ui.components.themed.TextPlaceholder
 import it.fast4x.rimusic.ui.styling.shimmer
-import it.fast4x.rimusic.utils.conditional
+import it.fast4x.rimusic.utils.applyIf
 import it.fast4x.rimusic.utils.secondary
 import it.fast4x.rimusic.utils.semiBold
 import it.fast4x.rimusic.utils.thumbnail
@@ -148,7 +148,7 @@ fun ArtistItem(
                 maxLines = 1, //if (alternative) 1 else 2,
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier
-                    .conditional(!disableScrollingText) { basicMarquee(iterations = Int.MAX_VALUE) }
+                    .applyIf(!disableScrollingText) { basicMarquee(iterations = Int.MAX_VALUE) }
             )
 
             subscribersCount?.let {
@@ -159,7 +159,7 @@ fun ArtistItem(
                     overflow = TextOverflow.Ellipsis,
                     modifier = Modifier
                         .padding(top = 4.dp)
-                        .conditional(!disableScrollingText) { basicMarquee(iterations = Int.MAX_VALUE) }
+                        .applyIf(!disableScrollingText) { basicMarquee(iterations = Int.MAX_VALUE) }
                 )
             }
         }

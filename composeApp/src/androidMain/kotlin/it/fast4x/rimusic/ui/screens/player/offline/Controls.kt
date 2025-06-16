@@ -50,7 +50,7 @@ import it.fast4x.rimusic.ui.screens.player.offline.components.controls.InfoAlbum
 import it.fast4x.rimusic.utils.GetControls
 import it.fast4x.rimusic.utils.GetSeekBar
 import it.fast4x.rimusic.utils.buttonzoomoutKey
-import it.fast4x.rimusic.utils.conditional
+import it.fast4x.rimusic.utils.applyIf
 import it.fast4x.rimusic.utils.disableScrollingTextKey
 import it.fast4x.rimusic.utils.isCompositionLaunched
 import it.fast4x.rimusic.utils.isDownloadedSong
@@ -456,8 +456,8 @@ fun Controls(
                 Spacer(
                     modifier = Modifier
                         .animateContentSize()
-                        .conditional(!expandedlandscape) { weight(0.4f) }
-                        .conditional(expandedlandscape) { height(15.dp) }
+                        .applyIf(!expandedlandscape) { weight(0.4f) }
+                        .applyIf(expandedlandscape) { height(15.dp) }
                 )
                 GetControls(
                     binder = binder,
@@ -470,8 +470,8 @@ fun Controls(
                 Spacer(
                     modifier = Modifier
                         .animateContentSize()
-                        .conditional(!expandedlandscape) { weight(0.5f) }
-                        .conditional(expandedlandscape) { height(15.dp) }
+                        .applyIf(!expandedlandscape) { weight(0.5f) }
+                        .applyIf(expandedlandscape) { height(15.dp) }
                 )
             } else {
                 GetControls(
@@ -485,8 +485,8 @@ fun Controls(
                 Spacer(
                     modifier = Modifier
                         .animateContentSize()
-                        .conditional(!expandedlandscape) { weight(0.5f) }
-                        .conditional(expandedlandscape) { height(15.dp) }
+                        .applyIf(!expandedlandscape) { weight(0.5f) }
+                        .applyIf(expandedlandscape) { height(15.dp) }
                 )
                 GetSeekBar(
                     position = position,
@@ -497,8 +497,8 @@ fun Controls(
                 Spacer(
                     modifier = Modifier
                         .animateContentSize()
-                        .conditional(!expandedlandscape) { weight(0.4f) }
-                        .conditional(expandedlandscape) { height(15.dp) }
+                        .applyIf(!expandedlandscape) { weight(0.4f) }
+                        .applyIf(expandedlandscape) { height(15.dp) }
                 )
             }
         }

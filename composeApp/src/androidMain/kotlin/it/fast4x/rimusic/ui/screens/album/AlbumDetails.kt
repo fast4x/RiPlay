@@ -94,7 +94,6 @@ import it.fast4x.rimusic.ui.components.themed.AutoResizeText
 import it.fast4x.rimusic.ui.components.themed.ConfirmationDialog
 import it.fast4x.rimusic.ui.components.themed.FontSizeRange
 import it.fast4x.rimusic.ui.components.themed.HeaderIconButton
-import it.fast4x.rimusic.ui.components.themed.IconButton
 import it.fast4x.rimusic.ui.components.themed.InputTextDialog
 import it.fast4x.rimusic.ui.components.themed.ItemsList
 import it.fast4x.rimusic.ui.components.themed.LayoutWithAdaptiveThumbnail
@@ -114,7 +113,7 @@ import it.fast4x.rimusic.utils.align
 import it.fast4x.rimusic.utils.asMediaItem
 import it.fast4x.rimusic.utils.center
 import it.fast4x.rimusic.utils.color
-import it.fast4x.rimusic.utils.conditional
+import it.fast4x.rimusic.utils.applyIf
 import it.fast4x.rimusic.utils.disableScrollingTextKey
 import it.fast4x.rimusic.utils.durationTextToMillis
 import it.fast4x.rimusic.utils.enqueue
@@ -154,7 +153,6 @@ import it.fast4x.rimusic.utils.addToYtLikedSongs
 import it.fast4x.rimusic.utils.addToYtPlaylist
 import org.dailyislam.android.utilities.isNetworkConnected
 import it.fast4x.rimusic.utils.mediaItemSetLiked
-import it.fast4x.rimusic.utils.mediaItemToggleLike
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import timber.log.Timber
@@ -657,7 +655,7 @@ fun AlbumDetails(
                                     modifier = Modifier
                                         .align(Alignment.BottomCenter)
                                         .padding(horizontal = 30.dp)
-                                        .conditional(!disableScrollingText) {
+                                        .applyIf(!disableScrollingText) {
                                             basicMarquee(
                                                 iterations = Int.MAX_VALUE
                                             )

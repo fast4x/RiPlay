@@ -1,11 +1,17 @@
 package it.fast4x.rimusic.ui.screens.player.online
 
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.systemBars
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -15,6 +21,7 @@ import androidx.compose.runtime.neverEqualPolicy
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.unit.dp
@@ -31,6 +38,7 @@ import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTube
 import it.fast4x.rimusic.Database
 import it.fast4x.rimusic.LocalPlayerServiceBinder
 import it.fast4x.rimusic.R
+import it.fast4x.rimusic.colorPalette
 import it.fast4x.rimusic.context
 import it.fast4x.rimusic.enums.ColorPaletteMode
 import it.fast4x.rimusic.enums.PlayerType
@@ -38,6 +46,7 @@ import it.fast4x.rimusic.models.Info
 import it.fast4x.rimusic.models.ui.toUiMedia
 import it.fast4x.rimusic.utils.blurStrengthKey
 import it.fast4x.rimusic.utils.colorPaletteModeKey
+import it.fast4x.rimusic.utils.applyIf
 import it.fast4x.rimusic.utils.controlsExpandedKey
 import it.fast4x.rimusic.utils.expandedplayerKey
 import it.fast4x.rimusic.utils.isExplicit
@@ -177,7 +186,16 @@ fun OnlinePlayer(
     val colorPaletteMode by rememberPreference(colorPaletteModeKey, ColorPaletteMode.Dark)
 
     Column(
+        verticalArrangement = Arrangement.Top,
+        horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
+            .padding(top = WindowInsets.systemBars
+                .asPaddingValues()
+                .calculateTopPadding(),
+                bottom = WindowInsets.systemBars
+                    .asPaddingValues()
+                    .calculateBottomPadding()
+            )
             .fillMaxSize()
 
     ) {
@@ -317,18 +335,16 @@ fun OnlinePlayer(
         }
 
 
-        if (playerType == PlayerType.Essential || isShowingVisualizer) {
-            Row {
-                controlsContent(
-                    Modifier
-                        .padding(vertical = 8.dp)
-                        //.conditional(playerType == PlayerType.Essential) { fillMaxHeight() }
-                    //.conditional(playerType == PlayerType.Essential) { weight(1f) }
 
-                )
-            }
-
+        Row {
+            controlsContent(
+                Modifier
+                    .padding(vertical = 8.dp)
+                    .border(BorderStroke(1.dp, colorPalette().red))
+            )
         }
+
+
 
 
     }

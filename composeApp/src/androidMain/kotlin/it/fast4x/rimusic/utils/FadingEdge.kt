@@ -115,7 +115,7 @@ fun Modifier.fadingEdge(
 
 fun Modifier.VerticalfadingEdge2(fade: Float, showTopActionsBar: Boolean, topPadding: Boolean, expandedplayer: Boolean) = this
     .graphicsLayer(compositingStrategy = CompositingStrategy.Offscreen)
-    .conditional(showTopActionsBar || topPadding || expandedplayer){
+    .applyIf(showTopActionsBar || topPadding || expandedplayer){
     drawWithContent {
         val topFade = Brush.verticalGradient(0f to Color.Transparent, fade to Color.Red)
         drawContent()
