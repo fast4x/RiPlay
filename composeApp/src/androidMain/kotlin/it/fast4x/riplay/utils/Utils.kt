@@ -54,9 +54,8 @@ import it.fast4x.riplay.models.SongAlbumMap
 import it.fast4x.riplay.models.SongArtistMap
 import it.fast4x.riplay.models.SongEntity
 import it.fast4x.riplay.models.SongPlaylistMap
-import it.fast4x.riplay.service.LOCAL_KEY_PREFIX
-import it.fast4x.riplay.service.MyDownloadHelper
-import it.fast4x.riplay.service.isLocal
+import it.fast4x.riplay.service.modern.LOCAL_KEY_PREFIX
+import it.fast4x.riplay.service.modern.isLocal
 import it.fast4x.riplay.ui.components.themed.NewVersionDialog
 import it.fast4x.riplay.ui.components.themed.SmartMessage
 import it.fast4x.riplay.ui.screens.settings.isYouTubeSyncEnabled
@@ -115,10 +114,7 @@ fun mediaItemToggleLike( mediaItem: MediaItem) {
             mediaItem.mediaId,
             null
         )
-        MyDownloadHelper.autoDownloadWhenLiked(
-            context(),
-            mediaItem
-        )
+
     }
 }
 
@@ -132,10 +128,7 @@ fun mediaItemSetLiked( mediaItem: MediaItem ) {
                 mediaItem.mediaId,
                 System.currentTimeMillis()
             )
-        MyDownloadHelper.autoDownloadWhenLiked(
-            context(),
-            mediaItem
-        )
+
     }
 }
 
@@ -1037,10 +1030,7 @@ suspend fun addToYtLikedSong(mediaItem: MediaItem){
                             Database.insert(mediaItem)
                         }
                         like(mediaItem.mediaId, System.currentTimeMillis())
-                        MyDownloadHelper.autoDownloadWhenLiked(
-                            context(),
-                            mediaItem
-                        )
+
                     }
                     SmartMessage(
                         appContext().resources.getString(R.string.songs_liked_yt),
@@ -1071,10 +1061,7 @@ suspend fun unlikeYtVideoOrSong(mediaItem: MediaItem){
                         insert(mediaItem)
                     }
                     like(mediaItem.mediaId, null)
-                    MyDownloadHelper.autoDownloadWhenLiked(
-                        context(),
-                        mediaItem
-                    )
+
                 }
                 SmartMessage(
                     appContext().resources.getString(R.string.song_unliked_yt),
@@ -1103,10 +1090,7 @@ suspend fun addToYtLikedSongs(mediaItems: List<MediaItem>){
                         Database.insert(item)
                     }
                     like(item.mediaId, System.currentTimeMillis())
-                    MyDownloadHelper.autoDownloadWhenLiked(
-                        context(),
-                        item
-                    )
+
                 }
                 SmartMessage(
                     "${index + 1}/${mediaItems.size} " + appContext().resources.getString(R.string.songs_liked_yt),

@@ -67,7 +67,7 @@ import it.fast4x.riplay.models.Artist
 import it.fast4x.riplay.models.Info
 import it.fast4x.riplay.models.Playlist
 import it.fast4x.riplay.models.SongPlaylistMap
-import it.fast4x.riplay.service.isLocal
+import it.fast4x.riplay.service.modern.isLocal
 import it.fast4x.riplay.ui.items.SongItem
 import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.ui.styling.favoritesIcon
@@ -75,9 +75,6 @@ import it.fast4x.riplay.ui.styling.px
 import it.fast4x.riplay.utils.addNext
 import it.fast4x.riplay.utils.enqueue
 import it.fast4x.riplay.utils.formatAsDuration
-import it.fast4x.riplay.utils.getDownloadState
-import it.fast4x.riplay.utils.isDownloadedSong
-import it.fast4x.riplay.utils.manageDownload
 import it.fast4x.riplay.utils.mediaItemToggleLike
 import it.fast4x.riplay.utils.playlistSortByKey
 import it.fast4x.riplay.utils.playlistSortOrderKey
@@ -93,7 +90,6 @@ import kotlinx.coroutines.withContext
 import it.fast4x.riplay.colorPalette
 import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.models.Song
-import it.fast4x.riplay.service.MyDownloadHelper
 import it.fast4x.riplay.typography
 import it.fast4x.riplay.ui.screens.player.fastPlay
 import it.fast4x.riplay.ui.screens.settings.isYouTubeSyncEnabled
@@ -337,8 +333,6 @@ fun MediaItemGridMenu (
         mutableStateOf(Download.STATE_STOPPED)
     }
 
-    downloadState = getDownloadState(mediaItem.mediaId)
-    val isDownloaded = if (!isLocal) isDownloadedSong(mediaItem.mediaId) else true
     val thumbnailSizeDp = Dimensions.thumbnails.song + 20.dp
     val thumbnailSizePx = thumbnailSizeDp.px
     val thumbnailArtistSizeDp = Dimensions.thumbnails.song + 10.dp
@@ -431,19 +425,6 @@ fun MediaItemGridMenu (
                 mediaItem = mediaItem,
                 thumbnailUrl = mediaItem.mediaMetadata.artworkUri.thumbnail(thumbnailSizePx)
                     ?.toString(),
-                onDownloadClick = {
-                    binder?.cache?.removeResource(mediaItem.mediaId)
-                    CoroutineScope(Dispatchers.IO).launch {
-                        Database.deleteFormat( mediaItem.mediaId )
-                    }
-                    if (!isLocal)
-                        manageDownload(
-                            context = context,
-                            mediaItem = mediaItem,
-                            downloadState = isDownloaded
-                        )
-                },
-                downloadState = downloadState,
                 thumbnailSizeDp = thumbnailSizeDp,
                 modifier = Modifier
                     .weight(1f),
@@ -475,7 +456,6 @@ fun MediaItemGridMenu (
                                 if (like(mediaItem.mediaId, setDisLikeState(likedAt)) == 0){
                                     insert(mediaItem, Song::toggleDislike)
                                 }
-                                MyDownloadHelper.autoDownloadWhenLiked(context, mediaItem)
                                 updateData = !updateData
                             }
                         } else {
@@ -961,18 +941,18 @@ fun MediaItemGridMenu (
                 }
 
 
-                onDownload?.let { onDownload ->
-                    GridMenuItem(
-                        icon = if (!isDownloaded) R.drawable.download else R.drawable.downloaded,
-                        title = if (!isDownloaded) R.string.download else R.string.downloaded,
-                        colorIcon = colorPalette.text,
-                        colorText = colorPalette.text,
-                        onClick = {
-                            onDismiss()
-                            onDownload()
-                        }
-                    )
-                }
+//                onDownload?.let { onDownload ->
+//                    GridMenuItem(
+//                        icon = if (!isDownloaded) R.drawable.download else R.drawable.downloaded,
+//                        title = if (!isDownloaded) R.string.download else R.string.downloaded,
+//                        colorIcon = colorPalette.text,
+//                        colorText = colorPalette.text,
+//                        onClick = {
+//                            onDismiss()
+//                            onDownload()
+//                        }
+//                    )
+//                }
 
                 onGoToEqualizer?.let { onGoToEqualizer ->
                     GridMenuItem(

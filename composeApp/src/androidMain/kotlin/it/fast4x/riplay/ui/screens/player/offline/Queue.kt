@@ -97,7 +97,7 @@ import it.fast4x.riplay.enums.QueueLoopType
 import it.fast4x.riplay.enums.QueueType
 import it.fast4x.riplay.enums.ThumbnailRoundness
 import it.fast4x.riplay.models.SongPlaylistMap
-import it.fast4x.riplay.service.isLocal
+import it.fast4x.riplay.service.modern.isLocal
 import it.fast4x.riplay.thumbnailShape
 import it.fast4x.riplay.typography
 import it.fast4x.riplay.ui.components.LocalMenuState
@@ -124,12 +124,9 @@ import it.fast4x.riplay.utils.currentWindow
 import it.fast4x.riplay.utils.disableScrollingTextKey
 import it.fast4x.riplay.utils.discoverKey
 import it.fast4x.riplay.utils.enqueue
-import it.fast4x.riplay.utils.getDownloadState
 import it.fast4x.riplay.utils.getIconQueueLoopState
-import it.fast4x.riplay.utils.isDownloadedSong
 import it.fast4x.riplay.utils.isLandscape
 import it.fast4x.riplay.utils.isNowPlaying
-import it.fast4x.riplay.utils.manageDownload
 import it.fast4x.riplay.utils.medium
 import it.fast4x.riplay.utils.queueLoopTypeKey
 import it.fast4x.riplay.utils.queueTypeKey
@@ -543,9 +540,6 @@ fun Queue(
                     mediaItemIndex == window.firstPeriodIndex
                 //val currentItem by rememberUpdatedState(window)
                 val isLocal by remember { derivedStateOf { window.mediaItem.isLocal } }
-                downloadState = getDownloadState(window.mediaItem.mediaId)
-                val isDownloaded =
-                    if (!isLocal) isDownloadedSong(window.mediaItem.mediaId) else true
                 var forceRecompose by remember { mutableStateOf(false) }
 
                 Box(
@@ -592,15 +586,7 @@ fun Queue(
                                 context
                             )
                         },
-                        onDownload = {
-                            binder.cache.removeResource(window.mediaItem.mediaId)
-                            if (!isLocal)
-                                manageDownload(
-                                    context = context,
-                                    mediaItem = window.mediaItem,
-                                    downloadState = isDownloaded
-                                )
-                        },
+                        onDownload = {},
                         onRemoveFromQueue = {
                             player.removeMediaItem(currentItem.firstPeriodIndex)
                             SmartMessage(
@@ -618,16 +604,6 @@ fun Queue(
                     ) {
                         SongItem(
                             song = window.mediaItem,
-                            onDownloadClick = {
-                                binder.cache.removeResource(window.mediaItem.mediaId)
-                                if (!isLocal)
-                                    manageDownload(
-                                        context = context,
-                                        mediaItem = window.mediaItem,
-                                        downloadState = isDownloaded
-                                    )
-                            },
-                            downloadState = getDownloadState(window.mediaItem.mediaId),
                             thumbnailSizePx = thumbnailSizePx,
                             thumbnailSizeDp = thumbnailSizeDp,
                             onThumbnailContent = {
@@ -688,13 +664,7 @@ fun Queue(
                                                     menuState.hide()
                                                     forceRecompose = true
                                                 },
-                                                onDownload = {
-                                                    manageDownload(
-                                                        context = context,
-                                                        mediaItem = window.mediaItem,
-                                                        downloadState = isDownloaded
-                                                    )
-                                                },
+                                                onDownload = {},
                                                 onInfo = {},
                                                 disableScrollingText = disableScrollingText
                                             )

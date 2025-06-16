@@ -68,10 +68,7 @@ import it.fast4x.riplay.utils.addNext
 import it.fast4x.riplay.utils.asMediaItem
 import it.fast4x.riplay.utils.disableScrollingTextKey
 import it.fast4x.riplay.utils.enqueue
-import it.fast4x.riplay.utils.getDownloadState
-import it.fast4x.riplay.utils.isDownloadedSong
 import it.fast4x.riplay.utils.isNowPlaying
-import it.fast4x.riplay.utils.manageDownload
 import it.fast4x.riplay.utils.parentalControlEnabledKey
 import it.fast4x.riplay.utils.preferences
 import it.fast4x.riplay.utils.rememberPreference
@@ -205,27 +202,12 @@ fun SearchResultScreen(
                                     if (parentalControlEnabled && song.explicit)
                                         return@ItemsPage
 
-                                    downloadState = getDownloadState(song.asMediaItem.mediaId)
-                                    val isDownloaded =
-                                        isDownloadedSong(song.asMediaItem.mediaId)
-
                                     SwipeablePlaylistItem(
                                         mediaItem = song.asMediaItem,
                                         onPlayNext = {
                                             localBinder?.player?.addNext(song.asMediaItem)
                                         },
-                                        onDownload = {
-                                            localBinder?.cache?.removeResource(song.asMediaItem.mediaId)
-                                            CoroutineScope(Dispatchers.IO).launch {
-                                                Database.resetContentLength( song.asMediaItem.mediaId )
-                                            }
-
-                                            manageDownload(
-                                                context = context,
-                                                mediaItem = song.asMediaItem,
-                                                downloadState = isDownloaded
-                                            )
-                                        },
+                                        onDownload = {},
                                         onEnqueue = {
                                             localBinder?.player?.enqueue(song.asMediaItem)
                                         }
@@ -233,22 +215,9 @@ fun SearchResultScreen(
                                         var forceRecompose by remember { mutableStateOf(false) }
                                         SongItem(
                                             song = song,
-                                            onDownloadClick = {
-                                                localBinder?.cache?.removeResource(song.asMediaItem.mediaId)
-                                                CoroutineScope(Dispatchers.IO).launch {
-                                                    Database.deleteFormat( song.asMediaItem.mediaId )
-                                                }
-
-                                                manageDownload(
-                                                    context = context,
-                                                    mediaItem = song.asMediaItem,
-                                                    downloadState = isDownloaded
-                                                )
-                                            },
                                             thumbnailContent = {
                                                 NowPlayingSongIndicator(song.asMediaItem.mediaId, binder?.player)
                                             },
-                                            downloadState = getDownloadState(song.asMediaItem.mediaId),
                                             thumbnailSizePx = thumbnailSizePx,
                                             thumbnailSizeDp = thumbnailSizeDp,
                                             modifier = Modifier

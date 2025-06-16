@@ -52,10 +52,7 @@ import it.fast4x.riplay.utils.disableScrollingTextKey
 import it.fast4x.riplay.utils.enqueue
 import it.fast4x.riplay.utils.forcePlayAtIndex
 import it.fast4x.riplay.utils.forcePlayFromBeginning
-import it.fast4x.riplay.utils.getDownloadState
-import it.fast4x.riplay.utils.isDownloadedSong
 import it.fast4x.riplay.utils.isNowPlaying
-import it.fast4x.riplay.utils.manageDownload
 import it.fast4x.riplay.utils.rememberPreference
 import it.fast4x.riplay.utils.showFloatingIconKey
 import kotlinx.coroutines.CoroutineScope
@@ -156,82 +153,6 @@ fun ArtistLocalSongs(
                         headerContent {
 
                             HeaderIconButton(
-                                icon = R.drawable.downloaded,
-                                color = colorPalette().text,
-                                onClick = {},
-                                modifier = Modifier
-                                    .combinedClickable(
-                                        onClick = {
-                                            showConfirmDownloadAllDialog = true
-                                        },
-                                        onLongClick = {
-                                            SmartMessage(context.resources.getString(R.string.info_download_all_songs), context = context)
-                                        }
-                                    )
-                            )
-
-                            if (showConfirmDownloadAllDialog) {
-                                ConfirmationDialog(
-                                    text = stringResource(R.string.do_you_really_want_to_download_all),
-                                    onDismiss = { showConfirmDownloadAllDialog = false },
-                                    onConfirm = {
-                                        showConfirmDownloadAllDialog = false
-                                        downloadState = Download.STATE_DOWNLOADING
-                                        if (songs?.isNotEmpty() == true)
-                                            songs?.forEach {
-                                                binder?.cache?.removeResource(it.asMediaItem.mediaId)
-                                                CoroutineScope(Dispatchers.IO).launch {
-                                                    Database.deleteFormat( it.asMediaItem.mediaId )
-                                                }
-                                                manageDownload(
-                                                    context = context,
-                                                    mediaItem = it.asMediaItem,
-                                                    downloadState = false
-                                                )
-                                            }
-                                    }
-                                )
-                            }
-
-                            HeaderIconButton(
-                                icon = R.drawable.download,
-                                color = colorPalette().text,
-                                onClick = {},
-                                modifier = Modifier
-                                    .combinedClickable(
-                                        onClick = {
-                                            showConfirmDeleteDownloadDialog = true
-                                        },
-                                        onLongClick = {
-                                            SmartMessage(context.resources.getString(R.string.info_remove_all_downloaded_songs), context = context)
-                                        }
-                                    )
-                            )
-
-                            if (showConfirmDeleteDownloadDialog) {
-                                ConfirmationDialog(
-                                    text = stringResource(R.string.do_you_really_want_to_delete_download),
-                                    onDismiss = { showConfirmDeleteDownloadDialog = false },
-                                    onConfirm = {
-                                        showConfirmDeleteDownloadDialog = false
-                                        downloadState = Download.STATE_DOWNLOADING
-                                        if (songs?.isNotEmpty() == true)
-                                            songs?.forEach {
-                                                binder?.cache?.removeResource(it.asMediaItem.mediaId)
-                                                CoroutineScope(Dispatchers.IO).launch {
-                                                    Database.deleteFormat( it.asMediaItem.mediaId )
-                                                }
-                                                manageDownload(
-                                                    context = context,
-                                                    mediaItem = it.asMediaItem,
-                                                    downloadState = true
-                                                )
-                                            }
-                                    }
-                                )
-                            }
-
-                            HeaderIconButton(
                                 icon = R.drawable.enqueue,
                                 enabled = !songs.isNullOrEmpty(),
                                 color = if (!songs.isNullOrEmpty()) colorPalette().text else colorPalette().textDisabled,
@@ -280,23 +201,8 @@ fun ArtistLocalSongs(
                         key = { _, song -> song.id }
                     ) { index, song ->
 
-                        downloadState = getDownloadState(song.asMediaItem.mediaId)
-                        val isDownloaded = isDownloadedSong(song.asMediaItem.mediaId)
                         SongItem(
                             song = song,
-                            onDownloadClick = {
-                                binder?.cache?.removeResource(song.asMediaItem.mediaId)
-                                CoroutineScope(Dispatchers.IO).launch {
-                                    Database.deleteFormat( song.asMediaItem.mediaId )
-                                }
-
-                                manageDownload(
-                                    context = context,
-                                    mediaItem = song.asMediaItem,
-                                    downloadState = isDownloaded
-                                )
-                            },
-                            downloadState = downloadState,
                             thumbnailSizeDp = songThumbnailSizeDp,
                             thumbnailSizePx = songThumbnailSizePx,
                             modifier = Modifier

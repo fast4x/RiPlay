@@ -25,7 +25,6 @@ import it.fast4x.riplay.context
 import it.fast4x.riplay.enums.MenuStyle
 import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.models.SongPlaylistMap
-import it.fast4x.riplay.service.MyDownloadHelper
 import it.fast4x.riplay.service.modern.PlayerServiceModern
 import it.fast4x.riplay.ui.screens.settings.isYouTubeSyncEnabled
 import it.fast4x.riplay.utils.addSongToYtPlaylist
@@ -172,7 +171,6 @@ fun PlayerMenu(
                             mediaItem.mediaId,
                             System.currentTimeMillis()
                         )
-                        MyDownloadHelper.autoDownloadWhenLiked(context(),mediaItem)
                     }
                 }
                 else {
@@ -226,7 +224,6 @@ fun MiniPlayerMenu(
                             mediaItem.mediaId,
                             System.currentTimeMillis()
                         )
-                        MyDownloadHelper.autoDownloadWhenLiked(context(),mediaItem)
                     }
                 }
                 else {
@@ -254,7 +251,6 @@ fun MiniPlayerMenu(
                             mediaItem.mediaId,
                             System.currentTimeMillis()
                         )
-                        MyDownloadHelper.autoDownloadWhenLiked(context(),mediaItem)
                     }
                 }
                 else {

@@ -121,13 +121,10 @@ import it.fast4x.riplay.utils.fadingEdge
 import it.fast4x.riplay.utils.forcePlayAtIndex
 import it.fast4x.riplay.utils.forcePlayFromBeginning
 import it.fast4x.riplay.utils.formatAsTime
-import it.fast4x.riplay.utils.getDownloadState
 import org.dailyislam.android.utilities.getHttpClient
-import it.fast4x.riplay.utils.isDownloadedSong
 import it.fast4x.riplay.utils.isLandscape
 import it.fast4x.riplay.utils.isNowPlaying
 import it.fast4x.riplay.utils.languageDestination
-import it.fast4x.riplay.utils.manageDownload
 import it.fast4x.riplay.utils.medium
 import it.fast4x.riplay.utils.parentalControlEnabledKey
 import it.fast4x.riplay.utils.rememberPreference
@@ -144,7 +141,6 @@ import me.bush.translator.Translator
 import it.fast4x.riplay.colorPalette
 import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.models.SongAlbumMap
-import it.fast4x.riplay.service.MyDownloadHelper
 import it.fast4x.riplay.typography
 import it.fast4x.riplay.ui.components.PullToRefreshBox
 import it.fast4x.riplay.ui.components.themed.Title
@@ -456,86 +452,7 @@ fun AlbumDetails(
         ConfirmationDialog(
             text = stringResource(R.string.do_you_really_want_to_delete_download),
             onDismiss = { showConfirmDeleteDownloadDialog = false },
-            onConfirm = {
-                showConfirmDeleteDownloadDialog = false
-                downloadState = Download.STATE_DOWNLOADING
-                if (listMediaItems.isEmpty()) {
-                    if (songs.isNotEmpty() == true)
-                        songs.forEach {
-                            binder?.cache?.removeResource(it.asMediaItem.mediaId)
-                            CoroutineScope(Dispatchers.IO).launch {
-                                Database.deleteFormat( it.asMediaItem.mediaId )
-                            }
-                            manageDownload(
-                                context = context,
-                                mediaItem = it.asMediaItem,
-                                downloadState = true
-                            )
-                        }
-                } else {
-                    runCatching {
-                        listMediaItems.forEach {
-                            binder?.cache?.removeResource(it.mediaId)
-                            CoroutineScope(Dispatchers.IO).launch {
-                                Database.deleteFormat( it.mediaId )
-                            }
-                            manageDownload(
-                                context = context,
-                                mediaItem = it,
-                                downloadState = true
-                            )
-                            //listMediaItems.clear()
-                            selectItems = false
-                        }
-                    }.onFailure {
-                        Timber.e("Failed listMediaItems in AlbumDetailsModern ${it.stackTraceToString()}")
-                    }
-                }
-            }
-        )
-    }
-
-    if (showConfirmDownloadAllDialog) {
-        ConfirmationDialog(
-            text = stringResource(R.string.do_you_really_want_to_download_all),
-            onDismiss = { showConfirmDownloadAllDialog = false },
-            onConfirm = {
-                showConfirmDownloadAllDialog = false
-                downloadState = Download.STATE_DOWNLOADING
-                if (listMediaItems.isEmpty()) {
-                    if (songs.filter { it.likedAt != -1L }.isNotEmpty()){
-                        songs.filter { it.likedAt != -1L }.forEach {
-                            binder?.cache?.removeResource(it.asMediaItem.mediaId)
-                            CoroutineScope(Dispatchers.IO).launch {
-                                Database.deleteFormat(it.asMediaItem.mediaId)
-                            }
-                            manageDownload(
-                                context = context,
-                                mediaItem = it.asMediaItem,
-                                downloadState = false
-                            )
-                        }
-                    }
-                } else {
-                    runCatching {
-                        listMediaItems.forEach {
-                            binder?.cache?.removeResource(it.mediaId)
-                            CoroutineScope(Dispatchers.IO).launch {
-                                Database.deleteFormat( it.mediaId )
-                            }
-                            manageDownload(
-                                context = context,
-                                mediaItem = it,
-                                downloadState = false
-                            )
-                            //listMediaItems.clear()
-                            selectItems = false
-                        }
-                    }.onFailure {
-                        Timber.e("Failed listMediaItems 1 in AlbumDetailsModern ${it.stackTraceToString()}")
-                    }
-                }
-            }
+            onConfirm = {}
         )
     }
 
@@ -779,11 +696,7 @@ fun AlbumDetails(
                                                         ?.let(::update)
                                                 }
 
-                                                if (bookmarkedAt != null) {
-                                                    MyDownloadHelper.autoDownloadWhenAlbumBookmarked(
-                                                        context,
-                                                        songs.map { it.asMediaItem })
-                                                }
+
 
                                                 if (isYouTubeSyncEnabled())
                                                     CoroutineScope(Dispatchers.IO).launch {
@@ -1367,28 +1280,13 @@ fun AlbumDetails(
                         key = { _, song -> song.id }
                     ) { index, song ->
                         val isLocal by remember { derivedStateOf { song.asMediaItem.isLocal } }
-                        downloadState = getDownloadState(song.asMediaItem.mediaId)
-                        val isDownloaded =
-                            if (!isLocal) isDownloadedSong(song.asMediaItem.mediaId) else true
 
                         SwipeablePlaylistItem(
                             mediaItem = song.asMediaItem,
                             onPlayNext = {
                                 binder?.player?.addNext(song.asMediaItem)
                             },
-                            onDownload = {
-                                binder?.cache?.removeResource(song.asMediaItem.mediaId)
-                                Database.asyncTransaction {
-                                    resetContentLength(song.asMediaItem.mediaId)
-                                }
-
-                                if (!isLocal)
-                                    manageDownload(
-                                        context = context,
-                                        mediaItem = song.asMediaItem,
-                                        downloadState = isDownloaded
-                                    )
-                            },
+                            onDownload = {},
                             onEnqueue = {
                                 binder?.player?.enqueue(song.asMediaItem)
                             }
@@ -1397,20 +1295,6 @@ fun AlbumDetails(
                             var forceRecompose by remember { mutableStateOf(false) }
                             SongItem(
                                 mediaItem = song.asMediaItem,
-                                downloadState = getDownloadState(song.asMediaItem.mediaId),
-                                onDownloadClick = {
-                                    binder?.cache?.removeResource(song.asMediaItem.mediaId)
-                                    Database.asyncTransaction {
-                                        deleteFormat(song.asMediaItem.mediaId)
-                                    }
-
-                                    if (!isLocal)
-                                        manageDownload(
-                                            context = context,
-                                            mediaItem = song.asMediaItem,
-                                            downloadState = isDownloaded
-                                        )
-                                },
                                 thumbnailSizeDp = thumbnailSizeDp,
                                 thumbnailContent = {
                                     /*

@@ -98,12 +98,9 @@ import it.fast4x.riplay.utils.enqueue
 import it.fast4x.riplay.utils.forcePlayAtIndex
 import it.fast4x.riplay.utils.forcePlayFromBeginning
 import it.fast4x.riplay.utils.formatAsDuration
-import it.fast4x.riplay.utils.getDownloadState
-import it.fast4x.riplay.utils.isDownloadedSong
 import it.fast4x.riplay.utils.isExplicit
 import org.dailyislam.android.utilities.isNetworkConnected
 import it.fast4x.riplay.utils.isNowPlaying
-import it.fast4x.riplay.utils.manageDownload
 import it.fast4x.riplay.utils.maxSongsInQueueKey
 import it.fast4x.riplay.utils.setLikeState
 import kotlinx.coroutines.CoroutineScope
@@ -222,58 +219,8 @@ fun ArtistOverviewItems(
                 .map{it as Environment.SongItem}
                 .map { it.asMediaItem }
 
-            if (showConfirmDownloadAllDialog) {
-                ConfirmationDialog(
-                    text = stringResource(R.string.do_you_really_want_to_download_all),
-                    onDismiss = { showConfirmDownloadAllDialog = false },
-                    onConfirm = {
-                        showConfirmDownloadAllDialog = false
-                        downloadState = Download.STATE_DOWNLOADING
-                        Database.asyncTransaction {
-                        if (artistSongs.any { getLikedAt(it.mediaId) != -1L }) {
-                            artistSongs.filter { getLikedAt(it.mediaId) != -1L }.forEach {
-                                binder?.cache?.removeResource(it.mediaId)
-                                Database.insert(
-                                    Song(
-                                        id = it.mediaId,
-                                        title = it.mediaMetadata.title.toString(),
-                                        artistsText = it.mediaMetadata.artist.toString(),
-                                        thumbnailUrl = it.asSong.thumbnailUrl,
-                                        durationText = null
-                                    )
-                                )
-                                manageDownload(
-                                    context = context,
-                                    mediaItem = it,
-                                    downloadState = false
-                                )
-                            }
-                        }
-                        }
-                    }
-                )
-            }
 
-            if (showConfirmDeleteDownloadDialog) {
-                ConfirmationDialog(
-                    text = stringResource(R.string.do_you_really_want_to_delete_download),
-                    onDismiss = { showConfirmDeleteDownloadDialog = false },
-                    onConfirm = {
-                        showConfirmDeleteDownloadDialog = false
-                        downloadState = Download.STATE_DOWNLOADING
-                        if (artistSongs.isNotEmpty()) {
-                            artistSongs.forEach {
-                                binder?.cache?.removeResource(it.mediaId)
-                                manageDownload(
-                                    context = context,
-                                    mediaItem = it,
-                                    downloadState = true
-                                )
-                            }
-                        }
-                    }
-                )
-            }
+
 
             if (showYoutubeLikeConfirmDialog) {
                 Database.asyncTransaction {
@@ -509,48 +456,21 @@ fun ArtistOverviewItems(
 
                     if (parentalControlEnabled && item.isExplicit) return@items
 
-                    downloadState = getDownloadState(item.mediaId)
-                    val isDownloaded = isDownloadedSong(item.mediaId)
-
                     SwipeablePlaylistItem(
                         mediaItem = item,
                         onPlayNext = {
                             binder?.player?.addNext(item)
                         },
-                        onDownload = {
-                            binder?.cache?.removeResource(item.mediaId)
-                            CoroutineScope(Dispatchers.IO).launch {
-                                Database.resetContentLength( item.mediaId )
-                            }
-
-                            manageDownload(
-                                context = context,
-                                mediaItem = item,
-                                downloadState = isDownloaded
-                            )
-                        },
+                        onDownload = {},
                         onEnqueue = {
                             binder?.player?.enqueue(item)
                         }
                     ) {
                         SongItem(
                             song = item,
-                            onDownloadClick = {
-                                binder?.cache?.removeResource(item.mediaId)
-                                CoroutineScope(Dispatchers.IO).launch {
-                                    Database.deleteFormat( item.mediaId )
-                                }
-
-                                manageDownload(
-                                    context = context,
-                                    mediaItem = item,
-                                    downloadState = isDownloaded
-                                )
-                            },
                             onThumbnailContent = {
                                 NowPlayingSongIndicator(item.mediaId, binder?.player)
                             },
-                            downloadState = getDownloadState(item.mediaId),
                             thumbnailSizeDp = songThumbnailSizeDp,
                             thumbnailSizePx = songThumbnailSizePx,
                             modifier = Modifier

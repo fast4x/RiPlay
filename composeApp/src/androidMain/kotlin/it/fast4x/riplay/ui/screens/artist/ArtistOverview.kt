@@ -111,11 +111,8 @@ import it.fast4x.riplay.utils.color
 import it.fast4x.riplay.utils.applyIf
 import it.fast4x.riplay.utils.enqueue
 import it.fast4x.riplay.utils.fadingEdge
-import it.fast4x.riplay.utils.getDownloadState
-import it.fast4x.riplay.utils.isDownloadedSong
 import it.fast4x.riplay.utils.isLandscape
 import org.dailyislam.android.utilities.isNetworkConnected
-import it.fast4x.riplay.utils.manageDownload
 import it.fast4x.riplay.utils.parentalControlEnabledKey
 import it.fast4x.riplay.utils.rememberPreference
 import it.fast4x.riplay.utils.resize
@@ -640,26 +637,13 @@ fun ArtistOverview(
                             is Environment.SongItem -> {
                                 if (parentalControlEnabled && item.explicit) return@items
 
-                                downloadState = getDownloadState(item.asMediaItem.mediaId)
-                                val isDownloaded = isDownloadedSong(item.asMediaItem.mediaId)
                                 println("Innertube artistmodern SongItem: ${item.info?.name}")
                                 SwipeablePlaylistItem(
                                     mediaItem = item.asMediaItem,
                                     onPlayNext = {
                                         binder?.player?.addNext(item.asMediaItem)
                                     },
-                                    onDownload = {
-                                        binder?.cache?.removeResource(item.asMediaItem.mediaId)
-                                        CoroutineScope(Dispatchers.IO).launch {
-                                            Database.resetContentLength( item.asMediaItem.mediaId )
-                                        }
-
-                                        manageDownload(
-                                            context = context,
-                                            mediaItem = item.asMediaItem,
-                                            downloadState = isDownloaded
-                                        )
-                                    },
+                                    onDownload = {},
                                     onEnqueue = {
                                         binder?.player?.enqueue(item.asMediaItem)
                                     }
@@ -669,8 +653,6 @@ fun ArtistOverview(
                                         song = item,
                                         thumbnailSizePx = songThumbnailSizePx,
                                         thumbnailSizeDp = songThumbnailSizeDp,
-                                        onDownloadClick = {},
-                                        downloadState = Download.STATE_STOPPED,
                                         disableScrollingText = disableScrollingText,
                                         isNowPlaying = false,
                                         forceRecompose = forceRecompose,

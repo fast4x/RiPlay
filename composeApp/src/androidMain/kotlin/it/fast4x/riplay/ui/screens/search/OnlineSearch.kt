@@ -239,8 +239,6 @@ fun OnlineSearch(
                                 onThumbnailContent = {
                                     NowPlayingSongIndicator(mediaItem.mediaId, binder?.player)
                                 },
-                                onDownloadClick = {},
-                                downloadState = downloadState,
                                 modifier = Modifier
                                     .combinedClickable(
                                         onLongClick = {

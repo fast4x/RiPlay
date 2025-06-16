@@ -45,7 +45,6 @@ import it.fast4x.riplay.enums.ExoPlayerDiskCacheMaxSize
 import it.fast4x.riplay.enums.ExoPlayerDiskDownloadCacheMaxSize
 import it.fast4x.riplay.enums.NavigationBarPosition
 import it.fast4x.riplay.enums.PopupType
-import it.fast4x.riplay.service.MyDownloadService
 import it.fast4x.riplay.service.modern.PlayerServiceModern
 import it.fast4x.riplay.ui.components.themed.CacheSpaceIndicator
 import it.fast4x.riplay.ui.components.themed.ConfirmationDialog
@@ -73,7 +72,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import it.fast4x.riplay.colorPalette
-import it.fast4x.riplay.service.MyDownloadHelper
 import it.fast4x.riplay.typography
 import it.fast4x.riplay.utils.asMediaItem
 import java.io.FileInputStream
@@ -187,7 +185,6 @@ fun DataSettings() {
                         }
                     }
                 context.stopService(context.intent<PlayerServiceModern>())
-                context.stopService(context.intent<MyDownloadService>())
 
                 exitAfterRestore = true
             }
@@ -289,28 +286,6 @@ fun DataSettings() {
             onConfirm = {
                 binder?.cache?.keys?.forEach { song ->
                     binder.cache.removeResource(song)
-                }
-            }
-        )
-    }
-
-    if (cleanDownloadCache) {
-        ConfirmationDialog(
-            text = stringResource(R.string.do_you_really_want_to_delete_cache),
-            onDismiss = {
-                cleanDownloadCache = false
-            },
-            onConfirm = {
-                binder?.downloadCache?.keys?.forEach { song ->
-                    binder.downloadCache.removeResource(song)
-
-                    CoroutineScope(Dispatchers.IO).launch {
-                        Database.song(song).collect {
-                            val mediaItem = it?.asMediaItem ?: throw CancellationException()
-                            MyDownloadHelper.removeDownload(context, mediaItem)
-                            throw CancellationException()
-                        }
-                    }
                 }
             }
         )

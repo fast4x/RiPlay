@@ -63,7 +63,6 @@ import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.models.Info
 import it.fast4x.riplay.models.Song
 import it.fast4x.riplay.models.ui.UiMedia
-import it.fast4x.riplay.service.MyDownloadHelper
 import it.fast4x.riplay.service.modern.PlayerServiceModern
 import it.fast4x.riplay.typography
 import it.fast4x.riplay.ui.components.themed.CustomElevatedButton
@@ -251,7 +250,6 @@ fun InfoAlbumAndArtistModern(
                                     if (mediaItem != null) {
                                         Database.asyncQuery {
                                             mediaItemToggleLike(mediaItem)
-                                            MyDownloadHelper.autoDownloadWhenLiked(context(), mediaItem)
                                         }
                                     }
                                 }
@@ -274,7 +272,6 @@ fun InfoAlbumAndArtistModern(
                                             if (like(mediaId, setDisLikeState(likedAt)) == 0) {
                                                 insert(mediaItem, Song::toggleDislike)
                                             }
-                                            MyDownloadHelper.autoDownloadWhenLiked(context(), mediaItem)
                                         }
                                     }
                                 }

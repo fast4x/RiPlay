@@ -39,7 +39,6 @@ import it.fast4x.riplay.models.Album
 import it.fast4x.riplay.models.Song
 import it.fast4x.riplay.models.SongAlbumMap
 import it.fast4x.riplay.models.SongArtistMap
-import it.fast4x.riplay.service.MyDownloadHelper
 import it.fast4x.riplay.service.modern.MediaSessionConstants.ID_CACHED
 import it.fast4x.riplay.service.modern.MediaSessionConstants.ID_DOWNLOADED
 import it.fast4x.riplay.service.modern.MediaSessionConstants.ID_FAVORITES
@@ -64,7 +63,6 @@ import kotlinx.coroutines.runBlocking
 class MediaLibrarySessionCallback (
     val context: Context,
     val database: Database,
-    val downloadHelper: MyDownloadHelper
 ) : MediaLibrarySession.Callback {
     private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
     lateinit var binder: PlayerServiceModern.Binder
@@ -255,7 +253,6 @@ class MediaLibrarySessionCallback (
                         PlayerServiceModern.PLAYLIST -> {
                             val likedSongCount = database.likedSongsCount().first()
                             val cachedSongCount = getCountCachedSongs().first()
-                            val downloadedSongCount = getCountDownloadedSongs().first()
                             val onDeviceSongCount = database.onDeviceSongsCount().first()
                             val playlists = database.playlistPreviewsByDateSongCountAsc().first()
                             listOf(
@@ -271,13 +268,6 @@ class MediaLibrarySessionCallback (
                                     context.getString(R.string.cached),
                                     cachedSongCount.toString(),
                                     drawableUri(R.drawable.download),
-                                    MediaMetadata.MEDIA_TYPE_PLAYLIST
-                                ),
-                                browsableMediaItem(
-                                    "${PlayerServiceModern.PLAYLIST}/$ID_DOWNLOADED",
-                                    context.getString(R.string.downloaded),
-                                    downloadedSongCount.toString(),
-                                    drawableUri(R.drawable.downloaded),
                                     MediaMetadata.MEDIA_TYPE_PLAYLIST
                                 ),
                                 browsableMediaItem(
@@ -457,17 +447,17 @@ class MediaLibrarySessionCallback (
                                         list.map { it.song }
                                     }
 
-                                    ID_DOWNLOADED -> {
-                                        val downloads = downloadHelper.downloads.value
-                                        database.listAllSongs(1)
-                                            .flowOn(Dispatchers.IO)
-                                            .map { list ->
-                                                list.map { it.song }
-                                                    .filter {
-                                                        downloads[it.id]?.state == Download.STATE_COMPLETED
-                                                    }
-                                            }
-                                    }
+//                                    ID_DOWNLOADED -> {
+//                                        val downloads = downloadHelper.downloads.value
+//                                        database.listAllSongs(1)
+//                                            .flowOn(Dispatchers.IO)
+//                                            .map { list ->
+//                                                list.map { it.song }
+//                                                    .filter {
+//                                                        downloads[it.id]?.state == Download.STATE_COMPLETED
+//                                                    }
+//                                            }
+//                                    }
 
                                     else -> database.sortSongsPlaylistByPosition(playlistId.toLong())
                                         .map { list ->
@@ -589,21 +579,21 @@ class MediaLibrarySessionCallback (
                         )
 
                         ID_ONDEVICE -> database.songsEntityOnDevice()
-                        ID_DOWNLOADED -> {
-                            val downloads = downloadHelper.downloads.value
-                            database.listAllSongs(-1)
-                                .flowOn(Dispatchers.IO)
-                                .map { songs ->
-                                    songs.filter {
-                                        downloads[it.song.id]?.state == Download.STATE_COMPLETED
-                                    }
-                                }
-                                .map { songs ->
-                                    songs.map { it to downloads[it.song.id] }
-                                        .sortedBy { it.second?.updateTimeMs ?: 0L }
-                                        .map { it.first }
-                                }
-                        }
+//                        ID_DOWNLOADED -> {
+//                            val downloads = downloadHelper.downloads.value
+//                            database.listAllSongs(-1)
+//                                .flowOn(Dispatchers.IO)
+//                                .map { songs ->
+//                                    songs.filter {
+//                                        downloads[it.song.id]?.state == Download.STATE_COMPLETED
+//                                    }
+//                                }
+//                                .map { songs ->
+//                                    songs.map { it to downloads[it.song.id] }
+//                                        .sortedBy { it.second?.updateTimeMs ?: 0L }
+//                                        .map { it.first }
+//                                }
+//                        }
 
                         else -> database.sortSongsPlaylistByPosition(playlistId.toLong())
                             .map { list ->
@@ -732,11 +722,11 @@ class MediaLibrarySessionCallback (
         }.size
     }
 
-    private fun getCountDownloadedSongs() = downloadHelper.downloads.map {
-        it.filter {
-            it.value.state == Download.STATE_COMPLETED
-        }.size
-    }
+//    private fun getCountDownloadedSongs() = downloadHelper.downloads.map {
+//        it.filter {
+//            it.value.state == Download.STATE_COMPLETED
+//        }.size
+//    }
 }
 
 

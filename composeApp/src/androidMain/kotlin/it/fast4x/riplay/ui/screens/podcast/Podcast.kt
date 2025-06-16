@@ -79,7 +79,7 @@ import it.fast4x.riplay.enums.ThumbnailRoundness
 import it.fast4x.riplay.enums.UiType
 import it.fast4x.riplay.models.Playlist
 import it.fast4x.riplay.models.SongPlaylistMap
-import it.fast4x.riplay.service.isLocal
+import it.fast4x.riplay.service.modern.isLocal
 import it.fast4x.riplay.ui.components.LocalMenuState
 import it.fast4x.riplay.ui.components.ShimmerHost
 import it.fast4x.riplay.ui.components.SwipeablePlaylistItem
@@ -109,11 +109,8 @@ import it.fast4x.riplay.utils.fadingEdge
 import it.fast4x.riplay.utils.forcePlayAtIndex
 import it.fast4x.riplay.utils.forcePlayFromBeginning
 import it.fast4x.riplay.utils.formatAsTime
-import it.fast4x.riplay.utils.getDownloadState
-import it.fast4x.riplay.utils.isDownloadedSong
 import it.fast4x.riplay.utils.isLandscape
 import it.fast4x.riplay.utils.isNowPlaying
-import it.fast4x.riplay.utils.manageDownload
 import it.fast4x.riplay.utils.medium
 import it.fast4x.riplay.utils.rememberPreference
 import it.fast4x.riplay.utils.resize
@@ -393,64 +390,6 @@ fun Podcast(
                             )
 
                             HeaderIconButton(
-                                icon = R.drawable.downloaded,
-                                color = colorPalette().text,
-                                onClick = {},
-                                modifier = Modifier
-                                    .padding(horizontal = 5.dp)
-                                    .combinedClickable(
-                                        onClick = {
-                                            downloadState = Download.STATE_DOWNLOADING
-                                            if (podcastPage?.listEpisode?.isNotEmpty() == true)
-                                                podcastPage?.listEpisode?.forEach {
-                                                    binder?.cache?.removeResource(it.asMediaItem.mediaId)
-                                                    CoroutineScope(Dispatchers.IO).launch {
-                                                        Database.deleteFormat( it.asMediaItem.mediaId )
-                                                    }
-                                                    manageDownload(
-                                                        context = context,
-                                                        mediaItem = it.asMediaItem,
-                                                        downloadState = false
-                                                    )
-                                                }
-                                        },
-                                        onLongClick = {
-                                            SmartMessage(context.resources.getString(R.string.info_download_all_songs), context = context)
-                                        }
-                                    )
-                            )
-
-                            HeaderIconButton(
-                                icon = R.drawable.download,
-                                color = colorPalette().text,
-                                onClick = {},
-                                modifier = Modifier
-                                    .padding(horizontal = 5.dp)
-                                    .combinedClickable(
-                                        onClick = {
-                                            downloadState = Download.STATE_DOWNLOADING
-                                            if (podcastPage?.listEpisode?.isNotEmpty() == true)
-                                                podcastPage?.listEpisode?.forEach {
-                                                    binder?.cache?.removeResource(it.asMediaItem.mediaId)
-                                                    CoroutineScope(Dispatchers.IO).launch {
-                                                        Database.deleteFormat( it.asMediaItem.mediaId )
-                                                    }
-                                                    manageDownload(
-                                                        context = context,
-                                                        mediaItem = it.asMediaItem,
-                                                        downloadState = true
-                                                    )
-                                                }
-                                        },
-                                        onLongClick = {
-                                            SmartMessage(context.resources.getString(R.string.info_remove_all_downloaded_songs), context = context)
-                                        }
-                                    )
-                            )
-
-
-
-                            HeaderIconButton(
                                 icon = R.drawable.enqueue,
                                 enabled = podcastPage?.listEpisode?.isNotEmpty() == true,
                                 color =  if (podcastPage?.listEpisode?.isNotEmpty() == true) colorPalette().text else colorPalette().textDisabled,
@@ -717,28 +656,13 @@ fun Podcast(
                         } else true
                     } ?: emptyList())
                 { index, song ->
-                    val isLocal by remember { derivedStateOf { song.asMediaItem.isLocal } }
-                    downloadState = getDownloadState(song.asMediaItem.mediaId)
-                    val isDownloaded = if (!isLocal) isDownloadedSong(song.asMediaItem.mediaId) else true
 
                     SwipeablePlaylistItem(
                         mediaItem = song.asMediaItem,
                         onPlayNext = {
                             binder?.player?.addNext(song.asMediaItem)
                         },
-                        onDownload = {
-                            binder?.cache?.removeResource(song.asMediaItem.mediaId)
-                            CoroutineScope(Dispatchers.IO).launch {
-                                Database.resetContentLength( song.asMediaItem.mediaId )
-                            }
-
-                            if (!isLocal)
-                                manageDownload(
-                                    context = context,
-                                    mediaItem = song.asMediaItem,
-                                    downloadState = isDownloaded
-                                )
-                        },
+                        onDownload = {},
                         onEnqueue = {
                             binder?.player?.enqueue(song.asMediaItem)
                         }
@@ -746,20 +670,6 @@ fun Podcast(
                         var forceRecompose by remember { mutableStateOf(false) }
                         SongItem(
                             song = song.asMediaItem,
-                            onDownloadClick = {
-                                binder?.cache?.removeResource(song.asMediaItem.mediaId)
-                                CoroutineScope(Dispatchers.IO).launch {
-                                    Database.deleteFormat( song.asMediaItem.mediaId )
-                                }
-
-                                if (!isLocal)
-                                    manageDownload(
-                                        context = context,
-                                        mediaItem = song.asMediaItem,
-                                        downloadState = isDownloaded
-                                    )
-                            },
-                            downloadState = downloadState,
                             thumbnailSizePx = songThumbnailSizePx,
                             thumbnailSizeDp = songThumbnailSizeDp,
                             modifier = Modifier

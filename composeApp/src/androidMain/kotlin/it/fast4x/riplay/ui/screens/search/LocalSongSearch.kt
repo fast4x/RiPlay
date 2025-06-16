@@ -46,7 +46,7 @@ import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.enums.NavigationBarPosition
 import it.fast4x.riplay.enums.ThumbnailRoundness
 import it.fast4x.riplay.models.Song
-import it.fast4x.riplay.service.isLocal
+import it.fast4x.riplay.service.modern.isLocal
 import it.fast4x.riplay.ui.components.LocalMenuState
 import it.fast4x.riplay.ui.components.themed.FloatingActionsContainerWithScrollToTop
 import it.fast4x.riplay.ui.components.themed.Header
@@ -57,10 +57,7 @@ import it.fast4x.riplay.ui.styling.px
 import it.fast4x.riplay.utils.align
 import it.fast4x.riplay.utils.asMediaItem
 import it.fast4x.riplay.utils.disableScrollingTextKey
-import it.fast4x.riplay.utils.getDownloadState
-import it.fast4x.riplay.utils.isDownloadedSong
 import it.fast4x.riplay.utils.isNowPlaying
-import it.fast4x.riplay.utils.manageDownload
 import it.fast4x.riplay.utils.medium
 import it.fast4x.riplay.utils.rememberPreference
 import it.fast4x.riplay.utils.thumbnailRoundnessKey
@@ -174,24 +171,8 @@ fun LocalSongSearch(
                 key = Song::id,
             ) { song ->
                 val isLocal by remember { derivedStateOf { song.asMediaItem.isLocal } }
-                downloadState = getDownloadState(song.asMediaItem.mediaId)
-                val isDownloaded = if (!isLocal) isDownloadedSong(song.asMediaItem.mediaId) else true
                 SongItem(
                     song = song,
-                    onDownloadClick = {
-                        binder?.cache?.removeResource(song.asMediaItem.mediaId)
-                        CoroutineScope(Dispatchers.IO).launch {
-                            Database.deleteFormat( song.asMediaItem.mediaId )
-                        }
-
-                        if (!isLocal)
-                        manageDownload(
-                            context = context,
-                            mediaItem = song.asMediaItem,
-                            downloadState = isDownloaded
-                        )
-                    },
-                    downloadState = downloadState,
                     thumbnailSizePx = thumbnailSizePx,
                     thumbnailSizeDp = thumbnailSizeDp,
                     modifier = Modifier

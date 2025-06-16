@@ -70,7 +70,6 @@ import it.fast4x.riplay.enums.QueueLoopType
 import it.fast4x.riplay.models.Info
 import it.fast4x.riplay.models.Song
 import it.fast4x.riplay.models.ui.UiMedia
-import it.fast4x.riplay.service.MyDownloadHelper
 import it.fast4x.riplay.service.modern.PlayerServiceModern
 import it.fast4x.riplay.typography
 import it.fast4x.riplay.ui.components.themed.IconButton
@@ -276,7 +275,6 @@ fun InfoAlbumAndArtistEssential(
                                         currentMediaItem.takeIf { it?.mediaId == mediaId }.let { mediaItem ->
                                             if(mediaItem != null){
                                                 mediaItemToggleLike(mediaItem)
-                                                MyDownloadHelper.autoDownloadWhenLiked(context(), mediaItem)
                                             }
                                         }
                                     }
@@ -303,9 +301,7 @@ fun InfoAlbumAndArtistEssential(
                                                     insert(currentMediaItem, Song::toggleDislike)
                                                 }
                                         }
-                                        if(currentMediaItem != null){
-                                            MyDownloadHelper.autoDownloadWhenLiked(context(), currentMediaItem)
-                                        }
+
                                     }
                                 }
                             } else {
@@ -480,7 +476,6 @@ fun ControlsEssential(
                             CoroutineScope(Dispatchers.IO).launch {
                                 currentMediaItem?.takeIf { it.mediaId == mediaId }?.let { mediaItem ->
                                     mediaItemToggleLike(mediaItem)
-                                    MyDownloadHelper.autoDownloadWhenLiked(context(), currentMediaItem)
                                 }
                             }
                         }
@@ -503,7 +498,6 @@ fun ControlsEssential(
                                     if (like(mediaId, setDisLikeState(likedAt)) == 0){
                                         insert(currentMediaItem, Song::toggleDislike)
                                     }
-                                    MyDownloadHelper.autoDownloadWhenLiked(context(), currentMediaItem)
                                 }
                             }
                         }

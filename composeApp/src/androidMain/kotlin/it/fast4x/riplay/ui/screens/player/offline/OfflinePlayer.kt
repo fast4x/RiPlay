@@ -229,13 +229,10 @@ import it.fast4x.riplay.utils.fadingedgeKey
 import it.fast4x.riplay.utils.formatAsDuration
 import it.fast4x.riplay.utils.formatAsTime
 import it.fast4x.riplay.utils.getBitmapFromUrl
-import it.fast4x.riplay.utils.getDownloadState
 import it.fast4x.riplay.utils.getIconQueueLoopState
 import it.fast4x.riplay.utils.horizontalFadingEdge
-import it.fast4x.riplay.utils.isDownloadedSong
 import it.fast4x.riplay.utils.isExplicit
 import it.fast4x.riplay.utils.isLandscape
-import it.fast4x.riplay.utils.manageDownload
 import it.fast4x.riplay.utils.mediaItems
 import it.fast4x.riplay.utils.miniQueueExpandedKey
 import it.fast4x.riplay.utils.noblurKey
@@ -315,7 +312,6 @@ import androidx.compose.ui.input.pointer.pointerInteropFilter
 import androidx.compose.ui.unit.LayoutDirection
 import it.fast4x.riplay.appContext
 import it.fast4x.riplay.context
-import it.fast4x.riplay.service.MyDownloadHelper
 import it.fast4x.riplay.ui.components.themed.AddToPlaylistPlayerMenu
 import it.fast4x.riplay.ui.screens.settings.isYouTubeSyncEnabled
 import it.fast4x.riplay.ui.styling.favoritesIcon
@@ -618,14 +614,6 @@ fun OfflinePlayer(
         updateBrush = true
     }
 
-
-    var downloadState by remember {
-        mutableStateOf(Download.STATE_STOPPED)
-    }
-    downloadState = getDownloadState(mediaItem.mediaId)
-
-    var isDownloaded by rememberSaveable { mutableStateOf(false) }
-    isDownloaded = isDownloadedSong(mediaItem.mediaId)
     var showthumbnail by rememberPreference(showthumbnailKey, true)
 
     val showButtonPlayerAddToPlaylist by rememberPreference(showButtonPlayerAddToPlaylistKey, true)
@@ -1736,31 +1724,6 @@ fun OfflinePlayer(
                                         }
 
                                     )
-                            )
-
-
-                        if (showButtonPlayerDownload)
-                            DownloadStateIconButton(
-                                icon = if (isDownloaded) R.drawable.downloaded else R.drawable.download,
-                                color = if (isDownloaded) colorPalette().accent else Color.Gray,
-                                downloadState = downloadState,
-                                onClick = {
-                                    manageDownload(
-                                        context = context,
-                                        mediaItem = mediaItem,
-                                        downloadState = isDownloaded
-                                    )
-                                },
-                                onCancelButtonClicked = {
-                                    manageDownload(
-                                        context = context,
-                                        mediaItem = mediaItem,
-                                        downloadState = true
-                                    )
-                                },
-                                modifier = Modifier
-                                    //.padding(start = 12.dp)
-                                    .size(24.dp)
                             )
 
 
@@ -3287,7 +3250,6 @@ fun OfflinePlayer(
                                             CoroutineScope(Dispatchers.IO).launch {
                                                 mediaItem.takeIf { it.mediaId == mediaItem.mediaId }?.let { mediaItem ->
                                                     mediaItemToggleLike(mediaItem)
-                                                    MyDownloadHelper.autoDownloadWhenLiked(context(), mediaItem)
                                                 }
                                             }
                                         }
@@ -3308,7 +3270,6 @@ fun OfflinePlayer(
                                                     if (like(mediaItem.mediaId, setDisLikeState(likedAt)) == 0){
                                                         insert(mediaItem, Song::toggleDislike)
                                                     }
-                                                    MyDownloadHelper.autoDownloadWhenLiked(context(), mediaItem)
                                                 }
                                             }
                                         }

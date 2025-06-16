@@ -53,7 +53,6 @@ import it.fast4x.riplay.utils.buttonzoomoutKey
 import it.fast4x.riplay.utils.applyIf
 import it.fast4x.riplay.utils.disableScrollingTextKey
 import it.fast4x.riplay.utils.isCompositionLaunched
-import it.fast4x.riplay.utils.isDownloadedSong
 import it.fast4x.riplay.utils.isLandscape
 import it.fast4x.riplay.utils.playerControlsTypeKey
 import it.fast4x.riplay.utils.playerInfoTypeKey
@@ -158,13 +157,7 @@ fun Controls(
         Database.likedAt(mediaId).distinctUntilChanged().collect { likedAt = it }
     }
 
-    var isDownloaded by rememberSaveable {
-        mutableStateOf(false)
-    }
 
-    isDownloaded = isDownloadedSong(mediaId)
-
-    //val menuState = LocalMenuState.current
 
 
     var showSelectDialog by remember { mutableStateOf(false) }

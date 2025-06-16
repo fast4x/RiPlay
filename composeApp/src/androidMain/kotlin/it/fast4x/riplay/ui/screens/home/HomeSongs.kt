@@ -109,8 +109,7 @@ import it.fast4x.riplay.models.OnDeviceSong
 import it.fast4x.riplay.models.Song
 import it.fast4x.riplay.models.SongEntity
 import it.fast4x.riplay.models.SongPlaylistMap
-import it.fast4x.riplay.service.LOCAL_KEY_PREFIX
-import it.fast4x.riplay.service.MyDownloadHelper
+import it.fast4x.riplay.service.modern.LOCAL_KEY_PREFIX
 import it.fast4x.riplay.service.modern.isLocal
 import it.fast4x.riplay.thumbnailShape
 import it.fast4x.riplay.typography
@@ -157,11 +156,9 @@ import it.fast4x.riplay.utils.enqueue
 import it.fast4x.riplay.utils.excludeSongsWithDurationLimitKey
 import it.fast4x.riplay.utils.forcePlayAtIndex
 import it.fast4x.riplay.utils.forcePlayFromBeginning
-import it.fast4x.riplay.utils.getDownloadState
 import it.fast4x.riplay.utils.hasPermission
 import it.fast4x.riplay.utils.includeLocalSongsKey
 import it.fast4x.riplay.utils.isCompositionLaunched
-import it.fast4x.riplay.utils.manageDownload
 import it.fast4x.riplay.utils.maxSongsInQueueKey
 import it.fast4x.riplay.utils.onDeviceFolderSortByKey
 import it.fast4x.riplay.utils.onDeviceSongSortByKey
@@ -199,7 +196,6 @@ import it.fast4x.riplay.utils.addToYtLikedSongs
 import it.fast4x.riplay.utils.addToYtPlaylist
 import it.fast4x.riplay.utils.asSong
 import it.fast4x.riplay.utils.formatAsDuration
-import it.fast4x.riplay.utils.isDownloadedSong
 import org.dailyislam.android.utilities.isNetworkConnected
 import it.fast4x.riplay.utils.isNowPlaying
 import kotlinx.coroutines.withContext
@@ -423,21 +419,21 @@ fun HomeSongs(
 
             LaunchedEffect(Unit, builtInPlaylist, sortBy, sortOrder, filter, topPlaylistPeriod) {
 
-                if (builtInPlaylist == BuiltInPlaylist.Downloaded) {
-
-                    val downloads = MyDownloadHelper.downloads.value
-                    Database.listAllSongsAsFlow()
-                        .flowOn(Dispatchers.IO)
-                        .map {
-                            it.filter { song ->
-                                binder?.downloadCache?.keys?.contains(song.song.id) == true
-                                        && downloads[song.song.id]?.state == Download.STATE_COMPLETED
-                            }
-                        }
-                        .collect {
-                            items = it
-                        }
-                }
+//                if (builtInPlaylist == BuiltInPlaylist.Downloaded) {
+//
+//                    val downloads = MyDownloadHelper.downloads.value
+//                    Database.listAllSongsAsFlow()
+//                        .flowOn(Dispatchers.IO)
+//                        .map {
+//                            it.filter { song ->
+//                                binder?.downloadCache?.keys?.contains(song.song.id) == true
+//                                        && downloads[song.song.id]?.state == Download.STATE_COMPLETED
+//                            }
+//                        }
+//                        .collect {
+//                            items = it
+//                        }
+//                }
 
                 if (builtInPlaylist == BuiltInPlaylist.Favorites) {
                     Database.songsFavorites(sortBy, sortOrder)
@@ -1045,41 +1041,6 @@ fun HomeSongs(
                             )
                         }
 
-                        if (showConfirmDownloadAllDialog) {
-                            ConfirmationDialog(
-                                text = stringResource(R.string.do_you_really_want_to_download_all),
-                                onDismiss = { showConfirmDownloadAllDialog = false },
-                                onConfirm = {
-                                    showConfirmDownloadAllDialog = false
-                                    //isRecommendationEnabled = false
-                                    downloadState = Download.STATE_DOWNLOADING
-                                    if (listMediaItems.isEmpty()) {
-                                        if (items.any { it.song.likedAt != -1L }) {
-                                            items.filter { it.song.likedAt != -1L }.forEach {
-                                                binder?.cache?.removeResource(it.song.asMediaItem.mediaId)
-                                                manageDownload(
-                                                    context = context,
-                                                    mediaItem = it.song.asMediaItem,
-                                                    downloadState = false
-                                                )
-                                            }
-                                        }
-                                    } else {
-                                        listMediaItems.forEach {
-                                            binder?.cache?.removeResource(it.mediaId)
-                                            manageDownload(
-                                                context = context,
-                                                mediaItem = it,
-                                                downloadState = false
-                                            )
-
-                                        }
-                                        selectItems = false
-                                    }
-                                }
-                            )
-                        }
-
                         if (showRiMusicLikeYoutubeLikeConfirmDialog) {
                             Database.asyncTransaction {
                             totalMinutesToLike = formatAsDuration((if (listMediaItems.isNotEmpty()) (listMediaItems.filter { Database.getLikedAt(it.mediaId) !in listOf(-1L,null)}).size
@@ -1134,107 +1095,7 @@ fun HomeSongs(
                             )
                         }
 
-                        if (deleteProgressDialog){
-                            InProgressDialog(total = totalSongsToDelete, done = songsDeleted, text = stringResource(R.string.delete_in_process))
-                        }
-                        LaunchedEffect(checkCheck) {
-                            if(!checkCheck) {
-                                return@LaunchedEffect
-                            }
-                            SmartMessage(
-                                context.resources.getString(R.string.please_wait),
-                                type = PopupType.Info, context = context
-                            )
-                            deleteProgressDialog = true
-                            withContext(Dispatchers.IO) {
-                                Database.asyncTransaction {
-                                    totalSongsToDelete = (itemsAll.filter {
-                                        !it.song.id.startsWith(LOCAL_KEY_PREFIX)
-                                                && it.song.likedAt == null
-                                                && songUsedInPlaylists(it.song.id) == 0
-                                                && albumBookmarked(
-                                            songAlbumInfo(it.song.id)?.id ?: "" ) == 0
-                                    }).size
-                                    if (totalSongsToDelete == 0) {
-                                        SmartMessage(
-                                            context.resources.getString(R.string.nothing_to_delete),
-                                            type = PopupType.Info, context = context
-                                        )
-                                        deleteProgressDialog = false
-                                    } else {
-                                        songsDeleted = 0
-                                        itemsAll.filter {!it.song.id.startsWith(LOCAL_KEY_PREFIX)}.forEach { song ->
-                                            Database.asyncTransaction {
-                                                if ((song.song.likedAt == null) && (Database.songUsedInPlaylists(song.song.id) == 0) && (Database.albumBookmarked(Database.songAlbumInfo(song.song.id)?.id?: "") == 0)) {
-                                                    binder?.cache?.removeResource(song.song.id)
-                                                    binder?.downloadCache?.removeResource(song.song.id)
-                                                    Database.delete(song.song)
-                                                    songsDeleted++
-                                                    if (songsDeleted == totalSongsToDelete) {
-                                                        deleteProgressDialog = false
-                                                        exitProcess(0)
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                                    checkCheck = false
-                                }
-                            }
-                        }
 
-                        if (builtInPlaylist == BuiltInPlaylist.Favorites || builtInPlaylist == BuiltInPlaylist.Downloaded) {
-                            HeaderIconButton(
-                                icon = R.drawable.download,
-                                enabled = songs.isNotEmpty(),
-                                color = colorPalette().text,
-                                onClick = {},
-                                modifier = Modifier
-                                    .combinedClickable(
-                                        onClick = {
-                                            showConfirmDeleteDownloadDialog = true
-                                        },
-                                        onLongClick = {
-                                            SmartMessage(
-                                                context.resources.getString(R.string.info_remove_all_downloaded_songs),
-                                                context = context
-                                            )
-                                        }
-                                    )
-                            )
-
-                            if (showConfirmDeleteDownloadDialog) {
-                                ConfirmationDialog(
-                                    text = stringResource(R.string.do_you_really_want_to_delete_download),
-                                    onDismiss = { showConfirmDeleteDownloadDialog = false },
-                                    onConfirm = {
-                                        showConfirmDeleteDownloadDialog = false
-                                        downloadState = Download.STATE_DOWNLOADING
-                                        if (listMediaItems.isEmpty()) {
-                                            if (items.isNotEmpty() == true)
-                                                items.forEach {
-                                                    binder?.cache?.removeResource(it.song.asMediaItem.mediaId)
-                                                    manageDownload(
-                                                        context = context,
-                                                        mediaItem = it.song.asMediaItem,
-                                                        downloadState = true
-                                                    )
-                                                }
-                                        } else {
-                                            listMediaItems.forEach {
-                                                binder?.cache?.removeResource(it.mediaId)
-                                                manageDownload(
-                                                    context = context,
-                                                    mediaItem = it,
-                                                    downloadState = true
-                                                )
-                                            }
-                                            selectItems = false
-                                        }
-                                    }
-                                )
-                            }
-                        }
 
                         if (builtInPlaylist == BuiltInPlaylist.All)
                             HeaderIconButton(
@@ -1711,7 +1572,6 @@ fun HomeSongs(
                         key = { _, song -> song.song.id }
                     ) { index, song ->
                         val isLocal by remember { derivedStateOf { song.asMediaItem.isLocal } }
-                        val isDownloaded = isLocal || isDownloadedSong( song.asMediaItem.mediaId )
                         SwipeablePlaylistItem(
                             mediaItem = song.asMediaItem,
                             onPlayNext = {
@@ -1722,21 +1582,6 @@ fun HomeSongs(
 
                             SongItem(
                                 song = song.song,
-                                onDownloadClick = {
-                                    if( builtInPlaylist != BuiltInPlaylist.OnDevice ) {
-                                        binder?.cache?.removeResource(song.song.asMediaItem.mediaId)
-                                        CoroutineScope(Dispatchers.IO).launch {
-                                            Database.resetContentLength( song.asMediaItem.mediaId )
-                                        }
-                                        if (!isLocal)
-                                            manageDownload(
-                                                context = context,
-                                                mediaItem = song.song.asMediaItem,
-                                                downloadState = isDownloaded
-                                            )
-                                    }
-                                },
-                                downloadState = Download.STATE_COMPLETED,
                                 thumbnailSizeDp = thumbnailSizeDp,
                                 thumbnailSizePx = thumbnailSizePx,
                                 onThumbnailContent = {
@@ -1914,32 +1759,9 @@ fun HomeSongs(
                     ) {
                         var forceRecompose by remember { mutableStateOf(false) }
                         val isLocal by remember { derivedStateOf { song.song.asMediaItem.isLocal } }
-                        downloadState = getDownloadState(song.song.asMediaItem.mediaId)
-                        val isDownloaded = if (!isLocal) isDownloadedSong(song.song.asMediaItem.mediaId) else true
                         val checkedState = rememberSaveable { mutableStateOf(false) }
                         SongItem(
                             song = song.song,
-                            onDownloadClick = {
-                                binder?.cache?.removeResource(song.song.asMediaItem.mediaId)
-                                Database.asyncTransaction {
-                                    Database.insert(
-                                        Song(
-                                            id = song.song.asMediaItem.mediaId,
-                                            title = song.song.asMediaItem.mediaMetadata.title.toString(),
-                                            artistsText = song.song.asMediaItem.mediaMetadata.artist.toString(),
-                                            thumbnailUrl = song.song.thumbnailUrl,
-                                            durationText = null
-                                        )
-                                    )
-                                }
-                                if (!isLocal)
-                                    manageDownload(
-                                        context = context,
-                                        mediaItem = song.song.asMediaItem,
-                                        downloadState = isDownloaded
-                                    )
-                            },
-                            downloadState = downloadState,
                             thumbnailSizePx = thumbnailSizePx,
                             thumbnailSizeDp = thumbnailSizeDp,
                             onThumbnailContent = {

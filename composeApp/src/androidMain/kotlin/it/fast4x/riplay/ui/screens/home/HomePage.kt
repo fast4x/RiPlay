@@ -79,8 +79,7 @@ import it.fast4x.riplay.enums.UiType
 import it.fast4x.riplay.models.Artist
 import it.fast4x.riplay.models.PlaylistPreview
 import it.fast4x.riplay.models.Song
-import it.fast4x.riplay.service.MyDownloadHelper
-import it.fast4x.riplay.service.isLocal
+import it.fast4x.riplay.service.modern.isLocal
 import it.fast4x.riplay.ui.components.LocalMenuState
 import it.fast4x.riplay.ui.components.PullToRefreshBox
 import it.fast4x.riplay.ui.components.themed.HeaderWithIcon
@@ -104,12 +103,9 @@ import it.fast4x.riplay.utils.bold
 import it.fast4x.riplay.utils.center
 import it.fast4x.riplay.utils.color
 import it.fast4x.riplay.utils.disableScrollingTextKey
-import it.fast4x.riplay.utils.getDownloadState
-import it.fast4x.riplay.utils.isDownloadedSong
 import it.fast4x.riplay.utils.isLandscape
 import it.fast4x.riplay.utils.isNowPlaying
 import it.fast4x.riplay.utils.loadedDataKey
-import it.fast4x.riplay.utils.manageDownload
 import it.fast4x.riplay.utils.parentalControlEnabledKey
 import it.fast4x.riplay.utils.playEventsTypeKey
 import it.fast4x.riplay.utils.quickPicsDiscoverPageKey
@@ -358,11 +354,6 @@ fun HomePage(
 
     val showSearchTab by rememberPreference(showSearchTabKey, false)
 
-    val downloadedSongs = remember {
-        MyDownloadHelper.downloads.value.filter {
-            it.value.state == Download.STATE_COMPLETED
-        }.keys.toList()
-    }
     val cachedSongs = remember {
         try {
             binder?.cache?.keys?.toMutableList()
@@ -370,7 +361,7 @@ fun HomePage(
             null
         }
     }
-    cachedSongs?.addAll(downloadedSongs)
+
 
     val hapticFeedback = LocalHapticFeedback.current
 
@@ -560,32 +551,9 @@ fun HomePage(
                         trending?.let { song ->
                             item {
                                 val isLocal by remember { derivedStateOf { song.asMediaItem.isLocal } }
-                                downloadState = getDownloadState(song.asMediaItem.mediaId)
-                                val isDownloaded =
-                                    if (!isLocal) isDownloadedSong(song.asMediaItem.mediaId) else true
                                 var forceRecompose by remember { mutableStateOf(false) }
                                 SongItem(
                                     song = song,
-                                    onDownloadClick = {
-                                        try {
-                                            binder?.cache?.removeResource(song.asMediaItem.mediaId)
-                                        } catch (e: Exception) {
-                                            Timber.e("HomePage Failed to remove resource")
-                                        }
-                                        CoroutineScope(Dispatchers.IO).launch {
-                                            Database.deleteFormat( song.asMediaItem.mediaId )
-                                        }
-
-
-                                        if (!isLocal)
-                                            manageDownload(
-                                                context = context,
-                                                mediaItem = song.asMediaItem,
-                                                downloadState = isDownloaded
-                                            )
-
-                                    },
-                                    downloadState = downloadState,
                                     thumbnailSizePx = songThumbnailSizePx,
                                     thumbnailSizeDp = songThumbnailSizeDp,
                                     trailingContent = {
@@ -614,21 +582,7 @@ fun HomePage(
                                                             }
                                                         },
 
-                                                        onDownload = {
-                                                            try {
-                                                                binder?.cache?.removeResource(song.asMediaItem.mediaId)
-                                                            } catch (e: Exception) {
-                                                                Timber.e("HomePage Failed to remove resource")
-                                                            }
-                                                            CoroutineScope(Dispatchers.IO).launch {
-                                                                Database.deleteFormat(song.asMediaItem.mediaId)
-                                                            }
-                                                            manageDownload(
-                                                                context = context,
-                                                                mediaItem = song.asMediaItem,
-                                                                downloadState = isDownloaded
-                                                            )
-                                                        },
+                                                        onDownload = {},
                                                         onInfo = {
                                                             navController.navigate("${NavRoutes.videoOrSongInfo.name}/${song.id}")
                                                         },
@@ -675,30 +629,9 @@ fun HomePage(
                                 key = Environment.SongItem::key
                             ) { song ->
                                 val isLocal by remember { derivedStateOf { song.asMediaItem.isLocal } }
-                                downloadState = getDownloadState(song.asMediaItem.mediaId)
-                                val isDownloaded =
-                                    if (!isLocal) isDownloadedSong(song.asMediaItem.mediaId) else true
                                 var forceRecompose by remember { mutableStateOf(false) }
                                 SongItem(
                                     song = song,
-                                    onDownloadClick = {
-                                        try {
-                                            binder?.cache?.removeResource(song.asMediaItem.mediaId)
-                                        } catch (e: Exception) {
-                                            Timber.e("HomePage Failed to remove resource")
-                                        }
-                                        CoroutineScope(Dispatchers.IO).launch {
-                                            Database.deleteFormat( song.asMediaItem.mediaId )
-                                        }
-                                        if (!isLocal)
-                                            manageDownload(
-                                                context = context,
-                                                mediaItem = song.asMediaItem,
-                                                downloadState = isDownloaded
-                                            )
-
-                                    },
-                                    downloadState = downloadState,
                                     thumbnailSizePx = songThumbnailSizePx,
                                     thumbnailSizeDp = songThumbnailSizeDp,
                                     modifier = Modifier
@@ -717,17 +650,7 @@ fun HomePage(
                                                             forceRecompose = true
                                                         },
                                                         mediaItem = song.asMediaItem,
-                                                        onDownload = {
-                                                            binder?.cache?.removeResource(song.asMediaItem.mediaId)
-                                                            CoroutineScope(Dispatchers.IO).launch {
-                                                                Database.deleteFormat(song.asMediaItem.mediaId)
-                                                            }
-                                                            manageDownload(
-                                                                context = context,
-                                                                mediaItem = song.asMediaItem,
-                                                                downloadState = isDownloaded
-                                                            )
-                                                        },
+                                                        onDownload = {},
                                                         onInfo = {
                                                             navController.navigate("${NavRoutes.videoOrSongInfo.name}/${song.key}")
                                                         },
@@ -1085,8 +1008,6 @@ fun HomePage(
                                             )
                                             SongItem(
                                                 song = song,
-                                                onDownloadClick = {},
-                                                downloadState = Download.STATE_STOPPED,
                                                 thumbnailSizePx = songThumbnailSizePx,
                                                 thumbnailSizeDp = songThumbnailSizeDp,
                                                 modifier = Modifier
@@ -1185,12 +1106,9 @@ fun HomePage(
                                             song = item,
                                             thumbnailSizePx = albumThumbnailSizePx,
                                             thumbnailSizeDp = albumThumbnailSizeDp,
-                                            onDownloadClick = {},
-                                            downloadState = Download.STATE_STOPPED,
                                             disableScrollingText = disableScrollingText,
                                             isNowPlaying = false,
                                             modifier = Modifier.clickable(onClick = {
-                                                //binder?.player?.forcePlay(item.asMediaItem)
                                                 fastPlay(item.asMediaItem, binder)
                                             })
                                         )

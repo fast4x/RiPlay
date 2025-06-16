@@ -84,10 +84,7 @@ import it.fast4x.riplay.utils.color
 import it.fast4x.riplay.utils.disableScrollingTextKey
 import it.fast4x.riplay.utils.forcePlayAtIndex
 import it.fast4x.riplay.utils.formatAsTime
-import it.fast4x.riplay.utils.getDownloadState
-import it.fast4x.riplay.utils.isDownloadedSong
 import it.fast4x.riplay.utils.isNowPlaying
-import it.fast4x.riplay.utils.manageDownload
 import it.fast4x.riplay.utils.maxStatisticsItemsKey
 import it.fast4x.riplay.utils.navigationBarPositionKey
 import it.fast4x.riplay.utils.rememberPreference
@@ -332,24 +329,9 @@ fun StatisticsPage(
                     items(
                         count = songs.count(),
                     ) {
-
-                        downloadState = getDownloadState(songs.get(it).asMediaItem.mediaId)
-                        val isDownloaded = isDownloadedSong(songs.get(it).asMediaItem.mediaId)
                         var forceRecompose by remember { mutableStateOf(false) }
                         SongItem(
                             song = songs.get(it).asMediaItem,
-                            onDownloadClick = {
-                                binder?.cache?.removeResource(songs.get(it).asMediaItem.mediaId)
-                                CoroutineScope(Dispatchers.IO).launch {
-                                    Database.deleteFormat( songs.get(it).asMediaItem.mediaId )
-                                }
-                                manageDownload(
-                                    context = context,
-                                    mediaItem = songs.get(it).asMediaItem,
-                                    downloadState = isDownloaded
-                                )
-                            },
-                            downloadState = downloadState,
                             thumbnailSizeDp = thumbnailSizeDp,
                             thumbnailSizePx = thumbnailSize,
                             onThumbnailContent = {

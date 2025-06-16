@@ -130,7 +130,6 @@ import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.enums.ThumbnailRoundness
 import it.fast4x.riplay.extensions.pip.PipModuleContainer
 import it.fast4x.riplay.extensions.pip.PipModuleCover
-import it.fast4x.riplay.service.MyDownloadHelper
 import it.fast4x.riplay.service.modern.PlayerServiceModern
 import it.fast4x.riplay.ui.components.CustomModalBottomSheet
 import it.fast4x.riplay.ui.components.LocalMenuState
@@ -148,7 +147,6 @@ import it.fast4x.riplay.ui.styling.colorPaletteOf
 import it.fast4x.riplay.ui.styling.customColorPalette
 import it.fast4x.riplay.ui.styling.dynamicColorPaletteOf
 import it.fast4x.riplay.ui.styling.typographyOf
-import it.fast4x.riplay.utils.InitDownloader
 import it.fast4x.riplay.utils.LocalMonetCompat
 import it.fast4x.riplay.utils.OkHttpRequest
 import it.fast4x.riplay.extensions.rescuecenter.RescueScreen
@@ -258,7 +256,7 @@ class MainActivity :
     MonetColorsChangedListener
 //,PersistMapOwner
 {
-    var downloadHelper = MyDownloadHelper
+    //var downloadHelper = MyDownloadHelper
     //lateinit var internetConnectivityObserver: InternetConnectivityObserver
 
     var client = OkHttpClient()
@@ -1091,7 +1089,6 @@ class MainActivity :
                                 LocalPlayerServiceBinder provides binder,
                                 LocalPlayerAwareWindowInsets provides playerAwareWindowInsets,
                                 LocalLayoutDirection provides LayoutDirection.Ltr,
-                                LocalDownloadHelper provides downloadHelper,
                                 LocalPlayerSheetState provides playerState,
                                 LocalMonetCompat provides monet,
                                 //LocalInternetAvailable provides isInternetAvailable
@@ -1308,7 +1305,6 @@ class MainActivity :
                         onDispose { player.removeListener(listener) }
                     }
 
-                    InitDownloader()
 
                 }
 
@@ -1572,7 +1568,7 @@ val LocalPlayerServiceBinder = staticCompositionLocalOf<PlayerServiceModern.Bind
 
 val LocalPlayerAwareWindowInsets = staticCompositionLocalOf<WindowInsets> { TODO() }
 
-val LocalDownloadHelper = staticCompositionLocalOf<MyDownloadHelper> { error("No Downloader provided") }
+//val LocalDownloadHelper = staticCompositionLocalOf<MyDownloadHelper> { error("No Downloader provided") }
 
 @OptIn(ExperimentalMaterial3Api::class)
 val LocalPlayerSheetState =

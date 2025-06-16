@@ -107,7 +107,7 @@ import it.fast4x.riplay.models.Playlist
 import it.fast4x.riplay.models.PlaylistPreview
 import it.fast4x.riplay.models.Song
 import it.fast4x.riplay.models.SongPlaylistMap
-import it.fast4x.riplay.service.isLocal
+import it.fast4x.riplay.service.modern.isLocal
 import it.fast4x.riplay.ui.components.LocalMenuState
 import it.fast4x.riplay.ui.components.SwipeableQueueItem
 import it.fast4x.riplay.ui.components.themed.ConfirmationDialog
@@ -141,12 +141,10 @@ import it.fast4x.riplay.utils.enqueue
 import it.fast4x.riplay.utils.forcePlayAtIndex
 import it.fast4x.riplay.utils.forcePlayFromBeginning
 import it.fast4x.riplay.utils.formatAsTime
-import it.fast4x.riplay.utils.getDownloadState
 import it.fast4x.riplay.utils.getPipedSession
 import it.fast4x.riplay.utils.isLandscape
 import it.fast4x.riplay.utils.isPipedEnabledKey
 import it.fast4x.riplay.utils.isRecommendationEnabledKey
-import it.fast4x.riplay.utils.manageDownload
 import it.fast4x.riplay.utils.maxSongsInQueueKey
 import it.fast4x.riplay.utils.navigationBarPositionKey
 import it.fast4x.riplay.utils.playlistSongSortByKey
@@ -182,17 +180,14 @@ import it.fast4x.riplay.ui.screens.settings.isYouTubeSyncEnabled
 import it.fast4x.riplay.utils.checkFileExists
 import it.fast4x.riplay.utils.deleteFileIfExists
 import it.fast4x.riplay.utils.disableScrollingTextKey
-import it.fast4x.riplay.utils.isDownloadedSong
 import it.fast4x.riplay.utils.isNowPlaying
 import it.fast4x.riplay.utils.saveImageToInternalStorage
 import kotlinx.coroutines.CoroutineScope
 import it.fast4x.riplay.models.SongEntity
-import it.fast4x.riplay.service.LOCAL_KEY_PREFIX
-import it.fast4x.riplay.service.MyDownloadHelper
+import it.fast4x.riplay.service.modern.LOCAL_KEY_PREFIX
 import it.fast4x.riplay.ui.components.PullToRefreshBox
 import it.fast4x.riplay.ui.components.themed.FilterMenu
 import it.fast4x.riplay.ui.components.themed.InProgressDialog
-import it.fast4x.riplay.ui.components.themed.SongMatchingDialog
 import it.fast4x.riplay.ui.screens.player.fastPlay
 import it.fast4x.riplay.utils.addToYtLikedSongs
 import it.fast4x.riplay.utils.addToYtPlaylist
@@ -256,20 +251,20 @@ fun LocalPlaylistSongs(
             .collect { playlistAllSongs = it }
     }
 
-    Database.asyncTransaction {
-        val downloads = MyDownloadHelper.downloads.value
-        CoroutineScope(Dispatchers.IO).launch {
-            downloadedPlaylistSongs = playlistAllSongs.filter { song -> downloads[song.song.id]?.state == Download.STATE_COMPLETED }
-            cachedPlaylistSongs = playlistAllSongs.filter { song -> song.contentLength?.let {
-                try {
-                    binder?.cache?.isCached(song.song.id, 0, song.contentLength)
-                } catch (e: Exception) {
-                    false
-                }
-            } ?: false
-            }
-        }
-    }
+//    Database.asyncTransaction {
+//        val downloads = MyDownloadHelper.downloads.value
+//        CoroutineScope(Dispatchers.IO).launch {
+//            downloadedPlaylistSongs = playlistAllSongs.filter { song -> downloads[song.song.id]?.state == Download.STATE_COMPLETED }
+//            cachedPlaylistSongs = playlistAllSongs.filter { song -> song.contentLength?.let {
+//                try {
+//                    binder?.cache?.isCached(song.song.id, 0, song.contentLength)
+//                } catch (e: Exception) {
+//                    false
+//                }
+//            } ?: false
+//            }
+//        }
+//    }
 
     LaunchedEffect(Unit, playlistAllSongs, filter, playlistSongsTypeFilter) {
         when (playlistSongsTypeFilter) {
@@ -466,16 +461,7 @@ fun LocalPlaylistSongs(
     val coroutineScope = rememberCoroutineScope()
     val pipedSession = getPipedSession()
 
-    if (songMatchingDialogEnable){
 
-        SongMatchingDialog(
-            songToRematch = matchingSongEntity.song,
-            playlistId = playlistId,
-            position = playlistSongsSortByPosition.indexOf(matchingSongEntity),
-            playlist = playlistPreview?.playlist,
-            onDismiss = {songMatchingDialogEnable = false}
-        )
-    }
 
     if (isDeleting) {
         ConfirmationDialog(
@@ -1384,51 +1370,7 @@ fun LocalPlaylistSongs(
                         )
 
 
-                        if (showConfirmDownloadAllDialog) {
-                            ConfirmationDialog(
-                                text = stringResource(R.string.do_you_really_want_to_download_all),
-                                onDismiss = { showConfirmDownloadAllDialog = false },
-                                onConfirm = {
-                                    showConfirmDownloadAllDialog = false
-                                    isRecommendationEnabled = false
-                                    downloadState = Download.STATE_DOWNLOADING
-                                    if (listMediaItems.isEmpty()) {
-                                        if (playlistSongs.any { it.song.likedAt != -1L }) {
-                                            playlistSongs.filter { it.song.likedAt != -1L }
-                                                .forEach {
-                                                    binder?.cache?.removeResource(it.asMediaItem.mediaId)
-                                                    Database.asyncTransaction {
-                                                        Database.insert(
-                                                            Song(
-                                                                id = it.asMediaItem.mediaId,
-                                                                title = it.asMediaItem.mediaMetadata.title.toString(),
-                                                                artistsText = it.asMediaItem.mediaMetadata.artist.toString(),
-                                                                thumbnailUrl = it.song.thumbnailUrl,
-                                                                durationText = null
-                                                            )
-                                                        )
-                                                    }
-                                                    manageDownload(
-                                                        context = context,
-                                                        mediaItem = it.asMediaItem,
-                                                        downloadState = false
-                                                    )
-                                                }
-                                        }
-                                    } else {
-                                        listMediaItems.forEach {
-                                            binder?.cache?.removeResource(it.mediaId)
-                                            manageDownload(
-                                                context = context,
-                                                mediaItem = it,
-                                                downloadState = true
-                                            )
-                                        }
-                                        selectItems = false
-                                    }
-                                }
-                            )
-                        }
+
 
                         if (showConfirmMatchAllDialog) {
                             ConfirmationDialog(
@@ -1509,79 +1451,7 @@ fun LocalPlaylistSongs(
                             )
                         }
 
-                        if (showConfirmDeleteDownloadDialog) {
-                            ConfirmationDialog(
-                                text = stringResource(R.string.do_you_really_want_to_delete_download),
-                                onDismiss = { showConfirmDeleteDownloadDialog = false },
-                                onConfirm = {
-                                    showConfirmDeleteDownloadDialog = false
-                                    downloadState = Download.STATE_DOWNLOADING
-                                    if (listMediaItems.isEmpty()) {
-                                        if (playlistSongs.isNotEmpty() == true)
-                                            playlistSongs.forEach {
-                                                binder?.cache?.removeResource(it.asMediaItem.mediaId)
-                                                manageDownload(
-                                                    context = context,
-                                                    mediaItem = it.asMediaItem,
-                                                    downloadState = true
-                                                )
-                                            }
-                                    } else {
-                                        listMediaItems.forEach {
-                                            binder?.cache?.removeResource(it.mediaId)
-                                            manageDownload(
-                                                context = context,
-                                                mediaItem = it,
-                                                downloadState = true
-                                            )
-                                        }
-                                    }
-                                }
-                            )
-                        }
 
-                        /*
-                    HeaderIconButton(
-                        icon = R.drawable.enqueue,
-                        enabled = playlistSongs.isNotEmpty(),
-                        color = if (playlistSongs.isNotEmpty()) colorPalette.text else colorPalette.textDisabled,
-                        onClick = {
-                            playlistSongs
-                                .map(Song::asMediaItem)
-                                .let { mediaItems ->
-                                    binder?.player?.enqueue(mediaItems)
-                                }
-                        }
-                    )
-                     */
-
-                        /*
-                    HeaderIconButton(
-                        icon = R.drawable.smart_shuffle,
-                        enabled = true,
-                        color = if (isRecommendationEnabled) colorPalette.text else colorPalette.textDisabled,
-                        onClick = {
-                            isRecommendationEnabled = !isRecommendationEnabled
-                        }
-                    )
-
-                    HeaderIconButton(
-                        icon = R.drawable.shuffle,
-                        enabled = playlistSongs.isNotEmpty() == true,
-                        color = if (playlistSongs.isNotEmpty() == true) colorPalette.text else colorPalette.textDisabled,
-                        onClick = {
-                            playlistSongs.let { songs ->
-                                if (songs.isNotEmpty()) {
-                                    val itemsLimited = if (songs.size > maxSongsInQueue.number)  songs.shuffled().take(maxSongsInQueue.number.toInt()) else songs
-                                    binder?.stopRadio()
-                                    binder?.player?.forcePlayFromBeginning(
-                                        itemsLimited.shuffled().map(Song::asMediaItem)
-                                    )
-                                }
-                            }
-                        }
-                    )
-                    */
 
                         HeaderIconButton(
                             icon = R.drawable.update,
@@ -2309,8 +2179,6 @@ fun LocalPlaylistSongs(
                                     isRecommended = true,
                                     thumbnailSizeDp = thumbnailSizeDp,
                                     thumbnailSizePx = thumbnailSizePx,
-                                    onDownloadClick = {},
-                                    downloadState = Download.STATE_STOPPED,
                                     trailingContent = {},
                                     onThumbnailContent = {},
                                     modifier = Modifier
@@ -2333,9 +2201,6 @@ fun LocalPlaylistSongs(
 
                         ) {
                             val isLocal by remember { derivedStateOf { song.asMediaItem.isLocal } }
-                            downloadState = getDownloadState(song.asMediaItem.mediaId)
-                            val isDownloaded =
-                                if (!isLocal) isDownloadedSong(song.asMediaItem.mediaId) else true
                             val checkedState = rememberSaveable { mutableStateOf(false) }
                             val positionInPlaylist: Int = index
                             Box(
@@ -2437,31 +2302,6 @@ fun LocalPlaylistSongs(
                                 var forceRecompose by remember { mutableStateOf(false) }
                                 SongItem(
                                     song = song.song,
-                                    onDownloadClick = {
-                                        binder?.cache?.removeResource(song.asMediaItem.mediaId)
-                                        Database.asyncTransaction {
-                                            Database.insert(
-                                                Song(
-                                                    id = song.asMediaItem.mediaId,
-                                                    title = song.asMediaItem.mediaMetadata.title.toString(),
-                                                    artistsText = song.asMediaItem.mediaMetadata.artist.toString(),
-                                                    thumbnailUrl = song.song.thumbnailUrl,
-                                                    durationText = null
-                                                )
-                                            )
-                                        }
-
-                                        if (!isLocal) {
-                                            manageDownload(
-                                                context = context,
-                                                mediaItem = song.asMediaItem,
-                                                downloadState = isDownloaded
-                                            )
-                                        }
-                                        //if (isDownloaded) listDownloadedMedia.dropWhile { it.asMediaItem.mediaId == song.asMediaItem.mediaId } else listDownloadedMedia.add(song)
-                                        //Log.d("mediaItem", "manageDownload click isDownloaded ${isDownloaded} listDownloadedMedia ${listDownloadedMedia.distinct().size}")
-                                    },
-                                    downloadState = getDownloadState(song.asMediaItem.mediaId),
                                     thumbnailSizePx = thumbnailSizePx,
                                     thumbnailSizeDp = thumbnailSizeDp,
                                     trailingContent = {

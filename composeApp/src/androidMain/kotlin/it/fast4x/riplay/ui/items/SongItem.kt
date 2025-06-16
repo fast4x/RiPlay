@@ -38,8 +38,6 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.MediaItem
 import androidx.media3.common.util.UnstableApi
-import androidx.media3.exoplayer.offline.Download
-import androidx.media3.exoplayer.offline.DownloadService
 import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
 import it.fast4x.environment.Environment
@@ -51,8 +49,6 @@ import it.fast4x.riplay.colorPalette
 import it.fast4x.riplay.enums.ColorPaletteName
 import it.fast4x.riplay.enums.DownloadedStateMedia
 import it.fast4x.riplay.models.Song
-import it.fast4x.riplay.service.MyDownloadService
-import it.fast4x.riplay.service.isLocal
 import it.fast4x.riplay.thumbnailShape
 import it.fast4x.riplay.typography
 import it.fast4x.riplay.ui.components.LocalMenuState
@@ -67,10 +63,8 @@ import it.fast4x.riplay.ui.styling.favoritesIcon
 import it.fast4x.riplay.ui.styling.favoritesOverlay
 import it.fast4x.riplay.ui.styling.shimmer
 import it.fast4x.riplay.utils.asMediaItem
-import it.fast4x.riplay.utils.asSong
 import it.fast4x.riplay.utils.colorPaletteNameKey
 import it.fast4x.riplay.utils.applyIf
-import it.fast4x.riplay.utils.downloadedStateMedia
 import it.fast4x.riplay.utils.getLikeState
 import it.fast4x.riplay.utils.isExplicit
 import it.fast4x.riplay.utils.medium
@@ -93,8 +87,6 @@ fun SongItem(
     thumbnailSizePx: Int,
     thumbnailSizeDp: Dp,
     modifier: Modifier = Modifier,
-    onDownloadClick: () -> Unit,
-    downloadState: Int,
     thumbnailContent: (@Composable BoxScope.() -> Unit)? = null,
     disableScrollingText: Boolean,
     isNowPlaying: Boolean = false,
@@ -104,13 +96,6 @@ fun SongItem(
         thumbnailUrl = song.thumbnail?.size(thumbnailSizePx),
         thumbnailSizeDp = thumbnailSizeDp,
         modifier = modifier,
-        onDownloadClick = {
-            CoroutineScope(Dispatchers.IO).launch {
-                Database.upsert(song.asSong)
-            }
-            onDownloadClick()
-        },
-        downloadState = downloadState,
         mediaItem = song.asMediaItem,
         onThumbnailContent = thumbnailContent,
         disableScrollingText = disableScrollingText,
@@ -128,8 +113,6 @@ fun SongItem(
     modifier: Modifier = Modifier,
     onThumbnailContent: (@Composable BoxScope.() -> Unit)? = null,
     trailingContent: (@Composable () -> Unit)? = null,
-    onDownloadClick: () -> Unit,
-    downloadState: Int,
     isRecommended: Boolean = false,
     disableScrollingText: Boolean,
     isNowPlaying: Boolean = false,
@@ -141,13 +124,6 @@ fun SongItem(
         onThumbnailContent = onThumbnailContent,
         trailingContent = trailingContent,
         modifier = modifier,
-        onDownloadClick = {
-            CoroutineScope(Dispatchers.IO).launch {
-                Database.upsert(song.asSong)
-            }
-            onDownloadClick()
-        },
-        downloadState = downloadState,
         isRecommended = isRecommended,
         mediaItem = song,
         disableScrollingText = disableScrollingText,
@@ -165,8 +141,6 @@ fun SongItem(
     modifier: Modifier = Modifier,
     onThumbnailContent: (@Composable BoxScope.() -> Unit)? = null,
     trailingContent: (@Composable () -> Unit)? = null,
-    onDownloadClick: () -> Unit,
-    downloadState: Int,
     disableScrollingText: Boolean,
     isNowPlaying: Boolean = false,
     forceRecompose: Boolean = false
@@ -177,13 +151,6 @@ fun SongItem(
         onThumbnailContent = onThumbnailContent,
         trailingContent = trailingContent,
         modifier = modifier,
-        onDownloadClick = {
-            CoroutineScope(Dispatchers.IO).launch {
-                Database.upsert(song)
-            }
-            onDownloadClick()
-        },
-        downloadState = downloadState,
         mediaItem = song.asMediaItem,
         disableScrollingText = disableScrollingText,
         isNowPlaying = isNowPlaying,
@@ -199,8 +166,6 @@ fun SongItem(
     modifier: Modifier = Modifier,
     onThumbnailContent: (@Composable BoxScope.() -> Unit)? = null,
     trailingContent: (@Composable () -> Unit)? = null,
-    onDownloadClick: () -> Unit,
-    downloadState: Int,
     isRecommended: Boolean = false,
     mediaItem: MediaItem,
     disableScrollingText: Boolean,
@@ -230,8 +195,6 @@ fun SongItem(
         },
         modifier = modifier,
         trailingContent = trailingContent,
-        onDownloadClick = onDownloadClick,
-        downloadState = downloadState,
         isRecommended = isRecommended,
         mediaItem = mediaItem,
         disableScrollingText = disableScrollingText,
@@ -239,95 +202,6 @@ fun SongItem(
         forceRecompose = forceRecompose
     )
 }
-
-/*
-@Composable
-fun SongItem(
-    thumbnailContent: @Composable BoxScope.() -> Unit,
-    title: String?,
-    authors: String?,
-    duration: String?,
-    thumbnailSizeDp: Dp,
-    modifier: Modifier = Modifier,
-    trailingContent: @Composable (() -> Unit)? = null,
-    isDownloaded: Boolean,
-    onDownloadClick: () -> Unit,
-    disableScrollingText: Boolean
-) {
-    ItemContainer(
-        alternative = false,
-        thumbnailSizeDp = thumbnailSizeDp,
-        modifier = modifier
-    ) {
-        Box(
-            modifier = Modifier
-                .size(thumbnailSizeDp)
-        ) {
-            thumbnailContent()
-        }
-
-        ItemInfoContainer {
-            trailingContent?.let {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    BasicText(
-                        text = title ?: "",
-                        style = typography().xs.semiBold,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier
-                            .weight(1f)
-                            .conditional(!disableScrollingText) { basicMarquee(iterations = Int.MAX_VALUE) }
-                    )
-
-                    it()
-                }
-            } ?: BasicText(
-                text = title ?: "",
-                style = typography().xs.semiBold,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                modifier = Modifier
-                    .conditional(!disableScrollingText) { basicMarquee(iterations = Int.MAX_VALUE) }
-            )
-
-
-            Row(verticalAlignment = Alignment.CenterVertically) {
-
-                IconButton(
-                    onClick = onDownloadClick,
-                    icon = if (isDownloaded) R.drawable.downloaded else R.drawable.download,
-                    color = if (isDownloaded) colorPalette().text else colorPalette().textDisabled,
-                    modifier = Modifier
-                        .size(16.dp)
-                )
-
-                Spacer(modifier = Modifier.padding(horizontal = 2.dp))
-
-                BasicText(
-                    text = authors ?: "",
-                    style = typography().xs.semiBold.secondary,
-                    maxLines = 1,
-                    overflow = TextOverflow.Clip,
-                    modifier = Modifier
-                        .weight(1f)
-                        .conditional(!disableScrollingText) { basicMarquee(iterations = Int.MAX_VALUE) }
-                )
-
-                duration?.let {
-                    BasicText(
-                        text = duration,
-                        style = typography().xxs.secondary.medium,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier
-                            .padding(top = 4.dp)
-                    )
-                }
-            }
-        }
-    }
-}
-*/
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalTextApi::class,
     ExperimentalAnimationApi::class
@@ -339,18 +213,12 @@ fun SongItem(
     thumbnailSizeDp: Dp,
     modifier: Modifier = Modifier,
     trailingContent: @Composable (() -> Unit)? = null,
-    onDownloadClick: () -> Unit,
-    downloadState: Int,
     isRecommended: Boolean = false,
     mediaItem: MediaItem,
     disableScrollingText: Boolean,
     isNowPlaying: Boolean = false,
     forceRecompose: Boolean = false
 ) {
-
-    var downloadedStateMedia by remember { mutableStateOf(DownloadedStateMedia.NOT_CACHED_OR_DOWNLOADED) }
-    downloadedStateMedia = if (!mediaItem.isLocal) downloadedStateMedia(mediaItem.mediaId)
-    else DownloadedStateMedia.DOWNLOADED
 
     val title = mediaItem.mediaMetadata.title.toString()
     val authors = mediaItem.mediaMetadata.artist.toString()
@@ -610,58 +478,6 @@ fun SongItem(
 
             Row(verticalAlignment = Alignment.CenterVertically) {
 
-                //Log.d("downloadState",downloadState.toString())
-
-                /*
-                if ((downloadState == Download.STATE_DOWNLOADING
-                            || downloadState == Download.STATE_QUEUED
-                            || downloadState == Download.STATE_RESTARTING
-                        )
-                    && !isDownloaded) {
-                    val context = LocalContext.current
-                    IconButton(
-                        onClick = {
-                            DownloadService.sendRemoveDownload(
-                                context,
-                                MyDownloadService::class.java,
-                                mediaId,
-                                false
-                            )
-                        },
-                        icon = R.drawable.download_progress,
-                        color = colorPalette().text,
-                        modifier = Modifier
-                            .size(16.dp)
-                    )
-                    /*
-                    CircularProgressIndicator(
-                        strokeWidth = 2.dp,
-                        color = colorPalette().text,
-                        modifier = Modifier
-                            .size(16.dp)
-                            .clickable {
-                                DownloadService.sendRemoveDownload(
-                                        context,
-                                        MyDownloadService::class.java,
-                                        mediaId,
-                                        false
-                                    )
-                            }
-                    )
-                     */
-                } else {
-                   IconButton(
-                        onClick = onDownloadClick,
-                        icon = if (isDownloaded) R.drawable.downloaded else R.drawable.download,
-                        color = if (isDownloaded) colorPalette().text else colorPalette().textDisabled,
-                        modifier = Modifier
-                            .size(16.dp)
-                    )
-                }
-
-                Spacer(modifier = Modifier.padding(horizontal = 2.dp))
-                */
-
                 BasicText(
                     text = authors,
                     style = typography().xs.semiBold.secondary,
@@ -684,41 +500,6 @@ fun SongItem(
                 }
 
                 Spacer(modifier = Modifier.padding(horizontal = 4.dp))
-
-                //println("downloadutil $mediaId $downloadState: $downloadState")
-
-                if ((downloadState == Download.STATE_DOWNLOADING
-                            || downloadState == Download.STATE_QUEUED
-                            || downloadState == Download.STATE_RESTARTING
-                            )
-                    && downloadedStateMedia == DownloadedStateMedia.NOT_CACHED_OR_DOWNLOADED) {
-                    //val context = LocalContext.current
-                    IconButton(
-                        onClick = {
-                            DownloadService.sendRemoveDownload(
-                                context,
-                                MyDownloadService::class.java,
-                                mediaItem.mediaId,
-                                false
-                            )
-                        },
-                        icon = R.drawable.download_progress,
-                        color = colorPalette().text,
-                        modifier = Modifier
-                            .size(20.dp)
-                    )
-                } else {
-                    IconButton(
-                        onClick = onDownloadClick,
-                        icon = downloadedStateMedia.icon,
-                        color = when(downloadedStateMedia) {
-                            DownloadedStateMedia.NOT_CACHED_OR_DOWNLOADED -> colorPalette().textDisabled
-                            else -> colorPalette().text
-                        },
-                        modifier = Modifier
-                            .size(20.dp)
-                    )
-                }
 
             }
         }

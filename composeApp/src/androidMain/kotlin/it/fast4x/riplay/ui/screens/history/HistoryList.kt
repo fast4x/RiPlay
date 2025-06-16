@@ -47,7 +47,7 @@ import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.NavigationBarPosition
 import it.fast4x.riplay.enums.ThumbnailRoundness
 import it.fast4x.riplay.models.DateAgo
-import it.fast4x.riplay.service.isLocal
+import it.fast4x.riplay.service.modern.isLocal
 import it.fast4x.riplay.ui.components.LocalMenuState
 import it.fast4x.riplay.ui.components.themed.HeaderWithIcon
 import it.fast4x.riplay.ui.components.themed.NonQueuedMediaItemMenuLibrary
@@ -58,10 +58,7 @@ import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.ui.styling.px
 import it.fast4x.riplay.utils.asMediaItem
 import it.fast4x.riplay.utils.disableScrollingTextKey
-import it.fast4x.riplay.utils.getDownloadState
-import it.fast4x.riplay.utils.isDownloadedSong
 import it.fast4x.riplay.utils.isNowPlaying
-import it.fast4x.riplay.utils.manageDownload
 import it.fast4x.riplay.utils.parentalControlEnabledKey
 import it.fast4x.riplay.utils.rememberPreference
 import it.fast4x.riplay.utils.thumbnailRoundnessKey
@@ -239,28 +236,11 @@ fun HistoryList(
                         key = { it.event.id }
                     ) { event ->
                         val isLocal by remember { derivedStateOf { event.song.asMediaItem.isLocal } }
-                        downloadState = getDownloadState(event.song.asMediaItem.mediaId)
-                        val isDownloaded =
-                            if (!isLocal) isDownloadedSong(event.song.asMediaItem.mediaId) else true
                         val checkedState = rememberSaveable { mutableStateOf(false) }
                         var forceRecompose by remember { mutableStateOf(false) }
 
                         SongItem(
                                     song = event.song,
-                                    onDownloadClick = {
-                                        binder?.cache?.removeResource(event.song.asMediaItem.mediaId)
-                                        CoroutineScope(Dispatchers.IO).launch {
-                                            Database.deleteFormat( event.song.asMediaItem.mediaId )
-                                        }
-
-                                        if (!isLocal)
-                                            manageDownload(
-                                                context = context,
-                                                mediaItem = event.song.asMediaItem,
-                                                downloadState = isDownloaded
-                                            )
-                                    },
-                                    downloadState = downloadState,
                                     thumbnailSizeDp = thumbnailSizeDp,
                                     thumbnailSizePx = thumbnailSizePx,
                                     onThumbnailContent = {
@@ -337,27 +317,10 @@ fun HistoryList(
                         key = { it.mediaId }
                     ) { song ->
                         val isLocal by remember { derivedStateOf { song.isLocal } }
-                        downloadState = getDownloadState(song.mediaId)
-                        val isDownloaded =
-                            if (!isLocal) isDownloadedSong(song.mediaId) else true
                         val checkedState = rememberSaveable { mutableStateOf(false) }
                         var forceRecompose by remember { mutableStateOf(false) }
                         SongItem(
                             song = song,
-                            onDownloadClick = {
-                                binder?.cache?.removeResource(song.mediaId)
-                                CoroutineScope(Dispatchers.IO).launch {
-                                    Database.deleteFormat( song.mediaId )
-                                }
-
-                                if (!isLocal)
-                                    manageDownload(
-                                        context = context,
-                                        mediaItem = song,
-                                        downloadState = isDownloaded
-                                    )
-                            },
-                            downloadState = downloadState,
                             thumbnailSizeDp = thumbnailSizeDp,
                             thumbnailSizePx = thumbnailSizePx,
                             onThumbnailContent = {

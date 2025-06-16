@@ -117,8 +117,6 @@ import it.fast4x.riplay.models.QueuedMediaItem
 import it.fast4x.riplay.models.Song
 import it.fast4x.riplay.models.asMediaItem
 import it.fast4x.riplay.service.BitmapProvider
-import it.fast4x.riplay.service.MyDownloadHelper
-import it.fast4x.riplay.service.MyDownloadService
 import it.fast4x.riplay.ui.components.themed.SmartMessage
 import it.fast4x.riplay.ui.widgets.PlayerHorizontalWidget
 import it.fast4x.riplay.ui.widgets.PlayerVerticalWidget
@@ -147,7 +145,6 @@ import it.fast4x.riplay.utils.isAtLeastAndroid81
 import it.fast4x.riplay.utils.isDiscordPresenceEnabledKey
 import it.fast4x.riplay.utils.isPauseOnVolumeZeroEnabledKey
 import it.fast4x.riplay.utils.loudnessBaseGainKey
-import it.fast4x.riplay.utils.manageDownload
 import it.fast4x.riplay.utils.mediaItems
 import it.fast4x.riplay.utils.minimumSilenceDurationKey
 import it.fast4x.riplay.utils.notificationPlayerFirstIconKey
@@ -206,7 +203,6 @@ import it.fast4x.riplay.utils.audioReverbPresetKey
 import it.fast4x.riplay.utils.bassboostEnabledKey
 import it.fast4x.riplay.utils.bassboostLevelKey
 import it.fast4x.riplay.utils.isInvincibilityEnabledKey
-import it.fast4x.riplay.utils.preCacheMedia
 import it.fast4x.riplay.utils.principalCache
 import it.fast4x.riplay.utils.volumeBoostLevelKey
 import kotlinx.coroutines.SupervisorJob
@@ -383,7 +379,7 @@ class PlayerServiceModern : MediaLibraryService(),
         showLikeButton = preferences.getBoolean(showLikeButtonBackgroundPlayerKey, true)
         showDownloadButton = preferences.getBoolean(showDownloadButtonBackgroundPlayerKey, true)
 
-        downloadCache = MyDownloadHelper.getDownloadCache(applicationContext) as SimpleCache
+        //downloadCache = MyDownloadHelper.getDownloadCache(applicationContext) as SimpleCache
 
 
         player = ExoPlayer.Builder(this)
@@ -434,11 +430,10 @@ class PlayerServiceModern : MediaLibraryService(),
         println("PlayerServiceModern.onCreate called")
 
         mediaLibrarySessionCallback =
-            MediaLibrarySessionCallback(this, Database, MyDownloadHelper)
+            MediaLibrarySessionCallback(this, Database)
             .apply {
                 binder = this@PlayerServiceModern.binder
                 toggleLike = ::toggleLike
-                toggleDownload = ::toggleDownload
                 toggleRepeat = ::toggleRepeat
                 toggleShuffle = ::toggleShuffle
                 startRadio = ::startRadio
@@ -488,21 +483,6 @@ class PlayerServiceModern : MediaLibraryService(),
 
         audioVolumeObserver = AudioVolumeObserver(this)
         audioVolumeObserver.register(AudioManager.STREAM_MUSIC, this)
-
-        // Download listener help to notify download change to UI
-        downloadListener = object : DownloadManager.Listener {
-            override fun onDownloadChanged(
-                downloadManager: DownloadManager,
-                download: Download,
-                finalException: Exception?
-            ) = run {
-                if (download.request.id != currentMediaItem.value?.mediaId) return@run
-                Timber.d("PlayerServiceModern onDownloadChanged current song ${currentMediaItem.value?.mediaId} state ${download.state} key ${download.request.id}")
-                println("PlayerServiceModern onDownloadChanged current song ${currentMediaItem.value?.mediaId} state ${download.state} key ${download.request.id}")
-                updateDownloadedState()
-            }
-        }
-        MyDownloadHelper.getDownloadManager(this).addListener(downloadListener)
 
         notificationActionReceiver = NotificationActionReceiver(player)
 
@@ -580,7 +560,7 @@ class PlayerServiceModern : MediaLibraryService(),
         currentSong.debounce(1000).collect(coroutineScope) { song ->
             Timber.d("PlayerServiceModern onCreate currentSong $song")
             println("PlayerServiceModern onCreate currentSong $song")
-            updateDownloadedState()
+
             Timber.d("PlayerServiceModern onCreate currentSongIsDownloaded ${currentSongStateDownload.value}")
             println("PlayerServiceModern onCreate currentSongIsDownloaded ${currentSongStateDownload.value}")
 
@@ -802,10 +782,6 @@ class PlayerServiceModern : MediaLibraryService(),
     override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
         Timber.d("PlayerServiceModern onMediaItemTransition mediaItem $mediaItem reason $reason")
         println("PlayerServiceModern onMediaItemTransition mediaItem $mediaItem reason $reason")
-
-        if (isPreCacheEnabled() && mediaItem != null) {
-            preCacheMedia(this,mediaItem)
-        }
 
         if (player.isPlaying && reason == MEDIA_ITEM_TRANSITION_REASON_SEEK) {
             player.prepare()
@@ -1241,23 +1217,24 @@ class PlayerServiceModern : MediaLibraryService(),
     fun createCacheDataSource(): CacheDataSource.Factory =
         CacheDataSource
             .Factory()
-            .setCache(downloadCache)
-            .setUpstreamDataSourceFactory(
-                CacheDataSource
-                    .Factory()
-                    .setCache(cache)
-                    .setUpstreamDataSourceFactory(
-                        DefaultDataSource.Factory(
-                            this,
-                            OkHttpDataSource.Factory(
-                                OkHttpClient
-                                    .Builder()
-                                    .proxy(Environment.proxy)
-                                    .build(),
-                            ),
-                        ),
-                    ),
-            ).setCacheWriteDataSinkFactory(null)
+            .setCache(cache)
+//            .setCache(downloadCache)
+//            .setUpstreamDataSourceFactory(
+//                CacheDataSource
+//                    .Factory()
+//                    .setCache(cache)
+//                    .setUpstreamDataSourceFactory(
+//                        DefaultDataSource.Factory(
+//                            this,
+//                            OkHttpDataSource.Factory(
+//                                OkHttpClient
+//                                    .Builder()
+//                                    .proxy(Environment.proxy)
+//                                    .build(),
+//                            ),
+//                        ),
+//                    ),
+//            ).setCacheWriteDataSinkFactory(null)
             .setFlags(FLAG_IGNORE_CACHE_ON_ERROR)
 
 
@@ -1502,10 +1479,6 @@ class PlayerServiceModern : MediaLibraryService(),
         binder.toggleLike()
     }
 
-    fun toggleDownload() {
-        binder.toggleDownload()
-    }
-
     fun toggleRepeat() {
         binder.toggleRepeat()
     }
@@ -1748,23 +1721,23 @@ class PlayerServiceModern : MediaLibraryService(),
 
     }
 
-    fun updateDownloadedState() {
-        if (currentSong.value == null) return
-        val mediaId = currentSong.value!!.id
-        val downloads = MyDownloadHelper.downloads.value
-        currentSongStateDownload.value = downloads[mediaId]?.state ?: Download.STATE_STOPPED
-        /*
-        if (downloads[currentSong.value?.id]?.state == Download.STATE_COMPLETED) {
-            currentSongIsDownloaded.value = true
-        } else {
-            currentSongIsDownloaded.value = false
-        }
-        */
-        Timber.d("PlayerServiceModern updateDownloadedState downloads count ${downloads.size} currentSongIsDownloaded ${currentSong.value?.id}")
-        println("PlayerServiceModern updateDownloadedState downloads count ${downloads.size} currentSongIsDownloaded ${currentSong.value?.id}")
-        updateDefaultNotification()
-
-    }
+//    fun updateDownloadedState() {
+//        if (currentSong.value == null) return
+//        val mediaId = currentSong.value!!.id
+//        val downloads = MyDownloadHelper.downloads.value
+//        currentSongStateDownload.value = downloads[mediaId]?.state ?: Download.STATE_STOPPED
+//        /*
+//        if (downloads[currentSong.value?.id]?.state == Download.STATE_COMPLETED) {
+//            currentSongIsDownloaded.value = true
+//        } else {
+//            currentSongIsDownloaded.value = false
+//        }
+//        */
+//        Timber.d("PlayerServiceModern updateDownloadedState downloads count ${downloads.size} currentSongIsDownloaded ${currentSong.value?.id}")
+//        println("PlayerServiceModern updateDownloadedState downloads count ${downloads.size} currentSongIsDownloaded ${currentSong.value?.id}")
+//        updateDefaultNotification()
+//
+//    }
 
     /**
      * This method should ONLY be called when the application (sc. activity) is in the foreground!
@@ -1793,11 +1766,11 @@ class PlayerServiceModern : MediaLibraryService(),
 
     class NotificationDismissReceiver : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
-            kotlin.runCatching {
-                context.stopService(context.intent<MyDownloadService>())
-            }.onFailure {
-                Timber.e("Failed NotificationDismissReceiver stopService in PlayerServiceModern (MyDownloadService) ${it.stackTraceToString()}")
-            }
+//            kotlin.runCatching {
+//                context.stopService(context.intent<MyDownloadService>())
+//            }.onFailure {
+//                Timber.e("Failed NotificationDismissReceiver stopService in PlayerServiceModern (MyDownloadService) ${it.stackTraceToString()}")
+//            }
             kotlin.runCatching {
                 context.stopService(context.intent<PlayerServiceModern>())
             }.onFailure {
@@ -1821,9 +1794,6 @@ class PlayerServiceModern : MediaLibraryService(),
                     binder.toggleLike()
                 }
 
-                Action.download.value -> {
-                    binder.toggleDownload()
-                }
 
                 Action.playradio.value -> {
                     binder.stopRadio()
@@ -2015,19 +1985,10 @@ class PlayerServiceModern : MediaLibraryService(),
                 }
             }
 
-            currentSong.value
-                ?.let { MyDownloadHelper.autoDownloadWhenLiked(this@PlayerServiceModern, it.asMediaItem) }
+//            currentSong.value
+//                ?.let { MyDownloadHelper.autoDownloadWhenLiked(this@PlayerServiceModern, it.asMediaItem) }
         }
 
-        fun toggleDownload() {
-            Timber.d("PlayerServiceModern toggleDownload currentMediaItem ${currentMediaItem.value} currentSongIsDownloaded ${currentSongStateDownload.value}")
-            println("PlayerServiceModern toggleDownload currentMediaItem ${currentMediaItem.value} currentSongIsDownloaded ${currentSongStateDownload.value}")
-            manageDownload(
-                context = this@PlayerServiceModern,
-                mediaItem = currentMediaItem.value ?: return,
-                downloadState = currentSongStateDownload.value == Download.STATE_COMPLETED
-            )
-        }
 
         fun toggleRepeat() {
             player.toggleRepeatMode()

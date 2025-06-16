@@ -40,12 +40,10 @@ import it.fast4x.riplay.enums.AlbumSwipeAction
 import it.fast4x.riplay.enums.DownloadedStateMedia
 import it.fast4x.riplay.enums.PlaylistSwipeAction
 import it.fast4x.riplay.enums.QueueSwipeAction
-import it.fast4x.riplay.service.isLocal
+import it.fast4x.riplay.service.modern.isLocal
 import it.fast4x.riplay.ui.components.themed.SmartMessage
 import it.fast4x.riplay.utils.albumSwipeLeftActionKey
 import it.fast4x.riplay.utils.albumSwipeRightActionKey
-import it.fast4x.riplay.utils.downloadedStateMedia
-import it.fast4x.riplay.utils.getDownloadState
 import it.fast4x.riplay.utils.isSwipeToActionEnabledKey
 import it.fast4x.riplay.utils.mediaItemToggleLike
 import it.fast4x.riplay.utils.playlistSwipeLeftActionKey
@@ -56,7 +54,6 @@ import it.fast4x.riplay.utils.queueSwipeRightActionKey
 import kotlinx.coroutines.flow.distinctUntilChanged
 import it.fast4x.riplay.colorPalette
 import it.fast4x.riplay.enums.PopupType
-import it.fast4x.riplay.service.MyDownloadService
 import it.fast4x.riplay.ui.screens.settings.isYouTubeSyncEnabled
 import it.fast4x.riplay.utils.addToYtLikedSong
 import org.dailyislam.android.utilities.isNetworkConnected
@@ -147,34 +144,6 @@ fun SwipeableQueueItem(
 ) {
     val context = LocalContext.current
 
-    val downloadState = getDownloadState(mediaItem.mediaId)
-    var downloadedStateMedia by remember { mutableStateOf(DownloadedStateMedia.NOT_CACHED_OR_DOWNLOADED) }
-    downloadedStateMedia = if (!mediaItem.isLocal) downloadedStateMedia(mediaItem.mediaId)
-    else DownloadedStateMedia.DOWNLOADED
-
-    val onDownloadButtonClick: () -> Unit = {
-        if (
-            (
-                    (downloadState == Download.STATE_DOWNLOADING
-                    || downloadState == Download.STATE_QUEUED
-                    || downloadState == Download.STATE_RESTARTING
-                    )  && downloadedStateMedia == DownloadedStateMedia.NOT_CACHED_OR_DOWNLOADED
-            ) ||
-            (
-                    downloadedStateMedia == DownloadedStateMedia.DOWNLOADED
-                   || downloadedStateMedia == DownloadedStateMedia.CACHED_AND_DOWNLOADED
-            )
-        ) {
-            DownloadService.sendRemoveDownload(
-                context,
-                MyDownloadService::class.java,
-                mediaItem.mediaId,
-                false
-            )
-        } else {
-            onDownload()
-        }
-    }
 
     var likedAt by rememberSaveable {
         mutableStateOf<Long?>(null)
@@ -217,7 +186,6 @@ fun SwipeableQueueItem(
     fun getActionCallback(actionName: QueueSwipeAction): () -> Unit {
         return when (actionName) {
             QueueSwipeAction.PlayNext -> onPlayNext
-            QueueSwipeAction.Download -> onDownloadButtonClick
             QueueSwipeAction.Favourite -> onFavourite
             QueueSwipeAction.RemoveFromQueue -> onRemoveFromQueue
             QueueSwipeAction.Enqueue -> onEnqueue
@@ -228,16 +196,8 @@ fun SwipeableQueueItem(
     val swipeRighCallback = getActionCallback(queueSwipeRightAction)
 
     SwipeableContent(
-        swipeToLeftIcon = queueSwipeLeftAction.getStateIcon(
-            likedAt,
-            downloadState,
-            downloadedStateMedia
-        ),
-        swipeToRightIcon = queueSwipeRightAction.getStateIcon(
-            likedAt,
-            downloadState,
-            downloadedStateMedia
-        ),
+        swipeToLeftIcon = null,
+        swipeToRightIcon = null,
         onSwipeToLeft = swipeLeftCallback,
         onSwipeToRight = swipeRighCallback,
         modifier = modifier
@@ -260,10 +220,6 @@ fun SwipeablePlaylistItem(
     var likedAt by rememberSaveable {
         mutableStateOf<Long?>(null)
     }
-    val downloadState = getDownloadState(mediaItem.mediaId)
-    var downloadedStateMedia by remember { mutableStateOf(DownloadedStateMedia.NOT_CACHED_OR_DOWNLOADED) }
-    downloadedStateMedia = if (!mediaItem.isLocal) downloadedStateMedia(mediaItem.mediaId)
-    else DownloadedStateMedia.DOWNLOADED
 
     LaunchedEffect(mediaItem.mediaId) {
         Database.likedAt(mediaItem.mediaId).distinctUntilChanged().collect { likedAt = it }
@@ -313,16 +269,8 @@ fun SwipeablePlaylistItem(
     val swipeRighCallback = getActionCallback(playlistSwipeRightAction)
 
     SwipeableContent(
-        swipeToLeftIcon =  playlistSwipeLeftAction.getStateIcon(
-            likedAt,
-            downloadState,
-            downloadedStateMedia
-        ),
-        swipeToRightIcon =  playlistSwipeRightAction.getStateIcon(
-            likedAt,
-            downloadState,
-            downloadedStateMedia
-        ),
+        swipeToLeftIcon =  null,
+        swipeToRightIcon =  null,
         onSwipeToLeft = swipeLeftCallback,
         onSwipeToRight = swipeRighCallback
     ) {

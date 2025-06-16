@@ -126,12 +126,9 @@ import it.fast4x.riplay.utils.enqueue
 import it.fast4x.riplay.utils.forcePlayAtIndex
 import it.fast4x.riplay.utils.forcePlayFromBeginning
 import it.fast4x.riplay.utils.formatAsTime
-import it.fast4x.riplay.utils.getDownloadState
-import it.fast4x.riplay.utils.isDownloadedSong
 import it.fast4x.riplay.utils.isLandscape
 import it.fast4x.riplay.utils.isNowPlaying
 import it.fast4x.riplay.utils.isRecommendationEnabledKey
-import it.fast4x.riplay.utils.manageDownload
 import it.fast4x.riplay.utils.maxSongsInQueueKey
 import it.fast4x.riplay.utils.recommendationsNumberKey
 import it.fast4x.riplay.utils.rememberPreference
@@ -706,90 +703,6 @@ fun BuiltInPlaylistSongs(
                         .fillMaxWidth()
                 ) {
 
-                    if (builtInPlaylist == BuiltInPlaylist.Favorites) {
-                        HeaderIconButton(
-                            icon = R.drawable.downloaded,
-                            enabled = songs.isNotEmpty(),
-                            color = if (songs.isNotEmpty()) colorPalette().text else colorPalette().textDisabled,
-                            onClick = {},
-                            modifier = Modifier
-                                .combinedClickable(
-                                    onClick = {
-                                        showConfirmDownloadAllDialog = true
-                                    },
-                                    onLongClick = {
-                                        SmartMessage(context.resources.getString(R.string.info_download_all_songs), context = context)
-                                    }
-                                )
-                        )
-                    }
-
-                    if (showConfirmDownloadAllDialog) {
-                        ConfirmationDialog(
-                            text = stringResource(R.string.do_you_really_want_to_download_all),
-                            onDismiss = { showConfirmDownloadAllDialog = false },
-                            onConfirm = {
-                                showConfirmDownloadAllDialog = false
-                                isRecommendationEnabled = false
-                                downloadState = Download.STATE_DOWNLOADING
-                                if (songs.isNotEmpty() == true)
-                                    songs.forEach {
-                                        binder?.cache?.removeResource(it.asMediaItem.mediaId)
-                                        CoroutineScope(Dispatchers.IO).launch {
-                                            Database.deleteFormat( it.asMediaItem.mediaId )
-                                        }
-                                        manageDownload(
-                                            context = context,
-                                            mediaItem = it.asMediaItem,
-                                            downloadState = false
-                                        )
-                                    }
-                            }
-                        )
-                    }
-
-                    if (builtInPlaylist == BuiltInPlaylist.Favorites || builtInPlaylist == BuiltInPlaylist.Downloaded) {
-                        HeaderIconButton(
-                            icon = R.drawable.download,
-                            enabled = songs.isNotEmpty(),
-                            color = if (songs.isNotEmpty()) colorPalette().text else colorPalette().textDisabled,
-                            onClick = {},
-                            modifier = Modifier
-                                .combinedClickable(
-                                    onClick = {
-                                        showConfirmDeleteDownloadDialog = true
-                                    },
-                                    onLongClick = {
-                                        SmartMessage(context.resources.getString(R.string.info_remove_all_downloaded_songs), context = context)
-                                    }
-                                )
-                        )
-
-                        if (showConfirmDeleteDownloadDialog) {
-                            ConfirmationDialog(
-                                text = stringResource(R.string.do_you_really_want_to_delete_download),
-                                onDismiss = { showConfirmDeleteDownloadDialog = false },
-                                onConfirm = {
-                                    showConfirmDeleteDownloadDialog = false
-                                    downloadState = Download.STATE_DOWNLOADING
-                                    if (songs.isNotEmpty() == true)
-                                        songs.forEach {
-                                            binder?.cache?.removeResource(it.asMediaItem.mediaId)
-                                            CoroutineScope(Dispatchers.IO).launch {
-                                                Database.deleteFormat( it.asMediaItem.mediaId )
-                                            }
-                                            manageDownload(
-                                                context = context,
-                                                mediaItem = it.asMediaItem,
-                                                downloadState = true
-                                            )
-                                        }
-                                }
-                            )
-                        }
-
-                    }
-
                     /*
                     HeaderIconButton(
                         icon = R.drawable.enqueue,
@@ -1166,8 +1079,6 @@ fun BuiltInPlaylistSongs(
                             isRecommended = true,
                             thumbnailSizeDp = thumbnailSizeDp,
                             thumbnailSizePx = thumbnailSizePx,
-                            onDownloadClick = {},
-                            downloadState = Download.STATE_STOPPED,
                             trailingContent = {},
                             onThumbnailContent = {},
                             modifier = Modifier
@@ -1185,9 +1096,6 @@ fun BuiltInPlaylistSongs(
                 //BehindMotionSwipe(
                 //    content = {
                         val isLocal by remember { derivedStateOf { song.asMediaItem.isLocal } }
-                        downloadState = getDownloadState(song.asMediaItem.mediaId)
-                        val isDownloaded =
-                            if (!isLocal) isDownloadedSong(song.asMediaItem.mediaId) else true
                         val checkedState = rememberSaveable { mutableStateOf(false) }
                 Modifier
                     .combinedClickable(
@@ -1236,20 +1144,6 @@ fun BuiltInPlaylistSongs(
                     .background(color = colorPalette().background0)
                 SongItem(
                             song = song,
-                            onDownloadClick = {
-                                binder?.cache?.removeResource(song.asMediaItem.mediaId)
-                                CoroutineScope(Dispatchers.IO).launch {
-                                    Database.deleteFormat( song.asMediaItem.mediaId )
-                                }
-
-                                if (!isLocal)
-                                    manageDownload(
-                                        context = context,
-                                        mediaItem = song.asMediaItem,
-                                        downloadState = isDownloaded
-                                    )
-                            },
-                            downloadState = downloadState,
                             thumbnailSizeDp = thumbnailSizeDp,
                             thumbnailSizePx = thumbnailSizePx,
                             onThumbnailContent = {

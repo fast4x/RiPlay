@@ -75,7 +75,6 @@ import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.service.modern.PlayerServiceModern
 import it.fast4x.riplay.models.Song
-import it.fast4x.riplay.service.MyDownloadHelper
 import it.fast4x.riplay.thumbnailShape
 import it.fast4x.riplay.typography
 import it.fast4x.riplay.ui.components.themed.IconButton
@@ -206,7 +205,6 @@ fun MiniPlayer(
                 Database.asyncTransaction {
                     if (like(mediaItem.mediaId, setDisLikeState(likedAt)) == 0)
                         insert(mediaItem, Song::toggleDislike)
-                    MyDownloadHelper.autoDownloadWhenLiked(context, mediaItem)
                     }
                 if (likedAt == null || likedAt!! > 0L)
                     SmartMessage(context.resources.getString(R.string.added_to_disliked), context = context)

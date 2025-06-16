@@ -51,7 +51,6 @@ import it.fast4x.riplay.utils.buttonzoomoutKey
 import it.fast4x.riplay.utils.applyIf
 import it.fast4x.riplay.utils.disableScrollingTextKey
 import it.fast4x.riplay.utils.isCompositionLaunched
-import it.fast4x.riplay.utils.isDownloadedSong
 import it.fast4x.riplay.utils.isLandscape
 import it.fast4x.riplay.utils.playerControlsTypeKey
 import it.fast4x.riplay.utils.playerInfoTypeKey
@@ -165,14 +164,6 @@ fun Controls(
         Database.likedAt(mediaItem.mediaId).distinctUntilChanged().collect { likedAt = it }
     }
 
-    var isDownloaded by rememberSaveable {
-        mutableStateOf(false)
-    }
-
-    isDownloaded = isDownloadedSong(mediaItem.mediaId)
-
-    //val menuState = LocalMenuState.current
-
 
     var showSelectDialog by remember { mutableStateOf(false) }
 
@@ -182,34 +173,6 @@ fun Controls(
     )
 
 
-    /*
-    var windows by remember {
-        mutableStateOf(binder.player.currentTimeline.windows)
-    }
-    var queuedSongs by remember {
-        mutableStateOf<List<Song>>(emptyList())
-    }
-    LaunchedEffect(mediaId, windows) {
-        Database.getSongsList(
-            windows.map {
-                it.mediaItem.mediaId
-            }
-        ).collect{ queuedSongs = it}
-    }
-
-    var totalPlayTimes = 0L
-    queuedSongs.forEach {
-        totalPlayTimes += it.durationText?.let { it1 ->
-            durationTextToMillis(it1)
-        }?.toLong() ?: 0
-    }
-     */
-
-    /*
-    var showLyrics by rememberSaveable {
-        mutableStateOf(false)
-    }
-     */
     val playerInfoType by rememberPreference(playerInfoTypeKey, PlayerInfoType.Essential)
     var playerSwapControlsWithTimeline by rememberPreference(
         playerSwapControlsWithTimelineKey,

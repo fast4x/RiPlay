@@ -299,7 +299,7 @@ fun OnlinePlayer(
 
                     lifecycleOwner.lifecycle.addObserver(this)
 
-                    initialize(listener, true, iFramePlayerOptions)
+                    initialize(listener, false, iFramePlayerOptions)
                 }
 
             }

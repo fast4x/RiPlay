@@ -84,7 +84,7 @@ import it.fast4x.riplay.models.Playlist
 import it.fast4x.riplay.models.PlaylistPreview
 import it.fast4x.riplay.models.Song
 import it.fast4x.riplay.models.SongPlaylistMap
-import it.fast4x.riplay.service.isLocal
+import it.fast4x.riplay.service.modern.isLocal
 import it.fast4x.riplay.ui.items.FolderItem
 import it.fast4x.riplay.ui.items.SongItem
 import it.fast4x.riplay.ui.styling.Dimensions
@@ -95,12 +95,9 @@ import it.fast4x.riplay.utils.addToPipedPlaylist
 import it.fast4x.riplay.utils.asMediaItem
 import it.fast4x.riplay.utils.enqueue
 import it.fast4x.riplay.utils.formatAsDuration
-import it.fast4x.riplay.utils.getDownloadState
 import it.fast4x.riplay.utils.getLikeState
 import it.fast4x.riplay.utils.getPipedSession
-import it.fast4x.riplay.utils.isDownloadedSong
 import it.fast4x.riplay.utils.isPipedEnabledKey
-import it.fast4x.riplay.utils.manageDownload
 import it.fast4x.riplay.utils.medium
 import it.fast4x.riplay.utils.menuStyleKey
 import it.fast4x.riplay.utils.playlistSortByKey
@@ -118,7 +115,6 @@ import kotlinx.coroutines.withContext
 import it.fast4x.riplay.colorPalette
 import it.fast4x.riplay.context
 import it.fast4x.riplay.enums.PopupType
-import it.fast4x.riplay.service.MyDownloadHelper
 import it.fast4x.riplay.typography
 import it.fast4x.riplay.ui.screens.player.fastPlay
 import it.fast4x.riplay.ui.screens.settings.isYouTubeSyncEnabled
@@ -164,7 +160,7 @@ fun InHistoryMediaItemMenu(
                         song.asMediaItem.mediaId,
                         System.currentTimeMillis()
                     )
-                    MyDownloadHelper.autoDownloadWhenLiked(context(),song.asMediaItem)
+
                 }
             }
             else {
@@ -252,7 +248,6 @@ fun InPlaylistMediaItemMenu(
                         song.asMediaItem.mediaId,
                         System.currentTimeMillis()
                     )
-                    MyDownloadHelper.autoDownloadWhenLiked(context(),song.asMediaItem)
                 }
             }
             else {
@@ -366,7 +361,6 @@ fun NonQueuedMediaItemMenuLibrary(
                             mediaItem.mediaId,
                             System.currentTimeMillis()
                         )
-                        MyDownloadHelper.autoDownloadWhenLiked(context(),mediaItem)
                     }
                 }
                 else {
@@ -410,7 +404,6 @@ fun NonQueuedMediaItemMenuLibrary(
                             mediaItem.mediaId,
                             System.currentTimeMillis()
                         )
-                        MyDownloadHelper.autoDownloadWhenLiked(context(),mediaItem)
                     }
                 }
                 else {
@@ -575,7 +568,6 @@ fun QueuedMediaItemMenu(
                             mediaItem.mediaId,
                             System.currentTimeMillis()
                         )
-                        MyDownloadHelper.autoDownloadWhenLiked(context(),mediaItem)
                     }
                 }
                 else {
@@ -620,7 +612,6 @@ fun QueuedMediaItemMenu(
                             mediaItem.mediaId,
                             System.currentTimeMillis()
                         )
-                        MyDownloadHelper.autoDownloadWhenLiked(context(),mediaItem)
                     }
                 }
                 else {
@@ -955,9 +946,6 @@ fun MediaItemMenu(
     var downloadState by remember {
         mutableStateOf(Download.STATE_STOPPED)
     }
-
-    downloadState = getDownloadState(mediaItem.mediaId)
-    val isDownloaded = if (!isLocal) isDownloadedSong(mediaItem.mediaId) else true
 
     var artistsList by persistList<Artist?>("home/artists")
     var artistIds = remember { mutableListOf("") }
@@ -1303,19 +1291,6 @@ fun MediaItemMenu(
                         mediaItem = mediaItem,
                         thumbnailUrl = mediaItem.mediaMetadata.artworkUri.thumbnail(thumbnailSizePx)
                             ?.toString(),
-                        onDownloadClick = {
-                            binder?.cache?.removeResource(mediaItem.mediaId)
-                            CoroutineScope(Dispatchers.IO).launch {
-                                Database.deleteFormat( mediaItem.mediaId )
-                            }
-                            if (!isLocal)
-                                manageDownload(
-                                    context = context,
-                                    mediaItem = mediaItem,
-                                    downloadState = isDownloaded
-                                )
-                        },
-                        downloadState = downloadState,
                         thumbnailSizeDp = thumbnailSizeDp,
                         modifier = Modifier
                             .weight(1f),
@@ -1336,7 +1311,6 @@ fun MediaItemMenu(
                                 } else if (!isYouTubeSyncEnabled()){
                                     Database.asyncTransaction {
                                         mediaItemToggleLike(mediaItem)
-                                        MyDownloadHelper.autoDownloadWhenLiked(context(), mediaItem)
                                     }
                                 } else {
                                     CoroutineScope(Dispatchers.IO).launch {
@@ -1352,7 +1326,6 @@ fun MediaItemMenu(
                                         if (like(mediaItem.mediaId, setDisLikeState(likedAt)) == 0) {
                                             insert(mediaItem, Song::toggleDislike)
                                         }
-                                        MyDownloadHelper.autoDownloadWhenLiked(context(), mediaItem)
                                     }
                                 } else {
                                     CoroutineScope(Dispatchers.IO).launch {
@@ -1490,19 +1463,6 @@ fun MediaItemMenu(
                         }
                     )
                 }
-
-                if (!isDownloaded)
-                    onDownload?.let { onDownload ->
-                        MenuEntry(
-                            icon = R.drawable.download,
-                            text = stringResource(R.string.download),
-                            onClick = {
-                                onDismiss()
-                                onDownload()
-                            }
-                        )
-                    }
-
 
                 onGoToEqualizer?.let { onGoToEqualizer ->
                     MenuEntry(
