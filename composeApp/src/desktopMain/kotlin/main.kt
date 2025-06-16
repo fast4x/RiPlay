@@ -4,10 +4,9 @@ import androidx.compose.ui.window.WindowState
 import androidx.compose.ui.window.application
 import coil3.annotation.ExperimentalCoilApi
 import coil3.compose.setSingletonImageLoaderFactory
-import database.MusicDatabaseDesktop
-import it.fast4x.rimusic.getAsyncImageLoader
-import it.fast4x.rimusic.ui.ThreeColumnsApp
-import it.fast4x.rimusic.ui.theme.DesktopTheme
+import it.fast4x.riplay.getAsyncImageLoader
+import it.fast4x.riplay.ui.ThreeColumnsApp
+import it.fast4x.riplay.ui.theme.DesktopTheme
 import org.jetbrains.compose.resources.painterResource
 import rimusic.composeapp.generated.resources.Res
 import rimusic.composeapp.generated.resources.app_icon

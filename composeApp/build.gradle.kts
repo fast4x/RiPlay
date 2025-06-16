@@ -367,7 +367,7 @@ android {
         }
     }
 
-    namespace = "it.fast4x.rimusic"
+    namespace = "it.fast4x.riplay"
 
     buildTypes {
         debug {

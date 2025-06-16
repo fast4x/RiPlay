@@ -10,10 +10,7 @@ import androidx.room.Query
 import androidx.room.RewriteQueriesToDropUnusedColumns
 import androidx.room.RoomDatabase
 import androidx.room.RoomDatabaseConstructor
-import androidx.room.RoomWarnings
 import androidx.room.RoomWarnings.Companion.QUERY_MISMATCH
-import androidx.room.Transaction
-import androidx.room.Update
 import androidx.room.Upsert
 import androidx.sqlite.driver.bundled.BundledSQLiteDriver
 import database.entities.Album
@@ -28,7 +25,7 @@ import database.entities.SongAlbumMap
 import database.entities.SongArtistMap
 import database.entities.SongEntity
 import database.entities.SongPlaylistMap
-import it.fast4x.rimusic.LOCAL_KEY_PREFIX
+import it.fast4x.riplay.LOCAL_KEY_PREFIX
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 
