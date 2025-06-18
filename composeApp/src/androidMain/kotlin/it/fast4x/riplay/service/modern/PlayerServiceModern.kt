@@ -1210,7 +1210,7 @@ class PlayerServiceModern : MediaLibraryService(),
     }
 
     private fun createMediaSourceFactory() = DefaultMediaSourceFactory(
-        createSimpleDataSourceFactory( coroutineScope ),
+            createSimpleDataSourceFactory( coroutineScope ),
         DefaultExtractorsFactory()
     )
 
@@ -1559,15 +1559,6 @@ class PlayerServiceModern : MediaLibraryService(),
         binder.actionSearch()
     }
 
-//    override fun onPositionDiscontinuity(
-//        oldPosition: Player.PositionInfo,
-//        newPosition: Player.PositionInfo,
-//        reason: Int
-//    ) {
-//        Timber.d("PlayerServiceModern onPositionDiscontinuity oldPosition ${oldPosition.mediaItemIndex} newPosition ${newPosition.mediaItemIndex} reason $reason")
-//        println("PlayerServiceModern onPositionDiscontinuity oldPosition ${oldPosition.mediaItemIndex} newPosition ${newPosition.mediaItemIndex} reason $reason")
-//        super.onPositionDiscontinuity(oldPosition, newPosition, reason)
-//    }
 
     private fun savePlayerQueue() {
         Timber.d("PlayerServiceModern onCreate savePersistentQueue")
@@ -1647,8 +1638,6 @@ class PlayerServiceModern : MediaLibraryService(),
     @FlowPreview
     @UnstableApi
     private fun restoreFromDiskPlayerQueue() {
-        //if (!isPersistentQueueEnabled) return
-        //Log.d("mediaItem", "QueuePersistentEnabled Restore Initial")
 
         runCatching {
             filesDir.resolve("persistentQueue.data").inputStream().use { fis ->
@@ -1678,18 +1667,12 @@ class PlayerServiceModern : MediaLibraryService(),
             }
 
         }.onFailure {
-            //it.printStackTrace()
             Timber.e(it.stackTraceToString())
         }
-
-        //Log.d("mediaItem", "QueuePersistentEnabled Restored ${player.currentTimeline.mediaItems.size}")
 
     }
 
     private fun saveToDiskPlayerQueue() {
-
-        //if (!isPersistentQueueEnabled) return
-        //Log.d("mediaItem", "QueuePersistentEnabled Save ${player.currentTimeline.mediaItems.size}")
 
         val persistentQueue = PersistentQueue(
             title = "title",
@@ -1721,23 +1704,6 @@ class PlayerServiceModern : MediaLibraryService(),
 
     }
 
-//    fun updateDownloadedState() {
-//        if (currentSong.value == null) return
-//        val mediaId = currentSong.value!!.id
-//        val downloads = MyDownloadHelper.downloads.value
-//        currentSongStateDownload.value = downloads[mediaId]?.state ?: Download.STATE_STOPPED
-//        /*
-//        if (downloads[currentSong.value?.id]?.state == Download.STATE_COMPLETED) {
-//            currentSongIsDownloaded.value = true
-//        } else {
-//            currentSongIsDownloaded.value = false
-//        }
-//        */
-//        Timber.d("PlayerServiceModern updateDownloadedState downloads count ${downloads.size} currentSongIsDownloaded ${currentSong.value?.id}")
-//        println("PlayerServiceModern updateDownloadedState downloads count ${downloads.size} currentSongIsDownloaded ${currentSong.value?.id}")
-//        updateDefaultNotification()
-//
-//    }
 
     /**
      * This method should ONLY be called when the application (sc. activity) is in the foreground!
@@ -1755,22 +1721,11 @@ class PlayerServiceModern : MediaLibraryService(),
             return super.getNotificationContentTitle(customMetadata)
         }
 
-//        override fun getNotificationContentText(metadata: MediaMetadata): CharSequence? {
-//            val customMetadata = MediaMetadata.Builder()
-//                .setArtist(cleanPrefix(metadata.artist?.toString() ?: ""))
-//                .build()
-//            return super.getNotificationContentText(customMetadata)
-//        }
     }
 
 
     class NotificationDismissReceiver : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
-//            kotlin.runCatching {
-//                context.stopService(context.intent<MyDownloadService>())
-//            }.onFailure {
-//                Timber.e("Failed NotificationDismissReceiver stopService in PlayerServiceModern (MyDownloadService) ${it.stackTraceToString()}")
-//            }
             kotlin.runCatching {
                 context.stopService(context.intent<PlayerServiceModern>())
             }.onFailure {

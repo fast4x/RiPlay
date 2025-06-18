@@ -81,25 +81,25 @@ fun PlayerError(error: PlaybackException) {
     var errorCounter = 0
     errorCounter = errorCounter.plus(1)
 
-    if (errorCounter < 2) {
-        Timber.e("Playback error: ${error.cause?.cause}")
-        SmartMessage(
-            if (binder?.player?.currentWindow?.mediaItem?.isLocal == true) localMusicFileNotFoundError
-            else when (error.cause?.cause) {
-                is UnresolvedAddressException, is UnknownHostException -> networkerror
-                is PlayableFormatNotFoundException -> notfindplayableaudioformaterror
-                is UnplayableException -> unplayableerror
-                is LoginRequiredException -> loginrequirederror
-                is VideoIdMismatchException -> videoidmismatcherror
-                is PlayableFormatNonSupported -> formatUnsupported
-                is NoInternetException -> nointerneterror
-                is TimeoutException -> timeouterror
-                is UnknownException -> unknownerror
-                is FakeException -> unknownerror
-                else -> unknownerror
-            }, PopupType.Warning, context = context
-        )
-    }
+//    if (errorCounter < 2) {
+//        Timber.e("Playback error: ${error.cause?.cause}")
+//        SmartMessage(
+//            if (binder?.player?.currentWindow?.mediaItem?.isLocal == true) localMusicFileNotFoundError
+//            else when (error.cause?.cause) {
+//                is UnresolvedAddressException, is UnknownHostException -> networkerror
+//                is PlayableFormatNotFoundException -> notfindplayableaudioformaterror
+//                is UnplayableException -> unplayableerror
+//                is LoginRequiredException -> loginrequirederror
+//                is VideoIdMismatchException -> videoidmismatcherror
+//                is PlayableFormatNonSupported -> formatUnsupported
+//                is NoInternetException -> nointerneterror
+//                is TimeoutException -> timeouterror
+//                is UnknownException -> unknownerror
+//                is FakeException -> unknownerror
+//                else -> unknownerror
+//            }, PopupType.Warning, context = context
+//        )
+//    }
 
 }
 

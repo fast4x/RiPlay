@@ -1,16 +1,28 @@
 package it.fast4x.riplay.ui.screens.player.online
 
+import android.view.LayoutInflater
+import android.view.ViewGroup
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -23,6 +35,12 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -40,25 +58,39 @@ import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.R
 import it.fast4x.riplay.colorPalette
 import it.fast4x.riplay.context
+import it.fast4x.riplay.enums.BackgroundProgress
 import it.fast4x.riplay.enums.ColorPaletteMode
+import it.fast4x.riplay.enums.NavRoutes
+import it.fast4x.riplay.enums.PlayerBackgroundColors
 import it.fast4x.riplay.enums.PlayerType
 import it.fast4x.riplay.models.Info
 import it.fast4x.riplay.models.ui.toUiMedia
+import it.fast4x.riplay.ui.components.LocalMenuState
+import it.fast4x.riplay.ui.components.themed.PlayerMenu
+import it.fast4x.riplay.ui.styling.collapsedPlayerProgressBar
+import it.fast4x.riplay.ui.styling.favoritesOverlay
+import it.fast4x.riplay.utils.backgroundProgressKey
 import it.fast4x.riplay.utils.blurStrengthKey
 import it.fast4x.riplay.utils.colorPaletteModeKey
 import it.fast4x.riplay.utils.controlsExpandedKey
+import it.fast4x.riplay.utils.disableScrollingTextKey
+import it.fast4x.riplay.utils.effectRotationKey
 import it.fast4x.riplay.utils.expandedplayerKey
 import it.fast4x.riplay.utils.isExplicit
 import it.fast4x.riplay.utils.isShowingLyricsKey
 import it.fast4x.riplay.utils.lastVideoIdKey
 import it.fast4x.riplay.utils.lastVideoSecondsKey
+import it.fast4x.riplay.utils.playerBackgroundColorsKey
 import it.fast4x.riplay.utils.playerTypeKey
 import it.fast4x.riplay.utils.rememberPreference
+import it.fast4x.riplay.utils.showButtonPlayerMenuKey
+import it.fast4x.riplay.utils.showTopActionsBarKey
 import it.fast4x.riplay.utils.timelineExpandedKey
 import it.fast4x.riplay.utils.titleExpandedKey
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.withContext
+import kotlin.math.absoluteValue
 
 
 @UnstableApi
@@ -184,38 +216,150 @@ fun OnlinePlayer(
 
     val colorPaletteMode by rememberPreference(colorPaletteModeKey, ColorPaletteMode.Dark)
 
+    val showTopActionsBar by rememberPreference(showTopActionsBarKey, true)
+    val windowInsets = WindowInsets.systemBars
+    val playerBackgroundColors by rememberPreference(
+        playerBackgroundColorsKey,
+        PlayerBackgroundColors.BlurredCoverColor
+    )
+    val color = colorPalette()
+    var dynamicColorPalette by remember { mutableStateOf( color ) }
+    var isRotated by rememberSaveable { mutableStateOf(false) }
+    val rotationAngle by animateFloatAsState(
+        targetValue = if (isRotated) 360F else 0f,
+        animationSpec = tween(durationMillis = 200), label = ""
+    )
+    val effectRotationEnabled by rememberPreference(effectRotationKey, true)
+    val showButtonPlayerMenu by rememberPreference(showButtonPlayerMenuKey, false)
+    val menuState = LocalMenuState.current
+    val disableScrollingText by rememberPreference(disableScrollingTextKey, false)
+    val backgroundProgress by rememberPreference(
+        backgroundProgressKey,
+        BackgroundProgress.MiniPlayer
+    )
+
     Column(
         verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
-            .padding(top = WindowInsets.systemBars
-                .asPaddingValues()
-                .calculateTopPadding(),
+            .padding(
+                top = WindowInsets.systemBars
+                    .asPaddingValues()
+                    .calculateTopPadding(),
                 bottom = WindowInsets.systemBars
                     .asPaddingValues()
                     .calculateBottomPadding()
             )
             .fillMaxSize()
+            .drawBehind {
+                if (backgroundProgress == BackgroundProgress.Both || backgroundProgress == BackgroundProgress.Player) {
+                    drawRect(
+                        color = color.favoritesOverlay,
+                        topLeft = Offset.Zero,
+                        size = Size(
+                            width = positionAndDuration.first.toFloat() /
+                                    positionAndDuration.second.absoluteValue * size.width,
+                            height = size.maxDimension
+                        )
+                    )
+                }
+            }
 
     ) {
-//        Box{
-//            Image(
-//                painter = painterResource(R.drawable.musical_notes),
-//                contentDescription = null,
-//                colorFilter = ColorFilter.tint(colorPalette().collapsedPlayerProgressBar),
-//                modifier = Modifier
-//                    .clickable {
-//                        onSwitchToAudioPlayer()
-//                    }
-//                    .padding(top = 30.dp, start = 10.dp)
-//                    .size(24.dp)
-//            )
-//        }
-        val onlinePlayerView = YouTubePlayerView(context = context())
+
+        if (showTopActionsBar) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier
+                    .padding(
+                        windowInsets
+                            .only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)
+                            .asPaddingValues()
+                    )
+                    //.padding(top = 5.dp)
+                    .fillMaxWidth(0.9f)
+                    .height(30.dp)
+            ) {
+
+                Image(
+                    painter = painterResource(R.drawable.chevron_down),
+                    contentDescription = null,
+                    colorFilter = ColorFilter.tint(if (playerBackgroundColors == PlayerBackgroundColors.MidnightOdyssey) dynamicColorPalette.background2 else colorPalette().collapsedPlayerProgressBar),
+                    modifier = Modifier
+                        .clickable {
+                            onDismiss()
+                        }
+                        .rotate(rotationAngle)
+                        //.padding(10.dp)
+                        .size(24.dp)
+                )
+
+
+                Image(
+                    painter = painterResource(R.drawable.app_icon),
+                    contentDescription = null,
+                    colorFilter = ColorFilter.tint(if (playerBackgroundColors == PlayerBackgroundColors.MidnightOdyssey) dynamicColorPalette.background2 else colorPalette().collapsedPlayerProgressBar),
+                    modifier = Modifier
+                        .clickable {
+                            onDismiss()
+                            navController.navigate(NavRoutes.home.name)
+                        }
+                        .rotate(rotationAngle)
+                        //.padding(10.dp)
+                        .size(24.dp)
+
+                )
+
+                if (!showButtonPlayerMenu)
+                    Image(
+                        painter = painterResource(R.drawable.ellipsis_vertical),
+                        contentDescription = null,
+                        colorFilter = ColorFilter.tint(if (playerBackgroundColors == PlayerBackgroundColors.MidnightOdyssey) dynamicColorPalette.background2 else colorPalette().collapsedPlayerProgressBar),
+                        modifier = Modifier
+                            .clickable {
+                                menuState.display {
+                                    PlayerMenu(
+                                        navController = navController,
+                                        onDismiss = menuState::hide,
+                                        mediaItem = mediaItem,
+                                        binder = binder ?: return@display,
+                                        onClosePlayer = {
+                                            onDismiss()
+                                        },
+                                        onInfo = {
+                                            navController.navigate("${NavRoutes.videoOrSongInfo.name}/${mediaItem.mediaId}")
+                                        },
+                                        disableScrollingText = disableScrollingText
+                                    )
+                                }
+                            }
+                            .rotate(rotationAngle)
+                            //.padding(10.dp)
+                            .size(24.dp)
+
+                    )
+
+            }
+            Spacer(
+                modifier = Modifier
+                    .height(5.dp)
+                    .padding(
+                        windowInsets
+                            .only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)
+                            .asPaddingValues()
+                    )
+            )
+        }
+
+        //val onlinePlayerView = YouTubePlayerView(context = context())
+        val inflatedView = LayoutInflater.from(context()).inflate(R.layout.youtube_player, null, false)
+        val onlinePlayerView: YouTubePlayerView = inflatedView as YouTubePlayerView
         val customPLayerUi = onlinePlayerView.inflateCustomPlayerUi(R.layout.ayp_default_player_ui)
         var player = remember { mutableStateOf<YouTubePlayer?>(null) }
         val playerState = remember { mutableStateOf(PlayerConstants.PlayerState.UNSTARTED) }
         var shouldBePlaying by remember { mutableStateOf(false) }
+        val enableBackgroundPlayback by remember { mutableStateOf(false) }
 
         LaunchedEffect(playerState.value) {
             shouldBePlaying = playerState.value == PlayerConstants.PlayerState.PLAYING
@@ -223,16 +367,7 @@ fun OnlinePlayer(
 
 
         AndroidView(
-            modifier = Modifier,
-                //.fillMaxSize(),
-                //.padding(8.dp)
-                //.clip(RoundedCornerShape(10.dp))
-                //.zIndex(2f),
             factory = {
-
-
-
-
 
 //                val iFramePlayerOptions = IFramePlayerOptions.Builder()
 //                    .controls(1) // show/hide controls
@@ -268,10 +403,12 @@ fun OnlinePlayer(
                     }
 
                     override fun onCurrentSecond(youTubePlayer: YouTubePlayer, second: Float) {
+                        super.onCurrentSecond(youTubePlayer, second)
                         currentSecond = second
                         onCurrentSecond(second)
                         lastYTVideoSeconds = second
                         lastYTVideoId = mediaItem.mediaId
+
                     }
 
                     override fun onVideoDuration(youTubePlayer: YouTubePlayer, duration: Float) {
@@ -295,11 +432,18 @@ fun OnlinePlayer(
                 }
 
                 onlinePlayerView.apply {
+                    layoutParams = ViewGroup.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.WRAP_CONTENT
+                    )
                     enableAutomaticInitialization = false
 
-                    lifecycleOwner.lifecycle.addObserver(this)
+                    if (enableBackgroundPlayback)
+                        enableBackgroundPlayback(true)
+                    else
+                        lifecycleOwner.lifecycle.addObserver(this)
 
-                    initialize(listener, false, iFramePlayerOptions)
+                    initialize(listener, iFramePlayerOptions)
                 }
 
             }
@@ -330,6 +474,9 @@ fun OnlinePlayer(
                 isExplicit = mediaItem.isExplicit,
                 onPlay = { player.value?.play() },
                 onPause = { player.value?.pause() },
+                onSeekTo = { player.value?.seekTo(it) },
+                onNext = { },
+                onPrevious = {  },
             )
         }
 
@@ -338,7 +485,7 @@ fun OnlinePlayer(
         Row {
             controlsContent(
                 Modifier
-                    .padding(vertical = 8.dp)
+                    .padding(vertical = 30.dp)
                     .border(BorderStroke(1.dp, colorPalette().red))
             )
         }

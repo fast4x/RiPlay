@@ -24,6 +24,7 @@ import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -64,6 +65,7 @@ import it.fast4x.riplay.utils.semiBold
 import it.fast4x.riplay.utils.showRemainingSongTimeKey
 import it.fast4x.riplay.utils.textoutlineKey
 import it.fast4x.riplay.utils.transparentbarKey
+import kotlinx.coroutines.delay
 import org.jetbrains.compose.resources.painterResource
 import riplay.composeapp.generated.resources.Res
 import riplay.composeapp.generated.resources.play
@@ -71,17 +73,14 @@ import riplay.composeapp.generated.resources.play
 @OptIn(UnstableApi::class)
 @Composable
 fun GetSeekBar(
-    //player: YouTubePlayer?,
     position: Long,
     duration: Long,
     mediaId: String,
-    media: UiMedia
+    media: UiMedia,
+    onSeekTo: (Float) -> Unit = {},
+    onPause: () -> Unit = {},
+    onPlay: () -> Unit = {},
 ) {
-
-    println("Controls GetSeekBar")
-    //val binder = LocalPlayerServiceBinder.current
-    //binder?.player ?: return
-
 
     val playerTimelineType by rememberPreference(
         playerTimelineTypeKey,
@@ -90,6 +89,13 @@ fun GetSeekBar(
     var scrubbingPosition by remember(mediaId) {
         mutableStateOf<Long?>(null)
     }
+    LaunchedEffect(scrubbingPosition) {
+        if (scrubbingPosition != null) {
+            onSeekTo(scrubbingPosition!!.toFloat())
+        }
+    }
+
+    println("GetSeekBar is called with $position and $duration")
     var transparentbar by rememberPreference(transparentbarKey, true)
     val scope = rememberCoroutineScope()
     val animatedPosition = remember { Animatable(position.toFloat()) }
@@ -320,7 +326,7 @@ fun GetSeekBar(
                     interactionSource = remember { MutableInteractionSource() },
                     indication = ripple(false),
                     onClick = {
-                        //binder.player.seekTo(position - 5000)
+                        onSeekTo(( position - 5).toFloat())
                     }
                 )
         ){
@@ -348,13 +354,13 @@ fun GetSeekBar(
             }
             Box{
                 BasicText(
-                    text = formatAsDuration(scrubbingPosition ?: position),
+                    text = formatAsDuration(position * 1000),
                     style = typography().xxs.semiBold,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
                 BasicText(
-                    text = formatAsDuration(scrubbingPosition ?: position),
+                    text = formatAsDuration(position * 1000),
                     style = typography().xxs.semiBold.merge(TextStyle(
                         drawStyle = Stroke(width = 1.0f, join = StrokeJoin.Round),
                         color = if (!textoutline) Color.Transparent else if (colorPaletteMode == ColorPaletteMode.Light || (colorPaletteMode == ColorPaletteMode.System && (!isSystemInDarkTheme()))) Color.White.copy(0.5f)
@@ -365,131 +371,125 @@ fun GetSeekBar(
             }
         }
 
-// TODO CHECK SEEKBAR TYPE
-//        if (duration != C.TIME_UNSET) {
-//            val positionAndDuration = binder.player.positionAndDurationState()
-//            var timeRemaining by remember { mutableIntStateOf(0) }
-//            timeRemaining =
-//                positionAndDuration.value.second.toInt() - positionAndDuration.value.first.toInt()
-//            var paused by remember { mutableStateOf(false) }
-//
-//            if (pauseBetweenSongs != PauseBetweenSongs.`0`)
-//                LaunchedEffect(timeRemaining) {
-//                    if (
-//                    //formatAsDuration(timeRemaining.toLong()) == "0:00"
-//                        timeRemaining.toLong() < 500
-//                    ) {
-//                        paused = true
-//                        player.pause()
-//                        delay(pauseBetweenSongs.number)
-//                        //binder.player.seekTo(position+2000)
-//                        player.play()
-//                        paused = false
-//                    }
-//                }
-//
-//            if (!paused) {
-//
-//                if (showRemainingSongTime)
-//                    Box(
-//
-//                    ){
-//                    BasicText(
-//                        text = "-${formatAsDuration(timeRemaining.toLong())}",
-//                        style = typography().xxs.semiBold,
-//                        maxLines = 1,
-//                        overflow = TextOverflow.Ellipsis,
-//                        modifier = Modifier
-//                            .padding(horizontal = 5.dp)
-//                    )
-//                    BasicText(
-//                        text = "-${formatAsDuration(timeRemaining.toLong())}",
-//                        style = typography().xxs.semiBold.merge(TextStyle(
-//                            drawStyle = Stroke(width = 1.0f, join = StrokeJoin.Round),
-//                            color = if (!textoutline) Color.Transparent else if (colorPaletteMode == ColorPaletteMode.Light || (colorPaletteMode == ColorPaletteMode.System && (!isSystemInDarkTheme()))) Color.White.copy(0.5f)
-//                            else Color.Black)),
-//                        maxLines = 1,
-//                        overflow = TextOverflow.Ellipsis,
-//                        modifier = Modifier
-//                            .padding(horizontal = 5.dp)
-//                    )
-//
-//            } else {
-//               /* Image(
-//                    painter = painterResource(R.drawable.pause),
-//                    colorFilter = ColorFilter.tint(colorPalette().accent),
-//                    modifier = Modifier
-//                        .size(20.dp),
-//                    contentDescription = "Background Image",
-//                    contentScale = ContentScale.Fit
-//                ) */
-//            }
-//
-//            /*
-//            BasicText(
-//                text = "-${formatAsDuration(timeRemaining.toLong())} / ${formatAsDuration(duration)}",
-//                style = typography().xxs.semiBold,
-//                maxLines = 1,
-//                overflow = TextOverflow.Ellipsis,
-//            )
-//             */
-//            Row(
-//                modifier = Modifier
-//                    .clickable(
-//                        interactionSource = remember { MutableInteractionSource() },
-//                        indication = ripple(false),
-//                        onClick = {
-//                           // binder.player.seekTo(position + 5000)
-//                        }
-//                    )
-//            ){
-//                Box{
-//                    BasicText(
-//                        text = formatAsDuration(duration),
-//                        style = typography().xxs.semiBold,
-//                        maxLines = 1,
-//                        overflow = TextOverflow.Ellipsis,
-//                    )
-//                    BasicText(
-//                        text = formatAsDuration(duration),
-//                        style = typography().xxs.semiBold.merge(
-//                            TextStyle(
-//                                drawStyle = Stroke(width = 1.0f, join = StrokeJoin.Round),
-//                                color = if (!textoutline) Color.Transparent else if (colorPaletteMode == ColorPaletteMode.Light || (colorPaletteMode == ColorPaletteMode.System && (!isSystemInDarkTheme()))) Color.White.copy(
-//                                    0.5f
-//                                )
-//                                else Color.Black
-//                            )
-//                        ),
-//                        maxLines = 1,
-//                        overflow = TextOverflow.Ellipsis,
-//                    )
-//                }
-//                Box(
-//                    modifier = Modifier
-//                        .align(Alignment.CenterVertically)
-//                ){
-//                    Icon(
-//                        painter =  painterResource(Res.drawable.play),
-//                        contentDescription = "",
-//                        tint = colorPalette().text,
-//                        modifier = Modifier
-//                            .size(10.dp)
-//                            .offset((5).dp,0.dp)
-//                    )
-//                    Icon(
-//                        painter =  painterResource(Res.drawable.play),
-//                        contentDescription = "",
-//                        tint = colorPalette().text,
-//                        modifier = Modifier
-//                            .size(10.dp)
-//                    )
-//                }
-//            }
-//
-//          }
-//
-//        }
+
+        if (duration != C.TIME_UNSET) {
+            var timeRemaining by remember { mutableIntStateOf( 0 ) }
+            timeRemaining = (duration.toInt() - position.toInt()) * 1000
+            var paused by remember { mutableStateOf(false) }
+
+            if (pauseBetweenSongs != PauseBetweenSongs.`0`)
+                LaunchedEffect(timeRemaining) {
+                    if (
+                        timeRemaining.toLong() < 500
+                    ) {
+                        paused = true
+                        onPause()
+                        delay(pauseBetweenSongs.number)
+                        onPlay()
+                        paused = false
+                    }
+                }
+
+            if (!paused) {
+
+                if (showRemainingSongTime)
+                    Box {
+                    BasicText(
+                        text = "-${formatAsDuration(timeRemaining.toLong())}",
+                        style = typography().xxs.semiBold,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier
+                            .padding(horizontal = 5.dp)
+                    )
+                    BasicText(
+                        text = "-${formatAsDuration(timeRemaining.toLong())}",
+                        style = typography().xxs.semiBold.merge(TextStyle(
+                            drawStyle = Stroke(width = 1.0f, join = StrokeJoin.Round),
+                            color = if (!textoutline) Color.Transparent else if (colorPaletteMode == ColorPaletteMode.Light || (colorPaletteMode == ColorPaletteMode.System && (!isSystemInDarkTheme()))) Color.White.copy(0.5f)
+                            else Color.Black)),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier
+                            .padding(horizontal = 5.dp)
+                    )
+
+            } else {
+               /* Image(
+                    painter = painterResource(R.drawable.pause),
+                    colorFilter = ColorFilter.tint(colorPalette().accent),
+                    modifier = Modifier
+                        .size(20.dp),
+                    contentDescription = "Background Image",
+                    contentScale = ContentScale.Fit
+                ) */
+            }
+
+            /*
+            BasicText(
+                text = "-${formatAsDuration(timeRemaining.toLong())} / ${formatAsDuration(duration)}",
+                style = typography().xxs.semiBold,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+             */
+            Row(
+                modifier = Modifier
+                    .clickable(
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = ripple(false),
+                        onClick = {
+                            onSeekTo(( position + 5).toFloat())
+                        }
+                    )
+            ){
+                Box{
+                    BasicText(
+                        text = formatAsDuration(duration * 1000),
+                        style = typography().xxs.semiBold,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                    BasicText(
+                        text = formatAsDuration(duration * 1000),
+                        style = typography().xxs.semiBold.merge(
+                            TextStyle(
+                                drawStyle = Stroke(width = 1.0f, join = StrokeJoin.Round),
+                                color = if (!textoutline) Color.Transparent else if (colorPaletteMode == ColorPaletteMode.Light || (colorPaletteMode == ColorPaletteMode.System && (!isSystemInDarkTheme()))) Color.White.copy(
+                                    0.5f
+                                )
+                                else Color.Black
+                            )
+                        ),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.CenterVertically)
+                ){
+                    Icon(
+                        painter =  painterResource(Res.drawable.play),
+                        contentDescription = "",
+                        tint = colorPalette().text,
+                        modifier = Modifier
+                            .size(10.dp)
+                            .offset((5).dp,0.dp)
+                    )
+                    Icon(
+                        painter =  painterResource(Res.drawable.play),
+                        contentDescription = "",
+                        tint = colorPalette().text,
+                        modifier = Modifier
+                            .size(10.dp)
+                    )
+                }
+            }
+
+          }
+
+        }
     }
 
 

@@ -454,11 +454,8 @@ fun ControlsModern(
                   indication = ripple(bounded = true),
                   interactionSource = remember { MutableInteractionSource() },
                   onClick = {
-                      if (jumpPrevious == "") jumpPrevious = "0"
-//                      if(!binder.player.hasPreviousMediaItem() || (jumpPrevious != "0" && binder.player.currentPosition > jumpPrevious.toInt()*1000)){
-//                          binder.player.seekTo(0)
-//                      }
-//                      else binder.player.playPrevious()
+                      //if (jumpPrevious == "") jumpPrevious = "0"
+                      onPrevious()
                       if (effectRotationEnabled) isRotated = !isRotated
                   },
                   onLongClick = {}
@@ -486,12 +483,8 @@ fun ControlsModern(
                      interactionSource = remember { MutableInteractionSource() },
                      onClick = {
                          if (shouldBePlaying) {
-                             //binder.player.pause()
                              onPause()
                          } else {
-//                             if (binder.player.playbackState == Player.STATE_IDLE) {
-//                                 binder.player.prepare()
-//                             }
                              onPlay()
                          }
                          if (effectRotationEnabled) isRotated = !isRotated
@@ -629,8 +622,7 @@ fun ControlsModern(
                 indication = ripple(bounded = true),
                 interactionSource = remember { MutableInteractionSource() },
                 onClick = {
-                    //binder.player.forceSeekToNext()
-                    //binder.player.playNext()
+                    onNext()
                     if (effectRotationEnabled) isRotated = !isRotated
                 },
                 onLongClick = {}
@@ -684,11 +676,8 @@ fun ControlsModern(
                           interactionSource = null,
                           indication = null,
                           onClick = {
-                              if (jumpPrevious == "") jumpPrevious = "0"
-//                              if(!binder.player.hasPreviousMediaItem() || (jumpPrevious != "0" && binder.player.currentPosition > jumpPrevious.toInt()*1000)){
-//                                  binder.player.seekTo(0)
-//                              }
-//                              else binder.player.playPrevious()
+                             // if (jumpPrevious == "") jumpPrevious = "0"
+                              onPrevious()
                               if (effectRotationEnabled) isRotated = !isRotated
                           },
                           onLongClick = {}
@@ -761,8 +750,7 @@ fun ControlsModern(
                           interactionSource = null,
                           indication = null,
                           onClick = {
-                              //binder.player.forceSeekToNext()
-                              //binder.player.playNext()
+                              onNext()
                               if (effectRotationEnabled) isRotated = !isRotated
                           },
                           onLongClick = {}

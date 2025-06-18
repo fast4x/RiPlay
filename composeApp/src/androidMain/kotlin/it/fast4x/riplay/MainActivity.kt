@@ -1188,43 +1188,14 @@ class MainActivity :
                                         }
                                     }
 
-//                                    PipEventContainer(
-//                                        enable = true,
-//                                        onPipOutAction = {
-//                                            showPlayer = false
-//                                            switchToAudioPlayer = false
-//                                        }
-//                                    ) {
-//                                        CustomModalBottomSheet(
-//                                            showSheet = switchToAudioPlayer || showPlayer,
-//                                            onDismissRequest = {
-//                                                showPlayer = false
-//                                                switchToAudioPlayer = false
-//                                            },
-//                                            containerColor = colorPalette().background0,
-//                                            contentColor = colorPalette().background0,
-//                                            modifier = Modifier.fillMaxWidth(),
-//                                            sheetState = playerState,
-//                                            dragHandle = {
-//                                                Surface(
-//                                                    modifier = Modifier.padding(vertical = 0.dp),
-//                                                    color = colorPalette().background0,
-//                                                    shape = thumbnailShape()
-//                                                ) {}
-//                                            },
-//                                            shape = thumbnailRoundness.shape()
-//                                        ) {
-//                                            player()
-//                                        }
-//                                    }
-
                                     CustomModalBottomSheet(
-                                        showSheet = showPlayer, //isVideo && isVideoEnabled && showPlayer,
+                                        showSheet = showPlayer,
                                         onDismissRequest = { showPlayer = false },
                                         containerColor = colorPalette().background0,
                                         contentColor = colorPalette().background0,
                                         modifier = Modifier.fillMaxWidth(),
                                         sheetState = playerState,
+                                        sheetGestureEnabled = false,
                                         dragHandle = {
                                             Surface(
                                                 modifier = Modifier.padding(vertical = 0.dp),

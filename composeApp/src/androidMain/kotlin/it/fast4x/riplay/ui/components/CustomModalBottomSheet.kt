@@ -39,6 +39,7 @@ fun CustomModalBottomSheet(
     sheetState: SheetState = rememberModalBottomSheetState(
         skipPartiallyExpanded = true
     ),
+    sheetGestureEnabled: Boolean = true,
     shape: Shape = BottomSheetDefaults.ExpandedShape,
     containerColor: Color = BottomSheetDefaults.ContainerColor,
     contentColor: Color = contentColorFor(containerColor),
@@ -92,6 +93,7 @@ fun CustomModalBottomSheet(
             onDismissRequest = onDismissRequest,
             modifier = modifier,
             sheetState = sheetState,
+            sheetGesturesEnabled = sheetGestureEnabled,
             shape = shape,
             containerColor = containerColor,
             contentColor = contentColor,

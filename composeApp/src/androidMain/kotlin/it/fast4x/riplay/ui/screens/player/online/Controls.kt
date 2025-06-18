@@ -112,31 +112,9 @@ fun Controls(
         }
     }
 
-    //println("Controls currentSong: ${currentSong?.title}")
-
-    /*
-    var scrubbingPosition by remember(mediaId) {
-        mutableStateOf<Long?>(null)
-    }
-
-     */
-
-    //val onGoToArtist = artistRoute::global
-    //val onGoToAlbum = albumRoute::global
-
-
     var likedAt by rememberSaveable {
         mutableStateOf<Long?>(null)
     }
-
-    /*
-    var nextmediaItemIndex = binder.player.nextMediaItemIndex ?: -1
-    var nextmediaItemtitle = ""
-
-
-    if (nextmediaItemIndex.toShort() > -1)
-        nextmediaItemtitle = binder.player.getMediaItemAt(nextmediaItemIndex).mediaMetadata.title.toString()
-    */
 
     var disableScrollingText by rememberPreference(disableScrollingTextKey, false)
 
@@ -238,11 +216,13 @@ fun Controls(
                 }
                 if (!isShowingLyrics || timelineExpanded) {
                     GetSeekBar(
-                        //player = player,
                         position = position,
                         duration = duration,
                         media = media,
-                        mediaId = mediaItem.mediaId
+                        mediaId = mediaItem.mediaId,
+                        onSeekTo = onSeekTo,
+                        onPlay = onPlay,
+                        onPause = onPause
                     )
                     Spacer(
                         modifier = Modifier
@@ -327,7 +307,10 @@ fun Controls(
                         position = position,
                         duration = duration,
                         media = media,
-                        mediaId = mediaItem.mediaId
+                        mediaId = mediaItem.mediaId,
+                        onSeekTo = onSeekTo,
+                        onPlay = onPlay,
+                        onPause = onPause
                     )
                     Spacer(
                         modifier = Modifier
@@ -375,7 +358,10 @@ fun Controls(
                         position = position,
                         duration = duration,
                         media = media,
-                        mediaId = mediaItem.mediaId
+                        mediaId = mediaItem.mediaId,
+                        onSeekTo = onSeekTo,
+                        onPlay = onPlay,
+                        onPause = onPause
                     )
                     Spacer(
                         modifier = Modifier
@@ -435,7 +421,10 @@ fun Controls(
                     position = position,
                     duration = duration,
                     media = media,
-                    mediaId = mediaItem.mediaId
+                    mediaId = mediaItem.mediaId,
+                    onSeekTo = onSeekTo,
+                    onPlay = onPlay,
+                    onPause = onPause
                 )
                 Spacer(
                     modifier = Modifier
@@ -488,7 +477,10 @@ fun Controls(
                     position = position,
                     duration = duration,
                     media = media,
-                    mediaId = mediaItem.mediaId
+                    mediaId = mediaItem.mediaId,
+                    onSeekTo = onSeekTo,
+                    onPlay = onPlay,
+                    onPause = onPause
                 )
                 Spacer(
                     modifier = Modifier
