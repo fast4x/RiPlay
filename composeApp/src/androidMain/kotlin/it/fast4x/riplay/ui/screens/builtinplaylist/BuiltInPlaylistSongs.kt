@@ -287,37 +287,6 @@ fun BuiltInPlaylistSongs(
         .take(4)
         .map { it.thumbnailUrl.thumbnail(playlistThumbnailSizePx / 2) }
 
-
-    if (builtInPlaylist == BuiltInPlaylist.Downloaded) {
-        when (sortOrder) {
-            SortOrder.Ascending -> {
-                when (sortBy) {
-                    SongSortBy.Title, SongSortBy.AlbumName -> songs = songs.sortedBy { it.title }
-                    SongSortBy.PlayTime -> songs = songs.sortedBy { it.totalPlayTimeMs }
-                    SongSortBy.Duration -> songs = songs.sortedBy { it.durationText }
-                    SongSortBy.Artist -> songs = songs.sortedBy { it.artistsText }
-                    SongSortBy.DatePlayed -> {}
-                    SongSortBy.DateLiked -> songs = songs.sortedBy { it.likedAt }
-                    SongSortBy.DateAdded -> {}
-                    SongSortBy.RelativePlayTime -> songs = songs.sortedBy { it.relativePlayTime() }
-                }
-            }
-            SortOrder.Descending -> {
-                when (sortBy) {
-                    SongSortBy.Title, SongSortBy.AlbumName -> songs = songs.sortedByDescending { it.title }
-                    SongSortBy.PlayTime -> songs = songs.sortedByDescending { it.totalPlayTimeMs }
-                    SongSortBy.Duration -> songs = songs.sortedByDescending { it.durationText }
-                    SongSortBy.Artist -> songs = songs.sortedByDescending { it.artistsText }
-                    SongSortBy.DatePlayed -> {}
-                    SongSortBy.DateLiked -> songs = songs.sortedByDescending { it.likedAt }
-                    SongSortBy.DateAdded -> {}
-                    SongSortBy.RelativePlayTime -> songs = songs.sortedByDescending { it.relativePlayTime() }
-                }
-            }
-        }
-
-    }
-
     if (builtInPlaylist == BuiltInPlaylist.Favorites) {
         songs.shuffled()
     }
@@ -457,8 +426,6 @@ fun BuiltInPlaylistSongs(
                 BuiltInPlaylist.All -> context.resources.getString(R.string.songs)
                 BuiltInPlaylist.OnDevice -> context.resources.getString(R.string.on_device)
                 BuiltInPlaylist.Favorites -> context.resources.getString(R.string.favorites)
-                BuiltInPlaylist.Downloaded -> context.resources.getString(R.string.downloaded)
-                BuiltInPlaylist.Offline -> context.resources.getString(R.string.cached)
                 BuiltInPlaylist.Top -> context.resources.getString(R.string.playlist_top)
                 BuiltInPlaylist.Disliked -> context.resources.getString(R.string.disliked)
             },
@@ -512,8 +479,6 @@ fun BuiltInPlaylistSongs(
                         BuiltInPlaylist.All -> stringResource(R.string.songs)
                         BuiltInPlaylist.OnDevice -> context.resources.getString(R.string.on_device)
                         BuiltInPlaylist.Favorites -> stringResource(R.string.favorites)
-                        BuiltInPlaylist.Downloaded -> stringResource(R.string.downloaded)
-                        BuiltInPlaylist.Offline -> stringResource(R.string.cached)
                         BuiltInPlaylist.Top -> stringResource(R.string.my_playlist_top).format(maxTopPlaylistItems.number)
                         BuiltInPlaylist.Disliked -> stringResource(R.string.disliked)
                     },
@@ -542,8 +507,6 @@ fun BuiltInPlaylistSongs(
                             BuiltInPlaylist.All -> R.drawable.musical_notes
                             BuiltInPlaylist.OnDevice -> R.drawable.musical_notes
                             BuiltInPlaylist.Favorites -> R.drawable.heart
-                            BuiltInPlaylist.Downloaded -> R.drawable.downloaded
-                            BuiltInPlaylist.Offline -> R.drawable.sync
                             BuiltInPlaylist.Top -> R.drawable.trending
                             BuiltInPlaylist.Disliked -> R.drawable.heart_dislike
                         },
@@ -552,8 +515,6 @@ fun BuiltInPlaylistSongs(
                             BuiltInPlaylist.All -> context.resources.getString(R.string.songs)
                             BuiltInPlaylist.OnDevice -> context.resources.getString(R.string.on_device)
                             BuiltInPlaylist.Favorites -> stringResource(R.string.favorites)
-                            BuiltInPlaylist.Downloaded -> stringResource(R.string.downloaded)
-                            BuiltInPlaylist.Offline -> stringResource(R.string.cached)
                             BuiltInPlaylist.Top -> stringResource(R.string.playlist_top)
                             BuiltInPlaylist.Disliked -> stringResource(R.string.disliked)
                         },
@@ -727,22 +688,7 @@ fun BuiltInPlaylistSongs(
                      */
 
 
-                    if (builtInPlaylist == BuiltInPlaylist.Offline)
-                        HeaderIconButton(
-                            icon = R.drawable.trash,
-                            enabled = true,
-                            color = if (songs.isNotEmpty()) colorPalette().text else colorPalette().textDisabled,
-                            onClick = {},
-                            modifier = Modifier
-                                .combinedClickable(
-                                    onClick = {
-                                        cleanCacheOfflineSongs = true
-                                    },
-                                    onLongClick = {
-                                        SmartMessage(context.resources.getString(R.string.info_clean_cached_congs), context = context)
-                                    }
-                                )
-                        )
+
 
                     if (builtInPlaylist == BuiltInPlaylist.Favorites)
                         HeaderIconButton(
@@ -916,9 +862,7 @@ fun BuiltInPlaylistSongs(
                         .fillMaxWidth()
                 ) {
 
-                    if ( builtInPlaylist == BuiltInPlaylist.Favorites ||
-                        builtInPlaylist == BuiltInPlaylist.Offline ||
-                        builtInPlaylist == BuiltInPlaylist.Downloaded )  {
+                    if ( builtInPlaylist == BuiltInPlaylist.Favorites)  {
                         HeaderIconButton(
                             icon = R.drawable.arrow_up,
                             color = colorPalette().text,
@@ -1103,19 +1047,10 @@ fun BuiltInPlaylistSongs(
                             menuState.display {
                                 when (builtInPlaylist) {
                                     BuiltInPlaylist.Favorites,
-                                    BuiltInPlaylist.Downloaded,
                                     BuiltInPlaylist.Top,
                                     BuiltInPlaylist.Disliked -> NonQueuedMediaItemMenuLibrary(
                                         navController = navController,
                                         mediaItem = song.asMediaItem,
-                                        onDismiss = menuState::hide,
-                                        onInfo = {},
-                                        disableScrollingText = disableScrollingText
-                                    )
-
-                                    BuiltInPlaylist.Offline -> InHistoryMediaItemMenu(
-                                        navController = navController,
-                                        song = song,
                                         onDismiss = menuState::hide,
                                         onInfo = {},
                                         disableScrollingText = disableScrollingText

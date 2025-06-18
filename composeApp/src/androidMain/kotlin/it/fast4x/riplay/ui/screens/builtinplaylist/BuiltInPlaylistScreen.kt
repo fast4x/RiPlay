@@ -49,8 +49,8 @@ fun BuiltInPlaylistScreen(
     val (tabIndex, onTabIndexChanged) = rememberSaveable {
         mutableStateOf(when (builtInPlaylist) {
             BuiltInPlaylist.Favorites -> 0
-            BuiltInPlaylist.Offline -> 1
-            BuiltInPlaylist.Downloaded -> 2
+            //BuiltInPlaylist.Offline -> 1
+            //BuiltInPlaylist.Downloaded -> 2
             BuiltInPlaylist.Top -> 3
             BuiltInPlaylist.OnDevice -> 4
             BuiltInPlaylist.Disliked -> 5
@@ -95,8 +95,8 @@ fun BuiltInPlaylistScreen(
                     val playlist: BuiltInPlaylist =
                         when( currentTabIndex ) {
                             0 -> BuiltInPlaylist.Favorites
-                            1 -> BuiltInPlaylist.Offline
-                            2 -> BuiltInPlaylist.Downloaded
+                            //1 -> BuiltInPlaylist.Offline
+                            //2 -> BuiltInPlaylist.Downloaded
                             3 -> BuiltInPlaylist.Top
                             4 -> BuiltInPlaylist.OnDevice
                             else -> BuiltInPlaylist.Disliked

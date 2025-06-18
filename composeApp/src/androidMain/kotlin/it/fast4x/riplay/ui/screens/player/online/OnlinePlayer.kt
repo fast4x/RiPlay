@@ -1,5 +1,6 @@
 package it.fast4x.riplay.ui.screens.player.online
 
+import android.database.SQLException
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.compose.animation.ExperimentalAnimationApi
@@ -28,6 +29,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.neverEqualPolicy
 import androidx.compose.runtime.remember
@@ -65,7 +67,10 @@ import it.fast4x.riplay.enums.PlayerBackgroundColors
 import it.fast4x.riplay.enums.PlayerThumbnailSize
 import it.fast4x.riplay.enums.PlayerType
 import it.fast4x.riplay.enums.QueueLoopType
+import it.fast4x.riplay.getMinTimeForEvent
+import it.fast4x.riplay.getPauseListenHistory
 import it.fast4x.riplay.getQueueLoopType
+import it.fast4x.riplay.models.Event
 import it.fast4x.riplay.models.Info
 import it.fast4x.riplay.models.ui.toUiMedia
 import it.fast4x.riplay.ui.components.LocalMenuState
@@ -73,6 +78,7 @@ import it.fast4x.riplay.ui.components.themed.PlayerMenu
 import it.fast4x.riplay.ui.styling.collapsedPlayerProgressBar
 import it.fast4x.riplay.ui.styling.favoritesOverlay
 import it.fast4x.riplay.utils.applyIf
+import it.fast4x.riplay.utils.asSong
 import it.fast4x.riplay.utils.backgroundProgressKey
 import it.fast4x.riplay.utils.blurStrengthKey
 import it.fast4x.riplay.utils.colorPaletteModeKey
@@ -80,7 +86,6 @@ import it.fast4x.riplay.utils.controlsExpandedKey
 import it.fast4x.riplay.utils.disableScrollingTextKey
 import it.fast4x.riplay.utils.effectRotationKey
 import it.fast4x.riplay.utils.expandedplayerKey
-import it.fast4x.riplay.utils.getEnum
 import it.fast4x.riplay.utils.isExplicit
 import it.fast4x.riplay.utils.isLandscape
 import it.fast4x.riplay.utils.isShowingLyricsKey
@@ -89,16 +94,17 @@ import it.fast4x.riplay.utils.lastVideoSecondsKey
 import it.fast4x.riplay.utils.playerBackgroundColorsKey
 import it.fast4x.riplay.utils.playerThumbnailSizeKey
 import it.fast4x.riplay.utils.playerTypeKey
-import it.fast4x.riplay.utils.preferences
-import it.fast4x.riplay.utils.queueLoopTypeKey
 import it.fast4x.riplay.utils.rememberPreference
 import it.fast4x.riplay.utils.showButtonPlayerMenuKey
 import it.fast4x.riplay.utils.showTopActionsBarKey
 import it.fast4x.riplay.utils.timelineExpandedKey
 import it.fast4x.riplay.utils.titleExpandedKey
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import timber.log.Timber
 import kotlin.math.absoluteValue
 
 
@@ -127,14 +133,6 @@ fun OnlinePlayer(
     var currentSecond by remember { mutableFloatStateOf(0f) }
     var currentDuration by remember { mutableFloatStateOf(0f) }
     var positionAndDuration by remember { mutableStateOf(0f to 0f) }
-
-    LaunchedEffect(currentSecond, currentDuration) {
-        positionAndDuration = currentSecond to currentDuration
-
-        if (currentSecond >= currentDuration) {
-            onVideoEnded()
-        }
-    }
 
     var isShowingVisualizer by remember { mutableStateOf(false) }
     val playerType by rememberPreference(playerTypeKey, PlayerType.Essential)
@@ -167,14 +165,6 @@ fun OnlinePlayer(
     }
 
     var updateBrush by remember { mutableStateOf(false) }
-
-    LaunchedEffect(mediaItem.mediaId) {
-        withContext(Dispatchers.IO) {
-            albumInfo = Database.songAlbumInfo(mediaItem.mediaId)
-            artistsInfo = Database.songArtistInfo(mediaItem.mediaId)
-        }
-        updateBrush = true
-    }
 
     val ExistIdsExtras =
         mediaItem.mediaMetadata.extras?.getStringArrayList("artistIds")?.size.toString()
@@ -209,10 +199,6 @@ fun OnlinePlayer(
 
     var likedAt by rememberSaveable {
         mutableStateOf<Long?>(null)
-    }
-    LaunchedEffect(mediaItem.mediaId) {
-        Database.likedAt(mediaItem.mediaId).distinctUntilChanged().collect { likedAt = it }
-        updateBrush = true
     }
 
     val defaultStrength = 25f
@@ -250,6 +236,67 @@ fun OnlinePlayer(
         playerThumbnailSizeKey,
         PlayerThumbnailSize.Biggest
     )
+    var updateStatistics by remember { mutableStateOf(true) }
+    var updateStatisticsEverySeconds by remember { mutableIntStateOf(0) }
+    val steps by remember { mutableIntStateOf(5) }
+    var stepToUpdateStats by remember { mutableIntStateOf(1) }
+
+
+    LaunchedEffect(mediaItem) {
+        // Ensure that the song is in database
+        CoroutineScope(Dispatchers.IO).launch {
+            Database.asyncTransaction {
+                insert(mediaItem.asSong)
+            }
+
+            Database.likedAt(mediaItem.mediaId).distinctUntilChanged().collect { likedAt = it }
+
+        }
+        withContext(Dispatchers.IO) {
+            albumInfo = Database.songAlbumInfo(mediaItem.mediaId)
+            artistsInfo = Database.songArtistInfo(mediaItem.mediaId)
+        }
+        updateBrush = true
+
+        stepToUpdateStats = 1
+    }
+
+    LaunchedEffect(currentSecond, currentDuration) {
+        positionAndDuration = currentSecond to currentDuration
+
+        updateStatisticsEverySeconds = (currentDuration / steps).toInt()
+
+        if (getPauseListenHistory()) return@LaunchedEffect
+
+        if (currentSecond.toInt() == updateStatisticsEverySeconds * stepToUpdateStats) {
+            stepToUpdateStats++
+            val totalPlayTimeMs = (currentSecond * 1000).toLong()
+            Database.asyncTransaction {
+                incrementTotalPlayTimeMs(mediaItem.mediaId, totalPlayTimeMs)
+            }
+
+            val minTimeForEvent = getMinTimeForEvent().ms
+
+            if (totalPlayTimeMs > minTimeForEvent) {
+
+                Database.asyncTransaction {
+                    try {
+                        insert(
+                            Event(
+                                songId = mediaItem.mediaId,
+                                timestamp = System.currentTimeMillis(),
+                                playTime = totalPlayTimeMs
+                            )
+                        )
+                    } catch (e: SQLException) {
+                        Timber.e("PlayerServiceModern onPlaybackStatsReady SQLException ${e.stackTraceToString()}")
+                    }
+                }
+            }
+        }
+
+    }
+
 
     Column(
         verticalArrangement = Arrangement.Top,
@@ -383,7 +430,9 @@ fun OnlinePlayer(
                 if (getQueueLoopType() != QueueLoopType.Default)
                     player.value?.seekTo(0f)
 
+                updateStatistics = true
             }
+
         }
 
 

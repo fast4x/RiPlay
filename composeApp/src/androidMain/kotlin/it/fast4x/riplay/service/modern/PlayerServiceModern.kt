@@ -54,12 +54,10 @@ import androidx.media3.common.audio.SonicAudioProcessor
 import androidx.media3.common.util.Log
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.DataSpec
-import androidx.media3.datasource.DefaultDataSource
 import androidx.media3.datasource.cache.Cache
 import androidx.media3.datasource.cache.CacheDataSource
 import androidx.media3.datasource.cache.CacheDataSource.FLAG_IGNORE_CACHE_ON_ERROR
 import androidx.media3.datasource.cache.SimpleCache
-import androidx.media3.datasource.okhttp.OkHttpDataSource
 import androidx.media3.exoplayer.DefaultLoadControl
 import androidx.media3.exoplayer.DefaultRenderersFactory
 import androidx.media3.exoplayer.ExoPlayer
@@ -101,7 +99,7 @@ import it.fast4x.riplay.R
 import it.fast4x.riplay.cleanPrefix
 import it.fast4x.riplay.enums.AudioQualityFormat
 import it.fast4x.riplay.enums.DurationInMilliseconds
-import it.fast4x.riplay.enums.ExoPlayerMinTimeForEvent
+import it.fast4x.riplay.enums.MinTimeForEvent
 import it.fast4x.riplay.enums.NotificationButtons
 import it.fast4x.riplay.enums.NotificationType
 import it.fast4x.riplay.enums.PopupType
@@ -196,9 +194,7 @@ import it.fast4x.riplay.enums.PresetsReverb
 import it.fast4x.riplay.extensions.connectivity.AndroidConnectivityObserverLegacy
 import it.fast4x.riplay.extensions.players.SimplePlayer
 import it.fast4x.riplay.isHandleAudioFocusEnabled
-import it.fast4x.riplay.isPreCacheEnabled
 import it.fast4x.riplay.ui.screens.settings.isYouTubeSyncEnabled
-import it.fast4x.riplay.utils.asMediaItem
 import it.fast4x.riplay.utils.audioReverbPresetKey
 import it.fast4x.riplay.utils.bassboostEnabledKey
 import it.fast4x.riplay.utils.bassboostLevelKey
@@ -208,7 +204,6 @@ import it.fast4x.riplay.utils.volumeBoostLevelKey
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
-import okhttp3.OkHttpClient
 import timber.log.Timber
 import java.io.ObjectInputStream
 import java.io.ObjectOutputStream
@@ -651,7 +646,7 @@ class PlayerServiceModern : MediaLibraryService(),
 
 
         val minTimeForEvent =
-            preferences.getEnum(exoPlayerMinTimeForEventKey, ExoPlayerMinTimeForEvent.`20s`)
+            preferences.getEnum(exoPlayerMinTimeForEventKey, MinTimeForEvent.`20s`)
 
         if (totalPlayTimeMs > minTimeForEvent.ms) {
             Database.asyncTransaction {

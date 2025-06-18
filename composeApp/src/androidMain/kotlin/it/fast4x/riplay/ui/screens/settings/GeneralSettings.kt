@@ -41,7 +41,7 @@ import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.AudioQualityFormat
 import it.fast4x.riplay.enums.DurationInMilliseconds
 import it.fast4x.riplay.enums.DurationInMinutes
-import it.fast4x.riplay.enums.ExoPlayerMinTimeForEvent
+import it.fast4x.riplay.enums.MinTimeForEvent
 import it.fast4x.riplay.enums.MaxSongs
 import it.fast4x.riplay.enums.MusicAnimationType
 import it.fast4x.riplay.enums.NavigationBarPosition
@@ -160,9 +160,9 @@ fun GeneralSettings(
     val systemLocale = LocaleListCompat.getDefault().get(0).toString()
     var languageApp  by rememberPreference(languageAppKey, getSystemlanguage())
 
-    var exoPlayerMinTimeForEvent by rememberPreference(
+    var minTimeForEvent by rememberPreference(
         exoPlayerMinTimeForEventKey,
-        ExoPlayerMinTimeForEvent.`20s`
+        MinTimeForEvent.`20s`
     )
     var persistentQueue by rememberPreference(persistentQueueKey, true)
     var resumePlaybackOnStart by rememberPreference(resumePlaybackOnStartKey, false)
@@ -607,16 +607,16 @@ fun GeneralSettings(
         if (search.input.isBlank() || stringResource(R.string.min_listening_time).contains(search.input,true)) {
             EnumValueSelectorSettingsEntry(
                 title = stringResource(R.string.min_listening_time),
-                selectedValue = exoPlayerMinTimeForEvent,
-                onValueSelected = { exoPlayerMinTimeForEvent = it },
+                selectedValue = minTimeForEvent,
+                onValueSelected = { minTimeForEvent = it },
                 valueText = {
                     when (it) {
-                        ExoPlayerMinTimeForEvent.`10s` -> "10s"
-                        ExoPlayerMinTimeForEvent.`15s` -> "15s"
-                        ExoPlayerMinTimeForEvent.`20s` -> "20s"
-                        ExoPlayerMinTimeForEvent.`30s` -> "30s"
-                        ExoPlayerMinTimeForEvent.`40s` -> "40s"
-                        ExoPlayerMinTimeForEvent.`60s` -> "60s"
+                        MinTimeForEvent.`10s` -> "10s"
+                        MinTimeForEvent.`15s` -> "15s"
+                        MinTimeForEvent.`20s` -> "20s"
+                        MinTimeForEvent.`30s` -> "30s"
+                        MinTimeForEvent.`40s` -> "40s"
+                        MinTimeForEvent.`60s` -> "60s"
                     }
                 }
             )

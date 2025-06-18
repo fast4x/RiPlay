@@ -414,7 +414,7 @@ fun HomeSongs(
 
             }
         }
-        BuiltInPlaylist.Downloaded, BuiltInPlaylist.Favorites, BuiltInPlaylist.Offline,
+        BuiltInPlaylist.Favorites,
         BuiltInPlaylist.Top, BuiltInPlaylist.Disliked -> {
 
             LaunchedEffect(Unit, builtInPlaylist, sortBy, sortOrder, filter, topPlaylistPeriod) {
@@ -456,25 +456,7 @@ fun HomeSongs(
                 }
 
 
-                if (builtInPlaylist == BuiltInPlaylist.Offline) {
-                    Database
-                        .songsOffline(sortBy, sortOrder)
-                        .flowOn(Dispatchers.IO)
-                        .map { songs ->
-                            songs.filter { song ->
-                                song.contentLength?.let {
-                                    try {
-                                        binder?.cache?.isCached(song.song.id, 0, song.contentLength)
-                                    } catch (e: Exception) {
-                                        false
-                                    }
-                                } ?: false
-                            }
-                        }
-                        .collect {
-                            items = it
-                        }
-                }
+
 
                 if (builtInPlaylist == BuiltInPlaylist.Top) {
 
@@ -543,43 +525,43 @@ fun HomeSongs(
     }
     /********** */
 
-    if (!includeLocalSongs && builtInPlaylist == BuiltInPlaylist.All)
-        items = items
-            .filter {
-                !it.song.id.startsWith(LOCAL_KEY_PREFIX)
-            }
+//    if (!includeLocalSongs && builtInPlaylist == BuiltInPlaylist.All)
+//        items = items
+//            .filter {
+//                !it.song.id.startsWith(LOCAL_KEY_PREFIX)
+//            }
 
-    if (builtInPlaylist == BuiltInPlaylist.Downloaded) {
-        when (sortOrder) {
-            SortOrder.Ascending -> {
-                when (sortBy) {
-                    SongSortBy.Title, SongSortBy.AlbumName -> items = items.sortedBy { it.song.title }
-                    SongSortBy.PlayTime -> items = items.sortedBy { it.song.totalPlayTimeMs }
-                    SongSortBy.RelativePlayTime -> items = items.sortedBy { it.relativePlayTime() }
-                    SongSortBy.Duration -> items = items.sortedBy { it.song.durationText }
-                    SongSortBy.Artist -> items = items.sortedBy { it.song.artistsText }
-                    SongSortBy.DatePlayed -> {}
-                    SongSortBy.DateLiked -> items = items.sortedBy { it.song.likedAt }
-                    SongSortBy.DateAdded -> {}
-                    SongSortBy.AlbumName -> items = items.sortedBy { it.albumTitle }
-                }
-            }
-            SortOrder.Descending -> {
-                when (sortBy) {
-                    SongSortBy.Title, SongSortBy.AlbumName -> items = items.sortedByDescending { it.song.title }
-                    SongSortBy.PlayTime -> items = items.sortedByDescending { it.song.totalPlayTimeMs }
-                    SongSortBy.RelativePlayTime -> items = items.sortedByDescending { it.relativePlayTime() }
-                    SongSortBy.Duration -> items = items.sortedByDescending { it.song.durationText }
-                    SongSortBy.Artist -> items = items.sortedByDescending { it.song.artistsText }
-                    SongSortBy.DatePlayed -> {}
-                    SongSortBy.DateLiked -> items = items.sortedByDescending { it.song.likedAt }
-                    SongSortBy.DateAdded -> {}
-                    SongSortBy.AlbumName -> items = items.sortedByDescending { it.albumTitle }
-                }
-            }
-        }
-
-    }
+//    if (builtInPlaylist == BuiltInPlaylist.Downloaded) {
+//        when (sortOrder) {
+//            SortOrder.Ascending -> {
+//                when (sortBy) {
+//                    SongSortBy.Title, SongSortBy.AlbumName -> items = items.sortedBy { it.song.title }
+//                    SongSortBy.PlayTime -> items = items.sortedBy { it.song.totalPlayTimeMs }
+//                    SongSortBy.RelativePlayTime -> items = items.sortedBy { it.relativePlayTime() }
+//                    SongSortBy.Duration -> items = items.sortedBy { it.song.durationText }
+//                    SongSortBy.Artist -> items = items.sortedBy { it.song.artistsText }
+//                    SongSortBy.DatePlayed -> {}
+//                    SongSortBy.DateLiked -> items = items.sortedBy { it.song.likedAt }
+//                    SongSortBy.DateAdded -> {}
+//                    SongSortBy.AlbumName -> items = items.sortedBy { it.albumTitle }
+//                }
+//            }
+//            SortOrder.Descending -> {
+//                when (sortBy) {
+//                    SongSortBy.Title, SongSortBy.AlbumName -> items = items.sortedByDescending { it.song.title }
+//                    SongSortBy.PlayTime -> items = items.sortedByDescending { it.song.totalPlayTimeMs }
+//                    SongSortBy.RelativePlayTime -> items = items.sortedByDescending { it.relativePlayTime() }
+//                    SongSortBy.Duration -> items = items.sortedByDescending { it.song.durationText }
+//                    SongSortBy.Artist -> items = items.sortedByDescending { it.song.artistsText }
+//                    SongSortBy.DatePlayed -> {}
+//                    SongSortBy.DateLiked -> items = items.sortedByDescending { it.song.likedAt }
+//                    SongSortBy.DateAdded -> {}
+//                    SongSortBy.AlbumName -> items = items.sortedByDescending { it.albumTitle }
+//                }
+//            }
+//        }
+//
+//    }
 
     var filterCharSequence: CharSequence
     filterCharSequence = filter.toString()
@@ -711,8 +693,6 @@ fun HomeSongs(
                 BuiltInPlaylist.All -> context.resources.getString(R.string.songs)
                 BuiltInPlaylist.OnDevice -> context.resources.getString(R.string.on_device)
                 BuiltInPlaylist.Favorites -> context.resources.getString(R.string.favorites)
-                BuiltInPlaylist.Downloaded -> context.resources.getString(R.string.downloaded)
-                BuiltInPlaylist.Offline -> context.resources.getString(R.string.cached)
                 BuiltInPlaylist.Top -> context.resources.getString(R.string.playlist_top)
                 BuiltInPlaylist.Disliked -> context.resources.getString(R.string.disliked)
             },
@@ -826,19 +806,6 @@ fun HomeSongs(
                                 },
                                 modifier = Modifier.padding(end = 12.dp)
                             )
-
-                            when (builtInPlaylist) {
-                                BuiltInPlaylist.Downloaded, BuiltInPlaylist.Offline -> {
-                                    CacheSpaceIndicator(
-                                        cacheType = when (builtInPlaylist) {
-                                            BuiltInPlaylist.Downloaded -> CacheType.DownloadedSongs
-                                            BuiltInPlaylist.Offline -> CacheType.CachedSongs
-                                            else -> CacheType.CachedSongs
-                                        }
-                                    )
-                                }
-                                else -> {}
-                            }
 
                         }
                     }

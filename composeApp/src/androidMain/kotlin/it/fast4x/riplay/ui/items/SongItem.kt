@@ -38,6 +38,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.MediaItem
 import androidx.media3.common.util.UnstableApi
+import androidx.media3.exoplayer.offline.DownloadService
 import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
 import it.fast4x.environment.Environment
@@ -47,8 +48,8 @@ import it.fast4x.riplay.R
 import it.fast4x.riplay.cleanPrefix
 import it.fast4x.riplay.colorPalette
 import it.fast4x.riplay.enums.ColorPaletteName
-import it.fast4x.riplay.enums.DownloadedStateMedia
 import it.fast4x.riplay.models.Song
+import it.fast4x.riplay.service.modern.isLocal
 import it.fast4x.riplay.thumbnailShape
 import it.fast4x.riplay.typography
 import it.fast4x.riplay.ui.components.LocalMenuState
@@ -196,6 +197,7 @@ fun SongItem(
         modifier = modifier,
         trailingContent = trailingContent,
         isRecommended = isRecommended,
+        isLocal = mediaItem.isLocal,
         mediaItem = mediaItem,
         disableScrollingText = disableScrollingText,
         isNowPlaying = isNowPlaying,
@@ -214,6 +216,7 @@ fun SongItem(
     modifier: Modifier = Modifier,
     trailingContent: @Composable (() -> Unit)? = null,
     isRecommended: Boolean = false,
+    isLocal: Boolean,
     mediaItem: MediaItem,
     disableScrollingText: Boolean,
     isNowPlaying: Boolean = false,
@@ -501,6 +504,15 @@ fun SongItem(
 
                 Spacer(modifier = Modifier.padding(horizontal = 4.dp))
 
+                if (isLocal)
+                    IconButton(
+                        onClick = {},
+                        icon = R.drawable.downloaded,
+                        color = colorPalette().text,
+                        modifier = Modifier
+                            .size(20.dp)
+                    )
+
             }
         }
     }
@@ -593,7 +605,7 @@ fun SongItemPlaceholder( thumbnailSizeDp: Dp ) {
 
                 IconButton(
                     onClick = {},
-                    icon = DownloadedStateMedia.NOT_CACHED_OR_DOWNLOADED.icon,
+                    icon = R.drawable.download,
                     color = colorPalette().textDisabled,
                     modifier = Modifier.size( 20.dp ),
                     enabled = false

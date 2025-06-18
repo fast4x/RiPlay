@@ -29,27 +29,4 @@ enum class PlaylistSwipeAction {
             Favourite -> R.drawable.heart_outline
             Enqueue -> R.drawable.enqueue
         }
-
-        @OptIn(UnstableApi::class)
-        fun getStateIcon(likedState: Long?, downloadState: Int, downloadedStateMedia: DownloadedStateMedia): Int? {
-                return when (this) {
-                    NoAction -> null
-                    PlayNext -> R.drawable.play_skip_forward
-                    Download -> when (downloadedStateMedia) {
-                        DownloadedStateMedia.NOT_CACHED_OR_DOWNLOADED -> when (downloadState) {
-                            androidx.media3.exoplayer.offline.Download.STATE_DOWNLOADING -> R.drawable.download_progress
-                            androidx.media3.exoplayer.offline.Download.STATE_QUEUED -> R.drawable.download_progress
-                            androidx.media3.exoplayer.offline.Download.STATE_RESTARTING -> R.drawable.download_progress
-                            else -> downloadedStateMedia.icon
-                        }
-                        else -> downloadedStateMedia.icon
-                    }
-                    Favourite -> when (likedState) {
-                        -1L -> R.drawable.heart_dislike
-                        null -> R.drawable.heart_outline
-                        else -> R.drawable.heart
-                    }
-                    Enqueue -> R.drawable.enqueue
-                }
-            }
 }

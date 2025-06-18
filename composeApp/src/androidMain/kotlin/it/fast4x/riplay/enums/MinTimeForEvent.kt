@@ -1,6 +1,6 @@
 package it.fast4x.riplay.enums
 
-enum class ExoPlayerMinTimeForEvent {
+enum class MinTimeForEvent {
     `10s`,
     `15s`,
     `20s`,

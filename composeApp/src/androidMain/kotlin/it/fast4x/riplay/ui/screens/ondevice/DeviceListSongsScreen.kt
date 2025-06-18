@@ -88,8 +88,6 @@ fun DeviceListSongsScreen(
                     val builtInPlaylist: BuiltInPlaylist =
                         when( currentTabIndex ) {
                             0 -> BuiltInPlaylist.Favorites
-                            1 -> BuiltInPlaylist.Offline
-                            2 -> BuiltInPlaylist.Downloaded
                             3 -> BuiltInPlaylist.Top
                             4 -> BuiltInPlaylist.OnDevice
                             else -> BuiltInPlaylist.Disliked

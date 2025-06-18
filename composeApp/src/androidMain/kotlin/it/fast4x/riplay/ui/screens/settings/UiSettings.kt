@@ -32,7 +32,7 @@ import it.fast4x.riplay.enums.ColorPaletteMode
 import it.fast4x.riplay.enums.ColorPaletteName
 import it.fast4x.riplay.enums.DurationInMilliseconds
 import it.fast4x.riplay.enums.DurationInMinutes
-import it.fast4x.riplay.enums.ExoPlayerMinTimeForEvent
+import it.fast4x.riplay.enums.MinTimeForEvent
 import it.fast4x.riplay.enums.FontType
 import it.fast4x.riplay.enums.HomeScreenTabs
 import it.fast4x.riplay.enums.IconLikeType
@@ -169,7 +169,6 @@ import it.fast4x.riplay.utils.showButtonPlayerMenuKey
 import it.fast4x.riplay.utils.showButtonPlayerShuffleKey
 import it.fast4x.riplay.utils.showButtonPlayerSleepTimerKey
 import it.fast4x.riplay.utils.showButtonPlayerSystemEqualizerKey
-import it.fast4x.riplay.utils.showCachedPlaylistKey
 import it.fast4x.riplay.utils.showDownloadedPlaylistKey
 import it.fast4x.riplay.utils.showFavoritesPlaylistKey
 import it.fast4x.riplay.utils.showFloatingIconKey
@@ -206,11 +205,11 @@ import it.fast4x.riplay.utils.showDislikedPlaylistKey
 
 @Composable
 fun DefaultUiSettings() {
-    var exoPlayerMinTimeForEvent by rememberPreference(
+    var minTimeForEvent by rememberPreference(
         exoPlayerMinTimeForEventKey,
-        ExoPlayerMinTimeForEvent.`20s`
+        MinTimeForEvent.`20s`
     )
-    exoPlayerMinTimeForEvent = ExoPlayerMinTimeForEvent.`20s`
+    minTimeForEvent = MinTimeForEvent.`20s`
     var persistentQueue by rememberPreference(persistentQueueKey, true)
     persistentQueue = true
     var resumePlaybackOnStart by rememberPreference(resumePlaybackOnStartKey, false)

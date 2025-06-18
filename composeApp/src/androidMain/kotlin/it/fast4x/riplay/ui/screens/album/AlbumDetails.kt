@@ -1383,7 +1383,7 @@ fun AlbumDetails(
                                         )
                                     else checkedState.value = false
                                 },
-                                //mediaId = song.asMediaItem.mediaId
+                                isLocal = isLocal,
                                 disableScrollingText = disableScrollingText,
                                 isNowPlaying = binder?.player?.isNowPlaying(song.id) ?: false,
                                 forceRecompose = forceRecompose

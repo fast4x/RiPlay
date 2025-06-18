@@ -37,10 +37,8 @@ import it.fast4x.riplay.R
 import it.fast4x.riplay.appContext
 import it.fast4x.riplay.cleanPrefix
 import it.fast4x.riplay.enums.AlbumSwipeAction
-import it.fast4x.riplay.enums.DownloadedStateMedia
 import it.fast4x.riplay.enums.PlaylistSwipeAction
 import it.fast4x.riplay.enums.QueueSwipeAction
-import it.fast4x.riplay.service.modern.isLocal
 import it.fast4x.riplay.ui.components.themed.SmartMessage
 import it.fast4x.riplay.utils.albumSwipeLeftActionKey
 import it.fast4x.riplay.utils.albumSwipeRightActionKey
