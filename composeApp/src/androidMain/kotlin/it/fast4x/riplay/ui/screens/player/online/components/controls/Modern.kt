@@ -428,11 +428,8 @@ fun ControlsModern(
     onShowSpeedPlayerDialog: () -> Unit,
     onPlay: () -> Unit,
     onPause: () -> Unit,
-    onSeekTo: (Float) -> Unit,
     onNext: () -> Unit,
     onPrevious: () -> Unit,
-    onToggleRepeatMode: () -> Unit,
-    onToggleShuffleMode: () -> Unit,
 ) {
     var effectRotationEnabled by rememberPreference(effectRotationKey, true)
     var isRotated by rememberSaveable { mutableStateOf(false) }

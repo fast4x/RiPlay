@@ -575,9 +575,9 @@ fun UiSettings(
     val search = Search.init()
 
     var showFavoritesPlaylist by rememberPreference(showFavoritesPlaylistKey, true)
-    var showCachedPlaylist by rememberPreference(showCachedPlaylistKey, true)
+    //var showCachedPlaylist by rememberPreference(showCachedPlaylistKey, true)
     var showMyTopPlaylist by rememberPreference(showMyTopPlaylistKey, true)
-    var showDownloadedPlaylist by rememberPreference(showDownloadedPlaylistKey, true)
+    //var showDownloadedPlaylist by rememberPreference(showDownloadedPlaylistKey, true)
     var showOnDevicePlaylist by rememberPreference(showOnDevicePlaylistKey, true)
     var showDislikedPlaylist by rememberPreference(showDislikedPlaylistKey, false)
     var showFloatingIcon by rememberPreference(showFloatingIconKey, false)
@@ -1389,21 +1389,21 @@ fun UiSettings(
                 onCheckedChange = { showFavoritesPlaylist = it }
             )
 
-        if (search.input.isBlank() || "${stringResource(R.string.show)} ${stringResource(R.string.cached)}".contains(search.input,true))
-            SwitchSettingEntry(
-                title = "${stringResource(R.string.show)} ${stringResource(R.string.cached)}",
-                text = "",
-                isChecked = showCachedPlaylist,
-                onCheckedChange = { showCachedPlaylist = it }
-            )
-
-        if (search.input.isBlank() || "${stringResource(R.string.show)} ${stringResource(R.string.downloaded)}".contains(search.input,true))
-            SwitchSettingEntry(
-                title = "${stringResource(R.string.show)} ${stringResource(R.string.downloaded)}",
-                text = "",
-                isChecked = showDownloadedPlaylist,
-                onCheckedChange = { showDownloadedPlaylist = it }
-            )
+//        if (search.input.isBlank() || "${stringResource(R.string.show)} ${stringResource(R.string.cached)}".contains(search.input,true))
+//            SwitchSettingEntry(
+//                title = "${stringResource(R.string.show)} ${stringResource(R.string.cached)}",
+//                text = "",
+//                isChecked = showCachedPlaylist,
+//                onCheckedChange = { showCachedPlaylist = it }
+//            )
+//
+//        if (search.input.isBlank() || "${stringResource(R.string.show)} ${stringResource(R.string.downloaded)}".contains(search.input,true))
+//            SwitchSettingEntry(
+//                title = "${stringResource(R.string.show)} ${stringResource(R.string.downloaded)}",
+//                text = "",
+//                isChecked = showDownloadedPlaylist,
+//                onCheckedChange = { showDownloadedPlaylist = it }
+//            )
         if (search.input.isBlank() || "${stringResource(R.string.show)} ${stringResource(R.string.my_playlist_top)}".contains(search.input,true))
             SwitchSettingEntry(
                 title = "${stringResource(R.string.show)} ${stringResource(R.string.my_playlist_top).format(maxTopPlaylistItems)}",

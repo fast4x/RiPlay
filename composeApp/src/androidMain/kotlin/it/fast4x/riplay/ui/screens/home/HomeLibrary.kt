@@ -146,7 +146,7 @@ fun HomeLibrary(
             PlaylistsType.Playlist -> Database.songsInAllPlaylists()
             PlaylistsType.PinnedPlaylist -> Database.songsInAllPinnedPlaylists()
             PlaylistsType.MonthlyPlaylist -> Database.songsInAllMonthlyPlaylists()
-            PlaylistsType.PipedPlaylist -> Database.songsInAllPipedPlaylists()
+            //PlaylistsType.PipedPlaylist -> Database.songsInAllPipedPlaylists()
             PlaylistsType.YTPlaylist -> Database.songsInAllYTPrivatePlaylists()
         }.map { it.map( Song::asMediaItem ) }
     }
@@ -296,8 +296,8 @@ fun HomeLibrary(
 
     val buttonsList = mutableListOf(PlaylistsType.Playlist to stringResource(R.string.playlists))
     buttonsList += PlaylistsType.YTPlaylist to stringResource(R.string.yt_playlists)
-    if (showPipedPlaylists) buttonsList +=
-        PlaylistsType.PipedPlaylist to stringResource(R.string.piped_playlists)
+//    if (showPipedPlaylists) buttonsList +=
+//        PlaylistsType.PipedPlaylist to stringResource(R.string.piped_playlists)
     if (showPinnedPlaylists) buttonsList +=
         PlaylistsType.PinnedPlaylist to stringResource(R.string.pinned_playlists)
     if (showMonthlyPlaylists) buttonsList +=
@@ -366,7 +366,7 @@ fun HomeLibrary(
                                 PlaylistsType.Playlist -> ""    // Matches everything
                                 PlaylistsType.PinnedPlaylist -> PINNED_PREFIX
                                 PlaylistsType.MonthlyPlaylist -> MONTHLY_PREFIX
-                                PlaylistsType.PipedPlaylist -> PIPED_PREFIX
+                                //PlaylistsType.PipedPlaylist -> PIPED_PREFIX
                                 PlaylistsType.YTPlaylist -> YTP_PREFIX
                             }
                         val condition: (PlaylistPreview) -> Boolean = {
@@ -430,7 +430,7 @@ fun HomeLibrary(
                                 PlaylistsType.Playlist -> ""    // Matches everything
                                 PlaylistsType.PinnedPlaylist -> PINNED_PREFIX
                                 PlaylistsType.MonthlyPlaylist -> MONTHLY_PREFIX
-                                PlaylistsType.PipedPlaylist -> PIPED_PREFIX
+                                //PlaylistsType.PipedPlaylist -> PIPED_PREFIX
                                 PlaylistsType.YTPlaylist -> YTP_PREFIX
                             }
                         val condition: (PlaylistPreview) -> Boolean = {

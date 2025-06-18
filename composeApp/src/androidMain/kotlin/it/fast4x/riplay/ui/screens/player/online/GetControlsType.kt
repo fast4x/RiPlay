@@ -117,7 +117,6 @@ fun GetControls(
                 onSeekTo = onSeekTo,
                 onNext = onNext,
                 onPrevious = onPrevious,
-                onToggleRepeatMode = onToggleRepeatMode,
                 onToggleShuffleMode = onToggleShuffleMode,
             )
 
@@ -131,11 +130,8 @@ fun GetControls(
                 onShowSpeedPlayerDialog = { showSpeedPlayerDialog = true },
                 onPlay = onPlay,
                 onPause = onPause,
-                onSeekTo = onSeekTo,
                 onNext = onNext,
                 onPrevious = onPrevious,
-                onToggleRepeatMode = onToggleRepeatMode,
-                onToggleShuffleMode = onToggleShuffleMode,
             )
     }
 }

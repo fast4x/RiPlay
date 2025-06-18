@@ -382,18 +382,18 @@ fun HomeSongs(
 
     val showFavoritesPlaylist by rememberPreference(showFavoritesPlaylistKey, true)
     val showDislikedPlaylist by rememberPreference(showDislikedPlaylistKey, false)
-    val showCachedPlaylist by rememberPreference(showCachedPlaylistKey, true)
+    //val showCachedPlaylist by rememberPreference(showCachedPlaylistKey, true)
     val showMyTopPlaylist by rememberPreference(showMyTopPlaylistKey, true)
-    val showDownloadedPlaylist by rememberPreference(showDownloadedPlaylistKey, true)
+    //val showDownloadedPlaylist by rememberPreference(showDownloadedPlaylistKey, true)
     val showOnDevicePlaylist by rememberPreference(showOnDevicePlaylistKey, true)
 
     var buttonsList = listOf(BuiltInPlaylist.All to stringResource(R.string.all))
     if (showFavoritesPlaylist) buttonsList +=
         BuiltInPlaylist.Favorites to stringResource(R.string.favorites)
-    if (showCachedPlaylist) buttonsList +=
-        BuiltInPlaylist.Offline to stringResource(R.string.cached)
-    if (showDownloadedPlaylist) buttonsList +=
-        BuiltInPlaylist.Downloaded to stringResource(R.string.downloaded)
+//    if (showCachedPlaylist) buttonsList +=
+//        BuiltInPlaylist.Offline to stringResource(R.string.cached)
+//    if (showDownloadedPlaylist) buttonsList +=
+//        BuiltInPlaylist.Downloaded to stringResource(R.string.downloaded)
     if (showMyTopPlaylist) buttonsList +=
         BuiltInPlaylist.Top to String.format(stringResource(R.string.my_playlist_top),maxTopPlaylistItems.number)
     if (showOnDevicePlaylist) buttonsList +=

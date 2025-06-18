@@ -440,7 +440,6 @@ fun ControlsEssential(
     onSeekTo: (Float) -> Unit,
     onNext: () -> Unit,
     onPrevious: () -> Unit,
-    onToggleRepeatMode: () -> Unit,
     onToggleShuffleMode: () -> Unit,
 ) {
     println("Controls essential called")
@@ -523,8 +522,7 @@ fun ControlsEssential(
                 color = colorPalette().text,
                 enabled = true,
                 onClick = {
-                    //TODO CHECK SHUFFLE
-                    //binder.player.shuffleQueue()
+                    onToggleShuffleMode()
                 },
                 modifier = Modifier
                     .size(26.dp),

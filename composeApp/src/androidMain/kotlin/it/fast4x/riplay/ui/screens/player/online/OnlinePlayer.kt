@@ -64,6 +64,8 @@ import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.enums.PlayerBackgroundColors
 import it.fast4x.riplay.enums.PlayerThumbnailSize
 import it.fast4x.riplay.enums.PlayerType
+import it.fast4x.riplay.enums.QueueLoopType
+import it.fast4x.riplay.getQueueLoopType
 import it.fast4x.riplay.models.Info
 import it.fast4x.riplay.models.ui.toUiMedia
 import it.fast4x.riplay.ui.components.LocalMenuState
@@ -78,6 +80,7 @@ import it.fast4x.riplay.utils.controlsExpandedKey
 import it.fast4x.riplay.utils.disableScrollingTextKey
 import it.fast4x.riplay.utils.effectRotationKey
 import it.fast4x.riplay.utils.expandedplayerKey
+import it.fast4x.riplay.utils.getEnum
 import it.fast4x.riplay.utils.isExplicit
 import it.fast4x.riplay.utils.isLandscape
 import it.fast4x.riplay.utils.isShowingLyricsKey
@@ -86,6 +89,8 @@ import it.fast4x.riplay.utils.lastVideoSecondsKey
 import it.fast4x.riplay.utils.playerBackgroundColorsKey
 import it.fast4x.riplay.utils.playerThumbnailSizeKey
 import it.fast4x.riplay.utils.playerTypeKey
+import it.fast4x.riplay.utils.preferences
+import it.fast4x.riplay.utils.queueLoopTypeKey
 import it.fast4x.riplay.utils.rememberPreference
 import it.fast4x.riplay.utils.showButtonPlayerMenuKey
 import it.fast4x.riplay.utils.showTopActionsBarKey
@@ -369,9 +374,18 @@ fun OnlinePlayer(
         var shouldBePlaying by remember { mutableStateOf(false) }
         val enableBackgroundPlayback by remember { mutableStateOf(false) }
 
+
         LaunchedEffect(playerState.value) {
             shouldBePlaying = playerState.value == PlayerConstants.PlayerState.PLAYING
+
+            if (playerState.value == PlayerConstants.PlayerState.ENDED) {
+                // TODO Implement repeat mode in queue
+                if (getQueueLoopType() != QueueLoopType.Default)
+                    player.value?.seekTo(0f)
+
+            }
         }
+
 
         val isLandscape = isLandscape
 
@@ -502,6 +516,8 @@ fun OnlinePlayer(
                 onSeekTo = { player.value?.seekTo(it) },
                 onNext = { },
                 onPrevious = { },
+                onToggleShuffleMode = { },
+                onToggleLike = { }
             )
         }
 

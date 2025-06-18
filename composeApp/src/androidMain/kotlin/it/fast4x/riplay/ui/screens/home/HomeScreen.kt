@@ -102,41 +102,19 @@ fun HomeScreen(
                 onTabChanged,
                 miniPlayer,
                 navBarContent = { Item ->
-                    if (enableQuickPicksPage || isYouTubeLoggedIn())
-                        Item(0, if (!isYouTubeLoggedIn())
-                            stringResource(R.string.quick_picks) else stringResource(R.string.home),
-                            if (!isYouTubeLoggedIn()) R.drawable.sparkles else R.drawable.ytmusic)
-                    Item(1, stringResource(R.string.songs), R.drawable.musical_notes)
+                    Item(0, "Music", R.drawable.music)
+                    Item(1, stringResource(R.string.songs), R.drawable.disc)
                     Item(2, stringResource(R.string.artists), R.drawable.artists)
                     Item(3, stringResource(R.string.albums), R.drawable.album)
                     Item(4, stringResource(R.string.playlists), R.drawable.library)
+                    if (enableQuickPicksPage || isYouTubeLoggedIn())
+                        Item(5, if (!isYouTubeLoggedIn())
+                            stringResource(R.string.discover) else stringResource(R.string.home),
+                            if (!isYouTubeLoggedIn()) R.drawable.sparkles else R.drawable.ytmusic)
                 }
             ) { currentTabIndex ->
                 saveableStateHolder.SaveableStateProvider(key = currentTabIndex) {
                     when (currentTabIndex) {
-                        0 -> HomePage(
-                            onAlbumClick = {
-                                navController.navigate(route = "${NavRoutes.album.name}/$it")
-                            },
-                            onArtistClick = {
-                                navController.navigate(route = "${NavRoutes.artist.name}/$it")
-                            },
-                            onPlaylistClick = {
-                                navController.navigate(route = "${NavRoutes.playlist.name}/$it")
-                            },
-                            onSearchClick = {
-                                navController.navigate(NavRoutes.search.name)
-                            },
-                            onMoodClick = { mood ->
-                                navController.currentBackStackEntry?.savedStateHandle?.set("mood", mood.toUiMood())
-                                navController.navigate(NavRoutes.mood.name)
-                            },
-                            onSettingsClick = {
-                                navController.navigate(NavRoutes.settings.name)
-                            },
-                            navController = navController
-                        )
-
                         1 -> HomeSongs(
                             navController = navController,
                             onSearchClick = {
@@ -193,6 +171,29 @@ fun HomeScreen(
                                 navController.navigate(NavRoutes.settings.name)
                             }
 
+                        )
+
+                        5 -> HomePage(
+                            onAlbumClick = {
+                                navController.navigate(route = "${NavRoutes.album.name}/$it")
+                            },
+                            onArtistClick = {
+                                navController.navigate(route = "${NavRoutes.artist.name}/$it")
+                            },
+                            onPlaylistClick = {
+                                navController.navigate(route = "${NavRoutes.playlist.name}/$it")
+                            },
+                            onSearchClick = {
+                                navController.navigate(NavRoutes.search.name)
+                            },
+                            onMoodClick = { mood ->
+                                navController.currentBackStackEntry?.savedStateHandle?.set("mood", mood.toUiMood())
+                                navController.navigate(NavRoutes.mood.name)
+                            },
+                            onSettingsClick = {
+                                navController.navigate(NavRoutes.settings.name)
+                            },
+                            navController = navController
                         )
                     }
                 }

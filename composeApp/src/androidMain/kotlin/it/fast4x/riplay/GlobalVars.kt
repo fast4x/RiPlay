@@ -6,6 +6,7 @@ import androidx.compose.runtime.ReadOnlyComposable
 import it.fast4x.riplay.enums.AudioQualityFormat
 import it.fast4x.riplay.enums.ColorPaletteMode
 import it.fast4x.riplay.enums.DnsOverHttpsType
+import it.fast4x.riplay.enums.QueueLoopType
 import it.fast4x.riplay.enums.StreamingPlayerType
 import it.fast4x.riplay.enums.UiType
 import it.fast4x.riplay.enums.ViewType
@@ -24,6 +25,7 @@ import it.fast4x.riplay.utils.isConnectionMeteredEnabledKey
 import it.fast4x.riplay.utils.logDebugEnabledKey
 import it.fast4x.riplay.utils.parentalControlEnabledKey
 import it.fast4x.riplay.utils.preferences
+import it.fast4x.riplay.utils.queueLoopTypeKey
 import it.fast4x.riplay.utils.rememberPreference
 import it.fast4x.riplay.utils.showButtonPlayerVideoKey
 import it.fast4x.riplay.utils.showSearchTabKey
@@ -62,6 +64,7 @@ fun getViewType() = appContext().preferences.getEnum(viewTypeKey, ViewType.Grid)
 fun getDnsOverHttpsType() = appContext().preferences.getEnum(dnsOverHttpsTypeKey, DnsOverHttpsType.None)
 fun getUiType() = appContext().preferences.getEnum(UiTypeKey, UiType.RiMusic)
 fun getStreamingPlayerType() = appContext().preferences.getEnum(streamingPlayerTypeKey, StreamingPlayerType.Advanced)
+fun getQueueLoopType() = appContext().preferences.getEnum(queueLoopTypeKey, QueueLoopType.Default)
 
 fun ytAccountName() = appContext().preferences.getString(ytAccountNameKey, "")
 fun ytAccountThumbnail() = appContext().preferences.getString(ytAccountThumbnailKey, "")
