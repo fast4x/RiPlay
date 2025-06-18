@@ -403,7 +403,7 @@ fun DefaultUiSettings() {
     carouselSize = CarouselSize.Biggest
     var thumbnailType by rememberPreference(thumbnailTypeKey, ThumbnailType.Modern)
     thumbnailType = ThumbnailType.Modern
-    var playerTimelineType by rememberPreference(playerTimelineTypeKey, PlayerTimelineType.FakeAudioBar)
+    var playerTimelineType by rememberPreference(playerTimelineTypeKey, PlayerTimelineType.Default)
     playerTimelineType = PlayerTimelineType.Default
     var playerThumbnailSize by rememberPreference(
         playerThumbnailSizeKey,
@@ -627,7 +627,7 @@ fun UiSettings(
     var carousel by rememberPreference(carouselKey, true)
     var carouselSize by rememberPreference(carouselSizeKey, CarouselSize.Biggest)
     var thumbnailType by rememberPreference(thumbnailTypeKey, ThumbnailType.Modern)
-    var playerTimelineType by rememberPreference(playerTimelineTypeKey, PlayerTimelineType.FakeAudioBar)
+    var playerTimelineType by rememberPreference(playerTimelineTypeKey, PlayerTimelineType.Default)
     var playerThumbnailSize by rememberPreference(
         playerThumbnailSizeKey,
         PlayerThumbnailSize.Biggest
@@ -809,7 +809,7 @@ fun UiSettings(
                     if (uiType == UiType.ViMusic) {
                         disablePlayerHorizontalSwipe = true
                         disableIconButtonOnTop = true
-                        playerTimelineType = PlayerTimelineType.FakeAudioBar
+                        playerTimelineType = PlayerTimelineType.Default
                         visualizerEnabled = false
                         playerThumbnailSize = PlayerThumbnailSize.Medium
                         thumbnailTapEnabled = true

@@ -122,7 +122,6 @@ import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.common.Timeline
 import androidx.media3.common.util.UnstableApi
-import androidx.media3.exoplayer.offline.Download
 import androidx.navigation.NavController
 import androidx.palette.graphics.Palette
 import coil.compose.AsyncImage
@@ -179,7 +178,6 @@ import it.fast4x.riplay.ui.components.themed.BlurParamsDialog
 import it.fast4x.riplay.ui.components.themed.CircularSlider
 import it.fast4x.riplay.ui.components.themed.ConfirmationDialog
 import it.fast4x.riplay.ui.components.themed.DefaultDialog
-import it.fast4x.riplay.ui.components.themed.DownloadStateIconButton
 import it.fast4x.riplay.ui.components.themed.IconButton
 import it.fast4x.riplay.ui.components.themed.NowPlayingSongIndicator
 import it.fast4x.riplay.ui.components.themed.PlayerMenu
@@ -311,7 +309,6 @@ import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.input.pointer.pointerInteropFilter
 import androidx.compose.ui.unit.LayoutDirection
 import it.fast4x.riplay.appContext
-import it.fast4x.riplay.context
 import it.fast4x.riplay.ui.components.themed.AddToPlaylistPlayerMenu
 import it.fast4x.riplay.ui.screens.settings.isYouTubeSyncEnabled
 import it.fast4x.riplay.ui.styling.favoritesIcon
@@ -1348,7 +1345,7 @@ fun OfflinePlayer(
 
                         )
                     }
-                    .padding(all = if (isLandscape) playerThumbnailSizeL.size.dp else playerThumbnailSize.size.dp)
+                    .padding(all = if (isLandscape) playerThumbnailSizeL.padding.dp else playerThumbnailSize.padding.dp)
                     .thumbnailpause(
                         shouldBePlaying = shouldBePlaying
                     )
@@ -2288,7 +2285,7 @@ fun OfflinePlayer(
                              if (showthumbnail) {
                                  if (!isShowingVisualizer) {
                                      val fling = PagerDefaults.flingBehavior(state = pagerState,snapPositionalThreshold = 0.25f)
-                                     val pageSpacing = thumbnailSpacingL.toInt()*0.01*(screenWidth) - (2.5*playerThumbnailSizeL.size.dp)
+                                     val pageSpacing = thumbnailSpacingL.toInt()*0.01*(screenWidth) - (2.5*playerThumbnailSizeL.padding.dp)
 
                                      LaunchedEffect(pagerState, binder.player.currentMediaItemIndex) {
                                          if (appRunningInBackground || isShowingLyrics) {
@@ -2312,7 +2309,7 @@ fun OfflinePlayer(
                                      HorizontalPager(
                                          state = pagerState,
                                          pageSize = PageSize.Fixed(thumbnailSizeDp),
-                                         pageSpacing = thumbnailSpacingL.toInt()*0.01*(screenWidth) - (2.5*playerThumbnailSizeL.size.dp),
+                                         pageSpacing = thumbnailSpacingL.toInt()*0.01*(screenWidth) - (2.5*playerThumbnailSizeL.padding.dp),
                                          contentPadding = PaddingValues(start = ((maxWidth - maxHeight)/2).coerceAtLeast(0.dp), end = ((maxWidth - maxHeight)/2 + if (pageSpacing < 0.dp) (-(pageSpacing)) else 0.dp).coerceAtLeast(0.dp)),
                                          beyondViewportPageCount = 3,
                                          flingBehavior = fling,
@@ -2337,7 +2334,7 @@ fun OfflinePlayer(
 
                                          val coverModifier = Modifier
                                              .aspectRatio(1f)
-                                             .padding(all = playerThumbnailSizeL.size.dp)
+                                             .padding(all = playerThumbnailSizeL.padding.dp)
                                              .graphicsLayer {
                                                  val pageOffSet =
                                                      ((pagerState.currentPage - it) + pagerState.currentPageOffsetFraction).absoluteValue
@@ -3016,14 +3013,14 @@ fun OfflinePlayer(
                                      }
                                  }
 
-                                 val pageSpacing = (thumbnailSpacing.toInt()*0.01*(screenHeight) - if (carousel) (3*carouselSize.size.dp) else (2*playerThumbnailSize.size.dp))
+                                 val pageSpacing = (thumbnailSpacing.toInt()*0.01*(screenHeight) - if (carousel) (3*carouselSize.size.dp) else (2*playerThumbnailSize.padding.dp))
                                  val animatePageSpacing by animateDpAsState(
                                      if (expandedplayer) (thumbnailSpacing.toInt()*0.01*(screenHeight) - if (carousel) (3*carouselSize.size.dp) else (2*carouselSize.size.dp)) else 10.dp,
                                      label = ""
                                  )
 
                                  val animatePadding by animateDpAsState(
-                                     if (expandedplayer) carouselSize.size.dp else playerThumbnailSize.size.dp
+                                     if (expandedplayer) carouselSize.size.dp else playerThumbnailSize.padding.dp
                                  )
                                  VerticalPager(
                                      state = pagerState,

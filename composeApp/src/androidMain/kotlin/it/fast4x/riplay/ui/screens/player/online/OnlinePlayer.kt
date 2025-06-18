@@ -62,6 +62,7 @@ import it.fast4x.riplay.enums.BackgroundProgress
 import it.fast4x.riplay.enums.ColorPaletteMode
 import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.enums.PlayerBackgroundColors
+import it.fast4x.riplay.enums.PlayerThumbnailSize
 import it.fast4x.riplay.enums.PlayerType
 import it.fast4x.riplay.models.Info
 import it.fast4x.riplay.models.ui.toUiMedia
@@ -69,6 +70,7 @@ import it.fast4x.riplay.ui.components.LocalMenuState
 import it.fast4x.riplay.ui.components.themed.PlayerMenu
 import it.fast4x.riplay.ui.styling.collapsedPlayerProgressBar
 import it.fast4x.riplay.ui.styling.favoritesOverlay
+import it.fast4x.riplay.utils.applyIf
 import it.fast4x.riplay.utils.backgroundProgressKey
 import it.fast4x.riplay.utils.blurStrengthKey
 import it.fast4x.riplay.utils.colorPaletteModeKey
@@ -77,10 +79,12 @@ import it.fast4x.riplay.utils.disableScrollingTextKey
 import it.fast4x.riplay.utils.effectRotationKey
 import it.fast4x.riplay.utils.expandedplayerKey
 import it.fast4x.riplay.utils.isExplicit
+import it.fast4x.riplay.utils.isLandscape
 import it.fast4x.riplay.utils.isShowingLyricsKey
 import it.fast4x.riplay.utils.lastVideoIdKey
 import it.fast4x.riplay.utils.lastVideoSecondsKey
 import it.fast4x.riplay.utils.playerBackgroundColorsKey
+import it.fast4x.riplay.utils.playerThumbnailSizeKey
 import it.fast4x.riplay.utils.playerTypeKey
 import it.fast4x.riplay.utils.rememberPreference
 import it.fast4x.riplay.utils.showButtonPlayerMenuKey
@@ -237,6 +241,10 @@ fun OnlinePlayer(
         backgroundProgressKey,
         BackgroundProgress.MiniPlayer
     )
+    val playerThumbnailSize by rememberPreference(
+        playerThumbnailSizeKey,
+        PlayerThumbnailSize.Biggest
+    )
 
     Column(
         verticalArrangement = Arrangement.Top,
@@ -365,8 +373,13 @@ fun OnlinePlayer(
             shouldBePlaying = playerState.value == PlayerConstants.PlayerState.PLAYING
         }
 
+        val isLandscape = isLandscape
 
         AndroidView(
+            modifier = Modifier
+                .applyIf(!isLandscape) {
+                    padding(horizontal = playerThumbnailSize.padding.dp)
+                },
             factory = {
 
 //                val iFramePlayerOptions = IFramePlayerOptions.Builder()
@@ -432,10 +445,6 @@ fun OnlinePlayer(
                 }
 
                 onlinePlayerView.apply {
-                    layoutParams = ViewGroup.LayoutParams(
-                        ViewGroup.LayoutParams.MATCH_PARENT,
-                        ViewGroup.LayoutParams.WRAP_CONTENT
-                    )
                     enableAutomaticInitialization = false
 
                     if (enableBackgroundPlayback)
@@ -446,6 +455,22 @@ fun OnlinePlayer(
                     initialize(listener, iFramePlayerOptions)
                 }
 
+            },
+            update = {
+                it.enableBackgroundPlayback(enableBackgroundPlayback)
+                it.layoutParams =  if (!isLandscape) {
+                    ViewGroup.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        if (playerThumbnailSize == PlayerThumbnailSize.Expanded)
+                            ViewGroup.LayoutParams.WRAP_CONTENT
+                        else playerThumbnailSize.height
+                    )
+                } else {
+                    ViewGroup.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.WRAP_CONTENT
+                    )
+                }
             }
         )
 
@@ -476,19 +501,20 @@ fun OnlinePlayer(
                 onPause = { player.value?.pause() },
                 onSeekTo = { player.value?.seekTo(it) },
                 onNext = { },
-                onPrevious = {  },
+                onPrevious = { },
             )
         }
 
 
 
-        Row {
-            controlsContent(
-                Modifier
-                    .padding(vertical = 30.dp)
-                    .border(BorderStroke(1.dp, colorPalette().red))
-            )
-        }
+        if (!isLandscape)
+            Row {
+                controlsContent(
+                    Modifier
+                        .padding(vertical = 30.dp)
+                        .border(BorderStroke(1.dp, colorPalette().red))
+                )
+            }
 
 
 
