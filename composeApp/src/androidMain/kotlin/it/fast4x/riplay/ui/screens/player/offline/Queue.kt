@@ -764,7 +764,7 @@ fun Queue(
                             .absoluteOffset(0.dp, -65.dp)
                             .align(Alignment.TopCenter)
                     ) {
-                        MiniPlayer(
+                        OfflineMiniPlayer(
                             showPlayer = {
                                 onDismiss(queueLoopType)
                             },

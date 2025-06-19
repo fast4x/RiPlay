@@ -119,7 +119,7 @@ import kotlin.math.absoluteValue
     ExperimentalFoundationApi::class, ExperimentalFoundationApi::class,
     ExperimentalFoundationApi::class)
 @Composable
-fun MiniPlayer(
+fun OfflineMiniPlayer(
     showPlayer: () -> Unit,
     hidePlayer: () -> Unit,
     navController: NavController? = null,

@@ -136,7 +136,7 @@ import it.fast4x.riplay.ui.components.LocalMenuState
 import it.fast4x.riplay.ui.components.themed.CrossfadeContainer
 import it.fast4x.riplay.ui.components.themed.SmartMessage
 import it.fast4x.riplay.ui.screens.AppNavigation
-import it.fast4x.riplay.ui.screens.player.offline.MiniPlayer
+import it.fast4x.riplay.ui.screens.player.offline.OfflineMiniPlayer
 import it.fast4x.riplay.ui.screens.player.online.OnlinePlayer
 import it.fast4x.riplay.ui.screens.player.offline.rememberPlayerSheetState
 import it.fast4x.riplay.ui.styling.Appearance
@@ -153,6 +153,7 @@ import it.fast4x.riplay.extensions.rescuecenter.RescueScreen
 import it.fast4x.riplay.service.modern.isLocal
 import it.fast4x.riplay.ui.screens.player.fastPlay
 import it.fast4x.riplay.ui.screens.player.offline.OfflinePlayer
+import it.fast4x.riplay.ui.screens.player.online.OnlineMiniPlayer
 import it.fast4x.riplay.ui.screens.settings.isYouTubeLoggedIn
 import it.fast4x.riplay.utils.UiTypeKey
 import it.fast4x.riplay.utils.animatedGradientKey
@@ -1132,11 +1133,21 @@ class MainActivity :
                                     AppNavigation(
                                         navController = navController,
                                         miniPlayer = {
-                                            MiniPlayer(
-                                                showPlayer = { showPlayer = true },
-                                                hidePlayer = { showPlayer = false },
-                                                navController = navController
-                                            )
+                                            println("MainActivity miniPlayer mediaItemIsLocal ${mediaItemIsLocal.value}")
+                                            if (mediaItemIsLocal.value)
+                                                OfflineMiniPlayer(
+                                                    showPlayer = { showPlayer = true },
+                                                    hidePlayer = { showPlayer = false },
+                                                    navController = navController
+                                                )
+                                            else
+                                                OnlineMiniPlayer(
+                                                    lifecycleOwner = LocalLifecycleOwner.current,
+                                                    mediaItem = binder?.player?.currentMediaItem,
+                                                    showPlayer = { showPlayer = true },
+                                                    hidePlayer = { showPlayer = false },
+                                                    navController = navController
+                                                )
                                         },
                                         openTabFromShortcut = openTabFromShortcut
                                     )
@@ -1164,7 +1175,7 @@ class MainActivity :
                                     val onlinePlayer: @Composable () -> Unit = {
                                         binder?.player?.currentMediaItem?.let {
                                             OnlinePlayer(
-                                                mediaItem = it,
+                                                //mediaItem = it,
                                                 lifecycleOwner = LocalLifecycleOwner.current,
                                                 showPlayer = showPlayer,
                                                 onCurrentSecond = {

@@ -30,11 +30,13 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.neverEqualPolicy
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
@@ -48,6 +50,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.LifecycleOwner
 import androidx.media3.common.MediaItem
+import androidx.media3.common.PlaybackException
+import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.PlayerConstants
@@ -77,6 +81,7 @@ import it.fast4x.riplay.ui.components.LocalMenuState
 import it.fast4x.riplay.ui.components.themed.PlayerMenu
 import it.fast4x.riplay.ui.styling.collapsedPlayerProgressBar
 import it.fast4x.riplay.ui.styling.favoritesOverlay
+import it.fast4x.riplay.utils.DisposableListener
 import it.fast4x.riplay.utils.applyIf
 import it.fast4x.riplay.utils.asSong
 import it.fast4x.riplay.utils.backgroundProgressKey
@@ -91,10 +96,14 @@ import it.fast4x.riplay.utils.isLandscape
 import it.fast4x.riplay.utils.isShowingLyricsKey
 import it.fast4x.riplay.utils.lastVideoIdKey
 import it.fast4x.riplay.utils.lastVideoSecondsKey
+import it.fast4x.riplay.utils.mediaItems
+import it.fast4x.riplay.utils.playNext
+import it.fast4x.riplay.utils.playPrevious
 import it.fast4x.riplay.utils.playerBackgroundColorsKey
 import it.fast4x.riplay.utils.playerThumbnailSizeKey
 import it.fast4x.riplay.utils.playerTypeKey
 import it.fast4x.riplay.utils.rememberPreference
+import it.fast4x.riplay.utils.shouldBePlaying
 import it.fast4x.riplay.utils.showButtonPlayerMenuKey
 import it.fast4x.riplay.utils.showTopActionsBarKey
 import it.fast4x.riplay.utils.timelineExpandedKey
@@ -122,10 +131,15 @@ fun OnlinePlayer(
     onSwitchToAudioPlayer: () -> Unit,
     onDismiss: () -> Unit,
     navController: NavController,
-    mediaItem: MediaItem,
+    //mediaItem: MediaItem,
 ) {
 
     if (!showPlayer) return
+
+    val binder = LocalPlayerServiceBinder.current
+    var queue by remember { mutableStateOf(queue(binder).toMutableStateList()) }
+    var queueIndex by remember { mutableIntStateOf(0) }
+    //queue = queue(binder).toMutableStateList()
 
     var lastYTVideoId by rememberPreference(key = lastVideoIdKey, defaultValue = "")
     var lastYTVideoSeconds by rememberPreference(key = lastVideoSecondsKey, defaultValue = 0f)
@@ -141,11 +155,22 @@ fun OnlinePlayer(
     var timelineExpanded by rememberPreference(timelineExpandedKey, false)
     var controlsExpanded by rememberPreference(controlsExpandedKey, false)
     var isShowingLyrics by rememberPreference(isShowingLyricsKey, false)
-    val binder = LocalPlayerServiceBinder.current
+
     var nullableMediaItem by remember {
         mutableStateOf(binder?.player?.currentMediaItem, neverEqualPolicy())
     }
-    val mediaItem = nullableMediaItem ?: return
+    var mediaItem = nullableMediaItem ?: return
+
+    binder?.player?.DisposableListener {
+        object : Player.Listener {
+            override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
+                println("OnlinePlayer onMediaItemTransition $mediaItem")
+                nullableMediaItem = mediaItem
+            }
+        }
+    }
+
+
     var albumInfo by remember {
         mutableStateOf(mediaItem.mediaMetadata.extras?.getString("albumId")?.let { albumId ->
             Info(albumId, null)
@@ -241,8 +266,20 @@ fun OnlinePlayer(
     val steps by remember { mutableIntStateOf(5) }
     var stepToUpdateStats by remember { mutableIntStateOf(1) }
 
+    //val onlinePlayerView = YouTubePlayerView(context = context())
+    val inflatedView = LayoutInflater.from(context()).inflate(R.layout.youtube_player, null, false)
+    val onlinePlayerView: YouTubePlayerView = inflatedView as YouTubePlayerView
+    val customPLayerUi = onlinePlayerView.inflateCustomPlayerUi(R.layout.ayp_default_player_ui)
+    var player = remember { mutableStateOf<YouTubePlayer?>(null) }
+    val playerState = remember { mutableStateOf(PlayerConstants.PlayerState.UNSTARTED) }
+    var shouldBePlaying by remember { mutableStateOf(false) }
+    val enableBackgroundPlayback by remember { mutableStateOf(false) }
 
     LaunchedEffect(mediaItem) {
+        //mediaItem = binder?.player?.mediaItems?.getOrNull(queueIndex) ?: return@LaunchedEffect
+        //binder.player.setMediaItem(mediaItem)
+        //println("OnlinePlayer LaunchedEffect mediaItem ${mediaItem.mediaId} ${mediaItem.mediaMetadata.title} ${lastYTVideoId}")
+
         // Ensure that the song is in database
         CoroutineScope(Dispatchers.IO).launch {
             Database.asyncTransaction {
@@ -259,6 +296,11 @@ fun OnlinePlayer(
         updateBrush = true
 
         stepToUpdateStats = 1
+
+        println("OnlinePLayer Inside Launchedeffect mediaItem.mediaId")
+        //if (queueIndex >= 0 && queueIndex < queue.size)
+            //player.value?.loadVideo(queue[queueIndex].toString(), 0f)
+        player.value?.loadVideo(mediaItem.mediaId, 0f)
     }
 
     LaunchedEffect(currentSecond, currentDuration) {
@@ -297,6 +339,21 @@ fun OnlinePlayer(
 
     }
 
+    LaunchedEffect(playerState.value) {
+        shouldBePlaying = playerState.value == PlayerConstants.PlayerState.PLAYING
+
+        if (playerState.value == PlayerConstants.PlayerState.ENDED) {
+            // TODO Implement repeat mode in queue
+            if (getQueueLoopType() != QueueLoopType.Default)
+                player.value?.seekTo(0f)
+
+            updateStatistics = true
+        }
+
+    }
+
+
+    val isLandscape = isLandscape
 
     Column(
         verticalArrangement = Arrangement.Top,
@@ -412,31 +469,6 @@ fun OnlinePlayer(
             )
         }
 
-        //val onlinePlayerView = YouTubePlayerView(context = context())
-        val inflatedView = LayoutInflater.from(context()).inflate(R.layout.youtube_player, null, false)
-        val onlinePlayerView: YouTubePlayerView = inflatedView as YouTubePlayerView
-        val customPLayerUi = onlinePlayerView.inflateCustomPlayerUi(R.layout.ayp_default_player_ui)
-        var player = remember { mutableStateOf<YouTubePlayer?>(null) }
-        val playerState = remember { mutableStateOf(PlayerConstants.PlayerState.UNSTARTED) }
-        var shouldBePlaying by remember { mutableStateOf(false) }
-        val enableBackgroundPlayback by remember { mutableStateOf(false) }
-
-
-        LaunchedEffect(playerState.value) {
-            shouldBePlaying = playerState.value == PlayerConstants.PlayerState.PLAYING
-
-            if (playerState.value == PlayerConstants.PlayerState.ENDED) {
-                // TODO Implement repeat mode in queue
-                if (getQueueLoopType() != QueueLoopType.Default)
-                    player.value?.seekTo(0f)
-
-                updateStatistics = true
-            }
-
-        }
-
-
-        val isLandscape = isLandscape
 
         AndroidView(
             modifier = Modifier
@@ -537,47 +569,84 @@ fun OnlinePlayer(
             }
         )
 
-        val controlsContent: @Composable (
-            modifier: Modifier
-        ) -> Unit = { modifierValue ->
-            Controls(
-                navController = navController,
-                onCollapse = onDismiss,
-                expandedplayer = expandedplayer,
-                titleExpanded = titleExpanded,
-                timelineExpanded = timelineExpanded,
-                controlsExpanded = controlsExpanded,
-                isShowingLyrics = isShowingLyrics,
-                media = mediaItem.toUiMedia(positionAndDuration.second.toLong()),
-                mediaItem = mediaItem,
-                title = mediaItem.mediaMetadata.title?.toString() ?: "",
-                artist = mediaItem.mediaMetadata.artist?.toString(),
-                artistIds = artistsInfo,
-                albumId = albumId,
-                shouldBePlaying = shouldBePlaying,
-                position = positionAndDuration.first.toLong(),
-                duration = positionAndDuration.second.toLong(),
-                modifier = modifierValue,
-                onBlurScaleChange = { blurStrength = it },
-                isExplicit = mediaItem.isExplicit,
-                onPlay = { player.value?.play() },
-                onPause = { player.value?.pause() },
-                onSeekTo = { player.value?.seekTo(it) },
-                onNext = { },
-                onPrevious = { },
-                onToggleShuffleMode = { },
-                onToggleLike = { }
-            )
-        }
+//        val controlsContent: @Composable (
+//            modifier: Modifier
+//        ) -> Unit = { modifierValue ->
+//            Controls(
+//                navController = navController,
+//                onCollapse = onDismiss,
+//                expandedplayer = expandedplayer,
+//                titleExpanded = titleExpanded,
+//                timelineExpanded = timelineExpanded,
+//                controlsExpanded = controlsExpanded,
+//                isShowingLyrics = isShowingLyrics,
+//                media = mediaItem.toUiMedia(positionAndDuration.second.toLong()),
+//                mediaItem = mediaItem,
+//                title = mediaItem.mediaMetadata.title?.toString() ?: "",
+//                artist = mediaItem.mediaMetadata.artist?.toString(),
+//                artistIds = artistsInfo,
+//                albumId = albumId,
+//                shouldBePlaying = shouldBePlaying,
+//                position = positionAndDuration.first.toLong(),
+//                duration = positionAndDuration.second.toLong(),
+//                modifier = modifierValue,
+//                onBlurScaleChange = { blurStrength = it },
+//                isExplicit = mediaItem.isExplicit,
+//                onPlay = { player.value?.play() },
+//                onPause = { player.value?.pause() },
+//                onSeekTo = { player.value?.seekTo(it) },
+//                onNext = {
+//                    queueIndex++
+//                    println("OnlinePlayer QueueIndex ++ $queueIndex")
+//                },
+//                onPrevious = {
+//                    queueIndex--
+//                    println("OnlinePlayer QueueIndex -- $queueIndex")
+//                },
+//                onToggleShuffleMode = { },
+//                onToggleLike = { }
+//            )
+//        }
 
 
 
         if (!isLandscape)
             Row {
-                controlsContent(
-                    Modifier
+//                controlsContent(
+//                    Modifier
+//                        .padding(vertical = 30.dp)
+//                        .border(BorderStroke(1.dp, colorPalette().red))
+//                )
+                println("OnlinePlayer Controls ${mediaItem.mediaMetadata.title?.toString()} ${mediaItem.mediaMetadata.artist?.toString()}")
+                Controls(
+                    navController = navController,
+                    onCollapse = onDismiss,
+                    expandedplayer = expandedplayer,
+                    titleExpanded = titleExpanded,
+                    timelineExpanded = timelineExpanded,
+                    controlsExpanded = controlsExpanded,
+                    isShowingLyrics = isShowingLyrics,
+                    media = mediaItem.toUiMedia(positionAndDuration.second.toLong()),
+                    mediaItem = mediaItem,
+                    title = mediaItem.mediaMetadata.title?.toString() ?: "",
+                    artist = mediaItem.mediaMetadata.artist?.toString(),
+                    artistIds = artistsInfo,
+                    albumId = albumId,
+                    shouldBePlaying = shouldBePlaying,
+                    position = positionAndDuration.first.toLong(),
+                    duration = positionAndDuration.second.toLong(),
+                    modifier = Modifier
                         .padding(vertical = 30.dp)
-                        .border(BorderStroke(1.dp, colorPalette().red))
+                        .border(BorderStroke(1.dp, colorPalette().red)),
+                    onBlurScaleChange = { blurStrength = it },
+                    isExplicit = mediaItem.isExplicit,
+                    onPlay = { player.value?.play() },
+                    onPause = { player.value?.pause() },
+                    onSeekTo = { player.value?.seekTo(it) },
+                    onNext = { binder?.player?.playNext() },
+                    onPrevious = { binder?.player?.playPrevious() },
+                    onToggleShuffleMode = { },
+                    onToggleLike = { }
                 )
             }
 

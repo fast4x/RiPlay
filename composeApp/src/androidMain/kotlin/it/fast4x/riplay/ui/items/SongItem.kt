@@ -91,6 +91,7 @@ fun SongItem(
     thumbnailContent: (@Composable BoxScope.() -> Unit)? = null,
     disableScrollingText: Boolean,
     isNowPlaying: Boolean = false,
+    isLocal: Boolean = false,
     forceRecompose: Boolean = false
 ) {
     SongItem(
@@ -101,6 +102,7 @@ fun SongItem(
         onThumbnailContent = thumbnailContent,
         disableScrollingText = disableScrollingText,
         isNowPlaying = isNowPlaying,
+        isLocal = isLocal,
         forceRecompose = forceRecompose
     )
 }
@@ -117,6 +119,7 @@ fun SongItem(
     isRecommended: Boolean = false,
     disableScrollingText: Boolean,
     isNowPlaying: Boolean = false,
+    isLocal: Boolean = false,
     forceRecompose: Boolean = false
 ) {
     SongItem(
@@ -129,6 +132,7 @@ fun SongItem(
         mediaItem = song,
         disableScrollingText = disableScrollingText,
         isNowPlaying = isNowPlaying,
+        isLocal = isLocal,
         forceRecompose = forceRecompose
     )
 }
@@ -144,6 +148,7 @@ fun SongItem(
     trailingContent: (@Composable () -> Unit)? = null,
     disableScrollingText: Boolean,
     isNowPlaying: Boolean = false,
+    isLocal: Boolean = false,
     forceRecompose: Boolean = false
 ) {
     SongItem(
@@ -155,6 +160,7 @@ fun SongItem(
         mediaItem = song.asMediaItem,
         disableScrollingText = disableScrollingText,
         isNowPlaying = isNowPlaying,
+        isLocal = isLocal,
         forceRecompose = forceRecompose
     )
 }
@@ -171,6 +177,7 @@ fun SongItem(
     mediaItem: MediaItem,
     disableScrollingText: Boolean,
     isNowPlaying: Boolean = false,
+    isLocal: Boolean = false,
     forceRecompose: Boolean = false
 ) {
     val binder = LocalPlayerServiceBinder.current
@@ -220,6 +227,7 @@ fun SongItem(
     mediaItem: MediaItem,
     disableScrollingText: Boolean,
     isNowPlaying: Boolean = false,
+    isLocalSong: Boolean = false,
     forceRecompose: Boolean = false
 ) {
 

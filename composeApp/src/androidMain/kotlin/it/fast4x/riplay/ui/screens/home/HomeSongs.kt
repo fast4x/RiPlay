@@ -1639,6 +1639,7 @@ fun HomeSongs(
                                     .animateItem(),
                                 disableScrollingText = disableScrollingText,
                                 isNowPlaying = binder?.player?.isNowPlaying(song.song.id) ?: false,
+                                isLocal = isLocal,
                                 forceRecompose = forceRecompose
                             )
                         }
