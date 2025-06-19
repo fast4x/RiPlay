@@ -314,7 +314,7 @@ fun Controls(
                     )
                     Spacer(
                         modifier = Modifier
-                            //.weight(0.4f)
+                            .weight(0.4f)
                     )
                     GetControls(
                         position = position,
@@ -332,7 +332,7 @@ fun Controls(
                     )
                     Spacer(
                         modifier = Modifier
-                           // .weight(0.5f)
+                            .weight(0.5f)
                     )
                 } else {
                     println("Controls sono qui 3")
@@ -352,7 +352,7 @@ fun Controls(
                     )
                     Spacer(
                         modifier = Modifier
-                            //.weight(0.5f)
+                            .weight(0.5f)
                     )
                     GetSeekBar(
                         position = position,
@@ -365,7 +365,7 @@ fun Controls(
                     )
                     Spacer(
                         modifier = Modifier
-                            //.weight(0.4f)
+                            .weight(0.4f)
                     )
                 }
 

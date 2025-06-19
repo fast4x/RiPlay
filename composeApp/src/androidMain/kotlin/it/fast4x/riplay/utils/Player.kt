@@ -113,6 +113,11 @@ fun Player.playOnline(mediaItem: MediaItem) {
     pause()
 }
 
+fun Player.playOnlineAtIndex(mediaItemIndex: Int) {
+    seekTo(mediaItemIndex, C.TIME_UNSET)
+    pause()
+}
+
 fun Player.playAtIndex(mediaItemIndex: Int) {
     seekTo(mediaItemIndex, C.TIME_UNSET)
     prepare()

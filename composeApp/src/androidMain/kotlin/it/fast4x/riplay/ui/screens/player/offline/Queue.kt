@@ -112,6 +112,7 @@ import it.fast4x.riplay.ui.components.themed.QueuedMediaItemMenu
 import it.fast4x.riplay.ui.components.themed.SmartMessage
 import it.fast4x.riplay.ui.items.SongItem
 import it.fast4x.riplay.ui.items.SongItemPlaceholder
+import it.fast4x.riplay.ui.screens.player.online.OnlineMiniPlayer
 import it.fast4x.riplay.ui.screens.settings.isYouTubeSyncEnabled
 import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.ui.styling.favoritesIcon
@@ -148,6 +149,7 @@ import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
 import java.text.SimpleDateFormat
 import java.util.Date
+import androidx.lifecycle.compose.LocalLifecycleOwner
 
 
 @ExperimentalTextApi
@@ -396,7 +398,7 @@ fun Queue(
                         ) ?: false
             }
 
-    println("QueueModern 2")
+    val lifecycleOwner = LocalLifecycleOwner.current
 
     Box(
         modifier = Modifier
@@ -764,11 +766,22 @@ fun Queue(
                             .absoluteOffset(0.dp, -65.dp)
                             .align(Alignment.TopCenter)
                     ) {
-                        OfflineMiniPlayer(
-                            showPlayer = {
-                                onDismiss(queueLoopType)
-                            },
-                            hidePlayer = {})
+                        if (player.currentMediaItem?.isLocal == true)
+                            OfflineMiniPlayer(
+                                showPlayer = {
+                                    onDismiss(queueLoopType)
+                                },
+                                hidePlayer = {}
+                            )
+//                        else
+//                            OnlineMiniPlayer(
+//                                showPlayer = {
+//                                    onDismiss(queueLoopType)
+//                                },
+//                                hidePlayer = {},
+//                                lifecycleOwner = lifecycleOwner,
+//                                mediaItem = binder.player.currentMediaItem
+//                            )
                     }
 
 

@@ -24,6 +24,8 @@ import it.fast4x.riplay.utils.getEnum
 import it.fast4x.riplay.utils.handleAudioFocusEnabledKey
 import it.fast4x.riplay.utils.isConnectionMetered
 import it.fast4x.riplay.utils.isConnectionMeteredEnabledKey
+import it.fast4x.riplay.utils.lastVideoIdKey
+import it.fast4x.riplay.utils.lastVideoSecondsKey
 import it.fast4x.riplay.utils.logDebugEnabledKey
 import it.fast4x.riplay.utils.parentalControlEnabledKey
 import it.fast4x.riplay.utils.pauseListenHistoryKey
@@ -70,6 +72,8 @@ fun getStreamingPlayerType() = appContext().preferences.getEnum(streamingPlayerT
 fun getQueueLoopType() = appContext().preferences.getEnum(queueLoopTypeKey, QueueLoopType.Default)
 fun getPauseListenHistory() = appContext().preferences.getBoolean(pauseListenHistoryKey, false)
 fun getMinTimeForEvent() = appContext().preferences.getEnum(exoPlayerMinTimeForEventKey, MinTimeForEvent.`20s`)
+fun getLastYTVideoId() = appContext().preferences.getString(lastVideoIdKey, "")
+fun getLastYTVideoSeconds() = appContext().preferences.getFloat(lastVideoSecondsKey, 0f)
 
 fun ytAccountName() = appContext().preferences.getString(ytAccountNameKey, "")
 fun ytAccountThumbnail() = appContext().preferences.getString(ytAccountThumbnailKey, "")

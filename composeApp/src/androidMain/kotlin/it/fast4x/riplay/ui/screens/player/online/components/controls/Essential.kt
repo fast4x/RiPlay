@@ -56,6 +56,7 @@ import androidx.navigation.NavController
 import it.fast4x.riplay.Database
 import it.fast4x.riplay.R
 import it.fast4x.riplay.appContext
+import it.fast4x.riplay.binder
 import it.fast4x.riplay.cleanPrefix
 import it.fast4x.riplay.colorPalette
 import it.fast4x.riplay.context
@@ -463,6 +464,8 @@ fun ControlsEssential(
     var jumpPrevious by rememberPreference(jumpPreviousKey,"3")
     val currentMediaItem = mediaItem
     var lightTheme = colorPaletteMode == ColorPaletteMode.Light || (colorPaletteMode == ColorPaletteMode.System && (!isSystemInDarkTheme()))
+
+    val binder = binder()
 
     Box {
         if (playerBackgroundColors != PlayerBackgroundColors.MidnightOdyssey){

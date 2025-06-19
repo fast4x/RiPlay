@@ -154,6 +154,7 @@ import it.fast4x.riplay.service.modern.isLocal
 import it.fast4x.riplay.ui.screens.player.fastPlay
 import it.fast4x.riplay.ui.screens.player.offline.OfflinePlayer
 import it.fast4x.riplay.ui.screens.player.online.OnlineMiniPlayer
+import it.fast4x.riplay.ui.screens.player.online.OnlinePlayerModern
 import it.fast4x.riplay.ui.screens.settings.isYouTubeLoggedIn
 import it.fast4x.riplay.utils.UiTypeKey
 import it.fast4x.riplay.utils.animatedGradientKey
@@ -1107,7 +1108,7 @@ class MainActivity :
                                                     )}.db")
                                                     .apply {
                                                         onCompleteListener { success, message, exitCode ->
-                                                            Timber.d(TAG,"Rescue backup success: $success, message: $message, exitCode: $exitCode")
+                                                            //Timber.d(TAG,"Rescue backup success: $success, message: $message, exitCode: $exitCode")
                                                             println("Rescue backup success: $success, message: $message, exitCode: $exitCode")
 
                                                         }
@@ -1120,7 +1121,7 @@ class MainActivity :
                                                 .backupLocation(RoomBackup.BACKUP_FILE_LOCATION_CUSTOM_DIALOG)
                                                 .apply {
                                                     onCompleteListener { success, message, exitCode ->
-                                                        Timber.d(TAG,"Rescue restore success: $success, message: $message, exitCode: $exitCode")
+                                                        //Timber.d(TAG,"Rescue restore success: $success, message: $message, exitCode: $exitCode")
                                                         println("Rescue restore success: $success, message: $message, exitCode: $exitCode")
 
                                                     }
@@ -1173,31 +1174,39 @@ class MainActivity :
                                     }
 
                                     val onlinePlayer: @Composable () -> Unit = {
-                                        binder?.player?.currentMediaItem?.let {
-                                            OnlinePlayer(
-                                                //mediaItem = it,
-                                                lifecycleOwner = LocalLifecycleOwner.current,
-                                                showPlayer = showPlayer,
-                                                onCurrentSecond = {
-                                                    println("MainActivity.OnlinePlayer onCurrentSecond $it")
-                                                },
-                                                onVideoDuration = {
-                                                    println("MainActivity.OnlinePlayer onVideoDuration $it")
-                                                },
-                                                onVideoEnded = {
-                                                    println("MainActivity.OnlinePlayer onVideoEnded")
-                                                },
-                                                onSwitchToAudioPlayer = {
-                                                    showPlayer = false
-                                                    switchToAudioPlayer = true
-                                                },
-                                                onDismiss = {
-                                                    showPlayer = false
-                                                },
-                                                navController = navController
-                                            )
-                                        }
+                                        OnlinePlayerModern(
+                                            navController = navController,
+                                            onDismiss = {
+                                                showPlayer = false
+                                            }
+                                        )
                                     }
+//                                    val onlinePlayer: @Composable () -> Unit = {
+//                                        binder?.player?.currentMediaItem?.let {
+//                                            OnlinePlayer(
+//                                                //mediaItem = it,
+//                                                lifecycleOwner = LocalLifecycleOwner.current,
+//                                                showPlayer = showPlayer,
+//                                                onCurrentSecond = {
+//                                                    println("MainActivity.OnlinePlayer onCurrentSecond $it")
+//                                                },
+//                                                onVideoDuration = {
+//                                                    println("MainActivity.OnlinePlayer onVideoDuration $it")
+//                                                },
+//                                                onVideoEnded = {
+//                                                    println("MainActivity.OnlinePlayer onVideoEnded")
+//                                                },
+//                                                onSwitchToAudioPlayer = {
+//                                                    showPlayer = false
+//                                                    switchToAudioPlayer = true
+//                                                },
+//                                                onDismiss = {
+//                                                    showPlayer = false
+//                                                },
+//                                                navController = navController
+//                                            )
+//                                        }
+//                                    }
 
                                     CustomModalBottomSheet(
                                         showSheet = showPlayer,
