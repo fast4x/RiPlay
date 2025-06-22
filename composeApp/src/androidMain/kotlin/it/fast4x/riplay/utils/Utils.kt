@@ -188,6 +188,7 @@ val Environment.SongItem.asMediaItem: MediaItem
                         "artistIds" to authors?.mapNotNull { it.endpoint?.browseId },
                         EXPLICIT_BUNDLE_TAG to explicit,
                         "setVideoId" to setVideoId,
+                        "isVideo" to !isAudioOnly,
                     )
                 )
                 .build()
@@ -272,7 +273,8 @@ val Song.asMediaItem: MediaItem
                 .setExtras(
                     bundleOf(
                         "durationText" to durationText,
-                        EXPLICIT_BUNDLE_TAG to title.startsWith( EXPLICIT_PREFIX, true )
+                        EXPLICIT_BUNDLE_TAG to title.startsWith( EXPLICIT_PREFIX, true ),
+                        "isVideo" to (isAudioOnly != 1),
                     )
                 )
                 .build()
@@ -299,7 +301,7 @@ val Song.asVideoMediaItem: MediaItem
                     bundleOf(
                         "durationText" to durationText,
                         EXPLICIT_BUNDLE_TAG to title.startsWith( EXPLICIT_PREFIX, true ),
-                        "isVideo" to true,
+                        "isVideo" to (isAudioOnly != 1),
                     )
                 )
                 .build()
@@ -326,7 +328,8 @@ val SongEntity.asMediaItem: MediaItem
                 .setExtras(
                     bundleOf(
                         "durationText" to song.durationText,
-                        EXPLICIT_BUNDLE_TAG to song.title.startsWith( EXPLICIT_PREFIX, true )
+                        EXPLICIT_BUNDLE_TAG to song.title.startsWith( EXPLICIT_PREFIX, true ),
+                        "isVideo" to (song.isAudioOnly != 1),
                     )
                 )
                 .build()
@@ -348,7 +351,8 @@ val MediaItem.asSong: Song
         title = mediaMetadata.title.toString(),
         artistsText = mediaMetadata.artist.toString(),
         durationText = mediaMetadata.extras?.getString("durationText"),
-        thumbnailUrl = mediaMetadata.artworkUri.toString()
+        thumbnailUrl = mediaMetadata.artworkUri.toString(),
+        isAudioOnly = if (mediaMetadata.extras?.getBoolean("isVideo") == true) 0 else 1
     )
 
 val MediaItem.cleaned: MediaItem

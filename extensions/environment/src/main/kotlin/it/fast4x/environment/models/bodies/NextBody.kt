@@ -7,7 +7,7 @@ import kotlinx.serialization.Serializable
 data class NextBody(
     val context: Context = Context.DefaultWeb,
     val videoId: String?,
-    val isAudioOnly: Boolean = true,
+    val isAudioOnly: Boolean = false,
     val playlistId: String? = null,
     val tunerSettingValue: String = "AUTOMIX_SETTING_NORMAL",
     val index: Int? = null,

@@ -55,7 +55,6 @@ open class DelSongDialog protected constructor(
             Database.asyncTransaction {
                 menuState.hide()
                 binder?.cache?.removeResource(it.song.id)
-                binder?.downloadCache?.removeResource(it.song.id)
                 deleteSongFromPlaylists(it.song.id)
                 deleteFormat(it.song.id)
                 delete(it.song)

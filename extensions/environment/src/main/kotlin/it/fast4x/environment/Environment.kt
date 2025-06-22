@@ -327,7 +327,8 @@ object Environment {
         val durationText: String?,
         override val thumbnail: Thumbnail?,
         val explicit: Boolean = false,
-        val setVideoId: String? = null
+        val setVideoId: String? = null,
+        val isAudioOnly: Boolean = true
     ) : Item() {
         override val key get() = info?.endpoint?.videoId ?: ""
         override val title get() = info?.name

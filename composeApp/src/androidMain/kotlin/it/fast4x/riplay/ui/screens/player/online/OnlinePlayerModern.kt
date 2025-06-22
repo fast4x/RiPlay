@@ -54,6 +54,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredHeight
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PageSize
 import androidx.compose.foundation.pager.PagerDefaults
@@ -344,6 +345,7 @@ import it.fast4x.riplay.ui.screens.player.offline.StatsForNerds
 import it.fast4x.riplay.ui.screens.player.offline.Queue
 import it.fast4x.riplay.utils.applyIf
 import it.fast4x.riplay.utils.asSong
+import it.fast4x.riplay.utils.isVideo
 import it.fast4x.riplay.utils.lastVideoIdKey
 import it.fast4x.riplay.utils.lastVideoSecondsKey
 import timber.log.Timber
@@ -622,8 +624,14 @@ fun OnlinePlayerModern(
     var likedAt by rememberSaveable {
         mutableStateOf<Long?>(null)
     }
+    var songIsAudioOnly by rememberSaveable {
+        mutableStateOf<Boolean>(true)
+    }
+
     LaunchedEffect(mediaItem.mediaId) {
         Database.likedAt(mediaItem.mediaId).distinctUntilChanged().collect { likedAt = it }
+        Database.song(mediaItem.mediaId).distinctUntilChanged()
+            .collect { songIsAudioOnly = it?.isVideo == false }
         updateBrush = true
     }
 
@@ -1352,11 +1360,14 @@ fun OnlinePlayerModern(
 
         //lastYTVideoSeconds = 0f
 
-        if (playerState.value != PlayerConstants.PlayerState.BUFFERING) {
-            println("OnlinePLayer LaunchedEffect change mediaItem RELOADING ${mediaItem.mediaId}")
+//        if (playerState.value != PlayerConstants.PlayerState.BUFFERING) {
+//            println("OnlinePLayer LaunchedEffect change mediaItem RELOADING ${mediaItem.mediaId}")
+        //if (playerType == PlayerType.Essential)
             player.value?.loadVideo(mediaItem.mediaId, 0f)
-        }
+//        }
 
+
+        println("OnlinePLayer LaunchedEffect change mediaItem isVideo? ${mediaItem.isVideo} song is audio only? ${songIsAudioOnly}")
     }
 
     LaunchedEffect(currentSecond, currentDuration) {
@@ -1423,7 +1434,6 @@ fun OnlinePlayerModern(
         if(onlinePlayerView.parent != null) {
             (onlinePlayerView.parent as ViewGroup).removeView(onlinePlayerView) // <- fix
         }
-
         AndroidView(
             modifier = innerModifier.background(Color.Transparent),
 //                .applyIf(!isLandscape) {
@@ -1460,8 +1470,9 @@ fun OnlinePlayerModern(
                         )
                         youTubePlayer.addListener(customPlayerUiController)
 
-                        //if (playerState.value == PlayerConstants.PlayerState.UNSTARTED)
-                            youTubePlayer.loadVideo(mediaItem.mediaId, if (mediaItem.mediaId == getLastYTVideoId()) getLastYTVideoSeconds() else 0f)
+                        if (playerState.value == PlayerConstants.PlayerState.UNSTARTED
+                            || playerState.value != PlayerConstants.PlayerState.BUFFERING)
+                        youTubePlayer.loadVideo(mediaItem.mediaId, if (mediaItem.mediaId == getLastYTVideoId()) getLastYTVideoSeconds() else 0f)
 
                     //youTubePlayer.cueVideo(mediaItem.mediaId, 0f)
 
@@ -1471,7 +1482,6 @@ fun OnlinePlayerModern(
                     override fun onCurrentSecond(youTubePlayer: YouTubePlayer, second: Float) {
                         super.onCurrentSecond(youTubePlayer, second)
                         currentSecond = second
-                        //onCurrentSecond(second)
                         lastYTVideoSeconds = second
                         lastYTVideoId = mediaItem.mediaId
 
@@ -1480,7 +1490,6 @@ fun OnlinePlayerModern(
                     override fun onVideoDuration(youTubePlayer: YouTubePlayer, duration: Float) {
                         super.onVideoDuration(youTubePlayer, duration)
                         currentDuration = duration
-                        //onVideoDuration(duration)
                     }
 
                     override fun onStateChange(
@@ -1526,7 +1535,6 @@ fun OnlinePlayerModern(
                 }
             }
         )
-
 
 //        var deltaX by remember { mutableStateOf(0f) }
 //        //var direction by remember { mutableIntStateOf(-1)}
@@ -3426,15 +3434,16 @@ fun OnlinePlayerModern(
                                                      else 0.57f
                                                  )
                                          ) {
-                                             thumbnailContent(
-                                                 coverModifier
-                                             )
-//                                             Image(
-//                                                 painter = coverPainter,
-//                                                 contentDescription = "",
-//                                                 contentScale = ContentScale.Fit,
-//                                                 modifier = coverModifier
-//                                             )
+
+                                             val isVideo = remember { binder.player.getMediaItemAt(it).isVideo }
+                                             if (!isVideo)
+                                                 Image(
+                                                     painter = coverPainter,
+                                                     contentDescription = "",
+                                                     contentScale = ContentScale.Fit,
+                                                     modifier = coverModifier
+                                                 )
+
                                              if (isDragged && expandedplayer && it == binder.player.currentMediaItemIndex) {
                                                  Box(modifier = Modifier
                                                      .align(Alignment.Center)
@@ -3499,6 +3508,38 @@ fun OnlinePlayerModern(
                                 isDisplayed = isShowingVisualizer
                             )
                     }
+
+                    val animatePadding by animateDpAsState(
+                        if (expandedplayer) carouselSize.size.dp else playerThumbnailSize.padding.dp
+                    )
+
+                    val coverModifier = Modifier
+                        .aspectRatio(1f)
+                        .padding(all = animatePadding)
+                        .conditional(thumbnailType == ThumbnailType.Modern) {
+                            padding(
+                                all = 10.dp
+                            )
+                        }
+                        .conditional(thumbnailType == ThumbnailType.Modern) {
+                            doubleShadowDrop(
+                                if (showCoverThumbnailAnimation) CircleShape else thumbnailRoundness.shape(),
+                                4.dp,
+                                8.dp
+                            )
+                        }
+                        .clip(thumbnailRoundness.shape())
+
+                        println("isScrolling ${pagerState.isScrollInProgress}")
+
+                        //use online player
+                        thumbnailContent(
+                            if (!mediaItem.isVideo)
+                                Modifier.size(10.dp)
+                            else
+                                coverModifier
+                        )
+
                 }
 
                 Column(

@@ -2554,15 +2554,19 @@ interface Database {
         if(!title.startsWith(EXPLICIT_PREFIX, true) && mediaItem.isExplicit){
             title = EXPLICIT_PREFIX + title
         }
+        val isVideo = mediaItem.mediaMetadata.extras?.getBoolean("isVideo") == true
         val song = Song(
             id = mediaItem.mediaId,
             title = title,
             artistsText = mediaItem.mediaMetadata.artist?.toString(),
             durationText = mediaItem.mediaMetadata.extras?.getString("durationText"),
-            thumbnailUrl = mediaItem.mediaMetadata.artworkUri?.toString()
+            thumbnailUrl = mediaItem.mediaMetadata.artworkUri?.toString(),
+            isAudioOnly = if(!isVideo) 1 else 0
         ).let(block).also { song ->
             if (insert(song) == -1L) return
         }
+
+        println("fastPlay: Database inserted: $song")
 
         mediaItem.mediaMetadata.extras?.getString("albumId")?.let { albumId ->
             insert(
@@ -2734,7 +2738,7 @@ interface Database {
     views = [
         SortedSongPlaylistMap::class
     ],
-    version = 27,
+    version = 28,
     exportSchema = true,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
@@ -2755,6 +2759,7 @@ interface Database {
         AutoMigration(from = 19, to = 20),
         AutoMigration(from = 20, to = 21, spec = DatabaseInitializer.From20To21Migration::class),
         AutoMigration(from = 21, to = 22, spec = DatabaseInitializer.From21To22Migration::class),
+        AutoMigration(from = 27, to = 28),
     ],
 )
 @TypeConverters(Converters::class)

@@ -4,6 +4,14 @@ import it.fast4x.environment.Environment
 import it.fast4x.environment.models.PlaylistPanelVideoRenderer
 
 fun Environment.SongItem.Companion.from(renderer: PlaylistPanelVideoRenderer): Environment.SongItem? {
+
+    val thumbnail = renderer
+        .thumbnail
+        ?.thumbnails
+        ?.getOrNull(0)
+
+    val isVideo = (thumbnail?.width ?: 0) > (thumbnail?.height ?: 0)
+
     return Environment.SongItem(
         info = Environment.Info(
             name = renderer
@@ -24,12 +32,10 @@ fun Environment.SongItem.Companion.from(renderer: PlaylistPanelVideoRenderer): E
             ?.getOrNull(1)
             ?.getOrNull(0)
             ?.let(Environment::Info),
-        thumbnail = renderer
-            .thumbnail
-            ?.thumbnails
-            ?.getOrNull(0),
+        thumbnail = thumbnail,
         durationText = renderer
             .lengthText
-            ?.text
+            ?.text,
+        isAudioOnly = !isVideo
     ).takeIf { it.info?.endpoint?.videoId != null }
 }

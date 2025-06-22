@@ -1,6 +1,7 @@
 package it.fast4x.riplay.models
 
 import androidx.compose.runtime.Immutable
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import it.fast4x.riplay.cleanPrefix
@@ -19,7 +20,9 @@ data class Song(
     val durationText: String?,
     val thumbnailUrl: String?,
     val likedAt: Long? = null,
-    val totalPlayTimeMs: Long = 0
+    val totalPlayTimeMs: Long = 0,
+    @ColumnInfo(defaultValue = "1")
+    val isAudioOnly: Int = 1,
 ) {
     val formattedTotalPlayTime: String
         get() {
@@ -33,6 +36,9 @@ data class Song(
                 else -> "${hours / 24}d"
             }
         }
+
+    val isVideo: Boolean
+        get() = isAudioOnly == 0
 
     fun toggleLike(): Song {
         return copy(

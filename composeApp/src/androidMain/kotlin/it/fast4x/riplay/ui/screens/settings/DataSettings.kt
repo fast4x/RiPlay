@@ -486,54 +486,6 @@ fun DataSettings() {
             //}
         }
 
-        binder?.downloadCache?.let { downloadCache ->
-            val diskDownloadCacheSize = remember(downloadCache.cacheSpace, cleanDownloadCache) {
-                    downloadCache.cacheSpace
-            }
-
-            EnumValueSelectorSettingsEntry(
-                title = stringResource(R.string.song_download_max_size),
-                titleSecondary = when (exoPlayerDiskDownloadCacheMaxSize) {
-                    ExoPlayerDiskDownloadCacheMaxSize.Disabled -> ""
-                    else -> Formatter.formatShortFileSize(context, diskDownloadCacheSize) +
-                        " ${stringResource(R.string.used)}" +
-                            when (val size = exoPlayerDiskDownloadCacheMaxSize) {
-                                ExoPlayerDiskDownloadCacheMaxSize.Unlimited -> ""
-                                else -> " (${diskDownloadCacheSize * 100 / size.bytes}%)"
-                            }
-                },
-                trailingContent = {
-                    HeaderIconButton(
-                        icon = R.drawable.trash,
-                        enabled = true,
-                        color = colorPalette().text,
-                        onClick = { cleanDownloadCache = true }
-                    )
-                },
-                selectedValue = exoPlayerDiskDownloadCacheMaxSize,
-                onValueSelected = {
-                    exoPlayerDiskDownloadCacheMaxSize = it
-                    restartService = true
-                },
-                valueText = {
-                    when (it) {
-                        ExoPlayerDiskDownloadCacheMaxSize.Disabled -> stringResource(R.string.turn_off)
-                        ExoPlayerDiskDownloadCacheMaxSize.Unlimited -> stringResource(R.string.unlimited)
-                        ExoPlayerDiskDownloadCacheMaxSize.`32MB` -> "32MB"
-                        ExoPlayerDiskDownloadCacheMaxSize.`512MB` -> "512MB"
-                        ExoPlayerDiskDownloadCacheMaxSize.`1GB` -> "1GB"
-                        ExoPlayerDiskDownloadCacheMaxSize.`2GB` -> "2GB"
-                        ExoPlayerDiskDownloadCacheMaxSize.`4GB` -> "4GB"
-                        ExoPlayerDiskDownloadCacheMaxSize.`8GB` -> "8GB"
-
-                    }
-                }
-            )
-            RestartPlayerService(restartService, onRestart = { restartService = false } )
-
-            CacheSpaceIndicator(cacheType = CacheType.DownloadedSongs, horizontalPadding = 20.dp)
-        }
-
         EnumValueSelectorSettingsEntry(
             title = stringResource(R.string.set_cache_location),
             selectedValue = exoPlayerCacheLocation,

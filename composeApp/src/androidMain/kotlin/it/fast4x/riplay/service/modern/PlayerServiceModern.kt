@@ -54,10 +54,12 @@ import androidx.media3.common.audio.SonicAudioProcessor
 import androidx.media3.common.util.Log
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.DataSpec
+import androidx.media3.datasource.DefaultDataSource
 import androidx.media3.datasource.cache.Cache
 import androidx.media3.datasource.cache.CacheDataSource
 import androidx.media3.datasource.cache.CacheDataSource.FLAG_IGNORE_CACHE_ON_ERROR
 import androidx.media3.datasource.cache.SimpleCache
+import androidx.media3.datasource.okhttp.OkHttpDataSource
 import androidx.media3.exoplayer.DefaultLoadControl
 import androidx.media3.exoplayer.DefaultRenderersFactory
 import androidx.media3.exoplayer.ExoPlayer
@@ -204,6 +206,7 @@ import it.fast4x.riplay.utils.volumeBoostLevelKey
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
+import okhttp3.OkHttpClient
 import timber.log.Timber
 import java.io.ObjectInputStream
 import java.io.ObjectOutputStream
@@ -238,7 +241,7 @@ class PlayerServiceModern : MediaLibraryService(),
     val cache: SimpleCache by lazy {
         principalCache.getInstance(this)
     }
-    lateinit var downloadCache: SimpleCache
+    //lateinit var downloadCache: SimpleCache
     private lateinit var audioVolumeObserver: AudioVolumeObserver
     private lateinit var bitmapProvider: BitmapProvider
     private var volumeNormalizationJob: Job? = null
@@ -712,7 +715,7 @@ class PlayerServiceModern : MediaLibraryService(),
 
         mediaSession.release()
         cache.release()
-        downloadCache.release()
+        //downloadCache.release()
         Database.close()
 
 //        timerJob?.cancel()
@@ -1213,6 +1216,19 @@ class PlayerServiceModern : MediaLibraryService(),
         CacheDataSource
             .Factory()
             .setCache(cache)
+            .setUpstreamDataSourceFactory(
+                DefaultDataSource.Factory(
+                    this,
+                    OkHttpDataSource.Factory(
+                        OkHttpClient
+                            .Builder()
+                            .proxy(Environment.proxy)
+                            .build(),
+                    ),
+                ),
+            )
+//        CacheDataSource
+//            .Factory()
 //            .setCache(downloadCache)
 //            .setUpstreamDataSourceFactory(
 //                CacheDataSource
@@ -1230,7 +1246,7 @@ class PlayerServiceModern : MediaLibraryService(),
 //                        ),
 //                    ),
 //            ).setCacheWriteDataSinkFactory(null)
-            .setFlags(FLAG_IGNORE_CACHE_ON_ERROR)
+//            .setFlags(FLAG_IGNORE_CACHE_ON_ERROR)
 
 
     private fun buildCustomCommandButtons(): MutableList<CommandButton> {
@@ -1789,8 +1805,8 @@ class PlayerServiceModern : MediaLibraryService(),
         val cache: Cache
             get() = this@PlayerServiceModern.cache
 
-        val downloadCache: Cache
-            get() = this@PlayerServiceModern.downloadCache
+//        val downloadCache: Cache
+//            get() = this@PlayerServiceModern.downloadCache
 
         val sleepTimerMillisLeft: StateFlow<Long?>?
             get() = timerJob?.millisLeft

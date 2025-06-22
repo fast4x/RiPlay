@@ -291,11 +291,7 @@ fun NonQueuedMediaItemMenuLibrary(
                     } catch (e: Exception) {
                         Timber.e("MediaItemMenu cache resource removeResource ${e.stackTraceToString()}")
                     }
-                    try {
-                        binder?.downloadCache?.removeResource(it) //try to remove from download cache if exists
-                    } catch (e: Exception) {
-                        Timber.e("MediaItemMenu downloadCache resource removeResource ${e.stackTraceToString()}")
-                    }
+
                 }
 
                 if (deleteAlsoPlayTimes)

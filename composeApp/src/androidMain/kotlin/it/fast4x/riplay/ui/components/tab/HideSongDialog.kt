@@ -41,7 +41,6 @@ class HideSongDialog private constructor(
             Database.asyncTransaction {
                 menuState.hide()
                 binder?.cache?.removeResource(it.song.id)
-                binder?.downloadCache?.removeResource(it.song.id)
                 resetFormatContentLength(it.song.id)
                 incrementTotalPlayTimeMs(
                     it.song.id,

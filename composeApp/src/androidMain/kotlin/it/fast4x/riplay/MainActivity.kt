@@ -1161,9 +1161,6 @@ class MainActivity :
                                         ThumbnailRoundness.Heavy
                                     )
 
-//                                    val isVideo = binder?.player?.currentMediaItem?.isVideo ?: false
-//                                    val isVideoEnabled =
-//                                        preferences.getBoolean(showButtonPlayerVideoKey, false)
                                     val offlinePlayer: @Composable () -> Unit = {
                                         OfflinePlayer(
                                             navController = navController,

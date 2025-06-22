@@ -96,11 +96,7 @@ fun PlayerMenu(
                     } catch (e: Exception) {
                         Timber.e("PlayerMenu cache resource removeResource ${e.stackTraceToString()}")
                     }
-                    try {
-                        binder.downloadCache.removeResource(it) //try to remove from download cache if exists
-                    } catch (e: Exception) {
-                        Timber.e("PlayerMenu downloadCache resource removeResource ${e.stackTraceToString()}")
-                    }
+
                 }
 
                 if (deleteAlsoPlayTimes)

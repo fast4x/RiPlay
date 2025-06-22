@@ -54,9 +54,6 @@ fun CacheSpaceIndicator(
         CacheType.CachedSongs -> {
             if (exoPlayerDiskCacheMaxSize == ExoPlayerDiskCacheMaxSize.Unlimited) return
         }
-        CacheType.DownloadedSongs -> {
-            if (exoPlayerDiskDownloadCacheMaxSize == ExoPlayerDiskDownloadCacheMaxSize.Unlimited) return
-        }
     }
 
     val context = LocalContext.current
@@ -78,14 +75,6 @@ fun CacheSpaceIndicator(
         }
     }
 
-    val downloadedSongsDiskCacheSize = remember {
-        try {
-            binder?.downloadCache?.cacheSpace
-        } catch (e: Exception) {
-            0L
-        }
-    }
-
     val progressValue = remember { mutableStateOf(0f) }
 
     LaunchedEffect (Unit, cacheType) {
@@ -95,8 +84,6 @@ fun CacheSpaceIndicator(
                 ?.div(coilDiskCacheMaxSize.bytes.coerceAtLeast(1)) ?: 0.0f
             CacheType.CachedSongs -> cachedSongsDiskCacheSize?.toFloat()
                 ?.div(exoPlayerDiskCacheMaxSize.bytes.coerceAtLeast(1)) ?: 0.0f
-            CacheType.DownloadedSongs -> downloadedSongsDiskCacheSize?.toFloat()
-                ?.div(exoPlayerDiskDownloadCacheMaxSize.bytes.coerceAtLeast(1)) ?: 0.0f
         }
     }
 

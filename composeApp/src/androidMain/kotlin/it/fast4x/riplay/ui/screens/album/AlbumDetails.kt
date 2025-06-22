@@ -216,7 +216,6 @@ fun AlbumDetails(
                         likedAt = song.likedAt
                         playTime = song.totalPlayTimeMs
                         binder?.cache?.removeResource(song.id)
-                        binder?.downloadCache?.removeResource(song.id)
                         val songState =
                             AlbumSongsState(song, likedAt, playTime, songExists, playlistsList)
                         albumSongsStateList.add(songState)

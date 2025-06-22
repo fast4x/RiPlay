@@ -3,5 +3,4 @@ package it.fast4x.riplay.enums
 enum class CacheType {
     Images,
     CachedSongs,
-    DownloadedSongs
 }

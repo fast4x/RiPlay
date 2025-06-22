@@ -1683,11 +1683,7 @@ fun HomeSongs(
                                     } catch (e: Exception) {
                                         Timber.e("HomeSongsModern cache resource removeResource ${e.stackTraceToString()}")
                                     }
-                                    try {
-                                        binder?.downloadCache?.removeResource(it) //try to remove from download cache if exists
-                                    } catch (e: Exception) {
-                                        Timber.e("HomeSongsModern downloadCache resource removeResource ${e.stackTraceToString()}")
-                                    }
+
                                 }
 
                                 if (deleteAlsoPlayTimes)
@@ -1709,7 +1705,6 @@ fun HomeSongs(
                                 Database.asyncTransaction {
 
                                     binder?.cache?.removeResource(song.song.id)
-                                    binder?.downloadCache?.removeResource(song.song.id)
                                     Database.delete(song.song)
                                     Database.deleteSongFromPlaylists(song.song.id)
                                 }

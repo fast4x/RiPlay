@@ -93,16 +93,6 @@ fun StatsForNerds(
             )
         }
 
-        var downloadCachedBytes by remember(mediaId) {
-            mutableStateOf(
-                try {
-                    binder.downloadCache.getCachedBytes(mediaId, 0, -1)
-                } catch (e: Exception) {
-                    0L
-                }
-            )
-        }
-
         var format by remember {
             mutableStateOf<Format?>(null)
         }
@@ -203,12 +193,6 @@ fun StatsForNerds(
 
                     if (format?.songId?.startsWith(LOCAL_KEY_PREFIX) == false) {
                         BasicText(
-                            text = if (downloadCachedBytes == 0L) stringResource(R.string.cached)
-                            else stringResource(R.string.downloaded),
-                            style = typography().xs.medium.color(colorPalette().onOverlay)
-                        )
-
-                        BasicText(
                             text = stringResource(R.string.loudness),
                             style = typography().xs.medium.color(colorPalette().onOverlay)
                         )
@@ -240,51 +224,8 @@ fun StatsForNerds(
                         maxLines = 1,
                         style = typography().xs.medium.color(colorPalette().onOverlay)
                     )
-                    BasicText(
-//                        text = format?.contentLength
-//                            ?.let { Formatter.formatShortFileSize(context, it) } ?: stringResource(R.string.audio_quality_format_unknown),
-                        text = when (format?.songId?.startsWith(LOCAL_KEY_PREFIX)){
-                            true -> "100%"
-                            else -> {
-                                if (downloadCachedBytes == 0L)
-                                    Formatter.formatShortFileSize(context, cachedBytes) + format?.contentLength?.let {
-                                        " (${(cachedBytes.toFloat() / it * 100).roundToInt()}%)"
-                                }
-                                else Formatter.formatShortFileSize(
-                                    context,
-                                    downloadCachedBytes
-                                ) + format?.contentLength?.let {
-                                     " (${(downloadCachedBytes.toFloat() / it * 100).roundToInt()}%)"
-                                }
-                            }
-                        },
-                        maxLines = 1,
-                        style = typography().xs.medium.color(colorPalette().onOverlay)
-                    )
-//                    if (format?.songId?.startsWith(LOCAL_KEY_PREFIX) == true) {
-//                        BasicText(
-//                            text = "100%",
-//                            maxLines = 1,
-//                            style = typography().xs.medium.color(colorPalette().onOverlay)
-//                        )
-//                    }
+
                     if (format?.songId?.startsWith(LOCAL_KEY_PREFIX) == false) {
-//                        BasicText(
-//                            text = if (cachedBytes > downloadCachedBytes)
-//                                Formatter.formatShortFileSize(context, cachedBytes)
-//                            else Formatter.formatShortFileSize(
-//                                    context,
-//                                    downloadCachedBytes
-//                                )
-//                            + format?.contentLength?.let {
-//                                    if (cachedBytes > downloadCachedBytes)
-//                                        " (${(cachedBytes.toFloat() / it * 100).roundToInt()}%)"
-//                                    else " (${(downloadCachedBytes.toFloat() / it * 100).roundToInt()}%)"
-//                                }
-//                            ,
-//                            maxLines = 1,
-//                            style = typography().xs.medium.color(colorPalette().onOverlay)
-//                        )
                         BasicText(
                             text = format?.loudnessDb?.let { "%.2f dB".format(it) }
                                 ?: stringResource(R.string.audio_quality_format_unknown),
@@ -421,31 +362,6 @@ fun StatsForNerds(
                               }
                           }
                           if (format?.songId?.startsWith(LOCAL_KEY_PREFIX) == false) {
-                              Box(
-                                  contentAlignment = Alignment.Center,
-                                  modifier = modifier.weight(1f)
-                              ) {
-                                  BasicText(
-                                      text =  if (downloadCachedBytes == 0L)
-                                                  stringResource(R.string.cached) + " : " + Formatter.formatShortFileSize(
-                                                      context,
-                                                      cachedBytes
-                                                  )
-                                                  + format?.contentLength?.let {
-                                                          " (${(cachedBytes.toFloat() / it * 100).roundToInt()}%)"
-                                                  }
-                                          else stringResource(R.string.downloaded) + " : " + Formatter.formatShortFileSize(
-                                                  context,
-                                                  downloadCachedBytes
-                                              )
-                                          + format?.contentLength?.let {
-                                               " (${(downloadCachedBytes.toFloat() / it * 100).roundToInt()}%)"
-                                          }
-                                      ,
-                                      maxLines = 1,
-                                      style = typography().xs.medium.color(colorPalette().text)
-                                  )
-                              }
                               Box(
                                   contentAlignment = Alignment.Center,
                                   modifier = modifier.weight(1f)

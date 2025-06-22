@@ -68,6 +68,7 @@ import it.fast4x.riplay.utils.colorPaletteNameKey
 import it.fast4x.riplay.utils.applyIf
 import it.fast4x.riplay.utils.getLikeState
 import it.fast4x.riplay.utils.isExplicit
+import it.fast4x.riplay.utils.isVideo
 import it.fast4x.riplay.utils.medium
 import it.fast4x.riplay.utils.playlistindicatorKey
 import it.fast4x.riplay.utils.rememberPreference
@@ -288,6 +289,18 @@ fun SongItem(
                         //.padding(start = 4.dp)
                         .align(Alignment.BottomStart)
                         .absoluteOffset(-8.dp, 0.dp)
+
+                )
+            if (mediaItem.isVideo)
+                HeaderIconButton(
+                    onClick = {},
+                    icon = R.drawable.video,
+                    color = colorPalette().favoritesIcon,
+                    iconSize = 12.dp,
+                    modifier = Modifier
+                        //.padding(start = 4.dp)
+                        .align(Alignment.BottomEnd)
+                        .absoluteOffset(8.dp, 0.dp)
 
                 )
             /*

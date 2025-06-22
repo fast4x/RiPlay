@@ -609,6 +609,7 @@ fun SearchResultScreen(
 //                                                            localBinder?.player?.forcePlay(video.asMediaItem)
                                                         //binder?.setupRadio(video.info?.endpoint)
                                                         fastPlay(video.asMediaItem, localBinder)
+                                                        localBinder?.setupRadio(video.info?.endpoint)
                                                     }
                                                 ),
                                             disableScrollingText = disableScrollingText
