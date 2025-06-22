@@ -21,10 +21,12 @@ import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
@@ -1034,6 +1036,10 @@ fun OnlinePlayerModern(
         }
     }
 
+    fun Modifier.hidePlayer(): Modifier {
+        return this.size(10.dp)
+    }
+
     if (animatedGradient == AnimatedGradient.Random){
         LaunchedEffect(mediaItem.mediaId){
             valueGrad = (2..14).random()
@@ -1431,16 +1437,16 @@ fun OnlinePlayerModern(
         modifier: Modifier,
     ) -> Unit = { innerModifier ->
 
-        if(onlinePlayerView.parent != null) {
-            (onlinePlayerView.parent as ViewGroup).removeView(onlinePlayerView) // <- fix
-        }
+
         AndroidView(
             modifier = innerModifier.background(Color.Transparent),
 //                .applyIf(!isLandscape) {
 //                    padding(horizontal = playerThumbnailSize.padding.dp)
 //                },
             factory = {
-
+                if(onlinePlayerView.parent != null) {
+                    (onlinePlayerView.parent as ViewGroup).removeView(onlinePlayerView) // <- fix
+                }
 //                val iFramePlayerOptions = IFramePlayerOptions.Builder()
 //                    .controls(1) // show/hide controls
 //                    .rel(0) // related video at the end
@@ -2540,7 +2546,8 @@ fun OnlinePlayerModern(
                         BoxWithConstraints(
                              contentAlignment = Alignment.Center,
                              modifier = Modifier
-                                 .weight(1f)
+                                 .weight(.5f)
+                                 .border(BorderStroke(2.dp, Color.Blue))
                              /*modifier = Modifier
                             .weight(1f)*/
                              //.padding(vertical = 10.dp)
@@ -2701,101 +2708,9 @@ fun OnlinePlayerModern(
                                                      }
                                                  }
                                              }
-                                         /*
-                                         Box(
-                                             modifier = Modifier
-                                                 .zIndex(
-                                                     if (it == pagerState.currentPage) 1f
-                                                     else if (it == (pagerState.currentPage + 1) || it == (pagerState.currentPage - 1)) 0.85f
-                                                     else if (it == (pagerState.currentPage + 2) || it == (pagerState.currentPage - 2)) 0.78f
-                                                     else if (it == (pagerState.currentPage + 3) || it == (pagerState.currentPage - 3)) 0.73f
-                                                     else if (it == (pagerState.currentPage + 4) || it == (pagerState.currentPage - 4)) 0.68f
-                                                     else if (it == (pagerState.currentPage + 5) || it == (pagerState.currentPage - 5)) 0.63f
-                                                     else 0.57f
-                                                 )
-                                         ) {
-                                             AsyncImage(
-                                                 model = ImageRequest.Builder(LocalContext.current)
-                                                     .data(
-                                                         binder.player.getMediaItemAt(it).mediaMetadata.artworkUri.toString()
-                                                             .resize(1200, 1200)
-                                                     )
-                                                     .build(),
-                                                 contentDescription = "",
-                                                 contentScale = ContentScale.Fit,
-                                                 modifier = Modifier
-                                                     .padding(all = playerThumbnailSize.size.dp)
-                                                     .graphicsLayer {
-                                                         val pageOffSet =
-                                                             ((pagerState.currentPage - it) + pagerState.currentPageOffsetFraction).absoluteValue
-                                                         alpha = lerp(
-                                                             start = 0.9f,
-                                                             stop = 1f,
-                                                             fraction = 1f - pageOffSet.coerceIn(0f,1f)
-                                                         )
-                                                         scaleY = lerp(
-                                                             start = 0.9f,
-                                                             stop = 1f,
-                                                             fraction = 1f - pageOffSet.coerceIn(0f,5f)
-                                                         )
-                                                         scaleX = lerp(
-                                                             start = 0.9f,
-                                                             stop = 1f,
-                                                             fraction = 1f - pageOffSet.coerceIn(0f,5f)
-                                                         )
-                                                     }
-                                                     .conditional(thumbnailType == ThumbnailType.Modern) {
-                                                         padding(
-                                                             all = 10.dp
-                                                         )
-                                                     }
-                                                     .conditional(thumbnailType == ThumbnailType.Modern) {
-                                                         doubleShadowDrop(
-                                                             thumbnailRoundness.shape(),
-                                                             4.dp,
-                                                             8.dp
-                                                         )
-                                                     }
-                                                     .clip(thumbnailRoundness.shape())
-                                                     .combinedClickable(
-                                                         interactionSource = remember { MutableInteractionSource() },
-                                                         indication = null,
-                                                         onClick = {
-                                                             if (it == pagerState.settledPage && thumbnailTapEnabled) {
-                                                                 if (isShowingVisualizer) isShowingVisualizer =
-                                                                     false
-                                                                 isShowingLyrics = !isShowingLyrics
-                                                             }
-                                                             if (it != pagerState.settledPage) {
-                                                                 binder.player.forcePlayAtIndex(
-                                                                     mediaItems,
-                                                                     it
-                                                                 )
-                                                             }
-                                                         },
-                                                         onLongClick = {
-                                                             if (it == pagerState.settledPage)
-                                                                 showThumbnailOffsetDialog = true
-                                                         }
-                                                     )
-
-                                             )
-                                             if (isDragged && it == binder.player.currentMediaItemIndex) {
-                                                 Box(modifier = Modifier
-                                                     .align(Alignment.Center)
-                                                     .matchParentSize()
-                                                 ) {
-                                                     NowPlayingSongIndicator(
-                                                         binder.player.getMediaItemAt(
-                                                             binder.player.currentMediaItemIndex
-                                                         ).mediaId,
-                                                         binder.player,
-                                                         Dimensions.thumbnails.album
-                                                     )
-                                                 }
-                                             }
-                                         }*/
                                      }
+
+
                                  }
                             }
                             if (isShowingVisualizer) {
@@ -3282,6 +3197,7 @@ fun OnlinePlayerModern(
                                 1f
                             )
                         }
+                        .border(BorderStroke(2.dp, colorPalette().collapsedPlayerProgressBar))
                 ) {
 
                       if (showthumbnail) {
@@ -3460,7 +3376,47 @@ fun OnlinePlayerModern(
                                          }
                                  }
                              } else {
-                                 thumbnailContent(Modifier)
+                                 val animatePadding by animateDpAsState(
+                                     if (expandedplayer) carouselSize.size.dp else playerThumbnailSize.padding.dp
+                                 )
+
+                                 val coverPainter = rememberAsyncImagePainter(
+                                     model = ImageRequest.Builder(LocalContext.current)
+                                         .data(mediaItem.mediaMetadata.artworkUri.thumbnail(1200))
+                                         .build()
+                                 )
+
+                                 val coverModifier = Modifier
+                                     .aspectRatio(1f)
+                                     .padding(all = animatePadding)
+                                     .conditional(thumbnailType == ThumbnailType.Modern) {
+                                         padding(
+                                             all = 10.dp
+                                         )
+                                     }
+                                     .conditional(thumbnailType == ThumbnailType.Modern) {
+                                         doubleShadowDrop(
+                                             if (showCoverThumbnailAnimation) CircleShape else thumbnailRoundness.shape(),
+                                             4.dp,
+                                             8.dp
+                                         )
+                                     }
+                                     .clip(thumbnailRoundness.shape())
+                                 println("Essential mediaItem.isVideo = ${mediaItem.isVideo}")
+                                 thumbnailContent(
+                                     //use online player
+                                     if (!mediaItem.isVideo)
+                                         Modifier.hidePlayer()
+                                     else
+                                         coverModifier
+                                 )
+                                 if (!mediaItem.isVideo)
+                                     Image(
+                                         painter = coverPainter,
+                                         contentDescription = "",
+                                         contentScale = ContentScale.Fit,
+                                         modifier = coverModifier
+                                     )
                              }
                          }
                       }
@@ -3535,7 +3491,7 @@ fun OnlinePlayerModern(
                         //use online player
                         thumbnailContent(
                             if (!mediaItem.isVideo)
-                                Modifier.size(10.dp)
+                                Modifier.hidePlayer()
                             else
                                 coverModifier
                         )

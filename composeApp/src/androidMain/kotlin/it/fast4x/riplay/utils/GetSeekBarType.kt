@@ -244,9 +244,10 @@ fun GetSeekBar(
             )
         }
 
-        if (playerTimelineType == PlayerTimelineType.FakeAudioBar)
+        if (playerTimelineType == PlayerTimelineType.FakeAudioBar) {
+            val percentage = remember { (position.toFloat() / duration.toFloat()).coerceIn(0f, 1f) }
             SeekBarAudioWaves(
-                progressPercentage = ProgressPercentage((position.toFloat() / duration.toFloat()).coerceIn(0f,1f)),
+                progressPercentage = ProgressPercentage.safeValue(percentage),
                 playedColor = colorPalette().accent,
                 notPlayedColor = if (transparentbar) Color.Transparent else colorPalette().textSecondary,
                 waveInteraction = {
@@ -256,8 +257,9 @@ fun GetSeekBar(
                 },
                 modifier = Modifier
                     .height(40.dp)
-                    //.pulsatingEffect(currentValue = position.toFloat() / duration.toFloat(), isVisible = true)
+                //.pulsatingEffect(currentValue = position.toFloat() / duration.toFloat(), isVisible = true)
             )
+        }
 
 
         if (playerTimelineType == PlayerTimelineType.ColoredBar)
@@ -319,7 +321,7 @@ fun GetSeekBar(
                     modifier = Modifier
                         .size(10.dp)
                         .rotate(180f)
-                        .offset((5).dp,0.dp)
+                        .offset((5).dp, 0.dp)
                 )
                 Icon(
                     painter =  painterResource(Res.drawable.play),
@@ -457,7 +459,7 @@ fun GetSeekBar(
                         tint = colorPalette().text,
                         modifier = Modifier
                             .size(10.dp)
-                            .offset((5).dp,0.dp)
+                            .offset((5).dp, 0.dp)
                     )
                     Icon(
                         painter =  painterResource(Res.drawable.play),
