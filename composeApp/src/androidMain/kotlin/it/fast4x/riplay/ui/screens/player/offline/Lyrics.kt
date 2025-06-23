@@ -159,6 +159,7 @@ import me.bush.translator.Language
 import me.bush.translator.Translator
 import it.fast4x.riplay.colorPalette
 import it.fast4x.riplay.enums.ColorPaletteName
+import it.fast4x.riplay.service.modern.isLocal
 import it.fast4x.riplay.thumbnailShape
 import it.fast4x.riplay.typography
 import it.fast4x.riplay.ui.components.themed.LyricsSizeDialog
@@ -187,6 +188,7 @@ fun Lyrics(
     size: Dp,
     mediaMetadataProvider: () -> MediaMetadata,
     durationProvider: () -> Long,
+    positionProvider: () -> Long = { 0L },
     ensureSongInserted: () -> Unit,
     modifier: Modifier = Modifier,
     clickLyricsText: Boolean,
@@ -910,13 +912,17 @@ fun Lyrics(
                     val player = LocalPlayerServiceBinder.current?.player
                         ?: return@AnimatedVisibility
 
+
+
                     val synchronizedLyrics = remember(text) {
                         val sentences = LrcLib.Lyrics(text).sentences
 
                         run {
                             invalidLrc = false
                             SynchronizedLyrics(sentences) {
-                                player.currentPosition + 50L //- (lyrics?.startTime ?: 0L)
+                                if (player.currentMediaItem?.isLocal ?: false)
+                                    player.currentPosition + 50L //- (lyrics?.startTime ?: 0L)
+                                else positionProvider()
                             }
                         }
                     }
@@ -1186,7 +1192,7 @@ fun Lyrics(
                                                         scaleX = animateSizeText
                                                     }
                                                 }
-                                                .graphicsLayer{
+                                                .graphicsLayer {
                                                     alpha = animateOpacity
                                                 }
                                         )
@@ -1231,7 +1237,7 @@ fun Lyrics(
                                                         scaleX = animateSizeText
                                                     }
                                                 }
-                                                .graphicsLayer{
+                                                .graphicsLayer {
                                                     alpha = animateOpacity
                                                 }
                                         )
@@ -1353,7 +1359,7 @@ fun Lyrics(
                                                     scaleX = animateSizeText
                                                 }
                                             }
-                                            .graphicsLayer{
+                                            .graphicsLayer {
                                                 alpha = animateOpacity
                                             }
                                             .clickable(
@@ -1391,18 +1397,27 @@ fun Lyrics(
                                         ),
                                         modifier = Modifier
                                             .padding(vertical = 4.dp, horizontal = 32.dp)
-                                            .applyIf(lyricsSizeAnimate){padding(vertical = 4.dp)}
+                                            .applyIf(lyricsSizeAnimate) { padding(vertical = 4.dp) }
                                             .align(if (lyricsAlignment == LyricsAlignment.Left) Alignment.CenterStart else if (lyricsAlignment == LyricsAlignment.Right) Alignment.CenterEnd else Alignment.Center)
-                                            .applyIf(lyricsSizeAnimate){
+                                            .applyIf(lyricsSizeAnimate) {
                                                 graphicsLayer {
-                                                    transformOrigin = if (lyricsAlignment == LyricsAlignment.Center) TransformOrigin(0.5f,0.5f)
-                                                    else if (lyricsAlignment == LyricsAlignment.Left) TransformOrigin(0f,0.5f)
-                                                    else TransformOrigin(1f,0.5f)
-                                                    scaleY = if (index == synchronizedLyrics.index) 1.1f else 0.9f
-                                                    scaleX = if (index == synchronizedLyrics.index) 1.1f else 0.9f
+                                                    transformOrigin =
+                                                        if (lyricsAlignment == LyricsAlignment.Center) TransformOrigin(
+                                                            0.5f,
+                                                            0.5f
+                                                        )
+                                                        else if (lyricsAlignment == LyricsAlignment.Left) TransformOrigin(
+                                                            0f,
+                                                            0.5f
+                                                        )
+                                                        else TransformOrigin(1f, 0.5f)
+                                                    scaleY =
+                                                        if (index == synchronizedLyrics.index) 1.1f else 0.9f
+                                                    scaleX =
+                                                        if (index == synchronizedLyrics.index) 1.1f else 0.9f
                                                 }
                                             }
-                                            .graphicsLayer{
+                                            .graphicsLayer {
                                                 alpha = animateOpacity
                                             }
                                             .clickable(
@@ -1807,7 +1822,12 @@ fun Lyrics(
                         .fillMaxWidth()
                         .background(
                             brush = Brush.verticalGradient(
-                                colors = listOf(Color.Transparent,if (lightTheme) Color.White.copy(0.5f) else Color.Black.copy(0.5f)),
+                                colors = listOf(
+                                    Color.Transparent,
+                                    if (lightTheme) Color.White.copy(0.5f) else Color.Black.copy(
+                                        0.5f
+                                    )
+                                ),
                                 startY = 0f,
                                 endY = POSITIVE_INFINITY
                             ),
@@ -1825,11 +1845,11 @@ fun Lyrics(
                                 interactionSource = remember { MutableInteractionSource() },
                                 onClick = {
                                     if (jumpPrevious == "") jumpPrevious = "0"
-                                    if(binder?.player?.hasPreviousMediaItem() == false || (jumpPrevious != "0" && (binder?.player?.currentPosition ?: 0) > jumpPrevious.toInt() * 1000)
-                                    ){
+                                    if (binder?.player?.hasPreviousMediaItem() == false || (jumpPrevious != "0" && (binder?.player?.currentPosition
+                                            ?: 0) > jumpPrevious.toInt() * 1000)
+                                    ) {
                                         binder?.player?.seekTo(0)
-                                    }
-                                    else binder?.player?.playPrevious()
+                                    } else binder?.player?.playPrevious()
                                     if (effectRotationEnabled) isRotated = !isRotated
                                 }
                             )
@@ -1924,7 +1944,7 @@ fun Lyrics(
                             onClick = {
                                 menuState.display {
                                     Menu {
-                                        if (isLandscape && !showlyricsthumbnail){
+                                        if (isLandscape && !showlyricsthumbnail) {
                                             MenuEntry(
                                                 icon = if (landscapeControls) R.drawable.checkmark else R.drawable.play,
                                                 text = stringResource(R.string.toggle_controls_landscape),
@@ -1948,7 +1968,8 @@ fun Lyrics(
                                                             secondaryText = "",
                                                             onClick = {
                                                                 menuState.hide()
-                                                                lyricsAlignment = LyricsAlignment.Left
+                                                                lyricsAlignment =
+                                                                    LyricsAlignment.Left
                                                             }
                                                         )
                                                         MenuEntry(
@@ -1957,7 +1978,8 @@ fun Lyrics(
                                                             secondaryText = "",
                                                             onClick = {
                                                                 menuState.hide()
-                                                                lyricsAlignment = LyricsAlignment.Center
+                                                                lyricsAlignment =
+                                                                    LyricsAlignment.Center
                                                             }
                                                         )
                                                         MenuEntry(
@@ -1966,7 +1988,8 @@ fun Lyrics(
                                                             secondaryText = "",
                                                             onClick = {
                                                                 menuState.hide()
-                                                                lyricsAlignment = LyricsAlignment.Right
+                                                                lyricsAlignment =
+                                                                    LyricsAlignment.Right
                                                             }
                                                         )
                                                     }
@@ -2026,7 +2049,10 @@ fun Lyrics(
                                                                     menuState.hide()
                                                                     fontSize = LyricsFontSize.Custom
                                                                 },
-                                                                onLongClick = {showLyricsSizeDialog = !showLyricsSizeDialog},
+                                                                onLongClick = {
+                                                                    showLyricsSizeDialog =
+                                                                        !showLyricsSizeDialog
+                                                                },
                                                             )
                                                         }
                                                     }
@@ -2178,15 +2204,18 @@ fun Lyrics(
                                             )
 
                                         //if (!showlyricsthumbnail)
-                                            MenuEntry(
-                                                icon = R.drawable.translate,
-                                                text = stringResource(R.string.translate_to, otherLanguageApp),
-                                                enabled = true,
-                                                onClick = {
-                                                    menuState.hide()
-                                                    translateEnabled = true
-                                                }
-                                            )
+                                        MenuEntry(
+                                            icon = R.drawable.translate,
+                                            text = stringResource(
+                                                R.string.translate_to,
+                                                otherLanguageApp
+                                            ),
+                                            enabled = true,
+                                            onClick = {
+                                                menuState.hide()
+                                                translateEnabled = true
+                                            }
+                                        )
                                         MenuEntry(
                                             icon = R.drawable.translate,
                                             text = stringResource(R.string.translate_to_other_language),

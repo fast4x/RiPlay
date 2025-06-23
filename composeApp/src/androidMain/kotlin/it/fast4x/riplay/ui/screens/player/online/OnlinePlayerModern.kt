@@ -21,12 +21,10 @@ import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
@@ -255,7 +253,6 @@ import it.fast4x.riplay.utils.rememberPreference
 import it.fast4x.riplay.utils.seamlessPlay
 import it.fast4x.riplay.utils.semiBold
 import it.fast4x.riplay.utils.setQueueLoopState
-import it.fast4x.riplay.utils.shouldBePlaying
 import it.fast4x.riplay.utils.showButtonPlayerAddToPlaylistKey
 import it.fast4x.riplay.utils.showButtonPlayerArrowKey
 import it.fast4x.riplay.utils.showButtonPlayerDiscoverKey
@@ -345,7 +342,6 @@ import kotlin.math.sqrt
 //import it.fast4x.riplay.ui.screens.player.offline.Controls
 import it.fast4x.riplay.ui.screens.player.offline.StatsForNerds
 import it.fast4x.riplay.ui.screens.player.offline.Queue
-import it.fast4x.riplay.utils.applyIf
 import it.fast4x.riplay.utils.asSong
 import it.fast4x.riplay.utils.isVideo
 import it.fast4x.riplay.utils.lastVideoIdKey
@@ -2555,7 +2551,8 @@ fun OnlinePlayerModern(
                                     ensureSongInserted = { Database.insert(mediaItem) },
                                     size = 1000.dp,
                                     mediaMetadataProvider = mediaItem::mediaMetadata,
-                                    durationProvider = binderPlayer::getDuration,
+                                    durationProvider = { positionAndDuration.second.toLong() * 1000 },
+                                    positionProvider = { positionAndDuration.first.toLong() * 1000 },
                                     isLandscape = isLandscape,
                                     clickLyricsText = clickLyricsText,
                                     modifier = Modifier
@@ -3277,7 +3274,7 @@ fun OnlinePlayerModern(
                         modifier = Modifier
                             .conditional(
                                 !it.fast4x.riplay.utils.isLandscape &&
-                                (screenWidth <= (screenHeight / 2)) && (showlyricsthumbnail || (!expandedplayer && !isShowingLyrics))
+                                        (screenWidth <= (screenHeight / 2)) && (showlyricsthumbnail || (!expandedplayer && !isShowingLyrics))
                             ) {
                                 height(
                                     screenWidth
@@ -3285,15 +3282,15 @@ fun OnlinePlayerModern(
                             }
                             .conditional(
                                 !it.fast4x.riplay.utils.isLandscape &&
-                                (screenWidth > (screenHeight / 2)) || expandedplayer || (isShowingLyrics && !showlyricsthumbnail)
+                                        (screenWidth > (screenHeight / 2)) || expandedplayer || (isShowingLyrics && !showlyricsthumbnail)
                             ) {
                                 weight(
                                     1f
                                 )
                             }
                             .conditional(it.fast4x.riplay.utils.isLandscape && mediaItem.isVideo) {
-                                height( screenHeight )
-                                width( screenWidth )
+                                height(screenHeight)
+                                width(screenWidth)
                             }
                             //.border(BorderStroke(2.dp, colorPalette().collapsedPlayerProgressBar))
                     ) {
@@ -3571,7 +3568,8 @@ fun OnlinePlayerModern(
                                     ensureSongInserted = { Database.insert(mediaItem) },
                                     size = 1000.dp,
                                     mediaMetadataProvider = mediaItem::mediaMetadata,
-                                    durationProvider = binderPlayer::getDuration,
+                                    durationProvider = { positionAndDuration.second.toLong() * 1000 },
+                                    positionProvider = { positionAndDuration.first.toLong() * 1000 },
                                     isLandscape = isLandscape,
                                     clickLyricsText = clickLyricsText,
                                 )
