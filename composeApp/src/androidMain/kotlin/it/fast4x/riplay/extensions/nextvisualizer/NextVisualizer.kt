@@ -75,6 +75,7 @@ import it.fast4x.riplay.utils.semiBold
 import it.fast4x.riplay.utils.visualizerEnabledKey
 import kotlinx.coroutines.launch
 import it.fast4x.riplay.colorPalette
+import it.fast4x.riplay.service.modern.isLocal
 import it.fast4x.riplay.typography
 import timber.log.Timber
 
@@ -146,7 +147,14 @@ fun NextVisualizer() {
 
             val binder = LocalPlayerServiceBinder.current
             val visualizerView = VisualizerView(context)
-            val helper = VisualizerHelper(binder?.player?.audioSessionId ?: 0)
+            val audioSessionId = remember {
+                if (binder?.player?.currentMediaItem?.isLocal == true)
+                    binder.player.audioSessionId
+                else 0
+            }
+            val helper = VisualizerHelper(audioSessionId)
+
+            println("NextVisualizer View created audioSessionId: $audioSessionId")
 
             val visualizersList = getVisualizers()
             var currentVisualizer by rememberPreference(currentVisualizerKey, 0)

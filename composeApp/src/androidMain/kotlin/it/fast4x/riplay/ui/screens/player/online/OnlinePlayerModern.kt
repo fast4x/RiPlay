@@ -1453,7 +1453,6 @@ fun OnlinePlayerModern(
         modifier: Modifier,
     ) -> Unit = { innerModifier ->
 
-
         AndroidView(
             modifier = innerModifier.background(Color.Transparent),
 //                .applyIf(!isLandscape) {
@@ -3176,7 +3175,7 @@ fun OnlinePlayerModern(
                 ) {
 
 
-                    if (showTopActionsBar) {
+                    if (showTopActionsBar && !it.fast4x.riplay.utils.isLandscape) {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.SpaceBetween,
@@ -3301,7 +3300,7 @@ fun OnlinePlayerModern(
 
                         if (showthumbnail) {
                             if ((!isShowingLyrics && !isShowingVisualizer) || (isShowingVisualizer && showvisthumbnail) || (isShowingLyrics && showlyricsthumbnail)) {
-                                if (playerType == PlayerType.Modern) {
+                                //if (playerType == PlayerType.Modern) {
                                     val fling = PagerDefaults.flingBehavior(
                                         state = pagerState,
                                         snapPositionalThreshold = 0.25f
@@ -3487,49 +3486,54 @@ fun OnlinePlayerModern(
                                                 }
                                             }
                                     }
-                                } else {
-                                    val animatePadding by animateDpAsState(
-                                        if (expandedplayer) carouselSize.size.dp else playerThumbnailSize.padding.dp
-                                    )
-
-                                    val coverPainter = rememberAsyncImagePainter(
-                                        model = ImageRequest.Builder(LocalContext.current)
-                                            .data(mediaItem.mediaMetadata.artworkUri.thumbnail(1200))
-                                            .build()
-                                    )
-
-                                    val coverModifier = Modifier
-                                        .aspectRatio(1f)
-                                        .padding(all = animatePadding)
-                                        .conditional(thumbnailType == ThumbnailType.Modern) {
-                                            padding(
-                                                all = 10.dp
-                                            )
-                                        }
-                                        .conditional(thumbnailType == ThumbnailType.Modern) {
-                                            doubleShadowDrop(
-                                                if (showCoverThumbnailAnimation) CircleShape else thumbnailRoundness.shape(),
-                                                4.dp,
-                                                8.dp
-                                            )
-                                        }
-                                        .clip(thumbnailRoundness.shape())
-
-                                    thumbnailContent(
-                                        //use online player
-                                        if (!mediaItem.isVideo)
-                                            Modifier.hidePlayer()
-                                        else
-                                            coverModifier
-                                    )
-                                    if (!mediaItem.isVideo)
-                                        Image(
-                                            painter = coverPainter,
-                                            contentDescription = "",
-                                            contentScale = ContentScale.Fit,
-                                            modifier = coverModifier
-                                        )
-                                }
+                                //not necessary essential player type
+//                                } else {
+//                                    val animatePadding by animateDpAsState(
+//                                        if (expandedplayer) carouselSize.size.dp else playerThumbnailSize.padding.dp
+//                                    )
+//
+//                                    val coverPainter = rememberAsyncImagePainter(
+//                                        model = ImageRequest.Builder(LocalContext.current)
+//                                            .data(mediaItem.mediaMetadata.artworkUri.thumbnail(1200))
+//                                            .build()
+//                                    )
+//
+//                                    val coverModifier = Modifier
+//                                        //.aspectRatio(1f)
+//                                        //.padding(all = animatePadding)
+////                                        .conditional(!it.fast4x.riplay.utils.isLandscape && !mediaItem.isVideo) {
+////                                            aspectRatio(1f)
+////                                            padding(all = animatePadding)
+////                                        }
+//                                        .conditional(thumbnailType == ThumbnailType.Modern) {
+//                                            padding(
+//                                                all = 10.dp
+//                                            )
+//                                        }
+//                                        .conditional(thumbnailType == ThumbnailType.Modern) {
+//                                            doubleShadowDrop(
+//                                                if (showCoverThumbnailAnimation) CircleShape else thumbnailRoundness.shape(),
+//                                                4.dp,
+//                                                8.dp
+//                                            )
+//                                        }
+//                                        .clip(thumbnailRoundness.shape())
+//
+////                                    thumbnailContent(
+////                                        //use online player
+////                                        if (!mediaItem.isVideo)
+////                                            Modifier.hidePlayer()
+////                                        else
+////                                           coverModifier
+////                                    )
+//                                    if (!mediaItem.isVideo)
+//                                        Image(
+//                                            painter = coverPainter,
+//                                            contentDescription = "",
+//                                            contentScale = ContentScale.Fit,
+//                                            modifier = coverModifier
+//                                        )
+//                                }
                             }
                         }
 
@@ -3582,10 +3586,13 @@ fun OnlinePlayerModern(
                         )
 
                         val coverModifier = Modifier
-                            .conditional(!it.fast4x.riplay.utils.isLandscape) {
+                            .conditional(!it.fast4x.riplay.utils.isLandscape && !mediaItem.isVideo) {
                                 aspectRatio(1f)
                             }
-                            .padding(all = animatePadding)
+                            .conditional(!it.fast4x.riplay.utils.isLandscape) {
+                                padding(all = animatePadding)
+                            }
+                            //.padding(all = animatePadding)
                             .conditional(thumbnailType == ThumbnailType.Modern) {
                                 padding(
                                     all = 10.dp
@@ -3600,7 +3607,7 @@ fun OnlinePlayerModern(
 
                         //use online player
                         thumbnailContent(
-                            if (!mediaItem.isVideo)
+                            if (!mediaItem.isVideo || isShowingVisualizer)
                                 Modifier.hidePlayer()
                             else
                                 coverModifier
