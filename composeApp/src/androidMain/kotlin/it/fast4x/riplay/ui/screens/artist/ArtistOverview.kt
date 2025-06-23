@@ -831,7 +831,7 @@ fun ArtistOverview(
 
             }
 
-        println("ArtistOverviewModern showArtistItems: $showArtistItems itemsBrowseId: $itemsBrowseId itemsParams: $itemsParams")
+
         CustomModalBottomSheet(
             showSheet = showArtistItems,
             onDismissRequest = { showArtistItems = false },

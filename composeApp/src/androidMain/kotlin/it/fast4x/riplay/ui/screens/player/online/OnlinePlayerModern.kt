@@ -392,6 +392,8 @@ fun OnlinePlayerModern(
         mutableStateOf(binder.player.currentMediaItem, neverEqualPolicy())
     }
 
+
+
     var shouldBePlaying by remember { mutableStateOf(false) }
 
     //val shouldBePlayingTransition = updateTransition(shouldBePlaying, label = "shouldBePlaying")
@@ -2495,17 +2497,17 @@ fun OnlinePlayerModern(
                             .animateContentSize()
                         // .border(BorderStroke(1.dp, Color.Blue))
                     ) {
-                        if (showthumbnail && (playerType == PlayerType.Essential)) {
-                            Box(
-                                contentAlignment = Alignment.Center,
-                                /*modifier = Modifier
-                                .weight(1f)*/
-                                //.padding(vertical = 10.dp)
-                            ) {
-                                if ((!isShowingLyrics && !isShowingVisualizer) || (isShowingVisualizer && showvisthumbnail) || (isShowingLyrics && showlyricsthumbnail))
-                                    thumbnailContent(Modifier)
-                            }
-                        }
+//                        if (showthumbnail && (playerType == PlayerType.Essential)) {
+//                            Box(
+//                                contentAlignment = Alignment.Center,
+//                                /*modifier = Modifier
+//                                .weight(1f)*/
+//                                //.padding(vertical = 10.dp)
+//                            ) {
+//                                if ((!isShowingLyrics && !isShowingVisualizer) || (isShowingVisualizer && showvisthumbnail) || (isShowingLyrics && showlyricsthumbnail))
+//                                    thumbnailContent(Modifier)
+//                            }
+//                        }
                         if (isShowingVisualizer && !showvisthumbnail && playerType == PlayerType.Essential) {
                             Box(
                                 modifier = Modifier

@@ -1143,7 +1143,7 @@ class MainActivity :
                                                 )
                                             else
                                                 OnlineMiniPlayer(
-                                                    lifecycleOwner = LocalLifecycleOwner.current,
+                                                    //lifecycleOwner = LocalLifecycleOwner.current,
                                                     mediaItem = binder?.player?.currentMediaItem,
                                                     showPlayer = { showPlayer = true },
                                                     hidePlayer = { showPlayer = false },

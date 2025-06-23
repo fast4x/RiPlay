@@ -63,6 +63,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackException
@@ -143,7 +144,7 @@ import kotlin.math.absoluteValue
     ExperimentalFoundationApi::class)
 @Composable
 fun OnlineMiniPlayer(
-    lifecycleOwner: LifecycleOwner,
+    lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current,
     showPlayer: () -> Unit,
     hidePlayer: () -> Unit,
     navController: NavController? = null,
