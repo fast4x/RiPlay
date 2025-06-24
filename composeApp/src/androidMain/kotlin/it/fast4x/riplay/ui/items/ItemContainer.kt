@@ -22,7 +22,6 @@ inline fun ItemContainer(
     horizontalAlignment: Alignment.Horizontal = Alignment.Start,
     verticalAlignment: Alignment.Vertical = Alignment.CenterVertically,
     content: @Composable (
-        //centeredMod: Modifier KOTLIN 2
     ) -> Unit
 ) {
     if (alternative) {
@@ -33,14 +32,7 @@ inline fun ItemContainer(
                 .padding(vertical = Dimensions.itemsVerticalPadding, horizontal = 16.dp)
                 .width(thumbnailSizeDp)
         ) {
-            content(
-                /*
-                KOTLIN 2
-                centeredMod = Modifier
-                    .align(Alignment.CenterHorizontally)
-
-                 */
-            )
+            content()
         }
     } else {
         Row(

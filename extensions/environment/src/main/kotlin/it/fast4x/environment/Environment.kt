@@ -1,7 +1,5 @@
 package it.fast4x.environment
 
-import com.mohamedrejeb.ksoup.html.parser.KsoupHtmlHandler
-import com.mohamedrejeb.ksoup.html.parser.KsoupHtmlParser
 import com.zionhuang.innertube.pages.LibraryContinuationPage
 import com.zionhuang.innertube.pages.LibraryPage
 import io.ktor.client.HttpClient
@@ -12,7 +10,6 @@ import io.ktor.client.plugins.compression.ContentEncoding
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.defaultRequest
 import io.ktor.client.request.HttpRequestBuilder
-import io.ktor.client.request.accept
 import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.request.headers
@@ -26,24 +23,18 @@ import io.ktor.http.HttpHeaders
 import io.ktor.http.contentType
 import io.ktor.http.userAgent
 import io.ktor.serialization.kotlinx.json.json
-import it.fast4x.environment.utils.EnvironmentLocale
 import it.fast4x.environment.models.AccountInfo
 import it.fast4x.environment.models.AccountMenuResponse
 import it.fast4x.environment.models.BrowseResponse
 import it.fast4x.environment.models.Context
 import it.fast4x.environment.models.Context.Client
-import it.fast4x.environment.models.Context.Companion.DefaultWeb3
 import it.fast4x.environment.models.Context.Companion.DefaultWeb
 import it.fast4x.environment.models.Context.Companion.DefaultWeb2WithLocale
-import it.fast4x.environment.models.Context.Companion.USER_AGENT1
 import it.fast4x.environment.models.GridRenderer
-import it.fast4x.environment.models.MediaType
 import it.fast4x.environment.models.MusicNavigationButtonRenderer
 import it.fast4x.environment.models.MusicShelfRenderer
 import it.fast4x.environment.models.NavigationEndpoint
 import it.fast4x.environment.models.NextResponse
-import it.fast4x.environment.models.PlayerResponse
-import it.fast4x.environment.models.ResponseContext
 import it.fast4x.environment.models.ReturnYouTubeDislikeResponse
 import it.fast4x.environment.models.Runs
 import it.fast4x.environment.models.Thumbnail
@@ -55,15 +46,14 @@ import it.fast4x.environment.models.bodies.CreatePlaylistBody
 import it.fast4x.environment.models.bodies.EditPlaylistBody
 import it.fast4x.environment.models.bodies.LikeBody
 import it.fast4x.environment.models.bodies.NextBody
-import it.fast4x.environment.models.bodies.PlayerBody
 import it.fast4x.environment.models.bodies.PlaylistDeleteBody
 import it.fast4x.environment.models.bodies.SubscribeBody
+import it.fast4x.environment.utils.EnvironmentLocale
 import it.fast4x.environment.utils.EnvironmentPreferences
 import it.fast4x.environment.utils.ProxyPreferences
 import it.fast4x.environment.utils.getProxy
 import it.fast4x.environment.utils.parseCookieString
 import it.fast4x.environment.utils.sha1
-import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonPrimitive
@@ -77,7 +67,6 @@ import java.net.InetAddress
 import java.net.Proxy
 import java.util.Locale
 import java.util.concurrent.TimeUnit
-import kotlin.random.Random
 
 object Environment {
 

@@ -50,7 +50,7 @@ class OnDeviceOrganize {
                             currentFolder = if (existingFolder != null) {
                                 existingFolder
                             } else {
-                                val newFolder = Folder(segment, currentFolder, fullPath = currentFullPath + "/")
+                                val newFolder = Folder(name = segment, parent = currentFolder, fullPath = currentFullPath + "/")
                                 currentFolder.addSubFolder(newFolder)
                                 newFolder
                             }

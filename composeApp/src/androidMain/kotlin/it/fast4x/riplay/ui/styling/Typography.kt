@@ -107,7 +107,7 @@ fun typographyOf(color: Color, useSystemFont: Boolean, applyFontPadding: Boolean
     )
 
     return Typography(
-        xxxs = textStyle.copy(fontSize = 10.sp),
+        xxxs = textStyle.copy(fontSize = 8.sp),
         xxs = textStyle.copy(fontSize = 12.sp),
         xs = textStyle.copy(fontSize = 14.sp),
         s = textStyle.copy(fontSize = 16.sp),

@@ -6,9 +6,7 @@ import it.fast4x.environment.models.BrowseEndpoint
 import it.fast4x.environment.models.BrowseResponse
 import it.fast4x.environment.models.Context
 import it.fast4x.environment.models.CreatePlaylistResponse
-import it.fast4x.environment.models.MediaType
 import it.fast4x.environment.models.NavigationEndpoint
-import it.fast4x.environment.models.PlayerResponse
 import it.fast4x.environment.models.VideoOrSongInfo
 import it.fast4x.environment.models.getContinuation
 import it.fast4x.environment.models.oddElements
@@ -21,7 +19,6 @@ import it.fast4x.environment.requests.HomePage
 import it.fast4x.environment.requests.NewReleaseAlbumPage
 import it.fast4x.environment.requests.PlaylistContinuationPage
 import it.fast4x.environment.requests.PlaylistPage
-import kotlin.random.Random
 
 object EnvironmentExt {
 

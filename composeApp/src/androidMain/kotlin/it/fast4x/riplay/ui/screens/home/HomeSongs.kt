@@ -18,8 +18,10 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
@@ -286,7 +288,11 @@ fun HomeSongs(
         contract = ActivityResultContracts.RequestPermission(),
         onResult = { hasPermission = it }
     )
-    val backButtonFolder = Folder(stringResource(R.string.back))
+
+    val backButtonFolder = Folder(
+        name ="..",
+        note = "Previous",
+    )
     val showFolders by rememberPreference(showFoldersOnDeviceKey, true)
 
     var sortByOnDevice by rememberPreference(onDeviceSongSortByKey, OnDeviceSongSortBy.DateAdded)
@@ -309,17 +315,9 @@ fun HomeSongs(
         mutableStateOf(defaultFolder)
     }
 
-    var deleteProgressDialog by remember {
-        mutableStateOf(false)
-    }
-
     var checkCheck by remember {
         mutableStateOf(false)
     }
-
-    var totalSongsToDelete by remember { mutableIntStateOf(0) }
-
-    var songsDeleted by remember { mutableIntStateOf(0) }
 
     val importLauncher =
         rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
@@ -1455,6 +1453,29 @@ fun HomeSongs(
                     }
                 } else {
                     if (showFolders) {
+                        if (currentFolder != null)
+                            stickyHeader {
+                                Box(
+                                    modifier = Modifier
+                                        .padding(horizontal = 24.dp)
+                                        .background(colorPalette().background0)
+                                ){
+                                    Box(
+                                        modifier = Modifier
+                                            .border(BorderStroke(1.dp, colorPalette().textSecondary), thumbnailShape())
+                                    ) {
+                                        FolderItem(
+                                            folder = currentFolder,
+                                            thumbnailSizeDp = thumbnailSizeDp,
+                                            modifier = Modifier,
+                                            disableScrollingText = disableScrollingText
+                                        )
+                                    }
+                                }
+
+
+                            }
+
                         if (currentFolderPath != "/") {
 
                             item {
@@ -1467,7 +1488,7 @@ fun HomeSongs(
                                 FolderItem(
                                     folder = folderItem,
                                     thumbnailSizeDp = thumbnailSizeDp,
-                                    icon = R.drawable.chevron_back,
+                                    //icon = R.drawable.chevron_back,
                                     modifier = Modifier
                                         .combinedClickable(
                                             onClick = {

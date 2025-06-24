@@ -22,6 +22,7 @@ import it.fast4x.riplay.utils.applyIf
 import it.fast4x.riplay.utils.semiBold
 import it.fast4x.riplay.colorPalette
 import it.fast4x.riplay.typography
+import it.fast4x.riplay.utils.secondary
 
 @UnstableApi
 @Composable
@@ -48,14 +49,14 @@ fun FolderItem(
                 colorFilter = androidx.compose.ui.graphics.ColorFilter.tint(colorPalette().text),
                 modifier = Modifier
                     .align(Alignment.Center)
-                    .size(thumbnailSizeDp - 5.dp)
+                    .size(thumbnailSizeDp - 15.dp)
             )
         }
 
         ItemInfoContainer {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 BasicText(
-                    text = folder.name ?: "",
+                    text = folder.name,
                     style = typography().xs.semiBold,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
@@ -63,6 +64,17 @@ fun FolderItem(
                         .applyIf(!disableScrollingText){ basicMarquee(iterations = Int.MAX_VALUE) }
                 )
             }
+            //if (folder.note?.isNotEmpty() == true)
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    BasicText(
+                        text = folder.note ?: folder.fullPath,
+                        style = typography().xxxs.secondary,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier
+                            .applyIf(!disableScrollingText){ basicMarquee(iterations = Int.MAX_VALUE) }
+                    )
+                }
 
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Spacer(modifier = Modifier.padding(horizontal = 2.dp))

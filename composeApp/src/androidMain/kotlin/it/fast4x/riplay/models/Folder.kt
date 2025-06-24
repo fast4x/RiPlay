@@ -2,6 +2,7 @@ package it.fast4x.riplay.models
 
 class Folder(
     val name: String,
+    val note: String? = null,
     val parent: Folder? = null,
     val subFolders: MutableList<Folder> = mutableListOf(),
     val songs: MutableList<OnDeviceSong> = mutableListOf(),
