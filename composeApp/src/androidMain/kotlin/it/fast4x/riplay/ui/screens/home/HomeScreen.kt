@@ -29,7 +29,6 @@ import it.fast4x.riplay.ui.components.themed.ConfirmationDialog
 import it.fast4x.riplay.ui.components.themed.SmartMessage
 import it.fast4x.riplay.utils.CheckAvailableNewVersion
 import it.fast4x.riplay.utils.checkUpdateStateKey
-import it.fast4x.riplay.utils.enableQuickPicksPageKey
 import it.fast4x.riplay.utils.getEnum
 import it.fast4x.riplay.utils.homeScreenTabIndexKey
 import it.fast4x.riplay.utils.indexNavigationTabKey
@@ -59,11 +58,6 @@ fun HomeScreen(
     openTabFromShortcut: Int
 ) {
 
-//    InitializeEnvironment(
-//        appContext()
-//    )
-
-
     var showNewversionDialog by remember {
         mutableStateOf(true)
     }
@@ -73,131 +67,127 @@ fun HomeScreen(
     val saveableStateHolder = rememberSaveableStateHolder()
 
     val preferences = LocalContext.current.preferences
-    //val showSearchTab by rememberPreference(showSearchTabKey, false)
-    //val showStatsInNavbar by rememberPreference(showStatsInNavbarKey, false)
-    val enableQuickPicksPage by rememberPreference(enableQuickPicksPageKey, true)
+    //val enableQuickPicksPage by rememberPreference(enableQuickPicksPageKey, true)
 
-//    PersistMapCleanup("home/")
 
-            val openTabFromShortcut1 by remember{ mutableIntStateOf(openTabFromShortcut) }
+    val openTabFromShortcut1 by remember{ mutableIntStateOf(openTabFromShortcut) }
 
-            var initialtabIndex =
-                    when (openTabFromShortcut1) {
-                    -1 -> when (preferences.getEnum(indexNavigationTabKey, HomeScreenTabs.Default)) {
-                        HomeScreenTabs.Default -> HomeScreenTabs.QuickPics.index
-                        else -> preferences.getEnum(indexNavigationTabKey, HomeScreenTabs.QuickPics).index
-                    }
-                    else -> openTabFromShortcut1
-                }
-
-            var (tabIndex, onTabChanged) = rememberPreference(homeScreenTabIndexKey, initialtabIndex)
-
-            if (tabIndex == -2) navController.navigate(NavRoutes.search.name)
-
-            if (!enableQuickPicksPage && tabIndex==0) tabIndex = 1
-
-            Skeleton(
-                navController,
-                tabIndex,
-                onTabChanged,
-                miniPlayer,
-                navBarContent = { Item ->
-                    Item(0, "Music", R.drawable.music)
-                    Item(1, stringResource(R.string.songs), R.drawable.disc)
-                    Item(2, stringResource(R.string.artists), R.drawable.artists)
-                    Item(3, stringResource(R.string.albums), R.drawable.album)
-                    Item(4, stringResource(R.string.playlists), R.drawable.library)
-                    if (enableQuickPicksPage || isYouTubeLoggedIn())
-                        Item(5, if (!isYouTubeLoggedIn())
-                            stringResource(R.string.discover) else stringResource(R.string.home),
-                            if (!isYouTubeLoggedIn()) R.drawable.sparkles else R.drawable.ytmusic)
-                }
-            ) { currentTabIndex ->
-                saveableStateHolder.SaveableStateProvider(key = currentTabIndex) {
-                    when (currentTabIndex) {
-                        1 -> HomeSongs(
-                            navController = navController,
-                            onSearchClick = {
-                                //searchRoute("")
-                                navController.navigate(NavRoutes.search.name)
-                            },
-                            onSettingsClick = {
-                                //settingsRoute()
-                                navController.navigate(NavRoutes.settings.name)
-                            }
-                        )
-
-                        2 -> HomeArtists(
-                            onArtistClick = {
-                                navController.navigate(route = "${NavRoutes.artist.name}/${it.id}")
-                            },
-                            onSearchClick = {
-                                //searchRoute("")
-                                navController.navigate(NavRoutes.search.name)
-                            },
-                            onSettingsClick = {
-                                //settingsRoute()
-                                navController.navigate(NavRoutes.settings.name)
-                            }
-                        )
-
-                        3 -> HomeAlbums(
-                            navController = navController,
-                            onAlbumClick = {
-                                //albumRoute(it.id)
-                                navController.navigate(route = "${NavRoutes.album.name}/${it.id}")
-                            },
-                            onSearchClick = {
-                                //searchRoute("")
-                                navController.navigate(NavRoutes.search.name)
-                            },
-                            onSettingsClick = {
-                                //settingsRoute()
-                                navController.navigate(NavRoutes.settings.name)
-                            }
-                        )
-
-                        4 -> HomeLibrary(
-                            onPlaylistClick = {
-                                //localPlaylistRoute(it.id)
-                                navController.navigate(route = "${NavRoutes.localPlaylist.name}/${it.id}")
-                            },
-                            onSearchClick = {
-                                //searchRoute("")
-                                navController.navigate(NavRoutes.search.name)
-                            },
-                            onSettingsClick = {
-                                //settingsRoute()
-                                navController.navigate(NavRoutes.settings.name)
-                            }
-
-                        )
-
-                        5 -> HomePage(
-                            onAlbumClick = {
-                                navController.navigate(route = "${NavRoutes.album.name}/$it")
-                            },
-                            onArtistClick = {
-                                navController.navigate(route = "${NavRoutes.artist.name}/$it")
-                            },
-                            onPlaylistClick = {
-                                navController.navigate(route = "${NavRoutes.playlist.name}/$it")
-                            },
-                            onSearchClick = {
-                                navController.navigate(NavRoutes.search.name)
-                            },
-                            onMoodClick = { mood ->
-                                navController.currentBackStackEntry?.savedStateHandle?.set("mood", mood.toUiMood())
-                                navController.navigate(NavRoutes.mood.name)
-                            },
-                            onSettingsClick = {
-                                navController.navigate(NavRoutes.settings.name)
-                            },
-                            navController = navController
-                        )
-                    }
-                }
+    var initialtabIndex =
+            when (openTabFromShortcut1) {
+            -1 -> when (preferences.getEnum(indexNavigationTabKey, HomeScreenTabs.Default)) {
+                HomeScreenTabs.Default -> HomeScreenTabs.LocalSongs.index
+                else -> preferences.getEnum(indexNavigationTabKey, HomeScreenTabs.LocalSongs).index
             }
+            else -> openTabFromShortcut1
+        }
+
+    var (tabIndex, onTabChanged) = rememberPreference(homeScreenTabIndexKey, initialtabIndex)
+
+    if (tabIndex == -2) navController.navigate(NavRoutes.search.name)
+
+    //if (!enableQuickPicksPage && tabIndex==0) tabIndex = 1
+
+    Skeleton(
+        navController,
+        tabIndex,
+        onTabChanged,
+        miniPlayer,
+        navBarContent = { Item ->
+            Item(0, "Music", R.drawable.music)
+            Item(1, stringResource(R.string.songs), R.drawable.disc)
+            Item(2, stringResource(R.string.artists), R.drawable.artists)
+            Item(3, stringResource(R.string.albums), R.drawable.album)
+            Item(4, stringResource(R.string.playlists), R.drawable.library)
+            Item(5, if (!isYouTubeLoggedIn())
+                stringResource(R.string.discover) else stringResource(R.string.home),
+                if (!isYouTubeLoggedIn()) R.drawable.sparkles else R.drawable.ytmusic)
+        }
+    ) { currentTabIndex ->
+        saveableStateHolder.SaveableStateProvider(key = currentTabIndex) {
+            when (currentTabIndex) {
+                0 -> HomeLocalSongs(
+                    navController = navController,
+                    onSearchClick = {
+                        navController.navigate(NavRoutes.search.name)
+                    },
+                    onSettingsClick = {
+                        navController.navigate(NavRoutes.settings.name)
+                    }
+                )
+
+                1 -> HomeSongs(
+                    navController = navController,
+                    onSearchClick = {
+                        navController.navigate(NavRoutes.search.name)
+                    },
+                    onSettingsClick = {
+                        navController.navigate(NavRoutes.settings.name)
+                    }
+                )
+
+                2 -> HomeArtists(
+                    onArtistClick = {
+                        navController.navigate(route = "${NavRoutes.artist.name}/${it.id}")
+                    },
+                    onSearchClick = {
+                        navController.navigate(NavRoutes.search.name)
+                    },
+                    onSettingsClick = {
+                        navController.navigate(NavRoutes.settings.name)
+                    }
+                )
+
+                3 -> HomeAlbums(
+                    navController = navController,
+                    onAlbumClick = {
+                        navController.navigate(route = "${NavRoutes.album.name}/${it.id}")
+                    },
+                    onSearchClick = {
+                        navController.navigate(NavRoutes.search.name)
+                    },
+                    onSettingsClick = {
+                        navController.navigate(NavRoutes.settings.name)
+                    }
+                )
+
+                4 -> HomePlaylists(
+                    onPlaylistClick = {
+                        navController.navigate(route = "${NavRoutes.localPlaylist.name}/${it.id}")
+                    },
+                    onSearchClick = {
+                        navController.navigate(NavRoutes.search.name)
+                    },
+                    onSettingsClick = {
+                        navController.navigate(NavRoutes.settings.name)
+                    }
+
+                )
+
+                5 -> HomePage(
+                    onAlbumClick = {
+                        navController.navigate(route = "${NavRoutes.album.name}/$it")
+                    },
+                    onArtistClick = {
+                        navController.navigate(route = "${NavRoutes.artist.name}/$it")
+                    },
+                    onPlaylistClick = {
+                        navController.navigate(route = "${NavRoutes.playlist.name}/$it")
+                    },
+                    onSearchClick = {
+                        navController.navigate(NavRoutes.search.name)
+                    },
+                    onMoodClick = { mood ->
+                        navController.currentBackStackEntry?.savedStateHandle?.set("mood", mood.toUiMood())
+                        navController.navigate(NavRoutes.mood.name)
+                    },
+                    onSettingsClick = {
+                        navController.navigate(NavRoutes.settings.name)
+                    },
+                    navController = navController
+                )
+            }
+        }
+    }
 
 
     if (showNewversionDialog && checkUpdateState == CheckUpdateState.Enabled)

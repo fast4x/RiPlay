@@ -1199,7 +1199,7 @@ fun UiSettings(
                 valueText = {
                     when (it) {
                         HomeScreenTabs.Default -> stringResource(R.string._default)
-                        HomeScreenTabs.QuickPics -> stringResource(R.string.quick_picks)
+                        HomeScreenTabs.LocalSongs -> stringResource(R.string.on_device)
                         HomeScreenTabs.Songs -> stringResource(R.string.songs)
                         HomeScreenTabs.Albums -> stringResource(R.string.albums)
                         HomeScreenTabs.Artists -> stringResource(R.string.artists)

@@ -42,7 +42,6 @@ import it.fast4x.environment.EnvironmentExt
 import it.fast4x.riplay.Database
 import it.fast4x.riplay.MONTHLY_PREFIX
 import it.fast4x.riplay.PINNED_PREFIX
-import it.fast4x.riplay.PIPED_PREFIX
 import it.fast4x.riplay.R
 import it.fast4x.riplay.YTP_PREFIX
 import it.fast4x.riplay.enums.NavigationBarPosition
@@ -109,7 +108,7 @@ import java.time.format.DateTimeFormatter
 @ExperimentalAnimationApi
 @ExperimentalFoundationApi
 @Composable
-fun HomeLibrary(
+fun HomePlaylists(
     onPlaylistClick: (Playlist) -> Unit,
     onSearchClick: () -> Unit,
     onSettingsClick: () -> Unit

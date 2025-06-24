@@ -204,7 +204,7 @@ import it.fast4x.riplay.utils.showDislikedPlaylistKey
 @ExperimentalComposeUiApi
 @UnstableApi
 @Composable
-fun HomeSongs(
+fun HomeLocalSongs(
     navController: NavController,
     onSearchClick: () -> Unit,
     onSettingsClick: () -> Unit
@@ -230,10 +230,15 @@ fun HomeSongs(
      */
 
     var filter: String? by rememberSaveable { mutableStateOf(null) }
-    var builtInPlaylist by rememberPreference(
-        builtInPlaylistKey,
-        BuiltInPlaylist.Favorites
-    )
+//    var builtInPlaylist by rememberPreference(
+//        builtInPlaylistKey,
+//        BuiltInPlaylist.Favorites
+//    )
+    val builtInPlaylist = remember { BuiltInPlaylist.OnDevice }
+
+    var downloadState by remember {
+        mutableStateOf(Download.STATE_STOPPED)
+    }
 
     val context = LocalContext.current
 
@@ -381,8 +386,8 @@ fun HomeSongs(
 //        BuiltInPlaylist.Downloaded to stringResource(R.string.downloaded)
     if (showMyTopPlaylist) buttonsList +=
         BuiltInPlaylist.Top to String.format(stringResource(R.string.my_playlist_top),maxTopPlaylistItems.number)
-//    if (showOnDevicePlaylist) buttonsList +=
-//        BuiltInPlaylist.OnDevice to stringResource(R.string.on_device)
+    if (showOnDevicePlaylist) buttonsList +=
+        BuiltInPlaylist.OnDevice to stringResource(R.string.on_device)
     if (showDislikedPlaylist) buttonsList +=
         BuiltInPlaylist.Disliked to stringResource(R.string.disliked)
 
@@ -774,26 +779,26 @@ fun HomeSongs(
                         )
                     }
 
-                    Row(
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier
-                            .padding(horizontal = 12.dp)
-                            .padding(vertical = 4.dp)
-                            .fillMaxWidth()
-                    ) {
-                        Column {
-                            ButtonsRow(
-                                chips = buttonsList,
-                                currentValue = builtInPlaylist,
-                                onValueUpdate = {
-                                    builtInPlaylist = it
-                                },
-                                modifier = Modifier.padding(end = 12.dp)
-                            )
-
-                        }
-                    }
+//                    Row(
+//                        horizontalArrangement = Arrangement.SpaceBetween,
+//                        verticalAlignment = Alignment.CenterVertically,
+//                        modifier = Modifier
+//                            .padding(horizontal = 12.dp)
+//                            .padding(vertical = 4.dp)
+//                            .fillMaxWidth()
+//                    ) {
+//                        Column {
+//                            ButtonsRow(
+//                                chips = buttonsList,
+//                                currentValue = builtInPlaylist,
+//                                onValueUpdate = {
+//                                    builtInPlaylist = it
+//                                },
+//                                modifier = Modifier.padding(end = 12.dp)
+//                            )
+//
+//                        }
+//                    }
 
                     Row(
                         horizontalArrangement = Arrangement.SpaceAround,
@@ -1121,37 +1126,37 @@ fun HomeSongs(
                                     )
                             )
 
-                        if (builtInPlaylist != BuiltInPlaylist.Favorites)
-                            HeaderIconButton(
-                                icon = R.drawable.resource_import,
-                                color = colorPalette().text,
-                                //iconSize = 22.dp,
-                                onClick = {},
-                                modifier = Modifier
-                                    .padding(horizontal = 2.dp)
-                                    .combinedClickable(
-                                        onClick = {
-                                            try {
-                                                importLauncher.launch(
-                                                    arrayOf(
-                                                        "text/*"
-                                                    )
-                                                )
-                                            } catch (e: ActivityNotFoundException) {
-                                                SmartMessage(
-                                                    context.resources.getString(R.string.info_not_find_app_open_doc),
-                                                    type = PopupType.Warning, context = context
-                                                )
-                                            }
-                                        },
-                                        onLongClick = {
-                                            SmartMessage(
-                                                context.resources.getString(R.string.import_favorites),
-                                                context = context
-                                            )
-                                        }
-                                    )
-                            )
+//                        if (builtInPlaylist != BuiltInPlaylist.Favorites)
+//                            HeaderIconButton(
+//                                icon = R.drawable.resource_import,
+//                                color = colorPalette().text,
+//                                //iconSize = 22.dp,
+//                                onClick = {},
+//                                modifier = Modifier
+//                                    .padding(horizontal = 2.dp)
+//                                    .combinedClickable(
+//                                        onClick = {
+//                                            try {
+//                                                importLauncher.launch(
+//                                                    arrayOf(
+//                                                        "text/*"
+//                                                    )
+//                                                )
+//                                            } catch (e: ActivityNotFoundException) {
+//                                                SmartMessage(
+//                                                    context.resources.getString(R.string.info_not_find_app_open_doc),
+//                                                    type = PopupType.Warning, context = context
+//                                                )
+//                                            }
+//                                        },
+//                                        onLongClick = {
+//                                            SmartMessage(
+//                                                context.resources.getString(R.string.import_favorites),
+//                                                context = context
+//                                            )
+//                                        }
+//                                    )
+//                            )
 
                         HeaderIconButton(
                             icon = R.drawable.ellipsis_horizontal,

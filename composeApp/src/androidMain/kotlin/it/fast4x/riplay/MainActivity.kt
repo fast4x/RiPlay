@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.ActivityManager
 import android.content.ComponentName
-import android.content.ContentValues.TAG
 import android.content.Intent
 import android.content.ServiceConnection
 import android.content.SharedPreferences
@@ -28,7 +27,6 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.ActivityResultCallback
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContract
-import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.LinearEasing
@@ -88,7 +86,6 @@ import androidx.core.content.edit
 import androidx.core.net.toUri
 import androidx.core.os.LocaleListCompat
 import androidx.core.view.WindowCompat
-import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
@@ -98,6 +95,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.palette.graphics.Palette
 import coil.imageLoader
 import coil.request.ImageRequest
+import com.kieronquinn.monetcompat.app.MonetCompatActivity
 import com.kieronquinn.monetcompat.core.MonetActivityAccessException
 import com.kieronquinn.monetcompat.core.MonetCompat
 import com.kieronquinn.monetcompat.interfaces.MonetColorsChangedListener
@@ -113,8 +111,6 @@ import it.fast4x.environment.utils.LocalePreferenceItem
 import it.fast4x.environment.utils.LocalePreferences
 import it.fast4x.environment.utils.ProxyPreferenceItem
 import it.fast4x.environment.utils.ProxyPreferences
-//import it.fast4x.environment.utils.YoutubePreferenceItem
-//import it.fast4x.environment.utils.YoutubePreferences
 import it.fast4x.riplay.enums.AnimatedGradient
 import it.fast4x.riplay.enums.CheckUpdateState
 import it.fast4x.riplay.enums.ColorPaletteMode
@@ -137,7 +133,6 @@ import it.fast4x.riplay.ui.components.themed.CrossfadeContainer
 import it.fast4x.riplay.ui.components.themed.SmartMessage
 import it.fast4x.riplay.ui.screens.AppNavigation
 import it.fast4x.riplay.ui.screens.player.offline.OfflineMiniPlayer
-import it.fast4x.riplay.ui.screens.player.online.OnlinePlayer
 import it.fast4x.riplay.ui.screens.player.offline.rememberPlayerSheetState
 import it.fast4x.riplay.ui.styling.Appearance
 import it.fast4x.riplay.ui.styling.Dimensions
@@ -253,8 +248,8 @@ import kotlin.math.sqrt
 
 @UnstableApi
 class MainActivity :
-//MonetCompatActivity(),
-    AppCompatActivity(),
+MonetCompatActivity(),
+    //AppCompatActivity()
     MonetColorsChangedListener
 //,PersistMapOwner
 {
@@ -292,7 +287,7 @@ class MainActivity :
     private var shakeCounter = 0
 
     private var _monet: MonetCompat? by mutableStateOf(null)
-    private val monet get() = _monet ?: throw MonetActivityAccessException()
+    val localMonet get() = _monet ?: throw MonetActivityAccessException()
 
     private val pipState: MutableState<Boolean> = mutableStateOf(false)
 
@@ -355,14 +350,18 @@ class MainActivity :
 
         MonetCompat.setup(this)
         _monet = MonetCompat.getInstance()
-        monet.setDefaultPalette()
-        monet.addMonetColorsChangedListener(
+        localMonet.setDefaultPalette()
+        //TODO CHECK IF IT WORKS
+        localMonet.addMonetColorsChangedListener(
             listener = this,
             notifySelf = false
         )
-        monet.updateMonetColors()
+        localMonet.updateMonetColors()
 
-        monet.invokeOnReady {
+        Timber.d("MainActivity onCreate Before localMonet.invokeOnReady")
+
+        localMonet.invokeOnReady {
+            Timber.d("MainActivity onCreate Inside localMonet.invokeOnReady")
             startApp()
         }
 
@@ -638,9 +637,10 @@ class MainActivity :
 
                         val fontType = getEnum(fontTypeKey, FontType.Rubik)
 
+                        //TODO CHECK MATERIALYOU OR MONIT
                         if (colorPaletteName == ColorPaletteName.MaterialYou) {
                             colorPalette = dynamicColorPaletteOf(
-                                Color(monet.getAccentColor(this@MainActivity)),
+                                Color(localMonet.getAccentColor(this@MainActivity)),
                                 !lightTheme
                             )
                         }
@@ -853,7 +853,7 @@ class MainActivity :
 
                                         if (colorPaletteName == ColorPaletteName.MaterialYou) {
                                             colorPalette = dynamicColorPaletteOf(
-                                                Color(monet.getAccentColor(this@MainActivity)),
+                                                Color(localMonet.getAccentColor(this@MainActivity)),
                                                 !lightTheme
                                             )
                                         }
@@ -1091,7 +1091,7 @@ class MainActivity :
                                 LocalPlayerAwareWindowInsets provides playerAwareWindowInsets,
                                 LocalLayoutDirection provides LayoutDirection.Ltr,
                                 LocalPlayerSheetState provides playerState,
-                                LocalMonetCompat provides monet,
+                                LocalMonetCompat provides localMonet,
                                 //LocalInternetAvailable provides isInternetAvailable
                             ) {
 
@@ -1450,7 +1450,7 @@ class MainActivity :
         super.onDestroy()
 
         runCatching {
-            monet.removeMonetColorsChangedListener(this)
+            localMonet.removeMonetColorsChangedListener(this)
             _monet = null
         }.onFailure {
             Timber.e("MainActivity.onDestroy removeMonetColorsChangedListener ${it.stackTraceToString()}")
@@ -1489,6 +1489,7 @@ class MainActivity :
         monetColors: ColorScheme,
         isInitialChange: Boolean
     ) {
+        super<MonetCompatActivity>.onMonetColorsChanged(monet, monetColors, isInitialChange)
         val colorPaletteName =
             preferences.getEnum(colorPaletteNameKey, ColorPaletteName.Dynamic)
         if (!isInitialChange && colorPaletteName == ColorPaletteName.MaterialYou) {
