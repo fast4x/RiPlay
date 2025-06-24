@@ -8,7 +8,7 @@
         <intent
             android:targetClass="it.fast4x.riplay.MainActivity"
             android:targetPackage="it.fast4x.riplay.debug"
-            android:action="it.fast4x.rimusic.action.search" />
+            android:action="it.fast4x.riplay.action.search" />
     </shortcut>
     <!--
     <shortcut
@@ -17,9 +17,9 @@
         android:icon="@drawable/disc"
         android:shortcutShortLabel="@string/songs">
         <intent
-            android:targetClass="it.fast4x.rimusic.MainActivity"
-            android:targetPackage="it.fast4x.rimusic.debug"
-            android:action="it.fast4x.rimusic.action.songs" />
+            android:targetClass="it.fast4x.riplay.MainActivity"
+            android:targetPackage="it.fast4x.riplay.debug"
+            android:action="it.fast4x.riplay.action.songs" />
     </shortcut>
     -->
     <shortcut
@@ -30,7 +30,7 @@
         <intent
             android:targetClass="it.fast4x.riplay.MainActivity"
             android:targetPackage="it.fast4x.riplay.debug"
-            android:action="it.fast4x.rimusic.action.albums" />
+            android:action="it.fast4x.riplay.action.albums" />
     </shortcut>
     <shortcut
         android:shortcutId="library"
@@ -40,7 +40,7 @@
         <intent
             android:targetClass="it.fast4x.riplay.MainActivity"
             android:targetPackage="it.fast4x.riplay.debug"
-            android:action="it.fast4x.rimusic.action.library" />
+            android:action="it.fast4x.riplay.action.library" />
     </shortcut>
     <shortcut
         android:shortcutId="rescuecenter"
@@ -50,6 +50,6 @@
         <intent
             android:targetClass="it.fast4x.riplay.MainActivity"
             android:targetPackage="it.fast4x.riplay.debug"
-            android:action="it.fast4x.rimusic.action.rescuecenter" />
+            android:action="it.fast4x.riplay.action.rescuecenter" />
     </shortcut>
 </shortcuts>

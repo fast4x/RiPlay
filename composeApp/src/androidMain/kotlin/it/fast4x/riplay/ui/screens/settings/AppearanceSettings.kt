@@ -263,7 +263,7 @@ fun DefaultAppearanceSettings() {
         navigationBarPositionKey,
         NavigationBarPosition.Bottom
     )
-    if (getUiType()==UiType.RiMusic)
+    if (getUiType()==UiType.RiPlay)
         navigationBarPosition = NavigationBarPosition.Bottom
     else
         navigationBarPosition = NavigationBarPosition.Left

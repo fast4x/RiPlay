@@ -140,7 +140,6 @@ import it.fast4x.riplay.utils.forcePlayAtIndex
 import it.fast4x.riplay.utils.forcePlayFromBeginning
 import it.fast4x.riplay.utils.formatAsTime
 import it.fast4x.riplay.utils.isLandscape
-import it.fast4x.riplay.utils.isPipedEnabledKey
 import it.fast4x.riplay.utils.isRecommendationEnabledKey
 import it.fast4x.riplay.utils.maxSongsInQueueKey
 import it.fast4x.riplay.utils.navigationBarPositionKey
@@ -161,7 +160,6 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.Date
-import java.util.UUID
 import it.fast4x.riplay.cleanPrefix
 import it.fast4x.riplay.MONTHLY_PREFIX
 import it.fast4x.riplay.PINNED_PREFIX
@@ -220,7 +218,7 @@ fun LocalPlaylistSongs(
     val (colorPalette, typography, thumbnailShape) = LocalAppearance.current
     val binder = LocalPlayerServiceBinder.current
     val menuState = LocalMenuState.current
-    val uiType by rememberPreference(UiTypeKey, UiType.RiMusic)
+    val uiType by rememberPreference(UiTypeKey, UiType.RiPlay)
 
     var playlistAllSongs by persistList<SongEntity>("localPlaylist/$playlistId/songs")
     var songsInTheToPlaylist by persistList<SongEntity>("")

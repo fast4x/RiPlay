@@ -240,8 +240,8 @@ fun DefaultUiSettings() {
     lastPlayerTimelineType = PlayerTimelineType.Default
     var lastPlayerThumbnailSize by rememberPreference(lastPlayerThumbnailSizeKey, PlayerThumbnailSize.Medium)
     lastPlayerThumbnailSize = PlayerThumbnailSize.Medium
-    var uiType  by rememberPreference(UiTypeKey, UiType.RiMusic)
-    uiType = UiType.RiMusic
+    var uiType  by rememberPreference(UiTypeKey, UiType.RiPlay)
+    uiType = UiType.RiPlay
     var disablePlayerHorizontalSwipe by rememberPreference(disablePlayerHorizontalSwipeKey, false)
     disablePlayerHorizontalSwipe = false
     var lastPlayerPlayButtonType by rememberPreference(lastPlayerPlayButtonTypeKey, PlayerPlayButtonType.Rectangular)
@@ -798,7 +798,7 @@ fun UiSettings(
         SettingsGroupSpacer()
         SettingsEntryGroupText(stringResource(R.string.user_interface))
 
-        var uiType by rememberPreference(UiTypeKey, UiType.RiMusic)
+        var uiType by rememberPreference(UiTypeKey, UiType.RiPlay)
         if (search.input.isBlank() || stringResource(R.string.interface_in_use).contains(search.input,true))
             EnumValueSelectorSettingsEntry(
                 title = stringResource(R.string.interface_in_use),

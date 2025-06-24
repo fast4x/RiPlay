@@ -194,7 +194,6 @@ import kotlinx.coroutines.withContext
 import it.fast4x.riplay.appContext
 import it.fast4x.riplay.enums.PresetsReverb
 import it.fast4x.riplay.extensions.connectivity.AndroidConnectivityObserverLegacy
-import it.fast4x.riplay.extensions.players.SimplePlayer
 import it.fast4x.riplay.isHandleAudioFocusEnabled
 import it.fast4x.riplay.ui.screens.settings.isYouTubeSyncEnabled
 import it.fast4x.riplay.utils.audioReverbPresetKey
@@ -602,28 +601,9 @@ class PlayerServiceModern : MediaLibraryService(),
     override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaLibrarySession =
         mediaSession
 
-//    @UnstableApi
-//    override fun onUpdateNotification(
-//        session: MediaSession,
-//        startInForegroundRequired: Boolean,
-//    ) {
-//        super.onUpdateNotification(session, startInForegroundRequired)
-//    }
-
-//    override fun onTrimMemory(level: Int) {
-//        super.onTrimMemory(level)
-//        savePlayerQueue()
-//    }
-//
-//    override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) {
-//        savePlayerQueue()
-//    }
 
     override fun onRepeatModeChanged(repeatMode: Int) {
         updateDefaultNotification()
-//        preferences.edit {
-//            putEnum(queueLoopTypeKey, QueueLoopType.from(repeatMode))
-//        }
     }
 
 
@@ -666,8 +646,6 @@ class PlayerServiceModern : MediaLibraryService(),
                 }
             }
 
-            updateOnlineHistory(mediaItem)
-
         }
 
 
@@ -707,21 +685,9 @@ class PlayerServiceModern : MediaLibraryService(),
             player.release()
         }
 
-        //unregisterReceiver(notificationActionReceiver)
-
-//        if (isAtLeastAndroid7)
-//            stopForeground(STOP_FOREGROUND_DETACH)
-//        else stopForeground(true)
-
         mediaSession.release()
         cache.release()
-        //downloadCache.release()
         Database.close()
-
-//        timerJob?.cancel()
-//        timerJob = null
-
-        //coroutineScope.cancel()
 
         super.onDestroy()
     }
@@ -805,17 +771,7 @@ class PlayerServiceModern : MediaLibraryService(),
             })
         }
 
-        if (mediaItem != null) {
-            println("PlayerServiceModern onMediaItemTransition call updateOnlineHistory with mediaItem $mediaItem")
-            updateOnlineHistory(mediaItem)
-        }
     }
-
-//    override fun onTimelineChanged(timeline: Timeline, reason: Int) {
-//        if (reason == Player.TIMELINE_CHANGE_REASON_PLAYLIST_CHANGED) {
-//            savePlayerQueue()
-//        }
-//    }
 
     override fun onShuffleModeEnabledChanged(shuffleModeEnabled: Boolean) {
         updateDefaultNotification()
@@ -844,11 +800,6 @@ class PlayerServiceModern : MediaLibraryService(),
                 duration = duration,
                 fadeIn = true
             )
-
-        //val totalPlayTimeMs = player.totalBufferedDuration.toString()
-        //Log.d("mediaEvent","isPlaying "+isPlaying.toString() + " buffered duration "+totalPlayTimeMs)
-        //Log.d("mediaItem","onIsPlayingChanged isPlaying $isPlaying audioSession ${player.audioSessionId}")
-
 
         super.onIsPlayingChanged(isPlaying)
     }
@@ -889,45 +840,6 @@ class PlayerServiceModern : MediaLibraryService(),
             return
         }
 
-//        if (error.errorCode in PlayerErrorsToRemoveCorruptedCache) {
-//            Timber.e("PlayerServiceModern onPlayerError delete corrupted resource ${currentMediaItem.value?.mediaId} errorCodeName ${error.errorCodeName}")
-//            println("PlayerServiceModern onPlayerError delete corrupted resource ${currentMediaItem.value?.mediaId} errorCodeName ${error.errorCodeName}")
-//            currentMediaItem.value?.mediaId?.let {
-//                try {
-//                    cache.removeResource(it) //try to remove from cache if exists
-//                } catch (e: Exception) {
-//                    Timber.e("PlayerServiceModern onPlayerError delete corrupted cache resource removeResource ${e.stackTraceToString()}")
-//                }
-//                try {
-//                    downloadCache.removeResource(it) //try to remove from download cache if exists
-//                } catch (e: Exception) {
-//                    Timber.e("PlayerServiceModern onPlayerError delete corrupted downloadCache resource removeResource ${e.stackTraceToString()}")
-//                }
-//            }
-//            player.stop()
-//            player.prepare()
-//            player.play()
-//            return
-//        }
-
-        /*
-        if (error.errorCode in PlayerErrorsToSkip) {
-            //println("mediaItem onPlayerError recovered occurred 2000 errorCodeName ${error.errorCodeName}")
-            player.pause()
-            player.prepare()
-            player.forceSeekToNext()
-            player.play()
-
-            showSmartMessage(
-                message = getString(
-                    R.string.skip_media_on_notavailable_message,
-                ))
-
-            return
-        }
-         */
-
-
         if (!preferences.getBoolean(skipMediaOnErrorKey, false) || !player.hasNextMediaItem())
             return
 
@@ -962,26 +874,7 @@ class PlayerServiceModern : MediaLibraryService(),
         }
     }
 
-    private fun updateOnlineHistory(mediaItem: MediaItem) {
-        if (preferences.getBoolean(pauseListenHistoryKey, false)) return
 
-        println("PlayerServiceModern updateOnlineHistory called with mediaItem $mediaItem")
-
-        if (!mediaItem.isLocal && isYouTubeSyncEnabled()) {
-            CoroutineScope(Dispatchers.IO).launch {
-                SimplePlayer.playerResponseForMetadata(mediaItem.mediaId)
-                    .getOrNull()?.playbackTracking?.videostatsPlaybackUrl?.baseUrl
-                    ?.let { playbackUrl ->
-                        println("PlayerServiceModern updateOnlineHistory addPlaybackToHistory playbackUrl $playbackUrl")
-                        EnvironmentExt.addPlaybackToHistory(null, playbackUrl)
-                            .onFailure {
-                                Timber.e("PlayerServiceModern updateOnlineHistory addPlaybackToHistory ${it.stackTraceToString()}")
-                                println("PlayerServiceModern updateOnlineHistory addPlaybackToHistory ${it.stackTraceToString()}")
-                            }
-                    }
-            }
-        }
-    }
 
     private fun recoverPlaybackError() {
         if (player.playerError != null) {
@@ -991,17 +884,7 @@ class PlayerServiceModern : MediaLibraryService(),
 
     private fun loadFromRadio(reason: Int) {
         if (!preferences.getBoolean(autoLoadSongsInQueueKey, true)) return
-        /*
-        // Old feature add songs only if radio is started by user and when last song in player is played
-        radio?.let { radio ->
-            if (player.mediaItemCount - player.currentMediaItemIndex == 1) {
-                coroutineScope.launch(Dispatchers.Main) {
-                    player.addMediaItems(radio.process())
-                }
-            }
-        }
 
-         */
         val isDiscoverEnabled = applicationContext.preferences.getBoolean(discoverKey, false)
         if (reason != Player.MEDIA_ITEM_TRANSITION_REASON_REPEAT &&
             player.mediaItemCount - player.currentMediaItemIndex <= if (
@@ -1015,12 +898,11 @@ class PlayerServiceModern : MediaLibraryService(),
                 )
             } else {
                 radio?.let { radio ->
-                    //if (player.mediaItemCount - player.currentMediaItemIndex <= 3) {
                     coroutineScope.launch(Dispatchers.Main) {
                         if (player.playbackState != STATE_IDLE)
                             player.addMediaItems(radio.process())
                     }
-                    //}
+
                 }
             }
         }
@@ -1227,26 +1109,6 @@ class PlayerServiceModern : MediaLibraryService(),
                     ),
                 ),
             )
-//        CacheDataSource
-//            .Factory()
-//            .setCache(downloadCache)
-//            .setUpstreamDataSourceFactory(
-//                CacheDataSource
-//                    .Factory()
-//                    .setCache(cache)
-//                    .setUpstreamDataSourceFactory(
-//                        DefaultDataSource.Factory(
-//                            this,
-//                            OkHttpDataSource.Factory(
-//                                OkHttpClient
-//                                    .Builder()
-//                                    .proxy(Environment.proxy)
-//                                    .build(),
-//                            ),
-//                        ),
-//                    ),
-//            ).setCacheWriteDataSinkFactory(null)
-//            .setFlags(FLAG_IGNORE_CACHE_ON_ERROR)
 
 
     private fun buildCustomCommandButtons(): MutableList<CommandButton> {
@@ -1805,9 +1667,6 @@ class PlayerServiceModern : MediaLibraryService(),
         val cache: Cache
             get() = this@PlayerServiceModern.cache
 
-//        val downloadCache: Cache
-//            get() = this@PlayerServiceModern.downloadCache
-
         val sleepTimerMillisLeft: StateFlow<Long?>?
             get() = timerJob?.millisLeft
 
@@ -1991,16 +1850,16 @@ class PlayerServiceModern : MediaLibraryService(),
 
         companion object {
 
-            val pause = Action("it.fast4x.rimusic.pause")
-            val play = Action("it.fast4x.rimusic.play")
-            val next = Action("it.fast4x.rimusic.next")
-            val previous = Action("it.fast4x.rimusic.previous")
-            val like = Action("it.fast4x.rimusic.like")
-            val download = Action("it.fast4x.rimusic.download")
-            val playradio = Action("it.fast4x.rimusic.playradio")
-            val shuffle = Action("it.fast4x.rimusic.shuffle")
-            val search = Action("it.fast4x.rimusic.search")
-            val repeat = Action("it.fast4x.rimusic.repeat")
+            val pause = Action("it.fast4x.riplay.pause")
+            val play = Action("it.fast4x.riplay.play")
+            val next = Action("it.fast4x.riplay.next")
+            val previous = Action("it.fast4x.riplay.previous")
+            val like = Action("it.fast4x.riplay.like")
+            val download = Action("it.fast4x.riplay.download")
+            val playradio = Action("it.fast4x.riplay.playradio")
+            val shuffle = Action("it.fast4x.riplay.shuffle")
+            val search = Action("it.fast4x.riplay.search")
+            val repeat = Action("it.fast4x.riplay.repeat")
 
         }
     }

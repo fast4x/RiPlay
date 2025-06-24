@@ -340,7 +340,7 @@ fun AlbumScreen(
         modifier = Modifier,
         containerColor = colorPalette().background0,
         topBar = {
-            if (UiType.RiMusic.isCurrent())
+            if (UiType.RiPlay.isCurrent())
                 AppHeader(navController).Draw()
         }
     ) {

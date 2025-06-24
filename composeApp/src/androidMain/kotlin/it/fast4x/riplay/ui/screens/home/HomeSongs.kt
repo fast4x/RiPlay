@@ -89,7 +89,6 @@ import it.fast4x.riplay.R
 import it.fast4x.riplay.appContext
 import it.fast4x.riplay.colorPalette
 import it.fast4x.riplay.enums.BuiltInPlaylist
-import it.fast4x.riplay.enums.CacheType
 import it.fast4x.riplay.enums.DurationInMinutes
 import it.fast4x.riplay.enums.MaxSongs
 import it.fast4x.riplay.enums.MaxTopPlaylistItems
@@ -166,8 +165,6 @@ import it.fast4x.riplay.utils.parentalControlEnabledKey
 import it.fast4x.riplay.utils.rememberPreference
 import it.fast4x.riplay.utils.secondary
 import it.fast4x.riplay.utils.semiBold
-import it.fast4x.riplay.utils.showCachedPlaylistKey
-import it.fast4x.riplay.utils.showDownloadedPlaylistKey
 import it.fast4x.riplay.utils.showFavoritesPlaylistKey
 import it.fast4x.riplay.utils.showFloatingIconKey
 import it.fast4x.riplay.utils.showFoldersOnDeviceKey
@@ -180,8 +177,6 @@ import it.fast4x.riplay.utils.thumbnailRoundnessKey
 import it.fast4x.riplay.utils.topPlaylistPeriodKey
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import java.text.SimpleDateFormat
@@ -189,8 +184,6 @@ import java.util.Date
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.time.Duration
-import it.fast4x.riplay.ui.components.themed.CacheSpaceIndicator
-import it.fast4x.riplay.ui.components.themed.InProgressDialog
 import it.fast4x.riplay.ui.screens.settings.isYouTubeSyncEnabled
 import it.fast4x.riplay.utils.addToYtLikedSongs
 import it.fast4x.riplay.utils.addToYtPlaylist
@@ -198,8 +191,6 @@ import it.fast4x.riplay.utils.asSong
 import it.fast4x.riplay.utils.formatAsDuration
 import org.dailyislam.android.utilities.isNetworkConnected
 import it.fast4x.riplay.utils.isNowPlaying
-import kotlinx.coroutines.withContext
-import kotlin.system.exitProcess
 import it.fast4x.riplay.utils.showDislikedPlaylistKey
 
 
@@ -776,7 +767,7 @@ fun HomeSongs(
                             .padding(vertical = 4.dp)
                             .fillMaxWidth()
                     ) {
-                        if ( UiType.RiMusic.isCurrent() )
+                        if ( UiType.RiPlay.isCurrent() )
                             TitleSection(title = stringResource(R.string.songs))
 
                         HeaderInfo(

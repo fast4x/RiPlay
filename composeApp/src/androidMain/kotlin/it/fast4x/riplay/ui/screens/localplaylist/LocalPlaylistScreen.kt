@@ -71,7 +71,7 @@ fun LocalPlaylistScreen(
                 modifier = modifier,
                 containerColor = colorPalette().background0,
                 topBar = {
-                    if( UiType.RiMusic.isCurrent() )
+                    if( UiType.RiPlay.isCurrent() )
                         AppHeader( navController ).Draw()
                 }
             ) {

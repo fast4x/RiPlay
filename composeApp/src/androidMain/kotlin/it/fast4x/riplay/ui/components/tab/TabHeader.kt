@@ -26,7 +26,7 @@ private fun Title( titleId: Int ) {
     val alignment: TextAlign
 
     when( UiType.current() ) {
-        UiType.RiMusic -> {
+        UiType.RiPlay -> {
             sPadding = Dp.Hairline
             ePadding = 12.dp
             alignment = TextAlign.Start
@@ -69,7 +69,7 @@ interface TabHeader {
         @Composable
         fun style(): TextStyle =
             when( UiType.current() ) {
-                UiType.RiMusic -> typography().xl.bold
+                UiType.RiPlay -> typography().xl.bold
                 UiType.ViMusic -> typography().xxl.bold
             }
 
@@ -107,7 +107,7 @@ fun TabHeader(
             .fillMaxWidth()
     ) {
         when( UiType.current() ) {
-            UiType.RiMusic -> RiMusicHeader( titleId, additionalContent )
+            UiType.RiPlay -> RiMusicHeader( titleId, additionalContent )
             UiType.ViMusic -> ViMusicHeader( titleId, additionalContent )
         }
     }

@@ -108,7 +108,7 @@ fun Scaffold(
         //val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
         val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
         val customModifier =
-            if( UiType.RiMusic.isCurrent() )
+            if( UiType.RiPlay.isCurrent() )
                 Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
             else
                 Modifier
@@ -118,7 +118,7 @@ fun Scaffold(
             modifier = customModifier,
             containerColor = colorPalette().background0,
             topBar = {
-                if( UiType.RiMusic.isCurrent() ) AppHeader( navController ).Draw()
+                if( UiType.RiPlay.isCurrent() ) AppHeader( navController ).Draw()
             },
 
             bottomBar = {

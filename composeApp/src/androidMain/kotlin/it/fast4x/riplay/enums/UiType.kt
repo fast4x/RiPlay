@@ -5,13 +5,13 @@ import it.fast4x.riplay.utils.UiTypeKey
 import it.fast4x.riplay.utils.rememberPreference
 
 enum class UiType {
-    RiMusic,
+    RiPlay,
     ViMusic;
 
     companion object {
 
         @Composable
-        fun current(): UiType = rememberPreference( UiTypeKey, RiMusic ).value
+        fun current(): UiType = rememberPreference( UiTypeKey, RiPlay ).value
     }
 
     @Composable

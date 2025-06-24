@@ -64,7 +64,7 @@ fun Skeleton(
             verticalArrangement = Arrangement.SpaceBetween,
             modifier = Modifier.fillMaxWidth()
         ) {
-            if( UiType.RiMusic.isCurrent() )
+            if( UiType.RiPlay.isCurrent() )
                 AppHeader( navController ).Draw()
 
             if ( NavigationBarPosition.Top.isCurrent() )

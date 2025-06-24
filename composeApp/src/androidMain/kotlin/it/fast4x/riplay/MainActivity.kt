@@ -513,15 +513,14 @@ class MainActivity :
                     ) == CheckUpdateState.Enabled
                 ) {
                     val urlVersionCode =
-                        "https://raw.githubusercontent.com/fast4x/RiMusic/master/updatedVersion/updatedVersionCode.ver"
-                    //val urlVersionCode = "https://rimusic.xyz/update/updatedVersionCode.ver"
+                        "https://raw.githubusercontent.com/fast4x/RiPlay/master/updatedVersion/updatedVersionCode.ver"
                     request.GET(urlVersionCode, object : Callback {
                         override fun onResponse(call: Call, response: Response) {
                             val responseData = response.body?.string()
                             runOnUiThread {
                                 try {
                                     if (responseData != null) {
-                                        val file = File(filesDir, "RiMusicUpdatedVersionCode.ver")
+                                        val file = File(filesDir, "RiPlayUpdatedVersionCode.ver")
                                         file.writeText(responseData.toString())
                                     }
                                 } catch (e: Exception) {
@@ -1103,7 +1102,7 @@ class MainActivity :
                                             val dateFormat = SimpleDateFormat("yyyyMMddHHmmss")
                                                 backup.database(Database.getInstance)
                                                     .backupLocation(RoomBackup.BACKUP_FILE_LOCATION_CUSTOM_DIALOG)
-                                                    .customBackupFileName("RiMusic_RescueBackup_${dateFormat.format(
+                                                    .customBackupFileName("RiPlay_RescueBackup_${dateFormat.format(
                                                         Date()
                                                     )}.db")
                                                     .apply {
@@ -1300,7 +1299,7 @@ class MainActivity :
                     val uri = intentUriData ?: return@LaunchedEffect
 
                     SmartMessage(
-                        message = "${"RiMusic "}${getString(R.string.opening_url)}",
+                        message = "${"RiPlay "}${getString(R.string.opening_url)}",
                         durationLong = true,
                         context = this@MainActivity
                     )
@@ -1477,11 +1476,11 @@ class MainActivity :
     }
 
     companion object {
-        const val action_search = "it.fast4x.rimusic.action.search"
-        const val action_songs = "it.fast4x.rimusic.action.songs"
-        const val action_albums = "it.fast4x.rimusic.action.albums"
-        const val action_library = "it.fast4x.rimusic.action.library"
-        const val action_rescuecenter = "it.fast4x.rimusic.action.rescuecenter"
+        const val action_search = "it.fast4x.riplay.action.search"
+        const val action_songs = "it.fast4x.riplay.action.songs"
+        const val action_albums = "it.fast4x.riplay.action.albums"
+        const val action_library = "it.fast4x.riplay.action.library"
+        const val action_rescuecenter = "it.fast4x.riplay.action.rescuecenter"
     }
 
 
