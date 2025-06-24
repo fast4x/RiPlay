@@ -345,26 +345,26 @@ fun FilterMenu (
                 }
             )
         }
-        onDownloaded?.let {
-            MenuEntry(
-                icon = R.drawable.downloaded,
-                text = stringResource(R.string.downloaded),
-                onClick = {
-                    onDismiss()
-                    onDownloaded()
-                }
-            )
-        }
-        onCached?.let {
-            MenuEntry(
-                icon = R.drawable.download,
-                text = stringResource(R.string.cached),
-                onClick = {
-                    onDismiss()
-                    onCached()
-                }
-            )
-        }
+//        onDownloaded?.let {
+//            MenuEntry(
+//                icon = R.drawable.downloaded,
+//                text = stringResource(R.string.downloaded),
+//                onClick = {
+//                    onDismiss()
+//                    onDownloaded()
+//                }
+//            )
+//        }
+//        onCached?.let {
+//            MenuEntry(
+//                icon = R.drawable.download,
+//                text = stringResource(R.string.cached),
+//                onClick = {
+//                    onDismiss()
+//                    onCached()
+//                }
+//            )
+//        }
         onExplicit?.let {
             MenuEntry(
                 icon = R.drawable.explicit,

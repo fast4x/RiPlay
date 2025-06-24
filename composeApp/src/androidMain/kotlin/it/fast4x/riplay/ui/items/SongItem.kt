@@ -528,7 +528,7 @@ fun SongItem(
                 if (isLocal)
                     IconButton(
                         onClick = {},
-                        icon = R.drawable.downloaded,
+                        icon = R.drawable.folder,
                         color = colorPalette().text,
                         modifier = Modifier
                             .size(20.dp)

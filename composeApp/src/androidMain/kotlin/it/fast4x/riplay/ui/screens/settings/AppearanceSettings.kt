@@ -523,7 +523,7 @@ fun AppearanceSettings(
     var showCoverThumbnailAnimation by rememberPreference(showCoverThumbnailAnimationKey, false)
     var coverThumbnailAnimation by rememberPreference(coverThumbnailAnimationKey, ThumbnailCoverType.Vinyl)
 
-    var notificationPlayerFirstIcon by rememberPreference(notificationPlayerFirstIconKey, NotificationButtons.Download)
+    var notificationPlayerFirstIcon by rememberPreference(notificationPlayerFirstIconKey, NotificationButtons.Repeat)
     var notificationPlayerSecondIcon by rememberPreference(notificationPlayerSecondIconKey, NotificationButtons.Favorites)
     var enableWallpaper by rememberPreference(enableWallpaperKey, false)
     var wallpaperType by rememberPreference(wallpaperTypeKey, WallpaperType.Lockscreen)

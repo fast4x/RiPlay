@@ -972,30 +972,30 @@ fun HomeSongs(
                             scrollToNowPlaying = false
                         }
 
-                        if (builtInPlaylist == BuiltInPlaylist.Favorites) {
-                            HeaderIconButton(
-                                icon = R.drawable.downloaded,
-                                enabled = (items.any { it.song.likedAt != -1L }),
-                                color = if (items.any { it.song.likedAt != -1L }) colorPalette().text else colorPalette().text,
-                                onClick = {},
-                                modifier = Modifier
-                                    .combinedClickable(
-                                        onClick = {
-                                            if (items.any { it.song.likedAt != -1L }) {
-                                                showConfirmDownloadAllDialog = true
-                                            } else {
-                                                SmartMessage(context.resources.getString(R.string.disliked_this_collection),type = PopupType.Error, context = context)
-                                            }
-                                        },
-                                        onLongClick = {
-                                            SmartMessage(
-                                                context.resources.getString(R.string.info_download_all_songs),
-                                                context = context
-                                            )
-                                        }
-                                    )
-                            )
-                        }
+//                        if (builtInPlaylist == BuiltInPlaylist.Favorites) {
+//                            HeaderIconButton(
+//                                icon = R.drawable.downloaded,
+//                                enabled = (items.any { it.song.likedAt != -1L }),
+//                                color = if (items.any { it.song.likedAt != -1L }) colorPalette().text else colorPalette().text,
+//                                onClick = {},
+//                                modifier = Modifier
+//                                    .combinedClickable(
+//                                        onClick = {
+//                                            if (items.any { it.song.likedAt != -1L }) {
+//                                                showConfirmDownloadAllDialog = true
+//                                            } else {
+//                                                SmartMessage(context.resources.getString(R.string.disliked_this_collection),type = PopupType.Error, context = context)
+//                                            }
+//                                        },
+//                                        onLongClick = {
+//                                            SmartMessage(
+//                                                context.resources.getString(R.string.info_download_all_songs),
+//                                                context = context
+//                                            )
+//                                        }
+//                                    )
+//                            )
+//                        }
 
                         if (showRiMusicLikeYoutubeLikeConfirmDialog) {
                             Database.asyncTransaction {
@@ -1455,6 +1455,7 @@ fun HomeSongs(
                     if (showFolders) {
                         if (currentFolder != null)
                             stickyHeader {
+                                Spacer(modifier = Modifier.height(10.dp))
                                 Box(
                                     modifier = Modifier
                                         .padding(horizontal = 24.dp)

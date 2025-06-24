@@ -1112,7 +1112,7 @@ class PlayerServiceModern : MediaLibraryService(),
 
 
     private fun buildCustomCommandButtons(): MutableList<CommandButton> {
-        val notificationPlayerFirstIcon = preferences.getEnum(notificationPlayerFirstIconKey, NotificationButtons.Download)
+        val notificationPlayerFirstIcon = preferences.getEnum(notificationPlayerFirstIconKey, NotificationButtons.Repeat)
         val notificationPlayerSecondIcon = preferences.getEnum(notificationPlayerSecondIconKey, NotificationButtons.Favorites)
 
         val commandButtonsList = mutableListOf<CommandButton>()
@@ -1233,7 +1233,7 @@ class PlayerServiceModern : MediaLibraryService(),
             .addAction(R.drawable.play_skip_forward, "Skip forward", nextIntent)
 
         //***********************
-        val notificationPlayerFirstIcon = preferences.getEnum(notificationPlayerFirstIconKey, NotificationButtons.Download)
+        val notificationPlayerFirstIcon = preferences.getEnum(notificationPlayerFirstIconKey, NotificationButtons.Repeat)
         val notificationPlayerSecondIcon = preferences.getEnum(notificationPlayerSecondIconKey, NotificationButtons.Favorites)
 
         NotificationButtons.entries.let { buttons ->

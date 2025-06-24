@@ -1299,32 +1299,32 @@ fun LocalPlaylistSongs(
                                     )
                             )
 
-                        HeaderIconButton(
-                            icon = R.drawable.downloaded,
-                            enabled = playlistSongs.any { it.song.likedAt != -1L },
-                            color = if (playlistSongs.any { it.song.likedAt != -1L }) colorPalette.text else colorPalette.textDisabled,
-                            onClick = {},
-                            modifier = Modifier
-                                .combinedClickable(
-                                    onClick = {
-                                        if (playlistSongs.any { it.song.likedAt != -1L }) {
-                                            showConfirmDownloadAllDialog = true
-                                        } else {
-                                            SmartMessage(
-                                                context.resources.getString(R.string.disliked_this_collection),
-                                                type = PopupType.Error,
-                                                context = context
-                                            )
-                                        }
-                                    },
-                                    onLongClick = {
-                                        SmartMessage(
-                                            context.resources.getString(R.string.info_download_all_songs),
-                                            context = context
-                                        )
-                                    }
-                                )
-                        )
+//                        HeaderIconButton(
+//                            icon = R.drawable.downloaded,
+//                            enabled = playlistSongs.any { it.song.likedAt != -1L },
+//                            color = if (playlistSongs.any { it.song.likedAt != -1L }) colorPalette.text else colorPalette.textDisabled,
+//                            onClick = {},
+//                            modifier = Modifier
+//                                .combinedClickable(
+//                                    onClick = {
+//                                        if (playlistSongs.any { it.song.likedAt != -1L }) {
+//                                            showConfirmDownloadAllDialog = true
+//                                        } else {
+//                                            SmartMessage(
+//                                                context.resources.getString(R.string.disliked_this_collection),
+//                                                type = PopupType.Error,
+//                                                context = context
+//                                            )
+//                                        }
+//                                    },
+//                                    onLongClick = {
+//                                        SmartMessage(
+//                                            context.resources.getString(R.string.info_download_all_songs),
+//                                            context = context
+//                                        )
+//                                    }
+//                                )
+//                        )
 
 
 
@@ -1341,24 +1341,24 @@ fun LocalPlaylistSongs(
                             )
                         }
 
-                        HeaderIconButton(
-                            icon = R.drawable.download,
-                            enabled = playlistSongs.isNotEmpty(),
-                            color = if (playlistSongs.isNotEmpty()) colorPalette.text else colorPalette.textDisabled,
-                            onClick = {},
-                            modifier = Modifier
-                                .combinedClickable(
-                                    onClick = {
-                                        showConfirmDeleteDownloadDialog = true
-                                    },
-                                    onLongClick = {
-                                        SmartMessage(
-                                            context.resources.getString(R.string.info_remove_all_downloaded_songs),
-                                            context = context
-                                        )
-                                    }
-                                )
-                        )
+//                        HeaderIconButton(
+//                            icon = R.drawable.download,
+//                            enabled = playlistSongs.isNotEmpty(),
+//                            color = if (playlistSongs.isNotEmpty()) colorPalette.text else colorPalette.textDisabled,
+//                            onClick = {},
+//                            modifier = Modifier
+//                                .combinedClickable(
+//                                    onClick = {
+//                                        showConfirmDeleteDownloadDialog = true
+//                                    },
+//                                    onLongClick = {
+//                                        SmartMessage(
+//                                            context.resources.getString(R.string.info_remove_all_downloaded_songs),
+//                                            context = context
+//                                        )
+//                                    }
+//                                )
+//                        )
 
 
 

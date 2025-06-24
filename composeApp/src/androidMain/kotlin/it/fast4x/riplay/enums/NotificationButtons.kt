@@ -18,7 +18,7 @@ import it.fast4x.riplay.service.modern.PlayerServiceModern
 import it.fast4x.riplay.appContext
 
 enum class NotificationButtons {
-    Download,
+    //Download,
     Favorites,
     Repeat,
     Shuffle,
@@ -27,7 +27,7 @@ enum class NotificationButtons {
 
     val sessionCommand: SessionCommand
     get() = when (this) {
-        Download -> CommandToggleDownload
+       // Download -> CommandToggleDownload
         Favorites -> CommandToggleLike
         Repeat -> CommandToggleRepeatMode
         Shuffle -> CommandToggleShuffle
@@ -38,7 +38,7 @@ enum class NotificationButtons {
     val pendingIntent: PendingIntent
     @OptIn(UnstableApi::class)
     get() = when (this) {
-        Download -> PlayerServiceModern.Action.download.pendingIntent
+        //Download -> PlayerServiceModern.Action.download.pendingIntent
         Favorites -> PlayerServiceModern.Action.like.pendingIntent
         Repeat -> PlayerServiceModern.Action.repeat.pendingIntent
         Shuffle -> PlayerServiceModern.Action.shuffle.pendingIntent
@@ -48,7 +48,7 @@ enum class NotificationButtons {
 
     val displayName: String
     get() = when (this) {
-        Download -> appContext().resources.getString(R.string.download)
+        //Download -> appContext().resources.getString(R.string.download)
         Favorites -> appContext().resources.getString(R.string.favorites)
         Repeat -> appContext().resources.getString(R.string.repeat)
         Shuffle -> appContext().resources.getString(R.string.shuffle)
@@ -58,7 +58,7 @@ enum class NotificationButtons {
 
     val icon: Int
         get() = when (this) {
-            Download -> R.drawable.download
+            //Download -> R.drawable.download
             Favorites -> R.drawable.heart_outline
             Repeat -> R.drawable.repeat
             Shuffle -> R.drawable.shuffle
@@ -69,12 +69,12 @@ enum class NotificationButtons {
         @OptIn(UnstableApi::class)
         fun getStateIcon(button: NotificationButtons, likedState: Long?, downloadState: Int, repeatMode: Int, shuffleMode: Boolean): Int {
             return when (button) {
-                Download -> when (downloadState) {
-                    androidx.media3.exoplayer.offline.Download.STATE_COMPLETED -> R.drawable.downloaded
-                    androidx.media3.exoplayer.offline.Download.STATE_DOWNLOADING,
-                    androidx.media3.exoplayer.offline.Download.STATE_QUEUED -> R.drawable.download_progress
-                    else -> R.drawable.download
-                }
+//                Download -> when (downloadState) {
+//                    androidx.media3.exoplayer.offline.Download.STATE_COMPLETED -> R.drawable.downloaded
+//                    androidx.media3.exoplayer.offline.Download.STATE_DOWNLOADING,
+//                    androidx.media3.exoplayer.offline.Download.STATE_QUEUED -> R.drawable.download_progress
+//                    else -> R.drawable.download
+//                }
                 Favorites -> when (likedState) {
                     -1L -> R.drawable.heart_dislike
                     null -> R.drawable.heart_outline

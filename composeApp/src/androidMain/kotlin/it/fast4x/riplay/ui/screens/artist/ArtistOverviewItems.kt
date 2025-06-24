@@ -348,40 +348,40 @@ fun ArtistOverviewItems(
                                     }
                                 )
                         )
-                        HeaderIconButton(
-                            icon = R.drawable.downloaded,
-                            //enabled = playlistSongs.any { it.song.likedAt != -1L },
-                            color = if (artistSongs.any { it.asSong.thumbnailUrl != "" }) colorPalette().text else colorPalette().textDisabled,
-                            onClick = {},
-                            modifier = Modifier
-                                .combinedClickable(
-                                    onClick = {
-                                        showConfirmDownloadAllDialog = true
-                                    },
-                                    onLongClick = {
-                                        SmartMessage(context.resources.getString(R.string.info_download_all_songs), context = context)
-                                    }
-                                )
-                        )
-                        HeaderIconButton(
-                            icon = R.drawable.download,
-                            //enabled = playlistSongs.any { it.song.likedAt != -1L },
-                            color = if (artistSongs.any { it.asSong.thumbnailUrl != "" }) colorPalette().text else colorPalette().textDisabled,
-                            onClick = {},
-                            modifier = Modifier
-                                .combinedClickable(
-                                    onClick = {
-                                        if (artistSongs.any { it.asSong.thumbnailUrl != "" }) {
-                                            showConfirmDeleteDownloadDialog = true
-                                        } else {
-                                            SmartMessage(context.resources.getString(R.string.disliked_this_collection),type = PopupType.Error, context = context)
-                                        }
-                                    },
-                                    onLongClick = {
-                                        SmartMessage(context.resources.getString(R.string.info_remove_all_downloaded_songs), context = context)
-                                    }
-                                )
-                        )
+//                        HeaderIconButton(
+//                            icon = R.drawable.downloaded,
+//                            //enabled = playlistSongs.any { it.song.likedAt != -1L },
+//                            color = if (artistSongs.any { it.asSong.thumbnailUrl != "" }) colorPalette().text else colorPalette().textDisabled,
+//                            onClick = {},
+//                            modifier = Modifier
+//                                .combinedClickable(
+//                                    onClick = {
+//                                        showConfirmDownloadAllDialog = true
+//                                    },
+//                                    onLongClick = {
+//                                        SmartMessage(context.resources.getString(R.string.info_download_all_songs), context = context)
+//                                    }
+//                                )
+//                        )
+//                        HeaderIconButton(
+//                            icon = R.drawable.download,
+//                            //enabled = playlistSongs.any { it.song.likedAt != -1L },
+//                            color = if (artistSongs.any { it.asSong.thumbnailUrl != "" }) colorPalette().text else colorPalette().textDisabled,
+//                            onClick = {},
+//                            modifier = Modifier
+//                                .combinedClickable(
+//                                    onClick = {
+//                                        if (artistSongs.any { it.asSong.thumbnailUrl != "" }) {
+//                                            showConfirmDeleteDownloadDialog = true
+//                                        } else {
+//                                            SmartMessage(context.resources.getString(R.string.disliked_this_collection),type = PopupType.Error, context = context)
+//                                        }
+//                                    },
+//                                    onLongClick = {
+//                                        SmartMessage(context.resources.getString(R.string.info_remove_all_downloaded_songs), context = context)
+//                                    }
+//                                )
+//                        )
                         HeaderIconButton(
                             icon = R.drawable.add_in_playlist,
                             color = colorPalette().text,
