@@ -36,7 +36,7 @@ class MainApplication : Application(), ImageLoaderFactory {
         /**** LOG *********/
         val logEnabled = preferences.getBoolean(logDebugEnabledKey, false)
         if (logEnabled) {
-            Timber.plant(FileLoggingTree(File(dir, "RiMusic_log.txt")))
+            Timber.plant(FileLoggingTree(File(dir, "RiPlay_log.txt")))
             Timber.d("Log enabled at ${dir.absolutePath}")
         } else {
             Timber.uprootAll()

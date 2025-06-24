@@ -9,8 +9,6 @@ enum class HomeScreenTabs {
     Playlists,
     Search;
 
-
-
     val index: Int
         get() = when (this) {
             Default -> 100

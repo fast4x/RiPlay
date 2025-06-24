@@ -8,7 +8,6 @@ import it.fast4x.riplay.enums.ColorPaletteMode
 import it.fast4x.riplay.enums.DnsOverHttpsType
 import it.fast4x.riplay.enums.MinTimeForEvent
 import it.fast4x.riplay.enums.QueueLoopType
-import it.fast4x.riplay.enums.StreamingPlayerType
 import it.fast4x.riplay.enums.UiType
 import it.fast4x.riplay.enums.ViewType
 import it.fast4x.riplay.ui.styling.LocalAppearance
@@ -18,12 +17,9 @@ import it.fast4x.riplay.utils.autosyncKey
 import it.fast4x.riplay.utils.bassboostEnabledKey
 import it.fast4x.riplay.utils.colorPaletteModeKey
 import it.fast4x.riplay.utils.dnsOverHttpsTypeKey
-import it.fast4x.riplay.utils.enablePreCacheKey
 import it.fast4x.riplay.utils.exoPlayerMinTimeForEventKey
 import it.fast4x.riplay.utils.getEnum
 import it.fast4x.riplay.utils.handleAudioFocusEnabledKey
-import it.fast4x.riplay.utils.isConnectionMetered
-import it.fast4x.riplay.utils.isConnectionMeteredEnabledKey
 import it.fast4x.riplay.utils.lastVideoIdKey
 import it.fast4x.riplay.utils.lastVideoSecondsKey
 import it.fast4x.riplay.utils.logDebugEnabledKey
@@ -32,11 +28,8 @@ import it.fast4x.riplay.utils.pauseListenHistoryKey
 import it.fast4x.riplay.utils.preferences
 import it.fast4x.riplay.utils.queueLoopTypeKey
 import it.fast4x.riplay.utils.rememberPreference
-import it.fast4x.riplay.utils.showButtonPlayerVideoKey
 import it.fast4x.riplay.utils.showSearchTabKey
 import it.fast4x.riplay.utils.showStatsInNavbarKey
-import it.fast4x.riplay.utils.streamingPlayerTypeKey
-import it.fast4x.riplay.utils.useYtLoginOnlyForBrowseKey
 import it.fast4x.riplay.utils.viewTypeKey
 import it.fast4x.riplay.utils.ytAccountNameKey
 import it.fast4x.riplay.utils.ytAccountThumbnailKey
@@ -68,7 +61,6 @@ fun getAudioQualityFormat() = appContext().preferences.getEnum(audioQualityForma
 fun getViewType() = appContext().preferences.getEnum(viewTypeKey, ViewType.Grid)
 fun getDnsOverHttpsType() = appContext().preferences.getEnum(dnsOverHttpsTypeKey, DnsOverHttpsType.None)
 fun getUiType() = appContext().preferences.getEnum(UiTypeKey, UiType.RiPlay)
-fun getStreamingPlayerType() = appContext().preferences.getEnum(streamingPlayerTypeKey, StreamingPlayerType.Advanced)
 fun getQueueLoopType() = appContext().preferences.getEnum(queueLoopTypeKey, QueueLoopType.Default)
 fun getPauseListenHistory() = appContext().preferences.getBoolean(pauseListenHistoryKey, false)
 fun getMinTimeForEvent() = appContext().preferences.getEnum(exoPlayerMinTimeForEventKey, MinTimeForEvent.`20s`)
@@ -77,14 +69,8 @@ fun getLastYTVideoSeconds() = appContext().preferences.getFloat(lastVideoSeconds
 
 fun ytAccountName() = appContext().preferences.getString(ytAccountNameKey, "")
 fun ytAccountThumbnail() = appContext().preferences.getString(ytAccountThumbnailKey, "")
-fun useYtLoginOnlyForBrowse() = appContext().preferences.getBoolean(useYtLoginOnlyForBrowseKey, true)
-
-fun isVideoEnabled() = appContext().preferences.getBoolean(showButtonPlayerVideoKey, false)
-fun isConnectionMetered() = appContext().isConnectionMetered()
-fun isConnectionMeteredEnabled() = appContext().preferences.getBoolean(isConnectionMeteredEnabledKey, true)
 fun isAutoSyncEnabled() = appContext().preferences.getBoolean(autosyncKey, false)
 fun isHandleAudioFocusEnabled() = appContext().preferences.getBoolean(handleAudioFocusEnabledKey, true)
 fun isBassBoostEnabled() = appContext().preferences.getBoolean(bassboostEnabledKey, false)
 fun isDebugModeEnabled() = appContext().preferences.getBoolean(logDebugEnabledKey, false)
 fun isParentalControlEnabled() = appContext().preferences.getBoolean(parentalControlEnabledKey, false)
-fun isPreCacheEnabled() = appContext().preferences.getBoolean(enablePreCacheKey, false)
