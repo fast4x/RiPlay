@@ -3297,7 +3297,7 @@ fun OnlinePlayerModern(
 
                         if (showthumbnail) {
                             if ((!isShowingLyrics && !isShowingVisualizer) || (isShowingVisualizer && showvisthumbnail) || (isShowingLyrics && showlyricsthumbnail)) {
-                                //if (playerType == PlayerType.Modern) {
+                                if (playerType == PlayerType.Modern) {
                                     val fling = PagerDefaults.flingBehavior(
                                         state = pagerState,
                                         snapPositionalThreshold = 0.25f
@@ -3483,39 +3483,39 @@ fun OnlinePlayerModern(
                                                 }
                                             }
                                     }
-                                //not necessary essential player type
-//                                } else {
-//                                    val animatePadding by animateDpAsState(
-//                                        if (expandedplayer) carouselSize.size.dp else playerThumbnailSize.padding.dp
-//                                    )
-//
-//                                    val coverPainter = rememberAsyncImagePainter(
-//                                        model = ImageRequest.Builder(LocalContext.current)
-//                                            .data(mediaItem.mediaMetadata.artworkUri.thumbnail(1200))
-//                                            .build()
-//                                    )
-//
-//                                    val coverModifier = Modifier
-//                                        //.aspectRatio(1f)
-//                                        //.padding(all = animatePadding)
+
+                                } else {
+                                    val animatePadding by animateDpAsState(
+                                        if (expandedplayer) carouselSize.size.dp else playerThumbnailSize.padding.dp
+                                    )
+
+                                    val coverPainter = rememberAsyncImagePainter(
+                                        model = ImageRequest.Builder(LocalContext.current)
+                                            .data(mediaItem.mediaMetadata.artworkUri.thumbnail(1200))
+                                            .build()
+                                   )
+
+                                     val coverModifier = Modifier
+                                        //.aspectRatio(1f)
+                                        //.padding(all = animatePadding)
 ////                                        .conditional(!it.fast4x.riplay.utils.isLandscape && !mediaItem.isVideo) {
 ////                                            aspectRatio(1f)
 ////                                            padding(all = animatePadding)
 ////                                        }
-//                                        .conditional(thumbnailType == ThumbnailType.Modern) {
-//                                            padding(
-//                                                all = 10.dp
-//                                            )
-//                                        }
-//                                        .conditional(thumbnailType == ThumbnailType.Modern) {
-//                                            doubleShadowDrop(
-//                                                if (showCoverThumbnailAnimation) CircleShape else thumbnailRoundness.shape(),
-//                                                4.dp,
-//                                                8.dp
-//                                            )
-//                                        }
-//                                        .clip(thumbnailRoundness.shape())
-//
+                                        .conditional(thumbnailType == ThumbnailType.Modern) {
+                                            padding(
+                                                all = 10.dp
+                                            )
+                                        }
+                                           .conditional(thumbnailType == ThumbnailType.Modern) {
+                                            doubleShadowDrop(
+                                                if (showCoverThumbnailAnimation) CircleShape else thumbnailRoundness.shape(),
+                                                4.dp,
+                                                8.dp
+                                            )
+                                        }
+                                        .clip(thumbnailRoundness.shape())
+
 ////                                    thumbnailContent(
 ////                                        //use online player
 ////                                        if (!mediaItem.isVideo)
@@ -3523,14 +3523,14 @@ fun OnlinePlayerModern(
 ////                                        else
 ////                                           coverModifier
 ////                                    )
-//                                    if (!mediaItem.isVideo)
-//                                        Image(
-//                                            painter = coverPainter,
-//                                            contentDescription = "",
-//                                            contentScale = ContentScale.Fit,
-//                                            modifier = coverModifier
-//                                        )
-//                                }
+                                    if (!mediaItem.isVideo)
+                                        Image(
+                                            painter = coverPainter,
+                                           contentDescription = "",
+                                            contentScale = ContentScale.Fit,
+                                            modifier = coverModifier
+                                        )
+                                }
                             }
                         }
 
