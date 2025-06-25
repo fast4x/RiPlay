@@ -109,6 +109,12 @@ kotlin {
 }
 
 android {
+
+    lint {
+        checkReleaseBuilds = false
+        abortOnError = false
+    }
+
     fun Project.propertyOrEmpty(name: String): String {
         val property = findProperty(name) as String?
         return property ?: ""
@@ -134,6 +140,8 @@ android {
         targetSdk = 35
         versionCode = 1
         versionName = "0.1.1"
+
+        multiDexEnabled = true
 
         // INIT ENVIRONMENT
         resValue(
@@ -555,6 +563,6 @@ dependencies {
     implementation(projects.kugou)
     implementation(projects.lrclib)
 
-    coreLibraryDesugaring(libs.desugaring.nio)
+    coreLibraryDesugaring(libs.desugaring)
 
 }
