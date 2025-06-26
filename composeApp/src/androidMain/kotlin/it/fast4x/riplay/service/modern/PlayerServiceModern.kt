@@ -271,9 +271,9 @@ class PlayerServiceModern : MediaLibraryService(),
 
     var currentSongStateDownload = MutableStateFlow(Download.STATE_STOPPED)
 
-    lateinit var connectivityObserver: AndroidConnectivityObserverLegacy
-    private val isNetworkAvailable = MutableStateFlow(true)
-    private val waitingForNetwork = MutableStateFlow(false)
+    //lateinit var connectivityObserver: AndroidConnectivityObserverLegacy
+    //private val isNetworkAvailable = MutableStateFlow(true)
+    //private val waitingForNetwork = MutableStateFlow(false)
 
     private val playerVerticalWidget = PlayerVerticalWidget()
     private val playerHorizontalWidget = PlayerHorizontalWidget()
@@ -294,26 +294,26 @@ class PlayerServiceModern : MediaLibraryService(),
 //            PackageManager.DONT_KILL_APP
 //        )
 
-        try {
-            connectivityObserver.unregister()
-        } catch (e: Exception) {
-            // isn't registered
-        }
-        connectivityObserver = AndroidConnectivityObserverLegacy(this@PlayerServiceModern)
-        coroutineScope.launch {
-            connectivityObserver.networkStatus.collect { isAvailable ->
-                isNetworkAvailable.value = isAvailable
-                Timber.d("PlayerServiceModern network status: $isAvailable")
-                println("PlayerServiceModern network status: $isAvailable")
-                if (isAvailable && waitingForNetwork.value) {
-                    waitingForNetwork.value = false
-                    withContext(Dispatchers.Main) {
-                        player.prepare()
-                        player.play()
-                    }
-                }
-            }
-        }
+//        try {
+//            connectivityObserver.unregister()
+//        } catch (e: Exception) {
+//            // isn't registered
+//        }
+//        connectivityObserver = AndroidConnectivityObserverLegacy(this@PlayerServiceModern)
+//        coroutineScope.launch {
+//            connectivityObserver.networkStatus.collect { isAvailable ->
+//                isNetworkAvailable.value = isAvailable
+//                Timber.d("PlayerServiceModern network status: $isAvailable")
+//                println("PlayerServiceModern network status: $isAvailable")
+//                if (isAvailable && waitingForNetwork.value) {
+//                    waitingForNetwork.value = false
+//                    withContext(Dispatchers.Main) {
+//                        player.prepare()
+//                        player.play()
+//                    }
+//                }
+//            }
+//        }
 
         val notificationType = preferences.getEnum(notificationTypeKey, NotificationType.Default)
         when(notificationType){
@@ -816,14 +816,14 @@ class PlayerServiceModern : MediaLibraryService(),
         )
 
         // check if error is caused by internet connection
-        val isConnectionError = (error.cause?.cause is PlaybackException)
-                && (error.cause?.cause as PlaybackException).errorCode in playbackConnectionExeptionList
-
-        if (!isNetworkAvailable.value || isConnectionError) {
-            waitingForNetwork.value = true
-            SmartMessage(resources.getString(R.string.error_no_internet), context = this )
-            return
-        }
+//        val isConnectionError = (error.cause?.cause is PlaybackException)
+//                && (error.cause?.cause as PlaybackException).errorCode in playbackConnectionExeptionList
+//
+//        if (!isNetworkAvailable.value || isConnectionError) {
+//            waitingForNetwork.value = true
+//            SmartMessage(resources.getString(R.string.error_no_internet), context = this )
+//            return
+//        }
 
         val playbackHttpExeptionList = listOf(
             PlaybackException.ERROR_CODE_IO_BAD_HTTP_STATUS,
@@ -863,9 +863,9 @@ class PlayerServiceModern : MediaLibraryService(),
                 sendOpenEqualizerIntent()
             } else {
                 sendCloseEqualizerIntent()
-                if (!player.playWhenReady) {
-                    waitingForNetwork.value = false
-                }
+//                if (!player.playWhenReady) {
+//                    waitingForNetwork.value = false
+//                }
             }
         }
 
