@@ -117,6 +117,7 @@ import it.fast4x.riplay.utils.effectRotationKey
 import it.fast4x.riplay.utils.getLikeState
 import it.fast4x.riplay.utils.intent
 import it.fast4x.riplay.utils.isExplicit
+import it.fast4x.riplay.utils.isInvincibilityEnabledKey
 import it.fast4x.riplay.utils.lastVideoIdKey
 import it.fast4x.riplay.utils.lastVideoSecondsKey
 import org.dailyislam.android.utilities.isNetworkConnected
@@ -259,7 +260,8 @@ fun OnlineMiniPlayer(
     val customPLayerUi = onlinePlayerView.inflateCustomPlayerUi(R.layout.ayp_default_player_ui)
     var player = remember { mutableStateOf<YouTubePlayer?>(null) }
     val playerState = remember { mutableStateOf(PlayerConstants.PlayerState.UNSTARTED) }
-    val enableBackgroundPlayback by remember { mutableStateOf(false) }
+    //val enableBackgroundPlayback by remember { mutableStateOf(true) }
+    var enableBackgroundPlayback by rememberPreference(isInvincibilityEnabledKey, false)
     /****** */
     if (mediaItem.mediaId != lastYTVideoId) lastYTVideoSeconds = 0f
     LaunchedEffect(mediaItem) {

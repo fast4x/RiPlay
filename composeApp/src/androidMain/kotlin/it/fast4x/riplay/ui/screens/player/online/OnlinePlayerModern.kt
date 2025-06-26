@@ -339,10 +339,10 @@ import it.fast4x.riplay.utils.unlikeYtVideoOrSong
 import kotlinx.coroutines.CoroutineScope
 import org.dailyislam.android.utilities.isNetworkConnected
 import kotlin.math.sqrt
-//import it.fast4x.riplay.ui.screens.player.offline.Controls
 import it.fast4x.riplay.ui.screens.player.offline.StatsForNerds
 import it.fast4x.riplay.ui.screens.player.offline.Queue
 import it.fast4x.riplay.utils.asSong
+import it.fast4x.riplay.utils.isInvincibilityEnabledKey
 import it.fast4x.riplay.utils.isVideo
 import it.fast4x.riplay.utils.lastVideoIdKey
 import it.fast4x.riplay.utils.lastVideoSecondsKey
@@ -1334,7 +1334,8 @@ fun OnlinePlayerModern(
     val customPLayerUi = onlinePlayerView.inflateCustomPlayerUi(R.layout.ayp_default_player_ui)
     var player = remember { mutableStateOf<YouTubePlayer?>(null) }
     val playerState = remember { mutableStateOf(PlayerConstants.PlayerState.UNSTARTED) }
-    val enableBackgroundPlayback by remember { mutableStateOf(false) }
+    var enableBackgroundPlayback by rememberPreference(isInvincibilityEnabledKey, false)
+    //val enableBackgroundPlayback by remember { mutableStateOf(true) }
 
     var lastYTVideoId by rememberPreference(key = lastVideoIdKey, defaultValue = "")
     var lastYTVideoSeconds by rememberPreference(key = lastVideoSecondsKey, defaultValue = 0f)
