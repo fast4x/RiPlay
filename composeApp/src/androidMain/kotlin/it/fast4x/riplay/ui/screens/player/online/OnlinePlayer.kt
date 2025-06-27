@@ -30,7 +30,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.neverEqualPolicy
 import androidx.compose.runtime.remember
@@ -50,7 +49,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.LifecycleOwner
 import androidx.media3.common.MediaItem
-import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
@@ -96,14 +94,12 @@ import it.fast4x.riplay.utils.isLandscape
 import it.fast4x.riplay.utils.isShowingLyricsKey
 import it.fast4x.riplay.utils.lastVideoIdKey
 import it.fast4x.riplay.utils.lastVideoSecondsKey
-import it.fast4x.riplay.utils.mediaItems
 import it.fast4x.riplay.utils.playNext
 import it.fast4x.riplay.utils.playPrevious
 import it.fast4x.riplay.utils.playerBackgroundColorsKey
 import it.fast4x.riplay.utils.playerThumbnailSizeKey
 import it.fast4x.riplay.utils.playerTypeKey
 import it.fast4x.riplay.utils.rememberPreference
-import it.fast4x.riplay.utils.shouldBePlaying
 import it.fast4x.riplay.utils.showButtonPlayerMenuKey
 import it.fast4x.riplay.utils.showTopActionsBarKey
 import it.fast4x.riplay.utils.timelineExpandedKey
@@ -269,7 +265,7 @@ fun OnlinePlayer(
     //val onlinePlayerView = YouTubePlayerView(context = context())
     val inflatedView = LayoutInflater.from(context()).inflate(R.layout.youtube_player, null, false)
     val onlinePlayerView: YouTubePlayerView = inflatedView as YouTubePlayerView
-    val customPLayerUi = onlinePlayerView.inflateCustomPlayerUi(R.layout.ayp_default_player_ui)
+    val customPLayerUi = onlinePlayerView.inflateCustomPlayerUi(R.layout.ayp_base_player_ui)
     var player = remember { mutableStateOf<YouTubePlayer?>(null) }
     val playerState = remember { mutableStateOf(PlayerConstants.PlayerState.UNSTARTED) }
     var shouldBePlaying by remember { mutableStateOf(false) }
@@ -498,7 +494,7 @@ fun OnlinePlayer(
                     override fun onReady(youTubePlayer: YouTubePlayer) {
                         player.value = youTubePlayer
 
-                        val customPlayerUiController = CustomPlayerUiController(
+                        val customPlayerUiController = CustomBasePlayerUiController(
                             it,
                             customPLayerUi,
                             youTubePlayer,

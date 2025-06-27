@@ -29,11 +29,9 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsDraggedAsState
@@ -1347,7 +1345,7 @@ fun OnlinePlayerModern(
     //val onlinePlayerView = YouTubePlayerView(context = context())
     val inflatedView = LayoutInflater.from(context()).inflate(R.layout.youtube_player, null, false)
     val onlinePlayerView: YouTubePlayerView = inflatedView as YouTubePlayerView
-    val customPLayerUi = onlinePlayerView.inflateCustomPlayerUi(R.layout.ayp_default_player_ui)
+    val customPLayerUi = onlinePlayerView.inflateCustomPlayerUi(R.layout.ayp_base_player_ui)
     var player = remember { mutableStateOf<YouTubePlayer?>(null) }
     val playerState = remember { mutableStateOf(PlayerConstants.PlayerState.UNSTARTED) }
     var enableBackgroundPlayback by rememberPreference(isInvincibilityEnabledKey, false)
@@ -1569,7 +1567,7 @@ fun OnlinePlayerModern(
                         override fun onReady(youTubePlayer: YouTubePlayer) {
                             player.value = youTubePlayer
 
-                            val customPlayerUiController = CustomPlayerUiController(
+                            val customPlayerUiController = CustomBasePlayerUiController(
                                 it,
                                 customPLayerUi,
                                 youTubePlayer,

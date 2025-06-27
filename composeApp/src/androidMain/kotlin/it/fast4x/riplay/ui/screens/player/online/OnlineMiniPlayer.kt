@@ -39,7 +39,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.neverEqualPolicy
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -66,8 +65,6 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
-import androidx.media3.common.PlaybackException
-import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
@@ -75,7 +72,6 @@ import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.PlayerConstan
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.AbstractYouTubePlayerListener
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.options.IFramePlayerOptions
-import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.utils.loadOrCueVideo
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
 import it.fast4x.riplay.Database
 import it.fast4x.riplay.LocalPlayerServiceBinder
@@ -87,7 +83,6 @@ import it.fast4x.riplay.context
 import it.fast4x.riplay.enums.BackgroundProgress
 import it.fast4x.riplay.enums.MiniPlayerType
 import it.fast4x.riplay.enums.NavRoutes
-import it.fast4x.riplay.enums.PlayerThumbnailSize
 import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.enums.QueueLoopType
 import it.fast4x.riplay.getMinTimeForEvent
@@ -99,7 +94,6 @@ import it.fast4x.riplay.models.Song
 import it.fast4x.riplay.thumbnailShape
 import it.fast4x.riplay.typography
 import it.fast4x.riplay.ui.components.themed.IconButton
-import it.fast4x.riplay.ui.components.themed.NowPlayingSongIndicator
 import it.fast4x.riplay.ui.components.themed.SmartMessage
 import it.fast4x.riplay.ui.screens.settings.isYouTubeSyncEnabled
 import it.fast4x.riplay.ui.styling.Dimensions
@@ -107,7 +101,6 @@ import it.fast4x.riplay.ui.styling.collapsedPlayerProgressBar
 import it.fast4x.riplay.ui.styling.favoritesIcon
 import it.fast4x.riplay.ui.styling.favoritesOverlay
 import it.fast4x.riplay.ui.styling.px
-import it.fast4x.riplay.utils.DisposableListener
 import it.fast4x.riplay.utils.addToYtLikedSong
 import it.fast4x.riplay.utils.backgroundProgressKey
 import it.fast4x.riplay.utils.applyIf
@@ -123,13 +116,9 @@ import it.fast4x.riplay.utils.lastVideoSecondsKey
 import org.dailyislam.android.utilities.isNetworkConnected
 import it.fast4x.riplay.utils.mediaItemToggleLike
 import it.fast4x.riplay.utils.miniPlayerTypeKey
-import it.fast4x.riplay.utils.playNext
-import it.fast4x.riplay.utils.playPrevious
-import it.fast4x.riplay.utils.positionAndDurationState
 import it.fast4x.riplay.utils.rememberPreference
 import it.fast4x.riplay.utils.semiBold
 import it.fast4x.riplay.utils.setDisLikeState
-import it.fast4x.riplay.utils.shouldBePlaying
 import it.fast4x.riplay.utils.thumbnail
 import it.fast4x.riplay.utils.unlikeYtVideoOrSong
 import kotlinx.coroutines.CoroutineScope
@@ -257,7 +246,7 @@ fun OnlineMiniPlayer(
 
     val inflatedView = LayoutInflater.from(context()).inflate(R.layout.youtube_player, null, false)
     val onlinePlayerView: YouTubePlayerView = inflatedView as YouTubePlayerView
-    val customPLayerUi = onlinePlayerView.inflateCustomPlayerUi(R.layout.ayp_default_player_ui)
+    val customPLayerUi = onlinePlayerView.inflateCustomPlayerUi(R.layout.ayp_base_player_ui)
     var player = remember { mutableStateOf<YouTubePlayer?>(null) }
     val playerState = remember { mutableStateOf(PlayerConstants.PlayerState.UNSTARTED) }
     //val enableBackgroundPlayback by remember { mutableStateOf(true) }
@@ -613,7 +602,7 @@ fun OnlineMiniPlayer(
                     override fun onReady(youTubePlayer: YouTubePlayer) {
                         player.value = youTubePlayer
 
-                        val customPlayerUiController = CustomPlayerUiController(
+                        val customPlayerUiController = CustomBasePlayerUiController(
                             it,
                             customPLayerUi,
                             youTubePlayer,

@@ -1,6 +1,5 @@
 package it.fast4x.riplay.ui.screens.player.online
 
-import android.annotation.SuppressLint
 import android.content.Context
 import android.view.View
 import android.widget.ImageView
@@ -18,7 +17,7 @@ import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.utils.YouTube
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
 import it.fast4x.riplay.R
 
-internal class CustomPlayerUiController (
+internal class CustomDefaultPlayerUiController (
     private val context: Context,
     customPlayerUi: View,
     private val youTubePlayer: YouTubePlayer,
@@ -49,8 +48,8 @@ internal class CustomPlayerUiController (
         fadeControlsContainer = FadeViewHelper(controlsContainer as View)
         panel = customPlayerUi.findViewById<View?>(R.id.panel)
         progressbar = customPlayerUi.findViewById<View?>(R.id.progress)
-        videoCurrentTimeTextView = customPlayerUi.findViewById<TextView?>(R.id.video_current_time)
-        videoDurationTextView = customPlayerUi.findViewById<TextView?>(R.id.video_duration)
+//        videoCurrentTimeTextView = customPlayerUi.findViewById<TextView?>(R.id.video_current_time)
+//        videoDurationTextView = customPlayerUi.findViewById<TextView?>(R.id.video_duration)
         youtubeButton = customPlayerUi.findViewById<ImageView?>(R.id.youtube_button)
         youtubeButton?.visibility = View.GONE
         youtubePlayerSeekBar = customPlayerUi.findViewById<YouTubePlayerSeekBar?>(R.id.youtube_player_seekbar)
@@ -152,15 +151,17 @@ internal class CustomPlayerUiController (
         }
     }
 
-    @SuppressLint("SetTextI18n")
-    override fun onCurrentSecond(youTubePlayer: YouTubePlayer, second: Float) {
-        videoCurrentTimeTextView?.text = second.toString() + ""
-    }
-
-    @SuppressLint("SetTextI18n")
-    override fun onVideoDuration(youTubePlayer: YouTubePlayer, duration: Float) {
-        videoDurationTextView?.text = duration.toString() + ""
-    }
+//    @SuppressLint("SetTextI18n")
+//    override fun onCurrentSecond(youTubePlayer: YouTubePlayer, second: Float) {
+//        //videoCurrentTimeTextView?.text = second.toString() + ""
+//        youtubePlayerSeekBar?.videoCurrentTimeTextView?.text = second.toString() + ""
+//    }
+//
+//    @SuppressLint("SetTextI18n")
+//    override fun onVideoDuration(youTubePlayer: YouTubePlayer, duration: Float) {
+//        //videoDurationTextView?.text = duration.toString() + ""
+//        youtubePlayerSeekBar?.videoDurationTextView?.text = duration.toString() + ""
+//    }
 
     private fun updatePlayPauseButtonIcon(playing: Boolean) {
         val drawable = if (playing) R.drawable.pause else R.drawable.play
