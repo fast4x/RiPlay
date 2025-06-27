@@ -575,23 +575,9 @@ fun OnlineMiniPlayer(
         }
 
         AndroidView(
-            modifier = Modifier,
-//                .applyIf(!isLandscape) {
-//                    padding(horizontal = playerThumbnailSize.padding.dp)
-//                },
+
             factory = {
 
-//                val iFramePlayerOptions = IFramePlayerOptions.Builder()
-//                    .controls(1) // show/hide controls
-//                    .rel(0) // related video at the end
-//                    .ivLoadPolicy(0) // show/hide annotations
-//                    .ccLoadPolicy(0) // show/hide captions
-//                    // Play a playlist by id
-//                    //.listType("playlist")
-//                    //.list(PLAYLIST_ID)
-//                    .build()
-
-                // Disable default view controls to set custom view
                 val iFramePlayerOptions = IFramePlayerOptions.Builder()
                     .controls(0) // show/hide controls
                     .listType("playlist")
@@ -619,7 +605,6 @@ fun OnlineMiniPlayer(
                     override fun onCurrentSecond(youTubePlayer: YouTubePlayer, second: Float) {
                         super.onCurrentSecond(youTubePlayer, second)
                         currentSecond = second
-                        //onCurrentSecond(second)
                         lastYTVideoSeconds = second
                         lastYTVideoId = mediaItem.mediaId
 
@@ -628,7 +613,6 @@ fun OnlineMiniPlayer(
                     override fun onVideoDuration(youTubePlayer: YouTubePlayer, duration: Float) {
                         super.onVideoDuration(youTubePlayer, duration)
                         currentDuration = duration
-                        //onVideoDuration(duration)
                     }
 
                     override fun onStateChange(
@@ -636,9 +620,7 @@ fun OnlineMiniPlayer(
                         state: PlayerConstants.PlayerState
                     ) {
                         super.onStateChange(youTubePlayer, state)
-//                        if (state == PlayerConstants.PlayerState.ENDED) {
-//                            onVideoEnded()
-//                        }
+
                         playerState.value = state
                     }
 
@@ -663,19 +645,7 @@ fun OnlineMiniPlayer(
                     100,
                     100
                 )
-//                it.layoutParams =  if (!isLandscape) {
-//                    ViewGroup.LayoutParams(
-//                        ViewGroup.LayoutParams.MATCH_PARENT,
-//                        if (playerThumbnailSize == PlayerThumbnailSize.Expanded)
-//                            ViewGroup.LayoutParams.WRAP_CONTENT
-//                        else playerThumbnailSize.height
-//                    )
-//                } else {
-//                    ViewGroup.LayoutParams(
-//                        ViewGroup.LayoutParams.MATCH_PARENT,
-//                        ViewGroup.LayoutParams.WRAP_CONTENT
-//                    )
-//                }
+
             }
         )
 

@@ -91,17 +91,17 @@ fun ThreeColumnsApp() {
     LaunchedEffect(videoId) {
         if (videoId.isEmpty()) return@LaunchedEffect
 
-        Environment.player(
-            body = PlayerBody(videoId = videoId)
-        ).onSuccess {
-                println("videoId  ${videoId} adaptiveFormats ${it.streamingData?.adaptiveFormats}")
-                formatAudio.value =
-                    it.streamingData?.autoMaxQualityFormat
-                        .let {
-                            // Specify range to avoid YouTube's throttling
-                            it?.copy(url = "${it.url}&range=0-${it.contentLength ?: 10000000}")
-                        }
-            }
+//        Environment.player(
+//            body = PlayerBody(videoId = videoId)
+//        ).onSuccess {
+//                println("videoId  ${videoId} adaptiveFormats ${it.streamingData?.adaptiveFormats}")
+//                formatAudio.value =
+//                    it.streamingData?.autoMaxQualityFormat
+//                        .let {
+//                            // Specify range to avoid YouTube's throttling
+//                            it?.copy(url = "${it.url}&range=0-${it.contentLength ?: 10000000}")
+//                        }
+//            }
         println("videoId  ${videoId} formatAudio url inside ${formatAudio.value?.url}")
 
         nowPlayingSong = db.getSong(videoId)

@@ -97,7 +97,6 @@ import it.fast4x.riplay.utils.loudnessBaseGainKey
 import it.fast4x.riplay.utils.maxSongsInQueueKey
 import it.fast4x.riplay.utils.minimumSilenceDurationKey
 import it.fast4x.riplay.utils.navigationBarPositionKey
-import it.fast4x.riplay.utils.notificationTypeKey
 import it.fast4x.riplay.utils.nowPlayingIndicatorKey
 import it.fast4x.riplay.utils.pauseBetweenSongsKey
 import it.fast4x.riplay.utils.pauseListenHistoryKey
@@ -250,7 +249,7 @@ fun GeneralSettings(
     var enablePictureInPictureAuto by rememberPreference(enablePictureInPictureAutoKey, false)
     var pipModule by rememberPreference(pipModuleKey, PipModule.Cover)
     var jumpPrevious by rememberPreference(jumpPreviousKey,"3")
-    var notificationType by rememberPreference(notificationTypeKey, NotificationType.Default)
+    //var notificationType by rememberPreference(notificationTypeKey, NotificationType.Default)
     var autoDownloadSong by rememberPreference(autoDownloadSongKey, false)
     var autoDownloadSongWhenLiked by rememberPreference(autoDownloadSongWhenLikedKey, false)
     var autoDownloadSongWhenAlbumBookmarked by rememberPreference(autoDownloadSongWhenAlbumBookmarkedKey, false)
@@ -523,20 +522,20 @@ fun GeneralSettings(
             )
         }
 
-        if (search.input.isBlank() || stringResource(R.string.notification_type).contains(search.input,true)) {
-            EnumValueSelectorSettingsEntry(
-                title = stringResource(R.string.notification_type),
-                selectedValue = notificationType,
-                onValueSelected = {
-                    notificationType = it
-                },
-                valueText = {
-                    it.textName
-                }
-            )
-            SettingsDescription(text = stringResource(R.string.notification_type_info))
-            ImportantSettingsDescription(text = stringResource(R.string.restarting_rimusic_is_required))
-        }
+//        if (search.input.isBlank() || stringResource(R.string.notification_type).contains(search.input,true)) {
+//            EnumValueSelectorSettingsEntry(
+//                title = stringResource(R.string.notification_type),
+//                selectedValue = notificationType,
+//                onValueSelected = {
+//                    notificationType = it
+//                },
+//                valueText = {
+//                    it.textName
+//                }
+//            )
+//            SettingsDescription(text = stringResource(R.string.notification_type_info))
+//            ImportantSettingsDescription(text = stringResource(R.string.restarting_rimusic_is_required))
+//        }
 
         if (search.input.isBlank() || stringResource(R.string.audio_quality_format).contains(search.input,true)) {
             EnumValueSelectorSettingsEntry(

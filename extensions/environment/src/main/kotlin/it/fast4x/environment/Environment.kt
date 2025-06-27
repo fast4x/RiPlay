@@ -72,10 +72,8 @@ object Environment {
 
     val _7ZoUy0mkCP = EnvironmentPreferences.preference?.p37 ?: ""
     val _uMYwa66ycM = EnvironmentPreferences.preference?.p38 ?: ""
-
     val _3djbhqyLpE = EnvironmentPreferences.preference?.p1 ?: ""
     val _NXIvG4ve8N = EnvironmentPreferences.preference?.p8 ?: ""
-    val _cdSL7DrPbA = EnvironmentPreferences.preference?.p5 ?: ""
     val _QPWiB5riY1 = EnvironmentPreferences.preference?.p11 ?: ""
     val _QPmE9fYezr = EnvironmentPreferences.preference?.p7 ?: ""
     val _Uwjb1AiI8t = EnvironmentPreferences.preference?.p13 ?: ""
@@ -87,23 +85,15 @@ object Environment {
     val _eR3hChvLRR = EnvironmentPreferences.preference?.p10 ?: ""
     val _wI7xC0jvaR = EnvironmentPreferences.preference?.p2 ?: ""
     val _1enRpaV4ei = EnvironmentPreferences.preference?.p6 ?: ""
-    val _0y2BrSeuzt = EnvironmentPreferences.preference?.p15 ?: ""
-    val _YfkInZQChm = EnvironmentPreferences.preference?.p16 ?: ""
-    val _Aj104iDVho = EnvironmentPreferences.preference?.p17 ?: ""
     val _XsHo8IdebO = EnvironmentPreferences.preference?.p36 ?: ""
     val _1Vv31MecRl = EnvironmentPreferences.preference?.p0 ?: ""
-    val _umx3sFb2yf = EnvironmentPreferences.preference?.p39 ?: ""
-    val _FNIXTCyeZC = EnvironmentPreferences.preference?.p40 ?: ""
-    val _rjH3trYO7G = EnvironmentPreferences.preference?.p41 ?: ""
-    val _0WL1AVN5v3 = EnvironmentPreferences.preference?.p42 ?: ""
-    val _p4N2lun1CR = EnvironmentPreferences.preference?.p43 ?: ""
+
 
     private fun buildClient() = HttpClient(OkHttp) {
 
         expectSuccess = true
 
         install(ContentNegotiation) {
-            //protobuf()
             json(Json {
                 ignoreUnknownKeys = true
                 explicitNulls = false
@@ -112,7 +102,6 @@ object Environment {
         }
 
         install(ContentEncoding) {
-            //brotli(1.0F)
             gzip(0.9F)
             deflate(0.8F)
         }
@@ -224,29 +213,6 @@ object Environment {
             cookieMap = if (value == null) emptyMap() else parseCookieString(value)
         }
     private var cookieMap = emptyMap<String, String>()
-
-    private var poTokenChallengeRequestKey = "O43z0dpjhgX20SCx4KAo"
-
-    /**
-     * Json deserializer for PO token request
-     */
-    private val poTokenJsonDeserializer =
-        Json {
-            ignoreUnknownKeys = true
-            encodeDefaults = true
-            coerceInputValues = true
-            useArrayPolymorphism = true
-        }
-
-    private fun String.getPoToken(): String? =
-        this
-            .replace("[", "")
-            .replace("]", "")
-            .split(",")
-            .findLast { it.contains("\"") }
-            ?.replace("\"", "")
-
-    private var poTokenObject: Pair<String?, Long> = Pair(null, 0)
 
     internal const val musicResponsiveListItemRendererMask = "musicResponsiveListItemRenderer(flexColumns,fixedColumns,thumbnail,navigationEndpoint,badges)"
     internal const val musicTwoRowItemRendererMask = "musicTwoRowItemRenderer(thumbnailRenderer,title,subtitle,navigationEndpoint)"

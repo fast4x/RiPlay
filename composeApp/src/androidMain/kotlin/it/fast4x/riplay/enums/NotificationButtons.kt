@@ -67,14 +67,8 @@ enum class NotificationButtons {
         }
 
         @OptIn(UnstableApi::class)
-        fun getStateIcon(button: NotificationButtons, likedState: Long?, downloadState: Int, repeatMode: Int, shuffleMode: Boolean): Int {
+        fun getStateIcon(button: NotificationButtons, likedState: Long?, repeatMode: Int, shuffleMode: Boolean): Int {
             return when (button) {
-//                Download -> when (downloadState) {
-//                    androidx.media3.exoplayer.offline.Download.STATE_COMPLETED -> R.drawable.downloaded
-//                    androidx.media3.exoplayer.offline.Download.STATE_DOWNLOADING,
-//                    androidx.media3.exoplayer.offline.Download.STATE_QUEUED -> R.drawable.download_progress
-//                    else -> R.drawable.download
-//                }
                 Favorites -> when (likedState) {
                     -1L -> R.drawable.heart_dislike
                     null -> R.drawable.heart_outline

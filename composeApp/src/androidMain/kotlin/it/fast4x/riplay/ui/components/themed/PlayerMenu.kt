@@ -31,7 +31,6 @@ import it.fast4x.riplay.utils.addSongToYtPlaylist
 import it.fast4x.riplay.utils.addToYtLikedSong
 import it.fast4x.riplay.utils.addToYtPlaylist
 import org.dailyislam.android.utilities.isNetworkConnected
-import it.fast4x.riplay.utils.isPipedEnabledKey
 import it.fast4x.riplay.utils.menuStyleKey
 import it.fast4x.riplay.utils.rememberEqualizerLauncher
 import it.fast4x.riplay.utils.rememberPreference

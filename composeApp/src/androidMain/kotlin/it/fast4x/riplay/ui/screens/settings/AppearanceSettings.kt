@@ -117,7 +117,6 @@ import it.fast4x.riplay.utils.showButtonPlayerSleepTimerKey
 import it.fast4x.riplay.utils.showButtonPlayerStartRadioKey
 import it.fast4x.riplay.utils.showButtonPlayerSystemEqualizerKey
 import it.fast4x.riplay.utils.showButtonPlayerVideoKey
-import it.fast4x.riplay.utils.showDownloadButtonBackgroundPlayerKey
 import it.fast4x.riplay.utils.showLikeButtonBackgroundPlayerKey
 import it.fast4x.riplay.utils.showNextSongsInPlayerKey
 import it.fast4x.riplay.utils.showRemainingSongTimeKey
@@ -209,11 +208,7 @@ fun DefaultAppearanceSettings() {
         true
     )
     showLikeButtonBackgroundPlayer = true
-    var showDownloadButtonBackgroundPlayer by rememberPreference(
-        showDownloadButtonBackgroundPlayerKey,
-        true
-    )
-    showDownloadButtonBackgroundPlayer = true
+
     var visualizerEnabled by rememberPreference(visualizerEnabledKey, false)
     visualizerEnabled = false
     var playerTimelineType by rememberPreference(playerTimelineTypeKey, PlayerTimelineType.Default)
@@ -396,10 +391,7 @@ fun AppearanceSettings(
         showLikeButtonBackgroundPlayerKey,
         true
     )
-    var showDownloadButtonBackgroundPlayer by rememberPreference(
-        showDownloadButtonBackgroundPlayerKey,
-        true
-    )
+
     var visualizerEnabled by rememberPreference(visualizerEnabledKey, false)
     /*
     var playerVisualizerType by rememberPreference(
@@ -637,7 +629,6 @@ fun AppearanceSettings(
                         writeRow("Appearance", appearanceFilename, "colorPaletteMode", colorPaletteMode.ordinal)
                         writeRow("Appearance", appearanceFilename, "swipeAnimationNoThumbnail", swipeAnimationNoThumbnail.ordinal)
                         writeRow("Appearance", appearanceFilename, "showLikeButtonBackgroundPlayer", showLikeButtonBackgroundPlayer)
-                        writeRow("Appearance", appearanceFilename, "showDownloadButtonBackgroundPlayer", showDownloadButtonBackgroundPlayer)
                         writeRow("Appearance", appearanceFilename, "visualizerEnabled", visualizerEnabled)
                     }
                 }
@@ -935,9 +926,6 @@ fun AppearanceSettings(
                                     }
                                     "showLikeButtonBackgroundPlayer" -> {
                                         showLikeButtonBackgroundPlayer = row["Value"]!!.toBoolean()
-                                    }
-                                    "showDownloadButtonBackgroundPlayer" -> {
-                                        showDownloadButtonBackgroundPlayer = row["Value"]!!.toBoolean()
                                     }
                                     "visualizerEnabled" -> {
                                         visualizerEnabled = row["Value"]!!.toBoolean()

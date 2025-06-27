@@ -79,7 +79,6 @@ const val coilCustomDiskCacheKey = "exoPlayerCustomCache"
 const val disableScrollingTextKey = "disableScrollingText"
 const val audioQualityFormatKey = "audioQualityFormat"
 const val showLikeButtonBackgroundPlayerKey = "showLikeButtonBackgroundPlayer"
-const val showDownloadButtonBackgroundPlayerKey = "showDownloadButtonBackgroundPlayer"
 const val playEventsTypeKey = "playEventsType"
 const val fontTypeKey = "fontType"
 const val playlistSongSortByKey = "playlistSongSortBy"
@@ -105,7 +104,6 @@ const val showButtonPlayerLoopKey = "showButtonPlayerLoop"
 const val showButtonPlayerLyricsKey = "showButtonPlayerLyrics"
 const val showButtonPlayerShuffleKey = "showButtonPlayerShuffle"
 const val isKeepScreenOnEnabledKey = "isKeepScreenOnEnabled"
-const val isEnabledDiscoveryLangCodeKey = "isEnabledDiscoveryLangCode"
 const val recommendationsNumberKey = "recommendationsNumber"
 const val checkUpdateStateKey = "checkUpdateState"
 const val showButtonPlayerSleepTimerKey = "showButtonPlayerSleepTimer"
@@ -137,7 +135,6 @@ const val playbackVolumeKey = "playbackVolume"
 const val playbackDeviceVolumeKey = "playbackDeviceVolume"
 const val playbackDurationKey = "playbackDuration"
 const val blurStrengthKey = "blurScale"
-//const val blurStrength2Key = "blurScale"
 const val blurDarkenFactorKey = "blurDarkenFactor"
 const val playbackFadeDurationKey = "playbackFadeDuration"
 const val playbackFadeAudioDurationKey = "playbackFadeAudioDuration"
@@ -265,8 +262,6 @@ const val parentalControlEnabledKey = "parentalControlEnabled"
 const val playerPositionKey = "playerPosition"
 const val excludeSongsWithDurationLimitKey = "excludeSongsWithDurationLimit"
 const val logDebugEnabledKey = "logDebugEnabled"
-const val isPipedEnabledKey = "isPipedEnabled"
-const val isPipedCustomEnabledKey = "isPipedCustomEnabled"
 
 const val messageTypeKey = "messageType"
 const val isPauseOnVolumeZeroEnabledKey = "isPauseOnVolumeZeroEnabled"
@@ -287,7 +282,6 @@ const val controlsExpandedKey = "controlsExpanded"
 const val miniQueueExpandedKey = "miniQueueExpanded"
 const val statsExpandedKey = "statsExpanded"
 const val actionExpandedKey = "actionExpanded"
-//const val showVinylThumbnailAnimationKey = "showVinylThumbnailAnimation"
 const val showCoverThumbnailAnimationKey = "showCoverThumbnailAnimation"
 const val coverThumbnailAnimationKey = "coverThumbnailAnimation"
 
@@ -322,7 +316,6 @@ const val albumTypeKey = "albumType"
 const val enableWallpaperKey = "enableWallpaper"
 const val wallpaperTypeKey = "wallpaperType"
 
-const val notificationTypeKey = "notificationType"
 const val topPaddingKey = "topPadding"
 
 const val autoDownloadSongKey = "autoDownloadSong"
@@ -359,11 +352,6 @@ const val bassboostLevelKey = "bassboostLevel"
 const val audioReverbPresetKey = "audioReverbPreset"
 const val handleAudioFocusEnabledKey = "handleAudioFocusEnabled"
 
-const val pipedUsernameKey = "pipedUsername"
-const val pipedPasswordKey = "pipedPassword"
-const val pipedInstanceNameKey = "pipedInstanceName"
-const val pipedApiBaseUrlKey = "pipedApiBaseUrl"
-const val pipedApiTokenKey = "pipedApiToken"
 const val discordPersonalAccessTokenKey = "DiscordPersonalAccessToken"
 const val viewTypeKey = "viewType"
 const val volumeBoostLevelKey = "volumeBoostLevel"
@@ -371,47 +359,6 @@ const val dnsOverHttpsTypeKey = "dnsOverHttpsType"
 const val customDnsOverHttpsServerKey = "customDnsOverHttpsServer"
 const val enablePreCacheKey = "enablePreCache"
 const val streamingPlayerTypeKey = "streamingPlayerType"
-
-
-/*
-@PublishedApi
-internal val defaultJson = Json {
-    isLenient = true
-    prettyPrint = false
-    ignoreUnknownKeys = true
-    encodeDefaults = true
-}
-
-@OptIn(InternalSerializationApi::class)
-inline fun <reified T : Json> SharedPreferences.Editor.putJson(
-    key: String,
-    defaultValue: T,
-    json: Json = defaultJson
-): SharedPreferences.Editor =
-    putString(
-        key,
-        try {
-            json.encodeToString(T::class.serializer(), defaultValue)
-        } catch (e: IllegalArgumentException) {
-            null
-        }
-
-    )
-
-@OptIn(InternalSerializationApi::class)
-inline fun <reified T : Json> SharedPreferences.getJson(
-    key: String,
-    defaultValue: T,
-    json: Json = defaultJson
-): T =
-    getString(key, null)?.let {
-        try {
-            json.decodeFromString(T::class.serializer(), it)
-        } catch (e: IllegalArgumentException) {
-            null
-        }
-    } ?: defaultValue
-*/
 
 inline fun <reified T : Enum<T>> SharedPreferences.getEnum(
     key: String,
@@ -434,17 +381,6 @@ inline fun <reified T : Enum<T>> SharedPreferences.Editor.putEnum(
 val Context.preferences: SharedPreferences
     get() = getSharedPreferences("preferences", Context.MODE_PRIVATE)
 
-/*
-@Composable
-inline fun <reified T : Json> rememberPreference(key: String, defaultValue: T, json: Json = defaultJson): MutableState<T> {
-    val context = LocalContext.current
-    return remember {
-        mutableStatePreferenceOf(context.preferences.getJson(key, defaultValue)) {
-            context.preferences.edit { putJson(key, it) }
-        }
-    }
-}
-*/
 
 @Composable
 fun rememberPreference(key: String, defaultValue: Song?): MutableState<Song?> {

@@ -69,13 +69,6 @@ import it.fast4x.riplay.utils.enableYouTubeSyncKey
 import it.fast4x.riplay.utils.isAtLeastAndroid7
 import it.fast4x.riplay.utils.isAtLeastAndroid81
 import it.fast4x.riplay.utils.isDiscordPresenceEnabledKey
-import it.fast4x.riplay.utils.isPipedCustomEnabledKey
-import it.fast4x.riplay.utils.isPipedEnabledKey
-import it.fast4x.riplay.utils.pipedApiBaseUrlKey
-import it.fast4x.riplay.utils.pipedApiTokenKey
-import it.fast4x.riplay.utils.pipedInstanceNameKey
-import it.fast4x.riplay.utils.pipedPasswordKey
-import it.fast4x.riplay.utils.pipedUsernameKey
 import it.fast4x.riplay.utils.preferences
 import it.fast4x.riplay.utils.rememberPreference
 import it.fast4x.riplay.utils.restartActivityKey

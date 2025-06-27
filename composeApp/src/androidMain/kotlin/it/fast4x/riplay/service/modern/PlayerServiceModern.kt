@@ -71,8 +71,6 @@ import androidx.media3.exoplayer.audio.DefaultAudioOffloadSupportProvider
 import androidx.media3.exoplayer.audio.DefaultAudioSink
 import androidx.media3.exoplayer.audio.DefaultAudioSink.DefaultAudioProcessorChain
 import androidx.media3.exoplayer.audio.SilenceSkippingAudioProcessor
-import androidx.media3.exoplayer.offline.Download
-import androidx.media3.exoplayer.offline.DownloadManager
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import androidx.media3.exoplayer.source.ShuffleOrder.DefaultShuffleOrder
 import androidx.media3.extractor.DefaultExtractorsFactory
@@ -149,7 +147,6 @@ import it.fast4x.riplay.utils.mediaItems
 import it.fast4x.riplay.utils.minimumSilenceDurationKey
 import it.fast4x.riplay.utils.notificationPlayerFirstIconKey
 import it.fast4x.riplay.utils.notificationPlayerSecondIconKey
-import it.fast4x.riplay.utils.notificationTypeKey
 import it.fast4x.riplay.utils.pauseListenHistoryKey
 import it.fast4x.riplay.utils.persistentQueueKey
 import it.fast4x.riplay.utils.playNext
@@ -164,7 +161,6 @@ import it.fast4x.riplay.utils.resumePlaybackOnStartKey
 import it.fast4x.riplay.utils.resumePlaybackWhenDeviceConnectedKey
 import it.fast4x.riplay.utils.setGlobalVolume
 import it.fast4x.riplay.utils.setLikeState
-import it.fast4x.riplay.utils.showDownloadButtonBackgroundPlayerKey
 import it.fast4x.riplay.utils.showLikeButtonBackgroundPlayerKey
 import it.fast4x.riplay.utils.skipMediaOnErrorKey
 import it.fast4x.riplay.utils.skipSilenceKey
@@ -240,7 +236,6 @@ class PlayerServiceModern : MediaLibraryService(),
     val cache: SimpleCache by lazy {
         principalCache.getInstance(this)
     }
-    //lateinit var downloadCache: SimpleCache
     private lateinit var audioVolumeObserver: AudioVolumeObserver
     private lateinit var bitmapProvider: BitmapProvider
     private var volumeNormalizationJob: Job? = null
@@ -248,14 +243,12 @@ class PlayerServiceModern : MediaLibraryService(),
     private var isclosebackgroundPlayerEnabled = false
     private var audioManager: AudioManager? = null
     private var audioDeviceCallback: AudioDeviceCallback? = null
-    private lateinit var downloadListener: DownloadManager.Listener
 
     var loudnessEnhancer: LoudnessEnhancer? = null
     private var binder = Binder()
     private var bassBoost: BassBoost? = null
     private var reverbPreset: PresetReverb? = null
     private var showLikeButton = true
-    private var showDownloadButton = true
 
     lateinit var audioQualityFormat: AudioQualityFormat
     lateinit var sleepTimer: SleepTimer
@@ -269,12 +262,6 @@ class PlayerServiceModern : MediaLibraryService(),
         Database.song(mediaItem?.mediaId)
     }.stateIn(coroutineScope, SharingStarted.Lazily, null)
 
-    var currentSongStateDownload = MutableStateFlow(Download.STATE_STOPPED)
-
-    //lateinit var connectivityObserver: AndroidConnectivityObserverLegacy
-    //private val isNetworkAvailable = MutableStateFlow(true)
-    //private val waitingForNetwork = MutableStateFlow(false)
-
     private val playerVerticalWidget = PlayerVerticalWidget()
     private val playerHorizontalWidget = PlayerHorizontalWidget()
 
@@ -286,75 +273,27 @@ class PlayerServiceModern : MediaLibraryService(),
     override fun onCreate() {
         super.onCreate()
 
-        // Enable Android Auto if disabled, REQUIRE ENABLING DEV MODE IN ANDROID AUTO
-//        val component = ComponentName(this, PlayerServiceModern::class.java)
-//        packageManager.setComponentEnabledSetting(
-//            component,
-//            PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
-//            PackageManager.DONT_KILL_APP
-//        )
-
-//        try {
-//            connectivityObserver.unregister()
-//        } catch (e: Exception) {
-//            // isn't registered
-//        }
-//        connectivityObserver = AndroidConnectivityObserverLegacy(this@PlayerServiceModern)
-//        coroutineScope.launch {
-//            connectivityObserver.networkStatus.collect { isAvailable ->
-//                isNetworkAvailable.value = isAvailable
-//                Timber.d("PlayerServiceModern network status: $isAvailable")
-//                println("PlayerServiceModern network status: $isAvailable")
-//                if (isAvailable && waitingForNetwork.value) {
-//                    waitingForNetwork.value = false
-//                    withContext(Dispatchers.Main) {
-//                        player.prepare()
-//                        player.play()
+//                // DEFAULT NOTIFICATION PROVIDER MODDED
+//                setMediaNotificationProvider(CustomMediaNotificationProvider(this)
+//                    .apply {
+//                        setSmallIcon(R.drawable.app_icon)
 //                    }
-//                }
+//                )
 //            }
-//        }
 
-        val notificationType = preferences.getEnum(notificationTypeKey, NotificationType.Default)
-        when(notificationType){
-            NotificationType.Default -> {
-                // DEFAULT NOTIFICATION PROVIDER
-                //        setMediaNotificationProvider(
-                //            DefaultMediaNotificationProvider(
-                //                this,
-                //                { NotificationId },
-                //                NotificationChannelId,
-                //                R.string.player
-                //            )
-                //            .apply {
-                //                setSmallIcon(R.drawable.app_icon)
-                //            }
-                //        )
-
-                // DEFAULT NOTIFICATION PROVIDER MODDED
-                setMediaNotificationProvider(CustomMediaNotificationProvider(this)
-                    .apply {
-                        setSmallIcon(R.drawable.app_icon)
-                    }
-                )
+        setMediaNotificationProvider(object : MediaNotification.Provider{
+            override fun createNotification(
+                mediaSession: MediaSession,
+                customLayout: ImmutableList<CommandButton>,
+                actionFactory: MediaNotification.ActionFactory,
+                onNotificationChangedCallback: MediaNotification.Provider.Callback
+            ): MediaNotification {
+                return updateCustomNotification(mediaSession)
             }
-            NotificationType.Advanced -> {
-                // CUSTOM NOTIFICATION PROVIDER -> CUSTOM NOTIFICATION PROVIDER WITH ACTIONS AND PENDING INTENT
-                // ACTUALLY NOT STABLE
-                setMediaNotificationProvider(object : MediaNotification.Provider{
-                    override fun createNotification(
-                        mediaSession: MediaSession,
-                        customLayout: ImmutableList<CommandButton>,
-                        actionFactory: MediaNotification.ActionFactory,
-                        onNotificationChangedCallback: MediaNotification.Provider.Callback
-                    ): MediaNotification {
-                        return updateCustomNotification(mediaSession)
-                    }
 
-                    override fun handleCustomCommand(session: MediaSession, action: String, extras: Bundle): Boolean { return false }
-                })
-            }
-        }
+            override fun handleCustomCommand(session: MediaSession, action: String, extras: Bundle): Boolean { return false }
+        })
+
 
         runCatching {
             bitmapProvider = BitmapProvider(
@@ -374,9 +313,6 @@ class PlayerServiceModern : MediaLibraryService(),
 
         audioQualityFormat = preferences.getEnum(audioQualityFormatKey, AudioQualityFormat.Auto)
         showLikeButton = preferences.getBoolean(showLikeButtonBackgroundPlayerKey, true)
-        showDownloadButton = preferences.getBoolean(showDownloadButtonBackgroundPlayerKey, true)
-
-        //downloadCache = MyDownloadHelper.getDownloadCache(applicationContext) as SimpleCache
 
 
         player = ExoPlayer.Builder(this)
@@ -490,7 +426,6 @@ class PlayerServiceModern : MediaLibraryService(),
             addAction(Action.next.value)
             addAction(Action.previous.value)
             addAction(Action.like.value)
-            addAction(Action.download.value)
             addAction(Action.playradio.value)
             addAction(Action.shuffle.value)
             addAction(Action.repeat.value)
@@ -557,9 +492,6 @@ class PlayerServiceModern : MediaLibraryService(),
         currentSong.debounce(1000).collect(coroutineScope) { song ->
             Timber.d("PlayerServiceModern onCreate currentSong $song")
             println("PlayerServiceModern onCreate currentSong $song")
-
-            Timber.d("PlayerServiceModern onCreate currentSongIsDownloaded ${currentSongStateDownload.value}")
-            println("PlayerServiceModern onCreate currentSongIsDownloaded ${currentSongStateDownload.value}")
 
             updateDefaultNotification()
             withContext(Dispatchers.Main) {
@@ -1126,7 +1058,6 @@ class PlayerServiceModern : MediaLibraryService(),
                             it.getStateIcon(
                                 it,
                                 currentSong.value?.likedAt,
-                                currentSongStateDownload.value,
                                 player.repeatMode,
                                 player.shuffleModeEnabled
                             )
@@ -1146,7 +1077,6 @@ class PlayerServiceModern : MediaLibraryService(),
                             it.getStateIcon(
                                 it,
                                 currentSong.value?.likedAt,
-                                currentSongStateDownload.value,
                                 player.repeatMode,
                                 player.shuffleModeEnabled
                             )
@@ -1166,7 +1096,6 @@ class PlayerServiceModern : MediaLibraryService(),
                             it.getStateIcon(
                                 it,
                                 currentSong.value?.likedAt,
-                                currentSongStateDownload.value,
                                 player.repeatMode,
                                 player.shuffleModeEnabled
                             )
@@ -1244,7 +1173,6 @@ class PlayerServiceModern : MediaLibraryService(),
                         it.getStateIcon(
                             it,
                             currentSong.value?.likedAt,
-                            currentSongStateDownload.value,
                             player.repeatMode,
                             player.shuffleModeEnabled
                         ),
@@ -1262,7 +1190,6 @@ class PlayerServiceModern : MediaLibraryService(),
                         it.getStateIcon(
                             it,
                             currentSong.value?.likedAt,
-                            currentSongStateDownload.value,
                             player.repeatMode,
                             player.shuffleModeEnabled
                         ),
@@ -1280,7 +1207,6 @@ class PlayerServiceModern : MediaLibraryService(),
                         it.getStateIcon(
                             it,
                             currentSong.value?.likedAt,
-                            currentSongStateDownload.value,
                             player.repeatMode,
                             player.shuffleModeEnabled
                         ),
@@ -1810,8 +1736,6 @@ class PlayerServiceModern : MediaLibraryService(),
                 }
             }
 
-//            currentSong.value
-//                ?.let { MyDownloadHelper.autoDownloadWhenLiked(this@PlayerServiceModern, it.asMediaItem) }
         }
 
 
@@ -1855,7 +1779,6 @@ class PlayerServiceModern : MediaLibraryService(),
             val next = Action("it.fast4x.riplay.next")
             val previous = Action("it.fast4x.riplay.previous")
             val like = Action("it.fast4x.riplay.like")
-            val download = Action("it.fast4x.riplay.download")
             val playradio = Action("it.fast4x.riplay.playradio")
             val shuffle = Action("it.fast4x.riplay.shuffle")
             val search = Action("it.fast4x.riplay.search")
