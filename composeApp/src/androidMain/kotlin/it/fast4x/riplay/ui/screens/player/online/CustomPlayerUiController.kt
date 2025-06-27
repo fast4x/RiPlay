@@ -22,7 +22,8 @@ internal class CustomPlayerUiController (
     private val context: Context,
     customPlayerUi: View,
     private val youTubePlayer: YouTubePlayer,
-    private val youTubePlayerView: YouTubePlayerView
+    private val youTubePlayerView: YouTubePlayerView,
+    private val onTap: () -> Unit? = {}
 ) : AbstractYouTubePlayerListener() {
     private val playerTracker: YouTubePlayerTracker = YouTubePlayerTracker()
 
@@ -89,7 +90,10 @@ internal class CustomPlayerUiController (
             override fun seekTo(time: Float) = youTubePlayer.seekTo(time)
         }
 
-        panel?.setOnClickListener { fadeControlsContainer?.toggleVisibility() }
+        panel?.setOnClickListener {
+            //fadeControlsContainer?.toggleVisibility()
+            onTap()
+        }
 
         //Disable controls in view
         customActionLeft?.visibility = View.GONE

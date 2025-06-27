@@ -12,6 +12,7 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.Animatable
@@ -22,13 +23,17 @@ import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsDraggedAsState
@@ -1462,6 +1467,41 @@ fun OnlinePlayerModern(
 
     }
 
+    val thumbnailRoundness by rememberPreference(
+        thumbnailRoundnessKey,
+        ThumbnailRoundness.Heavy
+    )
+
+    val controlsContent: @Composable (
+        modifier: Modifier
+    ) -> Unit = { modifierValue ->
+        Controls(
+            navController = navController,
+            onCollapse = onDismiss,
+            expandedplayer = expandedplayer,
+            titleExpanded = titleExpanded,
+            timelineExpanded = timelineExpanded,
+            controlsExpanded = controlsExpanded,
+            isShowingLyrics = isShowingLyrics,
+            media = mediaItem.toUiMedia(positionAndDuration.second.toLong()),
+            title = mediaItem.mediaMetadata.title?.toString() ?: "",
+            artist = mediaItem.mediaMetadata.artist?.toString(),
+            artistIds = artistsInfo,
+            albumId = albumId,
+            shouldBePlaying = shouldBePlaying,
+            position = positionAndDuration.first.toLong(),
+            duration = positionAndDuration.second.toLong(),
+            modifier = modifierValue,
+            onBlurScaleChange = { blurStrength = it },
+            isExplicit = mediaItem.isExplicit,
+            mediaItem = mediaItem,
+            onPlay = { player.value?.play() },
+            onPause = { player.value?.pause() },
+            onSeekTo = { player.value?.seekTo(it) },
+            onNext = { binder.player.playNext() },
+            onPrevious = { binder.player.playPrevious() },
+        )
+    }
 
     /***** NEW PLAYER *****/
 
@@ -1469,15 +1509,45 @@ fun OnlinePlayerModern(
         modifier: Modifier,
     ) -> Unit = { innerModifier ->
 
-        AndroidView(
-            modifier = innerModifier.background(Color.Transparent),
-//                .applyIf(!isLandscape) {
-//                    padding(horizontal = playerThumbnailSize.padding.dp)
-//                },
-            factory = {
-                if (onlinePlayerView.parent != null) {
-                    (onlinePlayerView.parent as ViewGroup).removeView(onlinePlayerView) // <- fix
+        var showControls by remember { mutableStateOf(true) }
+        LaunchedEffect(showControls) {
+            if (showControls) {
+                delay(5000)
+                showControls = false
+            }
+        }
+
+        Box(
+            modifier = innerModifier
+                .fillMaxSize()
+                .background(Color.Transparent)
+        ) {
+            AnimatedVisibility(
+                modifier = Modifier
+                    .zIndex(1f)
+                    .align(Alignment.Center),
+                visible = showControls && it.fast4x.riplay.utils.isLandscape,
+                enter = fadeIn(),
+                exit = fadeOut()
+            ) {
+                Box(
+                    modifier = Modifier
+                        .background(Color.Gray.copy(alpha = .4f),thumbnailRoundness.shape())
+                        .fillMaxWidth(0.9f)
+                        .fillMaxHeight(0.8f)
+                ) {
+                    controlsContent(Modifier.padding(top = 20.dp))
                 }
+            }
+
+            AndroidView(
+                modifier = innerModifier
+                    .background(Color.Transparent)
+                    .zIndex(0f),
+                factory = {
+                    if (onlinePlayerView.parent != null) {
+                        (onlinePlayerView.parent as ViewGroup).removeView(onlinePlayerView) // <- fix
+                    }
 //                val iFramePlayerOptions = IFramePlayerOptions.Builder()
 //                    .controls(1) // show/hide controls
 //                    .rel(0) // related video at the end
@@ -1488,94 +1558,101 @@ fun OnlinePlayerModern(
 //                    //.list(PLAYLIST_ID)
 //                    .build()
 
-                // Disable default view controls to set custom view
-                val iFramePlayerOptions = IFramePlayerOptions.Builder()
-                    .controls(0) // show/hide controls
-                    .listType("playlist")
-                    .build()
+                    // Disable default view controls to set custom view
+                    val iFramePlayerOptions = IFramePlayerOptions.Builder()
+                        .controls(0) // show/hide controls
+                        .listType("playlist")
+                        .build()
 
-                val listener = object : AbstractYouTubePlayerListener() {
+                    val listener = object : AbstractYouTubePlayerListener() {
 
-                    override fun onReady(youTubePlayer: YouTubePlayer) {
-                        player.value = youTubePlayer
+                        override fun onReady(youTubePlayer: YouTubePlayer) {
+                            player.value = youTubePlayer
 
-                        val customPlayerUiController = CustomPlayerUiController(
-                            it,
-                            customPLayerUi,
-                            youTubePlayer,
-                            onlinePlayerView
-                        )
-                        youTubePlayer.addListener(customPlayerUiController)
-
-                        if (playerState.value == PlayerConstants.PlayerState.UNSTARTED
-                            || playerState.value != PlayerConstants.PlayerState.BUFFERING
-                        )
-                            youTubePlayer.loadVideo(
-                                mediaItem.mediaId,
-                                if (mediaItem.mediaId == getLastYTVideoId()) getLastYTVideoSeconds() else 0f
+                            val customPlayerUiController = CustomPlayerUiController(
+                                it,
+                                customPLayerUi,
+                                youTubePlayer,
+                                onlinePlayerView,
+                                onTap = {
+                                    showControls = !showControls
+                                }
                             )
+                            youTubePlayer.addListener(customPlayerUiController)
 
-                        //youTubePlayer.cueVideo(mediaItem.mediaId, 0f)
+                            if (playerState.value == PlayerConstants.PlayerState.UNSTARTED
+                                || playerState.value != PlayerConstants.PlayerState.BUFFERING
+                            )
+                                youTubePlayer.loadVideo(
+                                    mediaItem.mediaId,
+                                    if (mediaItem.mediaId == getLastYTVideoId()) getLastYTVideoSeconds() else 0f
+                                )
+
+                            //youTubePlayer.cueVideo(mediaItem.mediaId, 0f)
 
 
-                    }
+                        }
 
-                    override fun onCurrentSecond(youTubePlayer: YouTubePlayer, second: Float) {
-                        super.onCurrentSecond(youTubePlayer, second)
-                        currentSecond = second
-                        lastYTVideoSeconds = second
-                        lastYTVideoId = mediaItem.mediaId
+                        override fun onCurrentSecond(youTubePlayer: YouTubePlayer, second: Float) {
+                            super.onCurrentSecond(youTubePlayer, second)
+                            currentSecond = second
+                            lastYTVideoSeconds = second
+                            lastYTVideoId = mediaItem.mediaId
 
-                    }
+                        }
 
-                    override fun onVideoDuration(youTubePlayer: YouTubePlayer, duration: Float) {
-                        super.onVideoDuration(youTubePlayer, duration)
-                        currentDuration = duration
-                    }
+                        override fun onVideoDuration(
+                            youTubePlayer: YouTubePlayer,
+                            duration: Float
+                        ) {
+                            super.onVideoDuration(youTubePlayer, duration)
+                            currentDuration = duration
+                        }
 
-                    override fun onStateChange(
-                        youTubePlayer: YouTubePlayer,
-                        state: PlayerConstants.PlayerState
-                    ) {
-                        super.onStateChange(youTubePlayer, state)
+                        override fun onStateChange(
+                            youTubePlayer: YouTubePlayer,
+                            state: PlayerConstants.PlayerState
+                        ) {
+                            super.onStateChange(youTubePlayer, state)
 //                        if (state == PlayerConstants.PlayerState.ENDED) {
 //                            onVideoEnded()
 //                        }
-                        playerState.value = state
+                            playerState.value = state
+                        }
+
+
                     }
 
+                    onlinePlayerView.apply {
+                        enableAutomaticInitialization = false
 
-                }
+                        if (enableBackgroundPlayback)
+                            enableBackgroundPlayback(true)
+                        else
+                            lifecycleOwner.lifecycle.addObserver(this)
 
-                onlinePlayerView.apply {
-                    enableAutomaticInitialization = false
+                        initialize(listener, iFramePlayerOptions)
+                    }
 
-                    if (enableBackgroundPlayback)
-                        enableBackgroundPlayback(true)
-                    else
-                        lifecycleOwner.lifecycle.addObserver(this)
-
-                    initialize(listener, iFramePlayerOptions)
-                }
-
-            },
-            update = {
-                it.enableBackgroundPlayback(enableBackgroundPlayback)
-                it.layoutParams = if (!isLandscape) {
-                    ViewGroup.LayoutParams(
-                        ViewGroup.LayoutParams.MATCH_PARENT,
-                        if (playerThumbnailSize == PlayerThumbnailSize.Expanded)
+                },
+                update = {
+                    it.enableBackgroundPlayback(enableBackgroundPlayback)
+                    it.layoutParams = if (!isLandscape) {
+                        ViewGroup.LayoutParams(
+                            ViewGroup.LayoutParams.MATCH_PARENT,
+                            if (playerThumbnailSize == PlayerThumbnailSize.Expanded)
+                                ViewGroup.LayoutParams.WRAP_CONTENT
+                            else playerThumbnailSize.height
+                        )
+                    } else {
+                        ViewGroup.LayoutParams(
+                            ViewGroup.LayoutParams.MATCH_PARENT,
                             ViewGroup.LayoutParams.WRAP_CONTENT
-                        else playerThumbnailSize.height
-                    )
-                } else {
-                    ViewGroup.LayoutParams(
-                        ViewGroup.LayoutParams.MATCH_PARENT,
-                        ViewGroup.LayoutParams.WRAP_CONTENT
-                    )
+                        )
+                    }
                 }
-            }
-        )
+            )
+        }
 
 //        var deltaX by remember { mutableStateOf(0f) }
 //        //var direction by remember { mutableIntStateOf(-1)}
@@ -1645,36 +1722,6 @@ fun OnlinePlayerModern(
     }
 
 
-    val controlsContent: @Composable (
-        modifier: Modifier
-    ) -> Unit = { modifierValue ->
-        Controls(
-            navController = navController,
-            onCollapse = onDismiss,
-            expandedplayer = expandedplayer,
-            titleExpanded = titleExpanded,
-            timelineExpanded = timelineExpanded,
-            controlsExpanded = controlsExpanded,
-            isShowingLyrics = isShowingLyrics,
-            media = mediaItem.toUiMedia(positionAndDuration.second.toLong()),
-            title = mediaItem.mediaMetadata.title?.toString() ?: "",
-            artist = mediaItem.mediaMetadata.artist?.toString(),
-            artistIds = artistsInfo,
-            albumId = albumId,
-            shouldBePlaying = shouldBePlaying,
-            position = positionAndDuration.first.toLong(),
-            duration = positionAndDuration.second.toLong(),
-            modifier = modifierValue,
-            onBlurScaleChange = { blurStrength = it },
-            isExplicit = mediaItem.isExplicit,
-            mediaItem = mediaItem,
-            onPlay = { player.value?.play() },
-            onPause = { player.value?.pause() },
-            onSeekTo = { player.value?.seekTo(it) },
-            onNext = { binder.player.playNext() },
-            onPrevious = { binder.player.playPrevious() },
-        )
-    }
     val textoutline by rememberPreference(textoutlineKey, false)
 
     var songPlaylist by remember {
@@ -2313,10 +2360,7 @@ fun OnlinePlayerModern(
             }
         }
 
-        val thumbnailRoundness by rememberPreference(
-            thumbnailRoundnessKey,
-            ThumbnailRoundness.Heavy
-        )
+
         val thumbnailType by rememberPreference(thumbnailTypeKey, ThumbnailType.Modern)
         val statsfornerds by rememberPreference(statsfornerdsKey, false)
         val topPadding by rememberPreference(topPaddingKey, true)

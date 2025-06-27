@@ -750,7 +750,7 @@ fun HomeLocalSongs(
                 ) {
                     if ( UiType.ViMusic.isCurrent() )
                         HeaderWithIcon(
-                            title = stringResource(R.string.songs),
+                            title = stringResource(R.string.on_device),
                             iconId = R.drawable.search,
                             enabled = true,
                             showIcon = !showSearchTab,
@@ -767,7 +767,9 @@ fun HomeLocalSongs(
                             .fillMaxWidth()
                     ) {
                         if ( UiType.RiPlay.isCurrent() )
-                            TitleSection(title = stringResource(R.string.songs))
+                            TitleSection(
+                                title = "Music" //stringResource(R.string.on_device)
+                            )
 
                         HeaderInfo(
                             title = if (builtInPlaylist == BuiltInPlaylist.OnDevice) "${filteredSongs.size}" else "${items.size}",
