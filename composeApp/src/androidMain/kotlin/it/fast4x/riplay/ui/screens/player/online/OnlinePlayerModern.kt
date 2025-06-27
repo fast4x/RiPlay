@@ -1,6 +1,7 @@
 package it.fast4x.riplay.ui.screens.player.online
 
 import android.annotation.SuppressLint
+import android.app.PendingIntent
 import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.database.SQLException
@@ -311,12 +312,16 @@ import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.input.pointer.pointerInteropFilter
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.core.app.NotificationChannelCompat
+import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.PlayerConstants
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.AbstractYouTubePlayerListener
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.options.IFramePlayerOptions
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
+import it.fast4x.riplay.MainActivity
 import it.fast4x.riplay.appContext
 import it.fast4x.riplay.context
 import it.fast4x.riplay.getLastYTVideoId
@@ -341,13 +346,18 @@ import org.dailyislam.android.utilities.isNetworkConnected
 import kotlin.math.sqrt
 import it.fast4x.riplay.ui.screens.player.offline.StatsForNerds
 import it.fast4x.riplay.ui.screens.player.offline.Queue
+import it.fast4x.riplay.utils.ActionIntent
 import it.fast4x.riplay.utils.asSong
+import it.fast4x.riplay.utils.isAtLeastAndroid15
 import it.fast4x.riplay.utils.isInvincibilityEnabledKey
 import it.fast4x.riplay.utils.isVideo
 import it.fast4x.riplay.utils.lastVideoIdKey
 import it.fast4x.riplay.utils.lastVideoSecondsKey
 import timber.log.Timber
 
+
+val NOTIFICATION_CHANNEL = "OnlinePlayer"
+val NOTIFICATION_ID = 1
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeUiApi::class)
 @ExperimentalTextApi
@@ -364,6 +374,7 @@ fun OnlinePlayerModern(
     modifier: Modifier = Modifier,
     onDismiss: () -> Unit,
 ) {
+
     val menuState = LocalMenuState.current
 
     val effectRotationEnabled by rememberPreference(effectRotationKey, true)
@@ -1390,6 +1401,13 @@ fun OnlinePlayerModern(
     }
 
     LaunchedEffect(currentSecond, currentDuration) {
+        updateNotification(
+            mediaItem.mediaMetadata.title.toString(),
+            mediaItem.mediaMetadata.artist.toString(),
+            currentSecond.toInt(),
+            currentDuration.toInt()
+        )
+
         positionAndDuration = currentSecond to currentDuration
         timeRemaining = positionAndDuration.second.toInt() - positionAndDuration.first.toInt()
 
@@ -1443,6 +1461,7 @@ fun OnlinePlayerModern(
         }
 
     }
+
 
     /***** NEW PLAYER *****/
 
@@ -3914,5 +3933,60 @@ private fun PagerState.LaunchedEffectScrollToPage(
     }
 }
 
+fun createNotificationChannel() {
+    val channel = NotificationChannelCompat.Builder(NOTIFICATION_CHANNEL, NotificationManagerCompat.IMPORTANCE_HIGH)
+        .setName(NOTIFICATION_CHANNEL)
+        .setShowBadge(false)
+        .build()
+
+    NotificationManagerCompat.from(appContext()).createNotificationChannel(channel)
+}
+
+@UnstableApi
+fun updateNotification(title: String? = null, artist: String? = null, progress: Int = 0, max: Int = 100) {
+    createNotificationChannel()
+
+    val forwardAction = NotificationCompat.Action.Builder(
+        R.drawable.play_skip_back,
+        "prev",
+        ActionIntent("it.fast4x.riplay.previous").pendingIntent
+    ).build()
+
+    val previousAction = NotificationCompat.Action.Builder(
+        R.drawable.play_skip_forward,
+        "next",
+        ActionIntent("it.fast4x.riplay.next").pendingIntent
+    ).build()
+
+    val notification = NotificationCompat.Builder(appContext(),
+        NOTIFICATION_CHANNEL
+    )
+        .setContentTitle(title)
+        .setTicker(title)
+        .setSilent(true)
+        .setColorized(true)
+        .setAutoCancel(true)
+        .setContentText(artist)
+        .setProgress(max, progress, if (isAtLeastAndroid15) true else false) //Workaround to android 15 because notification freeze
+        .setSmallIcon(R.drawable.app_icon)
+        .setOngoing(true)
+        .addAction(previousAction)
+        .addAction(forwardAction)
+        .setContentIntent(PendingIntent.getActivity(
+            appContext(),
+            0,
+            Intent(appContext(), MainActivity::class.java)
+                .putExtra("expandPlayerBottomSheet", true),
+            PendingIntent.FLAG_IMMUTABLE
+        ))
+        .setStyle(NotificationCompat.BigTextStyle()
+            .bigText("Much longer text that cannot fit one line...")
+        )
+        .setPriority(NotificationCompat.PRIORITY_MAX)
+        .setAutoCancel(false)
+        .build()
+
+    NotificationManagerCompat.from(appContext()).notify(NOTIFICATION_ID, notification)
+}
 
 

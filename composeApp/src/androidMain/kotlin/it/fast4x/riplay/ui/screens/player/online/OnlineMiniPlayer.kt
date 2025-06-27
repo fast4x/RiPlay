@@ -154,7 +154,7 @@ fun OnlineMiniPlayer(
     mediaItem ?: return
 
     val context = LocalContext.current
-
+    val binder = LocalPlayerServiceBinder.current
     var shouldBePlaying by remember { mutableStateOf(false) }
     val hapticFeedback = LocalHapticFeedback.current
 
