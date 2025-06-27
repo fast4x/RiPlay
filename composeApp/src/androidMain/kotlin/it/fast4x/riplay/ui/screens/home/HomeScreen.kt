@@ -93,7 +93,7 @@ fun HomeScreen(
         onTabChanged,
         miniPlayer,
         navBarContent = { Item ->
-            Item(0, "Music", R.drawable.music)
+            Item(0, stringResource(R.string.title_music), R.drawable.music)
             Item(1, stringResource(R.string.songs), R.drawable.disc)
             Item(2, stringResource(R.string.artists), R.drawable.artists)
             Item(3, stringResource(R.string.albums), R.drawable.album)

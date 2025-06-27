@@ -748,7 +748,7 @@ fun HomeLocalSongs(
                 ) {
                     if ( UiType.ViMusic.isCurrent() )
                         HeaderWithIcon(
-                            title = stringResource(R.string.on_device),
+                            title = stringResource(R.string.title_music),
                             iconId = R.drawable.search,
                             enabled = true,
                             showIcon = !showSearchTab,
@@ -766,7 +766,7 @@ fun HomeLocalSongs(
                     ) {
                         if ( UiType.RiPlay.isCurrent() )
                             TitleSection(
-                                title = "Music" //stringResource(R.string.on_device)
+                                title = stringResource(R.string.title_music)
                             )
 
                         HeaderInfo(

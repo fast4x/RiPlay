@@ -957,4 +957,5 @@
     <string name="streaming_player_type_next">Next</string>
     <string name="streaming_player_type">Streaming player type</string>
     <string name="streaming_player_type_advanced">Advanced</string>
+    <string name="title_music">Music</string>
 </resources>

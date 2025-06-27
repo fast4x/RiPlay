@@ -45,7 +45,6 @@ import it.fast4x.riplay.enums.MinTimeForEvent
 import it.fast4x.riplay.enums.MaxSongs
 import it.fast4x.riplay.enums.MusicAnimationType
 import it.fast4x.riplay.enums.NavigationBarPosition
-import it.fast4x.riplay.enums.NotificationType
 import it.fast4x.riplay.enums.PauseBetweenSongs
 import it.fast4x.riplay.enums.PipModule
 import it.fast4x.riplay.ui.components.themed.ConfirmationDialog
@@ -521,21 +520,6 @@ fun GeneralSettings(
                 }
             )
         }
-
-//        if (search.input.isBlank() || stringResource(R.string.notification_type).contains(search.input,true)) {
-//            EnumValueSelectorSettingsEntry(
-//                title = stringResource(R.string.notification_type),
-//                selectedValue = notificationType,
-//                onValueSelected = {
-//                    notificationType = it
-//                },
-//                valueText = {
-//                    it.textName
-//                }
-//            )
-//            SettingsDescription(text = stringResource(R.string.notification_type_info))
-//            ImportantSettingsDescription(text = stringResource(R.string.restarting_rimusic_is_required))
-//        }
 
         if (search.input.isBlank() || stringResource(R.string.audio_quality_format).contains(search.input,true)) {
             EnumValueSelectorSettingsEntry(
