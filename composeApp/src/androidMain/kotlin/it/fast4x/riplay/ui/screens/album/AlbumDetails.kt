@@ -85,7 +85,7 @@ import it.fast4x.riplay.models.Info
 import it.fast4x.riplay.models.Playlist
 import it.fast4x.riplay.models.Song
 import it.fast4x.riplay.models.SongPlaylistMap
-import it.fast4x.riplay.service.modern.isLocal
+import it.fast4x.riplay.service.isLocal
 import it.fast4x.riplay.ui.components.LocalMenuState
 import it.fast4x.riplay.ui.components.ShimmerHost
 import it.fast4x.riplay.ui.components.SwipeablePlaylistItem
@@ -151,7 +151,6 @@ import org.dailyislam.android.utilities.isNetworkConnected
 import it.fast4x.riplay.utils.mediaItemSetLiked
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
-import timber.log.Timber
 
 @OptIn(ExperimentalMaterial3Api::class)
 @ExperimentalTextApi

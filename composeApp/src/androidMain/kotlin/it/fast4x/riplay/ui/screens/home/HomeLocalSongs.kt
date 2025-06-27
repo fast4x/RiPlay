@@ -110,11 +110,10 @@ import it.fast4x.riplay.models.OnDeviceSong
 import it.fast4x.riplay.models.Song
 import it.fast4x.riplay.models.SongEntity
 import it.fast4x.riplay.models.SongPlaylistMap
-import it.fast4x.riplay.service.modern.LOCAL_KEY_PREFIX
-import it.fast4x.riplay.service.modern.isLocal
+import it.fast4x.riplay.service.LOCAL_KEY_PREFIX
+import it.fast4x.riplay.service.isLocal
 import it.fast4x.riplay.thumbnailShape
 import it.fast4x.riplay.typography
-import it.fast4x.riplay.ui.components.ButtonsRow
 import it.fast4x.riplay.ui.components.LocalMenuState
 import it.fast4x.riplay.ui.components.SwipeablePlaylistItem
 import it.fast4x.riplay.ui.components.themed.ConfirmationDialog
@@ -147,7 +146,6 @@ import it.fast4x.riplay.utils.OnDeviceOrganize
 import it.fast4x.riplay.utils.addNext
 import it.fast4x.riplay.utils.asMediaItem
 import it.fast4x.riplay.utils.autoShuffleKey
-import it.fast4x.riplay.utils.builtInPlaylistKey
 import it.fast4x.riplay.utils.center
 import it.fast4x.riplay.utils.color
 import it.fast4x.riplay.utils.defaultFolderKey

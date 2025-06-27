@@ -57,7 +57,6 @@ import it.fast4x.riplay.R
 import it.fast4x.riplay.appContext
 import it.fast4x.riplay.cleanPrefix
 import it.fast4x.riplay.colorPalette
-import it.fast4x.riplay.context
 import it.fast4x.riplay.enums.ButtonState
 import it.fast4x.riplay.enums.ColorPaletteMode
 import it.fast4x.riplay.enums.ColorPaletteName
@@ -70,7 +69,7 @@ import it.fast4x.riplay.enums.QueueLoopType
 import it.fast4x.riplay.models.Info
 import it.fast4x.riplay.models.Song
 import it.fast4x.riplay.models.ui.UiMedia
-import it.fast4x.riplay.service.modern.PlayerServiceModern
+import it.fast4x.riplay.service.OfflinePlayerService
 import it.fast4x.riplay.typography
 import it.fast4x.riplay.ui.components.themed.IconButton
 import it.fast4x.riplay.ui.components.themed.SelectorArtistsDialog
@@ -116,7 +115,7 @@ import kotlinx.coroutines.launch
 @ExperimentalFoundationApi
 @Composable
 fun InfoAlbumAndArtistEssential(
-    binder: PlayerServiceModern.Binder,
+    binder: OfflinePlayerService.Binder,
     navController: NavController,
     albumId: String?,
     media: UiMedia,
@@ -431,7 +430,7 @@ fun InfoAlbumAndArtistEssential(
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ControlsEssential(
-    binder: PlayerServiceModern.Binder,
+    binder: OfflinePlayerService.Binder,
     position: Long,
     playbackSpeed: Float,
     shouldBePlaying: Boolean,

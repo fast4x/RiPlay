@@ -7,7 +7,7 @@ import androidx.core.os.bundleOf
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.util.UnstableApi
-import it.fast4x.riplay.service.modern.LOCAL_KEY_PREFIX
+import it.fast4x.riplay.service.LOCAL_KEY_PREFIX
 import java.io.Serializable
 
 data class PersistentQueue(

@@ -43,7 +43,6 @@ import it.fast4x.riplay.EXPLICIT_PREFIX
 import it.fast4x.riplay.R
 import it.fast4x.riplay.appContext
 import it.fast4x.riplay.cleanPrefix
-import it.fast4x.riplay.context
 import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.models.Album
 import it.fast4x.riplay.models.Artist
@@ -54,8 +53,8 @@ import it.fast4x.riplay.models.SongAlbumMap
 import it.fast4x.riplay.models.SongArtistMap
 import it.fast4x.riplay.models.SongEntity
 import it.fast4x.riplay.models.SongPlaylistMap
-import it.fast4x.riplay.service.modern.LOCAL_KEY_PREFIX
-import it.fast4x.riplay.service.modern.isLocal
+import it.fast4x.riplay.service.LOCAL_KEY_PREFIX
+import it.fast4x.riplay.service.isLocal
 import it.fast4x.riplay.ui.components.themed.NewVersionDialog
 import it.fast4x.riplay.ui.components.themed.SmartMessage
 import it.fast4x.riplay.ui.screens.settings.isYouTubeSyncEnabled

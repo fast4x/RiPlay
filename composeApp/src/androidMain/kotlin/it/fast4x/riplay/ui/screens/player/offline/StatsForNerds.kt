@@ -42,7 +42,7 @@ import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.PlayerBackgroundColors
 import it.fast4x.riplay.enums.PlayerType
 import it.fast4x.riplay.models.Format
-import it.fast4x.riplay.service.modern.LOCAL_KEY_PREFIX
+import it.fast4x.riplay.service.LOCAL_KEY_PREFIX
 import it.fast4x.riplay.ui.styling.onOverlay
 import it.fast4x.riplay.ui.styling.overlay
 import it.fast4x.riplay.utils.blackgradientKey
@@ -60,7 +60,6 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import it.fast4x.riplay.colorPalette
 import it.fast4x.riplay.typography
 import it.fast4x.riplay.ui.components.themed.IconButton
-import kotlin.math.roundToInt
 
 @SuppressLint("LongLogTag")
 @UnstableApi

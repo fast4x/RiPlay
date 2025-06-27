@@ -13,7 +13,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.core.animation.doOnEnd
 import androidx.media3.common.util.UnstableApi
-import it.fast4x.riplay.service.modern.PlayerServiceModern
+import it.fast4x.riplay.service.OfflinePlayerService
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
@@ -91,7 +91,7 @@ fun setDeviceVolume(context: Context, volume: Float) {
 
 @Composable
 @OptIn(UnstableApi::class)
-fun MedleyMode(binder: PlayerServiceModern.Binder?, seconds: Int) {
+fun MedleyMode(binder: OfflinePlayerService.Binder?, seconds: Int) {
     if (seconds == 0) return
     if (binder != null) {
         val coroutineScope = rememberCoroutineScope()

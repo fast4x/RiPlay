@@ -79,7 +79,7 @@ import it.fast4x.riplay.enums.UiType
 import it.fast4x.riplay.models.Artist
 import it.fast4x.riplay.models.PlaylistPreview
 import it.fast4x.riplay.models.Song
-import it.fast4x.riplay.service.modern.isLocal
+import it.fast4x.riplay.service.isLocal
 import it.fast4x.riplay.ui.components.LocalMenuState
 import it.fast4x.riplay.ui.components.PullToRefreshBox
 import it.fast4x.riplay.ui.components.themed.HeaderWithIcon
@@ -126,7 +126,6 @@ import it.fast4x.riplay.utils.showRelatedAlbumsKey
 import it.fast4x.riplay.utils.showSearchTabKey
 import it.fast4x.riplay.utils.showSimilarArtistsKey
 import it.fast4x.riplay.utils.showTipsKey
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -139,7 +138,6 @@ import it.fast4x.riplay.ui.screens.player.fastPlay
 import it.fast4x.riplay.ui.screens.settings.isYouTubeLoggedIn
 import it.fast4x.riplay.utils.asVideoMediaItem
 import it.fast4x.riplay.utils.quickPicsHomePageKey
-import timber.log.Timber
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.days
 

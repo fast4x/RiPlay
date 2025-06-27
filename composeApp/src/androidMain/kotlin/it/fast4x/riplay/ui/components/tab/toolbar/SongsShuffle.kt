@@ -6,7 +6,7 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.util.UnstableApi
 import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.R
-import it.fast4x.riplay.service.modern.PlayerServiceModern
+import it.fast4x.riplay.service.OfflinePlayerService
 import it.fast4x.riplay.utils.playShuffledSongs
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -17,7 +17,7 @@ import kotlin.coroutines.cancellation.CancellationException
 
 @UnstableApi
 class SongsShuffle private constructor(
-    private val binder: PlayerServiceModern.Binder?,
+    private val binder: OfflinePlayerService.Binder?,
     private val songs: () -> Flow<List<MediaItem>>
 ): MenuIcon, Descriptive {
 

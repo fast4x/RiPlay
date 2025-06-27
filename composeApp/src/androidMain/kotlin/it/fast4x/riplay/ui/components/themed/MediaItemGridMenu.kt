@@ -67,7 +67,7 @@ import it.fast4x.riplay.models.Artist
 import it.fast4x.riplay.models.Info
 import it.fast4x.riplay.models.Playlist
 import it.fast4x.riplay.models.SongPlaylistMap
-import it.fast4x.riplay.service.modern.isLocal
+import it.fast4x.riplay.service.isLocal
 import it.fast4x.riplay.ui.items.SongItem
 import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.ui.styling.favoritesIcon

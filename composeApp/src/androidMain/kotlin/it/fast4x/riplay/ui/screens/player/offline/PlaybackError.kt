@@ -27,27 +27,11 @@ import androidx.media3.common.PlaybackException
 import androidx.media3.common.util.UnstableApi
 import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.R
-import it.fast4x.riplay.enums.PopupType
-import it.fast4x.riplay.service.FakeException
-import it.fast4x.riplay.service.LoginRequiredException
-import it.fast4x.riplay.service.NoInternetException
-import it.fast4x.riplay.service.PlayableFormatNonSupported
-import it.fast4x.riplay.service.PlayableFormatNotFoundException
-import it.fast4x.riplay.service.TimeoutException
-import it.fast4x.riplay.service.UnknownException
-import it.fast4x.riplay.service.UnplayableException
-import it.fast4x.riplay.service.VideoIdMismatchException
-import it.fast4x.riplay.service.modern.isLocal
-import it.fast4x.riplay.ui.components.themed.SmartMessage
 import it.fast4x.riplay.ui.styling.PureBlackColorPalette
 import it.fast4x.riplay.utils.center
 import it.fast4x.riplay.utils.color
-import it.fast4x.riplay.utils.currentWindow
 import it.fast4x.riplay.utils.medium
 import it.fast4x.riplay.typography
-import timber.log.Timber
-import java.net.UnknownHostException
-import java.nio.channels.UnresolvedAddressException
 
 @OptIn(UnstableApi::class)
 @Composable

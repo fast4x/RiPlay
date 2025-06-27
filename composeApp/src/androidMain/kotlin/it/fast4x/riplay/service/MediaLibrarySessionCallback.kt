@@ -1,4 +1,4 @@
-package it.fast4x.riplay.service.modern
+package it.fast4x.riplay.service
 
 import android.content.ContentResolver
 import android.content.Context
@@ -11,7 +11,6 @@ import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.util.UnstableApi
-import androidx.media3.exoplayer.offline.Download
 import androidx.media3.session.LibraryResult
 import androidx.media3.session.MediaLibraryService
 import androidx.media3.session.MediaLibraryService.MediaLibrarySession
@@ -39,11 +38,10 @@ import it.fast4x.riplay.models.Album
 import it.fast4x.riplay.models.Song
 import it.fast4x.riplay.models.SongAlbumMap
 import it.fast4x.riplay.models.SongArtistMap
-import it.fast4x.riplay.service.modern.MediaSessionConstants.ID_CACHED
-import it.fast4x.riplay.service.modern.MediaSessionConstants.ID_DOWNLOADED
-import it.fast4x.riplay.service.modern.MediaSessionConstants.ID_FAVORITES
-import it.fast4x.riplay.service.modern.MediaSessionConstants.ID_ONDEVICE
-import it.fast4x.riplay.service.modern.MediaSessionConstants.ID_TOP
+import it.fast4x.riplay.service.MediaSessionConstants.ID_CACHED
+import it.fast4x.riplay.service.MediaSessionConstants.ID_FAVORITES
+import it.fast4x.riplay.service.MediaSessionConstants.ID_ONDEVICE
+import it.fast4x.riplay.service.MediaSessionConstants.ID_TOP
 import it.fast4x.riplay.utils.MaxTopPlaylistItemsKey
 import it.fast4x.riplay.utils.asMediaItem
 import it.fast4x.riplay.utils.asSong
@@ -54,7 +52,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.guava.future
 import kotlinx.coroutines.runBlocking
@@ -65,7 +62,7 @@ class MediaLibrarySessionCallback (
     val database: Database,
 ) : MediaLibrarySession.Callback {
     private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
-    lateinit var binder: PlayerServiceModern.Binder
+    lateinit var binder: OfflinePlayerService.Binder
     var toggleLike: () -> Unit = {}
     var toggleDownload: () -> Unit = {}
     var toggleRepeat: () -> Unit = {}
@@ -126,14 +123,14 @@ class MediaLibrarySessionCallback (
             }?.getOrNull() ?: emptyList()
 
             val resultList = searchedSongs.map {
-                it.toMediaItem(PlayerServiceModern.SEARCHED)
+                it.toMediaItem(OfflinePlayerService.SEARCHED)
             }
             return@runBlocking Futures.immediateFuture(LibraryResult.ofItemList(resultList, params))
         }
 
         return Futures.immediateFuture(LibraryResult.ofItemList(searchedSongs.map {
             it.toMediaItem(
-                PlayerServiceModern.SEARCHED
+                OfflinePlayerService.SEARCHED
             )
         }, params))
     }
@@ -166,7 +163,7 @@ class MediaLibrarySessionCallback (
         return Futures.immediateFuture(
             LibraryResult.ofItem(
                 MediaItem.Builder()
-                    .setMediaId(PlayerServiceModern.ROOT)
+                    .setMediaId(OfflinePlayerService.ROOT)
                     .setMediaMetadata(
                         MediaMetadata.Builder()
                             .setIsPlayable(false)
@@ -193,30 +190,30 @@ class MediaLibrarySessionCallback (
         return scope.future(Dispatchers.IO) {
                 LibraryResult.ofItemList(
                     when (parentId) {
-                        PlayerServiceModern.ROOT -> listOf(
+                        OfflinePlayerService.ROOT -> listOf(
                             browsableMediaItem(
-                                PlayerServiceModern.SONG,
+                                OfflinePlayerService.SONG,
                                 context.getString(R.string.songs),
                                 null,
                                 drawableUri(R.drawable.musical_notes),
                                 MediaMetadata.MEDIA_TYPE_PLAYLIST
                             ),
                             browsableMediaItem(
-                                PlayerServiceModern.ARTIST,
+                                OfflinePlayerService.ARTIST,
                                 context.getString(R.string.artists),
                                 null,
                                 drawableUri(R.drawable.artists),
                                 MediaMetadata.MEDIA_TYPE_FOLDER_ARTISTS
                             ),
                             browsableMediaItem(
-                                PlayerServiceModern.ALBUM,
+                                OfflinePlayerService.ALBUM,
                                 context.getString(R.string.albums),
                                 null,
                                 drawableUri(R.drawable.album),
                                 MediaMetadata.MEDIA_TYPE_FOLDER_ALBUMS
                             ),
                             browsableMediaItem(
-                                PlayerServiceModern.PLAYLIST,
+                                OfflinePlayerService.PLAYLIST,
                                 context.getString(R.string.playlists),
                                 null,
                                 drawableUri(R.drawable.library),
@@ -224,13 +221,13 @@ class MediaLibrarySessionCallback (
                             )
                         )
 
-                        PlayerServiceModern.SONG -> database.sortAllSongsByRowId(0).first()
+                        OfflinePlayerService.SONG -> database.sortAllSongsByRowId(0).first()
                             .map { it.song.toMediaItem(parentId) }
 
-                        PlayerServiceModern.ARTIST -> database.artistsByRowIdAsc().first()
+                        OfflinePlayerService.ARTIST -> database.artistsByRowIdAsc().first()
                             .map { artist ->
                                 browsableMediaItem(
-                                    "${PlayerServiceModern.ARTIST}/${artist.id}",
+                                    "${OfflinePlayerService.ARTIST}/${artist.id}",
                                     artist.name ?: "",
                                     "",
                                     artist.thumbnailUrl?.toUri(),
@@ -238,10 +235,10 @@ class MediaLibrarySessionCallback (
                                 )
                             }
 
-                        PlayerServiceModern.ALBUM -> database.albumsByRowIdDesc().first()
+                        OfflinePlayerService.ALBUM -> database.albumsByRowIdDesc().first()
                             .map { album ->
                                 browsableMediaItem(
-                                    "${PlayerServiceModern.ALBUM}/${album.id}",
+                                    "${OfflinePlayerService.ALBUM}/${album.id}",
                                     album.title ?: "",
                                     album.authorsText,
                                     album.thumbnailUrl?.toUri(),
@@ -250,28 +247,28 @@ class MediaLibrarySessionCallback (
                             }
 
 
-                        PlayerServiceModern.PLAYLIST -> {
+                        OfflinePlayerService.PLAYLIST -> {
                             val likedSongCount = database.likedSongsCount().first()
                             val cachedSongCount = getCountCachedSongs().first()
                             val onDeviceSongCount = database.onDeviceSongsCount().first()
                             val playlists = database.playlistPreviewsByDateSongCountAsc().first()
                             listOf(
                                 browsableMediaItem(
-                                    "${PlayerServiceModern.PLAYLIST}/${ID_FAVORITES}",
+                                    "${OfflinePlayerService.PLAYLIST}/${ID_FAVORITES}",
                                     context.getString(R.string.favorites),
                                     likedSongCount.toString(),
                                     drawableUri(R.drawable.heart),
                                     MediaMetadata.MEDIA_TYPE_PLAYLIST
                                 ),
                                 browsableMediaItem(
-                                    "${PlayerServiceModern.PLAYLIST}/${ID_CACHED}",
+                                    "${OfflinePlayerService.PLAYLIST}/${ID_CACHED}",
                                     context.getString(R.string.cached),
                                     cachedSongCount.toString(),
                                     drawableUri(R.drawable.download),
                                     MediaMetadata.MEDIA_TYPE_PLAYLIST
                                 ),
                                 browsableMediaItem(
-                                    "${PlayerServiceModern.PLAYLIST}/$ID_TOP",
+                                    "${OfflinePlayerService.PLAYLIST}/$ID_TOP",
                                     context.getString(R.string.playlist_top),
                                     context.preferences.getEnum(
                                         MaxTopPlaylistItemsKey,
@@ -281,7 +278,7 @@ class MediaLibrarySessionCallback (
                                     MediaMetadata.MEDIA_TYPE_PLAYLIST
                                 ),
                                 browsableMediaItem(
-                                    "${PlayerServiceModern.PLAYLIST}/$ID_ONDEVICE",
+                                    "${OfflinePlayerService.PLAYLIST}/$ID_ONDEVICE",
                                     context.getString(R.string.on_device),
                                     onDeviceSongCount.toString(),
                                     drawableUri(R.drawable.devices),
@@ -290,7 +287,7 @@ class MediaLibrarySessionCallback (
 
                             ) + playlists.map { playlist ->
                                 browsableMediaItem(
-                                    "${PlayerServiceModern.PLAYLIST}/${playlist.playlist.id}",
+                                    "${OfflinePlayerService.PLAYLIST}/${playlist.playlist.id}",
                                     playlist.playlist.name,
                                     playlist.songCount.toString(),
                                     drawableUri(R.drawable.playlist),
@@ -303,9 +300,9 @@ class MediaLibrarySessionCallback (
 
                         else -> when {
 
-                            parentId.startsWith("${PlayerServiceModern.ARTIST}/") -> {
+                            parentId.startsWith("${OfflinePlayerService.ARTIST}/") -> {
                                 val browseId =
-                                    parentId.removePrefix("${PlayerServiceModern.ARTIST}/")
+                                    parentId.removePrefix("${OfflinePlayerService.ARTIST}/")
                                 val artist = database.artist(browseId).first()
                                 var songs = database.artistAllSongs(browseId).first()
                                 if (songs.isEmpty()) {
@@ -358,8 +355,8 @@ class MediaLibrarySessionCallback (
                                 }
                             }
 
-                            parentId.startsWith("${PlayerServiceModern.ALBUM}/") -> {
-                                val browseId = parentId.removePrefix("${PlayerServiceModern.ALBUM}/")
+                            parentId.startsWith("${OfflinePlayerService.ALBUM}/") -> {
+                                val browseId = parentId.removePrefix("${OfflinePlayerService.ALBUM}/")
                                 val album = database.album(browseId).first()
                                 var songs = database.albumSongs(browseId).first()
                                 if (songs.isEmpty()) {
@@ -412,10 +409,10 @@ class MediaLibrarySessionCallback (
                                 }
                             }
 
-                            parentId.startsWith("${PlayerServiceModern.PLAYLIST}/") -> {
+                            parentId.startsWith("${OfflinePlayerService.PLAYLIST}/") -> {
 
                                 when (val playlistId =
-                                    parentId.removePrefix("${PlayerServiceModern.PLAYLIST}/")) {
+                                    parentId.removePrefix("${OfflinePlayerService.PLAYLIST}/")) {
                                     ID_FAVORITES -> database.sortFavoriteSongsByRowId()
                                         .map { list ->
                                             list.map { it.song }
@@ -514,7 +511,7 @@ class MediaLibrarySessionCallback (
                 ?: return@future defaultResult
             when (path.firstOrNull()) {
 
-                PlayerServiceModern.SEARCHED -> {
+                OfflinePlayerService.SEARCHED -> {
                     val songId = path.getOrNull(1) ?: return@future defaultResult
                     MediaSession.MediaItemsWithStartPosition(
                         searchedSongs.map { it.toMediaItem() },
@@ -523,7 +520,7 @@ class MediaLibrarySessionCallback (
                     )
                 }
 
-                PlayerServiceModern.SONG -> {
+                OfflinePlayerService.SONG -> {
                     val songId = path.getOrNull(1) ?: return@future defaultResult
                     val allSongs = database.listAllSongs(-1).first()
                     MediaSession.MediaItemsWithStartPosition(
@@ -533,7 +530,7 @@ class MediaLibrarySessionCallback (
                     )
                 }
 
-                PlayerServiceModern.ARTIST -> {
+                OfflinePlayerService.ARTIST -> {
                     val songId = path.getOrNull(2) ?: return@future defaultResult
                     val artistId = path.getOrNull(1) ?: return@future defaultResult
                     val songs = database.artistSongs(artistId).first()
@@ -544,7 +541,7 @@ class MediaLibrarySessionCallback (
                     )
                 }
 
-                PlayerServiceModern.ALBUM -> {
+                OfflinePlayerService.ALBUM -> {
                     val songId = path.getOrNull(2) ?: return@future defaultResult
                     val albumId = path.getOrNull(1) ?: return@future defaultResult
                     val albumWithSongs = database.albumSongs(albumId).first()
@@ -556,7 +553,7 @@ class MediaLibrarySessionCallback (
                     )
                 }
 
-                PlayerServiceModern.PLAYLIST -> {
+                OfflinePlayerService.PLAYLIST -> {
                     val songId = path.getOrNull(2) ?: return@future defaultResult
                     val playlistId = path.getOrNull(1) ?: return@future defaultResult
                     val songs = when (playlistId) {

@@ -13,7 +13,6 @@ import it.fast4x.riplay.utils.thumbnail
 import it.fast4x.riplay.appContext
 import timber.log.Timber
 
-//context(Context)
 class BitmapProvider(
     private val bitmapSize: Int,
     private val colorProvider: (isSystemInDarkMode: Boolean) -> Int

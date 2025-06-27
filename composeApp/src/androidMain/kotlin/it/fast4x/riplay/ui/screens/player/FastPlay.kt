@@ -4,9 +4,8 @@ import androidx.annotation.OptIn
 import androidx.media3.common.MediaItem
 import androidx.media3.common.util.UnstableApi
 import it.fast4x.riplay.Database
-import it.fast4x.riplay.service.modern.PlayerServiceModern
-import it.fast4x.riplay.service.modern.isLocal
-import it.fast4x.riplay.utils.asSong
+import it.fast4x.riplay.service.OfflinePlayerService
+import it.fast4x.riplay.service.isLocal
 import it.fast4x.riplay.utils.forcePlay
 import it.fast4x.riplay.utils.playAtIndex
 import it.fast4x.riplay.utils.playOnline
@@ -15,7 +14,7 @@ import it.fast4x.riplay.utils.playOnlineAtIndex
 @OptIn(UnstableApi::class)
 fun fastPlay(
     mediaItem: MediaItem,
-    binder: PlayerServiceModern.Binder?,
+    binder: OfflinePlayerService.Binder?,
     mediaItems: List<MediaItem>? = emptyList(),
     playlistId: String? = null
 ) {
@@ -39,7 +38,7 @@ fun fastPlay(
 fun fastPlayAtIndex(
     index: Int,
     mediaItem: MediaItem,
-    binder: PlayerServiceModern.Binder?,
+    binder: OfflinePlayerService.Binder?,
 ) {
     binder?.stopRadio()
     if (mediaItem.isLocal) {

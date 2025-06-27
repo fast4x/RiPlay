@@ -8,13 +8,12 @@ import androidx.media3.common.Player.REPEAT_MODE_ONE
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.SessionCommand
 import it.fast4x.riplay.R
-import it.fast4x.riplay.service.modern.MediaSessionConstants.CommandSearch
-import it.fast4x.riplay.service.modern.MediaSessionConstants.CommandStartRadio
-import it.fast4x.riplay.service.modern.MediaSessionConstants.CommandToggleDownload
-import it.fast4x.riplay.service.modern.MediaSessionConstants.CommandToggleLike
-import it.fast4x.riplay.service.modern.MediaSessionConstants.CommandToggleRepeatMode
-import it.fast4x.riplay.service.modern.MediaSessionConstants.CommandToggleShuffle
-import it.fast4x.riplay.service.modern.PlayerServiceModern
+import it.fast4x.riplay.service.MediaSessionConstants.CommandSearch
+import it.fast4x.riplay.service.MediaSessionConstants.CommandStartRadio
+import it.fast4x.riplay.service.MediaSessionConstants.CommandToggleLike
+import it.fast4x.riplay.service.MediaSessionConstants.CommandToggleRepeatMode
+import it.fast4x.riplay.service.MediaSessionConstants.CommandToggleShuffle
+import it.fast4x.riplay.service.OfflinePlayerService
 import it.fast4x.riplay.appContext
 
 enum class NotificationButtons {
@@ -39,11 +38,11 @@ enum class NotificationButtons {
     @OptIn(UnstableApi::class)
     get() = when (this) {
         //Download -> PlayerServiceModern.Action.download.pendingIntent
-        Favorites -> PlayerServiceModern.Action.like.pendingIntent
-        Repeat -> PlayerServiceModern.Action.repeat.pendingIntent
-        Shuffle -> PlayerServiceModern.Action.shuffle.pendingIntent
-        Radio -> PlayerServiceModern.Action.playradio.pendingIntent
-        Search -> PlayerServiceModern.Action.search.pendingIntent
+        Favorites -> OfflinePlayerService.Action.like.pendingIntent
+        Repeat -> OfflinePlayerService.Action.repeat.pendingIntent
+        Shuffle -> OfflinePlayerService.Action.shuffle.pendingIntent
+        Radio -> OfflinePlayerService.Action.playradio.pendingIntent
+        Search -> OfflinePlayerService.Action.search.pendingIntent
     }
 
     val displayName: String

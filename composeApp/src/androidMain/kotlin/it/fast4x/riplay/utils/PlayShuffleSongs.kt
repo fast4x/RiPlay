@@ -6,20 +6,20 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.util.UnstableApi
 import it.fast4x.riplay.enums.MaxSongs
 import it.fast4x.riplay.models.Song
-import it.fast4x.riplay.service.modern.PlayerServiceModern
+import it.fast4x.riplay.service.OfflinePlayerService
 import it.fast4x.riplay.ui.components.themed.SmartMessage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 @OptIn(UnstableApi::class)
-fun PlayShuffledSongs(songsList: List<Song>?, context: Context, binder: PlayerServiceModern.Binder?) {
+fun PlayShuffledSongs(songsList: List<Song>?, context: Context, binder: OfflinePlayerService.Binder?) {
     if (songsList == null || binder == null) return
     playShuffledSongs( songsList.map( Song::asMediaItem ), context, binder )
 }
 
 @UnstableApi
-fun playShuffledSongs( mediaItems: List<MediaItem>, context: Context, binder: PlayerServiceModern.Binder? ) {
+fun playShuffledSongs( mediaItems: List<MediaItem>, context: Context, binder: OfflinePlayerService.Binder? ) {
 
     if ( binder == null ) return
 

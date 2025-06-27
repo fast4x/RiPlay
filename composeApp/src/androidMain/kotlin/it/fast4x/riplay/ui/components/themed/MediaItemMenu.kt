@@ -84,7 +84,7 @@ import it.fast4x.riplay.models.Playlist
 import it.fast4x.riplay.models.PlaylistPreview
 import it.fast4x.riplay.models.Song
 import it.fast4x.riplay.models.SongPlaylistMap
-import it.fast4x.riplay.service.modern.isLocal
+import it.fast4x.riplay.service.isLocal
 import it.fast4x.riplay.ui.items.FolderItem
 import it.fast4x.riplay.ui.items.SongItem
 import it.fast4x.riplay.ui.styling.Dimensions
@@ -124,7 +124,6 @@ import it.fast4x.riplay.utils.unlikeYtVideoOrSong
 import timber.log.Timber
 import java.time.LocalTime.now
 import java.time.format.DateTimeFormatter
-import java.util.UUID
 
 @ExperimentalTextApi
 @ExperimentalAnimationApi

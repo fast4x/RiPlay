@@ -58,7 +58,7 @@ import it.fast4x.riplay.service.TimeoutException
 import it.fast4x.riplay.service.UnknownException
 import it.fast4x.riplay.service.UnplayableException
 import it.fast4x.riplay.service.VideoIdMismatchException
-import it.fast4x.riplay.service.modern.isLocal
+import it.fast4x.riplay.service.isLocal
 import it.fast4x.riplay.ui.components.themed.SmartMessage
 import it.fast4x.riplay.ui.components.themed.RotateThumbnailCoverAnimation
 import it.fast4x.riplay.ui.styling.Dimensions

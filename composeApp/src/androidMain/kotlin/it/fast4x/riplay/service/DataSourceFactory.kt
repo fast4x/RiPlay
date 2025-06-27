@@ -1,13 +1,10 @@
-package it.fast4x.riplay.service.modern
+package it.fast4x.riplay.service
 
 import androidx.annotation.OptIn
-import androidx.core.net.toUri
-import androidx.media3.common.PlaybackException
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.DataSource
 import androidx.media3.datasource.ResolvingDataSource
 import it.fast4x.riplay.Database
-import it.fast4x.riplay.R
 import it.fast4x.riplay.utils.asSong
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
@@ -16,7 +13,7 @@ import kotlinx.coroutines.CoroutineScope
 
 
 @OptIn(UnstableApi::class)
-internal fun PlayerServiceModern.createSimpleDataSourceFactory(scope: CoroutineScope): DataSource.Factory {
+internal fun OfflinePlayerService.createSimpleDataSourceFactory(scope: CoroutineScope): DataSource.Factory {
     return ResolvingDataSource.Factory(createCacheDataSource()) { dataSpec ->
 
         // Get song from player

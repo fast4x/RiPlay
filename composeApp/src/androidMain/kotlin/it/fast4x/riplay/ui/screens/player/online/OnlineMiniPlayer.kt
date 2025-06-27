@@ -89,7 +89,7 @@ import it.fast4x.riplay.getMinTimeForEvent
 import it.fast4x.riplay.getPauseListenHistory
 import it.fast4x.riplay.getQueueLoopType
 import it.fast4x.riplay.models.Event
-import it.fast4x.riplay.service.modern.PlayerServiceModern
+import it.fast4x.riplay.service.OfflinePlayerService
 import it.fast4x.riplay.models.Song
 import it.fast4x.riplay.thumbnailShape
 import it.fast4x.riplay.typography
@@ -337,7 +337,7 @@ fun OnlineMiniPlayer(
 //                                    binder.player.clearMediaItems()
                                     hidePlayer()
                                     runCatching {
-                                        context.stopService(context.intent<PlayerServiceModern>())
+                                        context.stopService(context.intent<OfflinePlayerService>())
                                     }
                                     hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
                                 } else

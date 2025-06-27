@@ -75,7 +75,7 @@ import it.fast4x.riplay.utils.semiBold
 import it.fast4x.riplay.utils.visualizerEnabledKey
 import kotlinx.coroutines.launch
 import it.fast4x.riplay.colorPalette
-import it.fast4x.riplay.service.modern.isLocal
+import it.fast4x.riplay.service.isLocal
 import it.fast4x.riplay.typography
 import timber.log.Timber
 

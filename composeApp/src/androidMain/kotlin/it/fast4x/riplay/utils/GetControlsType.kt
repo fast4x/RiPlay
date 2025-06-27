@@ -18,7 +18,7 @@ import androidx.media3.common.util.UnstableApi
 import it.fast4x.riplay.enums.PlayerBackgroundColors
 import it.fast4x.riplay.enums.PlayerControlsType
 import it.fast4x.riplay.enums.PlayerPlayButtonType
-import it.fast4x.riplay.service.modern.PlayerServiceModern
+import it.fast4x.riplay.service.OfflinePlayerService
 import it.fast4x.riplay.ui.components.themed.PlaybackParamsDialog
 import it.fast4x.riplay.ui.screens.player.offline.components.controls.ControlsEssential
 import it.fast4x.riplay.ui.screens.player.offline.components.controls.ControlsModern
@@ -27,7 +27,7 @@ import kotlin.math.roundToInt
 @OptIn(UnstableApi::class)
 @Composable
 fun GetControls(
-    binder: PlayerServiceModern.Binder,
+    binder: OfflinePlayerService.Binder,
     position: Long,
     shouldBePlaying: Boolean,
     likedAt: Long?,

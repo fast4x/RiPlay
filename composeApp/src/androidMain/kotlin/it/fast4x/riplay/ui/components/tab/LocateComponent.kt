@@ -13,7 +13,7 @@ import androidx.media3.common.util.UnstableApi
 import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.PopupType
-import it.fast4x.riplay.service.modern.PlayerServiceModern
+import it.fast4x.riplay.service.OfflinePlayerService
 import it.fast4x.riplay.ui.components.themed.SmartMessage
 import kotlinx.coroutines.runBlocking
 import it.fast4x.riplay.appContext
@@ -23,7 +23,7 @@ import it.fast4x.riplay.ui.components.tab.toolbar.MenuIcon
 
 @UnstableApi
 class LocateComponent private constructor(
-    private val binder: PlayerServiceModern.Binder?,
+    private val binder: OfflinePlayerService.Binder?,
     private val scrollableState: ScrollableState,
     private val positionState: MutableState<Int>,
     private val songs: () -> List<MediaItem>

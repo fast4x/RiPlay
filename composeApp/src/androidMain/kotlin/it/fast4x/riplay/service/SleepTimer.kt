@@ -1,4 +1,4 @@
-package it.fast4x.riplay.service.modern
+package it.fast4x.riplay.service
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf

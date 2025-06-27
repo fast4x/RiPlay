@@ -126,7 +126,7 @@ import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.enums.ThumbnailRoundness
 import it.fast4x.riplay.extensions.pip.PipModuleContainer
 import it.fast4x.riplay.extensions.pip.PipModuleCover
-import it.fast4x.riplay.service.modern.PlayerServiceModern
+import it.fast4x.riplay.service.OfflinePlayerService
 import it.fast4x.riplay.ui.components.CustomModalBottomSheet
 import it.fast4x.riplay.ui.components.LocalMenuState
 import it.fast4x.riplay.ui.components.themed.CrossfadeContainer
@@ -145,7 +145,7 @@ import it.fast4x.riplay.ui.styling.typographyOf
 import it.fast4x.riplay.utils.LocalMonetCompat
 import it.fast4x.riplay.utils.OkHttpRequest
 import it.fast4x.riplay.extensions.rescuecenter.RescueScreen
-import it.fast4x.riplay.service.modern.isLocal
+import it.fast4x.riplay.service.isLocal
 import it.fast4x.riplay.ui.screens.player.fastPlay
 import it.fast4x.riplay.ui.screens.player.offline.OfflinePlayer
 import it.fast4x.riplay.ui.screens.player.online.OnlineMiniPlayer
@@ -262,7 +262,7 @@ MonetCompatActivity(),
 
     private val serviceConnection = object : ServiceConnection {
         override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
-            if (service is PlayerServiceModern.Binder) {
+            if (service is OfflinePlayerService.Binder) {
                 this@MainActivity.binder = service
                 println("MainActivity.onServiceConnected PlayerServiceModern is connected")
             }
@@ -275,7 +275,7 @@ MonetCompatActivity(),
 
     }
 
-    private var binder by mutableStateOf<PlayerServiceModern.Binder?>(null)
+    private var binder by mutableStateOf<OfflinePlayerService.Binder?>(null)
     private var intentUriData by mutableStateOf<Uri?>(null)
 
     //override lateinit var persistMap: PersistMap
@@ -299,7 +299,7 @@ MonetCompatActivity(),
         super.onStart()
 
         runCatching {
-            val intent = Intent(this, PlayerServiceModern::class.java)
+            val intent = Intent(this, OfflinePlayerService::class.java)
             startService(intent)
             bindService(intent, serviceConnection, BIND_AUTO_CREATE)
         }.onFailure {
@@ -1526,7 +1526,7 @@ MonetCompatActivity(),
 
 var appRunningInBackground: Boolean = false
 
-val LocalPlayerServiceBinder = staticCompositionLocalOf<PlayerServiceModern.Binder?> { null }
+val LocalPlayerServiceBinder = staticCompositionLocalOf<OfflinePlayerService.Binder?> { null }
 
 val LocalPlayerAwareWindowInsets = staticCompositionLocalOf<WindowInsets> { TODO() }
 

@@ -1,4 +1,4 @@
-package it.fast4x.riplay.service.modern
+package it.fast4x.riplay.service
 
 import android.annotation.SuppressLint
 import android.app.Notification
@@ -29,6 +29,7 @@ import android.media.audiofx.PresetReverb
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
+import android.os.IBinder
 import android.os.Looper
 import androidx.annotation.OptIn
 import androidx.compose.runtime.getValue
@@ -41,7 +42,6 @@ import androidx.media3.common.AuxEffectInfo
 import androidx.media3.common.C
 import androidx.media3.common.ForwardingPlayer
 import androidx.media3.common.MediaItem
-import androidx.media3.common.MediaMetadata
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.PlaybackParameters
 import androidx.media3.common.Player
@@ -57,7 +57,6 @@ import androidx.media3.datasource.DataSpec
 import androidx.media3.datasource.DefaultDataSource
 import androidx.media3.datasource.cache.Cache
 import androidx.media3.datasource.cache.CacheDataSource
-import androidx.media3.datasource.cache.CacheDataSource.FLAG_IGNORE_CACHE_ON_ERROR
 import androidx.media3.datasource.cache.SimpleCache
 import androidx.media3.datasource.okhttp.OkHttpDataSource
 import androidx.media3.exoplayer.DefaultLoadControl
@@ -75,7 +74,6 @@ import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import androidx.media3.exoplayer.source.ShuffleOrder.DefaultShuffleOrder
 import androidx.media3.extractor.DefaultExtractorsFactory
 import androidx.media3.session.CommandButton
-import androidx.media3.session.DefaultMediaNotificationProvider
 import androidx.media3.session.MediaController
 import androidx.media3.session.MediaLibraryService
 import androidx.media3.session.MediaNotification
@@ -88,7 +86,6 @@ import com.google.common.collect.ImmutableList
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.MoreExecutors
 import it.fast4x.environment.Environment
-import it.fast4x.environment.EnvironmentExt
 import it.fast4x.environment.models.NavigationEndpoint
 import it.fast4x.environment.models.bodies.SearchBody
 import it.fast4x.environment.requests.searchPage
@@ -101,7 +98,6 @@ import it.fast4x.riplay.enums.AudioQualityFormat
 import it.fast4x.riplay.enums.DurationInMilliseconds
 import it.fast4x.riplay.enums.MinTimeForEvent
 import it.fast4x.riplay.enums.NotificationButtons
-import it.fast4x.riplay.enums.NotificationType
 import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.enums.QueueLoopType
 import it.fast4x.riplay.enums.WallpaperType
@@ -114,7 +110,6 @@ import it.fast4x.riplay.models.PersistentSong
 import it.fast4x.riplay.models.QueuedMediaItem
 import it.fast4x.riplay.models.Song
 import it.fast4x.riplay.models.asMediaItem
-import it.fast4x.riplay.service.BitmapProvider
 import it.fast4x.riplay.ui.components.themed.SmartMessage
 import it.fast4x.riplay.ui.widgets.PlayerHorizontalWidget
 import it.fast4x.riplay.ui.widgets.PlayerVerticalWidget
@@ -189,9 +184,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import it.fast4x.riplay.appContext
 import it.fast4x.riplay.enums.PresetsReverb
-import it.fast4x.riplay.extensions.connectivity.AndroidConnectivityObserverLegacy
 import it.fast4x.riplay.isHandleAudioFocusEnabled
-import it.fast4x.riplay.ui.screens.settings.isYouTubeSyncEnabled
 import it.fast4x.riplay.utils.audioReverbPresetKey
 import it.fast4x.riplay.utils.bassboostEnabledKey
 import it.fast4x.riplay.utils.bassboostLevelKey
@@ -220,7 +213,7 @@ val MediaItem.isLocal get() = mediaId.startsWith(LOCAL_KEY_PREFIX)
 val Song.isLocal get() = id.startsWith(LOCAL_KEY_PREFIX)
 
 @UnstableApi
-class PlayerServiceModern : MediaLibraryService(),
+class OfflinePlayerService : MediaLibraryService(),
     Player.Listener,
     PlaybackStatsListener.Callback,
     SharedPreferences.OnSharedPreferenceChangeListener,
@@ -341,10 +334,10 @@ class PlayerServiceModern : MediaLibraryService(),
             )
             .build()
             .apply {
-                addListener(this@PlayerServiceModern)
+                addListener(this@OfflinePlayerService)
                 sleepTimer = SleepTimer(coroutineScope, this)
                 addListener(sleepTimer)
-                addAnalyticsListener(PlaybackStatsListener(false, this@PlayerServiceModern))
+                addAnalyticsListener(PlaybackStatsListener(false, this@OfflinePlayerService))
             }
 
         // Force player to add all commands available, prior to android 13
@@ -365,7 +358,7 @@ class PlayerServiceModern : MediaLibraryService(),
         mediaLibrarySessionCallback =
             MediaLibrarySessionCallback(this, Database)
             .apply {
-                binder = this@PlayerServiceModern.binder
+                binder = this@OfflinePlayerService.binder
                 toggleLike = ::toggleLike
                 toggleRepeat = ::toggleRepeat
                 toggleShuffle = ::toggleShuffle
@@ -397,13 +390,13 @@ class PlayerServiceModern : MediaLibraryService(),
                 .build()
 
         // Keep a connected controller so that notification works
-        sessionToken = SessionToken(this, ComponentName(this, PlayerServiceModern::class.java))
+        sessionToken = SessionToken(this, ComponentName(this, OfflinePlayerService::class.java))
         controllerFuture = MediaController.Builder(this, sessionToken).buildAsync()
         controllerFuture.addListener({ controllerFuture.let { if (it.isDone) it.get() }}, MoreExecutors.directExecutor())
 
         player.skipSilenceEnabled = preferences.getBoolean(skipSilenceKey, false)
-        player.addListener(this@PlayerServiceModern)
-        player.addAnalyticsListener(PlaybackStatsListener(false, this@PlayerServiceModern))
+        player.addListener(this@OfflinePlayerService)
+        player.addAnalyticsListener(PlaybackStatsListener(false, this@OfflinePlayerService))
 
         player.repeatMode = preferences.getEnum(queueLoopTypeKey, QueueLoopType.Default).type
 
@@ -528,7 +521,7 @@ class PlayerServiceModern : MediaLibraryService(),
 
     }
 
-    override fun onBind(intent: Intent?) = super.onBind(intent) ?: binder
+    override fun onBind(intent: Intent?): IBinder? = super.onBind(intent) ?: binder
 
     override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaLibrarySession =
         mediaSession
@@ -612,7 +605,7 @@ class PlayerServiceModern : MediaLibraryService(),
         savePlayerQueue()
 
         if (!player.isReleased) {
-            player.removeListener(this@PlayerServiceModern)
+            player.removeListener(this@OfflinePlayerService)
             player.stop()
             player.release()
         }
@@ -742,35 +735,20 @@ class PlayerServiceModern : MediaLibraryService(),
         Timber.e("PlayerServiceModern onPlayerError error code ${error.errorCode} message ${error.message} cause ${error.cause?.cause}")
         println("PlayerServiceModern onPlayerError error code ${error.errorCode} message ${error.message} cause ${error.cause?.cause}")
 
-        val playbackConnectionExeptionList = listOf(
-            PlaybackException.ERROR_CODE_IO_NETWORK_CONNECTION_FAILED, //primary error code to manage
-            PlaybackException.ERROR_CODE_IO_NETWORK_CONNECTION_TIMEOUT
-        )
-
-        // check if error is caused by internet connection
-//        val isConnectionError = (error.cause?.cause is PlaybackException)
-//                && (error.cause?.cause as PlaybackException).errorCode in playbackConnectionExeptionList
+//        val playbackHttpExeptionList = listOf(
+//            PlaybackException.ERROR_CODE_IO_BAD_HTTP_STATUS,
+//            PlaybackException.ERROR_CODE_IO_READ_POSITION_OUT_OF_RANGE,
+//            416 // 416 Range Not Satisfiable
+//        )
 //
-//        if (!isNetworkAvailable.value || isConnectionError) {
-//            waitingForNetwork.value = true
-//            SmartMessage(resources.getString(R.string.error_no_internet), context = this )
+//        if (error.errorCode in playbackHttpExeptionList) {
+//            Timber.e("PlayerServiceModern onPlayerError recovered occurred errorCodeName ${error.errorCodeName} cause ${error.cause?.cause}")
+//            println("PlayerServiceModern onPlayerError recovered occurred errorCodeName ${error.errorCodeName} cause ${error.cause?.cause}")
+//            player.pause()
+//            player.prepare()
+//            player.play()
 //            return
 //        }
-
-        val playbackHttpExeptionList = listOf(
-            PlaybackException.ERROR_CODE_IO_BAD_HTTP_STATUS,
-            PlaybackException.ERROR_CODE_IO_READ_POSITION_OUT_OF_RANGE,
-            416 // 416 Range Not Satisfiable
-        )
-
-        if (error.errorCode in playbackHttpExeptionList) {
-            Timber.e("PlayerServiceModern onPlayerError recovered occurred errorCodeName ${error.errorCodeName} cause ${error.cause?.cause}")
-            println("PlayerServiceModern onPlayerError recovered occurred errorCodeName ${error.errorCodeName} cause ${error.cause?.cause}")
-            player.pause()
-            player.prepare()
-            player.play()
-            return
-        }
 
         if (!preferences.getBoolean(skipMediaOnErrorKey, false) || !player.hasNextMediaItem())
             return
@@ -863,7 +841,7 @@ class PlayerServiceModern : MediaLibraryService(),
         }.onFailure {
             SmartMessage(
                 "Can't enable bass boost",
-                context = this@PlayerServiceModern
+                context = this@OfflinePlayerService
             )
         }
     }
@@ -924,7 +902,7 @@ class PlayerServiceModern : MediaLibraryService(),
                             withContext(Dispatchers.IO) {
                                 SmartMessage(
                                     "Extreme loudness detected",
-                                    context = this@PlayerServiceModern
+                                    context = this@OfflinePlayerService
                                 )
                             }
 
@@ -1227,7 +1205,7 @@ class PlayerServiceModern : MediaLibraryService(),
         val wallpaperType = preferences.getEnum(wallpaperTypeKey, WallpaperType.Lockscreen)
         if (isAtLeastAndroid7 && wallpaperEnabled) {
             coroutineScope.launch(Dispatchers.IO) {
-                val wpManager = WallpaperManager.getInstance(this@PlayerServiceModern)
+                val wpManager = WallpaperManager.getInstance(this@OfflinePlayerService)
                 wpManager.setBitmap(bitmapProvider.bitmap, null, true,
                     when (wallpaperType) {
                         WallpaperType.Both -> (FLAG_LOCK or FLAG_SYSTEM)
@@ -1301,7 +1279,7 @@ class PlayerServiceModern : MediaLibraryService(),
                     message,
                     type = PopupType.Info,
                     durationLong = true,
-                    context = this@PlayerServiceModern
+                    context = this@OfflinePlayerService
                 )
             }
         }
@@ -1507,26 +1485,26 @@ class PlayerServiceModern : MediaLibraryService(),
     /**
      * This method should ONLY be called when the application (sc. activity) is in the foreground!
      */
-    fun restartForegroundOrStop() {
-        binder.restartForegroundOrStop()
-    }
+//    fun restartForegroundOrStop() {
+//        binder.restartForegroundOrStop()
+//    }
 
-    @UnstableApi
-    class CustomMediaNotificationProvider(context: Context) : DefaultMediaNotificationProvider(context) {
-        override fun getNotificationContentTitle(metadata: MediaMetadata): CharSequence? {
-            val customMetadata = MediaMetadata.Builder()
-                .setTitle(cleanPrefix(metadata.title?.toString() ?: ""))
-                .build()
-            return super.getNotificationContentTitle(customMetadata)
-        }
-
-    }
+//    @UnstableApi
+//    class CustomMediaNotificationProvider(context: Context) : DefaultMediaNotificationProvider(context) {
+//        override fun getNotificationContentTitle(metadata: MediaMetadata): CharSequence? {
+//            val customMetadata = MediaMetadata.Builder()
+//                .setTitle(cleanPrefix(metadata.title?.toString() ?: ""))
+//                .build()
+//            return super.getNotificationContentTitle(customMetadata)
+//        }
+//
+//    }
 
 
     class NotificationDismissReceiver : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
-            kotlin.runCatching {
-                context.stopService(context.intent<PlayerServiceModern>())
+            runCatching {
+                context.stopService(context.intent<OfflinePlayerService>())
             }.onFailure {
                 Timber.e("Failed NotificationDismissReceiver stopService in PlayerServiceModern (PlayerServiceModern) ${it.stackTraceToString()}")
             }
@@ -1574,8 +1552,8 @@ class PlayerServiceModern : MediaLibraryService(),
     }
 
     open inner class Binder : AndroidBinder() {
-        val service: PlayerServiceModern
-            get() = this@PlayerServiceModern
+        val service: OfflinePlayerService
+            get() = this@OfflinePlayerService
 
         /*
         fun setBitmapListener(listener: ((Bitmap?) -> Unit)?) {
@@ -1588,10 +1566,10 @@ class PlayerServiceModern : MediaLibraryService(),
 
 
         val player: ExoPlayer
-            get() = this@PlayerServiceModern.player
+            get() = this@OfflinePlayerService.player
 
         val cache: Cache
-            get() = this@PlayerServiceModern.cache
+            get() = this@OfflinePlayerService.cache
 
         val sleepTimerMillisLeft: StateFlow<Long?>?
             get() = timerJob?.millisLeft
@@ -1603,7 +1581,7 @@ class PlayerServiceModern : MediaLibraryService(),
 
             timerJob = coroutineScope.timer(delayMillis) {
                 val notification = NotificationCompat
-                    .Builder(this@PlayerServiceModern, SleepTimerNotificationChannelId)
+                    .Builder(this@OfflinePlayerService, SleepTimerNotificationChannelId)
                     .setContentTitle(getString(R.string.sleep_timer_ended))
                     .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                     .setAutoCancel(true)

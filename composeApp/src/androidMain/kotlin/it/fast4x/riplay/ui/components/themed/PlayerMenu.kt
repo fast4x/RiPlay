@@ -18,14 +18,12 @@ import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import it.fast4x.environment.models.NavigationEndpoint
 import it.fast4x.riplay.Database
-import it.fast4x.riplay.PIPED_PREFIX
 import it.fast4x.riplay.R
-import it.fast4x.riplay.cleanPrefix
 import it.fast4x.riplay.context
 import it.fast4x.riplay.enums.MenuStyle
 import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.models.SongPlaylistMap
-import it.fast4x.riplay.service.modern.PlayerServiceModern
+import it.fast4x.riplay.service.OfflinePlayerService
 import it.fast4x.riplay.ui.screens.settings.isYouTubeSyncEnabled
 import it.fast4x.riplay.utils.addSongToYtPlaylist
 import it.fast4x.riplay.utils.addToYtLikedSong
@@ -40,7 +38,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import timber.log.Timber
-import java.util.UUID
 
 @ExperimentalTextApi
 @ExperimentalAnimationApi
@@ -48,7 +45,7 @@ import java.util.UUID
 @Composable
 fun PlayerMenu(
     navController: NavController,
-    binder: PlayerServiceModern.Binder,
+    binder: OfflinePlayerService.Binder,
     mediaItem: MediaItem,
     onDismiss: () -> Unit,
     onClosePlayer: () -> Unit,
@@ -187,7 +184,7 @@ fun PlayerMenu(
 @Composable
 fun MiniPlayerMenu(
     navController: NavController,
-    binder: PlayerServiceModern.Binder,
+    binder: OfflinePlayerService.Binder,
     mediaItem: MediaItem,
     onDismiss: () -> Unit,
     onClosePlayer: () -> Unit,
@@ -265,7 +262,7 @@ fun MiniPlayerMenu(
 @Composable
 fun AddToPlaylistPlayerMenu(
     navController: NavController,
-    binder: PlayerServiceModern.Binder,
+    binder: OfflinePlayerService.Binder,
     mediaItem: MediaItem,
     onDismiss: () -> Unit,
     onClosePlayer: () -> Unit,

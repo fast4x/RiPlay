@@ -45,7 +45,7 @@ import it.fast4x.riplay.enums.ExoPlayerDiskCacheMaxSize
 import it.fast4x.riplay.enums.ExoPlayerDiskDownloadCacheMaxSize
 import it.fast4x.riplay.enums.NavigationBarPosition
 import it.fast4x.riplay.enums.PopupType
-import it.fast4x.riplay.service.modern.PlayerServiceModern
+import it.fast4x.riplay.service.OfflinePlayerService
 import it.fast4x.riplay.ui.components.themed.CacheSpaceIndicator
 import it.fast4x.riplay.ui.components.themed.ConfirmationDialog
 import it.fast4x.riplay.ui.components.themed.DefaultDialog
@@ -73,12 +73,10 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import it.fast4x.riplay.colorPalette
 import it.fast4x.riplay.typography
-import it.fast4x.riplay.utils.asMediaItem
 import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.text.SimpleDateFormat
 import java.util.Date
-import java.util.concurrent.CancellationException
 import kotlin.system.exitProcess
 
 @SuppressLint("SuspiciousIndentation")
@@ -184,7 +182,7 @@ fun DataSettings() {
                             inputStream.copyTo(outputStream)
                         }
                     }
-                context.stopService(context.intent<PlayerServiceModern>())
+                context.stopService(context.intent<OfflinePlayerService>())
 
                 exitAfterRestore = true
             }

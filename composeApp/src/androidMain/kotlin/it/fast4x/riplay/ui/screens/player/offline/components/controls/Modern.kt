@@ -53,7 +53,6 @@ import it.fast4x.riplay.R
 import it.fast4x.riplay.appContext
 import it.fast4x.riplay.cleanPrefix
 import it.fast4x.riplay.colorPalette
-import it.fast4x.riplay.context
 import it.fast4x.riplay.enums.ColorPaletteMode
 import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.enums.PlayerBackgroundColors
@@ -63,7 +62,7 @@ import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.models.Info
 import it.fast4x.riplay.models.Song
 import it.fast4x.riplay.models.ui.UiMedia
-import it.fast4x.riplay.service.modern.PlayerServiceModern
+import it.fast4x.riplay.service.OfflinePlayerService
 import it.fast4x.riplay.typography
 import it.fast4x.riplay.ui.components.themed.CustomElevatedButton
 import it.fast4x.riplay.ui.components.themed.IconButton
@@ -104,7 +103,7 @@ import kotlinx.coroutines.launch
 @ExperimentalFoundationApi
 @Composable
 fun InfoAlbumAndArtistModern(
-    binder: PlayerServiceModern.Binder,
+    binder: OfflinePlayerService.Binder,
     navController: NavController,
     albumId: String?,
     media: UiMedia,
@@ -424,7 +423,7 @@ fun InfoAlbumAndArtistModern(
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ControlsModern(
-    binder: PlayerServiceModern.Binder,
+    binder: OfflinePlayerService.Binder,
     position: Long,
     playbackSpeed: Float,
     shouldBePlaying: Boolean,

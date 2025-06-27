@@ -79,7 +79,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.MediaItem
 import androidx.media3.common.util.UnstableApi
-import androidx.media3.exoplayer.offline.Download
 import androidx.navigation.NavController
 import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
 import com.github.doyaaaaaken.kotlincsv.dsl.csvWriter
@@ -110,8 +109,8 @@ import it.fast4x.riplay.models.OnDeviceSong
 import it.fast4x.riplay.models.Song
 import it.fast4x.riplay.models.SongEntity
 import it.fast4x.riplay.models.SongPlaylistMap
-import it.fast4x.riplay.service.modern.LOCAL_KEY_PREFIX
-import it.fast4x.riplay.service.modern.isLocal
+import it.fast4x.riplay.service.LOCAL_KEY_PREFIX
+import it.fast4x.riplay.service.isLocal
 import it.fast4x.riplay.thumbnailShape
 import it.fast4x.riplay.typography
 import it.fast4x.riplay.ui.components.ButtonsRow

@@ -92,7 +92,7 @@ import it.fast4x.riplay.enums.SortOrder
 import it.fast4x.riplay.enums.ThumbnailRoundness
 import it.fast4x.riplay.models.Song
 import it.fast4x.riplay.models.SongPlaylistMap
-import it.fast4x.riplay.service.modern.isLocal
+import it.fast4x.riplay.service.isLocal
 import it.fast4x.riplay.ui.components.LocalMenuState
 import it.fast4x.riplay.ui.components.themed.ConfirmationDialog
 import it.fast4x.riplay.ui.components.themed.FloatingActionsContainerWithScrollToTop
@@ -100,7 +100,6 @@ import it.fast4x.riplay.ui.components.themed.HeaderIconButton
 import it.fast4x.riplay.ui.components.themed.HeaderWithIcon
 import it.fast4x.riplay.ui.components.themed.IconButton
 import it.fast4x.riplay.ui.components.themed.IconInfo
-import it.fast4x.riplay.ui.components.themed.InHistoryMediaItemMenu
 import it.fast4x.riplay.ui.components.themed.InputTextDialog
 import it.fast4x.riplay.ui.components.themed.NonQueuedMediaItemMenuLibrary
 import it.fast4x.riplay.ui.components.themed.NowPlayingSongIndicator
@@ -139,9 +138,6 @@ import it.fast4x.riplay.utils.songSortByKey
 import it.fast4x.riplay.utils.songSortOrderKey
 import it.fast4x.riplay.utils.thumbnail
 import it.fast4x.riplay.utils.thumbnailRoundnessKey
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import it.fast4x.riplay.colorPalette
 import it.fast4x.riplay.thumbnailShape
 import it.fast4x.riplay.typography
