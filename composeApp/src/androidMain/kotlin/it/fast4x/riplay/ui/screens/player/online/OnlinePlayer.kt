@@ -3,13 +3,18 @@ package it.fast4x.riplay.ui.screens.player.online
 import android.annotation.SuppressLint
 import android.app.PendingIntent
 import android.content.ActivityNotFoundException
+import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.database.SQLException
+import android.graphics.BitmapFactory
 import android.graphics.RenderEffect
 import android.graphics.Shader
 import android.media.audiofx.AudioEffect
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import android.widget.RemoteViews
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
@@ -333,6 +338,7 @@ import it.fast4x.riplay.getMinTimeForEvent
 import it.fast4x.riplay.getPauseListenHistory
 import it.fast4x.riplay.getQueueLoopType
 import it.fast4x.riplay.models.Event
+import it.fast4x.riplay.service.OfflinePlayerService.Companion.NotificationChannelId
 import it.fast4x.riplay.ui.components.themed.AddToPlaylistPlayerMenu
 import it.fast4x.riplay.ui.screens.player.offline.Lyrics
 import it.fast4x.riplay.ui.screens.player.offline.NextVisualizer
@@ -352,6 +358,7 @@ import it.fast4x.riplay.ui.screens.player.offline.Queue
 import it.fast4x.riplay.utils.ActionIntent
 import it.fast4x.riplay.utils.asSong
 import it.fast4x.riplay.utils.isAtLeastAndroid15
+import it.fast4x.riplay.utils.isAtLeastAndroid8
 import it.fast4x.riplay.utils.isInvincibilityEnabledKey
 import it.fast4x.riplay.utils.isVideo
 import it.fast4x.riplay.utils.lastVideoIdKey
@@ -1366,7 +1373,6 @@ fun OnlinePlayer(
 
     val isLandscape = isLandscape
 
-
     LaunchedEffect(mediaItem) {
         //mediaItem = binder?.player?.mediaItems?.getOrNull(queueIndex) ?: return@LaunchedEffect
         //binder.player.setMediaItem(mediaItem)
@@ -1404,12 +1410,13 @@ fun OnlinePlayer(
     }
 
     LaunchedEffect(currentSecond, currentDuration) {
-        updateNotification(
-            mediaItem.mediaMetadata.title.toString(),
-            mediaItem.mediaMetadata.artist.toString(),
-            currentSecond.toInt(),
-            currentDuration.toInt()
-        )
+//        updateNotification(
+//            mediaItem.mediaMetadata.title.toString(),
+//            mediaItem.mediaMetadata.artist.toString(),
+////            currentSecond.toInt(),
+////            currentDuration.toInt(),
+////            shouldBePlaying
+//        )
 
         positionAndDuration = currentSecond to currentDuration
         timeRemaining = positionAndDuration.second.toInt() - positionAndDuration.first.toInt()
@@ -1448,7 +1455,6 @@ fun OnlinePlayer(
     }
 
     LaunchedEffect(playerState.value) {
-        println("OnlinePlayer LaunchedEffect playerState ${playerState.value}")
 
         shouldBePlaying = playerState.value == PlayerConstants.PlayerState.PLAYING
 
@@ -1462,6 +1468,17 @@ fun OnlinePlayer(
 
             updateStatistics = true
         }
+
+        updateNotification(
+            mediaItem.mediaMetadata.title.toString(),
+            mediaItem.mediaMetadata.artist.toString(),
+            if(shouldBePlaying) R.drawable.pause else R.drawable.play,
+            if (shouldBePlaying) "pause" else "play",
+            if (shouldBePlaying) ActionIntent("it.fast4x.riplay.onlineplayer.pause").pendingIntent
+            else ActionIntent("it.fast4x.riplay.onlineplayer.play").pendingIntent
+        )
+
+        println("OnlinePlayer LaunchedEffect playerState.value ${playerState.value} should be playing? $shouldBePlaying")
 
     }
 
@@ -1530,7 +1547,7 @@ fun OnlinePlayer(
             ) {
                 Box(
                     modifier = Modifier
-                        .background(Color.Gray.copy(alpha = .4f),thumbnailRoundness.shape())
+                        .background(Color.Gray.copy(alpha = .4f), thumbnailRoundness.shape())
                         .fillMaxWidth(0.9f)
                         .fillMaxHeight(0.8f)
                 ) {
@@ -1616,6 +1633,7 @@ fun OnlinePlayer(
 //                            onVideoEnded()
 //                        }
                             playerState.value = state
+
                         }
 
 
@@ -3558,7 +3576,7 @@ fun OnlinePlayer(
                                    )
 
                                      val coverModifier = Modifier
-                                        //.aspectRatio(1f)
+                                         //.aspectRatio(1f)
                                         //.padding(all = animatePadding)
 ////                                        .conditional(!it.fast4x.riplay.utils.isLandscape && !mediaItem.isVideo) {
 ////                                            aspectRatio(1f)
@@ -3569,14 +3587,14 @@ fun OnlinePlayer(
                                                 all = 10.dp
                                             )
                                         }
-                                           .conditional(thumbnailType == ThumbnailType.Modern) {
-                                            doubleShadowDrop(
-                                                if (showCoverThumbnailAnimation) CircleShape else thumbnailRoundness.shape(),
-                                                4.dp,
-                                                8.dp
-                                            )
-                                        }
-                                        .clip(thumbnailRoundness.shape())
+                                         .conditional(thumbnailType == ThumbnailType.Modern) {
+                                             doubleShadowDrop(
+                                                 if (showCoverThumbnailAnimation) CircleShape else thumbnailRoundness.shape(),
+                                                 4.dp,
+                                                 8.dp
+                                             )
+                                         }
+                                         .clip(thumbnailRoundness.shape())
 
 ////                                    thumbnailContent(
 ////                                        //use online player
@@ -3958,6 +3976,22 @@ fun OnlinePlayer(
 
     }
 
+    val actionReceiver = OnlinePlayerActionReceiver(
+        player = player.value,
+        onAction = {
+            shouldBePlaying = it
+        }
+    )
+
+    context.registerReceiver(
+        actionReceiver,
+        IntentFilter().apply {
+            addAction("it.fast4x.riplay.onlineplayer.pause")
+            addAction("it.fast4x.riplay.onlineplayer.play")
+        },
+        Context.RECEIVER_NOT_EXPORTED
+    )
+
 }
 
 @Composable
@@ -3985,50 +4019,96 @@ fun createNotificationChannel() {
 }
 
 @UnstableApi
-fun updateNotification(title: String? = null, artist: String? = null, progress: Int = 0, max: Int = 100) {
+fun updateNotification(
+    title: String? = null,
+    artist: String? = null,
+    icon: Int,
+    iconText: String,
+    pendingIntent: PendingIntent,
+) {
     createNotificationChannel()
 
-    val forwardAction = NotificationCompat.Action.Builder(
-        R.drawable.play_skip_back,
-        "prev",
-        ActionIntent("it.fast4x.riplay.previous").pendingIntent
-    ).build()
 
-    val previousAction = NotificationCompat.Action.Builder(
+    val forwardAction = NotificationCompat.Action.Builder(
         R.drawable.play_skip_forward,
         "next",
         ActionIntent("it.fast4x.riplay.next").pendingIntent
     ).build()
 
-    val notification = NotificationCompat.Builder(appContext(),
-        NOTIFICATION_CHANNEL
+    val playPauseAction = NotificationCompat.Action.Builder(
+        icon, iconText, pendingIntent
+    ).build()
+
+    val previousAction = NotificationCompat.Action.Builder(
+        R.drawable.play_skip_back,
+        "prev",
+        ActionIntent("it.fast4x.riplay.previous").pendingIntent
+    ).build()
+
+    //val notificationLayout = RemoteViews(appContext().packageName, R.layout.ayp_notification_small)
+    //val notificationLayoutExpanded = RemoteViews(appContext().packageName, R.layout.ayp_notification_big)
+
+    val notification = if (isAtLeastAndroid8) {
+        NotificationCompat.Builder(appContext(), NOTIFICATION_CHANNEL)
+    } else {
+        NotificationCompat.Builder(appContext())
+    }
+    .setContentTitle(title)
+    .setContentText(artist)
+    .setContentInfo("INFO CONTENT")
+    .setTicker("TICKER")
+    .setSilent(true)
+    .setColorized(true)
+    .setAutoCancel(false)
+    .setSmallIcon(R.drawable.app_icon)
+    .setOngoing(true)
+    .addAction(previousAction)
+    .addAction(playPauseAction)
+    .addAction(forwardAction)
+    .setContentIntent(PendingIntent.getActivity(
+        appContext(),
+        0,
+        Intent(appContext(), MainActivity::class.java)
+            .putExtra("expandPlayerBottomSheet", true),
+        PendingIntent.FLAG_IMMUTABLE
+    ))
+    //.setProgress(max, progress, if (isAtLeastAndroid15) true else false) //Workaround to android 15 because notification freeze
+//    .setStyle(NotificationCompat.BigTextStyle()
+//        //.bigText("Much longer text that cannot fit one line...")
+//        .setSummaryText(artist)
+//        .setBigContentTitle(title)
+//    )
+
+    .setStyle(
+        androidx.media.app.NotificationCompat.MediaStyle()
+            .setShowActionsInCompactView(0, 1, 2)
+            .setShowCancelButton(false)
     )
-        .setContentTitle(title)
-        .setTicker(title)
-        .setSilent(true)
-        .setColorized(true)
-        .setAutoCancel(true)
-        .setContentText(artist)
-        .setProgress(max, progress, if (isAtLeastAndroid15) true else false) //Workaround to android 15 because notification freeze
-        .setSmallIcon(R.drawable.app_icon)
-        .setOngoing(true)
-        .addAction(previousAction)
-        .addAction(forwardAction)
-        .setContentIntent(PendingIntent.getActivity(
-            appContext(),
-            0,
-            Intent(appContext(), MainActivity::class.java)
-                .putExtra("expandPlayerBottomSheet", true),
-            PendingIntent.FLAG_IMMUTABLE
-        ))
-        .setStyle(NotificationCompat.BigTextStyle()
-            .bigText("Much longer text that cannot fit one line...")
-        )
-        .setPriority(NotificationCompat.PRIORITY_MAX)
-        .setAutoCancel(false)
-        .build()
+    .setPriority(NotificationCompat.PRIORITY_MAX)
+    .build()
 
     NotificationManagerCompat.from(appContext()).notify(NOTIFICATION_ID, notification)
+}
+
+class OnlinePlayerActionReceiver(
+    private val player: YouTubePlayer?,
+    private val onAction: (Boolean) -> Unit = {}
+) : BroadcastReceiver() {
+    override fun onReceive(context: Context, intent: Intent) {
+
+        when (intent.action) {
+            "it.fast4x.riplay.onlineplayer.pause" -> {
+                println("OnlinePlayer LauncheEffect it.fast4x.riplay.onlineplayer.pause")
+                player?.pause()
+                onAction(false)
+            }
+            "it.fast4x.riplay.onlineplayer.play" -> {
+                println("OnlinePlayer LauncheEffect it.fast4x.riplay.onlineplayer.play")
+                player?.play()
+                onAction(true)
+            }
+        }
+    }
 }
 
 

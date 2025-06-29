@@ -1116,7 +1116,7 @@ class OfflinePlayerService : MediaLibraryService(),
                 else mediaMetadata.artist
             )
             .setLargeIcon(bitmapProvider.bitmap)
-            .setAutoCancel(false)
+            .setAutoCancel(true)
             .setOnlyAlertOnce(true)
             .setShowWhen(false)
             .setSmallIcon(player.playerError?.let { R.drawable.alert_circle }
