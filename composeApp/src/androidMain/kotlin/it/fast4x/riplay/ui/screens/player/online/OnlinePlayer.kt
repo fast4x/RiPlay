@@ -8,13 +8,12 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.database.SQLException
-import android.graphics.BitmapFactory
 import android.graphics.RenderEffect
 import android.graphics.Shader
 import android.media.audiofx.AudioEffect
+import android.support.v4.media.session.MediaSessionCompat
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import android.widget.RemoteViews
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
@@ -324,6 +323,7 @@ import androidx.core.app.NotificationChannelCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.media3.session.MediaStyleNotificationHelper
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.PlayerConstants
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.AbstractYouTubePlayerListener
@@ -338,7 +338,7 @@ import it.fast4x.riplay.getMinTimeForEvent
 import it.fast4x.riplay.getPauseListenHistory
 import it.fast4x.riplay.getQueueLoopType
 import it.fast4x.riplay.models.Event
-import it.fast4x.riplay.service.OfflinePlayerService.Companion.NotificationChannelId
+import it.fast4x.riplay.service.BitmapProvider
 import it.fast4x.riplay.ui.components.themed.AddToPlaylistPlayerMenu
 import it.fast4x.riplay.ui.screens.player.offline.Lyrics
 import it.fast4x.riplay.ui.screens.player.offline.NextVisualizer
@@ -357,13 +357,13 @@ import it.fast4x.riplay.ui.screens.player.offline.StatsForNerds
 import it.fast4x.riplay.ui.screens.player.offline.Queue
 import it.fast4x.riplay.utils.ActionIntent
 import it.fast4x.riplay.utils.asSong
-import it.fast4x.riplay.utils.isAtLeastAndroid15
 import it.fast4x.riplay.utils.isAtLeastAndroid8
 import it.fast4x.riplay.utils.isInvincibilityEnabledKey
 import it.fast4x.riplay.utils.isVideo
 import it.fast4x.riplay.utils.lastVideoIdKey
 import it.fast4x.riplay.utils.lastVideoSecondsKey
 import timber.log.Timber
+import kotlin.math.roundToInt
 
 
 val NOTIFICATION_CHANNEL = "OnlinePlayer"
@@ -1373,6 +1373,14 @@ fun OnlinePlayer(
 
     val isLandscape = isLandscape
 
+    var mediaSession = remember { MediaSessionCompat(context(), "OnlinePlayer")}
+    var bitmapProvider = BitmapProvider(
+        bitmapSize = (512 * appContext().resources.displayMetrics.density).roundToInt(),
+        colorProvider = { isSystemInDarkMode ->
+            if (isSystemInDarkMode) android.graphics.Color.BLACK else android.graphics.Color.WHITE
+        }
+    )
+
     LaunchedEffect(mediaItem) {
         //mediaItem = binder?.player?.mediaItems?.getOrNull(queueIndex) ?: return@LaunchedEffect
         //binder.player.setMediaItem(mediaItem)
@@ -1396,6 +1404,8 @@ fun OnlinePlayer(
         stepToUpdateStats = 1
 
         println("OnlinePLayer LaunchedEffect change mediaItem ${mediaItem.mediaId}")
+
+        bitmapProvider.load(mediaItem.mediaMetadata.artworkUri, {})
 
         //lastYTVideoSeconds = 0f
 
@@ -1475,7 +1485,9 @@ fun OnlinePlayer(
             if(shouldBePlaying) R.drawable.pause else R.drawable.play,
             if (shouldBePlaying) "pause" else "play",
             if (shouldBePlaying) ActionIntent("it.fast4x.riplay.onlineplayer.pause").pendingIntent
-            else ActionIntent("it.fast4x.riplay.onlineplayer.play").pendingIntent
+            else ActionIntent("it.fast4x.riplay.onlineplayer.play").pendingIntent,
+            mediaSession,
+            bitmapProvider
         )
 
         println("OnlinePlayer LaunchedEffect playerState.value ${playerState.value} should be playing? $shouldBePlaying")
@@ -4025,6 +4037,8 @@ fun updateNotification(
     icon: Int,
     iconText: String,
     pendingIntent: PendingIntent,
+    mediaSession: MediaSessionCompat,
+    bitmapProvider: BitmapProvider,
 ) {
     createNotificationChannel()
 
@@ -4055,12 +4069,14 @@ fun updateNotification(
     }
     .setContentTitle(title)
     .setContentText(artist)
-    .setContentInfo("INFO CONTENT")
-    .setTicker("TICKER")
+    .setSubText(artist)
+    .setSmallIcon(R.drawable.app_icon)
+    .setLargeIcon(bitmapProvider.bitmap)
+    .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+    .setCategory(NotificationCompat.CATEGORY_TRANSPORT)
     .setSilent(true)
     .setColorized(true)
     .setAutoCancel(false)
-    .setSmallIcon(R.drawable.app_icon)
     .setOngoing(true)
     .addAction(previousAction)
     .addAction(playPauseAction)
@@ -4083,8 +4099,9 @@ fun updateNotification(
         androidx.media.app.NotificationCompat.MediaStyle()
             .setShowActionsInCompactView(0, 1, 2)
             .setShowCancelButton(false)
+            .setMediaSession(mediaSession.sessionToken)
     )
-    .setPriority(NotificationCompat.PRIORITY_MAX)
+    .setPriority(NotificationCompat.PRIORITY_HIGH)
     .build()
 
     NotificationManagerCompat.from(appContext()).notify(NOTIFICATION_ID, notification)
