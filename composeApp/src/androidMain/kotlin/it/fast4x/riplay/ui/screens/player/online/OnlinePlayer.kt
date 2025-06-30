@@ -11,7 +11,11 @@ import android.database.SQLException
 import android.graphics.RenderEffect
 import android.graphics.Shader
 import android.media.audiofx.AudioEffect
+import android.media.session.PlaybackState
+import android.support.v4.media.MediaMetadataCompat
+import android.support.v4.media.RatingCompat
 import android.support.v4.media.session.MediaSessionCompat
+import android.support.v4.media.session.PlaybackStateCompat
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -357,6 +361,7 @@ import it.fast4x.riplay.ui.screens.player.offline.StatsForNerds
 import it.fast4x.riplay.ui.screens.player.offline.Queue
 import it.fast4x.riplay.utils.ActionIntent
 import it.fast4x.riplay.utils.asSong
+import it.fast4x.riplay.utils.isAtLeastAndroid12
 import it.fast4x.riplay.utils.isAtLeastAndroid8
 import it.fast4x.riplay.utils.isInvincibilityEnabledKey
 import it.fast4x.riplay.utils.isVideo
@@ -1374,12 +1379,72 @@ fun OnlinePlayer(
     val isLandscape = isLandscape
 
     var mediaSession = remember { MediaSessionCompat(context(), "OnlinePlayer")}
-    var bitmapProvider = BitmapProvider(
-        bitmapSize = (512 * appContext().resources.displayMetrics.density).roundToInt(),
-        colorProvider = { isSystemInDarkMode ->
-            if (isSystemInDarkMode) android.graphics.Color.BLACK else android.graphics.Color.WHITE
-        }
-    )
+    mediaSession.setFlags(MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS or MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS)
+    mediaSession.setRatingType(RatingCompat.RATING_NONE)
+    mediaSession.setSessionActivity(PendingIntent.getActivity(
+        appContext(),
+        0,
+        Intent(appContext(), MainActivity::class.java)
+            .putExtra("expandPlayerBottomSheet", true),
+        PendingIntent.FLAG_IMMUTABLE
+    ))
+
+    mediaSession.isActive = true
+    val actions = remember {
+        PlaybackStateCompat.ACTION_PLAY or
+                PlaybackStateCompat.ACTION_PAUSE or
+                PlaybackStateCompat.ACTION_PLAY_PAUSE or
+                PlaybackStateCompat.ACTION_STOP or
+                PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS or
+                PlaybackStateCompat.ACTION_SKIP_TO_NEXT or
+                PlaybackStateCompat.ACTION_SEEK_TO
+    }
+    var stateBuilder = remember {
+        PlaybackStateCompat.Builder().setActions(actions.let {
+            if (isAtLeastAndroid12) it or PlaybackState.ACTION_SET_PLAYBACK_SPEED else it
+        })
+    }
+    LaunchedEffect(Dispatchers.Main) {
+        mediaSession.setCallback(
+            MediaSessionCallback(
+                binder,
+                {
+                    println("OnlinePlayer callback play")
+                    player.value?.play()
+                },
+                {
+                    println("OnlinePlayer callback pause")
+                    player.value?.pause()
+                }
+            )
+        )
+
+        mediaSession.setPlaybackState(stateBuilder.build())
+    }
+
+
+//    val androidPlaybackState = remember {
+//        when (playerState.value) {
+//            PlayerConstants.PlayerState.BUFFERING -> if (shouldBePlaying) PlaybackStateCompat.STATE_BUFFERING else PlaybackStateCompat.STATE_PAUSED
+//            PlayerConstants.PlayerState.VIDEO_CUED -> if (shouldBePlaying) PlaybackStateCompat.STATE_PLAYING else PlaybackStateCompat.STATE_PAUSED
+//            PlayerConstants.PlayerState.ENDED -> PlaybackStateCompat.STATE_STOPPED
+//            PlayerConstants.PlayerState.UNKNOWN -> PlaybackStateCompat.STATE_NONE
+//            PlayerConstants.PlayerState.UNSTARTED -> PlaybackStateCompat.STATE_STOPPED
+//            PlayerConstants.PlayerState.PLAYING -> PlaybackStateCompat.STATE_PLAYING
+//            PlayerConstants.PlayerState.PAUSED -> PlaybackStateCompat.STATE_PAUSED
+//        }
+//    }
+
+
+
+    var bitmapProvider = remember {
+        BitmapProvider(
+            bitmapSize = (512 * appContext().resources.displayMetrics.density).roundToInt(),
+            colorProvider = { isSystemInDarkMode ->
+                if (isSystemInDarkMode) android.graphics.Color.BLACK else android.graphics.Color.WHITE
+            }
+        )
+    }
 
     LaunchedEffect(mediaItem) {
         //mediaItem = binder?.player?.mediaItems?.getOrNull(queueIndex) ?: return@LaunchedEffect
@@ -1405,7 +1470,9 @@ fun OnlinePlayer(
 
         println("OnlinePLayer LaunchedEffect change mediaItem ${mediaItem.mediaId}")
 
-        bitmapProvider.load(mediaItem.mediaMetadata.artworkUri, {})
+        bitmapProvider.load(mediaItem.mediaMetadata.artworkUri, {
+            println("OnlinePLayer LaunchedEffect BitmapProvider ")
+        })
 
         //lastYTVideoSeconds = 0f
 
@@ -1415,21 +1482,50 @@ fun OnlinePlayer(
         player.value?.loadVideo(mediaItem.mediaId, 0f)
 //        }
 
+        mediaSession.setMetadata(
+            MediaMetadataCompat.Builder()
+                .putString(MediaMetadataCompat.METADATA_KEY_TITLE, mediaItem.mediaMetadata.title.toString())
+                .putString(MediaMetadataCompat.METADATA_KEY_ARTIST, mediaItem.mediaMetadata.artist.toString())
+                .putLong(MediaMetadataCompat.METADATA_KEY_DURATION, (currentDuration/1000).toLong())
+                .build()
+        )
 
         println("OnlinePLayer LaunchedEffect change mediaItem isVideo? ${mediaItem.isVideo} song is audio only? ${songIsAudioOnly}")
     }
 
     LaunchedEffect(currentSecond, currentDuration) {
-//        updateNotification(
-//            mediaItem.mediaMetadata.title.toString(),
-//            mediaItem.mediaMetadata.artist.toString(),
-////            currentSecond.toInt(),
-////            currentDuration.toInt(),
-////            shouldBePlaying
-//        )
 
         positionAndDuration = currentSecond to currentDuration
         timeRemaining = positionAndDuration.second.toInt() - positionAndDuration.first.toInt()
+
+
+        withContext(Dispatchers.Main) {
+            mediaSession.setPlaybackState(
+                stateBuilder
+                    .setState(
+                        if (shouldBePlaying) PlaybackStateCompat.STATE_PLAYING else PlaybackStateCompat.STATE_PAUSED,
+                        (currentSecond/1000).toLong(),
+                        1f
+                    )
+                    .build()
+            )
+
+            println("OnlinePlayer LaunchedEffect currentSecond ${(currentSecond/1000).toLong()} shouldBePlaying $shouldBePlaying")
+
+            updateNotification(
+                mediaItem.mediaMetadata.title.toString(),
+                mediaItem.mediaMetadata.artist.toString(),
+                if(shouldBePlaying) R.drawable.pause else R.drawable.play,
+                if (shouldBePlaying) "pause" else "play",
+                if (shouldBePlaying) ActionIntent("it.fast4x.riplay.onlineplayer.pause").pendingIntent
+                else ActionIntent("it.fast4x.riplay.onlineplayer.play").pendingIntent,
+                mediaSession,
+                bitmapProvider
+            )
+        }
+        
+
+
 
         updateStatisticsEverySeconds = (currentDuration / steps).toInt()
 
@@ -1479,16 +1575,28 @@ fun OnlinePlayer(
             updateStatistics = true
         }
 
-        updateNotification(
-            mediaItem.mediaMetadata.title.toString(),
-            mediaItem.mediaMetadata.artist.toString(),
-            if(shouldBePlaying) R.drawable.pause else R.drawable.play,
-            if (shouldBePlaying) "pause" else "play",
-            if (shouldBePlaying) ActionIntent("it.fast4x.riplay.onlineplayer.pause").pendingIntent
-            else ActionIntent("it.fast4x.riplay.onlineplayer.play").pendingIntent,
-            mediaSession,
-            bitmapProvider
-        )
+        withContext(Dispatchers.Main) {
+            mediaSession.setPlaybackState(
+                stateBuilder
+                    .setState(
+                        if (shouldBePlaying) PlaybackStateCompat.STATE_PLAYING else PlaybackStateCompat.STATE_PAUSED,
+                        (currentSecond/1000).toLong(),
+                        1f
+                    )
+                    .build()
+            )
+
+            updateNotification(
+                mediaItem.mediaMetadata.title.toString(),
+                mediaItem.mediaMetadata.artist.toString(),
+                if(shouldBePlaying) R.drawable.pause else R.drawable.play,
+                if (shouldBePlaying) "pause" else "play",
+                if (shouldBePlaying) ActionIntent("it.fast4x.riplay.onlineplayer.pause").pendingIntent
+                else ActionIntent("it.fast4x.riplay.onlineplayer.play").pendingIntent,
+                mediaSession,
+                bitmapProvider
+            )
+        }
 
         println("OnlinePlayer LaunchedEffect playerState.value ${playerState.value} should be playing? $shouldBePlaying")
 
@@ -3988,21 +4096,25 @@ fun OnlinePlayer(
 
     }
 
-    val actionReceiver = OnlinePlayerActionReceiver(
-        player = player.value,
-        onAction = {
-            shouldBePlaying = it
-        }
-    )
+    val actionReceiver = remember {
+        OnlinePlayerActionReceiver(
+            player = player.value,
+            onAction = {
+                shouldBePlaying = it
+            }
+        )
+    }
 
-    context.registerReceiver(
-        actionReceiver,
-        IntentFilter().apply {
-            addAction("it.fast4x.riplay.onlineplayer.pause")
-            addAction("it.fast4x.riplay.onlineplayer.play")
-        },
-        Context.RECEIVER_NOT_EXPORTED
-    )
+    LaunchedEffect(Unit) {
+        context.registerReceiver(
+            actionReceiver,
+            IntentFilter().apply {
+                addAction("it.fast4x.riplay.onlineplayer.pause")
+                addAction("it.fast4x.riplay.onlineplayer.play")
+            },
+            Context.RECEIVER_NOT_EXPORTED
+        )
+    }
 
 }
 
@@ -4058,9 +4170,6 @@ fun updateNotification(
         "prev",
         ActionIntent("it.fast4x.riplay.previous").pendingIntent
     ).build()
-
-    //val notificationLayout = RemoteViews(appContext().packageName, R.layout.ayp_notification_small)
-    //val notificationLayoutExpanded = RemoteViews(appContext().packageName, R.layout.ayp_notification_big)
 
     val notification = if (isAtLeastAndroid8) {
         NotificationCompat.Builder(appContext(), NOTIFICATION_CHANNEL)
