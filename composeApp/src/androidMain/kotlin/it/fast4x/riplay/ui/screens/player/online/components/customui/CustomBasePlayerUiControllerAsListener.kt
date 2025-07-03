@@ -1,23 +1,16 @@
-package it.fast4x.riplay.ui.screens.player.online
+package it.fast4x.riplay.ui.screens.player.online.components.customui
 
 import android.content.Context
 import android.view.View
-import android.widget.ImageView
-import android.widget.TextView
-import androidx.compose.ui.graphics.Color
 import androidx.core.content.ContextCompat
-import com.pierfrancescosoffritti.androidyoutubeplayer.core.customui.utils.FadeViewHelper
-import com.pierfrancescosoffritti.androidyoutubeplayer.core.customui.views.YouTubePlayerSeekBar
-import com.pierfrancescosoffritti.androidyoutubeplayer.core.customui.views.YouTubePlayerSeekBarListener
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.PlayerConstants
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.AbstractYouTubePlayerListener
-import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.YouTubePlayerListener
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.utils.YouTubePlayerTracker
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
 import it.fast4x.riplay.R
 
-internal class CustomBasePlayerUiController (
+internal class CustomBasePlayerUiControllerAsListener (
     private val context: Context,
     customPlayerUi: View,
     private val youTubePlayer: YouTubePlayer,

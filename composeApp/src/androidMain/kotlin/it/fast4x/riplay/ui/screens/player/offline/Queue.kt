@@ -149,6 +149,7 @@ import sh.calvin.reorderable.rememberReorderableLazyListState
 import java.text.SimpleDateFormat
 import java.util.Date
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import it.fast4x.riplay.ui.screens.player.online.OnlineMiniPlayer
 
 
 @ExperimentalTextApi
@@ -624,7 +625,7 @@ fun Queue(
                                     ) {
                                         NowPlayingSongIndicator(
                                             window.mediaItem.mediaId,
-                                            binder?.player
+                                            binder.player
                                         )
                                     }
                                 }
@@ -772,15 +773,14 @@ fun Queue(
                                 },
                                 hidePlayer = {}
                             )
-//                        else
-//                            OnlineMiniPlayer(
-//                                showPlayer = {
-//                                    onDismiss(queueLoopType)
-//                                },
-//                                hidePlayer = {},
-//                                lifecycleOwner = lifecycleOwner,
-//                                mediaItem = binder.player.currentMediaItem
-//                            )
+                        else
+                            OnlineMiniPlayer(
+                                showPlayer = {
+                                    onDismiss(queueLoopType)
+                                },
+                                hidePlayer = {},
+                                lifecycleOwner = lifecycleOwner
+                            )
                     }
 
 

@@ -1,6 +1,13 @@
 package it.fast4x.riplay.ui.screens.player.online
 
+import android.app.PendingIntent
+import android.content.Intent
 import android.database.SQLException
+import android.media.session.PlaybackState
+import android.support.v4.media.MediaMetadataCompat
+import android.support.v4.media.RatingCompat
+import android.support.v4.media.session.MediaSessionCompat
+import android.support.v4.media.session.PlaybackStateCompat
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.compose.animation.core.LinearEasing
@@ -39,6 +46,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.neverEqualPolicy
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -65,6 +73,8 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
+import androidx.media3.common.Player
+import androidx.media3.common.Timeline
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
@@ -75,6 +85,7 @@ import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.options.IFram
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
 import it.fast4x.riplay.Database
 import it.fast4x.riplay.LocalPlayerServiceBinder
+import it.fast4x.riplay.MainActivity
 import it.fast4x.riplay.R
 import it.fast4x.riplay.appContext
 import it.fast4x.riplay.cleanPrefix
@@ -89,33 +100,46 @@ import it.fast4x.riplay.getMinTimeForEvent
 import it.fast4x.riplay.getPauseListenHistory
 import it.fast4x.riplay.getQueueLoopType
 import it.fast4x.riplay.models.Event
+import it.fast4x.riplay.models.Info
 import it.fast4x.riplay.service.OfflinePlayerService
 import it.fast4x.riplay.models.Song
+import it.fast4x.riplay.service.BitmapProvider
 import it.fast4x.riplay.thumbnailShape
 import it.fast4x.riplay.typography
 import it.fast4x.riplay.ui.components.themed.IconButton
+import it.fast4x.riplay.ui.components.themed.NowPlayingSongIndicator
 import it.fast4x.riplay.ui.components.themed.SmartMessage
+import it.fast4x.riplay.ui.screens.player.online.components.customui.CustomBasePlayerUiControllerAsListener
+import it.fast4x.riplay.ui.screens.player.online.components.customui.CustomDefaultPlayerUiController
 import it.fast4x.riplay.ui.screens.settings.isYouTubeSyncEnabled
 import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.ui.styling.collapsedPlayerProgressBar
 import it.fast4x.riplay.ui.styling.favoritesIcon
 import it.fast4x.riplay.ui.styling.favoritesOverlay
 import it.fast4x.riplay.ui.styling.px
+import it.fast4x.riplay.utils.ActionIntent
+import it.fast4x.riplay.utils.DisposableListener
 import it.fast4x.riplay.utils.addToYtLikedSong
 import it.fast4x.riplay.utils.backgroundProgressKey
 import it.fast4x.riplay.utils.applyIf
+import it.fast4x.riplay.utils.asSong
 import it.fast4x.riplay.utils.disableClosingPlayerSwipingDownKey
 import it.fast4x.riplay.utils.disableScrollingTextKey
 import it.fast4x.riplay.utils.effectRotationKey
 import it.fast4x.riplay.utils.getLikeState
 import it.fast4x.riplay.utils.intent
+import it.fast4x.riplay.utils.isAtLeastAndroid12
 import it.fast4x.riplay.utils.isExplicit
 import it.fast4x.riplay.utils.isInvincibilityEnabledKey
+import it.fast4x.riplay.utils.isVideo
 import it.fast4x.riplay.utils.lastVideoIdKey
 import it.fast4x.riplay.utils.lastVideoSecondsKey
 import org.dailyislam.android.utilities.isNetworkConnected
 import it.fast4x.riplay.utils.mediaItemToggleLike
+import it.fast4x.riplay.utils.mediaItems
 import it.fast4x.riplay.utils.miniPlayerTypeKey
+import it.fast4x.riplay.utils.playNext
+import it.fast4x.riplay.utils.playPrevious
 import it.fast4x.riplay.utils.rememberPreference
 import it.fast4x.riplay.utils.semiBold
 import it.fast4x.riplay.utils.setDisLikeState
@@ -125,8 +149,10 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import timber.log.Timber
 import kotlin.math.absoluteValue
+import kotlin.math.roundToInt
 
 @androidx.annotation.OptIn(UnstableApi::class)
 @OptIn(ExperimentalFoundationApi::class,
@@ -138,14 +164,35 @@ fun OnlineMiniPlayer(
     showPlayer: () -> Unit,
     hidePlayer: () -> Unit,
     navController: NavController? = null,
-    mediaItem: MediaItem?,
 ) {
-    mediaItem ?: return
 
     val context = LocalContext.current
     val binder = LocalPlayerServiceBinder.current
     var shouldBePlaying by remember { mutableStateOf(false) }
     val hapticFeedback = LocalHapticFeedback.current
+
+    binder?.player ?: return
+    if (binder.player.currentTimeline?.windowCount == 0) return
+
+    var nullableMediaItem by remember {
+        mutableStateOf(binder.player.currentMediaItem, neverEqualPolicy())
+    }
+
+    binder.player.DisposableListener {
+        object : Player.Listener {
+            override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
+                nullableMediaItem = mediaItem
+            }
+
+//            override fun onTimelineChanged(timeline: Timeline, reason: Int) {
+//                mediaItems = timeline.mediaItems
+//                mediaItemIndex = binder.player.currentMediaItemIndex
+//            }
+
+        }
+    }
+
+    val mediaItem = nullableMediaItem ?: return
 
     var likedAt by rememberSaveable {
         mutableStateOf<Long?>(null)
@@ -207,10 +254,10 @@ fun OnlineMiniPlayer(
                 updateLike = true
                 hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
             } else {
-                //binder.player.seekToPrevious()
+                binder.player.seekToPrevious()
                 hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
             } else if (value == SwipeToDismissBoxValue.EndToStart) {
-                //binder.player.seekToNext()
+                binder.player.seekToNext()
                 hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
             }
             return@rememberSwipeToDismissBoxState false
@@ -319,22 +366,18 @@ fun OnlineMiniPlayer(
                         hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
                     },
                     onClick = {
-                        //if (showPlayer != null)
+                        player.value?.pause()
                         showPlayer()
-                        //else
-                        //    navController?.navigate("player")
                     }
                 )
-                //.clickable(onClick = showPlayer)
                 .pointerInput(Unit) {
                     detectVerticalDragGestures(
                         onVerticalDrag = { _, dragAmount ->
                             if (dragAmount < 0) showPlayer()
                             else if (dragAmount > 20) {
                                 if (!disableClosingPlayerSwipingDown) {
-                                    //TODO Implement swipe down to close player
                                     player.value?.pause()
-//                                    binder.player.clearMediaItems()
+                                    binder.player.clearMediaItems()
                                     hidePlayer()
                                     runCatching {
                                         context.stopService(context.intent<OfflinePlayerService>())
@@ -384,8 +427,7 @@ fun OnlineMiniPlayer(
                         .clip(thumbnailShape())
                         .size(48.dp)
                 )
-                //TODO Implement NowPlayingSongIndicator with online mini player
-               // NowPlayingSongIndicator(mediaItem.mediaId, binder.player)
+                NowPlayingSongIndicator(mediaItem.mediaId, binder.player)
             }
 
             Column(
@@ -443,8 +485,7 @@ fun OnlineMiniPlayer(
                        icon = R.drawable.play_skip_back,
                        color = colorPalette().iconButtonPlayer,
                        onClick = {
-                           //TODO Implement play previous in online mini player
-                           //binder.player.playPrevious()
+                           binder.player.playPrevious()
                            if (effectRotationEnabled) isRotated = !isRotated
                        },
                        modifier = Modifier
@@ -488,8 +529,7 @@ fun OnlineMiniPlayer(
                        icon = R.drawable.play_skip_forward,
                        color = colorPalette().iconButtonPlayer,
                        onClick = {
-                           //TODO Implement play next in online mini player
-                           //binder.player.playNext()
+                           binder.player.playNext()
                            if (effectRotationEnabled) isRotated = !isRotated
                        },
                        modifier = Modifier
@@ -522,8 +562,60 @@ fun OnlineMiniPlayer(
         }
         /*****  */
 
+        var albumInfo by remember {
+            mutableStateOf(mediaItem.mediaMetadata.extras?.getString("albumId")?.let { albumId ->
+                Info(albumId, null)
+            })
+        }
+
+        var artistsInfo by remember {
+            mutableStateOf(
+                mediaItem.mediaMetadata.extras?.getStringArrayList("artistNames")?.let { artistNames ->
+                    mediaItem.mediaMetadata.extras?.getStringArrayList("artistIds")?.let { artistIds ->
+                        artistNames.zip(artistIds).map { (authorName, authorId) ->
+                            Info(authorId, authorName)
+                        }
+                    }
+                }
+            )
+        }
+
         /********** NEW PLAYER */
 
+        var mediaSession = remember { MediaSessionCompat(context(), "OnlineMiniPlayer")}
+        mediaSession.setFlags(MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS or MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS)
+        mediaSession.setRatingType(RatingCompat.RATING_NONE)
+        mediaSession.setSessionActivity(PendingIntent.getActivity(
+            appContext(),
+            0,
+            Intent(appContext(), MainActivity::class.java),
+            //.putExtra("expandPlayerBottomSheet", true),
+            PendingIntent.FLAG_IMMUTABLE
+        ))
+
+        mediaSession.isActive = true
+        val actions = remember {
+            PlaybackStateCompat.ACTION_PLAY or
+                    PlaybackStateCompat.ACTION_PAUSE or
+                    PlaybackStateCompat.ACTION_PLAY_PAUSE or
+                    PlaybackStateCompat.ACTION_STOP or
+                    PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS or
+                    PlaybackStateCompat.ACTION_SKIP_TO_NEXT or
+                    PlaybackStateCompat.ACTION_SEEK_TO
+        }
+        var stateBuilder = remember {
+            PlaybackStateCompat.Builder().setActions(actions.let {
+                if (isAtLeastAndroid12) it or PlaybackState.ACTION_SET_PLAYBACK_SPEED else it
+            })
+        }
+        var bitmapProvider = remember {
+            BitmapProvider(
+                bitmapSize = (512 * appContext().resources.displayMetrics.density).roundToInt(),
+                colorProvider = { isSystemInDarkMode ->
+                    if (isSystemInDarkMode) android.graphics.Color.BLACK else android.graphics.Color.WHITE
+                }
+            )
+        }
 
         LaunchedEffect(playerState.value) {
             shouldBePlaying = playerState.value == PlayerConstants.PlayerState.PLAYING
@@ -536,10 +628,123 @@ fun OnlineMiniPlayer(
                 updateStatistics = true
             }
 
+            withContext(Dispatchers.Main) {
+                mediaSession.setPlaybackState(
+                    stateBuilder
+                        .setState(
+                            if (shouldBePlaying) PlaybackStateCompat.STATE_PLAYING else PlaybackStateCompat.STATE_PAUSED,
+                            (currentSecond/1000).toLong(),
+                            1f
+                        )
+                        .build()
+                )
+
+                updateNotification(
+                    mediaItem.mediaMetadata.title.toString(),
+                    mediaItem.mediaMetadata.artist.toString(),
+                    if(shouldBePlaying) R.drawable.pause else R.drawable.play,
+                    if (shouldBePlaying) "pause" else "play",
+                    if (shouldBePlaying) ActionIntent("it.fast4x.riplay.onlineplayer.pause").pendingIntent
+                    else ActionIntent("it.fast4x.riplay.onlineplayer.play").pendingIntent,
+                    mediaSession,
+                    bitmapProvider
+                )
+            }
+
+        }
+
+        var songIsAudioOnly by rememberSaveable {
+            mutableStateOf<Boolean>(true)
+        }
+
+        LaunchedEffect(mediaItem.mediaId) {
+            Database.likedAt(mediaItem.mediaId).distinctUntilChanged().collect { likedAt = it }
+            Database.song(mediaItem.mediaId).distinctUntilChanged()
+                .collect { songIsAudioOnly = it?.isVideo == false }
+        }
+
+
+        LaunchedEffect(Dispatchers.Main) {
+            mediaSession.setCallback(
+                MediaSessionCallback(
+                    binder,
+                    {
+                        println("OnlineMiniPlayer callback play")
+                        player.value?.play()
+                    },
+                    {
+                        println("OnlineMiniPlayer callback pause")
+                        player.value?.pause()
+                    }
+                )
+            )
+
+            mediaSession.setPlaybackState(stateBuilder.build())
+        }
+
+        LaunchedEffect(mediaItem) {
+            // Ensure that the song is in database
+            CoroutineScope(Dispatchers.IO).launch {
+                Database.asyncTransaction {
+                    insert(mediaItem.asSong)
+                }
+
+                Database.likedAt(mediaItem.mediaId).distinctUntilChanged().collect { likedAt = it }
+
+            }
+            withContext(Dispatchers.IO) {
+                albumInfo = Database.songAlbumInfo(mediaItem.mediaId)
+                artistsInfo = Database.songArtistInfo(mediaItem.mediaId)
+            }
+
+            stepToUpdateStats = 1
+
+            println("OnlineMiniPlayer LaunchedEffect change mediaItem ${mediaItem.mediaId}")
+
+            bitmapProvider.load(mediaItem.mediaMetadata.artworkUri, {
+                println("OnlineMiniPlayer LaunchedEffect BitmapProvider ")
+            })
+
+            player.value?.loadVideo(mediaItem.mediaId, 0f)
+
+            mediaSession.setMetadata(
+                MediaMetadataCompat.Builder()
+                    .putString(MediaMetadataCompat.METADATA_KEY_TITLE, mediaItem.mediaMetadata.title.toString())
+                    .putString(MediaMetadataCompat.METADATA_KEY_ARTIST, mediaItem.mediaMetadata.artist.toString())
+                    .putLong(MediaMetadataCompat.METADATA_KEY_DURATION, (currentDuration/1000).toLong())
+                    .build()
+            )
+
+            println("OnlineMiniPLayer LaunchedEffect change mediaItem isVideo? ${mediaItem.isVideo} song is audio only? ${songIsAudioOnly}")
         }
 
         LaunchedEffect(currentSecond, currentDuration) {
             positionAndDuration = currentSecond to currentDuration
+
+            withContext(Dispatchers.Main) {
+                mediaSession.setPlaybackState(
+                    stateBuilder
+                        .setState(
+                            if (shouldBePlaying) PlaybackStateCompat.STATE_PLAYING else PlaybackStateCompat.STATE_PAUSED,
+                            (currentSecond/1000).toLong(),
+                            1f
+                        )
+                        .build()
+                )
+
+                println("OnlineMiniPlayer LaunchedEffect currentSecond ${(currentSecond/1000).toLong()} shouldBePlaying $shouldBePlaying")
+
+                updateNotification(
+                    mediaItem.mediaMetadata.title.toString(),
+                    mediaItem.mediaMetadata.artist.toString(),
+                    if(shouldBePlaying) R.drawable.pause else R.drawable.play,
+                    if (shouldBePlaying) "pause" else "play",
+                    if (shouldBePlaying) ActionIntent("it.fast4x.riplay.onlineplayer.pause").pendingIntent
+                    else ActionIntent("it.fast4x.riplay.onlineplayer.play").pendingIntent,
+                    mediaSession,
+                    bitmapProvider
+                )
+            }
 
             updateStatisticsEverySeconds = (currentDuration / steps).toInt()
 
@@ -588,17 +793,38 @@ fun OnlineMiniPlayer(
                     override fun onReady(youTubePlayer: YouTubePlayer) {
                         player.value = youTubePlayer
 
-                        val customPlayerUiController = CustomBasePlayerUiController(
-                            it,
-                            customPLayerUi,
-                            youTubePlayer,
-                            onlinePlayerView
-                        )
-                        youTubePlayer.addListener(customPlayerUiController)
+//                        val customPlayerUiController =
+//                            CustomBasePlayerUiControllerAsListener(
+//                                it,
+//                                customPLayerUi,
+//                                youTubePlayer,
+//                                onlinePlayerView
+//                            )
+//                        youTubePlayer.addListener(customPlayerUiController)
 
-                        //youTubePlayer.loadVideo(mediaItem.mediaId, lastYTVideoSeconds)
+                        // Used to show default player ui with defaultPlayerUiController as custom view
+                        val customUiController =
+                            CustomDefaultPlayerUiController(
+                                onlinePlayerView,
+                                youTubePlayer,
+                                onTap = {}
+                            )
+                        customUiController.showUi(false) // disable all default controls and buttons
+                        customUiController.showMenuButton(false)
+                        customUiController.showVideoTitle(false)
+                        customUiController.showPlayPauseButton(false)
+                        customUiController.showDuration(false)
+                        customUiController.showCurrentTime(false)
+                        customUiController.showSeekBar(false)
+                        customUiController.showBufferingProgress(false)
+                        customUiController.showYouTubeButton(false)
+                        customUiController.showFullscreenButton(false)
+                        onlinePlayerView.setCustomPlayerUi(customUiController.rootView)
+
                         //youTubePlayer.loadOrCueVideo(lifecycleOwner.lifecycle, mediaItem.mediaId, lastYTVideoSeconds)
+                        println("OnlineMiniPlayer: onReady shouldBePlaying: $shouldBePlaying")
                         youTubePlayer.cueVideo(mediaItem.mediaId, lastYTVideoSeconds)
+                        //youTubePlayer.loadVideo(mediaItem.mediaId, lastYTVideoSeconds)
 
                     }
 

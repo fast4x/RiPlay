@@ -1142,8 +1142,6 @@ MonetCompatActivity(),
                                                 )
                                             else
                                                 OnlineMiniPlayer(
-                                                    //lifecycleOwner = LocalLifecycleOwner.current,
-                                                    mediaItem = binder?.player?.currentMediaItem,
                                                     showPlayer = { showPlayer = true },
                                                     hidePlayer = { showPlayer = false },
                                                     navController = navController

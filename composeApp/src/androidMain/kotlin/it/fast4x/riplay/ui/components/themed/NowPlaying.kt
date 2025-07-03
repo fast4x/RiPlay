@@ -23,6 +23,8 @@ fun NowPlayingSongIndicator (
     containerSize: Dp = Dimensions.thumbnails.song
 ) {
 
+    println("NowPlayingSongIndicator: currentMediaItem player?.currentMediaItem?.mediaId ${player?.currentMediaItem?.mediaId} and mediaId $mediaId")
+
     if (player?.currentMediaItem?.mediaId != mediaId) return
 
     Box(

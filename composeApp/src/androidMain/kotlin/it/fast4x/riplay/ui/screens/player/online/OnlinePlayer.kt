@@ -327,7 +327,6 @@ import androidx.core.app.NotificationChannelCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.lifecycle.compose.LocalLifecycleOwner
-import androidx.media3.session.MediaStyleNotificationHelper
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.PlayerConstants
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.AbstractYouTubePlayerListener
@@ -359,6 +358,7 @@ import org.dailyislam.android.utilities.isNetworkConnected
 import kotlin.math.sqrt
 import it.fast4x.riplay.ui.screens.player.offline.StatsForNerds
 import it.fast4x.riplay.ui.screens.player.offline.Queue
+import it.fast4x.riplay.ui.screens.player.online.components.customui.CustomDefaultPlayerUiController
 import it.fast4x.riplay.utils.ActionIntent
 import it.fast4x.riplay.utils.asSong
 import it.fast4x.riplay.utils.isAtLeastAndroid12
@@ -1704,16 +1704,40 @@ fun OnlinePlayer(
                         override fun onReady(youTubePlayer: YouTubePlayer) {
                             player.value = youTubePlayer
 
-                            val customPlayerUiController = CustomBasePlayerUiController(
-                                it,
-                                customPLayerUi,
-                                youTubePlayer,
-                                onlinePlayerView,
-                                onTap = {
-                                    showControls = !showControls
-                                }
-                            )
-                            youTubePlayer.addListener(customPlayerUiController)
+/* Used to show custom player ui with uiController as listener
+//                            val customPlayerUiController = CustomBasePlayerUiControllerAsListener(
+//                                it,
+//                                customPLayerUi,
+//                                youTubePlayer,
+//                                onlinePlayerView,
+//                                onTap = {
+//                                    showControls = !showControls
+//                                }
+//                            )
+//                            youTubePlayer.addListener(customPlayerUiController)
+*/
+
+// Used to show default player ui with defaultPlayerUiController as custom view
+                            val customUiController =
+                                CustomDefaultPlayerUiController(
+                                    onlinePlayerView,
+                                    youTubePlayer,
+                                    onTap = {
+                                        showControls = !showControls
+                                    }
+                                )
+                            customUiController.showUi(false) // disable all default controls and buttons
+                            customUiController.showMenuButton(false)
+                            customUiController.showVideoTitle(false)
+                            customUiController.showPlayPauseButton(false)
+                            customUiController.showDuration(false)
+                            customUiController.showCurrentTime(false)
+                            customUiController.showSeekBar(false)
+                            customUiController.showBufferingProgress(false)
+                            customUiController.showYouTubeButton(false)
+                            customUiController.showFullscreenButton(false)
+                            onlinePlayerView.setCustomPlayerUi(customUiController.rootView)
+
 
                             if (playerState.value == PlayerConstants.PlayerState.UNSTARTED
                                 || playerState.value != PlayerConstants.PlayerState.BUFFERING
@@ -1754,6 +1778,14 @@ fun OnlinePlayer(
 //                        }
                             playerState.value = state
 
+                        }
+
+                        override fun onPlaybackQualityChange(
+                            youTubePlayer: YouTubePlayer,
+                            playbackQuality: PlayerConstants.PlaybackQuality
+                        ) {
+                            super.onPlaybackQualityChange(youTubePlayer, playbackQuality)
+                            println("OnlinePlayer onPlaybackQualityChange $playbackQuality")
                         }
 
 

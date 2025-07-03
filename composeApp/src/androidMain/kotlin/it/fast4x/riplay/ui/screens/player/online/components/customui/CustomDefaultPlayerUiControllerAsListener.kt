@@ -1,4 +1,4 @@
-package it.fast4x.riplay.ui.screens.player.online
+package it.fast4x.riplay.ui.screens.player.online.components.customui
 
 import android.content.Context
 import android.view.View
@@ -17,7 +17,7 @@ import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.utils.YouTube
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
 import it.fast4x.riplay.R
 
-internal class CustomDefaultPlayerUiController (
+internal class CustomDefaultPlayerUiControllerAsListener (
     private val context: Context,
     customPlayerUi: View,
     private val youTubePlayer: YouTubePlayer,
