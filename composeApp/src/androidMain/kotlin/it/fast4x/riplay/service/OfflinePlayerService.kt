@@ -42,6 +42,7 @@ import androidx.media3.common.AuxEffectInfo
 import androidx.media3.common.C
 import androidx.media3.common.ForwardingPlayer
 import androidx.media3.common.MediaItem
+import androidx.media3.common.MediaMetadata
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.PlaybackParameters
 import androidx.media3.common.Player
@@ -74,6 +75,7 @@ import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import androidx.media3.exoplayer.source.ShuffleOrder.DefaultShuffleOrder
 import androidx.media3.extractor.DefaultExtractorsFactory
 import androidx.media3.session.CommandButton
+import androidx.media3.session.DefaultMediaNotificationProvider
 import androidx.media3.session.MediaController
 import androidx.media3.session.MediaLibraryService
 import androidx.media3.session.MediaNotification
@@ -266,26 +268,26 @@ class OfflinePlayerService : MediaLibraryService(),
     override fun onCreate() {
         super.onCreate()
 
-//                // DEFAULT NOTIFICATION PROVIDER MODDED
-//                setMediaNotificationProvider(CustomMediaNotificationProvider(this)
-//                    .apply {
-//                        setSmallIcon(R.drawable.app_icon)
-//                    }
-//                )
+                // DEFAULT NOTIFICATION PROVIDER MODDED
+                setMediaNotificationProvider(CustomMediaNotificationProvider(this)
+                    .apply {
+                        setSmallIcon(R.drawable.app_icon)
+                    }
+                )
+
+
+//        setMediaNotificationProvider(object : MediaNotification.Provider{
+//            override fun createNotification(
+//                mediaSession: MediaSession,
+//                customLayout: ImmutableList<CommandButton>,
+//                actionFactory: MediaNotification.ActionFactory,
+//                onNotificationChangedCallback: MediaNotification.Provider.Callback
+//            ): MediaNotification {
+//                return updateCustomNotification(mediaSession)
 //            }
-
-        setMediaNotificationProvider(object : MediaNotification.Provider{
-            override fun createNotification(
-                mediaSession: MediaSession,
-                customLayout: ImmutableList<CommandButton>,
-                actionFactory: MediaNotification.ActionFactory,
-                onNotificationChangedCallback: MediaNotification.Provider.Callback
-            ): MediaNotification {
-                return updateCustomNotification(mediaSession)
-            }
-
-            override fun handleCustomCommand(session: MediaSession, action: String, extras: Bundle): Boolean { return false }
-        })
+//
+//            override fun handleCustomCommand(session: MediaSession, action: String, extras: Bundle): Boolean { return false }
+//        })
 
 
         runCatching {
@@ -379,11 +381,12 @@ class OfflinePlayerService : MediaLibraryService(),
                         PendingIntent.FLAG_IMMUTABLE
                     )
                 )
-                .setBitmapLoader(CoilBitmapLoader(
-                    this,
-                    coroutineScope,
-                    512 * resources.displayMetrics.density.toInt()
-                ))
+                //TODO CHECK IF THIS IS NEEDED
+//                .setBitmapLoader(CoilBitmapLoader(
+//                    this,
+//                    coroutineScope,
+//                    512 * resources.displayMetrics.density.toInt()
+//                ))
                 // Temporary fix for bug in ExoPlayer media3 https://github.com/androidx/media/issues/2192
                 // Bug cause refresh ui in android auto when media is playing
                 .setPeriodicPositionUpdateEnabled(false)
@@ -1100,9 +1103,9 @@ class OfflinePlayerService : MediaLibraryService(),
         bitmapProvider.load(mediaMetadata.artworkUri) {}
 
         val customNotify = if (isAtLeastAndroid8) {
-            NotificationCompat.Builder(this, NotificationChannelId)
+            NotificationCompat.Builder(this@OfflinePlayerService, NotificationChannelId)
         } else {
-            NotificationCompat.Builder(this)
+            NotificationCompat.Builder(this@OfflinePlayerService)
         }
             .setContentTitle(cleanPrefix(player.mediaMetadata.title.toString()))
             .setContentText(
@@ -1489,16 +1492,16 @@ class OfflinePlayerService : MediaLibraryService(),
 //        binder.restartForegroundOrStop()
 //    }
 
-//    @UnstableApi
-//    class CustomMediaNotificationProvider(context: Context) : DefaultMediaNotificationProvider(context) {
-//        override fun getNotificationContentTitle(metadata: MediaMetadata): CharSequence? {
-//            val customMetadata = MediaMetadata.Builder()
-//                .setTitle(cleanPrefix(metadata.title?.toString() ?: ""))
-//                .build()
-//            return super.getNotificationContentTitle(customMetadata)
-//        }
-//
-//    }
+    @UnstableApi
+    class CustomMediaNotificationProvider(context: Context) : DefaultMediaNotificationProvider(context) {
+        override fun getNotificationContentTitle(metadata: MediaMetadata): CharSequence? {
+            val customMetadata = MediaMetadata.Builder()
+                .setTitle(cleanPrefix(metadata.title?.toString() ?: ""))
+                .build()
+            return super.getNotificationContentTitle(customMetadata)
+        }
+
+    }
 
 
     class NotificationDismissReceiver : BroadcastReceiver() {
