@@ -1447,6 +1447,7 @@ fun OnlinePlayer(
     }
 
     LaunchedEffect(mediaItem) {
+        positionAndDuration = 0f to 0f
         //mediaItem = binder?.player?.mediaItems?.getOrNull(queueIndex) ?: return@LaunchedEffect
         //binder.player.setMediaItem(mediaItem)
         //println("OnlinePlayer LaunchedEffect mediaItem ${mediaItem.mediaId} ${mediaItem.mediaMetadata.title} ${lastYTVideoId}")

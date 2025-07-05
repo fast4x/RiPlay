@@ -36,6 +36,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.SwipeToDismissBox
 import androidx.compose.material3.SwipeToDismissBoxValue
@@ -84,7 +85,9 @@ import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.Abs
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.options.IFramePlayerOptions
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
 import it.fast4x.riplay.Database
+import it.fast4x.riplay.GlobalPlayerState
 import it.fast4x.riplay.LocalPlayerServiceBinder
+import it.fast4x.riplay.LocalPlayerSheetState
 import it.fast4x.riplay.MainActivity
 import it.fast4x.riplay.R
 import it.fast4x.riplay.appContext
@@ -154,10 +157,9 @@ import timber.log.Timber
 import kotlin.math.absoluteValue
 import kotlin.math.roundToInt
 
-@androidx.annotation.OptIn(UnstableApi::class)
-@OptIn(ExperimentalFoundationApi::class,
-    ExperimentalFoundationApi::class, ExperimentalFoundationApi::class,
-    ExperimentalFoundationApi::class)
+@ExperimentalMaterial3Api
+@ExperimentalFoundationApi
+@UnstableApi
 @Composable
 fun OnlineMiniPlayer(
     lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current,
@@ -617,6 +619,8 @@ fun OnlineMiniPlayer(
             )
         }
 
+        val playerIsVisible = GlobalPlayerState.current
+
         LaunchedEffect(playerState.value) {
             shouldBePlaying = playerState.value == PlayerConstants.PlayerState.PLAYING
 
@@ -705,7 +709,10 @@ fun OnlineMiniPlayer(
                 println("OnlineMiniPlayer LaunchedEffect BitmapProvider ")
             })
 
-            player.value?.loadVideo(mediaItem.mediaId, 0f)
+            if (playerIsVisible)
+                player.value?.cueVideo(mediaItem.mediaId, 0f)
+            else
+                player.value?.loadVideo(mediaItem.mediaId, 0f)
 
             mediaSession.setMetadata(
                 MediaMetadataCompat.Builder()

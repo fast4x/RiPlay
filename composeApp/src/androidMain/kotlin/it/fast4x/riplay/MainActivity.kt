@@ -1092,6 +1092,7 @@ MonetCompatActivity(),
                                 LocalLayoutDirection provides LayoutDirection.Ltr,
                                 LocalPlayerSheetState provides playerState,
                                 LocalMonetCompat provides localMonet,
+                                GlobalPlayerState provides showPlayer,
                                 //LocalInternetAvailable provides isInternetAvailable
                             ) {
 
@@ -1528,11 +1529,10 @@ val LocalPlayerServiceBinder = staticCompositionLocalOf<OfflinePlayerService.Bin
 
 val LocalPlayerAwareWindowInsets = staticCompositionLocalOf<WindowInsets> { TODO() }
 
-//val LocalDownloadHelper = staticCompositionLocalOf<MyDownloadHelper> { error("No Downloader provided") }
-
 @OptIn(ExperimentalMaterial3Api::class)
 val LocalPlayerSheetState =
     staticCompositionLocalOf<SheetState> { error("No player sheet state provided") }
 
-//val LocalInternetAvailable = staticCompositionLocalOf<Boolean> { error("No Internet Status provided") }
+val GlobalPlayerState = staticCompositionLocalOf<Boolean> { error("No player sheet state provided") }
+
 
