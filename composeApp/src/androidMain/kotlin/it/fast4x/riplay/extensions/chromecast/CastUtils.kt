@@ -14,6 +14,7 @@ import com.google.android.gms.cast.framework.SessionManager
 import com.google.android.gms.tasks.Task
 import com.pierfrancescosoffritti.androidyoutubeplayer.chromecast.chromecastsender.ChromecastYouTubePlayerContext
 import com.pierfrancescosoffritti.androidyoutubeplayer.chromecast.chromecastsender.io.infrastructure.ChromecastConnectionListener
+import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.PlayerConstants
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.AbstractYouTubePlayerListener
 import it.fast4x.riplay.appContext
@@ -83,6 +84,12 @@ class SimpleChromecastConnectionListener : ChromecastConnectionListener {
             override fun onReady(youTubePlayer: YouTubePlayer) {
                 println("onReady Chromecast")
                 youTubePlayer.loadVideo("S0Q4gqBUs7c", 0f)
+            }
+
+            override fun onError(youTubePlayer: YouTubePlayer, error: PlayerConstants.PlayerError) {
+                super.onError(youTubePlayer, error)
+                println("onError Chromecast $error")
+
             }
         })
     }
