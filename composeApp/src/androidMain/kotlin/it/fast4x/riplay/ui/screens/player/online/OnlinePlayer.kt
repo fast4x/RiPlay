@@ -18,6 +18,7 @@ import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.activity.compose.LocalActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
@@ -104,18 +105,25 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.paint
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.geometry.center
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.LinearGradientShader
+import androidx.compose.ui.graphics.Outline
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.asComposeRenderEffect
+import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.input.pointer.pointerInteropFilter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalConfiguration
@@ -127,22 +135,30 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.coerceAtLeast
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.times
 import androidx.compose.ui.util.lerp
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.zIndex
+import androidx.core.app.NotificationChannelCompat
+import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
 import androidx.core.graphics.ColorUtils.colorToHSL
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.common.Timeline
 import androidx.media3.common.util.UnstableApi
+import androidx.mediarouter.app.MediaRouteButton
 import androidx.navigation.NavController
 import androidx.palette.graphics.Palette
 import coil.compose.AsyncImage
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
+import com.google.android.gms.cast.framework.CastButtonFactory
 import com.mikepenz.hypnoticcanvas.shaderBackground
 import com.mikepenz.hypnoticcanvas.shaders.BlackCherryCosmos
 import com.mikepenz.hypnoticcanvas.shaders.GlossyGradients
@@ -155,6 +171,12 @@ import com.mikepenz.hypnoticcanvas.shaders.MesmerizingLens
 import com.mikepenz.hypnoticcanvas.shaders.OilFlow
 import com.mikepenz.hypnoticcanvas.shaders.PurpleLiquid
 import com.mikepenz.hypnoticcanvas.shaders.Stage
+import com.pierfrancescosoffritti.androidyoutubeplayer.chromecast.chromecastsender.utils.PlayServicesUtils
+import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.PlayerConstants
+import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
+import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.AbstractYouTubePlayerListener
+import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.options.IFramePlayerOptions
+import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
 import dev.chrisbanes.haze.HazeDefaults
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.haze
@@ -162,10 +184,13 @@ import dev.chrisbanes.haze.hazeChild
 import it.fast4x.environment.models.NavigationEndpoint
 import it.fast4x.riplay.Database
 import it.fast4x.riplay.LocalPlayerServiceBinder
+import it.fast4x.riplay.MainActivity
 import it.fast4x.riplay.R
+import it.fast4x.riplay.appContext
 import it.fast4x.riplay.appRunningInBackground
 import it.fast4x.riplay.cleanPrefix
 import it.fast4x.riplay.colorPalette
+import it.fast4x.riplay.context
 import it.fast4x.riplay.enums.AnimatedGradient
 import it.fast4x.riplay.enums.BackgroundProgress
 import it.fast4x.riplay.enums.CarouselSize
@@ -183,13 +208,22 @@ import it.fast4x.riplay.enums.SwipeAnimationNoThumbnail
 import it.fast4x.riplay.enums.ThumbnailCoverType
 import it.fast4x.riplay.enums.ThumbnailRoundness
 import it.fast4x.riplay.enums.ThumbnailType
+import it.fast4x.riplay.extensions.chromecast.initChromecast
+import it.fast4x.riplay.getLastYTVideoId
+import it.fast4x.riplay.getLastYTVideoSeconds
+import it.fast4x.riplay.getMinTimeForEvent
+import it.fast4x.riplay.getPauseListenHistory
+import it.fast4x.riplay.getQueueLoopType
+import it.fast4x.riplay.models.Event
 import it.fast4x.riplay.models.Info
 import it.fast4x.riplay.models.Song
 import it.fast4x.riplay.models.ui.toUiMedia
+import it.fast4x.riplay.service.BitmapProvider
 import it.fast4x.riplay.thumbnailShape
 import it.fast4x.riplay.typography
 import it.fast4x.riplay.ui.components.CustomModalBottomSheet
 import it.fast4x.riplay.ui.components.LocalMenuState
+import it.fast4x.riplay.ui.components.themed.AddToPlaylistPlayerMenu
 import it.fast4x.riplay.ui.components.themed.BlurParamsDialog
 import it.fast4x.riplay.ui.components.themed.CircularSlider
 import it.fast4x.riplay.ui.components.themed.ConfirmationDialog
@@ -202,11 +236,20 @@ import it.fast4x.riplay.ui.components.themed.SecondaryTextButton
 import it.fast4x.riplay.ui.components.themed.SmartMessage
 import it.fast4x.riplay.ui.components.themed.ThumbnailOffsetDialog
 import it.fast4x.riplay.ui.components.themed.animateBrushRotation
+import it.fast4x.riplay.ui.screens.player.offline.Lyrics
+import it.fast4x.riplay.ui.screens.player.offline.NextVisualizer
+import it.fast4x.riplay.ui.screens.player.offline.Queue
+import it.fast4x.riplay.ui.screens.player.offline.StatsForNerds
+import it.fast4x.riplay.ui.screens.player.offline.animatedGradient
+import it.fast4x.riplay.ui.screens.player.online.components.customui.CustomDefaultPlayerUiController
+import it.fast4x.riplay.ui.screens.settings.isYouTubeSyncEnabled
 import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.ui.styling.collapsedPlayerProgressBar
 import it.fast4x.riplay.ui.styling.dynamicColorPaletteOf
+import it.fast4x.riplay.ui.styling.favoritesIcon
 import it.fast4x.riplay.ui.styling.favoritesOverlay
 import it.fast4x.riplay.ui.styling.px
+import it.fast4x.riplay.utils.ActionIntent
 import it.fast4x.riplay.utils.BlurTransformation
 import it.fast4x.riplay.utils.DisposableListener
 import it.fast4x.riplay.utils.SearchYoutubeEntity
@@ -215,8 +258,10 @@ import it.fast4x.riplay.utils.VinylSizeKey
 import it.fast4x.riplay.utils.actionExpandedKey
 import it.fast4x.riplay.utils.actionspacedevenlyKey
 import it.fast4x.riplay.utils.addNext
+import it.fast4x.riplay.utils.addToYtLikedSong
 import it.fast4x.riplay.utils.albumCoverRotationKey
 import it.fast4x.riplay.utils.animatedGradientKey
+import it.fast4x.riplay.utils.asSong
 import it.fast4x.riplay.utils.backgroundProgressKey
 import it.fast4x.riplay.utils.blackgradientKey
 import it.fast4x.riplay.utils.blurDarkenFactorKey
@@ -244,9 +289,17 @@ import it.fast4x.riplay.utils.formatAsDuration
 import it.fast4x.riplay.utils.formatAsTime
 import it.fast4x.riplay.utils.getBitmapFromUrl
 import it.fast4x.riplay.utils.getIconQueueLoopState
+import it.fast4x.riplay.utils.getLikeState
 import it.fast4x.riplay.utils.horizontalFadingEdge
+import it.fast4x.riplay.utils.isAtLeastAndroid12
+import it.fast4x.riplay.utils.isAtLeastAndroid8
 import it.fast4x.riplay.utils.isExplicit
+import it.fast4x.riplay.utils.isInvincibilityEnabledKey
 import it.fast4x.riplay.utils.isLandscape
+import it.fast4x.riplay.utils.isVideo
+import it.fast4x.riplay.utils.lastVideoIdKey
+import it.fast4x.riplay.utils.lastVideoSecondsKey
+import it.fast4x.riplay.utils.mediaItemToggleLike
 import it.fast4x.riplay.utils.mediaItems
 import it.fast4x.riplay.utils.miniQueueExpandedKey
 import it.fast4x.riplay.utils.noblurKey
@@ -264,6 +317,7 @@ import it.fast4x.riplay.utils.queueTypeKey
 import it.fast4x.riplay.utils.rememberPreference
 import it.fast4x.riplay.utils.seamlessPlay
 import it.fast4x.riplay.utils.semiBold
+import it.fast4x.riplay.utils.setDisLikeState
 import it.fast4x.riplay.utils.setQueueLoopState
 import it.fast4x.riplay.utils.showButtonPlayerAddToPlaylistKey
 import it.fast4x.riplay.utils.showButtonPlayerArrowKey
@@ -305,70 +359,21 @@ import it.fast4x.riplay.utils.timelineExpandedKey
 import it.fast4x.riplay.utils.titleExpandedKey
 import it.fast4x.riplay.utils.topPaddingKey
 import it.fast4x.riplay.utils.transparentBackgroundPlayerActionBarKey
+import it.fast4x.riplay.utils.unlikeYtVideoOrSong
 import it.fast4x.riplay.utils.visualizerEnabledKey
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.dailyislam.android.utilities.isNetworkConnected
+import timber.log.Timber
 import kotlin.Float.Companion.POSITIVE_INFINITY
 import kotlin.math.absoluteValue
-import androidx.compose.ui.geometry.Rect
-import androidx.compose.ui.geometry.center
-import androidx.compose.ui.graphics.Outline
-import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.graphics.compositeOver
-import androidx.compose.ui.input.pointer.pointerInteropFilter
-import androidx.compose.ui.unit.LayoutDirection
-import androidx.compose.ui.viewinterop.AndroidView
-import androidx.core.app.NotificationChannelCompat
-import androidx.core.app.NotificationCompat
-import androidx.core.app.NotificationManagerCompat
-import androidx.lifecycle.compose.LocalLifecycleOwner
-import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.PlayerConstants
-import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
-import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.AbstractYouTubePlayerListener
-import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.options.IFramePlayerOptions
-import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
-import it.fast4x.riplay.MainActivity
-import it.fast4x.riplay.appContext
-import it.fast4x.riplay.context
-import it.fast4x.riplay.getLastYTVideoId
-import it.fast4x.riplay.getLastYTVideoSeconds
-import it.fast4x.riplay.getMinTimeForEvent
-import it.fast4x.riplay.getPauseListenHistory
-import it.fast4x.riplay.getQueueLoopType
-import it.fast4x.riplay.models.Event
-import it.fast4x.riplay.service.BitmapProvider
-import it.fast4x.riplay.ui.components.themed.AddToPlaylistPlayerMenu
-import it.fast4x.riplay.ui.screens.player.offline.Lyrics
-import it.fast4x.riplay.ui.screens.player.offline.NextVisualizer
-import it.fast4x.riplay.ui.screens.player.offline.animatedGradient
-import it.fast4x.riplay.ui.screens.settings.isYouTubeSyncEnabled
-import it.fast4x.riplay.ui.styling.favoritesIcon
-import it.fast4x.riplay.utils.addToYtLikedSong
-import it.fast4x.riplay.utils.getLikeState
-import it.fast4x.riplay.utils.mediaItemToggleLike
-import it.fast4x.riplay.utils.setDisLikeState
-import it.fast4x.riplay.utils.unlikeYtVideoOrSong
-import kotlinx.coroutines.CoroutineScope
-import org.dailyislam.android.utilities.isNetworkConnected
-import kotlin.math.sqrt
-import it.fast4x.riplay.ui.screens.player.offline.StatsForNerds
-import it.fast4x.riplay.ui.screens.player.offline.Queue
-import it.fast4x.riplay.ui.screens.player.online.components.customui.CustomDefaultPlayerUiController
-import it.fast4x.riplay.utils.ActionIntent
-import it.fast4x.riplay.utils.asSong
-import it.fast4x.riplay.utils.isAtLeastAndroid12
-import it.fast4x.riplay.utils.isAtLeastAndroid8
-import it.fast4x.riplay.utils.isInvincibilityEnabledKey
-import it.fast4x.riplay.utils.isVideo
-import it.fast4x.riplay.utils.lastVideoIdKey
-import it.fast4x.riplay.utils.lastVideoSecondsKey
-import timber.log.Timber
 import kotlin.math.roundToInt
+import kotlin.math.sqrt
 
 
 val NOTIFICATION_CHANNEL = "OnlinePlayer"
@@ -1641,49 +1646,57 @@ fun OnlinePlayer(
 
     /***** NEW PLAYER *****/
 
+    var showCastButton by remember { mutableStateOf(false) }
+    val activity = LocalActivity.current
+
     val thumbnailContent: @Composable (
         modifier: Modifier,
     ) -> Unit = { innerModifier ->
+        if (showCastButton) {
 
-        var showControls by remember { mutableStateOf(true) }
-        LaunchedEffect(showControls) {
-            if (showControls) {
-                delay(5000)
-                showControls = false
-            }
-        }
+            //PlayServicesUtils.checkGooglePlayServicesAvailability(activity, 1, Runnable {initChromecast()} )
 
-        Box(
-            modifier = innerModifier
-                .fillMaxSize()
-                .background(Color.Transparent)
-        ) {
-            AnimatedVisibility(
-                modifier = Modifier
-                    .zIndex(1f)
-                    .align(Alignment.Center),
-                visible = showControls && it.fast4x.riplay.utils.isLandscape,
-                enter = fadeIn(),
-                exit = fadeOut()
-            ) {
-                Box(
-                    modifier = Modifier
-                        .background(Color.Gray.copy(alpha = .4f), thumbnailRoundness.shape())
-                        .fillMaxWidth(0.9f)
-                        .fillMaxHeight(0.8f)
-                ) {
-                    controlsContent(Modifier.padding(top = 20.dp))
+        } else {
+
+            var showControls by remember { mutableStateOf(true) }
+            LaunchedEffect(showControls) {
+                if (showControls) {
+                    delay(5000)
+                    showControls = false
                 }
             }
 
-            AndroidView(
+            Box(
                 modifier = innerModifier
+                    .fillMaxSize()
                     .background(Color.Transparent)
-                    .zIndex(0f),
-                factory = {
-                    if (onlinePlayerView.parent != null) {
-                        (onlinePlayerView.parent as ViewGroup).removeView(onlinePlayerView) // <- fix
+            ) {
+                AnimatedVisibility(
+                    modifier = Modifier
+                        .zIndex(1f)
+                        .align(Alignment.Center),
+                    visible = showControls && it.fast4x.riplay.utils.isLandscape,
+                    enter = fadeIn(),
+                    exit = fadeOut()
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .background(Color.Gray.copy(alpha = .4f), thumbnailRoundness.shape())
+                            .fillMaxWidth(0.9f)
+                            .fillMaxHeight(0.8f)
+                    ) {
+                        controlsContent(Modifier.padding(top = 20.dp))
                     }
+                }
+
+                AndroidView(
+                    modifier = innerModifier
+                        .background(Color.Transparent)
+                        .zIndex(0f),
+                    factory = {
+                        if (onlinePlayerView.parent != null) {
+                            (onlinePlayerView.parent as ViewGroup).removeView(onlinePlayerView) // <- fix
+                        }
 //                val iFramePlayerOptions = IFramePlayerOptions.Builder()
 //                    .controls(1) // show/hide controls
 //                    .rel(0) // related video at the end
@@ -1694,18 +1707,18 @@ fun OnlinePlayer(
 //                    //.list(PLAYLIST_ID)
 //                    .build()
 
-                    // Disable default view controls to set custom view
-                    val iFramePlayerOptions = IFramePlayerOptions.Builder()
-                        .controls(0) // show/hide controls
-                        .listType("playlist")
-                        .build()
+                        // Disable default view controls to set custom view
+                        val iFramePlayerOptions = IFramePlayerOptions.Builder()
+                            .controls(0) // show/hide controls
+                            .listType("playlist")
+                            .build()
 
-                    val listener = object : AbstractYouTubePlayerListener() {
+                        val listener = object : AbstractYouTubePlayerListener() {
 
-                        override fun onReady(youTubePlayer: YouTubePlayer) {
-                            player.value = youTubePlayer
+                            override fun onReady(youTubePlayer: YouTubePlayer) {
+                                player.value = youTubePlayer
 
-/* Used to show custom player ui with uiController as listener
+                                /* Used to show custom player ui with uiController as listener
 //                            val customPlayerUiController = CustomBasePlayerUiControllerAsListener(
 //                                it,
 //                                customPLayerUi,
@@ -1719,174 +1732,113 @@ fun OnlinePlayer(
 */
 
 // Used to show default player ui with defaultPlayerUiController as custom view
-                            val customUiController =
-                                CustomDefaultPlayerUiController(
-                                    onlinePlayerView,
-                                    youTubePlayer,
-                                    onTap = {
-                                        showControls = !showControls
-                                    }
+                                val customUiController =
+                                    CustomDefaultPlayerUiController(
+                                        onlinePlayerView,
+                                        youTubePlayer,
+                                        onTap = {
+                                            showControls = !showControls
+                                        }
+                                    )
+                                customUiController.showUi(false) // disable all default controls and buttons
+                                customUiController.showMenuButton(false)
+                                customUiController.showVideoTitle(false)
+                                customUiController.showPlayPauseButton(false)
+                                customUiController.showDuration(false)
+                                customUiController.showCurrentTime(false)
+                                customUiController.showSeekBar(false)
+                                customUiController.showBufferingProgress(false)
+                                customUiController.showYouTubeButton(false)
+                                customUiController.showFullscreenButton(false)
+                                onlinePlayerView.setCustomPlayerUi(customUiController.rootView)
+
+                                if (playerState.value == PlayerConstants.PlayerState.UNSTARTED
+                                    || playerState.value != PlayerConstants.PlayerState.BUFFERING
                                 )
-                            customUiController.showUi(false) // disable all default controls and buttons
-                            customUiController.showMenuButton(false)
-                            customUiController.showVideoTitle(false)
-                            customUiController.showPlayPauseButton(false)
-                            customUiController.showDuration(false)
-                            customUiController.showCurrentTime(false)
-                            customUiController.showSeekBar(false)
-                            customUiController.showBufferingProgress(false)
-                            customUiController.showYouTubeButton(false)
-                            customUiController.showFullscreenButton(false)
-                            onlinePlayerView.setCustomPlayerUi(customUiController.rootView)
+                                    youTubePlayer.loadVideo(
+                                        mediaItem.mediaId,
+                                        if (mediaItem.mediaId == getLastYTVideoId()) getLastYTVideoSeconds() else 0f
+                                    )
+
+                                //youTubePlayer.cueVideo(mediaItem.mediaId, 0f)
 
 
-                            if (playerState.value == PlayerConstants.PlayerState.UNSTARTED
-                                || playerState.value != PlayerConstants.PlayerState.BUFFERING
-                            )
-                                youTubePlayer.loadVideo(
-                                    mediaItem.mediaId,
-                                    if (mediaItem.mediaId == getLastYTVideoId()) getLastYTVideoSeconds() else 0f
-                                )
+                            }
 
-                            //youTubePlayer.cueVideo(mediaItem.mediaId, 0f)
+                            override fun onCurrentSecond(
+                                youTubePlayer: YouTubePlayer,
+                                second: Float
+                            ) {
+                                super.onCurrentSecond(youTubePlayer, second)
+                                currentSecond = second
+                                lastYTVideoSeconds = second
+                                lastYTVideoId = mediaItem.mediaId
 
+                            }
 
-                        }
+                            override fun onVideoDuration(
+                                youTubePlayer: YouTubePlayer,
+                                duration: Float
+                            ) {
+                                super.onVideoDuration(youTubePlayer, duration)
+                                currentDuration = duration
+                            }
 
-                        override fun onCurrentSecond(youTubePlayer: YouTubePlayer, second: Float) {
-                            super.onCurrentSecond(youTubePlayer, second)
-                            currentSecond = second
-                            lastYTVideoSeconds = second
-                            lastYTVideoId = mediaItem.mediaId
-
-                        }
-
-                        override fun onVideoDuration(
-                            youTubePlayer: YouTubePlayer,
-                            duration: Float
-                        ) {
-                            super.onVideoDuration(youTubePlayer, duration)
-                            currentDuration = duration
-                        }
-
-                        override fun onStateChange(
-                            youTubePlayer: YouTubePlayer,
-                            state: PlayerConstants.PlayerState
-                        ) {
-                            super.onStateChange(youTubePlayer, state)
+                            override fun onStateChange(
+                                youTubePlayer: YouTubePlayer,
+                                state: PlayerConstants.PlayerState
+                            ) {
+                                super.onStateChange(youTubePlayer, state)
 //                        if (state == PlayerConstants.PlayerState.ENDED) {
 //                            onVideoEnded()
 //                        }
-                            playerState.value = state
+                                playerState.value = state
+
+                            }
+
+                            override fun onPlaybackQualityChange(
+                                youTubePlayer: YouTubePlayer,
+                                playbackQuality: PlayerConstants.PlaybackQuality
+                            ) {
+                                super.onPlaybackQualityChange(youTubePlayer, playbackQuality)
+                                println("OnlinePlayer onPlaybackQualityChange $playbackQuality")
+                            }
+
 
                         }
 
-                        override fun onPlaybackQualityChange(
-                            youTubePlayer: YouTubePlayer,
-                            playbackQuality: PlayerConstants.PlaybackQuality
-                        ) {
-                            super.onPlaybackQualityChange(youTubePlayer, playbackQuality)
-                            println("OnlinePlayer onPlaybackQualityChange $playbackQuality")
+                        onlinePlayerView.apply {
+                            enableAutomaticInitialization = false
+
+                            if (enableBackgroundPlayback)
+                                enableBackgroundPlayback(true)
+                            else
+                                lifecycleOwner.lifecycle.addObserver(this)
+
+                            initialize(listener, iFramePlayerOptions)
                         }
 
-
-                    }
-
-                    onlinePlayerView.apply {
-                        enableAutomaticInitialization = false
-
-                        if (enableBackgroundPlayback)
-                            enableBackgroundPlayback(true)
-                        else
-                            lifecycleOwner.lifecycle.addObserver(this)
-
-                        initialize(listener, iFramePlayerOptions)
-                    }
-
-                },
-                update = {
-                    it.enableBackgroundPlayback(enableBackgroundPlayback)
-                    it.layoutParams = if (!isLandscape) {
-                        ViewGroup.LayoutParams(
-                            ViewGroup.LayoutParams.MATCH_PARENT,
-                            if (playerThumbnailSize == PlayerThumbnailSize.Expanded)
+                    },
+                    update = {
+                        it.enableBackgroundPlayback(enableBackgroundPlayback)
+                        it.layoutParams = if (!isLandscape) {
+                            ViewGroup.LayoutParams(
+                                ViewGroup.LayoutParams.MATCH_PARENT,
+                                if (playerThumbnailSize == PlayerThumbnailSize.Expanded)
+                                    ViewGroup.LayoutParams.WRAP_CONTENT
+                                else playerThumbnailSize.height
+                            )
+                        } else {
+                            ViewGroup.LayoutParams(
+                                ViewGroup.LayoutParams.MATCH_PARENT,
                                 ViewGroup.LayoutParams.WRAP_CONTENT
-                            else playerThumbnailSize.height
-                        )
-                    } else {
-                        ViewGroup.LayoutParams(
-                            ViewGroup.LayoutParams.MATCH_PARENT,
-                            ViewGroup.LayoutParams.WRAP_CONTENT
-                        )
+                            )
+                        }
                     }
-                }
-            )
-        }
+                )
+            }
 
-//        var deltaX by remember { mutableStateOf(0f) }
-//        //var direction by remember { mutableIntStateOf(-1)}
-//
-//            Thumbnail(
-//                thumbnailTapEnabledKey = thumbnailTapEnabled,
-//                isShowingLyrics = isShowingLyrics,
-//                onShowLyrics = { isShowingLyrics = it },
-//                isShowingStatsForNerds = isShowingStatsForNerds,
-//                onShowStatsForNerds = { isShowingStatsForNerds = it },
-//                isShowingVisualizer = isShowingVisualizer,
-//                onShowEqualizer = { isShowingVisualizer = it },
-//                showthumbnail = showthumbnail,
-//                onMaximize = {
-//                    showFullLyrics = true
-//                },
-//                onDoubleTap = {
-//                    val currentMediaItem = binder.player.currentMediaItem
-//                    Database.asyncTransaction {
-//                        if (like(
-//                                mediaItem.mediaId,
-//                                if (likedAt == null) System.currentTimeMillis() else null
-//                            ) == 0
-//                        ) {
-//                            currentMediaItem
-//                                ?.takeIf { it.mediaId == mediaItem.mediaId }
-//                                ?.let {
-//                                    insert(currentMediaItem, Song::toggleLike)
-//                                }
-//                        }
-//                    }
-//                    if (effectRotationEnabled) isRotated = !isRotated
-//                },
-//                modifier = modifier
-//                    //.nestedScroll( connection = scrollConnection )
-//                    .pointerInput(Unit) {
-//                        detectHorizontalDragGestures(
-//                            onHorizontalDrag = { change, dragAmount ->
-//                                deltaX = dragAmount
-//                            },
-//                            onDragStart = {
-//                                //Log.d("mediaItemGesture","ondragStart offset ${it}")
-//                            },
-//                            onDragEnd = {
-//                                if (!disablePlayerHorizontalSwipe && playerType == PlayerType.Essential) {
-//                                    if (deltaX > 5) {
-//                                        binder.player.playPrevious()
-//                                        //Log.d("mediaItem","Swipe to LEFT")
-//                                    } else if (deltaX < -5) {
-//                                        binder.player.playNext()
-//                                        //Log.d("mediaItem","Swipe to RIGHT")
-//                                    }
-//
-//                                }
-//
-//                            }
-//
-//                        )
-//                    }
-//                    .padding(all = if (isLandscape) playerThumbnailSizeL.padding.dp else playerThumbnailSize.padding.dp)
-//                    .thumbnailpause(
-//                        shouldBePlaying = shouldBePlaying
-//                    )
-//
-//            )
+        }
 
     }
 
@@ -2213,6 +2165,19 @@ fun OnlinePlayer(
                                 .padding(horizontal = 12.dp)
                                 .fillMaxWidth()
                         ) {
+                            IconButton(
+                                icon = com.pierfrancescosoffritti.androidyoutubeplayer.chromecast.chromecastsender.R.drawable.quantum_ic_cast_connected_white_24,
+                                color = colorPalette().accent,
+                                enabled = true,
+                                onClick = {
+                                    //PlayServicesUtils.checkGooglePlayServicesAvailability(activity, 1, Runnable {initChromecast()} )
+                                    //initChromecast()
+                                    showCastButton = true
+                                },
+                                modifier = Modifier
+                                    .size(24.dp),
+                            )
+
                             if (showButtonPlayerVideo)
                                 IconButton(
                                     icon = R.drawable.video,
