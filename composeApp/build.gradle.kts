@@ -547,6 +547,8 @@ dependencies {
     implementation(libs.haze)
     implementation(libs.androidyoutubeplayer)
     implementation(libs.androidyoutubeplayer.custom.ui)
+    implementation(libs.androidyoutubeplayer.chromecast.sender)
+    implementation(libs.androidx.mediarouter)
     implementation(libs.glance.widgets)
     implementation(libs.kizzy.rpc)
     implementation(libs.gson)
