@@ -44,6 +44,7 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.Checkbox
 import androidx.compose.material.CheckboxDefaults.colors
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -151,7 +152,7 @@ import java.util.Date
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import it.fast4x.riplay.ui.screens.player.online.OnlineMiniPlayer
 
-
+@ExperimentalMaterial3Api
 @ExperimentalTextApi
 @SuppressLint("SuspiciousIndentation")
 @ExperimentalFoundationApi
