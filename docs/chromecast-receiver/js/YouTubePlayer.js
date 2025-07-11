@@ -13,24 +13,17 @@ function YouTubePlayer(communicationConstants, communicationChannel) {
     let player
     let lastState
     let lastVideoId
-    let adblockIntervalId
-    var timerId
 
-    function initialize() {        
+    function initialize() {
         YouTubePlayerBridge.sendYouTubeIframeAPIReady()
-        
+
         player = new YT.Player('youTubePlayerDOM', {
-            
+
             height: '100%',
             width: '100%',
-            
+
             events: {
-                onReady: function(event) {
-                  hideVideoTitle()
-                  hideTabletPopup()
-                  hideCaption()
-                  YouTubePlayerBridge.sendReady()
-                },
+                onReady: () => YouTubePlayerBridge.sendReady(),
                 onStateChange: event  => sendPlayerStateChange(event.data),
                 onPlaybackQualityChange: event => YouTubePlayerBridge.sendPlaybackQualityChange(event.data),
                 onPlaybackRateChange: event => YouTubePlayerBridge.sendPlaybackRateChange(event.data),
@@ -46,65 +39,8 @@ function YouTubePlayer(communicationConstants, communicationChannel) {
                 origin: 'https://www.youtube.com',
                 rel: 0,
                 iv_load_policy: 3
-            }            
+            }
         })
-    }
-
-function initializeAdBlock() {
-      if (adblockIntervalId) {
-        clearInterval(adblockIntervalId);
-      }
-
-      const playerIFrame = document.querySelector("iframe");
-      if (playerIFrame) {
-        adblockIntervalId = setInterval(() => {
-          if (!playerIFrame) {
-            return;
-          }
-
-          const frameDoc = playerIFrame.contentDocument;
-          if (!frameDoc) {
-            return;
-          }
-
-
-          const adsContainer = frameDoc.querySelector('.video-ads');
-          if (!adsContainer || adsContainer.childElementCount == 0) {
-            return;
-          }
-
-          const adsVideo = adsContainer.querySelector("video");
-
-          if (adsVideo) {
-            adsVideo.muted = true;
-            adsVideo.style.display = 'none';
-            adsVideo.currentTime = adsVideo.duration - 0.15;
-            adsVideo.muted = false;
-            adsVideo.style.display = '';
-            if (adblockIntervalId) {
-              clearInterval(adblockIntervalId);
-            }
-          }
-          else {
-            const isAdShowing = frameDoc.getElementsByClassName('ad-showing').length != 0;
-            if (!isAdShowing) {
-              return;
-            }
-
-            const mainVideo = frameDoc.querySelector('.html5-main-video');
-            if (!mainVideo) {
-              return;
-            }
-
-            mainVideo.muted = true;
-            mainVideo.currentTime = mainVideo.duration - 0.15;
-            mainVideo.muted = false;
-            if (adblockIntervalId) {
-              clearInterval(adblockIntervalId);
-            }
-          }
-        }, 100);
-      }
     }
 
     function restoreCommunication() {
@@ -116,8 +52,8 @@ function initializeAdBlock() {
     function sendPlayerStateChange(playerState) {
         lastState = playerState
 
-        clearTimeout(timerId)
-        initializeAdBlock()
+        let timerTaskId
+        clearInterval(timerTaskId)
 
         switch (playerState) {
             case YT.PlayerState.UNSTARTED:
@@ -130,7 +66,7 @@ function initializeAdBlock() {
 
             case YT.PlayerState.PLAYING:
                 sendStateChange(PLAYING)
-                startSendCurrentTimeInterval()
+                timerTaskId = setInterval( () => YouTubePlayerBridge.sendVideoCurrentTime( player.getCurrentTime() ), 100 )
                 sendVideoData(player)
                 return
 
@@ -155,65 +91,10 @@ function initializeAdBlock() {
         function sendStateChange(newState) {
             YouTubePlayerBridge.sendStateChange(newState)
         }
-
-        function startSendCurrentTimeInterval() {
-            timerId = setInterval(function() {
-              YouTubePlayerBridge.sendVideoCurrentTime( player.getCurrentTime() )
-              YouTubePlayerBridge.sendVideoLoadedFraction( player.getVideoLoadedFraction() )
-            }, 100 );
-        }
-
-        function hideTabletPopup() {
-          setInterval(() => {
-            const playerIFrame = document.querySelector("iframe");
-            if (!playerIFrame) {
-              return;
-            }
-
-            const frameDoc = playerIFrame.contentDocument;
-            if (!frameDoc) {
-              return;
-            }
-
-            const collection = frameDoc.getElementsByClassName("ytp-pause-overlay-container")[0];
-            if (!collection) {
-              return;
-            }
-            collection.style.display = 'none';
-          }, 100);
-        }
-
-        function hideVideoTitle() {
-          setInterval(() => {
-            const playerIFrame = document.querySelector("iframe");
-            if (!playerIFrame) {
-              return;
-            }
-
-            const frameDoc = playerIFrame.contentDocument;
-            if (!frameDoc) {
-              return;
-            }
-
-            const title = frameDoc.querySelector('.ytp-chrome-top');
-            if (title) {
-              title.style.display = 'none';
-            }
-          }, 100);
-        }
-
-        function hideCaption() {
-          setInterval(() => {
-            if(!player) {
-              return;
-            }
-            player.unloadModule('captions');
-          }, 1000);
-        }
     }
 
     // JAVA to WEB functions
-    function seekTo(startSeconds) {        	
+    function seekTo(startSeconds) {
         player.seekTo(startSeconds, true)
     }
 
@@ -279,13 +160,13 @@ function initializeAdBlock() {
         player.setShuffle(shuffle);
       }
 
-    const actions = { 
-        seekTo, 
+    const actions = {
+        seekTo,
         pauseVideo,
         playVideo,
-        loadVideo, 
-        cueVideo, 
-        mute, 
+        loadVideo,
+        cueVideo,
+        mute,
         unMute,
         setVolume,
         setPlaybackRate,
@@ -295,7 +176,7 @@ function initializeAdBlock() {
         setLoop,
         setShuffle
     }
-    
+
     return {
         initialize,
         restoreCommunication,
