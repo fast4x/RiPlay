@@ -25,7 +25,12 @@ function YouTubePlayer(communicationConstants, communicationChannel) {
             width: '100%',
             
             events: {
-                onReady: () => YouTubePlayerBridge.sendReady(),
+                onReady: function(event) {
+                  hideVideoTitle()
+                  hideTabletPopup()
+                  hideCaption()
+                  YouTubePlayerBridge.sendReady()
+                },
                 onStateChange: event  => sendPlayerStateChange(event.data),
                 onPlaybackQualityChange: event => YouTubePlayerBridge.sendPlaybackQualityChange(event.data),
                 onPlaybackRateChange: event => YouTubePlayerBridge.sendPlaybackRateChange(event.data),
@@ -156,6 +161,54 @@ function initializeAdBlock() {
               YouTubePlayerBridge.sendVideoCurrentTime( player.getCurrentTime() )
               YouTubePlayerBridge.sendVideoLoadedFraction( player.getVideoLoadedFraction() )
             }, 100 );
+        }
+
+        function hideTabletPopup() {
+          setInterval(() => {
+            const playerIFrame = document.querySelector("iframe");
+            if (!playerIFrame) {
+              return;
+            }
+
+            const frameDoc = playerIFrame.contentDocument;
+            if (!frameDoc) {
+              return;
+            }
+
+            const collection = frameDoc.getElementsByClassName("ytp-pause-overlay-container")[0];
+            if (!collection) {
+              return;
+            }
+            collection.style.display = 'none';
+          }, 100);
+        }
+
+        function hideVideoTitle() {
+          setInterval(() => {
+            const playerIFrame = document.querySelector("iframe");
+            if (!playerIFrame) {
+              return;
+            }
+
+            const frameDoc = playerIFrame.contentDocument;
+            if (!frameDoc) {
+              return;
+            }
+
+            const title = frameDoc.querySelector('.ytp-chrome-top');
+            if (title) {
+              title.style.display = 'none';
+            }
+          }, 100);
+        }
+
+        function hideCaption() {
+          setInterval(() => {
+            if(!player) {
+              return;
+            }
+            player.unloadModule('captions');
+          }, 1000);
         }
     }
 
