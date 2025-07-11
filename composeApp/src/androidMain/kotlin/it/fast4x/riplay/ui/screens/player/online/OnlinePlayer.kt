@@ -1650,10 +1650,11 @@ fun OnlinePlayer(
         modifier: Modifier,
     ) -> Unit = { innerModifier ->
         if (showCastButton) {
-
+            // Experimental use of Chromecast with Direct Mode
             //PlayServicesUtils.checkGooglePlayServicesAvailability(activity, 1, Runnable {initChromecast()} )
-            val intent = Intent(activity, ChromeCastActivity::class.java)
-            activity?.startActivity(intent)
+            // Experimental use of Chromecast with Activity
+            //val intent = Intent(activity, ChromeCastActivity::class.java)
+            //activity?.startActivity(intent)
 
         } else {
 
@@ -2164,18 +2165,17 @@ fun OnlinePlayer(
                                 .padding(horizontal = 12.dp)
                                 .fillMaxWidth()
                         ) {
-                            IconButton(
-                                icon = com.pierfrancescosoffritti.androidyoutubeplayer.chromecast.chromecastsender.R.drawable.quantum_ic_cast_connected_white_24,
-                                color = colorPalette().accent,
-                                enabled = true,
-                                onClick = {
-                                    //PlayServicesUtils.checkGooglePlayServicesAvailability(activity, 1, Runnable {initChromecast()} )
-                                    //initChromecast()
-                                    showCastButton = true
-                                },
-                                modifier = Modifier
-                                    .size(24.dp),
-                            )
+                            // TODO Implement RiPlay Connect
+//                            IconButton(
+//                                icon = com.pierfrancescosoffritti.androidyoutubeplayer.chromecast.chromecastsender.R.drawable.quantum_ic_cast_connected_white_24,
+//                                color = colorPalette().accent,
+//                                enabled = true,
+//                                onClick = {
+//                                    showCastButton = true
+//                                },
+//                                modifier = Modifier
+//                                    .size(24.dp),
+//                            )
 
                             if (showButtonPlayerVideo)
                                 IconButton(
