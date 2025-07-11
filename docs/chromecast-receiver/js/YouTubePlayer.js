@@ -13,6 +13,8 @@ function YouTubePlayer(communicationConstants, communicationChannel) {
     let player
     let lastState
     let lastVideoId
+    let adblockIntervalId;
+    var timerId;
 
     function initialize() {        
         YouTubePlayerBridge.sendYouTubeIframeAPIReady()
@@ -111,6 +113,7 @@ function initializeAdBlock() {
 
         let timerTaskId
         clearInterval(timerTaskId)
+        clearTimeout(timerId)
 
         initializeAdBlock()
 
