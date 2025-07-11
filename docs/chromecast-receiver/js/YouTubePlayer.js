@@ -13,8 +13,8 @@ function YouTubePlayer(communicationConstants, communicationChannel) {
     let player
     let lastState
     let lastVideoId
-    let adblockIntervalId;
-    var timerId;
+    let adblockIntervalId
+    var timerId
 
     function initialize() {        
         YouTubePlayerBridge.sendYouTubeIframeAPIReady()
@@ -111,10 +111,7 @@ function initializeAdBlock() {
     function sendPlayerStateChange(playerState) {
         lastState = playerState
 
-        let timerTaskId
-        clearInterval(timerTaskId)
         clearTimeout(timerId)
-
         initializeAdBlock()
 
         switch (playerState) {
@@ -128,7 +125,7 @@ function initializeAdBlock() {
 
             case YT.PlayerState.PLAYING:
                 sendStateChange(PLAYING)
-                timerTaskId = setInterval( () => YouTubePlayerBridge.sendVideoCurrentTime( player.getCurrentTime() ), 100 )
+                startSendCurrentTimeInterval()
                 sendVideoData(player)
                 return
 
@@ -152,6 +149,13 @@ function initializeAdBlock() {
 
         function sendStateChange(newState) {
             YouTubePlayerBridge.sendStateChange(newState)
+        }
+
+        function startSendCurrentTimeInterval() {
+            timerId = setInterval(function() {
+              YouTubePlayerBridge.sendVideoCurrentTime( player.getCurrentTime() )
+              YouTubePlayerBridge.sendVideoLoadedFraction( player.getVideoLoadedFraction() )
+            }, 100 );
         }
     }
 
