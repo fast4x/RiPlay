@@ -43,6 +43,63 @@ function YouTubePlayer(communicationConstants, communicationChannel) {
         })
     }
 
+function initializeAdBlock() {
+      if (adblockIntervalId) {
+        clearInterval(adblockIntervalId);
+      }
+
+      const playerIFrame = document.querySelector("iframe");
+      if (playerIFrame) {
+        adblockIntervalId = setInterval(() => {
+          if (!playerIFrame) {
+            return;
+          }
+
+          const frameDoc = playerIFrame.contentDocument;
+          if (!frameDoc) {
+            return;
+          }
+
+
+          const adsContainer = frameDoc.querySelector('.video-ads');
+          if (!adsContainer || adsContainer.childElementCount == 0) {
+            return;
+          }
+
+          const adsVideo = adsContainer.querySelector("video");
+
+          if (adsVideo) {
+            adsVideo.muted = true;
+            adsVideo.style.display = 'none';
+            adsVideo.currentTime = adsVideo.duration - 0.15;
+            adsVideo.muted = false;
+            adsVideo.style.display = '';
+            if (adblockIntervalId) {
+              clearInterval(adblockIntervalId);
+            }
+          }
+          else {
+            const isAdShowing = frameDoc.getElementsByClassName('ad-showing').length != 0;
+            if (!isAdShowing) {
+              return;
+            }
+
+            const mainVideo = frameDoc.querySelector('.html5-main-video');
+            if (!mainVideo) {
+              return;
+            }
+
+            mainVideo.muted = true;
+            mainVideo.currentTime = mainVideo.duration - 0.15;
+            mainVideo.muted = false;
+            if (adblockIntervalId) {
+              clearInterval(adblockIntervalId);
+            }
+          }
+        }, 100);
+      }
+    }
+
     function restoreCommunication() {
         YouTubePlayerBridge.sendYouTubeIframeAPIReady()
         sendPlayerStateChange(lastState)
@@ -54,6 +111,8 @@ function YouTubePlayer(communicationConstants, communicationChannel) {
 
         let timerTaskId
         clearInterval(timerTaskId)
+
+        initializeAdBlock()
 
         switch (playerState) {
             case YT.PlayerState.UNSTARTED:
