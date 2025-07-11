@@ -15,7 +15,7 @@ fun ShowUpdatedVersion(
     modifier: Modifier
 ) {
     //val file = getFilesDir() //shows as unresolved reference
-    val file = File(LocalContext.current.filesDir, "RiMusicUpdatedVersion.ver")
+    val file = File(LocalContext.current.filesDir, "UpdatedVersion.ver")
     val newVersion = file.readText()
 
     BasicText(

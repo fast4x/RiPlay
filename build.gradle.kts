@@ -9,36 +9,3 @@ plugins {
     alias(libs.plugins.kotlin.multiplatform) apply false
     alias(libs.plugins.jetbrainsCompose) apply false
 }
-
-/*
-subprojects {
-    tasks.named("compileKotlin", org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask::class.java) {
-        compilerOptions {
-            if (project.findProperty("enableComposeCompilerReports") == "true") {
-                arrayOf("reports", "metrics").forEach {
-                    freeCompilerArgs.addAll(
-                        listOf(
-                            "-P",
-                            "plugin:androidx.compose.compiler.plugins.kotlin:${it}Destination=${layout.buildDirectory.asFile.get().absolutePath}/compose_metrics"
-                        )
-                    )
-                }
-            }
-        }
-    }
-    /*
-    tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
-        kotlinOptions {
-            if (project.findProperty("enableComposeCompilerReports") == "true") {
-                arrayOf("reports", "metrics").forEach {
-                    freeCompilerArgs = freeCompilerArgs + listOf(
-                        "-P",
-                        "plugin:androidx.compose.compiler.plugins.kotlin:${it}Destination=${layout.buildDirectory.asFile.get().absolutePath}/compose_metrics"
-                    )
-                }
-            }
-        }
-    }
-     */
-}
-*/

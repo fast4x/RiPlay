@@ -152,6 +152,12 @@
                 android:resource="@xml/shortcuts" />
         </activity>
 
+        <activity
+            android:name=".extensions.chromecast.ChromeCastActivity"
+            android:configChanges="orientation|screenSize|keyboardHidden|smallestScreenSize|screenLayout"
+            android:hardwareAccelerated="true"
+            android:label="RiPlay Chromecast Activity" />
+
         <receiver android:name=".ui.widgets.PlayerVerticalWidgetReceiver"
             android:exported="true">
             <intent-filter>

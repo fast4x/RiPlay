@@ -519,7 +519,7 @@ MonetCompatActivity(),
                             runOnUiThread {
                                 try {
                                     if (responseData != null) {
-                                        val file = File(filesDir, "RiPlayUpdatedVersionCode.ver")
+                                        val file = File(filesDir, "UpdatedVersionCode.ver")
                                         file.writeText(responseData.toString())
                                     }
                                 } catch (e: Exception) {

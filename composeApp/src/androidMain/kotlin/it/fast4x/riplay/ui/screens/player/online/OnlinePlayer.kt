@@ -152,13 +152,11 @@ import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.common.Timeline
 import androidx.media3.common.util.UnstableApi
-import androidx.mediarouter.app.MediaRouteButton
 import androidx.navigation.NavController
 import androidx.palette.graphics.Palette
 import coil.compose.AsyncImage
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
-import com.google.android.gms.cast.framework.CastButtonFactory
 import com.mikepenz.hypnoticcanvas.shaderBackground
 import com.mikepenz.hypnoticcanvas.shaders.BlackCherryCosmos
 import com.mikepenz.hypnoticcanvas.shaders.GlossyGradients
@@ -171,7 +169,6 @@ import com.mikepenz.hypnoticcanvas.shaders.MesmerizingLens
 import com.mikepenz.hypnoticcanvas.shaders.OilFlow
 import com.mikepenz.hypnoticcanvas.shaders.PurpleLiquid
 import com.mikepenz.hypnoticcanvas.shaders.Stage
-import com.pierfrancescosoffritti.androidyoutubeplayer.chromecast.chromecastsender.utils.PlayServicesUtils
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.PlayerConstants
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.AbstractYouTubePlayerListener
@@ -208,7 +205,7 @@ import it.fast4x.riplay.enums.SwipeAnimationNoThumbnail
 import it.fast4x.riplay.enums.ThumbnailCoverType
 import it.fast4x.riplay.enums.ThumbnailRoundness
 import it.fast4x.riplay.enums.ThumbnailType
-import it.fast4x.riplay.extensions.chromecast.initChromecast
+import it.fast4x.riplay.extensions.chromecast.ChromeCastActivity
 import it.fast4x.riplay.getLastYTVideoId
 import it.fast4x.riplay.getLastYTVideoSeconds
 import it.fast4x.riplay.getMinTimeForEvent
@@ -1655,6 +1652,8 @@ fun OnlinePlayer(
         if (showCastButton) {
 
             //PlayServicesUtils.checkGooglePlayServicesAvailability(activity, 1, Runnable {initChromecast()} )
+            val intent = Intent(activity, ChromeCastActivity::class.java)
+            activity?.startActivity(intent)
 
         } else {
 

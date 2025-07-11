@@ -542,7 +542,7 @@ fun CheckAvailableNewVersion(
     var updatedProductName = ""
     var updatedVersionName = ""
     var updatedVersionCode = 0
-    val file = File(LocalContext.current.filesDir, "RiPlayUpdatedVersionCode.ver")
+    val file = File(LocalContext.current.filesDir, "UpdatedVersionCode.ver")
     if (file.exists()) {
         val dataText = file.readText().substring(0, file.readText().length - 1).split("-")
         updatedVersionCode =
