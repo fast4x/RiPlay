@@ -124,6 +124,8 @@ import it.fast4x.riplay.enums.PipModule
 import it.fast4x.riplay.enums.PlayerBackgroundColors
 import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.enums.ThumbnailRoundness
+import it.fast4x.riplay.extensions.nsd.discoverNsdServices
+import it.fast4x.riplay.extensions.nsd.registerNsdService
 import it.fast4x.riplay.extensions.pip.PipModuleContainer
 import it.fast4x.riplay.extensions.pip.PipModuleCover
 import it.fast4x.riplay.service.OfflinePlayerService
@@ -379,6 +381,9 @@ MonetCompatActivity(),
         backup = RoomBackup(this)
 
         checkIfAppIsRunningInBackground()
+
+        //registerNsdService()
+        //discoverNsdServices()
 
     }
 
