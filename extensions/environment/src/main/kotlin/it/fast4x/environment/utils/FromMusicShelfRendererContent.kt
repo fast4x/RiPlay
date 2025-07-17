@@ -7,12 +7,6 @@ import it.fast4x.environment.models.NavigationEndpoint
 fun Environment.SongItem.Companion.from(content: MusicShelfRenderer.Content): Environment.SongItem? {
     val (mainRuns, otherRuns) = content.runs
 
-    // Possible configurations:
-    // "song" • author(s) • album • duration
-    // "song" • author(s) • duration
-    // author(s) • album • duration
-    // author(s) • duration
-
     val album: Environment.Info<NavigationEndpoint.Endpoint.Browse>? = otherRuns
         .getOrNull(otherRuns.lastIndex - 1)
         ?.firstOrNull()

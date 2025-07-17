@@ -59,11 +59,15 @@ fun registerNsdService() {
 
 }
 
-fun discoverNsdServices() {
+fun discoverNsdServices(
+    onServiceFound: (List<NsdServiceInfo>) -> Unit
+) {
 
     val nsdManager = initializeNsd()
 
     var socket: Socket? = null
+
+    var servicesDiscovered: List<NsdServiceInfo> = emptyList()
 
     val resolveListener = object : NsdManager.ResolveListener {
 
@@ -83,6 +87,8 @@ fun discoverNsdServices() {
             try {
                 // Connect to the host
                 //socket = Socket(serviceInfo.host, serviceInfo.port)
+                servicesDiscovered = servicesDiscovered + serviceInfo
+                onServiceFound(servicesDiscovered)
                 Timber.i("NsdManager.resolveListener Socket host ${serviceInfo.host}, port ${serviceInfo.port}")
             } catch (e: UnknownHostException) {
                 Timber.e("NsdManager.resolveListener Unknown host. ${e.localizedMessage}")

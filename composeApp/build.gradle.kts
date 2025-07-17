@@ -552,8 +552,10 @@ dependencies {
     implementation(libs.glance.widgets)
     implementation(libs.kizzy.rpc)
     implementation(libs.gson)
-    implementation (libs.hypnoticcanvas)
-    implementation (libs.hypnoticcanvas.shaders)
+    implementation(libs.hypnoticcanvas)
+    implementation(libs.hypnoticcanvas.shaders)
+    implementation(libs.ktor.client.core)
+    implementation(libs.ktor.client.okhttp)
 
     implementation(libs.room)
     ksp(libs.room.compiler)

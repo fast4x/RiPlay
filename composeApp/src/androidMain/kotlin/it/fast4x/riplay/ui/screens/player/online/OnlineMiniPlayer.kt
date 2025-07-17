@@ -75,7 +75,6 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
-import androidx.media3.common.Timeline
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
@@ -85,9 +84,8 @@ import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.Abs
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.options.IFramePlayerOptions
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
 import it.fast4x.riplay.Database
-import it.fast4x.riplay.GlobalPlayerState
+import it.fast4x.riplay.LocalPlayerState
 import it.fast4x.riplay.LocalPlayerServiceBinder
-import it.fast4x.riplay.LocalPlayerSheetState
 import it.fast4x.riplay.MainActivity
 import it.fast4x.riplay.R
 import it.fast4x.riplay.appContext
@@ -112,7 +110,6 @@ import it.fast4x.riplay.typography
 import it.fast4x.riplay.ui.components.themed.IconButton
 import it.fast4x.riplay.ui.components.themed.NowPlayingSongIndicator
 import it.fast4x.riplay.ui.components.themed.SmartMessage
-import it.fast4x.riplay.ui.screens.player.online.components.customui.CustomBasePlayerUiControllerAsListener
 import it.fast4x.riplay.ui.screens.player.online.components.customui.CustomDefaultPlayerUiController
 import it.fast4x.riplay.ui.screens.settings.isYouTubeSyncEnabled
 import it.fast4x.riplay.ui.styling.Dimensions
@@ -139,7 +136,6 @@ import it.fast4x.riplay.utils.lastVideoIdKey
 import it.fast4x.riplay.utils.lastVideoSecondsKey
 import org.dailyislam.android.utilities.isNetworkConnected
 import it.fast4x.riplay.utils.mediaItemToggleLike
-import it.fast4x.riplay.utils.mediaItems
 import it.fast4x.riplay.utils.miniPlayerTypeKey
 import it.fast4x.riplay.utils.playNext
 import it.fast4x.riplay.utils.playPrevious
@@ -619,7 +615,7 @@ fun OnlineMiniPlayer(
             )
         }
 
-        val playerIsVisible = GlobalPlayerState.current
+        val playerIsVisible = LocalPlayerState.current
 
         LaunchedEffect(playerState.value) {
             shouldBePlaying = playerState.value == PlayerConstants.PlayerState.PLAYING

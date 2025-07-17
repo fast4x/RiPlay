@@ -15,6 +15,7 @@ import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.net.Uri
+import android.net.nsd.NsdServiceInfo
 import android.os.Build
 import android.os.Bundle
 import android.os.IBinder
@@ -125,7 +126,6 @@ import it.fast4x.riplay.enums.PlayerBackgroundColors
 import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.enums.ThumbnailRoundness
 import it.fast4x.riplay.extensions.nsd.discoverNsdServices
-import it.fast4x.riplay.extensions.nsd.registerNsdService
 import it.fast4x.riplay.extensions.pip.PipModuleContainer
 import it.fast4x.riplay.extensions.pip.PipModuleCover
 import it.fast4x.riplay.service.OfflinePlayerService
@@ -296,6 +296,8 @@ MonetCompatActivity(),
     var cookie: MutableState<String> = mutableStateOf("") //mutableStateOf(preferences.getString(ytCookieKey, "").toString())
     var visitorData: MutableState<String> = mutableStateOf("") //mutableStateOf(preferences.getString(ytVisitorDataKey, "").toString())
 
+    var linkDevices: MutableState<List<NsdServiceInfo?>> = mutableStateOf(emptyList())
+
 
     override fun onStart() {
         super.onStart()
@@ -329,8 +331,6 @@ MonetCompatActivity(),
         )
 
         WindowCompat.setDecorFitsSystemWindows(window, false)
-
-
 
         /***********/
         // TODO() enable fullscreen mode
@@ -382,8 +382,14 @@ MonetCompatActivity(),
 
         checkIfAppIsRunningInBackground()
 
+        //TODO Implement link client logic
         //registerNsdService()
-        //discoverNsdServices()
+        discoverNsdServices(
+            onServiceFound = {
+                println("MainActivity.onCreate onServiceFound $it")
+                linkDevices.value = it
+            }
+        )
 
     }
 
@@ -1097,7 +1103,8 @@ MonetCompatActivity(),
                                 LocalLayoutDirection provides LayoutDirection.Ltr,
                                 LocalPlayerSheetState provides playerState,
                                 LocalMonetCompat provides localMonet,
-                                GlobalPlayerState provides showPlayer,
+                                LocalPlayerState provides showPlayer,
+                                LocalLinkDevices provides linkDevices.value,
                                 //LocalInternetAvailable provides isInternetAvailable
                             ) {
 
@@ -1459,6 +1466,8 @@ MonetCompatActivity(),
         const val action_albums = "it.fast4x.riplay.action.albums"
         const val action_library = "it.fast4x.riplay.action.library"
         const val action_rescuecenter = "it.fast4x.riplay.action.rescuecenter"
+
+        val linkDevices = LocalLinkDevices
     }
 
 
@@ -1538,6 +1547,7 @@ val LocalPlayerAwareWindowInsets = staticCompositionLocalOf<WindowInsets> { TODO
 val LocalPlayerSheetState =
     staticCompositionLocalOf<SheetState> { error("No player sheet state provided") }
 
-val GlobalPlayerState = staticCompositionLocalOf<Boolean> { error("No player sheet state provided") }
+val LocalPlayerState = staticCompositionLocalOf<Boolean> { error("No player sheet state provided") }
+val LocalLinkDevices = staticCompositionLocalOf<List<NsdServiceInfo?>> { error("No link devices provided") }
 
 

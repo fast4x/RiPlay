@@ -4,5 +4,5 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     app:enableAutomaticInitialization="false"
-    app:handleNetworkEvents="false"
+    app:handleNetworkEvents="true"
     app:autoPlay="false" />

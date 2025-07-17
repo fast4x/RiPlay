@@ -18,7 +18,6 @@ import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import androidx.activity.compose.LocalActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
@@ -205,11 +204,12 @@ import it.fast4x.riplay.enums.SwipeAnimationNoThumbnail
 import it.fast4x.riplay.enums.ThumbnailCoverType
 import it.fast4x.riplay.enums.ThumbnailRoundness
 import it.fast4x.riplay.enums.ThumbnailType
-import it.fast4x.riplay.extensions.link.LINK_COMMAND_PAUSE
-import it.fast4x.riplay.extensions.link.LinkClient
-import it.fast4x.riplay.extensions.link.buildLinkClient
-import it.fast4x.riplay.extensions.link.toLoadCommand
-import it.fast4x.riplay.extensions.link.toPlayCommand
+import it.fast4x.riplay.extensions.link.LINKWEB_COMMAND_PAUSE
+import it.fast4x.riplay.extensions.link.linkServiceClientSend
+import it.fast4x.riplay.extensions.link.toCommand
+import it.fast4x.riplay.extensions.link.toCommandLoad
+import it.fast4x.riplay.extensions.link.toCommandPlay
+import it.fast4x.riplay.extensions.link.toCommandPlayAt
 import it.fast4x.riplay.getLastYTVideoId
 import it.fast4x.riplay.getLastYTVideoSeconds
 import it.fast4x.riplay.getMinTimeForEvent
@@ -270,6 +270,7 @@ import it.fast4x.riplay.utils.blurStrengthKey
 import it.fast4x.riplay.utils.bottomgradientKey
 import it.fast4x.riplay.utils.carouselKey
 import it.fast4x.riplay.utils.carouselSizeKey
+import it.fast4x.riplay.utils.castToLinkDeviceEnabledKey
 import it.fast4x.riplay.utils.clickOnLyricsTextKey
 import it.fast4x.riplay.utils.colorPaletteModeKey
 import it.fast4x.riplay.utils.colorPaletteNameKey
@@ -420,9 +421,10 @@ fun OnlinePlayer(
         mutableStateOf(binder.player.currentMediaItem, neverEqualPolicy())
     }
 
-
-
     var shouldBePlaying by remember { mutableStateOf(false) }
+
+    //var castToLinkDevice by remember { mutableStateOf(false) }
+    var castToLinkDevice by rememberPreference(castToLinkDeviceEnabledKey, false )
 
     //val shouldBePlayingTransition = updateTransition(shouldBePlaying, label = "shouldBePlaying")
 
@@ -542,6 +544,13 @@ fun OnlinePlayer(
         object : Player.Listener {
             override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
                 nullableMediaItem = mediaItem
+                //if (mediaItem != null)
+                mediaItem?.let {
+                    linkServiceClientSend(it.mediaId.toCommandLoad(), castToLinkDevice)
+                }
+
+
+//        }
             }
 
             override fun onTimelineChanged(timeline: Timeline, reason: Int) {
@@ -1083,8 +1092,9 @@ fun OnlinePlayer(
         }
     }
 
+    // This hide androidview when media is not video
     fun Modifier.hidePlayer(): Modifier {
-        return this.size(10.dp)
+        return this.size(0.dp)
     }
 
     if (animatedGradient == AnimatedGradient.Random) {
@@ -1452,13 +1462,18 @@ fun OnlinePlayer(
         )
     }
 
-    val linkClient by remember { mutableStateOf<LinkClient?>(
-        buildLinkClient(
-            address = "192.168.68.111",
-            port = 8000
-        )
-        //null
-    ) }
+//    val linkClient by remember { mutableStateOf<LinkClient?>(
+//        buildLinkClient(
+//            address = "192.168.68.111",
+//            port = 8000
+//        )
+//        //null
+//    ) }
+
+//    val linkClient by remember { mutableStateOf<LinkServiceClientWeb?>(
+//        LinkServiceClientWeb("192.168.68.119", 8443)
+//        //null
+//    ) }
 
     LaunchedEffect(mediaItem) {
         positionAndDuration = 0f to 0f
@@ -1496,12 +1511,6 @@ fun OnlinePlayer(
         //if (playerType == PlayerType.Essential)
 
         player.value?.loadVideo(mediaItem.mediaId, 0f)
-
-        if (linkClient != null)
-            linkClient?.send(mediaItem.mediaId.toLoadCommand())
-            //linkClient?.send("load|${mediaItem.mediaId}|0")
-
-//        }
 
         mediaSession.setMetadata(
             MediaMetadataCompat.Builder()
@@ -1619,6 +1628,11 @@ fun OnlinePlayer(
             )
         }
 
+        linkServiceClientSend(
+            if (shouldBePlaying) mediaItem.mediaId.toCommandPlay() else LINKWEB_COMMAND_PAUSE.toCommand(),
+            castToLinkDevice
+        )
+
         println("OnlinePlayer LaunchedEffect playerState.value ${playerState.value} should be playing? $shouldBePlaying")
 
     }
@@ -1655,22 +1669,18 @@ fun OnlinePlayer(
             mediaItem = mediaItem,
             onPlay = {
                 player.value?.play()
-                println("LinkClient OnLinePlayer Controls pause")
-                CoroutineScope(Dispatchers.IO).launch {
-                    if (linkClient != null)
-                        linkClient?.send(mediaItem.mediaId.toPlayCommand(currentSecond.toInt()))
-                        //linkClient?.send("play|${mediaItem.mediaId}|$currentSecond")
-                }
+                println("LinkClient OnLinePlayer Controls play")
+                linkServiceClientSend(mediaItem.mediaId.toCommandPlayAt(currentSecond.toInt()), castToLinkDevice)
 
             },
             onPause = {
                 player.value?.pause()
-                println("LinkClient OnLinePlayer Controls pause")
-                CoroutineScope(Dispatchers.IO).launch {
-                    if (linkClient != null)
-                        linkClient?.send(LINK_COMMAND_PAUSE)
+                println("LinkClient OnLinePlayer Controls pause 1")
+                //CoroutineScope(Dispatchers.IO).launch {
+                    //if (linkClient != null)
+                        linkServiceClientSend(LINKWEB_COMMAND_PAUSE.toCommand(), castToLinkDevice)
                         //linkClient?.send("pause|")
-                }
+                //}
             },
             onSeekTo = { player.value?.seekTo(it) },
             onNext = { binder.player.playNext() },
@@ -1682,20 +1692,29 @@ fun OnlinePlayer(
 
     /***** NEW PLAYER *****/
 
-    var showCastButton by remember { mutableStateOf(false) }
-    val activity = LocalActivity.current
+    //var showCastButton by remember { mutableStateOf(false) }
+    //val activity = LocalActivity.current
 
     val thumbnailContent: @Composable (
         modifier: Modifier,
     ) -> Unit = { innerModifier ->
-        if (showCastButton) {
+        //if (castToLinkDevice) {
             // Experimental use of Chromecast with Direct Mode
             //PlayServicesUtils.checkGooglePlayServicesAvailability(activity, 1, Runnable {initChromecast()} )
             // Experimental use of Chromecast with Activity
             //val intent = Intent(activity, ChromeCastActivity::class.java)
             //activity?.startActivity(intent)
 
-        } else {
+//            Box(
+//                modifier = innerModifier
+//                    .fillMaxSize()
+//                    .background(Color.Transparent)
+//
+//            ) {
+                ////
+            //}
+
+       // } else {
 
             var showControls by remember { mutableStateOf(true) }
             LaunchedEffect(showControls) {
@@ -1714,7 +1733,36 @@ fun OnlinePlayer(
                     modifier = Modifier
                         .zIndex(1f)
                         .align(Alignment.Center),
-                    visible = showControls && it.fast4x.riplay.utils.isLandscape,
+                    visible = castToLinkDevice,
+                    enter = fadeIn(),
+                    exit = fadeOut()
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .background(colorPalette().background0)
+                            .fillMaxSize()
+                    ) {
+                        IconButton(
+                            icon = if (castToLinkDevice) R.drawable.cast_connected else R.drawable.cast_disconnected,
+                            color = colorPalette().accent,
+                            enabled = true,
+                            onClick = {
+                                castToLinkDevice = !castToLinkDevice
+                                player.value?.pause()
+                                if (castToLinkDevice) player.value?.mute() else player.value?.unMute()
+                                if (!castToLinkDevice) linkServiceClientSend(LINKWEB_COMMAND_PAUSE.toCommand(), true)
+                            },
+                            modifier = Modifier
+                                .align(Alignment.Center)
+                                .size(56.dp),
+                        )
+                    }
+                }
+                AnimatedVisibility(
+                    modifier = Modifier
+                        .zIndex(1f)
+                        .align(Alignment.Center),
+                    visible = showControls && it.fast4x.riplay.utils.isLandscape && !castToLinkDevice,
                     enter = fadeIn(),
                     exit = fadeOut()
                 ) {
@@ -1756,6 +1804,7 @@ fun OnlinePlayer(
 
                             override fun onReady(youTubePlayer: YouTubePlayer) {
                                 player.value = youTubePlayer
+                                if (castToLinkDevice) player.value?.mute()
 
                                 /* Used to show custom player ui with uiController as listener
 //                            val customPlayerUiController = CustomBasePlayerUiControllerAsListener(
@@ -1799,15 +1848,10 @@ fun OnlinePlayer(
                                         mediaItem.mediaId,
                                         if (mediaItem.mediaId == getLastYTVideoId()) getLastYTVideoSeconds() else 0f
                                     )
-                                    CoroutineScope(Dispatchers.IO).launch {
-                                        if (linkClient != null)
-                                            linkClient?.send(mediaItem.mediaId.toLoadCommand(
-                                                if (mediaItem.mediaId == getLastYTVideoId()) getLastYTVideoSeconds().toInt() else 0
-                                            ))
-                                            //linkClient?.send("load|${mediaItem.mediaId}|${if (mediaItem.mediaId == getLastYTVideoId()) getLastYTVideoSeconds().toInt() else 0}")
-                                    }
-
-                                }
+                                    linkServiceClientSend(mediaItem.mediaId.toCommandLoad(
+                                        if (mediaItem.mediaId == getLastYTVideoId()) getLastYTVideoSeconds().toInt() else 0
+                                    ), castToLinkDevice)
+                                 }
 
                                 //youTubePlayer.cueVideo(mediaItem.mediaId, 0f)
 
@@ -1887,7 +1931,7 @@ fun OnlinePlayer(
                 )
             }
 
-        }
+        //}
 
     }
 
@@ -2215,16 +2259,19 @@ fun OnlinePlayer(
                                 .fillMaxWidth()
                         ) {
                             // TODO Implement RiPlay Connect
-//                            IconButton(
-//                                icon = com.pierfrancescosoffritti.androidyoutubeplayer.chromecast.chromecastsender.R.drawable.quantum_ic_cast_connected_white_24,
-//                                color = colorPalette().accent,
-//                                enabled = true,
-//                                onClick = {
-//                                    showCastButton = true
-//                                },
-//                                modifier = Modifier
-//                                    .size(24.dp),
-//                            )
+                            IconButton(
+                                icon = if (castToLinkDevice) R.drawable.cast_connected else R.drawable.cast_disconnected,
+                                color = colorPalette().accent,
+                                enabled = true,
+                                onClick = {
+                                    castToLinkDevice = !castToLinkDevice
+                                    player.value?.pause()
+                                    if (castToLinkDevice) player.value?.mute() else player.value?.unMute()
+                                    if (!castToLinkDevice) linkServiceClientSend(LINKWEB_COMMAND_PAUSE.toCommand(), true)
+                                },
+                                modifier = Modifier
+                                    .size(24.dp),
+                            )
 
                             if (showButtonPlayerVideo)
                                 IconButton(
@@ -3094,23 +3141,20 @@ fun OnlinePlayer(
                                 mediaItem = binderPlayer.getMediaItemAt(index),
                                 onPlay = {
                                     player.value?.play()
-                                    println("LinkClient OnLinePlayer Controls pause")
-                                    CoroutineScope(Dispatchers.IO).launch {
-                                        if (linkClient != null)
-                                            linkClient?.send(
-                                                withContext(Dispatchers.Main) {binderPlayer.getMediaItemAt(index).mediaId.toPlayCommand(currentSecond.toInt())}
-                                            )
-                                            //linkClient?.send("play|${withContext(Dispatchers.Main) {binderPlayer.getMediaItemAt(index).mediaId}}|$currentSecond")
-                                    }
+                                    println("LinkClient OnLinePlayer Controls play")
+                                    linkServiceClientSend(
+                                        binderPlayer.getMediaItemAt(index).mediaId.toCommandPlayAt(currentSecond.toInt()),
+                                        castToLinkDevice
+                                    )
                                 },
                                 onPause = {
                                     player.value?.pause()
-                                    println("LinkClient OnLinePlayer Controls pause")
-                                    CoroutineScope(Dispatchers.IO).launch {
-                                        if (linkClient != null)
-                                            linkClient?.send(LINK_COMMAND_PAUSE)
+                                    println("LinkClient OnLinePlayer Controls pause 2")
+                                    //CoroutineScope(Dispatchers.IO).launch {
+                                        //if (linkClient != null)
+                                            linkServiceClientSend(LINKWEB_COMMAND_PAUSE.toCommand(), castToLinkDevice)
                                             //linkClient?.send("pause|")
-                                    }
+                                    //}
                                 },
                                 onSeekTo = { player.value?.seekTo(it) },
                                 onNext = { binder.player.playNext() },
@@ -3386,23 +3430,18 @@ fun OnlinePlayer(
                                             mediaItem = binderPlayer.getMediaItemAt(it),
                                             onPlay = {
                                                 player.value?.play()
-                                                println("LinkClient OnLinePlayer Controls pause")
-                                                CoroutineScope(Dispatchers.IO).launch {
-                                                    if (linkClient != null)
-                                                        linkClient?.send(
-                                                            withContext(Dispatchers.Main) {binderPlayer.getMediaItemAt(it).mediaId.toPlayCommand(currentSecond.toInt())}
-                                                        )
-                                                        //linkClient?.send("play|${withContext(Dispatchers.Main) {binderPlayer.getMediaItemAt(it).mediaId}}|$currentSecond")
-                                                }
+                                                println("LinkClient OnLinePlayer Controls pause 3")
+                                                linkServiceClientSend(
+                                                    binderPlayer.getMediaItemAt(it).mediaId.toCommandPlayAt(currentSecond.toInt()),
+                                                    castToLinkDevice
+                                                )
+
                                             },
                                             onPause = {
                                                 player.value?.pause()
-                                                println("LinkClient OnLinePlayer Controls pause")
-                                                CoroutineScope(Dispatchers.IO).launch {
-                                                    if (linkClient != null)
-                                                        linkClient?.send(LINK_COMMAND_PAUSE)
-                                                        //linkClient?.send("pause|")
-                                                }
+                                                println("LinkClient OnLinePlayer Controls pause 4")
+                                                linkServiceClientSend(LINKWEB_COMMAND_PAUSE.toCommand(), castToLinkDevice)
+
                                             },
                                             onSeekTo = { player.value?.seekTo(it) },
                                             onNext = { binder.player.playNext() },
@@ -4096,23 +4135,21 @@ fun OnlinePlayer(
                                     mediaItem = binderPlayer.getMediaItemAt(index),
                                     onPlay = {
                                         player.value?.play()
-                                        println("LinkClient OnLinePlayer Controls pause")
-                                        CoroutineScope(Dispatchers.IO).launch {
-                                            if (linkClient != null)
-                                                linkClient?.send(
-                                                    withContext(Dispatchers.Main) {binderPlayer.getMediaItemAt(index).mediaId.toPlayCommand(currentSecond.toInt())}
-                                                )
-                                                //linkClient?.send("play|${withContext(Dispatchers.Main) {binderPlayer.getMediaItemAt(index).mediaId}}|$currentSecond")
-                                        }
+                                        println("LinkClient OnLinePlayer Controls play")
+                                        linkServiceClientSend(
+                                            binderPlayer.getMediaItemAt(index).mediaId.toCommandPlayAt(currentSecond.toInt()),
+                                            castToLinkDevice
+                                        )
+
                                     },
                                     onPause = {
                                         player.value?.pause()
-                                        println("LinkClient OnLinePlayer Controls pause")
-                                        CoroutineScope(Dispatchers.IO).launch {
-                                            if (linkClient != null)
-                                                linkClient?.send(LINK_COMMAND_PAUSE)
+                                        println("LinkClient OnLinePlayer Controls pause 5")
+                                        //CoroutineScope(Dispatchers.IO).launch {
+                                            //if (linkClient != null)
+                                                linkServiceClientSend(LINKWEB_COMMAND_PAUSE.toCommand(), castToLinkDevice)
                                                 //linkClient?.send("pause|")
-                                        }
+                                        //}
                                     },
                                     onSeekTo = { player.value?.seekTo(it) },
                                     onNext = { binder.player.playNext() },
@@ -4198,7 +4235,7 @@ fun OnlinePlayer(
 
     val actionReceiver = remember {
         OnlinePlayerActionReceiver(
-            player = player.value,
+            //player = player.value,
             onAction = {
                 shouldBePlaying = it
             }
@@ -4317,7 +4354,7 @@ fun updateNotification(
 }
 
 class OnlinePlayerActionReceiver(
-    private val player: YouTubePlayer?,
+    //private val player: YouTubePlayer?,
     private val onAction: (Boolean) -> Unit = {}
 ) : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
@@ -4325,12 +4362,12 @@ class OnlinePlayerActionReceiver(
         when (intent.action) {
             "it.fast4x.riplay.onlineplayer.pause" -> {
                 println("OnlinePlayer LauncheEffect it.fast4x.riplay.onlineplayer.pause")
-                player?.pause()
+                //player?.pause()
                 onAction(false)
             }
             "it.fast4x.riplay.onlineplayer.play" -> {
                 println("OnlinePlayer LauncheEffect it.fast4x.riplay.onlineplayer.play")
-                player?.play()
+                //player?.play()
                 onAction(true)
             }
         }

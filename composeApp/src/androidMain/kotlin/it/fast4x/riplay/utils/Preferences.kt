@@ -360,6 +360,8 @@ const val customDnsOverHttpsServerKey = "customDnsOverHttpsServer"
 const val enablePreCacheKey = "enablePreCache"
 const val streamingPlayerTypeKey = "streamingPlayerType"
 
+const val castToLinkDeviceEnabledKey = "castToLinkDeviceEnabled"
+
 inline fun <reified T : Enum<T>> SharedPreferences.getEnum(
     key: String,
     defaultValue: T
