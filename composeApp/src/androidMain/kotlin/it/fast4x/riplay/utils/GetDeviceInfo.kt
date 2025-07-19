@@ -3,17 +3,25 @@ package it.fast4x.riplay.utils
 import android.os.Build
 
 
+
 fun getDeviceInfo() : DeviceInfo? {
 
-     try {
+    try {
         val deviceModel = Build.MODEL
         val deviceBrand = Build.MANUFACTURER
         val deviceName = Build.DEVICE
-         val deviceVersion = Build.VERSION.RELEASE
-         val deviceApiLevel = Build.VERSION.SDK_INT
-         val deviceBoard = Build.BOARD
-         val deviceBootloader = Build.BOOTLOADER
-         val deviceFingerprint = Build.FINGERPRINT
+        val deviceVersion = Build.VERSION.RELEASE
+        val deviceApiLevel = Build.VERSION.SDK_INT
+        val deviceBoard = Build.BOARD
+        val deviceBootloader = Build.BOOTLOADER
+        val deviceFingerprint = Build.FINGERPRINT
+        val deviceHardware = Build.HARDWARE
+        val deviceHost = Build.HOST
+        val deviceId = Build.ID
+        val deviceProduct = Build.PRODUCT
+        val deviceType = Build.TYPE
+        val deviceTags = Build.TAGS
+
 
         return DeviceInfo(
             deviceModel = deviceModel,
@@ -23,7 +31,13 @@ fun getDeviceInfo() : DeviceInfo? {
             deviceApiLevel = deviceApiLevel,
             deviceBoard = deviceBoard,
             deviceBootloader = deviceBootloader,
-            deviceFingerprint = deviceFingerprint
+            deviceFingerprint = deviceFingerprint,
+            deviceHardware = deviceHardware,
+            deviceHost = deviceHost,
+            deviceId = deviceId,
+            deviceProduct = deviceProduct,
+            deviceType = deviceType,
+            deviceTags = deviceTags
         )
 
     } catch (e: Exception) {
@@ -42,5 +56,11 @@ data class DeviceInfo(
     val deviceApiLevel: Int? = null,
     val deviceBoard: String? = null,
     val deviceBootloader: String? = null,
-    val deviceFingerprint: String? = null
+    val deviceFingerprint: String? = null,
+    val deviceHardware: String? = null,
+    val deviceHost: String? = null,
+    val deviceId: String? = null,
+    val deviceProduct: String? = null,
+    val deviceType: String? = null,
+    val deviceTags: String? = null
 )

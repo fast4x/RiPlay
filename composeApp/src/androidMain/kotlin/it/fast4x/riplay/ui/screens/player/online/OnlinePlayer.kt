@@ -33,10 +33,12 @@ import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
@@ -67,6 +69,9 @@ import androidx.compose.foundation.layout.requiredHeight
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PageSize
 import androidx.compose.foundation.pager.PagerDefaults
@@ -79,7 +84,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
@@ -179,6 +186,7 @@ import dev.chrisbanes.haze.haze
 import dev.chrisbanes.haze.hazeChild
 import it.fast4x.environment.models.NavigationEndpoint
 import it.fast4x.riplay.Database
+import it.fast4x.riplay.LocalLinkDevices
 import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.MainActivity
 import it.fast4x.riplay.R
@@ -1462,18 +1470,8 @@ fun OnlinePlayer(
         )
     }
 
-//    val linkClient by remember { mutableStateOf<LinkClient?>(
-//        buildLinkClient(
-//            address = "192.168.68.111",
-//            port = 8000
-//        )
-//        //null
-//    ) }
-
-//    val linkClient by remember { mutableStateOf<LinkServiceClientWeb?>(
-//        LinkServiceClientWeb("192.168.68.119", 8443)
-//        //null
-//    ) }
+    val linkDevices = LocalLinkDevices.current
+    println("OnlinePlayer linkDevices $linkDevices")
 
     LaunchedEffect(mediaItem) {
         positionAndDuration = 0f to 0f
@@ -1742,20 +1740,63 @@ fun OnlinePlayer(
                             .background(colorPalette().background0)
                             .fillMaxSize()
                     ) {
-                        IconButton(
-                            icon = if (castToLinkDevice) R.drawable.cast_connected else R.drawable.cast_disconnected,
-                            color = colorPalette().accent,
-                            enabled = true,
-                            onClick = {
-                                castToLinkDevice = !castToLinkDevice
-                                player.value?.pause()
-                                if (castToLinkDevice) player.value?.mute() else player.value?.unMute()
-                                if (!castToLinkDevice) linkServiceClientSend(LINKWEB_COMMAND_PAUSE.toCommand(), true)
-                            },
+
+                        LazyColumn(
+                            state = rememberLazyListState(),
+                            contentPadding = PaddingValues(all = 5.dp),
                             modifier = Modifier
-                                .align(Alignment.Center)
-                                .size(56.dp),
-                        )
+                                .background(
+                                    colorPalette().background0
+                                )
+                                .fillMaxSize()
+                        ) {
+                            item {
+                                Box(
+                                    modifier = Modifier.fillMaxWidth()
+                                ){
+                                    IconButton(
+                                        icon = if (castToLinkDevice) R.drawable.cast_connected else R.drawable.cast_disconnected,
+                                        color = colorPalette().accent,
+                                        enabled = true,
+                                        onClick = {
+                                            castToLinkDevice = !castToLinkDevice
+                                            player.value?.pause()
+                                            if (castToLinkDevice) player.value?.mute() else player.value?.unMute()
+                                            if (!castToLinkDevice) linkServiceClientSend(LINKWEB_COMMAND_PAUSE.toCommand(), true)
+                                        },
+                                        modifier = Modifier
+                                            .align(Alignment.Center)
+                                            .size(24.dp),
+                                    )
+                                    LinearProgressIndicator(modifier = Modifier.fillMaxWidth().align(Alignment.BottomCenter))
+                                }
+
+                            }
+                            items(
+                                items = linkDevices
+                            ) { device ->
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    IconButton(
+                                        icon = R.drawable.cast_disconnected,
+                                        color = colorPalette().text,
+                                        enabled = true,
+                                        onClick = {},
+                                        modifier = Modifier
+                                            .size(24.dp),
+                                    )
+                                    Spacer(modifier = Modifier.width(16.dp))
+                                    Text(
+                                        text = device?.serviceName.toString(),
+                                        color = colorPalette().text,
+                                        modifier = Modifier.border(BorderStroke(1.dp, Color.Red))
+                                    )
+                                }
+                            }
+                        }
+
                     }
                 }
                 AnimatedVisibility(

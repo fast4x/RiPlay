@@ -1466,8 +1466,6 @@ MonetCompatActivity(),
         const val action_albums = "it.fast4x.riplay.action.albums"
         const val action_library = "it.fast4x.riplay.action.library"
         const val action_rescuecenter = "it.fast4x.riplay.action.rescuecenter"
-
-        val linkDevices = LocalLinkDevices
     }
 
 

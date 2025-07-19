@@ -34,7 +34,7 @@ fun linkServiceClientSend(command: String, castToLinkDevice: Boolean){
 
     //TODO Implement link client logic
 
-    val client = LinkServiceClientWeb("192.168.68.119", 18443, true)
+    val client = LinkServiceClientWeb("192.168.68.123", 18443, true)
     try {
         client.send(command)
     } catch (e: Exception) {
