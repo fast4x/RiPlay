@@ -556,6 +556,8 @@ dependencies {
     implementation(libs.hypnoticcanvas.shaders)
     implementation(libs.ktor.client.core)
     implementation(libs.ktor.client.okhttp)
+    implementation(libs.multidex)
+
 
     implementation(libs.room)
     ksp(libs.room.compiler)

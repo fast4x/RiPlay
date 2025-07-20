@@ -50,6 +50,7 @@ hypnoticcanvas = "0.3.0"
 ksoup = "0.3.1"
 okhttpDnsOverHttps = "4.12.0"
 reorderable = "2.4.3"
+multidex = "2.0.1"
 
 [libraries]
 kotlin-coroutines = {group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "kotlin-coroutine"}
@@ -132,6 +133,7 @@ androidx-webkit = { group = "androidx.webkit", name = "webkit", version = "1.13.
 okhttp-dnsoverhttps = { group = "com.squareup.okhttp3", name = "okhttp-dnsoverhttps", version.ref = "okhttpDnsOverHttps" }
 room-backup = { group = "de.raphaelebner", name = "roomdatabasebackup", version = "1.0.2" }
 reorderable = { module = "sh.calvin.reorderable:reorderable", version.ref = "reorderable" }
+multidex = { group = "androidx.multidex", name = "multidex", version.ref = "multidex" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

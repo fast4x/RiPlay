@@ -1,6 +1,7 @@
 package it.fast4x.riplay
 
 import android.app.Application
+import androidx.multidex.MultiDexApplication
 import coil.ImageLoader
 import coil.ImageLoaderFactory
 import coil.disk.DiskCache
@@ -18,7 +19,7 @@ import it.fast4x.riplay.utils.preferences
 import timber.log.Timber
 import java.io.File
 
-class MainApplication : Application(), ImageLoaderFactory {
+class MainApplication : MultiDexApplication(), ImageLoaderFactory {
 
     override fun onCreate() {
         super.onCreate()
