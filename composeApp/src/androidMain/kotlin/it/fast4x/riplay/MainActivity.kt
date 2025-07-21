@@ -296,7 +296,7 @@ MonetCompatActivity(),
     var cookie: MutableState<String> = mutableStateOf("") //mutableStateOf(preferences.getString(ytCookieKey, "").toString())
     var visitorData: MutableState<String> = mutableStateOf("") //mutableStateOf(preferences.getString(ytVisitorDataKey, "").toString())
 
-    var linkDevices: MutableState<List<NsdServiceInfo?>> = mutableStateOf(emptyList())
+    var linkDevices: MutableState<List<NsdServiceInfo>> = mutableStateOf(emptyList())
 
 
     override fun onStart() {
@@ -1546,6 +1546,6 @@ val LocalPlayerSheetState =
     staticCompositionLocalOf<SheetState> { error("No player sheet state provided") }
 
 val LocalPlayerState = staticCompositionLocalOf<Boolean> { error("No player sheet state provided") }
-val LocalLinkDevices = staticCompositionLocalOf<List<NsdServiceInfo?>> { error("No link devices provided") }
+val LocalLinkDevices = staticCompositionLocalOf<List<NsdServiceInfo>> { error("No link devices provided") }
 
 

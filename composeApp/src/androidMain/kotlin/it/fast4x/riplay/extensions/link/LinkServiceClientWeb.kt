@@ -7,6 +7,7 @@ import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsText
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.io.IOException
 import okhttp3.OkHttpClient
@@ -29,18 +30,30 @@ import javax.net.ssl.X509TrustManager
 //    return client
 //}
 
-fun linkServiceClientSend(command: String, castToLinkDevice: Boolean){
+fun linkServiceClientSend(
+    command: String,
+    castToLinkDevice: Boolean,
+    linkDevicesSelected: MutableList<LinkDevice>
+){
     if (!castToLinkDevice) return
 
     //TODO Implement link client logic
 
-    val client = LinkServiceClientWeb("192.168.68.123", 18443, true)
-    try {
-        client.send(command)
-    } catch (e: Exception) {
-        Timber.e("linkClientSend Error sending data: $e")
-        println("linkClientSend Error sending data: ${e.message}")
+    linkDevicesSelected.let { list ->
+        list.forEach { device ->
+            val client = LinkServiceClientWeb(device.host, device.port, true)
+            try {
+                client.send(command)
+            } catch (e: Exception) {
+                Timber.e("linkClientSend Error sending data: $e")
+                println("linkClientSend Error sending data: ${e.message}")
+            }
+            CoroutineScope(Dispatchers.IO).launch {
+                delay(200)
+            }
+        }
     }
+
 
 }
 

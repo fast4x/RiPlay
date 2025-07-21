@@ -1,5 +1,8 @@
 package it.fast4x.riplay.extensions.link
 
+import android.content.Context
+import java.io.File
+
 const val LINK_COMMAND_SEPARATOR = "|"
 const val LINK_COMMAND_LOAD = "load$LINK_COMMAND_SEPARATOR"
 const val LINK_COMMAND_PLAY = "play$LINK_COMMAND_SEPARATOR"
@@ -32,10 +35,3 @@ fun String.toCommand(): String {
     return "command=$this"
 }
 
-//fun String.toLoadCommand(position: Int = 0): String {
-//    return "$LINK_COMMAND_LOAD$this$LINK_COMMAND_SEPARATOR$position"
-//}
-//
-//fun String.toPlayCommand(position: Int = 0): String {
-//    return "$LINK_COMMAND_PLAY$this$LINK_COMMAND_SEPARATOR$position"
-//}

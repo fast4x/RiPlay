@@ -990,6 +990,7 @@ fun Context.musicFilesAsFlow(sortBy: OnDeviceSongSortBy, order: SortOrder, conte
         val newVersion = MediaStore.getVersion(applicationContext)
         if (version != newVersion) {
             version = newVersion
+
             val collection =
                 if (isAtLeastAndroid10) MediaStore.Audio.Media.getContentUri(MediaStore.VOLUME_EXTERNAL)
                 else MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
@@ -1073,7 +1074,7 @@ fun Context.musicFilesAsFlow(sortBy: OnDeviceSongSortBy, order: SortOrder, conte
                             val id = cursor.getLong(idIdx)
                             val name = cursor.getString(nameIdx).substringBeforeLast(".")
                             val trackName = cursor.getString(titleIdx)
-                            Timber.i(" DeviceListSongs trackName $trackName loaded")
+
                             val duration = cursor.getInt(durationIdx)
                             if (duration == 0) continue
                             val artist = cursor.getString(artistIdx)
@@ -1090,6 +1091,7 @@ fun Context.musicFilesAsFlow(sortBy: OnDeviceSongSortBy, order: SortOrder, conte
                                 cursor.getString(relativePathIdx).substringBeforeLast("/")
                             }
                             val exclude = blacklist.contains(relativePath)
+                            println("DeviceListSongs trackname $trackName exclude $exclude relativePath ${relativePath}")
 
                             if (!exclude) {
                                 runCatching {

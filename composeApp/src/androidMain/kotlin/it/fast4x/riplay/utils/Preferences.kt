@@ -2,6 +2,7 @@ package it.fast4x.riplay.utils
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.net.nsd.NsdServiceInfo
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.SnapshotMutationPolicy
@@ -11,6 +12,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.edit
 import it.fast4x.environment.Environment
 import it.fast4x.environment.requests.HomePage
+import it.fast4x.riplay.extensions.link.LinkDevices
 import it.fast4x.riplay.models.Song
 import kotlinx.serialization.json.Json
 import timber.log.Timber
@@ -361,6 +363,7 @@ const val enablePreCacheKey = "enablePreCache"
 const val streamingPlayerTypeKey = "streamingPlayerType"
 
 const val castToLinkDeviceEnabledKey = "castToLinkDeviceEnabled"
+const val linkDevicesSelectedKey = "linkDevicesSelected"
 
 inline fun <reified T : Enum<T>> SharedPreferences.getEnum(
     key: String,
@@ -383,6 +386,27 @@ inline fun <reified T : Enum<T>> SharedPreferences.Editor.putEnum(
 val Context.preferences: SharedPreferences
     get() = getSharedPreferences("preferences", Context.MODE_PRIVATE)
 
+@Composable
+fun rememberPreference(key: String, defaultValue: LinkDevices?): MutableState<LinkDevices?> {
+    val context = LocalContext.current
+    val json = Json.encodeToString(defaultValue)
+    return remember {
+        mutableStatePreferenceOf(
+            try {
+                context.preferences.getString(key, json)
+                    ?.let { Json.decodeFromString<LinkDevices>(it) }
+            } catch (e: Exception) {
+                Timber.e("RememberPreference LinkDevices Error: ${ e.stackTraceToString() }")
+                null
+            }
+        ) {
+            context.preferences.edit { putString(
+                key,
+                Json.encodeToString(it)
+            ) }
+        }
+    }
+}
 
 @Composable
 fun rememberPreference(key: String, defaultValue: Song?): MutableState<Song?> {
