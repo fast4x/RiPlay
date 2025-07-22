@@ -411,6 +411,36 @@ MonetCompatActivity(),
 
     }
 
+    override fun onLowMemory() {
+        super.onLowMemory()
+        println("MainActivity.onLowMemory")
+    }
+
+    override fun onTrimMemory(level: Int) {
+        super.onTrimMemory(level)
+        if (level == TRIM_MEMORY_UI_HIDDEN) {
+            println("MainActivity.onTrimMemory TRIM_MEMORY_UI_HIDDEN")
+        }
+        if (level == TRIM_MEMORY_RUNNING_LOW) {
+            println("MainActivity.onTrimMemory TRIM_MEMORY_RUNNING_LOW")
+        }
+        if (level == TRIM_MEMORY_RUNNING_CRITICAL) {
+            println("MainActivity.onTrimMemory TRIM_MEMORY_RUNNING_CRITICAL")
+        }
+        if (level == TRIM_MEMORY_BACKGROUND) {
+            println("MainActivity.onTrimMemory TRIM_MEMORY_BACKGROUND")
+        }
+        if (level == TRIM_MEMORY_COMPLETE) {
+            println("MainActivity.onTrimMemory TRIM_MEMORY_COMPLETE")
+        }
+        if (level == TRIM_MEMORY_MODERATE) {
+            println("MainActivity.onTrimMemory TRIM_MEMORY_MODERATE")
+        }
+        if (level == TRIM_MEMORY_RUNNING_MODERATE) {
+            println("MainActivity.onTrimMemory TRIM_MEMORY_RUNNING_MODERATE")
+        }
+    }
+
 
     /*
     @Suppress("DEPRECATION")
