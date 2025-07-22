@@ -144,7 +144,7 @@
     <string name="is_min_list_time_for_tips_or_quick_pics">Det er den korteste lyttetid for at inkludere sangen som mulig Forslag eller Hurtige Valg</string>
     <string name="min_listening_time">Min. lyttetid</string>
     <string name="player_thumbnail_size">Miniaturebilledstørrelse</string>
-    <string name="restarting_rimusic_is_required">Genstart er påkrævet</string>
+    <string name="restarting_riplay_is_required">Genstart er påkrævet</string>
     <string name="small">Lille</string>
     <string name="medium">Mellem</string>
     <string name="big">Stor</string>
@@ -921,7 +921,7 @@
     <string name="songs_liked_yt">Song(s) are Liked in YouTube</string>
     <string name="song_unliked_yt">Song is Unliked in YouTube</string>
     <string name="add_rimusic_to_ytm_favorites">Like RiMusic Liked songs in Youtube</string>
-    <string name="do_you_really_want_to_like_all_rimusictoytmusic">(estimated time) is required to like all the songs. This action cannot be resumed if cancelled in between. You need to close the app to cancel this process. Do you want to continue?</string>
+    <string name="do_you_really_want_to_like_all_riplaytoytmusic">(estimated time) is required to like all the songs. This action cannot be resumed if cancelled in between. You need to close the app to cancel this process. Do you want to continue?</string>
     <string name="do_you_really_want_to_like_all">(estimated time) is required to like all the songs. You need to close the app to cancel this process. Do you want to continue?</string>
     <string name="songs_liked_yt_failed">Failed to like the song in YouTube</string>
     <string name="songs_unliked_yt_failed">Failed to unlike the song in YouTube</string>

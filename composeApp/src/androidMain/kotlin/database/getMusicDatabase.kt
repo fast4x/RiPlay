@@ -6,7 +6,7 @@ import androidx.room.RoomDatabase
 
 fun getAndroidDatabaseBuilder(ctx: Context): RoomDatabase.Builder<MusicDatabase> {
     val appContext = ctx.applicationContext
-    val dbFile = appContext.getDatabasePath("rimusic.db")
+    val dbFile = appContext.getDatabasePath("riplay.db")
     return Room.databaseBuilder<MusicDatabase>(
         context = appContext,
         name = dbFile.absolutePath

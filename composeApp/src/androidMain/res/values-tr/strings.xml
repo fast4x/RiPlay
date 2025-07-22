@@ -144,7 +144,7 @@
     <string name="is_min_list_time_for_tips_or_quick_pics">Şarkının önerilere veya hızlı seçimlere dahil edilebilmesi için gereken minimum dinleme süresi</string>
     <string name="min_listening_time">Minimum dinleme süresi</string>
     <string name="player_thumbnail_size">Albüm Kapağı Boyutu</string>
-    <string name="restarting_rimusic_is_required">Yeniden başlatma gerekli</string>
+    <string name="restarting_riplay_is_required">Yeniden başlatma gerekli</string>
     <string name="small">Küçük</string>
     <string name="medium">Orta</string>
     <string name="big">Büyük</string>
@@ -921,7 +921,7 @@
     <string name="songs_liked_yt">Şarkı(lar) YouTube\'da Beğenildi</string>
     <string name="song_unliked_yt">Şarkı YouTube\'da Beğenilmedi</string>
     <string name="add_rimusic_to_ytm_favorites">RiMusic\'te beğenilen şarkıları Youtube\'da Beğen</string>
-    <string name="do_you_really_want_to_like_all_rimusictoytmusic">(tahmini süre) tüm şarkıları beğenmek için gereklidir. Bu işlem arada iptal edilirse devam ettirilemez. Bu işlemi iptal etmek için uygulamayı kapatmanız gerekir. Devam etmek istiyor musunuz?</string>
+    <string name="do_you_really_want_to_like_all_riplaytoytmusic">(tahmini süre) tüm şarkıları beğenmek için gereklidir. Bu işlem arada iptal edilirse devam ettirilemez. Bu işlemi iptal etmek için uygulamayı kapatmanız gerekir. Devam etmek istiyor musunuz?</string>
     <string name="do_you_really_want_to_like_all">(tahmini süre) tüm şarkıları beğenmek için gereklidir. Bu işlemi iptal etmek için uygulamayı kapatmanız gerekir. Devam etmek istiyor musunuz?</string>
     <string name="songs_liked_yt_failed">YouTube\'da şarkıyı beğenme başarısız oldu</string>
     <string name="songs_unliked_yt_failed">YouTube\'da şarkıyı beğenmeyi kaldırma başarısız oldu</string>

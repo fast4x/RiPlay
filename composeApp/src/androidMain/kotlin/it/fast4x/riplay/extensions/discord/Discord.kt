@@ -138,7 +138,6 @@ fun sendDiscordPresence(
             buttons = listOf("Get RiMusic", "Listen to YTMusic"),
             metadata = com.my.kizzyrpc.model.Metadata(
                 listOf(
-                    "https://rimusic.xyz/",
                     "https://music.youtube.com/watch?v=${mediaItem.mediaId}",
                 )
             )

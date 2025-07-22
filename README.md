@@ -1,26 +1,26 @@
 <div align="center">
   <img src="./assets/design/latest/app_logo.svg" width="300" height="100" />    
-  <p><b>RiMusic</b> is a <b>multilingual</b> Android application for streaming music.</p>
+  <p><b>RiPlay</b> is a <b>multilingual</b> Android application for streaming music.</p>
   <p>It began as an <b>extension</b> of <b>ViMusic</b>, then acquired its own identity.</p>
 <p><b>It allows the user to customize it at will.</b></p>
-<p><b>RiMusic does not collect any data.</b></p>
+<p><b>RiPlay does not collect any data.</b></p>
 
-  <a href="https://github.com/fast4x/RiMusic/releases"><img src="https://img.shields.io/github/downloads/fast4x/RiMusic/total?label=Total%20Downloads"></a>
-  <a href="https://github.com/fast4x/RiMusic/releases/latest"><img src="https://img.shields.io/github/downloads/fast4x/RiMusic/latest/total?label=Downloads%20of%20latest%20Release"></a>
-  <a href="https://github.com/fast4x/RiMusic/releases/latest"><img src="https://img.shields.io/github/v/release/fast4x/RiMusic?label=Release"></a>
+  <a href="https://github.com/fast4x/RiPlay/releases"><img src="https://img.shields.io/github/downloads/fast4x/RiPlay/total?label=Total%20Downloads"></a>
+  <a href="https://github.com/fast4x/RiPlay/releases/latest"><img src="https://img.shields.io/github/downloads/fast4x/RiPlay/latest/total?label=Downloads%20of%20latest%20Release"></a>
+  <a href="https://github.com/fast4x/RiPlay/releases/latest"><img src="https://img.shields.io/github/v/release/fast4x/RiPlay?label=Release"></a>
 </div>
 
 ## ✨ Features
 - **Multilingual:** English, Italian, German, Russian, French, Spanish, Czech, Turkish, Romanian and more. Contributions for other languages are welcome
-- UI Mode, swtich from RiMusic to classic ViMusic style, viceversa
+- UI Mode, swtich from RiPlay to classic ViMusic style, viceversa
 - Auto cache songs for offline playback with a custom cache size
 - Download songs or entire playlists for offline playback (not cache) 
 - Background playback
 - Listening statistics
 - Audio visualizer on player with many type of effects.
-  - THIS FEATURE REQUIRES MIC PERMISSION, ONLY AVAILABLE IF ACTIVATED FROM SETTINGS. [Full list of permissions](https://github.com/fast4x/RiMusic/wiki/FAQs#what-permissions-are-used)
+  - THIS FEATURE REQUIRES MIC PERMISSION, ONLY AVAILABLE IF ACTIVATED FROM SETTINGS. [Full list of permissions](https://github.com/fast4x/RiPlay/wiki/FAQs#what-permissions-are-used)
 - News, mood, musical genres, new albums from favourite artists
-- Import/Export online, RiMusic playlists, can share with friend all RiMusic playlists
+- Import/Export online, RiPlay playlists, can share with friend all RiPlay playlists
 - Fetch, display, edit, translate synchronized, or not, songs lyrics
 - Customizable themes
 - Sleep timer with customizable time
@@ -89,7 +89,7 @@
 - **Vietnamese:** thanks to [teaminh](https://crowdin.com/profile/teaminh)
 
 ## 📲 Installation
-[<img src="./assets/images/getItGithub.png" alt="GitHub" height="80">](https://github.com/fast4x/RiMusic/releases/latest)
+[<img src="./assets/images/getItGithub.png" alt="GitHub" height="80">](https://github.com/fast4x/RiPlay/releases/latest)
 [<img src="./assets/images/getItOpenapk.png" alt="OpenAPK" height="80">](https://www.openapk.net/rimusic/it.fast4x.rimusic/)
 [<img src="./assets/images/getItAccrescent.png" alt="Accrescent" height="80">](https://accrescent.app/app/it.fast4x.rimusic)
 [<img src="./assets/images/getItObtainium.png" alt="Obtainium" height="80">](https://apps.obtainium.imranr.dev/redirect?r=obtainium://app/%7B%22id%22%3A%22it.fast4x.rimusic%22%2C%22url%22%3A%22https%3A%2F%2Fgithub.com%2Ffast4x%2Frimusic%22%2C%22author%22%3A%22fast4x%22%2C%22name%22%3A%22RiMusic%22%2C%22preferredApkIndex%22%3A0%2C%22additionalSettings%22%3A%22%7B%5C%22includePrereleases%5C%22%3Afalse%2C%5C%22fallbackToOlderReleases%5C%22%3Atrue%2C%5C%22filterReleaseTitlesByRegEx%5C%22%3A%5C%22%5C%22%2C%5C%22filterReleaseNotesByRegEx%5C%22%3A%5C%22%5C%22%2C%5C%22verifyLatestTag%5C%22%3Afalse%2C%5C%22dontSortReleasesList%5C%22%3Afalse%2C%5C%22useLatestAssetDateAsReleaseDate%5C%22%3Afalse%2C%5C%22trackOnly%5C%22%3Afalse%2C%5C%22versionExtractionRegEx%5C%22%3A%5C%22%5C%22%2C%5C%22matchGroupToUse%5C%22%3A%5C%22%5C%22%2C%5C%22versionDetection%5C%22%3Atrue%2C%5C%22releaseDateAsVersion%5C%22%3Afalse%2C%5C%22useVersionCodeAsOSVersion%5C%22%3Afalse%2C%5C%22apkFilterRegEx%5C%22%3A%5C%22%5C%22%2C%5C%22invertAPKFilter%5C%22%3Afalse%2C%5C%22autoApkFilterByArch%5C%22%3Atrue%2C%5C%22appName%5C%22%3A%5C%22%5C%22%2C%5C%22shizukuPretendToBeGooglePlay%5C%22%3Afalse%2C%5C%22allowInsecure%5C%22%3Afalse%2C%5C%22exemptFromBackgroundUpdates%5C%22%3Afalse%2C%5C%22skipUpdateNotifications%5C%22%3Afalse%2C%5C%22about%5C%22%3A%5C%22RiMusic%20is%20a%20multilingual%20Android%20application%20for%20streaming%20music%20from%20YouTube%20Music.%20It%20began%20as%20an%20extension%20of%20ViMusic%2C%20then%20acquired%20its%20own%20identity.%20It%20allowing%20the%20user%20to%20customize%20it%20at%20will.%5C%22%7D%22%2C%22overrideSource%22%3Anull%7D)

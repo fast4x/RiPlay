@@ -144,7 +144,7 @@
     <string name="is_min_list_time_for_tips_or_quick_pics">To je minimalno vreme slušanja, da se pesma uvrsti kao mogući Saveti ili Brzi Odabiri</string>
     <string name="min_listening_time">Min. vreme slušanja</string>
     <string name="player_thumbnail_size">Veličina Sličica</string>
-    <string name="restarting_rimusic_is_required">Potrebno je restartovanje</string>
+    <string name="restarting_riplay_is_required">Potrebno je restartovanje</string>
     <string name="small">Mala</string>
     <string name="medium">Srednja</string>
     <string name="big">Velika</string>
@@ -921,7 +921,7 @@
     <string name="songs_liked_yt">Pesma (pesme) su lajkovane na YouTube-u</string>
     <string name="song_unliked_yt">Pesma je anlajkovana na YouTube-u</string>
     <string name="add_rimusic_to_ytm_favorites">Lajkuj RiMusic lajkovanе pesme na YouTube-u</string>
-    <string name="do_you_really_want_to_like_all_rimusictoytmusic">(procenjeno vreme) je potrebno da bi se sve pesme lajkovale. Ova radnja se ne može nastaviti ako se otkaže negde između. Morate zatvoriti aplikaciju da biste otkazali ovaj proces. Da li želite da nastavite?</string>
+    <string name="do_you_really_want_to_like_all_riplaytoytmusic">(procenjeno vreme) je potrebno da bi se sve pesme lajkovale. Ova radnja se ne može nastaviti ako se otkaže negde između. Morate zatvoriti aplikaciju da biste otkazali ovaj proces. Da li želite da nastavite?</string>
     <string name="do_you_really_want_to_like_all">(procenjeno vreme) je potrebno da bi se sve pesme lajkovale. Morate zatvoriti aplikaciju da biste otkazali ovaj proces. Da li želite da nastavite?</string>
     <string name="songs_liked_yt_failed">Lajkovanje pesme na YouTube-u nije uspelo</string>
     <string name="songs_unliked_yt_failed">Anlajkovanje pesme na YouTube-u nije uspelo</string>

@@ -144,7 +144,7 @@
     <string name="is_min_list_time_for_tips_or_quick_pics">Minimale Wiedergabedauer, um den Song in Empfehlungen zu berücksichtigen</string>
     <string name="min_listening_time">Minimale Wiedergabedauer</string>
     <string name="player_thumbnail_size">Größe der Vorschaubilder</string>
-    <string name="restarting_rimusic_is_required">Neustart ist erforderlich</string>
+    <string name="restarting_riplay_is_required">Neustart ist erforderlich</string>
     <string name="small">Klein</string>
     <string name="medium">Mittel</string>
     <string name="big">Groß</string>
@@ -921,7 +921,7 @@
     <string name="songs_liked_yt">Titel die auf YouTube mit \"Gefällt mir\" markiert sind</string>
     <string name="song_unliked_yt">Der Titel ist auf YouTube nicht mit \"Gefällt mir\" markiert</string>
     <string name="add_rimusic_to_ytm_favorites">\"Gefällt mir\" Angaben aus RiMusic nach YouTube übertragen</string>
-    <string name="do_you_really_want_to_like_all_rimusictoytmusic">(geschätzte Zeit) ist benötigt um alle Titel mit \"Gefällt mir\" zu markieren. Dieser Prozess kann nach der Beendigung nicht fortgesetzt werden. Möchtest du fortfahren?</string>
+    <string name="do_you_really_want_to_like_all_riplaytoytmusic">(geschätzte Zeit) ist benötigt um alle Titel mit \"Gefällt mir\" zu markieren. Dieser Prozess kann nach der Beendigung nicht fortgesetzt werden. Möchtest du fortfahren?</string>
     <string name="do_you_really_want_to_like_all">(geschätzte Zeit) ist benötigt um alle Titel mit \"Gefällt mir\" zu markieren. Du musst die App schließen, um diesen Prozess zu beenden. Möchtest du fortfahren?</string>
     <string name="songs_liked_yt_failed">Der Titel konnte auf YouTube nicht mit \"Gefällt mir\" markiert werden</string>
     <string name="songs_unliked_yt_failed">Das \"Gefällt mir\" des Titels konnte auf YouTube nicht entfernt werden</string>

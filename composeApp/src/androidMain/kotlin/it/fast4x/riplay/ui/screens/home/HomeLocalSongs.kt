@@ -708,7 +708,7 @@ fun HomeLocalSongs(
         mutableStateOf(false)
     }
 
-    var showRiMusicLikeYoutubeLikeConfirmDialog by remember {
+    var showRiPlayLikeYoutubeLikeConfirmDialog by remember {
         mutableStateOf(false)
     }
 
@@ -998,16 +998,16 @@ fun HomeLocalSongs(
 //                            )
 //                        }
 
-                        if (showRiMusicLikeYoutubeLikeConfirmDialog) {
+                        if (showRiPlayLikeYoutubeLikeConfirmDialog) {
                             Database.asyncTransaction {
                             totalMinutesToLike = formatAsDuration((if (listMediaItems.isNotEmpty()) (listMediaItems.filter { Database.getLikedAt(it.mediaId) !in listOf(-1L,null)}).size
                                 else (items.filter { Database.getLikedAt(it.asMediaItem.mediaId) !in listOf(-1L,null) }).size)*1000.toLong())
                                 }
                             ConfirmationDialog(
-                                text = "$totalMinutesToLike "+stringResource(R.string.do_you_really_want_to_like_all_rimusictoytmusic),
-                                onDismiss = { showRiMusicLikeYoutubeLikeConfirmDialog = false },
+                                text = "$totalMinutesToLike "+stringResource(R.string.do_you_really_want_to_like_all_riplaytoytmusic),
+                                onDismiss = { showRiPlayLikeYoutubeLikeConfirmDialog = false },
                                 onConfirm = {
-                                    showRiMusicLikeYoutubeLikeConfirmDialog = false
+                                    showRiPlayLikeYoutubeLikeConfirmDialog = false
 
                                     if (listMediaItems.isNotEmpty()) {
                                         CoroutineScope(Dispatchers.IO).launch {
@@ -1245,7 +1245,7 @@ fun HomeLocalSongs(
                                             if (!isNetworkConnected(appContext())) {
                                                 SmartMessage(appContext().resources.getString(R.string.no_connection), context = appContext(), type = PopupType.Error)
                                             } else {
-                                                showRiMusicLikeYoutubeLikeConfirmDialog = true
+                                                showRiPlayLikeYoutubeLikeConfirmDialog = true
                                             }
                                         },
                                         onAddToPlaylist = { playlistPreview ->

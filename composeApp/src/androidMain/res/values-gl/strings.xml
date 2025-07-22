@@ -144,7 +144,7 @@
     <string name="is_min_list_time_for_tips_or_quick_pics">É o tempo mínimo de escoita para incluír a canción como posible suxestión ou escolla rápida</string>
     <string name="min_listening_time">Tempo mínimo de escoita</string>
     <string name="player_thumbnail_size">Tamaño de miniatura</string>
-    <string name="restarting_rimusic_is_required">É necesario reiniciar</string>
+    <string name="restarting_riplay_is_required">É necesario reiniciar</string>
     <string name="small">Pequeno</string>
     <string name="medium">Medio</string>
     <string name="big">Grande</string>
@@ -921,7 +921,7 @@
     <string name="songs_liked_yt">A(s) canción(s) foi/foron marcada(s) como \'Gústame\' en YouTube</string>
     <string name="song_unliked_yt">Retirouse o \'Gústame\' da canción en YouTube</string>
     <string name="add_rimusic_to_ytm_favorites">Gústache as cancións que RiMusic marcou como \'Gústame\' en YouTube</string>
-    <string name="do_you_really_want_to_like_all_rimusictoytmusic">(tempo estimado) é necesario para marcar como \'Gústame\' todas as cancións. Esta acción non se pode retomar se se cancela a metade. Para cancelar este proceso, debes pechar a aplicación. Queres continuar?</string>
+    <string name="do_you_really_want_to_like_all_riplaytoytmusic">(tempo estimado) é necesario para marcar como \'Gústame\' todas as cancións. Esta acción non se pode retomar se se cancela a metade. Para cancelar este proceso, debes pechar a aplicación. Queres continuar?</string>
     <string name="do_you_really_want_to_like_all">Requírese (tempo estimado) para marcar como \'Gústame\' todas as cancións. Para cancelar este proceso, debes pechar a aplicación. Queres continuar?</string>
     <string name="songs_liked_yt_failed">Non se puido marcar como \'Gústame\' a canción en YouTube</string>
     <string name="songs_unliked_yt_failed">Non se puido desmarcar como \'Gústame\' a canción en YouTube</string>

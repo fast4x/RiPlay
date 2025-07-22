@@ -32,7 +32,7 @@ object principalCache {
     private val cacheSize =
         appContext().preferences.getEnum(exoPlayerDiskCacheMaxSizeKey, ExoPlayerDiskCacheMaxSize.`2GB`)
 
-    private val cacheDirName = if (cacheSize == ExoPlayerDiskCacheMaxSize.Disabled) "rimusic_no_cache" else "rimusic_cache"
+    private val cacheDirName = if (cacheSize == ExoPlayerDiskCacheMaxSize.Disabled) "riplay_no_cache" else "riplay_cache"
 
     private val directory = directoryLocation.resolve(cacheDirName).also { dir ->
         if (dir.exists()) return@also

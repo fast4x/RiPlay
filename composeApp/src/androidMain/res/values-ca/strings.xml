@@ -144,7 +144,7 @@
     <string name="is_min_list_time_for_tips_or_quick_pics">És el temps d\'escolta mínim, per incloure la cançó com a possibles Consells o Tries ràpides</string>
     <string name="min_listening_time">Temps mínim d\'escolta</string>
     <string name="player_thumbnail_size">Mida de la miniatura</string>
-    <string name="restarting_rimusic_is_required">Cal reiniciar</string>
+    <string name="restarting_riplay_is_required">Cal reiniciar</string>
     <string name="small">Petit</string>
     <string name="medium">Mitjà</string>
     <string name="big">Gran</string>
@@ -921,7 +921,7 @@
     <string name="songs_liked_yt">Les cançons tenen M\'agrada a YouTube</string>
     <string name="song_unliked_yt">Les cançons tenen No m\'agrada a YouTube</string>
     <string name="add_rimusic_to_ytm_favorites">Com a RiMusic les cançons tenen m\'agrada a YouTube</string>
-    <string name="do_you_really_want_to_like_all_rimusictoytmusic">(temps estimat) és necessari per agradar a totes les cançons. Aquesta acció no es pot reprendre si es cancel·la entremig. Heu de tancar l\'aplicació per cancel·lar aquest procés. Vols continuar?</string>
+    <string name="do_you_really_want_to_like_all_riplaytoytmusic">(temps estimat) és necessari per agradar a totes les cançons. Aquesta acció no es pot reprendre si es cancel·la entremig. Heu de tancar l\'aplicació per cancel·lar aquest procés. Vols continuar?</string>
     <string name="do_you_really_want_to_like_all">(temps estimat) és necessari per agradar a totes les cançons. Heu de tancar l\'aplicació per cancel·lar aquest procés. Vols continuar?</string>
     <string name="songs_liked_yt_failed">No s\'ha pogut fer m\'agrada a la cançó a YouTube</string>
     <string name="songs_unliked_yt_failed">No s\'ha pogut desagradar la cançó a YouTube</string>

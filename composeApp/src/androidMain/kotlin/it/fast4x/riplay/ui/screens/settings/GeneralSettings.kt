@@ -407,7 +407,7 @@ fun GeneralSettings(
             isChecked = isProxyEnabled,
             onCheckedChange = { isProxyEnabled = it }
         )
-        SettingsDescription(text = stringResource(R.string.restarting_rimusic_is_required))
+        SettingsDescription(text = stringResource(R.string.restarting_riplay_is_required))
 
         AnimatedVisibility(visible = isProxyEnabled) {
             Column {
@@ -482,7 +482,7 @@ fun GeneralSettings(
                         )
                     } catch (e: ActivityNotFoundException) {
                         SmartMessage(
-                            "$msgNoBatteryOptim RiMusic",
+                            "$msgNoBatteryOptim RiPlay",
                             type = PopupType.Info,
                             context = context
                         )

@@ -646,14 +646,14 @@ fun AppearanceSettings(
                 isExporting = false
             },
             title = "Enter the name of settings export",
-            value = "RM_Appearance",
+            value = "RP_Appearance",
             placeholder = "Enter the name of settings export",
             setValue = { text ->
                 appearanceFilename = text
                 try {
                     @SuppressLint("SimpleDateFormat")
                     val dateFormat = SimpleDateFormat("yyyyMMddHHmmss")
-                    exportLauncher.launch("RMAppearance_${text.take(20)}_${dateFormat.format(
+                    exportLauncher.launch("RPAppearance_${text.take(20)}_${dateFormat.format(
                         Date()
                     )}")
                 } catch (e: ActivityNotFoundException) {
@@ -2583,35 +2583,35 @@ fun AppearanceSettings(
             SmartMessage(stringResource(R.string.done), context = context)
         }
 
-//        SettingsGroupSpacer()
-//        ButtonBarSettingEntry(
-//            title = "Export appearance settings",
-//            text = "Backup or share appearance settings",
-//            icon = R.drawable.export,
-//            iconColor = colorPalette().text,
-//            onClick = { isExporting = true },
-//        )
-//
-//        ButtonBarSettingEntry(
-//            title = "Import appearance settings",
-//            text = "Restore backup or shared appearance settings",
-//            icon = R.drawable.resource_import,
-//            iconColor = colorPalette().text,
-//            onClick = {
-//                try {
-//                    importLauncher.launch(
-//                        arrayOf(
-//                            "text/*"
-//                        )
-//                    )
-//                } catch (e: ActivityNotFoundException) {
-//                    SmartMessage(
-//                        context.resources.getString(R.string.info_not_find_app_open_doc),
-//                        type = PopupType.Warning, context = context
-//                    )
-//                }
-//            },
-//        )
+        SettingsGroupSpacer()
+        ButtonBarSettingEntry(
+            title = "Export appearance settings",
+            text = "Backup or share appearance settings",
+            icon = R.drawable.export,
+            iconColor = colorPalette().text,
+            onClick = { isExporting = true },
+        )
+
+        ButtonBarSettingEntry(
+            title = "Import appearance settings",
+            text = "Restore backup or shared appearance settings",
+            icon = R.drawable.resource_import,
+            iconColor = colorPalette().text,
+            onClick = {
+                try {
+                    importLauncher.launch(
+                        arrayOf(
+                            "text/*"
+                        )
+                    )
+                } catch (e: ActivityNotFoundException) {
+                    SmartMessage(
+                        context.resources.getString(R.string.info_not_find_app_open_doc),
+                        type = PopupType.Warning, context = context
+                    )
+                }
+            },
+        )
 
         SettingsGroupSpacer(
             modifier = Modifier.height(Dimensions.bottomSpacer)

@@ -2,9 +2,6 @@ package it.fast4x.riplay.ui.screens.settings
 
 import android.annotation.SuppressLint
 import android.content.ActivityNotFoundException
-import android.content.Intent
-import android.net.Uri
-import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
@@ -423,12 +420,12 @@ fun OtherSettings() {
 
             } else
                 SmartMessage(
-                    context.resources.getString(R.string.restarting_rimusic_is_required),
+                    context.resources.getString(R.string.restarting_riplay_is_required),
                     type = PopupType.Info, context = context
                 )
         }
     )
-    ImportantSettingsDescription(text = stringResource(R.string.restarting_rimusic_is_required))
+    ImportantSettingsDescription(text = stringResource(R.string.restarting_riplay_is_required))
         ButtonBarSettingEntry(
             isEnabled = logDebugEnabled,
             title = stringResource(R.string.export_log),

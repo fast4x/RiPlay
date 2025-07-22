@@ -144,7 +144,7 @@
     <string name="is_min_list_time_for_tips_or_quick_pics">È il tempo minimo di ascolto, per includere la canzone come eventuali Suggerimenti e Scelte rapide</string>
     <string name="min_listening_time">Tempo minimo di ascolto</string>
     <string name="player_thumbnail_size">Anteprima</string>
-    <string name="restarting_rimusic_is_required">E\' richiesto il riavvio</string>
+    <string name="restarting_riplay_is_required">E\' richiesto il riavvio</string>
     <string name="small">Piccolo</string>
     <string name="medium">Medio</string>
     <string name="big">Grande</string>
@@ -921,7 +921,7 @@
     <string name="songs_liked_yt">Messo like a canzone/i su YouTube</string>
     <string name="song_unliked_yt">Messo unlike a canzone/i su YouTube</string>
     <string name="add_rimusic_to_ytm_favorites">Il like su RiMusic ha messo like su YouTube</string>
-    <string name="do_you_really_want_to_like_all_rimusictoytmusic">(tempo stimato) è necessario per mettere like a tutte le canzoni. Questa azione non può essere ripresa se cancellata tra le canzoni. Devi chiudere l\'app per annullare questo processo. Vuoi continuare?</string>
+    <string name="do_you_really_want_to_like_all_riplaytoytmusic">(tempo stimato) è necessario per mettere like a tutte le canzoni. Questa azione non può essere ripresa se cancellata tra le canzoni. Devi chiudere l\'app per annullare questo processo. Vuoi continuare?</string>
     <string name="do_you_really_want_to_like_all">(tempo stimato) è necessario per mettere like a tutte le canzoni. È necessario chiudere l\'app per annullare questo processo. Vuoi continuare?</string>
     <string name="songs_liked_yt_failed">Non è stato possibile mettere like alla canzone su YouTube</string>
     <string name="songs_unliked_yt_failed">Non è stato possibile mettere unlike alla canzone su YouTube</string>

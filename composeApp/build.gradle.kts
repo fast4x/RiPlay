@@ -458,7 +458,7 @@ compose.desktop {
 /*
 
         nativeDistributions {
-            vendor = "fast4x RiMusic"
+            vendor = "fast4x RiPlay"
             description = "Desktop music player"
         }
         */

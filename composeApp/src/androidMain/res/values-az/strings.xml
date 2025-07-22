@@ -144,7 +144,7 @@
     <string name="is_min_list_time_for_tips_or_quick_pics">Bu, mahnını mümkün Tövsiyələr və ya Cəld Seçimlər kimi daxil etmək üçün ən az dinləmə vaxtıdır</string>
     <string name="min_listening_time">Min dinləmə vaxtı</string>
     <string name="player_thumbnail_size">Miniatür Ölçüsü</string>
-    <string name="restarting_rimusic_is_required">Yenidən başlatmaq tələbi var</string>
+    <string name="restarting_riplay_is_required">Yenidən başlatmaq tələbi var</string>
     <string name="small">Kiçik</string>
     <string name="medium">Orta</string>
     <string name="big">Böyük</string>
@@ -921,7 +921,7 @@
     <string name="songs_liked_yt">Mahnı(lar) YouTube-da bəyənilib</string>
     <string name="song_unliked_yt">Mahnı YouTube-da Bəyənilməyib</string>
     <string name="add_rimusic_to_ytm_favorites">RiMusic Bəyənilən Mahnıları, Youtube-da Bəyən</string>
-    <string name="do_you_really_want_to_like_all_rimusictoytmusic">(təxmini vaxt) bütün mahnıları bəyənmək tələb olunur. Aralıqda ləğv edilərsə, bu fəaliyyət davam etdirilə bilməz. Bu prosesi ləğv etmək üçün tətbiqi bağlamalısınız. Davam etmək istəyirsiniz?</string>
+    <string name="do_you_really_want_to_like_all_riplaytoytmusic">(təxmini vaxt) bütün mahnıları bəyənmək tələb olunur. Aralıqda ləğv edilərsə, bu fəaliyyət davam etdirilə bilməz. Bu prosesi ləğv etmək üçün tətbiqi bağlamalısınız. Davam etmək istəyirsiniz?</string>
     <string name="do_you_really_want_to_like_all">(təxmini vaxt) bütün mahnıları bəyənmək tələb olunur. Bu prosesi ləğv etmək üçün tətbiqi bağlamalısınız. Davam etmək istəyirsiniz?</string>
     <string name="songs_liked_yt_failed">Mahnını YouTube-da bəyənmək olmadı</string>
     <string name="songs_unliked_yt_failed">Mahnını YouTube-da bəyənməmək olmadı</string>

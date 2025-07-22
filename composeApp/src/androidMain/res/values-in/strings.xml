@@ -144,7 +144,7 @@
     <string name="is_min_list_time_for_tips_or_quick_pics">Durasi pemutaran minimum sebuah lagu agar disarankan ke dalam Pilihan cepat</string>
     <string name="min_listening_time">Durasi pemutaran minimum</string>
     <string name="player_thumbnail_size">Ukuran thumbnail</string>
-    <string name="restarting_rimusic_is_required">Dibutuhkan pemulaian ulang</string>
+    <string name="restarting_riplay_is_required">Dibutuhkan pemulaian ulang</string>
     <string name="small">Kecil</string>
     <string name="medium">Sedang</string>
     <string name="big">Besar</string>
@@ -921,7 +921,7 @@
     <string name="songs_liked_yt">Lagu disukai di youtube</string>
     <string name="song_unliked_yt">Lagu tidak disukai di youtube</string>
     <string name="add_rimusic_to_ytm_favorites">seperti rimusic disukai lagu di youtube</string>
-    <string name="do_you_really_want_to_like_all_rimusictoytmusic">(perkiraan waktu) diperlukan untuk menyukai semua lagu. Tindakan ini tidak dapat dilanjutkan jika dibatalkan di tengah jalan. Kamu harus menutup aplikasi untuk membatalkan proses ini. Apakah kamu ingin melanjutkan?</string>
+    <string name="do_you_really_want_to_like_all_riplaytoytmusic">(perkiraan waktu) diperlukan untuk menyukai semua lagu. Tindakan ini tidak dapat dilanjutkan jika dibatalkan di tengah jalan. Kamu harus menutup aplikasi untuk membatalkan proses ini. Apakah kamu ingin melanjutkan?</string>
     <string name="do_you_really_want_to_like_all">(perkiraan waktu) diperlukan untuk menyukai semua lagu. Kamu harus menutup aplikasi untuk membatalkan proses ini. Apakah kamu ingin melanjutkan?</string>
     <string name="songs_liked_yt_failed">gagal menyukai lagu di youtube</string>
     <string name="songs_unliked_yt_failed">gagal untuk tidak seperti lagu di youtube</string>

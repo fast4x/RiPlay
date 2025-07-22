@@ -144,7 +144,7 @@
     <string name="is_min_list_time_for_tips_or_quick_pics">Abestia gomendio edo aukeraketa azkar moduan gordetzeko, abestia gutxienez entzun beharreko gutxienezko denbora</string>
     <string name="min_listening_time">Entzundako minutu kopurua</string>
     <string name="player_thumbnail_size">Irudi txikiaren tamaina</string>
-    <string name="restarting_rimusic_is_required">Berrabiaraztea nahitaezkoa da</string>
+    <string name="restarting_riplay_is_required">Berrabiaraztea nahitaezkoa da</string>
     <string name="small">Txikia</string>
     <string name="medium">Ertaina</string>
     <string name="big">Handia</string>
@@ -921,7 +921,7 @@
     <string name="songs_liked_yt">Song(s) are Liked in YouTube</string>
     <string name="song_unliked_yt">Song is Unliked in YouTube</string>
     <string name="add_rimusic_to_ytm_favorites">Like RiMusic Liked songs in Youtube</string>
-    <string name="do_you_really_want_to_like_all_rimusictoytmusic">(estimated time) is required to like all the songs. This action cannot be resumed if cancelled in between. You need to close the app to cancel this process. Do you want to continue?</string>
+    <string name="do_you_really_want_to_like_all_riplaytoytmusic">(estimated time) is required to like all the songs. This action cannot be resumed if cancelled in between. You need to close the app to cancel this process. Do you want to continue?</string>
     <string name="do_you_really_want_to_like_all">(estimated time) is required to like all the songs. You need to close the app to cancel this process. Do you want to continue?</string>
     <string name="songs_liked_yt_failed">Abestiari ezin izan zaio like eman YouTube-n</string>
     <string name="songs_unliked_yt_failed">Abestiari ezin izan zaio unlike eman YouTube-n</string>

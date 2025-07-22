@@ -912,7 +912,7 @@ fun UiSettings(
                     .padding(start = 25.dp)
             )
             ImportantSettingsDescription(
-                text = stringResource(R.string.restarting_rimusic_is_required),
+                text = stringResource(R.string.restarting_riplay_is_required),
                 modifier = Modifier
                 .padding(start = 25.dp)
             )

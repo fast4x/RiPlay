@@ -88,7 +88,7 @@ fun About() {
             title = stringResource(R.string.social_telegram),
             text = stringResource(R.string.social_telegram_info),
             onClick = {
-                uriHandler.openUri("https://t.me/rimusic_app")
+                uriHandler.openUri("https://t.me/riplay_app")
             }
         )
 
@@ -100,13 +100,13 @@ fun About() {
             }
         )
 
-        SettingsEntry(
-            title = stringResource(R.string.social_discord),
-            text = stringResource(R.string.social_discord_info),
-            onClick = {
-                uriHandler.openUri("https://discord.gg/h7eS2PcGeW")
-            }
-        )
+//        SettingsEntry(
+//            title = stringResource(R.string.social_discord),
+//            text = stringResource(R.string.social_discord_info),
+//            onClick = {
+//                uriHandler.openUri("https://discord.gg/h7eS2PcGeW")
+//            }
+//        )
 
         SettingsGroupSpacer()
 
@@ -116,7 +116,7 @@ fun About() {
             title = stringResource(R.string.social_github),
             text = stringResource(R.string.view_the_source_code),
             onClick = {
-                uriHandler.openUri("https://github.com/fast4x/RiMusic")
+                uriHandler.openUri("https://github.com/fast4x/RiPlay")
             }
         )
 
@@ -124,40 +124,41 @@ fun About() {
 
         SettingsGroupSpacer()
 
-        SettingsEntryGroupText(title = stringResource(R.string.troubleshooting))
+        //todo enable issues
+//        SettingsEntryGroupText(title = stringResource(R.string.troubleshooting))
+//
+//        SettingsEntry(
+//            title = stringResource(R.string.report_an_issue),
+//            text = stringResource(R.string.you_will_be_redirected_to_github),
+//            onClick = {
+//                uriHandler.openUri("https://github.com/fast4x/RiPlay/issues/new?assignees=&labels=bug&template=bug_report.yaml")
+//            }
+//        )
+//
+//
+//        SettingsEntry(
+//            title = stringResource(R.string.request_a_feature_or_suggest_an_idea),
+//            text = stringResource(R.string.you_will_be_redirected_to_github),
+//            onClick = {
+//                uriHandler.openUri("https://github.com/fast4x/RiPlay/issues/new?assignees=&labels=feature_request&template=feature_request.yaml")
+//            }
+//        )
 
-        SettingsEntry(
-            title = stringResource(R.string.report_an_issue),
-            text = stringResource(R.string.you_will_be_redirected_to_github),
-            onClick = {
-                uriHandler.openUri("https://github.com/fast4x/RiMusic/issues/new?assignees=&labels=bug&template=bug_report.yaml")
-            }
-        )
-
-
-        SettingsEntry(
-            title = stringResource(R.string.request_a_feature_or_suggest_an_idea),
-            text = stringResource(R.string.you_will_be_redirected_to_github),
-            onClick = {
-                uriHandler.openUri("https://github.com/fast4x/RiMusic/issues/new?assignees=&labels=feature_request&template=feature_request.yaml")
-            }
-        )
-
-        SettingsGroupSpacer()
-
-        Title(
-            title = stringResource(R.string.contributors)
-        )
-
-        SettingsEntryGroupText(title = "${ countTranslators() } " + stringResource(R.string.translators))
-        SettingsDescription(text = stringResource(R.string.in_alphabetical_order))
-        ShowTranslators()
-
-        SettingsGroupSpacer()
-
-        SettingsEntryGroupText(title = "${ countDevelopers() } " + "Developers / Designers")
-        SettingsDescription(text = stringResource(R.string.in_alphabetical_order))
-        ShowDevelopers()
+//        SettingsGroupSpacer()
+//
+//        Title(
+//            title = stringResource(R.string.contributors)
+//        )
+//
+//        SettingsEntryGroupText(title = "${ countTranslators() } " + stringResource(R.string.translators))
+//        SettingsDescription(text = stringResource(R.string.in_alphabetical_order))
+//        ShowTranslators()
+//
+//        SettingsGroupSpacer()
+//
+//        SettingsEntryGroupText(title = "${ countDevelopers() } " + "Developers / Designers")
+//        SettingsDescription(text = stringResource(R.string.in_alphabetical_order))
+//        ShowDevelopers()
 
         SettingsGroupSpacer(
             modifier = Modifier.height(Dimensions.bottomSpacer)
