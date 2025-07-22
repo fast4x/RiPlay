@@ -74,7 +74,7 @@ fun About() {
                 .fillMaxSize()
         ) {
             BasicText(
-                text = "RiMusic v${getVersionName()} by fast4x",
+                text = "RiPlay v${getVersionName()} by fast4x",
                 style = typography().s.secondary,
 
                 )
