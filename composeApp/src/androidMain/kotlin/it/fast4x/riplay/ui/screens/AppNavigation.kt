@@ -47,8 +47,6 @@ import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.enums.StatisticsType
 import it.fast4x.riplay.enums.ThumbnailRoundness
 import it.fast4x.riplay.enums.TransitionEffect
-import it.fast4x.riplay.extensions.games.pacman.Pacman
-import it.fast4x.riplay.extensions.games.snake.SnakeGame
 import it.fast4x.riplay.models.Mood
 import it.fast4x.riplay.models.SearchQuery
 import it.fast4x.riplay.ui.components.CustomModalBottomSheet
@@ -200,20 +198,6 @@ fun AppNavigation(
                 miniPlayer = miniPlayer,
                 openTabFromShortcut = openTabFromShortcut
             )
-        }
-
-        composable(route = NavRoutes.gamePacman.name) {
-            modalBottomSheetPage {
-                Pacman()
-            }
-
-        }
-
-        composable(route = NavRoutes.gameSnake.name) {
-            modalBottomSheetPage {
-                SnakeGame()
-            }
-
         }
 
         composable(

@@ -14,7 +14,6 @@ import androidx.lifecycle.Lifecycle
 import androidx.navigation.NavController
 import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.NavRoutes
-import it.fast4x.riplay.extensions.games.pacman.Pacman
 import it.fast4x.riplay.ui.styling.favoritesIcon
 import it.fast4x.riplay.ui.components.themed.Button
 import it.fast4x.riplay.colorPalette
@@ -58,11 +57,8 @@ class AppHeader(
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     fun Draw() {
-        val showGames by remember { mutableStateOf(false) }
         val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
         val context = LocalContext.current
-
-        if (showGames) Pacman()
 
         TopAppBar(
             title = { AppTitle( navController, context ) },

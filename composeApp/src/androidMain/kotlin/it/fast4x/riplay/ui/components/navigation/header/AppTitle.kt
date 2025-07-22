@@ -34,55 +34,15 @@ import it.fast4x.riplay.typography
 import it.fast4x.riplay.utils.isAtLeastAndroid7
 import org.dailyislam.android.utilities.getNetworkType
 
-private fun appIconClickAction(
-    navController: NavController,
-    countToReveal: MutableIntState,
-    context: Context
-) {
-    countToReveal.intValue++
-
-    val message: String =
-        when( countToReveal.intValue ) {
-            10 -> {
-                countToReveal.intValue = 0
-                navController.navigate( NavRoutes.gamePacman.name )
-                ""
-            }
-            3 -> "Do you like clicking? Then continue..."
-            6 -> "Okay, you’re looking for something, keep..."
-            9 -> "You are a number one, click and enjoy the surprise"
-            else -> ""
-        }
-    if( message.isNotEmpty() )
-        SmartMessage(
-            message = message,
-            durationLong = true,
-            context = context
-        )
-}
-
-private fun appIconLongClickAction(
-    navController: NavController,
-    context: Context
-) {
-    SmartMessage(
-        "You are a number one, click and enjoy the surprise",
-        durationLong = true,
-        context = context
-    )
-    navController.navigate( NavRoutes.gameSnake.name )
-}
-
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun AppLogo(
     navController: NavController,
     context: Context
 ) {
-    val countToReveal = remember { mutableIntStateOf(0) }
     val modifier = Modifier.combinedClickable(
-        onClick = { appIconClickAction( navController, countToReveal, context ) },
-        onLongClick = { appIconLongClickAction( navController, context ) }
+        onClick = {},
+        onLongClick = {}
     )
 
     Button(

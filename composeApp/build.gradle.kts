@@ -397,8 +397,8 @@ android {
         variant.outputs
             .map { it as com.android.build.gradle.internal.api.BaseVariantOutputImpl }
             .forEach { output ->
-                //val outputFileName = "app-${variant.baseName}-${variant.versionName}-${variant.versionCode}.apk"
-                val outputFileName = "riplay-${variant.baseName}.apk"
+                val outputFileName = "app-${variant.baseName}-${variant.versionName}-${variant.versionCode}.apk"
+                //val outputFileName = "riplay-${variant.baseName}.apk"
                 output.outputFileName = outputFileName
             }
     }
