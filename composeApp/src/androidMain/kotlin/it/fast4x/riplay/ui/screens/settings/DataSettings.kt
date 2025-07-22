@@ -97,20 +97,20 @@ fun DataSettings() {
         ExoPlayerDiskCacheMaxSize.`2GB`
     )
 
-    var exoPlayerDiskDownloadCacheMaxSize by rememberPreference(
-        exoPlayerDiskDownloadCacheMaxSizeKey,
-        ExoPlayerDiskDownloadCacheMaxSize.`2GB`
-    )
-
-    /*
-    var exoPlayerAlternateCacheLocation by rememberPreference(
-        exoPlayerAlternateCacheLocationKey,""
-    )
-     */
-
-    var exoPlayerCacheLocation by rememberPreference(
-        exoPlayerCacheLocationKey, ExoPlayerCacheLocation.System
-    )
+//    var exoPlayerDiskDownloadCacheMaxSize by rememberPreference(
+//        exoPlayerDiskDownloadCacheMaxSizeKey,
+//        ExoPlayerDiskDownloadCacheMaxSize.`2GB`
+//    )
+//
+//    /*
+//    var exoPlayerAlternateCacheLocation by rememberPreference(
+//        exoPlayerAlternateCacheLocationKey,""
+//    )
+//     */
+//
+//    var exoPlayerCacheLocation by rememberPreference(
+//        exoPlayerCacheLocationKey, ExoPlayerCacheLocation.System
+//    )
 
 
     /*
@@ -125,10 +125,10 @@ fun DataSettings() {
      */
 
 
-    var showExoPlayerCustomCacheDialog by remember { mutableStateOf(false) }
-    var exoPlayerCustomCache by rememberPreference(
-        exoPlayerCustomCacheKey,32
-    )
+//    var showExoPlayerCustomCacheDialog by remember { mutableStateOf(false) }
+//    var exoPlayerCustomCache by rememberPreference(
+//        exoPlayerCustomCacheKey,32
+//    )
 
     var showCoilCustomDiskCacheDialog by remember { mutableStateOf(false) }
     var coilCustomDiskCache by rememberPreference(
@@ -407,101 +407,101 @@ fun DataSettings() {
             CacheSpaceIndicator(cacheType = CacheType.Images, horizontalPadding = 20.dp)
         }
 
-        binder?.cache?.let { cache ->
-            val diskCacheSize = remember(cache.cacheSpace, cleanCacheOfflineSongs) {
-                    cache.cacheSpace
-            }
+//        binder?.cache?.let { cache ->
+//            val diskCacheSize = remember(cache.cacheSpace, cleanCacheOfflineSongs) {
+//                    cache.cacheSpace
+//            }
+//
+//            //SettingsGroup {
+//                EnumValueSelectorSettingsEntry(
+//                    title = stringResource(R.string.song_cache_max_size),
+//                    titleSecondary = when (exoPlayerDiskCacheMaxSize) {
+//                        ExoPlayerDiskCacheMaxSize.Disabled -> ""
+//                        ExoPlayerDiskCacheMaxSize.Custom -> Formatter.formatShortFileSize(context, diskCacheSize) +
+//                                "/${Formatter.formatShortFileSize(context,
+//                                    exoPlayerCustomCache.toLong() * 1000 * 1000
+//                                )}" + " ${stringResource(R.string.used)}"
+//                        else -> Formatter.formatShortFileSize(context, diskCacheSize) +
+//                                " ${stringResource(R.string.used)}" +
+//                                when (val size = exoPlayerDiskCacheMaxSize) {
+//                                    ExoPlayerDiskCacheMaxSize.Unlimited -> ""
+//                                    ExoPlayerDiskCacheMaxSize.Custom -> "" // only needed because of UNLIMITED
+//                                    else -> " (${diskCacheSize * 100 / size.bytes}%)"
+//                                }
+//                    },
+//                    trailingContent = {
+//                        HeaderIconButton(
+//                            icon = R.drawable.trash,
+//                            enabled = true,
+//                            color = colorPalette().text,
+//                            onClick = { cleanCacheOfflineSongs = true }
+//                        )
+//                    },
+//                    selectedValue = exoPlayerDiskCacheMaxSize,
+//                    onValueSelected = {
+//                        exoPlayerDiskCacheMaxSize = it
+//                        if (exoPlayerDiskCacheMaxSize == ExoPlayerDiskCacheMaxSize.Custom)
+//                            showExoPlayerCustomCacheDialog = true
+//
+//                        restartService = true
+//                    },
+//                    valueText = {
+//                        when (it) {
+//                            ExoPlayerDiskCacheMaxSize.Disabled -> stringResource(R.string.turn_off)
+//                            ExoPlayerDiskCacheMaxSize.Unlimited -> stringResource(R.string.unlimited)
+//                            ExoPlayerDiskCacheMaxSize.Custom -> stringResource(R.string.custom)
+//                            ExoPlayerDiskCacheMaxSize.`32MB` -> "32MB"
+//                            ExoPlayerDiskCacheMaxSize.`512MB` -> "512MB"
+//                            ExoPlayerDiskCacheMaxSize.`1GB` -> "1GB"
+//                            ExoPlayerDiskCacheMaxSize.`2GB` -> "2GB"
+//                            ExoPlayerDiskCacheMaxSize.`4GB` -> "4GB"
+//                            ExoPlayerDiskCacheMaxSize.`8GB` -> "8GB"
+//
+//                        }
+//                    }
+//                )
+//                RestartPlayerService(restartService, onRestart = { restartService = false } )
+//
+//                if (showExoPlayerCustomCacheDialog) {
+//                    InputNumericDialog(
+//                        title = stringResource(R.string.set_custom_cache),
+//                        placeholder = stringResource(R.string.enter_value_in_mb),
+//                        value = exoPlayerCustomCache.toString(),
+//                        valueMin = "32",
+//                        valueMax = "10000",
+//                        onDismiss = { showExoPlayerCustomCacheDialog = false },
+//                        setValue = {
+//                            //Log.d("customCache", it)
+//                            exoPlayerCustomCache = it.toInt()
+//                            showExoPlayerCustomCacheDialog = false
+//                            restartService = true
+//                        }
+//                    )
+//                    RestartPlayerService(restartService, onRestart = { restartService = false } )
+//                }
+//
+//                CacheSpaceIndicator(cacheType = CacheType.CachedSongs, horizontalPadding = 20.dp)
+//            //}
+//        }
 
-            //SettingsGroup {
-                EnumValueSelectorSettingsEntry(
-                    title = stringResource(R.string.song_cache_max_size),
-                    titleSecondary = when (exoPlayerDiskCacheMaxSize) {
-                        ExoPlayerDiskCacheMaxSize.Disabled -> ""
-                        ExoPlayerDiskCacheMaxSize.Custom -> Formatter.formatShortFileSize(context, diskCacheSize) +
-                                "/${Formatter.formatShortFileSize(context,
-                                    exoPlayerCustomCache.toLong() * 1000 * 1000
-                                )}" + " ${stringResource(R.string.used)}"
-                        else -> Formatter.formatShortFileSize(context, diskCacheSize) +
-                                " ${stringResource(R.string.used)}" +
-                                when (val size = exoPlayerDiskCacheMaxSize) {
-                                    ExoPlayerDiskCacheMaxSize.Unlimited -> ""
-                                    ExoPlayerDiskCacheMaxSize.Custom -> "" // only needed because of UNLIMITED
-                                    else -> " (${diskCacheSize * 100 / size.bytes}%)"
-                                }
-                    },
-                    trailingContent = {
-                        HeaderIconButton(
-                            icon = R.drawable.trash,
-                            enabled = true,
-                            color = colorPalette().text,
-                            onClick = { cleanCacheOfflineSongs = true }
-                        )
-                    },
-                    selectedValue = exoPlayerDiskCacheMaxSize,
-                    onValueSelected = {
-                        exoPlayerDiskCacheMaxSize = it
-                        if (exoPlayerDiskCacheMaxSize == ExoPlayerDiskCacheMaxSize.Custom)
-                            showExoPlayerCustomCacheDialog = true
-
-                        restartService = true
-                    },
-                    valueText = {
-                        when (it) {
-                            ExoPlayerDiskCacheMaxSize.Disabled -> stringResource(R.string.turn_off)
-                            ExoPlayerDiskCacheMaxSize.Unlimited -> stringResource(R.string.unlimited)
-                            ExoPlayerDiskCacheMaxSize.Custom -> stringResource(R.string.custom)
-                            ExoPlayerDiskCacheMaxSize.`32MB` -> "32MB"
-                            ExoPlayerDiskCacheMaxSize.`512MB` -> "512MB"
-                            ExoPlayerDiskCacheMaxSize.`1GB` -> "1GB"
-                            ExoPlayerDiskCacheMaxSize.`2GB` -> "2GB"
-                            ExoPlayerDiskCacheMaxSize.`4GB` -> "4GB"
-                            ExoPlayerDiskCacheMaxSize.`8GB` -> "8GB"
-
-                        }
-                    }
-                )
-                RestartPlayerService(restartService, onRestart = { restartService = false } )
-
-                if (showExoPlayerCustomCacheDialog) {
-                    InputNumericDialog(
-                        title = stringResource(R.string.set_custom_cache),
-                        placeholder = stringResource(R.string.enter_value_in_mb),
-                        value = exoPlayerCustomCache.toString(),
-                        valueMin = "32",
-                        valueMax = "10000",
-                        onDismiss = { showExoPlayerCustomCacheDialog = false },
-                        setValue = {
-                            //Log.d("customCache", it)
-                            exoPlayerCustomCache = it.toInt()
-                            showExoPlayerCustomCacheDialog = false
-                            restartService = true
-                        }
-                    )
-                    RestartPlayerService(restartService, onRestart = { restartService = false } )
-                }
-
-                CacheSpaceIndicator(cacheType = CacheType.CachedSongs, horizontalPadding = 20.dp)
-            //}
-        }
-
-        EnumValueSelectorSettingsEntry(
-            title = stringResource(R.string.set_cache_location),
-            selectedValue = exoPlayerCacheLocation,
-            onValueSelected = {
-                exoPlayerCacheLocation = it
-                restartService = true
-            },
-            valueText = {
-                when (it) {
-                    ExoPlayerCacheLocation.Private -> stringResource(R.string.cache_location_private)
-                    ExoPlayerCacheLocation.System -> stringResource(R.string.cache_location_system)
-                }
-            }
-        )
-
-        SettingsDescription(stringResource(R.string.info_private_cache_location_can_t_cleaned))
-        RestartPlayerService(restartService, onRestart = { restartService = false } )
-        //ImportantSettingsDescription(stringResource(R.string.restarting_rimusic_is_required))
+//        EnumValueSelectorSettingsEntry(
+//            title = stringResource(R.string.set_cache_location),
+//            selectedValue = exoPlayerCacheLocation,
+//            onValueSelected = {
+//                exoPlayerCacheLocation = it
+//                restartService = true
+//            },
+//            valueText = {
+//                when (it) {
+//                    ExoPlayerCacheLocation.Private -> stringResource(R.string.cache_location_private)
+//                    ExoPlayerCacheLocation.System -> stringResource(R.string.cache_location_system)
+//                }
+//            }
+//        )
+//
+//        SettingsDescription(stringResource(R.string.info_private_cache_location_can_t_cleaned))
+//        RestartPlayerService(restartService, onRestart = { restartService = false } )
+//        //ImportantSettingsDescription(stringResource(R.string.restarting_rimusic_is_required))
 
         SettingsGroupSpacer()
 

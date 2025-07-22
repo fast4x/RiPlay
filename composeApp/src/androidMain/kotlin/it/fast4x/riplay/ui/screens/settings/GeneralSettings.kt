@@ -121,9 +121,9 @@ import it.fast4x.riplay.enums.ValidationType
 import it.fast4x.riplay.ui.components.themed.Search
 import it.fast4x.riplay.typography
 import it.fast4x.riplay.utils.audioReverbPresetKey
-import it.fast4x.riplay.utils.autoDownloadSongKey
-import it.fast4x.riplay.utils.autoDownloadSongWhenAlbumBookmarkedKey
-import it.fast4x.riplay.utils.autoDownloadSongWhenLikedKey
+//import it.fast4x.riplay.utils.autoDownloadSongKey
+//import it.fast4x.riplay.utils.autoDownloadSongWhenAlbumBookmarkedKey
+//import it.fast4x.riplay.utils.autoDownloadSongWhenLikedKey
 import it.fast4x.riplay.utils.bassboostEnabledKey
 import it.fast4x.riplay.utils.bassboostLevelKey
 import it.fast4x.riplay.utils.customDnsOverHttpsServerKey
@@ -249,9 +249,9 @@ fun GeneralSettings(
     var pipModule by rememberPreference(pipModuleKey, PipModule.Cover)
     var jumpPrevious by rememberPreference(jumpPreviousKey,"3")
     //var notificationType by rememberPreference(notificationTypeKey, NotificationType.Default)
-    var autoDownloadSong by rememberPreference(autoDownloadSongKey, false)
-    var autoDownloadSongWhenLiked by rememberPreference(autoDownloadSongWhenLikedKey, false)
-    var autoDownloadSongWhenAlbumBookmarked by rememberPreference(autoDownloadSongWhenAlbumBookmarkedKey, false)
+//    var autoDownloadSong by rememberPreference(autoDownloadSongKey, false)
+//    var autoDownloadSongWhenLiked by rememberPreference(autoDownloadSongWhenLikedKey, false)
+//    var autoDownloadSongWhenAlbumBookmarked by rememberPreference(autoDownloadSongWhenAlbumBookmarkedKey, false)
 
     var isProxyEnabled by rememberPreference(isProxyEnabledKey, false)
     var proxyHost by rememberPreference(proxyHostnameKey, "")
@@ -1104,39 +1104,39 @@ fun GeneralSettings(
             }
         }
 
-        if (search.input.isBlank() || stringResource(R.string.settings_enable_autodownload_song).contains(search.input,true)) {
-            SwitchSettingEntry(
-                title = stringResource(R.string.settings_enable_autodownload_song),
-                text = "",
-                isChecked = autoDownloadSong,
-                onCheckedChange = {
-                    autoDownloadSong = it
-                }
-            )
-            AnimatedVisibility(visible = autoDownloadSong) {
-                Column(
-                    modifier = Modifier.padding(start = 25.dp)
-                ) {
-                    SwitchSettingEntry(
-                        title = stringResource(R.string.settings_enable_autodownload_song_when_liked),
-                        text = "",
-                        isChecked = autoDownloadSongWhenLiked,
-                        onCheckedChange = {
-                            autoDownloadSongWhenLiked = it
-                        }
-                    )
-                    SwitchSettingEntry(
-                        title = stringResource(R.string.settings_enable_autodownload_song_when_album_bookmarked),
-                        text = "",
-                        isChecked = autoDownloadSongWhenAlbumBookmarked,
-                        onCheckedChange = {
-                            autoDownloadSongWhenAlbumBookmarked = it
-                        }
-                    )
-                }
-
-            }
-        }
+//        if (search.input.isBlank() || stringResource(R.string.settings_enable_autodownload_song).contains(search.input,true)) {
+//            SwitchSettingEntry(
+//                title = stringResource(R.string.settings_enable_autodownload_song),
+//                text = "",
+//                isChecked = autoDownloadSong,
+//                onCheckedChange = {
+//                    autoDownloadSong = it
+//                }
+//            )
+//            AnimatedVisibility(visible = autoDownloadSong) {
+//                Column(
+//                    modifier = Modifier.padding(start = 25.dp)
+//                ) {
+//                    SwitchSettingEntry(
+//                        title = stringResource(R.string.settings_enable_autodownload_song_when_liked),
+//                        text = "",
+//                        isChecked = autoDownloadSongWhenLiked,
+//                        onCheckedChange = {
+//                            autoDownloadSongWhenLiked = it
+//                        }
+//                    )
+//                    SwitchSettingEntry(
+//                        title = stringResource(R.string.settings_enable_autodownload_song_when_album_bookmarked),
+//                        text = "",
+//                        isChecked = autoDownloadSongWhenAlbumBookmarked,
+//                        onCheckedChange = {
+//                            autoDownloadSongWhenAlbumBookmarked = it
+//                        }
+//                    )
+//                }
+//
+//            }
+//        }
 
         if (search.input.isBlank() || stringResource(R.string.equalizer).contains(search.input,true))
             SettingsEntry(

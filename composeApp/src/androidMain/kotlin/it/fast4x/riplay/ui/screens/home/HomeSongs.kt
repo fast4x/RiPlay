@@ -380,8 +380,8 @@ fun HomeSongs(
 //        BuiltInPlaylist.Downloaded to stringResource(R.string.downloaded)
     if (showMyTopPlaylist) buttonsList +=
         BuiltInPlaylist.Top to String.format(stringResource(R.string.my_playlist_top),maxTopPlaylistItems.number)
-//    if (showOnDevicePlaylist) buttonsList +=
-//        BuiltInPlaylist.OnDevice to stringResource(R.string.on_device)
+    if (showOnDevicePlaylist) buttonsList +=
+        BuiltInPlaylist.OnDevice to stringResource(R.string.on_device)
     if (showDislikedPlaylist) buttonsList +=
         BuiltInPlaylist.Disliked to stringResource(R.string.disliked)
 
@@ -393,7 +393,6 @@ fun HomeSongs(
     when (builtInPlaylist) {
         BuiltInPlaylist.All -> {
             LaunchedEffect(sortBy, sortOrder, filter, showHiddenSongs, includeLocalSongs) {
-                //Database.songs(sortBy, sortOrder, showHiddenSongs).collect { items = it }
                 Database.songs(sortBy, sortOrder, showHiddenSongs).collect { items = it }
 
             }

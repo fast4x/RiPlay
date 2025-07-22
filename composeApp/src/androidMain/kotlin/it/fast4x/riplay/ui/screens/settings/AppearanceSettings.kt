@@ -231,8 +231,8 @@ fun DefaultAppearanceSettings() {
     showButtonPlayerAddToPlaylist = true
     var showButtonPlayerArrow by rememberPreference(showButtonPlayerArrowKey, true)
     showButtonPlayerArrow = false
-    var showButtonPlayerDownload by rememberPreference(showButtonPlayerDownloadKey, true)
-    showButtonPlayerDownload = true
+//    var showButtonPlayerDownload by rememberPreference(showButtonPlayerDownloadKey, true)
+//    showButtonPlayerDownload = true
     var showButtonPlayerLoop by rememberPreference(showButtonPlayerLoopKey, true)
     showButtonPlayerLoop = true
     var showButtonPlayerLyrics by rememberPreference(showButtonPlayerLyricsKey, true)
@@ -421,7 +421,7 @@ fun AppearanceSettings(
 
     var showButtonPlayerAddToPlaylist by rememberPreference(showButtonPlayerAddToPlaylistKey, true)
     var showButtonPlayerArrow by rememberPreference(showButtonPlayerArrowKey, true)
-    var showButtonPlayerDownload by rememberPreference(showButtonPlayerDownloadKey, true)
+    //var showButtonPlayerDownload by rememberPreference(showButtonPlayerDownloadKey, true)
     var showButtonPlayerLoop by rememberPreference(showButtonPlayerLoopKey, true)
     var showButtonPlayerLyrics by rememberPreference(showButtonPlayerLyricsKey, true)
     var expandedplayertoggle by rememberPreference(expandedplayertoggleKey, true)
@@ -588,7 +588,7 @@ fun AppearanceSettings(
                         writeRow("Appearance", appearanceFilename, "thumbnailTapEnabled", thumbnailTapEnabled)
                         writeRow("Appearance", appearanceFilename, "showButtonPlayerAddToPlaylist", showButtonPlayerAddToPlaylist)
                         writeRow("Appearance", appearanceFilename, "showButtonPlayerArrow", showButtonPlayerArrow)
-                        writeRow("Appearance", appearanceFilename, "showButtonPlayerDownload", showButtonPlayerDownload)
+                        //writeRow("Appearance", appearanceFilename, "showButtonPlayerDownload", showButtonPlayerDownload)
                         writeRow("Appearance", appearanceFilename, "showButtonPlayerLoop", showButtonPlayerLoop)
                         writeRow("Appearance", appearanceFilename, "showButtonPlayerLyrics", showButtonPlayerLyrics)
                         writeRow("Appearance", appearanceFilename, "expandedplayertoggle", expandedplayertoggle)
@@ -798,9 +798,9 @@ fun AppearanceSettings(
                                     "showButtonPlayerArrow" -> {
                                         showButtonPlayerArrow = row["Value"]!!.toBoolean()
                                     }
-                                    "showButtonPlayerDownload" -> {
-                                        showButtonPlayerDownload = row["Value"]!!.toBoolean()
-                                    }
+//                                    "showButtonPlayerDownload" -> {
+//                                        showButtonPlayerDownload = row["Value"]!!.toBoolean()
+//                                    }
                                     "showButtonPlayerLoop" -> {
                                         showButtonPlayerLoop = row["Value"]!!.toBoolean()
                                     }
@@ -1024,7 +1024,7 @@ fun AppearanceSettings(
                 actionspacedevenly = true
                 showButtonPlayerVideo = false
                 showButtonPlayerDiscover = false
-                showButtonPlayerDownload = false
+                //showButtonPlayerDownload = false
                 showButtonPlayerAddToPlaylist = true
                 showButtonPlayerLoop = false
                 showButtonPlayerShuffle = true
@@ -1071,7 +1071,7 @@ fun AppearanceSettings(
                 actionspacedevenly = true
                 showButtonPlayerVideo = false
                 showButtonPlayerDiscover = false
-                showButtonPlayerDownload = false
+                //showButtonPlayerDownload = false
                 showButtonPlayerAddToPlaylist = true
                 showButtonPlayerLoop = false
                 showButtonPlayerShuffle = false
@@ -1114,7 +1114,7 @@ fun AppearanceSettings(
                 actionspacedevenly = true
                 showButtonPlayerVideo = false
                 showButtonPlayerDiscover = false
-                showButtonPlayerDownload = false
+                //showButtonPlayerDownload = false
                 showButtonPlayerAddToPlaylist = false
                 showButtonPlayerLoop = false
                 showButtonPlayerShuffle = false
@@ -1161,7 +1161,7 @@ fun AppearanceSettings(
                 actionspacedevenly = true
                 showButtonPlayerVideo = false
                 showButtonPlayerDiscover = false
-                showButtonPlayerDownload = false
+                //showButtonPlayerDownload = false
                 showButtonPlayerAddToPlaylist = false
                 showButtonPlayerLoop = true
                 showButtonPlayerShuffle = true
@@ -1209,7 +1209,7 @@ fun AppearanceSettings(
                 actionspacedevenly = true
                 showButtonPlayerVideo = false
                 showButtonPlayerDiscover = false
-                showButtonPlayerDownload = true
+                //showButtonPlayerDownload = true
                 showButtonPlayerAddToPlaylist = false
                 showButtonPlayerLoop = false
                 showButtonPlayerShuffle = false
@@ -1251,7 +1251,7 @@ fun AppearanceSettings(
                 actionspacedevenly = true
                 showButtonPlayerVideo = false
                 showButtonPlayerDiscover = false
-                showButtonPlayerDownload = false
+                //showButtonPlayerDownload = false
                 showButtonPlayerAddToPlaylist = false
                 showButtonPlayerLoop = false
                 showButtonPlayerShuffle = true
@@ -2238,17 +2238,17 @@ fun AppearanceSettings(
                 onCheckedChange = { showButtonPlayerDiscover = it }
             )
 
-        if (search.input.isBlank() || stringResource(R.string.action_bar_show_download_button).contains(
-                search.input,
-                true
-            )
-        )
-            SwitchSettingEntry(
-                title = stringResource(R.string.action_bar_show_download_button),
-                text = "",
-                isChecked = showButtonPlayerDownload,
-                onCheckedChange = { showButtonPlayerDownload = it }
-            )
+//        if (search.input.isBlank() || stringResource(R.string.action_bar_show_download_button).contains(
+//                search.input,
+//                true
+//            )
+//        )
+//            SwitchSettingEntry(
+//                title = stringResource(R.string.action_bar_show_download_button),
+//                text = "",
+//                isChecked = showButtonPlayerDownload,
+//                onCheckedChange = { showButtonPlayerDownload = it }
+//            )
 
         if (search.input.isBlank() || stringResource(R.string.action_bar_show_add_to_playlist_button).contains(
                 search.input,
@@ -2442,7 +2442,7 @@ fun AppearanceSettings(
             }
 
             if (
-                showButtonPlayerDownload ||
+                //showButtonPlayerDownload ||
                 showButtonPlayerAddToPlaylist ||
                 showButtonPlayerLoop ||
                 showButtonPlayerShuffle ||

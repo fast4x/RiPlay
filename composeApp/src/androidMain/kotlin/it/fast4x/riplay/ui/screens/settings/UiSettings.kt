@@ -162,7 +162,7 @@ import it.fast4x.riplay.utils.shakeEventEnabledKey
 import it.fast4x.riplay.utils.showButtonPlayerAddToPlaylistKey
 import it.fast4x.riplay.utils.showButtonPlayerArrowKey
 import it.fast4x.riplay.utils.showButtonPlayerDiscoverKey
-import it.fast4x.riplay.utils.showButtonPlayerDownloadKey
+//import it.fast4x.riplay.utils.showButtonPlayerDownloadKey
 import it.fast4x.riplay.utils.showButtonPlayerLoopKey
 import it.fast4x.riplay.utils.showButtonPlayerLyricsKey
 import it.fast4x.riplay.utils.showButtonPlayerMenuKey
@@ -476,8 +476,8 @@ fun DefaultUiSettings() {
     showButtonPlayerAddToPlaylist = true
     var showButtonPlayerArrow by rememberPreference(showButtonPlayerArrowKey, true)
     showButtonPlayerArrow = false
-    var showButtonPlayerDownload by rememberPreference(showButtonPlayerDownloadKey, true)
-    showButtonPlayerDownload = true
+//    var showButtonPlayerDownload by rememberPreference(showButtonPlayerDownloadKey, true)
+//    showButtonPlayerDownload = true
     var showButtonPlayerLoop by rememberPreference(showButtonPlayerLoopKey, true)
     showButtonPlayerLoop = true
     var showButtonPlayerLyrics by rememberPreference(showButtonPlayerLyricsKey, true)
@@ -675,7 +675,7 @@ fun UiSettings(
     var swipeUpQueue by rememberPreference(swipeUpQueueKey, true)
     var showButtonPlayerAddToPlaylist by rememberPreference(showButtonPlayerAddToPlaylistKey, true)
     var showButtonPlayerArrow by rememberPreference(showButtonPlayerArrowKey, true)
-    var showButtonPlayerDownload by rememberPreference(showButtonPlayerDownloadKey, true)
+    //var showButtonPlayerDownload by rememberPreference(showButtonPlayerDownloadKey, true)
     var showButtonPlayerLoop by rememberPreference(showButtonPlayerLoopKey, true)
     var showButtonPlayerLyrics by rememberPreference(showButtonPlayerLyricsKey, true)
     var expandedplayertoggle by rememberPreference(expandedplayertoggleKey, true)
@@ -846,7 +846,7 @@ fun UiSettings(
                         tapqueue = false
                         swipeUpQueue = true
                         showButtonPlayerDiscover = false
-                        showButtonPlayerDownload = false
+                        //showButtonPlayerDownload = false
                         showButtonPlayerAddToPlaylist = false
                         showButtonPlayerLoop = false
                         showButtonPlayerShuffle = false
