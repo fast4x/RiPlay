@@ -351,17 +351,18 @@ fun GeneralSettings(
             )
 
         SettingsEntryGroupText(title = "Network")
-        if (search.input.isBlank() || stringResource(R.string.enable_connection_metered).contains(search.input,true))
-            SwitchSettingEntry(
-                title = stringResource(R.string.enable_connection_metered),
-                text = stringResource(R.string.info_enable_connection_metered),
-                isChecked = isConnectionMeteredEnabled,
-                onCheckedChange = {
-                    isConnectionMeteredEnabled = it
-                    if (it)
-                        audioQualityFormat = AudioQualityFormat.Auto
-                }
-            )
+
+//        if (search.input.isBlank() || stringResource(R.string.enable_connection_metered).contains(search.input,true))
+//            SwitchSettingEntry(
+//                title = stringResource(R.string.enable_connection_metered),
+//                text = stringResource(R.string.info_enable_connection_metered),
+//                isChecked = isConnectionMeteredEnabled,
+//                onCheckedChange = {
+//                    isConnectionMeteredEnabled = it
+//                    if (it)
+//                        audioQualityFormat = AudioQualityFormat.Auto
+//                }
+//            )
 
         if (search.input.isBlank() || stringResource(R.string.use_alternative_dns).contains(search.input,true)) {
             EnumValueSelectorSettingsEntry(
@@ -508,55 +509,55 @@ fun GeneralSettings(
         SettingsGroupSpacer()
         SettingsEntryGroupText(stringResource(R.string.player))
 
-        if (search.input.isBlank() || stringResource(R.string.streaming_player_type).contains(search.input,true)) {
-            EnumValueSelectorSettingsEntry(
-                title = stringResource(R.string.streaming_player_type),
-                selectedValue = streamingPlayerType,
-                onValueSelected = {
-                    streamingPlayerType = it
-                },
-                valueText = {
-                    it.displayName
-                }
-            )
-        }
-
-        if (search.input.isBlank() || stringResource(R.string.audio_quality_format).contains(search.input,true)) {
-            EnumValueSelectorSettingsEntry(
-                title = stringResource(R.string.audio_quality_format),
-                selectedValue = audioQualityFormat,
-                onValueSelected = {
-                    audioQualityFormat = it
-                    restartService = true
-                },
-                valueText = {
-                    when (it) {
-                        AudioQualityFormat.Auto -> stringResource(R.string.audio_quality_automatic)
-                        AudioQualityFormat.High -> stringResource(R.string.audio_quality_format_high)
-                        AudioQualityFormat.Medium -> stringResource(R.string.audio_quality_format_medium)
-                        AudioQualityFormat.Low -> stringResource(R.string.audio_quality_format_low)
-                    }
-                }
-            )
-
-            RestartPlayerService(restartService, onRestart = { restartService = false } )
-
-        }
-
-        if (search.input.isBlank() || "Pre Cache the whole song at once".contains(search.input,true)) {
-            SwitchSettingEntry(
-                title = "Pre Cache the whole song at once",
-                text = "Songs will be cached in parts if this is disabled",
-                isChecked = isPreCacheEnabled,
-                onCheckedChange = {
-                    isPreCacheEnabled = it
-                    restartService = true
-                }
-            )
-            RestartPlayerService(restartService, onRestart = { restartService = false } )
-        }
-
-        SettingsGroupSpacer()
+//        if (search.input.isBlank() || stringResource(R.string.streaming_player_type).contains(search.input,true)) {
+//            EnumValueSelectorSettingsEntry(
+//                title = stringResource(R.string.streaming_player_type),
+//                selectedValue = streamingPlayerType,
+//                onValueSelected = {
+//                    streamingPlayerType = it
+//                },
+//                valueText = {
+//                    it.displayName
+//                }
+//            )
+//        }
+//
+//        if (search.input.isBlank() || stringResource(R.string.audio_quality_format).contains(search.input,true)) {
+//            EnumValueSelectorSettingsEntry(
+//                title = stringResource(R.string.audio_quality_format),
+//                selectedValue = audioQualityFormat,
+//                onValueSelected = {
+//                    audioQualityFormat = it
+//                    restartService = true
+//                },
+//                valueText = {
+//                    when (it) {
+//                        AudioQualityFormat.Auto -> stringResource(R.string.audio_quality_automatic)
+//                        AudioQualityFormat.High -> stringResource(R.string.audio_quality_format_high)
+//                        AudioQualityFormat.Medium -> stringResource(R.string.audio_quality_format_medium)
+//                        AudioQualityFormat.Low -> stringResource(R.string.audio_quality_format_low)
+//                    }
+//                }
+//            )
+//
+//            RestartPlayerService(restartService, onRestart = { restartService = false } )
+//
+//        }
+//
+//        if (search.input.isBlank() || "Pre Cache the whole song at once".contains(search.input,true)) {
+//            SwitchSettingEntry(
+//                title = "Pre Cache the whole song at once",
+//                text = "Songs will be cached in parts if this is disabled",
+//                isChecked = isPreCacheEnabled,
+//                onCheckedChange = {
+//                    isPreCacheEnabled = it
+//                    restartService = true
+//                }
+//            )
+//            RestartPlayerService(restartService, onRestart = { restartService = false } )
+//        }
+//
+//        SettingsGroupSpacer()
 
         if (search.input.isBlank() || stringResource(R.string.jump_previous).contains(search.input,true)) {
             BasicText(
