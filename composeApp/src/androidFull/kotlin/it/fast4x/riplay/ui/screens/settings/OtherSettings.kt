@@ -464,12 +464,12 @@ fun OtherSettings() {
 
                 } else
                     SmartMessage(
-                        context.resources.getString(R.string.restarting_rimusic_is_required),
+                        context.resources.getString(R.string.restarting_riplay_is_required),
                         type = PopupType.Info, context = context
                     )
             }
         )
-        ImportantSettingsDescription(text = stringResource(R.string.restarting_rimusic_is_required))
+        ImportantSettingsDescription(text = stringResource(R.string.restarting_riplay_is_required))
         ButtonBarSettingEntry(
             isEnabled = logDebugEnabled,
             title = stringResource(R.string.export_log),
