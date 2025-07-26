@@ -110,6 +110,7 @@ import it.fast4x.riplay.typography
 import it.fast4x.riplay.ui.components.themed.IconButton
 import it.fast4x.riplay.ui.components.themed.NowPlayingSongIndicator
 import it.fast4x.riplay.ui.components.themed.SmartMessage
+import it.fast4x.riplay.ui.screens.player.online.components.core.OnlineCore
 import it.fast4x.riplay.ui.screens.player.online.components.customui.CustomDefaultPlayerUiController
 import it.fast4x.riplay.ui.screens.settings.isYouTubeSyncEnabled
 import it.fast4x.riplay.ui.styling.Dimensions
@@ -162,6 +163,10 @@ fun OnlineMiniPlayer(
     showPlayer: () -> Unit,
     hidePlayer: () -> Unit,
     navController: NavController? = null,
+    playFromSecond: Float = 0f,
+    load: Boolean = false,
+    onSecondChange: (Float) -> Unit,
+    onPlayingChange: (Boolean) -> Unit,
 ) {
 
     val context = LocalContext.current
@@ -170,7 +175,7 @@ fun OnlineMiniPlayer(
     val hapticFeedback = LocalHapticFeedback.current
 
     binder?.player ?: return
-    if (binder.player.currentTimeline?.windowCount == 0) return
+    if (binder.player.currentTimeline.windowCount == 0) return
 
     var nullableMediaItem by remember {
         mutableStateOf(binder.player.currentMediaItem, neverEqualPolicy())
@@ -181,12 +186,6 @@ fun OnlineMiniPlayer(
             override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
                 nullableMediaItem = mediaItem
             }
-
-//            override fun onTimelineChanged(timeline: Timeline, reason: Int) {
-//                mediaItems = timeline.mediaItems
-//                mediaItemIndex = binder.player.currentMediaItemIndex
-//            }
-
         }
     }
 
@@ -782,101 +781,117 @@ fun OnlineMiniPlayer(
 
         }
 
-        AndroidView(
-
-            factory = {
-
-                val iFramePlayerOptions = IFramePlayerOptions.Builder()
-                    .controls(0) // show/hide controls
-                    .listType("playlist")
-                    .build()
-
-                val listener = object : AbstractYouTubePlayerListener() {
-
-                    override fun onReady(youTubePlayer: YouTubePlayer) {
-                        player.value = youTubePlayer
-
-//                        val customPlayerUiController =
-//                            CustomBasePlayerUiControllerAsListener(
-//                                it,
-//                                customPLayerUi,
-//                                youTubePlayer,
-//                                onlinePlayerView
-//                            )
-//                        youTubePlayer.addListener(customPlayerUiController)
-
-                        // Used to show default player ui with defaultPlayerUiController as custom view
-                        val customUiController =
-                            CustomDefaultPlayerUiController(
-                                onlinePlayerView,
-                                youTubePlayer,
-                                onTap = {}
-                            )
-                        customUiController.showUi(false) // disable all default controls and buttons
-                        customUiController.showMenuButton(false)
-                        customUiController.showVideoTitle(false)
-                        customUiController.showPlayPauseButton(false)
-                        customUiController.showDuration(false)
-                        customUiController.showCurrentTime(false)
-                        customUiController.showSeekBar(false)
-                        customUiController.showBufferingProgress(false)
-                        customUiController.showYouTubeButton(false)
-                        customUiController.showFullscreenButton(false)
-                        onlinePlayerView.setCustomPlayerUi(customUiController.rootView)
-
-                        //youTubePlayer.loadOrCueVideo(lifecycleOwner.lifecycle, mediaItem.mediaId, lastYTVideoSeconds)
-                        println("OnlineMiniPlayer: onReady shouldBePlaying: $shouldBePlaying")
-                        youTubePlayer.cueVideo(mediaItem.mediaId, lastYTVideoSeconds)
-                        //youTubePlayer.loadVideo(mediaItem.mediaId, lastYTVideoSeconds)
-
-                    }
-
-                    override fun onCurrentSecond(youTubePlayer: YouTubePlayer, second: Float) {
-                        super.onCurrentSecond(youTubePlayer, second)
-                        currentSecond = second
-                        lastYTVideoSeconds = second
-                        lastYTVideoId = mediaItem.mediaId
-
-                    }
-
-                    override fun onVideoDuration(youTubePlayer: YouTubePlayer, duration: Float) {
-                        super.onVideoDuration(youTubePlayer, duration)
-                        currentDuration = duration
-                    }
-
-                    override fun onStateChange(
-                        youTubePlayer: YouTubePlayer,
-                        state: PlayerConstants.PlayerState
-                    ) {
-                        super.onStateChange(youTubePlayer, state)
-
-                        playerState.value = state
-                    }
-
-
-                }
-
-                onlinePlayerView.apply {
-                    enableAutomaticInitialization = false
-
-                    if (enableBackgroundPlayback)
-                        enableBackgroundPlayback(true)
-                    else
-                        lifecycleOwner.lifecycle.addObserver(this)
-
-                    initialize(listener, iFramePlayerOptions)
-                }
-
+        OnlineCore(
+            actAsMini = true,
+            load = load,
+            playFromSecond = playFromSecond,
+            onPlayerReady = { player.value = it },
+            onSecondChange = {
+                currentSecond = it
+                onSecondChange(it)
             },
-            update = {
-                it.enableBackgroundPlayback(enableBackgroundPlayback)
-                it.layoutParams = ViewGroup.LayoutParams(
-                    100,
-                    100
-                )
-
+            onDurationChange = { currentDuration = it },
+            onPlayerStateChange = {
+                playerState.value = it
+                onPlayingChange(it == PlayerConstants.PlayerState.PLAYING)
             }
         )
+
+//        AndroidView(
+//
+//            factory = {
+//
+//                val iFramePlayerOptions = IFramePlayerOptions.Builder()
+//                    .controls(0) // show/hide controls
+//                    .listType("playlist")
+//                    .build()
+//
+//                val listener = object : AbstractYouTubePlayerListener() {
+//
+//                    override fun onReady(youTubePlayer: YouTubePlayer) {
+//                        player.value = youTubePlayer
+//
+////                        val customPlayerUiController =
+////                            CustomBasePlayerUiControllerAsListener(
+////                                it,
+////                                customPLayerUi,
+////                                youTubePlayer,
+////                                onlinePlayerView
+////                            )
+////                        youTubePlayer.addListener(customPlayerUiController)
+//
+//                        // Used to show default player ui with defaultPlayerUiController as custom view
+//                        val customUiController =
+//                            CustomDefaultPlayerUiController(
+//                                onlinePlayerView,
+//                                youTubePlayer,
+//                                onTap = {}
+//                            )
+//                        customUiController.showUi(false) // disable all default controls and buttons
+//                        customUiController.showMenuButton(false)
+//                        customUiController.showVideoTitle(false)
+//                        customUiController.showPlayPauseButton(false)
+//                        customUiController.showDuration(false)
+//                        customUiController.showCurrentTime(false)
+//                        customUiController.showSeekBar(false)
+//                        customUiController.showBufferingProgress(false)
+//                        customUiController.showYouTubeButton(false)
+//                        customUiController.showFullscreenButton(false)
+//                        onlinePlayerView.setCustomPlayerUi(customUiController.rootView)
+//
+//                        //youTubePlayer.loadOrCueVideo(lifecycleOwner.lifecycle, mediaItem.mediaId, lastYTVideoSeconds)
+//                        println("OnlineMiniPlayer: onReady shouldBePlaying: $shouldBePlaying")
+//                        youTubePlayer.cueVideo(mediaItem.mediaId, lastYTVideoSeconds)
+//                        //youTubePlayer.loadVideo(mediaItem.mediaId, lastYTVideoSeconds)
+//
+//                    }
+//
+//                    override fun onCurrentSecond(youTubePlayer: YouTubePlayer, second: Float) {
+//                        super.onCurrentSecond(youTubePlayer, second)
+//                        currentSecond = second
+//                        lastYTVideoSeconds = second
+//                        lastYTVideoId = mediaItem.mediaId
+//
+//                    }
+//
+//                    override fun onVideoDuration(youTubePlayer: YouTubePlayer, duration: Float) {
+//                        super.onVideoDuration(youTubePlayer, duration)
+//                        currentDuration = duration
+//                    }
+//
+//                    override fun onStateChange(
+//                        youTubePlayer: YouTubePlayer,
+//                        state: PlayerConstants.PlayerState
+//                    ) {
+//                        super.onStateChange(youTubePlayer, state)
+//
+//                        playerState.value = state
+//                    }
+//
+//
+//                }
+//
+//                onlinePlayerView.apply {
+//                    enableAutomaticInitialization = false
+//
+//                    if (enableBackgroundPlayback)
+//                        enableBackgroundPlayback(true)
+//                    else
+//                        lifecycleOwner.lifecycle.addObserver(this)
+//
+//                    initialize(listener, iFramePlayerOptions)
+//                }
+//
+//            },
+//            update = {
+//                it.enableBackgroundPlayback(enableBackgroundPlayback)
+//                it.layoutParams = ViewGroup.LayoutParams(
+//                    100,
+//                    100
+//                )
+//
+//            }
+//        )
 
         /******* */
 

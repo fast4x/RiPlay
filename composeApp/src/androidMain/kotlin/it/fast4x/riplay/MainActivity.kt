@@ -64,6 +64,7 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -199,6 +200,7 @@ import it.fast4x.riplay.utils.isValidHttpUrl
 import it.fast4x.riplay.utils.isValidIP
 import it.fast4x.riplay.utils.keepPlayerMinimizedKey
 import it.fast4x.riplay.utils.languageAppKey
+import it.fast4x.riplay.utils.lastVideoIdKey
 import it.fast4x.riplay.utils.loadedDataKey
 import it.fast4x.riplay.utils.miniPlayerTypeKey
 import it.fast4x.riplay.utils.navigationBarPositionKey
@@ -1173,6 +1175,9 @@ MonetCompatActivity(),
                                     )
                                 } else {
 
+                                    var currentSecond by remember { mutableFloatStateOf(0f) }
+                                    var continuePlaying by remember { mutableStateOf(false) }
+
                                     AppNavigation(
                                         navController = navController,
                                         miniPlayer = {
@@ -1181,14 +1186,24 @@ MonetCompatActivity(),
                                                 OfflineMiniPlayer(
                                                     showPlayer = { showPlayer = true },
                                                     hidePlayer = { showPlayer = false },
-                                                    navController = navController
+                                                    navController = navController,
                                                 )
-                                            else
-                                                OnlineMiniPlayer(
-                                                    showPlayer = { showPlayer = true },
-                                                    hidePlayer = { showPlayer = false },
-                                                    navController = navController
-                                                )
+                                            else {
+                                                if (!showPlayer)
+                                                    OnlineMiniPlayer(
+                                                        showPlayer = { showPlayer = true },
+                                                        hidePlayer = { showPlayer = false },
+                                                        navController = navController,
+                                                        playFromSecond = currentSecond,
+                                                        load = continuePlaying,
+                                                        onSecondChange = {
+                                                            currentSecond = it
+                                                        },
+                                                        onPlayingChange = {
+                                                            continuePlaying = it
+                                                        }
+                                                    )
+                                            }
                                         },
                                         openTabFromShortcut = openTabFromShortcut
                                     )
@@ -1213,8 +1228,15 @@ MonetCompatActivity(),
                                     val onlinePlayer: @Composable () -> Unit = {
                                         OnlinePlayer(
                                             navController = navController,
+                                            playFromSecond = currentSecond,
                                             onDismiss = {
                                                 showPlayer = false
+                                            },
+                                            onSecondChange = {
+                                                currentSecond = it
+                                            },
+                                            onPlayingChange = {
+                                                continuePlaying = it
                                             }
                                         )
                                     }

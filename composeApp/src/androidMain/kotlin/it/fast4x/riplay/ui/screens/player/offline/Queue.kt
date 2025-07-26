@@ -780,7 +780,9 @@ fun Queue(
                                     onDismiss(queueLoopType)
                                 },
                                 hidePlayer = {},
-                                lifecycleOwner = lifecycleOwner
+                                lifecycleOwner = lifecycleOwner,
+                                onSecondChange = {},
+                                onPlayingChange = {}
                             )
                     }
 
