@@ -1043,26 +1043,23 @@ fun OnlinePlayer(
     )
 
 
-    val totalPlayTimes = remember {
-        var total = 0L
-        mediaItems.forEach {
-            total += it.mediaMetadata.extras?.getString("durationText")?.let { it1 ->
-                durationTextToMillis(it1)
-            }?.toLong() ?: 0
-        }
-        return@remember total
+    var totalPlayTimes = 0L
+    mediaItems.forEach {
+        totalPlayTimes += it.mediaMetadata.extras?.getString("durationText")?.let { it1 ->
+            durationTextToMillis(it1)
+        } ?: 0
     }
 
 
-    var isShowingStatsForNerds by remember {
-        mutableStateOf(false)
-    }
+
+//    var isShowingStatsForNerds by remember {
+//        mutableStateOf(false)
+//    }
 
     val thumbnailTapEnabled by rememberPreference(thumbnailTapEnabledKey, true)
     val showNextSongsInPlayer by rememberPreference(showNextSongsInPlayerKey, false)
 
     var showQueue by remember { mutableStateOf(false) }
-    var showFullLyrics by remember { mutableStateOf(false) }
     var showSearchEntity by remember { mutableStateOf(false) }
 
     val transparentBackgroundActionBarPlayer by rememberPreference(
