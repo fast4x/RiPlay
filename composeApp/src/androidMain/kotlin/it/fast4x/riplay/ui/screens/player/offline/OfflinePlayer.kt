@@ -844,12 +844,6 @@ fun OfflinePlayer(
                 playerBackgroundColors == PlayerBackgroundColors.AnimatedGradient
 
 
-
-        //val context = LocalContext.current
-        //println("Player before getting dynamic color ${dynamicColorPalette}")
-        //println("Player url mediaitem ${mediaItem.mediaMetadata.artworkUri}")
-        //println("Player url binder ${binder.player.currentWindow?.mediaItem?.mediaMetadata?.artworkUri}")
-        //val isSystemDarkMode = isSystemInDarkTheme()
         LaunchedEffect(mediaItem.mediaId, updateBrush) {
             if (playerBackgroundColors == PlayerBackgroundColors.CoverColorGradient ||
                 playerBackgroundColors == PlayerBackgroundColors.CoverColor ||
@@ -865,7 +859,6 @@ fun OfflinePlayer(
                     bitmap,
                     !lightTheme
                 ) ?: color
-                println("Player INSIDE getting dynamic color ${dynamicColorPalette}")
 
                 val palette = Palette.from(bitmap).generate()
 
@@ -879,7 +872,6 @@ fun OfflinePlayer(
 
             } catch (e: Exception) {
                 dynamicColorPalette = color
-                println("Player Error getting dynamic color ${e.printStackTrace()}")
             }
 
         }

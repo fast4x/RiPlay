@@ -76,7 +76,6 @@ class MediaLibrarySessionCallback (
         session: MediaSession,
         controller: MediaSession.ControllerInfo
     ): MediaSession.ConnectionResult {
-        println("PlayerServiceModern MediaLibrarySessionCallback.onConnect")
         val connectionResult = super.onConnect(session, controller)
         return MediaSession.ConnectionResult.accept(
             connectionResult.availableSessionCommands.buildUpon()

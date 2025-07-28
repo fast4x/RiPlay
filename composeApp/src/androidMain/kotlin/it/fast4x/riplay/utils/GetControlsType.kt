@@ -86,8 +86,6 @@ fun GetControls(
             .fillMaxWidth()
     ) {
 
-        println("Controls type sono qui playerControlsType = $playerControlsType ")
-
         if (playerControlsType == PlayerControlsType.Essential)
             ControlsEssential(
                 binder = binder,

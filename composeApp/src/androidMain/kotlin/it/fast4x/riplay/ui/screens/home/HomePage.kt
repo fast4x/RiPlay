@@ -1085,8 +1085,6 @@ fun HomePage(
 
                     page.sections.forEach {
                         if (it.items.isEmpty() || it.items.firstOrNull()?.key == null) return@forEach
-                        println("homePage() in HomeYouTubeMusic sections: ${it.title} ${it.items.size}")
-                        println("homePage() in HomeYouTubeMusic sections items: ${it.items}")
 
                         TitleMiniSection(it.label ?: "", modifier = Modifier.padding(horizontal = 16.dp).padding(top = 14.dp, bottom = 4.dp))
                         

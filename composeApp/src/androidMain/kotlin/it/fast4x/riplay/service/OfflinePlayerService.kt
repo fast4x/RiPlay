@@ -355,8 +355,6 @@ class OfflinePlayerService : MediaLibraryService(),
                 }
             }
 
-        println("PlayerServiceModern.onCreate called")
-
         mediaLibrarySessionCallback =
             MediaLibrarySessionCallback(this, Database)
             .apply {

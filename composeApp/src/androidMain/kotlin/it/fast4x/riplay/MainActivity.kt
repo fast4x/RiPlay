@@ -268,13 +268,11 @@ MonetCompatActivity(),
         override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
             if (service is OfflinePlayerService.Binder) {
                 this@MainActivity.binder = service
-                println("MainActivity.onServiceConnected PlayerServiceModern is connected")
             }
         }
 
         override fun onServiceDisconnected(name: ComponentName?) {
             binder = null
-            println("MainActivity.onServiceDisconnected")
         }
 
     }
@@ -388,7 +386,6 @@ MonetCompatActivity(),
         //registerNsdService()
         discoverNsdServices(
             onServiceFound = {
-                println("MainActivity.onCreate onServiceFound $it")
                 linkDevices.value = it
             }
         )
@@ -408,7 +405,7 @@ MonetCompatActivity(),
         newConfig: Configuration
     ) {
         pipState.value = isInPictureInPictureMode
-        println("MainActivity.onPictureInPictureModeChanged isInPictureInPictureMode: $isInPictureInPictureMode")
+
         super.onPictureInPictureModeChanged(isInPictureInPictureMode, newConfig)
 
     }

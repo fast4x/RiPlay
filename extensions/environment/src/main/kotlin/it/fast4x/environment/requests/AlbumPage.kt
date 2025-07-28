@@ -87,7 +87,7 @@ data class AlbumPage(
         }
 
         fun getSong(renderer: MusicResponsiveListItemRenderer, album: Environment.AlbumItem? = null): Environment.SongItem {
-            println("mediaItem getSong ${renderer.flexColumns.get(1).musicResponsiveListItemFlexColumnRenderer?.text?.runs}")
+
             return Environment.SongItem(
                 info = Info(
                     name = PageHelper.extractRuns(renderer.flexColumns, "MUSIC_VIDEO")
@@ -136,20 +136,12 @@ data class AlbumPage(
 suspend fun Environment.albumPage(body: BrowseBody) = playlistPage(body)?.map { album ->
     album.url?.let { Url(it).parameters["list"] }?.let { playlistId ->
         playlistPage(BrowseBody(browseId = "VL$playlistId"))?.getOrNull()?.let { playlist ->
-            println("mediaItem albumPage pre songsPage ${playlist.songsPage?.items?.size}")
             album.copy(songsPage = playlist.songsPage)
         }
     } ?: album
     }
 
     ?.map { album ->
-        //println("mediaItem albumPage post songsPage ${album?.songsPage?.items?.size} des ${album?.description} browseId ${body.browseId}")
-        /*
-        println("mediaItem albumPage post songsPage songs id ${album?.songsPage?.items?.size}")
-        album?.songsPage?.items?.forEach {
-            println("mediaItem albumPage post songsPage song id ${it.info?.endpoint?.videoId} playlistId ")
-        }
-         */
 
         val albumInfo = Environment.Info(
             name = album.title,

@@ -14,9 +14,6 @@ suspend fun Result<PlaylistPage>.completed(): Result<PlaylistPage> = runCatching
     val songs = page.songs.toMutableList()
     var continuation = page.songsContinuation
 
-
-    println("getPlaylist complete PlaylistPage songs: ${songs.size} continuation: ${continuation}")
-
     while (continuation != null) {
         val continuationPage = EnvironmentExt.getPlaylistContinuation(continuation).getOrNull()
         if (continuationPage != null) {
@@ -39,9 +36,6 @@ suspend fun Result<ArtistItemsPage>.completed(): Result<ArtistItemsPage> = runCa
     val page = getOrThrow()
     var items = page.items
     var continuation = page.continuation
-
-
-    println("getArtistItemsPage complete ArtistItemsPage items: ${items.size} continuation: ${continuation}")
 
     while (continuation != null) {
         val continuationPage = EnvironmentExt.getArtistItemsContinuation(continuation).getOrNull()

@@ -443,7 +443,7 @@ fun ControlsEssential(
     onPrevious: () -> Unit,
     onToggleShuffleMode: () -> Unit,
 ) {
-    println("Controls essential called")
+
     val colorPaletteName by rememberPreference(colorPaletteNameKey, ColorPaletteName.Dynamic)
     val colorPaletteMode by rememberPreference(colorPaletteModeKey, ColorPaletteMode.Dark)
     var effectRotationEnabled by rememberPreference(effectRotationKey, true)
@@ -544,8 +544,6 @@ fun ControlsEssential(
         }
 
     }
-
-    println("Controls essential called end")
 
     Image(
         painter = painterResource(R.drawable.play_skip_back),

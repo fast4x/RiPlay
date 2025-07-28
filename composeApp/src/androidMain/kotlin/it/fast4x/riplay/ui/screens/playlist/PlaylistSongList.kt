@@ -223,8 +223,6 @@ fun PlaylistSongList(
                 println("PlaylistSongList error: ${it.stackTraceToString()}")
             }
 
-        println("PlaylistSongList browseId: ${browseId}")
-        println("PlaylistSongList playlistSongs: ${playlistSongs.size}")
     }
 
     var filterCharSequence: CharSequence

@@ -22,8 +22,7 @@ data class HomePage(
     ) {
         companion object {
             fun fromMusicCarouselShelfRenderer(renderer: MusicCarouselShelfRenderer): Section? {
-                println("getHomePage() fromMusicCarouselShelfRenderer musicTwoRowItemRenderer: section title ${renderer.header?.musicCarouselShelfBasicHeaderRenderer?.title?.runs?.firstOrNull()?.text}")
-                println("getHomePage() fromMusicCarouselShelfRenderer musicTwoRowItemRenderer: section items ${renderer.contents.map { it.musicTwoRowItemRenderer?.title?.runs?.firstOrNull()?.text }}")
+
                 return Section(
                     title = renderer.header?.musicCarouselShelfBasicHeaderRenderer?.title?.runs?.firstOrNull()?.text
                         ?: "",
@@ -46,10 +45,10 @@ data class HomePage(
             }
 
             private fun fromMusicTwoRowItemRenderer(renderer: MusicTwoRowItemRenderer?, sectionTitle: String? = null): Environment.Item? {
-                println("getHomePage() fromMusicTwoRowItemRenderer for section $sectionTitle: ${renderer?.title?.runs?.firstOrNull()?.text}")
+
                 return when {
                     renderer?.isSong == true -> {
-                        println("getHomePage() fromMusicTwoRowItemRenderer isSong: ${renderer.title?.runs?.firstOrNull()?.text}")
+
                         Environment.SongItem(
                             info = Environment.Info(
                                 renderer.title?.runs?.firstOrNull()?.text,
@@ -71,7 +70,7 @@ data class HomePage(
                     }
 
                     renderer?.isAlbum == true -> {
-                        println("getHomePage() fromMusicTwoRowItemRenderer isAlbum: ${renderer.title?.runs?.firstOrNull()?.text}")
+
                         Environment.AlbumItem(
                             info = Environment.Info(
                                 renderer.title?.runs?.firstOrNull()?.text,
@@ -96,7 +95,7 @@ data class HomePage(
                     }
 
                     renderer?.isPlaylist == true -> {
-                        println("getHomePage() fromMusicTwoRowItemRenderer isPlaylist: ${renderer.title?.runs?.firstOrNull()?.text}")
+
                         Environment.PlaylistItem(
                             info = Environment.Info(
                                 renderer.title?.runs?.firstOrNull()?.text,
@@ -110,7 +109,7 @@ data class HomePage(
                     }
 
                     renderer?.isArtist == true -> {
-                        println("getHomePage() fromMusicTwoRowItemRenderer isArtist: ${renderer.title?.runs?.firstOrNull()?.text}")
+
                         Environment.ArtistItem(
                             info = Environment.Info(
                                 renderer.title?.runs?.firstOrNull()?.text,
@@ -122,7 +121,7 @@ data class HomePage(
                     }
 
                     renderer?.isVideo == true -> {
-                        println("getHomePage() fromMusicTwoRowItemRenderer isVideo: ${renderer.title?.runs?.firstOrNull()?.text}")
+
                         Environment.VideoItem(
                             info = Environment.Info(
                                 renderer.title?.runs?.firstOrNull()?.text,
@@ -142,7 +141,7 @@ data class HomePage(
                     }
 
                     else -> {
-                        println("getHomePage() fromMusicTwoRowItemRenderer else renderer: ${renderer}")
+                        //println("getHomePage() fromMusicTwoRowItemRenderer else renderer: ${renderer}")
                         null
                     }
                 }

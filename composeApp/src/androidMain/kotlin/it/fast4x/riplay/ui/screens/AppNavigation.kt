@@ -372,7 +372,7 @@ fun AppNavigation(
                 onViewPlaylist = {},
                 //pop = popDestination,
                 onSearch = { query ->
-                    println("onSearch: $query")
+
                     navController.navigate(
                         route = "${NavRoutes.searchResults.name}/${
                             cleanString(

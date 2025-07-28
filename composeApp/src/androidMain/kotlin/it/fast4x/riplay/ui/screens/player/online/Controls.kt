@@ -265,7 +265,7 @@ fun Controls(
                     .padding(horizontal = playerTimelineSize.size.dp)
                     //.fillMaxHeight(0.40f)
             ) {
-                println("Controls sono qui")
+
                 if (playerInfoType == PlayerInfoType.Modern)
                     InfoAlbumAndArtistModern(
                         navController = navController,
@@ -302,7 +302,6 @@ fun Controls(
                 )
 
                 if (!playerSwapControlsWithTimeline) {
-                    println("Controls sono qui 2")
                     GetSeekBar(
                         position = position,
                         duration = duration,
@@ -335,7 +334,6 @@ fun Controls(
                             .weight(0.5f)
                     )
                 } else {
-                    println("Controls sono qui 3")
                     GetControls(
                         position = position,
                         shouldBePlaying = shouldBePlaying,

@@ -95,7 +95,6 @@ fun GetSeekBar(
         }
     }
 
-    println("GetSeekBar is called with $position and $duration")
     var transparentbar by rememberPreference(transparentbarKey, true)
     val scope = rememberCoroutineScope()
     val animatedPosition = remember { Animatable(position.toFloat()) }

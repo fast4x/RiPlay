@@ -2566,7 +2566,6 @@ interface Database {
             if (insert(song) == -1L) return
         }
 
-        println("fastPlay: Database inserted: $song")
 
         mediaItem.mediaMetadata.extras?.getString("albumId")?.let { albumId ->
             insert(

@@ -62,7 +62,7 @@ object EnvironmentExt {
     }
 
     suspend fun removeFromPlaylist(playlistId: String, videoId: String, setVideoId: String? = null) = runCatching {
-        println("EnvironmentExt removeFromPlaylist params: playlistId: $playlistId, videoId: $videoId, setVideoId: $setVideoId")
+
             Environment.removeFromPlaylist(Context.DefaultWeb.client, playlistId, videoId, setVideoId)
         }.onFailure {
             println("YtMusic removeFromPlaylist error: ${it.stackTraceToString()}")
@@ -81,14 +81,12 @@ object EnvironmentExt {
     }
 
     suspend fun subscribeChannel(channelId: String) = runCatching {
-        println("EnvironmentExt subscribeChannel channelId: $channelId")
         Environment.subscribeChannel(channelId)
     }.onFailure {
         println("YtMusic subscribeChannel error: ${it.stackTraceToString()}")
     }
 
     suspend fun unsubscribeChannel(channelId: String) = runCatching {
-        println("EnvironmentExt unsubscribeChannel channelId: $channelId")
         Environment.unsubscribeChannel(channelId)
     }.onFailure {
         println("EnvironmentExt unsubscribeChannel error: ${it.stackTraceToString()}")
@@ -140,10 +138,10 @@ object EnvironmentExt {
                 HomePage.Section.fromMusicCarouselShelfRenderer(it)
             }.toMutableList()
         while (continuation != null) {
-            println("EnvironmentExt gethomePage() continuation before:  ${continuation}" )
+
             response = Environment.browse(continuation = continuation).body<BrowseResponse>()
             continuation = response.continuationContents?.sectionListContinuation?.continuations?.getContinuation()
-            println("EnvironmentExt gethomePage() continuation after:  ${continuation}" )
+
 
             sections += response.continuationContents?.sectionListContinuation?.contents
                 ?.mapNotNull { it.musicCarouselShelfRenderer }

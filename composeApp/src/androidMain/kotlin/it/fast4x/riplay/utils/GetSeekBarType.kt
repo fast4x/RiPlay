@@ -69,7 +69,7 @@ fun GetSeekBar(
     mediaId: String,
     media: UiMedia
     ) {
-    println("Controls GetSeekBar")
+
     val binder = LocalPlayerServiceBinder.current
     binder?.player ?: return
     val playerTimelineType by rememberPreference(playerTimelineTypeKey, PlayerTimelineType.FakeAudioBar)

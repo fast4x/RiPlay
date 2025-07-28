@@ -324,7 +324,7 @@ fun HomeSongs(
                 ?.use { inputStream ->
                     csvReader().open(inputStream) {
                         readAllWithHeaderAsSequence().forEachIndexed { index, row: Map<String, String> ->
-                            println("mediaItem index song ${index}")
+
                             Database.asyncTransaction {
                                 /**/
                                 if (row["MediaId"] != null && row["Title"] != null) {
@@ -486,8 +486,6 @@ fun HomeSongs(
             }
         }
     }
-
-    //println("mediaItem SongEntity: ${items.size} filter ${filter} $items")
 
     /********** OnDeviceDev */
     if (builtInPlaylist == BuiltInPlaylist.OnDevice) {
@@ -1266,7 +1264,6 @@ fun HomeSongs(
                                                         }
                                                     }.onFailure {
                                                         Timber.e("Failed addToPlaylist in HomeSongsModern ${it.stackTraceToString()}")
-                                                        println("Failed addToPlaylist in HomeSongsModern ${it.stackTraceToString()}")
                                                     }
                                                 }
                                                 CoroutineScope(Dispatchers.Main).launch {
@@ -1695,7 +1692,6 @@ fun HomeSongs(
 
                                 if (deleteAlsoPlayTimes)
                                     Database.asyncTransaction {
-                                        println("HomeSongsModern deleteAlsoPlayTimes")
                                         resetTotalPlayTimeMs(song.song.id)
                                     }
 

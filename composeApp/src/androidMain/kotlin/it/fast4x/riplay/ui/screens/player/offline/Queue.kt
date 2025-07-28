@@ -221,8 +221,6 @@ fun Queue(
         }
     }
 
-    println("QueueModern 1")
-
     val rippleIndication = ripple(bounded = false)
 
     val musicBarsTransition = updateTransition(targetState = mediaItemIndex, label = "")
@@ -418,9 +416,6 @@ fun Queue(
             if (to.key != binder.player.currentMediaItem?.mediaId)
                 player.moveMediaItem(from.index, to.index)
         }
-
-
-        println("QueueModern 3")
 
     LazyColumn(
         state = lazyListState,

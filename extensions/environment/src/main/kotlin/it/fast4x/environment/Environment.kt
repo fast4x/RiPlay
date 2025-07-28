@@ -465,8 +465,7 @@ object Environment {
 
 
     suspend fun accountInfo(): Result<AccountInfo?> = runCatching {
-        println("YoutubeLogin accountInfo() response ${accountMenu().body<AccountMenuResponse>()
-            .actions} ")
+
         accountMenu()
             .body<AccountMenuResponse>()
             .actions?.get(0)?.openPopupAction?.popup?.multiPageMenuRenderer
@@ -491,9 +490,6 @@ object Environment {
                 setBody(AccountMenuBody())
             }
 
-        println("YoutubeLogin Innertube accountMenuBody: ${AccountMenuBody()}")
-        println("YoutubeLogin Innertube accountMenu RESPONSE: ${response.bodyAsText()}")
-
         return response
     }
 
@@ -510,7 +506,7 @@ object Environment {
     }
 
     fun HttpRequestBuilder.setLogin(clientType: Client = DefaultWeb.client, setLogin: Boolean = false) {
-        println("HttpRequestBuilder.setLogin CALLED")
+
         contentType(ContentType.Application.Json)
         headers {
             append("X-Goog-Api-Format-Version", "1")
@@ -521,16 +517,8 @@ object Environment {
                 append("Referer", clientType.referer)
             }
             if (setLogin && clientType.loginSupported) {
-                println("HttpRequestBuilder.setLogin $setLogin")
-                println("HttpRequestBuilder.setLogin beforeCreateHeaders cookie: $cookie")
                 cookie?.let { cookieData ->
-                    println("HttpRequestBuilder.setLogin cookie: $cookieData")
-                    println("HttpRequestBuilder.setLogin xclientName ${clientType.xClientName ?: 1}")
-                    println("HttpRequestBuilder.setLogin clientVerson ${clientType.clientVersion}")
-                    println("HttpRequestBuilder.setLogin referer ${clientType.referer}")
-                    println("HttpRequestBuilder.setLogin userAgent ${clientType.userAgent}")
-                    println("HttpRequestBuilder.setLogin x-origin ${_XsHo8IdebO}")
-                    println("HttpRequestBuilder.setLogin visitorData ${visitorData}")
+
                     cookieMap = parseCookieString(cookieData)
 //                    append("X-Goog-Authuser", "0")
 //                    append("X-Goog-Visitor-Id", visitorData ?: "")

@@ -17,7 +17,6 @@ import android.support.v4.media.RatingCompat
 import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import android.view.LayoutInflater
-import android.view.ViewGroup
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
@@ -99,7 +98,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.neverEqualPolicy
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
@@ -146,7 +144,6 @@ import androidx.compose.ui.unit.coerceAtLeast
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.times
 import androidx.compose.ui.util.lerp
-import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.zIndex
 import androidx.core.app.NotificationChannelCompat
 import androidx.core.app.NotificationCompat
@@ -221,8 +218,6 @@ import it.fast4x.riplay.extensions.link.toCommandLoad
 import it.fast4x.riplay.extensions.link.toCommandPlay
 import it.fast4x.riplay.extensions.link.toCommandPlayAt
 import it.fast4x.riplay.extensions.link.toLinkDevice
-import it.fast4x.riplay.getLastYTVideoId
-import it.fast4x.riplay.getLastYTVideoSeconds
 import it.fast4x.riplay.getMinTimeForEvent
 import it.fast4x.riplay.getPauseListenHistory
 import it.fast4x.riplay.getQueueLoopType
@@ -254,7 +249,6 @@ import it.fast4x.riplay.ui.screens.player.offline.Queue
 import it.fast4x.riplay.ui.screens.player.offline.StatsForNerds
 import it.fast4x.riplay.ui.screens.player.offline.animatedGradient
 import it.fast4x.riplay.ui.screens.player.online.components.core.OnlineCore
-import it.fast4x.riplay.ui.screens.player.online.components.customui.CustomDefaultPlayerUiController
 import it.fast4x.riplay.ui.screens.settings.isYouTubeSyncEnabled
 import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.ui.styling.collapsedPlayerProgressBar
@@ -408,7 +402,6 @@ val NOTIFICATION_ID = 1
 fun OnlinePlayer(
     navController: NavController,
     playFromSecond: Float = 0f,
-    modifier: Modifier = Modifier,
     onDismiss: () -> Unit,
     onSecondChange: (Float) -> Unit,
     onPlayingChange: (Boolean) -> Unit,
@@ -445,7 +438,7 @@ fun OnlinePlayer(
 
     //val shouldBePlayingTransition = updateTransition(shouldBePlaying, label = "shouldBePlaying")
 
-    var isRotated by rememberSaveable { mutableStateOf(false) }
+    var isRotated by remember { mutableStateOf(false) }
     val rotationAngle by animateFloatAsState(
         targetValue = if (isRotated) 360F else 0f,
         animationSpec = tween(durationMillis = 200), label = ""
@@ -466,13 +459,13 @@ fun OnlinePlayer(
     var thumbnailFadeEx by rememberPreference(thumbnailFadeExKey, defaultFade)
     var imageCoverSize by rememberPreference(VinylSizeKey, defaultImageCoverSize)
     var blurDarkenFactor by rememberPreference(blurDarkenFactorKey, defaultDarkenFactor)
-    var showBlurPlayerDialog by rememberSaveable {
+    var showBlurPlayerDialog by remember {
         mutableStateOf(false)
     }
-    var showThumbnailOffsetDialog by rememberSaveable {
+    var showThumbnailOffsetDialog by remember {
         mutableStateOf(false)
     }
-    var isShowingLyrics by rememberSaveable {
+    var isShowingLyrics by remember {
         mutableStateOf(false)
     }
     val showvisthumbnail by rememberPreference(showvisthumbnailKey, false)
@@ -563,14 +556,12 @@ fun OnlinePlayer(
 
     @kotlin.OptIn(ExperimentalCoroutinesApi::class)
     val linkDevicesSavedAsState = linkDevicesSavedProvider.collectAsState()
-    println("linkDevicesSavedProvider ${linkDevicesSavedAsState.value.devices()}")
 
     val linkDevicesSelected = remember { mutableListOf<LinkDevice>() }
     LaunchedEffect(Unit) {
         linkDevicesSelected.addAll(linkDevicesSavedAsState.value.devices())
     }
 
-    println("linkDevicesSelected ${linkDevicesSelected}")
 
     binder.player.DisposableListener {
         object : Player.Listener {
@@ -698,10 +689,10 @@ fun OnlinePlayer(
         }
     }
 
-    var likedAt by rememberSaveable {
+    var likedAt by remember {
         mutableStateOf<Long?>(null)
     }
-    var songIsAudioOnly by rememberSaveable {
+    var songIsAudioOnly by remember {
         mutableStateOf<Boolean>(true)
     }
 
@@ -948,12 +939,6 @@ fun OnlinePlayer(
                 playerBackgroundColors == PlayerBackgroundColors.CoverColorGradient ||
                 playerBackgroundColors == PlayerBackgroundColors.AnimatedGradient
 
-
-    //val context = LocalContext.current
-    //println("Player before getting dynamic color ${dynamicColorPalette}")
-    //println("Player url mediaitem ${mediaItem.mediaMetadata.artworkUri}")
-    //println("Player url binder ${binder.player.currentWindow?.mediaItem?.mediaMetadata?.artworkUri}")
-    //val isSystemDarkMode = isSystemInDarkTheme()
     LaunchedEffect(mediaItem.mediaId, updateBrush) {
         if (playerBackgroundColors == PlayerBackgroundColors.CoverColorGradient ||
             playerBackgroundColors == PlayerBackgroundColors.CoverColor ||
@@ -970,7 +955,6 @@ fun OnlinePlayer(
                     bitmap,
                     !lightTheme
                 ) ?: color
-                println("Player INSIDE getting dynamic color ${dynamicColorPalette}")
 
                 val palette = Palette.from(bitmap).generate()
 
@@ -984,11 +968,9 @@ fun OnlinePlayer(
 
             } catch (e: Exception) {
                 dynamicColorPalette = color
-                println("Player Error getting dynamic color ${e.printStackTrace()}")
             }
 
         }
-        println("Player after getting dynamic color ${dynamicColorPalette}")
     }
 
     var sizeShader by remember { mutableStateOf(Size.Zero) }
@@ -1061,25 +1043,27 @@ fun OnlinePlayer(
     )
 
 
-    var totalPlayTimes = 0L
-    mediaItems.forEach {
-        totalPlayTimes += it.mediaMetadata.extras?.getString("durationText")?.let { it1 ->
-            durationTextToMillis(it1)
-        }?.toLong() ?: 0
+    val totalPlayTimes = remember {
+        var total = 0L
+        mediaItems.forEach {
+            total += it.mediaMetadata.extras?.getString("durationText")?.let { it1 ->
+                durationTextToMillis(it1)
+            }?.toLong() ?: 0
+        }
+        return@remember total
     }
-//    println("mediaItem totalPlayTimes $totalPlayTimes")
 
 
-    var isShowingStatsForNerds by rememberSaveable {
+    var isShowingStatsForNerds by remember {
         mutableStateOf(false)
     }
 
     val thumbnailTapEnabled by rememberPreference(thumbnailTapEnabledKey, true)
     val showNextSongsInPlayer by rememberPreference(showNextSongsInPlayerKey, false)
 
-    var showQueue by rememberSaveable { mutableStateOf(false) }
-    var showFullLyrics by rememberSaveable { mutableStateOf(false) }
-    var showSearchEntity by rememberSaveable { mutableStateOf(false) }
+    var showQueue by remember { mutableStateOf(false) }
+    var showFullLyrics by remember { mutableStateOf(false) }
+    var showSearchEntity by remember { mutableStateOf(false) }
 
     val transparentBackgroundActionBarPlayer by rememberPreference(
         transparentBackgroundPlayerActionBarKey,
@@ -1403,12 +1387,12 @@ fun OnlinePlayer(
     /***** NEW PLAYER *****/
 
     //val onlinePlayerView = YouTubePlayerView(context = context())
-    val inflatedView = LayoutInflater.from(context()).inflate(R.layout.youtube_player, null, false)
-    val onlinePlayerView: YouTubePlayerView = inflatedView as YouTubePlayerView
-    val customPLayerUi = onlinePlayerView.inflateCustomPlayerUi(R.layout.ayp_base_player_ui)
-    var player = remember { mutableStateOf<YouTubePlayer?>(null) }
+//    val inflatedView = remember { LayoutInflater.from(context()).inflate(R.layout.youtube_player, null, false) }
+//    val onlinePlayerView = remember { inflatedView as YouTubePlayerView }
+//    val customPLayerUi = remember { onlinePlayerView.inflateCustomPlayerUi(R.layout.ayp_base_player_ui) }
+    val player = remember { mutableStateOf<YouTubePlayer?>(null) }
     val playerState = remember { mutableStateOf(PlayerConstants.PlayerState.UNSTARTED) }
-    var enableBackgroundPlayback by rememberPreference(isInvincibilityEnabledKey, false)
+    //var enableBackgroundPlayback by rememberPreference(isInvincibilityEnabledKey, false)
     //val enableBackgroundPlayback by remember { mutableStateOf(true) }
 
     var lastYTVideoId by rememberPreference(key = lastVideoIdKey, defaultValue = "")
@@ -1417,12 +1401,12 @@ fun OnlinePlayer(
     var currentSecond by remember { mutableFloatStateOf(0f) }
     var currentDuration by remember { mutableFloatStateOf(0f) }
 
-    var updateStatistics by remember { mutableStateOf(true) }
+    //var updateStatistics by remember { mutableStateOf(true) }
     var updateStatisticsEverySeconds by remember { mutableIntStateOf(0) }
     val steps by remember { mutableIntStateOf(5) }
     var stepToUpdateStats by remember { mutableIntStateOf(1) }
 
-    val lifecycleOwner = LocalLifecycleOwner.current
+    //val lifecycleOwner = LocalLifecycleOwner.current
 
     val isLandscape = isLandscape
 
@@ -1498,9 +1482,6 @@ fun OnlinePlayer(
 
     LaunchedEffect(mediaItem) {
         positionAndDuration = 0f to 0f
-        //mediaItem = binder?.player?.mediaItems?.getOrNull(queueIndex) ?: return@LaunchedEffect
-        //binder.player.setMediaItem(mediaItem)
-        //println("OnlinePlayer LaunchedEffect mediaItem ${mediaItem.mediaId} ${mediaItem.mediaMetadata.title} ${lastYTVideoId}")
 
         // Ensure that the song is in database
         CoroutineScope(Dispatchers.IO).launch {
@@ -1519,11 +1500,7 @@ fun OnlinePlayer(
 
         stepToUpdateStats = 1
 
-        println("OnlinePLayer LaunchedEffect change mediaItem ${mediaItem.mediaId}")
-
-        bitmapProvider.load(mediaItem.mediaMetadata.artworkUri, {
-            println("OnlinePLayer LaunchedEffect BitmapProvider ")
-        })
+        bitmapProvider.load(mediaItem.mediaMetadata.artworkUri, {})
 
         //lastYTVideoSeconds = 0f
 
@@ -1541,7 +1518,7 @@ fun OnlinePlayer(
                 .build()
         )
 
-        println("OnlinePLayer LaunchedEffect change mediaItem isVideo? ${mediaItem.isVideo} song is audio only? ${songIsAudioOnly}")
+        //println("OnlinePLayer LaunchedEffect change mediaItem isVideo? ${mediaItem.isVideo} song is audio only? ${songIsAudioOnly}")
     }
 
     LaunchedEffect(currentSecond, currentDuration) {
@@ -1623,7 +1600,7 @@ fun OnlinePlayer(
             if (binder.player.hasNextMediaItem())
                 binder.player.playNext()
 
-            updateStatistics = true
+            //updateStatistics = true
         }
 
         withContext(Dispatchers.Main) {
@@ -1655,7 +1632,7 @@ fun OnlinePlayer(
             linkDevicesSelected
         )
 
-        println("OnlinePlayer LaunchedEffect playerState.value ${playerState.value} should be playing? $shouldBePlaying")
+        //println("OnlinePlayer LaunchedEffect playerState.value ${playerState.value} should be playing? $shouldBePlaying")
 
     }
 
@@ -1691,7 +1668,7 @@ fun OnlinePlayer(
             mediaItem = mediaItem,
             onPlay = {
                 player.value?.play()
-                println("LinkClient OnLinePlayer Controls play")
+                //println("LinkClient OnLinePlayer Controls play")
                 linkServiceClientSend(
                     mediaItem.mediaId.toCommandPlayAt(currentSecond.toInt()),
                     castToLinkDevice,
@@ -1701,7 +1678,7 @@ fun OnlinePlayer(
             },
             onPause = {
                 player.value?.pause()
-                println("LinkClient OnLinePlayer Controls pause 1")
+                //println("LinkClient OnLinePlayer Controls pause 1")
                 //CoroutineScope(Dispatchers.IO).launch {
                     //if (linkClient != null)
                         linkServiceClientSend(
@@ -1725,43 +1702,11 @@ fun OnlinePlayer(
     //var showCastButton by remember { mutableStateOf(false) }
     //val activity = LocalActivity.current
 
-    val onlineCore: @Composable () -> Unit = {
-        OnlineCore(
-            load = true,
-            playFromSecond = playFromSecond,
-            onPlayerReady = { player.value = it },
-            onSecondChange = {
-                currentSecond = it
-                onSecondChange(it)
-            },
-            onDurationChange = { currentDuration = it },
-            onPlayerStateChange = {
-                playerState.value = it
-                onPlayingChange(it == PlayerConstants.PlayerState.PLAYING)
-            }
-        )
-    }
+
 
     val thumbnailContent: @Composable (
         modifier: Modifier,
     ) -> Unit = { innerModifier ->
-        //if (castToLinkDevice) {
-            // Experimental use of Chromecast with Direct Mode
-            //PlayServicesUtils.checkGooglePlayServicesAvailability(activity, 1, Runnable {initChromecast()} )
-            // Experimental use of Chromecast with Activity
-            //val intent = Intent(activity, ChromeCastActivity::class.java)
-            //activity?.startActivity(intent)
-
-//            Box(
-//                modifier = innerModifier
-//                    .fillMaxSize()
-//                    .background(Color.Transparent)
-//
-//            ) {
-                ////
-            //}
-
-       // } else {
 
             var showControls by remember { mutableStateOf(true) }
             LaunchedEffect(showControls) {
@@ -1771,7 +1716,25 @@ fun OnlinePlayer(
                 }
             }
 
-        println("CastToLinkDevice inside thumbnailContent $castToLinkDevice")
+        val onlineCore: @Composable () -> Unit = {
+            OnlineCore(
+                load = true,
+                playFromSecond = playFromSecond,
+                onPlayerReady = { player.value = it },
+                onSecondChange = {
+                    currentSecond = it
+                    onSecondChange(it)
+                },
+                onDurationChange = { currentDuration = it },
+                onPlayerStateChange = {
+                    playerState.value = it
+                    onPlayingChange(it == PlayerConstants.PlayerState.PLAYING)
+                },
+                onTap = { showControls = !showControls }
+            )
+        }
+
+        //println("CastToLinkDevice inside thumbnailContent $castToLinkDevice")
 
             Box(
                 modifier = innerModifier
@@ -1847,7 +1810,7 @@ fun OnlinePlayer(
 
                                             linkDevicesSavedProvider.value.saveDevices(linkDevicesSelected)
 
-                                            println("LinkClient OnLinePlayer Controls cast selected -${device.toLinkDevice()}- devices after ${linkDevicesSelected}")
+                                            //println("LinkClient OnLinePlayer Controls cast selected -${device.toLinkDevice()}- devices after ${linkDevicesSelected}")
                                             player.value?.pause()
                                         },
                                         modifier = Modifier
@@ -2393,7 +2356,7 @@ fun OnlinePlayer(
                                         true,
                                         linkDevicesSelected
                                     )
-                                    println("CastToLinkDevice: $castToLinkDevice")
+                                    //println("CastToLinkDevice: $castToLinkDevice")
                                 },
                                 modifier = Modifier
                                     .size(24.dp),
@@ -3267,7 +3230,7 @@ fun OnlinePlayer(
                                 mediaItem = binderPlayer.getMediaItemAt(index),
                                 onPlay = {
                                     player.value?.play()
-                                    println("LinkClient OnLinePlayer Controls play")
+                                    //println("LinkClient OnLinePlayer Controls play")
                                     linkServiceClientSend(
                                         binderPlayer.getMediaItemAt(index).mediaId.toCommandPlayAt(currentSecond.toInt()),
                                         castToLinkDevice,
@@ -3276,7 +3239,7 @@ fun OnlinePlayer(
                                 },
                                 onPause = {
                                     player.value?.pause()
-                                    println("LinkClient OnLinePlayer Controls pause 2")
+                                    //println("LinkClient OnLinePlayer Controls pause 2")
                                     //CoroutineScope(Dispatchers.IO).launch {
                                         //if (linkClient != null)
                                             linkServiceClientSend(
@@ -3561,7 +3524,7 @@ fun OnlinePlayer(
                                             mediaItem = binderPlayer.getMediaItemAt(it),
                                             onPlay = {
                                                 player.value?.play()
-                                                println("LinkClient OnLinePlayer Controls pause 3")
+                                                //println("LinkClient OnLinePlayer Controls pause 3")
                                                 linkServiceClientSend(
                                                     binderPlayer.getMediaItemAt(it).mediaId.toCommandPlayAt(currentSecond.toInt()),
                                                     castToLinkDevice,
@@ -3571,7 +3534,7 @@ fun OnlinePlayer(
                                             },
                                             onPause = {
                                                 player.value?.pause()
-                                                println("LinkClient OnLinePlayer Controls pause 4")
+                                                //println("LinkClient OnLinePlayer Controls pause 4")
                                                 linkServiceClientSend(
                                                     LINKWEB_COMMAND_PAUSE.toCommand(),
                                                     castToLinkDevice,
@@ -3798,7 +3761,7 @@ fun OnlinePlayer(
                                         beyondViewportPageCount = 2,
                                         flingBehavior = fling,
                                         userScrollEnabled = expandedplayer || !disablePlayerHorizontalSwipe,
-                                        modifier = modifier
+                                        modifier = Modifier
                                             .padding(
                                                 all = (if (expandedplayer) 0.dp else if (thumbnailType == ThumbnailType.Modern) -(10.dp) else 0.dp).coerceAtLeast(
                                                     0.dp
@@ -4271,7 +4234,7 @@ fun OnlinePlayer(
                                     mediaItem = binderPlayer.getMediaItemAt(index),
                                     onPlay = {
                                         player.value?.play()
-                                        println("LinkClient OnLinePlayer Controls play")
+                                        //println("LinkClient OnLinePlayer Controls play")
                                         linkServiceClientSend(
                                             binderPlayer.getMediaItemAt(index).mediaId.toCommandPlayAt(currentSecond.toInt()),
                                             castToLinkDevice,
@@ -4281,7 +4244,7 @@ fun OnlinePlayer(
                                     },
                                     onPause = {
                                         player.value?.pause()
-                                        println("LinkClient OnLinePlayer Controls pause 5")
+                                        //println("LinkClient OnLinePlayer Controls pause 5")
                                         //CoroutineScope(Dispatchers.IO).launch {
                                             //if (linkClient != null)
                                                 linkServiceClientSend(

@@ -19,7 +19,6 @@ fun fastPlay(
     playlistId: String? = null
 ) {
 
-    println("fastPlay: ${mediaItem.mediaMetadata.extras}")
     Database.asyncTransaction {
         insert(mediaItem)
     }

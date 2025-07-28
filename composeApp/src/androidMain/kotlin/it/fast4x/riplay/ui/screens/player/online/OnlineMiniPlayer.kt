@@ -9,7 +9,6 @@ import android.support.v4.media.RatingCompat
 import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import android.view.LayoutInflater
-import android.view.ViewGroup
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateDp
 import androidx.compose.animation.core.animateFloatAsState
@@ -69,7 +68,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.media3.common.C
@@ -111,7 +109,6 @@ import it.fast4x.riplay.ui.components.themed.IconButton
 import it.fast4x.riplay.ui.components.themed.NowPlayingSongIndicator
 import it.fast4x.riplay.ui.components.themed.SmartMessage
 import it.fast4x.riplay.ui.screens.player.online.components.core.OnlineCore
-import it.fast4x.riplay.ui.screens.player.online.components.customui.CustomDefaultPlayerUiController
 import it.fast4x.riplay.ui.screens.settings.isYouTubeSyncEnabled
 import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.ui.styling.collapsedPlayerProgressBar
@@ -668,11 +665,9 @@ fun OnlineMiniPlayer(
                 MediaSessionCallback(
                     binder,
                     {
-                        println("OnlineMiniPlayer callback play")
                         player.value?.play()
                     },
                     {
-                        println("OnlineMiniPlayer callback pause")
                         player.value?.pause()
                     }
                 )
@@ -698,11 +693,7 @@ fun OnlineMiniPlayer(
 
             stepToUpdateStats = 1
 
-            println("OnlineMiniPlayer LaunchedEffect change mediaItem ${mediaItem.mediaId}")
-
-            bitmapProvider.load(mediaItem.mediaMetadata.artworkUri, {
-                println("OnlineMiniPlayer LaunchedEffect BitmapProvider ")
-            })
+            bitmapProvider.load(mediaItem.mediaMetadata.artworkUri, {})
 
             if (playerIsVisible)
                 player.value?.cueVideo(mediaItem.mediaId, 0f)
@@ -716,8 +707,6 @@ fun OnlineMiniPlayer(
                     .putLong(MediaMetadataCompat.METADATA_KEY_DURATION, (currentDuration/1000).toLong())
                     .build()
             )
-
-            println("OnlineMiniPLayer LaunchedEffect change mediaItem isVideo? ${mediaItem.isVideo} song is audio only? ${songIsAudioOnly}")
         }
 
         LaunchedEffect(currentSecond, currentDuration) {
@@ -794,7 +783,8 @@ fun OnlineMiniPlayer(
             onPlayerStateChange = {
                 playerState.value = it
                 onPlayingChange(it == PlayerConstants.PlayerState.PLAYING)
-            }
+            },
+            onTap = {}
         )
 
 //        AndroidView(

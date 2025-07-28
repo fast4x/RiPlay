@@ -52,7 +52,6 @@ class LinkDevicesSelected(context: Context) {
         try {
             file.writeText(lines.joinToString("\n"))
         } catch (e: Exception) {
-            println("Error saving devices: ${e.message}")
             Timber.e("Error saving devices: ${e.message}")
         }
 

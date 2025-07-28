@@ -41,7 +41,8 @@ fun OnlineCore(
     onPlayerReady: (YouTubePlayer?) -> Unit,
     onSecondChange: (Float) -> Unit,
     onDurationChange: (Float) -> Unit,
-    onPlayerStateChange: (PlayerConstants.PlayerState) -> Unit
+    onPlayerStateChange: (PlayerConstants.PlayerState) -> Unit,
+    onTap: () -> Unit
 ) {
     val binder = LocalPlayerServiceBinder.current
     binder?.player ?: return
@@ -60,8 +61,8 @@ fun OnlineCore(
     }
     val mediaItem = nullableMediaItem ?: return
 
-    val inflatedView = LayoutInflater.from(context()).inflate(R.layout.youtube_player, null, false)
-    val onlinePlayerView: YouTubePlayerView = inflatedView as YouTubePlayerView
+    val inflatedView = remember { LayoutInflater.from(context()).inflate(R.layout.youtube_player, null, false) }
+    val onlinePlayerView = remember { inflatedView as YouTubePlayerView }
     var shouldBePlaying by remember { mutableStateOf(false) }
     val lifecycleOwner = LocalLifecycleOwner.current
     val enableBackgroundPlayback by rememberPreference(isInvincibilityEnabledKey, false)
@@ -101,7 +102,7 @@ fun OnlineCore(
                         CustomDefaultPlayerUiController(
                             onlinePlayerView,
                             youTubePlayer,
-                            onTap = {}
+                            onTap = onTap
                         )
                     customUiController.showUi(false) // disable all default controls and buttons
                     customUiController.showMenuButton(false)
