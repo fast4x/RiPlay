@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
+import it.fast4x.riplay.LocalOnlinePlayerPlayingState
 import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.enums.MusicAnimationType
 import it.fast4x.riplay.utils.DisposableListener
@@ -50,6 +51,8 @@ fun MusicAnimation(
             }
         }
     }
+
+    val isOnlinePlayRunning = LocalOnlinePlayerPlayingState.current
 
     val nowPlayingIndicator by rememberPreference(nowPlayingIndicatorKey, MusicAnimationType.Bubbles)
     if (nowPlayingIndicator == MusicAnimationType.Disabled) return
@@ -143,8 +146,8 @@ fun MusicAnimation(
         )
     }
 
-    LaunchedEffect(Unit, isPlayRunning) {
-        if (isPlayRunning == true)
+    LaunchedEffect(Unit, isPlayRunning, isOnlinePlayRunning) {
+        if (isPlayRunning == true || isOnlinePlayRunning)
             animatablesWithSteps.forEach { (animatable, steps) ->
                 launch {
                     while (true) {
@@ -156,7 +159,7 @@ fun MusicAnimation(
             }
     }
 
-    AnimatedVisibility(isPlayRunning == true) {
+    AnimatedVisibility(isPlayRunning == true || isOnlinePlayRunning) {
         Row(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.Bottom,

@@ -69,7 +69,7 @@ fun BoxScope.MultiFloatingActionsContainer(
     val bottomDp = with(density) { windowsInsets.getBottom(density).toDp() }
 
     val playerSheetState = LocalPlayerSheetState.current
-    val bottomPadding = if (!playerSheetState.isVisible) bottomDp + Dimensions.collapsedPlayer + additionalBottomPadding else bottomDp + additionalBottomPadding
+    val bottomPadding = if (!playerSheetState.isExpanded) bottomDp + Dimensions.collapsedPlayer + additionalBottomPadding else bottomDp + additionalBottomPadding
 
     Row(
         horizontalArrangement = Arrangement.spacedBy(16.dp),
@@ -203,7 +203,7 @@ fun BoxScope.FloatingActions(
     val bottomDp = with(density) { windowsInsets.getBottom(density).toDp() }
 
     val playerSheetState = LocalPlayerSheetState.current
-    val bottomPadding = if (!playerSheetState.isVisible) bottomDp + Dimensions.collapsedPlayer else bottomDp
+    val bottomPadding = if (!playerSheetState.isExpanded) bottomDp + Dimensions.collapsedPlayer else bottomDp
 
     var offsetX = rememberPreference(floatActionIconOffsetXkey, 0F )
     var offsetY = rememberPreference(floatActionIconOffsetYkey, 0F )

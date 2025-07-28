@@ -51,7 +51,6 @@ import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.LocalRippleConfiguration
 import androidx.compose.material3.RippleConfiguration
-import androidx.compose.material3.SheetState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.ripple
@@ -137,9 +136,7 @@ import it.fast4x.riplay.ui.components.themed.CrossfadeContainer
 import it.fast4x.riplay.ui.components.themed.SmartMessage
 import it.fast4x.riplay.ui.screens.AppNavigation
 import it.fast4x.riplay.ui.screens.player.offline.OfflineMiniPlayer
-import it.fast4x.riplay.ui.screens.player.offline.rememberPlayerSheetState
 import it.fast4x.riplay.ui.styling.Appearance
-import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.ui.styling.LocalAppearance
 import it.fast4x.riplay.ui.styling.applyPitchBlack
 import it.fast4x.riplay.ui.styling.colorPaletteOf
@@ -154,10 +151,13 @@ import it.fast4x.riplay.ui.components.BottomSheet
 import it.fast4x.riplay.ui.components.rememberBottomSheetState
 import it.fast4x.riplay.ui.screens.player.fastPlay
 import it.fast4x.riplay.ui.screens.player.offline.OfflinePlayer
+import it.fast4x.riplay.ui.screens.player.offline.PlayerSheetState
+import it.fast4x.riplay.ui.screens.player.offline.rememberPlayerSheetState
 import it.fast4x.riplay.ui.screens.player.online.OnlineMiniPlayer
 import it.fast4x.riplay.ui.screens.player.online.OnlinePlayer
 import it.fast4x.riplay.ui.screens.player.online.components.core.OnlinePlayerCore
 import it.fast4x.riplay.ui.screens.settings.isYouTubeLoggedIn
+import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.utils.UiTypeKey
 import it.fast4x.riplay.utils.animatedGradientKey
 import it.fast4x.riplay.utils.applyFontPaddingKey
@@ -301,6 +301,7 @@ MonetCompatActivity(),
 
     var linkDevices: MutableState<List<NsdServiceInfo>> = mutableStateOf(emptyList())
 
+    var onlinePlayerPlayingState: MutableState<Boolean> = mutableStateOf(false)
 
     override fun onStart() {
         super.onStart()
@@ -1054,8 +1055,10 @@ MonetCompatActivity(),
                         expandedBound = maxHeight,
                     )
 
-                    val playerState =
-                        rememberModalBottomSheetState(skipPartiallyExpanded = true)
+//                    val playerState =
+//                        rememberModalBottomSheetState(skipPartiallyExpanded = true)
+
+
 
                     val playerAwareWindowInsets by remember(
                         bottomDp,
@@ -1072,6 +1075,8 @@ MonetCompatActivity(),
                                 .add(WindowInsets(bottom = bottom))
                         }
                     }
+
+
 
                     var openTabFromShortcut = remember { -1 }
                     if (intent.action in arrayOf(
@@ -1132,9 +1137,10 @@ MonetCompatActivity(),
                                 LocalPlayerServiceBinder provides binder,
                                 LocalPlayerAwareWindowInsets provides playerAwareWindowInsets,
                                 LocalLayoutDirection provides LayoutDirection.Ltr,
-                                LocalPlayerSheetState provides playerState,
+                                LocalPlayerSheetState provides playerSheetState,
                                 LocalMonetCompat provides localMonet,
                                 LocalLinkDevices provides linkDevices.value,
+                                LocalOnlinePlayerPlayingState provides onlinePlayerPlayingState.value,
                                 //LocalInternetAvailable provides isInternetAvailable
                             ) {
 
@@ -1180,7 +1186,7 @@ MonetCompatActivity(),
                                     val playerState1 = remember { mutableStateOf(PlayerConstants.PlayerState.UNSTARTED) }
                                     var showControls by remember { mutableStateOf(true) }
                                     var currentDuration by remember { mutableFloatStateOf(0f) }
-                                    val playerSheetState = rememberBottomSheetState(
+                                    val localPlayerSheetState = rememberBottomSheetState(
                                         dismissedBound = 0.dp,
                                         collapsedBound = 5.dp, //Dimensions.collapsedPlayer,
                                         expandedBound = maxHeight
@@ -1199,16 +1205,16 @@ MonetCompatActivity(),
                                             println("MainActivity miniPlayer mediaItemIsLocal ${mediaItemIsLocal.value}")
                                             if (mediaItemIsLocal.value)
                                                 OfflineMiniPlayer(
-                                                    showPlayer = { playerSheetState.expandSoft() },
-                                                    hidePlayer = { playerSheetState.collapseSoft() },
+                                                    showPlayer = { localPlayerSheetState.expandSoft() },
+                                                    hidePlayer = { localPlayerSheetState.collapseSoft() },
                                                     navController = navController,
                                                 )
                                             else {
                                                     OnlineMiniPlayer(
                                                         showPlayer = {
-                                                            playerSheetState.expandSoft()
+                                                            localPlayerSheetState.expandSoft()
                                                         },
-                                                        hidePlayer = { playerSheetState.collapseSoft() },
+                                                        hidePlayer = { localPlayerSheetState.collapseSoft() },
                                                         navController = navController,
                                                         player = player,
                                                         playerState = playerState1,
@@ -1236,7 +1242,7 @@ MonetCompatActivity(),
                                             playerOnline = player,
                                             playerState = playerState1,
                                             onDismiss = {
-                                                playerSheetState.collapseSoft()
+                                                localPlayerSheetState.collapseSoft()
                                             }
                                         )
                                     }
@@ -1254,6 +1260,7 @@ MonetCompatActivity(),
                                             onDurationChange = { currentDuration = it },
                                             onPlayerStateChange = {
                                                 playerState1.value = it
+                                                onlinePlayerPlayingState.value =  it == PlayerConstants.PlayerState.PLAYING
                                                 continuePlaying = it == PlayerConstants.PlayerState.PLAYING
                                             },
                                             onTap = { showControls = !showControls }
@@ -1271,7 +1278,7 @@ MonetCompatActivity(),
                                             currentSecond = currentSecond,
                                             showControls = showControls,
                                             onDismiss = {
-                                                playerSheetState.collapseSoft()
+                                                localPlayerSheetState.collapseSoft()
                                             },
 
                                         )
@@ -1279,7 +1286,7 @@ MonetCompatActivity(),
 
 
                                     BottomSheet(
-                                        state = playerSheetState,
+                                        state = localPlayerSheetState,
                                         collapsedContent = {
                                             Box(modifier = Modifier.fillMaxSize()) {
                                                 //Text(text = "BottomSheet", modifier = Modifier.align(Alignment.Center))
@@ -1320,7 +1327,7 @@ MonetCompatActivity(),
                         val player = binder?.player ?: return@DisposableEffect onDispose { }
 
                         if (player.currentMediaItem == null) {
-                            if (playerState.isVisible) {
+                            if (playerSheetState.isExpanded) {
                                 playerSheetState.collapseSoft()
                             }
                         } else {
@@ -1624,9 +1631,9 @@ val LocalPlayerAwareWindowInsets = staticCompositionLocalOf<WindowInsets> { TODO
 
 @OptIn(ExperimentalMaterial3Api::class)
 val LocalPlayerSheetState =
-    staticCompositionLocalOf<SheetState> { error("No player sheet state provided") }
+    staticCompositionLocalOf<PlayerSheetState> { error("No player sheet state provided") }
 
-val LocalPlayerState = staticCompositionLocalOf<Boolean> { error("No player sheet state provided") }
+val LocalOnlinePlayerPlayingState = staticCompositionLocalOf<Boolean> { error("No player sheet state provided") }
 val LocalLinkDevices = staticCompositionLocalOf<List<NsdServiceInfo>> { error("No link devices provided") }
 
 
