@@ -1273,12 +1273,7 @@ MonetCompatActivity(),
                                             onDismiss = {
                                                 playerSheetState.collapseSoft()
                                             },
-//                                            onSecondChange = {
-//                                                currentSecond = it
-//                                            },
-//                                            onPlayingChange = {
-//                                                continuePlaying = it
-//                                            }
+
                                         )
                                     }
 

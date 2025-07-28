@@ -432,10 +432,7 @@ fun OnlinePlayer(
 
     var shouldBePlaying by remember { mutableStateOf(false) }
 
-    //var castToLinkDevice by remember { mutableStateOf(false) }
     var castToLinkDevice by rememberPreference(castToLinkDeviceEnabledKey, false )
-
-    //val shouldBePlayingTransition = updateTransition(shouldBePlaying, label = "shouldBePlaying")
 
     var isRotated by remember { mutableStateOf(false) }
     val rotationAngle by animateFloatAsState(
@@ -566,7 +563,7 @@ fun OnlinePlayer(
         object : Player.Listener {
             override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
                 nullableMediaItem = mediaItem
-                //if (mediaItem != null)
+
                 mediaItem?.let {
                     linkServiceClientSend(it.mediaId.toCommandLoad(), castToLinkDevice, linkDevicesSelected)
                 }
@@ -589,9 +586,6 @@ fun OnlinePlayer(
     val pagerStateFS = rememberPagerState(pageCount = { mediaItems.size })
     val isDragged by pagerState.interactionSource.collectIsDraggedAsState()
     val isDraggedFS by pagerStateFS.interactionSource.collectIsDraggedAsState()
-
-    //Temporaly commented for debug
-    //playerError?.let { PlayerError(error = it) }
 
     var isShowingSleepTimerDialog by remember {
         mutableStateOf(false)
@@ -1382,27 +1376,12 @@ fun OnlinePlayer(
 
     /***** NEW PLAYER *****/
 
-    //val onlinePlayerView = YouTubePlayerView(context = context())
-//    val inflatedView = remember { LayoutInflater.from(context()).inflate(R.layout.youtube_player, null, false) }
-//    val onlinePlayerView = remember { inflatedView as YouTubePlayerView }
-//    val customPLayerUi = remember { onlinePlayerView.inflateCustomPlayerUi(R.layout.ayp_base_player_ui) }
-//    val player = remember { mutableStateOf<YouTubePlayer?>(null) }
-//    val playerState = remember { mutableStateOf(PlayerConstants.PlayerState.UNSTARTED) }
-    //var enableBackgroundPlayback by rememberPreference(isInvincibilityEnabledKey, false)
-    //val enableBackgroundPlayback by remember { mutableStateOf(true) }
-
     var lastYTVideoId by rememberPreference(key = lastVideoIdKey, defaultValue = "")
     var lastYTVideoSeconds by rememberPreference(key = lastVideoSecondsKey, defaultValue = 0f)
 
-//    var currentSecond by remember { mutableFloatStateOf(0f) }
-//    var currentDuration by remember { mutableFloatStateOf(0f) }
-
-    //var updateStatistics by remember { mutableStateOf(true) }
     var updateStatisticsEverySeconds by remember { mutableIntStateOf(0) }
     val steps by remember { mutableIntStateOf(5) }
     var stepToUpdateStats by remember { mutableIntStateOf(1) }
-
-    //val lifecycleOwner = LocalLifecycleOwner.current
 
     val isLandscape = isLandscape
 
@@ -1451,20 +1430,6 @@ fun OnlinePlayer(
     }
 
 
-//    val androidPlaybackState = remember {
-//        when (playerState.value) {
-//            PlayerConstants.PlayerState.BUFFERING -> if (shouldBePlaying) PlaybackStateCompat.STATE_BUFFERING else PlaybackStateCompat.STATE_PAUSED
-//            PlayerConstants.PlayerState.VIDEO_CUED -> if (shouldBePlaying) PlaybackStateCompat.STATE_PLAYING else PlaybackStateCompat.STATE_PAUSED
-//            PlayerConstants.PlayerState.ENDED -> PlaybackStateCompat.STATE_STOPPED
-//            PlayerConstants.PlayerState.UNKNOWN -> PlaybackStateCompat.STATE_NONE
-//            PlayerConstants.PlayerState.UNSTARTED -> PlaybackStateCompat.STATE_STOPPED
-//            PlayerConstants.PlayerState.PLAYING -> PlaybackStateCompat.STATE_PLAYING
-//            PlayerConstants.PlayerState.PAUSED -> PlaybackStateCompat.STATE_PAUSED
-//        }
-//    }
-
-
-
     var bitmapProvider = remember {
         BitmapProvider(
             bitmapSize = (512 * appContext().resources.displayMetrics.density).roundToInt(),
@@ -1497,12 +1462,6 @@ fun OnlinePlayer(
         stepToUpdateStats = 1
 
         bitmapProvider.load(mediaItem.mediaMetadata.artworkUri, {})
-
-        //lastYTVideoSeconds = 0f
-
-//        if (playerState.value != PlayerConstants.PlayerState.BUFFERING) {
-//            println("OnlinePLayer LaunchedEffect change mediaItem RELOADING ${mediaItem.mediaId}")
-        //if (playerType == PlayerType.Essential)
 
         player.value?.loadVideo(mediaItem.mediaId, 0f)
 
@@ -1628,8 +1587,6 @@ fun OnlinePlayer(
             linkDevicesSelected
         )
 
-        //println("OnlinePlayer LaunchedEffect playerState.value ${playerState.value} should be playing? $shouldBePlaying")
-
     }
 
     val thumbnailRoundness by rememberPreference(
@@ -1674,16 +1631,13 @@ fun OnlinePlayer(
             },
             onPause = {
                 player.value?.pause()
-                //println("LinkClient OnLinePlayer Controls pause 1")
-                //CoroutineScope(Dispatchers.IO).launch {
-                    //if (linkClient != null)
+
                         linkServiceClientSend(
                             LINKWEB_COMMAND_PAUSE.toCommand(),
                             castToLinkDevice,
                             linkDevicesSelected
                         )
-                        //linkClient?.send("pause|")
-                //}
+
             },
             onSeekTo = { player.value?.seekTo(it) },
             onNext = { binder.player.playNext() },
@@ -1695,42 +1649,9 @@ fun OnlinePlayer(
 
     /***** NEW PLAYER *****/
 
-    //var showCastButton by remember { mutableStateOf(false) }
-    //val activity = LocalActivity.current
-
-
-
     val thumbnailContent: @Composable (
         modifier: Modifier,
     ) -> Unit = { innerModifier ->
-
-//            var showControls by remember { mutableStateOf(true) }
-//            LaunchedEffect(showControls) {
-//                if (showControls) {
-//                    delay(5000)
-//                    showControls = false
-//                }
-//            }
-
-//        val onlineCore: @Composable () -> Unit = {
-//            OnlineCore(
-//                load = true,
-//                playFromSecond = playFromSecond,
-//                onPlayerReady = { player.value = it },
-//                onSecondChange = {
-//                    currentSecond = it
-//                    onSecondChange(it)
-//                },
-//                onDurationChange = { currentDuration = it },
-//                onPlayerStateChange = {
-//                    playerState.value = it
-//                    onPlayingChange(it == PlayerConstants.PlayerState.PLAYING)
-//                },
-//                onTap = { showControls = !showControls }
-//            )
-//        }
-
-        //println("CastToLinkDevice inside thumbnailContent $castToLinkDevice")
 
             Box(
                 modifier = innerModifier
@@ -1766,24 +1687,7 @@ fun OnlinePlayer(
                                     color = colorPalette().text,
                                     modifier = Modifier.padding(bottom = 10.dp)
                                 )
-//                                Box(
-//                                    modifier = Modifier.fillMaxWidth()
-//                                ){
-//                                    IconButton(
-//                                        icon = if (castToLinkDevice) R.drawable.cast_connected else R.drawable.cast_disconnected,
-//                                        color = colorPalette().accent,
-//                                        enabled = true,
-//                                        onClick = {
-////                                            castToLinkDevice = !castToLinkDevice
-////                                            player.value?.pause()
-////                                            if (castToLinkDevice) player.value?.mute() else player.value?.unMute()
-////                                            if (!castToLinkDevice) linkServiceClientSend(LINKWEB_COMMAND_PAUSE.toCommand(), true)
-//                                        },
-//                                        modifier = Modifier
-//                                            .align(Alignment.Center)
-//                                            .size(24.dp),
-//                                    )
-//                                }
+
 
                             }
                             items(
@@ -1848,170 +1752,8 @@ fun OnlinePlayer(
                 }
 
                 onlineCore()
-//                OnlineCore(
-//                    onPlayerReady = { player.value = it },
-//                    onSecondChange = { currentSecond = it },
-//                    onDurationChange = { currentDuration = it },
-//                    onPlayerStateChange = { playerState.value = it }
-//                )
-//                AndroidView(
-//                    modifier = innerModifier
-//                        .background(Color.Transparent)
-//                        .zIndex(0f),
-//                    factory = {
-//                        if (onlinePlayerView.parent != null) {
-//                            (onlinePlayerView.parent as ViewGroup).removeView(onlinePlayerView) // <- fix
-//                        }
-////                val iFramePlayerOptions = IFramePlayerOptions.Builder()
-////                    .controls(1) // show/hide controls
-////                    .rel(0) // related video at the end
-////                    .ivLoadPolicy(0) // show/hide annotations
-////                    .ccLoadPolicy(0) // show/hide captions
-////                    // Play a playlist by id
-////                    //.listType("playlist")
-////                    //.list(PLAYLIST_ID)
-////                    .build()
-//
-//                        // Disable default view controls to set custom view
-//                        val iFramePlayerOptions = IFramePlayerOptions.Builder()
-//                            .controls(0) // show/hide controls
-//                            .listType("playlist")
-//                            .build()
-//
-//                        val listener = object : AbstractYouTubePlayerListener() {
-//
-//                            override fun onReady(youTubePlayer: YouTubePlayer) {
-//                                player.value = youTubePlayer
-//                                if (castToLinkDevice) player.value?.mute()
-//
-//                                /* Used to show custom player ui with uiController as listener
-////                            val customPlayerUiController = CustomBasePlayerUiControllerAsListener(
-////                                it,
-////                                customPLayerUi,
-////                                youTubePlayer,
-////                                onlinePlayerView,
-////                                onTap = {
-////                                    showControls = !showControls
-////                                }
-////                            )
-////                            youTubePlayer.addListener(customPlayerUiController)
-//*/
-//
-//// Used to show default player ui with defaultPlayerUiController as custom view
-//                                val customUiController =
-//                                    CustomDefaultPlayerUiController(
-//                                        onlinePlayerView,
-//                                        youTubePlayer,
-//                                        onTap = {
-//                                            showControls = !showControls
-//                                        }
-//                                    )
-//                                customUiController.showUi(false) // disable all default controls and buttons
-//                                customUiController.showMenuButton(false)
-//                                customUiController.showVideoTitle(false)
-//                                customUiController.showPlayPauseButton(false)
-//                                customUiController.showDuration(false)
-//                                customUiController.showCurrentTime(false)
-//                                customUiController.showSeekBar(false)
-//                                customUiController.showBufferingProgress(false)
-//                                customUiController.showYouTubeButton(false)
-//                                customUiController.showFullscreenButton(false)
-//                                onlinePlayerView.setCustomPlayerUi(customUiController.rootView)
-//
-//
-//                                if (playerState.value == PlayerConstants.PlayerState.UNSTARTED
-//                                    || playerState.value != PlayerConstants.PlayerState.BUFFERING
-//                                ) {
-//                                    youTubePlayer.loadVideo(
-//                                        mediaItem.mediaId,
-//                                        if (mediaItem.mediaId == getLastYTVideoId()) getLastYTVideoSeconds() else 0f
-//                                    )
-//                                    linkServiceClientSend(
-//                                        mediaItem.mediaId.toCommandLoad(
-//                                            if (mediaItem.mediaId == getLastYTVideoId()) getLastYTVideoSeconds().toInt() else 0
-//                                        ), castToLinkDevice, linkDevicesSelected
-//                                    )
-//                                 }
-//
-//                                //youTubePlayer.cueVideo(mediaItem.mediaId, 0f)
-//
-//
-//                            }
-//
-//                            override fun onCurrentSecond(
-//                                youTubePlayer: YouTubePlayer,
-//                                second: Float
-//                            ) {
-//                                super.onCurrentSecond(youTubePlayer, second)
-//                                currentSecond = second
-//                                lastYTVideoSeconds = second
-//                                lastYTVideoId = mediaItem.mediaId
-//
-//                            }
-//
-//                            override fun onVideoDuration(
-//                                youTubePlayer: YouTubePlayer,
-//                                duration: Float
-//                            ) {
-//                                super.onVideoDuration(youTubePlayer, duration)
-//                                currentDuration = duration
-//                            }
-//
-//                            override fun onStateChange(
-//                                youTubePlayer: YouTubePlayer,
-//                                state: PlayerConstants.PlayerState
-//                            ) {
-//                                super.onStateChange(youTubePlayer, state)
-////                        if (state == PlayerConstants.PlayerState.ENDED) {
-////                            onVideoEnded()
-////                        }
-//                                playerState.value = state
-//
-//                            }
-//
-//                            override fun onPlaybackQualityChange(
-//                                youTubePlayer: YouTubePlayer,
-//                                playbackQuality: PlayerConstants.PlaybackQuality
-//                            ) {
-//                                super.onPlaybackQualityChange(youTubePlayer, playbackQuality)
-//                                println("OnlinePlayer onPlaybackQualityChange $playbackQuality")
-//                            }
-//
-//
-//                        }
-//
-//                        onlinePlayerView.apply {
-//                            enableAutomaticInitialization = false
-//
-//                            if (enableBackgroundPlayback)
-//                                enableBackgroundPlayback(true)
-//                            else
-//                                lifecycleOwner.lifecycle.addObserver(this)
-//
-//                            initialize(listener, iFramePlayerOptions)
-//                        }
-//
-//                    },
-//                    update = {
-//                        it.enableBackgroundPlayback(enableBackgroundPlayback)
-//                        it.layoutParams = if (!isLandscape) {
-//                            ViewGroup.LayoutParams(
-//                                ViewGroup.LayoutParams.MATCH_PARENT,
-//                                if (playerThumbnailSize == PlayerThumbnailSize.Expanded)
-//                                    ViewGroup.LayoutParams.WRAP_CONTENT
-//                                else playerThumbnailSize.height
-//                            )
-//                        } else {
-//                            ViewGroup.LayoutParams(
-//                                ViewGroup.LayoutParams.MATCH_PARENT,
-//                                ViewGroup.LayoutParams.WRAP_CONTENT
-//                            )
-//                        }
-//                    }
-//                )
-            }
 
-        //}
+            }
 
     }
 
@@ -2870,17 +2612,7 @@ fun OnlinePlayer(
                             .animateContentSize()
                         // .border(BorderStroke(1.dp, Color.Blue))
                     ) {
-//                        if (showthumbnail && (playerType == PlayerType.Essential)) {
-//                            Box(
-//                                contentAlignment = Alignment.Center,
-//                                /*modifier = Modifier
-//                                .weight(1f)*/
-//                                //.padding(vertical = 10.dp)
-//                            ) {
-//                                if ((!isShowingLyrics && !isShowingVisualizer) || (isShowingVisualizer && showvisthumbnail) || (isShowingLyrics && showlyricsthumbnail))
-//                                    thumbnailContent(Modifier)
-//                            }
-//                        }
+
                         if (isShowingVisualizer && !showvisthumbnail && playerType == PlayerType.Essential) {
                             Box(
                                 modifier = Modifier
@@ -3912,12 +3644,6 @@ fun OnlinePlayer(
                                    )
 
                                      val coverModifier = Modifier
-                                         //.aspectRatio(1f)
-                                        //.padding(all = animatePadding)
-////                                        .conditional(!it.fast4x.riplay.utils.isLandscape && !mediaItem.isVideo) {
-////                                            aspectRatio(1f)
-////                                            padding(all = animatePadding)
-////                                        }
                                         .conditional(thumbnailType == ThumbnailType.Modern) {
                                             padding(
                                                 all = 10.dp
@@ -3932,13 +3658,6 @@ fun OnlinePlayer(
                                          }
                                          .clip(thumbnailRoundness.shape())
 
-////                                    thumbnailContent(
-////                                        //use online player
-////                                        if (!mediaItem.isVideo)
-////                                            Modifier.hidePlayer()
-////                                        else
-////                                           coverModifier
-////                                    )
                                     if (!mediaItem.isVideo)
                                         Image(
                                             painter = coverPainter,
