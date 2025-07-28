@@ -148,6 +148,7 @@ import it.fast4x.riplay.utils.OkHttpRequest
 import it.fast4x.riplay.extensions.rescuecenter.RescueScreen
 import it.fast4x.riplay.service.isLocal
 import it.fast4x.riplay.ui.components.BottomSheet
+import it.fast4x.riplay.ui.components.BottomSheetMenu
 import it.fast4x.riplay.ui.components.rememberBottomSheetState
 import it.fast4x.riplay.ui.screens.player.fastPlay
 import it.fast4x.riplay.ui.screens.player.offline.OfflinePlayer
@@ -1319,6 +1320,11 @@ MonetCompatActivity(),
                                     ) {
                                         menuState.content()
                                     }
+//                                    BottomSheetMenu(
+//                                        state = menuState,
+//                                        modifier = Modifier.fillMaxSize()
+//                                    )
+
                                 }
                             }
 
