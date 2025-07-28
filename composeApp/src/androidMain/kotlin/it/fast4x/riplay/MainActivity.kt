@@ -44,7 +44,6 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.add
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBars
@@ -101,6 +100,8 @@ import com.kieronquinn.monetcompat.app.MonetCompatActivity
 import com.kieronquinn.monetcompat.core.MonetActivityAccessException
 import com.kieronquinn.monetcompat.core.MonetCompat
 import com.kieronquinn.monetcompat.interfaces.MonetColorsChangedListener
+import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.PlayerConstants
+import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
 import com.valentinilk.shimmer.LocalShimmerTheme
 import com.valentinilk.shimmer.defaultShimmerTheme
 import de.raphaelebner.roomdatabasebackup.core.RoomBackup
@@ -149,10 +150,13 @@ import it.fast4x.riplay.utils.LocalMonetCompat
 import it.fast4x.riplay.utils.OkHttpRequest
 import it.fast4x.riplay.extensions.rescuecenter.RescueScreen
 import it.fast4x.riplay.service.isLocal
+import it.fast4x.riplay.ui.components.BottomSheet
+import it.fast4x.riplay.ui.components.rememberBottomSheetState
 import it.fast4x.riplay.ui.screens.player.fastPlay
 import it.fast4x.riplay.ui.screens.player.offline.OfflinePlayer
 import it.fast4x.riplay.ui.screens.player.online.OnlineMiniPlayer
 import it.fast4x.riplay.ui.screens.player.online.OnlinePlayer
+import it.fast4x.riplay.ui.screens.player.online.components.core.OnlinePlayerCore
 import it.fast4x.riplay.ui.screens.settings.isYouTubeLoggedIn
 import it.fast4x.riplay.utils.UiTypeKey
 import it.fast4x.riplay.utils.animatedGradientKey
@@ -200,7 +204,6 @@ import it.fast4x.riplay.utils.isValidHttpUrl
 import it.fast4x.riplay.utils.isValidIP
 import it.fast4x.riplay.utils.keepPlayerMinimizedKey
 import it.fast4x.riplay.utils.languageAppKey
-import it.fast4x.riplay.utils.lastVideoIdKey
 import it.fast4x.riplay.utils.loadedDataKey
 import it.fast4x.riplay.utils.miniPlayerTypeKey
 import it.fast4x.riplay.utils.navigationBarPositionKey
@@ -230,6 +233,7 @@ import it.fast4x.riplay.utils.ytCookieKey
 import it.fast4x.riplay.utils.ytDataSyncIdKey
 import it.fast4x.riplay.utils.ytVisitorDataKey
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -257,7 +261,6 @@ MonetCompatActivity(),
     MonetColorsChangedListener
 //,PersistMapOwner
 {
-    //var downloadHelper = MyDownloadHelper
     //lateinit var internetConnectivityObserver: InternetConnectivityObserver
 
     var client = OkHttpClient()
@@ -584,7 +587,6 @@ MonetCompatActivity(),
                 val coroutineScope = rememberCoroutineScope()
                 val isSystemInDarkTheme = isSystemInDarkTheme()
                 val navController = rememberNavController()
-                var showPlayer by rememberSaveable { mutableStateOf(false) }
                 var mediaItemIsLocal = rememberSaveable { mutableStateOf(false) }
                 var switchToAudioPlayer by rememberSaveable { mutableStateOf(false) }
                 var animatedGradient by rememberPreference(
@@ -1132,7 +1134,6 @@ MonetCompatActivity(),
                                 LocalLayoutDirection provides LayoutDirection.Ltr,
                                 LocalPlayerSheetState provides playerState,
                                 LocalMonetCompat provides localMonet,
-                                LocalPlayerState provides showPlayer,
                                 LocalLinkDevices provides linkDevices.value,
                                 //LocalInternetAvailable provides isInternetAvailable
                             ) {
@@ -1175,33 +1176,49 @@ MonetCompatActivity(),
                                     var currentSecond by remember { mutableFloatStateOf(0f) }
                                     var continuePlaying by remember { mutableStateOf(false) }
 
+                                    val player = remember { mutableStateOf<YouTubePlayer?>(null) }
+                                    val playerState1 = remember { mutableStateOf(PlayerConstants.PlayerState.UNSTARTED) }
+                                    var showControls by remember { mutableStateOf(true) }
+                                    var currentDuration by remember { mutableFloatStateOf(0f) }
+                                    val playerSheetState = rememberBottomSheetState(
+                                        dismissedBound = 0.dp,
+                                        collapsedBound = 5.dp, //Dimensions.collapsedPlayer,
+                                        expandedBound = maxHeight
+                                    )
+
+                                    LaunchedEffect(showControls) {
+                                        if (showControls) {
+                                            delay(5000)
+                                            showControls = false
+                                        }
+                                    }
+
                                     AppNavigation(
                                         navController = navController,
                                         miniPlayer = {
                                             println("MainActivity miniPlayer mediaItemIsLocal ${mediaItemIsLocal.value}")
                                             if (mediaItemIsLocal.value)
                                                 OfflineMiniPlayer(
-                                                    showPlayer = { showPlayer = true },
-                                                    hidePlayer = { showPlayer = false },
+                                                    showPlayer = { playerSheetState.expandSoft() },
+                                                    hidePlayer = { playerSheetState.collapseSoft() },
                                                     navController = navController,
                                                 )
                                             else {
-                                                if (!showPlayer)
                                                     OnlineMiniPlayer(
-                                                        showPlayer = { showPlayer = true },
-                                                        hidePlayer = { showPlayer = false },
-                                                        navController = navController,
-                                                        playFromSecond = currentSecond,
-                                                        load = continuePlaying,
-                                                        onSecondChange = {
-                                                            currentSecond = it
+                                                        showPlayer = {
+                                                            playerSheetState.expandSoft()
                                                         },
-                                                        onPlayingChange = {
-                                                            continuePlaying = it
-                                                        }
+                                                        hidePlayer = { playerSheetState.collapseSoft() },
+                                                        navController = navController,
+                                                        player = player,
+                                                        playerState = playerState1,
+                                                        currentDuration = currentDuration,
+                                                        currentSecond = currentSecond,
                                                     )
                                             }
                                         },
+                                        player = player,
+                                        playerState = playerState1,
                                         openTabFromShortcut = openTabFromShortcut
                                     )
 
@@ -1216,44 +1233,64 @@ MonetCompatActivity(),
                                     val offlinePlayer: @Composable () -> Unit = {
                                         OfflinePlayer(
                                             navController = navController,
+                                            playerOnline = player,
+                                            playerState = playerState1,
                                             onDismiss = {
-                                                showPlayer = false
+                                                playerSheetState.collapseSoft()
                                             }
+                                        )
+                                    }
+
+
+
+                                    val onlineCore: @Composable () -> Unit = {
+                                        OnlinePlayerCore(
+                                            load = true,
+                                            playFromSecond = currentSecond,
+                                            onPlayerReady = { player.value = it },
+                                            onSecondChange = {
+                                                currentSecond = it
+                                            },
+                                            onDurationChange = { currentDuration = it },
+                                            onPlayerStateChange = {
+                                                playerState1.value = it
+                                                continuePlaying = it == PlayerConstants.PlayerState.PLAYING
+                                            },
+                                            onTap = { showControls = !showControls }
                                         )
                                     }
 
                                     val onlinePlayer: @Composable () -> Unit = {
-                                        OnlinePlayer(
+                                        OnlinePlayer (
                                             navController = navController,
                                             playFromSecond = currentSecond,
+                                            onlineCore = { onlineCore() },
+                                            player = player,
+                                            playerState = playerState1,
+                                            currentDuration = currentDuration,
+                                            currentSecond = currentSecond,
+                                            showControls = showControls,
                                             onDismiss = {
-                                                showPlayer = false
+                                                playerSheetState.collapseSoft()
                                             },
-                                            onSecondChange = {
-                                                currentSecond = it
-                                            },
-                                            onPlayingChange = {
-                                                continuePlaying = it
-                                            }
+//                                            onSecondChange = {
+//                                                currentSecond = it
+//                                            },
+//                                            onPlayingChange = {
+//                                                continuePlaying = it
+//                                            }
                                         )
                                     }
 
-                                    CustomModalBottomSheet(
-                                        showSheet = showPlayer,
-                                        onDismissRequest = { showPlayer = false },
-                                        containerColor = colorPalette().background0,
-                                        contentColor = colorPalette().background0,
-                                        modifier = Modifier.fillMaxWidth(),
-                                        sheetState = playerState,
-                                        sheetGestureEnabled = false,
-                                        dragHandle = {
-                                            Surface(
-                                                modifier = Modifier.padding(vertical = 0.dp),
-                                                color = colorPalette().background0,
-                                                shape = thumbnailShape()
-                                            ) {}
+
+                                    BottomSheet(
+                                        state = playerSheetState,
+                                        collapsedContent = {
+                                            Box(modifier = Modifier.fillMaxSize()) {
+                                                //Text(text = "BottomSheet", modifier = Modifier.align(Alignment.Center))
+                                            }
                                         },
-                                        shape = thumbnailRoundness.shape()
+                                        contentAlwaysAvailable = true
                                     ) {
                                         if (mediaItemIsLocal.value)
                                             offlinePlayer()
@@ -1289,16 +1326,16 @@ MonetCompatActivity(),
 
                         if (player.currentMediaItem == null) {
                             if (playerState.isVisible) {
-                                showPlayer = false
+                                playerSheetState.collapseSoft()
                             }
                         } else {
                             if (launchedFromNotification) {
                                 intent.replaceExtras(Bundle())
                                 if (preferences.getBoolean(keepPlayerMinimizedKey, false))
-                                    showPlayer = false
-                                else showPlayer = true
+                                    playerSheetState.collapseSoft()
+                                else playerSheetState.expandSoft()
                             } else {
-                                showPlayer = false
+                                playerSheetState.collapseSoft()
                             }
                         }
 
@@ -1308,8 +1345,8 @@ MonetCompatActivity(),
                                 if (reason == Player.MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED && mediaItem != null) {
                                     if (mediaItem.mediaMetadata.extras?.getBoolean("isFromPersistentQueue") != true) {
                                         if (preferences.getBoolean(keepPlayerMinimizedKey, false))
-                                            showPlayer = false
-                                        else showPlayer = true
+                                            playerSheetState.collapseSoft()
+                                        else playerSheetState.expandSoft()
                                     }
                                 }
 

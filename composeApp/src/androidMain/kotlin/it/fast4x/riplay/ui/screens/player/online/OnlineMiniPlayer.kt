@@ -8,7 +8,6 @@ import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.RatingCompat
 import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
-import android.view.LayoutInflater
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateDp
 import androidx.compose.animation.core.animateFloatAsState
@@ -42,8 +41,8 @@ import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.neverEqualPolicy
@@ -68,8 +67,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
@@ -78,11 +75,7 @@ import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.PlayerConstants
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
-import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.AbstractYouTubePlayerListener
-import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.options.IFramePlayerOptions
-import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
 import it.fast4x.riplay.Database
-import it.fast4x.riplay.LocalPlayerState
 import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.MainActivity
 import it.fast4x.riplay.R
@@ -108,7 +101,6 @@ import it.fast4x.riplay.typography
 import it.fast4x.riplay.ui.components.themed.IconButton
 import it.fast4x.riplay.ui.components.themed.NowPlayingSongIndicator
 import it.fast4x.riplay.ui.components.themed.SmartMessage
-import it.fast4x.riplay.ui.screens.player.online.components.core.OnlineCore
 import it.fast4x.riplay.ui.screens.settings.isYouTubeSyncEnabled
 import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.ui.styling.collapsedPlayerProgressBar
@@ -128,10 +120,6 @@ import it.fast4x.riplay.utils.getLikeState
 import it.fast4x.riplay.utils.intent
 import it.fast4x.riplay.utils.isAtLeastAndroid12
 import it.fast4x.riplay.utils.isExplicit
-import it.fast4x.riplay.utils.isInvincibilityEnabledKey
-import it.fast4x.riplay.utils.isVideo
-import it.fast4x.riplay.utils.lastVideoIdKey
-import it.fast4x.riplay.utils.lastVideoSecondsKey
 import org.dailyislam.android.utilities.isNetworkConnected
 import it.fast4x.riplay.utils.mediaItemToggleLike
 import it.fast4x.riplay.utils.miniPlayerTypeKey
@@ -156,14 +144,13 @@ import kotlin.math.roundToInt
 @UnstableApi
 @Composable
 fun OnlineMiniPlayer(
-    lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current,
     showPlayer: () -> Unit,
     hidePlayer: () -> Unit,
     navController: NavController? = null,
-    playFromSecond: Float = 0f,
-    load: Boolean = false,
-    onSecondChange: (Float) -> Unit,
-    onPlayingChange: (Boolean) -> Unit,
+    player: MutableState<YouTubePlayer?>,
+    playerState: MutableState<PlayerConstants.PlayerState>,
+    currentDuration: Float,
+    currentSecond: Float
 ) {
 
     val context = LocalContext.current
@@ -276,24 +263,11 @@ fun OnlineMiniPlayer(
     val disableScrollingText by rememberPreference(disableScrollingTextKey, false)
 
     /******* new player */
-    var lastYTVideoId by rememberPreference(key = lastVideoIdKey, defaultValue = "")
-    var lastYTVideoSeconds by rememberPreference(key = lastVideoSecondsKey, defaultValue = 0f)
-    var currentSecond by remember { mutableFloatStateOf(0f) }
-    var currentDuration by remember { mutableFloatStateOf(0f) }
-    var updateStatistics by remember { mutableStateOf(true) }
     var updateStatisticsEverySeconds by remember { mutableIntStateOf(0) }
     val steps by remember { mutableIntStateOf(5) }
     var stepToUpdateStats by remember { mutableIntStateOf(1) }
 
-    val inflatedView = LayoutInflater.from(context()).inflate(R.layout.youtube_player, null, false)
-    val onlinePlayerView: YouTubePlayerView = inflatedView as YouTubePlayerView
-    val customPLayerUi = onlinePlayerView.inflateCustomPlayerUi(R.layout.ayp_base_player_ui)
-    var player = remember { mutableStateOf<YouTubePlayer?>(null) }
-    val playerState = remember { mutableStateOf(PlayerConstants.PlayerState.UNSTARTED) }
-    //val enableBackgroundPlayback by remember { mutableStateOf(true) }
-    var enableBackgroundPlayback by rememberPreference(isInvincibilityEnabledKey, false)
     /****** */
-    if (mediaItem.mediaId != lastYTVideoId) lastYTVideoSeconds = 0f
     LaunchedEffect(mediaItem) {
         Database.likedAt(mediaItem.mediaId).distinctUntilChanged().collect { likedAt = it }
 
@@ -360,7 +334,6 @@ fun OnlineMiniPlayer(
                         hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
                     },
                     onClick = {
-                        player.value?.pause()
                         showPlayer()
                     }
                 )
@@ -611,8 +584,6 @@ fun OnlineMiniPlayer(
             )
         }
 
-        val playerIsVisible = LocalPlayerState.current
-
         LaunchedEffect(playerState.value) {
             shouldBePlaying = playerState.value == PlayerConstants.PlayerState.PLAYING
 
@@ -620,8 +591,6 @@ fun OnlineMiniPlayer(
                 // TODO Implement repeat mode in queue
                 if (getQueueLoopType() != QueueLoopType.Default)
                     player.value?.seekTo(0f)
-
-                updateStatistics = true
             }
 
             withContext(Dispatchers.Main) {
@@ -695,11 +664,6 @@ fun OnlineMiniPlayer(
 
             bitmapProvider.load(mediaItem.mediaMetadata.artworkUri, {})
 
-            if (playerIsVisible)
-                player.value?.cueVideo(mediaItem.mediaId, 0f)
-            else
-                player.value?.loadVideo(mediaItem.mediaId, 0f)
-
             mediaSession.setMetadata(
                 MediaMetadataCompat.Builder()
                     .putString(MediaMetadataCompat.METADATA_KEY_TITLE, mediaItem.mediaMetadata.title.toString())
@@ -769,122 +733,7 @@ fun OnlineMiniPlayer(
             }
 
         }
-
-        OnlineCore(
-            actAsMini = true,
-            load = load,
-            playFromSecond = playFromSecond,
-            onPlayerReady = { player.value = it },
-            onSecondChange = {
-                currentSecond = it
-                onSecondChange(it)
-            },
-            onDurationChange = { currentDuration = it },
-            onPlayerStateChange = {
-                playerState.value = it
-                onPlayingChange(it == PlayerConstants.PlayerState.PLAYING)
-            },
-            onTap = {}
-        )
-
-//        AndroidView(
-//
-//            factory = {
-//
-//                val iFramePlayerOptions = IFramePlayerOptions.Builder()
-//                    .controls(0) // show/hide controls
-//                    .listType("playlist")
-//                    .build()
-//
-//                val listener = object : AbstractYouTubePlayerListener() {
-//
-//                    override fun onReady(youTubePlayer: YouTubePlayer) {
-//                        player.value = youTubePlayer
-//
-////                        val customPlayerUiController =
-////                            CustomBasePlayerUiControllerAsListener(
-////                                it,
-////                                customPLayerUi,
-////                                youTubePlayer,
-////                                onlinePlayerView
-////                            )
-////                        youTubePlayer.addListener(customPlayerUiController)
-//
-//                        // Used to show default player ui with defaultPlayerUiController as custom view
-//                        val customUiController =
-//                            CustomDefaultPlayerUiController(
-//                                onlinePlayerView,
-//                                youTubePlayer,
-//                                onTap = {}
-//                            )
-//                        customUiController.showUi(false) // disable all default controls and buttons
-//                        customUiController.showMenuButton(false)
-//                        customUiController.showVideoTitle(false)
-//                        customUiController.showPlayPauseButton(false)
-//                        customUiController.showDuration(false)
-//                        customUiController.showCurrentTime(false)
-//                        customUiController.showSeekBar(false)
-//                        customUiController.showBufferingProgress(false)
-//                        customUiController.showYouTubeButton(false)
-//                        customUiController.showFullscreenButton(false)
-//                        onlinePlayerView.setCustomPlayerUi(customUiController.rootView)
-//
-//                        //youTubePlayer.loadOrCueVideo(lifecycleOwner.lifecycle, mediaItem.mediaId, lastYTVideoSeconds)
-//                        println("OnlineMiniPlayer: onReady shouldBePlaying: $shouldBePlaying")
-//                        youTubePlayer.cueVideo(mediaItem.mediaId, lastYTVideoSeconds)
-//                        //youTubePlayer.loadVideo(mediaItem.mediaId, lastYTVideoSeconds)
-//
-//                    }
-//
-//                    override fun onCurrentSecond(youTubePlayer: YouTubePlayer, second: Float) {
-//                        super.onCurrentSecond(youTubePlayer, second)
-//                        currentSecond = second
-//                        lastYTVideoSeconds = second
-//                        lastYTVideoId = mediaItem.mediaId
-//
-//                    }
-//
-//                    override fun onVideoDuration(youTubePlayer: YouTubePlayer, duration: Float) {
-//                        super.onVideoDuration(youTubePlayer, duration)
-//                        currentDuration = duration
-//                    }
-//
-//                    override fun onStateChange(
-//                        youTubePlayer: YouTubePlayer,
-//                        state: PlayerConstants.PlayerState
-//                    ) {
-//                        super.onStateChange(youTubePlayer, state)
-//
-//                        playerState.value = state
-//                    }
-//
-//
-//                }
-//
-//                onlinePlayerView.apply {
-//                    enableAutomaticInitialization = false
-//
-//                    if (enableBackgroundPlayback)
-//                        enableBackgroundPlayback(true)
-//                    else
-//                        lifecycleOwner.lifecycle.addObserver(this)
-//
-//                    initialize(listener, iFramePlayerOptions)
-//                }
-//
-//            },
-//            update = {
-//                it.enableBackgroundPlayback(enableBackgroundPlayback)
-//                it.layoutParams = ViewGroup.LayoutParams(
-//                    100,
-//                    100
-//                )
-//
-//            }
-//        )
-
         /******* */
-
 
     }
 }

@@ -68,6 +68,7 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -308,6 +309,8 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.input.pointer.pointerInteropFilter
 import androidx.compose.ui.unit.LayoutDirection
+import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.PlayerConstants
+import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
 import it.fast4x.riplay.appContext
 import it.fast4x.riplay.ui.components.themed.AddToPlaylistPlayerMenu
 import it.fast4x.riplay.ui.screens.settings.isYouTubeSyncEnabled
@@ -331,6 +334,8 @@ import kotlin.math.sqrt
 @Composable
 fun OfflinePlayer(
     navController: NavController,
+    playerOnline: MutableState<YouTubePlayer?>,
+    playerState: MutableState<PlayerConstants.PlayerState>,
     modifier: Modifier = Modifier,
     onDismiss: () -> Unit,
 ) {
@@ -1107,14 +1112,14 @@ fun OfflinePlayer(
                 if (animatedGradient == AnimatedGradient.FluidCoverColorGradient ||
                     animatedGradient == AnimatedGradient.FluidThemeColorGradient) {
                     containerModifier = containerModifier
-                            .onSizeChanged {
-                                sizeShader = Size(it.width.toFloat(), it.height.toFloat())
-                            }
-                            .drawBehind {
-                                drawRect(brush = brushA)
-                                drawRect(brush = brushMask, blendMode = BlendMode.DstOut)
-                                drawRect(brush = brushB, blendMode = BlendMode.DstAtop)
-                            }
+                        .onSizeChanged {
+                            sizeShader = Size(it.width.toFloat(), it.height.toFloat())
+                        }
+                        .drawBehind {
+                            drawRect(brush = brushA)
+                            drawRect(brush = brushMask, blendMode = BlendMode.DstOut)
+                            drawRect(brush = brushB, blendMode = BlendMode.DstAtop)
+                        }
                 }
                 else if ((animatedGradient == AnimatedGradient.Random && tempGradient == gradients[2]) || animatedGradient == AnimatedGradient.Linear){
                     containerModifier = containerModifier
@@ -3411,6 +3416,12 @@ fun OfflinePlayer(
         ) {
             Queue(
                 navController = navController,
+                showPlayer = {},
+                hidePlayer = {},
+                player = playerOnline,
+                playerState = playerState,
+                currentDuration = 0f,
+                currentSecond = 0f,
                 onDismiss = {
                     queueLoopType = it
                     showQueue = false

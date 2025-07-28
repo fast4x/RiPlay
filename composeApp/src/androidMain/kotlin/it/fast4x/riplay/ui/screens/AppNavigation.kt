@@ -21,6 +21,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -39,6 +40,8 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.PlayerConstants
+import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
 import it.fast4x.riplay.Database
 import it.fast4x.riplay.cleanString
 import it.fast4x.riplay.enums.BuiltInPlaylist
@@ -86,6 +89,8 @@ import it.fast4x.riplay.utils.transitionEffectKey
 fun AppNavigation(
     navController: NavHostController,
     miniPlayer: @Composable () -> Unit = {},
+    player: MutableState<YouTubePlayer?>,
+    playerState: MutableState<PlayerConstants.PlayerState>,
     openTabFromShortcut: Int
 ) {
     val transitionEffect by rememberPreference(transitionEffectKey, TransitionEffect.Scale)
@@ -219,6 +224,12 @@ fun AppNavigation(
             modalBottomSheetPage {
                 Queue(
                     navController = navController,
+                    showPlayer = {},
+                    hidePlayer = {},
+                    player = player,
+                    playerState = playerState,
+                    currentDuration = 0f,
+                    currentSecond = 0f,
                     onDismiss = {},
                     onDiscoverClick = {}
                 )
@@ -229,6 +240,8 @@ fun AppNavigation(
             modalBottomSheetPage {
                 OfflinePlayer(
                     navController = navController,
+                    playerOnline = player,
+                    playerState = playerState,
                     onDismiss = {}
                 )
             }

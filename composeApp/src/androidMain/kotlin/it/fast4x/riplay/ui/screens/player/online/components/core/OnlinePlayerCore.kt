@@ -27,14 +27,12 @@ import it.fast4x.riplay.ui.screens.player.online.components.customui.CustomDefau
 import it.fast4x.riplay.utils.DisposableListener
 import it.fast4x.riplay.utils.isInvincibilityEnabledKey
 import it.fast4x.riplay.utils.isLandscape
-import it.fast4x.riplay.utils.lastVideoIdKey
-import it.fast4x.riplay.utils.lastVideoSecondsKey
 import it.fast4x.riplay.utils.playerThumbnailSizeKey
 import it.fast4x.riplay.utils.rememberPreference
 
 @OptIn(UnstableApi::class)
 @Composable
-fun OnlineCore(
+fun OnlinePlayerCore(
     actAsMini: Boolean = false,
     load: Boolean = false,
     playFromSecond: Float = 0f,

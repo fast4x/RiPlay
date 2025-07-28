@@ -16,7 +16,6 @@ import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.RatingCompat
 import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
-import android.view.LayoutInflater
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
@@ -90,6 +89,7 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -149,7 +149,6 @@ import androidx.core.app.NotificationChannelCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.graphics.ColorUtils.colorToHSL
-import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
@@ -174,9 +173,6 @@ import com.mikepenz.hypnoticcanvas.shaders.PurpleLiquid
 import com.mikepenz.hypnoticcanvas.shaders.Stage
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.PlayerConstants
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
-import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.AbstractYouTubePlayerListener
-import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.options.IFramePlayerOptions
-import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
 import dev.chrisbanes.haze.HazeDefaults
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.haze
@@ -228,6 +224,7 @@ import it.fast4x.riplay.models.ui.toUiMedia
 import it.fast4x.riplay.service.BitmapProvider
 import it.fast4x.riplay.thumbnailShape
 import it.fast4x.riplay.typography
+import it.fast4x.riplay.ui.components.BottomSheetState
 import it.fast4x.riplay.ui.components.CustomModalBottomSheet
 import it.fast4x.riplay.ui.components.LocalMenuState
 import it.fast4x.riplay.ui.components.themed.AddToPlaylistPlayerMenu
@@ -248,7 +245,6 @@ import it.fast4x.riplay.ui.screens.player.offline.NextVisualizer
 import it.fast4x.riplay.ui.screens.player.offline.Queue
 import it.fast4x.riplay.ui.screens.player.offline.StatsForNerds
 import it.fast4x.riplay.ui.screens.player.offline.animatedGradient
-import it.fast4x.riplay.ui.screens.player.online.components.core.OnlineCore
 import it.fast4x.riplay.ui.screens.settings.isYouTubeSyncEnabled
 import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.ui.styling.collapsedPlayerProgressBar
@@ -302,7 +298,6 @@ import it.fast4x.riplay.utils.horizontalFadingEdge
 import it.fast4x.riplay.utils.isAtLeastAndroid12
 import it.fast4x.riplay.utils.isAtLeastAndroid8
 import it.fast4x.riplay.utils.isExplicit
-import it.fast4x.riplay.utils.isInvincibilityEnabledKey
 import it.fast4x.riplay.utils.isLandscape
 import it.fast4x.riplay.utils.isVideo
 import it.fast4x.riplay.utils.lastVideoIdKey
@@ -402,9 +397,13 @@ val NOTIFICATION_ID = 1
 fun OnlinePlayer(
     navController: NavController,
     playFromSecond: Float = 0f,
+    onlineCore: @Composable () -> Unit,
+    player: MutableState<YouTubePlayer?>,
+    playerState: MutableState<PlayerConstants.PlayerState>,
+    currentDuration: Float,
+    currentSecond: Float,
+    showControls: Boolean,
     onDismiss: () -> Unit,
-    onSecondChange: (Float) -> Unit,
-    onPlayingChange: (Boolean) -> Unit,
 ) {
 
     val menuState = LocalMenuState.current
@@ -1387,16 +1386,16 @@ fun OnlinePlayer(
 //    val inflatedView = remember { LayoutInflater.from(context()).inflate(R.layout.youtube_player, null, false) }
 //    val onlinePlayerView = remember { inflatedView as YouTubePlayerView }
 //    val customPLayerUi = remember { onlinePlayerView.inflateCustomPlayerUi(R.layout.ayp_base_player_ui) }
-    val player = remember { mutableStateOf<YouTubePlayer?>(null) }
-    val playerState = remember { mutableStateOf(PlayerConstants.PlayerState.UNSTARTED) }
+//    val player = remember { mutableStateOf<YouTubePlayer?>(null) }
+//    val playerState = remember { mutableStateOf(PlayerConstants.PlayerState.UNSTARTED) }
     //var enableBackgroundPlayback by rememberPreference(isInvincibilityEnabledKey, false)
     //val enableBackgroundPlayback by remember { mutableStateOf(true) }
 
     var lastYTVideoId by rememberPreference(key = lastVideoIdKey, defaultValue = "")
     var lastYTVideoSeconds by rememberPreference(key = lastVideoSecondsKey, defaultValue = 0f)
 
-    var currentSecond by remember { mutableFloatStateOf(0f) }
-    var currentDuration by remember { mutableFloatStateOf(0f) }
+//    var currentSecond by remember { mutableFloatStateOf(0f) }
+//    var currentDuration by remember { mutableFloatStateOf(0f) }
 
     //var updateStatistics by remember { mutableStateOf(true) }
     var updateStatisticsEverySeconds by remember { mutableIntStateOf(0) }
@@ -1705,31 +1704,31 @@ fun OnlinePlayer(
         modifier: Modifier,
     ) -> Unit = { innerModifier ->
 
-            var showControls by remember { mutableStateOf(true) }
-            LaunchedEffect(showControls) {
-                if (showControls) {
-                    delay(5000)
-                    showControls = false
-                }
-            }
+//            var showControls by remember { mutableStateOf(true) }
+//            LaunchedEffect(showControls) {
+//                if (showControls) {
+//                    delay(5000)
+//                    showControls = false
+//                }
+//            }
 
-        val onlineCore: @Composable () -> Unit = {
-            OnlineCore(
-                load = true,
-                playFromSecond = playFromSecond,
-                onPlayerReady = { player.value = it },
-                onSecondChange = {
-                    currentSecond = it
-                    onSecondChange(it)
-                },
-                onDurationChange = { currentDuration = it },
-                onPlayerStateChange = {
-                    playerState.value = it
-                    onPlayingChange(it == PlayerConstants.PlayerState.PLAYING)
-                },
-                onTap = { showControls = !showControls }
-            )
-        }
+//        val onlineCore: @Composable () -> Unit = {
+//            OnlineCore(
+//                load = true,
+//                playFromSecond = playFromSecond,
+//                onPlayerReady = { player.value = it },
+//                onSecondChange = {
+//                    currentSecond = it
+//                    onSecondChange(it)
+//                },
+//                onDurationChange = { currentDuration = it },
+//                onPlayerStateChange = {
+//                    playerState.value = it
+//                    onPlayingChange(it == PlayerConstants.PlayerState.PLAYING)
+//                },
+//                onTap = { showControls = !showControls }
+//            )
+//        }
 
         //println("CastToLinkDevice inside thumbnailContent $castToLinkDevice")
 
@@ -4296,6 +4295,12 @@ fun OnlinePlayer(
         ) {
             Queue(
                 navController = navController,
+                showPlayer = {},
+                hidePlayer = {},
+                player = player,
+                playerState = playerState,
+                currentDuration = currentDuration,
+                currentSecond = currentSecond,
                 onDismiss = {
                     queueLoopType = it
                     showQueue = false

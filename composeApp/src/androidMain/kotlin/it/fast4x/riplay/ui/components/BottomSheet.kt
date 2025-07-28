@@ -7,6 +7,7 @@ import androidx.compose.animation.core.AnimationVector1D
 import androidx.compose.animation.core.SpringSpec
 import androidx.compose.animation.core.VectorConverter
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.DraggableState
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
@@ -15,7 +16,9 @@ import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.derivedStateOf
@@ -37,19 +40,22 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.Velocity
+import androidx.compose.ui.zIndex
 import androidx.media3.common.util.UnstableApi
+import it.fast4x.riplay.colorPalette
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
 @UnstableApi
 @Composable
 fun BottomSheet(
+    modifier: Modifier = Modifier,
     state: BottomSheetState,
     disableVerticalDrag: Boolean = false,
     disableDismiss: Boolean = false,
-    modifier: Modifier = Modifier,
     onDismiss: (() -> Unit)? = null,
     collapsedContent: @Composable BoxScope.() -> Unit,
+    contentAlwaysAvailable: Boolean = false,
     content: @Composable BoxScope.() -> Unit,
 ) {
     Box(
@@ -58,6 +64,7 @@ fun BottomSheet(
                 val y = (state.expandedBound - state.value)
                     .roundToPx()
                     .coerceAtLeast(0)
+                //IntOffset(x = 0, y = y - if(state.isExpanded) 0 else state.collapsedBound.roundToPx())
                 IntOffset(x = 0, y = y)
             }
             .pointerInput(state) {
@@ -86,11 +93,28 @@ fun BottomSheet(
             }
             .fillMaxSize()
     ) {
-        if (!state.isCollapsed) {
-            BackHandler(onBack = state::collapseSoft)
-            content()
+        // Content
+        if (contentAlwaysAvailable) {
+            Box(
+                modifier = Modifier
+                    .graphicsLayer {
+                        alpha = 0f + (state.progress * 16).coerceAtMost(1f)
+                    }
+                    .navigationBarsPadding()
+            ) {
+                content()
+            }
+
+        } else {
+            if (!state.isCollapsed) {
+                BackHandler(onBack = state::collapseSoft)
+                content()
+            }
         }
 
+
+
+        // Collapsed Content
         if (!state.isExpanded && (onDismiss == null || !state.isDismissed)) {
             Box(
                 modifier = Modifier

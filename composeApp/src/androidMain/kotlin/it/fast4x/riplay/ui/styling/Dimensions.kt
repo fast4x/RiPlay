@@ -16,7 +16,7 @@ object Dimensions {
     val headerHeight = 140.dp
     val halfheaderHeight = 60.dp
     val miniPlayerHeight = 64.dp
-    val collapsedPlayer = 64.dp
+    val collapsedPlayer = 84.dp
     val navigationBarHeight = 64.dp
     val contentWidthRightBar = 0.88f
     val additionalVerticalSpaceForFloatingAction = 40.dp

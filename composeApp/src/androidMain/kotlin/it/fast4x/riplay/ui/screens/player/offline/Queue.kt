@@ -48,6 +48,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -150,6 +151,8 @@ import sh.calvin.reorderable.rememberReorderableLazyListState
 import java.text.SimpleDateFormat
 import java.util.Date
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.PlayerConstants
+import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
 import it.fast4x.riplay.ui.screens.player.online.OnlineMiniPlayer
 
 @ExperimentalMaterial3Api
@@ -161,6 +164,12 @@ import it.fast4x.riplay.ui.screens.player.online.OnlineMiniPlayer
 @Composable
 fun Queue(
     navController: NavController,
+    showPlayer: () -> Unit? = {},
+    hidePlayer: () -> Unit? = {},
+    player: MutableState<YouTubePlayer?>,
+    playerState: MutableState<PlayerConstants.PlayerState>,
+    currentDuration: Float,
+    currentSecond: Float,
     onDismiss: (QueueLoopType) -> Unit,
     onDiscoverClick: (Boolean) -> Unit,
 ) {
@@ -176,7 +185,7 @@ fun Queue(
 
     binder?.player ?: return
 
-    val player = binder.player
+    val binderPlayer = binder.player
 
     var queueLoopType by rememberPreference(queueLoopTypeKey, defaultValue = QueueLoopType.Default)
 
@@ -186,11 +195,11 @@ fun Queue(
     val thumbnailSizePx = thumbnailSizeDp.px
 
     var mediaItemIndex by remember {
-        mutableStateOf(if (player.mediaItemCount == 0) -1 else player.currentMediaItemIndex)
+        mutableStateOf(if (binderPlayer.mediaItemCount == 0) -1 else binderPlayer.currentMediaItemIndex)
     }
 
     var windows by remember {
-        mutableStateOf(player.currentTimeline.windows)
+        mutableStateOf(binderPlayer.currentTimeline.windows)
     }
     var windowsFiltered by remember {
         mutableStateOf(windows)
@@ -200,15 +209,15 @@ fun Queue(
         mutableStateOf(binder.player.shouldBePlaying)
     }
 
-    player.DisposableListener {
+    binderPlayer.DisposableListener {
         object : Player.Listener {
             override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
-                mediaItemIndex = player.currentMediaItemIndex
+                mediaItemIndex = binderPlayer.currentMediaItemIndex
             }
 
             override fun onTimelineChanged(timeline: Timeline, reason: Int) {
                 windows = timeline.windows
-                mediaItemIndex = player.currentMediaItemIndex
+                mediaItemIndex = binderPlayer.currentMediaItemIndex
             }
 
             override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) {
@@ -401,9 +410,11 @@ fun Queue(
 
     Box(
         modifier = Modifier
-            .padding(windowInsets
-                .only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top)
-                .asPaddingValues())
+            .padding(
+                windowInsets
+                    .only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top)
+                    .asPaddingValues()
+            )
             .background(if (queueType == QueueType.Modern) Color.Transparent else colorPalette().background1)
             .fillMaxSize()
     ) {
@@ -414,7 +425,7 @@ fun Queue(
             scrollThresholdPadding = WindowInsets.systemBars.asPaddingValues(),
         ) { from, to ->
             if (to.key != binder.player.currentMediaItem?.mediaId)
-                player.moveMediaItem(from.index, to.index)
+                binderPlayer.moveMediaItem(from.index, to.index)
         }
 
     LazyColumn(
@@ -586,7 +597,7 @@ fun Queue(
                         },
                         onDownload = {},
                         onRemoveFromQueue = {
-                            player.removeMediaItem(currentItem.firstPeriodIndex)
+                            binderPlayer.removeMediaItem(currentItem.firstPeriodIndex)
                             SmartMessage(
                                 "${context.resources.getString(R.string.deleted)} ${currentItem.mediaItem.mediaMetadata.title}",
                                 type = PopupType.Warning,
@@ -675,14 +686,14 @@ fun Queue(
                                         if (!selectQueueItems) {
                                             if (isPlayingThisMediaItem) {
                                                 if (shouldBePlaying) {
-                                                    player.pause()
+                                                    binderPlayer.pause()
                                                 } else {
-                                                    player.play()
+                                                    binderPlayer.play()
                                                 }
                                             } else {
-                                                player.seekToDefaultPosition(window.firstPeriodIndex)
-                                                player.prepare()
-                                                player.playWhenReady = true
+                                                binderPlayer.seekToDefaultPosition(window.firstPeriodIndex)
+                                                binderPlayer.prepare()
+                                                binderPlayer.playWhenReady = true
                                             }
                                         } else checkedState.value = !checkedState.value
                                     }
@@ -726,7 +737,7 @@ fun Queue(
     LaunchedEffect(Unit) {
         if (!lazyListState.isScrollInProgress)
             lazyListState.animateScrollToItem (
-                windows.indexOf(player.currentWindow),
+                windows.indexOf(binderPlayer.currentWindow),
                 -300
             )
     }
@@ -762,7 +773,7 @@ fun Queue(
                             .absoluteOffset(0.dp, -65.dp)
                             .align(Alignment.TopCenter)
                     ) {
-                        if (player.currentMediaItem?.isLocal == true)
+                        if (binderPlayer.currentMediaItem?.isLocal == true)
                             OfflineMiniPlayer(
                                 showPlayer = {
                                     onDismiss(queueLoopType)
@@ -771,13 +782,13 @@ fun Queue(
                             )
                         else
                             OnlineMiniPlayer(
-                                showPlayer = {
-                                    onDismiss(queueLoopType)
-                                },
-                                hidePlayer = {},
-                                lifecycleOwner = lifecycleOwner,
-                                onSecondChange = {},
-                                onPlayingChange = {}
+                                showPlayer = { showPlayer() },
+                                hidePlayer = { hidePlayer() },
+                                navController = navController,
+                                player = player,
+                                playerState = playerState,
+                                currentDuration = currentDuration,
+                                currentSecond = currentSecond,
                             )
                     }
 
@@ -909,7 +920,7 @@ fun Queue(
                             coroutineScope.launch {
                                 lazyListState.smoothScrollToTop()
                             }.invokeOnCompletion {
-                                player.shuffleQueue()
+                                binderPlayer.shuffleQueue()
                             }
                         }
                     )
