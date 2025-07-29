@@ -1252,7 +1252,7 @@ MonetCompatActivity(),
 
                                     val onlineCore: @Composable () -> Unit = {
                                         OnlinePlayerCore(
-                                            load = true,
+                                            load = getResumePlaybackOnStart(),
                                             playFromSecond = currentSecond,
                                             onPlayerReady = { player.value = it },
                                             onSecondChange = {

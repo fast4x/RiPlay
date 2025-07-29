@@ -28,6 +28,7 @@ import it.fast4x.riplay.utils.pauseListenHistoryKey
 import it.fast4x.riplay.utils.preferences
 import it.fast4x.riplay.utils.queueLoopTypeKey
 import it.fast4x.riplay.utils.rememberPreference
+import it.fast4x.riplay.utils.resumePlaybackOnStartKey
 import it.fast4x.riplay.utils.showSearchTabKey
 import it.fast4x.riplay.utils.showStatsInNavbarKey
 import it.fast4x.riplay.utils.viewTypeKey
@@ -66,6 +67,7 @@ fun getPauseListenHistory() = appContext().preferences.getBoolean(pauseListenHis
 fun getMinTimeForEvent() = appContext().preferences.getEnum(exoPlayerMinTimeForEventKey, MinTimeForEvent.`20s`)
 fun getLastYTVideoId() = appContext().preferences.getString(lastVideoIdKey, "")
 fun getLastYTVideoSeconds() = appContext().preferences.getFloat(lastVideoSecondsKey, 0f)
+fun getResumePlaybackOnStart() = appContext().preferences.getBoolean(resumePlaybackOnStartKey, false)
 
 fun ytAccountName() = appContext().preferences.getString(ytAccountNameKey, "")
 fun ytAccountThumbnail() = appContext().preferences.getString(ytAccountThumbnailKey, "")
