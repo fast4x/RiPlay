@@ -450,28 +450,12 @@ class OfflinePlayerService : MediaLibraryService(),
 
                     }
 
-                    // FG keep alive, thanks to OuterTune for solution
-                    if (preferences.getBoolean(isInvincibilityEnabledKey, false)) {
+                    // Foreground keep alive
+                    if (preferences.getBoolean(isInvincibilityEnabledKey, false))
                         startFg()
-                    } else {
-                        // mimic media3 default behaviour
-                        if (player.isPlaying) {
-                            startFg()
-                        } else {
-                            runCatching {
-                                if (isAtLeastAndroid7)
-                                    stopForeground(notificationId)
-                                else
-                                    stopForeground(true)
-                            }.onFailure {
-                                Timber.e("PlayerServiceModern onNotificationPosted stopForeground failed ${it.stackTraceToString()}")
-                                println("PlayerServiceModern onNotificationPosted stopForeground failed ${it.stackTraceToString()}")
-                            }
+                    else
+                        super.onNotificationPosted(notificationId, notification, ongoing)
 
-
-
-                        }
-                    }
                 }
             })
             .setMediaDescriptionAdapter(DefaultMediaDescriptionAdapter(mediaSession.sessionActivity))

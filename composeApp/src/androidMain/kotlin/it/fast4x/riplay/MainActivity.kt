@@ -753,7 +753,6 @@ MonetCompatActivity(),
                                 .maximumColorCount(8)
                                 .addFilter(if (isDark) ({ _, hsl -> hsl[0] !in 36f..100f }) else null)
                                 .generate()
-                            println("Mainactivity onmediaItemTransition palette dominantSwatch: ${palette.dominantSwatch}")
 
                             dynamicColorPaletteOf(bitmap, isDark)?.let {
                                 withContext(Dispatchers.Main) {
@@ -770,12 +769,10 @@ MonetCompatActivity(),
                                     ),
                                     typography = appearance.typography.copy(it.text)
                                 )
-                                println("Mainactivity onmediaItemTransition appearance inside: ${appearance.colorPalette}")
                             }
 
                         }
                     }
-                    println("Mainactivity onmediaItemTransition appearance outside: ${appearance.colorPalette}")
                 }
 
 
@@ -1349,6 +1346,8 @@ MonetCompatActivity(),
 
                         val listener = object : Player.Listener {
                             override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
+                                println("MainActivity:Player.Listener onMediaItemTransition mediaItem $mediaItem reason $reason")
+
                                 mediaItemIsLocal.value = mediaItem?.isLocal == true
                                 if (reason == Player.MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED && mediaItem != null) {
                                     if (mediaItem.mediaMetadata.extras?.getBoolean("isFromPersistentQueue") != true) {
