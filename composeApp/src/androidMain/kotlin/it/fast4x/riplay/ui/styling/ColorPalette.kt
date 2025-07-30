@@ -283,3 +283,14 @@ inline val ColorPalette.applyPitchBlack: ColorPalette
         background4 = Color.Black,
         text = Color.White,
     )
+
+inline val ColorPalette.applyTransparency: ColorPalette
+    get() = this.copy(
+        isDark = false,
+        background0 = Color.Transparent,
+        background1 = Color.Transparent,
+        background2 = Color.Transparent,
+        background3 = Color.Transparent,
+        background4 = Color.Transparent,
+        text = Color.White,
+    )
