@@ -155,6 +155,7 @@ import it.fast4x.riplay.typography
 import it.fast4x.riplay.ui.components.themed.Search
 import it.fast4x.riplay.ui.components.themed.AppearancePresetDialog
 import it.fast4x.riplay.ui.components.themed.InputTextDialog
+import it.fast4x.riplay.utils.RestartActivity
 import it.fast4x.riplay.utils.albumCoverRotationKey
 import it.fast4x.riplay.utils.animatedGradientKey
 import it.fast4x.riplay.utils.blurStrengthKey
@@ -512,6 +513,7 @@ fun AppearanceSettings(
     var statsExpanded by rememberPreference(statsExpandedKey, true)
     var actionExpanded by rememberPreference(actionExpandedKey, true)
     var restartService by rememberSaveable { mutableStateOf(false) }
+    var restartActivity by rememberSaveable { mutableStateOf(false) }
     var showCoverThumbnailAnimation by rememberPreference(showCoverThumbnailAnimationKey, false)
     var coverThumbnailAnimation by rememberPreference(coverThumbnailAnimationKey, ThumbnailCoverType.Vinyl)
 
@@ -1733,13 +1735,18 @@ fun AppearanceSettings(
                 search.input,
                 true
             )
-        )
+        ) {
             EnumValueSelectorSettingsEntry(
                 title = stringResource(R.string.timeline),
                 selectedValue = playerTimelineType,
-                onValueSelected = { playerTimelineType = it },
+                onValueSelected = {
+                    playerTimelineType = it
+                    restartActivity = true // applied also for online player
+                },
                 valueText = { it.textName }
             )
+            RestartActivity(restartActivity, onRestart = { restartActivity = false })
+        }
 
         if (search.input.isBlank() || stringResource(R.string.transparentbar).contains(
                 search.input,
