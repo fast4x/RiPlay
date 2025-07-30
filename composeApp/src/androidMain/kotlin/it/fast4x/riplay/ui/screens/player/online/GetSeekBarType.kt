@@ -87,7 +87,6 @@ fun GetSeekBar(
         playerTimelineTypeKey,
         PlayerTimelineType.FakeAudioBar
     )
-    //val playerTimelineType = getPlayerTimelineType()
     var scrubbingPosition by remember(mediaId) {
         mutableStateOf<Long?>(null)
     }
