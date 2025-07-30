@@ -314,7 +314,7 @@ class OfflinePlayerService : MediaLibraryService(),
             .setMediaSourceFactory(createMediaSourceFactory())
             .setRenderersFactory(createRendersFactory())
             .setHandleAudioBecomingNoisy(true)
-            .setWakeMode(C.WAKE_MODE_NETWORK)
+            .setWakeMode(C.WAKE_MODE_LOCAL)
             .setAudioAttributes(
                 AudioAttributes.Builder()
                     .setUsage(C.USAGE_MEDIA)
@@ -325,15 +325,15 @@ class OfflinePlayerService : MediaLibraryService(),
             //.setUsePlatformDiagnostics(false)
             .setSeekBackIncrementMs(5000)
             .setSeekForwardIncrementMs(5000)
-            .setLoadControl(
-                DefaultLoadControl.Builder()
-                    .setBufferDurationsMs(
-                        DefaultLoadControl.DEFAULT_MIN_BUFFER_MS, // 50000
-                        DefaultLoadControl.DEFAULT_MAX_BUFFER_MS, // 50000
-                        5000,
-                        10000
-                    ).build()
-            )
+//            .setLoadControl(
+//                DefaultLoadControl.Builder()
+//                    .setBufferDurationsMs(
+//                        DefaultLoadControl.DEFAULT_MIN_BUFFER_MS, // 50000
+//                        DefaultLoadControl.DEFAULT_MAX_BUFFER_MS, // 50000
+//                        5000,
+//                        10000
+//                    ).build()
+//            )
             .build()
             .apply {
                 addListener(this@OfflinePlayerService)
@@ -387,7 +387,7 @@ class OfflinePlayerService : MediaLibraryService(),
 //                ))
                 // Temporary fix for bug in ExoPlayer media3 https://github.com/androidx/media/issues/2192
                 // Bug cause refresh ui in android auto when media is playing
-                .setPeriodicPositionUpdateEnabled(false)
+                //.setPeriodicPositionUpdateEnabled(false)
                 .build()
 
         // Keep a connected controller so that notification works
@@ -503,7 +503,6 @@ class OfflinePlayerService : MediaLibraryService(),
 
         }
 
-
     }
 
     override fun onBind(intent: Intent?): IBinder? = super.onBind(intent) ?: binder
@@ -564,7 +563,7 @@ class OfflinePlayerService : MediaLibraryService(),
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         super.onStartCommand(intent, flags, startId)
-        return START_NOT_STICKY
+        return START_STICKY
     }
 
     override fun onTaskRemoved(rootIntent: Intent?) {

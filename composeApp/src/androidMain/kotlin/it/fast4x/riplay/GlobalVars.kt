@@ -7,6 +7,7 @@ import it.fast4x.riplay.enums.AudioQualityFormat
 import it.fast4x.riplay.enums.ColorPaletteMode
 import it.fast4x.riplay.enums.DnsOverHttpsType
 import it.fast4x.riplay.enums.MinTimeForEvent
+import it.fast4x.riplay.enums.PlayerTimelineType
 import it.fast4x.riplay.enums.QueueLoopType
 import it.fast4x.riplay.enums.UiType
 import it.fast4x.riplay.enums.ViewType
@@ -25,6 +26,7 @@ import it.fast4x.riplay.utils.lastVideoSecondsKey
 import it.fast4x.riplay.utils.logDebugEnabledKey
 import it.fast4x.riplay.utils.parentalControlEnabledKey
 import it.fast4x.riplay.utils.pauseListenHistoryKey
+import it.fast4x.riplay.utils.playerTimelineTypeKey
 import it.fast4x.riplay.utils.preferences
 import it.fast4x.riplay.utils.queueLoopTypeKey
 import it.fast4x.riplay.utils.rememberPreference
@@ -68,6 +70,7 @@ fun getMinTimeForEvent() = appContext().preferences.getEnum(exoPlayerMinTimeForE
 fun getLastYTVideoId() = appContext().preferences.getString(lastVideoIdKey, "")
 fun getLastYTVideoSeconds() = appContext().preferences.getFloat(lastVideoSecondsKey, 0f)
 fun getResumePlaybackOnStart() = appContext().preferences.getBoolean(resumePlaybackOnStartKey, false)
+fun getPlayerTimelineType() = appContext().preferences.getEnum(playerTimelineTypeKey, PlayerTimelineType.Default)
 
 fun ytAccountName() = appContext().preferences.getString(ytAccountNameKey, "")
 fun ytAccountThumbnail() = appContext().preferences.getString(ytAccountThumbnailKey, "")

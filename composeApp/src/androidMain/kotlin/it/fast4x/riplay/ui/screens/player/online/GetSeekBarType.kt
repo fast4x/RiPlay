@@ -54,6 +54,7 @@ import it.fast4x.riplay.ui.components.SeekBarWaved
 import it.fast4x.riplay.ui.styling.collapsedPlayerProgressBar
 import kotlinx.coroutines.launch
 import it.fast4x.riplay.colorPalette
+import it.fast4x.riplay.getPlayerTimelineType
 import it.fast4x.riplay.typography
 import it.fast4x.riplay.utils.colorPaletteModeKey
 import it.fast4x.riplay.utils.formatAsDuration
@@ -82,10 +83,11 @@ fun GetSeekBar(
     onPlay: () -> Unit = {},
 ) {
 
-    val playerTimelineType by rememberPreference(
-        playerTimelineTypeKey,
-        PlayerTimelineType.FakeAudioBar
-    )
+//    val playerTimelineType by rememberPreference(
+//        playerTimelineTypeKey,
+//        PlayerTimelineType.FakeAudioBar
+//    )
+    val playerTimelineType = getPlayerTimelineType()
     var scrubbingPosition by remember(mediaId) {
         mutableStateOf<Long?>(null)
     }

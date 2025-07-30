@@ -958,4 +958,6 @@
     <string name="streaming_player_type">Streaming player type</string>
     <string name="streaming_player_type_advanced">Advanced</string>
     <string name="title_music">Music</string>
+    <string name="use_placeholder_in_imageloader">Use placeholder for image loader</string>
+    <string name="use_placeholder_in_imageloader_info">Show image loader while loading images</string>
 </resources>

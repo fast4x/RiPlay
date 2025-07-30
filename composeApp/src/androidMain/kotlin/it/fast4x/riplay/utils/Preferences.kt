@@ -364,6 +364,7 @@ const val streamingPlayerTypeKey = "streamingPlayerType"
 
 const val castToLinkDeviceEnabledKey = "castToLinkDeviceEnabled"
 const val linkDevicesSelectedKey = "linkDevicesSelected"
+const val usePlaceholderInImageLoaderKey = "usePlaceholderInImageLoader"
 
 inline fun <reified T : Enum<T>> SharedPreferences.getEnum(
     key: String,

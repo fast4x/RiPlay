@@ -16,6 +16,7 @@ import it.fast4x.riplay.utils.coilDiskCacheMaxSizeKey
 import it.fast4x.riplay.utils.getEnum
 import it.fast4x.riplay.utils.logDebugEnabledKey
 import it.fast4x.riplay.utils.preferences
+import it.fast4x.riplay.utils.usePlaceholderInImageLoaderKey
 import timber.log.Timber
 import java.io.File
 
@@ -49,6 +50,7 @@ class MainApplication : MultiDexApplication(), ImageLoaderFactory {
     override fun newImageLoader(): ImageLoader {
         val coilCustomDiskCache = preferences.getInt(coilCustomDiskCacheKey, 128) * 1000 * 1000L
         val coilDiskCacheMaxSize = preferences.getEnum(coilDiskCacheMaxSizeKey,CoilDiskCacheMaxSize.`128MB`)
+        val usePlaceholder = preferences.getBoolean(usePlaceholderInImageLoaderKey, true)
         val coilCacheSize = when (coilDiskCacheMaxSize) {
             CoilDiskCacheMaxSize.Custom -> coilCustomDiskCache
             else -> coilDiskCacheMaxSize.bytes
@@ -61,7 +63,6 @@ class MainApplication : MultiDexApplication(), ImageLoaderFactory {
             //.bitmapConfig(if (isAtLeastAndroid8) Bitmap.Config.HARDWARE else Bitmap.Config.ARGB_8888)
             //.networkCachePolicy(CachePolicy.ENABLED)
             .respectCacheHeaders(false)
-            .placeholder(R.drawable.loader)
             .error(R.drawable.noimage)
             .fallback(R.drawable.noimage)
             .memoryCachePolicy(CachePolicy.ENABLED)
@@ -80,6 +81,11 @@ class MainApplication : MultiDexApplication(), ImageLoaderFactory {
                     )
                     .build()
             )
+            .apply {
+                if (usePlaceholder) {
+                    placeholder(R.drawable.loader)
+                }
+            }
             .build()
     }
 

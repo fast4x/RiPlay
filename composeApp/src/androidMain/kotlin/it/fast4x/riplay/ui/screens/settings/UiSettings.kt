@@ -202,6 +202,7 @@ import it.fast4x.riplay.colorPalette
 import it.fast4x.riplay.ui.components.themed.Search
 import it.fast4x.riplay.utils.customColorKey
 import it.fast4x.riplay.utils.showDislikedPlaylistKey
+import it.fast4x.riplay.utils.usePlaceholderInImageLoaderKey
 
 @Composable
 fun DefaultUiSettings() {
@@ -721,6 +722,8 @@ fun UiSettings(
     )
 
     var customColor by rememberPreference(customColorKey, Color.Green.hashCode())
+
+    var usePlaceholder by rememberPreference(usePlaceholderInImageLoaderKey, true)
 
     Column(
         modifier = Modifier
@@ -1376,6 +1379,14 @@ fun UiSettings(
                 }
             }
         }
+
+        if (search.input.isBlank() || stringResource(R.string.use_placeholder_in_imageloader).contains(search.input,true))
+            SwitchSettingEntry(
+                title = stringResource(R.string.use_placeholder_in_imageloader),
+                text = stringResource(R.string.use_placeholder_in_imageloader_info),
+                isChecked = usePlaceholder,
+                onCheckedChange = { usePlaceholder = it }
+            )
 
         SettingsGroupSpacer()
         SettingsEntryGroupText(title = stringResource(R.string.songs).uppercase())

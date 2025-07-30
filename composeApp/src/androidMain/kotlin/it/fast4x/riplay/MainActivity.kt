@@ -309,8 +309,8 @@ MonetCompatActivity(),
 
         runCatching {
             val intent = Intent(this, OfflinePlayerService::class.java)
-            startService(intent)
             bindService(intent, serviceConnection, BIND_AUTO_CREATE)
+            startService(intent)
         }.onFailure {
             Timber.e("MainActivity.onStart bindService ${it.stackTraceToString()}")
         }
