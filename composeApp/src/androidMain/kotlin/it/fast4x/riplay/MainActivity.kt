@@ -1057,8 +1057,6 @@ MonetCompatActivity(),
                         }
 
                         onDispose {
-                            //bitmapListenerJob?.cancel()
-                            //binder?.setBitmapListener(null)
                             unregisterOnSharedPreferenceChangeListener(listener)
                         }
                     }
@@ -1124,10 +1122,6 @@ MonetCompatActivity(),
                         collapsedBound = Dimensions.collapsedPlayer + bottomDp,
                         expandedBound = maxHeight,
                     )
-
-//                    val playerState =
-//                        rememberModalBottomSheetState(skipPartiallyExpanded = true)
-
 
 
                     val playerAwareWindowInsets by remember(
@@ -1361,57 +1355,10 @@ MonetCompatActivity(),
 
                                     }
 
+                                    //Needed to update time in notification
                                     LaunchedEffect(onlinePlayerPlayingState.value) {
                                         updateNotification()
-////                                        mediaSession?.setPlaybackState(
-////                                            stateBuilder
-////                                                .setState(
-////                                                    if (onlinePlayerPlayingState.value) PlaybackStateCompat.STATE_PLAYING else PlaybackStateCompat.STATE_PAUSED,
-////                                                    (currentSecond/1000).toLong(),
-////                                                    1f
-////                                                )
-////                                                .build()
-////                                        )
-//                                       // val currentMediaItem = binder?.player?.currentMediaItem
-//                                        mediaSession?.let { ms ->
-//                                            bitmapProvider?.let { bm ->
-//                                                updateNotification(
-//
-////                                                    currentMediaItem?.mediaMetadata?.title.toString(),
-////                                                    currentMediaItem?.mediaMetadata?.artist.toString(),
-////                                                    if(onlinePlayerPlayingState.value) R.drawable.pause else R.drawable.play,
-////                                                    if (onlinePlayerPlayingState.value) "pause" else "play",
-////                                                    if (onlinePlayerPlayingState.value) Action.pause.pendingIntent
-////                                                    else Action.play.pendingIntent,
-////                                                    ms,
-////                                                    bm
-//                                                )
-//                                            }
-//
-//                                        }
                                     }
-
-//                                    LaunchedEffect(currentSecond) {
-//                                        if (mediaItemIsLocal.value) return@LaunchedEffect
-//                                        val currentMediaItem = binder?.player?.currentMediaItem
-//                                        mediaSession?.let { ms ->
-//                                            bitmapProvider?.let { bm ->
-//                                                println("ActionReceiver")
-//                                                updateNotification(
-//                                                    currentMediaItem?.mediaMetadata?.title.toString(),
-//                                                    currentMediaItem?.mediaMetadata?.artist.toString(),
-//                                                    if(onlinePlayerPlayingState.value) R.drawable.pause else R.drawable.play,
-//                                                    if (onlinePlayerPlayingState.value) "pause" else "play",
-//                                                    if (onlinePlayerPlayingState.value) Action.pause.pendingIntent
-//                                                    else Action.play.pendingIntent,
-//                                                    ms,
-//                                                    bm
-//                                                )
-//                                            }
-//
-//                                        }
-//
-//                                    }
 
                                     BottomSheet(
                                         state = localPlayerSheetState,
@@ -1493,14 +1440,6 @@ MonetCompatActivity(),
                                     ).toString()
                                 )
 
-//                                mediaSession?.setMetadata(
-//                                    MediaMetadataCompat.Builder()
-//                                        .putString(MediaMetadataCompat.METADATA_KEY_TITLE, mediaItem?.mediaMetadata?.title.toString())
-//                                        .putString(MediaMetadataCompat.METADATA_KEY_ARTIST, mediaItem?.mediaMetadata?.artist.toString())
-//                                        .putLong(MediaMetadataCompat.METADATA_KEY_DURATION, mediaItem?.mediaMetadata?.durationMs ?: 0L)
-//                                        .build()
-//                                )
-
                                 bitmapProvider?.load(mediaItem?.mediaMetadata?.artworkUri) {}
                             }
                         }
@@ -1581,9 +1520,6 @@ MonetCompatActivity(),
                     intentUriData = null
                 }
 
-
-                //throw RuntimeException("This is a simulated exception to crash");
-            //}
         }
 
     }
@@ -1592,7 +1528,7 @@ MonetCompatActivity(),
         val currentMediaItem = binder?.player?.currentMediaItem
         if (mediaSession == null)
             mediaSession = MediaSessionCompat(this@MainActivity, "OnlinePlayer")
-        //mediaSession?.setFlags(MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS or MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS)
+
         mediaSession?.setFlags(0)
         mediaSession?.setRepeatMode(PlaybackStateCompat.REPEAT_MODE_NONE)
         mediaSession?.setMetadata(
@@ -1611,14 +1547,6 @@ MonetCompatActivity(),
                 )
                 .build()
         )
-//        mediaSession?.setSessionActivity(
-//            PendingIntent.getActivity(
-//                appContext(),
-//                0,
-//                Intent(appContext(), MainActivity::class.java)
-//                    .putExtra("expandPlayerBottomSheet", true),
-//                PendingIntent.FLAG_IMMUTABLE
-//            ))
 
         binder?.let {
             mediaSession?.setCallback(
@@ -1715,12 +1643,6 @@ MonetCompatActivity(),
                     .setMediaSession(mediaSession?.sessionToken)
 
             )
-          //.setProgress(max, progress, if (isAtLeastAndroid15) true else false) //Workaround to android 15 because notification freeze
-//            .setStyle(NotificationCompat.BigTextStyle()
-//                //.bigText("Much longer text that cannot fit one line...")
-//                .setSummaryText(artist)
-//                .setBigContentTitle(title)
-//            )
             .setContentIntent(PendingIntent.getActivity(
                 appContext(),
                 0,
