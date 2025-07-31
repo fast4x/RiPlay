@@ -1501,7 +1501,7 @@ MonetCompatActivity(),
 //                                        .build()
 //                                )
 
-                                //bitmapProvider?.load(mediaItem?.mediaMetadata?.artworkUri) {}
+                                bitmapProvider?.load(mediaItem?.mediaMetadata?.artworkUri) {}
                             }
                         }
 
