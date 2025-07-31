@@ -445,7 +445,6 @@ MonetCompatActivity(),
             }
         )
 
-        mediaSession = MediaSessionCompat(this@MainActivity, "OnlinePlayer")
         initializeMediasession()
 
         initializeBitmapProvider()
@@ -466,25 +465,8 @@ MonetCompatActivity(),
             ContextCompat.RECEIVER_NOT_EXPORTED
         )
 
+        updateNotification()
 
-        mediaSession?.let { ms ->
-            bitmapProvider?.let { bm ->
-                updateNotification(
-//                    currentMediaItem?.mediaMetadata?.title.toString(),
-//                    currentMediaItem?.mediaMetadata?.artist.toString(),
-//                    if(onlinePlayerPlayingState.value) R.drawable.pause else R.drawable.play,
-//                    if (onlinePlayerPlayingState.value) "pause" else "play",
-//                    if (onlinePlayerPlayingState.value) Action.pause.pendingIntent
-//                    else Action.play.pendingIntent,
-//                    ms,
-//                    bm
-                )
-            }
-
-        }
-
-//        if (isAtLeastAndroid8)
-//            registerOnlinePlayerActionReceiver()
     }
 
     private fun checkIfAppIsRunningInBackground() {
@@ -1344,13 +1326,12 @@ MonetCompatActivity(),
                                             onSecondChange = {
                                                 currentSecond = it
                                                 currentPlaybackPosition.value = (it * 1000).toLong()
-                                                updateNotification()
                                                 println("MainActivity onSecondChange ${currentPlaybackPosition.value}")
                                             },
                                             onDurationChange = {
                                                 currentDuration = it
                                                 currentPlaybackDuration.value = (it * 1000).toLong()
-                                                updateNotification()
+                                                currentPlaybackPosition.value = 0L
                                                 println("MainActivity onDurationChange ${currentPlaybackDuration.value}")
                                             },
                                             onPlayerStateChange = {
@@ -1381,32 +1362,33 @@ MonetCompatActivity(),
                                     }
 
                                     LaunchedEffect(onlinePlayerPlayingState.value) {
-//                                        mediaSession?.setPlaybackState(
-//                                            stateBuilder
-//                                                .setState(
-//                                                    if (onlinePlayerPlayingState.value) PlaybackStateCompat.STATE_PLAYING else PlaybackStateCompat.STATE_PAUSED,
-//                                                    (currentSecond/1000).toLong(),
-//                                                    1f
+                                        updateNotification()
+////                                        mediaSession?.setPlaybackState(
+////                                            stateBuilder
+////                                                .setState(
+////                                                    if (onlinePlayerPlayingState.value) PlaybackStateCompat.STATE_PLAYING else PlaybackStateCompat.STATE_PAUSED,
+////                                                    (currentSecond/1000).toLong(),
+////                                                    1f
+////                                                )
+////                                                .build()
+////                                        )
+//                                       // val currentMediaItem = binder?.player?.currentMediaItem
+//                                        mediaSession?.let { ms ->
+//                                            bitmapProvider?.let { bm ->
+//                                                updateNotification(
+//
+////                                                    currentMediaItem?.mediaMetadata?.title.toString(),
+////                                                    currentMediaItem?.mediaMetadata?.artist.toString(),
+////                                                    if(onlinePlayerPlayingState.value) R.drawable.pause else R.drawable.play,
+////                                                    if (onlinePlayerPlayingState.value) "pause" else "play",
+////                                                    if (onlinePlayerPlayingState.value) Action.pause.pendingIntent
+////                                                    else Action.play.pendingIntent,
+////                                                    ms,
+////                                                    bm
 //                                                )
-//                                                .build()
-//                                        )
-                                       // val currentMediaItem = binder?.player?.currentMediaItem
-                                        mediaSession?.let { ms ->
-                                            bitmapProvider?.let { bm ->
-                                                updateNotification(
-
-//                                                    currentMediaItem?.mediaMetadata?.title.toString(),
-//                                                    currentMediaItem?.mediaMetadata?.artist.toString(),
-//                                                    if(onlinePlayerPlayingState.value) R.drawable.pause else R.drawable.play,
-//                                                    if (onlinePlayerPlayingState.value) "pause" else "play",
-//                                                    if (onlinePlayerPlayingState.value) Action.pause.pendingIntent
-//                                                    else Action.play.pendingIntent,
-//                                                    ms,
-//                                                    bm
-                                                )
-                                            }
-
-                                        }
+//                                            }
+//
+//                                        }
                                     }
 
 //                                    LaunchedEffect(currentSecond) {
@@ -1608,7 +1590,8 @@ MonetCompatActivity(),
 
     fun initializeMediasession() {
         val currentMediaItem = binder?.player?.currentMediaItem
-
+        if (mediaSession == null)
+            mediaSession = MediaSessionCompat(this@MainActivity, "OnlinePlayer")
         //mediaSession?.setFlags(MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS or MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS)
         mediaSession?.setFlags(0)
         mediaSession?.setRepeatMode(PlaybackStateCompat.REPEAT_MODE_NONE)
@@ -1681,15 +1664,8 @@ MonetCompatActivity(),
     }
 
     @UnstableApi
-    fun updateNotification(
-//        title: String? = null,
-//        artist: String? = null,
-//        icon: Int,
-//        iconText: String,
-//        pendingIntent: PendingIntent,
-//        mediaSession: MediaSessionCompat,
-//        bitmapProvider: BitmapProvider,
-    ) {
+    fun updateNotification() {
+
         initializeMediasession()
 
         createNotificationChannel()
