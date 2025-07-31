@@ -336,7 +336,6 @@ fun OfflinePlayer(
     navController: NavController,
     playerOnline: MutableState<YouTubePlayer?>,
     playerState: MutableState<PlayerConstants.PlayerState>,
-    modifier: Modifier = Modifier,
     onDismiss: () -> Unit,
 ) {
     val menuState = LocalMenuState.current
@@ -1316,7 +1315,7 @@ fun OfflinePlayer(
                     }
                     if (effectRotationEnabled) isRotated = !isRotated
                 },
-                modifier = modifier
+                modifier = Modifier
                     //.nestedScroll( connection = scrollConnection )
                     .pointerInput(Unit) {
                         detectHorizontalDragGestures(
@@ -3030,7 +3029,7 @@ fun OfflinePlayer(
                                      beyondViewportPageCount = 2,
                                      flingBehavior = fling,
                                      userScrollEnabled = expandedplayer || !disablePlayerHorizontalSwipe,
-                                     modifier = modifier
+                                     modifier = Modifier
                                          .padding(
                                              all = (if (expandedplayer) 0.dp else if (thumbnailType == ThumbnailType.Modern) -(10.dp) else 0.dp).coerceAtLeast(
                                                  0.dp

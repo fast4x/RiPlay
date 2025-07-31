@@ -268,12 +268,12 @@ class OfflinePlayerService : MediaLibraryService(),
     override fun onCreate() {
         super.onCreate()
 
-                // DEFAULT NOTIFICATION PROVIDER MODDED
-                setMediaNotificationProvider(CustomMediaNotificationProvider(this)
-                    .apply {
-                        setSmallIcon(R.drawable.app_icon)
-                    }
-                )
+        // DEFAULT NOTIFICATION PROVIDER MODDED
+        setMediaNotificationProvider(CustomMediaNotificationProvider(this)
+            .apply {
+                setSmallIcon(R.drawable.app_icon)
+            }
+        )
 
 
 //        setMediaNotificationProvider(object : MediaNotification.Provider{

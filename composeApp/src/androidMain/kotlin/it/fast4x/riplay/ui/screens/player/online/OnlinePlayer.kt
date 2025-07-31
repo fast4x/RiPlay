@@ -11,9 +11,7 @@ import android.database.SQLException
 import android.graphics.RenderEffect
 import android.graphics.Shader
 import android.media.audiofx.AudioEffect
-import android.media.session.PlaybackState
 import android.support.v4.media.MediaMetadataCompat
-import android.support.v4.media.RatingCompat
 import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -182,12 +180,12 @@ import it.fast4x.riplay.Database
 import it.fast4x.riplay.LocalLinkDevices
 import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.MainActivity
+import it.fast4x.riplay.NOTIFICATION_CHANNEL
 import it.fast4x.riplay.R
 import it.fast4x.riplay.appContext
 import it.fast4x.riplay.appRunningInBackground
 import it.fast4x.riplay.cleanPrefix
 import it.fast4x.riplay.colorPalette
-import it.fast4x.riplay.context
 import it.fast4x.riplay.enums.AnimatedGradient
 import it.fast4x.riplay.enums.BackgroundProgress
 import it.fast4x.riplay.enums.CarouselSize
@@ -224,7 +222,6 @@ import it.fast4x.riplay.models.ui.toUiMedia
 import it.fast4x.riplay.service.BitmapProvider
 import it.fast4x.riplay.thumbnailShape
 import it.fast4x.riplay.typography
-import it.fast4x.riplay.ui.components.BottomSheetState
 import it.fast4x.riplay.ui.components.CustomModalBottomSheet
 import it.fast4x.riplay.ui.components.LocalMenuState
 import it.fast4x.riplay.ui.components.themed.AddToPlaylistPlayerMenu
@@ -295,7 +292,6 @@ import it.fast4x.riplay.utils.getBitmapFromUrl
 import it.fast4x.riplay.utils.getIconQueueLoopState
 import it.fast4x.riplay.utils.getLikeState
 import it.fast4x.riplay.utils.horizontalFadingEdge
-import it.fast4x.riplay.utils.isAtLeastAndroid12
 import it.fast4x.riplay.utils.isAtLeastAndroid8
 import it.fast4x.riplay.utils.isExplicit
 import it.fast4x.riplay.utils.isLandscape
@@ -381,8 +377,7 @@ import kotlin.math.roundToInt
 import kotlin.math.sqrt
 
 
-val NOTIFICATION_CHANNEL = "OnlinePlayer"
-val NOTIFICATION_ID = 1
+
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeUiApi::class)
 @ExperimentalTextApi
@@ -1385,59 +1380,59 @@ fun OnlinePlayer(
 
     val isLandscape = isLandscape
 
-    var mediaSession = remember { MediaSessionCompat(context(), "OnlinePlayer")}
-    mediaSession.setFlags(MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS or MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS)
-    mediaSession.setRatingType(RatingCompat.RATING_NONE)
-    mediaSession.setSessionActivity(PendingIntent.getActivity(
-        appContext(),
-        0,
-        Intent(appContext(), MainActivity::class.java)
-            .putExtra("expandPlayerBottomSheet", true),
-        PendingIntent.FLAG_IMMUTABLE
-    ))
+    //var mediaSession = remember { MediaSessionCompat(context(), "OnlinePlayer")}
+//    mediaSession.setFlags(MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS or MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS)
+//    mediaSession.setRatingType(RatingCompat.RATING_NONE)
+//    mediaSession.setSessionActivity(PendingIntent.getActivity(
+//        appContext(),
+//        0,
+//        Intent(appContext(), MainActivity::class.java)
+//            .putExtra("expandPlayerBottomSheet", true),
+//        PendingIntent.FLAG_IMMUTABLE
+//    ))
+//
+//    mediaSession.isActive = true
+//    val actions = remember {
+//        PlaybackStateCompat.ACTION_PLAY or
+//                PlaybackStateCompat.ACTION_PAUSE or
+//                PlaybackStateCompat.ACTION_PLAY_PAUSE or
+//                PlaybackStateCompat.ACTION_STOP or
+//                PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS or
+//                PlaybackStateCompat.ACTION_SKIP_TO_NEXT or
+//                PlaybackStateCompat.ACTION_SEEK_TO
+//    }
+//    var stateBuilder = remember {
+//        PlaybackStateCompat.Builder().setActions(actions.let {
+//            if (isAtLeastAndroid12) it or PlaybackState.ACTION_SET_PLAYBACK_SPEED else it
+//        })
+//    }
+//    LaunchedEffect(Dispatchers.Main) {
+//        mediaSession.setCallback(
+//            MediaSessionCallback(
+//                binder,
+//                {
+//                    println("OnlinePlayer callback play")
+//                    player.value?.play()
+//                },
+//                {
+//                    println("OnlinePlayer callback pause")
+//                    player.value?.pause()
+//                }
+//            )
+//        )
+//
+//        mediaSession.setPlaybackState(stateBuilder.build())
+//    }
 
-    mediaSession.isActive = true
-    val actions = remember {
-        PlaybackStateCompat.ACTION_PLAY or
-                PlaybackStateCompat.ACTION_PAUSE or
-                PlaybackStateCompat.ACTION_PLAY_PAUSE or
-                PlaybackStateCompat.ACTION_STOP or
-                PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS or
-                PlaybackStateCompat.ACTION_SKIP_TO_NEXT or
-                PlaybackStateCompat.ACTION_SEEK_TO
-    }
-    var stateBuilder = remember {
-        PlaybackStateCompat.Builder().setActions(actions.let {
-            if (isAtLeastAndroid12) it or PlaybackState.ACTION_SET_PLAYBACK_SPEED else it
-        })
-    }
-    LaunchedEffect(Dispatchers.Main) {
-        mediaSession.setCallback(
-            MediaSessionCallback(
-                binder,
-                {
-                    println("OnlinePlayer callback play")
-                    player.value?.play()
-                },
-                {
-                    println("OnlinePlayer callback pause")
-                    player.value?.pause()
-                }
-            )
-        )
 
-        mediaSession.setPlaybackState(stateBuilder.build())
-    }
-
-
-    var bitmapProvider = remember {
-        BitmapProvider(
-            bitmapSize = (512 * appContext().resources.displayMetrics.density).roundToInt(),
-            colorProvider = { isSystemInDarkMode ->
-                if (isSystemInDarkMode) android.graphics.Color.BLACK else android.graphics.Color.WHITE
-            }
-        )
-    }
+//    var bitmapProvider = remember {
+//        BitmapProvider(
+//            bitmapSize = (512 * appContext().resources.displayMetrics.density).roundToInt(),
+//            colorProvider = { isSystemInDarkMode ->
+//                if (isSystemInDarkMode) android.graphics.Color.BLACK else android.graphics.Color.WHITE
+//            }
+//        )
+//    }
 
 
 
@@ -1461,17 +1456,17 @@ fun OnlinePlayer(
 
         stepToUpdateStats = 1
 
-        bitmapProvider.load(mediaItem.mediaMetadata.artworkUri, {})
+        //bitmapProvider.load(mediaItem.mediaMetadata.artworkUri, {})
 
         player.value?.loadVideo(mediaItem.mediaId, 0f)
 
-        mediaSession.setMetadata(
-            MediaMetadataCompat.Builder()
-                .putString(MediaMetadataCompat.METADATA_KEY_TITLE, mediaItem.mediaMetadata.title.toString())
-                .putString(MediaMetadataCompat.METADATA_KEY_ARTIST, mediaItem.mediaMetadata.artist.toString())
-                .putLong(MediaMetadataCompat.METADATA_KEY_DURATION, (currentDuration/1000).toLong())
-                .build()
-        )
+//        mediaSession.setMetadata(
+//            MediaMetadataCompat.Builder()
+//                .putString(MediaMetadataCompat.METADATA_KEY_TITLE, mediaItem.mediaMetadata.title.toString())
+//                .putString(MediaMetadataCompat.METADATA_KEY_ARTIST, mediaItem.mediaMetadata.artist.toString())
+//                .putLong(MediaMetadataCompat.METADATA_KEY_DURATION, (currentDuration/1000).toLong())
+//                .build()
+//        )
 
         //println("OnlinePLayer LaunchedEffect change mediaItem isVideo? ${mediaItem.isVideo} song is audio only? ${songIsAudioOnly}")
     }
@@ -1482,30 +1477,30 @@ fun OnlinePlayer(
         timeRemaining = positionAndDuration.second.toInt() - positionAndDuration.first.toInt()
 
 
-        withContext(Dispatchers.Main) {
-            mediaSession.setPlaybackState(
-                stateBuilder
-                    .setState(
-                        if (shouldBePlaying) PlaybackStateCompat.STATE_PLAYING else PlaybackStateCompat.STATE_PAUSED,
-                        (currentSecond/1000).toLong(),
-                        1f
-                    )
-                    .build()
-            )
-
-            println("OnlinePlayer LaunchedEffect currentSecond ${(currentSecond/1000).toLong()} shouldBePlaying $shouldBePlaying")
-
-            updateNotification(
-                mediaItem.mediaMetadata.title.toString(),
-                mediaItem.mediaMetadata.artist.toString(),
-                if(shouldBePlaying) R.drawable.pause else R.drawable.play,
-                if (shouldBePlaying) "pause" else "play",
-                if (shouldBePlaying) ActionIntent("it.fast4x.riplay.onlineplayer.pause").pendingIntent
-                else ActionIntent("it.fast4x.riplay.onlineplayer.play").pendingIntent,
-                mediaSession,
-                bitmapProvider
-            )
-        }
+//        withContext(Dispatchers.Main) {
+//            mediaSession.setPlaybackState(
+//                stateBuilder
+//                    .setState(
+//                        if (shouldBePlaying) PlaybackStateCompat.STATE_PLAYING else PlaybackStateCompat.STATE_PAUSED,
+//                        (currentSecond/1000).toLong(),
+//                        1f
+//                    )
+//                    .build()
+//            )
+//
+//            println("OnlinePlayer LaunchedEffect currentSecond ${(currentSecond/1000).toLong()} shouldBePlaying $shouldBePlaying")
+//
+//            updateNotification(
+//                mediaItem.mediaMetadata.title.toString(),
+//                mediaItem.mediaMetadata.artist.toString(),
+//                if(shouldBePlaying) R.drawable.pause else R.drawable.play,
+//                if (shouldBePlaying) "pause" else "play",
+//                if (shouldBePlaying) ActionIntent("it.fast4x.riplay.onlineplayer.pause").pendingIntent
+//                else ActionIntent("it.fast4x.riplay.onlineplayer.play").pendingIntent,
+//                mediaSession,
+//                bitmapProvider
+//            )
+//        }
         
 
 
@@ -1558,28 +1553,28 @@ fun OnlinePlayer(
             //updateStatistics = true
         }
 
-        withContext(Dispatchers.Main) {
-            mediaSession.setPlaybackState(
-                stateBuilder
-                    .setState(
-                        if (shouldBePlaying) PlaybackStateCompat.STATE_PLAYING else PlaybackStateCompat.STATE_PAUSED,
-                        (currentSecond/1000).toLong(),
-                        1f
-                    )
-                    .build()
-            )
-
-            updateNotification(
-                mediaItem.mediaMetadata.title.toString(),
-                mediaItem.mediaMetadata.artist.toString(),
-                if(shouldBePlaying) R.drawable.pause else R.drawable.play,
-                if (shouldBePlaying) "pause" else "play",
-                if (shouldBePlaying) ActionIntent("it.fast4x.riplay.onlineplayer.pause").pendingIntent
-                else ActionIntent("it.fast4x.riplay.onlineplayer.play").pendingIntent,
-                mediaSession,
-                bitmapProvider
-            )
-        }
+//        withContext(Dispatchers.Main) {
+//            mediaSession.setPlaybackState(
+//                stateBuilder
+//                    .setState(
+//                        if (shouldBePlaying) PlaybackStateCompat.STATE_PLAYING else PlaybackStateCompat.STATE_PAUSED,
+//                        (currentSecond/1000).toLong(),
+//                        1f
+//                    )
+//                    .build()
+//            )
+//
+//            updateNotification(
+//                mediaItem.mediaMetadata.title.toString(),
+//                mediaItem.mediaMetadata.artist.toString(),
+//                if(shouldBePlaying) R.drawable.pause else R.drawable.play,
+//                if (shouldBePlaying) "pause" else "play",
+//                if (shouldBePlaying) ActionIntent("it.fast4x.riplay.onlineplayer.pause").pendingIntent
+//                else ActionIntent("it.fast4x.riplay.onlineplayer.play").pendingIntent,
+//                mediaSession,
+//                bitmapProvider
+//            )
+//        }
 
         linkServiceClientSend(
             if (shouldBePlaying) mediaItem.mediaId.toCommandPlay() else LINKWEB_COMMAND_PAUSE.toCommand(),
@@ -4058,25 +4053,25 @@ fun OnlinePlayer(
 
     }
 
-    val actionReceiver = remember {
-        OnlinePlayerActionReceiver(
-            //player = player.value,
-            onAction = {
-                shouldBePlaying = it
-            }
-        )
-    }
-
-    LaunchedEffect(Unit) {
-        context.registerReceiver(
-            actionReceiver,
-            IntentFilter().apply {
-                addAction("it.fast4x.riplay.onlineplayer.pause")
-                addAction("it.fast4x.riplay.onlineplayer.play")
-            },
-            Context.RECEIVER_NOT_EXPORTED
-        )
-    }
+//    val actionReceiver = remember {
+//        OnlinePlayerActionReceiver(
+//            //player = player.value,
+//            onAction = {
+//                shouldBePlaying = it
+//            }
+//        )
+//    }
+//
+//    LaunchedEffect(Unit) {
+//        context.registerReceiver(
+//            actionReceiver,
+//            IntentFilter().apply {
+//                addAction("it.fast4x.riplay.onlineplayer.pause")
+//                addAction("it.fast4x.riplay.onlineplayer.play")
+//            },
+//            Context.RECEIVER_NOT_EXPORTED
+//        )
+//    }
 
 }
 
@@ -4095,108 +4090,108 @@ private fun PagerState.LaunchedEffectScrollToPage(
     }
 }
 
-fun createNotificationChannel() {
-    val channel = NotificationChannelCompat.Builder(NOTIFICATION_CHANNEL, NotificationManagerCompat.IMPORTANCE_HIGH)
-        .setName(NOTIFICATION_CHANNEL)
-        .setShowBadge(false)
-        .build()
+//fun createNotificationChannel() {
+//    val channel = NotificationChannelCompat.Builder(NOTIFICATION_CHANNEL, NotificationManagerCompat.IMPORTANCE_HIGH)
+//        .setName(NOTIFICATION_CHANNEL)
+//        .setShowBadge(false)
+//        .build()
+//
+//    NotificationManagerCompat.from(appContext()).createNotificationChannel(channel)
+//}
 
-    NotificationManagerCompat.from(appContext()).createNotificationChannel(channel)
-}
-
-@UnstableApi
-fun updateNotification(
-    title: String? = null,
-    artist: String? = null,
-    icon: Int,
-    iconText: String,
-    pendingIntent: PendingIntent,
-    mediaSession: MediaSessionCompat,
-    bitmapProvider: BitmapProvider,
-) {
-    createNotificationChannel()
-
-
-    val forwardAction = NotificationCompat.Action.Builder(
-        R.drawable.play_skip_forward,
-        "next",
-        ActionIntent("it.fast4x.riplay.next").pendingIntent
-    ).build()
-
-    val playPauseAction = NotificationCompat.Action.Builder(
-        icon, iconText, pendingIntent
-    ).build()
-
-    val previousAction = NotificationCompat.Action.Builder(
-        R.drawable.play_skip_back,
-        "prev",
-        ActionIntent("it.fast4x.riplay.previous").pendingIntent
-    ).build()
-
-    val notification = if (isAtLeastAndroid8) {
-        NotificationCompat.Builder(appContext(), NOTIFICATION_CHANNEL)
-    } else {
-        NotificationCompat.Builder(appContext())
-    }
-    .setContentTitle(title)
-    .setContentText(artist)
-    .setSubText(artist)
-    .setSmallIcon(R.drawable.app_icon)
-    .setLargeIcon(bitmapProvider.bitmap)
-    .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
-    .setCategory(NotificationCompat.CATEGORY_TRANSPORT)
-    .setSilent(true)
-    .setColorized(true)
-    .setAutoCancel(false)
-    .setOngoing(true)
-    .addAction(previousAction)
-    .addAction(playPauseAction)
-    .addAction(forwardAction)
-    .setContentIntent(PendingIntent.getActivity(
-        appContext(),
-        0,
-        Intent(appContext(), MainActivity::class.java)
-            .putExtra("expandPlayerBottomSheet", true),
-        PendingIntent.FLAG_IMMUTABLE
-    ))
-    //.setProgress(max, progress, if (isAtLeastAndroid15) true else false) //Workaround to android 15 because notification freeze
-//    .setStyle(NotificationCompat.BigTextStyle()
-//        //.bigText("Much longer text that cannot fit one line...")
-//        .setSummaryText(artist)
-//        .setBigContentTitle(title)
+//@UnstableApi
+//fun updateNotification(
+//    title: String? = null,
+//    artist: String? = null,
+//    icon: Int,
+//    iconText: String,
+//    pendingIntent: PendingIntent,
+//    mediaSession: MediaSessionCompat,
+//    bitmapProvider: BitmapProvider,
+//) {
+//    createNotificationChannel()
+//
+//
+//    val forwardAction = NotificationCompat.Action.Builder(
+//        R.drawable.play_skip_forward,
+//        "next",
+//        ActionIntent("it.fast4x.riplay.next").pendingIntent
+//    ).build()
+//
+//    val playPauseAction = NotificationCompat.Action.Builder(
+//        icon, iconText, pendingIntent
+//    ).build()
+//
+//    val previousAction = NotificationCompat.Action.Builder(
+//        R.drawable.play_skip_back,
+//        "prev",
+//        ActionIntent("it.fast4x.riplay.previous").pendingIntent
+//    ).build()
+//
+//    val notification = if (isAtLeastAndroid8) {
+//        NotificationCompat.Builder(appContext(), NOTIFICATION_CHANNEL)
+//    } else {
+//        NotificationCompat.Builder(appContext())
+//    }
+//    .setContentTitle(title)
+//    .setContentText(artist)
+//    .setSubText(artist)
+//    .setSmallIcon(R.drawable.app_icon)
+//    .setLargeIcon(bitmapProvider.bitmap)
+//    .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+//    .setCategory(NotificationCompat.CATEGORY_TRANSPORT)
+//    .setSilent(true)
+//    .setColorized(true)
+//    .setAutoCancel(false)
+//    .setOngoing(true)
+//    .addAction(previousAction)
+//    .addAction(playPauseAction)
+//    .addAction(forwardAction)
+//    .setContentIntent(PendingIntent.getActivity(
+//        appContext(),
+//        0,
+//        Intent(appContext(), MainActivity::class.java)
+//            .putExtra("expandPlayerBottomSheet", true),
+//        PendingIntent.FLAG_IMMUTABLE
+//    ))
+//    //.setProgress(max, progress, if (isAtLeastAndroid15) true else false) //Workaround to android 15 because notification freeze
+////    .setStyle(NotificationCompat.BigTextStyle()
+////        //.bigText("Much longer text that cannot fit one line...")
+////        .setSummaryText(artist)
+////        .setBigContentTitle(title)
+////    )
+//
+//    .setStyle(
+//        androidx.media.app.NotificationCompat.MediaStyle()
+//            .setShowActionsInCompactView(0, 1, 2)
+//            .setShowCancelButton(false)
+//            .setMediaSession(mediaSession.sessionToken)
 //    )
+//    .setPriority(NotificationCompat.PRIORITY_HIGH)
+//    .build()
+//
+//    NotificationManagerCompat.from(appContext()).notify(NOTIFICATION_ID, notification)
+//}
 
-    .setStyle(
-        androidx.media.app.NotificationCompat.MediaStyle()
-            .setShowActionsInCompactView(0, 1, 2)
-            .setShowCancelButton(false)
-            .setMediaSession(mediaSession.sessionToken)
-    )
-    .setPriority(NotificationCompat.PRIORITY_HIGH)
-    .build()
-
-    NotificationManagerCompat.from(appContext()).notify(NOTIFICATION_ID, notification)
-}
-
-class OnlinePlayerActionReceiver(
-    //private val player: YouTubePlayer?,
-    private val onAction: (Boolean) -> Unit = {}
-) : BroadcastReceiver() {
-    override fun onReceive(context: Context, intent: Intent) {
-
-        when (intent.action) {
-            "it.fast4x.riplay.onlineplayer.pause" -> {
-                println("OnlinePlayer LauncheEffect it.fast4x.riplay.onlineplayer.pause")
-                //player?.pause()
-                onAction(false)
-            }
-            "it.fast4x.riplay.onlineplayer.play" -> {
-                println("OnlinePlayer LauncheEffect it.fast4x.riplay.onlineplayer.play")
-                //player?.play()
-                onAction(true)
-            }
-        }
-    }
-}
+//class OnlinePlayerActionReceiver(
+//    //private val player: YouTubePlayer?,
+//    private val onAction: (Boolean) -> Unit = {}
+//) : BroadcastReceiver() {
+//    override fun onReceive(context: Context, intent: Intent) {
+//
+//        when (intent.action) {
+//            "it.fast4x.riplay.onlineplayer.pause" -> {
+//                println("OnlinePlayer LauncheEffect it.fast4x.riplay.onlineplayer.pause")
+//                //player?.pause()
+//                onAction(false)
+//            }
+//            "it.fast4x.riplay.onlineplayer.play" -> {
+//                println("OnlinePlayer LauncheEffect it.fast4x.riplay.onlineplayer.play")
+//                //player?.play()
+//                onAction(true)
+//            }
+//        }
+//    }
+//}
 
 

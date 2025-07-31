@@ -3,8 +3,12 @@ package it.fast4x.riplay
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.ActivityManager
+import android.app.PendingIntent
+import android.content.BroadcastReceiver
 import android.content.ComponentName
+import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.content.ServiceConnection
 import android.content.SharedPreferences
 import android.content.res.Configuration
@@ -14,11 +18,16 @@ import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
+import android.media.session.PlaybackState
 import android.net.Uri
 import android.net.nsd.NsdServiceInfo
 import android.os.Build
 import android.os.Bundle
 import android.os.IBinder
+import android.support.v4.media.MediaMetadataCompat
+import android.support.v4.media.RatingCompat
+import android.support.v4.media.session.MediaSessionCompat
+import android.support.v4.media.session.PlaybackStateCompat
 import android.view.WindowManager
 import android.window.OnBackInvokedDispatcher
 import androidx.activity.ComponentActivity
@@ -28,6 +37,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.ActivityResultCallback
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContract
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.LinearEasing
@@ -82,6 +92,10 @@ import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.coerceIn
 import androidx.compose.ui.unit.dp
+import androidx.core.app.NotificationChannelCompat
+import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
+import androidx.core.content.ContextCompat
 import androidx.core.content.edit
 import androidx.core.net.toUri
 import androidx.core.os.LocaleListCompat
@@ -106,6 +120,7 @@ import com.valentinilk.shimmer.defaultShimmerTheme
 import de.raphaelebner.roomdatabasebackup.core.RoomBackup
 import dev.kdrag0n.monet.theme.ColorScheme
 import it.fast4x.environment.Environment
+import it.fast4x.environment.models.NavigationEndpoint
 import it.fast4x.environment.models.bodies.BrowseBody
 import it.fast4x.environment.requests.playlistPage
 import it.fast4x.environment.requests.song
@@ -146,19 +161,23 @@ import it.fast4x.riplay.ui.styling.typographyOf
 import it.fast4x.riplay.utils.LocalMonetCompat
 import it.fast4x.riplay.utils.OkHttpRequest
 import it.fast4x.riplay.extensions.rescuecenter.RescueScreen
+import it.fast4x.riplay.service.BitmapProvider
+import it.fast4x.riplay.service.OfflinePlayerService.NotificationActionReceiver
 import it.fast4x.riplay.service.isLocal
 import it.fast4x.riplay.ui.components.BottomSheet
-import it.fast4x.riplay.ui.components.BottomSheetMenu
 import it.fast4x.riplay.ui.components.rememberBottomSheetState
 import it.fast4x.riplay.ui.screens.player.fastPlay
 import it.fast4x.riplay.ui.screens.player.offline.OfflinePlayer
 import it.fast4x.riplay.ui.screens.player.offline.PlayerSheetState
 import it.fast4x.riplay.ui.screens.player.offline.rememberPlayerSheetState
+import it.fast4x.riplay.ui.screens.player.online.MediaSessionCallback
 import it.fast4x.riplay.ui.screens.player.online.OnlineMiniPlayer
 import it.fast4x.riplay.ui.screens.player.online.OnlinePlayer
+import it.fast4x.riplay.ui.screens.player.online.OnlinePlayerActionReceiver
 import it.fast4x.riplay.ui.screens.player.online.components.core.OnlinePlayerCore
 import it.fast4x.riplay.ui.screens.settings.isYouTubeLoggedIn
 import it.fast4x.riplay.ui.styling.Dimensions
+import it.fast4x.riplay.utils.ActionIntent
 import it.fast4x.riplay.utils.UiTypeKey
 import it.fast4x.riplay.utils.animatedGradientKey
 import it.fast4x.riplay.utils.applyFontPaddingKey
@@ -197,6 +216,7 @@ import it.fast4x.riplay.utils.fontTypeKey
 import it.fast4x.riplay.utils.getEnum
 import it.fast4x.riplay.utils.getSystemlanguage
 import it.fast4x.riplay.utils.invokeOnReady
+import it.fast4x.riplay.utils.isAtLeastAndroid12
 import it.fast4x.riplay.utils.isAtLeastAndroid6
 import it.fast4x.riplay.utils.isAtLeastAndroid8
 import it.fast4x.riplay.utils.isKeepScreenOnEnabledKey
@@ -212,6 +232,7 @@ import it.fast4x.riplay.utils.navigationBarTypeKey
 import it.fast4x.riplay.utils.parentalControlEnabledKey
 import it.fast4x.riplay.utils.pipModuleKey
 import it.fast4x.riplay.utils.playNext
+import it.fast4x.riplay.utils.playPrevious
 import it.fast4x.riplay.utils.playerBackgroundColorsKey
 import it.fast4x.riplay.utils.playerThumbnailSizeKey
 import it.fast4x.riplay.utils.playerVisualizerTypeKey
@@ -233,7 +254,10 @@ import it.fast4x.riplay.utils.useSystemFontKey
 import it.fast4x.riplay.utils.ytCookieKey
 import it.fast4x.riplay.utils.ytDataSyncIdKey
 import it.fast4x.riplay.utils.ytVisitorDataKey
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
@@ -253,7 +277,12 @@ import java.util.Date
 import java.util.Locale
 import java.util.Objects
 import java.util.UUID
+import kotlin.math.roundToInt
 import kotlin.math.sqrt
+
+
+const val NOTIFICATION_CHANNEL = "OnlinePlayer"
+const val NOTIFICATION_ID = 1
 
 @UnstableApi
 class MainActivity :
@@ -304,6 +333,26 @@ MonetCompatActivity(),
 
     var onlinePlayerPlayingState: MutableState<Boolean> = mutableStateOf(false)
 
+    var mediaSession: MediaSessionCompat? = null
+    var onlinePlayer: MutableState<YouTubePlayer?> = mutableStateOf(null)
+    val actions =
+        PlaybackStateCompat.ACTION_PLAY or
+                PlaybackStateCompat.ACTION_PAUSE or
+                PlaybackStateCompat.ACTION_PLAY_PAUSE or
+                PlaybackStateCompat.ACTION_STOP or
+                PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS or
+                PlaybackStateCompat.ACTION_SKIP_TO_NEXT or
+                PlaybackStateCompat.ACTION_SEEK_TO
+    val stateBuilder =
+        PlaybackStateCompat.Builder().setActions(actions.let {
+            if (isAtLeastAndroid12) it or PlaybackState.ACTION_SET_PLAYBACK_SPEED else it
+        })
+
+    var bitmapProvider: BitmapProvider? = null
+    var onlinePlayerNotificationActionReceiver: OnlinePlayerNotificationActionReceiver? = null
+    var currentPlaybackPosition: MutableState<Long> = mutableStateOf(0)
+    var currentPlaybackDuration: MutableState<Long> = mutableStateOf(0)
+
     override fun onStart() {
         super.onStart()
 
@@ -311,6 +360,7 @@ MonetCompatActivity(),
             val intent = Intent(this, OfflinePlayerService::class.java)
             bindService(intent, serviceConnection, BIND_AUTO_CREATE)
             startService(intent)
+
         }.onFailure {
             Timber.e("MainActivity.onStart bindService ${it.stackTraceToString()}")
         }
@@ -395,6 +445,46 @@ MonetCompatActivity(),
             }
         )
 
+        mediaSession = MediaSessionCompat(this@MainActivity, "OnlinePlayer")
+        initializeMediasession()
+
+        initializeBitmapProvider()
+
+        onlinePlayerNotificationActionReceiver = OnlinePlayerNotificationActionReceiver()
+        val filter = IntentFilter().apply {
+            addAction(Action.play.value)
+            addAction(Action.pause.value)
+            addAction(Action.next.value)
+            addAction(Action.previous.value)
+
+        }
+
+        ContextCompat.registerReceiver(
+            this@MainActivity,
+            onlinePlayerNotificationActionReceiver,
+            filter,
+            ContextCompat.RECEIVER_NOT_EXPORTED
+        )
+
+
+        mediaSession?.let { ms ->
+            bitmapProvider?.let { bm ->
+                updateNotification(
+//                    currentMediaItem?.mediaMetadata?.title.toString(),
+//                    currentMediaItem?.mediaMetadata?.artist.toString(),
+//                    if(onlinePlayerPlayingState.value) R.drawable.pause else R.drawable.play,
+//                    if (onlinePlayerPlayingState.value) "pause" else "play",
+//                    if (onlinePlayerPlayingState.value) Action.pause.pendingIntent
+//                    else Action.play.pendingIntent,
+//                    ms,
+//                    bm
+                )
+            }
+
+        }
+
+//        if (isAtLeastAndroid8)
+//            registerOnlinePlayerActionReceiver()
     }
 
     private fun checkIfAppIsRunningInBackground() {
@@ -1178,9 +1268,8 @@ MonetCompatActivity(),
                                 } else {
 
                                     var currentSecond by remember { mutableFloatStateOf(0f) }
-                                    var continuePlaying by remember { mutableStateOf(false) }
 
-                                    val player = remember { mutableStateOf<YouTubePlayer?>(null) }
+                                    //val player = remember { mutableStateOf<YouTubePlayer?>(null) }
                                     val playerState1 = remember { mutableStateOf(PlayerConstants.PlayerState.UNSTARTED) }
                                     var showControls by remember { mutableStateOf(true) }
                                     var currentDuration by remember { mutableFloatStateOf(0f) }
@@ -1214,14 +1303,14 @@ MonetCompatActivity(),
                                                         },
                                                         hidePlayer = { localPlayerSheetState.collapseSoft() },
                                                         navController = navController,
-                                                        player = player,
+                                                        player = onlinePlayer,
                                                         playerState = playerState1,
                                                         currentDuration = currentDuration,
                                                         currentSecond = currentSecond,
                                                     )
                                             }
                                         },
-                                        player = player,
+                                        player = onlinePlayer,
                                         playerState = playerState1,
                                         openTabFromShortcut = openTabFromShortcut
                                     )
@@ -1237,7 +1326,7 @@ MonetCompatActivity(),
                                     val offlinePlayer: @Composable () -> Unit = {
                                         OfflinePlayer(
                                             navController = navController,
-                                            playerOnline = player,
+                                            playerOnline = onlinePlayer,
                                             playerState = playerState1,
                                             onDismiss = {
                                                 localPlayerSheetState.collapseSoft()
@@ -1251,15 +1340,24 @@ MonetCompatActivity(),
                                         OnlinePlayerCore(
                                             load = getResumePlaybackOnStart(),
                                             playFromSecond = currentSecond,
-                                            onPlayerReady = { player.value = it },
+                                            onPlayerReady = { onlinePlayer.value = it },
                                             onSecondChange = {
                                                 currentSecond = it
+                                                currentPlaybackPosition.value = (it * 1000).toLong()
+                                                updateNotification()
+                                                println("MainActivity onSecondChange ${currentPlaybackPosition.value}")
                                             },
-                                            onDurationChange = { currentDuration = it },
+                                            onDurationChange = {
+                                                currentDuration = it
+                                                currentPlaybackDuration.value = (it * 1000).toLong()
+                                                updateNotification()
+                                                println("MainActivity onDurationChange ${currentPlaybackDuration.value}")
+                                            },
                                             onPlayerStateChange = {
                                                 playerState1.value = it
                                                 onlinePlayerPlayingState.value =  it == PlayerConstants.PlayerState.PLAYING
-                                                continuePlaying = it == PlayerConstants.PlayerState.PLAYING
+                                                updateNotification()
+
                                             },
                                             onTap = { showControls = !showControls }
                                         )
@@ -1270,7 +1368,7 @@ MonetCompatActivity(),
                                             navController = navController,
                                             playFromSecond = currentSecond,
                                             onlineCore = { onlineCore() },
-                                            player = player,
+                                            player = onlinePlayer,
                                             playerState = playerState1,
                                             currentDuration = currentDuration,
                                             currentSecond = currentSecond,
@@ -1278,10 +1376,60 @@ MonetCompatActivity(),
                                             onDismiss = {
                                                 localPlayerSheetState.collapseSoft()
                                             },
-
                                         )
+
                                     }
 
+                                    LaunchedEffect(onlinePlayerPlayingState.value) {
+//                                        mediaSession?.setPlaybackState(
+//                                            stateBuilder
+//                                                .setState(
+//                                                    if (onlinePlayerPlayingState.value) PlaybackStateCompat.STATE_PLAYING else PlaybackStateCompat.STATE_PAUSED,
+//                                                    (currentSecond/1000).toLong(),
+//                                                    1f
+//                                                )
+//                                                .build()
+//                                        )
+                                       // val currentMediaItem = binder?.player?.currentMediaItem
+                                        mediaSession?.let { ms ->
+                                            bitmapProvider?.let { bm ->
+                                                updateNotification(
+
+//                                                    currentMediaItem?.mediaMetadata?.title.toString(),
+//                                                    currentMediaItem?.mediaMetadata?.artist.toString(),
+//                                                    if(onlinePlayerPlayingState.value) R.drawable.pause else R.drawable.play,
+//                                                    if (onlinePlayerPlayingState.value) "pause" else "play",
+//                                                    if (onlinePlayerPlayingState.value) Action.pause.pendingIntent
+//                                                    else Action.play.pendingIntent,
+//                                                    ms,
+//                                                    bm
+                                                )
+                                            }
+
+                                        }
+                                    }
+
+//                                    LaunchedEffect(currentSecond) {
+//                                        if (mediaItemIsLocal.value) return@LaunchedEffect
+//                                        val currentMediaItem = binder?.player?.currentMediaItem
+//                                        mediaSession?.let { ms ->
+//                                            bitmapProvider?.let { bm ->
+//                                                println("ActionReceiver")
+//                                                updateNotification(
+//                                                    currentMediaItem?.mediaMetadata?.title.toString(),
+//                                                    currentMediaItem?.mediaMetadata?.artist.toString(),
+//                                                    if(onlinePlayerPlayingState.value) R.drawable.pause else R.drawable.play,
+//                                                    if (onlinePlayerPlayingState.value) "pause" else "play",
+//                                                    if (onlinePlayerPlayingState.value) Action.pause.pendingIntent
+//                                                    else Action.play.pendingIntent,
+//                                                    ms,
+//                                                    bm
+//                                                )
+//                                            }
+//
+//                                        }
+//
+//                                    }
 
                                     BottomSheet(
                                         state = localPlayerSheetState,
@@ -1362,6 +1510,16 @@ MonetCompatActivity(),
                                         1200
                                     ).toString()
                                 )
+
+//                                mediaSession?.setMetadata(
+//                                    MediaMetadataCompat.Builder()
+//                                        .putString(MediaMetadataCompat.METADATA_KEY_TITLE, mediaItem?.mediaMetadata?.title.toString())
+//                                        .putString(MediaMetadataCompat.METADATA_KEY_ARTIST, mediaItem?.mediaMetadata?.artist.toString())
+//                                        .putLong(MediaMetadataCompat.METADATA_KEY_DURATION, mediaItem?.mediaMetadata?.durationMs ?: 0L)
+//                                        .build()
+//                                )
+
+                                //bitmapProvider?.load(mediaItem?.mediaMetadata?.artworkUri) {}
                             }
                         }
 
@@ -1445,8 +1603,195 @@ MonetCompatActivity(),
                 //throw RuntimeException("This is a simulated exception to crash");
             //}
         }
+
     }
 
+    fun initializeMediasession() {
+        val currentMediaItem = binder?.player?.currentMediaItem
+
+        //mediaSession?.setFlags(MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS or MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS)
+        mediaSession?.setFlags(0)
+        mediaSession?.setRepeatMode(PlaybackStateCompat.REPEAT_MODE_NONE)
+        mediaSession?.setMetadata(
+            MediaMetadataCompat.Builder()
+                .putString(MediaMetadataCompat.METADATA_KEY_TITLE, currentMediaItem?.mediaMetadata?.title.toString())
+                .putString(MediaMetadataCompat.METADATA_KEY_ARTIST, currentMediaItem?.mediaMetadata?.artist.toString())
+                .putLong(MediaMetadataCompat.METADATA_KEY_DURATION, currentPlaybackDuration.value)
+                .build()
+        )
+        mediaSession?.setPlaybackState(
+            stateBuilder
+                .setState(
+                    if (onlinePlayerPlayingState.value) PlaybackStateCompat.STATE_PLAYING else PlaybackStateCompat.STATE_PAUSED,
+                    currentPlaybackPosition.value,
+                    1f
+                )
+                .build()
+        )
+//        mediaSession?.setSessionActivity(
+//            PendingIntent.getActivity(
+//                appContext(),
+//                0,
+//                Intent(appContext(), MainActivity::class.java)
+//                    .putExtra("expandPlayerBottomSheet", true),
+//                PendingIntent.FLAG_IMMUTABLE
+//            ))
+
+        binder?.let {
+            mediaSession?.setCallback(
+                MediaSessionCallback(
+                    it,
+                    {
+                        println("OnlinePlayer callback play")
+                        onlinePlayer.value?.play()
+                    },
+                    {
+                        println("OnlinePlayer callback pause")
+                        onlinePlayer.value?.pause()
+                    }
+                )
+            )
+        }
+
+
+        mediaSession?.setPlaybackState(stateBuilder.build())
+        mediaSession?.isActive = true
+    }
+
+    fun initializeBitmapProvider() {
+        runCatching {
+            bitmapProvider = BitmapProvider(
+                bitmapSize = (512 * resources.displayMetrics.density).roundToInt(),
+                colorProvider = { isSystemInDarkMode ->
+                    if (isSystemInDarkMode) android.graphics.Color.BLACK else android.graphics.Color.WHITE
+                }
+            )
+        }.onFailure {
+            Timber.e("Failed init bitmap provider in PlayerService ${it.stackTraceToString()}")
+        }
+    }
+
+    fun createNotificationChannel() {
+        val channel = NotificationChannelCompat.Builder(NOTIFICATION_CHANNEL, NotificationManagerCompat.IMPORTANCE_HIGH)
+            .setName(NOTIFICATION_CHANNEL)
+            .setShowBadge(false)
+            .build()
+
+        NotificationManagerCompat.from(appContext()).createNotificationChannel(channel)
+    }
+
+    @UnstableApi
+    fun updateNotification(
+//        title: String? = null,
+//        artist: String? = null,
+//        icon: Int,
+//        iconText: String,
+//        pendingIntent: PendingIntent,
+//        mediaSession: MediaSessionCompat,
+//        bitmapProvider: BitmapProvider,
+    ) {
+        initializeMediasession()
+
+        createNotificationChannel()
+
+        val currentMediaItem = binder?.player?.currentMediaItem
+
+        val forwardAction = NotificationCompat.Action.Builder(
+            R.drawable.play_skip_forward,
+            "next",
+            Action.next.pendingIntent
+        ).build()
+
+        val playPauseAction = NotificationCompat.Action.Builder(
+            if(onlinePlayerPlayingState.value) R.drawable.pause else R.drawable.play,
+            if (onlinePlayerPlayingState.value) "pause" else "play",
+            if (onlinePlayerPlayingState.value) Action.pause.pendingIntent
+            else Action.play.pendingIntent,
+        ).build()
+
+        val previousAction = NotificationCompat.Action.Builder(
+            R.drawable.play_skip_back,
+            "prev",
+            Action.previous.pendingIntent
+        ).build()
+
+        val notification = if (isAtLeastAndroid8) {
+            NotificationCompat.Builder(appContext(), NOTIFICATION_CHANNEL)
+        } else {
+            NotificationCompat.Builder(appContext())
+        }
+            .setContentTitle(currentMediaItem?.mediaMetadata?.title)
+            .setContentText(currentMediaItem?.mediaMetadata?.artist)
+            .setSubText(currentMediaItem?.mediaMetadata?.artist)
+            .setSmallIcon(R.drawable.app_icon)
+            .setLargeIcon(bitmapProvider?.bitmap)
+            .setSilent(true)
+            .setColorized(false)
+            .setAutoCancel(false)
+            .setOngoing(true)
+            .addAction(previousAction)
+            .addAction(playPauseAction)
+            .addAction(forwardAction)
+            .setStyle(
+                androidx.media.app.NotificationCompat.MediaStyle()
+                    .setShowActionsInCompactView(0, 1, 2)
+                    .setShowCancelButton(false)
+                    .setMediaSession(mediaSession?.sessionToken)
+
+            )
+          //.setProgress(max, progress, if (isAtLeastAndroid15) true else false) //Workaround to android 15 because notification freeze
+//            .setStyle(NotificationCompat.BigTextStyle()
+//                //.bigText("Much longer text that cannot fit one line...")
+//                .setSummaryText(artist)
+//                .setBigContentTitle(title)
+//            )
+            .setContentIntent(PendingIntent.getActivity(
+                appContext(),
+                0,
+                Intent(appContext(), MainActivity::class.java)
+                    .putExtra("expandPlayerBottomSheet", true),
+                PendingIntent.FLAG_IMMUTABLE
+            ))
+            .build()
+
+        NotificationManagerCompat.from(this).notify(NOTIFICATION_ID, notification)
+    }
+
+    @JvmInline
+    value class Action(val value: String) {
+        val pendingIntent: PendingIntent
+            get() = PendingIntent.getBroadcast(
+                appContext(),
+                100,
+                Intent(appContext(), OnlinePlayerNotificationActionReceiver::class.java).setAction(value),
+                PendingIntent.FLAG_UPDATE_CURRENT.or(if (isAtLeastAndroid6) PendingIntent.FLAG_IMMUTABLE else 0)
+            )
+
+        companion object {
+
+            val pause = Action("it.fast4x.riplay.onlineplayer.pause")
+            val play = Action("it.fast4x.riplay.onlineplayer.play")
+            val next = Action("it.fast4x.riplay.onlineplayer.next")
+            val previous = Action("it.fast4x.riplay.onlineplayer.previous")
+
+        }
+    }
+
+    inner class OnlinePlayerNotificationActionReceiver() : BroadcastReceiver() {
+
+        @ExperimentalCoroutinesApi
+        @FlowPreview
+        override fun onReceive(context: Context, intent: Intent) {
+            println("OnlinePlayerNotificationActionReceiver onReceive intent.action: ${intent.action}")
+            when (intent.action) {
+                Action.pause.value ->  onlinePlayer.value?.pause()
+                Action.play.value -> onlinePlayer.value?.play()
+                Action.next.value -> binder?.player?.playNext()
+                Action.previous.value -> binder?.player?.playPrevious()
+            }
+        }
+
+    }
 
     private val sensorListener: SensorEventListener = object : SensorEventListener {
         override fun onSensorChanged(event: SensorEvent) {
@@ -1580,51 +1925,6 @@ MonetCompatActivity(),
             this@MainActivity.recreate()
         }
     }
-
-//    fun InitializeEnvironment() {
-//        EnvironmentPreferences.preference = EnvironmentPreferenceItem(
-//            p0 = resources.getString(R.string.env_CrQ0JjAXgv),
-//            p1 = resources.getString(R.string.env_hNpBzzAn7i),
-//            p2 = resources.getString(R.string.env_lEi9YM74OL),
-//            p3 = resources.getString(R.string.env_C0ZR993zmk),
-//            p4 = resources.getString(R.string.env_w3TFBFL74Y),
-//            p5 = resources.getString(R.string.env_mcchaHCWyK),
-//            p6 = resources.getString(R.string.env_L2u4JNdp7L),
-//            p7 = resources.getString(R.string.env_sqDlfmV4Mt),
-//            p8 = resources.getString(R.string.env_WpLlatkrVv),
-//            p9 = resources.getString(R.string.env_1zNshDpFoh),
-//            p10 = resources.getString(R.string.env_mPVWVuCxJz),
-//            p11 = resources.getString(R.string.env_auDsjnylCZ),
-//            p12 = resources.getString(R.string.env_AW52cvJIJx),
-//            p13 = resources.getString(R.string.env_0RGAyC1Zqu),
-//            p14 = resources.getString(R.string.env_4Fdmu9Jkax),
-//            p15 = resources.getString(R.string.env_kuSdQLhP8I),
-//            p16 = resources.getString(R.string.env_QrgDKwvam1),
-//            p17 = resources.getString(R.string.env_wLwNESpPtV),
-//            p18 = resources.getString(R.string.env_JJUQaehRFg),
-//            p19 = resources.getString(R.string.env_i7WX2bHV6R),
-//            p20 = resources.getString(R.string.env_XpiuASubrV),
-//            p21 = resources.getString(R.string.env_lOlIIVw38L),
-//            p22 = resources.getString(R.string.env_mtcR0FhFEl),
-//            p23 = resources.getString(R.string.env_DTihHAFaBR),
-//            p24 = resources.getString(R.string.env_a4AcHS8CSg),
-//            p25 = resources.getString(R.string.env_krdLqpYLxM),
-//            p26 = resources.getString(R.string.env_ye6KGLZL7n),
-//            p27 = resources.getString(R.string.env_ec09m20YH5),
-//            p28 = resources.getString(R.string.env_LDRlbOvbF1),
-//            p29 = resources.getString(R.string.env_EEqX0yizf2),
-//            p30 = resources.getString(R.string.env_i3BRhLrV1v),
-//            p31 = resources.getString(R.string.env_MApdyHLMyJ),
-//            p32 = resources.getString(R.string.env_hizI7yLjL4),
-//            p33 = resources.getString(R.string.env_rLoZP7BF4c),
-//            p34 = resources.getString(R.string.env_nza34sU88C),
-//            p35 = resources.getString(R.string.env_dwbUvjWUl3),
-//            p36 = resources.getString(R.string.env_fqqhBZd0cf),
-//            p37 = resources.getString(R.string.env_9sZKrkMg8p),
-//            p38 = resources.getString(R.string.env_aQpNCVOe2i),
-//
-//            )
-//    }
 
 }
 
