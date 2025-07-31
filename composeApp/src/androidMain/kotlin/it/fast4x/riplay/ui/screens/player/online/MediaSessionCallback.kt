@@ -11,6 +11,7 @@ class MediaSessionCallback (
     val binder: OfflinePlayerService.Binder,
     val onPlayClick: () -> Unit,
     val onPauseClick: () -> Unit,
+    val onSeekToPos: (Long) -> Unit
 ) : MediaSessionCompat.Callback() {
     override fun onPlay() {
         println("MediaSessionCallback onPlay()")
@@ -22,6 +23,11 @@ class MediaSessionCallback (
     }
     override fun onSkipToNext() {
         binder.player.playNext()
+    }
+
+    override fun onSeekTo(pos: Long) {
+        onSeekToPos(pos)
+
     }
 
 //    @ExperimentalCoroutinesApi

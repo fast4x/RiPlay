@@ -653,11 +653,6 @@ MonetCompatActivity(),
                 }
 
 
-//                InitializeEnvironment(
-//                    appContext()
-//                )
-
-
                 val coroutineScope = rememberCoroutineScope()
                 val isSystemInDarkTheme = isSystemInDarkTheme()
                 val navController = rememberNavController()
@@ -919,12 +914,6 @@ MonetCompatActivity(),
                                             ColorPaletteName.Dynamic
                                         )
 
-//                                val colorPaletteMode =
-//                                    sharedPreferences.getEnum(
-//                                        colorPaletteModeKey,
-//                                        ColorPaletteMode.System
-//                                    )
-
                                     var colorPalette = colorPaletteOf(
                                         colorPaletteName,
                                         colorPaletteMode,
@@ -961,8 +950,6 @@ MonetCompatActivity(),
                                         }
 
                                     } else {
-                                        //bitmapListenerJob?.cancel()
-                                        //binder?.setBitmapListener(null)
 
                                         if (colorPaletteName == ColorPaletteName.MaterialYou) {
                                             colorPalette = dynamicColorPaletteOf(
@@ -1325,7 +1312,6 @@ MonetCompatActivity(),
                                             onDurationChange = {
                                                 currentDuration = it
                                                 currentPlaybackDuration.value = (it * 1000).toLong()
-                                                currentPlaybackPosition.value = 0L
                                                 println("MainActivity onDurationChange ${currentPlaybackDuration.value}")
                                             },
                                             onPlayerStateChange = {
@@ -1441,6 +1427,8 @@ MonetCompatActivity(),
                                 )
 
                                 bitmapProvider?.load(mediaItem?.mediaMetadata?.artworkUri) {}
+
+                                currentPlaybackPosition.value = 0L
                             }
                         }
 
@@ -1559,6 +1547,12 @@ MonetCompatActivity(),
                     {
                         println("OnlinePlayer callback pause")
                         onlinePlayer.value?.pause()
+                    },
+                    { second ->
+                        val newPosition = (second/1000).toFloat()
+                        println("OnlinePlayer callback seekTo ${newPosition}")
+                        onlinePlayer.value?.seekTo(newPosition)
+                        currentPlaybackPosition.value = second
                     }
                 )
             )
