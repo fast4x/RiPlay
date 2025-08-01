@@ -4,6 +4,8 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.ActivityManager
 import android.app.PendingIntent
+import android.app.PictureInPictureParams
+import android.app.RemoteAction
 import android.content.BroadcastReceiver
 import android.content.ComponentName
 import android.content.Context
@@ -483,6 +485,14 @@ MonetCompatActivity(),
     ) {
         pipState.value = isInPictureInPictureMode
 
+//        if (isAtLeastAndroid8 && isInPictureInPictureMode)
+//            setPictureInPictureParams(
+//                PictureInPictureParams.Builder()
+//                    .setActions(mutableListOf<RemoteAction?>(null))
+//                    //.setAutoEnterEnabled(true)
+//                    .build()
+//            )
+
         super.onPictureInPictureModeChanged(isInPictureInPictureMode, newConfig)
 
     }
@@ -490,30 +500,38 @@ MonetCompatActivity(),
     override fun onLowMemory() {
         super.onLowMemory()
         println("MainActivity.onLowMemory")
+        Timber.d("MainActivity.onLowMemory")
     }
 
     override fun onTrimMemory(level: Int) {
         super.onTrimMemory(level)
         if (level == TRIM_MEMORY_UI_HIDDEN) {
             println("MainActivity.onTrimMemory TRIM_MEMORY_UI_HIDDEN")
+            Timber.d("MainActivity.onTrimMemory TRIM_MEMORY_UI_HIDDEN")
         }
         if (level == TRIM_MEMORY_RUNNING_LOW) {
             println("MainActivity.onTrimMemory TRIM_MEMORY_RUNNING_LOW")
+            Timber.d("MainActivity.onTrimMemory TRIM_MEMORY_RUNNING_LOW")
         }
         if (level == TRIM_MEMORY_RUNNING_CRITICAL) {
             println("MainActivity.onTrimMemory TRIM_MEMORY_RUNNING_CRITICAL")
+            Timber.d("MainActivity.onTrimMemory TRIM_MEMORY_RUNNING_CRITICAL")
         }
         if (level == TRIM_MEMORY_BACKGROUND) {
             println("MainActivity.onTrimMemory TRIM_MEMORY_BACKGROUND")
+            Timber.d("MainActivity.onTrimMemory TRIM_MEMORY_BACKGROUND")
         }
         if (level == TRIM_MEMORY_COMPLETE) {
             println("MainActivity.onTrimMemory TRIM_MEMORY_COMPLETE")
+            Timber.d("MainActivity.onTrimMemory TRIM_MEMORY_COMPLETE")
         }
         if (level == TRIM_MEMORY_MODERATE) {
             println("MainActivity.onTrimMemory TRIM_MEMORY_MODERATE")
+            Timber.d("MainActivity.onTrimMemory TRIM_MEMORY_MODERATE")
         }
         if (level == TRIM_MEMORY_RUNNING_MODERATE) {
             println("MainActivity.onTrimMemory TRIM_MEMORY_RUNNING_MODERATE")
+            Timber.d("MainActivity.onTrimMemory TRIM_MEMORY_RUNNING_MODERATE")
         }
     }
 
@@ -1174,7 +1192,6 @@ MonetCompatActivity(),
                                             )
                                         }
                                     }
-
                                 }
 
                             }
