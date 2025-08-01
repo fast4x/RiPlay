@@ -261,7 +261,7 @@ class OfflinePlayerService : MediaLibraryService(),
     private val playerHorizontalWidget = PlayerHorizontalWidget()
 
     private var notificationManager: NotificationManager? = null
-    private lateinit var playerNotificationManager: PlayerNotificationManager
+    //private lateinit var playerNotificationManager: PlayerNotificationManager
     private lateinit var notificationActionReceiver: NotificationActionReceiver
 
     @kotlin.OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
@@ -433,37 +433,37 @@ class OfflinePlayerService : MediaLibraryService(),
             ContextCompat.RECEIVER_NOT_EXPORTED
         )
 
-        playerNotificationManager = PlayerNotificationManager.Builder(this, NotificationId, NotificationChannelId)
-            .setNotificationListener(object : PlayerNotificationManager.NotificationListener {
-                override fun onNotificationPosted(notificationId: Int, notification: Notification, ongoing: Boolean) {
-                    fun startFg() {
-                        runCatching {
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                                startForeground(notificationId, notification, FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK)
-                            } else {
-                                startForeground(notificationId, notification)
-                            }
-                        }.onFailure {
-                            Timber.e("PlayerServiceModern onNotificationPosted startForeground failed ${it.stackTraceToString()}")
-                            println("PlayerServiceModern onNotificationPosted startForeground failed ${it.stackTraceToString()}")
-                        }
-
-                    }
-
-                    // Foreground keep alive
-                    if (preferences.getBoolean(isInvincibilityEnabledKey, false))
-                        startFg()
-                    else
-                        super.onNotificationPosted(notificationId, notification, ongoing)
-
-                }
-            })
-            .setMediaDescriptionAdapter(DefaultMediaDescriptionAdapter(mediaSession.sessionActivity))
-            .build()
-
-        playerNotificationManager.setPlayer(player)
-        playerNotificationManager.setSmallIcon(R.drawable.app_icon)
-        playerNotificationManager.setMediaSessionToken(mediaSession.platformToken)
+//        playerNotificationManager = PlayerNotificationManager.Builder(this, NotificationId, NotificationChannelId)
+//            .setNotificationListener(object : PlayerNotificationManager.NotificationListener {
+//                override fun onNotificationPosted(notificationId: Int, notification: Notification, ongoing: Boolean) {
+//                    fun startFg() {
+//                        runCatching {
+//                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+//                                startForeground(notificationId, notification, FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK)
+//                            } else {
+//                                startForeground(notificationId, notification)
+//                            }
+//                        }.onFailure {
+//                            Timber.e("PlayerServiceModern onNotificationPosted startForeground failed ${it.stackTraceToString()}")
+//                            println("PlayerServiceModern onNotificationPosted startForeground failed ${it.stackTraceToString()}")
+//                        }
+//
+//                    }
+//
+//                    // Foreground keep alive
+//                    if (preferences.getBoolean(isInvincibilityEnabledKey, false))
+//                        startFg()
+//                    else
+//                        super.onNotificationPosted(notificationId, notification, ongoing)
+//
+//                }
+//            })
+//            .setMediaDescriptionAdapter(DefaultMediaDescriptionAdapter(mediaSession.sessionActivity))
+//            .build()
+//
+//        playerNotificationManager.setPlayer(player)
+//        playerNotificationManager.setSmallIcon(R.drawable.app_icon)
+//        playerNotificationManager.setMediaSessionToken(mediaSession.platformToken)
 
 
         // Ensure that song is updated
@@ -515,6 +515,14 @@ class OfflinePlayerService : MediaLibraryService(),
         updateDefaultNotification()
     }
 
+    override fun onUpdateNotification(session: MediaSession, startInForegroundRequired: Boolean) {
+        println("OfflinePlayerService onUpdateNotification called startInForegroundRequired ${startInForegroundRequired}")
+        // Foreground keep alive
+        if (!(!player.isPlaying && preferences.getBoolean(isInvincibilityEnabledKey, false))) {
+            println("OfflinePlayerService onUpdateNotification PASSED WITH startInForegroundRequired ${startInForegroundRequired}")
+            super.onUpdateNotification(session, startInForegroundRequired)
+        }
+    }
 
 
     override fun onPlaybackStatsReady(
