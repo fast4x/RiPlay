@@ -485,6 +485,7 @@ MonetCompatActivity(),
     ) {
         pipState.value = isInPictureInPictureMode
 
+        // todo improve pip
 //        if (isAtLeastAndroid8 && isInPictureInPictureMode)
 //            setPictureInPictureParams(
 //                PictureInPictureParams.Builder()
