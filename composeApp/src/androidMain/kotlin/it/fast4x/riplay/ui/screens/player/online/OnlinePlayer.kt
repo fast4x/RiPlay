@@ -1458,7 +1458,7 @@ fun OnlinePlayer(
 
         //bitmapProvider.load(mediaItem.mediaMetadata.artworkUri, {})
 
-        player.value?.loadVideo(mediaItem.mediaId, 0f)
+        //player.value?.loadVideo(mediaItem.mediaId, 0f)
 
 //        mediaSession.setMetadata(
 //            MediaMetadataCompat.Builder()

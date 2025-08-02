@@ -1440,6 +1440,7 @@ class MainActivity :
                             println("MainActivity:Player.Listener onMediaItemTransition mediaItem $mediaItem reason $reason")
 
                             mediaItemIsLocal.value = mediaItem?.isLocal == true
+
                             if (reason == Player.MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED && mediaItem != null) {
                                 if (mediaItem.mediaMetadata.extras?.getBoolean("isFromPersistentQueue") != true) {
                                     if (preferences.getBoolean(keepPlayerMinimizedKey, false))
@@ -1457,6 +1458,9 @@ class MainActivity :
                             bitmapProvider?.load(mediaItem?.mediaMetadata?.artworkUri) {}
 
                             currentPlaybackPosition.value = 0L
+
+                            if (!mediaItemIsLocal.value && mediaItem != null)
+                                onlinePlayer.value?.loadVideo(mediaItem.mediaId, 0f)
                         }
                     }
 
