@@ -1437,7 +1437,7 @@ class MainActivity :
 
                     val listener = object : Player.Listener {
                         override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
-                            println("MainActivity:Player.Listener onMediaItemTransition mediaItem $mediaItem reason $reason")
+                            println("MainActivity:Player.Listener onMediaItemTransition mediaItem $mediaItem reason $reason foreground $appRunningInBackground")
 
                             mediaItemIsLocal.value = mediaItem?.isLocal == true
 
