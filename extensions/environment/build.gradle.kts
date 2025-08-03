@@ -21,9 +21,9 @@ dependencies {
     implementation(libs.ktor.serialization.json)
     implementation(libs.ktor.serialization.kotlinx.xml)
     implementation(libs.ktor.serialization.kotlinx.protobuf)
-    implementation(libs.newpipe.extractor)
-    implementation(libs.ksoup.html)
-    implementation(libs.ksoup.entities)
+    //implementation(libs.newpipe.extractor)
+    //implementation(libs.ksoup.html)
+    //implementation(libs.ksoup.entities)
     implementation(libs.okhttp.dnsoverhttps)
     
 

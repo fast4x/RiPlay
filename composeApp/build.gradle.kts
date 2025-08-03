@@ -72,8 +72,8 @@ kotlin {
             implementation(libs.media3.ui)
             implementation(libs.kotlin.coroutines.guava)
             implementation(libs.kotlin.concurrent.futures)
-            implementation(libs.newpipe.extractor)
-            implementation(libs.nanojson)
+            //implementation(libs.newpipe.extractor)
+            //implementation(libs.nanojson)
             implementation(libs.androidx.webkit)
             implementation(libs.room.backup)
 
@@ -530,6 +530,7 @@ dependencies {
 }
 
 dependencies {
+    implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.aar", "*.jar"))))
     implementation(projects.composePersist)
     implementation(libs.compose.activity)
     implementation(libs.compose.foundation)
@@ -563,6 +564,7 @@ dependencies {
     implementation(libs.androidyoutubeplayer)
     implementation(libs.androidyoutubeplayer.custom.ui)
     implementation(libs.androidyoutubeplayer.chromecast.sender)
+    //implementation(libs.gmsCast)
     implementation(libs.androidx.mediarouter)
     implementation(libs.glance.widgets)
     implementation(libs.kizzy.rpc)

@@ -50,10 +50,16 @@ fun OnlinePlayerCore(
         mutableStateOf(binder.player.currentMediaItem, neverEqualPolicy())
     }
 
+    val player = remember { mutableStateOf<YouTubePlayer?>(null) }
+
     binder.player.DisposableListener {
         object : Player.Listener {
             override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
                 nullableMediaItem = mediaItem
+                if (mediaItem != null) {
+                    player.value?.loadVideo(mediaItem.mediaId, 0f)
+                    println("OnlinePlayerCore: onMediaItemTransition loaded ${mediaItem.mediaId}")
+                }
             }
         }
     }
@@ -71,6 +77,9 @@ fun OnlinePlayerCore(
         PlayerThumbnailSize.Biggest
     )
 
+
+
+
     AndroidView(
 
         factory = {
@@ -83,7 +92,8 @@ fun OnlinePlayerCore(
             val listener = object : AbstractYouTubePlayerListener() {
 
                 override fun onReady(youTubePlayer: YouTubePlayer) {
-                    //player.value = youTubePlayer
+                    super.onReady(youTubePlayer)
+                    player.value = youTubePlayer
                     onPlayerReady(youTubePlayer)
 
 //                        val customPlayerUiController =

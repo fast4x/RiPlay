@@ -177,7 +177,6 @@ import it.fast4x.riplay.ui.screens.player.offline.rememberPlayerSheetState
 import it.fast4x.riplay.ui.screens.player.online.MediaSessionCallback
 import it.fast4x.riplay.ui.screens.player.online.OnlineMiniPlayer
 import it.fast4x.riplay.ui.screens.player.online.OnlinePlayer
-import it.fast4x.riplay.ui.screens.player.online.OnlinePlayerActionReceiver
 import it.fast4x.riplay.ui.screens.player.online.components.core.OnlinePlayerCore
 import it.fast4x.riplay.ui.screens.settings.isYouTubeLoggedIn
 import it.fast4x.riplay.ui.styling.Dimensions
@@ -1258,8 +1257,6 @@ class MainActivity :
                             } else {
 
                                 var currentSecond by remember { mutableFloatStateOf(0f) }
-
-                                //val player = remember { mutableStateOf<YouTubePlayer?>(null) }
                                 val playerState1 =
                                     remember { mutableStateOf(PlayerConstants.PlayerState.UNSTARTED) }
                                 var showControls by remember { mutableStateOf(true) }
@@ -1280,7 +1277,7 @@ class MainActivity :
                                 AppNavigation(
                                     navController = navController,
                                     miniPlayer = {
-                                        println("MainActivity miniPlayer mediaItemIsLocal ${mediaItemIsLocal.value}")
+                                        //println("MainActivity miniPlayer mediaItemIsLocal ${mediaItemIsLocal.value}")
                                         if (mediaItemIsLocal.value)
                                             OfflineMiniPlayer(
                                                 showPlayer = { localPlayerSheetState.expandSoft() },
@@ -1334,7 +1331,7 @@ class MainActivity :
                                         onSecondChange = {
                                             currentSecond = it
                                             currentPlaybackPosition.value = (it * 1000).toLong()
-                                            println("MainActivity onSecondChange ${currentPlaybackPosition.value}")
+                                            //println("MainActivity onSecondChange ${currentPlaybackPosition.value}")
                                         },
                                         onDurationChange = {
                                             currentDuration = it
@@ -1437,9 +1434,14 @@ class MainActivity :
 
                     val listener = object : Player.Listener {
                         override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
-                            println("MainActivity:Player.Listener onMediaItemTransition mediaItem $mediaItem reason $reason foreground $appRunningInBackground")
+                            println("MainActivity Player.Listener onMediaItemTransition mediaItem $mediaItem reason $reason foreground $appRunningInBackground")
 
                             mediaItemIsLocal.value = mediaItem?.isLocal == true
+                            currentPlaybackPosition.value = 0L
+
+//                            if (!mediaItemIsLocal.value && mediaItem != null) {
+//                                onlinePlayer.value?.loadVideo(mediaItem.mediaId, 0f)
+//                            }
 
                             if (reason == Player.MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED && mediaItem != null) {
                                 if (mediaItem.mediaMetadata.extras?.getBoolean("isFromPersistentQueue") != true) {
@@ -1457,10 +1459,7 @@ class MainActivity :
 
                             bitmapProvider?.load(mediaItem?.mediaMetadata?.artworkUri) {}
 
-                            currentPlaybackPosition.value = 0L
 
-                            if (!mediaItemIsLocal.value && mediaItem != null)
-                                onlinePlayer.value?.loadVideo(mediaItem.mediaId, 0f)
                         }
                     }
 
@@ -1798,6 +1797,7 @@ class MainActivity :
             Timber.e("MainActivity.onResume registerListener sensorManager ${it.stackTraceToString()}")
         }
         appRunningInBackground = false
+        println("MainActivity.onResume $appRunningInBackground")
     }
 
     override fun onPause() {
@@ -1808,6 +1808,8 @@ class MainActivity :
             Timber.e("MainActivity.onPause unregisterListener sensorListener ${it.stackTraceToString()}")
         }
         appRunningInBackground = true
+
+        println("MainActivity.onPause $appRunningInBackground")
     }
 
     @UnstableApi
