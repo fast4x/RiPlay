@@ -189,6 +189,18 @@
             </intent-filter>
         </service>
 
+        <service
+            android:enabled="true"
+            android:name=".service.EndlessService"
+            android:exported="false"
+            android:foregroundServiceType="mediaPlayback"
+            tools:ignore="ExportedService">
+            <intent-filter>
+                <action android:name=".service.EndlessService" />
+            </intent-filter>
+        </service>
+
+
         <receiver android:name="androidx.media3.session.MediaButtonReceiver"
             android:exported="true">
             <intent-filter>

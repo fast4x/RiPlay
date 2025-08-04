@@ -549,41 +549,6 @@ fun OnlineMiniPlayer(
 
         /********** NEW PLAYER */
 
-//        var mediaSession = remember { MediaSessionCompat(context(), "OnlineMiniPlayer")}
-//        mediaSession.setFlags(MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS or MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS)
-//        mediaSession.setRatingType(RatingCompat.RATING_NONE)
-//        mediaSession.setSessionActivity(PendingIntent.getActivity(
-//            appContext(),
-//            0,
-//            Intent(appContext(), MainActivity::class.java),
-//            //.putExtra("expandPlayerBottomSheet", true),
-//            PendingIntent.FLAG_IMMUTABLE
-//        ))
-
-//        mediaSession.isActive = true
-//        val actions = remember {
-//            PlaybackStateCompat.ACTION_PLAY or
-//                    PlaybackStateCompat.ACTION_PAUSE or
-//                    PlaybackStateCompat.ACTION_PLAY_PAUSE or
-//                    PlaybackStateCompat.ACTION_STOP or
-//                    PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS or
-//                    PlaybackStateCompat.ACTION_SKIP_TO_NEXT or
-//                    PlaybackStateCompat.ACTION_SEEK_TO
-//        }
-//        var stateBuilder = remember {
-//            PlaybackStateCompat.Builder().setActions(actions.let {
-//                if (isAtLeastAndroid12) it or PlaybackState.ACTION_SET_PLAYBACK_SPEED else it
-//            })
-//        }
-//        var bitmapProvider = remember {
-//            BitmapProvider(
-//                bitmapSize = (512 * appContext().resources.displayMetrics.density).roundToInt(),
-//                colorProvider = { isSystemInDarkMode ->
-//                    if (isSystemInDarkMode) android.graphics.Color.BLACK else android.graphics.Color.WHITE
-//                }
-//            )
-//        }
-
         LaunchedEffect(playerState.value) {
             shouldBePlaying = playerState.value == PlayerConstants.PlayerState.PLAYING
 
@@ -592,29 +557,6 @@ fun OnlineMiniPlayer(
                 if (getQueueLoopType() != QueueLoopType.Default)
                     player.value?.seekTo(0f)
             }
-
-//            withContext(Dispatchers.Main) {
-//                mediaSession.setPlaybackState(
-//                    stateBuilder
-//                        .setState(
-//                            if (shouldBePlaying) PlaybackStateCompat.STATE_PLAYING else PlaybackStateCompat.STATE_PAUSED,
-//                            (currentSecond/1000).toLong(),
-//                            1f
-//                        )
-//                        .build()
-//                )
-//
-//                updateNotification(
-//                    mediaItem.mediaMetadata.title.toString(),
-//                    mediaItem.mediaMetadata.artist.toString(),
-//                    if(shouldBePlaying) R.drawable.pause else R.drawable.play,
-//                    if (shouldBePlaying) "pause" else "play",
-//                    if (shouldBePlaying) ActionIntent("it.fast4x.riplay.onlineplayer.pause").pendingIntent
-//                    else ActionIntent("it.fast4x.riplay.onlineplayer.play").pendingIntent,
-//                    mediaSession,
-//                    bitmapProvider
-//                )
-//            }
 
         }
 
@@ -628,22 +570,6 @@ fun OnlineMiniPlayer(
                 .collect { songIsAudioOnly = it?.isVideo == false }
         }
 
-
-//        LaunchedEffect(Dispatchers.Main) {
-//            mediaSession.setCallback(
-//                MediaSessionCallback(
-//                    binder,
-//                    {
-//                        player.value?.play()
-//                    },
-//                    {
-//                        player.value?.pause()
-//                    }
-//                )
-//            )
-//
-//            mediaSession.setPlaybackState(stateBuilder.build())
-//        }
 
         LaunchedEffect(mediaItem) {
             // Ensure that the song is in database
@@ -662,44 +588,10 @@ fun OnlineMiniPlayer(
 
             stepToUpdateStats = 1
 
-//            bitmapProvider.load(mediaItem.mediaMetadata.artworkUri, {})
-//
-//            mediaSession.setMetadata(
-//                MediaMetadataCompat.Builder()
-//                    .putString(MediaMetadataCompat.METADATA_KEY_TITLE, mediaItem.mediaMetadata.title.toString())
-//                    .putString(MediaMetadataCompat.METADATA_KEY_ARTIST, mediaItem.mediaMetadata.artist.toString())
-//                    .putLong(MediaMetadataCompat.METADATA_KEY_DURATION, (currentDuration/1000).toLong())
-//                    .build()
-//            )
         }
 
         LaunchedEffect(currentSecond, currentDuration) {
             positionAndDuration = currentSecond to currentDuration
-
-//            withContext(Dispatchers.Main) {
-//                mediaSession.setPlaybackState(
-//                    stateBuilder
-//                        .setState(
-//                            if (shouldBePlaying) PlaybackStateCompat.STATE_PLAYING else PlaybackStateCompat.STATE_PAUSED,
-//                            (currentSecond/1000).toLong(),
-//                            1f
-//                        )
-//                        .build()
-//                )
-//
-//                println("OnlineMiniPlayer LaunchedEffect currentSecond ${(currentSecond/1000).toLong()} shouldBePlaying $shouldBePlaying")
-//
-//                updateNotification(
-//                    mediaItem.mediaMetadata.title.toString(),
-//                    mediaItem.mediaMetadata.artist.toString(),
-//                    if(shouldBePlaying) R.drawable.pause else R.drawable.play,
-//                    if (shouldBePlaying) "pause" else "play",
-//                    if (shouldBePlaying) ActionIntent("it.fast4x.riplay.onlineplayer.pause").pendingIntent
-//                    else ActionIntent("it.fast4x.riplay.onlineplayer.play").pendingIntent,
-//                    mediaSession,
-//                    bitmapProvider
-//                )
-//            }
 
             updateStatisticsEverySeconds = (currentDuration / steps).toInt()
 

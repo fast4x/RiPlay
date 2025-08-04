@@ -195,7 +195,6 @@ fun OnlinePlayerCore(
                 }
             }
 
-
         }
     )
 }

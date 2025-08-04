@@ -166,7 +166,7 @@ import it.fast4x.riplay.utils.LocalMonetCompat
 import it.fast4x.riplay.utils.OkHttpRequest
 import it.fast4x.riplay.extensions.rescuecenter.RescueScreen
 import it.fast4x.riplay.service.BitmapProvider
-import it.fast4x.riplay.service.OfflinePlayerService.NotificationActionReceiver
+import it.fast4x.riplay.service.EndlessService
 import it.fast4x.riplay.service.isLocal
 import it.fast4x.riplay.ui.components.BottomSheet
 import it.fast4x.riplay.ui.components.rememberBottomSheetState
@@ -294,7 +294,6 @@ class MainActivity :
     MonetCompatActivity(),
     //AppCompatActivity()
     MonetColorsChangedListener
-//,PersistMapOwner
 {
     //lateinit var internetConnectivityObserver: InternetConnectivityObserver
 
@@ -307,10 +306,14 @@ class MainActivity :
             if (service is OfflinePlayerService.Binder) {
                 this@MainActivity.binder = service
             }
+            if (service is EndlessService.LocalBinder) {
+                this@MainActivity.endlessService = service.serviceInstance
+            }
         }
 
         override fun onServiceDisconnected(name: ComponentName?) {
             binder = null
+            endlessService = null
         }
 
     }
@@ -318,7 +321,6 @@ class MainActivity :
     private var binder by mutableStateOf<OfflinePlayerService.Binder?>(null)
     private var intentUriData by mutableStateOf<Uri?>(null)
 
-    //override lateinit var persistMap: PersistMap
 
     private var sensorManager: SensorManager? = null
     private var acceleration = 0f
@@ -360,6 +362,8 @@ class MainActivity :
     var currentPlaybackPosition: MutableState<Long> = mutableStateOf(0)
     var currentPlaybackDuration: MutableState<Long> = mutableStateOf(0)
 
+    var endlessService: EndlessService? = null
+
     override fun onStart() {
         super.onStart()
 
@@ -370,6 +374,14 @@ class MainActivity :
 
         }.onFailure {
             Timber.e("MainActivity.onStart bindService ${it.stackTraceToString()}")
+        }
+
+        runCatching {
+            val intent = Intent(this, EndlessService::class.java)
+            bindService(intent, serviceConnection, BIND_AUTO_CREATE)
+            startService(intent)
+        }.onFailure {
+            Timber.e("MainActivity.onStart startService EndlessService ${it.stackTraceToString()}")
         }
 
     }
