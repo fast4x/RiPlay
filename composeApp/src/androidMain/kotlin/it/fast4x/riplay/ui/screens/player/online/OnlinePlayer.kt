@@ -1038,6 +1038,12 @@ fun OnlinePlayer(
         } ?: 0
     }
 
+
+
+//    var isShowingStatsForNerds by remember {
+//        mutableStateOf(false)
+//    }
+
     val thumbnailTapEnabled by rememberPreference(thumbnailTapEnabledKey, true)
     val showNextSongsInPlayer by rememberPreference(showNextSongsInPlayerKey, false)
 
