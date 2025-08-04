@@ -138,8 +138,8 @@ android {
         applicationId = "it.fast4x.riplay"
         minSdk = 21
         targetSdk = 36
-        versionCode = 4
-        versionName = "0.0.4-alpha"
+        versionCode = 5
+        versionName = "0.0.5-alpha"
 
         multiDexEnabled = true
 
@@ -530,7 +530,7 @@ dependencies {
 }
 
 dependencies {
-    implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.aar", "*.jar"))))
+    //implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.aar", "*.jar"))))
     implementation(projects.composePersist)
     implementation(libs.compose.activity)
     implementation(libs.compose.foundation)
