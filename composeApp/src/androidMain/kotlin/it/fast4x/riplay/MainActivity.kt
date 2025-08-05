@@ -913,21 +913,6 @@ class MainActivity :
                             }
 
                             // todo improve enum in live state
-                            playerThumbnailSizeLKey,
-                            backgroundProgressKey,
-                            queueLoopTypeKey,
-                            showsongsKey,
-                            playerTypeKey,queueTypeKey,
-                            playerBackgroundColorsKey,
-                            animatedGradientKey,
-                            transparentBackgroundPlayerActionBarKey,
-                            coverThumbnailAnimationKey,
-                            thumbnailRoundnessKey,
-                            carouselSizeKey,
-                            thumbnailTypeKey,
-                            swipeAnimationsNoThumbnailKey,
-                            effectRotationKey, playerThumbnailSizeKey,
-                            playerVisualizerTypeKey,
                             UiTypeKey,
                             disablePlayerHorizontalSwipeKey,
                             disableClosingPlayerSwipingDownKey,

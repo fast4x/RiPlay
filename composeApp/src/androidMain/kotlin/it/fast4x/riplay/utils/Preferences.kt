@@ -2,7 +2,6 @@ package it.fast4x.riplay.utils
 
 import android.content.Context
 import android.content.SharedPreferences
-import android.net.nsd.NsdServiceInfo
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.SnapshotMutationPolicy
@@ -10,7 +9,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
-import androidx.core.app.PendingIntentCompat.send
 import androidx.core.content.edit
 import it.fast4x.environment.Environment
 import it.fast4x.environment.requests.HomePage
@@ -617,7 +615,7 @@ inline fun <reified T : Enum<T>> rememberPreference(key: String, defaultValue: T
 @Composable
 inline fun <reified T : Enum<T>>  rememberObservedPreference(key: String, defaultValue: T): MutableState<T> {
     val context = LocalContext.current
-    val state = context.preferences.observeKey(key, defaultValue).collectAsState(defaultValue) as MutableState<T>
+    val state = context.preferences.observeKeyEnum(key, defaultValue).collectAsState(defaultValue) as MutableState<T>
     return remember { state }
 }
 
@@ -659,6 +657,30 @@ inline fun <reified T> SharedPreferences.observeKey(key: String, default: T): Fl
     }
 }
 
+inline fun <reified T: Enum<T>> SharedPreferences.observeKeyEnum(key: String, default: T): Flow<T> = channelFlow {
+    try {
+        send(getEnum(key, default))
+    } catch (e: Exception) {
+        Timber.e("observeKeyEnum Error: ${e.stackTraceToString()}")
+    }
+
+
+    val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, k ->
+        if (key == k) {
+            try {
+                trySend(getEnum(key, default))
+            } catch (e: Exception) {
+                Timber.e("observeKeyEnum Error: ${e.stackTraceToString()}")
+            }
+        }
+    }
+    registerOnSharedPreferenceChangeListener(listener)
+
+    awaitClose {
+        unregisterOnSharedPreferenceChangeListener(listener)
+    }
+}
+
 inline fun <reified T> SharedPreferences.getItem(key: String, default: T): T {
     @Suppress("UNCHECKED_CAST")
     return when (default) {
@@ -670,4 +692,14 @@ inline fun <reified T> SharedPreferences.getItem(key: String, default: T): T {
         is Set<*> -> getStringSet(key, default as Set<String>) as T
         else -> error("generic type not handled ${T::class.java.name}")
     }
+}
+
+//Int to Enum
+inline fun <reified T : Enum<T>> Int.toEnum(): T? {
+    return enumValues<T>().firstOrNull { it.ordinal == this }
+}
+
+//Enum to Int
+inline fun <reified T : Enum<T>> T.toInt(): Int {
+    return this.ordinal
 }

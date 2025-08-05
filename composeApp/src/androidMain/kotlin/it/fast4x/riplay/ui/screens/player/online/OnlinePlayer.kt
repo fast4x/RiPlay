@@ -406,11 +406,11 @@ fun OnlinePlayer(
 
     val effectRotationEnabled by rememberObservedPreference(effectRotationKey, true)
 
-    val playerThumbnailSize by rememberPreference(
+    val playerThumbnailSize by rememberObservedPreference(
         playerThumbnailSizeKey,
         PlayerThumbnailSize.Biggest
     )
-    var playerThumbnailSizeL by rememberPreference(
+    val playerThumbnailSizeL by rememberObservedPreference(
         playerThumbnailSizeLKey,
         PlayerThumbnailSize.Biggest
     )
@@ -711,21 +711,21 @@ fun OnlinePlayer(
     val showButtonPlayerVideo by rememberObservedPreference(showButtonPlayerVideoKey, false)
 
     val showTotalTimeQueue by rememberObservedPreference(showTotalTimeQueueKey, true)
-    val backgroundProgress by rememberPreference(
+    val backgroundProgress by rememberObservedPreference(
         backgroundProgressKey,
         BackgroundProgress.MiniPlayer
     )
 
-    var queueLoopType by rememberPreference(queueLoopTypeKey, defaultValue = QueueLoopType.Default)
+    var queueLoopType by rememberObservedPreference(queueLoopTypeKey, defaultValue = QueueLoopType.Default)
     var showCircularSlider by remember {
         mutableStateOf(false)
     }
-    val showsongs by rememberPreference(showsongsKey, SongsNumber.`2`)
+    val showsongs by rememberObservedPreference(showsongsKey, SongsNumber.`2`)
     val showalbumcover by rememberObservedPreference(showalbumcoverKey, true)
     val tapqueue by rememberObservedPreference(tapqueueKey, true)
     val swipeUpQueue by rememberObservedPreference(swipeUpQueueKey, true)
-    val playerType by rememberPreference(playerTypeKey, PlayerType.Essential)
-    val queueType by rememberPreference(queueTypeKey, QueueType.Essential)
+    val playerType by rememberObservedPreference(playerTypeKey, PlayerType.Essential)
+    val queueType by rememberObservedPreference(queueTypeKey, QueueType.Essential)
     val noblur by rememberObservedPreference(noblurKey, true)
     val fadingedge by rememberObservedPreference(fadingedgeKey, false)
     val configuration = LocalConfiguration.current
@@ -915,11 +915,11 @@ fun OnlinePlayer(
         )
     }
 
-    val playerBackgroundColors by rememberPreference(
+    val playerBackgroundColors by rememberObservedPreference(
         playerBackgroundColorsKey,
         PlayerBackgroundColors.BlurredCoverColor
     )
-    val animatedGradient by rememberPreference(
+    val animatedGradient by rememberObservedPreference(
         animatedGradientKey,
         AnimatedGradient.Linear
     )
@@ -1071,7 +1071,7 @@ fun OnlinePlayer(
     val controlsExpanded by rememberObservedPreference(controlsExpandedKey, true)
 
     val showCoverThumbnailAnimation by rememberObservedPreference(showCoverThumbnailAnimationKey, false)
-    var coverThumbnailAnimation by rememberPreference(
+    var coverThumbnailAnimation by rememberObservedPreference(
         coverThumbnailAnimationKey,
         ThumbnailCoverType.Vinyl
     )
@@ -1463,7 +1463,7 @@ fun OnlinePlayer(
 
     }
 
-    val thumbnailRoundness by rememberPreference(
+    val thumbnailRoundness by rememberObservedPreference(
         thumbnailRoundnessKey,
         ThumbnailRoundness.Heavy
     )
@@ -1644,7 +1644,7 @@ fun OnlinePlayer(
     }
     val playlistindicator by rememberObservedPreference(playlistindicatorKey, false)
     val carousel by rememberObservedPreference(carouselKey, true)
-    val carouselSize by rememberPreference(carouselSizeKey, CarouselSize.Biggest)
+    val carouselSize by rememberObservedPreference(carouselSizeKey, CarouselSize.Biggest)
 
     var showButtonPlayerDiscover by rememberObservedPreference(showButtonPlayerDiscoverKey, false)
     val hazeState = remember { HazeState() }
@@ -2291,10 +2291,10 @@ fun OnlinePlayer(
         }
 
 
-        val thumbnailType by rememberPreference(thumbnailTypeKey, ThumbnailType.Modern)
+        val thumbnailType by rememberObservedPreference(thumbnailTypeKey, ThumbnailType.Modern)
         val statsfornerds by rememberObservedPreference(statsfornerdsKey, false)
         val topPadding by rememberObservedPreference(topPaddingKey, true)
-        var swipeAnimationNoThumbnail by rememberPreference(
+        var swipeAnimationNoThumbnail by rememberObservedPreference(
             swipeAnimationsNoThumbnailKey,
             SwipeAnimationNoThumbnail.Sliding
         )
