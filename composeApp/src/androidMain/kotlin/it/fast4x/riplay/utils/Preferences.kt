@@ -6,14 +6,19 @@ import android.net.nsd.NsdServiceInfo
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.SnapshotMutationPolicy
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
+import androidx.core.app.PendingIntentCompat.send
 import androidx.core.content.edit
 import it.fast4x.environment.Environment
 import it.fast4x.environment.requests.HomePage
 import it.fast4x.riplay.extensions.link.LinkDevices
 import it.fast4x.riplay.models.Song
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.channelFlow
 import kotlinx.serialization.json.Json
 import timber.log.Timber
 
@@ -525,6 +530,13 @@ fun rememberPreference(key: String, defaultValue: Boolean): MutableState<Boolean
 }
 
 @Composable
+fun rememberObservedPreference(key: String, defaultValue: Boolean): MutableState<Boolean> {
+    val context = LocalContext.current
+    val state = context.preferences.observeKey(key, defaultValue).collectAsState(defaultValue) as MutableState<Boolean>
+    return remember { state }
+}
+
+@Composable
 fun rememberPreference(key: String, defaultValue: Int): MutableState<Int> {
     val context = LocalContext.current
     return remember {
@@ -534,7 +546,12 @@ fun rememberPreference(key: String, defaultValue: Int): MutableState<Int> {
     }
 }
 
-
+@Composable
+fun rememberObservedPreference(key: String, defaultValue: Int): MutableState<Int> {
+    val context = LocalContext.current
+    val state = context.preferences.observeKey(key, defaultValue).collectAsState(defaultValue) as MutableState<Int>
+    return remember { state }
+}
 
 @Composable
 fun rememberPreference(key: String, defaultValue: Float): MutableState<Float> {
@@ -544,6 +561,13 @@ fun rememberPreference(key: String, defaultValue: Float): MutableState<Float> {
             context.preferences.edit { putFloat(key, it) }
         }
     }
+}
+
+@Composable
+fun rememberObservedPreference(key: String, defaultValue: Float): MutableState<Float> {
+    val context = LocalContext.current
+    val state = context.preferences.observeKey(key, defaultValue).collectAsState(defaultValue) as MutableState<Float>
+    return remember { state }
 }
 
 @Composable
@@ -557,6 +581,13 @@ fun rememberPreference(key: String, defaultValue: Long): MutableState<Long> {
 }
 
 @Composable
+fun rememberObservedPreference(key: String, defaultValue: Long): MutableState<Long> {
+    val context = LocalContext.current
+    val state = context.preferences.observeKey(key, defaultValue).collectAsState(defaultValue) as MutableState<Long>
+    return remember { state }
+}
+
+@Composable
 fun rememberPreference(key: String, defaultValue: String): MutableState<String> {
     val context = LocalContext.current
     return remember {
@@ -567,6 +598,13 @@ fun rememberPreference(key: String, defaultValue: String): MutableState<String> 
 }
 
 @Composable
+fun rememberObservedPreference(key: String, defaultValue: String): MutableState<String> {
+    val context = LocalContext.current
+    val state = context.preferences.observeKey(key, defaultValue).collectAsState(defaultValue) as MutableState<String>
+    return remember { state }
+}
+
+@Composable
 inline fun <reified T : Enum<T>> rememberPreference(key: String, defaultValue: T): MutableState<T> {
     val context = LocalContext.current
     return remember {
@@ -574,6 +612,13 @@ inline fun <reified T : Enum<T>> rememberPreference(key: String, defaultValue: T
             context.preferences.edit { putEnum(key, it) }
         }
     }
+}
+
+@Composable
+inline fun <reified T : Enum<T>>  rememberObservedPreference(key: String, defaultValue: T): MutableState<T> {
+    val context = LocalContext.current
+    val state = context.preferences.observeKey(key, defaultValue).collectAsState(defaultValue) as MutableState<T>
+    return remember { state }
 }
 
 fun clearPreference(context: Context, key: String): Unit {
@@ -598,3 +643,31 @@ inline fun <T> mutableStatePreferenceOf(
                 return areEquals
             }
         })
+
+inline fun <reified T> SharedPreferences.observeKey(key: String, default: T): Flow<T> = channelFlow {
+    send(getItem(key, default))
+
+    val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, k ->
+        if (key == k) {
+            trySend(getItem(key, default))
+        }
+    }
+    registerOnSharedPreferenceChangeListener(listener)
+
+    awaitClose {
+        unregisterOnSharedPreferenceChangeListener(listener)
+    }
+}
+
+inline fun <reified T> SharedPreferences.getItem(key: String, default: T): T {
+    @Suppress("UNCHECKED_CAST")
+    return when (default) {
+        is String -> getString(key, default) as T
+        is Int -> getInt(key, default) as T
+        is Long -> getLong(key, default) as T
+        is Boolean -> getBoolean(key, default) as T
+        is Float -> getFloat(key, default) as T
+        is Set<*> -> getStringSet(key, default as Set<String>) as T
+        else -> error("generic type not handled ${T::class.java.name}")
+    }
+}

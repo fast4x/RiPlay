@@ -186,10 +186,12 @@ import it.fast4x.riplay.utils.animatedGradientKey
 import it.fast4x.riplay.utils.applyFontPaddingKey
 import it.fast4x.riplay.utils.asMediaItem
 import it.fast4x.riplay.utils.backgroundProgressKey
+import it.fast4x.riplay.utils.carouselSizeKey
 import it.fast4x.riplay.utils.checkUpdateStateKey
 import it.fast4x.riplay.utils.closeWithBackButtonKey
 import it.fast4x.riplay.utils.colorPaletteModeKey
 import it.fast4x.riplay.utils.colorPaletteNameKey
+import it.fast4x.riplay.utils.coverThumbnailAnimationKey
 import it.fast4x.riplay.utils.customColorKey
 import it.fast4x.riplay.utils.customDnsOverHttpsServerKey
 import it.fast4x.riplay.utils.customThemeDark_Background0Key
@@ -240,11 +242,15 @@ import it.fast4x.riplay.utils.playNext
 import it.fast4x.riplay.utils.playPrevious
 import it.fast4x.riplay.utils.playerBackgroundColorsKey
 import it.fast4x.riplay.utils.playerThumbnailSizeKey
+import it.fast4x.riplay.utils.playerThumbnailSizeLKey
+import it.fast4x.riplay.utils.playerTypeKey
 import it.fast4x.riplay.utils.playerVisualizerTypeKey
 import it.fast4x.riplay.utils.preferences
 import it.fast4x.riplay.utils.proxyHostnameKey
 import it.fast4x.riplay.utils.proxyModeKey
 import it.fast4x.riplay.utils.proxyPortKey
+import it.fast4x.riplay.utils.queueLoopTypeKey
+import it.fast4x.riplay.utils.queueTypeKey
 import it.fast4x.riplay.utils.rememberPreference
 import it.fast4x.riplay.utils.resize
 import it.fast4x.riplay.utils.restartActivityKey
@@ -252,9 +258,13 @@ import it.fast4x.riplay.utils.setDefaultPalette
 import it.fast4x.riplay.utils.shakeEventEnabledKey
 import it.fast4x.riplay.utils.showSearchTabKey
 import it.fast4x.riplay.utils.showTotalTimeQueueKey
+import it.fast4x.riplay.utils.showsongsKey
+import it.fast4x.riplay.utils.swipeAnimationsNoThumbnailKey
 import it.fast4x.riplay.utils.thumbnail
 import it.fast4x.riplay.utils.thumbnailRoundnessKey
+import it.fast4x.riplay.utils.thumbnailTypeKey
 import it.fast4x.riplay.utils.transitionEffectKey
+import it.fast4x.riplay.utils.transparentBackgroundPlayerActionBarKey
 import it.fast4x.riplay.utils.useSystemFontKey
 import it.fast4x.riplay.utils.ytCookieKey
 import it.fast4x.riplay.utils.ytDataSyncIdKey
@@ -902,6 +912,20 @@ class MainActivity :
                                 AppCompatDelegate.setApplicationLocales(if (lang.code == "") sysLocale else appLocale)
                             }
 
+                            // todo improve enum in live state
+                            playerThumbnailSizeLKey,
+                            backgroundProgressKey,
+                            queueLoopTypeKey,
+                            showsongsKey,
+                            playerTypeKey,queueTypeKey,
+                            playerBackgroundColorsKey,
+                            animatedGradientKey,
+                            transparentBackgroundPlayerActionBarKey,
+                            coverThumbnailAnimationKey,
+                            thumbnailRoundnessKey,
+                            carouselSizeKey,
+                            thumbnailTypeKey,
+                            swipeAnimationsNoThumbnailKey,
                             effectRotationKey, playerThumbnailSizeKey,
                             playerVisualizerTypeKey,
                             UiTypeKey,

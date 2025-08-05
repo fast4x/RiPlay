@@ -313,6 +313,7 @@ import it.fast4x.riplay.utils.playlistindicatorKey
 import it.fast4x.riplay.utils.queueDurationExpandedKey
 import it.fast4x.riplay.utils.queueLoopTypeKey
 import it.fast4x.riplay.utils.queueTypeKey
+import it.fast4x.riplay.utils.rememberObservedPreference
 import it.fast4x.riplay.utils.rememberPreference
 import it.fast4x.riplay.utils.seamlessPlay
 import it.fast4x.riplay.utils.semiBold
@@ -403,7 +404,7 @@ fun OnlinePlayer(
 
     val menuState = LocalMenuState.current
 
-    val effectRotationEnabled by rememberPreference(effectRotationKey, true)
+    val effectRotationEnabled by rememberObservedPreference(effectRotationKey, true)
 
     val playerThumbnailSize by rememberPreference(
         playerThumbnailSizeKey,
@@ -414,8 +415,8 @@ fun OnlinePlayer(
         PlayerThumbnailSize.Biggest
     )
 
-    val disablePlayerHorizontalSwipe by rememberPreference(disablePlayerHorizontalSwipeKey, false)
-    val showlyricsthumbnail by rememberPreference(showlyricsthumbnailKey, false)
+    val disablePlayerHorizontalSwipe by rememberObservedPreference(disablePlayerHorizontalSwipeKey, false)
+    val showlyricsthumbnail by rememberObservedPreference(showlyricsthumbnailKey, false)
     val binder = LocalPlayerServiceBinder.current
 
     binder?.player ?: return
@@ -435,7 +436,7 @@ fun OnlinePlayer(
         animationSpec = tween(durationMillis = 200), label = ""
     )
 
-    val visualizerEnabled by rememberPreference(visualizerEnabledKey, false)
+    val visualizerEnabled by rememberObservedPreference(visualizerEnabledKey, false)
 
     val defaultStrength = 25f
     val defaultDarkenFactor = 0.2f
@@ -459,7 +460,7 @@ fun OnlinePlayer(
     var isShowingLyrics by remember {
         mutableStateOf(false)
     }
-    val showvisthumbnail by rememberPreference(showvisthumbnailKey, false)
+    val showvisthumbnail by rememberObservedPreference(showvisthumbnailKey, false)
     var isShowingVisualizer by remember {
         mutableStateOf(false)
     }
@@ -500,10 +501,10 @@ fun OnlinePlayer(
         mutableStateOf<PlaybackException?>(binder.player.playerError)
     }
 
-    val queueDurationExpanded by rememberPreference(queueDurationExpandedKey, true)
-    val miniQueueExpanded by rememberPreference(miniQueueExpandedKey, true)
-    val statsExpanded by rememberPreference(statsExpandedKey, true)
-    val actionExpanded by rememberPreference(actionExpandedKey, true)
+    val queueDurationExpanded by rememberObservedPreference(queueDurationExpandedKey, true)
+    val miniQueueExpanded by rememberObservedPreference(miniQueueExpandedKey, true)
+    val statsExpanded by rememberObservedPreference(statsExpandedKey, true)
+    val actionExpanded by rememberObservedPreference(actionExpandedKey, true)
     val colorPaletteName by rememberPreference(colorPaletteNameKey, ColorPaletteName.Dynamic)
 
     fun PagerState.offsetForPage(page: Int) = (currentPage - page) + currentPageOffsetFraction
@@ -628,8 +629,8 @@ fun OnlinePlayer(
             }
         )
     }
-    val actionspacedevenly by rememberPreference(actionspacedevenlyKey, false)
-    var expandedplayer by rememberPreference(expandedplayerKey, false)
+    val actionspacedevenly by rememberObservedPreference(actionspacedevenlyKey, false)
+    var expandedplayer by rememberObservedPreference(expandedplayerKey, false)
 
     var updateBrush by remember { mutableStateOf(false) }
 
@@ -691,25 +692,25 @@ fun OnlinePlayer(
         updateBrush = true
     }
 
-    var showthumbnail by rememberPreference(showthumbnailKey, true)
+    var showthumbnail by rememberObservedPreference(showthumbnailKey, true)
 
-    val showButtonPlayerAddToPlaylist by rememberPreference(showButtonPlayerAddToPlaylistKey, true)
-    val showButtonPlayerArrow by rememberPreference(showButtonPlayerArrowKey, true)
-    val showButtonPlayerDownload by rememberPreference(showButtonPlayerDownloadKey, true)
-    val showButtonPlayerLoop by rememberPreference(showButtonPlayerLoopKey, true)
-    val showButtonPlayerLyrics by rememberPreference(showButtonPlayerLyricsKey, true)
-    val expandedplayertoggle by rememberPreference(expandedplayertoggleKey, true)
-    val showButtonPlayerShuffle by rememberPreference(showButtonPlayerShuffleKey, true)
-    val showButtonPlayerSleepTimer by rememberPreference(showButtonPlayerSleepTimerKey, false)
-    val showButtonPlayerMenu by rememberPreference(showButtonPlayerMenuKey, false)
-    val showButtonPlayerStartRadio by rememberPreference(showButtonPlayerStartRadioKey, false)
-    val showButtonPlayerSystemEqualizer by rememberPreference(
+    val showButtonPlayerAddToPlaylist by rememberObservedPreference(showButtonPlayerAddToPlaylistKey, true)
+    val showButtonPlayerArrow by rememberObservedPreference(showButtonPlayerArrowKey, true)
+    val showButtonPlayerDownload by rememberObservedPreference(showButtonPlayerDownloadKey, true)
+    val showButtonPlayerLoop by rememberObservedPreference(showButtonPlayerLoopKey, true)
+    val showButtonPlayerLyrics by rememberObservedPreference(showButtonPlayerLyricsKey, true)
+    val expandedplayertoggle by rememberObservedPreference(expandedplayertoggleKey, true)
+    val showButtonPlayerShuffle by rememberObservedPreference(showButtonPlayerShuffleKey, true)
+    val showButtonPlayerSleepTimer by rememberObservedPreference(showButtonPlayerSleepTimerKey, false)
+    val showButtonPlayerMenu by rememberObservedPreference(showButtonPlayerMenuKey, false)
+    val showButtonPlayerStartRadio by rememberObservedPreference(showButtonPlayerStartRadioKey, false)
+    val showButtonPlayerSystemEqualizer by rememberObservedPreference(
         showButtonPlayerSystemEqualizerKey,
         false
     )
-    val showButtonPlayerVideo by rememberPreference(showButtonPlayerVideoKey, false)
+    val showButtonPlayerVideo by rememberObservedPreference(showButtonPlayerVideoKey, false)
 
-    val showTotalTimeQueue by rememberPreference(showTotalTimeQueueKey, true)
+    val showTotalTimeQueue by rememberObservedPreference(showTotalTimeQueueKey, true)
     val backgroundProgress by rememberPreference(
         backgroundProgressKey,
         BackgroundProgress.MiniPlayer
@@ -720,13 +721,13 @@ fun OnlinePlayer(
         mutableStateOf(false)
     }
     val showsongs by rememberPreference(showsongsKey, SongsNumber.`2`)
-    val showalbumcover by rememberPreference(showalbumcoverKey, true)
-    val tapqueue by rememberPreference(tapqueueKey, true)
-    val swipeUpQueue by rememberPreference(swipeUpQueueKey, true)
+    val showalbumcover by rememberObservedPreference(showalbumcoverKey, true)
+    val tapqueue by rememberObservedPreference(tapqueueKey, true)
+    val swipeUpQueue by rememberObservedPreference(swipeUpQueueKey, true)
     val playerType by rememberPreference(playerTypeKey, PlayerType.Essential)
     val queueType by rememberPreference(queueTypeKey, QueueType.Essential)
-    val noblur by rememberPreference(noblurKey, true)
-    val fadingedge by rememberPreference(fadingedgeKey, false)
+    val noblur by rememberObservedPreference(noblurKey, true)
+    val fadingedge by rememberObservedPreference(fadingedgeKey, false)
     val configuration = LocalConfiguration.current
     val screenWidth = configuration.screenWidthDp.dp
     val screenHeight = configuration.screenHeightDp.dp
@@ -1044,8 +1045,8 @@ fun OnlinePlayer(
 //        mutableStateOf(false)
 //    }
 
-    val thumbnailTapEnabled by rememberPreference(thumbnailTapEnabledKey, true)
-    val showNextSongsInPlayer by rememberPreference(showNextSongsInPlayerKey, false)
+    val thumbnailTapEnabled by rememberObservedPreference(thumbnailTapEnabledKey, true)
+    val showNextSongsInPlayer by rememberObservedPreference(showNextSongsInPlayerKey, false)
 
     var showQueue by remember { mutableStateOf(false) }
     var showSearchEntity by remember { mutableStateOf(false) }
@@ -1054,22 +1055,22 @@ fun OnlinePlayer(
         transparentBackgroundPlayerActionBarKey,
         false
     )
-    val showTopActionsBar by rememberPreference(showTopActionsBarKey, true)
+    val showTopActionsBar by rememberObservedPreference(showTopActionsBarKey, true)
 
     var containerModifier = Modifier
         //.padding(bottom = bottomDp)
         .padding(bottom = 0.dp)
     var deltaX by remember { mutableStateOf(0f) }
-    val blackgradient by rememberPreference(blackgradientKey, false)
-    val bottomgradient by rememberPreference(bottomgradientKey, false)
-    val disableScrollingText by rememberPreference(disableScrollingTextKey, false)
+    val blackgradient by rememberObservedPreference(blackgradientKey, false)
+    val bottomgradient by rememberObservedPreference(bottomgradientKey, false)
+    val disableScrollingText by rememberObservedPreference(disableScrollingTextKey, false)
 
-    var discoverIsEnabled by rememberPreference(discoverKey, false)
-    val titleExpanded by rememberPreference(titleExpandedKey, true)
-    val timelineExpanded by rememberPreference(timelineExpandedKey, true)
-    val controlsExpanded by rememberPreference(controlsExpandedKey, true)
+    var discoverIsEnabled by rememberObservedPreference(discoverKey, false)
+    val titleExpanded by rememberObservedPreference(titleExpandedKey, true)
+    val timelineExpanded by rememberObservedPreference(timelineExpandedKey, true)
+    val controlsExpanded by rememberObservedPreference(controlsExpandedKey, true)
 
-    val showCoverThumbnailAnimation by rememberPreference(showCoverThumbnailAnimationKey, false)
+    val showCoverThumbnailAnimation by rememberObservedPreference(showCoverThumbnailAnimationKey, false)
     var coverThumbnailAnimation by rememberPreference(
         coverThumbnailAnimationKey,
         ThumbnailCoverType.Vinyl
@@ -1078,7 +1079,7 @@ fun OnlinePlayer(
     var valueGrad by remember { mutableStateOf(2) }
     val gradients = enumValues<AnimatedGradient>()
     var tempGradient by remember { mutableStateOf(AnimatedGradient.Linear) }
-    var albumCoverRotation by rememberPreference(albumCoverRotationKey, false)
+    var albumCoverRotation by rememberObservedPreference(albumCoverRotationKey, false)
     var circleOffsetY by remember { mutableStateOf(0f) }
 
     @Composable
@@ -1631,7 +1632,7 @@ fun OnlinePlayer(
     }
 
 
-    val textoutline by rememberPreference(textoutlineKey, false)
+    val textoutline by rememberObservedPreference(textoutlineKey, false)
 
     var songPlaylist by remember {
         mutableStateOf(0)
@@ -1641,11 +1642,11 @@ fun OnlinePlayer(
             songPlaylist = Database.songUsedInPlaylists(mediaItem.mediaId)
         }
     }
-    val playlistindicator by rememberPreference(playlistindicatorKey, false)
-    val carousel by rememberPreference(carouselKey, true)
+    val playlistindicator by rememberObservedPreference(playlistindicatorKey, false)
+    val carousel by rememberObservedPreference(carouselKey, true)
     val carouselSize by rememberPreference(carouselSizeKey, CarouselSize.Biggest)
 
-    var showButtonPlayerDiscover by rememberPreference(showButtonPlayerDiscoverKey, false)
+    var showButtonPlayerDiscover by rememberObservedPreference(showButtonPlayerDiscoverKey, false)
     val hazeState = remember { HazeState() }
 
     Box(
@@ -2262,8 +2263,8 @@ fun OnlinePlayer(
         }
 
         val binderPlayer = binder.player ?: return
-        val clickLyricsText by rememberPreference(clickOnLyricsTextKey, true)
-        var extraspace by rememberPreference(extraspaceKey, false)
+        val clickLyricsText by rememberObservedPreference(clickOnLyricsTextKey, true)
+        var extraspace by rememberObservedPreference(extraspaceKey, false)
 
         val nextmedia = if (binder.player.mediaItemCount > 1
             && binder.player.currentMediaItemIndex + 1 < binder.player.mediaItemCount
@@ -2291,8 +2292,8 @@ fun OnlinePlayer(
 
 
         val thumbnailType by rememberPreference(thumbnailTypeKey, ThumbnailType.Modern)
-        val statsfornerds by rememberPreference(statsfornerdsKey, false)
-        val topPadding by rememberPreference(topPaddingKey, true)
+        val statsfornerds by rememberObservedPreference(statsfornerdsKey, false)
+        val topPadding by rememberObservedPreference(topPaddingKey, true)
         var swipeAnimationNoThumbnail by rememberPreference(
             swipeAnimationsNoThumbnailKey,
             SwipeAnimationNoThumbnail.Sliding
@@ -2703,7 +2704,7 @@ fun OnlinePlayer(
                                             if (showCoverThumbnailAnimation)
                                                 RotateThumbnailCoverAnimationModern(
                                                     painter = coverPainter,
-                                                    isSongPlaying = binderPlayer.isPlaying,
+                                                    isSongPlaying = binderPlayer.isPlaying || shouldBePlaying,
                                                     modifier = coverModifier
                                                         .zIndex(
                                                             if (it == pagerState.currentPage) 1f
@@ -3448,7 +3449,7 @@ fun OnlinePlayer(
                                         if (showCoverThumbnailAnimation)
                                             RotateThumbnailCoverAnimationModern(
                                                 painter = coverPainter,
-                                                isSongPlaying = binderPlayer.isPlaying,
+                                                isSongPlaying = binderPlayer.isPlaying  || shouldBePlaying,
                                                 modifier = coverModifier
                                                     .zIndex(
                                                         if (it == pagerState.currentPage) 1f
