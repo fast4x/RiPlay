@@ -101,7 +101,7 @@ fun HomeSearch(
 
             item(key = "library") {
                 PlaylistItem(
-                    icon = R.drawable.library,
+                    icon = R.drawable.playlist,
                     colorTint = colorPalette().favoritesIcon,
                     name = "${stringResource(R.string.search)} ${stringResource(R.string.library)}",
                     songCount = null,

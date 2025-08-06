@@ -233,7 +233,7 @@ fun ArtistScreen(
         miniPlayer,
         navBarContent = { Item ->
             Item(0, stringResource(R.string.overview), R.drawable.artist)
-            Item(1, stringResource(R.string.library), R.drawable.library)
+            Item(1, stringResource(R.string.library), R.drawable.playlist)
         }
     ) { currentTabIndex ->
                 saveableStateHolder.SaveableStateProvider(key = currentTabIndex) {

@@ -36,16 +36,18 @@ class YouTubePlayersManager internal constructor(
 
     init {
         val nextVideoButton = chromecastControls.findViewById<Button?>(R.id.next_video_button)
-        nextVideoButton.visibility = View.VISIBLE
+        if (nextVideoButton != null) {
+            nextVideoButton.visibility = View.VISIBLE
+        }
         chromecastUiController = SimpleChromeCastUiController(chromecastControls)
 
         initLocalYouTube(localYouTubePlayerInitListener)
-        nextVideoButton.setOnClickListener(View.OnClickListener { view: View? ->
+        nextVideoButton?.setOnClickListener { view: View? ->
             if (chromecastYouTubePlayer != null) chromecastYouTubePlayer!!.loadVideo(
                 VideoIdsProvider.nextVideoId,
                 0f
             )
-        })
+        }
     }
 
     override fun onChromecastConnecting() {

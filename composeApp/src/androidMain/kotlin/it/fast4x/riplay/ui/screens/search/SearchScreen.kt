@@ -149,7 +149,7 @@ fun SearchScreen(
                 miniPlayer,
                 navBarContent = { item ->
                     item(0, stringResource(R.string.online), R.drawable.globe)
-                    item(1, stringResource(R.string.library), R.drawable.library)
+                    item(1, stringResource(R.string.library), R.drawable.playlist)
                     item(2, stringResource(R.string.go_to_link), R.drawable.link)
                 }
             ) { currentTabIndex ->

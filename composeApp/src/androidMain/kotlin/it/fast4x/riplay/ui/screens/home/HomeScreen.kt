@@ -20,6 +20,7 @@ import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.lifecycle.Lifecycle
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
+import it.fast4x.riplay.LocalPlayerSheetState
 import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.CheckUpdateState
 import it.fast4x.riplay.enums.HomeScreenTabs
@@ -99,7 +100,7 @@ fun HomeScreen(
             Item(1, stringResource(R.string.songs), R.drawable.disc)
             Item(2, stringResource(R.string.artists), R.drawable.artists)
             Item(3, stringResource(R.string.albums), R.drawable.album)
-            Item(4, stringResource(R.string.playlists), R.drawable.library)
+            Item(4, stringResource(R.string.playlists), R.drawable.playlist)
         }
     ) { currentTabIndex ->
         saveableStateHolder.SaveableStateProvider(key = currentTabIndex) {
@@ -203,7 +204,10 @@ fun HomeScreen(
     // Exit app when user uses back
     val context = LocalContext.current
     var confirmCount by remember { mutableIntStateOf( 0 ) }
-    BackHandler {
+    val playerSheetState = LocalPlayerSheetState.current
+    BackHandler(
+        enabled = !playerSheetState.isExpanded
+    ) {
         // Prevent this from being applied when user is not on HomeScreen
         if( NavRoutes.home.isNotHere( navController ) )  {
             if ( navController.currentBackStackEntry?.lifecycle?.currentState == Lifecycle.State.RESUMED )

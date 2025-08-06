@@ -4,8 +4,6 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.ActivityManager
 import android.app.PendingIntent
-import android.app.PictureInPictureParams
-import android.app.RemoteAction
 import android.content.BroadcastReceiver
 import android.content.ComponentName
 import android.content.Context
@@ -27,7 +25,6 @@ import android.os.Build
 import android.os.Bundle
 import android.os.IBinder
 import android.support.v4.media.MediaMetadataCompat
-import android.support.v4.media.RatingCompat
 import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import android.view.WindowManager
@@ -39,7 +36,6 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.ActivityResultCallback
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContract
-import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.LinearEasing
@@ -107,7 +103,6 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.common.util.Log
 import androidx.media3.common.util.UnstableApi
-import androidx.media3.session.CommandButton
 import androidx.navigation.compose.rememberNavController
 import androidx.palette.graphics.Palette
 import coil.imageLoader
@@ -123,7 +118,6 @@ import com.valentinilk.shimmer.defaultShimmerTheme
 import de.raphaelebner.roomdatabasebackup.core.RoomBackup
 import dev.kdrag0n.monet.theme.ColorScheme
 import it.fast4x.environment.Environment
-import it.fast4x.environment.models.NavigationEndpoint
 import it.fast4x.environment.models.bodies.BrowseBody
 import it.fast4x.environment.requests.playlistPage
 import it.fast4x.environment.requests.song
@@ -140,7 +134,6 @@ import it.fast4x.riplay.enums.FontType
 import it.fast4x.riplay.enums.HomeScreenTabs
 import it.fast4x.riplay.enums.Languages
 import it.fast4x.riplay.enums.NavRoutes
-import it.fast4x.riplay.enums.NotificationButtons
 import it.fast4x.riplay.enums.PipModule
 import it.fast4x.riplay.enums.PlayerBackgroundColors
 import it.fast4x.riplay.enums.PopupType
@@ -180,18 +173,15 @@ import it.fast4x.riplay.ui.screens.player.online.OnlinePlayer
 import it.fast4x.riplay.ui.screens.player.online.components.core.OnlinePlayerCore
 import it.fast4x.riplay.ui.screens.settings.isYouTubeLoggedIn
 import it.fast4x.riplay.ui.styling.Dimensions
-import it.fast4x.riplay.utils.ActionIntent
 import it.fast4x.riplay.utils.UiTypeKey
 import it.fast4x.riplay.utils.animatedGradientKey
 import it.fast4x.riplay.utils.applyFontPaddingKey
 import it.fast4x.riplay.utils.asMediaItem
 import it.fast4x.riplay.utils.backgroundProgressKey
-import it.fast4x.riplay.utils.carouselSizeKey
 import it.fast4x.riplay.utils.checkUpdateStateKey
 import it.fast4x.riplay.utils.closeWithBackButtonKey
 import it.fast4x.riplay.utils.colorPaletteModeKey
 import it.fast4x.riplay.utils.colorPaletteNameKey
-import it.fast4x.riplay.utils.coverThumbnailAnimationKey
 import it.fast4x.riplay.utils.customColorKey
 import it.fast4x.riplay.utils.customDnsOverHttpsServerKey
 import it.fast4x.riplay.utils.customThemeDark_Background0Key
@@ -216,7 +206,6 @@ import it.fast4x.riplay.utils.customThemeLight_textDisabledKey
 import it.fast4x.riplay.utils.customThemeLight_textSecondaryKey
 import it.fast4x.riplay.utils.disableClosingPlayerSwipingDownKey
 import it.fast4x.riplay.utils.disablePlayerHorizontalSwipeKey
-import it.fast4x.riplay.utils.effectRotationKey
 import it.fast4x.riplay.utils.fontTypeKey
 import it.fast4x.riplay.utils.getEnum
 import it.fast4x.riplay.utils.getSystemlanguage
@@ -234,23 +223,15 @@ import it.fast4x.riplay.utils.loadedDataKey
 import it.fast4x.riplay.utils.miniPlayerTypeKey
 import it.fast4x.riplay.utils.navigationBarPositionKey
 import it.fast4x.riplay.utils.navigationBarTypeKey
-import it.fast4x.riplay.utils.notificationPlayerFirstIconKey
-import it.fast4x.riplay.utils.notificationPlayerSecondIconKey
 import it.fast4x.riplay.utils.parentalControlEnabledKey
 import it.fast4x.riplay.utils.pipModuleKey
 import it.fast4x.riplay.utils.playNext
 import it.fast4x.riplay.utils.playPrevious
 import it.fast4x.riplay.utils.playerBackgroundColorsKey
-import it.fast4x.riplay.utils.playerThumbnailSizeKey
-import it.fast4x.riplay.utils.playerThumbnailSizeLKey
-import it.fast4x.riplay.utils.playerTypeKey
-import it.fast4x.riplay.utils.playerVisualizerTypeKey
 import it.fast4x.riplay.utils.preferences
 import it.fast4x.riplay.utils.proxyHostnameKey
 import it.fast4x.riplay.utils.proxyModeKey
 import it.fast4x.riplay.utils.proxyPortKey
-import it.fast4x.riplay.utils.queueLoopTypeKey
-import it.fast4x.riplay.utils.queueTypeKey
 import it.fast4x.riplay.utils.rememberPreference
 import it.fast4x.riplay.utils.resize
 import it.fast4x.riplay.utils.restartActivityKey
@@ -258,18 +239,13 @@ import it.fast4x.riplay.utils.setDefaultPalette
 import it.fast4x.riplay.utils.shakeEventEnabledKey
 import it.fast4x.riplay.utils.showSearchTabKey
 import it.fast4x.riplay.utils.showTotalTimeQueueKey
-import it.fast4x.riplay.utils.showsongsKey
-import it.fast4x.riplay.utils.swipeAnimationsNoThumbnailKey
 import it.fast4x.riplay.utils.thumbnail
 import it.fast4x.riplay.utils.thumbnailRoundnessKey
-import it.fast4x.riplay.utils.thumbnailTypeKey
 import it.fast4x.riplay.utils.transitionEffectKey
-import it.fast4x.riplay.utils.transparentBackgroundPlayerActionBarKey
 import it.fast4x.riplay.utils.useSystemFontKey
 import it.fast4x.riplay.utils.ytCookieKey
 import it.fast4x.riplay.utils.ytDataSyncIdKey
 import it.fast4x.riplay.utils.ytVisitorDataKey
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
@@ -1380,6 +1356,7 @@ class MainActivity :
                                         currentDuration = currentDuration,
                                         currentSecond = currentSecond,
                                         showControls = showControls,
+                                        playerSheetState = localPlayerSheetState,
                                         onDismiss = {
                                             localPlayerSheetState.collapseSoft()
                                         },

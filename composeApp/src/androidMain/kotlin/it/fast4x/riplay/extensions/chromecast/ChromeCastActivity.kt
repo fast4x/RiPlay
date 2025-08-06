@@ -185,8 +185,8 @@ class ChromeCastActivity : AppCompatActivity(), LocalYouTubePlayerInitListener,
             disabledContainer, enabledContainer
         )
 
-        youTubePlayerView!!.setVisibility(if (connected) View.GONE else View.VISIBLE)
-        chromeCastControlsRoot!!.setVisibility(if (connected) View.VISIBLE else View.GONE)
+        youTubePlayerView!!.visibility = if (connected) View.GONE else View.VISIBLE
+        chromeCastControlsRoot!!.visibility = if (connected) View.VISIBLE else View.GONE
     }
 
     interface MediaRouteButtonContainer {

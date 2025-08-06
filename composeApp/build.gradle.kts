@@ -365,6 +365,19 @@ android {
             propertyOrEmpty("z4Xe47r8Vs")
         )
         // INIT ENVIRONMENT
+
+        //INIT CHROMECAST RECEIVER
+        resValue(
+            "string",
+            "RiPlay_CHROMECAST_APPLICATION_ID",
+            propertyOrEmpty("RiPlay_CHROMECAST_APPLICATION_ID")
+        )
+        resValue(
+            "string",
+            "Ayp_CHROMECAST_APPLICATION_ID",
+            propertyOrEmpty("Ayp_CHROMECAST_APPLICATION_ID")
+        )
+        //INIT CHROMECAST RECEIVER
     }
 
     splits {

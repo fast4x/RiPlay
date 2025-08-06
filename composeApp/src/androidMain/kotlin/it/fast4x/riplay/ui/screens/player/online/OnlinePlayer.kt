@@ -1,19 +1,13 @@
 package it.fast4x.riplay.ui.screens.player.online
 
 import android.annotation.SuppressLint
-import android.app.PendingIntent
 import android.content.ActivityNotFoundException
-import android.content.BroadcastReceiver
-import android.content.Context
 import android.content.Intent
-import android.content.IntentFilter
 import android.database.SQLException
 import android.graphics.RenderEffect
 import android.graphics.Shader
 import android.media.audiofx.AudioEffect
-import android.support.v4.media.MediaMetadataCompat
-import android.support.v4.media.session.MediaSessionCompat
-import android.support.v4.media.session.PlaybackStateCompat
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
@@ -143,9 +137,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.times
 import androidx.compose.ui.util.lerp
 import androidx.compose.ui.zIndex
-import androidx.core.app.NotificationChannelCompat
-import androidx.core.app.NotificationCompat
-import androidx.core.app.NotificationManagerCompat
 import androidx.core.graphics.ColorUtils.colorToHSL
 import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackException
@@ -179,8 +170,6 @@ import it.fast4x.environment.models.NavigationEndpoint
 import it.fast4x.riplay.Database
 import it.fast4x.riplay.LocalLinkDevices
 import it.fast4x.riplay.LocalPlayerServiceBinder
-import it.fast4x.riplay.MainActivity
-import it.fast4x.riplay.NOTIFICATION_CHANNEL
 import it.fast4x.riplay.R
 import it.fast4x.riplay.appContext
 import it.fast4x.riplay.appRunningInBackground
@@ -219,9 +208,9 @@ import it.fast4x.riplay.models.Event
 import it.fast4x.riplay.models.Info
 import it.fast4x.riplay.models.Song
 import it.fast4x.riplay.models.ui.toUiMedia
-import it.fast4x.riplay.service.BitmapProvider
 import it.fast4x.riplay.thumbnailShape
 import it.fast4x.riplay.typography
+import it.fast4x.riplay.ui.components.BottomSheetState
 import it.fast4x.riplay.ui.components.CustomModalBottomSheet
 import it.fast4x.riplay.ui.components.LocalMenuState
 import it.fast4x.riplay.ui.components.themed.AddToPlaylistPlayerMenu
@@ -249,7 +238,6 @@ import it.fast4x.riplay.ui.styling.dynamicColorPaletteOf
 import it.fast4x.riplay.ui.styling.favoritesIcon
 import it.fast4x.riplay.ui.styling.favoritesOverlay
 import it.fast4x.riplay.ui.styling.px
-import it.fast4x.riplay.utils.ActionIntent
 import it.fast4x.riplay.utils.BlurTransformation
 import it.fast4x.riplay.utils.DisposableListener
 import it.fast4x.riplay.utils.SearchYoutubeEntity
@@ -292,7 +280,6 @@ import it.fast4x.riplay.utils.getBitmapFromUrl
 import it.fast4x.riplay.utils.getIconQueueLoopState
 import it.fast4x.riplay.utils.getLikeState
 import it.fast4x.riplay.utils.horizontalFadingEdge
-import it.fast4x.riplay.utils.isAtLeastAndroid8
 import it.fast4x.riplay.utils.isExplicit
 import it.fast4x.riplay.utils.isLandscape
 import it.fast4x.riplay.utils.isVideo
@@ -374,7 +361,6 @@ import org.dailyislam.android.utilities.isNetworkConnected
 import timber.log.Timber
 import kotlin.Float.Companion.POSITIVE_INFINITY
 import kotlin.math.absoluteValue
-import kotlin.math.roundToInt
 import kotlin.math.sqrt
 
 
@@ -399,8 +385,14 @@ fun OnlinePlayer(
     currentDuration: Float,
     currentSecond: Float,
     showControls: Boolean,
+    playerSheetState: BottomSheetState,
     onDismiss: () -> Unit,
 ) {
+
+    BackHandler(
+        enabled = playerSheetState.isExpanded,
+        onBack = onDismiss
+    )
 
     val menuState = LocalMenuState.current
 

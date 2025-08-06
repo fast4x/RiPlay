@@ -51,7 +51,5 @@ fun InitializeEnvironment(context: Context) {
         p41 = context.resources.getString(R.string.env_eZueG672lt),
         p42 = context.resources.getString(R.string.env_WkUFhXtC3G),
         p43 = context.resources.getString(R.string.env_z4Xe47r8Vs),
-
-
-        )
+    )
 }

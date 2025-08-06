@@ -215,7 +215,7 @@ class MediaLibrarySessionCallback (
                                 OfflinePlayerService.PLAYLIST,
                                 context.getString(R.string.playlists),
                                 null,
-                                drawableUri(R.drawable.library),
+                                drawableUri(R.drawable.playlist),
                                 MediaMetadata.MEDIA_TYPE_FOLDER_PLAYLISTS
                             )
                         )

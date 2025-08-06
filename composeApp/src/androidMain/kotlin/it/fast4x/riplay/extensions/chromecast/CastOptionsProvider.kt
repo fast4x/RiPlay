@@ -1,21 +1,16 @@
 package it.fast4x.riplay.extensions.chromecast
 
 import android.content.Context
-import com.google.android.gms.cast.CastMediaControlIntent
 import com.google.android.gms.cast.framework.CastOptions
 import com.google.android.gms.cast.framework.OptionsProvider
 import com.google.android.gms.cast.framework.SessionProvider
-import com.google.android.gms.cast.framework.media.CastMediaOptions
-import com.google.android.gms.cast.framework.media.NotificationOptions
-
-const val RiPlay_APPLICATION_ID = "87961733"
-const val PierFrancesco_APPLICATION_ID = "C5CBE8CA"
+import it.fast4x.riplay.R
 
 class CastOptionsProvider : OptionsProvider {
     override fun getCastOptions(context: Context): CastOptions {
-
+        val riPlayChromecastApplicationID = context.resources.getString(R.string.RiPlay_CHROMECAST_APPLICATION_ID)
         return CastOptions.Builder()
-            .setReceiverApplicationId(RiPlay_APPLICATION_ID)
+            .setReceiverApplicationId(riPlayChromecastApplicationID)
             .build()
     }
 
