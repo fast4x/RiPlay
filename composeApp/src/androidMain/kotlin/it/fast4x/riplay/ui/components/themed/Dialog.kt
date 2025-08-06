@@ -1867,218 +1867,218 @@ fun InProgressDialog(
     }
 }
 
-//@androidx.annotation.OptIn(UnstableApi::class)
-//@Composable
-//fun SongMatchingDialog(
-//    songToRematch : Song,
-//    playlistId : Long,
-//    position : Int,
-//    playlist : Playlist?,
-//    onDismiss: (() -> Unit)
-//) {
-//    Dialog(
-//        onDismissRequest = { onDismiss() },
-//        properties = DialogProperties(usePlatformDefaultWidth = false)
-//    ) {
-//        Column(
-//            horizontalAlignment = Alignment.CenterHorizontally,
-//            modifier = Modifier
-//                .fillMaxWidth(if (isLandscape) 0.5f else 0.9f)
-//                .fillMaxHeight(if (isLandscape) 0.9f else 0.7f)
-//                .background(color = colorPalette().background1, shape = RoundedCornerShape(8.dp))
-//        ) {
-//            fun filteredText(text : String): String{
-//                val filteredText = text
-//                    .lowercase()
-//                    .replace("(", " ")
-//                    .replace(")", " ")
-//                    .replace("-", " ")
-//                    .replace("lyrics", "")
-//                    .replace("vevo", "")
-//                    .replace(" hd", "")
-//                    .replace("official video", "")
-//                    .filter {it.isLetterOrDigit() || it.isWhitespace() || it == '\'' || it == ',' }
-//                    .replace(Regex("\\s+"), " ")
-//                return filteredText
-//            }
-//            var songsList by remember { mutableStateOf<List<Environment.SongItem?>>(emptyList()) }
-//            var searchText by remember {mutableStateOf(filteredText("${cleanPrefix(songToRematch.title)} ${songToRematch.artistsText}"))}
-//            var startSearch by remember { mutableStateOf(false) }
-//            val binder = LocalPlayerServiceBinder.current
-//            val songThumbnailSizeDp = Dimensions.thumbnails.song
-//            val songThumbnailSizePx = songThumbnailSizeDp.px
-//            val disableScrollingText by rememberPreference(disableScrollingTextKey, false)
-//
-//            LaunchedEffect(Unit,startSearch) {
-//                runBlocking(Dispatchers.IO) {
-//                    val searchQuery = Environment.searchPage(
-//                        body = SearchBody(
-//                            query = searchText,
-//                            params = Environment.SearchFilter.Song.value
-//                        ),
-//                        fromMusicShelfRendererContent = Environment.SongItem.Companion::from
-//                    )
-//
-//                    songsList = searchQuery?.getOrNull()?.items ?: emptyList()
-//                    startSearch = false
-//                }
-//            }
-//            SongItem(
-//                song = songToRematch,
-//                onDownloadClick = {},
-//                downloadState = null,
-//                thumbnailSizeDp = songThumbnailSizeDp,
-//                thumbnailSizePx = songThumbnailSizePx,
-//                disableScrollingText = disableScrollingText,
-//                isNowPlaying = binder?.player?.isNowPlaying(songToRematch.id) ?: false
-//            )
-//            Row(
-//                verticalAlignment = Alignment.CenterVertically
-//            ) {
-//                TextField(
-//                    value = searchText,
-//                    onValueChange = { it ->
-//                        searchText = it
-//                    },
-//                    singleLine = true,
-//                    colors = TextFieldDefaults.textFieldColors(
-//                        textColor = colorPalette().text,
-//                        unfocusedIndicatorColor = colorPalette().text
-//                    ),
-//                    modifier = Modifier
-//                        .padding(horizontal = 6.dp)
-//                        .weight(1f)
-//                )
-//                IconButton(
-//                    icon = R.drawable.search,
-//                    color = Color.Black,
-//                    onClick = {
-//                        startSearch = true
-//                    },
-//                    modifier = Modifier
-//                        .background(shape = RoundedCornerShape(4.dp), color = Color.White)
-//                        .padding(all = 4.dp)
-//                        .size(24.dp)
-//                        .align(Alignment.CenterVertically)
-//                        .weight(0.1f)
-//                )
-//            }
-//            if (songsList.isNotEmpty()) {
-//                LazyColumn {
-//                    itemsIndexed(songsList) { _, song ->
-//                        val artistsNames = song?.authors?.filter { it.endpoint != null }?.map { it.name }
-//                        val artistsIds = song?.authors?.filter { it.endpoint != null }?.map { it.endpoint?.browseId }
-//                        val artistNameString = song?.asMediaItem?.mediaMetadata?.artist?.toString() ?: ""
-//                        if (song != null) {
-//                            Row(horizontalArrangement = Arrangement.Start,
-//                                verticalAlignment = Alignment.CenterVertically,
-//                            ) {
-//                                SongItem(
-//                                    song = song,
-//                                    thumbnailSizePx = songThumbnailSizePx,
-//                                    thumbnailSizeDp = songThumbnailSizeDp,
+@androidx.annotation.OptIn(UnstableApi::class)
+@Composable
+fun SongMatchingDialog(
+    songToRematch : Song,
+    playlistId : Long,
+    position : Int,
+    playlist : Playlist?,
+    onDismiss: (() -> Unit)
+) {
+    Dialog(
+        onDismissRequest = { onDismiss() },
+        properties = DialogProperties(usePlatformDefaultWidth = false)
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier
+                .fillMaxWidth(if (isLandscape) 0.5f else 0.9f)
+                .fillMaxHeight(if (isLandscape) 0.9f else 0.7f)
+                .background(color = colorPalette().background1, shape = RoundedCornerShape(8.dp))
+        ) {
+            fun filteredText(text : String): String{
+                val filteredText = text
+                    .lowercase()
+                    .replace("(", " ")
+                    .replace(")", " ")
+                    .replace("-", " ")
+                    .replace("lyrics", "")
+                    .replace("vevo", "")
+                    .replace(" hd", "")
+                    .replace("official video", "")
+                    .filter {it.isLetterOrDigit() || it.isWhitespace() || it == '\'' || it == ',' }
+                    .replace(Regex("\\s+"), " ")
+                return filteredText
+            }
+            var songsList by remember { mutableStateOf<List<Environment.SongItem?>>(emptyList()) }
+            var searchText by remember {mutableStateOf(filteredText("${cleanPrefix(songToRematch.title)} ${songToRematch.artistsText}"))}
+            var startSearch by remember { mutableStateOf(false) }
+            val binder = LocalPlayerServiceBinder.current
+            val songThumbnailSizeDp = Dimensions.thumbnails.song
+            val songThumbnailSizePx = songThumbnailSizeDp.px
+            val disableScrollingText by rememberPreference(disableScrollingTextKey, false)
+
+            LaunchedEffect(Unit,startSearch) {
+                runBlocking(Dispatchers.IO) {
+                    val searchQuery = Environment.searchPage(
+                        body = SearchBody(
+                            query = searchText,
+                            params = Environment.SearchFilter.Song.value
+                        ),
+                        fromMusicShelfRendererContent = Environment.SongItem.Companion::from
+                    )
+
+                    songsList = searchQuery?.getOrNull()?.items ?: emptyList()
+                    startSearch = false
+                }
+            }
+            SongItem(
+                song = songToRematch,
+                //onDownloadClick = {},
+                //downloadState = null,
+                thumbnailSizeDp = songThumbnailSizeDp,
+                thumbnailSizePx = songThumbnailSizePx,
+                disableScrollingText = disableScrollingText,
+                isNowPlaying = binder?.player?.isNowPlaying(songToRematch.id) ?: false
+            )
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                TextField(
+                    value = searchText,
+                    onValueChange = { it ->
+                        searchText = it
+                    },
+                    singleLine = true,
+                    colors = TextFieldDefaults.textFieldColors(
+                        textColor = colorPalette().text,
+                        unfocusedIndicatorColor = colorPalette().text
+                    ),
+                    modifier = Modifier
+                        .padding(horizontal = 6.dp)
+                        .weight(1f)
+                )
+                IconButton(
+                    icon = R.drawable.search,
+                    color = Color.Black,
+                    onClick = {
+                        startSearch = true
+                    },
+                    modifier = Modifier
+                        .background(shape = RoundedCornerShape(4.dp), color = Color.White)
+                        .padding(all = 4.dp)
+                        .size(24.dp)
+                        .align(Alignment.CenterVertically)
+                        .weight(0.1f)
+                )
+            }
+            if (songsList.isNotEmpty()) {
+                LazyColumn {
+                    itemsIndexed(songsList) { _, song ->
+                        val artistsNames = song?.authors?.filter { it.endpoint != null }?.map { it.name }
+                        val artistsIds = song?.authors?.filter { it.endpoint != null }?.map { it.endpoint?.browseId }
+                        val artistNameString = song?.asMediaItem?.mediaMetadata?.artist?.toString() ?: ""
+                        if (song != null) {
+                            Row(horizontalArrangement = Arrangement.Start,
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                SongItem(
+                                    song = song,
+                                    thumbnailSizePx = songThumbnailSizePx,
+                                    thumbnailSizeDp = songThumbnailSizeDp,
 //                                    onDownloadClick = {},
 //                                    downloadState = Download.STATE_STOPPED,
-//                                    disableScrollingText = disableScrollingText,
-//                                    isNowPlaying = false,
-//                                    forceRecompose = false,
-//                                    modifier = Modifier
-//                                        .fillMaxWidth()
-//                                        .padding(horizontal = 10.dp)
-//                                        .clickable(onClick = {
-//                                            Database.asyncTransaction {
-//                                                if (isYouTubeSyncEnabled() && playlist?.isYoutubePlaylist == true && playlist.isEditable) {
-//                                                    CoroutineScope(Dispatchers.IO).launch {
-//                                                        if (removeYTSongFromPlaylist(
-//                                                                songToRematch.id,
-//                                                                playlist.browseId ?: "",
-//                                                                playlistId
-//                                                            )
-//                                                        )
-//                                                            deleteSongFromPlaylist(
-//                                                                songToRematch.id,
-//                                                                playlistId
-//                                                            )
-//                                                    }
-//                                                } else {
-//                                                    deleteSongFromPlaylist(songToRematch.id, playlistId)
-//                                                }
-//
-//                                                if (songExist(song.asSong.id) == 0) {
-//                                                    Database.insert(song.asMediaItem)
-//                                                }
-//
-//                                                insert(
-//                                                    SongPlaylistMap(
-//                                                        songId = song.asMediaItem.mediaId,
-//                                                        playlistId = playlistId,
-//                                                        position = position
-//                                                    ).default()
-//                                                )
-//                                                insert(
-//                                                    Album(
-//                                                        id = song.album?.endpoint?.browseId ?: "",
-//                                                        title = song.asMediaItem.mediaMetadata.albumTitle?.toString()
-//                                                    ),
-//                                                    SongAlbumMap(
-//                                                        songId = song.asMediaItem.mediaId,
-//                                                        albumId = song.album?.endpoint?.browseId ?: "",
-//                                                        position = null
-//                                                    )
-//                                                )
-//                                                CoroutineScope(Dispatchers.IO).launch {
-//                                                    val album = Database.album(
-//                                                        song.album?.endpoint?.browseId ?: ""
-//                                                    ).firstOrNull()
-//                                                    album?.copy(thumbnailUrl = song.thumbnail?.url)
-//                                                        ?.let { update(it) }
-//
-//                                                    if (isYouTubeSyncEnabled() && playlist?.isYoutubePlaylist == true && playlist.isEditable) {
-//                                                        EnvironmentExt.addToPlaylist(
-//                                                            playlist.browseId ?: "",
-//                                                            song.asMediaItem.mediaId
-//                                                        )
-//                                                    }
-//                                                }
-//                                                if ((artistsNames != null) && (artistsIds != null)) {
-//                                                    artistsNames.let { artistNames ->
-//                                                        artistsIds.let { artistIds ->
-//                                                            if (artistNames.size == artistIds.size) {
-//                                                                insert(
-//                                                                    artistNames.mapIndexed { index, artistName ->
-//                                                                        Artist(
-//                                                                            id = (artistIds[index])
-//                                                                                ?: "", name = artistName
-//                                                                        )
-//                                                                    },
-//                                                                    artistIds.map { artistId ->
-//                                                                        SongArtistMap(
-//                                                                            songId = song.asMediaItem.mediaId,
-//                                                                            artistId = (artistId) ?: ""
-//                                                                        )
-//                                                                    }
-//                                                                )
-//                                                            }
-//                                                        }
-//                                                    }
-//                                                }
-//                                                Database.updateSongArtist(
-//                                                    song.asMediaItem.mediaId,
-//                                                    artistNameString
-//                                                )
-//                                            }
-//                                            onDismiss()
-//                                        }
-//                                    )
-//                                )
-//                            }
-//                        }
-//                    }
-//                }
-//            }
-//        }
-//    }
-//}
+                                    disableScrollingText = disableScrollingText,
+                                    isNowPlaying = false,
+                                    forceRecompose = false,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 10.dp)
+                                        .clickable(onClick = {
+                                            Database.asyncTransaction {
+                                                if (isYouTubeSyncEnabled() && playlist?.isYoutubePlaylist == true && playlist.isEditable) {
+                                                    CoroutineScope(Dispatchers.IO).launch {
+                                                        if (removeYTSongFromPlaylist(
+                                                                songToRematch.id,
+                                                                playlist.browseId ?: "",
+                                                                playlistId
+                                                            )
+                                                        )
+                                                            deleteSongFromPlaylist(
+                                                                songToRematch.id,
+                                                                playlistId
+                                                            )
+                                                    }
+                                                } else {
+                                                    deleteSongFromPlaylist(songToRematch.id, playlistId)
+                                                }
+
+                                                if (songExist(song.asSong.id) == 0) {
+                                                    Database.insert(song.asMediaItem)
+                                                }
+
+                                                insert(
+                                                    SongPlaylistMap(
+                                                        songId = song.asMediaItem.mediaId,
+                                                        playlistId = playlistId,
+                                                        position = position
+                                                    ).default()
+                                                )
+                                                insert(
+                                                    Album(
+                                                        id = song.album?.endpoint?.browseId ?: "",
+                                                        title = song.asMediaItem.mediaMetadata.albumTitle?.toString()
+                                                    ),
+                                                    SongAlbumMap(
+                                                        songId = song.asMediaItem.mediaId,
+                                                        albumId = song.album?.endpoint?.browseId ?: "",
+                                                        position = null
+                                                    )
+                                                )
+                                                CoroutineScope(Dispatchers.IO).launch {
+                                                    val album = Database.album(
+                                                        song.album?.endpoint?.browseId ?: ""
+                                                    ).firstOrNull()
+                                                    album?.copy(thumbnailUrl = song.thumbnail?.url)
+                                                        ?.let { update(it) }
+
+                                                    if (isYouTubeSyncEnabled() && playlist?.isYoutubePlaylist == true && playlist.isEditable) {
+                                                        EnvironmentExt.addToPlaylist(
+                                                            playlist.browseId ?: "",
+                                                            song.asMediaItem.mediaId
+                                                        )
+                                                    }
+                                                }
+                                                if ((artistsNames != null) && (artistsIds != null)) {
+                                                    artistsNames.let { artistNames ->
+                                                        artistsIds.let { artistIds ->
+                                                            if (artistNames.size == artistIds.size) {
+                                                                insert(
+                                                                    artistNames.mapIndexed { index, artistName ->
+                                                                        Artist(
+                                                                            id = (artistIds[index])
+                                                                                ?: "", name = artistName
+                                                                        )
+                                                                    },
+                                                                    artistIds.map { artistId ->
+                                                                        SongArtistMap(
+                                                                            songId = song.asMediaItem.mediaId,
+                                                                            artistId = (artistId) ?: ""
+                                                                        )
+                                                                    }
+                                                                )
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                                Database.updateSongArtist(
+                                                    song.asMediaItem.mediaId,
+                                                    artistNameString
+                                                )
+                                            }
+                                            onDismiss()
+                                        }
+                                    )
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
 
   /*if (isShowingLyrics && !showlyricsthumbnail)
       DefaultDialog(

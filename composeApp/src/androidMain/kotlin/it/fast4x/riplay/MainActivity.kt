@@ -350,6 +350,9 @@ class MainActivity :
 
     var endlessService: EndlessService? = null
 
+    var mediaItemIsLocal: MutableState<Boolean> = mutableStateOf(false)
+
+
     override fun onStart() {
         super.onStart()
 
@@ -470,7 +473,8 @@ class MainActivity :
             ContextCompat.RECEIVER_NOT_EXPORTED
         )
 
-        updateNotification()
+
+        updateOnlineNotification()
 
     }
 
@@ -678,7 +682,7 @@ class MainActivity :
             val coroutineScope = rememberCoroutineScope()
             val isSystemInDarkTheme = isSystemInDarkTheme()
             val navController = rememberNavController()
-            var mediaItemIsLocal = rememberSaveable { mutableStateOf(false) }
+            //var mediaItemIsLocal = rememberSaveable { mutableStateOf(false) }
             var switchToAudioPlayer by rememberSaveable { mutableStateOf(false) }
             var animatedGradient by rememberPreference(
                 animatedGradientKey,
@@ -1339,7 +1343,7 @@ class MainActivity :
                                             playerState1.value = it
                                             onlinePlayerPlayingState.value =
                                                 it == PlayerConstants.PlayerState.PLAYING
-                                            updateNotification()
+                                            updateOnlineNotification()
 
                                         },
                                         onTap = { showControls = !showControls }
@@ -1366,7 +1370,7 @@ class MainActivity :
 
                                 //Needed to update time in notification
                                 LaunchedEffect(onlinePlayerPlayingState.value) {
-                                    updateNotification()
+                                    updateOnlineNotification()
                                 }
 
                                 BottomSheet(
@@ -1624,7 +1628,8 @@ class MainActivity :
     }
 
     @UnstableApi
-    fun updateNotification() {
+    fun updateOnlineNotification() {
+        if (mediaItemIsLocal.value) return
 
         initializeMediasession()
 

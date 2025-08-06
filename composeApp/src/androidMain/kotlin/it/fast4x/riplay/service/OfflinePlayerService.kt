@@ -1210,6 +1210,8 @@ class OfflinePlayerService : MediaLibraryService(),
     }
 
     private fun updateDefaultNotification() {
+        if (currentMediaItem.value?.isLocal == false) return
+
         coroutineScope.launch(Dispatchers.Main) {
             mediaSession.setCustomLayout( buildCustomCommandButtons() )
         }
