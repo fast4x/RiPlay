@@ -186,13 +186,16 @@ fun Player.addNext(mediaItem: MediaItem, context: Context? = null, idQueue: Long
 }
 
 @UnstableApi
-fun Player.addNext(mediaItems: List<MediaItem>, context: Context? = null) {
+fun Player.addNext(mediaItems: List<MediaItem>, context: Context? = null, idQueue: Long) {
     val filteredMediaItems = if (context != null) excludeMediaItems(mediaItems, context)
     else mediaItems
 
     filteredMediaItems.forEach { mediaItem ->
         val itemIndex = findMediaItemIndexById(mediaItem.mediaId)
         if (itemIndex >= 0) removeMediaItem(itemIndex)
+
+        mediaItem.mediaMetadata.extras?.putLong("idQueue", idQueue)
+        println("mediaItems-addNext extras: ${mediaItem.mediaMetadata.extras}")
     }
 
     if (playbackState == Player.STATE_IDLE || playbackState == Player.STATE_ENDED) {

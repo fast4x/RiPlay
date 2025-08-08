@@ -48,6 +48,7 @@ import androidx.navigation.NavController
 import it.fast4x.compose.persist.persistList
 import it.fast4x.riplay.Database
 import it.fast4x.riplay.LocalPlayerServiceBinder
+import it.fast4x.riplay.LocalSelectedQueue
 import it.fast4x.riplay.MODIFIED_PREFIX
 import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.AlbumSortBy
@@ -125,6 +126,7 @@ fun HomeAlbums(
     val menuState = LocalMenuState.current
     //val context = LocalContext.current
     val binder = LocalPlayerServiceBinder.current
+    val selectedQueue = LocalSelectedQueue.current
     val lazyGridState = rememberLazyGridState()
 
     val disableScrollingText by rememberPreference(disableScrollingTextKey, false)
@@ -424,7 +426,9 @@ fun HomeAlbums(
                                                     onPlayNext = {
                                                         println("mediaItem ${songs}")
                                                         binder?.player?.addNext(
-                                                            songs.map(Song::asMediaItem), context
+                                                            songs.map(Song::asMediaItem),
+                                                            context,
+                                                            selectedQueue?.id ?: 0
                                                         )
 
                                                     },
@@ -593,7 +597,9 @@ fun HomeAlbums(
                                                     onPlayNext = {
                                                         println("mediaItem ${songs}")
                                                         binder?.player?.addNext(
-                                                            songs.map(Song::asMediaItem), context
+                                                            songs.map(Song::asMediaItem),
+                                                            context,
+                                                            selectedQueue?.id ?: 0
                                                         )
 
                                                     },

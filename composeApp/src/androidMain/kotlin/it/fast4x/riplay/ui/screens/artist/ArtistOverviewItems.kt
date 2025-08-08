@@ -338,7 +338,8 @@ fun ArtistOverviewItems(
                                             if (artistSongs.any { Database.getLikedAt(it.mediaId) != -1L }) {
                                                 val filteredArtistSongs = artistSongs.filter {Database.getLikedAt(it.mediaId) != -1L}
                                                 withContext(Dispatchers.Main) {
-                                                    binder?.player?.addNext(filteredArtistSongs, context)
+                                                    binder?.player?.addNext(filteredArtistSongs, context,
+                                                        selectedQueue?.id ?: 0)
                                                 }
                                             } else {
                                                 SmartMessage(context.resources.getString(R.string.disliked_this_collection),type = PopupType.Error, context = context)

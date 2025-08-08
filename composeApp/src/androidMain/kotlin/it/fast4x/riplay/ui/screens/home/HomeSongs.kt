@@ -1174,13 +1174,17 @@ fun HomeSongs(
                                                     binder?.player?.addNext(
                                                         items.filter { it.song.likedAt != -1L }
                                                             .map(SongEntity::asMediaItem),
-                                                        context
+                                                        context,
+                                                        selectedQueue?.id ?: 0
                                                     )
                                                 } else {
                                                     SmartMessage(context.resources.getString(R.string.disliked_this_collection),type = PopupType.Error, context = context)
                                                 }
                                             } else {
-                                                binder?.player?.addNext(listMediaItems, context)
+                                                binder?.player?.addNext(listMediaItems,
+                                                    context,
+                                                    selectedQueue?.id ?: 0
+                                                )
                                                 listMediaItems.clear()
                                                 selectItems = false
                                             }

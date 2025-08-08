@@ -79,6 +79,7 @@ import it.fast4x.environment.models.bodies.NextBody
 import it.fast4x.environment.requests.relatedSongs
 import it.fast4x.riplay.Database
 import it.fast4x.riplay.LocalPlayerServiceBinder
+import it.fast4x.riplay.LocalSelectedQueue
 import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.BuiltInPlaylist
 import it.fast4x.riplay.enums.MaxSongs
@@ -161,6 +162,7 @@ fun BuiltInPlaylistSongs(
     val context = LocalContext.current
     val binder = LocalPlayerServiceBinder.current
     val menuState = LocalMenuState.current
+    val selectedQueue = LocalSelectedQueue.current
 
     var songs by persistList<Song>("${builtInPlaylist.name}/songs")
 
@@ -778,9 +780,11 @@ fun BuiltInPlaylistSongs(
                                      */
                                     onPlayNext = {
                                         if (listMediaItems.isEmpty()) {
-                                            binder?.player?.addNext(songs.map(Song::asMediaItem), context)
+                                            binder?.player?.addNext(songs.map(Song::asMediaItem),
+                                                context,
+                                                selectedQueue?.id ?: 0)
                                         } else {
-                                            binder?.player?.addNext(listMediaItems, context)
+                                            binder?.player?.addNext(listMediaItems, context, selectedQueue?.id ?: 0)
                                             listMediaItems.clear()
                                             selectItems = false
                                         }

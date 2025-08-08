@@ -1477,7 +1477,10 @@ fun LocalPlaylistSongs(
                                                 if (listMediaItems.isEmpty()) {
                                                     if (playlistSongs.any { it.song.thumbnailUrl != "" && it.song.likedAt != -1L }) {
                                                         binder?.player?.addNext(playlistSongs.filter { it.song.thumbnailUrl != "" && it.song.likedAt != -1L }
-                                                            .map(SongEntity::asMediaItem), context)
+                                                            .map(SongEntity::asMediaItem),
+                                                            context,
+                                                            selectedQueue?.id ?: 0
+                                                        )
                                                     } else {
                                                         SmartMessage(
                                                             context.resources.getString(R.string.disliked_this_collection),
@@ -1486,7 +1489,10 @@ fun LocalPlaylistSongs(
                                                         )
                                                     }
                                                 } else {
-                                                    binder?.player?.addNext(listMediaItems, context)
+                                                    binder?.player?.addNext(listMediaItems,
+                                                        context,
+                                                        selectedQueue?.id ?: 0
+                                                    )
                                                     listMediaItems.clear()
                                                     selectItems = false
                                                 }

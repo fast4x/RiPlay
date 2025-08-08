@@ -321,7 +321,8 @@ fun SearchResultScreen(
                                                                                 withContext(Dispatchers.Main) {
                                                                                     binder?.player?.addNext(
                                                                                         it1,
-                                                                                        context
+                                                                                        context,
+                                                                                        selectedQueue?.id ?: 0
                                                                                     )
                                                                                 }
                                                                             }

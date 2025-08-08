@@ -958,7 +958,8 @@ fun AlbumDetails(
                                                             binder?.player?.addNext(
                                                                 songs.filter { it.likedAt != -1L }
                                                                     .map(Song::asMediaItem),
-                                                                context
+                                                                context,
+                                                                selectedQueue?.id ?: 0
                                                             )
                                                         } else {
                                                             SmartMessage(
@@ -972,7 +973,8 @@ fun AlbumDetails(
                                                     } else {
                                                         binder?.player?.addNext(
                                                             listMediaItems,
-                                                            context
+                                                            context,
+                                                            selectedQueue?.id ?: 0
                                                         )
                                                         listMediaItems.clear()
                                                         selectItems = false

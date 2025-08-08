@@ -75,6 +75,7 @@ import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import it.fast4x.riplay.Database
 import it.fast4x.riplay.LocalPlayerServiceBinder
+import it.fast4x.riplay.LocalSelectedQueue
 import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.DeviceLists
 import it.fast4x.riplay.enums.NavRoutes
@@ -165,6 +166,8 @@ fun DeviceListSongs(
     onSearchClick: () -> Unit
 ) {
     val context = LocalContext.current
+    val selectedQueue = LocalSelectedQueue.current
+
     val permission = if (Build.VERSION.SDK_INT >= 33) Manifest.permission.READ_MEDIA_AUDIO
     else Manifest.permission.READ_EXTERNAL_STORAGE
 
@@ -674,9 +677,14 @@ fun DeviceListSongs(
                                      */
                                     onPlayNext = {
                                         if (listMediaItems.isEmpty()) {
-                                            binder?.player?.addNext(filteredSongs.map(SongEntity::asMediaItem), context)
+                                            binder?.player?.addNext(filteredSongs.map(SongEntity::asMediaItem),
+                                                context,
+                                                selectedQueue?.id ?: 0
+                                            )
                                         } else {
-                                            binder?.player?.addNext(listMediaItems, context)
+                                            binder?.player?.addNext(listMediaItems,
+                                                context,
+                                                selectedQueue?.id ?: 0)
                                             listMediaItems.clear()
                                             selectItems = false
                                         }
