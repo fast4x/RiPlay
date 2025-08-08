@@ -311,6 +311,7 @@ import androidx.compose.ui.input.pointer.pointerInteropFilter
 import androidx.compose.ui.unit.LayoutDirection
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.PlayerConstants
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
+import it.fast4x.riplay.LocalSelectedQueue
 import it.fast4x.riplay.appContext
 import it.fast4x.riplay.ui.components.themed.AddToPlaylistPlayerMenu
 import it.fast4x.riplay.ui.screens.settings.isYouTubeSyncEnabled
@@ -339,7 +340,7 @@ fun OfflinePlayer(
     onDismiss: () -> Unit,
 ) {
     val menuState = LocalMenuState.current
-
+    val selectedQueue = LocalSelectedQueue.current
     val effectRotationEnabled by rememberPreference(effectRotationKey, true)
 
     val playerThumbnailSize by rememberPreference(
@@ -1526,7 +1527,8 @@ fun OfflinePlayer(
                                                 onLongClick = {
                                                     if (index < mediaItems.size) {
                                                         binder.player.addNext(
-                                                            binder.player.getMediaItemAt(index)
+                                                            binder.player.getMediaItemAt(index),
+                                                            idQueue = selectedQueue?.id ?: 0
                                                         )
                                                         scope.launch {
                                                             if (!appRunningInBackground) {

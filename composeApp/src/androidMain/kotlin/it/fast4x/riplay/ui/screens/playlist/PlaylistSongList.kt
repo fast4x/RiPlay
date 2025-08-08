@@ -81,6 +81,7 @@ import it.fast4x.environment.utils.completed
 import it.fast4x.riplay.Database
 import it.fast4x.riplay.Database.Companion.like
 import it.fast4x.riplay.LocalPlayerServiceBinder
+import it.fast4x.riplay.LocalSelectedQueue
 import it.fast4x.riplay.R
 import it.fast4x.riplay.appContext
 import it.fast4x.riplay.cleanPrefix
@@ -169,6 +170,7 @@ fun PlaylistSongList(
     val binder = LocalPlayerServiceBinder.current
     val context = LocalContext.current
     val menuState = LocalMenuState.current
+    val selectedQueue = LocalSelectedQueue.current
 
     var playlistPage by persist<PlaylistPage?>("playlist/$browseId/playlistPage")
     var playlistSongs by persistList<Environment.SongItem>("playlist/$browseId/songs")
@@ -1024,7 +1026,7 @@ fun PlaylistSongList(
                     SwipeablePlaylistItem(
                         mediaItem = song.asMediaItem,
                         onPlayNext = {
-                            binder?.player?.addNext(song.asMediaItem)
+                            binder?.player?.addNext(song.asMediaItem, idQueue = selectedQueue?.id ?: 0)
                         },
                         onDownload = {},
                         onEnqueue = {

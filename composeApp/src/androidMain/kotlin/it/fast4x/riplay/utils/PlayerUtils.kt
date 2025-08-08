@@ -12,8 +12,10 @@ import androidx.media3.common.Player.REPEAT_MODE_ONE
 import androidx.media3.common.Timeline
 import androidx.media3.common.util.Log
 import androidx.media3.common.util.UnstableApi
+import it.fast4x.riplay.Database
 import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.DurationInMinutes
+import it.fast4x.riplay.models.Queues
 import it.fast4x.riplay.ui.components.themed.SmartMessage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -167,11 +169,14 @@ fun Player.playPrevious() {
 }
 
 @UnstableApi
-fun Player.addNext(mediaItem: MediaItem, context: Context? = null) {
+fun Player.addNext(mediaItem: MediaItem, context: Context? = null, idQueue: Long) {
     if (context != null && excludeMediaItem(mediaItem, context)) return
 
     val itemIndex = findMediaItemIndexById(mediaItem.mediaId)
     if (itemIndex >= 0) removeMediaItem(itemIndex)
+
+    mediaItem.mediaMetadata.extras?.putLong("idQueue", idQueue)
+    println("mediaItem-addNext extras: ${mediaItem.mediaMetadata.extras}")
 
     if (playbackState == Player.STATE_IDLE || playbackState == Player.STATE_ENDED) {
         forcePlay(mediaItem)

@@ -70,6 +70,7 @@ import it.fast4x.environment.utils.completed
 import it.fast4x.riplay.Database
 import it.fast4x.riplay.LocalPlayerAwareWindowInsets
 import it.fast4x.riplay.LocalPlayerServiceBinder
+import it.fast4x.riplay.LocalSelectedQueue
 import it.fast4x.riplay.R
 import it.fast4x.riplay.cleanPrefix
 import it.fast4x.riplay.colorPalette
@@ -146,6 +147,7 @@ fun ArtistOverview(
 
     val binder = LocalPlayerServiceBinder.current
     val windowInsets = LocalPlayerAwareWindowInsets.current
+    val selectedQueue = LocalSelectedQueue.current
 
     val songThumbnailSizeDp = Dimensions.thumbnails.song
     val songThumbnailSizePx = songThumbnailSizeDp.px
@@ -641,7 +643,7 @@ fun ArtistOverview(
                                 SwipeablePlaylistItem(
                                     mediaItem = item.asMediaItem,
                                     onPlayNext = {
-                                        binder?.player?.addNext(item.asMediaItem)
+                                        binder?.player?.addNext(item.asMediaItem, idQueue = selectedQueue?.id ?: 0)
                                     },
                                     onDownload = {},
                                     onEnqueue = {

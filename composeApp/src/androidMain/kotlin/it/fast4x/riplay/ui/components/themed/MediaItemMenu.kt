@@ -66,6 +66,7 @@ import it.fast4x.compose.persist.persistList
 import it.fast4x.environment.models.NavigationEndpoint
 import it.fast4x.riplay.Database
 import it.fast4x.riplay.LocalPlayerServiceBinder
+import it.fast4x.riplay.LocalSelectedQueue
 import it.fast4x.riplay.MODIFIED_PREFIX
 import it.fast4x.riplay.MONTHLY_PREFIX
 import it.fast4x.riplay.PINNED_PREFIX
@@ -265,6 +266,7 @@ fun NonQueuedMediaItemMenuLibrary(
 ) {
     val binder = LocalPlayerServiceBinder.current
     val context = LocalContext.current
+    val selectedQueue = LocalSelectedQueue.current
 
     var isHiding by remember {
         mutableStateOf(false)
@@ -325,7 +327,7 @@ fun NonQueuedMediaItemMenuLibrary(
                     )
                 )
             },
-            onPlayNext = { binder?.player?.addNext(mediaItem, context) },
+            onPlayNext = { binder?.player?.addNext(mediaItem, context, selectedQueue?.id ?: 0) },
             onEnqueue = { binder?.player?.enqueue(mediaItem, context) },
             onDownload = onDownload,
             onRemoveFromPlaylist = onRemoveFromPlaylist,
@@ -368,7 +370,7 @@ fun NonQueuedMediaItemMenuLibrary(
                     )
                 )
             },
-            onPlayNext = { binder?.player?.addNext(mediaItem, context) },
+            onPlayNext = { binder?.player?.addNext(mediaItem, context, selectedQueue?.id ?: 0) },
             onEnqueue = { binder?.player?.enqueue(mediaItem, context)},
             onDownload = onDownload,
             onRemoveFromPlaylist = onRemoveFromPlaylist,
@@ -420,6 +422,7 @@ fun NonQueuedMediaItemMenu(
 ) {
     val binder = LocalPlayerServiceBinder.current
     val context = LocalContext.current
+    val selectedQueue = LocalSelectedQueue.current
 
     val menuStyle by rememberPreference(
         menuStyleKey,
@@ -444,7 +447,7 @@ fun NonQueuedMediaItemMenu(
                     )
                 )
             },
-            onPlayNext = { binder?.player?.addNext(mediaItem, context) },
+            onPlayNext = { binder?.player?.addNext(mediaItem, context, selectedQueue?.id ?: 0) },
             onEnqueue = { binder?.player?.enqueue(mediaItem, context) },
             onDownload = onDownload,
             onRemoveFromPlaylist = onRemoveFromPlaylist,
@@ -474,7 +477,7 @@ fun NonQueuedMediaItemMenu(
                     )
                 )
             },
-            onPlayNext = { binder?.player?.addNext(mediaItem, context) },
+            onPlayNext = { binder?.player?.addNext(mediaItem, context, selectedQueue?.id ?: 0) },
             onEnqueue = { binder?.player?.enqueue(mediaItem, context) },
             onDownload = onDownload,
             onRemoveFromPlaylist = onRemoveFromPlaylist,
@@ -507,7 +510,7 @@ fun QueuedMediaItemMenu(
 ) {
     val binder = LocalPlayerServiceBinder.current
     val context = LocalContext.current
-
+    val selectedQueue = LocalSelectedQueue.current
     val menuStyle by rememberPreference(
         menuStyleKey,
         MenuStyle.List
@@ -522,7 +525,7 @@ fun QueuedMediaItemMenu(
             onRemoveFromQueue = if (indexInQueue != null) ({
                 binder?.player?.removeMediaItem(indexInQueue)
             }) else null,
-            onPlayNext = { binder?.player?.addNext(mediaItem, context) },
+            onPlayNext = { binder?.player?.addNext(mediaItem, context, selectedQueue?.id ?: 0) },
             onStartRadio = {
                 binder?.stopRadio()
                 //binder?.player?.forcePlay(mediaItem)
@@ -566,7 +569,7 @@ fun QueuedMediaItemMenu(
             onRemoveFromQueue = if (indexInQueue != null) ({
                 binder?.player?.removeMediaItem(indexInQueue)
             }) else null,
-            onPlayNext = { binder?.player?.addNext(mediaItem, context) },
+            onPlayNext = { binder?.player?.addNext(mediaItem, context, selectedQueue?.id ?: 0) },
             onStartRadio = {
                 binder?.stopRadio()
                 //binder?.player?.forcePlay(mediaItem)

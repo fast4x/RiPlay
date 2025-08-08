@@ -625,7 +625,7 @@ class MediaLibrarySessionCallback (
             return Futures.immediateFuture(defaultResult)
 
         scope.future {
-                val queuedSong = database.queue()
+                val queuedSong = database.queuedMediaItems()
                 if (queuedSong.isEmpty()) return@future Futures.immediateFuture(defaultResult)
 
             val startIndex = queuedSong.indexOfFirst { it.position != null }.coerceAtLeast(0)

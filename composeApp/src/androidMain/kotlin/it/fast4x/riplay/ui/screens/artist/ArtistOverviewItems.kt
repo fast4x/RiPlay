@@ -57,6 +57,7 @@ import it.fast4x.environment.utils.completed
 import it.fast4x.riplay.Database
 import it.fast4x.riplay.LocalPlayerAwareWindowInsets
 import it.fast4x.riplay.LocalPlayerServiceBinder
+import it.fast4x.riplay.LocalSelectedQueue
 import it.fast4x.riplay.R
 import it.fast4x.riplay.appContext
 import it.fast4x.riplay.enums.NavRoutes
@@ -128,6 +129,7 @@ fun ArtistOverviewItems(
     val binder = LocalPlayerServiceBinder.current
     val menuState = LocalMenuState.current
     val windowInsets = LocalPlayerAwareWindowInsets.current
+    val selectedQueue = LocalSelectedQueue.current
 
     val songThumbnailSizeDp = Dimensions.thumbnails.song
     val songThumbnailSizePx = songThumbnailSizeDp.px
@@ -459,7 +461,7 @@ fun ArtistOverviewItems(
                     SwipeablePlaylistItem(
                         mediaItem = item,
                         onPlayNext = {
-                            binder?.player?.addNext(item)
+                            binder?.player?.addNext(item, idQueue = selectedQueue?.id ?: 0)
                         },
                         onDownload = {},
                         onEnqueue = {

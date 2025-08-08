@@ -11,5 +11,6 @@ import androidx.room.PrimaryKey
 class QueuedMediaItem(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
     @ColumnInfo(typeAffinity = ColumnInfo.BLOB) val mediaItem: MediaItem,
-    var position: Long?
+    var position: Long?,
+    val idQueue: Long?
 )

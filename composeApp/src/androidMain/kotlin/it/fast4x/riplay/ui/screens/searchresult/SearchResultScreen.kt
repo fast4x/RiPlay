@@ -37,6 +37,7 @@ import it.fast4x.environment.requests.searchPage
 import it.fast4x.environment.utils.from
 import it.fast4x.riplay.Database
 import it.fast4x.riplay.LocalPlayerServiceBinder
+import it.fast4x.riplay.LocalSelectedQueue
 import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.models.Album
@@ -97,6 +98,8 @@ fun SearchResultScreen(
 ) {
     val context = LocalContext.current
     val binder = LocalPlayerServiceBinder.current
+    val selectedQueue = LocalSelectedQueue.current
+
     val saveableStateHolder = rememberSaveableStateHolder()
     val (tabIndex, onTabIndexChanges) = rememberPreference(searchResultScreenTabIndexKey, 0)
 
@@ -205,7 +208,7 @@ fun SearchResultScreen(
                                     SwipeablePlaylistItem(
                                         mediaItem = song.asMediaItem,
                                         onPlayNext = {
-                                            localBinder?.player?.addNext(song.asMediaItem)
+                                            localBinder?.player?.addNext(song.asMediaItem, idQueue = selectedQueue?.id ?: 0)
                                         },
                                         onDownload = {},
                                         onEnqueue = {
@@ -564,7 +567,7 @@ fun SearchResultScreen(
                                     SwipeablePlaylistItem(
                                         mediaItem = video.asMediaItem,
                                         onPlayNext = {
-                                            localBinder?.player?.addNext(video.asMediaItem)
+                                            localBinder?.player?.addNext(video.asMediaItem, idQueue = selectedQueue?.id ?: 0)
                                         },
                                         onDownload = {
                                             val message = context.resources.getString(R.string.downloading_videos_not_supported)

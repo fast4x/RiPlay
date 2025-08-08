@@ -170,6 +170,7 @@ import it.fast4x.environment.models.NavigationEndpoint
 import it.fast4x.riplay.Database
 import it.fast4x.riplay.LocalLinkDevices
 import it.fast4x.riplay.LocalPlayerServiceBinder
+import it.fast4x.riplay.LocalSelectedQueue
 import it.fast4x.riplay.R
 import it.fast4x.riplay.appContext
 import it.fast4x.riplay.appRunningInBackground
@@ -481,7 +482,7 @@ fun OnlinePlayer(
 
 
     val context = LocalContext.current
-
+    val selectedQueue = LocalSelectedQueue.current
     var mediaItems by remember {
         mutableStateOf(binder.player.currentTimeline.mediaItems)
     }
@@ -1781,7 +1782,8 @@ fun OnlinePlayer(
                                                     onLongClick = {
                                                         if (index < mediaItems.size) {
                                                             binder.player.addNext(
-                                                                binder.player.getMediaItemAt(index)
+                                                                binder.player.getMediaItemAt(index),
+                                                                idQueue = selectedQueue?.id ?: 0
                                                             )
                                                             scope.launch {
                                                                 if (!appRunningInBackground) {

@@ -7,6 +7,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.core.updateTransition
 import androidx.compose.animation.fadeIn
@@ -49,6 +50,7 @@ import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -150,10 +152,16 @@ import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
 import java.text.SimpleDateFormat
 import java.util.Date
-import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.PlayerConstants
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
+import it.fast4x.riplay.LocalSelectedQueue
+import it.fast4x.riplay.models.Queues
+import it.fast4x.riplay.ui.components.themed.EditQueueDialog
+import it.fast4x.riplay.ui.components.themed.QueueItemMenu
+import it.fast4x.riplay.ui.components.themed.Title2Actions
+import it.fast4x.riplay.ui.items.QueueItem
 import it.fast4x.riplay.ui.screens.player.online.OnlineMiniPlayer
+import it.fast4x.riplay.utils.getScreenDimensions
 
 @ExperimentalMaterial3Api
 @ExperimentalTextApi
@@ -176,6 +184,7 @@ fun Queue(
     val windowInsets = WindowInsets.systemBars
 
     val context = LocalContext.current
+    val selectedQueue = LocalSelectedQueue.current
     val showButtonPlayerArrow by rememberPreference(showButtonPlayerArrowKey, true)
     var queueType by rememberPreference(queueTypeKey, QueueType.Essential)
 
@@ -229,6 +238,8 @@ fun Queue(
             }
         }
     }
+
+    val queueslist = Database.queues().collectAsState( emptyList())
 
     val rippleIndication = ripple(bounded = false)
 
@@ -385,6 +396,10 @@ fun Queue(
         thumbnailRoundnessKey,
         ThumbnailRoundness.Heavy
     )
+    var showQueues by rememberSaveable { mutableStateOf(false) }
+    val maxHeightQueuesList by remember { derivedStateOf { getScreenDimensions().height.dp.div(6) } }
+    println("maxHeightQueuesList: $maxHeightQueuesList")
+    val heightQueues = animateDpAsState(if (showQueues) maxHeightQueuesList else 20.dp)
 
     var filterCharSequence: CharSequence
     filterCharSequence = filter.toString()
@@ -405,8 +420,6 @@ fun Queue(
                             true
                         ) ?: false
             }
-
-    val lifecycleOwner = LocalLifecycleOwner.current
 
     Box(
         modifier = Modifier
@@ -438,96 +451,200 @@ fun Queue(
 
 
     ) {
-        if (searching)
+
             stickyHeader {
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(10.dp),
-                    verticalAlignment = Alignment.Bottom,
-                    modifier = Modifier
-                        .background(colorPalette().background1)
-                        .padding(all = 10.dp)
-                        .fillMaxWidth()
-                ) {
-                    AnimatedVisibility(visible = searching) {
-                        val focusRequester = remember { FocusRequester() }
-                        val focusManager = LocalFocusManager.current
-                        val keyboardController = LocalSoftwareKeyboardController.current
 
-                        LaunchedEffect(searching) {
-                            focusRequester.requestFocus()
-                        }
-
-                        BasicTextField(
-                            value = filter ?: "",
-                            onValueChange = { filter = it },
-                            textStyle = typography().xs.semiBold,
-                            singleLine = true,
-                            maxLines = 1,
-                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                            keyboardActions = KeyboardActions(onDone = {
-                                if (filter.isNullOrBlank()) filter = ""
-                                focusManager.clearFocus()
-                            }),
-                            cursorBrush = SolidColor(colorPalette().text),
-                            decorationBox = { innerTextField ->
-                                Box(
-                                    contentAlignment = Alignment.CenterStart,
-                                    modifier = Modifier
-                                        .weight(1f)
-                                        .padding(horizontal = 10.dp)
-                                ) {
-                                    IconButton(
-                                        onClick = {},
-                                        icon = R.drawable.search,
-                                        color = colorPalette().favoritesIcon,
-                                        modifier = Modifier
-                                            .align(Alignment.CenterStart)
-                                            .size(16.dp)
-                                    )
+                var editQueue by remember { mutableStateOf(false) }
+                var addQueue by remember { mutableStateOf(false) }
+                var queueToEdit by remember { mutableStateOf<Queues?>(null) }
+                if (editQueue || addQueue) {
+                    EditQueueDialog(
+                        onDismiss = {
+                            editQueue = false
+                            addQueue = false
+                            queueToEdit = null
+                        },
+                        queue = queueToEdit,
+                        setValue = { queue ->
+                            CoroutineScope(Dispatchers.IO).launch {
+                                Database.asyncTransaction {
+                                    if (editQueue)
+                                        update(queue)
+                                    else insert(queue)
                                 }
-//                                Box(
-//                                    contentAlignment = Alignment.CenterStart,
-//                                    modifier = Modifier
-//                                        .weight(1f)
-//                                        .padding(horizontal = 30.dp)
-//                                ) {
-//                                    AnimatedVisibility(
-//                                        visible = filter?.isEmpty() ?: true,
-//                                        enter = fadeIn(tween(100)),
-//                                        exit = fadeOut(tween(100)),
-//                                    ) {
-//                                        BasicText(
-//                                            text = stringResource(R.string.search),
-//                                            maxLines = 1,
-//                                            overflow = TextOverflow.Ellipsis,
-//                                            style = typography().xs.semiBold.secondary.copy(color = colorPalette().textDisabled)
-//                                        )
-//                                    }
-//
-//                                    innerTextField()
-//                                }
-                            },
-                            modifier = Modifier
-                                .height(30.dp)
-                                .fillMaxWidth()
-                                .background(
-                                    colorPalette().background4,
-                                    shape = thumbnailRoundness.shape()
-                                )
-                                .focusRequester(focusRequester)
-                                .onFocusChanged {
-                                    if (!it.hasFocus) {
-                                        keyboardController?.hide()
-                                        if (filter?.isBlank() == true) {
-                                            filter = null
-                                            searching = false
-                                        }
+                            }
+                            editQueue = false
+                            addQueue = false
+                            queueToEdit = null
+                        },
+                        modifier = Modifier,
+                        setValueRequireNotNull = true,
+                    )
+                }
+
+                Title2Actions(
+                    title = "Queue: "+queueslist.value.find { it.isSelected == true }?.title.toString(),
+                    icon1 = if (showQueues) R.drawable.chevron_up else R.drawable.chevron_down,
+                    icon2 = R.drawable.addqueue,
+                    onClick1 = {
+                        showQueues = !showQueues
+                    },
+                    onClick2 = {
+                        editQueue = false
+                        addQueue = true
+//                        CoroutineScope(Dispatchers.IO).launch {
+//                            Database.asyncTransaction {
+//                                clearQueues()
+//                            }
+//                        }
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(colorPalette().background1)
+                )
+
+                if (showQueues)
+                LazyColumn(
+                    state = rememberLazyListState(),
+                    contentPadding = windowInsets
+                        .only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom)
+                        .asPaddingValues(),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier
+                        .height(heightQueues.value)
+                        .background(colorPalette().background1)
+                ) {
+                        items(
+                            items = queueslist.value,
+                            key = { it.id }
+                        ) {
+                            QueueItem(
+                                title = it.title.toString(),
+                                isSelected = it.isSelected == true,
+                                acceptSong = it.acceptSong,
+                                acceptVideo = it.acceptVideo,
+                                acceptPodcast = it.acceptPodcast,
+                                onClick = {
+                                    CoroutineScope(Dispatchers.IO).launch {
+                                        Database.selectQueue(it)
+                                    }
+                                    println("Queue selected")
+                                },
+                                onLongClick = {
+                                    menuState.display {
+                                        QueueItemMenu(
+                                            navController = navController,
+                                            onDismiss = { menuState.hide() },
+                                            onEdit = {
+                                                queueToEdit = it
+                                                editQueue = true
+                                                addQueue = false
+                                                println("Queue selected for editing")
+                                            },
+                                            onRemove = {
+                                                CoroutineScope(Dispatchers.IO).launch {
+                                                    Database.asyncTransaction {
+                                                        deleteQueue(it.id)
+                                                    }
+                                                }
+                                            }
+                                        )
+
                                     }
                                 }
-                        )
-                    }
-
+                            )
+                        }
                 }
+
+                if (searching)
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(10.dp),
+                        verticalAlignment = Alignment.Bottom,
+                        modifier = Modifier
+                            .background(colorPalette().background1)
+                            .padding(all = 10.dp)
+                            .fillMaxWidth()
+                    ) {
+                        AnimatedVisibility(visible = searching) {
+                            val focusRequester = remember { FocusRequester() }
+                            val focusManager = LocalFocusManager.current
+                            val keyboardController = LocalSoftwareKeyboardController.current
+
+                            LaunchedEffect(searching) {
+                                focusRequester.requestFocus()
+                            }
+
+                            BasicTextField(
+                                value = filter ?: "",
+                                onValueChange = { filter = it },
+                                textStyle = typography().xs.semiBold,
+                                singleLine = true,
+                                maxLines = 1,
+                                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                                keyboardActions = KeyboardActions(onDone = {
+                                    if (filter.isNullOrBlank()) filter = ""
+                                    focusManager.clearFocus()
+                                }),
+                                cursorBrush = SolidColor(colorPalette().text),
+                                decorationBox = { innerTextField ->
+                                    Box(
+                                        contentAlignment = Alignment.CenterStart,
+                                        modifier = Modifier
+                                            .weight(1f)
+                                            .padding(horizontal = 10.dp)
+                                    ) {
+                                        IconButton(
+                                            onClick = {},
+                                            icon = R.drawable.search,
+                                            color = colorPalette().favoritesIcon,
+                                            modifier = Modifier
+                                                .align(Alignment.CenterStart)
+                                                .size(16.dp)
+                                        )
+                                    }
+    //                                Box(
+    //                                    contentAlignment = Alignment.CenterStart,
+    //                                    modifier = Modifier
+    //                                        .weight(1f)
+    //                                        .padding(horizontal = 30.dp)
+    //                                ) {
+    //                                    AnimatedVisibility(
+    //                                        visible = filter?.isEmpty() ?: true,
+    //                                        enter = fadeIn(tween(100)),
+    //                                        exit = fadeOut(tween(100)),
+    //                                    ) {
+    //                                        BasicText(
+    //                                            text = stringResource(R.string.search),
+    //                                            maxLines = 1,
+    //                                            overflow = TextOverflow.Ellipsis,
+    //                                            style = typography().xs.semiBold.secondary.copy(color = colorPalette().textDisabled)
+    //                                        )
+    //                                    }
+    //
+    //                                    innerTextField()
+    //                                }
+                                },
+                                modifier = Modifier
+                                    .height(30.dp)
+                                    .fillMaxWidth()
+                                    .background(
+                                        colorPalette().background4,
+                                        shape = thumbnailRoundness.shape()
+                                    )
+                                    .focusRequester(focusRequester)
+                                    .onFocusChanged {
+                                        if (!it.hasFocus) {
+                                            keyboardController?.hide()
+                                            if (filter?.isBlank() == true) {
+                                                filter = null
+                                                searching = false
+                                            }
+                                        }
+                                    }
+                            )
+                        }
+
+                    }
             }
 
         items(
@@ -592,7 +709,8 @@ fun Queue(
                         onPlayNext = {
                             binder.player.addNext(
                                 window.mediaItem,
-                                context
+                                context,
+                                idQueue = selectedQueue?.id ?: 0
                             )
                         },
                         onDownload = {},

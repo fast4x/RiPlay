@@ -54,6 +54,7 @@ import it.fast4x.compose.persist.persistList
 import it.fast4x.environment.models.NavigationEndpoint
 import it.fast4x.riplay.Database
 import it.fast4x.riplay.LocalPlayerServiceBinder
+import it.fast4x.riplay.LocalSelectedQueue
 import it.fast4x.riplay.MODIFIED_PREFIX
 import it.fast4x.riplay.MONTHLY_PREFIX
 import it.fast4x.riplay.PINNED_PREFIX
@@ -115,7 +116,7 @@ fun NonQueuedMediaItemGridMenu(
 ) {
     val binder = LocalPlayerServiceBinder.current
     val context = LocalContext.current
-
+    val selectedQueue = LocalSelectedQueue.current
     BaseMediaItemGridMenu(
         navController = navController,
         mediaItem = mediaItem,
@@ -131,7 +132,7 @@ fun NonQueuedMediaItemGridMenu(
                 )
             )
         },
-        onPlayNext = { binder?.player?.addNext(mediaItem, context) },
+        onPlayNext = { binder?.player?.addNext(mediaItem, context, selectedQueue?.id ?: 0) },
         onEnqueue = { binder?.player?.enqueue(mediaItem, context) },
         onDownload = onDownload,
         onRemoveFromPlaylist = onRemoveFromPlaylist,

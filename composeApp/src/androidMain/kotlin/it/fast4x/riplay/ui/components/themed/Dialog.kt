@@ -92,7 +92,6 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.media3.common.PlaybackParameters
 import androidx.media3.common.util.UnstableApi
-import androidx.media3.exoplayer.offline.Download
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import it.fast4x.compose.persist.persist
@@ -146,6 +145,7 @@ import it.fast4x.riplay.colorPalette
 import it.fast4x.riplay.isBassBoostEnabled
 import it.fast4x.riplay.models.Album
 import it.fast4x.riplay.models.Playlist
+import it.fast4x.riplay.models.Queues
 import it.fast4x.riplay.models.Song
 import it.fast4x.riplay.models.SongAlbumMap
 import it.fast4x.riplay.models.SongArtistMap
@@ -2901,4 +2901,230 @@ fun <T> ValueSelectorDialogBody(
             onClick = onDismiss
         )
     }
+}
+
+@Composable
+inline fun EditQueueDialog(
+    modifier: Modifier = Modifier,
+    noinline onDismiss: () -> Unit,
+    queue: Queues?,
+    //title: String,
+    //value: String,
+    setValueRequireNotNull: Boolean = true,
+    //placeholder: String,
+    crossinline setValue: (Queues) -> Unit,
+    //acceptSong: Boolean = true,
+    //acceptVideo: Boolean = true,
+    //acceptPodcast: Boolean = true,
+) {
+    val inError = remember { mutableStateOf(false) }
+    val txtFieldError = remember { mutableStateOf("") }
+    val txtField = remember { mutableStateOf(cleanPrefix(queue?.title ?: "Name of the queue")) }
+    val value_cannot_empty = stringResource(R.string.value_cannot_be_empty)
+    val checkedStateAcceptSong = remember{
+        mutableStateOf(queue?.acceptSong)
+    }
+    val checkedStateAcceptVideo = remember{
+        mutableStateOf(queue?.acceptVideo)
+    }
+    val checkedStateAcceptPodcast = remember{
+        mutableStateOf(queue?.acceptPodcast)
+    }
+
+    inError.value = txtField.value.isEmpty()
+
+
+
+    Dialog(onDismissRequest = {
+        if (!inError.value) onDismiss()
+    }) {
+        Column(
+            modifier = modifier
+                .padding(all = 10.dp)
+                .background(color = colorPalette().background1, shape = RoundedCornerShape(8.dp))
+                .padding(vertical = 16.dp)
+                .defaultMinSize(Dp.Unspecified, 190.dp)
+        ) {
+            BasicText(
+                text = queue?.title ?: "Create new queue",
+                style = typography().s.semiBold,
+                modifier = Modifier
+                    .padding(vertical = 8.dp, horizontal = 24.dp)
+            )
+
+            Row(
+                horizontalArrangement = Arrangement.SpaceEvenly,
+                modifier = Modifier
+                    .fillMaxWidth()
+            ) {
+
+                TextField(
+                    modifier = Modifier
+                        .fillMaxWidth(0.9f),
+                    maxLines = 20,
+                    colors = TextFieldDefaults.textFieldColors(
+                        placeholderColor = colorPalette().textDisabled,
+                        cursorColor = colorPalette().text,
+                        textColor = colorPalette().text,
+                        backgroundColor = if (txtFieldError.value.isEmpty()) colorPalette().background1 else colorPalette().red,
+                        focusedIndicatorColor = colorPalette().accent,
+                        unfocusedIndicatorColor = colorPalette().textDisabled
+                    ),
+                    leadingIcon = {
+                        /*
+                        Image(
+                            painter = painterResource(R.drawable.app_icon),
+                            contentDescription = null,
+                            colorFilter = ColorFilter.tint(colorPalette.background0),
+                            modifier = Modifier
+                                .width(30.dp)
+                                .height(30.dp)
+                                .clickable(
+                                    enabled = true,
+                                    onClick = { onDismiss() }
+                                )
+                        )
+                         */
+
+                    },
+                    placeholder = { Text(text = if (queue == null) "Name of the queue" else "") },
+                    value = txtField.value,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
+                    onValueChange = {
+                        txtField.value = it
+                    })
+            }
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(5.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .fillMaxWidth()
+            ) {
+                Checkbox(
+                    checked = checkedStateAcceptSong.value == true,
+                    onCheckedChange = {
+                        checkedStateAcceptSong.value = it
+                    },
+                    colors = CheckboxDefaults.colors(
+                        checkedColor = colorPalette().accent,
+                        uncheckedColor = colorPalette().text
+                    ),
+                    modifier = Modifier
+                        .scale(0.7f)
+                )
+                BasicText(
+                    text = "Accept song",
+                    style = typography().xs.medium,
+                    maxLines = 2,
+                    modifier = Modifier
+                )
+
+            }
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(5.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .fillMaxWidth()
+            ) {
+                Checkbox(
+                    checked = checkedStateAcceptVideo.value == true,
+                    onCheckedChange = {
+                        checkedStateAcceptVideo.value = it
+                    },
+                    colors = CheckboxDefaults.colors(
+                        checkedColor = colorPalette().accent,
+                        uncheckedColor = colorPalette().text
+                    ),
+                    modifier = Modifier
+                        .scale(0.7f)
+                )
+                BasicText(
+                    text = "Accept video",
+                    style = typography().xs.medium,
+                    maxLines = 2,
+                    modifier = Modifier
+                )
+
+            }
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(5.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .fillMaxWidth()
+            ) {
+                Checkbox(
+                    checked = checkedStateAcceptPodcast.value == true,
+                    onCheckedChange = {
+                        checkedStateAcceptPodcast.value = it
+                    },
+                    colors = CheckboxDefaults.colors(
+                        checkedColor = colorPalette().accent,
+                        uncheckedColor = colorPalette().text
+                    ),
+                    modifier = Modifier
+                        .scale(0.7f)
+                )
+                BasicText(
+                    text = "Accept podcast",
+                    style = typography().xs.medium,
+                    maxLines = 2,
+                    modifier = Modifier
+                )
+
+            }
+
+            Row(
+                horizontalArrangement = Arrangement.SpaceEvenly,
+                modifier = Modifier
+                    .fillMaxWidth()
+            ) {
+                DialogTextButton(
+                    text = stringResource(R.string.cancel),
+                    onClick = onDismiss,
+                    modifier = Modifier
+                )
+
+                DialogTextButton(
+                    text = stringResource(R.string.confirm),
+                    onClick = {
+                        if (txtField.value.isEmpty() && setValueRequireNotNull) {
+                            txtFieldError.value = value_cannot_empty
+                            inError.value = true
+                            return@DialogTextButton
+                        }
+
+                        inError.value = false
+
+                        var newQueue = Queues(
+                            title = cleanPrefix(txtField.value),
+                            acceptSong = checkedStateAcceptSong.value == true,
+                            acceptVideo = checkedStateAcceptVideo.value == true,
+                            acceptPodcast = checkedStateAcceptPodcast.value == true,
+                            position = null,
+                            isSelected = false
+                        )
+                        if (queue != null) {
+                            newQueue = newQueue.copy(
+                                id = queue.id,
+                                position = queue.position,
+                                isSelected = queue.isSelected
+                            )
+                        }
+
+                        setValue (newQueue)
+
+                        onDismiss()
+
+                    },
+                    primary = true
+                )
+            }
+
+        }
+    }
+
 }

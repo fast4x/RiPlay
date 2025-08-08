@@ -74,6 +74,7 @@ import it.fast4x.environment.requests.AlbumPage
 import it.fast4x.riplay.Database
 import it.fast4x.riplay.EXPLICIT_PREFIX
 import it.fast4x.riplay.LocalPlayerServiceBinder
+import it.fast4x.riplay.LocalSelectedQueue
 import it.fast4x.riplay.MODIFIED_PREFIX
 import it.fast4x.riplay.R
 import it.fast4x.riplay.appContext
@@ -174,7 +175,7 @@ fun AlbumDetails(
     val binder = LocalPlayerServiceBinder.current
     val menuState = LocalMenuState.current
     val context = LocalContext.current
-
+    val selectedQueue = LocalSelectedQueue.current
     var songs by persistList<Song>("album/$browseId/songs")
     var album by persist<Album?>("album/$browseId")
     //val albumPage by persist<Innertube.PlaylistOrAlbumPage?>("album/$browseId/albumPage")
@@ -1282,7 +1283,7 @@ fun AlbumDetails(
                         SwipeablePlaylistItem(
                             mediaItem = song.asMediaItem,
                             onPlayNext = {
-                                binder?.player?.addNext(song.asMediaItem)
+                                binder?.player?.addNext(song.asMediaItem, idQueue = selectedQueue?.id ?: 0)
                             },
                             onDownload = {},
                             onEnqueue = {

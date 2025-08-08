@@ -51,6 +51,7 @@ import it.fast4x.riplay.models.Playlist
 import it.fast4x.riplay.models.PlaylistPreview
 import it.fast4x.riplay.models.PlaylistWithSongs
 import it.fast4x.riplay.models.QueuedMediaItem
+import it.fast4x.riplay.models.Queues
 import it.fast4x.riplay.models.SearchQuery
 import it.fast4x.riplay.models.Song
 import it.fast4x.riplay.models.SongAlbumMap
@@ -1450,10 +1451,10 @@ interface Database {
     fun favorites(): Flow<List<Song>>
 
     @Query("SELECT * FROM QueuedMediaItem")
-    fun queue(): List<QueuedMediaItem>
+    fun queuedMediaItems(): List<QueuedMediaItem>
 
     @Query("DELETE FROM QueuedMediaItem")
-    fun clearQueue()
+    fun clearQueuedMediaItems()
 
     @Query("SELECT * FROM SearchQuery WHERE `query` LIKE :query ORDER BY id DESC")
     fun queries(query: String): Flow<List<SearchQuery>>
@@ -2508,6 +2509,27 @@ interface Database {
     @Query("DELETE FROM Event WHERE songId = :songId")
     fun clearEventsFor(songId: String)
 
+
+    @Query("SELECT * FROM Queues ORDER BY position")
+    fun queues(): Flow<List<Queues>>
+
+    @Query("UPDATE Queues SET isSelected = 0")
+    fun clearSelectedQueue()
+
+    @Query("DELETE FROM Queues")
+    fun clearQueues()
+
+    fun selectQueue(queue: Queues) {
+        clearSelectedQueue()
+        update(queue.copy(isSelected = true))
+    }
+
+    @Query("DELETE FROM Queues WHERE id = :id")
+    fun deleteQueue(id: Long)
+
+    @Query("SELECT * FROM Queues WHERE isSelected = 1 LIMIT 1")
+    fun selectedQueue(): Queues
+
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     @Throws(SQLException::class)
     fun insert(event: Event)
@@ -2590,6 +2612,9 @@ interface Database {
         }
     }
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    fun insert(queues: Queues)
+
     @Update
     fun update(artist: Artist)
 
@@ -2598,6 +2623,9 @@ interface Database {
 
     @Update
     fun update(playlist: Playlist)
+
+    @Update
+    fun update(queues: Queues)
 
     @Update
     fun update(playlist: Playlist, playlistItem: Environment.PlaylistItem) {
@@ -2627,6 +2655,9 @@ interface Database {
 
     @Upsert
     fun upsert(song: Song)
+
+    @Upsert
+    fun upsert(queue: Queues)
 
     @Delete
     fun delete(searchQuery: SearchQuery)
@@ -2733,11 +2764,12 @@ interface Database {
         Format::class,
         Event::class,
         Lyrics::class,
+        Queues::class,
     ],
     views = [
         SortedSongPlaylistMap::class
     ],
-    version = 28,
+    version = 31,
     exportSchema = true,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
@@ -2759,6 +2791,9 @@ interface Database {
         AutoMigration(from = 20, to = 21, spec = DatabaseInitializer.From20To21Migration::class),
         AutoMigration(from = 21, to = 22, spec = DatabaseInitializer.From21To22Migration::class),
         AutoMigration(from = 27, to = 28),
+        AutoMigration(from = 28, to = 29),
+        AutoMigration(from = 29, to = 30),
+        AutoMigration(from = 30, to = 31),
     ],
 )
 @TypeConverters(Converters::class)

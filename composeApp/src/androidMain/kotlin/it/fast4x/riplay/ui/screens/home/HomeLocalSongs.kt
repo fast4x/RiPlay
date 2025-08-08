@@ -87,6 +87,7 @@ import it.fast4x.compose.persist.persistList
 import it.fast4x.riplay.Database
 import it.fast4x.riplay.EXPLICIT_PREFIX
 import it.fast4x.riplay.LocalPlayerServiceBinder
+import it.fast4x.riplay.LocalSelectedQueue
 import it.fast4x.riplay.R
 import it.fast4x.riplay.appContext
 import it.fast4x.riplay.colorPalette
@@ -209,6 +210,7 @@ fun HomeLocalSongs(
 ) {
     val binder = LocalPlayerServiceBinder.current
     val menuState = LocalMenuState.current
+    val selectedQueue = LocalSelectedQueue.current
     val thumbnailSizeDp = Dimensions.thumbnails.song
     val thumbnailSizePx = thumbnailSizeDp.px
 
@@ -1556,7 +1558,7 @@ fun HomeLocalSongs(
                         SwipeablePlaylistItem(
                             mediaItem = song.asMediaItem,
                             onPlayNext = {
-                                binder?.player?.addNext(song.asMediaItem)
+                                binder?.player?.addNext(song.asMediaItem, idQueue = selectedQueue?.id ?: 0)
                             }
                         ) {
                             var forceRecompose by remember { mutableStateOf(false) }
@@ -1731,7 +1733,7 @@ fun HomeLocalSongs(
                     SwipeablePlaylistItem(
                         mediaItem = song.song.asMediaItem,
                         onPlayNext = {
-                            binder?.player?.addNext(song.song.asMediaItem)
+                            binder?.player?.addNext(song.song.asMediaItem, idQueue = selectedQueue?.id ?: 0)
                         }
                     ) {
                         var forceRecompose by remember { mutableStateOf(false) }

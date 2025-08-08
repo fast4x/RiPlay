@@ -1,7 +1,6 @@
 package it.fast4x.riplay.service
 
 import android.annotation.SuppressLint
-import android.app.Notification
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.WallpaperManager
@@ -15,7 +14,6 @@ import android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK
 import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.content.IntentFilter
 import android.content.SharedPreferences
-import android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK
 import android.database.SQLException
 import android.graphics.Bitmap
 import android.graphics.Color
@@ -26,8 +24,6 @@ import android.media.audiofx.AudioEffect
 import android.media.audiofx.BassBoost
 import android.media.audiofx.LoudnessEnhancer
 import android.media.audiofx.PresetReverb
-import android.os.Build
-import android.os.Bundle
 import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
@@ -60,7 +56,6 @@ import androidx.media3.datasource.cache.Cache
 import androidx.media3.datasource.cache.CacheDataSource
 import androidx.media3.datasource.cache.SimpleCache
 import androidx.media3.datasource.okhttp.OkHttpDataSource
-import androidx.media3.exoplayer.DefaultLoadControl
 import androidx.media3.exoplayer.DefaultRenderersFactory
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.analytics.AnalyticsListener
@@ -82,9 +77,6 @@ import androidx.media3.session.MediaNotification
 import androidx.media3.session.MediaSession
 import androidx.media3.session.MediaStyleNotificationHelper
 import androidx.media3.session.SessionToken
-import androidx.media3.ui.DefaultMediaDescriptionAdapter
-import androidx.media3.ui.PlayerNotificationManager
-import com.google.common.collect.ImmutableList
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.MoreExecutors
 import it.fast4x.environment.Environment
@@ -115,7 +107,6 @@ import it.fast4x.riplay.models.asMediaItem
 import it.fast4x.riplay.ui.components.themed.SmartMessage
 import it.fast4x.riplay.ui.widgets.PlayerHorizontalWidget
 import it.fast4x.riplay.ui.widgets.PlayerVerticalWidget
-import it.fast4x.riplay.utils.CoilBitmapLoader
 import it.fast4x.riplay.utils.TimerJob
 import it.fast4x.riplay.utils.YouTubeRadio
 import it.fast4x.riplay.utils.activityPendingIntent
@@ -1349,13 +1340,14 @@ class OfflinePlayerService : MediaLibraryService(),
             mediaItems.mapIndexed { index, mediaItem ->
                 QueuedMediaItem(
                     mediaItem = mediaItem,
-                    position = if (index == mediaItemIndex) mediaItemPosition else null
+                    position = if (index == mediaItemIndex) mediaItemPosition else null,
+                    idQueue = mediaItem.mediaMetadata.extras?.getLong("idQueue", 0)
                 )
             }.let { queuedMediaItems ->
                 if (queuedMediaItems.isEmpty()) return@let
 
                 Database.asyncTransaction {
-                    clearQueue()
+                    clearQueuedMediaItems()
                     insert( queuedMediaItems )
                 }
 
@@ -1380,7 +1372,7 @@ class OfflinePlayerService : MediaLibraryService(),
         if (!isPersistentQueueEnabled) return
 
         Database.asyncQuery {
-            val queuedSong = queue()
+            val queuedSong = queuedMediaItems()
 
             if (queuedSong.isEmpty()) return@asyncQuery
 
@@ -1394,6 +1386,7 @@ class OfflinePlayerService : MediaLibraryService(),
                             .setCustomCacheKey(mediaItem.mediaItem.mediaId)
                             .build().apply {
                                 mediaMetadata.extras?.putBoolean("isFromPersistentQueue", true)
+                                mediaMetadata.extras?.putLong("idQueue", mediaItem.idQueue ?: 0)
                             }
                     },
                     index,

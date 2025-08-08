@@ -25,6 +25,7 @@ import it.fast4x.environment.models.bodies.SearchBody
 import it.fast4x.environment.requests.searchPage
 import it.fast4x.environment.utils.from
 import it.fast4x.riplay.LocalPlayerServiceBinder
+import it.fast4x.riplay.LocalSelectedQueue
 import it.fast4x.riplay.R
 import it.fast4x.riplay.ui.components.LocalMenuState
 import it.fast4x.riplay.ui.components.SwipeablePlaylistItem
@@ -53,6 +54,7 @@ fun SearchYoutubeEntity (
     val menuState = LocalMenuState.current
     val hapticFeedback = LocalHapticFeedback.current
     val context = LocalContext.current
+    val selectedQueue = LocalSelectedQueue.current
     //val context = LocalContext.current
     val thumbnailHeightDp = 72.dp
     val thumbnailWidthDp = 128.dp
@@ -99,7 +101,7 @@ fun SearchYoutubeEntity (
                     SwipeablePlaylistItem(
                         mediaItem = video.asMediaItem,
                         onPlayNext = {
-                            binder?.player?.addNext(video.asMediaItem)
+                            binder?.player?.addNext(video.asMediaItem, idQueue = selectedQueue?.id ?: 0)
                         },
                         onDownload = {
                             val message = context.resources.getString(R.string.downloading_videos_not_supported)

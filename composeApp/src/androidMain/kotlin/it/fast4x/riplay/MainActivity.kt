@@ -158,6 +158,7 @@ import it.fast4x.riplay.ui.styling.typographyOf
 import it.fast4x.riplay.utils.LocalMonetCompat
 import it.fast4x.riplay.utils.OkHttpRequest
 import it.fast4x.riplay.extensions.rescuecenter.RescueScreen
+import it.fast4x.riplay.models.Queues
 import it.fast4x.riplay.service.BitmapProvider
 import it.fast4x.riplay.service.EndlessService
 import it.fast4x.riplay.service.isLocal
@@ -327,6 +328,8 @@ class MainActivity :
     var linkDevices: MutableState<List<NsdServiceInfo>> = mutableStateOf(emptyList())
 
     var onlinePlayerPlayingState: MutableState<Boolean> = mutableStateOf(false)
+
+    var selectedQueue: MutableState<Queues?> = mutableStateOf(null)
 
     var mediaSession: MediaSessionCompat? = null
     var onlinePlayer: MutableState<YouTubePlayer?> = mutableStateOf(null)
@@ -1215,6 +1218,7 @@ class MainActivity :
                             LocalMonetCompat provides localMonet,
                             LocalLinkDevices provides linkDevices.value,
                             LocalOnlinePlayerPlayingState provides onlinePlayerPlayingState.value,
+                            LocalSelectedQueue provides selectedQueue.value,
                             //LocalInternetAvailable provides isInternetAvailable
                         ) {
 
@@ -1461,6 +1465,9 @@ class MainActivity :
 
                             bitmapProvider?.load(mediaItem?.mediaMetadata?.artworkUri) {}
 
+                             Database.asyncTransaction {
+                                 selectedQueue.value = Database.selectedQueue()
+                            }
 
                         }
                     }
@@ -1906,4 +1913,5 @@ val LocalOnlinePlayerPlayingState =
 val LocalLinkDevices =
     staticCompositionLocalOf<List<NsdServiceInfo>> { error("No link devices provided") }
 
+val LocalSelectedQueue = staticCompositionLocalOf<Queues?> { error("No selected queue provided") }
 

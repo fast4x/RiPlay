@@ -2,11 +2,13 @@ package it.fast4x.riplay.utils
 
 import android.content.Context
 import android.content.res.Configuration
+import android.content.res.Resources
 import android.os.Build
 import android.view.Surface
 import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
 
 
 fun getScreenOrientation(context: Context): Int {
@@ -38,4 +40,20 @@ fun getRotation(context: Context): Int {
 fun getRotation(): Int {
     val context = LocalContext.current
     return context.display.rotation
+}
+
+class ScreenDimensions (
+    val width: Int,
+    val height: Int,
+    val density: Float,
+)
+
+fun getScreenDimensions(): ScreenDimensions {
+    return ScreenDimensions(
+        Resources.getSystem().displayMetrics.widthPixels,
+        Resources.getSystem().displayMetrics.heightPixels,
+        Resources.getSystem().displayMetrics.density
+    )
+
+
 }

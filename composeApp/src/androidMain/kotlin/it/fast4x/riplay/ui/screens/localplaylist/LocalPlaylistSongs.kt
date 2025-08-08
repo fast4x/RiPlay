@@ -93,6 +93,7 @@ import it.fast4x.riplay.Database
 import it.fast4x.riplay.Database.Companion.songAlbumInfo
 import it.fast4x.riplay.Database.Companion.songArtistInfo
 import it.fast4x.riplay.LocalPlayerServiceBinder
+import it.fast4x.riplay.LocalSelectedQueue
 import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.MaxSongs
 import it.fast4x.riplay.enums.NavRoutes
@@ -218,6 +219,7 @@ fun LocalPlaylistSongs(
     val (colorPalette, typography, thumbnailShape) = LocalAppearance.current
     val binder = LocalPlayerServiceBinder.current
     val menuState = LocalMenuState.current
+    val selectedQueue = LocalSelectedQueue.current
     val uiType by rememberPreference(UiTypeKey, UiType.RiPlay)
 
     var playlistAllSongs by persistList<SongEntity>("localPlaylist/$playlistId/songs")
@@ -2212,7 +2214,7 @@ fun LocalPlaylistSongs(
                                     }
                                 },
                                 onPlayNext = {
-                                    binder?.player?.addNext(song.asMediaItem)
+                                    binder?.player?.addNext(song.asMediaItem, idQueue = selectedQueue?.id ?: 0)
                                 }
                             ) {
                                 var forceRecompose by remember { mutableStateOf(false) }

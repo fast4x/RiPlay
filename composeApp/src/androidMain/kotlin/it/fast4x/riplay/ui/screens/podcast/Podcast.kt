@@ -70,6 +70,7 @@ import it.fast4x.environment.models.bodies.BrowseBody
 import it.fast4x.environment.requests.podcastPage
 import it.fast4x.riplay.Database
 import it.fast4x.riplay.LocalPlayerServiceBinder
+import it.fast4x.riplay.LocalSelectedQueue
 import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.enums.NavigationBarPosition
@@ -143,6 +144,7 @@ fun Podcast(
     val binder = LocalPlayerServiceBinder.current
     val context = LocalContext.current
     val menuState = LocalMenuState.current
+    val selectedQueue = LocalSelectedQueue.current
 
     var podcastPage by persist<Environment.Podcast?>("podcast/$browseId/listEpisodes")
 
@@ -658,7 +660,7 @@ fun Podcast(
                     SwipeablePlaylistItem(
                         mediaItem = song.asMediaItem,
                         onPlayNext = {
-                            binder?.player?.addNext(song.asMediaItem)
+                            binder?.player?.addNext(song.asMediaItem, idQueue = selectedQueue?.id ?: 0)
                         },
                         onDownload = {},
                         onEnqueue = {
