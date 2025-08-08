@@ -479,6 +479,8 @@ class MainActivity :
 
         updateOnlineNotification()
 
+        updateSelectedQueue()
+
     }
 
     private fun checkIfAppIsRunningInBackground() {
@@ -1465,9 +1467,7 @@ class MainActivity :
 
                             bitmapProvider?.load(mediaItem?.mediaMetadata?.artworkUri) {}
 
-                             Database.asyncTransaction {
-                                 selectedQueue.value = Database.selectedQueue()
-                            }
+                            updateSelectedQueue()
 
                         }
                     }
@@ -1550,6 +1550,12 @@ class MainActivity :
 
         }
 
+    }
+
+    fun updateSelectedQueue() {
+        Database.asyncTransaction {
+            selectedQueue.value = Database.selectedQueue()
+        }
     }
 
     fun initializeMediasession() {
