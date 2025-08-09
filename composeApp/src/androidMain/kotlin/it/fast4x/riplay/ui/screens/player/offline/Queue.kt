@@ -482,7 +482,7 @@ fun Queue(
                     )
                 }
 
-                val queueTitle = queueslist.value.find { it.isSelected == true }?.title ?: "Default"
+                val queueTitle = queueslist.value.find { it.isSelected == true }?.title ?: "No queue"
                 Title2Actions(
                     title = "Queue: $queueTitle",
                     icon1 = if (showQueues) R.drawable.chevron_up else R.drawable.chevron_down,
