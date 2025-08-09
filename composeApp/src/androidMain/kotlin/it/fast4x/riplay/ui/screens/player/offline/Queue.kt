@@ -482,8 +482,9 @@ fun Queue(
                     )
                 }
 
+                val queueTitle = queueslist.value.find { it.isSelected == true }?.title ?: "Default"
                 Title2Actions(
-                    title = "Queue: "+queueslist.value.find { it.isSelected == true }?.title.toString(),
+                    title = "Queue: $queueTitle",
                     icon1 = if (showQueues) R.drawable.chevron_up else R.drawable.chevron_down,
                     icon2 = R.drawable.addqueue,
                     onClick1 = {
@@ -492,11 +493,6 @@ fun Queue(
                     onClick2 = {
                         editQueue = false
                         addQueue = true
-//                        CoroutineScope(Dispatchers.IO).launch {
-//                            Database.asyncTransaction {
-//                                clearQueues()
-//                            }
-//                        }
                     },
                     modifier = Modifier
                         .fillMaxWidth()
