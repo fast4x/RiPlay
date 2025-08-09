@@ -2528,7 +2528,7 @@ interface Database {
     fun deleteQueue(id: Long)
 
     @Query("SELECT * FROM Queues WHERE isSelected = 1 LIMIT 1")
-    fun selectedQueue(): Queues
+    fun selectedQueue(): Queues?
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     @Throws(SQLException::class)
