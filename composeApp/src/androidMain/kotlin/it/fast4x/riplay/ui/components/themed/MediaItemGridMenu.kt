@@ -91,6 +91,7 @@ import kotlinx.coroutines.withContext
 import it.fast4x.riplay.colorPalette
 import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.models.Song
+import it.fast4x.riplay.models.defaultQueueId
 import it.fast4x.riplay.typography
 import it.fast4x.riplay.ui.screens.player.fastPlay
 import it.fast4x.riplay.ui.screens.settings.isYouTubeSyncEnabled
@@ -132,8 +133,8 @@ fun NonQueuedMediaItemGridMenu(
                 )
             )
         },
-        onPlayNext = { binder?.player?.addNext(mediaItem, context, selectedQueue?.id ?: 0) },
-        onEnqueue = { binder?.player?.enqueue(mediaItem, context) },
+        onPlayNext = { binder?.player?.addNext(mediaItem, context, selectedQueue?.id ?: defaultQueueId()) },
+        onEnqueue = { binder?.player?.enqueue(mediaItem, context, it) },
         onDownload = onDownload,
         onRemoveFromPlaylist = onRemoveFromPlaylist,
         onHideFromDatabase = onHideFromDatabase,
@@ -153,7 +154,7 @@ fun BaseMediaItemGridMenu(
     onShowSleepTimer: (() -> Unit)? = null,
     onStartRadio: (() -> Unit)? = null,
     onPlayNext: (() -> Unit)? = null,
-    onEnqueue: (() -> Unit)? = null,
+    onEnqueue: ((Long) -> Unit)? = null,
     onDownload: (() -> Unit)? = null,
     onRemoveFromQueue: (() -> Unit)? = null,
     onRemoveFromPlaylist: (() -> Unit)? = null,
@@ -298,7 +299,7 @@ fun MediaItemGridMenu (
     onShowSleepTimer: (() -> Unit)? = null,
     onStartRadio: (() -> Unit)? = null,
     onPlayNext: (() -> Unit)? = null,
-    onEnqueue: (() -> Unit)? = null,
+    onEnqueue: ((Long) -> Unit)? = null,
     onDownload: (() -> Unit)? = null,
     onHideFromDatabase: (() -> Unit)? = null,
     onDeleteFromDatabase: (() -> Unit)? = null,
@@ -866,6 +867,19 @@ fun MediaItemGridMenu (
         } else {
             val colorPalette = colorPalette()
 
+            //SHOW QUEUES DIALOG
+            var isViewingQueues by remember { mutableStateOf(false) }
+            if (isViewingQueues) {
+                QueuesDialog(
+                    onSelect = {
+                        onDismiss()
+                        onEnqueue?.invoke(it.id)
+                    },
+                    onDismiss = { isViewingQueues = false }
+                )
+            }
+
+
             GridMenu(
                 contentPadding = PaddingValues(
                     start = 8.dp,
@@ -935,8 +949,7 @@ fun MediaItemGridMenu (
                         colorIcon = colorPalette.text,
                         colorText = colorPalette.text,
                         onClick = {
-                            onDismiss()
-                            onEnqueue()
+                            isViewingQueues = true
                         }
                     )
                 }

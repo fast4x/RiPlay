@@ -24,6 +24,7 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import it.fast4x.riplay.R
 import it.fast4x.riplay.utils.medium
 import it.fast4x.riplay.utils.secondary
 import it.fast4x.riplay.colorPalette
@@ -36,11 +37,11 @@ inline fun Menu(
 ) {
     Column(
         modifier = modifier
-            .padding(top = 48.dp)
+            //.padding(top = 12.dp)
             .verticalScroll(rememberScrollState())
             .fillMaxWidth()
             .background(colorPalette().background1)
-            .padding(top = 2.dp)
+            //.padding(top = 2.dp)
             .padding(vertical = 8.dp)
             .navigationBarsPadding(),
         content = content
@@ -115,5 +116,35 @@ fun MenuEntry(
         secondaryText,
         enabled,
         trailingContent
+    )
+}
+
+@Composable
+fun SubMenuEntry(
+    @DrawableRes icon: Int,
+    text: String,
+    onClick: () -> Unit,
+    onLongClick: (() -> Unit)? = null,
+    secondaryText: String? = null,
+    enabled: Boolean = true,
+) {
+    MenuEntry(
+        painterResource( icon ),
+        text,
+        onClick,
+        onLongClick,
+        secondaryText,
+        enabled,
+        trailingContent = {
+            Image(
+                painter = painterResource(R.drawable.chevron_forward),
+                contentDescription = null,
+                colorFilter = androidx.compose.ui.graphics.ColorFilter.tint(
+                    colorPalette().textSecondary
+                ),
+                modifier = Modifier
+                    .size(16.dp)
+            )
+        }
     )
 }

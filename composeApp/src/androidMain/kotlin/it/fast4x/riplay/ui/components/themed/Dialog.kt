@@ -50,6 +50,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -150,6 +151,7 @@ import it.fast4x.riplay.models.Song
 import it.fast4x.riplay.models.SongAlbumMap
 import it.fast4x.riplay.models.SongArtistMap
 import it.fast4x.riplay.models.SongPlaylistMap
+import it.fast4x.riplay.models.defaultQueue
 import it.fast4x.riplay.typography
 import it.fast4x.riplay.ui.items.SongItem
 import it.fast4x.riplay.ui.screens.settings.isYouTubeSyncEnabled
@@ -3127,4 +3129,44 @@ inline fun EditQueueDialog(
         }
     }
 
+}
+
+@Composable
+fun QueuesDialog(
+    onSelect: (Queues) -> Unit,
+    onDismiss: () -> Unit
+) {
+    DefaultDialog(
+        onDismiss = onDismiss
+    ) {
+        BasicText(
+            text = "Select queue",
+            style = typography().s.semiBold,
+            modifier = Modifier
+                .padding(vertical = 8.dp, horizontal = 24.dp)
+        )
+        val queueslist by Database.queues().collectAsState( emptyList())
+        if (queueslist.isEmpty())
+            MenuEntry(
+                icon = R.drawable.enqueue,
+                text = "Default",
+                secondaryText = "1 " + stringResource(R.string.songs),
+                onClick = {
+                    onDismiss()
+                    onSelect(defaultQueue())
+                }
+            )
+
+        queueslist.forEach { queue ->
+            MenuEntry(
+                icon = R.drawable.enqueue,
+                text = queue.title.toString(),
+                secondaryText = "1 " + stringResource(R.string.songs),
+                onClick = {
+                    onDismiss()
+                    onSelect(queue)
+                }
+            )
+        }
+    }
 }

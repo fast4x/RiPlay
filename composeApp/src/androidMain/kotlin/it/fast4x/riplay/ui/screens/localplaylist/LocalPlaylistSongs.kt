@@ -177,6 +177,7 @@ import it.fast4x.riplay.utils.isNowPlaying
 import it.fast4x.riplay.utils.saveImageToInternalStorage
 import kotlinx.coroutines.CoroutineScope
 import it.fast4x.riplay.models.SongEntity
+import it.fast4x.riplay.models.defaultQueueId
 import it.fast4x.riplay.service.LOCAL_KEY_PREFIX
 import it.fast4x.riplay.ui.components.PullToRefreshBox
 import it.fast4x.riplay.ui.components.themed.FilterMenu
@@ -1479,7 +1480,7 @@ fun LocalPlaylistSongs(
                                                         binder?.player?.addNext(playlistSongs.filter { it.song.thumbnailUrl != "" && it.song.likedAt != -1L }
                                                             .map(SongEntity::asMediaItem),
                                                             context,
-                                                            selectedQueue?.id ?: 0
+                                                            selectedQueue?.id ?: defaultQueueId()
                                                         )
                                                     } else {
                                                         SmartMessage(
@@ -1491,7 +1492,7 @@ fun LocalPlaylistSongs(
                                                 } else {
                                                     binder?.player?.addNext(listMediaItems,
                                                         context,
-                                                        selectedQueue?.id ?: 0
+                                                        selectedQueue?.id ?: defaultQueueId()
                                                     )
                                                     listMediaItems.clear()
                                                     selectItems = false
@@ -2220,7 +2221,7 @@ fun LocalPlaylistSongs(
                                     }
                                 },
                                 onPlayNext = {
-                                    binder?.player?.addNext(song.asMediaItem, idQueue = selectedQueue?.id ?: 0)
+                                    binder?.player?.addNext(song.asMediaItem, idQueue = selectedQueue?.id ?: defaultQueueId())
                                 }
                             ) {
                                 var forceRecompose by remember { mutableStateOf(false) }

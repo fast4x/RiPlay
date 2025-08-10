@@ -2519,9 +2519,10 @@ interface Database {
     @Query("DELETE FROM Queues")
     fun clearQueues()
 
-    fun selectQueue(queue: Queues) {
+    fun toggleSelectQueue(queue: Queues) {
         clearSelectedQueue()
-        update(queue.copy(isSelected = true))
+        val isSelected = queue.isSelected ?: false
+        update(queue.copy(isSelected = !isSelected))
     }
 
     @Query("DELETE FROM Queues WHERE id = :id")
@@ -2529,6 +2530,9 @@ interface Database {
 
     @Query("SELECT * FROM Queues WHERE isSelected = 1 LIMIT 1")
     fun selectedQueue(): Queues?
+
+    @Query("SELECT * FROM Queues WHERE isSelected = 1 LIMIT 1")
+    fun selectedQueueFlow(): Flow<Queues?>
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     @Throws(SQLException::class)

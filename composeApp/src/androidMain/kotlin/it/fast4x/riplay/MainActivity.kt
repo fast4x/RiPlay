@@ -159,6 +159,7 @@ import it.fast4x.riplay.utils.LocalMonetCompat
 import it.fast4x.riplay.utils.OkHttpRequest
 import it.fast4x.riplay.extensions.rescuecenter.RescueScreen
 import it.fast4x.riplay.models.Queues
+import it.fast4x.riplay.models.defaultQueue
 import it.fast4x.riplay.service.BitmapProvider
 import it.fast4x.riplay.service.EndlessService
 import it.fast4x.riplay.service.isLocal
@@ -329,7 +330,7 @@ class MainActivity :
 
     var onlinePlayerPlayingState: MutableState<Boolean> = mutableStateOf(false)
 
-    var selectedQueue: MutableState<Queues?> = mutableStateOf(null)
+    var selectedQueue: MutableState<Queues> = mutableStateOf(defaultQueue())
 
     var mediaSession: MediaSessionCompat? = null
     var onlinePlayer: MutableState<YouTubePlayer?> = mutableStateOf(null)
@@ -1554,7 +1555,7 @@ class MainActivity :
 
     fun updateSelectedQueue() {
         Database.asyncTransaction {
-            selectedQueue.value = Database.selectedQueue()
+            selectedQueue.value = Database.selectedQueue() ?: defaultQueue()
         }
     }
 

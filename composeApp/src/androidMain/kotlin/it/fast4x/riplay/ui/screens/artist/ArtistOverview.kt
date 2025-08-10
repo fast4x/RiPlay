@@ -82,6 +82,7 @@ import it.fast4x.riplay.enums.UiType
 import it.fast4x.riplay.models.Album
 import it.fast4x.riplay.models.Artist
 import it.fast4x.riplay.models.Playlist
+import it.fast4x.riplay.models.defaultQueueId
 import it.fast4x.riplay.thumbnailShape
 import it.fast4x.riplay.typography
 import it.fast4x.riplay.ui.components.CustomModalBottomSheet
@@ -643,11 +644,11 @@ fun ArtistOverview(
                                 SwipeablePlaylistItem(
                                     mediaItem = item.asMediaItem,
                                     onPlayNext = {
-                                        binder?.player?.addNext(item.asMediaItem, idQueue = selectedQueue?.id ?: 0)
+                                        binder?.player?.addNext(item.asMediaItem, idQueue = selectedQueue?.id ?: defaultQueueId())
                                     },
                                     onDownload = {},
                                     onEnqueue = {
-                                        binder?.player?.enqueue(item.asMediaItem)
+                                        binder?.player?.enqueue(item.asMediaItem, idQueue = it)
                                     }
                                 ) {
                                     var forceRecompose by remember { mutableStateOf(false) }

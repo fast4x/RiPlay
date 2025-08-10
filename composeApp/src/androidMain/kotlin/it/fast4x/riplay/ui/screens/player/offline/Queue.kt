@@ -156,6 +156,8 @@ import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.PlayerConstan
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
 import it.fast4x.riplay.LocalSelectedQueue
 import it.fast4x.riplay.models.Queues
+import it.fast4x.riplay.models.defaultQueue
+import it.fast4x.riplay.models.defaultQueueId
 import it.fast4x.riplay.ui.components.themed.EditQueueDialog
 import it.fast4x.riplay.ui.components.themed.QueueItemMenu
 import it.fast4x.riplay.ui.components.themed.Title2Actions
@@ -184,7 +186,6 @@ fun Queue(
     val windowInsets = WindowInsets.systemBars
 
     val context = LocalContext.current
-    val selectedQueue = LocalSelectedQueue.current
     val showButtonPlayerArrow by rememberPreference(showButtonPlayerArrowKey, true)
     var queueType by rememberPreference(queueTypeKey, QueueType.Essential)
 
@@ -239,7 +240,10 @@ fun Queue(
         }
     }
 
-    val queueslist = Database.queues().collectAsState( emptyList())
+    val queueslist by Database.queues().collectAsState( emptyList())
+    val selectedQueue = Database.selectedQueueFlow().collectAsState( defaultQueue()).let {
+        if (it.value == null) defaultQueue() else it.value
+    }
 
     val rippleIndication = ripple(bounded = false)
 
@@ -420,6 +424,16 @@ fun Queue(
                             true
                         ) ?: false
             }
+    var windowsInQueue by remember { mutableStateOf(windows) }
+    LaunchedEffect(selectedQueue) {
+        val win = if (searching) windowsFiltered else windows
+        windowsInQueue = if (selectedQueue == defaultQueue()) win else win.filter {
+                it.mediaItem.mediaMetadata.extras
+                    ?.getLong("idQueue", defaultQueueId()) == selectedQueue?.id
+        }
+        //binderPlayer.setMediaItems(windowsInQueue.map { it.mediaItem })
+        println("windowsInQueue changed: ${windowsInQueue.size}")
+    }
 
     Box(
         modifier = Modifier
@@ -482,9 +496,8 @@ fun Queue(
                     )
                 }
 
-                val queueTitle = queueslist.value.find { it.isSelected == true }?.title ?: "No queue"
                 Title2Actions(
-                    title = "Queue: $queueTitle",
+                    title = "Queue: ${selectedQueue?.title}",
                     icon1 = if (showQueues) R.drawable.chevron_up else R.drawable.chevron_down,
                     icon2 = R.drawable.addqueue,
                     onClick1 = {
@@ -511,7 +524,7 @@ fun Queue(
                         .background(colorPalette().background1)
                 ) {
                         items(
-                            items = queueslist.value,
+                            items = queueslist,
                             key = { it.id }
                         ) {
                             QueueItem(
@@ -522,7 +535,7 @@ fun Queue(
                                 acceptPodcast = it.acceptPodcast,
                                 onClick = {
                                     CoroutineScope(Dispatchers.IO).launch {
-                                        Database.selectQueue(it)
+                                        Database.toggleSelectQueue(it)
                                     }
                                     println("Queue selected")
                                 },
@@ -644,7 +657,7 @@ fun Queue(
             }
 
         items(
-            items = if (searching) windowsFiltered else windows,
+            items = windowsInQueue,
             key = { it.uid.hashCode() }
         ) { window ->
             ReorderableItem(
@@ -706,7 +719,7 @@ fun Queue(
                             binder.player.addNext(
                                 window.mediaItem,
                                 context,
-                                idQueue = selectedQueue?.id ?: 0
+                                idQueue = selectedQueue?.id ?: defaultQueueId()
                             )
                         },
                         onDownload = {},
@@ -721,7 +734,8 @@ fun Queue(
                         onEnqueue = {
                             binder.player.enqueue(
                                 window.mediaItem,
-                                context
+                                context,
+                                it
                             )
                         }
                     ) {

@@ -208,8 +208,11 @@ fun Player.addNext(mediaItems: List<MediaItem>, context: Context? = null, idQueu
 }
 
 
-fun Player.enqueue(mediaItem: MediaItem, context: Context? = null) {
+fun Player.enqueue(mediaItem: MediaItem, context: Context? = null, idQueue: Long) {
      if (context != null && excludeMediaItem(mediaItem, context)) return
+
+    mediaItem.mediaMetadata.extras?.putLong("idQueue", idQueue)
+    println("mediaItem-enqueue extras: ${mediaItem.mediaMetadata.extras}")
 
     if (playbackState == Player.STATE_IDLE || playbackState == Player.STATE_ENDED) {
         forcePlay(mediaItem)
@@ -220,9 +223,18 @@ fun Player.enqueue(mediaItem: MediaItem, context: Context? = null) {
 
 
 @UnstableApi
-fun Player.enqueue(mediaItems: List<MediaItem>, context: Context? = null) {
+fun Player.enqueue(
+    mediaItems: List<MediaItem>,
+    context: Context? = null,
+    //idQueue: Long
+) {
     val filteredMediaItems = if (context != null) excludeMediaItems(mediaItems, context)
     else mediaItems
+//TODO copmlete enqueue for mediaitems
+//    filteredMediaItems.forEach { mediaItem ->
+//        mediaItem.mediaMetadata.extras?.putLong("idQueue", idQueue)
+//        println("mediaItems-enqueue extras: ${mediaItem.mediaMetadata.extras}")
+//    }
 
     if (playbackState == Player.STATE_IDLE || playbackState == Player.STATE_ENDED) {
         //forcePlayFromBeginning(mediaItems)

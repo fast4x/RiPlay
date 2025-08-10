@@ -52,6 +52,7 @@ import it.fast4x.riplay.utils.queueSwipeRightActionKey
 import kotlinx.coroutines.flow.distinctUntilChanged
 import it.fast4x.riplay.colorPalette
 import it.fast4x.riplay.enums.PopupType
+import it.fast4x.riplay.ui.components.themed.QueuesDialog
 import it.fast4x.riplay.ui.screens.settings.isYouTubeSyncEnabled
 import it.fast4x.riplay.utils.addToYtLikedSong
 import org.dailyislam.android.utilities.isNetworkConnected
@@ -136,7 +137,7 @@ fun SwipeableQueueItem(
     onPlayNext: (() -> Unit) = {},
     onDownload: (() -> Unit) = {},
     onRemoveFromQueue: (() -> Unit) = {},
-    onEnqueue: (() -> Unit) = {},
+    onEnqueue: ((Long) -> Unit) = {},
     modifier: Modifier = Modifier,
     content: @Composable () -> Unit
 ) {
@@ -180,16 +181,28 @@ fun SwipeableQueueItem(
 
     val queueSwipeLeftAction by rememberPreference(queueSwipeLeftActionKey, QueueSwipeAction.RemoveFromQueue)
     val queueSwipeRightAction by rememberPreference(queueSwipeRightActionKey, QueueSwipeAction.PlayNext)
+    var isViewingQueues by remember { mutableStateOf(false) }
 
     fun getActionCallback(actionName: QueueSwipeAction): () -> Unit {
         return when (actionName) {
             QueueSwipeAction.PlayNext -> onPlayNext
             QueueSwipeAction.Favourite -> onFavourite
             QueueSwipeAction.RemoveFromQueue -> onRemoveFromQueue
-            QueueSwipeAction.Enqueue -> onEnqueue
+            QueueSwipeAction.Enqueue -> ({ isViewingQueues = true })
             else -> ({})
         }
     }
+
+    if (isViewingQueues) {
+        QueuesDialog(
+            onSelect = {
+                onEnqueue.invoke(it.id)
+            },
+            onDismiss = { isViewingQueues = false }
+        )
+    }
+
+
     val swipeLeftCallback = getActionCallback(queueSwipeLeftAction)
     val swipeRighCallback = getActionCallback(queueSwipeRightAction)
 
@@ -211,7 +224,7 @@ fun SwipeablePlaylistItem(
     mediaItem: MediaItem,
     onPlayNext: (() -> Unit) = {},
     onDownload: (() -> Unit) = {},
-    onEnqueue: (() -> Unit) = {},
+    onEnqueue: ((Long) -> Unit) = {},
     content: @Composable () -> Unit
 ) {
     val context = LocalContext.current
@@ -253,18 +266,30 @@ fun SwipeablePlaylistItem(
 
     val playlistSwipeLeftAction by rememberPreference(playlistSwipeLeftActionKey, PlaylistSwipeAction.Favourite)
     val playlistSwipeRightAction by rememberPreference(playlistSwipeRightActionKey, PlaylistSwipeAction.PlayNext)
+    var isViewingQueues by remember { mutableStateOf(false) }
 
     fun getActionCallback(actionName: PlaylistSwipeAction): () -> Unit {
         return when (actionName) {
             PlaylistSwipeAction.PlayNext -> onPlayNext
             PlaylistSwipeAction.Download -> onDownload
             PlaylistSwipeAction.Favourite -> onFavourite
-            PlaylistSwipeAction.Enqueue -> onEnqueue
+            PlaylistSwipeAction.Enqueue -> ({ isViewingQueues = true })
             else -> ({})
         }
     }
+
+    if (isViewingQueues) {
+        QueuesDialog(
+            onSelect = {
+                onEnqueue.invoke(it.id)
+            },
+            onDismiss = { isViewingQueues = false }
+        )
+    }
+
     val swipeLeftCallback = getActionCallback(playlistSwipeLeftAction)
     val swipeRighCallback = getActionCallback(playlistSwipeRightAction)
+
 
     SwipeableContent(
         swipeToLeftIcon =  null,

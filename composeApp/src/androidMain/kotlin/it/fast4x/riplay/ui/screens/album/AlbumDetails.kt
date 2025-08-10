@@ -142,8 +142,10 @@ import me.bush.translator.Translator
 import it.fast4x.riplay.colorPalette
 import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.models.SongAlbumMap
+import it.fast4x.riplay.models.defaultQueueId
 import it.fast4x.riplay.typography
 import it.fast4x.riplay.ui.components.PullToRefreshBox
+import it.fast4x.riplay.ui.components.themed.QueuesDialog
 import it.fast4x.riplay.ui.components.themed.Title
 import it.fast4x.riplay.ui.screens.settings.isYouTubeSyncEnabled
 import it.fast4x.riplay.utils.addToYtLikedSongs
@@ -455,6 +457,16 @@ fun AlbumDetails(
         )
     }
 
+    var isViewingQueues by remember { mutableStateOf(false) }
+    if (isViewingQueues) {
+        QueuesDialog(
+            onSelect = {
+                binder?.player?.enqueue(songs.map(Song::asMediaItem))
+            },
+            onDismiss = { isViewingQueues = false }
+        )
+    }
+
     if (showSelectDialog)
         SelectorDialog(
             title = stringResource(R.string.enqueue),
@@ -465,7 +477,7 @@ fun AlbumDetails(
             ),
             onValueSelected = {
                 if (it == "a") {
-                    binder?.player?.enqueue(songs.map(Song::asMediaItem))
+                    isViewingQueues = true
                 } else selectItems = true
 
                 showSelectDialog = false
@@ -959,7 +971,7 @@ fun AlbumDetails(
                                                                 songs.filter { it.likedAt != -1L }
                                                                     .map(Song::asMediaItem),
                                                                 context,
-                                                                selectedQueue?.id ?: 0
+                                                                selectedQueue?.id ?: defaultQueueId()
                                                             )
                                                         } else {
                                                             SmartMessage(
@@ -974,7 +986,7 @@ fun AlbumDetails(
                                                         binder?.player?.addNext(
                                                             listMediaItems,
                                                             context,
-                                                            selectedQueue?.id ?: 0
+                                                            selectedQueue?.id ?: defaultQueueId()
                                                         )
                                                         listMediaItems.clear()
                                                         selectItems = false
@@ -1285,11 +1297,11 @@ fun AlbumDetails(
                         SwipeablePlaylistItem(
                             mediaItem = song.asMediaItem,
                             onPlayNext = {
-                                binder?.player?.addNext(song.asMediaItem, idQueue = selectedQueue?.id ?: 0)
+                                binder?.player?.addNext(song.asMediaItem, idQueue = selectedQueue?.id ?: defaultQueueId())
                             },
                             onDownload = {},
                             onEnqueue = {
-                                binder?.player?.enqueue(song.asMediaItem)
+                                binder?.player?.enqueue(song.asMediaItem, idQueue = it)
                             }
                         ) {
                             val checkedState = rememberSaveable { mutableStateOf(false) }

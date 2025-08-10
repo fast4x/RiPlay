@@ -122,6 +122,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import it.fast4x.riplay.colorPalette
+import it.fast4x.riplay.models.defaultQueueId
 import it.fast4x.riplay.typography
 import it.fast4x.riplay.ui.screens.settings.isYouTubeSyncEnabled
 import it.fast4x.riplay.utils.addToYtPlaylist
@@ -660,11 +661,11 @@ fun Podcast(
                     SwipeablePlaylistItem(
                         mediaItem = song.asMediaItem,
                         onPlayNext = {
-                            binder?.player?.addNext(song.asMediaItem, idQueue = selectedQueue?.id ?: 0)
+                            binder?.player?.addNext(song.asMediaItem, idQueue = selectedQueue?.id ?: defaultQueueId())
                         },
                         onDownload = {},
                         onEnqueue = {
-                            binder?.player?.enqueue(song.asMediaItem)
+                            binder?.player?.enqueue(song.asMediaItem, idQueue = it)
                         }
                     ) {
                         var forceRecompose by remember { mutableStateOf(false) }

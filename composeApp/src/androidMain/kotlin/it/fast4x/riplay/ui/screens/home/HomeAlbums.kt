@@ -82,6 +82,7 @@ import it.fast4x.riplay.enums.FilterBy
 import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.enums.ViewType
 import it.fast4x.riplay.getViewType
+import it.fast4x.riplay.models.defaultQueueId
 import it.fast4x.riplay.ui.components.themed.Search
 import it.fast4x.riplay.ui.components.navigation.header.TabToolBar
 import it.fast4x.riplay.ui.components.tab.ItemSize
@@ -428,7 +429,7 @@ fun HomeAlbums(
                                                         binder?.player?.addNext(
                                                             songs.map(Song::asMediaItem),
                                                             context,
-                                                            selectedQueue?.id ?: 0
+                                                            selectedQueue?.id ?: defaultQueueId()
                                                         )
 
                                                     },
@@ -599,7 +600,7 @@ fun HomeAlbums(
                                                         binder?.player?.addNext(
                                                             songs.map(Song::asMediaItem),
                                                             context,
-                                                            selectedQueue?.id ?: 0
+                                                            selectedQueue?.id ?: defaultQueueId()
                                                         )
 
                                                     },

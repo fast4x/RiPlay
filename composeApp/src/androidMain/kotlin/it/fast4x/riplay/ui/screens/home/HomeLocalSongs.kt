@@ -111,6 +111,7 @@ import it.fast4x.riplay.models.OnDeviceSong
 import it.fast4x.riplay.models.Song
 import it.fast4x.riplay.models.SongEntity
 import it.fast4x.riplay.models.SongPlaylistMap
+import it.fast4x.riplay.models.defaultQueueId
 import it.fast4x.riplay.service.LOCAL_KEY_PREFIX
 import it.fast4x.riplay.service.isLocal
 import it.fast4x.riplay.thumbnailShape
@@ -1184,7 +1185,7 @@ fun HomeLocalSongs(
                                                         items.filter { it.song.likedAt != -1L }
                                                             .map(SongEntity::asMediaItem),
                                                         context,
-                                                        selectedQueue?.id ?: 0
+                                                        selectedQueue?.id ?: defaultQueueId()
                                                     )
                                                 } else {
                                                     SmartMessage(context.resources.getString(R.string.disliked_this_collection),type = PopupType.Error, context = context)
@@ -1192,7 +1193,7 @@ fun HomeLocalSongs(
                                             } else {
                                                 binder?.player?.addNext(listMediaItems,
                                                     context,
-                                                    selectedQueue?.id ?: 0
+                                                    selectedQueue?.id ?: defaultQueueId()
                                                 )
                                                 listMediaItems.clear()
                                                 selectItems = false
@@ -1562,7 +1563,7 @@ fun HomeLocalSongs(
                         SwipeablePlaylistItem(
                             mediaItem = song.asMediaItem,
                             onPlayNext = {
-                                binder?.player?.addNext(song.asMediaItem, idQueue = selectedQueue?.id ?: 0)
+                                binder?.player?.addNext(song.asMediaItem, idQueue = selectedQueue?.id ?: defaultQueueId())
                             }
                         ) {
                             var forceRecompose by remember { mutableStateOf(false) }
@@ -1737,7 +1738,7 @@ fun HomeLocalSongs(
                     SwipeablePlaylistItem(
                         mediaItem = song.song.asMediaItem,
                         onPlayNext = {
-                            binder?.player?.addNext(song.song.asMediaItem, idQueue = selectedQueue?.id ?: 0)
+                            binder?.player?.addNext(song.song.asMediaItem, idQueue = selectedQueue?.id ?: defaultQueueId())
                         }
                     ) {
                         var forceRecompose by remember { mutableStateOf(false) }

@@ -44,6 +44,7 @@ import it.fast4x.riplay.models.Album
 import it.fast4x.riplay.models.Artist
 import it.fast4x.riplay.models.Playlist
 import it.fast4x.riplay.models.SongAlbumMap
+import it.fast4x.riplay.models.defaultQueueId
 import it.fast4x.riplay.ui.components.LocalMenuState
 import it.fast4x.riplay.ui.components.Skeleton
 import it.fast4x.riplay.ui.components.SwipeableAlbumItem
@@ -208,11 +209,11 @@ fun SearchResultScreen(
                                     SwipeablePlaylistItem(
                                         mediaItem = song.asMediaItem,
                                         onPlayNext = {
-                                            localBinder?.player?.addNext(song.asMediaItem, idQueue = selectedQueue?.id ?: 0)
+                                            localBinder?.player?.addNext(song.asMediaItem, idQueue = selectedQueue?.id ?: defaultQueueId())
                                         },
                                         onDownload = {},
                                         onEnqueue = {
-                                            localBinder?.player?.enqueue(song.asMediaItem)
+                                            localBinder?.player?.enqueue(song.asMediaItem, idQueue = it)
                                         }
                                     ) {
                                         var forceRecompose by remember { mutableStateOf(false) }
@@ -322,7 +323,7 @@ fun SearchResultScreen(
                                                                                     binder?.player?.addNext(
                                                                                         it1,
                                                                                         context,
-                                                                                        selectedQueue?.id ?: 0
+                                                                                        selectedQueue?.id ?: defaultQueueId()
                                                                                     )
                                                                                 }
                                                                             }
@@ -568,7 +569,7 @@ fun SearchResultScreen(
                                     SwipeablePlaylistItem(
                                         mediaItem = video.asMediaItem,
                                         onPlayNext = {
-                                            localBinder?.player?.addNext(video.asMediaItem, idQueue = selectedQueue?.id ?: 0)
+                                            localBinder?.player?.addNext(video.asMediaItem, idQueue = selectedQueue?.id ?: defaultQueueId())
                                         },
                                         onDownload = {
                                             val message = context.resources.getString(R.string.downloading_videos_not_supported)
@@ -580,7 +581,7 @@ fun SearchResultScreen(
                                             )
                                         },
                                         onEnqueue = {
-                                            localBinder?.player?.enqueue(video.asMediaItem)
+                                            localBinder?.player?.enqueue(video.asMediaItem, idQueue = it)
                                         }
                                     ) {
                                         VideoItem(

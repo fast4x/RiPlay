@@ -28,6 +28,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -112,6 +113,8 @@ import kotlinx.coroutines.withContext
 import it.fast4x.riplay.colorPalette
 import it.fast4x.riplay.context
 import it.fast4x.riplay.enums.PopupType
+import it.fast4x.riplay.models.defaultQueue
+import it.fast4x.riplay.models.defaultQueueId
 import it.fast4x.riplay.typography
 import it.fast4x.riplay.ui.screens.player.fastPlay
 import it.fast4x.riplay.ui.screens.settings.isYouTubeSyncEnabled
@@ -327,8 +330,8 @@ fun NonQueuedMediaItemMenuLibrary(
                     )
                 )
             },
-            onPlayNext = { binder?.player?.addNext(mediaItem, context, selectedQueue?.id ?: 0) },
-            onEnqueue = { binder?.player?.enqueue(mediaItem, context) },
+            onPlayNext = { binder?.player?.addNext(mediaItem, context, selectedQueue?.id ?: defaultQueueId()) },
+            onEnqueue = { binder?.player?.enqueue(mediaItem, context, it) },
             onDownload = onDownload,
             onRemoveFromPlaylist = onRemoveFromPlaylist,
             onHideFromDatabase = { isHiding = true },
@@ -370,9 +373,8 @@ fun NonQueuedMediaItemMenuLibrary(
                     )
                 )
             },
-            onPlayNext = { binder?.player?.addNext(mediaItem, context, selectedQueue?.id ?: 0) },
-            onEnqueue = { binder?.player?.enqueue(mediaItem, context)},
-            onDownload = onDownload,
+            onPlayNext = { binder?.player?.addNext(mediaItem, context, selectedQueue?.id ?: defaultQueueId()) },
+            onEnqueue = { binder?.player?.enqueue(mediaItem, context, it)},
             onRemoveFromPlaylist = onRemoveFromPlaylist,
             onHideFromDatabase = { isHiding = true },
             onRemoveFromQuickPicks = onRemoveFromQuickPicks,
@@ -447,9 +449,8 @@ fun NonQueuedMediaItemMenu(
                     )
                 )
             },
-            onPlayNext = { binder?.player?.addNext(mediaItem, context, selectedQueue?.id ?: 0) },
-            onEnqueue = { binder?.player?.enqueue(mediaItem, context) },
-            onDownload = onDownload,
+            onPlayNext = { binder?.player?.addNext(mediaItem, context, selectedQueue?.id ?: defaultQueueId()) },
+            onEnqueue = { binder?.player?.enqueue(mediaItem, context, it) },
             onRemoveFromPlaylist = onRemoveFromPlaylist,
             onHideFromDatabase = onHideFromDatabase,
             onDeleteFromDatabase = onDeleteFromDatabase,
@@ -477,9 +478,8 @@ fun NonQueuedMediaItemMenu(
                     )
                 )
             },
-            onPlayNext = { binder?.player?.addNext(mediaItem, context, selectedQueue?.id ?: 0) },
-            onEnqueue = { binder?.player?.enqueue(mediaItem, context) },
-            onDownload = onDownload,
+            onPlayNext = { binder?.player?.addNext(mediaItem, context, selectedQueue?.id ?: defaultQueueId()) },
+            onEnqueue = { binder?.player?.enqueue(mediaItem, context, it) },
             onRemoveFromPlaylist = onRemoveFromPlaylist,
             onHideFromDatabase = onHideFromDatabase,
             onDeleteFromDatabase = onDeleteFromDatabase,
@@ -525,7 +525,7 @@ fun QueuedMediaItemMenu(
             onRemoveFromQueue = if (indexInQueue != null) ({
                 binder?.player?.removeMediaItem(indexInQueue)
             }) else null,
-            onPlayNext = { binder?.player?.addNext(mediaItem, context, selectedQueue?.id ?: 0) },
+            onPlayNext = { binder?.player?.addNext(mediaItem, context, selectedQueue?.id ?: defaultQueueId()) },
             onStartRadio = {
                 binder?.stopRadio()
                 //binder?.player?.forcePlay(mediaItem)
@@ -565,11 +565,10 @@ fun QueuedMediaItemMenu(
             navController = navController,
             mediaItem = mediaItem,
             onDismiss = onDismiss,
-            onDownload = onDownload,
             onRemoveFromQueue = if (indexInQueue != null) ({
                 binder?.player?.removeMediaItem(indexInQueue)
             }) else null,
-            onPlayNext = { binder?.player?.addNext(mediaItem, context, selectedQueue?.id ?: 0) },
+            onPlayNext = { binder?.player?.addNext(mediaItem, context, selectedQueue?.id ?: defaultQueueId()) },
             onStartRadio = {
                 binder?.stopRadio()
                 //binder?.player?.forcePlay(mediaItem)
@@ -622,8 +621,7 @@ fun BaseMediaItemMenu(
     onShowSleepTimer: (() -> Unit)? = null,
     onStartRadio: (() -> Unit)? = null,
     onPlayNext: (() -> Unit)? = null,
-    onEnqueue: (() -> Unit)? = null,
-    onDownload: (() -> Unit)? = null,
+    onEnqueue: ((Long) -> Unit)? = null,
     onRemoveFromQueue: (() -> Unit)? = null,
     onRemoveFromPlaylist: (() -> Unit)? = null,
     onHideFromDatabase: (() -> Unit)? = null,
@@ -649,7 +647,6 @@ fun BaseMediaItemMenu(
         onStartRadio = onStartRadio,
         onPlayNext = onPlayNext,
         onEnqueue = onEnqueue,
-        onDownload = onDownload,
         onAddToPreferites = onAddToPreferites,
         onMatchingSong =  onMatchingSong,
         onAddToPlaylist = { playlist, position ->
@@ -845,8 +842,7 @@ fun MediaItemMenu(
     onShowSleepTimer: (() -> Unit)? = null,
     onStartRadio: (() -> Unit)? = null,
     onPlayNext: (() -> Unit)? = null,
-    onEnqueue: (() -> Unit)? = null,
-    onDownload: (() -> Unit)? = null,
+    onEnqueue: ((Long) -> Unit)? = null,
     onHideFromDatabase: (() -> Unit)? = null,
     onDeleteFromDatabase: (() -> Unit)? = null,
     onRemoveFromQueue: (() -> Unit)? = null,
@@ -1420,14 +1416,93 @@ fun MediaItemMenu(
                 }
 
                 onEnqueue?.let { onEnqueue ->
-                    MenuEntry(
-                        icon = R.drawable.enqueue,
-                        text = stringResource(R.string.enqueue),
-                        onClick = {
-                            onDismiss()
-                            onEnqueue()
+                    var isViewingQueues by remember { mutableStateOf(false) }
+                    AnimatedContent(
+                        targetState = isViewingQueues,
+                        transitionSpec = {
+                            val animationSpec = tween<IntOffset>(400)
+                            val slideDirection = if (targetState) AnimatedContentTransitionScope.SlideDirection.Left
+                            else AnimatedContentTransitionScope.SlideDirection.Right
+
+                            slideIntoContainer(slideDirection, animationSpec) togetherWith
+                                    slideOutOfContainer(slideDirection, animationSpec)
+                        }, label = ""
+                    ) { currentIsViewingQueues ->
+                        BackHandler(
+                            enabled = isViewingQueues
+                        ) { isViewingQueues = false }
+                        if (currentIsViewingQueues) {
+                            val queueslist by Database.queues().collectAsState( emptyList())
+                            Menu(
+                                modifier = modifier
+                                    .requiredHeight(height)
+                            ) {
+                                Row(
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier = Modifier
+                                        .padding(horizontal = 16.dp, vertical = 8.dp)
+                                        .fillMaxWidth()
+                                ) {
+                                    IconButton(
+                                        onClick = { isViewingQueues = false },
+                                        icon = R.drawable.chevron_back,
+                                        color = colorPalette().textSecondary,
+                                        modifier = Modifier
+                                            .padding(all = 4.dp)
+                                            .size(20.dp)
+                                    )
+
+                                    Text(
+                                        stringResource(R.string.enqueue),
+                                        color = colorPalette().textSecondary
+                                    )
+
+                                    SecondaryTextButton(
+                                        text = "New queue",//stringResource(R.string.new_playlist),
+                                        onClick = {
+                                            //isCreatingNewPlaylist = true
+                                        },
+                                        alternative = true
+                                    )
+
+                                }
+
+                                if (queueslist.isEmpty())
+                                    MenuEntry(
+                                        icon = R.drawable.enqueue,
+                                        text = "Default",
+                                        secondaryText = "1 " + stringResource(R.string.songs),
+                                        onClick = {
+                                            onDismiss()
+                                            onEnqueue(defaultQueueId())
+                                        }
+                                    )
+
+                                queueslist.forEach { queue ->
+                                    MenuEntry(
+                                        icon = R.drawable.enqueue,
+                                        text = queue.title.toString(),
+                                        secondaryText = "1 " + stringResource(R.string.songs),
+                                        onClick = {
+                                            onDismiss()
+                                            onEnqueue(queue.id)
+                                        }
+                                    )
+                                }
+                            }
+                        } else {
+                            SubMenuEntry(
+                                icon = R.drawable.enqueue,
+                                text = stringResource(R.string.enqueue),
+                                onClick = {
+//                            onDismiss()
+//                            onEnqueue()
+                                    isViewingQueues = true
+                                }
+                            )
                         }
-                    )
+                    }
                 }
 
                 onGoToEqualizer?.let { onGoToEqualizer ->

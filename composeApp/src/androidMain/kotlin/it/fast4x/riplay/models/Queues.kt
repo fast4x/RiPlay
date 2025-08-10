@@ -17,3 +17,15 @@ data class Queues(
     var position: Long?,
     val isSelected: Boolean? = false
 )
+
+fun defaultQueue() = Queues(
+        id = defaultQueueId(),
+        title = "Default",
+        acceptSong = true,
+        acceptVideo = true,
+        acceptPodcast = true,
+        position = null,
+        isSelected = false
+    )
+
+fun defaultQueueId() = (-1).toLong()
