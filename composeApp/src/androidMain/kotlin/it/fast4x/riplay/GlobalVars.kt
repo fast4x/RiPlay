@@ -26,6 +26,7 @@ import it.fast4x.riplay.utils.lastVideoSecondsKey
 import it.fast4x.riplay.utils.logDebugEnabledKey
 import it.fast4x.riplay.utils.parentalControlEnabledKey
 import it.fast4x.riplay.utils.pauseListenHistoryKey
+import it.fast4x.riplay.utils.persistentQueueKey
 import it.fast4x.riplay.utils.playerTimelineTypeKey
 import it.fast4x.riplay.utils.preferences
 import it.fast4x.riplay.utils.queueLoopTypeKey
@@ -79,3 +80,4 @@ fun isHandleAudioFocusEnabled() = appContext().preferences.getBoolean(handleAudi
 fun isBassBoostEnabled() = appContext().preferences.getBoolean(bassboostEnabledKey, false)
 fun isDebugModeEnabled() = appContext().preferences.getBoolean(logDebugEnabledKey, false)
 fun isParentalControlEnabled() = appContext().preferences.getBoolean(parentalControlEnabledKey, false)
+fun isPersistentQueueEnabled() = appContext().preferences.getBoolean(persistentQueueKey, true)

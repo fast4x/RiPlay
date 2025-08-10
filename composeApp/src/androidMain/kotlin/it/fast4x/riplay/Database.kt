@@ -2562,7 +2562,7 @@ interface Database {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     fun insert(song: Song): Long
 
-    @Insert(onConflict = OnConflictStrategy.ABORT)
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insert(queuedMediaItems: List<QueuedMediaItem>)
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
@@ -2773,7 +2773,7 @@ interface Database {
     views = [
         SortedSongPlaylistMap::class
     ],
-    version = 31,
+    version = 32,
     exportSchema = true,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
@@ -2818,7 +2818,8 @@ abstract class DatabaseInitializer protected constructor() : RoomDatabase() {
                 From23To24Migration(),
                 From24To25Migration(),
                 From25To26Migration(),
-                From26To27Migration()
+                From26To27Migration(),
+                From31To32Migration(),
             )
             .build()
 
@@ -3025,6 +3026,17 @@ abstract class DatabaseInitializer protected constructor() : RoomDatabase() {
                 println("Database From26To27Migration error ${e.stackTraceToString()}")
             }
 
+        }
+    }
+    class From31To32Migration : Migration(31, 32) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            try {
+                db.execSQL("CREATE TABLE IF NOT EXISTS QueuedMediaItem_copy (`mediaId` TEXT NOT NULL, `mediaItem` BLOB NOT NULL, `position` INTEGER, `idQueue` INTEGER, PRIMARY KEY(`mediaId`));")
+                db.execSQL("DROP TABLE IF EXISTS QueuedMediaItem;")
+                db.execSQL("ALTER TABLE QueuedMediaItem_copy RENAME TO QueuedMediaItem;")
+            } catch (e: Exception) {
+                println("Database From31To32Migration error ${e.stackTraceToString()}")
+            }
         }
     }
 }

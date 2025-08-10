@@ -160,6 +160,7 @@ import it.fast4x.riplay.models.defaultQueue
 import it.fast4x.riplay.models.defaultQueueId
 import it.fast4x.riplay.ui.components.themed.EditQueueDialog
 import it.fast4x.riplay.ui.components.themed.QueueItemMenu
+import it.fast4x.riplay.ui.components.themed.Title
 import it.fast4x.riplay.ui.components.themed.Title2Actions
 import it.fast4x.riplay.ui.items.QueueItem
 import it.fast4x.riplay.ui.screens.player.online.OnlineMiniPlayer
@@ -401,7 +402,7 @@ fun Queue(
         ThumbnailRoundness.Heavy
     )
     var showQueues by rememberSaveable { mutableStateOf(false) }
-    val maxHeightQueuesList by remember { derivedStateOf { getScreenDimensions().height.dp.div(6) } }
+    val maxHeightQueuesList by remember { derivedStateOf { getScreenDimensions().height.dp.div(8) } }
     println("maxHeightQueuesList: $maxHeightQueuesList")
     val heightQueues = animateDpAsState(if (showQueues) maxHeightQueuesList else 20.dp)
 
@@ -516,13 +517,14 @@ fun Queue(
                 LazyColumn(
                     state = rememberLazyListState(),
                     contentPadding = windowInsets
-                        .only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom)
+                        .only(WindowInsetsSides.Horizontal)
                         .asPaddingValues(),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier
                         .height(heightQueues.value)
-                        .background(colorPalette().background1)
+                        .background(colorPalette().background0)
                 ) {
+
                         items(
                             items = queueslist,
                             key = { it.id }
@@ -563,6 +565,17 @@ fun Queue(
                                 }
                             )
                         }
+
+                }
+
+                Row(
+                    horizontalArrangement = Arrangement.Start,
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .background(colorPalette().background1)
+                        .fillMaxWidth()
+                ) {
+                    Title("List of media")
                 }
 
                 if (searching)
@@ -655,6 +668,7 @@ fun Queue(
 
                     }
             }
+
 
         items(
             items = windowsInQueue,

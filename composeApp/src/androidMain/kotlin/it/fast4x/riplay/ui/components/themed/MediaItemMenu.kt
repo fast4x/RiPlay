@@ -526,9 +526,9 @@ fun QueuedMediaItemMenu(
                 binder?.player?.removeMediaItem(indexInQueue)
             }) else null,
             onPlayNext = { binder?.player?.addNext(mediaItem, context, selectedQueue?.id ?: defaultQueueId()) },
+            onEnqueue = { binder?.player?.enqueue(mediaItem, idQueue = it) },
             onStartRadio = {
                 binder?.stopRadio()
-                //binder?.player?.forcePlay(mediaItem)
                 fastPlay(mediaItem, binder)
                 binder?.setupRadio(
                     NavigationEndpoint.Endpoint.Watch(
@@ -569,6 +569,7 @@ fun QueuedMediaItemMenu(
                 binder?.player?.removeMediaItem(indexInQueue)
             }) else null,
             onPlayNext = { binder?.player?.addNext(mediaItem, context, selectedQueue?.id ?: defaultQueueId()) },
+            onEnqueue = { binder?.player?.enqueue(mediaItem, idQueue = it) },
             onStartRadio = {
                 binder?.stopRadio()
                 //binder?.player?.forcePlay(mediaItem)

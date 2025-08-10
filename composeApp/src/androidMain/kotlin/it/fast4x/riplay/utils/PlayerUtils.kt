@@ -3,6 +3,7 @@ package it.fast4x.riplay.utils
 
 import android.annotation.SuppressLint
 import android.content.Context
+import androidx.annotation.OptIn
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
@@ -15,11 +16,15 @@ import androidx.media3.common.util.UnstableApi
 import it.fast4x.riplay.Database
 import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.DurationInMinutes
+import it.fast4x.riplay.isPersistentQueueEnabled
+import it.fast4x.riplay.models.QueuedMediaItem
 import it.fast4x.riplay.models.Queues
+import it.fast4x.riplay.models.defaultQueueId
 import it.fast4x.riplay.ui.components.themed.SmartMessage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import timber.log.Timber
 import java.util.ArrayDeque
 
@@ -178,11 +183,12 @@ fun Player.addNext(mediaItem: MediaItem, context: Context? = null, idQueue: Long
     mediaItem.mediaMetadata.extras?.putLong("idQueue", idQueue)
     println("mediaItem-addNext extras: ${mediaItem.mediaMetadata.extras}")
 
-    if (playbackState == Player.STATE_IDLE || playbackState == Player.STATE_ENDED) {
-        forcePlay(mediaItem)
-    } else {
-        addMediaItem(currentMediaItemIndex + 1, mediaItem.cleaned)
-    }
+    addMediaItem(currentMediaItemIndex + 1, mediaItem.cleaned)
+//    if (playbackState == Player.STATE_IDLE || playbackState == Player.STATE_ENDED) {
+//        forcePlay(mediaItem)
+//    } else {
+//        addMediaItem(currentMediaItemIndex + 1, mediaItem.cleaned)
+//    }
 }
 
 @UnstableApi
@@ -198,12 +204,13 @@ fun Player.addNext(mediaItems: List<MediaItem>, context: Context? = null, idQueu
         println("mediaItems-addNext extras: ${mediaItem.mediaMetadata.extras}")
     }
 
-    if (playbackState == Player.STATE_IDLE || playbackState == Player.STATE_ENDED) {
-        setMediaItems(filteredMediaItems.map { it.cleaned })
-        play()
-    } else {
-        addMediaItems(currentMediaItemIndex + 1, filteredMediaItems.map { it.cleaned })
-    }
+    addMediaItems(currentMediaItemIndex + 1, filteredMediaItems.map { it.cleaned })
+//    if (playbackState == Player.STATE_IDLE || playbackState == Player.STATE_ENDED) {
+//        setMediaItems(filteredMediaItems.map { it.cleaned })
+//        play()
+//    } else {
+//        addMediaItems(currentMediaItemIndex + 1, filteredMediaItems.map { it.cleaned })
+//    }
 
 }
 
@@ -214,11 +221,12 @@ fun Player.enqueue(mediaItem: MediaItem, context: Context? = null, idQueue: Long
     mediaItem.mediaMetadata.extras?.putLong("idQueue", idQueue)
     println("mediaItem-enqueue extras: ${mediaItem.mediaMetadata.extras}")
 
-    if (playbackState == Player.STATE_IDLE || playbackState == Player.STATE_ENDED) {
-        forcePlay(mediaItem)
-    } else {
-        addMediaItem(mediaItemCount, mediaItem.cleaned)
-    }
+    addMediaItem(mediaItemCount, mediaItem.cleaned)
+//    if (playbackState == Player.STATE_IDLE || playbackState == Player.STATE_ENDED) {
+//        forcePlay(mediaItem)
+//    } else {
+//        addMediaItem(mediaItemCount, mediaItem.cleaned)
+//    }
 }
 
 
@@ -397,4 +405,76 @@ fun Player.getQueueWindows(): List<Timeline.Window> {
         }
     }
     return queue.toList()
+}
+
+fun Player.saveMasterQueue() {
+    println("SaveMasterQueue onCreate savePersistentQueue is enabled, called")
+    if (!isPersistentQueueEnabled()) return
+
+    Timber.d("SaveMasterQueue savePersistentQueue is enabled, processing")
+    println("SaveMasterQueue onCreate savePersistentQueue is enabled, processing")
+
+    CoroutineScope(Dispatchers.Main).launch {
+        val mediaItems = currentTimeline.mediaItems
+        val mediaItemIndex = currentMediaItemIndex
+        val mediaItemPosition = currentPosition
+
+        if (mediaItems.isEmpty()) return@launch
+
+
+        mediaItems.mapIndexed { index, mediaItem ->
+            QueuedMediaItem(
+                mediaItem = mediaItem,
+                mediaId = mediaItem.mediaId,
+                position = if (index == mediaItemIndex) mediaItemPosition else null,
+                idQueue = mediaItem.mediaMetadata.extras?.getLong("idQueue", defaultQueueId())
+            )
+        }.let { queuedMediaItems ->
+            if (queuedMediaItems.isEmpty()) return@let
+
+            Database.asyncTransaction {
+                insert(queuedMediaItems)
+//                queuedMediaItems.forEach {
+//                    insert(it)
+//                    Timber.d("SaveMasterQueue QueuePersistentEnabled Saved queue")
+//                    println("SaveMasterQueue saved")
+//                }
+            }
+
+            Timber.d("SaveMasterQueue QueuePersistentEnabled Saved queue")
+        }
+
+    }
+}
+
+@OptIn(UnstableApi::class)
+fun Player.loadMasterQueue() {
+    Timber.d("LoadMasterQueue loadPersistentQueue is enabled, called")
+    if (!isPersistentQueueEnabled()) return
+
+        println("LoadMasterQueue loadPersistentQueue is enabled, processing")
+        Database.asyncQuery {
+            val queuedSong = queuedMediaItems()
+
+            if (queuedSong.isEmpty()) return@asyncQuery
+
+            val index = queuedSong.indexOfFirst { it.position != null }.coerceAtLeast(0)
+
+            runBlocking(Dispatchers.Main) {
+                setMediaItems(
+                    queuedSong.map { mediaItem ->
+                        mediaItem.mediaItem.buildUpon()
+                            .setUri(mediaItem.mediaItem.mediaId)
+                            .setCustomCacheKey(mediaItem.mediaItem.mediaId)
+                            .build().apply {
+                                mediaMetadata.extras?.putBoolean("isFromPersistentQueue", true)
+                                mediaMetadata.extras?.putLong("idQueue", mediaItem.idQueue ?: defaultQueueId())
+                            }
+                    },
+                    index,
+                    queuedSong[index].position ?: C.TIME_UNSET
+                )
+                prepare()
+            }
+        }
 }

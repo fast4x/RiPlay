@@ -178,11 +178,14 @@ import kotlinx.coroutines.withContext
 import it.fast4x.riplay.appContext
 import it.fast4x.riplay.enums.PresetsReverb
 import it.fast4x.riplay.isHandleAudioFocusEnabled
+import it.fast4x.riplay.models.defaultQueueId
 import it.fast4x.riplay.utils.audioReverbPresetKey
 import it.fast4x.riplay.utils.bassboostEnabledKey
 import it.fast4x.riplay.utils.bassboostLevelKey
 import it.fast4x.riplay.utils.isInvincibilityEnabledKey
+import it.fast4x.riplay.utils.loadMasterQueue
 import it.fast4x.riplay.utils.principalCache
+import it.fast4x.riplay.utils.saveMasterQueue
 import it.fast4x.riplay.utils.volumeBoostLevelKey
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
@@ -471,7 +474,8 @@ class OfflinePlayerService : MediaLibraryService(),
             }
         }
 
-        restorePlayerQueue()
+        //restorePlayerQueue()
+        player.loadMasterQueue()
 
         resumePlaybackWhenDeviceConnected()
 
@@ -486,7 +490,8 @@ class OfflinePlayerService : MediaLibraryService(),
             coroutineScope.launch {
                 while (isActive) {
                     delay(30.seconds)
-                    savePlayerQueue()
+                    //savePlayerQueue()
+                    player.saveMasterQueue()
                     Timber.d("PlayerServiceModern onCreate savePersistentQueue")
                     println("PlayerServiceModern onCreate savePersistentQueue")
                 }
@@ -585,7 +590,8 @@ class OfflinePlayerService : MediaLibraryService(),
     @UnstableApi
     override fun onDestroy() {
 
-        savePlayerQueue()
+        //savePlayerQueue()
+        player.saveMasterQueue()
 
         if (!player.isReleased) {
             player.removeListener(this@OfflinePlayerService)
@@ -1322,40 +1328,40 @@ class OfflinePlayerService : MediaLibraryService(),
     }
 
 
-    private fun savePlayerQueue() {
-        Timber.d("PlayerServiceModern onCreate savePersistentQueue")
-        println("PlayerServiceModern onCreate savePersistentQueue")
-        if (!isPersistentQueueEnabled) return
-        Timber.d("PlayerServiceModern onCreate savePersistentQueue is enabled, processing")
-        println("PlayerServiceModern onCreate savePersistentQueue is enabled, processing")
-
-        CoroutineScope(Dispatchers.Main).launch {
-            val mediaItems = player.currentTimeline.mediaItems
-            val mediaItemIndex = player.currentMediaItemIndex
-            val mediaItemPosition = player.currentPosition
-
-            if (mediaItems.isEmpty()) return@launch
-
-
-            mediaItems.mapIndexed { index, mediaItem ->
-                QueuedMediaItem(
-                    mediaItem = mediaItem,
-                    position = if (index == mediaItemIndex) mediaItemPosition else null,
-                    idQueue = mediaItem.mediaMetadata.extras?.getLong("idQueue", 0)
-                )
-            }.let { queuedMediaItems ->
-                if (queuedMediaItems.isEmpty()) return@let
-
-                Database.asyncTransaction {
-                    clearQueuedMediaItems()
-                    insert( queuedMediaItems )
-                }
-
-                Timber.d("PlayerServiceModern QueuePersistentEnabled Saved queue")
-            }
-
-        }
-    }
+//    private fun savePlayerQueue() {
+//        Timber.d("PlayerServiceModern onCreate savePersistentQueue")
+//        println("PlayerServiceModern onCreate savePersistentQueue")
+//        if (!isPersistentQueueEnabled) return
+//        Timber.d("PlayerServiceModern onCreate savePersistentQueue is enabled, processing")
+//        println("PlayerServiceModern onCreate savePersistentQueue is enabled, processing")
+//
+//        CoroutineScope(Dispatchers.Main).launch {
+//            val mediaItems = player.currentTimeline.mediaItems
+//            val mediaItemIndex = player.currentMediaItemIndex
+//            val mediaItemPosition = player.currentPosition
+//
+//            if (mediaItems.isEmpty()) return@launch
+//
+//
+//            mediaItems.mapIndexed { index, mediaItem ->
+//                QueuedMediaItem(
+//                    mediaItem = mediaItem,
+//                    position = if (index == mediaItemIndex) mediaItemPosition else null,
+//                    idQueue = mediaItem.mediaMetadata.extras?.getLong("idQueue", defaultQueueId())
+//                )
+//            }.let { queuedMediaItems ->
+//                if (queuedMediaItems.isEmpty()) return@let
+//
+//                Database.asyncTransaction {
+//                    clearQueuedMediaItems()
+//                    insert( queuedMediaItems )
+//                }
+//
+//                Timber.d("PlayerServiceModern QueuePersistentEnabled Saved queue")
+//            }
+//
+//        }
+//    }
 
     private fun resumePlaybackOnStart() {
         if(!isPersistentQueueEnabled || !preferences.getBoolean(resumePlaybackOnStartKey, false)) return
@@ -1365,108 +1371,108 @@ class OfflinePlayerService : MediaLibraryService(),
         }
     }
 
-    @ExperimentalCoroutinesApi
-    @FlowPreview
-    @UnstableApi
-    private fun restorePlayerQueue() {
-        if (!isPersistentQueueEnabled) return
+//    @ExperimentalCoroutinesApi
+//    @FlowPreview
+//    @UnstableApi
+//    private fun restorePlayerQueue() {
+//        if (!isPersistentQueueEnabled) return
+//
+//        Database.asyncQuery {
+//            val queuedSong = queuedMediaItems()
+//
+//            if (queuedSong.isEmpty()) return@asyncQuery
+//
+//            val index = queuedSong.indexOfFirst { it.position != null }.coerceAtLeast(0)
+//
+//            runBlocking(Dispatchers.Main) {
+//                player.setMediaItems(
+//                    queuedSong.map { mediaItem ->
+//                        mediaItem.mediaItem.buildUpon()
+//                            .setUri(mediaItem.mediaItem.mediaId)
+//                            .setCustomCacheKey(mediaItem.mediaItem.mediaId)
+//                            .build().apply {
+//                                mediaMetadata.extras?.putBoolean("isFromPersistentQueue", true)
+//                                mediaMetadata.extras?.putLong("idQueue", mediaItem.idQueue ?: defaultQueueId())
+//                            }
+//                    },
+//                    index,
+//                    queuedSong[index].position ?: C.TIME_UNSET
+//                )
+//                player.prepare()
+//            }
+//        }
+//
+//    }
 
-        Database.asyncQuery {
-            val queuedSong = queuedMediaItems()
-
-            if (queuedSong.isEmpty()) return@asyncQuery
-
-            val index = queuedSong.indexOfFirst { it.position != null }.coerceAtLeast(0)
-
-            runBlocking(Dispatchers.Main) {
-                player.setMediaItems(
-                    queuedSong.map { mediaItem ->
-                        mediaItem.mediaItem.buildUpon()
-                            .setUri(mediaItem.mediaItem.mediaId)
-                            .setCustomCacheKey(mediaItem.mediaItem.mediaId)
-                            .build().apply {
-                                mediaMetadata.extras?.putBoolean("isFromPersistentQueue", true)
-                                mediaMetadata.extras?.putLong("idQueue", mediaItem.idQueue ?: 0)
-                            }
-                    },
-                    index,
-                    queuedSong[index].position ?: C.TIME_UNSET
-                )
-                player.prepare()
-            }
-        }
-
-    }
-
-    @ExperimentalCoroutinesApi
-    @FlowPreview
-    @UnstableApi
-    private fun restoreFromDiskPlayerQueue() {
-
-        runCatching {
-            filesDir.resolve("persistentQueue.data").inputStream().use { fis ->
-                ObjectInputStream(fis).use { oos ->
-                    oos.readObject() as PersistentQueue
-                }
-            }
-        }.onSuccess { queue ->
-            //Log.d("mediaItem", "QueuePersistentEnabled Restored queue $queue")
-            //Log.d("mediaItem", "QueuePersistentEnabled Restored ${queue.songMediaItems.size}")
-            runBlocking(Dispatchers.Main) {
-                player.setMediaItems(
-                    queue.songMediaItems.map { song ->
-                        song.asMediaItem.buildUpon()
-                            .setUri(song.asMediaItem.mediaId)
-                            .setCustomCacheKey(song.asMediaItem.mediaId)
-                            .build().apply {
-                                mediaMetadata.extras?.putBoolean("isFromPersistentQueue", true)
-                            }
-                    },
-                    queue.mediaItemIndex,
-                    queue.position
-                )
-
-                player.prepare()
-
-            }
-
-        }.onFailure {
-            Timber.e(it.stackTraceToString())
-        }
-
-    }
-
-    private fun saveToDiskPlayerQueue() {
-
-        val persistentQueue = PersistentQueue(
-            title = "title",
-            songMediaItems = player.currentTimeline.mediaItems.map {
-                PersistentSong(
-                    id = it.mediaId,
-                    title = it.mediaMetadata.title.toString(),
-                    durationText = it.mediaMetadata.extras?.getString("durationText").toString(),
-                    thumbnailUrl = it.mediaMetadata.artworkUri.toString()
-                )
-            },
-            mediaItemIndex = player.currentMediaItemIndex,
-            position = player.currentPosition
-        )
-
-        runCatching {
-            filesDir.resolve("persistentQueue.data").outputStream().use { fos ->
-                ObjectOutputStream(fos).use { oos ->
-                    oos.writeObject(persistentQueue)
-                }
-            }
-        }.onFailure {
-            //it.printStackTrace()
-            Timber.e(it.stackTraceToString())
-
-        }.onSuccess {
-            Log.d("mediaItem", "QueuePersistentEnabled Saved $persistentQueue")
-        }
-
-    }
+//    @ExperimentalCoroutinesApi
+//    @FlowPreview
+//    @UnstableApi
+//    private fun restoreFromDiskPlayerQueue() {
+//
+//        runCatching {
+//            filesDir.resolve("persistentQueue.data").inputStream().use { fis ->
+//                ObjectInputStream(fis).use { oos ->
+//                    oos.readObject() as PersistentQueue
+//                }
+//            }
+//        }.onSuccess { queue ->
+//            //Log.d("mediaItem", "QueuePersistentEnabled Restored queue $queue")
+//            //Log.d("mediaItem", "QueuePersistentEnabled Restored ${queue.songMediaItems.size}")
+//            runBlocking(Dispatchers.Main) {
+//                player.setMediaItems(
+//                    queue.songMediaItems.map { song ->
+//                        song.asMediaItem.buildUpon()
+//                            .setUri(song.asMediaItem.mediaId)
+//                            .setCustomCacheKey(song.asMediaItem.mediaId)
+//                            .build().apply {
+//                                mediaMetadata.extras?.putBoolean("isFromPersistentQueue", true)
+//                            }
+//                    },
+//                    queue.mediaItemIndex,
+//                    queue.position
+//                )
+//
+//                player.prepare()
+//
+//            }
+//
+//        }.onFailure {
+//            Timber.e(it.stackTraceToString())
+//        }
+//
+//    }
+//
+//    private fun saveToDiskPlayerQueue() {
+//
+//        val persistentQueue = PersistentQueue(
+//            title = "title",
+//            songMediaItems = player.currentTimeline.mediaItems.map {
+//                PersistentSong(
+//                    id = it.mediaId,
+//                    title = it.mediaMetadata.title.toString(),
+//                    durationText = it.mediaMetadata.extras?.getString("durationText").toString(),
+//                    thumbnailUrl = it.mediaMetadata.artworkUri.toString()
+//                )
+//            },
+//            mediaItemIndex = player.currentMediaItemIndex,
+//            position = player.currentPosition
+//        )
+//
+//        runCatching {
+//            filesDir.resolve("persistentQueue.data").outputStream().use { fos ->
+//                ObjectOutputStream(fos).use { oos ->
+//                    oos.writeObject(persistentQueue)
+//                }
+//            }
+//        }.onFailure {
+//            //it.printStackTrace()
+//            Timber.e(it.stackTraceToString())
+//
+//        }.onSuccess {
+//            Log.d("mediaItem", "QueuePersistentEnabled Saved $persistentQueue")
+//        }
+//
+//    }
 
 
     /**
