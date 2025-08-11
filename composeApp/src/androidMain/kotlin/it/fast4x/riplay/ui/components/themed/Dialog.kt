@@ -152,6 +152,7 @@ import it.fast4x.riplay.models.SongAlbumMap
 import it.fast4x.riplay.models.SongArtistMap
 import it.fast4x.riplay.models.SongPlaylistMap
 import it.fast4x.riplay.models.defaultQueue
+import it.fast4x.riplay.models.defaultQueueId
 import it.fast4x.riplay.typography
 import it.fast4x.riplay.ui.items.SongItem
 import it.fast4x.riplay.ui.screens.settings.isYouTubeSyncEnabled
@@ -2910,27 +2911,21 @@ inline fun EditQueueDialog(
     modifier: Modifier = Modifier,
     noinline onDismiss: () -> Unit,
     queue: Queues?,
-    //title: String,
-    //value: String,
     setValueRequireNotNull: Boolean = true,
-    //placeholder: String,
     crossinline setValue: (Queues) -> Unit,
-    //acceptSong: Boolean = true,
-    //acceptVideo: Boolean = true,
-    //acceptPodcast: Boolean = true,
 ) {
     val inError = remember { mutableStateOf(false) }
     val txtFieldError = remember { mutableStateOf("") }
-    val txtField = remember { mutableStateOf(cleanPrefix(queue?.title ?: "Name of the queue")) }
+    val txtField = remember { mutableStateOf(cleanPrefix(queue?.title ?: "")) }
     val value_cannot_empty = stringResource(R.string.value_cannot_be_empty)
     val checkedStateAcceptSong = remember{
-        mutableStateOf(queue?.acceptSong)
+        mutableStateOf(queue?.acceptSong ?: true)
     }
     val checkedStateAcceptVideo = remember{
-        mutableStateOf(queue?.acceptVideo)
+        mutableStateOf(queue?.acceptVideo ?: true)
     }
     val checkedStateAcceptPodcast = remember{
-        mutableStateOf(queue?.acceptPodcast)
+        mutableStateOf(queue?.acceptPodcast ?: true)
     }
 
     inError.value = txtField.value.isEmpty()
@@ -2948,7 +2943,7 @@ inline fun EditQueueDialog(
                 .defaultMinSize(Dp.Unspecified, 190.dp)
         ) {
             BasicText(
-                text = queue?.title ?: "Create new queue",
+                text = if (queue == null) "Create new queue" else queue.title.toString(),
                 style = typography().s.semiBold,
                 modifier = Modifier
                     .padding(vertical = 8.dp, horizontal = 24.dp)
