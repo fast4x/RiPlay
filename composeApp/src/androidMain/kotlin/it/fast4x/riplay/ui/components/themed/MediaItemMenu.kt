@@ -1469,16 +1469,16 @@ fun MediaItemMenu(
 
                                 }
 
-                                if (queueslist.isEmpty())
-                                    MenuEntry(
-                                        icon = R.drawable.enqueue,
-                                        text = "Default",
-                                        secondaryText = "1 " + stringResource(R.string.songs),
-                                        onClick = {
-                                            onDismiss()
-                                            onEnqueue(defaultQueueId())
-                                        }
-                                    )
+
+                                MenuEntry(
+                                    icon = R.drawable.enqueue,
+                                    text = defaultQueue().title.toString(),
+                                    secondaryText = "1 " + stringResource(R.string.songs),
+                                    onClick = {
+                                        onDismiss()
+                                        onEnqueue(defaultQueueId())
+                                    }
+                                )
 
                                 queueslist.forEach { queue ->
                                     MenuEntry(

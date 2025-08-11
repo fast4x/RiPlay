@@ -61,7 +61,9 @@ import it.fast4x.riplay.utils.formatAsDuration
 import it.fast4x.riplay.utils.isCompositionLaunched
 import it.fast4x.riplay.utils.pauseBetweenSongsKey
 import it.fast4x.riplay.utils.playerTimelineTypeKey
+import it.fast4x.riplay.utils.rememberObservedPreference
 import it.fast4x.riplay.utils.rememberPreference
+import it.fast4x.riplay.utils.seekWithTapKey
 import it.fast4x.riplay.utils.semiBold
 import it.fast4x.riplay.utils.showRemainingSongTimeKey
 import it.fast4x.riplay.utils.textoutlineKey
@@ -83,7 +85,7 @@ fun GetSeekBar(
     onPlay: () -> Unit = {},
 ) {
 
-    val playerTimelineType by rememberPreference(
+    val playerTimelineType by rememberObservedPreference(
         playerTimelineTypeKey,
         PlayerTimelineType.FakeAudioBar
     )
@@ -96,12 +98,12 @@ fun GetSeekBar(
         }
     }
 
-    var transparentbar by rememberPreference(transparentbarKey, true)
+    var transparentbar by rememberObservedPreference(transparentbarKey, true)
     val scope = rememberCoroutineScope()
     val animatedPosition = remember { Animatable(position.toFloat()) }
     var isSeeking by remember { mutableStateOf(false) }
-    val showRemainingSongTime by rememberPreference(showRemainingSongTimeKey, true)
-    val pauseBetweenSongs by rememberPreference(pauseBetweenSongsKey, PauseBetweenSongs.`0`)
+    val showRemainingSongTime by rememberObservedPreference(showRemainingSongTimeKey, true)
+    val pauseBetweenSongs by rememberObservedPreference(pauseBetweenSongsKey, PauseBetweenSongs.`0`)
 
     val compositionLaunched = isCompositionLaunched()
     LaunchedEffect(mediaId) {
@@ -117,7 +119,8 @@ fun GetSeekBar(
                 )
             )
     }
-    val textoutline by rememberPreference(textoutlineKey, false)
+    val textoutline by rememberObservedPreference(textoutlineKey, false)
+    val seekWithTap by rememberObservedPreference(seekWithTapKey, true)
 
     Row(
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -313,6 +316,7 @@ fun GetSeekBar(
     )
 
 
+    // fast seek
     Row(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
@@ -323,35 +327,37 @@ fun GetSeekBar(
         Row(
             modifier = Modifier
                 .clickable(
+                    enabled = seekWithTap,
                     interactionSource = remember { MutableInteractionSource() },
                     indication = ripple(false),
                     onClick = {
-                        onSeekTo(( position - 5).toFloat())
+                            onSeekTo(( position - 5).toFloat())
                     }
                 )
         ){
-            Box(
-                modifier = Modifier
-                    .align(Alignment.CenterVertically)
-            ){
-                Icon(
-                    painter =  painterResource(Res.drawable.play),
-                    contentDescription = "",
-                    tint = colorPalette().text,
+            if (seekWithTap)
+                Box(
                     modifier = Modifier
-                        .size(10.dp)
-                        .rotate(180f)
-                        .offset((5).dp,0.dp)
-                )
-                Icon(
-                    painter =  painterResource(Res.drawable.play),
-                    contentDescription = "",
-                    tint = colorPalette().text,
-                    modifier = Modifier
-                        .size(10.dp)
-                        .rotate(180f)
-                )
-            }
+                        .align(Alignment.CenterVertically)
+                ){
+                    Icon(
+                        painter =  painterResource(Res.drawable.play),
+                        contentDescription = "",
+                        tint = colorPalette().text,
+                        modifier = Modifier
+                            .size(10.dp)
+                            .rotate(180f)
+                            .offset((5).dp,0.dp)
+                    )
+                    Icon(
+                        painter =  painterResource(Res.drawable.play),
+                        contentDescription = "",
+                        tint = colorPalette().text,
+                        modifier = Modifier
+                            .size(10.dp)
+                            .rotate(180f)
+                    )
+                }
             Box{
                 BasicText(
                     text = formatAsDuration(position * 1000),
@@ -433,9 +439,11 @@ fun GetSeekBar(
                 overflow = TextOverflow.Ellipsis,
             )
              */
+            //fast seek
             Row(
                 modifier = Modifier
                     .clickable(
+                        enabled = seekWithTap,
                         interactionSource = remember { MutableInteractionSource() },
                         indication = ripple(false),
                         onClick = {
@@ -465,26 +473,27 @@ fun GetSeekBar(
                         overflow = TextOverflow.Ellipsis,
                     )
                 }
-                Box(
-                    modifier = Modifier
-                        .align(Alignment.CenterVertically)
-                ){
-                    Icon(
-                        painter =  painterResource(Res.drawable.play),
-                        contentDescription = "",
-                        tint = colorPalette().text,
+                if (seekWithTap)
+                    Box(
                         modifier = Modifier
-                            .size(10.dp)
-                            .offset((5).dp,0.dp)
-                    )
-                    Icon(
-                        painter =  painterResource(Res.drawable.play),
-                        contentDescription = "",
-                        tint = colorPalette().text,
-                        modifier = Modifier
-                            .size(10.dp)
-                    )
-                }
+                            .align(Alignment.CenterVertically)
+                    ){
+                        Icon(
+                            painter =  painterResource(Res.drawable.play),
+                            contentDescription = "",
+                            tint = colorPalette().text,
+                            modifier = Modifier
+                                .size(10.dp)
+                                .offset((5).dp,0.dp)
+                        )
+                        Icon(
+                            painter =  painterResource(Res.drawable.play),
+                            contentDescription = "",
+                            tint = colorPalette().text,
+                            modifier = Modifier
+                                .size(10.dp)
+                        )
+                    }
             }
 
           }

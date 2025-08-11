@@ -3141,16 +3141,16 @@ fun QueuesDialog(
                 .padding(vertical = 8.dp, horizontal = 24.dp)
         )
         val queueslist by Database.queues().collectAsState( emptyList())
-        if (queueslist.isEmpty())
-            MenuEntry(
-                icon = R.drawable.enqueue,
-                text = "Default",
-                secondaryText = "1 " + stringResource(R.string.songs),
-                onClick = {
-                    onDismiss()
-                    onSelect(defaultQueue())
-                }
-            )
+
+        MenuEntry(
+            icon = R.drawable.enqueue,
+            text = defaultQueue().title.toString(),
+            secondaryText = "1 " + stringResource(R.string.songs),
+            onClick = {
+                onDismiss()
+                onSelect(defaultQueue())
+            }
+        )
 
         queueslist.forEach { queue ->
             MenuEntry(

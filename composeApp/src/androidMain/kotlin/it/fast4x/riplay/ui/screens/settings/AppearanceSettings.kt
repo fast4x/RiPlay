@@ -162,6 +162,7 @@ import it.fast4x.riplay.utils.blurStrengthKey
 import it.fast4x.riplay.utils.colorPaletteModeKey
 import it.fast4x.riplay.utils.colorPaletteNameKey
 import it.fast4x.riplay.utils.playerThumbnailSizeLKey
+import it.fast4x.riplay.utils.seekWithTapKey
 import it.fast4x.riplay.utils.semiBold
 import it.fast4x.riplay.utils.swipeAnimationsNoThumbnailKey
 import it.fast4x.riplay.utils.thumbnailFadeExKey
@@ -412,6 +413,11 @@ fun AppearanceSettings(
     var playerTimelineSize by rememberPreference(
         playerTimelineSizeKey,
         PlayerTimelineSize.Biggest
+    )
+
+    var seekWithTap by rememberPreference(
+        seekWithTapKey,
+        true
     )
     //
 
@@ -1638,26 +1644,6 @@ fun AppearanceSettings(
                 )
         }
 
-        if (search.input.isBlank() || stringResource(R.string.timelinesize).contains(
-                search.input,
-                true
-            )
-        )
-            EnumValueSelectorSettingsEntry(
-                title = stringResource(R.string.timelinesize),
-                selectedValue = playerTimelineSize,
-                onValueSelected = { playerTimelineSize = it },
-                valueText = {
-                    when (it) {
-                        PlayerTimelineSize.Small -> stringResource(R.string.small)
-                        PlayerTimelineSize.Medium -> stringResource(R.string.medium)
-                        PlayerTimelineSize.Big -> stringResource(R.string.big)
-                        PlayerTimelineSize.Biggest -> stringResource(R.string.biggest)
-                        PlayerTimelineSize.Expanded -> stringResource(R.string.expanded)
-                    }
-                }
-            )
-
         if (search.input.isBlank() || stringResource(R.string.pinfo_type).contains(
                 search.input,
                 true
@@ -1758,6 +1744,38 @@ fun AppearanceSettings(
                 text = "",
                 isChecked = transparentbar,
                 onCheckedChange = { transparentbar = it }
+            )
+
+        if (search.input.isBlank() || stringResource(R.string.timelinesize).contains(
+                search.input,
+                true
+            )
+        )
+            EnumValueSelectorSettingsEntry(
+                title = stringResource(R.string.timelinesize),
+                selectedValue = playerTimelineSize,
+                onValueSelected = { playerTimelineSize = it },
+                valueText = {
+                    when (it) {
+                        PlayerTimelineSize.Small -> stringResource(R.string.small)
+                        PlayerTimelineSize.Medium -> stringResource(R.string.medium)
+                        PlayerTimelineSize.Big -> stringResource(R.string.big)
+                        PlayerTimelineSize.Biggest -> stringResource(R.string.biggest)
+                        PlayerTimelineSize.Expanded -> stringResource(R.string.expanded)
+                    }
+                }
+            )
+
+        if (search.input.isBlank() || stringResource(R.string.seek_with_tap).contains(
+                search.input,
+                true
+            )
+        )
+            SwitchSettingEntry(
+                title = stringResource(R.string.seek_with_tap),
+                text = "",
+                isChecked = seekWithTap,
+                onCheckedChange = { seekWithTap = it }
             )
 
         if (search.input.isBlank() || stringResource(R.string.pcontrols_type).contains(
