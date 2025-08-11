@@ -142,6 +142,7 @@ import me.bush.translator.Translator
 import it.fast4x.riplay.colorPalette
 import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.models.SongAlbumMap
+import it.fast4x.riplay.models.defaultQueue
 import it.fast4x.riplay.models.defaultQueueId
 import it.fast4x.riplay.typography
 import it.fast4x.riplay.ui.components.PullToRefreshBox
@@ -971,7 +972,7 @@ fun AlbumDetails(
                                                                 songs.filter { it.likedAt != -1L }
                                                                     .map(Song::asMediaItem),
                                                                 context,
-                                                                selectedQueue?.id ?: defaultQueueId()
+                                                                selectedQueue ?: defaultQueue()
                                                             )
                                                         } else {
                                                             SmartMessage(
@@ -986,7 +987,7 @@ fun AlbumDetails(
                                                         binder?.player?.addNext(
                                                             listMediaItems,
                                                             context,
-                                                            selectedQueue?.id ?: defaultQueueId()
+                                                            selectedQueue ?: defaultQueue()
                                                         )
                                                         listMediaItems.clear()
                                                         selectItems = false
@@ -1297,11 +1298,11 @@ fun AlbumDetails(
                         SwipeablePlaylistItem(
                             mediaItem = song.asMediaItem,
                             onPlayNext = {
-                                binder?.player?.addNext(song.asMediaItem, idQueue = selectedQueue?.id ?: defaultQueueId())
+                                binder?.player?.addNext(song.asMediaItem, queue = selectedQueue ?: defaultQueue())
                             },
                             onDownload = {},
                             onEnqueue = {
-                                binder?.player?.enqueue(song.asMediaItem, idQueue = it)
+                                binder?.player?.enqueue(song.asMediaItem, queue = it)
                             }
                         ) {
                             val checkedState = rememberSaveable { mutableStateOf(false) }

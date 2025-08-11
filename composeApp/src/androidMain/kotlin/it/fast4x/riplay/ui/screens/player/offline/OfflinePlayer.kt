@@ -313,6 +313,7 @@ import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.PlayerConstan
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
 import it.fast4x.riplay.LocalSelectedQueue
 import it.fast4x.riplay.appContext
+import it.fast4x.riplay.models.defaultQueue
 import it.fast4x.riplay.models.defaultQueueId
 import it.fast4x.riplay.ui.components.themed.AddToPlaylistPlayerMenu
 import it.fast4x.riplay.ui.screens.settings.isYouTubeSyncEnabled
@@ -1529,7 +1530,7 @@ fun OfflinePlayer(
                                                     if (index < mediaItems.size) {
                                                         binder.player.addNext(
                                                             binder.player.getMediaItemAt(index),
-                                                            idQueue = selectedQueue?.id ?: defaultQueueId()
+                                                            queue = selectedQueue ?: defaultQueue()
                                                         )
                                                         scope.launch {
                                                             if (!appRunningInBackground) {

@@ -35,6 +35,7 @@ import it.fast4x.riplay.ui.items.VideoItem
 import it.fast4x.riplay.ui.items.VideoItemPlaceholder
 import it.fast4x.riplay.ui.screens.searchresult.ItemsPage
 import it.fast4x.riplay.colorPalette
+import it.fast4x.riplay.models.defaultQueue
 import it.fast4x.riplay.models.defaultQueueId
 import it.fast4x.riplay.ui.components.themed.SmartMessage
 import it.fast4x.riplay.ui.screens.player.fastPlay
@@ -102,7 +103,7 @@ fun SearchYoutubeEntity (
                     SwipeablePlaylistItem(
                         mediaItem = video.asMediaItem,
                         onPlayNext = {
-                            binder?.player?.addNext(video.asMediaItem, idQueue = selectedQueue?.id ?: defaultQueueId())
+                            binder?.player?.addNext(video.asMediaItem, queue = selectedQueue ?: defaultQueue())
                         },
                         onDownload = {
                             val message = context.resources.getString(R.string.downloading_videos_not_supported)
@@ -114,7 +115,7 @@ fun SearchYoutubeEntity (
                             )
                         },
                         onEnqueue = {
-                            binder?.player?.enqueue(video.asMediaItem, idQueue = it)
+                            binder?.player?.enqueue(video.asMediaItem, queue = it)
                         }
                     ) {
                         VideoItem(

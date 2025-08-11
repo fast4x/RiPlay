@@ -113,6 +113,7 @@ import kotlinx.coroutines.withContext
 import it.fast4x.riplay.colorPalette
 import it.fast4x.riplay.context
 import it.fast4x.riplay.enums.PopupType
+import it.fast4x.riplay.models.Queues
 import it.fast4x.riplay.models.defaultQueue
 import it.fast4x.riplay.models.defaultQueueId
 import it.fast4x.riplay.typography
@@ -330,7 +331,7 @@ fun NonQueuedMediaItemMenuLibrary(
                     )
                 )
             },
-            onPlayNext = { binder?.player?.addNext(mediaItem, context, selectedQueue?.id ?: defaultQueueId()) },
+            onPlayNext = { binder?.player?.addNext(mediaItem, context, selectedQueue ?: defaultQueue()) },
             onEnqueue = { binder?.player?.enqueue(mediaItem, context, it) },
             onDownload = onDownload,
             onRemoveFromPlaylist = onRemoveFromPlaylist,
@@ -373,7 +374,7 @@ fun NonQueuedMediaItemMenuLibrary(
                     )
                 )
             },
-            onPlayNext = { binder?.player?.addNext(mediaItem, context, selectedQueue?.id ?: defaultQueueId()) },
+            onPlayNext = { binder?.player?.addNext(mediaItem, context, selectedQueue ?: defaultQueue()) },
             onEnqueue = { binder?.player?.enqueue(mediaItem, context, it)},
             onRemoveFromPlaylist = onRemoveFromPlaylist,
             onHideFromDatabase = { isHiding = true },
@@ -449,7 +450,7 @@ fun NonQueuedMediaItemMenu(
                     )
                 )
             },
-            onPlayNext = { binder?.player?.addNext(mediaItem, context, selectedQueue?.id ?: defaultQueueId()) },
+            onPlayNext = { binder?.player?.addNext(mediaItem, context, selectedQueue ?: defaultQueue()) },
             onEnqueue = { binder?.player?.enqueue(mediaItem, context, it) },
             onRemoveFromPlaylist = onRemoveFromPlaylist,
             onHideFromDatabase = onHideFromDatabase,
@@ -478,7 +479,7 @@ fun NonQueuedMediaItemMenu(
                     )
                 )
             },
-            onPlayNext = { binder?.player?.addNext(mediaItem, context, selectedQueue?.id ?: defaultQueueId()) },
+            onPlayNext = { binder?.player?.addNext(mediaItem, context, selectedQueue ?: defaultQueue()) },
             onEnqueue = { binder?.player?.enqueue(mediaItem, context, it) },
             onRemoveFromPlaylist = onRemoveFromPlaylist,
             onHideFromDatabase = onHideFromDatabase,
@@ -525,8 +526,8 @@ fun QueuedMediaItemMenu(
             onRemoveFromQueue = if (indexInQueue != null) ({
                 binder?.player?.removeMediaItem(indexInQueue)
             }) else null,
-            onPlayNext = { binder?.player?.addNext(mediaItem, context, selectedQueue?.id ?: defaultQueueId()) },
-            onEnqueue = { binder?.player?.enqueue(mediaItem, idQueue = it) },
+            onPlayNext = { binder?.player?.addNext(mediaItem, context, selectedQueue ?: defaultQueue()) },
+            onEnqueue = { binder?.player?.enqueue(mediaItem, queue = it) },
             onStartRadio = {
                 binder?.stopRadio()
                 fastPlay(mediaItem, binder)
@@ -568,8 +569,8 @@ fun QueuedMediaItemMenu(
             onRemoveFromQueue = if (indexInQueue != null) ({
                 binder?.player?.removeMediaItem(indexInQueue)
             }) else null,
-            onPlayNext = { binder?.player?.addNext(mediaItem, context, selectedQueue?.id ?: defaultQueueId()) },
-            onEnqueue = { binder?.player?.enqueue(mediaItem, idQueue = it) },
+            onPlayNext = { binder?.player?.addNext(mediaItem, context, selectedQueue ?: defaultQueue()) },
+            onEnqueue = { binder?.player?.enqueue(mediaItem, queue = it) },
             onStartRadio = {
                 binder?.stopRadio()
                 //binder?.player?.forcePlay(mediaItem)
@@ -622,7 +623,7 @@ fun BaseMediaItemMenu(
     onShowSleepTimer: (() -> Unit)? = null,
     onStartRadio: (() -> Unit)? = null,
     onPlayNext: (() -> Unit)? = null,
-    onEnqueue: ((Long) -> Unit)? = null,
+    onEnqueue: ((Queues) -> Unit)? = null,
     onRemoveFromQueue: (() -> Unit)? = null,
     onRemoveFromPlaylist: (() -> Unit)? = null,
     onHideFromDatabase: (() -> Unit)? = null,
@@ -843,7 +844,7 @@ fun MediaItemMenu(
     onShowSleepTimer: (() -> Unit)? = null,
     onStartRadio: (() -> Unit)? = null,
     onPlayNext: (() -> Unit)? = null,
-    onEnqueue: ((Long) -> Unit)? = null,
+    onEnqueue: ((Queues) -> Unit)? = null,
     onHideFromDatabase: (() -> Unit)? = null,
     onDeleteFromDatabase: (() -> Unit)? = null,
     onRemoveFromQueue: (() -> Unit)? = null,
@@ -1476,7 +1477,7 @@ fun MediaItemMenu(
                                     secondaryText = "1 " + stringResource(R.string.songs),
                                     onClick = {
                                         onDismiss()
-                                        onEnqueue(defaultQueueId())
+                                        onEnqueue(defaultQueue())
                                     }
                                 )
 
@@ -1487,7 +1488,7 @@ fun MediaItemMenu(
                                         secondaryText = "1 " + stringResource(R.string.songs),
                                         onClick = {
                                             onDismiss()
-                                            onEnqueue(queue.id)
+                                            onEnqueue(queue)
                                         }
                                     )
                                 }

@@ -52,6 +52,7 @@ import it.fast4x.riplay.utils.queueSwipeRightActionKey
 import kotlinx.coroutines.flow.distinctUntilChanged
 import it.fast4x.riplay.colorPalette
 import it.fast4x.riplay.enums.PopupType
+import it.fast4x.riplay.models.Queues
 import it.fast4x.riplay.ui.components.themed.QueuesDialog
 import it.fast4x.riplay.ui.screens.settings.isYouTubeSyncEnabled
 import it.fast4x.riplay.utils.addToYtLikedSong
@@ -137,7 +138,7 @@ fun SwipeableQueueItem(
     onPlayNext: (() -> Unit) = {},
     onDownload: (() -> Unit) = {},
     onRemoveFromQueue: (() -> Unit) = {},
-    onEnqueue: ((Long) -> Unit) = {},
+    onEnqueue: ((Queues) -> Unit) = {},
     modifier: Modifier = Modifier,
     content: @Composable () -> Unit
 ) {
@@ -196,7 +197,7 @@ fun SwipeableQueueItem(
     if (isViewingQueues) {
         QueuesDialog(
             onSelect = {
-                onEnqueue.invoke(it.id)
+                onEnqueue.invoke(it)
             },
             onDismiss = { isViewingQueues = false }
         )
@@ -224,7 +225,7 @@ fun SwipeablePlaylistItem(
     mediaItem: MediaItem,
     onPlayNext: (() -> Unit) = {},
     onDownload: (() -> Unit) = {},
-    onEnqueue: ((Long) -> Unit) = {},
+    onEnqueue: ((Queues) -> Unit) = {},
     content: @Composable () -> Unit
 ) {
     val context = LocalContext.current
@@ -281,7 +282,7 @@ fun SwipeablePlaylistItem(
     if (isViewingQueues) {
         QueuesDialog(
             onSelect = {
-                onEnqueue.invoke(it.id)
+                onEnqueue.invoke(it)
             },
             onDismiss = { isViewingQueues = false }
         )

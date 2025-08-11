@@ -733,7 +733,7 @@ fun Queue(
                             binder.player.addNext(
                                 window.mediaItem,
                                 context,
-                                idQueue = selectedQueue?.id ?: defaultQueueId()
+                                selectedQueue ?: defaultQueue()
                             )
                         },
                         onDownload = {},

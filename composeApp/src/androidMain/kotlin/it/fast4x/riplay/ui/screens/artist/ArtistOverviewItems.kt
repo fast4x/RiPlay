@@ -82,6 +82,7 @@ import it.fast4x.riplay.enums.MaxSongs
 import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.models.Song
 import it.fast4x.riplay.models.Album
+import it.fast4x.riplay.models.defaultQueue
 import it.fast4x.riplay.models.defaultQueueId
 import it.fast4x.riplay.ui.components.SwipeablePlaylistItem
 import it.fast4x.riplay.ui.components.themed.AddToPlaylistArtistSongs
@@ -340,7 +341,7 @@ fun ArtistOverviewItems(
                                                 val filteredArtistSongs = artistSongs.filter {Database.getLikedAt(it.mediaId) != -1L}
                                                 withContext(Dispatchers.Main) {
                                                     binder?.player?.addNext(filteredArtistSongs, context,
-                                                        selectedQueue?.id ?: defaultQueueId())
+                                                        selectedQueue ?: defaultQueue())
                                                 }
                                             } else {
                                                 SmartMessage(context.resources.getString(R.string.disliked_this_collection),type = PopupType.Error, context = context)
@@ -463,11 +464,11 @@ fun ArtistOverviewItems(
                     SwipeablePlaylistItem(
                         mediaItem = item,
                         onPlayNext = {
-                            binder?.player?.addNext(item, idQueue = selectedQueue?.id ?: defaultQueueId())
+                            binder?.player?.addNext(item, queue = selectedQueue ?: defaultQueue())
                         },
                         onDownload = {},
                         onEnqueue = {
-                            binder?.player?.enqueue(item, idQueue = it)
+                            binder?.player?.enqueue(item, queue = it)
                         }
                     ) {
                         SongItem(

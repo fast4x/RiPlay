@@ -15,10 +15,13 @@ import androidx.media3.common.util.Log
 import androidx.media3.common.util.UnstableApi
 import it.fast4x.riplay.Database
 import it.fast4x.riplay.R
+import it.fast4x.riplay.context
 import it.fast4x.riplay.enums.DurationInMinutes
+import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.isPersistentQueueEnabled
 import it.fast4x.riplay.models.QueuedMediaItem
 import it.fast4x.riplay.models.Queues
+import it.fast4x.riplay.models.defaultQueue
 import it.fast4x.riplay.models.defaultQueueId
 import it.fast4x.riplay.ui.components.themed.SmartMessage
 import kotlinx.coroutines.CoroutineScope
@@ -174,16 +177,19 @@ fun Player.playPrevious() {
 }
 
 @UnstableApi
-fun Player.addNext(mediaItem: MediaItem, context: Context? = null, idQueue: Long) {
+fun Player.addNext(mediaItem: MediaItem, context: Context? = null, queue: Queues) {
     if (context != null && excludeMediaItem(mediaItem, context)) return
 
     val itemIndex = findMediaItemIndexById(mediaItem.mediaId)
     if (itemIndex >= 0) removeMediaItem(itemIndex)
 
-    mediaItem.mediaMetadata.extras?.putLong("idQueue", idQueue)
+    if (!canAddedToQueue(mediaItem, queue)) return
+
+    mediaItem.mediaMetadata.extras?.putLong("idQueue", queue.id)
     println("mediaItem-addNext extras: ${mediaItem.mediaMetadata.extras}")
 
     addMediaItem(currentMediaItemIndex + 1, mediaItem.cleaned)
+    SmartMessage(context().resources.getString(R.string.done), context = context())
 //    if (playbackState == Player.STATE_IDLE || playbackState == Player.STATE_ENDED) {
 //        forcePlay(mediaItem)
 //    } else {
@@ -192,7 +198,7 @@ fun Player.addNext(mediaItem: MediaItem, context: Context? = null, idQueue: Long
 }
 
 @UnstableApi
-fun Player.addNext(mediaItems: List<MediaItem>, context: Context? = null, idQueue: Long) {
+fun Player.addNext(mediaItems: List<MediaItem>, context: Context? = null, queue: Queues) {
     val filteredMediaItems = if (context != null) excludeMediaItems(mediaItems, context)
     else mediaItems
 
@@ -200,11 +206,14 @@ fun Player.addNext(mediaItems: List<MediaItem>, context: Context? = null, idQueu
         val itemIndex = findMediaItemIndexById(mediaItem.mediaId)
         if (itemIndex >= 0) removeMediaItem(itemIndex)
 
-        mediaItem.mediaMetadata.extras?.putLong("idQueue", idQueue)
-        println("mediaItems-addNext extras: ${mediaItem.mediaMetadata.extras}")
+        if (canAddedToQueue(mediaItem, queue)) {
+            mediaItem.mediaMetadata.extras?.putLong("idQueue", queue.id)
+            println("mediaItems-addNext extras: ${mediaItem.mediaMetadata.extras}")
+        }
     }
 
     addMediaItems(currentMediaItemIndex + 1, filteredMediaItems.map { it.cleaned })
+    SmartMessage(context().resources.getString(R.string.done), context = context())
 //    if (playbackState == Player.STATE_IDLE || playbackState == Player.STATE_ENDED) {
 //        setMediaItems(filteredMediaItems.map { it.cleaned })
 //        play()
@@ -215,13 +224,16 @@ fun Player.addNext(mediaItems: List<MediaItem>, context: Context? = null, idQueu
 }
 
 
-fun Player.enqueue(mediaItem: MediaItem, context: Context? = null, idQueue: Long) {
+fun Player.enqueue(mediaItem: MediaItem, context: Context? = null, queue: Queues) {
      if (context != null && excludeMediaItem(mediaItem, context)) return
 
-    mediaItem.mediaMetadata.extras?.putLong("idQueue", idQueue)
+    if (!canAddedToQueue(mediaItem, queue)) return
+
+    mediaItem.mediaMetadata.extras?.putLong("idQueue", queue.id)
     println("mediaItem-enqueue extras: ${mediaItem.mediaMetadata.extras}")
 
     addMediaItem(mediaItemCount, mediaItem.cleaned)
+    SmartMessage(context().resources.getString(R.string.done), context = context())
 //    if (playbackState == Player.STATE_IDLE || playbackState == Player.STATE_ENDED) {
 //        forcePlay(mediaItem)
 //    } else {
@@ -234,23 +246,39 @@ fun Player.enqueue(mediaItem: MediaItem, context: Context? = null, idQueue: Long
 fun Player.enqueue(
     mediaItems: List<MediaItem>,
     context: Context? = null,
-    //idQueue: Long
+    //queue: Queues
 ) {
     val filteredMediaItems = if (context != null) excludeMediaItems(mediaItems, context)
     else mediaItems
-//TODO copmlete enqueue for mediaitems
-//    filteredMediaItems.forEach { mediaItem ->
-//        mediaItem.mediaMetadata.extras?.putLong("idQueue", idQueue)
-//        println("mediaItems-enqueue extras: ${mediaItem.mediaMetadata.extras}")
-//    }
 
-    if (playbackState == Player.STATE_IDLE || playbackState == Player.STATE_ENDED) {
-        //forcePlayFromBeginning(mediaItems)
-        forcePlayFromBeginning(filteredMediaItems)
-    } else {
-        //addMediaItems(mediaItemCount, mediaItems)
-        addMediaItems(mediaItemCount, filteredMediaItems.map { it.cleaned })
+    //TODO add support for multiple queues with multiple mediaItems
+//    filteredMediaItems.forEach { mediaItem ->
+//        if (canAddedToQueue(mediaItem, queue)) {
+//            mediaItem.mediaMetadata.extras?.putLong("idQueue", queue.id)
+//            println("mediaItems-enqueue extras: ${mediaItem.mediaMetadata.extras}")
+//        }
+//    }
+    addMediaItems(mediaItemCount, filteredMediaItems.map { it.cleaned })
+    SmartMessage(context().resources.getString(R.string.done), context = context())
+//    if (playbackState == Player.STATE_IDLE || playbackState == Player.STATE_ENDED) {
+//        //forcePlayFromBeginning(mediaItems)
+//        forcePlayFromBeginning(filteredMediaItems)
+//    } else {
+//        //addMediaItems(mediaItemCount, mediaItems)
+//        addMediaItems(mediaItemCount, filteredMediaItems.map { it.cleaned })
+//    }
+}
+
+fun Player.canAddedToQueue(mediaItem: MediaItem, queue: Queues): Boolean {
+    if (mediaItem.isVideo && !queue.acceptVideo) {
+        SmartMessage("Queue not accept video", type = PopupType.Warning, context = context())
+        return false
     }
+    if (!mediaItem.isVideo && !queue.acceptSong) {
+        SmartMessage("Queue not accept song", type = PopupType.Warning, context = context())
+        return false
+    }
+    return true
 }
 
 /*

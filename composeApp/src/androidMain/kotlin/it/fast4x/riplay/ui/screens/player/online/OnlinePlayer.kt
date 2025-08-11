@@ -208,6 +208,7 @@ import it.fast4x.riplay.getQueueLoopType
 import it.fast4x.riplay.models.Event
 import it.fast4x.riplay.models.Info
 import it.fast4x.riplay.models.Song
+import it.fast4x.riplay.models.defaultQueue
 import it.fast4x.riplay.models.defaultQueueId
 import it.fast4x.riplay.models.ui.toUiMedia
 import it.fast4x.riplay.thumbnailShape
@@ -1784,7 +1785,7 @@ fun OnlinePlayer(
                                                         if (index < mediaItems.size) {
                                                             binder.player.addNext(
                                                                 binder.player.getMediaItemAt(index),
-                                                                idQueue = selectedQueue?.id ?: defaultQueueId()
+                                                                queue = selectedQueue ?: defaultQueue()
                                                             )
                                                             scope.launch {
                                                                 if (!appRunningInBackground) {

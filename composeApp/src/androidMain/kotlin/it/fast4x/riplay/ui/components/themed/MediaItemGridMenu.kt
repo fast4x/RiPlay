@@ -90,7 +90,9 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import it.fast4x.riplay.colorPalette
 import it.fast4x.riplay.enums.PopupType
+import it.fast4x.riplay.models.Queues
 import it.fast4x.riplay.models.Song
+import it.fast4x.riplay.models.defaultQueue
 import it.fast4x.riplay.models.defaultQueueId
 import it.fast4x.riplay.typography
 import it.fast4x.riplay.ui.screens.player.fastPlay
@@ -133,7 +135,7 @@ fun NonQueuedMediaItemGridMenu(
                 )
             )
         },
-        onPlayNext = { binder?.player?.addNext(mediaItem, context, selectedQueue?.id ?: defaultQueueId()) },
+        onPlayNext = { binder?.player?.addNext(mediaItem, context, selectedQueue ?: defaultQueue()) },
         onEnqueue = { binder?.player?.enqueue(mediaItem, context, it) },
         onDownload = onDownload,
         onRemoveFromPlaylist = onRemoveFromPlaylist,
@@ -154,7 +156,7 @@ fun BaseMediaItemGridMenu(
     onShowSleepTimer: (() -> Unit)? = null,
     onStartRadio: (() -> Unit)? = null,
     onPlayNext: (() -> Unit)? = null,
-    onEnqueue: ((Long) -> Unit)? = null,
+    onEnqueue: ((Queues) -> Unit)? = null,
     onDownload: (() -> Unit)? = null,
     onRemoveFromQueue: (() -> Unit)? = null,
     onRemoveFromPlaylist: (() -> Unit)? = null,
@@ -299,7 +301,7 @@ fun MediaItemGridMenu (
     onShowSleepTimer: (() -> Unit)? = null,
     onStartRadio: (() -> Unit)? = null,
     onPlayNext: (() -> Unit)? = null,
-    onEnqueue: ((Long) -> Unit)? = null,
+    onEnqueue: ((Queues) -> Unit)? = null,
     onDownload: (() -> Unit)? = null,
     onHideFromDatabase: (() -> Unit)? = null,
     onDeleteFromDatabase: (() -> Unit)? = null,
@@ -873,7 +875,7 @@ fun MediaItemGridMenu (
                 QueuesDialog(
                     onSelect = {
                         onDismiss()
-                        onEnqueue?.invoke(it.id)
+                        onEnqueue?.invoke(it)
                     },
                     onDismiss = { isViewingQueues = false }
                 )

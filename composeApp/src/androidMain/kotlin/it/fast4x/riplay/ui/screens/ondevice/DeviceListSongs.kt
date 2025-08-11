@@ -147,6 +147,7 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.isActive
 import it.fast4x.riplay.colorPalette
+import it.fast4x.riplay.models.defaultQueue
 import it.fast4x.riplay.models.defaultQueueId
 import it.fast4x.riplay.typography
 import timber.log.Timber
@@ -680,12 +681,12 @@ fun DeviceListSongs(
                                         if (listMediaItems.isEmpty()) {
                                             binder?.player?.addNext(filteredSongs.map(SongEntity::asMediaItem),
                                                 context,
-                                                selectedQueue?.id ?: defaultQueueId()
+                                                selectedQueue ?: defaultQueue()
                                             )
                                         } else {
                                             binder?.player?.addNext(listMediaItems,
                                                 context,
-                                                selectedQueue?.id ?: defaultQueueId())
+                                                selectedQueue ?: defaultQueue())
                                             listMediaItems.clear()
                                             selectItems = false
                                         }

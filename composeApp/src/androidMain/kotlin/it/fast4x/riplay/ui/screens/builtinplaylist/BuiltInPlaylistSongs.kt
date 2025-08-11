@@ -140,6 +140,7 @@ import it.fast4x.riplay.utils.songSortOrderKey
 import it.fast4x.riplay.utils.thumbnail
 import it.fast4x.riplay.utils.thumbnailRoundnessKey
 import it.fast4x.riplay.colorPalette
+import it.fast4x.riplay.models.defaultQueue
 import it.fast4x.riplay.models.defaultQueueId
 import it.fast4x.riplay.thumbnailShape
 import it.fast4x.riplay.typography
@@ -783,9 +784,9 @@ fun BuiltInPlaylistSongs(
                                         if (listMediaItems.isEmpty()) {
                                             binder?.player?.addNext(songs.map(Song::asMediaItem),
                                                 context,
-                                                selectedQueue?.id ?: defaultQueueId())
+                                                selectedQueue ?: defaultQueue())
                                         } else {
-                                            binder?.player?.addNext(listMediaItems, context, selectedQueue?.id ?: defaultQueueId())
+                                            binder?.player?.addNext(listMediaItems, context, selectedQueue ?: defaultQueue())
                                             listMediaItems.clear()
                                             selectItems = false
                                         }
