@@ -2534,6 +2534,9 @@ interface Database {
     @Query("SELECT * FROM Queues WHERE isSelected = 1 LIMIT 1")
     fun selectedQueueFlow(): Flow<Queues?>
 
+    @Query("SELECT * FROM Queues WHERE id = :id")
+    fun getQueue(id: Long): Queues?
+
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     @Throws(SQLException::class)
     fun insert(event: Event)
