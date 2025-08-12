@@ -278,6 +278,11 @@ fun Player.canAddedToQueue(mediaItem: MediaItem, queue: Queues): Boolean {
         SmartMessage("Queue not accept song", type = PopupType.Warning, context = context())
         return false
     }
+    if (mediaItem.isPodcast && !queue.acceptPodcast) {
+        SmartMessage("Queue not accept podcast", type = PopupType.Warning, context = context())
+        return false
+    }
+
     return true
 }
 

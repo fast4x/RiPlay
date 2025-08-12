@@ -117,6 +117,8 @@ fun Environment.ArtistItem.Companion.from(content: MusicShelfRenderer.Content): 
 fun Environment.PlaylistItem.Companion.from(content: MusicShelfRenderer.Content): Environment.PlaylistItem? {
     val (mainRuns, otherRuns) = content.runs
 
+    println("Environment.PlaylistItem.Companion.from $content")
+
     return Environment.PlaylistItem(
         info = Environment.Info(
             name = mainRuns

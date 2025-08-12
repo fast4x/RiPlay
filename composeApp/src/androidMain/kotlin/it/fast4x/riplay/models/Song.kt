@@ -23,6 +23,8 @@ data class Song(
     val totalPlayTimeMs: Long = 0,
     @ColumnInfo(defaultValue = "1")
     val isAudioOnly: Int = 1,
+    @ColumnInfo(defaultValue = "0")
+    val isPodcast: Int = 0
 ) {
     val formattedTotalPlayTime: String
         get() {

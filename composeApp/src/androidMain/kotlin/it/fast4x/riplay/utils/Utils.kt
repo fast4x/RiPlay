@@ -159,6 +159,7 @@ val Environment.Podcast.EpisodeItem.asMediaItem: MediaItem
                         "durationText" to durationString,
                         "artistNames" to author,
                         //"artistIds" to authors?.mapNotNull { it.endpoint?.browseId },
+                        "isPodcast" to true
                     )
                 )
 
@@ -274,6 +275,7 @@ val Song.asMediaItem: MediaItem
                         "durationText" to durationText,
                         EXPLICIT_BUNDLE_TAG to title.startsWith( EXPLICIT_PREFIX, true ),
                         "isVideo" to (isAudioOnly != 1),
+                        "isPodcast" to (isPodcast == 1)
                     )
                 )
                 .build()
@@ -329,6 +331,7 @@ val SongEntity.asMediaItem: MediaItem
                         "durationText" to song.durationText,
                         EXPLICIT_BUNDLE_TAG to song.title.startsWith( EXPLICIT_PREFIX, true ),
                         "isVideo" to (song.isAudioOnly != 1),
+                        "isPodcast" to (song.isPodcast == 1)
                     )
                 )
                 .build()
@@ -377,6 +380,8 @@ val MediaItem.cleaned: MediaItem
 
 val MediaItem.isVideo: Boolean
     get() = mediaMetadata.extras?.getBoolean("isVideo") == true
+val MediaItem.isPodcast: Boolean
+    get() = mediaMetadata.extras?.getBoolean("isPodcast") == true
 
 val MediaItem.isExplicit: Boolean
     get() {
