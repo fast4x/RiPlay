@@ -40,6 +40,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.C
 import androidx.media3.common.util.UnstableApi
+import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.PlayerConstants
 import it.fast4x.riplay.enums.ColorPaletteMode
 import it.fast4x.riplay.enums.PauseBetweenSongs
 import it.fast4x.riplay.enums.PlayerTimelineType
@@ -54,7 +55,6 @@ import it.fast4x.riplay.ui.components.SeekBarWaved
 import it.fast4x.riplay.ui.styling.collapsedPlayerProgressBar
 import kotlinx.coroutines.launch
 import it.fast4x.riplay.colorPalette
-import it.fast4x.riplay.getPlayerTimelineType
 import it.fast4x.riplay.typography
 import it.fast4x.riplay.utils.colorPaletteModeKey
 import it.fast4x.riplay.utils.formatAsDuration
@@ -83,6 +83,7 @@ fun GetSeekBar(
     onSeekTo: (Float) -> Unit = {},
     onPause: () -> Unit = {},
     onPlay: () -> Unit = {},
+    playerState: PlayerConstants.PlayerState,
 ) {
 
     val playerTimelineType by rememberObservedPreference(
@@ -130,7 +131,7 @@ fun GetSeekBar(
             .fillMaxWidth()
     ) {
 
-        if (duration == 0L)
+        if (playerState == PlayerConstants.PlayerState.BUFFERING)
             LinearProgressIndicator(
                 modifier = Modifier.fillMaxWidth().height(1.dp),
                 color = colorPalette().collapsedPlayerProgressBar

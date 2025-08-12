@@ -16,6 +16,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.media3.common.MediaItem
 import androidx.media3.common.util.UnstableApi
+import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.PlayerConstants
 import it.fast4x.riplay.enums.PlayerBackgroundColors
 import it.fast4x.riplay.enums.PlayerControlsType
 import it.fast4x.riplay.enums.PlayerPlayButtonType
@@ -44,6 +45,7 @@ fun GetControls(
     onPrevious: () -> Unit,
     onToggleRepeatMode: () -> Unit,
     onToggleShuffleMode: () -> Unit,
+    playerState: PlayerConstants.PlayerState,
 ) {
     val playerControlsType by rememberPreference(
         playerControlsTypeKey,
@@ -116,6 +118,7 @@ fun GetControls(
                 onNext = onNext,
                 onPrevious = onPrevious,
                 onToggleShuffleMode = onToggleShuffleMode,
+                playerState = playerState
             )
 
         if (playerControlsType == PlayerControlsType.Modern)
@@ -130,6 +133,7 @@ fun GetControls(
                 onPause = onPause,
                 onNext = onNext,
                 onPrevious = onPrevious,
+                playerState = playerState
             )
     }
 }

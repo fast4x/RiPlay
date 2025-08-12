@@ -461,7 +461,7 @@ fun OnlineMiniPlayer(
                            .size(24.dp)
                    )
 
-                if (positionAndDuration.second.toLong() != C.TIME_UNSET) {
+                if (playerState.value != PlayerConstants.PlayerState.BUFFERING) {
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(playPauseRoundness))

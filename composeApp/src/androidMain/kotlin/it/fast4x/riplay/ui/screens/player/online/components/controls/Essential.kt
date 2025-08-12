@@ -27,6 +27,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
@@ -53,13 +54,12 @@ import androidx.compose.ui.unit.dp
 import androidx.media3.common.MediaItem
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
+import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.PlayerConstants
 import it.fast4x.riplay.Database
 import it.fast4x.riplay.R
 import it.fast4x.riplay.appContext
-import it.fast4x.riplay.binder
 import it.fast4x.riplay.cleanPrefix
 import it.fast4x.riplay.colorPalette
-import it.fast4x.riplay.context
 import it.fast4x.riplay.enums.ButtonState
 import it.fast4x.riplay.enums.ColorPaletteMode
 import it.fast4x.riplay.enums.ColorPaletteName
@@ -78,6 +78,7 @@ import it.fast4x.riplay.ui.components.themed.SelectorArtistsDialog
 import it.fast4x.riplay.ui.components.themed.SmartMessage
 import it.fast4x.riplay.ui.screens.player.offline.bounceClick
 import it.fast4x.riplay.ui.screens.settings.isYouTubeSyncEnabled
+import it.fast4x.riplay.ui.styling.collapsedPlayerProgressBar
 import it.fast4x.riplay.ui.styling.favoritesIcon
 import it.fast4x.riplay.utils.HorizontalfadingEdge2
 import it.fast4x.riplay.utils.addToYtLikedSong
@@ -191,13 +192,13 @@ fun InfoAlbumAndArtistEssential(
             BoxWithConstraints(
                 modifier = Modifier
                     .weight(1f)
-                    .applyIf(!disableScrollingText){HorizontalfadingEdge2(0.025f)},
+                    .applyIf(!disableScrollingText) { HorizontalfadingEdge2(0.025f) },
                 contentAlignment = Alignment.Center
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically,
                     modifier = modifierTitle
-                    .applyIf(!disableScrollingText) {padding(horizontal = maxWidth * 0.025f)}
-                    .applyIf(playerControlsType == PlayerControlsType.Modern){padding(start = likeButtonWidth)}
+                        .applyIf(!disableScrollingText) { padding(horizontal = maxWidth * 0.025f) }
+                        .applyIf(playerControlsType == PlayerControlsType.Modern) { padding(start = likeButtonWidth) }
                 ) {
                     if (isExplicit) {
                         IconButton(
@@ -442,6 +443,7 @@ fun ControlsEssential(
     onNext: () -> Unit,
     onPrevious: () -> Unit,
     onToggleShuffleMode: () -> Unit,
+    playerState: PlayerConstants.PlayerState,
 ) {
 
     val colorPaletteName by rememberPreference(colorPaletteNameKey, ColorPaletteName.Dynamic)
@@ -465,7 +467,7 @@ fun ControlsEssential(
     val currentMediaItem = mediaItem
     var lightTheme = colorPaletteMode == ColorPaletteMode.Light || (colorPaletteMode == ColorPaletteMode.System && (!isSystemInDarkTheme()))
 
-    val binder = binder()
+    //val binder = binder()
 
     Box {
         if (playerBackgroundColors != PlayerBackgroundColors.MidnightOdyssey){
@@ -555,7 +557,7 @@ fun ControlsEssential(
                 interactionSource = remember { MutableInteractionSource() },
                 onClick = {
                     //if (jumpPrevious == "") jumpPrevious = "0"
-                        onPrevious()
+                    onPrevious()
 
                     if (effectRotationEnabled) isRotated = !isRotated
                 },
@@ -585,8 +587,14 @@ fun ControlsEssential(
                 onLongClick = onShowSpeedPlayerDialog
             )
             .bounceClick()
-            .applyIf(playerPlayButtonType != PlayerPlayButtonType.Circle){clip(RoundedCornerShape(playPauseRoundness))}
-            .applyIf(playerPlayButtonType == PlayerPlayButtonType.Circle){clip(CircleShape)}
+            .applyIf(playerPlayButtonType != PlayerPlayButtonType.Circle) {
+                clip(
+                    RoundedCornerShape(
+                        playPauseRoundness
+                    )
+                )
+            }
+            .applyIf(playerPlayButtonType == PlayerPlayButtonType.Circle) { clip(CircleShape) }
             .background(
                 when (playerPlayButtonType) {
                     PlayerPlayButtonType.CircularRibbed, PlayerPlayButtonType.Disabled -> Color.Transparent
@@ -618,15 +626,21 @@ fun ControlsEssential(
                 contentScale = ContentScale.Fit
             )
 
-        Image(
-            painter = painterResource(if (shouldBePlaying) R.drawable.pause else R.drawable.play),
-            contentDescription = null,
-            colorFilter = ColorFilter.tint(if (playerPlayButtonType == PlayerPlayButtonType.Disabled || playerBackgroundColors == PlayerBackgroundColors.AnimatedGradient) colorPalette().accent else colorPalette().text),
-            modifier = Modifier
-                .rotate(rotationAngle)
-                .align(Alignment.Center)
-                .size(if (playerPlayButtonType == PlayerPlayButtonType.Disabled) 40.dp else 30.dp)
-                .bounceClick()
+        val imgSize = remember { if (playerPlayButtonType == PlayerPlayButtonType.Disabled) 40.dp else 30.dp }
+        if (playerState != PlayerConstants.PlayerState.BUFFERING) {
+            Image(
+                painter = painterResource(if (shouldBePlaying) R.drawable.pause else R.drawable.play),
+                contentDescription = null,
+                colorFilter = ColorFilter.tint(if (playerPlayButtonType == PlayerPlayButtonType.Disabled || playerBackgroundColors == PlayerBackgroundColors.AnimatedGradient) colorPalette().accent else colorPalette().text),
+                modifier = Modifier
+                    .rotate(rotationAngle)
+                    .align(Alignment.Center)
+                    .size(imgSize)
+                    .bounceClick()
+            )
+        } else CircularProgressIndicator(
+            modifier = Modifier.size(imgSize),
+            color = colorPalette().collapsedPlayerProgressBar
         )
 
         val fmtSpeed = "%.1fx".format(playbackSpeed).replace(",", ".")

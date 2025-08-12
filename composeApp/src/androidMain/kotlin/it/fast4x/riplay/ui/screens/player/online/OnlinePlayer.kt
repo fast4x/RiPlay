@@ -209,7 +209,6 @@ import it.fast4x.riplay.models.Event
 import it.fast4x.riplay.models.Info
 import it.fast4x.riplay.models.Song
 import it.fast4x.riplay.models.defaultQueue
-import it.fast4x.riplay.models.defaultQueueId
 import it.fast4x.riplay.models.ui.toUiMedia
 import it.fast4x.riplay.thumbnailShape
 import it.fast4x.riplay.typography
@@ -1511,6 +1510,7 @@ fun OnlinePlayer(
             onSeekTo = { player.value?.seekTo(it) },
             onNext = { binder.player.playNext() },
             onPrevious = { binder.player.playPrevious() },
+            playerState = playerState.value,
         )
     }
 
@@ -2807,6 +2807,7 @@ fun OnlinePlayer(
                             Controls(
                                 navController = navController,
                                 onCollapse = onDismiss,
+                                onBlurScaleChange = { blurStrength = it },
                                 expandedplayer = expandedplayer,
                                 titleExpanded = titleExpanded,
                                 timelineExpanded = timelineExpanded,
@@ -2814,6 +2815,7 @@ fun OnlinePlayer(
                                 isShowingLyrics = isShowingLyrics,
                                 media = binderPlayer.getMediaItemAt(index)
                                     .toUiMedia(positionAndDuration.second.toLong()),
+                                mediaItem = binderPlayer.getMediaItemAt(index),
                                 title = binderPlayer.getMediaItemAt(index).mediaMetadata.title?.toString(),
                                 artist = binderPlayer.getMediaItemAt(index).mediaMetadata.artist?.toString(),
                                 artistIds = artistsInfo,
@@ -2821,11 +2823,9 @@ fun OnlinePlayer(
                                 shouldBePlaying = shouldBePlaying,
                                 position = positionAndDuration.first.toLong(),
                                 duration = positionAndDuration.second.toLong(),
+                                isExplicit = binderPlayer.getMediaItemAt(index).isExplicit,
                                 modifier = Modifier
                                     .padding(vertical = 8.dp),
-                                onBlurScaleChange = { blurStrength = it },
-                                isExplicit = binderPlayer.getMediaItemAt(index).isExplicit,
-                                mediaItem = binderPlayer.getMediaItemAt(index),
                                 onPlay = {
                                     player.value?.play()
                                     //println("LinkClient OnLinePlayer Controls play")
@@ -2851,6 +2851,7 @@ fun OnlinePlayer(
                                 onSeekTo = { player.value?.seekTo(it) },
                                 onNext = { binder.player.playNext() },
                                 onPrevious = { binder.player.playPrevious() },
+                                playerState = playerState.value,
                             )
 
                         }
@@ -3100,6 +3101,7 @@ fun OnlinePlayer(
                                         Controls(
                                             navController = navController,
                                             onCollapse = onDismiss,
+                                            onBlurScaleChange = { blurStrength = it },
                                             expandedplayer = expandedplayer,
                                             titleExpanded = titleExpanded,
                                             timelineExpanded = timelineExpanded,
@@ -3107,6 +3109,7 @@ fun OnlinePlayer(
                                             isShowingLyrics = isShowingLyrics,
                                             media = binderPlayer.getMediaItemAt(it)
                                                 .toUiMedia(positionAndDuration.second.toLong()),
+                                            mediaItem = binderPlayer.getMediaItemAt(it),
                                             title = binderPlayer.getMediaItemAt(it).mediaMetadata.title?.toString(),
                                             artist = binderPlayer.getMediaItemAt(it).mediaMetadata.artist?.toString(),
                                             artistIds = artistsInfo,
@@ -3114,12 +3117,10 @@ fun OnlinePlayer(
                                             shouldBePlaying = shouldBePlaying,
                                             position = positionAndDuration.first.toLong(),
                                             duration = positionAndDuration.second.toLong(),
+                                            isExplicit = binderPlayer.getMediaItemAt(it).isExplicit,
                                             modifier = Modifier
                                                 .padding(vertical = 4.dp)
                                                 .fillMaxWidth(),
-                                            onBlurScaleChange = { blurStrength = it },
-                                            isExplicit = binderPlayer.getMediaItemAt(it).isExplicit,
-                                            mediaItem = binderPlayer.getMediaItemAt(it),
                                             onPlay = {
                                                 player.value?.play()
                                                 //println("LinkClient OnLinePlayer Controls pause 3")
@@ -3143,6 +3144,7 @@ fun OnlinePlayer(
                                             onSeekTo = { player.value?.seekTo(it) },
                                             onNext = { binder.player.playNext() },
                                             onPrevious = { binder.player.playPrevious() },
+                                            playerState = playerState.value,
                                         )
                                     }
                                 }
@@ -3796,6 +3798,7 @@ fun OnlinePlayer(
                                 Controls(
                                     navController = navController,
                                     onCollapse = onDismiss,
+                                    onBlurScaleChange = { blurStrength = it },
                                     expandedplayer = expandedplayer,
                                     titleExpanded = titleExpanded,
                                     timelineExpanded = timelineExpanded,
@@ -3803,20 +3806,19 @@ fun OnlinePlayer(
                                     isShowingLyrics = isShowingLyrics,
                                     media = binderPlayer.getMediaItemAt(index)
                                         .toUiMedia(positionAndDuration.second.toLong()),
+                                    mediaItem = binderPlayer.getMediaItemAt(index),
                                     title = binderPlayer.getMediaItemAt(index).mediaMetadata.title?.toString(),
                                     artist = binderPlayer.getMediaItemAt(index).mediaMetadata.artist?.toString(),
                                     artistIds = artistsInfo,
                                     albumId = albumId,
                                     shouldBePlaying = shouldBePlaying,
                                     position = positionAndDuration.first.toLong(),
+                                    //.weight(1f),
                                     duration = positionAndDuration.second.toLong(),
+                                    isExplicit = binderPlayer.getMediaItemAt(index).isExplicit,
                                     modifier = Modifier
                                         .padding(vertical = 4.dp)
                                         .fillMaxWidth(),
-                                    //.weight(1f),
-                                    onBlurScaleChange = { blurStrength = it },
-                                    isExplicit = binderPlayer.getMediaItemAt(index).isExplicit,
-                                    mediaItem = binderPlayer.getMediaItemAt(index),
                                     onPlay = {
                                         player.value?.play()
                                         //println("LinkClient OnLinePlayer Controls play")
@@ -3843,6 +3845,7 @@ fun OnlinePlayer(
                                     onSeekTo = { player.value?.seekTo(it) },
                                     onNext = { binder.player.playNext() },
                                     onPrevious = { binder.player.playPrevious() },
+                                    playerState = playerState.value,
                                 )
 
                             }

@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
@@ -48,12 +49,12 @@ import androidx.compose.ui.unit.dp
 import androidx.media3.common.MediaItem
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
+import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.PlayerConstants
 import it.fast4x.riplay.Database
 import it.fast4x.riplay.R
 import it.fast4x.riplay.appContext
 import it.fast4x.riplay.cleanPrefix
 import it.fast4x.riplay.colorPalette
-import it.fast4x.riplay.context
 import it.fast4x.riplay.enums.ColorPaletteMode
 import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.enums.PlayerBackgroundColors
@@ -70,6 +71,7 @@ import it.fast4x.riplay.ui.components.themed.SelectorArtistsDialog
 import it.fast4x.riplay.ui.components.themed.SmartMessage
 import it.fast4x.riplay.ui.screens.player.offline.bounceClick
 import it.fast4x.riplay.ui.screens.settings.isYouTubeSyncEnabled
+import it.fast4x.riplay.ui.styling.collapsedPlayerProgressBar
 import it.fast4x.riplay.ui.styling.favoritesIcon
 import it.fast4x.riplay.utils.addToYtLikedSong
 import it.fast4x.riplay.utils.bold
@@ -430,6 +432,7 @@ fun ControlsModern(
     onPause: () -> Unit,
     onNext: () -> Unit,
     onPrevious: () -> Unit,
+    playerState: PlayerConstants.PlayerState,
 ) {
     var effectRotationEnabled by rememberPreference(effectRotationKey, true)
     var isRotated by rememberSaveable { mutableStateOf(false) }
@@ -520,14 +523,19 @@ fun ControlsModern(
                   contentDescription = "Background Image",
                   contentScale = ContentScale.Fit
               )
-              Image(
-                  painter = painterResource(if (shouldBePlaying) R.drawable.pause else R.drawable.play),
-                  contentDescription = null,
-                  colorFilter = ColorFilter.tint(colorPalette().text),  //ColorFilter.tint(colorPalette().collapsedPlayerProgressBar),
-                  modifier = Modifier
-                      .rotate(rotationAngle)
-                      .align(Alignment.Center)
-                      .size(30.dp)
+              if (playerState != PlayerConstants.PlayerState.BUFFERING) {
+                  Image(
+                      painter = painterResource(if (shouldBePlaying) R.drawable.pause else R.drawable.play),
+                      contentDescription = null,
+                      colorFilter = ColorFilter.tint(colorPalette().text),  //ColorFilter.tint(colorPalette().collapsedPlayerProgressBar),
+                      modifier = Modifier
+                          .rotate(rotationAngle)
+                          .align(Alignment.Center)
+                          .size(30.dp)
+                  )
+              } else CircularProgressIndicator(
+                  modifier = Modifier.size(30.dp),
+                  color = colorPalette().collapsedPlayerProgressBar
               )
           }
       }
@@ -574,16 +582,20 @@ fun ControlsModern(
                 contentScale = ContentScale.Fit
             )
          */
-
-              Image(
-                  painter = painterResource(if (shouldBePlaying) R.drawable.pause else R.drawable.play),
-                  contentDescription = null,
-                  colorFilter = ColorFilter.tint(colorPalette().text),  //ColorFilter.tint(colorPalette().collapsedPlayerProgressBar),
-                  modifier = Modifier
-                      .rotate(rotationAngle)
-                      .align(Alignment.Center)
-                      .size(30.dp)
-                      .bounceClick()
+              if (playerState != PlayerConstants.PlayerState.BUFFERING) {
+                  Image(
+                      painter = painterResource(if (shouldBePlaying) R.drawable.pause else R.drawable.play),
+                      contentDescription = null,
+                      colorFilter = ColorFilter.tint(colorPalette().text),  //ColorFilter.tint(colorPalette().collapsedPlayerProgressBar),
+                      modifier = Modifier
+                          .rotate(rotationAngle)
+                          .align(Alignment.Center)
+                          .size(30.dp)
+                          .bounceClick()
+                  )
+              } else CircularProgressIndicator(
+                  modifier = Modifier.size(30.dp),
+                  color = colorPalette().collapsedPlayerProgressBar
               )
 
               val fmtSpeed = "%.1fx".format(playbackSpeed).replace(",", ".")
@@ -686,37 +698,42 @@ fun ControlsModern(
               modifier = Modifier
                 .bounceClick()
           ) {
-              Icon(
-                  painter = painterResource(if (shouldBePlaying) R.drawable.pause else R.drawable.play),
-                  contentDescription = null,
-                  modifier = Modifier
-                      .offset(x = (0).dp, y = (0).dp)
-                      .blur(7.dp)
-                      .size(54.dp)
-                      .rotate(rotationAngle),
-                  tint = Color.Black
-              )
-              Image(
-                  painter = painterResource(if (shouldBePlaying) R.drawable.pause else R.drawable.play),
-                  contentDescription = null,
-                  colorFilter = ColorFilter.tint(colorPalette().accent),  //ColorFilter.tint(colorPalette().collapsedPlayerProgressBar),
-                  modifier = Modifier
-                      .rotate(rotationAngle)
-                      .size(44.dp)
-                      .align(Alignment.Center)
-                      .combinedClickable(
-                          interactionSource = null,
-                          indication = null,
-                          onClick = {
-                              if (shouldBePlaying) {
-                                  onPause()
-                              } else {
-                                  onPlay()
-                              }
-                              if (effectRotationEnabled) isRotated = !isRotated
-                          },
-                          onLongClick = onShowSpeedPlayerDialog
-                      )
+              if (playerState != PlayerConstants.PlayerState.BUFFERING) {
+                  Icon(
+                      painter = painterResource(if (shouldBePlaying) R.drawable.pause else R.drawable.play),
+                      contentDescription = null,
+                      modifier = Modifier
+                          .offset(x = (0).dp, y = (0).dp)
+                          .blur(7.dp)
+                          .size(54.dp)
+                          .rotate(rotationAngle),
+                      tint = Color.Black
+                  )
+                  Image(
+                      painter = painterResource(if (shouldBePlaying) R.drawable.pause else R.drawable.play),
+                      contentDescription = null,
+                      colorFilter = ColorFilter.tint(colorPalette().accent),  //ColorFilter.tint(colorPalette().collapsedPlayerProgressBar),
+                      modifier = Modifier
+                          .rotate(rotationAngle)
+                          .size(44.dp)
+                          .align(Alignment.Center)
+                          .combinedClickable(
+                              interactionSource = null,
+                              indication = null,
+                              onClick = {
+                                  if (shouldBePlaying) {
+                                      onPause()
+                                  } else {
+                                      onPlay()
+                                  }
+                                  if (effectRotationEnabled) isRotated = !isRotated
+                              },
+                              onLongClick = onShowSpeedPlayerDialog
+                          )
+                  )
+              } else CircularProgressIndicator(
+                  modifier = Modifier.size(44.dp),
+                  color = colorPalette().collapsedPlayerProgressBar
               )
 
           }

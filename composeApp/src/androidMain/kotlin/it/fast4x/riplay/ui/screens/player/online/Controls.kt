@@ -35,6 +35,7 @@ import androidx.compose.ui.unit.dp
 import androidx.media3.common.MediaItem
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
+import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.PlayerConstants
 import it.fast4x.riplay.Database
 import it.fast4x.riplay.enums.ButtonState
 import it.fast4x.riplay.enums.PlayerControlsType
@@ -100,6 +101,7 @@ fun Controls(
     onToggleRepeatMode: () -> Unit = {},
     onToggleShuffleMode: () -> Unit = {},
     onToggleLike: () -> Unit = {},
+    playerState: PlayerConstants.PlayerState,
 ) {
     //val binder = LocalPlayerServiceBinder.current
     //binder?.player ?: return
@@ -143,7 +145,7 @@ fun Controls(
     }
 
 
-    var showSelectDialog by remember { mutableStateOf(false) }
+    //var showSelectDialog by remember { mutableStateOf(false) }
 
     var playerTimelineSize by rememberPreference(
         playerTimelineSizeKey,
@@ -222,7 +224,8 @@ fun Controls(
                         mediaId = mediaItem.mediaId,
                         onSeekTo = onSeekTo,
                         onPlay = onPlay,
-                        onPause = onPause
+                        onPause = onPause,
+                        playerState = playerState
                     )
                     Spacer(
                         modifier = Modifier
@@ -243,6 +246,7 @@ fun Controls(
                         onPrevious = onPrevious,
                         onToggleRepeatMode = onToggleRepeatMode,
                         onToggleShuffleMode = onToggleShuffleMode,
+                        playerState = playerState
                     )
                     Spacer(
                         modifier = Modifier
@@ -309,7 +313,8 @@ fun Controls(
                         mediaId = mediaItem.mediaId,
                         onSeekTo = onSeekTo,
                         onPlay = onPlay,
-                        onPause = onPause
+                        onPause = onPause,
+                        playerState = playerState
                     )
                     Spacer(
                         modifier = Modifier
@@ -328,6 +333,7 @@ fun Controls(
                         onPrevious = onPrevious,
                         onToggleRepeatMode = onToggleRepeatMode,
                         onToggleShuffleMode = onToggleShuffleMode,
+                        playerState = playerState
                     )
                     Spacer(
                         modifier = Modifier
@@ -347,6 +353,7 @@ fun Controls(
                         onPrevious = onPrevious,
                         onToggleRepeatMode = onToggleRepeatMode,
                         onToggleShuffleMode = onToggleShuffleMode,
+                        playerState = playerState
                     )
                     Spacer(
                         modifier = Modifier
@@ -359,7 +366,8 @@ fun Controls(
                         mediaId = mediaItem.mediaId,
                         onSeekTo = onSeekTo,
                         onPlay = onPlay,
-                        onPause = onPause
+                        onPause = onPause,
+                        playerState = playerState
                     )
                     Spacer(
                         modifier = Modifier
@@ -422,7 +430,8 @@ fun Controls(
                     mediaId = mediaItem.mediaId,
                     onSeekTo = onSeekTo,
                     onPlay = onPlay,
-                    onPause = onPause
+                    onPause = onPause,
+                    playerState = playerState
                 )
                 Spacer(
                     modifier = Modifier
@@ -443,6 +452,7 @@ fun Controls(
                     onPrevious = onPrevious,
                     onToggleRepeatMode = onToggleRepeatMode,
                     onToggleShuffleMode = onToggleShuffleMode,
+                    playerState = playerState
                 )
                 Spacer(
                     modifier = Modifier
@@ -464,6 +474,7 @@ fun Controls(
                     onPrevious = onPrevious,
                     onToggleRepeatMode = onToggleRepeatMode,
                     onToggleShuffleMode = onToggleShuffleMode,
+                    playerState = playerState,
                 )
                 Spacer(
                     modifier = Modifier
@@ -478,7 +489,8 @@ fun Controls(
                     mediaId = mediaItem.mediaId,
                     onSeekTo = onSeekTo,
                     onPlay = onPlay,
-                    onPause = onPause
+                    onPause = onPause,
+                    playerState = playerState
                 )
                 Spacer(
                     modifier = Modifier
