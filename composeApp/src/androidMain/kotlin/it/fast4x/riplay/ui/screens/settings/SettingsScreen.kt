@@ -14,10 +14,13 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -35,6 +38,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.asAndroidColorFilter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -126,7 +130,9 @@ inline fun StringListValueSelectorSettingsEntry(
     context: Context,
     list: List<String>,
     crossinline add: (String) -> Unit,
-    crossinline remove: (String) -> Unit
+    crossinline remove: (String) -> Unit,
+    online: Boolean = true,
+    offline: Boolean = true
 ) {
     var showStringListDialog by remember {
         mutableStateOf(false)
@@ -151,7 +157,9 @@ inline fun StringListValueSelectorSettingsEntry(
         text = text,
         onClick = {
             showStringListDialog = true
-        }
+        },
+        online = online,
+        offline = offline
     )
 }
 
@@ -167,7 +175,9 @@ inline fun <reified T : Enum<T>> EnumValueSelectorSettingsEntry(
     modifier: Modifier = Modifier,
     isEnabled: Boolean = true,
     noinline valueText: @Composable (T) -> String  = { it.name },
-    noinline trailingContent: (@Composable () -> Unit) = {}
+    noinline trailingContent: (@Composable () -> Unit) = {},
+    online: Boolean = true,
+    offline: Boolean = true
 ) {
     ValueSelectorSettingsEntry(
         title = title,
@@ -180,6 +190,8 @@ inline fun <reified T : Enum<T>> EnumValueSelectorSettingsEntry(
         isEnabled = isEnabled,
         valueText = valueText,
         trailingContent = trailingContent,
+        online = online,
+        offline = offline
     )
 }
 
@@ -194,7 +206,9 @@ fun <T> ValueSelectorSettingsEntry(
     modifier: Modifier = Modifier,
     isEnabled: Boolean = true,
     valueText: @Composable (T) -> String = { it.toString() },
-    trailingContent: (@Composable () -> Unit) = {}
+    trailingContent: (@Composable () -> Unit) = {},
+    online: Boolean = true,
+    offline: Boolean = true
 ) {
     var isShowingDialog by remember {
         mutableStateOf(false)
@@ -218,7 +232,9 @@ fun <T> ValueSelectorSettingsEntry(
         modifier = modifier,
         isEnabled = isEnabled,
         onClick = { isShowingDialog = true },
-        trailingContent = trailingContent
+        trailingContent = trailingContent,
+        online = online,
+        offline = offline
     )
 
     text?.let {
@@ -238,7 +254,9 @@ fun SwitchSettingEntry(
     isChecked: Boolean,
     onCheckedChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
-    isEnabled: Boolean = true
+    isEnabled: Boolean = true,
+    online: Boolean = true,
+    offline: Boolean = true
 ) {
     SettingsEntry(
         title = title,
@@ -246,49 +264,83 @@ fun SwitchSettingEntry(
         isEnabled = isEnabled,
         onClick = { onCheckedChange(!isChecked) },
         trailingContent = { Switch(isChecked = isChecked) },
-        modifier = modifier
+        modifier = modifier,
+        online = online,
+        offline = offline
     )
 }
 
 @Composable
 fun SettingsEntry(
+    modifier: Modifier = Modifier,
     title: String,
     titleSecondary: String? = null,
     text: String,
-    modifier: Modifier = Modifier,
     onClick: () -> Unit,
     isEnabled: Boolean = true,
-    trailingContent: (@Composable () -> Unit)? = null
+    trailingContent: (@Composable () -> Unit)? = null,
+    online: Boolean = true,
+    offline: Boolean = true
 ) {
     Row(
         horizontalArrangement = Arrangement.spacedBy(16.dp),
         verticalAlignment = Alignment.CenterVertically,
         modifier = modifier
             .clickable(enabled = isEnabled, onClick = onClick)
-            .alpha(if (isEnabled) 1f else 0.5f)
-            //.padding(start = 16.dp)
-            //.padding(all = 16.dp)
+            //.alpha(if (isEnabled) .5f else 0.2f)
             .padding(all = 12.dp)
             .fillMaxWidth()
+            //.background(colorPalette().background0.copy(if (isEnabled) 0.5f else 0.2f))
     ) {
+        Box(modifier = Modifier.width(4.dp).height(30.dp)
+            .background(colorPalette().textSecondary)
+        )
+
         Column(
+            verticalArrangement = Arrangement.spacedBy(8.dp),
             modifier = Modifier
-                .weight(1f)
+                //.weight(1f)
         ) {
-            BasicText(
-                text = title,
-                style = typography().xs.semiBold.copy(color = colorPalette().text),
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
                 modifier = Modifier
-                    .padding(bottom = 4.dp)
-            )
-            if (text != "")
+                    .fillMaxWidth()
+            ) {
+                BasicText(
+                    text = title,
+                    style = typography().xs.semiBold.copy(color = colorPalette().text),
+                    modifier = Modifier
+                        .padding(bottom = 4.dp)
+                )
+                trailingContent?.invoke()
+
+            }
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier
+                    .fillMaxWidth()
+            ) {
+
                 BasicText(
                     text = text,
                     style = typography().xs.semiBold.copy(color = colorPalette().textSecondary),
+                    modifier = Modifier.fillMaxWidth(.7f)
                 )
+
+                Spacer(modifier = Modifier.weight(1f))
+                SettingsContextIcons(
+                    online = online,
+                    offline = offline
+                )
+
+            }
+
         }
 
-        trailingContent?.invoke()
+
 
         if (titleSecondary != null) {
             BasicText(
@@ -300,6 +352,63 @@ fun SettingsEntry(
                 //    .padding(vertical = 8.dp, horizontal = 24.dp)
             )
         }
+    }
+}
+
+@Composable
+fun SettingsEntryGroup(
+    online: Boolean = true,
+    offline: Boolean = true,
+    content: @Composable () -> Unit,
+) {
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.padding(all = 12.dp)
+    ) {
+        Box(
+            modifier = Modifier.width(4.dp).height(30.dp)
+                .background(colorPalette().textSecondary)
+        )
+        Box(modifier = Modifier.fillMaxSize()) {
+            Column {
+                content()
+            }
+            SettingsContextIcons(
+                modifier = Modifier
+                    .align(Alignment.BottomEnd),
+                online = online,
+                offline = offline
+            )
+        }
+    }
+}
+
+@Composable
+fun SettingsContextIcons(
+    modifier: Modifier = Modifier,
+    online: Boolean = true,
+    offline: Boolean = true
+) {
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(5.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = modifier
+    ) {
+        if (online)
+            Image(
+                painter = painterResource(R.drawable.internet),
+                contentDescription = null,
+                colorFilter = ColorFilter.tint(colorPalette().text),
+                modifier = Modifier.size(12.dp)
+            )
+        if (offline)
+            Image(
+                painter = painterResource(R.drawable.no_internet),
+                contentDescription = null,
+                colorFilter = ColorFilter.tint(colorPalette().text),
+                modifier = Modifier.size(12.dp)
+            )
     }
 }
 
@@ -465,7 +574,9 @@ fun ButtonBarSettingEntry(
     iconColor: Color? = null,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    isEnabled: Boolean = true
+    isEnabled: Boolean = true,
+    online: Boolean = true,
+    offline: Boolean = true
 ) {
     SettingsEntry(
         title = title,
@@ -481,7 +592,9 @@ fun ButtonBarSettingEntry(
                 contentScale = ContentScale.Fit
             )
         },
-        modifier = modifier
+        modifier = modifier,
+        online = online,
+        offline = offline
     )
 
 }

@@ -9,11 +9,15 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.KeyboardOptions
@@ -28,6 +32,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -342,6 +347,8 @@ fun GeneralSettings(
 
         if (search.input.isBlank() || stringResource(R.string.app_language).contains(search.input,true))
             EnumValueSelectorSettingsEntry(
+                offline = false,
+                online = false,
                 title = stringResource(R.string.app_language),
                 selectedValue = languageApp,
                 onValueSelected = {languageApp = it },
@@ -366,6 +373,7 @@ fun GeneralSettings(
 
         if (search.input.isBlank() || stringResource(R.string.use_alternative_dns).contains(search.input,true)) {
             EnumValueSelectorSettingsEntry(
+                offline = false,
                 title = stringResource(R.string.use_dns_over_https_title),
                 selectedValue = useDnsOverHttpsType,
                 onValueSelected = {
@@ -403,6 +411,7 @@ fun GeneralSettings(
         //SettingsGroupSpacer()
 
         SwitchSettingEntry(
+            offline = false,
             title = stringResource(R.string.enable_proxy),
             text = "",
             isChecked = isProxyEnabled,
@@ -445,6 +454,8 @@ fun GeneralSettings(
             }
 
         SwitchSettingEntry(
+            offline = false,
+            online = false,
             title = stringResource(R.string.keep_screen_on),
             text = stringResource(R.string.prevents_screen_timeout),
             isChecked = isKeepScreenOnEnabled,
@@ -560,32 +571,29 @@ fun GeneralSettings(
 //        SettingsGroupSpacer()
 
         if (search.input.isBlank() || stringResource(R.string.jump_previous).contains(search.input,true)) {
-            BasicText(
-                text = stringResource(R.string.jump_previous),
-                style = typography().xs.semiBold.copy(color = colorPalette().text),
-                modifier = Modifier
-                    .padding(start = 12.dp)
-                    //.padding(all = 12.dp)
-            )
-            BasicText(
-                text = stringResource(R.string.jump_previous_blank),
-                style = typography().xxs.semiBold.copy(color = colorPalette().textDisabled),
-                modifier = Modifier
-                    .padding(start = 12.dp)
-            )
-            TextField(
-                value = jumpPrevious,
-                onValueChange = {
-                    if (it.isDigitsOnly())
-                    jumpPrevious = it
-                },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                singleLine = true,
-                colors = TextFieldDefaults.textFieldColors(textColor = colorPalette().text, unfocusedIndicatorColor = colorPalette().text),
-                modifier = Modifier
-                    .padding(start = 12.dp)
-                    //.padding(all = 12.dp)
-            )
+            SettingsEntryGroup() {
+                BasicText(
+                    text = stringResource(R.string.jump_previous),
+                    style = typography().xs.semiBold.copy(color = colorPalette().text),
+                )
+                BasicText(
+                    text = stringResource(R.string.jump_previous_blank),
+                    style = typography().xxs.semiBold.copy(color = colorPalette().textDisabled),
+                )
+                TextField(
+                    value = jumpPrevious,
+                    onValueChange = {
+                        if (it.isDigitsOnly())
+                            jumpPrevious = it
+                    },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    singleLine = true,
+                    colors = TextFieldDefaults.textFieldColors(
+                        textColor = colorPalette().text,
+                        unfocusedIndicatorColor = colorPalette().text
+                    ),
+                )
+            }
         }
 
         if (search.input.isBlank() || stringResource(R.string.min_listening_time).contains(search.input,true)) {
@@ -664,6 +672,7 @@ fun GeneralSettings(
 
         if (search.input.isBlank() || stringResource(R.string.player_pause_on_volume_zero).contains(search.input,true))
             SwitchSettingEntry(
+                online = false,
                 title = stringResource(R.string.player_pause_on_volume_zero),
                 text = stringResource(R.string.info_pauses_player_when_volume_zero),
                 isChecked = isPauseOnVolumeZeroEnabled,
@@ -674,6 +683,7 @@ fun GeneralSettings(
 
         if (search.input.isBlank() || stringResource(R.string.effect_fade_audio).contains(search.input,true)) {
             EnumValueSelectorSettingsEntry(
+                online = false,
                 title = stringResource(R.string.effect_fade_audio),
                 selectedValue = playbackFadeAudioDuration,
                 onValueSelected = { playbackFadeAudioDuration = it },
@@ -863,6 +873,7 @@ fun GeneralSettings(
 
         if (search.input.isBlank() || stringResource(R.string.close_background_player).contains(search.input,true)) {
             SwitchSettingEntry(
+                online = false,
                 title = stringResource(R.string.close_background_player),
                 text = stringResource(R.string.when_app_swipe_out_from_task_manager),
                 isChecked = closebackgroundPlayer,
@@ -876,6 +887,7 @@ fun GeneralSettings(
 
         if (search.input.isBlank() || stringResource(R.string.skip_media_on_error).contains(search.input,true)) {
             SwitchSettingEntry(
+                online = false,
                 title = stringResource(R.string.skip_media_on_error),
                 text = stringResource(R.string.skip_media_on_error_description),
                 isChecked = skipMediaOnError,
@@ -891,6 +903,7 @@ fun GeneralSettings(
 
         if (search.input.isBlank() || stringResource(R.string.skip_silence).contains(search.input,true)) {
             SwitchSettingEntry(
+                online = false,
                 title = stringResource(R.string.skip_silence),
                 text = stringResource(R.string.skip_silent_parts_during_playback),
                 isChecked = skipSilence,
@@ -928,6 +941,7 @@ fun GeneralSettings(
 
         if (search.input.isBlank() || stringResource(R.string.loudness_normalization).contains(search.input,true)) {
             SwitchSettingEntry(
+                online = false,
                 title = stringResource(R.string.loudness_normalization),
                 text = stringResource(R.string.autoadjust_the_volume),
                 isChecked = volumeNormalization,
@@ -975,6 +989,7 @@ fun GeneralSettings(
 
         if (search.input.isBlank() || stringResource(R.string.settings_audio_bass_boost).contains(search.input,true)) {
             SwitchSettingEntry(
+                online = false,
                 title = stringResource(R.string.settings_audio_bass_boost),
                 text = "",
                 isChecked = bassboostEnabled,
@@ -1007,6 +1022,7 @@ fun GeneralSettings(
 
         if (search.input.isBlank() || stringResource(R.string.settings_audio_reverb).contains(search.input,true)) {
             EnumValueSelectorSettingsEntry(
+                online = false,
                 title = stringResource(R.string.settings_audio_reverb),
                 text = stringResource(R.string.settings_audio_reverb_info_apply_a_depth_effect_to_the_audio),
                 selectedValue = audioReverb,
@@ -1034,6 +1050,7 @@ fun GeneralSettings(
 
         if (search.input.isBlank() || stringResource(R.string.event_volumekeys).contains(search.input,true)) {
             SwitchSettingEntry(
+                online = false,
                 title = stringResource(R.string.event_volumekeys),
                 text = stringResource(R.string.event_volumekeysinfo),
                 isChecked = useVolumeKeysToChangeSong,
@@ -1048,6 +1065,7 @@ fun GeneralSettings(
 
         if (search.input.isBlank() || stringResource(R.string.event_shake).contains(search.input,true)) {
             SwitchSettingEntry(
+                online = false,
                 title = stringResource(R.string.event_shake),
                 text = stringResource(R.string.shake_to_change_song),
                 isChecked = shakeEventEnabled,
@@ -1141,6 +1159,7 @@ fun GeneralSettings(
 
         if (search.input.isBlank() || stringResource(R.string.equalizer).contains(search.input,true))
             SettingsEntry(
+                online = false,
                 title = stringResource(R.string.equalizer),
                 text = stringResource(R.string.interact_with_the_system_equalizer),
                 onClick = launchEqualizer

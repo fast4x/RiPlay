@@ -226,6 +226,7 @@ fun OtherSettings() {
     SettingsGroupSpacer()
     SettingsEntryGroupText(stringResource(R.string.on_device))
     StringListValueSelectorSettingsEntry(
+        online = false,
         title = stringResource(R.string.blacklisted_folders),
         text = stringResource(R.string.edit_blacklist_for_on_device_songs),
         addTitle = stringResource(R.string.add_folder),
@@ -251,6 +252,7 @@ fun OtherSettings() {
     )
 
     SwitchSettingEntry(
+        online = false,
         title = stringResource(R.string.folders),
         text = stringResource(R.string.show_folders_in_on_device_page),
         isChecked = showFolders,
@@ -389,6 +391,8 @@ fun OtherSettings() {
     SettingsEntryGroupText(title = stringResource(R.string.parental_control))
 
     SwitchSettingEntry(
+        online = false,
+        offline = false,
         title = stringResource(R.string.parental_control),
         text = stringResource(R.string.info_prevent_play_songs_with_age_limitation),
         isChecked = parentalControlEnabled,
@@ -403,6 +407,8 @@ fun OtherSettings() {
 
     SettingsEntryGroupText(title = stringResource(R.string.debug))
     SwitchSettingEntry(
+        online = false,
+        offline = false,
         title = stringResource(R.string.enable_log_debug),
         text = stringResource(R.string.if_enabled_create_a_log_file_to_highlight_errors),
         isChecked = logDebugEnabled,
@@ -427,6 +433,8 @@ fun OtherSettings() {
     )
     ImportantSettingsDescription(text = stringResource(R.string.restarting_riplay_is_required))
         ButtonBarSettingEntry(
+            online = false,
+            offline = false,
             isEnabled = logDebugEnabled,
             title = stringResource(R.string.export_log),
             text = "",
@@ -446,6 +454,8 @@ fun OtherSettings() {
             }
         )
         ButtonBarSettingEntry(
+            online = false,
+            offline = false,
             //isEnabled = logDebugEnabled,
             title = stringResource(R.string.export_crash_log),
             text = "Is always enabled",

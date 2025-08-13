@@ -286,7 +286,7 @@ fun FilterMenu (
         }
         onOnlineSongs?.let {
             MenuEntry(
-                icon = R.drawable.globe,
+                icon = R.drawable.internet,
                 text = stringResource(R.string.online_songs),
                 onClick = {
                     onDismiss()

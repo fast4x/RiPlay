@@ -85,7 +85,7 @@ fun HomeSearch(
 
             item(key = "online") {
                 PlaylistItem(
-                    icon = R.drawable.globe,
+                    icon = R.drawable.internet,
                     colorTint = colorPalette().favoritesIcon,
                     name = "${stringResource(R.string.search)} ${stringResource(R.string.online)}",
                     songCount = null,

@@ -148,7 +148,7 @@ fun SearchScreen(
                 onTabChanged,
                 miniPlayer,
                 navBarContent = { item ->
-                    item(0, stringResource(R.string.online), R.drawable.globe)
+                    item(0, stringResource(R.string.online), R.drawable.internet)
                     item(1, stringResource(R.string.library), R.drawable.playlist)
                     item(2, stringResource(R.string.go_to_link), R.drawable.link)
                 }

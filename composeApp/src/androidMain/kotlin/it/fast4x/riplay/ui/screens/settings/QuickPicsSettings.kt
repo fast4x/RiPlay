@@ -107,6 +107,7 @@ fun  QuickPicsSettings() {
         )
 
         SwitchSettingEntry(
+            offline = false,
             title = stringResource(R.string.enable_quick_picks_page),
             text = "",
             isChecked = enableQuickPicksPage,
@@ -128,6 +129,7 @@ fun  QuickPicsSettings() {
          */
 
         SwitchSettingEntry(
+            offline = false,
             title = "${stringResource(R.string.show)} ${stringResource(R.string.tips)}",
             text = stringResource(R.string.disable_if_you_do_not_want_to_see) + " " +stringResource(R.string.tips),
             isChecked = showTips,
@@ -137,6 +139,7 @@ fun  QuickPicsSettings() {
         )
 
         SwitchSettingEntry(
+            offline = false,
             title = "${stringResource(R.string.show)} ${stringResource(R.string.charts)}",
             text = stringResource(R.string.disable_if_you_do_not_want_to_see) + " " +stringResource(R.string.charts),
             isChecked = showCharts,
@@ -151,6 +154,7 @@ fun  QuickPicsSettings() {
             exit = fadeOut(tween(100)),
         ) {
             EnumValueSelectorSettingsEntry(
+                offline = false,
                 title = stringResource(R.string.tips),
                 selectedValue = playEventType,
                 onValueSelected = { playEventType = it },
@@ -167,6 +171,7 @@ fun  QuickPicsSettings() {
         //SettingsGroupSpacer()
 
         SwitchSettingEntry(
+            offline = false,
             title = "${stringResource(R.string.show)} ${stringResource(R.string.related_albums)}",
             text = stringResource(R.string.disable_if_you_do_not_want_to_see) + " " +stringResource(R.string.related_albums),
             isChecked = showRelatedAlbums,
@@ -178,6 +183,7 @@ fun  QuickPicsSettings() {
         //SettingsGroupSpacer()
 
         SwitchSettingEntry(
+            offline = false,
             title = "${stringResource(R.string.show)} ${stringResource(R.string.similar_artists)}",
             text = stringResource(R.string.disable_if_you_do_not_want_to_see) + " " +stringResource(R.string.similar_artists),
             isChecked = showSimilarArtists,
@@ -190,6 +196,7 @@ fun  QuickPicsSettings() {
         //SettingsGroupSpacer()
 
         SwitchSettingEntry(
+            offline = false,
             title = "${stringResource(R.string.show)} ${stringResource(R.string.new_albums_of_your_artists)}",
             text = stringResource(R.string.disable_if_you_do_not_want_to_see) + " " +stringResource(R.string.new_albums_of_your_artists),
             isChecked = showNewAlbumsArtists,
@@ -210,6 +217,7 @@ fun  QuickPicsSettings() {
         //SettingsGroupSpacer()
 
         SwitchSettingEntry(
+            offline = false,
             title = "${stringResource(R.string.show)} ${stringResource(R.string.playlists_you_might_like)}",
             text = stringResource(R.string.disable_if_you_do_not_want_to_see) + " " +stringResource(R.string.playlists_you_might_like),
             isChecked = showPlaylistMightLike,
@@ -219,6 +227,7 @@ fun  QuickPicsSettings() {
         )
 
         SwitchSettingEntry(
+            offline = false,
             title = "${stringResource(R.string.show)} ${stringResource(R.string.moods_and_genres)}",
             text = stringResource(R.string.disable_if_you_do_not_want_to_see) + " " +stringResource(R.string.moods_and_genres),
             isChecked = showMoodsAndGenres,
@@ -228,6 +237,7 @@ fun  QuickPicsSettings() {
         )
 
         SwitchSettingEntry(
+            offline = false,
             title = "${stringResource(R.string.show)} ${stringResource(R.string.monthly_playlists)}",
             text = stringResource(R.string.disable_if_you_do_not_want_to_see) + " " +stringResource(R.string.monthly_playlists),
             isChecked = showMonthlyPlaylistInQuickPicks,
@@ -249,6 +259,7 @@ fun  QuickPicsSettings() {
          */
 
         SettingsEntry(
+            offline = false,
             title = stringResource(R.string.reset_quick_picks),
             text = if (eventsCount > 0) {
                 stringResource(R.string.delete_playback_events, eventsCount)

@@ -85,6 +85,8 @@ fun About() {
         SettingsEntryGroupText(title = stringResource(R.string.social))
 
         SettingsEntry(
+            online = false,
+            offline = false,
             title = stringResource(R.string.social_telegram),
             text = stringResource(R.string.social_telegram_info),
             onClick = {
@@ -93,6 +95,8 @@ fun About() {
         )
 
         SettingsEntry(
+            online = false,
+            offline = false,
             title = stringResource(R.string.social_reddit),
             text = stringResource(R.string.social_reddit_info),
             onClick = {
@@ -113,6 +117,8 @@ fun About() {
         SettingsEntryGroupText(title = "Official Project Page")
 
         SettingsEntry(
+            online = false,
+            offline = false,
             title = stringResource(R.string.social_github),
             text = stringResource(R.string.view_the_source_code),
             onClick = {

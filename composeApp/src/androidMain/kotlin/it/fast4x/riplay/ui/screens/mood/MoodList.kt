@@ -118,7 +118,7 @@ fun MoodList(
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         HeaderWithIcon(
                             title = mood.name,
-                            iconId = R.drawable.globe,
+                            iconId = R.drawable.internet,
                             enabled = true,
                             showIcon = true,
                             modifier = Modifier,
