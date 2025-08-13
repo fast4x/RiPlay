@@ -4,6 +4,8 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.ActivityManager
 import android.app.PendingIntent
+import android.app.PictureInPictureParams
+import android.app.RemoteAction
 import android.content.BroadcastReceiver
 import android.content.ComponentName
 import android.content.Context
@@ -27,6 +29,7 @@ import android.os.IBinder
 import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
+import android.util.Rational
 import android.view.WindowManager
 import android.window.OnBackInvokedDispatcher
 import androidx.activity.ComponentActivity
@@ -140,6 +143,7 @@ import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.enums.ThumbnailRoundness
 import it.fast4x.riplay.extensions.nsd.discoverNsdServices
 import it.fast4x.riplay.extensions.pip.PipModuleContainer
+import it.fast4x.riplay.extensions.pip.PipModuleCore
 import it.fast4x.riplay.extensions.pip.PipModuleCover
 import it.fast4x.riplay.service.OfflinePlayerService
 import it.fast4x.riplay.ui.components.CustomModalBottomSheet
@@ -1186,6 +1190,37 @@ class MainActivity :
                     return activityResultRegistry.register(key, contract, callback)
                 }
 
+                var currentSecond by remember { mutableFloatStateOf(0f) }
+                val playerState1 =
+                    remember { mutableStateOf(PlayerConstants.PlayerState.UNSTARTED) }
+                var showControls by remember { mutableStateOf(true) }
+                var currentDuration by remember { mutableFloatStateOf(0f) }
+                val onlineCore: @Composable () -> Unit = {
+                    OnlinePlayerCore(
+                        load = getResumePlaybackOnStart(),
+                        playFromSecond = currentSecond,
+                        onPlayerReady = { onlinePlayer.value = it },
+                        onSecondChange = {
+                            currentSecond = it
+                            currentPlaybackPosition.value = (it * 1000).toLong()
+                            //println("MainActivity onSecondChange ${currentPlaybackPosition.value}")
+                        },
+                        onDurationChange = {
+                            currentDuration = it
+                            currentPlaybackDuration.value = (it * 1000).toLong()
+                            println("MainActivity onDurationChange ${currentPlaybackDuration.value}")
+                        },
+                        onPlayerStateChange = {
+                            playerState1.value = it
+                            onlinePlayerPlayingState.value =
+                                it == PlayerConstants.PlayerState.PLAYING
+                            updateOnlineNotification()
+
+                        },
+                        onTap = { showControls = !showControls }
+                    )
+                }
+
                 CrossfadeContainer(state = pipState.value) { isCurrentInPip ->
                     println("MainActivity pipState ${pipState.value} CrossfadeContainer isCurrentInPip $isCurrentInPip ")
                     val pipModule by rememberPreference(pipModuleKey, PipModule.Cover)
@@ -1198,10 +1233,17 @@ class MainActivity :
                             when (pipModule) {
                                 PipModule.Cover -> {
                                     PipModuleContainer {
-                                        PipModuleCover(
-                                            url = binder?.player?.currentMediaItem?.mediaMetadata?.artworkUri.toString()
-                                                .resize(1200, 1200)
-                                        )
+                                        // Implement pip mode with video
+                                        //if (mediaItemIsLocal.value) {
+                                            PipModuleCover(
+                                                url = binder?.player?.currentMediaItem?.mediaMetadata?.artworkUri.toString()
+                                                    .resize(1200, 1200)
+                                            )
+//                                        } else {
+//                                            PipModuleCore(
+//                                                onlineCore = onlineCore
+//                                            )
+//                                        }
                                     }
                                 }
                             }
@@ -1264,11 +1306,7 @@ class MainActivity :
                                 )
                             } else {
 
-                                var currentSecond by remember { mutableFloatStateOf(0f) }
-                                val playerState1 =
-                                    remember { mutableStateOf(PlayerConstants.PlayerState.UNSTARTED) }
-                                var showControls by remember { mutableStateOf(true) }
-                                var currentDuration by remember { mutableFloatStateOf(0f) }
+
                                 val localPlayerSheetState = rememberBottomSheetState(
                                     dismissedBound = 0.dp,
                                     collapsedBound = 5.dp, //Dimensions.collapsedPlayer,
@@ -1331,31 +1369,7 @@ class MainActivity :
                                 }
 
 
-                                val onlineCore: @Composable () -> Unit = {
-                                    OnlinePlayerCore(
-                                        load = getResumePlaybackOnStart(),
-                                        playFromSecond = currentSecond,
-                                        onPlayerReady = { onlinePlayer.value = it },
-                                        onSecondChange = {
-                                            currentSecond = it
-                                            currentPlaybackPosition.value = (it * 1000).toLong()
-                                            //println("MainActivity onSecondChange ${currentPlaybackPosition.value}")
-                                        },
-                                        onDurationChange = {
-                                            currentDuration = it
-                                            currentPlaybackDuration.value = (it * 1000).toLong()
-                                            println("MainActivity onDurationChange ${currentPlaybackDuration.value}")
-                                        },
-                                        onPlayerStateChange = {
-                                            playerState1.value = it
-                                            onlinePlayerPlayingState.value =
-                                                it == PlayerConstants.PlayerState.PLAYING
-                                            updateOnlineNotification()
 
-                                        },
-                                        onTap = { showControls = !showControls }
-                                    )
-                                }
 
                                 val onlinePlayer: @Composable () -> Unit = {
                                     OnlinePlayer(

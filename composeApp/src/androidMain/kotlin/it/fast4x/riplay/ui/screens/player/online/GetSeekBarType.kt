@@ -131,7 +131,7 @@ fun GetSeekBar(
             .fillMaxWidth()
     ) {
 
-        if (playerState == PlayerConstants.PlayerState.BUFFERING)
+        if (duration == 0L)
             LinearProgressIndicator(
                 modifier = Modifier.fillMaxWidth().height(1.dp),
                 color = colorPalette().collapsedPlayerProgressBar

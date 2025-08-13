@@ -77,9 +77,6 @@ fun OnlinePlayerCore(
         PlayerThumbnailSize.Biggest
     )
 
-
-
-
     AndroidView(
 
         factory = {
@@ -125,7 +122,7 @@ fun OnlinePlayerCore(
                     onlinePlayerView.setCustomPlayerUi(customUiController.rootView)
 
                     //youTubePlayer.loadOrCueVideo(lifecycleOwner.lifecycle, mediaItem.mediaId, lastYTVideoSeconds)
-                    println("OnlineMiniPlayer: onReady shouldBePlaying: $shouldBePlaying")
+                    println("OnlinePlayerCore: onReady shouldBePlaying: $shouldBePlaying")
                     if (!load)
                         youTubePlayer.cueVideo(mediaItem.mediaId, playFromSecond)
                     else
