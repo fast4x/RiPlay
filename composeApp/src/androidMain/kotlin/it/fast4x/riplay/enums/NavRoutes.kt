@@ -24,7 +24,8 @@ enum class NavRoutes {
     newAlbums,
     moodsPage,
     podcast,
-    videoOrSongInfo;
+    videoOrSongInfo,
+    localAlbum;
 
     companion object {
 

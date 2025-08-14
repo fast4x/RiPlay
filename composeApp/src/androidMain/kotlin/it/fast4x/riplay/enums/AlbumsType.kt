@@ -6,7 +6,8 @@ import it.fast4x.riplay.R
 
 enum class AlbumsType {
     Favorites,
-    Library;
+    Library,
+    OnDevice;
     //All;
 
     val textName: String
@@ -14,6 +15,7 @@ enum class AlbumsType {
         get() = when( this ) {
             Favorites -> stringResource(R.string.favorites)
             Library -> stringResource(R.string.library)
+            OnDevice -> stringResource(R.string.on_device)
             //All -> stringResource(R.string.all)
         }
 

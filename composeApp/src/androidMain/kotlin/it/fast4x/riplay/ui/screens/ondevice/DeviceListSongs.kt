@@ -147,6 +147,8 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.isActive
 import it.fast4x.riplay.colorPalette
+import it.fast4x.riplay.models.Album
+import it.fast4x.riplay.models.SongAlbumMap
 import it.fast4x.riplay.models.defaultQueue
 import it.fast4x.riplay.models.defaultQueueId
 import it.fast4x.riplay.typography
@@ -1011,6 +1013,7 @@ fun Context.musicFilesAsFlow(sortBy: OnDeviceSongSortBy, order: SortOrder, conte
                 MediaStore.Audio.Media.DURATION,
                 MediaStore.Audio.Media.ARTIST,
                 MediaStore.Audio.Media.ALBUM_ID,
+                MediaStore.Audio.Media.ALBUM,
                 if (isAtLeastAndroid10) {
                     MediaStore.Audio.Media.RELATIVE_PATH
                 } else {
@@ -1054,6 +1057,10 @@ fun Context.musicFilesAsFlow(sortBy: OnDeviceSongSortBy, order: SortOrder, conte
                     Timber.i(" DeviceListSongs colums artistIdx $artistIdx")
                     val albumIdIdx = cursor.getColumnIndex(MediaStore.Audio.Media.ALBUM_ID)
                     Timber.i(" DeviceListSongs colums albumIdIdx $albumIdIdx")
+                    val albumIdx = cursor.getColumnIndex(MediaStore.Audio.Media.ALBUM)
+                    Timber.i(" DeviceListSongs colums albumIdx $albumIdx")
+                    //val yearIdx = cursor.getColumnIndex(MediaStore.Audio.Media.YEAR)
+                    //Timber.i(" DeviceListSongs colums yearIdx $yearIdx")
                     val relativePathIdx = if (isAtLeastAndroid10) {
                         cursor.getColumnIndex(MediaStore.Audio.Media.RELATIVE_PATH)
                     } else {
@@ -1089,6 +1096,8 @@ fun Context.musicFilesAsFlow(sortBy: OnDeviceSongSortBy, order: SortOrder, conte
                             if (duration == 0) continue
                             val artist = cursor.getString(artistIdx)
                             val albumId = cursor.getLong(albumIdIdx)
+                            val album = cursor.getString(albumIdx)
+                            //val year = cursor.getInt(yearIdx)
 
                             val mimeType = cursor.getString(mimeTypeIdx)
                             val bitrate = if (isAtLeastAndroid11) cursor.getInt(bitrateIdx) else 0
@@ -1130,6 +1139,23 @@ fun Context.musicFilesAsFlow(sortBy: OnDeviceSongSortBy, order: SortOrder, conte
                                             bitrate = bitrate.toLong(),
                                             contentLength = fileSize.toLong(),
                                             lastModified = dateModified
+                                        )
+                                    )
+
+                                    Database.insert(
+                                        Album(
+                                            id = "$LOCAL_KEY_PREFIX${albumId}",
+                                            title = album,
+                                            thumbnailUrl = albumUri.toString(),
+                                            year = null,
+                                            authorsText = artist,
+                                            shareUrl = null,
+                                            timestamp = dateModified
+                                        ),
+                                        SongAlbumMap(
+                                            songId = song.id,
+                                            albumId = "$LOCAL_KEY_PREFIX${albumId}",
+                                            position = 0
                                         )
                                     )
 

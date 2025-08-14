@@ -58,6 +58,7 @@ import it.fast4x.riplay.ui.screens.artist.ArtistScreen
 import it.fast4x.riplay.ui.screens.builtinplaylist.BuiltInPlaylistScreen
 import it.fast4x.riplay.ui.screens.history.HistoryScreen
 import it.fast4x.riplay.ui.screens.home.HomeScreen
+import it.fast4x.riplay.ui.screens.localalbum.LocalAlbumScreen
 import it.fast4x.riplay.ui.screens.localplaylist.LocalPlaylistScreen
 import it.fast4x.riplay.ui.screens.mood.MoodScreen
 import it.fast4x.riplay.ui.screens.mood.MoodsPageScreen
@@ -279,6 +280,23 @@ fun AppNavigation(
             AlbumScreen(
                 navController = navController,
                 browseId = id,
+                miniPlayer = miniPlayer,
+            )
+        }
+
+        composable(
+            route = "${NavRoutes.localAlbum.name}/{id}",
+            arguments = listOf(
+                navArgument(
+                    name = "id",
+                    builder = { type = NavType.StringType }
+                )
+            )
+        ) { navBackStackEntry ->
+            val id = navBackStackEntry.arguments?.getString("id") ?: ""
+            LocalAlbumScreen(
+                navController = navController,
+                albumId = id,
                 miniPlayer = miniPlayer,
             )
         }

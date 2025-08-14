@@ -1730,6 +1730,84 @@ interface Database {
         }
     }
 
+    @Transaction
+    @Query("SELECT *, (SELECT SUM(CAST(REPLACE(durationText, ':', '') AS INTEGER)) FROM Song JOIN SongAlbumMap ON Song.id = SongAlbumMap.songId WHERE SongAlbumMap.albumId = Album.id AND position IS NOT NULL) as totalDuration " +
+            "FROM Album WHERE id LIKE '$LOCAL_KEY_PREFIX%' ORDER BY totalDuration ASC" )
+    @RewriteQueriesToDropUnusedColumns
+    fun albumsOnDeviceByTotalDurationAsc(): Flow<List<Album>>
+
+    @Transaction
+    @Query("SELECT *, (SELECT SUM(CAST(REPLACE(durationText, ':', '') AS INTEGER)) FROM Song JOIN SongAlbumMap ON Song.id = SongAlbumMap.songId WHERE SongAlbumMap.albumId = Album.id AND position IS NOT NULL) as totalDuration " +
+            "FROM Album WHERE id LIKE '$LOCAL_KEY_PREFIX%' ORDER BY totalDuration DESC" )
+    @RewriteQueriesToDropUnusedColumns
+    fun albumsOnDeviceByTotalDurationDesc(): Flow<List<Album>>
+
+    @Transaction
+    @Query("SELECT *, (SELECT COUNT(*) FROM SongAlbumMap WHERE albumId = Album.id) as songCount " +
+            "FROM Album WHERE id LIKE '$LOCAL_KEY_PREFIX%' ORDER BY songCount ASC" )
+    @RewriteQueriesToDropUnusedColumns
+    fun albumsOnDeviceBySongsCountAsc(): Flow<List<Album>>
+
+    @Transaction
+    @Query("SELECT *, (SELECT COUNT(*) FROM SongAlbumMap WHERE albumId = Album.id) as songCount " +
+            "FROM Album WHERE id LIKE '$LOCAL_KEY_PREFIX%' ORDER BY songCount DESC" )
+    @RewriteQueriesToDropUnusedColumns
+    fun albumsOnDeviceBySongsCountDesc(): Flow<List<Album>>
+
+    @Query("SELECT * FROM Album WHERE id LIKE '$LOCAL_KEY_PREFIX%' ORDER BY authorsText COLLATE NOCASE ASC")
+    fun albumsOnDeviceByArtistAsc(): Flow<List<Album>>
+
+    @Query("SELECT * FROM Album WHERE id LIKE '$LOCAL_KEY_PREFIX%' ORDER BY authorsText COLLATE NOCASE DESC")
+    fun albumsOnDeviceByArtistDesc(): Flow<List<Album>>
+
+    @Query("SELECT * FROM Album WHERE id LIKE '$LOCAL_KEY_PREFIX%' ORDER BY id ASC")
+    fun albumsOnDeviceByRowIdAsc(): Flow<List<Album>>
+
+    @Query("SELECT * FROM Album WHERE id LIKE '$LOCAL_KEY_PREFIX%' ORDER BY id DESC")
+    fun albumsOnDeviceByRowIdDesc(): Flow<List<Album>>
+
+    @Query("SELECT * FROM Album WHERE id LIKE '$LOCAL_KEY_PREFIX%' ORDER BY year ASC")
+    fun albumsOnDeviceByYearAsc(): Flow<List<Album>>
+
+    @Query("SELECT * FROM Album WHERE id LIKE '$LOCAL_KEY_PREFIX%' ORDER BY year DESC")
+    fun albumsOnDeviceByYearDesc(): Flow<List<Album>>
+
+    @Query("SELECT * FROM Album WHERE id LIKE '$LOCAL_KEY_PREFIX%' ORDER BY title COLLATE NOCASE ASC")
+    fun albumsOnDeviceByTitleDesc(): Flow<List<Album>>
+
+    @Query("SELECT * FROM Album WHERE id LIKE '$LOCAL_KEY_PREFIX%' ORDER BY title COLLATE NOCASE ASC")
+    fun albumsOnDeviceByTitleAsc(): Flow<List<Album>>
+
+
+    fun albumsOnDevice(sortBy: AlbumSortBy, sortOrder: SortOrder): Flow<List<Album>> {
+        return when (sortBy) {
+            AlbumSortBy.Title -> when (sortOrder) {
+                SortOrder.Ascending -> albumsOnDeviceByTitleAsc()
+                SortOrder.Descending -> albumsOnDeviceByTitleDesc()
+            }
+            AlbumSortBy.Year -> when (sortOrder) {
+                SortOrder.Ascending -> albumsOnDeviceByYearAsc()
+                SortOrder.Descending -> albumsOnDeviceByYearDesc()
+            }
+            AlbumSortBy.DateAdded -> when (sortOrder) {
+                SortOrder.Ascending -> albumsOnDeviceByRowIdAsc()
+                SortOrder.Descending -> albumsOnDeviceByRowIdDesc()
+            }
+            AlbumSortBy.Artist -> when (sortOrder) {
+                SortOrder.Ascending -> albumsOnDeviceByArtistAsc()
+                SortOrder.Descending -> albumsOnDeviceByArtistDesc()
+            }
+            AlbumSortBy.Songs -> when (sortOrder) {
+                SortOrder.Ascending -> albumsOnDeviceBySongsCountAsc()
+                SortOrder.Descending -> albumsOnDeviceBySongsCountDesc()
+            }
+            AlbumSortBy.Duration -> when (sortOrder) {
+                SortOrder.Ascending -> albumsOnDeviceByTotalDurationAsc()
+                SortOrder.Descending -> albumsOnDeviceByTotalDurationDesc()
+            }
+        }
+    }
+
     @Query("SELECT * FROM Album A WHERE A.id in (" +
             "SELECT DISTINCT albumId FROM SongAlbumMap INNER JOIN Song " +
             "ON Song.id = SongAlbumMap.songId " +
@@ -1852,6 +1930,8 @@ interface Database {
             }
         }
     }
+
+
 
     @Query("SELECT * FROM Album A" +
             " WHERE A.id in ( SELECT DISTINCT albumId FROM SongAlbumMap ) " +

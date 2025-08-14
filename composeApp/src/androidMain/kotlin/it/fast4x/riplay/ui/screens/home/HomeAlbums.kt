@@ -170,6 +170,7 @@ fun HomeAlbums(
         when ( albumType ) {
             AlbumsType.Favorites -> Database.albums( sort.sortBy, sort.sortOrder ).collect { itemsToFilter = it }
             AlbumsType.Library -> Database.albumsInLibrary( sort.sortBy, sort.sortOrder ).collect { itemsToFilter = it }
+            AlbumsType.OnDevice -> Database.albumsOnDevice( sort.sortBy, sort.sortOrder ).collect { itemsToFilter = it }
             //AlbumsType.All -> Database.albumsWithSongsSaved( sort.sortBy, sort.sortOrder ).collect { items = it }
 
         }
@@ -195,7 +196,7 @@ fun HomeAlbums(
         lazyGridState.scrollToItem( scrollIndex, scrollOffset )
     }
 
-    if (albumType == AlbumsType.Library) {
+    if (albumType == AlbumsType.Library || albumType == AlbumsType.OnDevice) {
         if (items.any{it.thumbnailUrl == null}) {
             LaunchedEffect(Unit) {
                 withContext(Dispatchers.IO) {

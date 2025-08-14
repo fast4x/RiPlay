@@ -20,6 +20,7 @@ import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.lifecycle.Lifecycle
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
+import it.fast4x.riplay.LOCAL_KEY_PREFIX
 import it.fast4x.riplay.LocalPlayerSheetState
 import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.CheckUpdateState
@@ -153,7 +154,9 @@ fun HomeScreen(
                 3 -> HomeAlbums(
                     navController = navController,
                     onAlbumClick = {
-                        navController.navigate(route = "${NavRoutes.album.name}/${it.id}")
+                        if (!it.id.startsWith(LOCAL_KEY_PREFIX))
+                            navController.navigate(route = "${NavRoutes.album.name}/${it.id}")
+                        else navController.navigate(route = "${NavRoutes.localAlbum.name}/${it.id}")
                     },
                     onSearchClick = {
                         navController.navigate(NavRoutes.search.name)
