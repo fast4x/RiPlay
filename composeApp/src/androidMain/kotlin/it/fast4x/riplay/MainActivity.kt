@@ -145,6 +145,9 @@ import it.fast4x.riplay.extensions.nsd.discoverNsdServices
 import it.fast4x.riplay.extensions.pip.PipModuleContainer
 import it.fast4x.riplay.extensions.pip.PipModuleCore
 import it.fast4x.riplay.extensions.pip.PipModuleCover
+import it.fast4x.riplay.extensions.pip.isInPip
+import it.fast4x.riplay.extensions.pip.maybeEnterPip
+import it.fast4x.riplay.extensions.pip.maybeExitPip
 import it.fast4x.riplay.service.OfflinePlayerService
 import it.fast4x.riplay.ui.components.CustomModalBottomSheet
 import it.fast4x.riplay.ui.components.LocalMenuState
@@ -554,16 +557,18 @@ class MainActivity :
     }
 
 
-    /*
-    @Suppress("DEPRECATION")
     override fun onUserLeaveHint() {
         super.onUserLeaveHint()
-        if (isAtLeastAndroid8 && !isInPictureInPictureMode) {
-            enterPictureInPictureMode()
-            println("MainActivity.onUserLeaveHint isInPictureInPictureMode: $isInPictureInPictureMode")
-        }
+//        if (isAtLeastAndroid8 && !isInPictureInPictureMode) {
+//            enterPictureInPictureMode()
+//            println("MainActivity.onUserLeaveHint isInPictureInPictureMode: $isInPictureInPictureMode")
+//        }
+        if (
+            isPipModeAutoEnabled() &&
+            (binder?.player?.isPlaying == true || onlinePlayerPlayingState.value)
+        ) maybeEnterPip()
     }
-    */
+
 
     @Composable
     fun ThemeApp(
@@ -1221,7 +1226,18 @@ class MainActivity :
                     )
                 }
 
-                CrossfadeContainer(state = pipState.value) { isCurrentInPip ->
+                val pip = isInPip(
+                    onChange = {
+                        if (!it || (binder?.player?.isPlaying != true && !onlinePlayerPlayingState.value))
+                            return@isInPip
+
+                        playerSheetState.expandSoft()
+                    }
+                )
+
+                CrossfadeContainer(
+                    state = pip //pipState.value
+                ) { isCurrentInPip ->
                     println("MainActivity pipState ${pipState.value} CrossfadeContainer isCurrentInPip $isCurrentInPip ")
                     val pipModule by rememberPreference(pipModuleKey, PipModule.Cover)
                     if (isCurrentInPip) {
@@ -1458,6 +1474,11 @@ class MainActivity :
                     val listener = object : Player.Listener {
                         override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
                             println("MainActivity Player.Listener onMediaItemTransition mediaItem $mediaItem reason $reason foreground $appRunningInBackground")
+
+                            if (mediaItem == null) {
+                                maybeExitPip()
+                                playerSheetState.dismissSoft()
+                            }
 
                             mediaItemIsLocal.value = mediaItem?.isLocal == true
                             currentPlaybackPosition.value = 0L

@@ -39,6 +39,7 @@ import it.fast4x.riplay.utils.isAtLeastAndroid7
 import it.fast4x.riplay.utils.isAtLeastAndroid8
 import it.fast4x.riplay.utils.rememberPreference
 import it.fast4x.riplay.appContext
+import it.fast4x.riplay.isPipModeAutoEnabled
 
 
 private fun logError(throwable: Throwable) = Log.e("PipHandler", "An error occurred", throwable)
@@ -67,7 +68,7 @@ fun Activity.setPipParams(
     rect: Rect,
     targetNumerator: Int,
     targetDenominator: Int,
-    autoEnterIfPossible: Boolean = false,
+    autoEnterIfPossible: Boolean = isPipModeAutoEnabled(),
     block: PictureInPictureParams.Builder.() -> PictureInPictureParams.Builder = { this }
 ) {
     if (isAtLeastAndroid8) setPictureInPictureParams(

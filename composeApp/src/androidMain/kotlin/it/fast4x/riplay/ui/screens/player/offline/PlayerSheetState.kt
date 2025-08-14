@@ -91,12 +91,14 @@ class PlayerSheetState(
         expand(tween(300))
     }
 
-    fun dismiss() {
+    fun dismiss(animationSpec: AnimationSpec<Dp> = SpringSpec()) {
         onAnchorChanged(dismissedAnchor)
         coroutineScope.launch {
-            animatable.animateTo(animatable.lowerBound!!)
+            animatable.animateTo(animatable.lowerBound!!, animationSpec)
         }
     }
+
+    fun dismissSoft() = dismiss(tween(300))
 
     fun snapTo(value: Dp) {
         coroutineScope.launch {

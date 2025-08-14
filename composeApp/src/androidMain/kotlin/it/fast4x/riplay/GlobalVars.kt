@@ -18,6 +18,7 @@ import it.fast4x.riplay.utils.autosyncKey
 import it.fast4x.riplay.utils.bassboostEnabledKey
 import it.fast4x.riplay.utils.colorPaletteModeKey
 import it.fast4x.riplay.utils.dnsOverHttpsTypeKey
+import it.fast4x.riplay.utils.enablePictureInPictureAutoKey
 import it.fast4x.riplay.utils.exoPlayerMinTimeForEventKey
 import it.fast4x.riplay.utils.getEnum
 import it.fast4x.riplay.utils.handleAudioFocusEnabledKey
@@ -81,3 +82,4 @@ fun isBassBoostEnabled() = appContext().preferences.getBoolean(bassboostEnabledK
 fun isDebugModeEnabled() = appContext().preferences.getBoolean(logDebugEnabledKey, false)
 fun isParentalControlEnabled() = appContext().preferences.getBoolean(parentalControlEnabledKey, false)
 fun isPersistentQueueEnabled() = appContext().preferences.getBoolean(persistentQueueKey, true)
+fun isPipModeAutoEnabled() = appContext().preferences.getBoolean(enablePictureInPictureAutoKey, false)
