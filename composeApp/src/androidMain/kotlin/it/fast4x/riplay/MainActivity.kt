@@ -559,10 +559,6 @@ class MainActivity :
 
     override fun onUserLeaveHint() {
         super.onUserLeaveHint()
-//        if (isAtLeastAndroid8 && !isInPictureInPictureMode) {
-//            enterPictureInPictureMode()
-//            println("MainActivity.onUserLeaveHint isInPictureInPictureMode: $isInPictureInPictureMode")
-//        }
         if (
             isPipModeAutoEnabled() &&
             (binder?.player?.isPlaying == true || onlinePlayerPlayingState.value)
