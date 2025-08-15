@@ -1,4 +1,4 @@
-package it.fast4x.riplay.ui.screens.localalbum
+package it.fast4x.riplay.ui.screens.ondevice
 
 import android.annotation.SuppressLint
 import androidx.compose.animation.AnimatedContent
@@ -78,7 +78,7 @@ import it.fast4x.riplay.utils.transitionEffectKey
 @ExperimentalComposeUiApi
 @UnstableApi
 @Composable
-fun LocalAlbumScreen(
+fun OnDeviceAlbumScreen(
     navController: NavController,
     albumId: String,
     modifier: Modifier = Modifier,
@@ -285,7 +285,7 @@ fun LocalAlbumScreen(
                 ) { currentTabIndex ->
                     saveableStateHolder.SaveableStateProvider(key = currentTabIndex) {
                         when (currentTabIndex) {
-                            0 -> LocalAlbumDetails(
+                            0 -> OnDeviceAlbumDetails(
                                 navController = navController,
                                 albumId = albumId,
                                 //albumPage = albumPage,

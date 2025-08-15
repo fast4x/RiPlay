@@ -1,13 +1,11 @@
-package it.fast4x.riplay.ui.screens.localalbum
+package it.fast4x.riplay.ui.screens.ondevice
 
 import android.annotation.SuppressLint
-import android.content.Intent
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -40,7 +38,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -62,15 +59,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.media3.common.MediaItem
 import androidx.media3.common.util.UnstableApi
-import androidx.media3.exoplayer.offline.Download
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import it.fast4x.compose.persist.persist
 import it.fast4x.compose.persist.persistList
-import it.fast4x.environment.Environment
-import it.fast4x.environment.EnvironmentExt
 import it.fast4x.environment.models.NavigationEndpoint
-import it.fast4x.environment.requests.AlbumPage
 import it.fast4x.riplay.Database
 import it.fast4x.riplay.EXPLICIT_PREFIX
 import it.fast4x.riplay.LocalPlayerServiceBinder
@@ -92,18 +85,15 @@ import it.fast4x.riplay.ui.components.ShimmerHost
 import it.fast4x.riplay.ui.components.SwipeablePlaylistItem
 import it.fast4x.riplay.ui.components.themed.AlbumsItemMenu
 import it.fast4x.riplay.ui.components.themed.AutoResizeText
-import it.fast4x.riplay.ui.components.themed.ConfirmationDialog
 import it.fast4x.riplay.ui.components.themed.FontSizeRange
 import it.fast4x.riplay.ui.components.themed.HeaderIconButton
 import it.fast4x.riplay.ui.components.themed.InputTextDialog
-import it.fast4x.riplay.ui.components.themed.ItemsList
 import it.fast4x.riplay.ui.components.themed.LayoutWithAdaptiveThumbnail
 import it.fast4x.riplay.ui.components.themed.MultiFloatingActionsContainer
 import it.fast4x.riplay.ui.components.themed.NonQueuedMediaItemMenu
 import it.fast4x.riplay.ui.components.themed.NowPlayingSongIndicator
 import it.fast4x.riplay.ui.components.themed.SelectorDialog
 import it.fast4x.riplay.ui.components.themed.SmartMessage
-import it.fast4x.riplay.ui.items.AlbumItem
 import it.fast4x.riplay.ui.items.AlbumItemPlaceholder
 import it.fast4x.riplay.ui.items.SongItem
 import it.fast4x.riplay.ui.items.SongItemPlaceholder
@@ -130,30 +120,21 @@ import it.fast4x.riplay.utils.medium
 import it.fast4x.riplay.utils.parentalControlEnabledKey
 import it.fast4x.riplay.utils.rememberPreference
 import it.fast4x.riplay.utils.resize
-import it.fast4x.riplay.utils.secondary
 import it.fast4x.riplay.utils.semiBold
 import it.fast4x.riplay.utils.showFloatingIconKey
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import me.bush.translator.Language
 import me.bush.translator.Translator
 import it.fast4x.riplay.colorPalette
 import it.fast4x.riplay.enums.PopupType
-import it.fast4x.riplay.models.SongAlbumMap
 import it.fast4x.riplay.models.defaultQueue
 import it.fast4x.riplay.typography
-import it.fast4x.riplay.ui.components.PullToRefreshBox
 import it.fast4x.riplay.ui.components.themed.QueuesDialog
-import it.fast4x.riplay.ui.components.themed.Title
 import it.fast4x.riplay.ui.screens.settings.isYouTubeSyncEnabled
 import it.fast4x.riplay.utils.addToYtLikedSongs
-import it.fast4x.riplay.utils.addToYtPlaylist
 import org.dailyislam.android.utilities.isNetworkConnected
 import it.fast4x.riplay.utils.mediaItemSetLiked
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.runBlocking
 
 @OptIn(ExperimentalMaterial3Api::class)
 @ExperimentalTextApi
@@ -162,7 +143,7 @@ import kotlinx.coroutines.runBlocking
 @ExperimentalFoundationApi
 @UnstableApi
 @Composable
-fun LocalAlbumDetails(
+fun OnDeviceAlbumDetails(
     navController: NavController,
     albumId: String,
     //albumPage: AlbumPage?,
@@ -194,104 +175,6 @@ fun LocalAlbumDetails(
     var playTime by remember {
         mutableStateOf<Long?>(null)
     }
-
-//    data class AlbumSongsState(
-//        val song : Song,
-//        val likedAt : Long? = null,
-//        val playtime : Long? = null,
-//        val songExists : Boolean = false,
-//        val playlistsList : List<Database.PlayListIdPosition>? = emptyList(),
-//    )
-
-//    fun update() {
-//        if(!isNetworkConnected(context)) {
-//            return
-//        }
-//        runBlocking(Dispatchers.IO) {
-//            withContext(Dispatchers.IO) {
-//                Database.asyncTransaction {
-//                    val albumSongsStateList = mutableListOf<AlbumSongsState>()
-//                    songs.forEach { song ->
-//                        songPlaylist = Database.songUsedInPlaylists(song.id)
-//                        if (songPlaylist > 0) songExists = true
-//                        playlistsList = Database.playlistsUsedForSong(song.id)
-//                        likedAt = song.likedAt
-//                        playTime = song.totalPlayTimeMs
-//                        binder?.cache?.removeResource(song.id)
-//                        val songState =
-//                            AlbumSongsState(song, likedAt, playTime, songExists, playlistsList)
-//                        albumSongsStateList.add(songState)
-//                        Database.delete(song)
-//                    }
-//
-//                    Database.upsert(
-//                        Album(
-//                            id = albumId,
-//                            title = if (album?.title?.startsWith(MODIFIED_PREFIX) == true) album?.title else albumPage?.album?.title,
-//                            thumbnailUrl = if (album?.thumbnailUrl?.startsWith(MODIFIED_PREFIX) == true) album?.thumbnailUrl else albumPage?.album?.thumbnail?.url,
-//                            year = albumPage?.album?.year,
-//                            authorsText = if (album?.authorsText?.startsWith(MODIFIED_PREFIX) == true) album?.authorsText else albumPage?.album?.authors
-//                                ?.joinToString("") { it.name ?: "" },
-//                            shareUrl = albumPage?.url,
-//                            timestamp = System.currentTimeMillis(),
-//                            bookmarkedAt = album?.bookmarkedAt,
-//                            isYoutubeAlbum = album?.isYoutubeAlbum == true
-//                        ),
-//                        albumPage
-//                            ?.songs?.distinct()
-//                            ?.map(Environment.SongItem::asMediaItem)
-//                            ?.onEach(Database::insert)
-//                            ?.mapIndexed { position, mediaItem ->
-//                                SongAlbumMap(
-//                                    songId = mediaItem.mediaId,
-//                                    albumId = albumId,
-//                                    position = position
-//                                )
-//                            } ?: emptyList()
-//                    )
-//
-//                    albumSongsStateList.forEach { albumSongsState ->
-//                        if ((albumSongsState.songExists || albumSongsState.likedAt != null || albumSongsState.playtime != null)
-//                            && songExist(albumSongsState.song.id) == 0
-//                        ) {
-//                            insert(albumSongsState.song)
-//                        }
-//                        if (albumSongsState.songExists) {
-//                            albumSongsState.playlistsList?.forEach { item ->
-//                                insert(
-//                                    SongPlaylistMap(
-//                                        songId = albumSongsState.song.id,
-//                                        playlistId = item.playlistId,
-//                                        position = item.position
-//                                    ).default()
-//                                )
-//                            }
-//                        }
-//                        if (albumSongsState.likedAt != null) {
-//                            Database.like(albumSongsState.song.id, albumSongsState.likedAt)
-//                        }
-//                        Database.incrementTotalPlayTimeMs(
-//                            albumSongsState.song.id,
-//                            albumSongsState.playtime ?: 0
-//                        )
-//                    }
-//                }
-//            }
-//        }
-//    }
-
-//    var refreshing by remember { mutableStateOf(false) }
-//    val refreshScope = rememberCoroutineScope()
-//
-//    fun refresh() {
-//        if (refreshing) return
-//        refreshScope.launch(Dispatchers.IO) {
-//            refreshing = true
-//            update()
-//            delay(500)
-//            refreshing = false
-//        }
-//    }
 
     LaunchedEffect(Unit) {
         Database.albumSongs(albumId).collect {

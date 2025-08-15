@@ -148,10 +148,13 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.isActive
 import it.fast4x.riplay.colorPalette
 import it.fast4x.riplay.models.Album
+import it.fast4x.riplay.models.Artist
 import it.fast4x.riplay.models.SongAlbumMap
+import it.fast4x.riplay.models.SongArtistMap
 import it.fast4x.riplay.models.defaultQueue
 import it.fast4x.riplay.models.defaultQueueId
 import it.fast4x.riplay.typography
+import it.fast4x.riplay.utils.asKey
 import timber.log.Timber
 import kotlin.random.Random
 import kotlin.time.Duration.Companion.milliseconds
@@ -348,7 +351,7 @@ fun DeviceListSongs(
                 //.fillMaxSize()
                 .fillMaxHeight()
                 .fillMaxWidth(
-                    if( NavigationBarPosition.Right.isCurrent() )
+                    if (NavigationBarPosition.Right.isCurrent())
                         Dimensions.contentWidthRightBar
                     else
                         1f
@@ -1055,6 +1058,8 @@ fun Context.musicFilesAsFlow(sortBy: OnDeviceSongSortBy, order: SortOrder, conte
                     Timber.i(" DeviceListSongs colums durationIdx $durationIdx")
                     val artistIdx = cursor.getColumnIndex(MediaStore.Audio.Media.ARTIST)
                     Timber.i(" DeviceListSongs colums artistIdx $artistIdx")
+                    //val artistIdIdx = cursor.getColumnIndex(MediaStore.Audio.Media.ARTIST_ID)
+                    //Timber.i(" DeviceListSongs colums artistIdIdx $artistIdIdx")
                     val albumIdIdx = cursor.getColumnIndex(MediaStore.Audio.Media.ALBUM_ID)
                     Timber.i(" DeviceListSongs colums albumIdIdx $albumIdIdx")
                     val albumIdx = cursor.getColumnIndex(MediaStore.Audio.Media.ALBUM)
@@ -1095,6 +1100,7 @@ fun Context.musicFilesAsFlow(sortBy: OnDeviceSongSortBy, order: SortOrder, conte
                             val duration = cursor.getInt(durationIdx)
                             if (duration == 0) continue
                             val artist = cursor.getString(artistIdx)
+                            //val artistId = cursor.getLong(artistIdIdx)
                             val albumId = cursor.getLong(albumIdIdx)
                             val album = cursor.getString(albumIdx)
                             //val year = cursor.getInt(yearIdx)
@@ -1110,7 +1116,7 @@ fun Context.musicFilesAsFlow(sortBy: OnDeviceSongSortBy, order: SortOrder, conte
                                 cursor.getString(relativePathIdx).substringBeforeLast("/")
                             }
                             val exclude = blacklist.contains(relativePath)
-                            println("DeviceListSongs trackname $trackName exclude $exclude relativePath ${relativePath}")
+                            //println("DeviceListSongs trackname $trackName exclude $exclude relativePath ${relativePath}")
 
                             if (!exclude) {
                                 runCatching {
@@ -1128,10 +1134,7 @@ fun Context.musicFilesAsFlow(sortBy: OnDeviceSongSortBy, order: SortOrder, conte
                                         relativePath = relativePath
                                     )
                                     Database.insert(
-                                        song.toSong()
-                                    )
-                                    
-                                    Database.insert(
+                                        song.toSong(),
                                         it.fast4x.riplay.models.Format(
                                             songId = song.id,
                                             itag = 0,
@@ -1159,6 +1162,19 @@ fun Context.musicFilesAsFlow(sortBy: OnDeviceSongSortBy, order: SortOrder, conte
                                         )
                                     )
 
+                                    Database.insert(
+                                        Artist(
+                                            id = "$LOCAL_KEY_PREFIX${artist}",
+                                            name = artist,
+                                            thumbnailUrl = albumUri.toString(),
+                                            timestamp = dateModified
+                                        ),
+                                        SongArtistMap(
+                                            songId = song.id,
+                                            artistId = "$LOCAL_KEY_PREFIX${artist}"
+                                        )
+                                    )
+                                    println("DeviceListSongs song ${song.id} album $LOCAL_KEY_PREFIX${albumId} artist $LOCAL_KEY_PREFIX${artist}")
                                     add(
                                         song
                                     )

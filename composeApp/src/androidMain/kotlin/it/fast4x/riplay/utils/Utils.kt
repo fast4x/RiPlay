@@ -16,6 +16,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.toLowerCase
 import androidx.core.net.toUri
 import androidx.core.os.bundleOf
 import androidx.media3.common.MediaItem
@@ -71,6 +72,8 @@ import java.time.Duration
 import java.util.Calendar
 import java.util.Date
 import java.util.GregorianCalendar
+import java.util.Locale
+import java.util.Locale.getDefault
 import kotlin.math.absoluteValue
 import kotlin.random.Random
 import kotlin.time.Duration.Companion.milliseconds
@@ -422,6 +425,15 @@ fun String?.thumbnail(): String? {
 }
 fun Uri?.thumbnail(size: Int): Uri? {
     return toString().thumbnail(size)?.toUri()
+}
+
+fun String?.asKey(): String? {
+    var cleanText = this?.replace(" ", "_", true)
+    cleanText = cleanText?.replace(":", "", true)
+    cleanText = cleanText?.replace(",", "", true)
+    cleanText = cleanText?.replace("#", "", true)
+
+    return  cleanText?.lowercase(getDefault())
 }
 
 fun formatAsDuration(millis: Long) = DateUtils.formatElapsedTime(millis / 1000).removePrefix("0")
@@ -1139,3 +1151,4 @@ inline fun <reified T : Throwable> Throwable.findCause(): T? {
 fun isValidHex(hex: String): Boolean {
     return hex.length == 7 && hex.startsWith("#")
 }
+

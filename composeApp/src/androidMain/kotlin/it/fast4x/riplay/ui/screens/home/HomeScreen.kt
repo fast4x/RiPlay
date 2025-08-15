@@ -141,7 +141,9 @@ fun HomeScreen(
 
                 2 -> HomeArtists(
                     onArtistClick = {
-                        navController.navigate(route = "${NavRoutes.artist.name}/${it.id}")
+                        if (!it.id.startsWith(LOCAL_KEY_PREFIX))
+                            navController.navigate(route = "${NavRoutes.artist.name}/${it.id}")
+                        else navController.navigate(route = "${NavRoutes.onDeviceArtist.name}/${it.id}")
                     },
                     onSearchClick = {
                         navController.navigate(NavRoutes.search.name)
@@ -156,7 +158,7 @@ fun HomeScreen(
                     onAlbumClick = {
                         if (!it.id.startsWith(LOCAL_KEY_PREFIX))
                             navController.navigate(route = "${NavRoutes.album.name}/${it.id}")
-                        else navController.navigate(route = "${NavRoutes.localAlbum.name}/${it.id}")
+                        else navController.navigate(route = "${NavRoutes.onDeviceAlbum.name}/${it.id}")
                     },
                     onSearchClick = {
                         navController.navigate(NavRoutes.search.name)

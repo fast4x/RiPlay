@@ -1531,6 +1531,31 @@ interface Database {
         }
     }
 
+    @Query("SELECT * FROM Artist WHERE id LIKE '$LOCAL_KEY_PREFIX%' ORDER BY name DESC")
+    fun artistsOnDeviceByNameDesc(): Flow<List<Artist>>
+
+    @Query("SELECT * FROM Artist WHERE id LIKE '$LOCAL_KEY_PREFIX%' ORDER BY name ASC")
+    fun artistsOnDeviceByNameAsc(): Flow<List<Artist>>
+
+    @Query("SELECT * FROM Artist WHERE id LIKE '$LOCAL_KEY_PREFIX%' ORDER BY id DESC")
+    fun artistsOnDeviceByRowIdDesc(): Flow<List<Artist>>
+
+    @Query("SELECT * FROM Artist WHERE id LIKE '$LOCAL_KEY_PREFIX%' ORDER BY id ASC")
+    fun artistsOnDeviceByRowIdAsc(): Flow<List<Artist>>
+
+    fun artistsOnDevice(sortBy: ArtistSortBy, sortOrder: SortOrder): Flow<List<Artist>> {
+        return when (sortBy) {
+            ArtistSortBy.Name -> when (sortOrder) {
+                SortOrder.Ascending -> artistsOnDeviceByNameAsc()
+                SortOrder.Descending -> artistsOnDeviceByNameDesc()
+            }
+            ArtistSortBy.DateAdded -> when (sortOrder) {
+                SortOrder.Ascending -> artistsOnDeviceByRowIdAsc()
+                SortOrder.Descending -> artistsOnDeviceByRowIdDesc()
+            }
+        }
+    }
+
     @Query("SELECT * FROM Artist A WHERE A.id in ( " +
             "SELECT DISTINCT artistId FROM SongArtistMap INNER JOIN Song " +
             "ON Song.id = SongArtistMap.songId " +
@@ -1569,6 +1594,18 @@ interface Database {
             ")"+
         ") A on A.id=SM.artistId")
     fun songsInLibraryArtistsFiltered(artists: List<String>): Flow<List<Song>>
+
+    @Transaction
+    @Query(
+        "SELECT DISTINCT S.* FROM Song S INNER JOIN SongArtistMap SM ON S.id=SM.songId INNER JOIN " +
+                "(SELECT * FROM Artist A WHERE A.id LIKE '$LOCAL_KEY_PREFIX%' AND A.id IN (:artists) AND A.id in "+
+                "(SELECT DISTINCT artistId FROM SongArtistMap INNER JOIN Song " +
+                "ON Song.id = SongArtistMap.songId " +
+                "LEFT JOIN SongPlaylistMap ON Song.id = SongPlaylistMap.songId " +
+                "WHERE (Song.totalPlayTimeMs > 0 AND Song.likedAt > 0) OR SongPlaylistMap.playlistId IS NOT NULL " +
+                ")"+
+                ") A on A.id=SM.artistId")
+    fun songsOnDeviceArtistsFiltered(artists: List<String>): Flow<List<Song>>
 
     @Query("SELECT * FROM Artist A WHERE A.id in ( " +
             "SELECT DISTINCT artistId FROM SongArtistMap INNER JOIN Song " +
@@ -1807,6 +1844,10 @@ interface Database {
             }
         }
     }
+
+    @Query("SELECT * FROM Album WHERE id LIKE '$LOCAL_KEY_PREFIX%' AND authorsText = :name ORDER BY title COLLATE NOCASE ASC")
+    fun artistOnDeviceAlbums(name: String): Flow<List<Album>>
+
 
     @Query("SELECT * FROM Album A WHERE A.id in (" +
             "SELECT DISTINCT albumId FROM SongAlbumMap INNER JOIN Song " +
@@ -2443,6 +2484,8 @@ interface Database {
     fun playlistThumbnailUrls(id: Long): Flow<List<String?>>
 
 
+    @Query("SELECT * FROM Song JOIN SongArtistMap ON Song.id = SongArtistMap.songId WHERE SongArtistMap.artistId = :artistId ORDER BY Song.totalPlayTimeMs DESC LIMIT :count")
+    fun artistTopSongs(artistId: String, count: Int = 10): Flow<List<Song>>
 
     @Transaction
     @Query("SELECT * FROM Song JOIN SongArtistMap ON Song.id = SongArtistMap.songId WHERE SongArtistMap.artistId = :artistId AND totalPlayTimeMs > 0 ORDER BY Song.ROWID DESC")
@@ -2453,6 +2496,9 @@ interface Database {
     @Query("SELECT * FROM Song JOIN SongArtistMap ON Song.id = SongArtistMap.songId WHERE SongArtistMap.artistId = :artistId ORDER BY Song.ROWID DESC")
     @RewriteQueriesToDropUnusedColumns
     fun artistAllSongs(artistId: String): Flow<List<Song>>
+
+    @Query("SELECT * FROM SongArtistMap WHERE artistId = :artistId")
+    fun artistSongMap(artistId: String): Flow<List<SongArtistMap>>
 
     @Query("SELECT * FROM Format WHERE songId = :songId")
     fun format(songId: String): Flow<Format?>
@@ -2639,11 +2685,14 @@ interface Database {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     fun insert(songPlaylistMap: SongPlaylistMap): Long
 
-    @Insert(onConflict = OnConflictStrategy.ABORT)
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     fun insert(songArtistMap: SongArtistMap): Long
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     fun insert(song: Song): Long
+
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    fun insert(song: Song, format: Format)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insert(queuedMediaItems: List<QueuedMediaItem>)
@@ -2653,6 +2702,9 @@ interface Database {
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     fun insert(album: Album, songAlbumMap: SongAlbumMap)
+
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    fun insert(artist: Artist, songArtistMap: SongArtistMap)
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     fun insert(artists: List<Artist>, songArtistMaps: List<SongArtistMap>)
