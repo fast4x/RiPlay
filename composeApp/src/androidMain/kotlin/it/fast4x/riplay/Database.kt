@@ -1845,8 +1845,13 @@ interface Database {
         }
     }
 
-    @Query("SELECT * FROM Album WHERE id LIKE '$LOCAL_KEY_PREFIX%' AND authorsText = :name ORDER BY title COLLATE NOCASE ASC")
-    fun artistOnDeviceAlbums(name: String): Flow<List<Album>>
+    @Query("SELECT * FROM Album A WHERE A.id in ( " +
+            "SELECT DISTINCT albumId FROM SongAlbumMap INNER JOIN Song ON Song.id = SongAlbumMap.songId " +
+            "INNER JOIN SongArtistMap ON Song.id = SongArtistMap.songId " +
+            "AND SongArtistMap.artistId = :artistId " +
+            ") " +
+            "ORDER BY A.title COLLATE NOCASE ASC")
+    fun artistAlbums(artistId: String): Flow<List<Album>>
 
 
     @Query("SELECT * FROM Album A WHERE A.id in (" +

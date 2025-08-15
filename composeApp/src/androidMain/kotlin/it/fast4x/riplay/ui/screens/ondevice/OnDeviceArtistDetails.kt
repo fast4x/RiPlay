@@ -173,14 +173,9 @@ fun OnDeviceArtistDetails(
     }.collectAsState(initial = emptyList(), context = Dispatchers.IO)
     println("OnDeviceArtistDetails topSongs: $topSongs")
     val albums by remember {
-        Database.artistOnDeviceAlbums(artist?.name.toString())
+        Database.artistAlbums(artist?.name.toString())
     }.collectAsState(initial = emptyList(), context = Dispatchers.IO)
     println("OnDeviceArtistDetails albums: $albums")
-
-    val artistSongsMapped by remember {
-        Database.artistSongMap(artistId)
-    }.collectAsState(initial = emptyList(), context = Dispatchers.IO)
-    println("OnDeviceArtistDetails artistSongsMapped: $artistSongsMapped")
 
 
     var itemsBrowseId by remember { mutableStateOf("") }
