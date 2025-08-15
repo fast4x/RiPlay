@@ -183,18 +183,18 @@ fun OnDeviceAlbumScreen(
             }
         }
 
-    val thumbnailContent =
-        adaptiveThumbnailContent(
-            album?.timestamp == null,
-            album?.thumbnailUrl,
-            showIcon = false, //albumPage?.otherVersions?.isNotEmpty(),
-            onOtherVersionAvailable = {
-                //println("mediaItem Click other version")
-            },
-            //shape = thumbnailRoundness.shape()
-            onClick = { changeShape = !changeShape },
-            shape = if (changeShape) CircleShape else thumbnailRoundness.shape(),
-        )
+//    val thumbnailContent =
+//        adaptiveThumbnailContent(
+//            album?.timestamp == null,
+//            album?.thumbnailUrl,
+//            showIcon = false, //albumPage?.otherVersions?.isNotEmpty(),
+//            onOtherVersionAvailable = {
+//                //println("mediaItem Click other version")
+//            },
+//            //shape = thumbnailRoundness.shape()
+//            onClick = { changeShape = !changeShape },
+//            shape = if (changeShape) CircleShape else thumbnailRoundness.shape(),
+//        )
 
     val transitionEffect by rememberPreference(transitionEffectKey, TransitionEffect.Scale)
     val playerPosition by rememberPreference(playerPositionKey, PlayerPosition.Bottom)
@@ -290,7 +290,7 @@ fun OnDeviceAlbumScreen(
                                 albumId = albumId,
                                 //albumPage = albumPage,
                                 headerContent = headerContent,
-                                thumbnailContent = thumbnailContent,
+                                //thumbnailContent = thumbnailContent,
                                 onSearchClick = {
                                     navController.navigate(NavRoutes.search.name)
                                 },

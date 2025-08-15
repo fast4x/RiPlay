@@ -127,6 +127,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import me.bush.translator.Translator
 import it.fast4x.riplay.colorPalette
+import it.fast4x.riplay.enums.NavigationBarPosition
 import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.models.defaultQueue
 import it.fast4x.riplay.typography
@@ -148,7 +149,7 @@ fun OnDeviceAlbumDetails(
     albumId: String,
     //albumPage: AlbumPage?,
     headerContent: @Composable (textButton: (@Composable () -> Unit)?) -> Unit,
-    thumbnailContent: @Composable () -> Unit,
+    //thumbnailContent: @Composable () -> Unit,
     onSearchClick: () -> Unit,
     onSettingsClick: () -> Unit
 ) {
@@ -359,7 +360,7 @@ fun OnDeviceAlbumDetails(
 
     var readMore by remember { mutableStateOf(false) }
 
-    LayoutWithAdaptiveThumbnail(thumbnailContent = thumbnailContent) {
+    //LayoutWithAdaptiveThumbnail(thumbnailContent = thumbnailContent) {
 
             Box(
                 modifier = Modifier
@@ -368,8 +369,12 @@ fun OnDeviceAlbumDetails(
                     )
                     //.fillMaxSize()
                     .fillMaxHeight()
-                    //.fillMaxWidth(if (navigationBarPosition == NavigationBarPosition.Left) 1f else contentWidth)
-                    .fillMaxWidth()
+                    .fillMaxWidth(
+                        if (NavigationBarPosition.Right.isCurrent())
+                            Dimensions.contentWidthRightBar
+                        else
+                            1f
+                    )
             ) {
 
                 LazyColumn(
@@ -397,6 +402,7 @@ fun OnDeviceAlbumDetails(
                                         AsyncImage(
                                             model = album?.thumbnailUrl?.resize(1200, 1200),
                                             contentDescription = "loading...",
+                                            contentScale = ContentScale.FillBounds,
                                             modifier = Modifier
                                                 .fillMaxWidth()
                                                 .align(Alignment.Center)
@@ -998,7 +1004,7 @@ fun OnDeviceAlbumDetails(
         //}
 
 
-    }
+    //}
 
 
 }
