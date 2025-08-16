@@ -73,6 +73,7 @@ import it.fast4x.riplay.ui.screens.search.SearchScreen
 import it.fast4x.riplay.ui.screens.searchresult.SearchResultScreen
 import it.fast4x.riplay.ui.screens.settings.SettingsScreen
 import it.fast4x.riplay.ui.screens.statistics.StatisticsScreen
+import it.fast4x.riplay.ui.screens.welcome.WelcomeScreen
 import it.fast4x.riplay.utils.ShowVideoOrSongInfo
 import it.fast4x.riplay.utils.clearPreference
 import it.fast4x.riplay.utils.homeScreenTabIndexKey
@@ -560,6 +561,14 @@ fun AppNavigation(
                         }
                     }
                 },
+            )
+        }
+
+        composable(
+            route = NavRoutes.welcome.name
+        ) { navBackStackEntry ->
+            WelcomeScreen(
+                navController = navController
             )
         }
     }

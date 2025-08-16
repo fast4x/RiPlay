@@ -72,6 +72,7 @@ import it.fast4x.riplay.Database
 import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.LocalSelectedQueue
 import it.fast4x.riplay.R
+import it.fast4x.riplay.YT_PLAYLIST_SHARE_BASEURL
 import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.enums.NavigationBarPosition
 import it.fast4x.riplay.enums.PopupType
@@ -248,7 +249,7 @@ fun Podcast(
                 //.fillMaxSize()
                 .fillMaxHeight()
                 .fillMaxWidth(
-                    if( NavigationBarPosition.Right.isCurrent() )
+                    if (NavigationBarPosition.Right.isCurrent())
                         Dimensions.contentWidthRightBar
                     else
                         1f
@@ -267,7 +268,9 @@ fun Podcast(
                     key = "header"
                 ) {
 
-                    val modifierArt = if (isLandscape) Modifier.fillMaxWidth() else Modifier.fillMaxWidth().aspectRatio(4f / 3)
+                    val modifierArt = if (isLandscape) Modifier.fillMaxWidth() else Modifier
+                        .fillMaxWidth()
+                        .aspectRatio(4f / 3)
 
                     Box(
                         modifier = modifierArt
@@ -322,9 +325,11 @@ fun Podcast(
                                 iconSize = 24.dp,
                                 modifier = Modifier
                                     .align(Alignment.TopEnd)
-                                    .padding(top = 5.dp, end= 5.dp),
+                                    .padding(top = 5.dp, end = 5.dp),
                                 onClick = {
-                                    ("https://music.youtube.com/playlist?list=${browseId.removePrefix("VL")}").let { url ->
+                                    //("https://music.youtube.com/playlist?list=${browseId.removePrefix("VL")}")
+                                    "$YT_PLAYLIST_SHARE_BASEURL${browseId.removePrefix("MPSP")}"
+                                        .let { url ->
                                         val sendIntent = Intent().apply {
                                             action = Intent.ACTION_SEND
                                             type = "text/plain"
@@ -400,12 +405,16 @@ fun Podcast(
                                     .padding(horizontal = 5.dp)
                                     .combinedClickable(
                                         onClick = {
-                                            podcastPage?.listEpisode?.map(Environment.Podcast.EpisodeItem::asMediaItem)?.let { mediaItems ->
-                                                binder?.player?.enqueue(mediaItems, context)
-                                            }
+                                            podcastPage?.listEpisode?.map(Environment.Podcast.EpisodeItem::asMediaItem)
+                                                ?.let { mediaItems ->
+                                                    binder?.player?.enqueue(mediaItems, context)
+                                                }
                                         },
                                         onLongClick = {
-                                            SmartMessage(context.resources.getString(R.string.info_enqueue_songs), context = context)
+                                            SmartMessage(
+                                                context.resources.getString(R.string.info_enqueue_songs),
+                                                context = context
+                                            )
                                         }
                                     )
                             )
@@ -421,7 +430,8 @@ fun Podcast(
                                         onClick = {
                                             if (podcastPage?.listEpisode?.isNotEmpty() == true) {
                                                 binder?.stopRadio()
-                                                podcastPage?.listEpisode?.shuffled()?.map(Environment.Podcast.EpisodeItem::asMediaItem)
+                                                podcastPage?.listEpisode?.shuffled()
+                                                    ?.map(Environment.Podcast.EpisodeItem::asMediaItem)
                                                     ?.let {
                                                         binder?.player?.forcePlayFromBeginning(
                                                             it
@@ -430,7 +440,10 @@ fun Podcast(
                                             }
                                         },
                                         onLongClick = {
-                                            SmartMessage(context.resources.getString(R.string.info_shuffle), context = context)
+                                            SmartMessage(
+                                                context.resources.getString(R.string.info_shuffle),
+                                                context = context
+                                            )
                                         }
                                     )
                             )
@@ -447,17 +460,21 @@ fun Podcast(
                                             if (binder != null) {
                                                 binder.stopRadio()
                                                 binder.playRadio(
-                                                    NavigationEndpoint.Endpoint.Watch( videoId =
-                                                        if (binder.player.currentMediaItem?.mediaId != null)
-                                                            binder.player.currentMediaItem?.mediaId
-                                                        else podcastPage?.listEpisode?.first()?.asMediaItem?.mediaId
+                                                    NavigationEndpoint.Endpoint.Watch(
+                                                        videoId =
+                                                            if (binder.player.currentMediaItem?.mediaId != null)
+                                                                binder.player.currentMediaItem?.mediaId
+                                                            else podcastPage?.listEpisode?.first()?.asMediaItem?.mediaId
                                                     )
                                                 )
                                             }
 
                                         },
                                         onLongClick = {
-                                            SmartMessage(context.resources.getString(R.string.info_start_radio), context = context)
+                                            SmartMessage(
+                                                context.resources.getString(R.string.info_start_radio),
+                                                context = context
+                                            )
                                         }
                                     )
                             )
@@ -484,7 +501,8 @@ fun Podcast(
                                                     onAddToPlaylist = { playlistPreview ->
                                                         position =
                                                             playlistPreview.songCount.minus(1) ?: 0
-                                                        if (position > 0) position++ else position = 0
+                                                        if (position > 0) position++ else position =
+                                                            0
 
                                                         if (!isYouTubeSyncEnabled() || !playlistPreview.playlist.isYoutubePlaylist) {
                                                             podcastPage?.listEpisode?.forEachIndexed { index, song ->
@@ -504,16 +522,24 @@ fun Podcast(
                                                         } else {
                                                             CoroutineScope(Dispatchers.IO).launch {
                                                                 playlistPreview.playlist.browseId?.let { id ->
-                                                                    addToYtPlaylist(playlistPreview.playlist.id,
+                                                                    addToYtPlaylist(
+                                                                        playlistPreview.playlist.id,
                                                                         position,
                                                                         id,
-                                                                        podcastPage?.listEpisode?.map { it.asMediaItem } ?: emptyList())
+                                                                        podcastPage?.listEpisode?.map { it.asMediaItem }
+                                                                            ?: emptyList())
                                                                 }
                                                             }
                                                         }
 
                                                         CoroutineScope(Dispatchers.Main).launch {
-                                                            SmartMessage(context.resources.getString(R.string.done), type = PopupType.Success, context = context)
+                                                            SmartMessage(
+                                                                context.resources.getString(
+                                                                    R.string.done
+                                                                ),
+                                                                type = PopupType.Success,
+                                                                context = context
+                                                            )
                                                         }
                                                     },
                                                     onGoToPlaylist = {
@@ -524,7 +550,10 @@ fun Podcast(
                                             }
                                         },
                                         onLongClick = {
-                                            SmartMessage(context.resources.getString(R.string.info_add_in_playlist), context = context)
+                                            SmartMessage(
+                                                context.resources.getString(R.string.info_add_in_playlist),
+                                                context = context
+                                            )
                                         }
                                     )
                             )

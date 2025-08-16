@@ -998,7 +998,11 @@ fun DeviceListSongs(
 }
 
 private val mediaScope = CoroutineScope(Dispatchers.IO + CoroutineName("MediaStore worker"))
-fun Context.musicFilesAsFlow(sortBy: OnDeviceSongSortBy, order: SortOrder, context: Context): StateFlow<List<OnDeviceSong>> = flow {
+fun Context.musicFilesAsFlow(
+    sortBy: OnDeviceSongSortBy = OnDeviceSongSortBy.DateAdded,
+    order: SortOrder = SortOrder.Descending,
+    context: Context
+): StateFlow<List<OnDeviceSong>> = flow {
     var version: String? = null
 
     while (currentCoroutineContext().isActive) {

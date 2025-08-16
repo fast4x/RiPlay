@@ -72,6 +72,8 @@ import it.fast4x.riplay.LocalPlayerAwareWindowInsets
 import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.LocalSelectedQueue
 import it.fast4x.riplay.R
+import it.fast4x.riplay.YTM_ARTIST_SHARE_BASEURL
+import it.fast4x.riplay.YT_ARTIST_SHARE_BASEURL
 import it.fast4x.riplay.cleanPrefix
 import it.fast4x.riplay.colorPalette
 import it.fast4x.riplay.enums.NavRoutes
@@ -301,7 +303,8 @@ fun ArtistOverview(
                                 type = "text/plain"
                                 putExtra(
                                     Intent.EXTRA_TEXT,
-                                    "https://music.youtube.com/channel/$browseId"
+                                    //"https://music.youtube.com/channel/$browseId"
+                                    "$YTM_ARTIST_SHARE_BASEURL$browseId"
                                 )
                             }
 

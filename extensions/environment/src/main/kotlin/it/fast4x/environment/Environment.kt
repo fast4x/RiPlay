@@ -68,6 +68,15 @@ import java.net.Proxy
 import java.util.Locale
 import java.util.concurrent.TimeUnit
 
+const val YT_PLAYLIST_SHARE_BASEURL = "https://www.youtube.com/playlist?list="
+const val YTM_PLAYLIST_SHARE_BASEURL = "https://music.youtube.com/playlist?list="
+const val YT_VIDEOORSONG_SHARE_BASEURL = "https://www.youtube.com/watch?v="
+const val YTM_VIDEOORSONG_SHARE_BASEURL = "https://music.youtube.com/watch?v="
+const val YT_ARTIST_SHARE_BASEURL = "https://www.youtube.com/channel/"
+const val YTM_ARTIST_SHARE_BASEURL = "https://music.youtube.com/channel/"
+const val YT_ALBUM_SHARE_BASEURL = "https://www.youtube.com/browse/"
+const val YTM_ALBUM_SHARE_BASEURL = "https://music.youtube.com/browse/"
+
 object Environment {
 
     val _7ZoUy0mkCP = EnvironmentPreferences.preference?.p37 ?: ""
@@ -268,6 +277,12 @@ object Environment {
         override val key get() = info?.endpoint?.videoId ?: ""
         override val title get() = info?.name
 
+        val shareYTUrl: String
+            get() = "${YT_VIDEOORSONG_SHARE_BASEURL}${key}"
+
+        val shareYTMUrl: String?
+            get() = "${YTM_VIDEOORSONG_SHARE_BASEURL}${key}"
+
         companion object
     }
 
@@ -296,6 +311,12 @@ object Environment {
                 ?.watchEndpointMusicConfig
                 ?.musicVideoType == "MUSIC_VIDEO_TYPE_UGC"
 
+        val shareYTUrl: String
+            get() = "${YT_VIDEOORSONG_SHARE_BASEURL}${key}"
+
+        val shareYTMUrl: String?
+            get() = "${YTM_VIDEOORSONG_SHARE_BASEURL}${key}"
+
         companion object
     }
 
@@ -310,6 +331,12 @@ object Environment {
         override val key get() = info?.endpoint?.browseId ?: ""
         override val title get() = info?.name
 
+        val shareYTUrl: String
+            get() = "${YT_ALBUM_SHARE_BASEURL}${playlistId}"
+
+        val shareYTMUrl: String?
+            get() = "${YTM_ALBUM_SHARE_BASEURL}${playlistId}"
+
         companion object
     }
 
@@ -322,6 +349,12 @@ object Environment {
     ) : Item() {
         override val key get() = info?.endpoint?.browseId ?: ""
         override val title get() = info?.name
+
+        val shareYTUrl: String
+            get() = "${YT_ARTIST_SHARE_BASEURL}${channelId}"
+
+        val shareYTMUrl: String?
+            get() = "${YTM_ARTIST_SHARE_BASEURL}${channelId}"
 
         companion object
     }
@@ -336,6 +369,12 @@ object Environment {
     ) : Item() {
         override val key get() = info?.endpoint?.browseId ?: ""
         override val title get() = info?.name
+
+        val shareYTUrl: String
+            get() = "${YT_PLAYLIST_SHARE_BASEURL}${key}"
+
+        val shareYTMUrl: String?
+            get() = "${YTM_PLAYLIST_SHARE_BASEURL}${key}"
 
         companion object
     }
@@ -430,7 +469,7 @@ object Environment {
         val authorThumbnail: String?,
         val thumbnail: List<Thumbnail>,
         val description: String?,
-        val listEpisode: List<EpisodeItem>
+        val listEpisode: List<EpisodeItem>,
     ) {
         data class EpisodeItem(
             val title: String,

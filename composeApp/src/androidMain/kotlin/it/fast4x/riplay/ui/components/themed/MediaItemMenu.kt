@@ -121,6 +121,7 @@ import it.fast4x.riplay.ui.screens.player.fastPlay
 import it.fast4x.riplay.ui.screens.settings.isYouTubeSyncEnabled
 import it.fast4x.riplay.utils.addSongToYtPlaylist
 import it.fast4x.riplay.utils.addToYtLikedSong
+import it.fast4x.riplay.utils.asSong
 import org.dailyislam.android.utilities.isNetworkConnected
 import it.fast4x.riplay.utils.removeYTSongFromPlaylist
 import it.fast4x.riplay.utils.mediaItemToggleLike
@@ -692,7 +693,8 @@ fun BaseMediaItemMenu(
                 type = "text/plain"
                 putExtra(
                     Intent.EXTRA_TEXT,
-                    "https://music.youtube.com/watch?v=${mediaItem.mediaId}"
+                    //"https://music.youtube.com/watch?v=${mediaItem.mediaId}"
+                    mediaItem.asSong.shareYTUrl
                 )
             }
 
@@ -759,7 +761,8 @@ fun MiniMediaItemMenu(
                 type = "text/plain"
                 putExtra(
                     Intent.EXTRA_TEXT,
-                    "https://music.youtube.com/watch?v=${mediaItem.mediaId}"
+                    //"https://music.youtube.com/watch?v=${mediaItem.mediaId}"
+                    mediaItem.asSong.shareYTUrl
                 )
             }
 

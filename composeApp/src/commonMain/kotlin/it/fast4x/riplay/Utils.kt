@@ -11,6 +11,15 @@ const val EXPLICIT_PREFIX = "e:"
 const val LOCAL_KEY_PREFIX = "local:"
 const val YTP_PREFIX = "account:"
 
+const val YT_PLAYLIST_SHARE_BASEURL = "https://www.youtube.com/playlist?list="
+const val YTM_PLAYLIST_SHARE_BASEURL = "https://music.youtube.com/playlist?list="
+const val YT_VIDEOORSONG_SHARE_BASEURL = "https://www.youtube.com/watch?v="
+const val YTM_VIDEOORSONG_SHARE_BASEURL = "https://music.youtube.com/watch?v="
+const val YT_ARTIST_SHARE_BASEURL = "https://www.youtube.com/channel/"
+const val YTM_ARTIST_SHARE_BASEURL = "https://music.youtube.com/channel/"
+const val YT_ALBUM_SHARE_BASEURL = "https://www.youtube.com/browse/"
+const val YTM_ALBUM_SHARE_BASEURL = "https://music.youtube.com/browse/"
+
 
 /**
  * Assumption: all prefixes end with ":" and have at least 1 (other) character.
@@ -49,3 +58,4 @@ fun String?.thumbnail(): String? {
 fun Uri?.thumbnail(size: Int): Uri? {
     return toString().thumbnail(size)?.toUri()
 }
+

@@ -83,6 +83,7 @@ import it.fast4x.riplay.Database.Companion.like
 import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.LocalSelectedQueue
 import it.fast4x.riplay.R
+import it.fast4x.riplay.YT_PLAYLIST_SHARE_BASEURL
 import it.fast4x.riplay.appContext
 import it.fast4x.riplay.cleanPrefix
 import it.fast4x.riplay.enums.NavRoutes
@@ -442,7 +443,9 @@ fun PlaylistSongList(
                                     .align(Alignment.TopEnd)
                                     .padding(top = 5.dp, end = 5.dp),
                                 onClick = {
-                                    (playlistPage?.playlist?.thumbnail?.url ?: "https://music.youtube.com/playlist?list=${browseId.removePrefix("VL")}").let { url ->
+                                    //(playlistPage?.playlist?.thumbnail?.url ?: "https://music.youtube.com/playlist?list=${browseId.removePrefix("VL")}")
+                                    "$YT_PLAYLIST_SHARE_BASEURL${browseId.removePrefix("VL")}"
+                                        .let { url ->
                                         val sendIntent = Intent().apply {
                                             action = Intent.ACTION_SEND
                                             type = "text/plain"

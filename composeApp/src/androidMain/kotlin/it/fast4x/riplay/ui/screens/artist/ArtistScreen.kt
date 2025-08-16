@@ -33,11 +33,13 @@ import androidx.navigation.NavController
 import com.valentinilk.shimmer.shimmer
 import it.fast4x.compose.persist.persist
 import it.fast4x.environment.EnvironmentExt
+import it.fast4x.environment.YTM_ARTIST_SHARE_BASEURL
 import it.fast4x.environment.requests.ArtistPage
 import it.fast4x.environment.requests.ArtistSection
 import it.fast4x.riplay.Database
 import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.R
+import it.fast4x.riplay.YT_ARTIST_SHARE_BASEURL
 import it.fast4x.riplay.cleanPrefix
 import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.enums.ThumbnailRoundness
@@ -208,7 +210,8 @@ fun ArtistScreen(
                                                 type = "text/plain"
                                                 putExtra(
                                                     Intent.EXTRA_TEXT,
-                                                    "https://music.youtube.com/channel/$browseId"
+                                                    //"https://music.youtube.com/channel/$browseId"
+                                                    "$YTM_ARTIST_SHARE_BASEURL$browseId"
                                                 )
                                             }
 

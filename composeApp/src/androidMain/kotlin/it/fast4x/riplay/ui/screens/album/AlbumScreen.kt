@@ -298,7 +298,7 @@ fun AlbumScreen(
                             icon = R.drawable.share_social,
                             color = colorPalette().text,
                             onClick = {
-                                album?.shareUrl?.let { url ->
+                                album?.shareYTUrl?.let { url ->
                                     val sendIntent = Intent().apply {
                                         action = Intent.ACTION_SEND
                                         type = "text/plain"

@@ -26,7 +26,8 @@ enum class NavRoutes {
     podcast,
     videoOrSongInfo,
     onDeviceAlbum,
-    onDeviceArtist;
+    onDeviceArtist,
+    welcome;
 
     companion object {
 

@@ -600,7 +600,7 @@ fun AlbumDetails(
                                         .align(Alignment.TopEnd)
                                         .padding(top = 5.dp, end = 5.dp),
                                     onClick = {
-                                        album?.shareUrl?.let { url ->
+                                        album?.shareYTUrl?.let { url ->
                                             val sendIntent = Intent().apply {
                                                 action = Intent.ACTION_SEND
                                                 type = "text/plain"
