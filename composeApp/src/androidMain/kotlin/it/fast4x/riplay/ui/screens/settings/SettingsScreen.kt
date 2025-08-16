@@ -95,7 +95,7 @@ fun SettingsScreen(
                     item(2, stringResource(R.string.player_appearance), R.drawable.color_palette)
                     item(3, if (!isYouTubeLoggedIn()) stringResource(R.string.quick_picks)
                     else stringResource(R.string.home), if (!isYouTubeLoggedIn()) R.drawable.sparkles
-                    else R.drawable.ytmusic)
+                    else R.drawable.internet)
                     item(4, stringResource(R.string.tab_data), R.drawable.server)
                     item(5, stringResource(R.string.tab_accounts), R.drawable.person)
                     item(6, stringResource(R.string.tab_miscellaneous), R.drawable.equalizer)

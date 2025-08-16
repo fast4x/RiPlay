@@ -301,6 +301,7 @@ fun PlaylistItem(
     isEditable : Boolean = false,
     isPodcast : Boolean = false
 ) {
+    val localIconSize = remember { if (homePage) 0.2*iconSize else 30.dp }
     ItemContainer(
         alternative = alternative,
         thumbnailSizeDp = thumbnailSizeDp,
@@ -321,23 +322,25 @@ fun PlaylistItem(
             )
 
             name?.let {
-                if (it.startsWith(PIPED_PREFIX,0,true)) {
-                    Image(
-                        painter = painterResource(R.drawable.piped_logo),
-                        colorFilter = ColorFilter.tint(colorPalette().red),
-                        modifier = Modifier
-                            .size(if (homePage) 0.3*iconSize else 40.dp)
-                            .padding(all = 5.dp),
-                        contentDescription = "Background Image",
-                        contentScale = ContentScale.Fit
-                    )
-                }
+//                if (it.startsWith(PIPED_PREFIX,0,true)) {
+//                    Image(
+//                        painter = painterResource(R.drawable.piped_logo),
+//                        colorFilter = ColorFilter.tint(colorPalette().red),
+//                        modifier = Modifier
+//                            .size(iconSize)
+//                            .padding(all = 5.dp),
+//                        contentDescription = "Background Image",
+//                        contentScale = ContentScale.Fit
+//                    )
+//                }
                 if (it.startsWith(PINNED_PREFIX,0,true)) {
                     Image(
                         painter = painterResource(R.drawable.pin),
                         colorFilter = ColorFilter.tint(colorPalette().accent),
                         modifier = Modifier
-                            .size(if (homePage) 0.3*iconSize else 40.dp)
+                            .padding(all = 5.dp)
+                            .background(colorPalette().text, CircleShape)
+                            .size(localIconSize)
                             .padding(all = 5.dp),
                         contentDescription = "Background Image",
                         contentScale = ContentScale.Fit
@@ -348,7 +351,9 @@ fun PlaylistItem(
                         painter = painterResource(R.drawable.stat_month),
                         colorFilter = ColorFilter.tint(colorPalette().accent),
                         modifier = Modifier
-                            .size(if (homePage) 0.3*iconSize else 40.dp)
+                            .padding(all = 5.dp)
+                            .background(colorPalette().text, CircleShape)
+                            .size(localIconSize)
                             .padding(all = 5.dp),
                         contentDescription = "Background Image",
                         contentScale = ContentScale.Fit
@@ -358,10 +363,12 @@ fun PlaylistItem(
             }
             if ((browseId?.isNotEmpty() == true && name?.startsWith(PIPED_PREFIX) == false) || isYoutubePlaylist) {
                 Image(
-                    painter = painterResource(R.drawable.ytmusic),
-                    colorFilter = ColorFilter.tint(if (isYoutubePlaylist) Color.Red.copy(0.75f).compositeOver(Color.White) else colorPalette().text),
+                    painter = painterResource(R.drawable.internet),
+                    colorFilter = ColorFilter.tint(if (isYoutubePlaylist) Color.Red.copy(0.75f).compositeOver(Color.White) else colorPalette().textDisabled),
                     modifier = Modifier
-                        .size(if (homePage) 0.3*iconSize else 40.dp)
+                        .padding(all = 5.dp)
+                        .background(colorPalette().text, CircleShape)
+                        .size(localIconSize)
                         .padding(all = 5.dp),
                     contentDescription = "Background Image",
                     contentScale = ContentScale.Fit
@@ -371,10 +378,13 @@ fun PlaylistItem(
             if (isPodcast) {
                 Image(
                     painter = painterResource(R.drawable.podcast),
-                    colorFilter = ColorFilter.tint(if (isYoutubePlaylist) Color.Red.copy(0.75f).compositeOver(Color.White) else colorPalette().text),
+                    colorFilter = ColorFilter.tint(if (isYoutubePlaylist) Color.Red.copy(0.75f).compositeOver(Color.White) else colorPalette().textDisabled),
                     modifier = Modifier
-                        .size(if (homePage) 0.3*iconSize else 40.dp)
-                        .padding(all = 5.dp),
+                        .padding(all = 5.dp)
+                        .background(colorPalette().text, CircleShape)
+                        .size(localIconSize)
+                        .padding(all = 5.dp)
+                        .align(Alignment.TopEnd),
                     contentDescription = "Background Image",
                     contentScale = ContentScale.Fit
                 )
@@ -383,12 +393,12 @@ fun PlaylistItem(
             if (isYoutubePlaylist && !isEditable){
                 Image(
                     painter = painterResource(R.drawable.locked),
-                    colorFilter = ColorFilter.tint(Color.Red),
+                    colorFilter = ColorFilter.tint(colorPalette().textDisabled),
                     modifier = Modifier
                         .padding(all = 5.dp)
                         .background(colorPalette().text, CircleShape)
                         .padding(all = 5.dp)
-                        .size(if (homePage) 0.2*iconSize else 40.dp)
+                        .size(localIconSize)
                         .align(Alignment.BottomStart),
                     contentDescription = "Background Image",
                     contentScale = ContentScale.Fit

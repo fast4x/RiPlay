@@ -196,7 +196,7 @@ fun AccountsSettings() {
                                 isEnabled = true,
                                 title = if (isLoggedIn) "Disconnect" else "Connect",
                                 text = "", //if (isLoggedIn) "$accountName ${accountChannelHandle}" else "",
-                                icon = R.drawable.ytmusic,
+                                icon = R.drawable.internet,
                                 iconColor = colorPalette().text,
                                 onClick = {
                                     if (isLoggedIn) { // if logged in, disconnect and clean data

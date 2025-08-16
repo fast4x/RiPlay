@@ -231,7 +231,7 @@ fun AlbumsItemGridMenu(
                                             )
                                         if (playlistPreview.playlist.isYoutubePlaylist) {
                                             Image(
-                                                painter = painterResource(R.drawable.ytmusic),
+                                                painter = painterResource(R.drawable.internet),
                                                 contentDescription = null,
                                                 colorFilter = ColorFilter.tint(
                                                     Color.Red.copy(0.75f).compositeOver(Color.White)

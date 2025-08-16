@@ -280,7 +280,7 @@ fun PlaylistsItemMenu(
                                             )
                                         if (playlistPreview.playlist.isYoutubePlaylist) {
                                             Image(
-                                                painter = painterResource(R.drawable.ytmusic),
+                                                painter = painterResource(R.drawable.internet),
                                                 contentDescription = null,
                                                 colorFilter = ColorFilter.tint(
                                                     Color.Red.copy(0.75f).compositeOver(Color.White)
@@ -586,7 +586,7 @@ fun PlaylistsItemMenu(
                     if (showonAddToPreferitesYoutube) {
                         if (onAddToPreferitesYoutube != null)
                             MenuEntry(
-                                icon = R.drawable.ytmusic,
+                                icon = R.drawable.internet,
                                 text = stringResource(R.string.add_rimusic_to_ytm_favorites),
                                 onClick = {
                                     onDismiss()

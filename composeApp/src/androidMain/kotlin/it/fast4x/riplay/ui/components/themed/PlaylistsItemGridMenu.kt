@@ -251,7 +251,7 @@ fun PlaylistsItemGridMenu(
                                         )
                                     if (playlistPreview.playlist.isYoutubePlaylist) {
                                         Image(
-                                            painter = painterResource(R.drawable.ytmusic),
+                                            painter = painterResource(R.drawable.internet),
                                             contentDescription = null,
                                             colorFilter = ColorFilter.tint(
                                                 Color.Red.copy(0.75f).compositeOver(Color.White)
@@ -508,7 +508,7 @@ fun PlaylistsItemGridMenu(
                 if (showonAddToPreferitesYoutube) {
                     if (onAddToPreferitesYoutube != null)
                         GridMenuItem(
-                            icon = R.drawable.ytmusic,
+                            icon = R.drawable.internet,
                             title = R.string.add_rimusic_to_ytm_favorites,
                             colorIcon = colorPalette.text,
                             colorText = colorPalette.text,

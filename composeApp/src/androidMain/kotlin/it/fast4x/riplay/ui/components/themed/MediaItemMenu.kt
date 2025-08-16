@@ -1110,7 +1110,7 @@ fun MediaItemMenu(
                                         )
                                     if (playlistPreview.playlist.isYoutubePlaylist) {
                                         Image(
-                                            painter = painterResource(R.drawable.ytmusic),
+                                            painter = painterResource(R.drawable.internet),
                                             contentDescription = null,
                                             colorFilter = ColorFilter.tint(
                                                 Color.Red.copy(0.75f).compositeOver(Color.White)
@@ -2033,7 +2033,7 @@ fun AddToPlaylistItemMenu(
                                 )
                             if (playlistPreview.playlist.isYoutubePlaylist) {
                                 Image(
-                                    painter = painterResource(R.drawable.ytmusic),
+                                    painter = painterResource(R.drawable.internet),
                                     contentDescription = null,
                                     colorFilter = ColorFilter.tint(
                                         Color.Red.copy(0.75f).compositeOver(Color.White)
@@ -2269,7 +2269,7 @@ fun AddToPlaylistArtistSongsMenu(
                                 )
                             if (playlistPreview.playlist.isYoutubePlaylist) {
                                 Image(
-                                    painter = painterResource(R.drawable.ytmusic),
+                                    painter = painterResource(R.drawable.internet),
                                     contentDescription = null,
                                     colorFilter = ColorFilter.tint(
                                         Color.Red.copy(0.75f).compositeOver(Color.White)

@@ -468,7 +468,7 @@ fun HomePlaylists(
                                     }),
                                 disableScrollingText = disableScrollingText,
                                 isYoutubePlaylist = preview.playlist.isYoutubePlaylist,
-                                isEditable = preview.playlist.isEditable
+                                isEditable = preview.playlist.isEditable,
                             )
                         }
 

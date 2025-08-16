@@ -250,7 +250,7 @@ fun OnDeviceArtistDetails(
                             )
                             if (artist?.isYoutubeArtist == true) {
                                 Image(
-                                    painter = painterResource(R.drawable.ytmusic),
+                                    painter = painterResource(R.drawable.internet),
                                     colorFilter = ColorFilter.tint(
                                         Color.Red.copy(0.75f).compositeOver(Color.White)
                                     ),

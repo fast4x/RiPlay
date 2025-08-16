@@ -95,7 +95,7 @@ fun ActionBar(
                     .clip( thumbnailShape() )
                     .clickable { expanded = !expanded }
             )
-        else HeaderIcon( R.drawable.ytmusic, size = 30.dp ) { expanded = !expanded }
+        else HeaderIcon( R.drawable.internet, size = 30.dp ) { expanded = !expanded }
     } else HeaderIcon( R.drawable.burger ) { expanded = !expanded }
 
     // Define actions for when item inside menu clicked,

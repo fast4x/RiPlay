@@ -130,7 +130,7 @@ fun AlbumItem(
             )
             if (isYoutubeAlbum) {
                 Image(
-                    painter = painterResource(R.drawable.ytmusic),
+                    painter = painterResource(R.drawable.internet),
                     colorFilter = ColorFilter.tint(Color.Red.copy(0.75f).compositeOver(Color.White)),
                     modifier = Modifier
                         .size(if (homePage) 0.3*iconSize else 40.dp)

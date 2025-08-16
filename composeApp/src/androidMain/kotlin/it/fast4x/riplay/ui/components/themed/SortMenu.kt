@@ -296,7 +296,7 @@ fun FilterMenu (
         }
         onYoutubeLibrary?.let {
             MenuEntry(
-                icon = R.drawable.ytmusic,
+                icon = R.drawable.internet,
                 text = stringResource(R.string.ytm_library),
                 onClick = {
                     onDismiss()

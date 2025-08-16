@@ -220,8 +220,8 @@ fun Podcast(
                         Playlist(
                             name = text,
                             browseId = browseId,
-                            isYoutubePlaylist = true,
-                            isEditable = false,
+                            //isYoutubePlaylist = true,
+                            //isEditable = false,
                             isPodcast = true
                         )
                     )

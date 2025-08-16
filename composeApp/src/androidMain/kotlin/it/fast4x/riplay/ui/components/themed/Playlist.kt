@@ -23,6 +23,8 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import it.fast4x.compose.persist.persistList
 import it.fast4x.riplay.Database
+import it.fast4x.riplay.MONTHLY_PREFIX
+import it.fast4x.riplay.PINNED_PREFIX
 import it.fast4x.riplay.PIPED_PREFIX
 import it.fast4x.riplay.R
 import it.fast4x.riplay.cleanPrefix
@@ -31,6 +33,7 @@ import it.fast4x.riplay.models.PlaylistPreview
 import it.fast4x.riplay.models.Song
 import it.fast4x.riplay.ui.items.PlaylistItem
 import it.fast4x.riplay.utils.thumbnail
+import kotlin.text.startsWith
 
 @Composable
 fun Playlist(
@@ -104,11 +107,13 @@ fun Playlist(
                     PIPED_PREFIX)
             ) {
                 Image(
-                    painter = painterResource(R.drawable.ytmusic),
+                    painter = painterResource(R.drawable.internet),
                     colorFilter = ColorFilter.tint(if (playlist.playlist.isYoutubePlaylist) Color.Red.copy(0.75f).compositeOver(
-                        Color.White) else colorPalette().text),
+                        Color.White) else colorPalette().textDisabled),
                     modifier = Modifier
-                        .size(40.dp)
+                        .padding(all = 5.dp)
+                        .background(colorPalette().text, CircleShape)
+                        .size(30.dp)
                         .padding(all = 5.dp),
                     contentDescription = "Background Image",
                     contentScale = ContentScale.Fit
@@ -117,13 +122,53 @@ fun Playlist(
             if (playlist.playlist.isYoutubePlaylist && !playlist.playlist.isEditable){
                 Image(
                     painter = painterResource(R.drawable.locked),
-                    colorFilter = ColorFilter.tint(Color.Red),
+                    colorFilter = ColorFilter.tint(colorPalette().textDisabled),
                     modifier = Modifier
                         .padding(all = 5.dp)
                         .background(colorPalette().text, CircleShape)
+                        .size(30.dp)
                         .padding(all = 5.dp)
-                        .size(18.dp)
                         .align(Alignment.BottomStart),
+                    contentDescription = "Background Image",
+                    contentScale = ContentScale.Fit
+                )
+            }
+            if (playlist.playlist.name.startsWith(PINNED_PREFIX,0,true)) {
+                Image(
+                    painter = painterResource(R.drawable.pin),
+                    colorFilter = ColorFilter.tint(colorPalette().textDisabled),
+                    modifier = Modifier
+                        .padding(all = 5.dp)
+                        .background(colorPalette().text, CircleShape)
+                        .size(30.dp)
+                        .padding(all = 5.dp),
+                    contentDescription = "Background Image",
+                    contentScale = ContentScale.Fit
+                )
+            }
+            if (playlist.playlist.name.startsWith(MONTHLY_PREFIX,0,true)) {
+                Image(
+                    painter = painterResource(R.drawable.stat_month),
+                    colorFilter = ColorFilter.tint(colorPalette().textDisabled),
+                    modifier = Modifier
+                        .padding(all = 5.dp)
+                        .background(colorPalette().text, CircleShape)
+                        .size(30.dp)
+                        .padding(all = 5.dp),
+                    contentDescription = "Background Image",
+                    contentScale = ContentScale.Fit
+                )
+            }
+            if (playlist.playlist.isPodcast) {
+                Image(
+                    painter = painterResource(R.drawable.podcast),
+                    colorFilter = ColorFilter.tint(colorPalette().textDisabled),
+                    modifier = Modifier
+                        .padding(all = 5.dp)
+                        .background(colorPalette().text, CircleShape)
+                        .size(30.dp)
+                        .padding(all = 5.dp)
+                        .align(Alignment.TopEnd),
                     contentDescription = "Background Image",
                     contentScale = ContentScale.Fit
                 )

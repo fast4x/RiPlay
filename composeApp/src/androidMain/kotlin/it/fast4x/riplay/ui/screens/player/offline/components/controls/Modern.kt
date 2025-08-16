@@ -142,7 +142,7 @@ fun InfoAlbumAndArtistModern(
 
             if (playerInfoShowIcon) {
                 IconButton(
-                    icon = if (albumId == null && !media.isLocal) R.drawable.logo_youtube else R.drawable.album,
+                    icon = if (albumId == null && !media.isLocal) R.drawable.internet else R.drawable.album,
                     color = if (albumId == null) colorPalette().textDisabled else colorPalette().text,
                     enabled = albumId != null,
                     onClick = {
@@ -335,7 +335,7 @@ fun InfoAlbumAndArtistModern(
 
         if (playerInfoShowIcon) {
             IconButton(
-                icon = if (artistIds?.isEmpty() == true && !media.isLocal) R.drawable.logo_youtube else R.drawable.artists,
+                icon = if (artistIds?.isEmpty() == true && !media.isLocal) R.drawable.internet else R.drawable.artists,
                 color = if (artistIds?.isEmpty() == true) colorPalette().textDisabled else colorPalette().text,
                 onClick = {
                     if (artistIds?.isNotEmpty() == true && artistIds.size > 1)
