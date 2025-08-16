@@ -1,0 +1,63 @@
+package it.fast4x.riplay.extensions.listapps
+
+import android.content.Context
+import android.content.Intent
+import android.content.pm.ApplicationInfo
+import android.content.pm.PackageManager
+import android.graphics.drawable.Drawable
+import android.os.Build
+
+fun listApps(
+    context: Context,
+    includeSystemApps: Boolean = false
+): List<DeviceApp> {
+
+    // searching main activities labeled to be launchers of the apps
+    val pm = context.packageManager
+    val mainIntent = Intent(Intent.ACTION_MAIN, null)
+    mainIntent.addCategory(Intent.CATEGORY_LAUNCHER)
+
+    if (!includeSystemApps) {
+        val resolvedInfos = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            pm.queryIntentActivities(
+                mainIntent,
+                PackageManager.ResolveInfoFlags.of(0L)
+            )
+        } else {
+            pm.queryIntentActivities(mainIntent, 0)
+        }
+
+        return resolvedInfos.map { info ->
+            val app = DeviceApp(
+                packageName = info.activityInfo.packageName,
+                iconDrawable = info.loadIcon(pm),
+                appName = info.loadLabel(pm).toString(),
+                isSystemApp = false
+            )
+            app
+        }
+    } else {
+        val appInfos = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            pm.getInstalledApplications(PackageManager.ApplicationInfoFlags.of(0L))
+        } else {
+            pm.getInstalledApplications(0)
+        }
+
+        return appInfos.map { appInfo ->
+            val app = DeviceApp(
+                packageName = appInfo.packageName,
+                iconDrawable = appInfo.loadIcon(pm),
+                appName = appInfo.loadLabel(pm).toString(),
+                isSystemApp = appInfo.flags and ApplicationInfo.FLAG_SYSTEM != 0
+            )
+            app
+        }
+    }
+}
+
+data class DeviceApp (
+    val packageName: String,
+    val iconDrawable: Drawable,
+    val appName: String,
+    val isSystemApp: Boolean
+)
