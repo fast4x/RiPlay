@@ -216,7 +216,15 @@ fun Podcast(
             placeholder = "https://........",
             setValue = { text ->
                 Database.asyncTransaction {
-                    val playlistId = insert(Playlist(name = text, browseId = browseId))
+                    val playlistId = insert(
+                        Playlist(
+                            name = text,
+                            browseId = browseId,
+                            isYoutubePlaylist = true,
+                            isEditable = false,
+                            isPodcast = true
+                        )
+                    )
 
                     podcastPage?.listEpisode
                         ?.map(Environment.Podcast.EpisodeItem::asMediaItem)

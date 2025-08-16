@@ -74,7 +74,8 @@ fun PlaylistItem(
     iconSize: Dp = 34.dp,
     disableScrollingText: Boolean,
     isYoutubePlaylist : Boolean = false,
-    isEditable : Boolean = false
+    isEditable : Boolean = false,
+    isPodcast : Boolean = false
 ) {
     PlaylistItem(
         thumbnailContent = {
@@ -96,7 +97,8 @@ fun PlaylistItem(
         showName = showName,
         disableScrollingText = disableScrollingText,
         isYoutubePlaylist = isYoutubePlaylist,
-        isEditable = isEditable
+        isEditable = isEditable,
+        isPodcast = isPodcast
     )
 }
 
@@ -112,7 +114,7 @@ fun PlaylistItem(
     showName: Boolean = true,
     disableScrollingText: Boolean,
     isYoutubePlaylist: Boolean,
-    isEditable: Boolean
+    isEditable: Boolean,
 ) {
     val context = LocalContext.current
 
@@ -209,7 +211,8 @@ fun PlaylistItem(
         showName = showName,
         disableScrollingText = disableScrollingText,
         isYoutubePlaylist = isYoutubePlaylist,
-        isEditable = isEditable
+        isEditable = isEditable,
+        isPodcast = playlist.playlist.isPodcast
     )
 }
 
@@ -254,7 +257,8 @@ fun PlaylistItem(
     showSongsCount: Boolean = true,
     disableScrollingText: Boolean,
     isYoutubePlaylist : Boolean = false,
-    isEditable : Boolean = false
+    isEditable : Boolean = false,
+    isPodcast : Boolean = false
 ) {
     PlaylistItem(
         thumbnailContent = {
@@ -273,7 +277,8 @@ fun PlaylistItem(
         alternative = alternative,
         disableScrollingText = disableScrollingText,
         isYoutubePlaylist = isYoutubePlaylist,
-        isEditable = isEditable
+        isEditable = isEditable,
+        isPodcast = isPodcast
     )
 }
 
@@ -293,7 +298,8 @@ fun PlaylistItem(
     showSongsCount: Boolean = true,
     disableScrollingText: Boolean,
     isYoutubePlaylist : Boolean = false,
-    isEditable : Boolean = false
+    isEditable : Boolean = false,
+    isPodcast : Boolean = false
 ) {
     ItemContainer(
         alternative = alternative,
@@ -353,6 +359,18 @@ fun PlaylistItem(
             if ((browseId?.isNotEmpty() == true && name?.startsWith(PIPED_PREFIX) == false) || isYoutubePlaylist) {
                 Image(
                     painter = painterResource(R.drawable.ytmusic),
+                    colorFilter = ColorFilter.tint(if (isYoutubePlaylist) Color.Red.copy(0.75f).compositeOver(Color.White) else colorPalette().text),
+                    modifier = Modifier
+                        .size(if (homePage) 0.3*iconSize else 40.dp)
+                        .padding(all = 5.dp),
+                    contentDescription = "Background Image",
+                    contentScale = ContentScale.Fit
+                )
+            }
+
+            if (isPodcast) {
+                Image(
+                    painter = painterResource(R.drawable.podcast),
                     colorFilter = ColorFilter.tint(if (isYoutubePlaylist) Color.Red.copy(0.75f).compositeOver(Color.White) else colorPalette().text),
                     modifier = Modifier
                         .size(if (homePage) 0.3*iconSize else 40.dp)
