@@ -2174,6 +2174,11 @@ interface Database {
 
     @Transaction
     @Query("SELECT DISTINCT S.* FROM Song S INNER JOIN songplaylistmap SM ON S.id=SM.songId " +
+            "INNER JOIN Playlist P ON P.id=SM.playlistId WHERE P.isPodcast = 1")
+    fun songsInAllPodcastPlaylists(): Flow<List<Song>>
+
+    @Transaction
+    @Query("SELECT DISTINCT S.* FROM Song S INNER JOIN songplaylistmap SM ON S.id=SM.songId " +
             "INNER JOIN Playlist P ON P.id=SM.playlistId WHERE P.name LIKE '${PINNED_PREFIX}' || '%'")
     fun songsInAllPinnedPlaylists(): Flow<List<Song>>
 

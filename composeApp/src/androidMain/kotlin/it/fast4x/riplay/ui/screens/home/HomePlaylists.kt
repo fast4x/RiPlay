@@ -145,7 +145,7 @@ fun HomePlaylists(
             PlaylistsType.Playlist -> Database.songsInAllPlaylists()
             PlaylistsType.PinnedPlaylist -> Database.songsInAllPinnedPlaylists()
             PlaylistsType.MonthlyPlaylist -> Database.songsInAllMonthlyPlaylists()
-            //PlaylistsType.PipedPlaylist -> Database.songsInAllPipedPlaylists()
+            PlaylistsType.PodcastPlaylist -> Database.songsInAllPodcastPlaylists()
             PlaylistsType.YTPlaylist -> Database.songsInAllYTPrivatePlaylists()
         }.map { it.map( Song::asMediaItem ) }
     }
@@ -295,8 +295,9 @@ fun HomePlaylists(
 
     val buttonsList = mutableListOf(PlaylistsType.Playlist to stringResource(R.string.playlists))
     buttonsList += PlaylistsType.YTPlaylist to stringResource(R.string.yt_playlists)
-//    if (showPipedPlaylists) buttonsList +=
-//        PlaylistsType.PipedPlaylist to stringResource(R.string.piped_playlists)
+    //if (showPipedPlaylists)
+        buttonsList +=
+        PlaylistsType.PodcastPlaylist to stringResource(R.string.podcasts)
     if (showPinnedPlaylists) buttonsList +=
         PlaylistsType.PinnedPlaylist to stringResource(R.string.pinned_playlists)
     if (showMonthlyPlaylists) buttonsList +=
@@ -365,13 +366,18 @@ fun HomePlaylists(
                                 PlaylistsType.Playlist -> ""    // Matches everything
                                 PlaylistsType.PinnedPlaylist -> PINNED_PREFIX
                                 PlaylistsType.MonthlyPlaylist -> MONTHLY_PREFIX
-                                //PlaylistsType.PipedPlaylist -> PIPED_PREFIX
+                                PlaylistsType.PodcastPlaylist -> ""
                                 PlaylistsType.YTPlaylist -> YTP_PREFIX
                             }
                         val condition: (PlaylistPreview) -> Boolean = {
-                            if (playlistType == PlaylistsType.YTPlaylist) {
-                                it.playlist.isYoutubePlaylist
-                            } else it.playlist.name.startsWith(listPrefix, true)
+                            when(playlistType){
+                                PlaylistsType.YTPlaylist -> it.playlist.isYoutubePlaylist
+                                PlaylistsType.PodcastPlaylist -> it.playlist.isPodcast
+                                else -> it.playlist.name.startsWith(listPrefix, true)
+                            }
+//                            if (playlistType == PlaylistsType.YTPlaylist) {
+//                                it.playlist.isYoutubePlaylist
+//                            } else it.playlist.name.startsWith(listPrefix, true)
                         }
                         items(
                             items = itemsOnDisplay.filter(condition),
@@ -429,13 +435,18 @@ fun HomePlaylists(
                                 PlaylistsType.Playlist -> ""    // Matches everything
                                 PlaylistsType.PinnedPlaylist -> PINNED_PREFIX
                                 PlaylistsType.MonthlyPlaylist -> MONTHLY_PREFIX
-                                //PlaylistsType.PipedPlaylist -> PIPED_PREFIX
+                                PlaylistsType.PodcastPlaylist -> ""
                                 PlaylistsType.YTPlaylist -> YTP_PREFIX
                             }
                         val condition: (PlaylistPreview) -> Boolean = {
-                            if (playlistType == PlaylistsType.YTPlaylist) {
-                                it.playlist.isYoutubePlaylist
-                            } else it.playlist.name.startsWith(listPrefix, true)
+                            when(playlistType){
+                                PlaylistsType.YTPlaylist -> it.playlist.isYoutubePlaylist
+                                PlaylistsType.PodcastPlaylist -> it.playlist.isPodcast
+                                else -> it.playlist.name.startsWith(listPrefix, true)
+                            }
+//                            if (playlistType == PlaylistsType.YTPlaylist) {
+//                                it.playlist.isYoutubePlaylist
+//                            } else it.playlist.name.startsWith(listPrefix, true)
                         }
                         items(
                             items = itemsOnDisplay.filter(condition),
