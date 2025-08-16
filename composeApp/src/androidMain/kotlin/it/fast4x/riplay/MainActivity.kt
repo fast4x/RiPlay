@@ -486,7 +486,11 @@ class MainActivity :
 
         updateSelectedQueue()
 
-        listApps(this)
+        val apps = listApps(this)
+        apps.forEach { app ->
+            println("MainActivity.onCreate app $app")
+        }
+
 
     }
 

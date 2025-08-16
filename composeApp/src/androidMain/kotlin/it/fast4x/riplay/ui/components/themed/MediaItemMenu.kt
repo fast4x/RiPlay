@@ -2,8 +2,12 @@ package it.fast4x.riplay.ui.components.themed
 
 
 import android.annotation.SuppressLint
+import android.content.ActivityNotFoundException
+import android.content.ComponentName
 import android.content.Intent
+import android.os.Build
 import androidx.activity.compose.BackHandler
+import androidx.annotation.RequiresApi
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.ExperimentalAnimationApi
@@ -611,6 +615,7 @@ fun QueuedMediaItemMenu(
     }
 }
 
+
 @ExperimentalTextApi
 @UnstableApi
 @ExperimentalAnimationApi
@@ -688,17 +693,39 @@ fun BaseMediaItemMenu(
             }
         },
         onShare = {
-            val sendIntent = Intent().apply {
-                action = Intent.ACTION_SEND
-                type = "text/plain"
-                putExtra(
+//            val sendIntent = Intent().apply {
+//                action = Intent.ACTION_SEND
+//                type = "text/plain"
+//                putExtra(
+//                    Intent.EXTRA_TEXT,
+//                    //"https://music.youtube.com/watch?v=${mediaItem.mediaId}"
+//                    mediaItem.asSong.shareYTUrl
+//                )
+//            }
+//            context.startActivity(Intent.createChooser(sendIntent, null))
+
+            try {
+                val intent = Intent().apply {
+                    component = ComponentName(
+                        "org.schabi.newpipe",
+                        "org.schabi.newpipe.MainActivity"
+                    )
+                    action = Intent.ACTION_SEND
+                    type = "text/plain"
+                    putExtra(
                     Intent.EXTRA_TEXT,
-                    //"https://music.youtube.com/watch?v=${mediaItem.mediaId}"
                     mediaItem.asSong.shareYTUrl
+                    )
+                }
+                context.startActivity(intent)
+            } catch (e: ActivityNotFoundException) {
+                SmartMessage(
+                    "App is not installed! \n${e.localizedMessage}",
+                    PopupType.Error,
+                    context = context
                 )
             }
 
-            context.startActivity(Intent.createChooser(sendIntent, null))
         },
         onRemoveFromQuickPicks = onRemoveFromQuickPicks,
         onGoToPlaylist = {

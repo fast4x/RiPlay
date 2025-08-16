@@ -6,6 +6,7 @@ import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import android.graphics.drawable.Drawable
 import android.os.Build
+import it.fast4x.riplay.models.ExternalApp
 
 fun listApps(
     context: Context,
@@ -27,12 +28,15 @@ fun listApps(
             pm.queryIntentActivities(mainIntent, 0)
         }
 
+
+
         return resolvedInfos.map { info ->
             val app = DeviceApp(
                 packageName = info.activityInfo.packageName,
+                activityName = info.activityInfo.name,
                 iconDrawable = info.loadIcon(pm),
                 appName = info.loadLabel(pm).toString(),
-                isSystemApp = false
+                isSystemApp = false,
             )
             app
         }
@@ -46,6 +50,7 @@ fun listApps(
         return appInfos.map { appInfo ->
             val app = DeviceApp(
                 packageName = appInfo.packageName,
+                activityName = appInfo.packageName,
                 iconDrawable = appInfo.loadIcon(pm),
                 appName = appInfo.loadLabel(pm).toString(),
                 isSystemApp = appInfo.flags and ApplicationInfo.FLAG_SYSTEM != 0
@@ -57,7 +62,16 @@ fun listApps(
 
 data class DeviceApp (
     val packageName: String,
+    val activityName: String,
     val iconDrawable: Drawable,
     val appName: String,
-    val isSystemApp: Boolean
+    val isSystemApp: Boolean,
 )
+
+val DeviceApp.toExternalApp: ExternalApp
+    get() = ExternalApp(
+        packageName = this.packageName,
+        iconDrawable = this.iconDrawable,
+        appName = this.appName,
+        isSystemApp = this.isSystemApp
+    )
