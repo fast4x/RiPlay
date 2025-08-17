@@ -102,7 +102,7 @@ import it.fast4x.riplay.utils.semiBold
 import it.fast4x.riplay.utils.setDisLikeState
 import it.fast4x.riplay.utils.setQueueLoopState
 import it.fast4x.riplay.utils.showthumbnailKey
-import it.fast4x.riplay.utils.textCopyToClipboard
+import it.fast4x.riplay.utils.copyTextToClipboard
 import it.fast4x.riplay.utils.textoutlineKey
 import it.fast4x.riplay.utils.unlikeYtVideoOrSong
 import kotlinx.coroutines.CoroutineScope
@@ -165,7 +165,7 @@ fun InfoAlbumAndArtistEssential(
                         }
                     },
                     onLongClick = {
-                        textCopyToClipboard(cleanPrefix(title ?: ""), context = appContext())
+                        copyTextToClipboard(cleanPrefix(title ?: ""), context = appContext())
                     }
                 )
 
@@ -372,7 +372,7 @@ fun InfoAlbumAndArtistEssential(
                     }
                 },
                 onLongClick = {
-                    textCopyToClipboard(artist ?: "", context = appContext())
+                    copyTextToClipboard(artist ?: "", context = appContext())
                 }
             )
 

@@ -28,7 +28,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import it.fast4x.riplay.R
 import it.fast4x.riplay.utils.semiBold
-import it.fast4x.riplay.utils.textCopyFromClipboard
+import it.fast4x.riplay.utils.copyTextFromClipboard
 import it.fast4x.riplay.colorPalette
 import it.fast4x.riplay.typography
 
@@ -48,7 +48,7 @@ inline fun InputTextField(
 
     var copyText by remember { mutableStateOf(true) }
     if (copyText) {
-        txtField.value = textCopyFromClipboard(context)
+        txtField.value = copyTextFromClipboard(context)
         copyText = false
     }
 

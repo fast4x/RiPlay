@@ -2,12 +2,9 @@ package it.fast4x.riplay.ui.components.themed
 
 
 import android.annotation.SuppressLint
-import android.content.ActivityNotFoundException
 import android.content.ComponentName
 import android.content.Intent
-import android.os.Build
 import androidx.activity.compose.BackHandler
-import androidx.annotation.RequiresApi
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.ExperimentalAnimationApi
@@ -117,9 +114,9 @@ import kotlinx.coroutines.withContext
 import it.fast4x.riplay.colorPalette
 import it.fast4x.riplay.context
 import it.fast4x.riplay.enums.PopupType
+import it.fast4x.riplay.extensions.fastshare.FastShare
 import it.fast4x.riplay.models.Queues
 import it.fast4x.riplay.models.defaultQueue
-import it.fast4x.riplay.models.defaultQueueId
 import it.fast4x.riplay.typography
 import it.fast4x.riplay.ui.screens.player.fastPlay
 import it.fast4x.riplay.ui.screens.settings.isYouTubeSyncEnabled
@@ -646,6 +643,8 @@ fun BaseMediaItemMenu(
 
     //println("mediaItem in BaseMediaItemMenu albumId ${mediaItem.mediaMetadata.extras?.getString("albumId")}")
 
+    var showFastShare by remember { mutableStateOf(false) }
+
     MediaItemMenu(
         navController = navController,
         mediaItem = mediaItem,
@@ -693,38 +692,21 @@ fun BaseMediaItemMenu(
             }
         },
         onShare = {
-//            val sendIntent = Intent().apply {
-//                action = Intent.ACTION_SEND
-//                type = "text/plain"
-//                putExtra(
-//                    Intent.EXTRA_TEXT,
-//                    //"https://music.youtube.com/watch?v=${mediaItem.mediaId}"
-//                    mediaItem.asSong.shareYTUrl
-//                )
-//            }
-//            context.startActivity(Intent.createChooser(sendIntent, null))
 
-            try {
-                val intent = Intent().apply {
-                    component = ComponentName(
-                        "org.schabi.newpipe",
-                        "org.schabi.newpipe.MainActivity"
-                    )
-                    action = Intent.ACTION_SEND
-                    type = "text/plain"
-                    putExtra(
-                    Intent.EXTRA_TEXT,
-                    mediaItem.asSong.shareYTUrl
-                    )
-                }
-                context.startActivity(intent)
-            } catch (e: ActivityNotFoundException) {
-                SmartMessage(
-                    "App is not installed! \n${e.localizedMessage}",
-                    PopupType.Error,
-                    context = context
-                )
-            }
+
+//            directShare(
+//                content = mediaItem.asSong.shareYTUrl.toString(),
+//                componentName = ComponentName(
+//                "com.junkfood.seal",
+//                "com.junkfood.seal.MainActivity"
+//                ),
+//                context = context
+//            )
+//            classicShare(
+//                mediaItem.asSong.shareYTUrl.toString(),
+//                context = context
+//            )
+            showFastShare = true
 
         },
         onRemoveFromQuickPicks = onRemoveFromQuickPicks,
@@ -735,6 +717,13 @@ fun BaseMediaItemMenu(
         modifier = modifier,
         disableScrollingText = disableScrollingText
     )
+
+    FastShare(
+        showFastShare,
+        mediaItem,
+        onDismissRequest = { showFastShare = false}
+    )
+
 }
 
 @ExperimentalTextApi

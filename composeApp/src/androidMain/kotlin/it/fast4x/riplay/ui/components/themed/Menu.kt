@@ -1,5 +1,6 @@
 package it.fast4x.riplay.ui.components.themed
 
+import android.graphics.drawable.Drawable
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
@@ -21,9 +22,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.core.graphics.drawable.toBitmap
 import it.fast4x.riplay.R
 import it.fast4x.riplay.utils.medium
 import it.fast4x.riplay.utils.secondary
@@ -70,6 +73,59 @@ fun MenuEntry(
     ) {
         Image(
             painter = painter,
+            contentDescription = null,
+            colorFilter = ColorFilter.tint(colorPalette().text),
+            modifier = Modifier
+                .size(15.dp)
+        )
+
+        Column(
+            modifier = Modifier
+                .padding(vertical = 16.dp)
+                .weight(1f)
+        ) {
+            BasicText(
+                text = text,
+                style = typography().xs.medium
+            )
+
+            secondaryText?.let { secondaryText ->
+                BasicText(
+                    text = secondaryText,
+                    style = typography().xxs.medium.secondary
+                )
+            }
+        }
+
+        trailingContent?.invoke()
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun MenuEntry(
+    drawable: Drawable,
+    text: String,
+    onClick: () -> Unit,
+    onLongClick: (() -> Unit)? = null,
+    secondaryText: String? = null,
+    enabled: Boolean = true,
+    trailingContent: (@Composable () -> Unit)? = null
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(24.dp),
+        modifier = Modifier
+            .combinedClickable(enabled = enabled, onClick = onClick, onLongClick = onLongClick)
+            .fillMaxWidth()
+            .alpha(if (enabled) 1f else 0.4f)
+            .padding(horizontal = 24.dp)
+    ) {
+        Image(
+            bitmap = drawable.toBitmap(
+                drawable.intrinsicWidth,
+                drawable.intrinsicHeight
+            ).asImageBitmap(),
             contentDescription = null,
             colorFilter = ColorFilter.tint(colorPalette().text),
             modifier = Modifier

@@ -148,7 +148,7 @@ import it.fast4x.riplay.utils.romanizationKey
 import it.fast4x.riplay.utils.showBackgroundLyricsKey
 import it.fast4x.riplay.utils.showSecondLineKey
 import it.fast4x.riplay.utils.showlyricsthumbnailKey
-import it.fast4x.riplay.utils.textCopyToClipboard
+import it.fast4x.riplay.utils.copyTextToClipboard
 import it.fast4x.riplay.utils.verticalFadingEdge
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -329,7 +329,7 @@ fun Lyrics(
         }
 
         if (copyToClipboard) text?.let {
-            textCopyToClipboard(it, context)
+            copyTextToClipboard(it, context)
             copyToClipboard = false
         }
 
@@ -338,7 +338,7 @@ fun Lyrics(
         }
 
         if (copyTranslatedToClipboard) textTranslated.let {
-            textCopyToClipboard(it, context)
+            copyTextToClipboard(it, context)
             copyTranslatedToClipboard = false
         }
 
