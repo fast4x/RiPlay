@@ -18,9 +18,9 @@ data class Playlist(
     @ColumnInfo(defaultValue = "0") val isPodcast: Boolean = false,
 ) {
     val shareYTUrl: String?
-        get() = browseId?.let { "$YT_PLAYLIST_SHARE_BASEURL$it" }
+        get() = browseId?.let { "$YT_PLAYLIST_SHARE_BASEURL${it.removePrefix("VL")}" }
     val shareYTMUrl: String?
-        get() =  browseId?.let { "$YTM_PLAYLIST_SHARE_BASEURL$it" }
+        get() =  browseId?.let { "$YTM_PLAYLIST_SHARE_BASEURL${it.removePrefix("VL")}" }
     val shareYTUrlAsPodcast: String?
         get() = browseId?.let { "$YT_PLAYLIST_SHARE_BASEURL${it.removePrefix("MPSP")}" }
     val shareYTMUrlAsPodcast: String?
