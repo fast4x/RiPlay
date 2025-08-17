@@ -4,14 +4,22 @@ import android.content.ActivityNotFoundException
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.graphics.drawable.Animatable
+import android.graphics.drawable.BitmapDrawable
+import android.graphics.drawable.ColorDrawable
+import android.graphics.drawable.Drawable
+import android.os.Build
+import android.view.View
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -24,12 +32,14 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Checkbox
 import androidx.compose.material.CheckboxDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -37,10 +47,23 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.asAndroidColorFilter
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
+import androidx.compose.ui.graphics.nativeCanvas
+import androidx.compose.ui.graphics.painter.BitmapPainter
+import androidx.compose.ui.graphics.painter.ColorPainter
+import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.graphics.withSave
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.MediaItem
+import it.fast4x.riplay.Database
 import it.fast4x.riplay.R
 import it.fast4x.riplay.colorPalette
 import it.fast4x.riplay.context
@@ -49,8 +72,10 @@ import it.fast4x.riplay.enums.ShareType
 import it.fast4x.riplay.enums.ThumbnailRoundness
 import it.fast4x.riplay.enums.LinkType
 import it.fast4x.riplay.extensions.listapps.listApps
+import it.fast4x.riplay.extensions.listapps.toExternalApp
 import it.fast4x.riplay.models.Album
 import it.fast4x.riplay.models.Artist
+import it.fast4x.riplay.models.ExternalApp
 import it.fast4x.riplay.models.Playlist
 import it.fast4x.riplay.thumbnailShape
 import it.fast4x.riplay.typography
@@ -65,6 +90,8 @@ import it.fast4x.riplay.utils.asSong
 import it.fast4x.riplay.utils.rememberObservedPreference
 import it.fast4x.riplay.utils.copyTextToClipboard
 import it.fast4x.riplay.utils.thumbnailRoundnessKey
+import kotlinx.coroutines.Dispatchers
+import kotlin.math.roundToInt
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
@@ -126,6 +153,12 @@ fun FastShare(
 
     var showAppSelector by remember { mutableStateOf(false) }
 
+    val externalApps by remember {
+        Database.externalApps()
+    }.collectAsState(initial = emptyList() , Dispatchers.IO)
+
+    println("FastShare externalApps: $externalApps")
+
     CustomModalBottomSheet(
         showSheet = showFastShare,
         onDismissRequest = onDismissRequest,
@@ -165,7 +198,8 @@ fun FastShare(
                 Column(
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier
+                        .fillMaxWidth()
                         .border(BorderStroke(1.dp, colorPalette().accent), shape = thumbnailShape())
                 ) {
                     TitleMiniSection(
@@ -239,7 +273,8 @@ fun FastShare(
                 Column(
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier
+                        .fillMaxWidth()
                         .border(BorderStroke(1.dp, colorPalette().accent), shape = thumbnailShape())
                 ) {
                     TitleMiniSection(
@@ -286,42 +321,27 @@ fun FastShare(
             Row (
                 modifier = Modifier.padding(bottom = 20.dp)
             ) {
-//                Column(
-//                    verticalArrangement = Arrangement.Center,
-//                    horizontalAlignment = Alignment.CenterHorizontally,
-//                    modifier = Modifier.fillMaxWidth()
-//                        .border(BorderStroke(1.dp, colorPalette().accent), shape = thumbnailShape())
-//                ) {
-//                    TitleMiniSection(
-//                        title = "Share with external app",
-//                        modifier = Modifier.padding(bottom = 16.dp)
-//                    )
-//                }
                 LazyColumn(
                     state = rememberLazyListState(),
-//                    contentPadding = PaddingValues(
-//                        top = 20.dp,
-//                        bottom = Dimensions.bottomSpacer,
-//                        start = 20.dp,
-//                        end = 20.dp
-//                    ),
                     modifier = Modifier
                         .height(300.dp)
                         .fillMaxWidth()
                         .border(BorderStroke(1.dp, colorPalette().accent), shape = thumbnailShape())
                 ) {
-                    item {
+                    stickyHeader {
                         Row (
                             horizontalArrangement = Arrangement.Center,
                             verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier
                                 .fillMaxWidth()
+                                .background(colorPalette().background0)
                         ) {
                             TitleMiniSection(
                                 title = "Share with external app",
                                 modifier = Modifier.padding(bottom = 16.dp)
                             )
                         }
+
                         Row(
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically,
@@ -356,6 +376,50 @@ fun FastShare(
                             )
                         }
                     }
+                    items(externalApps.size) {
+                        val app = externalApps[it]
+                        Spacer(modifier = Modifier.height(5.dp))
+                        Row(
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier
+                                .border(
+                                    BorderStroke(1.dp, colorPalette().background2),
+                                    shape = thumbnailShape()
+                                )
+                                //.background(colorPalette().background2, shape = thumbnailShape())
+                                .fillMaxWidth()
+                                .padding(all = 10.dp)
+                                .clickable {
+                                    directShare(urlToShare, app.componentName, context())
+                                }
+
+                        ){
+                            Text(
+                                text = app.appName.toString(),
+                                color = colorPalette().text,
+                                fontSize = typography().xs.fontSize,
+                                fontFamily = typography().xs.fontFamily,
+                                fontWeight = typography().xs.fontWeight,
+                                fontStyle = typography().xs.fontStyle,
+                                modifier = Modifier
+                            )
+                            Image(
+                                painter = painterResource(R.drawable.close),
+                                colorFilter = ColorFilter.tint(colorPalette().text),
+                                contentDescription = "Delete app",
+                                modifier = Modifier
+                                    .size(24.dp)
+                                    .clickable {
+                                        Database.asyncTransaction {
+                                            delete(app)
+                                        }
+                                    }
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(5.dp))
+                    }
+
                 }
             }
         }
@@ -366,7 +430,10 @@ fun FastShare(
         AppSelector(
             onSelected = {
                 showAppSelector = false
-                directShare(urlToShare, it, context())
+                Database.asyncTransaction {
+                    insert(it)
+                }
+                //directShare(urlToShare, it.componentName, context())
             },
             onDismiss = { showAppSelector = false }
         )
@@ -420,40 +487,39 @@ fun classicShare(content: String, context: Context) {
 
 @Composable
 fun AppSelector(
-    onSelected: (ComponentName) -> Unit,
+    onSelected: (ExternalApp) -> Unit,
     onDismiss: () -> Unit
 ) {
-    val apps = listApps(context()).sortedBy { it.appName }
+    val apps = remember { listApps(context()).sortedBy { it.appName } }
     DefaultDialog(
         onDismiss = onDismiss,
-        modifier = Modifier.fillMaxSize().verticalScroll(
-            rememberScrollState()
-        )
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(
+                rememberScrollState()
+            )
     ) {
+
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp, vertical = 16.dp),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            TitleSection(title = "Select an installed applications")
+            TitleSection(title = "Installed applications")
         }
         apps.forEach { app ->
-                MenuEntry(
-                    //drawable = app.iconDrawable,
-                    icon = R.drawable.add_app,
-                    text = app.appName,
-                    secondaryText = "",
-                    onClick = {
-                        onSelected(
-                            ComponentName(
-                                app.packageName,
-                                app.activityName
-                            )
-                        )
-                    }
-                )
+            MenuEntry(
+                icon = R.drawable.add_app,
+                text = app.appName,
+                secondaryText = app.packageName,
+                onClick = {
+                    onSelected(
+                        app.toExternalApp()
+                    )
+                }
+            )
         }
     }
-
 }
+

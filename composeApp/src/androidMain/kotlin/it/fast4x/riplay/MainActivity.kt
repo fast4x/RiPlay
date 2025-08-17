@@ -486,12 +486,6 @@ class MainActivity :
 
         updateSelectedQueue()
 
-        val apps = listApps(this)
-        apps.forEach { app ->
-            println("MainActivity.onCreate app $app")
-        }
-
-
     }
 
     private fun checkIfAppIsRunningInBackground() {

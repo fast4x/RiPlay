@@ -1,5 +1,6 @@
 package it.fast4x.riplay.extensions.listapps
 
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.pm.ApplicationInfo
@@ -34,7 +35,7 @@ fun listApps(
             val app = DeviceApp(
                 packageName = info.activityInfo.packageName,
                 activityName = info.activityInfo.name,
-                iconDrawable = info.loadIcon(pm),
+                //iconDrawable = info.loadIcon(pm),
                 appName = info.loadLabel(pm).toString(),
                 isSystemApp = false,
             )
@@ -50,8 +51,8 @@ fun listApps(
         return appInfos.map { appInfo ->
             val app = DeviceApp(
                 packageName = appInfo.packageName,
-                activityName = appInfo.packageName,
-                iconDrawable = appInfo.loadIcon(pm),
+                activityName = appInfo.name,
+                //iconDrawable = appInfo.loadIcon(pm),
                 appName = appInfo.loadLabel(pm).toString(),
                 isSystemApp = appInfo.flags and ApplicationInfo.FLAG_SYSTEM != 0
             )
@@ -63,15 +64,25 @@ fun listApps(
 data class DeviceApp (
     val packageName: String,
     val activityName: String,
-    val iconDrawable: Drawable,
     val appName: String,
     val isSystemApp: Boolean,
 )
 
-val DeviceApp.toExternalApp: ExternalApp
-    get() = ExternalApp(
+fun DeviceApp.toExternalApp(): ExternalApp =
+    ExternalApp(
         packageName = this.packageName,
-        iconDrawable = this.iconDrawable,
+        activityName = this.activityName,
         appName = this.appName,
         isSystemApp = this.isSystemApp
     )
+
+fun ExternalApp.toDeviceApp(): DeviceApp =
+    DeviceApp(
+        packageName = this.packageName,
+        activityName = this.activityName,
+        appName = this.appName.toString(),
+        isSystemApp = this.isSystemApp
+    )
+
+val DeviceApp.componentName: ComponentName
+    get() = ComponentName(packageName, activityName)

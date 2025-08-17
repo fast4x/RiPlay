@@ -44,6 +44,7 @@ import it.fast4x.riplay.models.Album
 import it.fast4x.riplay.models.Artist
 import it.fast4x.riplay.models.Event
 import it.fast4x.riplay.models.EventWithSong
+import it.fast4x.riplay.models.ExternalApp
 import it.fast4x.riplay.models.Format
 import it.fast4x.riplay.models.Info
 import it.fast4x.riplay.models.Lyrics
@@ -2649,6 +2650,9 @@ interface Database {
     @Query("SELECT * FROM Queues ORDER BY position")
     fun queues(): Flow<List<Queues>>
 
+    @Query("SELECT * FROM ExternalApp ORDER BY appName")
+    fun externalApps(): Flow<List<ExternalApp>>
+
     @Query("UPDATE Queues SET isSelected = 0")
     fun clearSelectedQueue()
 
@@ -2766,6 +2770,9 @@ interface Database {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insert(queues: Queues)
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    fun insert(externalApp: ExternalApp)
+
     @Update
     fun update(artist: Artist)
 
@@ -2827,6 +2834,9 @@ interface Database {
 
     @Delete
     fun delete(artist: Artist)
+
+    @Delete
+    fun delete(externalApp: ExternalApp)
 
     /**
      * Reset [Format.contentLength] of provided song.
@@ -2916,11 +2926,12 @@ interface Database {
         Event::class,
         Lyrics::class,
         Queues::class,
+        ExternalApp::class,
     ],
     views = [
         SortedSongPlaylistMap::class
     ],
-    version = 35,
+    version = 36,
     exportSchema = true,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
@@ -2948,6 +2959,7 @@ interface Database {
         AutoMigration(from = 32, to = 33),
         AutoMigration(from = 33, to = 34),
         AutoMigration(from = 34, to = 35),
+        AutoMigration(from = 35, to = 36),
 
     ],
 )

@@ -101,59 +101,6 @@ fun MenuEntry(
     }
 }
 
-@OptIn(ExperimentalFoundationApi::class)
-@Composable
-fun MenuEntry(
-    drawable: Drawable,
-    text: String,
-    onClick: () -> Unit,
-    onLongClick: (() -> Unit)? = null,
-    secondaryText: String? = null,
-    enabled: Boolean = true,
-    trailingContent: (@Composable () -> Unit)? = null
-) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(24.dp),
-        modifier = Modifier
-            .combinedClickable(enabled = enabled, onClick = onClick, onLongClick = onLongClick)
-            .fillMaxWidth()
-            .alpha(if (enabled) 1f else 0.4f)
-            .padding(horizontal = 24.dp)
-    ) {
-        Image(
-            bitmap = drawable.toBitmap(
-                drawable.intrinsicWidth,
-                drawable.intrinsicHeight
-            ).asImageBitmap(),
-            contentDescription = null,
-            colorFilter = ColorFilter.tint(colorPalette().text),
-            modifier = Modifier
-                .size(15.dp)
-        )
-
-        Column(
-            modifier = Modifier
-                .padding(vertical = 16.dp)
-                .weight(1f)
-        ) {
-            BasicText(
-                text = text,
-                style = typography().xs.medium
-            )
-
-            secondaryText?.let { secondaryText ->
-                BasicText(
-                    text = secondaryText,
-                    style = typography().xxs.medium.secondary
-                )
-            }
-        }
-
-        trailingContent?.invoke()
-    }
-}
-
 @Composable
 fun MenuEntry(
     @DrawableRes icon: Int,
