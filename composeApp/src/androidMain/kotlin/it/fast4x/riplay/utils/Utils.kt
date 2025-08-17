@@ -144,6 +144,20 @@ val Environment.AlbumItem.asAlbum: Album
         //shareUrl =
     )
 
+fun Environment.Podcast.toPlaylist(browseId: String): Playlist
+     = Playlist (
+        browseId = browseId,
+        name = title,
+        isPodcast = true
+    )
+
+val Environment.PlaylistItem.asPlaylist: Playlist
+    get() = Playlist (
+        browseId = key,
+        name = info?.name.toString(),
+        isPodcast = false
+    )
+
 val Environment.Podcast.EpisodeItem.asMediaItem: MediaItem
     @UnstableApi
     get() = MediaItem.Builder()

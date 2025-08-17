@@ -81,6 +81,7 @@ import it.fast4x.riplay.enums.NavigationBarPosition
 import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.enums.ThumbnailRoundness
 import it.fast4x.riplay.enums.UiType
+import it.fast4x.riplay.extensions.fastshare.FastShare
 import it.fast4x.riplay.models.Album
 import it.fast4x.riplay.models.Artist
 import it.fast4x.riplay.models.Playlist
@@ -205,10 +206,17 @@ fun ArtistOverview(
 
     var readMore by remember { mutableStateOf(false) }
 
+    var showFastShare by remember { mutableStateOf(false) }
+
     LaunchedEffect(Unit) {
         Database.artist(browseId).collect { artist = it }
     }
 
+    FastShare(
+        showFastShare,
+        artist ?: return,
+        onDismissRequest = { showFastShare = false}
+    )
 
     Box(
         modifier = Modifier
@@ -298,22 +306,23 @@ fun ArtistOverview(
                             .align(Alignment.TopEnd)
                             .padding(top = 5.dp, end = 5.dp),
                         onClick = {
-                            val sendIntent = Intent().apply {
-                                action = Intent.ACTION_SEND
-                                type = "text/plain"
-                                putExtra(
-                                    Intent.EXTRA_TEXT,
-                                    //"https://music.youtube.com/channel/$browseId"
-                                    "$YTM_ARTIST_SHARE_BASEURL$browseId"
-                                )
-                            }
-
-                            context.startActivity(
-                                Intent.createChooser(
-                                    sendIntent,
-                                    null
-                                )
-                            )
+                            showFastShare = true
+//                            val sendIntent = Intent().apply {
+//                                action = Intent.ACTION_SEND
+//                                type = "text/plain"
+//                                putExtra(
+//                                    Intent.EXTRA_TEXT,
+//                                    //"https://music.youtube.com/channel/$browseId"
+//                                    "$YTM_ARTIST_SHARE_BASEURL$browseId"
+//                                )
+//                            }
+//
+//                            context.startActivity(
+//                                Intent.createChooser(
+//                                    sendIntent,
+//                                    null
+//                                )
+//                            )
                         }
                     )
 

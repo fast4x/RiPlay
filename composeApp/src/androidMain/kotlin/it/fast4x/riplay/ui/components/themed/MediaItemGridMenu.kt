@@ -90,6 +90,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import it.fast4x.riplay.colorPalette
 import it.fast4x.riplay.enums.PopupType
+import it.fast4x.riplay.extensions.fastshare.FastShare
 import it.fast4x.riplay.models.Queues
 import it.fast4x.riplay.models.Song
 import it.fast4x.riplay.models.defaultQueue
@@ -421,6 +422,7 @@ fun MediaItemGridMenu (
     }
 
     val topContent = @Composable {
+        var showFastShare by remember { mutableStateOf(false) }
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
@@ -481,17 +483,18 @@ fun MediaItemGridMenu (
                         icon = R.drawable.share_social,
                         color = colorPalette().text,
                         onClick = {
-                            val sendIntent = Intent().apply {
-                                action = Intent.ACTION_SEND
-                                type = "text/plain"
-                                putExtra(
-                                    Intent.EXTRA_TEXT,
-                                    //"https://music.youtube.com/watch?v=${mediaItem.mediaId}"
-                                    mediaItem.asSong.shareYTUrl
-                                )
-                            }
-
-                            context.startActivity(Intent.createChooser(sendIntent, null))
+                            showFastShare = true
+//                            val sendIntent = Intent().apply {
+//                                action = Intent.ACTION_SEND
+//                                type = "text/plain"
+//                                putExtra(
+//                                    Intent.EXTRA_TEXT,
+//                                    //"https://music.youtube.com/watch?v=${mediaItem.mediaId}"
+//                                    mediaItem.asSong.shareYTUrl
+//                                )
+//                            }
+//
+//                            context.startActivity(Intent.createChooser(sendIntent, null))
                         },
                         modifier = Modifier
                             .padding(all = 4.dp)
@@ -502,6 +505,11 @@ fun MediaItemGridMenu (
             }
 
         }
+        FastShare(
+            showFastShare = showFastShare,
+            content = mediaItem,
+            onDismissRequest = { showFastShare = false }
+        )
     }
 
     var showCircularSlider by remember {

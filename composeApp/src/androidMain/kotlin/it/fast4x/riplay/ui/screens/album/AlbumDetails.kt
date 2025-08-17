@@ -141,6 +141,7 @@ import me.bush.translator.Language
 import me.bush.translator.Translator
 import it.fast4x.riplay.colorPalette
 import it.fast4x.riplay.enums.PopupType
+import it.fast4x.riplay.extensions.fastshare.FastShare
 import it.fast4x.riplay.models.SongAlbumMap
 import it.fast4x.riplay.models.defaultQueue
 import it.fast4x.riplay.models.defaultQueueId
@@ -504,6 +505,14 @@ fun AlbumDetails(
 
     var readMore by remember { mutableStateOf(false) }
 
+    var showFastShare by remember { mutableStateOf(false) }
+
+    FastShare(
+        showFastShare,
+        album ?: return,
+        onDismissRequest = { showFastShare = false}
+    )
+
     LayoutWithAdaptiveThumbnail(thumbnailContent = thumbnailContent) {
         PullToRefreshBox(
             refreshing = refreshing,
@@ -600,20 +609,21 @@ fun AlbumDetails(
                                         .align(Alignment.TopEnd)
                                         .padding(top = 5.dp, end = 5.dp),
                                     onClick = {
-                                        album?.shareYTUrl?.let { url ->
-                                            val sendIntent = Intent().apply {
-                                                action = Intent.ACTION_SEND
-                                                type = "text/plain"
-                                                putExtra(Intent.EXTRA_TEXT, url)
-                                            }
-
-                                            context.startActivity(
-                                                Intent.createChooser(
-                                                    sendIntent,
-                                                    null
-                                                )
-                                            )
-                                        }
+                                        showFastShare = true
+//                                        album?.shareYTUrl?.let { url ->
+//                                            val sendIntent = Intent().apply {
+//                                                action = Intent.ACTION_SEND
+//                                                type = "text/plain"
+//                                                putExtra(Intent.EXTRA_TEXT, url)
+//                                            }
+//
+//                                            context.startActivity(
+//                                                Intent.createChooser(
+//                                                    sendIntent,
+//                                                    null
+//                                                )
+//                                            )
+//                                        }
                                     }
                                 )
 

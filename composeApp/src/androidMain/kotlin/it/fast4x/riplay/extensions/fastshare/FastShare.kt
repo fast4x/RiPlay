@@ -4,19 +4,12 @@ import android.content.ActivityNotFoundException
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
-import android.graphics.drawable.Animatable
-import android.graphics.drawable.BitmapDrawable
-import android.graphics.drawable.ColorDrawable
-import android.graphics.drawable.Drawable
-import android.os.Build
-import android.view.View
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -102,10 +95,10 @@ fun FastShare(
     //typeOfUrl: LinkType = LinkType.Alternative,
     onDismissRequest: () -> Unit,
 ) {
-    if (content.toString().isEmpty()) {
-        SmartMessage(message = "No content to share!", type = PopupType.Error, context = context())
-        return
-    }
+//    if (content.toString().isEmpty()) {
+//        SmartMessage(message = "No content to share!", type = PopupType.Error, context = context())
+//        return
+//    }
 
     var typeOfUrl by remember { mutableStateOf(LinkType.Main) }
     var urlToShare by remember { mutableStateOf("") }

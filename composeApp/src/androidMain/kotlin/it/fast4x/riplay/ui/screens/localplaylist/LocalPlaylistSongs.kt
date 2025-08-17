@@ -167,7 +167,9 @@ import it.fast4x.riplay.PINNED_PREFIX
 import it.fast4x.riplay.PIPED_PREFIX
 import it.fast4x.riplay.YTP_PREFIX
 import it.fast4x.riplay.appContext
+import it.fast4x.riplay.colorPalette
 import it.fast4x.riplay.enums.PlaylistSongsTypeFilter
+import it.fast4x.riplay.extensions.fastshare.FastShare
 import it.fast4x.riplay.ui.components.themed.NowPlayingSongIndicator
 import it.fast4x.riplay.ui.screens.settings.isYouTubeSyncEnabled
 import it.fast4x.riplay.utils.checkFileExists
@@ -1042,6 +1044,14 @@ fun LocalPlaylistSongs(
         }
     }
 
+    var showFastShare by remember { mutableStateOf(false) }
+
+    FastShare(
+        showFastShare,
+        playlistPreview?.playlist ?: return,
+        onDismissRequest = { showFastShare = false}
+    )
+
     println("LocalPlaylistSongs playlist browseId ${playlistPreview?.playlist?.browseId}")
 
     PullToRefreshBox(
@@ -1430,6 +1440,15 @@ fun LocalPlaylistSongs(
                                 )
                         )
 
+                        if (playlistPreview?.playlist?.browseId != null)
+                            HeaderIconButton(
+                                icon = R.drawable.share_social,
+                                color = colorPalette().text,
+                                //iconSize = 24.dp,
+                                onClick = {
+                                    showFastShare = true
+                                }
+                            )
 
                         HeaderIconButton(
                             icon = R.drawable.ellipsis_horizontal,

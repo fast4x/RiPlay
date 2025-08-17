@@ -123,11 +123,13 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import it.fast4x.riplay.colorPalette
+import it.fast4x.riplay.extensions.fastshare.FastShare
 import it.fast4x.riplay.models.defaultQueue
 import it.fast4x.riplay.models.defaultQueueId
 import it.fast4x.riplay.typography
 import it.fast4x.riplay.ui.screens.settings.isYouTubeSyncEnabled
 import it.fast4x.riplay.utils.addToYtPlaylist
+import it.fast4x.riplay.utils.toPlaylist
 import timber.log.Timber
 
 
@@ -250,6 +252,14 @@ fun Podcast(
 
     val lazyListState = rememberLazyListState()
 
+    var showFastShare by remember { mutableStateOf(false) }
+
+    FastShare(
+        showFastShare,
+        podcastPage?.toPlaylist(browseId) ?: return,
+        onDismissRequest = { showFastShare = false}
+    )
+
     LayoutWithAdaptiveThumbnail(thumbnailContent = thumbnailContent) {
         Box(
             modifier = Modifier
@@ -335,17 +345,18 @@ fun Podcast(
                                     .align(Alignment.TopEnd)
                                     .padding(top = 5.dp, end = 5.dp),
                                 onClick = {
+                                    showFastShare = true
                                     //("https://music.youtube.com/playlist?list=${browseId.removePrefix("VL")}")
-                                    "$YT_PLAYLIST_SHARE_BASEURL${browseId.removePrefix("MPSP")}"
-                                        .let { url ->
-                                        val sendIntent = Intent().apply {
-                                            action = Intent.ACTION_SEND
-                                            type = "text/plain"
-                                            putExtra(Intent.EXTRA_TEXT, url)
-                                        }
-
-                                        context.startActivity(Intent.createChooser(sendIntent, null))
-                                    }
+//                                    "$YT_PLAYLIST_SHARE_BASEURL${browseId.removePrefix("MPSP")}"
+//                                        .let { url ->
+//                                        val sendIntent = Intent().apply {
+//                                            action = Intent.ACTION_SEND
+//                                            type = "text/plain"
+//                                            putExtra(Intent.EXTRA_TEXT, url)
+//                                        }
+//
+//                                        context.startActivity(Intent.createChooser(sendIntent, null))
+//                                    }
                                 }
                             )
 

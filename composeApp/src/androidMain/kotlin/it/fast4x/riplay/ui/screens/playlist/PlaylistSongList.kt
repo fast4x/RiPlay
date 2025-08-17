@@ -139,6 +139,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import it.fast4x.riplay.colorPalette
+import it.fast4x.riplay.extensions.fastshare.FastShare
 import it.fast4x.riplay.models.defaultQueue
 import it.fast4x.riplay.models.defaultQueueId
 import it.fast4x.riplay.typography
@@ -146,6 +147,7 @@ import it.fast4x.riplay.ui.components.themed.ConfirmationDialog
 import it.fast4x.riplay.ui.screens.settings.isYouTubeSyncEnabled
 import it.fast4x.riplay.utils.addToYtLikedSongs
 import it.fast4x.riplay.utils.align
+import it.fast4x.riplay.utils.asPlaylist
 import it.fast4x.riplay.utils.color
 import it.fast4x.riplay.utils.formatAsDuration
 import org.dailyislam.android.utilities.getHttpClient
@@ -343,6 +345,14 @@ fun PlaylistSongList(
 
     val coroutineScope = rememberCoroutineScope()
 
+    var showFastShare by remember { mutableStateOf(false) }
+
+    FastShare(
+        showFastShare,
+        playlistPage?.playlist?.asPlaylist ?: return,
+        onDismissRequest = { showFastShare = false}
+    )
+
     LayoutWithAdaptiveThumbnail(thumbnailContent = thumbnailContent) {
         Box(
             modifier = Modifier
@@ -443,17 +453,18 @@ fun PlaylistSongList(
                                     .align(Alignment.TopEnd)
                                     .padding(top = 5.dp, end = 5.dp),
                                 onClick = {
+                                    showFastShare = true
                                     //(playlistPage?.playlist?.thumbnail?.url ?: "https://music.youtube.com/playlist?list=${browseId.removePrefix("VL")}")
-                                    "$YT_PLAYLIST_SHARE_BASEURL${browseId.removePrefix("VL")}"
-                                        .let { url ->
-                                        val sendIntent = Intent().apply {
-                                            action = Intent.ACTION_SEND
-                                            type = "text/plain"
-                                            putExtra(Intent.EXTRA_TEXT, url)
-                                        }
-
-                                        context.startActivity(Intent.createChooser(sendIntent, null))
-                                    }
+//                                    "$YT_PLAYLIST_SHARE_BASEURL${browseId.removePrefix("VL")}"
+//                                        .let { url ->
+//                                        val sendIntent = Intent().apply {
+//                                            action = Intent.ACTION_SEND
+//                                            type = "text/plain"
+//                                            putExtra(Intent.EXTRA_TEXT, url)
+//                                        }
+//
+//                                        context.startActivity(Intent.createChooser(sendIntent, null))
+//                                    }
                                 }
                             )
 
