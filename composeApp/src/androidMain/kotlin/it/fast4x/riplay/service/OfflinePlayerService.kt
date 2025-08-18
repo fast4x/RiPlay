@@ -201,9 +201,12 @@ import android.os.Binder as AndroidBinder
 
 
 const val LOCAL_KEY_PREFIX = "local:"
+const val LOCAL_AUDIO_URI_PATH = "content://media/external/audio/media/"
 
 @get:OptIn(UnstableApi::class)
 val DataSpec.isLocal get() = key?.startsWith(LOCAL_KEY_PREFIX) == true
+@get:OptIn(UnstableApi::class)
+val DataSpec.isLocalUri get() = uri.toString().startsWith("content://")
 
 val MediaItem.isLocal get() = mediaId.startsWith(LOCAL_KEY_PREFIX)
 val Song.isLocal get() = id.startsWith(LOCAL_KEY_PREFIX)
@@ -381,7 +384,7 @@ class OfflinePlayerService : MediaLibraryService(),
 //                ))
                 // Temporary fix for bug in ExoPlayer media3 https://github.com/androidx/media/issues/2192
                 // Bug cause refresh ui in android auto when media is playing
-                //.setPeriodicPositionUpdateEnabled(false)
+                .setPeriodicPositionUpdateEnabled(false)
                 .build()
 
         // Keep a connected controller so that notification works

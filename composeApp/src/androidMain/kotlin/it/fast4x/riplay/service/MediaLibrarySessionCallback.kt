@@ -38,7 +38,6 @@ import it.fast4x.riplay.models.Album
 import it.fast4x.riplay.models.Song
 import it.fast4x.riplay.models.SongAlbumMap
 import it.fast4x.riplay.models.SongArtistMap
-import it.fast4x.riplay.service.MediaSessionConstants.ID_CACHED
 import it.fast4x.riplay.service.MediaSessionConstants.ID_FAVORITES
 import it.fast4x.riplay.service.MediaSessionConstants.ID_ONDEVICE
 import it.fast4x.riplay.service.MediaSessionConstants.ID_TOP
@@ -55,6 +54,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.guava.future
 import kotlinx.coroutines.runBlocking
+import timber.log.Timber
 
 @UnstableApi
 class MediaLibrarySessionCallback (
@@ -64,7 +64,7 @@ class MediaLibrarySessionCallback (
     private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
     lateinit var binder: OfflinePlayerService.Binder
     var toggleLike: () -> Unit = {}
-    var toggleDownload: () -> Unit = {}
+    //var toggleDownload: () -> Unit = {}
     var toggleRepeat: () -> Unit = {}
     var toggleShuffle: () -> Unit = {}
     var startRadio: () -> Unit = {}
@@ -79,7 +79,7 @@ class MediaLibrarySessionCallback (
         val connectionResult = super.onConnect(session, controller)
         return MediaSession.ConnectionResult.accept(
             connectionResult.availableSessionCommands.buildUpon()
-                .add(MediaSessionConstants.CommandToggleDownload)
+                //.add(MediaSessionConstants.CommandToggleDownload)
                 .add(MediaSessionConstants.CommandToggleLike)
                 .add(MediaSessionConstants.CommandToggleShuffle)
                 .add(MediaSessionConstants.CommandToggleRepeatMode)
@@ -143,7 +143,7 @@ class MediaLibrarySessionCallback (
         println("PlayerServiceModern MediaLibrarySessionCallback.onCustomCommand: ${customCommand.customAction}")
         when (customCommand.customAction) {
             MediaSessionConstants.ACTION_TOGGLE_LIKE -> toggleLike()
-            MediaSessionConstants.ACTION_TOGGLE_DOWNLOAD -> toggleDownload()
+            //MediaSessionConstants.ACTION_TOGGLE_DOWNLOAD -> toggleDownload()
             MediaSessionConstants.ACTION_TOGGLE_SHUFFLE -> toggleShuffle()
             MediaSessionConstants.ACTION_TOGGLE_REPEAT_MODE -> toggleRepeat()
             MediaSessionConstants.ACTION_START_RADIO -> startRadio()
@@ -248,7 +248,7 @@ class MediaLibrarySessionCallback (
 
                         OfflinePlayerService.PLAYLIST -> {
                             val likedSongCount = database.likedSongsCount().first()
-                            val cachedSongCount = getCountCachedSongs().first()
+                            //val cachedSongCount = getCountCachedSongs().first()
                             val onDeviceSongCount = database.onDeviceSongsCount().first()
                             val playlists = database.playlistPreviewsByDateSongCountAsc().first()
                             listOf(
@@ -259,13 +259,13 @@ class MediaLibrarySessionCallback (
                                     drawableUri(R.drawable.heart),
                                     MediaMetadata.MEDIA_TYPE_PLAYLIST
                                 ),
-                                browsableMediaItem(
-                                    "${OfflinePlayerService.PLAYLIST}/${ID_CACHED}",
-                                    context.getString(R.string.cached),
-                                    cachedSongCount.toString(),
-                                    drawableUri(R.drawable.download),
-                                    MediaMetadata.MEDIA_TYPE_PLAYLIST
-                                ),
+//                                browsableMediaItem(
+//                                    "${OfflinePlayerService.PLAYLIST}/${ID_CACHED}",
+//                                    context.getString(R.string.cached),
+//                                    cachedSongCount.toString(),
+//                                    drawableUri(R.drawable.download),
+//                                    MediaMetadata.MEDIA_TYPE_PLAYLIST
+//                                ),
                                 browsableMediaItem(
                                     "${OfflinePlayerService.PLAYLIST}/$ID_TOP",
                                     context.getString(R.string.playlist_top),
@@ -295,7 +295,6 @@ class MediaLibrarySessionCallback (
                             }
 
                         }
-
 
                         else -> when {
 
@@ -417,20 +416,20 @@ class MediaLibrarySessionCallback (
                                             list.map { it.song }
                                         }
 
-                                    ID_CACHED -> database.sortOfflineSongsByPlayTime().map { list ->
-                                        list.filter { song ->
-                                            try {
-                                                binder.cache.isCached(
-                                                    song.song.id,
-                                                    0L,
-                                                    song.contentLength ?: 0L
-                                                )
-                                            } catch (e: Exception) {
-                                                false
-                                            }
-                                        }.reversed()
-                                            .map { it.song }
-                                    }
+//                                    ID_CACHED -> database.sortOfflineSongsByPlayTime().map { list ->
+//                                        list.filter { song ->
+//                                            try {
+//                                                binder.cache.isCached(
+//                                                    song.song.id,
+//                                                    0L,
+//                                                    song.contentLength ?: 0L
+//                                                )
+//                                            } catch (e: Exception) {
+//                                                false
+//                                            }
+//                                        }.reversed()
+//                                            .map { it.song }
+//                                    }
 
                                     ID_TOP -> database.trending(
                                         context.preferences.getEnum(
@@ -440,8 +439,8 @@ class MediaLibrarySessionCallback (
                                     )
 
                                     ID_ONDEVICE -> database.songsEntityOnDevice().map { list ->
-                                        list.map { it.song }
-                                    }
+                                            list.map { it.song }
+                                        }
 
 //                                    ID_DOWNLOADED -> {
 //                                        val downloads = downloadHelper.downloads.value
@@ -461,6 +460,8 @@ class MediaLibrarySessionCallback (
                                         }
                                 }.first().map {
                                     it.toMediaItem(parentId)
+                                }.also { media ->
+                                    println("onGetChildren playlist songs ${media.map{ it.mediaId }}")
                                 }
 
 
@@ -480,15 +481,15 @@ class MediaLibrarySessionCallback (
         session: MediaLibrarySession,
         browser: MediaSession.ControllerInfo,
         mediaId: String,
-    ): ListenableFuture<LibraryResult<MediaItem>> {
-        println("PlayerServiceModern MediaLibrarySessionCallback.onGetItem")
-        return scope.future(Dispatchers.IO) {
-            println("PlayerServiceModern MediaLibrarySessionCallback.onGetItem: $mediaId")
+    ): ListenableFuture<LibraryResult<MediaItem>> =
+        //println("PlayerServiceModern MediaLibrarySessionCallback.onGetItem mediaId $mediaId external")
+         scope.future(Dispatchers.IO) {
+            //println("PlayerServiceModern MediaLibrarySessionCallback.onGetItem: mediaId $mediaId inside")
             database.song(mediaId).first()?.toMediaItem()?.let {
                 LibraryResult.ofItem(it, null)
-            } ?: LibraryResult.ofError(SessionError.ERROR_UNKNOWN)
+            } ?: LibraryResult.ofError(SessionError.ERROR_BAD_VALUE)
         }
-    }
+
 
     override fun onSetMediaItems(
         mediaSession: MediaSession,
@@ -557,15 +558,15 @@ class MediaLibrarySessionCallback (
                     val playlistId = path.getOrNull(1) ?: return@future defaultResult
                     val songs = when (playlistId) {
                         ID_FAVORITES -> database.sortFavoriteSongsByRowId().map { it.reversed() }
-                        ID_CACHED -> database.sortOfflineSongsByPlayTime().map {
-                            it.filter { song ->
-                                try {
-                                    binder.cache.isCached(song.song.id, 0L, song.contentLength ?: 0L)
-                                } catch (e: Exception) {
-                                    false
-                                }
-                            }.reversed()
-                        }
+//                        ID_CACHED -> database.sortOfflineSongsByPlayTime().map {
+//                            it.filter { song ->
+//                                try {
+//                                    binder.cache.isCached(song.song.id, 0L, song.contentLength ?: 0L)
+//                                } catch (e: Exception) {
+//                                    false
+//                                }
+//                            }.reversed()
+//                        }
 
                         ID_TOP -> database.trendingSongEntity(
                             context.preferences.getEnum(
@@ -729,8 +730,8 @@ class MediaLibrarySessionCallback (
 
 object MediaSessionConstants {
     const val ID_FAVORITES = "FAVORITES"
-    const val ID_CACHED = "CACHED"
-    const val ID_DOWNLOADED = "DOWNLOADED"
+    //const val ID_CACHED = "CACHED"
+    //const val ID_DOWNLOADED = "DOWNLOADED"
     const val ID_TOP = "TOP"
     const val ID_ONDEVICE = "ONDEVICE"
     const val ACTION_TOGGLE_DOWNLOAD = "TOGGLE_DOWNLOAD"
@@ -739,7 +740,7 @@ object MediaSessionConstants {
     const val ACTION_TOGGLE_REPEAT_MODE = "TOGGLE_REPEAT_MODE"
     const val ACTION_START_RADIO = "START_RADIO"
     const val ACTION_SEARCH = "ACTION_SEARCH"
-    val CommandToggleDownload = SessionCommand(ACTION_TOGGLE_DOWNLOAD, Bundle.EMPTY)
+    //val CommandToggleDownload = SessionCommand(ACTION_TOGGLE_DOWNLOAD, Bundle.EMPTY)
     val CommandToggleLike = SessionCommand(ACTION_TOGGLE_LIKE, Bundle.EMPTY)
     val CommandToggleShuffle = SessionCommand(ACTION_TOGGLE_SHUFFLE, Bundle.EMPTY)
     val CommandToggleRepeatMode = SessionCommand(ACTION_TOGGLE_REPEAT_MODE, Bundle.EMPTY)
