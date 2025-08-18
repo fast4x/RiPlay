@@ -52,6 +52,7 @@ import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.graphics.painter.ColorPainter
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.withSave
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
@@ -149,8 +150,8 @@ fun FastShare(
     val externalApps by remember {
         Database.externalApps()
     }.collectAsState(initial = emptyList() , Dispatchers.IO)
-
-    println("FastShare externalApps: $externalApps")
+    
+    val uriHandler = LocalUriHandler.current
 
     CustomModalBottomSheet(
         showSheet = showFastShare,
@@ -258,6 +259,57 @@ fun FastShare(
                                 }
                         )
                     }
+                }
+            }
+            Row (
+                modifier = Modifier.padding(bottom = 20.dp)
+            ) {
+                Column(
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .border(BorderStroke(1.dp, colorPalette().accent), shape = thumbnailShape())
+                ) {
+                    TitleMiniSection(
+                        title = "Open link",
+                        modifier = Modifier.padding(bottom = 16.dp)
+                    )
+
+                    Row(
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .requiredHeight(60.dp)
+                            .background(colorPalette().background2, shape = thumbnailShape())
+                            .padding(horizontal = 20.dp)
+                            .fillMaxWidth()
+                    ) {
+                        Text(
+                            text = urlToShare,
+                            fontSize = typography().xs.fontSize,
+                            fontFamily = typography().xs.fontFamily,
+                            fontWeight = typography().xs.fontWeight,
+                            fontStyle = typography().xs.fontStyle,
+                            color = colorPalette().text,
+                            modifier = Modifier
+                                .fillMaxWidth(0.9f)
+                                .clickable {
+                                    uriHandler.openUri(urlToShare)
+                                }
+                        )
+                        Image(
+                            painter = painterResource(R.drawable.internet),
+                            colorFilter = ColorFilter.tint(colorPalette().text),
+                            contentDescription = "Open link",
+                            modifier = Modifier
+                                .size(24.dp)
+                                .clickable {
+                                    uriHandler.openUri(urlToShare)
+                                }
+                        )
+                    }
+
                 }
             }
             Row (

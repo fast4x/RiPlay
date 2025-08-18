@@ -75,148 +75,25 @@ fun OnDeviceArtistScreen(
     artistId: String,
     miniPlayer: @Composable () -> Unit = {},
 ) {
-    val saveableStateHolder = rememberSaveableStateHolder()
-
-    var tabIndex by rememberSaveable {
-        mutableStateOf(0)
-    }
-
-    var artist by persist<Artist?>("artist/$artistId/artist")
-
-    //var artistPage by persist<ArtistPage?>("artist/$artistId/artistPage")
-
-    val context = LocalContext.current
-
-    val thumbnailRoundness by rememberPreference(
-        thumbnailRoundnessKey,
-        ThumbnailRoundness.Heavy
-    )
-    var changeShape by remember {
-        mutableStateOf(false)
-    }
 
     val disableScrollingText by rememberPreference(disableScrollingTextKey, false)
 
-//    var artistInDatabase by remember { mutableStateOf<Artist?>(null) }
-//
-//    Database.asyncTransaction {
-//        CoroutineScope(Dispatchers.IO).launch {
-//            artistInDatabase = artist(artistId).firstOrNull()
-//        }
-//    }
-
-    LaunchedEffect(Unit) {
-
-        //artistPage = YtMusic.getArtistPage(browseId)
-
-        Database
-            .artist(artistId)
-            //.combine(snapshotFlow { tabIndex }.map { it != 4 }) { artist, mustFetch -> artist to mustFetch }
-            .distinctUntilChanged()
-            .collect { currentArtist ->
-                artist = currentArtist
-
-            }
-    }
-
-    val listMediaItems = remember { mutableListOf<MediaItem>() }
-
-    var artistItemsSection by remember { mutableStateOf<ArtistSection?>(null) }
-
-            val thumbnailContent =
-                adaptiveThumbnailContent(
-                    artist?.timestamp == null,
-                    artist?.thumbnailUrl,
-                    //CircleShape
-                    onClick = { changeShape = !changeShape },
-                    shape = if (changeShape) CircleShape else thumbnailRoundness.shape(),
-                )
-
-            val headerContent: @Composable (textButton: (@Composable () -> Unit)?) -> Unit =
-                { textButton ->
-                    if (artist?.timestamp == null) {
-                        HeaderPlaceholder(
-                            modifier = Modifier
-                                .shimmer()
-                        )
-                    } else {
-                        Header(title = cleanPrefix(artist?.name ?: "Unknown"), actionsContent = {
-                                Row(
-                                    horizontalArrangement = Arrangement.spacedBy(10.dp),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    modifier = Modifier
-                                        .padding(top = 50.dp)
-                                        .padding(horizontal = 12.dp)
-                                ) {
-                                    textButton?.invoke()
-
-                                    Spacer(
-                                        modifier = Modifier
-                                            .weight(0.2f)
-                                    )
-
-//                                    SecondaryTextButton(
-//                                        text = if (artist?.bookmarkedAt == null) stringResource(R.string.follow) else stringResource(
-//                                            R.string.following
-//                                        ),
-//                                        onClick = {
-//                                            val bookmarkedAt =
-//                                                if (artist?.bookmarkedAt == null) System.currentTimeMillis() else null
-//
-//                                            Database.asyncTransaction {
-//                                                artist?.copy( bookmarkedAt = bookmarkedAt )
-//                                                      ?.let( ::update )
-//                                            }
-//                                        },
-//                                        alternative = artist?.bookmarkedAt == null
-//                                    )
-//
-//                                    HeaderIconButton(
-//                                        icon = R.drawable.share_social,
-//                                        color = colorPalette().text,
-//                                        onClick = {
-//                                            val sendIntent = Intent().apply {
-//                                                Intent.setAction = Intent.ACTION_SEND
-//                                                Intent.setType = "text/plain"
-//                                                putExtra(
-//                                                    Intent.EXTRA_TEXT,
-//                                                    "https://music.youtube.com/channel/$artistId"
-//                                                )
-//                                            }
-//
-//                                            context.startActivity(
-//                                                Intent.createChooser(
-//                                                    sendIntent,
-//                                                    null
-//                                                )
-//                                            )
-//                                        }
-//                                    )
-                                }
-                            },
-                            disableScrollingText = disableScrollingText)
-                    }
-                }
-
     Skeleton(
         navController,
-        tabIndex,
-        onTabChanged = { tabIndex = it },
+        0,
+        onTabChanged = {},
         miniPlayer,
         navBarContent = {}
     ) { currentTabIndex ->
-                //saveableStateHolder.SaveableStateProvider(key = currentTabIndex) {
                     when (currentTabIndex) {
                         0 -> {
                             OnDeviceArtistDetails(
                                 navController = navController,
                                 artistId = artistId,
-                                onItemsPageClick = {},
                                 disableScrollingText = disableScrollingText
                             )
                         }
                     }
-                //}
             }
 
 }

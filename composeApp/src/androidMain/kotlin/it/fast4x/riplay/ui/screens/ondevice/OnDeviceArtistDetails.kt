@@ -125,8 +125,6 @@ import kotlin.random.Random
 fun OnDeviceArtistDetails(
     navController: NavController,
     artistId: String?,
-//    artistPage: ArtistPage?,
-    onItemsPageClick: (ArtistSection) -> Unit,
     disableScrollingText: Boolean
 ) {
 
@@ -140,10 +138,6 @@ fun OnDeviceArtistDetails(
     val songThumbnailSizePx = songThumbnailSizeDp.px
     val albumThumbnailSizeDp = 108.dp
     val albumThumbnailSizePx = albumThumbnailSizeDp.px
-    val artistThumbnailSizeDp = 92.dp
-    val artistThumbnailSizePx = artistThumbnailSizeDp.px
-    val playlistThumbnailSizeDp = 108.dp
-    val playlistThumbnailSizePx = playlistThumbnailSizeDp.px
 
     val endPaddingValues = windowInsets.only(WindowInsetsSides.End).asPaddingValues()
 
@@ -154,12 +148,6 @@ fun OnDeviceArtistDetails(
     }
 
     val context = LocalContext.current
-
-    var translateEnabled by remember {
-        mutableStateOf(false)
-    }
-
-    val listMediaItems = remember { mutableListOf<MediaItem>() }
 
     val artist by remember {
         Database.artist(artistId)
@@ -174,19 +162,11 @@ fun OnDeviceArtistDetails(
     }.collectAsState(initial = emptyList(), context = Dispatchers.IO)
     println("OnDeviceArtistDetails albums: $albums")
 
-
-    var itemsBrowseId by remember { mutableStateOf("") }
-    var itemsParams by remember { mutableStateOf("") }
-    var itemsSectionName by remember { mutableStateOf("") }
     var showArtistItems by rememberSaveable { mutableStateOf(false) }
-    var songsBrowseId by remember { mutableStateOf("") }
-    var songsParams by remember { mutableStateOf("") }
 
     val hapticFeedback = LocalHapticFeedback.current
     val parentalControlEnabled by rememberPreference(parentalControlEnabledKey, false)
     val menuState = LocalMenuState.current
-
-    var readMore by remember { mutableStateOf(false) }
 
     var scrollToNowPlaying by remember {
         mutableStateOf(false)
@@ -207,7 +187,6 @@ fun OnDeviceArtistDetails(
     Box(
         modifier = Modifier
             .background(colorPalette().background0)
-            //.fillMaxSize()
             .fillMaxHeight()
             .fillMaxWidth(
                 if (NavigationBarPosition.Right.isCurrent())
@@ -228,7 +207,6 @@ fun OnDeviceArtistDetails(
                 Box(
                     modifier = modifierArt
                 ) {
-                    //if (artistPage != null) {
                     if (!isLandscape)
                         Box {
                             AsyncImage(
@@ -248,20 +226,20 @@ fun OnDeviceArtistDetails(
                                         bottom = Dimensions.fadeSpacingBottom
                                     )
                             )
-                            if (artist?.isYoutubeArtist == true) {
-                                Image(
-                                    painter = painterResource(R.drawable.internet),
-                                    colorFilter = ColorFilter.tint(
-                                        Color.Red.copy(0.75f).compositeOver(Color.White)
-                                    ),
-                                    modifier = Modifier
-                                        .size(40.dp)
-                                        .padding(all = 5.dp)
-                                        .offset(10.dp,10.dp),
-                                    contentDescription = "Background Image",
-                                    contentScale = ContentScale.Fit
-                                )
-                            }
+
+                            Image(
+                                painter = painterResource(R.drawable.folder),
+                                colorFilter = ColorFilter.tint(
+                                    colorPalette().text
+                                ),
+                                modifier = Modifier
+                                    .size(24.dp)
+                                    .padding(top = 5.dp, end = 5.dp)
+                                    .align(Alignment.TopEnd),
+                                contentDescription = "Background Image",
+                                contentScale = ContentScale.Fit
+                            )
+
                         }
 
                     AutoResizeText(
@@ -398,84 +376,6 @@ fun OnDeviceArtistDetails(
                 }
             }
 
-//            item {
-//                artistPage.description?.let { description ->
-//                    val attributionsIndex = description.lastIndexOf("\n\nFrom Wikipedia")
-//
-//                    Title(
-//                        title = stringResource(R.string.information),
-//                        icon = if (readMore) R.drawable.chevron_up else R.drawable.chevron_down,
-//                        onClick = {
-//                            readMore = !readMore
-//                        }
-//                    )
-//
-//                    Row(
-//                        modifier = Modifier
-//                            .padding(vertical = 16.dp, horizontal = 8.dp)
-//                    ) {
-//                        BasicText(
-//                            text = "“",
-//                            style = typography().xxl.semiBold,
-//                            modifier = Modifier
-//                                .offset(y = (-8).dp)
-//                                .align(Alignment.Top)
-//                        )
-//
-//                        if (!readMore)
-//                            BasicText(
-//                                text = description.substring(0,
-//                                    if (description.length >= 100) 100 else description.length
-//                                ).plus("..."),
-//                                style = typography().xxs.secondary.align(TextAlign.Justify),
-//                                modifier = Modifier
-//                                    .padding(horizontal = 8.dp)
-//                                    .weight(1f)
-//                                    .clickable {
-//                                        readMore = !readMore
-//                                    }
-//                            )
-//
-//                        if (readMore)
-//                            BasicText(
-//                                text = if (attributionsIndex == -1) {
-//                                    description
-//                                } else {
-//                                    description.substring(0, attributionsIndex)
-//                                },
-//                                style = typography().xxs.secondary.align(TextAlign.Justify),
-//                                modifier = Modifier
-//                                    .padding(horizontal = 8.dp)
-//                                    .weight(1f)
-//                                    .clickable {
-//                                        readMore = !readMore
-//                                    }
-//                            )
-//
-//
-//                        BasicText(
-//                            text = "„",
-//                            style = typography().xxl.semiBold,
-//                            modifier = Modifier
-//                                .offset(y = 4.dp)
-//                                .align(Alignment.Bottom)
-//                        )
-//                    }
-//
-//                    if (attributionsIndex != -1) {
-//                        BasicText(
-//                            text = stringResource(R.string.from_wikipedia_cca),
-//                            style = typography().xxs.color(colorPalette().textDisabled)
-//                                .align(TextAlign.Start),
-//                            modifier = Modifier
-//                                .padding(horizontal = 16.dp)
-//                                .padding(bottom = 16.dp)
-//                        )
-//                    }
-//
-//                }
-//            }
-
             item {
                 Title2Actions(
                             title = stringResource(R.string.songs),
@@ -492,7 +392,6 @@ fun OnDeviceArtistDetails(
                                         Random(System.currentTimeMillis()).nextInt(0, topSongs.size-1)
                                     else 0
                                 )
-                                //navController.navigate(route = "${NavRoutes.album.name}/${idItem}")
                                 fastPlay(item.asMediaItem, binder)
                             }
                         )
@@ -595,7 +494,7 @@ fun OnDeviceArtistDetails(
 
         }
 
-        val showFloatingIcon by rememberPreference(showFloatingIconKey, false)
+//        val showFloatingIcon by rememberPreference(showFloatingIconKey, false)
 //        if (UiType.ViMusic.isCurrent() && showFloatingIcon)
 //            artistPage?.radioEndpoint?.let { endpoint ->
 //

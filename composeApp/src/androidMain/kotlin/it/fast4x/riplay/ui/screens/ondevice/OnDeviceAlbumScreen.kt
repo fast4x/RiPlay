@@ -85,27 +85,13 @@ fun OnDeviceAlbumScreen(
     miniPlayer: @Composable () -> Unit = {}
 ) {
 
-    //val uriHandler = LocalUriHandler.current
     val saveableStateHolder = rememberSaveableStateHolder()
 
-    var tabIndex by rememberSaveable {
-        mutableStateOf(0)
-    }
-    val thumbnailRoundness by rememberPreference(
-        thumbnailRoundnessKey,
-        ThumbnailRoundness.Heavy
-    )
-    var changeShape by remember {
-        mutableStateOf(false)
-    }
-
     var album by persist<Album?>("album/$albumId/album")
-    //var albumPage by persist<Innertube.PlaylistOrAlbumPage?>("album/$browseId/albumPage")
-    var albumPage by persist<AlbumPage?>("album/$albumId/albumPage")
 
     val disableScrollingText by rememberPreference(disableScrollingTextKey, false)
 
-    PersistMapCleanup(tagPrefix = "album/$albumId/")
+    //PersistMapCleanup(tagPrefix = "album/$albumId/")
 
     LaunchedEffect(Unit) {
         Database
@@ -117,71 +103,71 @@ fun OnDeviceAlbumScreen(
     }
 
 
-    val headerContent: @Composable (textButton: (@Composable () -> Unit)?) -> Unit =
-        { textButton ->
-            if (album?.timestamp == null) {
-                HeaderPlaceholder(
-                    modifier = Modifier
-                        .shimmer()
-                )
-            } else {
-                val context = LocalContext.current
-
-                Header(
-                    title = "",
-                    modifier = Modifier.padding(horizontal = 12.dp),
-                    actionsContent = {
-                        textButton?.invoke()
-
-
-                        Spacer(
-                            modifier = Modifier
-                                .weight(1f)
-                        )
-
-//                        HeaderIconButton(
-//                            icon = if (album?.bookmarkedAt == null) {
-//                                R.drawable.bookmark_outline
-//                            } else {
-//                                R.drawable.bookmark
-//                            },
-//                            color = colorPalette().accent,
-//                            onClick = {
-//                                val bookmarkedAt =
-//                                    if (album?.bookmarkedAt == null) System.currentTimeMillis() else null
+//    val headerContent: @Composable (textButton: (@Composable () -> Unit)?) -> Unit =
+//        { textButton ->
+//            if (album?.timestamp == null) {
+//                HeaderPlaceholder(
+//                    modifier = Modifier
+//                        .shimmer()
+//                )
+//            } else {
+//                val context = LocalContext.current
 //
-//                                Database.asyncTransaction {
-//                                    album?.copy(bookmarkedAt = bookmarkedAt)
-//                                        ?.let(::update)
-//                                }
-//                            }
+//                Header(
+//                    title = "",
+//                    modifier = Modifier.padding(horizontal = 12.dp),
+//                    actionsContent = {
+//                        textButton?.invoke()
+//
+//
+//                        Spacer(
+//                            modifier = Modifier
+//                                .weight(1f)
 //                        )
 //
-//                        HeaderIconButton(
-//                            icon = R.drawable.share_social,
-//                            color = colorPalette().text,
-//                            onClick = {
-//                                album?.shareUrl?.let { url ->
-//                                    val sendIntent = Intent().apply {
-//                                        Intent.setAction = Intent.ACTION_SEND
-//                                        Intent.setType = "text/plain"
-//                                        putExtra(Intent.EXTRA_TEXT, url)
-//                                    }
-//
-//                                    context.startActivity(
-//                                        Intent.createChooser(
-//                                            sendIntent,
-//                                            null
-//                                        )
-//                                    )
-//                                }
-//                            }
-//                        )
-                    },
-                    disableScrollingText = disableScrollingText
-                )
-            }
-        }
+////                        HeaderIconButton(
+////                            icon = if (album?.bookmarkedAt == null) {
+////                                R.drawable.bookmark_outline
+////                            } else {
+////                                R.drawable.bookmark
+////                            },
+////                            color = colorPalette().accent,
+////                            onClick = {
+////                                val bookmarkedAt =
+////                                    if (album?.bookmarkedAt == null) System.currentTimeMillis() else null
+////
+////                                Database.asyncTransaction {
+////                                    album?.copy(bookmarkedAt = bookmarkedAt)
+////                                        ?.let(::update)
+////                                }
+////                            }
+////                        )
+////
+////                        HeaderIconButton(
+////                            icon = R.drawable.share_social,
+////                            color = colorPalette().text,
+////                            onClick = {
+////                                album?.shareUrl?.let { url ->
+////                                    val sendIntent = Intent().apply {
+////                                        Intent.setAction = Intent.ACTION_SEND
+////                                        Intent.setType = "text/plain"
+////                                        putExtra(Intent.EXTRA_TEXT, url)
+////                                    }
+////
+////                                    context.startActivity(
+////                                        Intent.createChooser(
+////                                            sendIntent,
+////                                            null
+////                                        )
+////                                    )
+////                                }
+////                            }
+////                        )
+//                    },
+//                    disableScrollingText = disableScrollingText
+//                )
+//            }
+//        }
 
 //    val thumbnailContent =
 //        adaptiveThumbnailContent(
@@ -279,18 +265,14 @@ fun OnDeviceAlbumScreen(
                     },
                     label = "",
                     modifier = Modifier
-                        //.fillMaxWidth()
                         .fillMaxHeight()
                         .padding(top = topPadding)
                 ) { currentTabIndex ->
-                    saveableStateHolder.SaveableStateProvider(key = currentTabIndex) {
+                   // saveableStateHolder.SaveableStateProvider(key = currentTabIndex) {
                         when (currentTabIndex) {
                             0 -> OnDeviceAlbumDetails(
                                 navController = navController,
                                 albumId = albumId,
-                                //albumPage = albumPage,
-                                headerContent = headerContent,
-                                //thumbnailContent = thumbnailContent,
                                 onSearchClick = {
                                     navController.navigate(NavRoutes.search.name)
                                 },
@@ -300,7 +282,7 @@ fun OnDeviceAlbumScreen(
                             )
 
                         }
-                    }
+                    //}
                 }
             }
 

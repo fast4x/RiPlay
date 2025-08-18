@@ -136,49 +136,21 @@ fun OnDeviceArtistItems(
 
     val binder = LocalPlayerServiceBinder.current
     val menuState = LocalMenuState.current
-    val windowInsets = LocalPlayerAwareWindowInsets.current
     val selectedQueue = LocalSelectedQueue.current
 
     val songThumbnailSizeDp = Dimensions.thumbnails.song
     val songThumbnailSizePx = songThumbnailSizeDp.px
-    val albumThumbnailSizeDp = 108.dp
-    val albumThumbnailSizePx = albumThumbnailSizeDp.px
-    val artistThumbnailSizeDp = 92.dp
-    val artistThumbnailSizePx = artistThumbnailSizeDp.px
-    val playlistThumbnailSizeDp = 108.dp
-    val playlistThumbnailSizePx = playlistThumbnailSizeDp.px
-
-    val endPaddingValues = windowInsets.only(WindowInsetsSides.End).asPaddingValues()
 
     val sectionTextModifier = Modifier
         .padding(horizontal = 16.dp)
         .padding(top = 24.dp, bottom = 8.dp)
 
-    val scrollState = rememberScrollState()
 
     val context = LocalContext.current
 
-    var showYoutubeLikeConfirmDialog by remember {
-        mutableStateOf(false)
-    }
-
-    var notLikedSongs by persistList<MediaItem>("")
-    var totalMinutesToLike by remember { mutableStateOf("") }
-
-    var translateEnabled by remember {
-        mutableStateOf(false)
-    }
-
-    val translator = Translator(getHttpClient())
-    val languageDestination = languageDestination()
-    val listMediaItems = remember { mutableListOf<MediaItem>() }
-
-    //var artist by persist<Artist?>("artist/${artistSection?.moreEndpoint?.browseId}/items")
 
     val hapticFeedback = LocalHapticFeedback.current
     val parentalControlEnabled by rememberPreference(parentalControlEnabledKey, false)
-
-    //var artistItemsPage by persist<ArtistItemsPage?>("artist/${browseId}/artistPage")
 
     val thumbnailSizeDp = Dimensions.thumbnails.album //+ 24.dp
     val thumbnailSizePx = thumbnailSizeDp.px
@@ -207,7 +179,6 @@ fun OnDeviceArtistItems(
     Box(
         modifier = Modifier
             .background(colorPalette().background0)
-            //.fillMaxSize()
             .fillMaxHeight()
             .fillMaxWidth(
                 if (NavigationBarPosition.Right.isCurrent())
@@ -339,7 +310,7 @@ fun OnDeviceArtistItems(
                                     }
                                 )
                         )
-//
+
                         HeaderIconButton(
                             icon = R.drawable.add_in_playlist,
                             color = colorPalette().text,
@@ -440,59 +411,6 @@ fun OnDeviceArtistItems(
                             forceRecompose = forceRecompose
                         )
                     }
-                    /*else -> {}
-//                        is Innertube.AlbumItem -> {
-//                            AlbumItem(
-//                                album = item,
-//                                thumbnailSizePx = thumbnailSizePx,
-//                                thumbnailSizeDp = thumbnailSizeDp,
-//                                alternative = false,
-//                                yearCentered = false,
-//                                showAuthors = true,
-//                                modifier = Modifier.clickable(onClick = {
-//                                    navController.navigate(route = "${NavRoutes.album.name}/${item.key}")
-//                                }),
-//                                disableScrollingText = disableScrollingText
-//                            )
-//                        }
-//                        is Innertube.PlaylistItem -> {
-//                            PlaylistItem(
-//                                playlist = item,
-//                                alternative = false,
-//                                thumbnailSizePx = playlistThumbnailSizePx,
-//                                thumbnailSizeDp = playlistThumbnailSizeDp,
-//                                disableScrollingText = disableScrollingText,
-//                                modifier = Modifier.clickable(onClick = {
-//                                    navController.navigate("${NavRoutes.playlist.name}/${item.key}")
-//                                })
-//                            )
-//                        }
-//                        is Innertube.VideoItem -> {
-//                            VideoItem(
-//                                video = item,
-//                                thumbnailHeightDp = playlistThumbnailSizeDp,
-//                                thumbnailWidthDp = playlistThumbnailSizeDp,
-//                                disableScrollingText = disableScrollingText,
-//                                modifier = Modifier.clickable(onClick = {
-//                                    binder?.stopRadio()
-//                                    if (isVideoEnabled())
-//                                        binder?.player?.playVideo(item.asMediaItem)
-//                                    else
-//                                        binder?.player?.forcePlay(item.asMediaItem)
-//                                })
-//                            )
-//                        }
-//                        is Innertube.ArtistItem -> {
-//                            ArtistItem(
-//                                artist = item,
-//                                thumbnailSizePx = artistThumbnailSizePx,
-//                                thumbnailSizeDp = artistThumbnailSizeDp,
-//                                disableScrollingText = disableScrollingText,
-//                                modifier = Modifier.clickable(onClick = {
-//                                    navController.navigate("${NavRoutes.artist.name}/${item.key}")
-//                                })
-//                            )
-//                        }*/
 
                 }
 
@@ -538,8 +456,6 @@ fun OnDeviceArtistItems(
                                 }),
                                 disableScrollingText = disableScrollingText
                             )
-
-
 
                 }
             }

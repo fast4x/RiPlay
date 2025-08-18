@@ -147,14 +147,9 @@ import it.fast4x.riplay.utils.mediaItemSetLiked
 fun OnDeviceAlbumDetails(
     navController: NavController,
     albumId: String,
-    //albumPage: AlbumPage?,
-    headerContent: @Composable (textButton: (@Composable () -> Unit)?) -> Unit,
-    //thumbnailContent: @Composable () -> Unit,
     onSearchClick: () -> Unit,
     onSettingsClick: () -> Unit
 ) {
-
-    //if (albumPage == null) return
 
     val binder = LocalPlayerServiceBinder.current
     val menuState = LocalMenuState.current
@@ -162,20 +157,8 @@ fun OnDeviceAlbumDetails(
     val selectedQueue = LocalSelectedQueue.current
     var songs by persistList<Song>("album/$albumId/songs")
     var album by persist<Album?>("album/$albumId")
-    //val albumPage by persist<Innertube.PlaylistOrAlbumPage?>("album/$browseId/albumPage")
     val parentalControlEnabled by rememberPreference(parentalControlEnabledKey, false)
     val disableScrollingText by rememberPreference(disableScrollingTextKey, false)
-    var songPlaylist by remember {
-        mutableIntStateOf(0)
-    }
-    var playlistsList by remember { mutableStateOf<List<Database.PlayListIdPosition>?>(null) }
-    var songExists by remember { mutableStateOf(false) }
-    var likedAt by remember {
-        mutableStateOf<Long?>(null)
-    }
-    var playTime by remember {
-        mutableStateOf<Long?>(null)
-    }
 
     LaunchedEffect(Unit) {
         Database.albumSongs(albumId).collect {
@@ -188,14 +171,8 @@ fun OnDeviceAlbumDetails(
         Database.album(albumId).collect { album = it }
     }
 
-    var showConfirmDeleteDownloadDialog by remember {
-        mutableStateOf(false)
-    }
-
     val thumbnailSizeDp = Dimensions.thumbnails.song
     val thumbnailAlbumSizeDp = Dimensions.thumbnails.album
-
-    val thumbnailAlbumSizePx = thumbnailAlbumSizeDp.px
 
     val lazyListState = rememberLazyListState()
 
@@ -306,14 +283,6 @@ fun OnDeviceAlbumDetails(
             }
         )
 
-//    if (showConfirmDeleteDownloadDialog) {
-//        ConfirmationDialog(
-//            text = stringResource(R.string.do_you_really_want_to_delete_download),
-//            onDismiss = { showConfirmDeleteDownloadDialog = false },
-//            onConfirm = {}
-//        )
-//    }
-
     var isViewingQueues by remember { mutableStateOf(false) }
     if (isViewingQueues) {
         QueuesDialog(
@@ -351,23 +320,11 @@ fun OnDeviceAlbumDetails(
         .padding(horizontal = 16.dp)
         .padding(top = 24.dp, bottom = 8.dp)
 
-    var translateEnabled by remember {
-        mutableStateOf(false)
-    }
-
-    val translator = Translator(getHttpClient())
-    val languageDestination = languageDestination()
-
-    var readMore by remember { mutableStateOf(false) }
-
-    //LayoutWithAdaptiveThumbnail(thumbnailContent = thumbnailContent) {
-
             Box(
                 modifier = Modifier
                     .background(
                         colorPalette().background0
                     )
-                    //.fillMaxSize()
                     .fillMaxHeight()
                     .fillMaxWidth(
                         if (NavigationBarPosition.Right.isCurrent())
@@ -379,8 +336,6 @@ fun OnDeviceAlbumDetails(
 
                 LazyColumn(
                     state = lazyListState,
-                    //contentPadding = LocalPlayerAwareWindowInsets.current
-                    //    .only(WindowInsetsSides.Vertical + WindowInsetsSides.End).asPaddingValues(),
                     modifier = Modifier
                         .background(
                             colorPalette().background0
@@ -413,20 +368,18 @@ fun OnDeviceAlbumDetails(
                                                     bottom = Dimensions.fadeSpacingBottom
                                                 )
                                         )
-                                        if (album?.isYoutubeAlbum == true) {
-                                            Image(
-                                                painter = painterResource(R.drawable.internet),
-                                                colorFilter = ColorFilter.tint(
-                                                    Color.Red.copy(0.75f).compositeOver(Color.White)
-                                                ),
-                                                modifier = Modifier
-                                                    .size(40.dp)
-                                                    .padding(all = 5.dp)
-                                                    .offset(10.dp, 10.dp),
-                                                contentDescription = "Background Image",
-                                                contentScale = ContentScale.Fit
-                                            )
-                                        }
+                                        Image(
+                                            painter = painterResource(R.drawable.folder),
+                                            colorFilter = ColorFilter.tint(
+                                                colorPalette().text
+                                            ),
+                                            modifier = Modifier
+                                                .size(24.dp)
+                                                .padding(top = 5.dp, end = 5.dp)
+                                                .align(Alignment.TopEnd),
+                                            contentDescription = "Background Image",
+                                            contentScale = ContentScale.Fit
+                                        )
                                     }
 
                                 AutoResizeText(
@@ -447,33 +400,7 @@ fun OnDeviceAlbumDetails(
                                                 iterations = Int.MAX_VALUE
                                             )
                                         }
-                                    //.padding(bottom = 20.dp)
                                 )
-
-//                                HeaderIconButton(
-//                                    icon = R.drawable.share_social,
-//                                    color = colorPalette().text,
-//                                    iconSize = 24.dp,
-//                                    modifier = Modifier
-//                                        .align(Alignment.TopEnd)
-//                                        .padding(top = 5.dp, end = 5.dp),
-//                                    onClick = {
-//                                        album?.shareUrl?.let { url ->
-//                                            val sendIntent = Intent().apply {
-//                                                Intent.setAction = Intent.ACTION_SEND
-//                                                Intent.setType = "text/plain"
-//                                                putExtra(Intent.EXTRA_TEXT, url)
-//                                            }
-//
-//                                            context.startActivity(
-//                                                Intent.createChooser(
-//                                                    sendIntent,
-//                                                    null
-//                                                )
-//                                            )
-//                                        }
-//                                    }
-//                                )
 
                             } else {
                                 Column(
@@ -654,13 +581,6 @@ fun OnDeviceAlbumDetails(
                                                         listMediaItems.clear()
                                                     }
                                                 },
-                                                /*
-                                        onSelect = { selectItems = true },
-                                        onUncheck = {
-                                            selectItems = false
-                                            listMediaItems.clear()
-                                        },
-                                         */
                                                 onChangeAlbumTitle = {
                                                     if (album?.isYoutubeAlbum == true) {
                                                         SmartMessage(
@@ -841,16 +761,6 @@ fun OnDeviceAlbumDetails(
                                 mediaItem = song.asMediaItem,
                                 thumbnailSizeDp = thumbnailSizeDp,
                                 thumbnailContent = {
-                                    /*
-                            AsyncImage(
-                                model = song.thumbnailUrl,
-                                contentDescription = null,
-                                contentScale = ContentScale.Crop,
-                                modifier = Modifier
-                                    .clip(LocalAppearance.current.thumbnailShape)
-                                    .fillMaxSize()
-                            )
-                             */
                                     BasicText(
                                         text = "${index + 1}",
                                         style = typography().s.semiBold.center.color(
@@ -1001,10 +911,6 @@ fun OnDeviceAlbumDetails(
 
 
             }
-        //}
-
-
-    //}
 
 
 }
