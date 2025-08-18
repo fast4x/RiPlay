@@ -7,9 +7,12 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
@@ -42,6 +45,7 @@ import it.fast4x.riplay.utils.showSimilarArtistsKey
 import it.fast4x.riplay.utils.showTipsKey
 import kotlinx.coroutines.flow.distinctUntilChanged
 import it.fast4x.riplay.colorPalette
+import it.fast4x.riplay.ui.components.themed.settingsItem
 
 @ExperimentalAnimationApi
 @UnstableApi
@@ -87,7 +91,7 @@ fun  QuickPicsSettings() {
                 else
                     1f
             )
-            .verticalScroll(rememberScrollState())
+            //.verticalScroll(rememberScrollState())
             /*
             .padding(
                 LocalPlayerAwareWindowInsets.current
@@ -97,180 +101,216 @@ fun  QuickPicsSettings() {
 
              */
     ) {
-        HeaderWithIcon(
-            title = if (!isYouTubeLoggedIn()) stringResource(R.string.quick_picks) else stringResource(R.string.home),
-            iconId = if (!isYouTubeLoggedIn()) R.drawable.sparkles else R.drawable.internet,
-            enabled = false,
-            showIcon = true,
-            modifier = Modifier,
-            onClick = {}
-        )
-
-        SwitchSettingEntry(
-            offline = false,
-            title = stringResource(R.string.enable_quick_picks_page),
-            text = "",
-            isChecked = enableQuickPicksPage,
-            onCheckedChange = {
-                enableQuickPicksPage = it
-            }
-        )
-
-        //SettingsGroupSpacer()
-        /*
-        SwitchSettingEntry(
-            title = stringResource(R.string.show_actions_bar),
-            text = "",
-            isChecked = showActionsBar,
-            onCheckedChange = {
-                showActionsBar = it
-            }
-        )
-         */
-
-        SwitchSettingEntry(
-            offline = false,
-            title = "${stringResource(R.string.show)} ${stringResource(R.string.tips)}",
-            text = stringResource(R.string.disable_if_you_do_not_want_to_see) + " " +stringResource(R.string.tips),
-            isChecked = showTips,
-            onCheckedChange = {
-                showTips = it
-            }
-        )
-
-        SwitchSettingEntry(
-            offline = false,
-            title = "${stringResource(R.string.show)} ${stringResource(R.string.charts)}",
-            text = stringResource(R.string.disable_if_you_do_not_want_to_see) + " " +stringResource(R.string.charts),
-            isChecked = showCharts,
-            onCheckedChange = {
-                showCharts = it
-            }
-        )
-
-        AnimatedVisibility(
-            visible = showTips,
-            enter = fadeIn(tween(100)),
-            exit = fadeOut(tween(100)),
+        LazyColumn(
+            state = rememberLazyListState(),
+            contentPadding = PaddingValues(bottom = Dimensions.bottomSpacer)
         ) {
-            EnumValueSelectorSettingsEntry(
-                offline = false,
-                title = stringResource(R.string.tips),
-                selectedValue = playEventType,
-                onValueSelected = { playEventType = it },
-                valueText = {
-                    when (it) {
-                        PlayEventsType.MostPlayed -> stringResource(R.string.by_most_played_song)
-                        PlayEventsType.LastPlayed -> stringResource(R.string.by_last_played_song)
-                        PlayEventsType.CasualPlayed -> stringResource(R.string.by_casual_played_song)
+            settingsItem {
+                HeaderWithIcon(
+                    title = if (!isYouTubeLoggedIn()) stringResource(R.string.quick_picks) else stringResource(
+                        R.string.home
+                    ),
+                    iconId = if (!isYouTubeLoggedIn()) R.drawable.sparkles else R.drawable.internet,
+                    enabled = false,
+                    showIcon = true,
+                    modifier = Modifier,
+                    onClick = {}
+                )
+            }
+
+            settingsItem(
+                isHeader = true
+            ) {
+                SettingsEntryGroupText(title = stringResource(R.string.quick_picks))
+            }
+
+            settingsItem {
+                SwitchSettingEntry(
+                    offline = false,
+                    title = stringResource(R.string.enable_quick_picks_page),
+                    text = "",
+                    isChecked = enableQuickPicksPage,
+                    onCheckedChange = {
+                        enableQuickPicksPage = it
                     }
+                )
+
+                //SettingsGroupSpacer()
+                /*
+                SwitchSettingEntry(
+                    title = stringResource(R.string.show_actions_bar),
+                    text = "",
+                    isChecked = showActionsBar,
+                    onCheckedChange = {
+                        showActionsBar = it
+                    }
+                )
+                 */
+
+                SwitchSettingEntry(
+                    offline = false,
+                    title = "${stringResource(R.string.show)} ${stringResource(R.string.tips)}",
+                    text = stringResource(R.string.disable_if_you_do_not_want_to_see) + " " + stringResource(
+                        R.string.tips
+                    ),
+                    isChecked = showTips,
+                    onCheckedChange = {
+                        showTips = it
+                    }
+                )
+
+                SwitchSettingEntry(
+                    offline = false,
+                    title = "${stringResource(R.string.show)} ${stringResource(R.string.charts)}",
+                    text = stringResource(R.string.disable_if_you_do_not_want_to_see) + " " + stringResource(
+                        R.string.charts
+                    ),
+                    isChecked = showCharts,
+                    onCheckedChange = {
+                        showCharts = it
+                    }
+                )
+
+                AnimatedVisibility(
+                    visible = showTips,
+                    enter = fadeIn(tween(100)),
+                    exit = fadeOut(tween(100)),
+                ) {
+                    EnumValueSelectorSettingsEntry(
+                        offline = false,
+                        title = stringResource(R.string.tips),
+                        selectedValue = playEventType,
+                        onValueSelected = { playEventType = it },
+                        valueText = {
+                            when (it) {
+                                PlayEventsType.MostPlayed -> stringResource(R.string.by_most_played_song)
+                                PlayEventsType.LastPlayed -> stringResource(R.string.by_last_played_song)
+                                PlayEventsType.CasualPlayed -> stringResource(R.string.by_casual_played_song)
+                            }
+                        }
+                    )
                 }
-            )
+
+                //SettingsGroupSpacer()
+
+                SwitchSettingEntry(
+                    offline = false,
+                    title = "${stringResource(R.string.show)} ${stringResource(R.string.related_albums)}",
+                    text = stringResource(R.string.disable_if_you_do_not_want_to_see) + " " + stringResource(
+                        R.string.related_albums
+                    ),
+                    isChecked = showRelatedAlbums,
+                    onCheckedChange = {
+                        showRelatedAlbums = it
+                    }
+                )
+
+                //SettingsGroupSpacer()
+
+                SwitchSettingEntry(
+                    offline = false,
+                    title = "${stringResource(R.string.show)} ${stringResource(R.string.similar_artists)}",
+                    text = stringResource(R.string.disable_if_you_do_not_want_to_see) + " " + stringResource(
+                        R.string.similar_artists
+                    ),
+                    isChecked = showSimilarArtists,
+                    onCheckedChange = {
+                        showSimilarArtists = it
+                    }
+                )
+
+
+                //SettingsGroupSpacer()
+
+                SwitchSettingEntry(
+                    offline = false,
+                    title = "${stringResource(R.string.show)} ${stringResource(R.string.new_albums_of_your_artists)}",
+                    text = stringResource(R.string.disable_if_you_do_not_want_to_see) + " " + stringResource(
+                        R.string.new_albums_of_your_artists
+                    ),
+                    isChecked = showNewAlbumsArtists,
+                    onCheckedChange = {
+                        showNewAlbumsArtists = it
+                    }
+                )
+
+                SwitchSettingEntry(
+                    title = "${stringResource(R.string.show)} ${stringResource(R.string.new_albums)}",
+                    text = stringResource(R.string.disable_if_you_do_not_want_to_see) + " " + stringResource(
+                        R.string.new_albums
+                    ),
+                    isChecked = showNewAlbums,
+                    onCheckedChange = {
+                        showNewAlbums = it
+                    }
+                )
+
+                //SettingsGroupSpacer()
+
+                SwitchSettingEntry(
+                    offline = false,
+                    title = "${stringResource(R.string.show)} ${stringResource(R.string.playlists_you_might_like)}",
+                    text = stringResource(R.string.disable_if_you_do_not_want_to_see) + " " + stringResource(
+                        R.string.playlists_you_might_like
+                    ),
+                    isChecked = showPlaylistMightLike,
+                    onCheckedChange = {
+                        showPlaylistMightLike = it
+                    }
+                )
+
+                SwitchSettingEntry(
+                    offline = false,
+                    title = "${stringResource(R.string.show)} ${stringResource(R.string.moods_and_genres)}",
+                    text = stringResource(R.string.disable_if_you_do_not_want_to_see) + " " + stringResource(
+                        R.string.moods_and_genres
+                    ),
+                    isChecked = showMoodsAndGenres,
+                    onCheckedChange = {
+                        showMoodsAndGenres = it
+                    }
+                )
+
+                SwitchSettingEntry(
+                    offline = false,
+                    title = "${stringResource(R.string.show)} ${stringResource(R.string.monthly_playlists)}",
+                    text = stringResource(R.string.disable_if_you_do_not_want_to_see) + " " + stringResource(
+                        R.string.monthly_playlists
+                    ),
+                    isChecked = showMonthlyPlaylistInQuickPicks,
+                    onCheckedChange = {
+                        showMonthlyPlaylistInQuickPicks = it
+                    }
+                )
+
+                /*
+                SwitchSettingEntry(
+                    title = stringResource(R.string.enable_language_in_discovery),
+                    text = stringResource(R.string.if_possible_allows_discovery_content_language),
+                    isChecked = isEnabledDiscoveryLangCode,
+                    onCheckedChange = {
+                        isEnabledDiscoveryLangCode = it
+                    }
+                )
+                ImportantSettingsDescription(text = stringResource(R.string.restarting_rimusic_is_required))
+                 */
+
+                SettingsEntry(
+                    offline = false,
+                    title = stringResource(R.string.reset_quick_picks),
+                    text = if (eventsCount > 0) {
+                        stringResource(R.string.delete_playback_events, eventsCount)
+                    } else {
+                        stringResource(R.string.quick_picks_are_cleared)
+                    },
+                    isEnabled = eventsCount > 0,
+                    onClick = { clearEvents = true }
+                )
+            }
         }
 
-        //SettingsGroupSpacer()
-
-        SwitchSettingEntry(
-            offline = false,
-            title = "${stringResource(R.string.show)} ${stringResource(R.string.related_albums)}",
-            text = stringResource(R.string.disable_if_you_do_not_want_to_see) + " " +stringResource(R.string.related_albums),
-            isChecked = showRelatedAlbums,
-            onCheckedChange = {
-                showRelatedAlbums = it
-            }
-        )
-
-        //SettingsGroupSpacer()
-
-        SwitchSettingEntry(
-            offline = false,
-            title = "${stringResource(R.string.show)} ${stringResource(R.string.similar_artists)}",
-            text = stringResource(R.string.disable_if_you_do_not_want_to_see) + " " +stringResource(R.string.similar_artists),
-            isChecked = showSimilarArtists,
-            onCheckedChange = {
-                showSimilarArtists = it
-            }
-        )
-
-
-        //SettingsGroupSpacer()
-
-        SwitchSettingEntry(
-            offline = false,
-            title = "${stringResource(R.string.show)} ${stringResource(R.string.new_albums_of_your_artists)}",
-            text = stringResource(R.string.disable_if_you_do_not_want_to_see) + " " +stringResource(R.string.new_albums_of_your_artists),
-            isChecked = showNewAlbumsArtists,
-            onCheckedChange = {
-                showNewAlbumsArtists = it
-            }
-        )
-
-        SwitchSettingEntry(
-            title = "${stringResource(R.string.show)} ${stringResource(R.string.new_albums)}",
-            text = stringResource(R.string.disable_if_you_do_not_want_to_see) + " " +stringResource(R.string.new_albums),
-            isChecked = showNewAlbums,
-            onCheckedChange = {
-                showNewAlbums = it
-            }
-        )
-
-        //SettingsGroupSpacer()
-
-        SwitchSettingEntry(
-            offline = false,
-            title = "${stringResource(R.string.show)} ${stringResource(R.string.playlists_you_might_like)}",
-            text = stringResource(R.string.disable_if_you_do_not_want_to_see) + " " +stringResource(R.string.playlists_you_might_like),
-            isChecked = showPlaylistMightLike,
-            onCheckedChange = {
-                showPlaylistMightLike = it
-            }
-        )
-
-        SwitchSettingEntry(
-            offline = false,
-            title = "${stringResource(R.string.show)} ${stringResource(R.string.moods_and_genres)}",
-            text = stringResource(R.string.disable_if_you_do_not_want_to_see) + " " +stringResource(R.string.moods_and_genres),
-            isChecked = showMoodsAndGenres,
-            onCheckedChange = {
-                showMoodsAndGenres = it
-            }
-        )
-
-        SwitchSettingEntry(
-            offline = false,
-            title = "${stringResource(R.string.show)} ${stringResource(R.string.monthly_playlists)}",
-            text = stringResource(R.string.disable_if_you_do_not_want_to_see) + " " +stringResource(R.string.monthly_playlists),
-            isChecked = showMonthlyPlaylistInQuickPicks,
-            onCheckedChange = {
-                showMonthlyPlaylistInQuickPicks = it
-            }
-        )
-
-        /*
-        SwitchSettingEntry(
-            title = stringResource(R.string.enable_language_in_discovery),
-            text = stringResource(R.string.if_possible_allows_discovery_content_language),
-            isChecked = isEnabledDiscoveryLangCode,
-            onCheckedChange = {
-                isEnabledDiscoveryLangCode = it
-            }
-        )
-        ImportantSettingsDescription(text = stringResource(R.string.restarting_rimusic_is_required))
-         */
-
-        SettingsEntry(
-            offline = false,
-            title = stringResource(R.string.reset_quick_picks),
-            text = if (eventsCount > 0) {
-                stringResource(R.string.delete_playback_events, eventsCount)
-            } else {
-                stringResource(R.string.quick_picks_are_cleared)
-            },
-            isEnabled = eventsCount > 0,
-            onClick = { clearEvents = true }
-        )
-        SettingsGroupSpacer(
-            modifier = Modifier.height(Dimensions.bottomSpacer)
-        )
+//        SettingsGroupSpacer(
+//            modifier = Modifier.height(Dimensions.bottomSpacer)
+//        )
     }
 }

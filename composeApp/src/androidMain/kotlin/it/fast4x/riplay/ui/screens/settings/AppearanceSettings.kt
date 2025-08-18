@@ -10,12 +10,15 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.verticalScroll
@@ -155,6 +158,8 @@ import it.fast4x.riplay.typography
 import it.fast4x.riplay.ui.components.themed.Search
 import it.fast4x.riplay.ui.components.themed.AppearancePresetDialog
 import it.fast4x.riplay.ui.components.themed.InputTextDialog
+import it.fast4x.riplay.ui.components.themed.settingsItem
+import it.fast4x.riplay.ui.components.themed.settingsSearchBarItem
 import it.fast4x.riplay.utils.RestartActivity
 import it.fast4x.riplay.utils.albumCoverRotationKey
 import it.fast4x.riplay.utils.animatedGradientKey
@@ -962,7 +967,7 @@ fun AppearanceSettings(
                 ) 1f
                 else Dimensions.contentWidthRightBar
             )
-            .verticalScroll(rememberScrollState())
+            //.verticalScroll(rememberScrollState())
         /*
         .padding(
             LocalPlayerAwareWindowInsets.current
@@ -972,27 +977,13 @@ fun AppearanceSettings(
 
          */
     ) {
-        HeaderWithIcon(
-            title = stringResource(R.string.player_appearance),
-            iconId = R.drawable.color_palette,
-            enabled = false,
-            showIcon = true,
-            modifier = Modifier,
-            onClick = {}
-        )
-
-        search.ToolBarButton()
-        search.SearchBar( this )
-
-        //SettingsEntryGroupText(stringResource(R.string.user_interface))
-
-        //SettingsGroupSpacer()
-        SettingsEntryGroupText(title = stringResource(R.string.player))
 
         if (playerBackgroundColors != PlayerBackgroundColors.BlurredCoverColor)
             showthumbnail = true
         if (!visualizerEnabled) showvisthumbnail = false
-        if (!showthumbnail) {showlyricsthumbnail = false; showvisthumbnail = false}
+        if (!showthumbnail) {
+            showlyricsthumbnail = false; showvisthumbnail = false
+        }
         if (playerType == PlayerType.Modern) {
             showlyricsthumbnail = false
             showvisthumbnail = false
@@ -1001,1267 +992,1309 @@ fun AppearanceSettings(
         }
 
 
-        if (appearanceChooser){
+        if (appearanceChooser) {
             AppearancePresetDialog(
-            onDismiss = {appearanceChooser = false},
-            onClick0 = {
-                showTopActionsBar = true
-                showthumbnail = true
-                playerBackgroundColors = PlayerBackgroundColors.BlurredCoverColor
-                blurStrength = 50f
-                thumbnailRoundness = ThumbnailRoundness.None
-                playerInfoType = PlayerInfoType.Essential
-                playerTimelineType = PlayerTimelineType.ThinBar
-                playerTimelineSize = PlayerTimelineSize.Biggest
-                playerControlsType = PlayerControlsType.Essential
-                playerPlayButtonType = PlayerPlayButtonType.Disabled
-                transparentbar = true
-                playerType = PlayerType.Essential
-                showlyricsthumbnail = false
-                expandedplayer = true
-                thumbnailType = ThumbnailType.Modern
-                playerThumbnailSize = PlayerThumbnailSize.Big
-                showTotalTimeQueue = false
-                bottomgradient = true
-                showRemainingSongTime = true
-                showNextSongsInPlayer = false
-                colorPaletteName = ColorPaletteName.Dynamic
-                colorPaletteMode = ColorPaletteMode.System
-                ///////ACTION BAR BUTTONS////////////////
-                transparentBackgroundActionBarPlayer = true
-                actionspacedevenly = true
-                showButtonPlayerVideo = false
-                showButtonPlayerDiscover = false
-                //showButtonPlayerDownload = false
-                showButtonPlayerAddToPlaylist = true
-                showButtonPlayerLoop = false
-                showButtonPlayerShuffle = true
-                showButtonPlayerLyrics = false
-                expandedplayertoggle = false
-                showButtonPlayerSleepTimer = false
-                visualizerEnabled = false
-                appearanceChooser = false
-                showButtonPlayerArrow = false
-                showButtonPlayerStartradio = false
-                showButtonPlayerMenu = true
-                ///////////////////////////
-                appearanceChooser = false
-            },
-            onClick1 = {
-                showTopActionsBar = true
-                showthumbnail = true
-                playerBackgroundColors = PlayerBackgroundColors.BlurredCoverColor
-                blurStrength = 50f
-                playerInfoType = PlayerInfoType.Essential
-                playerPlayButtonType = PlayerPlayButtonType.Disabled
-                playerTimelineType = PlayerTimelineType.ThinBar
-                playerControlsType = PlayerControlsType.Essential
-                transparentbar = true
-                playerType = PlayerType.Modern
-                expandedplayer = true
-                fadingedge = true
-                thumbnailFadeEx = 4f
-                thumbnailSpacing = -32f
-                thumbnailType = ThumbnailType.Essential
-                carouselSize = CarouselSize.Big
-                playerThumbnailSize = PlayerThumbnailSize.Biggest
-                showTotalTimeQueue = false
-                transparentBackgroundActionBarPlayer = true
-                showRemainingSongTime = true
-                bottomgradient = true
-                showlyricsthumbnail = false
-                thumbnailRoundness = ThumbnailRoundness.Medium
-                showNextSongsInPlayer = true
-                colorPaletteName = ColorPaletteName.Dynamic
-                colorPaletteMode = ColorPaletteMode.System
-                ///////ACTION BAR BUTTONS////////////////
-                transparentBackgroundActionBarPlayer = true
-                actionspacedevenly = true
-                showButtonPlayerVideo = false
-                showButtonPlayerDiscover = false
-                //showButtonPlayerDownload = false
-                showButtonPlayerAddToPlaylist = true
-                showButtonPlayerLoop = false
-                showButtonPlayerShuffle = false
-                showButtonPlayerLyrics = false
-                expandedplayertoggle = true
-                showButtonPlayerSleepTimer = false
-                visualizerEnabled = false
-                appearanceChooser = false
-                showButtonPlayerArrow = false
-                showButtonPlayerStartradio = false
-                showButtonPlayerMenu = true
-                ///////////////////////////
-                appearanceChooser = false
-            },
-            onClick2 = {
-                showTopActionsBar = false
-                showthumbnail = false
-                noblur = true
-                topPadding = false
-                playerBackgroundColors = PlayerBackgroundColors.BlurredCoverColor
-                blurStrength = 50f
-                playerPlayButtonType = PlayerPlayButtonType.Disabled
-                playerInfoType = PlayerInfoType.Modern
-                playerInfoShowIcons = false
-                playerTimelineType = PlayerTimelineType.ThinBar
-                playerControlsType = PlayerControlsType.Essential
-                transparentbar = true
-                playerType = PlayerType.Modern
-                expandedplayer = true
-                showTotalTimeQueue = false
-                transparentBackgroundActionBarPlayer = true
-                showRemainingSongTime = true
-                bottomgradient = true
-                showlyricsthumbnail = false
-                showNextSongsInPlayer = false
-                colorPaletteName = ColorPaletteName.Dynamic
-                colorPaletteMode = ColorPaletteMode.System
-                ///////ACTION BAR BUTTONS////////////////
-                transparentBackgroundActionBarPlayer = true
-                actionspacedevenly = true
-                showButtonPlayerVideo = false
-                showButtonPlayerDiscover = false
-                //showButtonPlayerDownload = false
-                showButtonPlayerAddToPlaylist = false
-                showButtonPlayerLoop = false
-                showButtonPlayerShuffle = false
-                showButtonPlayerLyrics = false
-                expandedplayertoggle = false
-                showButtonPlayerSleepTimer = false
-                visualizerEnabled = false
-                appearanceChooser = false
-                showButtonPlayerArrow = false
-                showButtonPlayerStartradio = false
-                showButtonPlayerMenu = true
-                ///////////////////////////
-                appearanceChooser = false
-            },
-            onClick3 = {
-                showTopActionsBar = false
-                topPadding = false
-                showthumbnail = true
-                playerBackgroundColors = PlayerBackgroundColors.BlurredCoverColor
-                blurStrength = 50f
-                playerInfoType = PlayerInfoType.Essential
-                playerTimelineType = PlayerTimelineType.FakeAudioBar
-                playerTimelineSize = PlayerTimelineSize.Biggest
-                playerControlsType = PlayerControlsType.Modern
-                playerPlayButtonType = PlayerPlayButtonType.Disabled
-                colorPaletteName = ColorPaletteName.PureBlack
-                transparentbar = false
-                playerType = PlayerType.Essential
-                expandedplayer = false
-                playerThumbnailSize = PlayerThumbnailSize.Expanded
-                showTotalTimeQueue = false
-                transparentBackgroundActionBarPlayer = true
-                showRemainingSongTime = true
-                bottomgradient = true
-                showlyricsthumbnail = false
-                thumbnailType = ThumbnailType.Essential
-                thumbnailRoundness = ThumbnailRoundness.Light
-                playerType = PlayerType.Modern
-                fadingedge = true
-                thumbnailFade = 5f
-                showNextSongsInPlayer = false
-                ///////ACTION BAR BUTTONS////////////////
-                transparentBackgroundActionBarPlayer = true
-                actionspacedevenly = true
-                showButtonPlayerVideo = false
-                showButtonPlayerDiscover = false
-                //showButtonPlayerDownload = false
-                showButtonPlayerAddToPlaylist = false
-                showButtonPlayerLoop = true
-                showButtonPlayerShuffle = true
-                showButtonPlayerLyrics = false
-                expandedplayertoggle = false
-                showButtonPlayerSleepTimer = false
-                visualizerEnabled = false
-                appearanceChooser = false
-                showButtonPlayerArrow = true
-                showButtonPlayerStartradio = false
-                showButtonPlayerMenu = true
-                ///////////////////////////
-                appearanceChooser = false
-            },
-            onClick4 = {
-                showTopActionsBar = false
-                topPadding = true
-                showthumbnail = true
-                playerBackgroundColors = PlayerBackgroundColors.AnimatedGradient
-                animatedGradient = AnimatedGradient.Linear
-                playerInfoType = PlayerInfoType.Essential
-                playerTimelineType = PlayerTimelineType.PinBar
-                playerTimelineSize = PlayerTimelineSize.Biggest
-                playerControlsType = PlayerControlsType.Essential
-                playerPlayButtonType = PlayerPlayButtonType.Square
-                colorPaletteName = ColorPaletteName.Dynamic
-                colorPaletteMode = ColorPaletteMode.PitchBlack
-                transparentbar = false
-                playerType = PlayerType.Modern
-                expandedplayer = false
-                playerThumbnailSize = PlayerThumbnailSize.Biggest
-                showTotalTimeQueue = false
-                transparentBackgroundActionBarPlayer = true
-                showRemainingSongTime = true
-                showlyricsthumbnail = false
-                thumbnailType = ThumbnailType.Modern
-                thumbnailRoundness = ThumbnailRoundness.Heavy
-                fadingedge = true
-                thumbnailFade = 0f
-                thumbnailFadeEx = 5f
-                thumbnailSpacing = -32f
-                showNextSongsInPlayer = false
-                ///////ACTION BAR BUTTONS////////////////
-                transparentBackgroundActionBarPlayer = true
-                actionspacedevenly = true
-                showButtonPlayerVideo = false
-                showButtonPlayerDiscover = false
-                //showButtonPlayerDownload = true
-                showButtonPlayerAddToPlaylist = false
-                showButtonPlayerLoop = false
-                showButtonPlayerShuffle = false
-                showButtonPlayerLyrics = false
-                expandedplayertoggle = true
-                showButtonPlayerSleepTimer = false
-                visualizerEnabled = false
-                appearanceChooser = false
-                showButtonPlayerArrow =false
-                showButtonPlayerStartradio = false
-                showButtonPlayerMenu = true
-                ///////////////////////////
-                appearanceChooser = false
-            },
-            onClick5 = {
-                showTopActionsBar = true
-                showthumbnail = true
-                playerBackgroundColors = PlayerBackgroundColors.CoverColorGradient
-                playerInfoType = PlayerInfoType.Essential
-                playerTimelineType = PlayerTimelineType.Wavy
-                playerTimelineSize = PlayerTimelineSize.Biggest
-                playerControlsType = PlayerControlsType.Essential
-                playerPlayButtonType = PlayerPlayButtonType.CircularRibbed
-                colorPaletteName = ColorPaletteName.Dynamic
-                colorPaletteMode = ColorPaletteMode.System
-                transparentbar = false
-                playerType = PlayerType.Essential
-                expandedplayer = true
-                playerThumbnailSize = PlayerThumbnailSize.Big
-                showTotalTimeQueue = false
-                transparentBackgroundActionBarPlayer = true
-                showRemainingSongTime = true
-                showlyricsthumbnail = false
-                thumbnailType = ThumbnailType.Modern
-                thumbnailRoundness = ThumbnailRoundness.Heavy
-                showNextSongsInPlayer = false
-                ///////ACTION BAR BUTTONS////////////////
-                transparentBackgroundActionBarPlayer = true
-                actionspacedevenly = true
-                showButtonPlayerVideo = false
-                showButtonPlayerDiscover = false
-                //showButtonPlayerDownload = false
-                showButtonPlayerAddToPlaylist = false
-                showButtonPlayerLoop = false
-                showButtonPlayerShuffle = true
-                showButtonPlayerLyrics = true
-                expandedplayertoggle = false
-                showButtonPlayerSleepTimer = false
-                visualizerEnabled = false
-                appearanceChooser = false
-                showButtonPlayerArrow =false
-                showButtonPlayerStartradio = false
-                showButtonPlayerMenu = true
-                ///////////////////////////
-                appearanceChooser = false
-            }
-            )
-        }
-
-        if (!isLandscape) {
-            Column {
-                BasicText(
-                    text = stringResource(R.string.appearancepresets),
-                    style = typography().m.semiBold.copy(color = colorPalette().text),
-                    modifier = Modifier
-                        .padding(all = 12.dp)
-                        .clickable(onClick = { appearanceChooser = true })
-                )
-                BasicText(
-                    text = stringResource(R.string.appearancepresetssecondary),
-                    style = typography().xs.semiBold.copy(color = colorPalette().textSecondary),
-                    modifier = Modifier
-                        .padding(start = 12.dp)
-                        .padding(bottom = 10.dp)
-                )
-            }
-
-            if (search.input.isBlank() || stringResource(R.string.show_player_top_actions_bar).contains(
-                    search.input,
-                    true
-                )
-            )
-                SwitchSettingEntry(
-                    title = stringResource(R.string.show_player_top_actions_bar),
-                    text = "",
-                    isChecked = showTopActionsBar,
-                    onCheckedChange = { showTopActionsBar = it }
-                )
-
-            if (!showTopActionsBar) {
-                if (search.input.isBlank() || stringResource(R.string.blankspace).contains(
-                        search.input,
-                        true
-                    )
-                )
-                    SwitchSettingEntry(
-                        title = stringResource(R.string.blankspace),
-                        text = "",
-                        isChecked = topPadding,
-                        onCheckedChange = { topPadding = it }
-                    )
-            }
-        }
-        if (search.input.isBlank() || stringResource(R.string.playertype).contains(
-                search.input,
-                true
-            )
-        )
-            EnumValueSelectorSettingsEntry(
-                title = stringResource(R.string.playertype),
-                selectedValue = playerType,
-                onValueSelected = {
-                    playerType = it
+                onDismiss = { appearanceChooser = false },
+                onClick0 = {
+                    showTopActionsBar = true
+                    showthumbnail = true
+                    playerBackgroundColors = PlayerBackgroundColors.BlurredCoverColor
+                    blurStrength = 50f
+                    thumbnailRoundness = ThumbnailRoundness.None
+                    playerInfoType = PlayerInfoType.Essential
+                    playerTimelineType = PlayerTimelineType.ThinBar
+                    playerTimelineSize = PlayerTimelineSize.Biggest
+                    playerControlsType = PlayerControlsType.Essential
+                    playerPlayButtonType = PlayerPlayButtonType.Disabled
+                    transparentbar = true
+                    playerType = PlayerType.Essential
+                    showlyricsthumbnail = false
+                    expandedplayer = true
+                    thumbnailType = ThumbnailType.Modern
+                    playerThumbnailSize = PlayerThumbnailSize.Big
+                    showTotalTimeQueue = false
+                    bottomgradient = true
+                    showRemainingSongTime = true
+                    showNextSongsInPlayer = false
+                    colorPaletteName = ColorPaletteName.Dynamic
+                    colorPaletteMode = ColorPaletteMode.System
+                    ///////ACTION BAR BUTTONS////////////////
+                    transparentBackgroundActionBarPlayer = true
+                    actionspacedevenly = true
+                    showButtonPlayerVideo = false
+                    showButtonPlayerDiscover = false
+                    //showButtonPlayerDownload = false
+                    showButtonPlayerAddToPlaylist = true
+                    showButtonPlayerLoop = false
+                    showButtonPlayerShuffle = true
+                    showButtonPlayerLyrics = false
+                    expandedplayertoggle = false
+                    showButtonPlayerSleepTimer = false
+                    visualizerEnabled = false
+                    appearanceChooser = false
+                    showButtonPlayerArrow = false
+                    showButtonPlayerStartradio = false
+                    showButtonPlayerMenu = true
+                    ///////////////////////////
+                    appearanceChooser = false
                 },
-                valueText = {
-                    when (it) {
-                        PlayerType.Modern -> stringResource(R.string.pcontrols_modern)
-                        PlayerType.Essential -> stringResource(R.string.pcontrols_essential)
-                    }
+                onClick1 = {
+                    showTopActionsBar = true
+                    showthumbnail = true
+                    playerBackgroundColors = PlayerBackgroundColors.BlurredCoverColor
+                    blurStrength = 50f
+                    playerInfoType = PlayerInfoType.Essential
+                    playerPlayButtonType = PlayerPlayButtonType.Disabled
+                    playerTimelineType = PlayerTimelineType.ThinBar
+                    playerControlsType = PlayerControlsType.Essential
+                    transparentbar = true
+                    playerType = PlayerType.Modern
+                    expandedplayer = true
+                    fadingedge = true
+                    thumbnailFadeEx = 4f
+                    thumbnailSpacing = -32f
+                    thumbnailType = ThumbnailType.Essential
+                    carouselSize = CarouselSize.Big
+                    playerThumbnailSize = PlayerThumbnailSize.Biggest
+                    showTotalTimeQueue = false
+                    transparentBackgroundActionBarPlayer = true
+                    showRemainingSongTime = true
+                    bottomgradient = true
+                    showlyricsthumbnail = false
+                    thumbnailRoundness = ThumbnailRoundness.Medium
+                    showNextSongsInPlayer = true
+                    colorPaletteName = ColorPaletteName.Dynamic
+                    colorPaletteMode = ColorPaletteMode.System
+                    ///////ACTION BAR BUTTONS////////////////
+                    transparentBackgroundActionBarPlayer = true
+                    actionspacedevenly = true
+                    showButtonPlayerVideo = false
+                    showButtonPlayerDiscover = false
+                    //showButtonPlayerDownload = false
+                    showButtonPlayerAddToPlaylist = true
+                    showButtonPlayerLoop = false
+                    showButtonPlayerShuffle = false
+                    showButtonPlayerLyrics = false
+                    expandedplayertoggle = true
+                    showButtonPlayerSleepTimer = false
+                    visualizerEnabled = false
+                    appearanceChooser = false
+                    showButtonPlayerArrow = false
+                    showButtonPlayerStartradio = false
+                    showButtonPlayerMenu = true
+                    ///////////////////////////
+                    appearanceChooser = false
                 },
-            )
-
-        if (search.input.isBlank() || stringResource(R.string.queuetype).contains(
-                search.input,
-                true
-            )
-        )
-            EnumValueSelectorSettingsEntry(
-                title = stringResource(R.string.queuetype),
-                selectedValue = queueType,
-                onValueSelected = {
-                    queueType = it
+                onClick2 = {
+                    showTopActionsBar = false
+                    showthumbnail = false
+                    noblur = true
+                    topPadding = false
+                    playerBackgroundColors = PlayerBackgroundColors.BlurredCoverColor
+                    blurStrength = 50f
+                    playerPlayButtonType = PlayerPlayButtonType.Disabled
+                    playerInfoType = PlayerInfoType.Modern
+                    playerInfoShowIcons = false
+                    playerTimelineType = PlayerTimelineType.ThinBar
+                    playerControlsType = PlayerControlsType.Essential
+                    transparentbar = true
+                    playerType = PlayerType.Modern
+                    expandedplayer = true
+                    showTotalTimeQueue = false
+                    transparentBackgroundActionBarPlayer = true
+                    showRemainingSongTime = true
+                    bottomgradient = true
+                    showlyricsthumbnail = false
+                    showNextSongsInPlayer = false
+                    colorPaletteName = ColorPaletteName.Dynamic
+                    colorPaletteMode = ColorPaletteMode.System
+                    ///////ACTION BAR BUTTONS////////////////
+                    transparentBackgroundActionBarPlayer = true
+                    actionspacedevenly = true
+                    showButtonPlayerVideo = false
+                    showButtonPlayerDiscover = false
+                    //showButtonPlayerDownload = false
+                    showButtonPlayerAddToPlaylist = false
+                    showButtonPlayerLoop = false
+                    showButtonPlayerShuffle = false
+                    showButtonPlayerLyrics = false
+                    expandedplayertoggle = false
+                    showButtonPlayerSleepTimer = false
+                    visualizerEnabled = false
+                    appearanceChooser = false
+                    showButtonPlayerArrow = false
+                    showButtonPlayerStartradio = false
+                    showButtonPlayerMenu = true
+                    ///////////////////////////
+                    appearanceChooser = false
                 },
-                valueText = {
-                    when (it) {
-                        QueueType.Modern -> stringResource(R.string.pcontrols_modern)
-                        QueueType.Essential -> stringResource(R.string.pcontrols_essential)
-                    }
+                onClick3 = {
+                    showTopActionsBar = false
+                    topPadding = false
+                    showthumbnail = true
+                    playerBackgroundColors = PlayerBackgroundColors.BlurredCoverColor
+                    blurStrength = 50f
+                    playerInfoType = PlayerInfoType.Essential
+                    playerTimelineType = PlayerTimelineType.FakeAudioBar
+                    playerTimelineSize = PlayerTimelineSize.Biggest
+                    playerControlsType = PlayerControlsType.Modern
+                    playerPlayButtonType = PlayerPlayButtonType.Disabled
+                    colorPaletteName = ColorPaletteName.PureBlack
+                    transparentbar = false
+                    playerType = PlayerType.Essential
+                    expandedplayer = false
+                    playerThumbnailSize = PlayerThumbnailSize.Expanded
+                    showTotalTimeQueue = false
+                    transparentBackgroundActionBarPlayer = true
+                    showRemainingSongTime = true
+                    bottomgradient = true
+                    showlyricsthumbnail = false
+                    thumbnailType = ThumbnailType.Essential
+                    thumbnailRoundness = ThumbnailRoundness.Light
+                    playerType = PlayerType.Modern
+                    fadingedge = true
+                    thumbnailFade = 5f
+                    showNextSongsInPlayer = false
+                    ///////ACTION BAR BUTTONS////////////////
+                    transparentBackgroundActionBarPlayer = true
+                    actionspacedevenly = true
+                    showButtonPlayerVideo = false
+                    showButtonPlayerDiscover = false
+                    //showButtonPlayerDownload = false
+                    showButtonPlayerAddToPlaylist = false
+                    showButtonPlayerLoop = true
+                    showButtonPlayerShuffle = true
+                    showButtonPlayerLyrics = false
+                    expandedplayertoggle = false
+                    showButtonPlayerSleepTimer = false
+                    visualizerEnabled = false
+                    appearanceChooser = false
+                    showButtonPlayerArrow = true
+                    showButtonPlayerStartradio = false
+                    showButtonPlayerMenu = true
+                    ///////////////////////////
+                    appearanceChooser = false
                 },
-            )
-
-        if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) {
-            if (search.input.isBlank() || stringResource(R.string.show_thumbnail).contains(
-                    search.input,
-                    true
-                )
-            )
-                SwitchSettingEntry(
-                    title = stringResource(R.string.show_thumbnail),
-                    text = "",
-                    isChecked = showthumbnail,
-                    onCheckedChange = {showthumbnail = it},
-                )
-        }
-        AnimatedVisibility(visible = !showthumbnail && playerType == PlayerType.Modern && !isLandscape) {
-            if (search.input.isBlank() || stringResource(R.string.swipe_Animation_No_Thumbnail).contains(
-                    search.input,
-                    true
-                )
-            )
-                EnumValueSelectorSettingsEntry(
-                    title = stringResource(R.string.swipe_Animation_No_Thumbnail),
-                    selectedValue = swipeAnimationNoThumbnail,
-                    onValueSelected = { swipeAnimationNoThumbnail = it },
-                    valueText = {
-                        when (it) {
-                            SwipeAnimationNoThumbnail.Sliding -> stringResource(R.string.te_slide_vertical)
-                            SwipeAnimationNoThumbnail.Fade -> stringResource(R.string.te_fade)
-                            SwipeAnimationNoThumbnail.Scale -> stringResource(R.string.te_scale)
-                            SwipeAnimationNoThumbnail.Carousel -> stringResource(R.string.carousel)
-                            SwipeAnimationNoThumbnail.Circle -> stringResource(R.string.vt_circular)
-                        }
-                    },
-                    modifier = Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) 25.dp else 0.dp)
-                )
-        }
-        AnimatedVisibility(visible = showthumbnail) {
-            Column {
-                if (playerType == PlayerType.Modern) {
-                    if (search.input.isBlank() || stringResource(R.string.fadingedge).contains(
-                            search.input,
-                            true
-                        )
-                    )
-                        SwitchSettingEntry(
-                            title = stringResource(R.string.fadingedge),
-                            text = "",
-                            isChecked = fadingedge,
-                            onCheckedChange = { fadingedge = it },
-                            modifier = Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) 25.dp else 0.dp)
-                        )
+                onClick4 = {
+                    showTopActionsBar = false
+                    topPadding = true
+                    showthumbnail = true
+                    playerBackgroundColors = PlayerBackgroundColors.AnimatedGradient
+                    animatedGradient = AnimatedGradient.Linear
+                    playerInfoType = PlayerInfoType.Essential
+                    playerTimelineType = PlayerTimelineType.PinBar
+                    playerTimelineSize = PlayerTimelineSize.Biggest
+                    playerControlsType = PlayerControlsType.Essential
+                    playerPlayButtonType = PlayerPlayButtonType.Square
+                    colorPaletteName = ColorPaletteName.Dynamic
+                    colorPaletteMode = ColorPaletteMode.PitchBlack
+                    transparentbar = false
+                    playerType = PlayerType.Modern
+                    expandedplayer = false
+                    playerThumbnailSize = PlayerThumbnailSize.Biggest
+                    showTotalTimeQueue = false
+                    transparentBackgroundActionBarPlayer = true
+                    showRemainingSongTime = true
+                    showlyricsthumbnail = false
+                    thumbnailType = ThumbnailType.Modern
+                    thumbnailRoundness = ThumbnailRoundness.Heavy
+                    fadingedge = true
+                    thumbnailFade = 0f
+                    thumbnailFadeEx = 5f
+                    thumbnailSpacing = -32f
+                    showNextSongsInPlayer = false
+                    ///////ACTION BAR BUTTONS////////////////
+                    transparentBackgroundActionBarPlayer = true
+                    actionspacedevenly = true
+                    showButtonPlayerVideo = false
+                    showButtonPlayerDiscover = false
+                    //showButtonPlayerDownload = true
+                    showButtonPlayerAddToPlaylist = false
+                    showButtonPlayerLoop = false
+                    showButtonPlayerShuffle = false
+                    showButtonPlayerLyrics = false
+                    expandedplayertoggle = true
+                    showButtonPlayerSleepTimer = false
+                    visualizerEnabled = false
+                    appearanceChooser = false
+                    showButtonPlayerArrow = false
+                    showButtonPlayerStartradio = false
+                    showButtonPlayerMenu = true
+                    ///////////////////////////
+                    appearanceChooser = false
+                },
+                onClick5 = {
+                    showTopActionsBar = true
+                    showthumbnail = true
+                    playerBackgroundColors = PlayerBackgroundColors.CoverColorGradient
+                    playerInfoType = PlayerInfoType.Essential
+                    playerTimelineType = PlayerTimelineType.Wavy
+                    playerTimelineSize = PlayerTimelineSize.Biggest
+                    playerControlsType = PlayerControlsType.Essential
+                    playerPlayButtonType = PlayerPlayButtonType.CircularRibbed
+                    colorPaletteName = ColorPaletteName.Dynamic
+                    colorPaletteMode = ColorPaletteMode.System
+                    transparentbar = false
+                    playerType = PlayerType.Essential
+                    expandedplayer = true
+                    playerThumbnailSize = PlayerThumbnailSize.Big
+                    showTotalTimeQueue = false
+                    transparentBackgroundActionBarPlayer = true
+                    showRemainingSongTime = true
+                    showlyricsthumbnail = false
+                    thumbnailType = ThumbnailType.Modern
+                    thumbnailRoundness = ThumbnailRoundness.Heavy
+                    showNextSongsInPlayer = false
+                    ///////ACTION BAR BUTTONS////////////////
+                    transparentBackgroundActionBarPlayer = true
+                    actionspacedevenly = true
+                    showButtonPlayerVideo = false
+                    showButtonPlayerDiscover = false
+                    //showButtonPlayerDownload = false
+                    showButtonPlayerAddToPlaylist = false
+                    showButtonPlayerLoop = false
+                    showButtonPlayerShuffle = true
+                    showButtonPlayerLyrics = true
+                    expandedplayertoggle = false
+                    showButtonPlayerSleepTimer = false
+                    visualizerEnabled = false
+                    appearanceChooser = false
+                    showButtonPlayerArrow = false
+                    showButtonPlayerStartradio = false
+                    showButtonPlayerMenu = true
+                    ///////////////////////////
+                    appearanceChooser = false
                 }
+            )
+        }
 
-                if (playerType == PlayerType.Modern && !isLandscape && (expandedplayertoggle || expandedplayer)) {
-                    if (search.input.isBlank() || stringResource(R.string.carousel).contains(
+        LazyColumn(
+            state = rememberLazyListState(),
+            contentPadding = PaddingValues(bottom = Dimensions.bottomSpacer)
+        ) {
+            settingsItem {
+                HeaderWithIcon(
+                    title = stringResource(R.string.player_appearance),
+                    iconId = R.drawable.color_palette,
+                    enabled = false,
+                    showIcon = true,
+                    modifier = Modifier,
+                    onClick = {}
+                )
+            }
+
+            settingsSearchBarItem {
+                search.ToolBarButton()
+                search.SearchBar(this)
+            }
+
+            settingsItem(
+                isHeader = true
+            ) {
+                SettingsEntryGroupText(title = stringResource(R.string.player))
+            }
+
+            settingsItem {
+                if (!isLandscape) {
+                    Column {
+                        BasicText(
+                            text = stringResource(R.string.appearancepresets),
+                            style = typography().m.semiBold.copy(color = colorPalette().text),
+                            modifier = Modifier
+                                .padding(all = 12.dp)
+                                .clickable(onClick = { appearanceChooser = true })
+                        )
+                        BasicText(
+                            text = stringResource(R.string.appearancepresetssecondary),
+                            style = typography().xs.semiBold.copy(color = colorPalette().textSecondary),
+                            modifier = Modifier
+                                .padding(start = 12.dp)
+                                .padding(bottom = 10.dp)
+                        )
+                    }
+
+                    if (search.input.isBlank() || stringResource(R.string.show_player_top_actions_bar).contains(
                             search.input,
                             true
                         )
                     )
                         SwitchSettingEntry(
-                            title = stringResource(R.string.carousel),
+                            title = stringResource(R.string.show_player_top_actions_bar),
                             text = "",
-                            isChecked = carousel,
-                            onCheckedChange = { carousel = it },
-                            modifier = Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) 25.dp else 0.dp)
+                            isChecked = showTopActionsBar,
+                            onCheckedChange = { showTopActionsBar = it }
                         )
 
-                    if (search.input.isBlank() || stringResource(R.string.carouselsize).contains(
-                            search.input,
-                            true
-                        )
-                    )
-                        EnumValueSelectorSettingsEntry(
-                            title = stringResource(R.string.carouselsize),
-                            selectedValue = carouselSize,
-                            onValueSelected = { carouselSize = it },
-                            valueText = {
-                                when (it) {
-                                    CarouselSize.Small -> stringResource(R.string.small)
-                                    CarouselSize.Medium -> stringResource(R.string.medium)
-                                    CarouselSize.Big -> stringResource(R.string.big)
-                                    CarouselSize.Biggest -> stringResource(R.string.biggest)
-                                    CarouselSize.Expanded -> stringResource(R.string.expanded)
-                                }
-                            },
-                            modifier = Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) 25.dp else 0.dp)
-                        )
-                }
-                if (playerType == PlayerType.Essential) {
-
-                    if (search.input.isBlank() || stringResource(R.string.thumbnailpause).contains(
-                            search.input,
-                            true
-                        )
-                    )
-                        SwitchSettingEntry(
-                            title = stringResource(R.string.thumbnailpause),
-                            text = "",
-                            isChecked = thumbnailpause,
-                            onCheckedChange = { thumbnailpause = it },
-                            modifier = Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) 25.dp else 0.dp)
-                        )
-
-                    if (search.input.isBlank() || stringResource(R.string.show_lyrics_thumbnail).contains(
-                            search.input,
-                            true
-                        )
-                    )
-                        SwitchSettingEntry(
-                            title = stringResource(R.string.show_lyrics_thumbnail),
-                            text = "",
-                            isChecked = showlyricsthumbnail,
-                            onCheckedChange = { showlyricsthumbnail = it },
-                            modifier = Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) 25.dp else 0.dp)
-                        )
-                    if (visualizerEnabled) {
-                        if (search.input.isBlank() || stringResource(R.string.showvisthumbnail).contains(
+                    if (!showTopActionsBar) {
+                        if (search.input.isBlank() || stringResource(R.string.blankspace).contains(
                                 search.input,
                                 true
                             )
                         )
                             SwitchSettingEntry(
-                                title = stringResource(R.string.showvisthumbnail),
+                                title = stringResource(R.string.blankspace),
                                 text = "",
-                                isChecked = showvisthumbnail,
-                                onCheckedChange = { showvisthumbnail = it },
-                                modifier = Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) 25.dp else 0.dp)
+                                isChecked = topPadding,
+                                onCheckedChange = { topPadding = it }
                             )
                     }
                 }
-
-                if (search.input.isBlank() || stringResource(R.string.show_cover_thumbnail_animation).contains(
-                        search.input,
-                        true
-                    )
-                ) {
-                    SwitchSettingEntry(
-                        title = stringResource(R.string.show_cover_thumbnail_animation),
-                        text = "",
-                        isChecked = showCoverThumbnailAnimation,
-                        onCheckedChange = { showCoverThumbnailAnimation = it },
-                        modifier = Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) 25.dp else 0.dp)
-                    )
-                    AnimatedVisibility(visible = showCoverThumbnailAnimation) {
-                        Column {
-                            EnumValueSelectorSettingsEntry(
-                                title = stringResource(R.string.cover_thumbnail_animation_type),
-                                selectedValue = coverThumbnailAnimation,
-                                onValueSelected = { coverThumbnailAnimation = it },
-                                valueText = { it.textName },
-                                modifier = Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) 50.dp else 25.dp)
-                            )
-                        }
-                    }
-                }
-
-                if (isLandscape) {
-                    if (search.input.isBlank() || stringResource(R.string.player_thumbnail_size).contains(
-                            search.input,
-                            true
-                        )
-                    )
-                        EnumValueSelectorSettingsEntry(
-                            title = stringResource(R.string.player_thumbnail_size),
-                            selectedValue = playerThumbnailSizeL,
-                            onValueSelected = { playerThumbnailSizeL = it },
-                            valueText = {
-                                when (it) {
-                                    PlayerThumbnailSize.Small -> stringResource(R.string.small)
-                                    PlayerThumbnailSize.Medium -> stringResource(R.string.medium)
-                                    PlayerThumbnailSize.Big -> stringResource(R.string.big)
-                                    PlayerThumbnailSize.Biggest -> stringResource(R.string.biggest)
-                                    PlayerThumbnailSize.Expanded -> stringResource(R.string.expanded)
-                                }
-                            },
-                            modifier = Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) 25.dp else 0.dp)
-                        )
-                } else {
-                    if (search.input.isBlank() || stringResource(R.string.player_thumbnail_size).contains(
-                            search.input,
-                            true
-                        )
-                    )
-                        EnumValueSelectorSettingsEntry(
-                            title = stringResource(R.string.player_thumbnail_size),
-                            selectedValue = playerThumbnailSize,
-                            onValueSelected = { playerThumbnailSize = it },
-                            valueText = {
-                                when (it) {
-                                    PlayerThumbnailSize.Small -> stringResource(R.string.small)
-                                    PlayerThumbnailSize.Medium -> stringResource(R.string.medium)
-                                    PlayerThumbnailSize.Big -> stringResource(R.string.big)
-                                    PlayerThumbnailSize.Biggest -> stringResource(R.string.biggest)
-                                    PlayerThumbnailSize.Expanded -> stringResource(R.string.expanded)
-                                }
-                            },
-                            modifier = Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) 25.dp else 0.dp)
-                        )
-                }
-                if (search.input.isBlank() || stringResource(R.string.thumbnailtype).contains(
-                        search.input,
-                        true
-                    )
-                )
-                    EnumValueSelectorSettingsEntry(
-                        title = stringResource(R.string.thumbnailtype),
-                        selectedValue = thumbnailType,
-                        onValueSelected = {
-                            thumbnailType = it
-                        },
-                        valueText = {
-                            when (it) {
-                                ThumbnailType.Modern -> stringResource(R.string.pcontrols_modern)
-                                ThumbnailType.Essential -> stringResource(R.string.pcontrols_essential)
-                            }
-                        },
-                        modifier = Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) 25.dp else 0.dp)
-                    )
-
-                if (search.input.isBlank() || stringResource(R.string.thumbnail_roundness).contains(
-                        search.input,
-                        true
-                    )
-                )
-                    EnumValueSelectorSettingsEntry(
-                        title = stringResource(R.string.thumbnail_roundness),
-                        selectedValue = thumbnailRoundness,
-                        onValueSelected = { thumbnailRoundness = it },
-                        trailingContent = {
-                            Spacer(
-                                modifier = Modifier
-                                    .border(
-                                        width = 1.dp,
-                                        color = colorPalette().accent,
-                                        shape = thumbnailRoundness.shape()
-                                    )
-                                    .background(
-                                        color = colorPalette().background1,
-                                        shape = thumbnailRoundness.shape()
-                                    )
-                                    .size(36.dp)
-                            )
-                        },
-                        valueText = {
-                            when (it) {
-                                ThumbnailRoundness.None -> stringResource(R.string.none)
-                                ThumbnailRoundness.Light -> stringResource(R.string.light)
-                                ThumbnailRoundness.Heavy -> stringResource(R.string.heavy)
-                                ThumbnailRoundness.Medium -> stringResource(R.string.medium)
-                            }
-                        },
-                        modifier = Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) 25.dp else 0.dp)
-                    )
             }
-        }
 
-        if (!showthumbnail) {
-            if (search.input.isBlank() || stringResource(R.string.noblur).contains(
-                    search.input,
-                    true
+
+            settingsItem {
+                if (search.input.isBlank() || stringResource(R.string.playertype).contains(
+                        search.input,
+                        true
+                    )
                 )
-            )
-                SwitchSettingEntry(
-                    title = stringResource(R.string.noblur),
-                    text = "",
-                    isChecked = noblur,
-                    onCheckedChange = { noblur = it }
+                    EnumValueSelectorSettingsEntry(
+                        title = stringResource(R.string.playertype),
+                        selectedValue = playerType,
+                        onValueSelected = {
+                            playerType = it
+                        },
+                        valueText = {
+                            when (it) {
+                                PlayerType.Modern -> stringResource(R.string.pcontrols_modern)
+                                PlayerType.Essential -> stringResource(R.string.pcontrols_essential)
+                            }
+                        },
+                    )
+
+                if (search.input.isBlank() || stringResource(R.string.queuetype).contains(
+                        search.input,
+                        true
+                    )
                 )
+                    EnumValueSelectorSettingsEntry(
+                        title = stringResource(R.string.queuetype),
+                        selectedValue = queueType,
+                        onValueSelected = {
+                            queueType = it
+                        },
+                        valueText = {
+                            when (it) {
+                                QueueType.Modern -> stringResource(R.string.pcontrols_modern)
+                                QueueType.Essential -> stringResource(R.string.pcontrols_essential)
+                            }
+                        },
+                    )
 
-
-        }
-
-        if (!(showthumbnail && playerType == PlayerType.Essential)){
-            if (search.input.isBlank() || stringResource(R.string.statsfornerdsplayer).contains(
-                    search.input,
-                    true
-                )
-            )
-                SwitchSettingEntry(
-                    title = stringResource(R.string.statsfornerdsplayer),
-                    text = "",
-                    isChecked = statsfornerds,
-                    onCheckedChange = { statsfornerds = it }
-                )
-        }
-
-        if (search.input.isBlank() || stringResource(R.string.pinfo_type).contains(
-                search.input,
-                true
-            )
-        ) {
-            EnumValueSelectorSettingsEntry(
-                title = stringResource(R.string.pinfo_type),
-                selectedValue = playerInfoType,
-                onValueSelected = {
-                    playerInfoType = it
-                },
-                valueText = {
-                    when (it) {
-                        PlayerInfoType.Modern -> stringResource(R.string.pcontrols_modern)
-                        PlayerInfoType.Essential -> stringResource(R.string.pcontrols_essential)
-                    }
-                },
-            )
-            SettingsDescription(text = stringResource(R.string.pinfo_album_and_artist_name))
-
-            AnimatedVisibility( visible = playerInfoType == PlayerInfoType.Modern) {
-                Column {
-                    if (search.input.isBlank() || stringResource(R.string.pinfo_show_icons).contains(
+                if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) {
+                    if (search.input.isBlank() || stringResource(R.string.show_thumbnail).contains(
                             search.input,
                             true
                         )
                     )
                         SwitchSettingEntry(
-                            title = stringResource(R.string.pinfo_show_icons),
+                            title = stringResource(R.string.show_thumbnail),
                             text = "",
-                            isChecked = playerInfoShowIcons,
-                            onCheckedChange = { playerInfoShowIcons = it },
+                            isChecked = showthumbnail,
+                            onCheckedChange = { showthumbnail = it },
+                        )
+                }
+                AnimatedVisibility(visible = !showthumbnail && playerType == PlayerType.Modern && !isLandscape) {
+                    if (search.input.isBlank() || stringResource(R.string.swipe_Animation_No_Thumbnail).contains(
+                            search.input,
+                            true
+                        )
+                    )
+                        EnumValueSelectorSettingsEntry(
+                            title = stringResource(R.string.swipe_Animation_No_Thumbnail),
+                            selectedValue = swipeAnimationNoThumbnail,
+                            onValueSelected = { swipeAnimationNoThumbnail = it },
+                            valueText = {
+                                when (it) {
+                                    SwipeAnimationNoThumbnail.Sliding -> stringResource(R.string.te_slide_vertical)
+                                    SwipeAnimationNoThumbnail.Fade -> stringResource(R.string.te_fade)
+                                    SwipeAnimationNoThumbnail.Scale -> stringResource(R.string.te_scale)
+                                    SwipeAnimationNoThumbnail.Carousel -> stringResource(R.string.carousel)
+                                    SwipeAnimationNoThumbnail.Circle -> stringResource(R.string.vt_circular)
+                                }
+                            },
+                            modifier = Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) 25.dp else 0.dp)
+                        )
+                }
+                AnimatedVisibility(visible = showthumbnail) {
+                    Column {
+                        if (playerType == PlayerType.Modern) {
+                            if (search.input.isBlank() || stringResource(R.string.fadingedge).contains(
+                                    search.input,
+                                    true
+                                )
+                            )
+                                SwitchSettingEntry(
+                                    title = stringResource(R.string.fadingedge),
+                                    text = "",
+                                    isChecked = fadingedge,
+                                    onCheckedChange = { fadingedge = it },
+                                    modifier = Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) 25.dp else 0.dp)
+                                )
+                        }
+
+                        if (playerType == PlayerType.Modern && !isLandscape && (expandedplayertoggle || expandedplayer)) {
+                            if (search.input.isBlank() || stringResource(R.string.carousel).contains(
+                                    search.input,
+                                    true
+                                )
+                            )
+                                SwitchSettingEntry(
+                                    title = stringResource(R.string.carousel),
+                                    text = "",
+                                    isChecked = carousel,
+                                    onCheckedChange = { carousel = it },
+                                    modifier = Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) 25.dp else 0.dp)
+                                )
+
+                            if (search.input.isBlank() || stringResource(R.string.carouselsize).contains(
+                                    search.input,
+                                    true
+                                )
+                            )
+                                EnumValueSelectorSettingsEntry(
+                                    title = stringResource(R.string.carouselsize),
+                                    selectedValue = carouselSize,
+                                    onValueSelected = { carouselSize = it },
+                                    valueText = {
+                                        when (it) {
+                                            CarouselSize.Small -> stringResource(R.string.small)
+                                            CarouselSize.Medium -> stringResource(R.string.medium)
+                                            CarouselSize.Big -> stringResource(R.string.big)
+                                            CarouselSize.Biggest -> stringResource(R.string.biggest)
+                                            CarouselSize.Expanded -> stringResource(R.string.expanded)
+                                        }
+                                    },
+                                    modifier = Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) 25.dp else 0.dp)
+                                )
+                        }
+                        if (playerType == PlayerType.Essential) {
+
+                            if (search.input.isBlank() || stringResource(R.string.thumbnailpause).contains(
+                                    search.input,
+                                    true
+                                )
+                            )
+                                SwitchSettingEntry(
+                                    title = stringResource(R.string.thumbnailpause),
+                                    text = "",
+                                    isChecked = thumbnailpause,
+                                    onCheckedChange = { thumbnailpause = it },
+                                    modifier = Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) 25.dp else 0.dp)
+                                )
+
+                            if (search.input.isBlank() || stringResource(R.string.show_lyrics_thumbnail).contains(
+                                    search.input,
+                                    true
+                                )
+                            )
+                                SwitchSettingEntry(
+                                    title = stringResource(R.string.show_lyrics_thumbnail),
+                                    text = "",
+                                    isChecked = showlyricsthumbnail,
+                                    onCheckedChange = { showlyricsthumbnail = it },
+                                    modifier = Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) 25.dp else 0.dp)
+                                )
+                            if (visualizerEnabled) {
+                                if (search.input.isBlank() || stringResource(R.string.showvisthumbnail).contains(
+                                        search.input,
+                                        true
+                                    )
+                                )
+                                    SwitchSettingEntry(
+                                        title = stringResource(R.string.showvisthumbnail),
+                                        text = "",
+                                        isChecked = showvisthumbnail,
+                                        onCheckedChange = { showvisthumbnail = it },
+                                        modifier = Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) 25.dp else 0.dp)
+                                    )
+                            }
+                        }
+
+                        if (search.input.isBlank() || stringResource(R.string.show_cover_thumbnail_animation).contains(
+                                search.input,
+                                true
+                            )
+                        ) {
+                            SwitchSettingEntry(
+                                title = stringResource(R.string.show_cover_thumbnail_animation),
+                                text = "",
+                                isChecked = showCoverThumbnailAnimation,
+                                onCheckedChange = { showCoverThumbnailAnimation = it },
+                                modifier = Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) 25.dp else 0.dp)
+                            )
+                            AnimatedVisibility(visible = showCoverThumbnailAnimation) {
+                                Column {
+                                    EnumValueSelectorSettingsEntry(
+                                        title = stringResource(R.string.cover_thumbnail_animation_type),
+                                        selectedValue = coverThumbnailAnimation,
+                                        onValueSelected = { coverThumbnailAnimation = it },
+                                        valueText = { it.textName },
+                                        modifier = Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) 50.dp else 25.dp)
+                                    )
+                                }
+                            }
+                        }
+
+                        if (isLandscape) {
+                            if (search.input.isBlank() || stringResource(R.string.player_thumbnail_size).contains(
+                                    search.input,
+                                    true
+                                )
+                            )
+                                EnumValueSelectorSettingsEntry(
+                                    title = stringResource(R.string.player_thumbnail_size),
+                                    selectedValue = playerThumbnailSizeL,
+                                    onValueSelected = { playerThumbnailSizeL = it },
+                                    valueText = {
+                                        when (it) {
+                                            PlayerThumbnailSize.Small -> stringResource(R.string.small)
+                                            PlayerThumbnailSize.Medium -> stringResource(R.string.medium)
+                                            PlayerThumbnailSize.Big -> stringResource(R.string.big)
+                                            PlayerThumbnailSize.Biggest -> stringResource(R.string.biggest)
+                                            PlayerThumbnailSize.Expanded -> stringResource(R.string.expanded)
+                                        }
+                                    },
+                                    modifier = Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) 25.dp else 0.dp)
+                                )
+                        } else {
+                            if (search.input.isBlank() || stringResource(R.string.player_thumbnail_size).contains(
+                                    search.input,
+                                    true
+                                )
+                            )
+                                EnumValueSelectorSettingsEntry(
+                                    title = stringResource(R.string.player_thumbnail_size),
+                                    selectedValue = playerThumbnailSize,
+                                    onValueSelected = { playerThumbnailSize = it },
+                                    valueText = {
+                                        when (it) {
+                                            PlayerThumbnailSize.Small -> stringResource(R.string.small)
+                                            PlayerThumbnailSize.Medium -> stringResource(R.string.medium)
+                                            PlayerThumbnailSize.Big -> stringResource(R.string.big)
+                                            PlayerThumbnailSize.Biggest -> stringResource(R.string.biggest)
+                                            PlayerThumbnailSize.Expanded -> stringResource(R.string.expanded)
+                                        }
+                                    },
+                                    modifier = Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) 25.dp else 0.dp)
+                                )
+                        }
+                        if (search.input.isBlank() || stringResource(R.string.thumbnailtype).contains(
+                                search.input,
+                                true
+                            )
+                        )
+                            EnumValueSelectorSettingsEntry(
+                                title = stringResource(R.string.thumbnailtype),
+                                selectedValue = thumbnailType,
+                                onValueSelected = {
+                                    thumbnailType = it
+                                },
+                                valueText = {
+                                    when (it) {
+                                        ThumbnailType.Modern -> stringResource(R.string.pcontrols_modern)
+                                        ThumbnailType.Essential -> stringResource(R.string.pcontrols_essential)
+                                    }
+                                },
+                                modifier = Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) 25.dp else 0.dp)
+                            )
+
+                        if (search.input.isBlank() || stringResource(R.string.thumbnail_roundness).contains(
+                                search.input,
+                                true
+                            )
+                        )
+                            EnumValueSelectorSettingsEntry(
+                                title = stringResource(R.string.thumbnail_roundness),
+                                selectedValue = thumbnailRoundness,
+                                onValueSelected = { thumbnailRoundness = it },
+                                trailingContent = {
+                                    Spacer(
+                                        modifier = Modifier
+                                            .border(
+                                                width = 1.dp,
+                                                color = colorPalette().accent,
+                                                shape = thumbnailRoundness.shape()
+                                            )
+                                            .background(
+                                                color = colorPalette().background1,
+                                                shape = thumbnailRoundness.shape()
+                                            )
+                                            .size(36.dp)
+                                    )
+                                },
+                                valueText = {
+                                    when (it) {
+                                        ThumbnailRoundness.None -> stringResource(R.string.none)
+                                        ThumbnailRoundness.Light -> stringResource(R.string.light)
+                                        ThumbnailRoundness.Heavy -> stringResource(R.string.heavy)
+                                        ThumbnailRoundness.Medium -> stringResource(R.string.medium)
+                                    }
+                                },
+                                modifier = Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) 25.dp else 0.dp)
+                            )
+                    }
+                }
+
+                if (!showthumbnail) {
+                    if (search.input.isBlank() || stringResource(R.string.noblur).contains(
+                            search.input,
+                            true
+                        )
+                    )
+                        SwitchSettingEntry(
+                            title = stringResource(R.string.noblur),
+                            text = "",
+                            isChecked = noblur,
+                            onCheckedChange = { noblur = it }
+                        )
+
+
+                }
+
+                if (!(showthumbnail && playerType == PlayerType.Essential)) {
+                    if (search.input.isBlank() || stringResource(R.string.statsfornerdsplayer).contains(
+                            search.input,
+                            true
+                        )
+                    )
+                        SwitchSettingEntry(
+                            title = stringResource(R.string.statsfornerdsplayer),
+                            text = "",
+                            isChecked = statsfornerds,
+                            onCheckedChange = { statsfornerds = it }
+                        )
+                }
+
+                if (search.input.isBlank() || stringResource(R.string.pinfo_type).contains(
+                        search.input,
+                        true
+                    )
+                ) {
+                    EnumValueSelectorSettingsEntry(
+                        title = stringResource(R.string.pinfo_type),
+                        selectedValue = playerInfoType,
+                        onValueSelected = {
+                            playerInfoType = it
+                        },
+                        valueText = {
+                            when (it) {
+                                PlayerInfoType.Modern -> stringResource(R.string.pcontrols_modern)
+                                PlayerInfoType.Essential -> stringResource(R.string.pcontrols_essential)
+                            }
+                        },
+                    )
+                    SettingsDescription(text = stringResource(R.string.pinfo_album_and_artist_name))
+
+                    AnimatedVisibility(visible = playerInfoType == PlayerInfoType.Modern) {
+                        Column {
+                            if (search.input.isBlank() || stringResource(R.string.pinfo_show_icons).contains(
+                                    search.input,
+                                    true
+                                )
+                            )
+                                SwitchSettingEntry(
+                                    title = stringResource(R.string.pinfo_show_icons),
+                                    text = "",
+                                    isChecked = playerInfoShowIcons,
+                                    onCheckedChange = { playerInfoShowIcons = it },
+                                    modifier = Modifier
+                                        .padding(start = 25.dp)
+                                )
+                        }
+                    }
+
+                }
+
+
+
+                if (search.input.isBlank() || stringResource(R.string.miniplayertype).contains(
+                        search.input,
+                        true
+                    )
+                )
+                    EnumValueSelectorSettingsEntry(
+                        title = stringResource(R.string.miniplayertype),
+                        selectedValue = miniPlayerType,
+                        onValueSelected = {
+                            miniPlayerType = it
+                        },
+                        valueText = {
+                            when (it) {
+                                MiniPlayerType.Modern -> stringResource(R.string.pcontrols_modern)
+                                MiniPlayerType.Essential -> stringResource(R.string.pcontrols_essential)
+                            }
+                        },
+                    )
+
+                if (search.input.isBlank() || stringResource(R.string.player_swap_controls_with_timeline).contains(
+                        search.input,
+                        true
+                    )
+                )
+                    SwitchSettingEntry(
+                        title = stringResource(R.string.player_swap_controls_with_timeline),
+                        text = "",
+                        isChecked = playerSwapControlsWithTimeline,
+                        onCheckedChange = { playerSwapControlsWithTimeline = it }
+                    )
+
+                if (search.input.isBlank() || stringResource(R.string.timeline).contains(
+                        search.input,
+                        true
+                    )
+                ) {
+                    EnumValueSelectorSettingsEntry(
+                        title = stringResource(R.string.timeline),
+                        selectedValue = playerTimelineType,
+                        onValueSelected = {
+                            playerTimelineType = it
+                            restartActivity = true // applied also for online player
+                        },
+                        valueText = { it.textName }
+                    )
+                    RestartActivity(restartActivity, onRestart = { restartActivity = false })
+                }
+
+                if (search.input.isBlank() || stringResource(R.string.transparentbar).contains(
+                        search.input,
+                        true
+                    )
+                )
+                    SwitchSettingEntry(
+                        title = stringResource(R.string.transparentbar),
+                        text = "",
+                        isChecked = transparentbar,
+                        onCheckedChange = { transparentbar = it }
+                    )
+
+                if (search.input.isBlank() || stringResource(R.string.timelinesize).contains(
+                        search.input,
+                        true
+                    )
+                )
+                    EnumValueSelectorSettingsEntry(
+                        title = stringResource(R.string.timelinesize),
+                        selectedValue = playerTimelineSize,
+                        onValueSelected = { playerTimelineSize = it },
+                        valueText = {
+                            when (it) {
+                                PlayerTimelineSize.Small -> stringResource(R.string.small)
+                                PlayerTimelineSize.Medium -> stringResource(R.string.medium)
+                                PlayerTimelineSize.Big -> stringResource(R.string.big)
+                                PlayerTimelineSize.Biggest -> stringResource(R.string.biggest)
+                                PlayerTimelineSize.Expanded -> stringResource(R.string.expanded)
+                            }
+                        }
+                    )
+
+                if (search.input.isBlank() || stringResource(R.string.seek_with_tap).contains(
+                        search.input,
+                        true
+                    )
+                )
+                    SwitchSettingEntry(
+                        title = stringResource(R.string.seek_with_tap),
+                        text = "",
+                        isChecked = seekWithTap,
+                        onCheckedChange = { seekWithTap = it }
+                    )
+
+                if (search.input.isBlank() || stringResource(R.string.pcontrols_type).contains(
+                        search.input,
+                        true
+                    )
+                )
+                    EnumValueSelectorSettingsEntry(
+                        title = stringResource(R.string.pcontrols_type),
+                        selectedValue = playerControlsType,
+                        onValueSelected = {
+                            playerControlsType = it
+                        },
+                        valueText = {
+                            when (it) {
+                                PlayerControlsType.Modern -> stringResource(R.string.pcontrols_modern)
+                                PlayerControlsType.Essential -> stringResource(R.string.pcontrols_essential)
+                            }
+                        },
+                    )
+
+
+                if (search.input.isBlank() || stringResource(R.string.play_button).contains(
+                        search.input,
+                        true
+                    )
+                )
+                    EnumValueSelectorSettingsEntry(
+                        title = stringResource(R.string.play_button),
+                        selectedValue = playerPlayButtonType,
+                        onValueSelected = {
+                            playerPlayButtonType = it
+                            lastPlayerPlayButtonType = it
+                        },
+                        valueText = {
+                            when (it) {
+                                PlayerPlayButtonType.Disabled -> stringResource(R.string.vt_disabled)
+                                PlayerPlayButtonType.Default -> stringResource(R.string._default)
+                                PlayerPlayButtonType.Rectangular -> stringResource(R.string.rectangular)
+                                PlayerPlayButtonType.Square -> stringResource(R.string.square)
+                                PlayerPlayButtonType.CircularRibbed -> stringResource(R.string.circular_ribbed)
+                                PlayerPlayButtonType.Circle -> stringResource(R.string.circle)
+                            }
+                        },
+                    )
+
+                if (search.input.isBlank() || stringResource(R.string.buttonzoomout).contains(
+                        search.input,
+                        true
+                    )
+                )
+                    SwitchSettingEntry(
+                        title = stringResource(R.string.buttonzoomout),
+                        text = "",
+                        isChecked = buttonzoomout,
+                        onCheckedChange = { buttonzoomout = it }
+                    )
+
+
+                if (search.input.isBlank() || stringResource(R.string.play_button).contains(
+                        search.input,
+                        true
+                    )
+                )
+                    EnumValueSelectorSettingsEntry(
+                        title = stringResource(R.string.icon_like_button),
+                        selectedValue = iconLikeType,
+                        onValueSelected = {
+                            iconLikeType = it
+                        },
+                        valueText = {
+                            when (it) {
+                                IconLikeType.Essential -> stringResource(R.string.pcontrols_essential)
+                                IconLikeType.Apple -> stringResource(R.string.icon_like_apple)
+                                IconLikeType.Breaked -> stringResource(R.string.icon_like_breaked)
+                                IconLikeType.Gift -> stringResource(R.string.icon_like_gift)
+                                IconLikeType.Shape -> stringResource(R.string.icon_like_shape)
+                                IconLikeType.Striped -> stringResource(R.string.icon_like_striped)
+                                IconLikeType.Brilliant -> stringResource(R.string.icon_like_brilliant)
+                            }
+                        },
+                    )
+
+                /*
+
+            if (filter.isNullOrBlank() || stringResource(R.string.use_gradient_background).contains(filterCharSequence,true))
+                SwitchSettingEntry(
+                    title = stringResource(R.string.use_gradient_background),
+                    text = "",
+                    isChecked = isGradientBackgroundEnabled,
+                    onCheckedChange = { isGradientBackgroundEnabled = it }
+                )
+             */
+
+                if (search.input.isBlank() || stringResource(R.string.background_colors).contains(
+                        search.input,
+                        true
+                    )
+                )
+                    EnumValueSelectorSettingsEntry(
+                        title = stringResource(R.string.background_colors),
+                        selectedValue = playerBackgroundColors,
+                        onValueSelected = {
+                            playerBackgroundColors = it
+                        },
+                        valueText = {
+                            when (it) {
+                                PlayerBackgroundColors.CoverColor -> stringResource(R.string.bg_colors_background_from_cover)
+                                PlayerBackgroundColors.ThemeColor -> stringResource(R.string.bg_colors_background_from_theme)
+                                PlayerBackgroundColors.CoverColorGradient -> stringResource(R.string.bg_colors_gradient_background_from_cover)
+                                PlayerBackgroundColors.ThemeColorGradient -> stringResource(R.string.bg_colors_gradient_background_from_theme)
+                                PlayerBackgroundColors.BlurredCoverColor -> stringResource(R.string.bg_colors_blurred_cover_background)
+                                PlayerBackgroundColors.ColorPalette -> stringResource(R.string.colorpalette)
+                                PlayerBackgroundColors.AnimatedGradient -> stringResource(R.string.animatedgradient)
+                                PlayerBackgroundColors.MidnightOdyssey -> stringResource(R.string.midnightodyssey)
+                            }
+                        },
+                    )
+
+                AnimatedVisibility(visible = playerBackgroundColors == PlayerBackgroundColors.AnimatedGradient) {
+                    if (search.input.isBlank() || stringResource(R.string.gradienttype).contains(
+                            search.input,
+                            true
+                        )
+                    )
+                        EnumValueSelectorSettingsEntry(
+                            title = stringResource(R.string.gradienttype),
+                            selectedValue = animatedGradient,
+                            onValueSelected = {
+                                animatedGradient = it
+                            },
+                            valueText = {
+                                when (it) {
+                                    AnimatedGradient.FluidThemeColorGradient -> stringResource(R.string.bg_colors_fluid_gradient_background_from_theme)
+                                    AnimatedGradient.FluidCoverColorGradient -> stringResource(R.string.bg_colors_fluid_gradient_background_from_cover)
+                                    AnimatedGradient.Linear -> stringResource(R.string.linear)
+                                    AnimatedGradient.Mesh -> stringResource(R.string.mesh)
+                                    AnimatedGradient.MesmerizingLens -> stringResource(R.string.mesmerizinglens)
+                                    AnimatedGradient.GlossyGradients -> stringResource(R.string.glossygradient)
+                                    AnimatedGradient.GradientFlow -> stringResource(R.string.gradientflow)
+                                    AnimatedGradient.PurpleLiquid -> stringResource(R.string.purpleliquid)
+                                    AnimatedGradient.Stage -> stringResource(R.string.stage)
+                                    AnimatedGradient.InkFlow -> stringResource(R.string.inkflow)
+                                    AnimatedGradient.GoldenMagma -> stringResource(R.string.goldenmagma)
+                                    AnimatedGradient.OilFlow -> stringResource(R.string.oilflow)
+                                    AnimatedGradient.IceReflection -> stringResource(R.string.icereflection)
+                                    AnimatedGradient.BlackCherryCosmos -> stringResource(R.string.blackcherrycosmos)
+                                    AnimatedGradient.Random -> stringResource(R.string.random)
+                                }
+                            },
+                            modifier = Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.AnimatedGradient) 25.dp else 0.dp)
+                        )
+                }
+
+                if ((playerBackgroundColors == PlayerBackgroundColors.CoverColorGradient) || (playerBackgroundColors == PlayerBackgroundColors.ThemeColorGradient))
+                    if (search.input.isBlank() || stringResource(R.string.blackgradient).contains(
+                            search.input,
+                            true
+                        )
+                    )
+                        SwitchSettingEntry(
+                            title = stringResource(R.string.blackgradient),
+                            text = "",
+                            isChecked = blackgradient,
+                            onCheckedChange = { blackgradient = it }
+                        )
+
+                if ((playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) && (playerType == PlayerType.Modern))
+                    if (search.input.isBlank() || stringResource(R.string.albumCoverRotation).contains(
+                            search.input,
+                            true
+                        )
+                    )
+                        SwitchSettingEntry(
+                            title = stringResource(R.string.albumCoverRotation),
+                            text = "",
+                            isChecked = albumCoverRotation,
+                            onCheckedChange = { albumCoverRotation = it },
                             modifier = Modifier
                                 .padding(start = 25.dp)
                         )
-                }
-            }
 
-        }
-
-
-
-        if (search.input.isBlank() || stringResource(R.string.miniplayertype).contains(
-                search.input,
-                true
-            )
-        )
-            EnumValueSelectorSettingsEntry(
-                title = stringResource(R.string.miniplayertype),
-                selectedValue = miniPlayerType,
-                onValueSelected = {
-                    miniPlayerType = it
-                },
-                valueText = {
-                    when (it) {
-                        MiniPlayerType.Modern -> stringResource(R.string.pcontrols_modern)
-                        MiniPlayerType.Essential -> stringResource(R.string.pcontrols_essential)
-                    }
-                },
-            )
-
-        if (search.input.isBlank() || stringResource(R.string.player_swap_controls_with_timeline).contains(
-                search.input,
-                true
-            )
-        )
-            SwitchSettingEntry(
-                title = stringResource(R.string.player_swap_controls_with_timeline),
-                text = "",
-                isChecked = playerSwapControlsWithTimeline,
-                onCheckedChange = { playerSwapControlsWithTimeline = it }
-            )
-
-        if (search.input.isBlank() || stringResource(R.string.timeline).contains(
-                search.input,
-                true
-            )
-        ) {
-            EnumValueSelectorSettingsEntry(
-                title = stringResource(R.string.timeline),
-                selectedValue = playerTimelineType,
-                onValueSelected = {
-                    playerTimelineType = it
-                    restartActivity = true // applied also for online player
-                },
-                valueText = { it.textName }
-            )
-            RestartActivity(restartActivity, onRestart = { restartActivity = false })
-        }
-
-        if (search.input.isBlank() || stringResource(R.string.transparentbar).contains(
-                search.input,
-                true
-            )
-        )
-            SwitchSettingEntry(
-                title = stringResource(R.string.transparentbar),
-                text = "",
-                isChecked = transparentbar,
-                onCheckedChange = { transparentbar = it }
-            )
-
-        if (search.input.isBlank() || stringResource(R.string.timelinesize).contains(
-                search.input,
-                true
-            )
-        )
-            EnumValueSelectorSettingsEntry(
-                title = stringResource(R.string.timelinesize),
-                selectedValue = playerTimelineSize,
-                onValueSelected = { playerTimelineSize = it },
-                valueText = {
-                    when (it) {
-                        PlayerTimelineSize.Small -> stringResource(R.string.small)
-                        PlayerTimelineSize.Medium -> stringResource(R.string.medium)
-                        PlayerTimelineSize.Big -> stringResource(R.string.big)
-                        PlayerTimelineSize.Biggest -> stringResource(R.string.biggest)
-                        PlayerTimelineSize.Expanded -> stringResource(R.string.expanded)
-                    }
-                }
-            )
-
-        if (search.input.isBlank() || stringResource(R.string.seek_with_tap).contains(
-                search.input,
-                true
-            )
-        )
-            SwitchSettingEntry(
-                title = stringResource(R.string.seek_with_tap),
-                text = "",
-                isChecked = seekWithTap,
-                onCheckedChange = { seekWithTap = it }
-            )
-
-        if (search.input.isBlank() || stringResource(R.string.pcontrols_type).contains(
-                search.input,
-                true
-            )
-        )
-            EnumValueSelectorSettingsEntry(
-                title = stringResource(R.string.pcontrols_type),
-                selectedValue = playerControlsType,
-                onValueSelected = {
-                    playerControlsType = it
-                },
-                valueText = {
-                    when (it) {
-                        PlayerControlsType.Modern -> stringResource(R.string.pcontrols_modern)
-                        PlayerControlsType.Essential -> stringResource(R.string.pcontrols_essential)
-                    }
-                },
-            )
-
-
-        if (search.input.isBlank() || stringResource(R.string.play_button).contains(
-                search.input,
-                true
-            )
-        )
-            EnumValueSelectorSettingsEntry(
-                title = stringResource(R.string.play_button),
-                selectedValue = playerPlayButtonType,
-                onValueSelected = {
-                    playerPlayButtonType = it
-                    lastPlayerPlayButtonType = it
-                },
-                valueText = {
-                    when (it) {
-                        PlayerPlayButtonType.Disabled -> stringResource(R.string.vt_disabled)
-                        PlayerPlayButtonType.Default -> stringResource(R.string._default)
-                        PlayerPlayButtonType.Rectangular -> stringResource(R.string.rectangular)
-                        PlayerPlayButtonType.Square -> stringResource(R.string.square)
-                        PlayerPlayButtonType.CircularRibbed -> stringResource(R.string.circular_ribbed)
-                        PlayerPlayButtonType.Circle -> stringResource(R.string.circle)
-                    }
-                },
-            )
-
-        if (search.input.isBlank() || stringResource(R.string.buttonzoomout).contains(
-                search.input,
-                true
-            )
-        )
-            SwitchSettingEntry(
-                title = stringResource(R.string.buttonzoomout),
-                text = "",
-                isChecked = buttonzoomout,
-                onCheckedChange = { buttonzoomout = it }
-            )
-
-
-        if (search.input.isBlank() || stringResource(R.string.play_button).contains(
-                search.input,
-                true
-            )
-        )
-            EnumValueSelectorSettingsEntry(
-                title = stringResource(R.string.icon_like_button),
-                selectedValue = iconLikeType,
-                onValueSelected = {
-                    iconLikeType = it
-                },
-                valueText = {
-                    when (it) {
-                        IconLikeType.Essential -> stringResource(R.string.pcontrols_essential)
-                        IconLikeType.Apple -> stringResource(R.string.icon_like_apple)
-                        IconLikeType.Breaked -> stringResource(R.string.icon_like_breaked)
-                        IconLikeType.Gift -> stringResource(R.string.icon_like_gift)
-                        IconLikeType.Shape -> stringResource(R.string.icon_like_shape)
-                        IconLikeType.Striped -> stringResource(R.string.icon_like_striped)
-                        IconLikeType.Brilliant -> stringResource(R.string.icon_like_brilliant)
-                    }
-                },
-            )
-
-        /*
-
-        if (filter.isNullOrBlank() || stringResource(R.string.use_gradient_background).contains(filterCharSequence,true))
-            SwitchSettingEntry(
-                title = stringResource(R.string.use_gradient_background),
-                text = "",
-                isChecked = isGradientBackgroundEnabled,
-                onCheckedChange = { isGradientBackgroundEnabled = it }
-            )
-         */
-
-        if (search.input.isBlank() || stringResource(R.string.background_colors).contains(
-                search.input,
-                true
-            )
-        )
-            EnumValueSelectorSettingsEntry(
-                title = stringResource(R.string.background_colors),
-                selectedValue = playerBackgroundColors,
-                onValueSelected = {
-                    playerBackgroundColors = it
-                },
-                valueText = {
-                    when (it) {
-                        PlayerBackgroundColors.CoverColor -> stringResource(R.string.bg_colors_background_from_cover)
-                        PlayerBackgroundColors.ThemeColor -> stringResource(R.string.bg_colors_background_from_theme)
-                        PlayerBackgroundColors.CoverColorGradient -> stringResource(R.string.bg_colors_gradient_background_from_cover)
-                        PlayerBackgroundColors.ThemeColorGradient -> stringResource(R.string.bg_colors_gradient_background_from_theme)
-                        PlayerBackgroundColors.BlurredCoverColor -> stringResource(R.string.bg_colors_blurred_cover_background)
-                        PlayerBackgroundColors.ColorPalette -> stringResource(R.string.colorpalette)
-                        PlayerBackgroundColors.AnimatedGradient -> stringResource(R.string.animatedgradient)
-                        PlayerBackgroundColors.MidnightOdyssey ->  stringResource(R.string.midnightodyssey)
-                    }
-                },
-            )
-
-        AnimatedVisibility(visible = playerBackgroundColors == PlayerBackgroundColors.AnimatedGradient) {
-            if (search.input.isBlank() || stringResource(R.string.gradienttype).contains(
-                    search.input,
-                    true
+                if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor)
+                    if (search.input.isBlank() || stringResource(R.string.bottomgradient).contains(
+                            search.input,
+                            true
+                        )
+                    )
+                        SwitchSettingEntry(
+                            title = stringResource(R.string.bottomgradient),
+                            text = "",
+                            isChecked = bottomgradient,
+                            onCheckedChange = { bottomgradient = it }
+                        )
+                if (search.input.isBlank() || stringResource(R.string.textoutline).contains(
+                        search.input,
+                        true
+                    )
                 )
-            )
+                    SwitchSettingEntry(
+                        title = stringResource(R.string.textoutline),
+                        text = "",
+                        isChecked = textoutline,
+                        onCheckedChange = { textoutline = it }
+                    )
+
+                if (search.input.isBlank() || stringResource(R.string.show_total_time_of_queue).contains(
+                        search.input,
+                        true
+                    )
+                )
+                    SwitchSettingEntry(
+                        title = stringResource(R.string.show_total_time_of_queue),
+                        text = "",
+                        isChecked = showTotalTimeQueue,
+                        onCheckedChange = { showTotalTimeQueue = it }
+                    )
+
+                if (search.input.isBlank() || stringResource(R.string.show_remaining_song_time).contains(
+                        search.input,
+                        true
+                    )
+                )
+                    SwitchSettingEntry(
+                        title = stringResource(R.string.show_remaining_song_time),
+                        text = "",
+                        isChecked = showRemainingSongTime,
+                        onCheckedChange = { showRemainingSongTime = it }
+                    )
+
+                if (search.input.isBlank() || stringResource(R.string.show_next_songs_in_player).contains(
+                        search.input,
+                        true
+                    )
+                )
+                    SwitchSettingEntry(
+                        title = stringResource(R.string.show_next_songs_in_player),
+                        text = "",
+                        isChecked = showNextSongsInPlayer,
+                        onCheckedChange = { showNextSongsInPlayer = it }
+                    )
+                AnimatedVisibility(visible = showNextSongsInPlayer) {
+                    Column {
+                        if (search.input.isBlank() || stringResource(R.string.showtwosongs).contains(
+                                search.input,
+                                true
+                            )
+                        )
+                            EnumValueSelectorSettingsEntry(
+                                title = stringResource(R.string.songs_number_to_show),
+                                selectedValue = showsongs,
+                                onValueSelected = {
+                                    showsongs = it
+                                },
+                                valueText = {
+                                    it.name
+                                },
+                                modifier = Modifier
+                                    .padding(start = 25.dp)
+                            )
+
+
+                        if (search.input.isBlank() || stringResource(R.string.showalbumcover).contains(
+                                search.input,
+                                true
+                            )
+                        )
+                            SwitchSettingEntry(
+                                title = stringResource(R.string.showalbumcover),
+                                text = "",
+                                isChecked = showalbumcover,
+                                onCheckedChange = { showalbumcover = it },
+                                modifier = Modifier.padding(start = 25.dp)
+                            )
+                    }
+                }
+
+                if (search.input.isBlank() || stringResource(R.string.disable_scrolling_text).contains(
+                        search.input,
+                        true
+                    )
+                )
+                    SwitchSettingEntry(
+                        title = stringResource(R.string.disable_scrolling_text),
+                        text = stringResource(R.string.scrolling_text_is_used_for_long_texts),
+                        isChecked = disableScrollingText,
+                        onCheckedChange = { disableScrollingText = it }
+                    )
+
+                if (search.input.isBlank() || stringResource(if (playerType == PlayerType.Modern && !isLandscape) R.string.disable_horizontal_swipe else R.string.disable_vertical_swipe).contains(
+                        search.input,
+                        true
+                    )
+                )
+                    SwitchSettingEntry(
+                        title = stringResource(if (playerType == PlayerType.Modern && !isLandscape) R.string.disable_vertical_swipe else R.string.disable_horizontal_swipe),
+                        text = stringResource(if (playerType == PlayerType.Modern && !isLandscape) R.string.disable_vertical_swipe_secondary else R.string.disable_song_switching_via_swipe),
+                        isChecked = disablePlayerHorizontalSwipe,
+                        onCheckedChange = { disablePlayerHorizontalSwipe = it }
+                    )
+
+                if (search.input.isBlank() || stringResource(R.string.player_rotating_buttons).contains(
+                        search.input,
+                        true
+                    )
+                )
+                    SwitchSettingEntry(
+                        title = stringResource(R.string.player_rotating_buttons),
+                        text = stringResource(R.string.player_enable_rotation_buttons),
+                        isChecked = effectRotationEnabled,
+                        onCheckedChange = { effectRotationEnabled = it }
+                    )
+
+                if (search.input.isBlank() || stringResource(R.string.toggle_lyrics).contains(
+                        search.input,
+                        true
+                    )
+                )
+                    SwitchSettingEntry(
+                        title = stringResource(R.string.toggle_lyrics),
+                        text = stringResource(R.string.by_tapping_on_the_thumbnail),
+                        isChecked = thumbnailTapEnabled,
+                        onCheckedChange = { thumbnailTapEnabled = it }
+                    )
+
+                if (search.input.isBlank() || stringResource(R.string.click_lyrics_text).contains(
+                        search.input,
+                        true
+                    )
+                )
+                    SwitchSettingEntry(
+                        title = stringResource(R.string.click_lyrics_text),
+                        text = "",
+                        isChecked = clickLyricsText,
+                        onCheckedChange = { clickLyricsText = it }
+                    )
+                if (showlyricsthumbnail)
+                    if (search.input.isBlank() || stringResource(R.string.show_background_in_lyrics).contains(
+                            search.input,
+                            true
+                        )
+                    )
+                        SwitchSettingEntry(
+                            title = stringResource(R.string.show_background_in_lyrics),
+                            text = "",
+                            isChecked = showBackgroundLyrics,
+                            onCheckedChange = { showBackgroundLyrics = it }
+                        )
+
+                if (search.input.isBlank() || stringResource(R.string.player_enable_lyrics_popup_message).contains(
+                        search.input,
+                        true
+                    )
+                )
+                    SwitchSettingEntry(
+                        title = stringResource(R.string.player_enable_lyrics_popup_message),
+                        text = "",
+                        isChecked = playerEnableLyricsPopupMessage,
+                        onCheckedChange = { playerEnableLyricsPopupMessage = it }
+                    )
+
+                if (search.input.isBlank() || stringResource(R.string.background_progress_bar).contains(
+                        search.input,
+                        true
+                    )
+                )
+                    EnumValueSelectorSettingsEntry(
+                        title = stringResource(R.string.background_progress_bar),
+                        selectedValue = backgroundProgress,
+                        onValueSelected = {
+                            backgroundProgress = it
+                        },
+                        valueText = {
+                            when (it) {
+                                BackgroundProgress.Player -> stringResource(R.string.player)
+                                BackgroundProgress.MiniPlayer -> stringResource(R.string.minimized_player)
+                                BackgroundProgress.Both -> stringResource(R.string.both)
+                                BackgroundProgress.Disabled -> stringResource(R.string.vt_disabled)
+                            }
+                        },
+                    )
+
+
+                if (search.input.isBlank() || stringResource(R.string.visualizer).contains(
+                        search.input,
+                        true
+                    )
+                ) {
+                    SwitchSettingEntry(
+                        title = stringResource(R.string.visualizer),
+                        text = "",
+                        isChecked = visualizerEnabled,
+                        onCheckedChange = { visualizerEnabled = it }
+                    )
+                    /*
                 EnumValueSelectorSettingsEntry(
-                    title = stringResource(R.string.gradienttype),
-                    selectedValue = animatedGradient,
-                    onValueSelected = {
-                        animatedGradient = it
-                    },
+                    title = stringResource(R.string.visualizer),
+                    selectedValue = playerVisualizerType,
+                    onValueSelected = { playerVisualizerType = it },
                     valueText = {
                         when (it) {
-                            AnimatedGradient.FluidThemeColorGradient -> stringResource(R.string.bg_colors_fluid_gradient_background_from_theme)
-                            AnimatedGradient.FluidCoverColorGradient -> stringResource(R.string.bg_colors_fluid_gradient_background_from_cover)
-                            AnimatedGradient.Linear -> stringResource(R.string.linear)
-                            AnimatedGradient.Mesh -> stringResource(R.string.mesh)
-                            AnimatedGradient.MesmerizingLens -> stringResource(R.string.mesmerizinglens)
-                            AnimatedGradient.GlossyGradients -> stringResource(R.string.glossygradient)
-                            AnimatedGradient.GradientFlow -> stringResource(R.string.gradientflow)
-                            AnimatedGradient.PurpleLiquid -> stringResource(R.string.purpleliquid)
-                            AnimatedGradient.Stage -> stringResource(R.string.stage)
-                            AnimatedGradient.InkFlow -> stringResource(R.string.inkflow)
-                            AnimatedGradient.GoldenMagma -> stringResource(R.string.goldenmagma)
-                            AnimatedGradient.OilFlow -> stringResource(R.string.oilflow)
-                            AnimatedGradient.IceReflection -> stringResource(R.string.icereflection)
-                            AnimatedGradient.BlackCherryCosmos -> stringResource(R.string.blackcherrycosmos)
-                            AnimatedGradient.Random -> stringResource(R.string.random)
+                            PlayerVisualizerType.Fancy -> stringResource(R.string.vt_fancy)
+                            PlayerVisualizerType.Circular -> stringResource(R.string.vt_circular)
+                            PlayerVisualizerType.Disabled -> stringResource(R.string.vt_disabled)
+                            PlayerVisualizerType.Stacked -> stringResource(R.string.vt_stacked)
+                            PlayerVisualizerType.Oneside -> stringResource(R.string.vt_one_side)
+                            PlayerVisualizerType.Doubleside -> stringResource(R.string.vt_double_side)
+                            PlayerVisualizerType.DoublesideCircular -> stringResource(R.string.vt_double_side_circular)
+                            PlayerVisualizerType.Full -> stringResource(R.string.vt_full)
                         }
-                    },
-                    modifier = Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.AnimatedGradient) 25.dp else 0.dp)
-                )
-        }
-
-        if ((playerBackgroundColors == PlayerBackgroundColors.CoverColorGradient) || (playerBackgroundColors == PlayerBackgroundColors.ThemeColorGradient))
-            if (search.input.isBlank() || stringResource(R.string.blackgradient).contains(
-                    search.input,
-                    true
-                )
-            )
-                SwitchSettingEntry(
-                    title = stringResource(R.string.blackgradient),
-                    text = "",
-                    isChecked = blackgradient,
-                    onCheckedChange = { blackgradient = it }
-                )
-
-        if ((playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) && (playerType == PlayerType.Modern))
-            if (search.input.isBlank() || stringResource(R.string.albumCoverRotation).contains(
-                    search.input,
-                    true
-                )
-            )
-                SwitchSettingEntry(
-                    title = stringResource(R.string.albumCoverRotation),
-                    text = "",
-                    isChecked = albumCoverRotation,
-                    onCheckedChange = { albumCoverRotation = it },
-                    modifier = Modifier
-                        .padding(start = 25.dp)
-                )
-
-        if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor)
-            if (search.input.isBlank() || stringResource(R.string.bottomgradient).contains(
-                    search.input,
-                    true
-                )
-            )
-                SwitchSettingEntry(
-                    title = stringResource(R.string.bottomgradient),
-                    text = "",
-                    isChecked = bottomgradient,
-                    onCheckedChange = { bottomgradient = it }
-                )
-        if (search.input.isBlank() || stringResource(R.string.textoutline).contains(
-              search.input,
-              true
-              )
-         )
-             SwitchSettingEntry(
-                 title = stringResource(R.string.textoutline),
-                 text = "",
-                 isChecked = textoutline,
-                 onCheckedChange = { textoutline = it }
-             )
-
-       if (search.input.isBlank() || stringResource(R.string.show_total_time_of_queue).contains(
-                search.input,
-                true
-            )
-        )
-            SwitchSettingEntry(
-                title = stringResource(R.string.show_total_time_of_queue),
-                text = "",
-                isChecked = showTotalTimeQueue,
-                onCheckedChange = { showTotalTimeQueue = it }
-            )
-
-        if (search.input.isBlank() || stringResource(R.string.show_remaining_song_time).contains(
-                search.input,
-                true
-            )
-        )
-            SwitchSettingEntry(
-                title = stringResource(R.string.show_remaining_song_time),
-                text = "",
-                isChecked = showRemainingSongTime,
-                onCheckedChange = { showRemainingSongTime = it }
-            )
-
-        if (search.input.isBlank() || stringResource(R.string.show_next_songs_in_player).contains(
-                search.input,
-                true
-            )
-        )
-            SwitchSettingEntry(
-                title = stringResource(R.string.show_next_songs_in_player),
-                text = "",
-                isChecked = showNextSongsInPlayer,
-                onCheckedChange = { showNextSongsInPlayer = it }
-            )
-        AnimatedVisibility( visible = showNextSongsInPlayer) {
-          Column {
-              if (search.input.isBlank() || stringResource(R.string.showtwosongs).contains(search.input,true))
-                  EnumValueSelectorSettingsEntry(
-                      title = stringResource(R.string.songs_number_to_show),
-                      selectedValue = showsongs,
-                      onValueSelected = {
-                          showsongs = it
-                      },
-                      valueText = {
-                          it.name
-                      },
-                      modifier = Modifier
-                          .padding(start = 25.dp)
-                  )
-
-
-            if (search.input.isBlank() || stringResource(R.string.showalbumcover).contains(
-                    search.input,
-                    true
-                )
-            )
-                SwitchSettingEntry(
-                    title = stringResource(R.string.showalbumcover),
-                    text = "",
-                    isChecked = showalbumcover,
-                    onCheckedChange = { showalbumcover = it },
-                      modifier = Modifier.padding(start = 25.dp)
-                  )
-          }
-        }
-
-        if (search.input.isBlank() || stringResource(R.string.disable_scrolling_text).contains(
-                search.input,
-                true
-            )
-        )
-            SwitchSettingEntry(
-                title = stringResource(R.string.disable_scrolling_text),
-                text = stringResource(R.string.scrolling_text_is_used_for_long_texts),
-                isChecked = disableScrollingText,
-                onCheckedChange = { disableScrollingText = it }
-            )
-
-        if (search.input.isBlank() || stringResource(if (playerType == PlayerType.Modern && !isLandscape) R.string.disable_horizontal_swipe else R.string.disable_vertical_swipe).contains(
-                search.input,
-                true
-            )
-        )
-            SwitchSettingEntry(
-                title = stringResource(if (playerType == PlayerType.Modern && !isLandscape) R.string.disable_vertical_swipe else R.string.disable_horizontal_swipe),
-                text = stringResource(if (playerType == PlayerType.Modern && !isLandscape) R.string.disable_vertical_swipe_secondary else R.string.disable_song_switching_via_swipe),
-                isChecked = disablePlayerHorizontalSwipe,
-                onCheckedChange = { disablePlayerHorizontalSwipe = it }
-            )
-
-        if (search.input.isBlank() || stringResource(R.string.player_rotating_buttons).contains(
-                search.input,
-                true
-            )
-        )
-            SwitchSettingEntry(
-                title = stringResource(R.string.player_rotating_buttons),
-                text = stringResource(R.string.player_enable_rotation_buttons),
-                isChecked = effectRotationEnabled,
-                onCheckedChange = { effectRotationEnabled = it }
-            )
-
-        if (search.input.isBlank() || stringResource(R.string.toggle_lyrics).contains(
-                search.input,
-                true
-            )
-        )
-            SwitchSettingEntry(
-                title = stringResource(R.string.toggle_lyrics),
-                text = stringResource(R.string.by_tapping_on_the_thumbnail),
-                isChecked = thumbnailTapEnabled,
-                onCheckedChange = { thumbnailTapEnabled = it }
-            )
-
-        if (search.input.isBlank() || stringResource(R.string.click_lyrics_text).contains(
-                search.input,
-                true
-            )
-        )
-            SwitchSettingEntry(
-                title = stringResource(R.string.click_lyrics_text),
-                text = "",
-                isChecked = clickLyricsText,
-                onCheckedChange = { clickLyricsText = it }
-            )
-        if (showlyricsthumbnail)
-            if (search.input.isBlank() || stringResource(R.string.show_background_in_lyrics).contains(
-                    search.input,
-                    true
-                )
-            )
-                SwitchSettingEntry(
-                    title = stringResource(R.string.show_background_in_lyrics),
-                    text = "",
-                    isChecked = showBackgroundLyrics,
-                    onCheckedChange = { showBackgroundLyrics = it }
-                )
-
-        if (search.input.isBlank() || stringResource(R.string.player_enable_lyrics_popup_message).contains(
-                search.input,
-                true
-            )
-        )
-            SwitchSettingEntry(
-                title = stringResource(R.string.player_enable_lyrics_popup_message),
-                text = "",
-                isChecked = playerEnableLyricsPopupMessage,
-                onCheckedChange = { playerEnableLyricsPopupMessage = it }
-            )
-
-        if (search.input.isBlank() || stringResource(R.string.background_progress_bar).contains(
-                search.input,
-                true
-            )
-        )
-            EnumValueSelectorSettingsEntry(
-                title = stringResource(R.string.background_progress_bar),
-                selectedValue = backgroundProgress,
-                onValueSelected = {
-                    backgroundProgress = it
-                },
-                valueText = {
-                    when (it) {
-                        BackgroundProgress.Player -> stringResource(R.string.player)
-                        BackgroundProgress.MiniPlayer -> stringResource(R.string.minimized_player)
-                        BackgroundProgress.Both -> stringResource(R.string.both)
-                        BackgroundProgress.Disabled -> stringResource(R.string.vt_disabled)
                     }
-                },
-            )
-
-
-        if (search.input.isBlank() || stringResource(R.string.visualizer).contains(
-                search.input,
-                true
-            )
-        ) {
-            SwitchSettingEntry(
-                title = stringResource(R.string.visualizer),
-                text = "",
-                isChecked = visualizerEnabled,
-                onCheckedChange = { visualizerEnabled = it }
-            )
-            /*
-            EnumValueSelectorSettingsEntry(
-                title = stringResource(R.string.visualizer),
-                selectedValue = playerVisualizerType,
-                onValueSelected = { playerVisualizerType = it },
-                valueText = {
-                    when (it) {
-                        PlayerVisualizerType.Fancy -> stringResource(R.string.vt_fancy)
-                        PlayerVisualizerType.Circular -> stringResource(R.string.vt_circular)
-                        PlayerVisualizerType.Disabled -> stringResource(R.string.vt_disabled)
-                        PlayerVisualizerType.Stacked -> stringResource(R.string.vt_stacked)
-                        PlayerVisualizerType.Oneside -> stringResource(R.string.vt_one_side)
-                        PlayerVisualizerType.Doubleside -> stringResource(R.string.vt_double_side)
-                        PlayerVisualizerType.DoublesideCircular -> stringResource(R.string.vt_double_side_circular)
-                        PlayerVisualizerType.Full -> stringResource(R.string.vt_full)
-                    }
+                )
+                */
+                    ImportantSettingsDescription(text = stringResource(R.string.visualizer_require_mic_permission))
                 }
-            )
-            */
-            ImportantSettingsDescription(text = stringResource(R.string.visualizer_require_mic_permission))
-        }
 
-        SettingsGroupSpacer()
-        SettingsEntryGroupText(title = stringResource(R.string.player_action_bar))
+            }
 
-        if (search.input.isBlank() || stringResource(R.string.action_bar_transparent_background).contains(
-                search.input,
-                true
-            )
-        )
-            SwitchSettingEntry(
-                title = stringResource(R.string.action_bar_transparent_background),
-                text = "",
-                isChecked = transparentBackgroundActionBarPlayer,
-                onCheckedChange = { transparentBackgroundActionBarPlayer = it }
-            )
+            settingsItem(
+                isHeader = true
+            ) {
+                SettingsGroupSpacer()
+                SettingsEntryGroupText(title = stringResource(R.string.player_action_bar))
+            }
 
-        if (search.input.isBlank() || stringResource(R.string.actionspacedevenly).contains(
-                search.input,
-                true
-            )
-        )
-            SwitchSettingEntry(
-                title = stringResource(R.string.actionspacedevenly),
-                text = "",
-                isChecked = actionspacedevenly,
-                onCheckedChange = { actionspacedevenly = it }
-            )
+            settingsItem {
+                if (search.input.isBlank() || stringResource(R.string.action_bar_transparent_background).contains(
+                        search.input,
+                        true
+                    )
+                )
+                    SwitchSettingEntry(
+                        title = stringResource(R.string.action_bar_transparent_background),
+                        text = "",
+                        isChecked = transparentBackgroundActionBarPlayer,
+                        onCheckedChange = { transparentBackgroundActionBarPlayer = it }
+                    )
 
-        if (search.input.isBlank() || stringResource(R.string.tapqueue).contains(
-                search.input,
-                true
-            )
-        )
-            SwitchSettingEntry(
-                title = stringResource(R.string.tapqueue),
-                text = "",
-                isChecked = tapqueue,
-                onCheckedChange = { tapqueue = it }
-            )
+                if (search.input.isBlank() || stringResource(R.string.actionspacedevenly).contains(
+                        search.input,
+                        true
+                    )
+                )
+                    SwitchSettingEntry(
+                        title = stringResource(R.string.actionspacedevenly),
+                        text = "",
+                        isChecked = actionspacedevenly,
+                        onCheckedChange = { actionspacedevenly = it }
+                    )
 
-        if (search.input.isBlank() || stringResource(R.string.swipe_up_to_open_the_queue).contains(
-                search.input,
-                true
-            )
-        )
-            SwitchSettingEntry(
-                title = stringResource(R.string.swipe_up_to_open_the_queue),
-                text = "",
-                isChecked = swipeUpQueue,
-                onCheckedChange = { swipeUpQueue = it }
-            )
+                if (search.input.isBlank() || stringResource(R.string.tapqueue).contains(
+                        search.input,
+                        true
+                    )
+                )
+                    SwitchSettingEntry(
+                        title = stringResource(R.string.tapqueue),
+                        text = "",
+                        isChecked = tapqueue,
+                        onCheckedChange = { tapqueue = it }
+                    )
 
-        if (search.input.isBlank() || stringResource(R.string.action_bar_show_video_button).contains(
-                search.input,
-                true
-            )
-        )
-            SwitchSettingEntry(
-                title = stringResource(R.string.action_bar_show_video_button),
-                text = "",
-                isChecked = showButtonPlayerVideo,
-                onCheckedChange = { showButtonPlayerVideo = it }
-            )
+                if (search.input.isBlank() || stringResource(R.string.swipe_up_to_open_the_queue).contains(
+                        search.input,
+                        true
+                    )
+                )
+                    SwitchSettingEntry(
+                        title = stringResource(R.string.swipe_up_to_open_the_queue),
+                        text = "",
+                        isChecked = swipeUpQueue,
+                        onCheckedChange = { swipeUpQueue = it }
+                    )
 
-        if (search.input.isBlank() || stringResource(R.string.action_bar_show_discover_button).contains(
-                search.input,
-                true
-            )
-        )
-            SwitchSettingEntry(
-                title = stringResource(R.string.action_bar_show_discover_button),
-                text = "",
-                isChecked = showButtonPlayerDiscover,
-                onCheckedChange = { showButtonPlayerDiscover = it }
-            )
+                if (search.input.isBlank() || stringResource(R.string.action_bar_show_video_button).contains(
+                        search.input,
+                        true
+                    )
+                )
+                    SwitchSettingEntry(
+                        title = stringResource(R.string.action_bar_show_video_button),
+                        text = "",
+                        isChecked = showButtonPlayerVideo,
+                        onCheckedChange = { showButtonPlayerVideo = it }
+                    )
+
+                if (search.input.isBlank() || stringResource(R.string.action_bar_show_discover_button).contains(
+                        search.input,
+                        true
+                    )
+                )
+                    SwitchSettingEntry(
+                        title = stringResource(R.string.action_bar_show_discover_button),
+                        text = "",
+                        isChecked = showButtonPlayerDiscover,
+                        onCheckedChange = { showButtonPlayerDiscover = it }
+                    )
 
 //        if (search.input.isBlank() || stringResource(R.string.action_bar_show_download_button).contains(
 //                search.input,
@@ -2275,274 +2308,286 @@ fun AppearanceSettings(
 //                onCheckedChange = { showButtonPlayerDownload = it }
 //            )
 
-        if (search.input.isBlank() || stringResource(R.string.action_bar_show_add_to_playlist_button).contains(
-                search.input,
-                true
-            )
-        )
-            SwitchSettingEntry(
-                title = stringResource(R.string.action_bar_show_add_to_playlist_button),
-                text = "",
-                isChecked = showButtonPlayerAddToPlaylist,
-                onCheckedChange = { showButtonPlayerAddToPlaylist = it }
-            )
-
-        if (search.input.isBlank() || stringResource(R.string.action_bar_show_loop_button).contains(
-                search.input,
-                true
-            )
-        )
-            SwitchSettingEntry(
-                title = stringResource(R.string.action_bar_show_loop_button),
-                text = "",
-                isChecked = showButtonPlayerLoop,
-                onCheckedChange = { showButtonPlayerLoop = it }
-            )
-
-        if (search.input.isBlank() || stringResource(R.string.action_bar_show_shuffle_button).contains(
-                search.input,
-                true
-            )
-        )
-            SwitchSettingEntry(
-                title = stringResource(R.string.action_bar_show_shuffle_button),
-                text = "",
-                isChecked = showButtonPlayerShuffle,
-                onCheckedChange = { showButtonPlayerShuffle = it }
-            )
-
-        if (search.input.isBlank() || stringResource(R.string.action_bar_show_lyrics_button).contains(
-                search.input,
-                true
-            )
-        )
-            SwitchSettingEntry(
-                title = stringResource(R.string.action_bar_show_lyrics_button),
-                text = "",
-                isChecked = showButtonPlayerLyrics,
-                onCheckedChange = { showButtonPlayerLyrics = it }
-            )
-        if (!isLandscape || !showthumbnail) {
-            if (!showlyricsthumbnail) {
-                if (search.input.isBlank() || stringResource(R.string.expandedplayer).contains(
+                if (search.input.isBlank() || stringResource(R.string.action_bar_show_add_to_playlist_button).contains(
                         search.input,
                         true
                     )
                 )
                     SwitchSettingEntry(
-                        title = stringResource(R.string.expandedplayer),
+                        title = stringResource(R.string.action_bar_show_add_to_playlist_button),
                         text = "",
-                        isChecked = expandedplayertoggle,
-                        onCheckedChange = { expandedplayertoggle = it }
+                        isChecked = showButtonPlayerAddToPlaylist,
+                        onCheckedChange = { showButtonPlayerAddToPlaylist = it }
                     )
-            }
-        }
 
-        if (search.input.isBlank() || stringResource(R.string.action_bar_show_sleep_timer_button).contains(
-                search.input,
-                true
-            )
-        )
-            SwitchSettingEntry(
-                title = stringResource(R.string.action_bar_show_sleep_timer_button),
-                text = "",
-                isChecked = showButtonPlayerSleepTimer,
-                onCheckedChange = { showButtonPlayerSleepTimer = it }
-            )
-
-        if (search.input.isBlank() || stringResource(R.string.show_equalizer).contains(
-                search.input,
-                true
-            )
-        )
-            SwitchSettingEntry(
-                title = stringResource(R.string.show_equalizer),
-                text = "",
-                isChecked = showButtonPlayerSystemEqualizer,
-                onCheckedChange = { showButtonPlayerSystemEqualizer = it }
-            )
-
-        if (search.input.isBlank() || stringResource(R.string.action_bar_show_arrow_button_to_open_queue).contains(
-                search.input,
-                true
-            )
-        )
-            SwitchSettingEntry(
-                title = stringResource(R.string.action_bar_show_arrow_button_to_open_queue),
-                text = "",
-                isChecked = showButtonPlayerArrow,
-                onCheckedChange = { showButtonPlayerArrow = it }
-            )
-
-        if (search.input.isBlank() || stringResource(R.string.action_bar_show_start_radio_button).contains(
-                search.input,
-                true
-            )
-        )
-            SwitchSettingEntry(
-                title = stringResource(R.string.action_bar_show_start_radio_button),
-                text = "",
-                isChecked = showButtonPlayerStartradio,
-                onCheckedChange = { showButtonPlayerStartradio = it }
-            )
-
-        if (search.input.isBlank() || stringResource(R.string.action_bar_show_menu_button).contains(
-                search.input,
-                true
-            )
-        )
-            SwitchSettingEntry(
-                title = stringResource(R.string.action_bar_show_menu_button),
-                text = "",
-                isChecked = showButtonPlayerMenu,
-                onCheckedChange = { showButtonPlayerMenu = it }
-            )
-
-        if (!showlyricsthumbnail) {
-            SettingsGroupSpacer()
-            SettingsEntryGroupText(title = stringResource(R.string.full_screen_lyrics_components))
-
-            if (showTotalTimeQueue) {
-                if (search.input.isBlank() || stringResource(R.string.show_total_time_of_queue).contains(
+                if (search.input.isBlank() || stringResource(R.string.action_bar_show_loop_button).contains(
                         search.input,
                         true
                     )
                 )
                     SwitchSettingEntry(
-                        title = stringResource(R.string.show_total_time_of_queue),
+                        title = stringResource(R.string.action_bar_show_loop_button),
                         text = "",
-                        isChecked = queueDurationExpanded,
-                        onCheckedChange = { queueDurationExpanded = it }
+                        isChecked = showButtonPlayerLoop,
+                        onCheckedChange = { showButtonPlayerLoop = it }
                     )
+
+                if (search.input.isBlank() || stringResource(R.string.action_bar_show_shuffle_button).contains(
+                        search.input,
+                        true
+                    )
+                )
+                    SwitchSettingEntry(
+                        title = stringResource(R.string.action_bar_show_shuffle_button),
+                        text = "",
+                        isChecked = showButtonPlayerShuffle,
+                        onCheckedChange = { showButtonPlayerShuffle = it }
+                    )
+
+                if (search.input.isBlank() || stringResource(R.string.action_bar_show_lyrics_button).contains(
+                        search.input,
+                        true
+                    )
+                )
+                    SwitchSettingEntry(
+                        title = stringResource(R.string.action_bar_show_lyrics_button),
+                        text = "",
+                        isChecked = showButtonPlayerLyrics,
+                        onCheckedChange = { showButtonPlayerLyrics = it }
+                    )
+                if (!isLandscape || !showthumbnail) {
+                    if (!showlyricsthumbnail) {
+                        if (search.input.isBlank() || stringResource(R.string.expandedplayer).contains(
+                                search.input,
+                                true
+                            )
+                        )
+                            SwitchSettingEntry(
+                                title = stringResource(R.string.expandedplayer),
+                                text = "",
+                                isChecked = expandedplayertoggle,
+                                onCheckedChange = { expandedplayertoggle = it }
+                            )
+                    }
+                }
+
+                if (search.input.isBlank() || stringResource(R.string.action_bar_show_sleep_timer_button).contains(
+                        search.input,
+                        true
+                    )
+                )
+                    SwitchSettingEntry(
+                        title = stringResource(R.string.action_bar_show_sleep_timer_button),
+                        text = "",
+                        isChecked = showButtonPlayerSleepTimer,
+                        onCheckedChange = { showButtonPlayerSleepTimer = it }
+                    )
+
+                if (search.input.isBlank() || stringResource(R.string.show_equalizer).contains(
+                        search.input,
+                        true
+                    )
+                )
+                    SwitchSettingEntry(
+                        title = stringResource(R.string.show_equalizer),
+                        text = "",
+                        isChecked = showButtonPlayerSystemEqualizer,
+                        onCheckedChange = { showButtonPlayerSystemEqualizer = it }
+                    )
+
+                if (search.input.isBlank() || stringResource(R.string.action_bar_show_arrow_button_to_open_queue).contains(
+                        search.input,
+                        true
+                    )
+                )
+                    SwitchSettingEntry(
+                        title = stringResource(R.string.action_bar_show_arrow_button_to_open_queue),
+                        text = "",
+                        isChecked = showButtonPlayerArrow,
+                        onCheckedChange = { showButtonPlayerArrow = it }
+                    )
+
+                if (search.input.isBlank() || stringResource(R.string.action_bar_show_start_radio_button).contains(
+                        search.input,
+                        true
+                    )
+                )
+                    SwitchSettingEntry(
+                        title = stringResource(R.string.action_bar_show_start_radio_button),
+                        text = "",
+                        isChecked = showButtonPlayerStartradio,
+                        onCheckedChange = { showButtonPlayerStartradio = it }
+                    )
+
+                if (search.input.isBlank() || stringResource(R.string.action_bar_show_menu_button).contains(
+                        search.input,
+                        true
+                    )
+                )
+                    SwitchSettingEntry(
+                        title = stringResource(R.string.action_bar_show_menu_button),
+                        text = "",
+                        isChecked = showButtonPlayerMenu,
+                        onCheckedChange = { showButtonPlayerMenu = it }
+                    )
+
             }
 
-            if (search.input.isBlank() || stringResource(R.string.titleartist).contains(
-                    search.input,
-                    true
-                )
-            )
-                SwitchSettingEntry(
-                    title = stringResource(R.string.titleartist),
-                    text = "",
-                    isChecked = titleExpanded,
-                    onCheckedChange = { titleExpanded = it }
-                )
+                if (!showlyricsthumbnail) {
+                    settingsItem(
+                        isHeader = true
+                    ) {
+                        SettingsGroupSpacer()
+                        SettingsEntryGroupText(title = stringResource(R.string.full_screen_lyrics_components))
+                    }
 
-            if (search.input.isBlank() || stringResource(R.string.timeline).contains(
-                    search.input,
-                    true
-                )
-            )
-                SwitchSettingEntry(
-                    title = stringResource(R.string.timeline),
-                    text = "",
-                    isChecked = timelineExpanded,
-                    onCheckedChange = { timelineExpanded = it }
-                )
-
-            if (search.input.isBlank() || stringResource(R.string.controls).contains(
-                    search.input,
-                    true
-                )
-            )
-                SwitchSettingEntry(
-                    title = stringResource(R.string.controls),
-                    text = "",
-                    isChecked = controlsExpanded,
-                    onCheckedChange = { controlsExpanded = it }
-                )
-
-            if (statsfornerds && (!(showthumbnail && playerType == PlayerType.Essential))){
-                if (search.input.isBlank() || stringResource(R.string.statsfornerds).contains(
-                        search.input,
-                        true
-                    )
-                )
-                    SwitchSettingEntry(
-                        title = stringResource(R.string.statsfornerds),
-                        text = "",
-                        isChecked = statsExpanded,
-                        onCheckedChange = { statsExpanded = it }
-                    )
-            }
-
-            if (
-                //showButtonPlayerDownload ||
-                showButtonPlayerAddToPlaylist ||
-                showButtonPlayerLoop ||
-                showButtonPlayerShuffle ||
-                showButtonPlayerLyrics ||
-                showButtonPlayerSleepTimer ||
-                showButtonPlayerSystemEqualizer ||
-                showButtonPlayerArrow ||
-                showButtonPlayerMenu ||
-                expandedplayertoggle ||
-                showButtonPlayerDiscover ||
-                showButtonPlayerVideo
-            ){
-                if (search.input.isBlank() || stringResource(R.string.actionbar).contains(
-                        search.input,
-                        true
-                    )
-                )
-                    SwitchSettingEntry(
-                        title = stringResource(R.string.actionbar),
-                        text = "",
-                        isChecked = actionExpanded,
-                        onCheckedChange = {
-                            actionExpanded = it
+                    settingsItem {
+                        if (showTotalTimeQueue) {
+                            if (search.input.isBlank() || stringResource(R.string.show_total_time_of_queue).contains(
+                                    search.input,
+                                    true
+                                )
+                            )
+                                SwitchSettingEntry(
+                                    title = stringResource(R.string.show_total_time_of_queue),
+                                    text = "",
+                                    isChecked = queueDurationExpanded,
+                                    onCheckedChange = { queueDurationExpanded = it }
+                                )
                         }
-                    )
+
+                        if (search.input.isBlank() || stringResource(R.string.titleartist).contains(
+                                search.input,
+                                true
+                            )
+                        )
+                            SwitchSettingEntry(
+                                title = stringResource(R.string.titleartist),
+                                text = "",
+                                isChecked = titleExpanded,
+                                onCheckedChange = { titleExpanded = it }
+                            )
+
+                        if (search.input.isBlank() || stringResource(R.string.timeline).contains(
+                                search.input,
+                                true
+                            )
+                        )
+                            SwitchSettingEntry(
+                                title = stringResource(R.string.timeline),
+                                text = "",
+                                isChecked = timelineExpanded,
+                                onCheckedChange = { timelineExpanded = it }
+                            )
+
+                        if (search.input.isBlank() || stringResource(R.string.controls).contains(
+                                search.input,
+                                true
+                            )
+                        )
+                            SwitchSettingEntry(
+                                title = stringResource(R.string.controls),
+                                text = "",
+                                isChecked = controlsExpanded,
+                                onCheckedChange = { controlsExpanded = it }
+                            )
+
+                        if (statsfornerds && (!(showthumbnail && playerType == PlayerType.Essential))) {
+                            if (search.input.isBlank() || stringResource(R.string.statsfornerds).contains(
+                                    search.input,
+                                    true
+                                )
+                            )
+                                SwitchSettingEntry(
+                                    title = stringResource(R.string.statsfornerds),
+                                    text = "",
+                                    isChecked = statsExpanded,
+                                    onCheckedChange = { statsExpanded = it }
+                                )
+                        }
+
+                        if (
+                        //showButtonPlayerDownload ||
+                            showButtonPlayerAddToPlaylist ||
+                            showButtonPlayerLoop ||
+                            showButtonPlayerShuffle ||
+                            showButtonPlayerLyrics ||
+                            showButtonPlayerSleepTimer ||
+                            showButtonPlayerSystemEqualizer ||
+                            showButtonPlayerArrow ||
+                            showButtonPlayerMenu ||
+                            expandedplayertoggle ||
+                            showButtonPlayerDiscover ||
+                            showButtonPlayerVideo
+                        ) {
+                            if (search.input.isBlank() || stringResource(R.string.actionbar).contains(
+                                    search.input,
+                                    true
+                                )
+                            )
+                                SwitchSettingEntry(
+                                    title = stringResource(R.string.actionbar),
+                                    text = "",
+                                    isChecked = actionExpanded,
+                                    onCheckedChange = {
+                                        actionExpanded = it
+                                    }
+                                )
+                        }
+                        if (showNextSongsInPlayer && actionExpanded) {
+                            if (search.input.isBlank() || stringResource(R.string.miniqueue).contains(
+                                    search.input,
+                                    true
+                                )
+                            )
+                                SwitchSettingEntry(
+                                    title = stringResource(R.string.miniqueue),
+                                    text = "",
+                                    isChecked = miniQueueExpanded,
+                                    onCheckedChange = { miniQueueExpanded = it }
+                                )
+                        }
+                    }
+
+                }
+
+            settingsItem(
+                isHeader = true
+            ) {
+                SettingsGroupSpacer()
+                SettingsEntryGroupText(title = stringResource(R.string.notification_player))
             }
-            if (showNextSongsInPlayer && actionExpanded) {
-                if (search.input.isBlank() || stringResource(R.string.miniqueue).contains(
+
+            settingsItem {
+                if (search.input.isBlank() || stringResource(R.string.notification_player).contains(
                         search.input,
                         true
                     )
-                )
-                    SwitchSettingEntry(
-                        title = stringResource(R.string.miniqueue),
-                        text = "",
-                        isChecked = miniQueueExpanded,
-                        onCheckedChange = { miniQueueExpanded = it }
+                ) {
+                    EnumValueSelectorSettingsEntry(
+                        title = stringResource(R.string.notificationPlayerFirstIcon),
+                        selectedValue = notificationPlayerFirstIcon,
+                        onValueSelected = {
+                            notificationPlayerFirstIcon = it
+                            restartService = true
+                        },
+                        valueText = {
+                            it.displayName
+                        },
                     )
-            }
-
-        }
-
-
-        SettingsGroupSpacer()
-        SettingsEntryGroupText(title = stringResource(R.string.notification_player))
-
-        if (search.input.isBlank() || stringResource(R.string.notification_player).contains(
-                search.input,
-                true
-            )
-        ) {
-            EnumValueSelectorSettingsEntry(
-                title = stringResource(R.string.notificationPlayerFirstIcon),
-                selectedValue = notificationPlayerFirstIcon,
-                onValueSelected = {
-                    notificationPlayerFirstIcon = it
-                    restartService = true
-                },
-                valueText = {
-                    it.displayName
-                },
-            )
-            EnumValueSelectorSettingsEntry(
-                title = stringResource(R.string.notificationPlayerSecondIcon),
-                selectedValue = notificationPlayerSecondIcon,
-                onValueSelected = {
-                    notificationPlayerSecondIcon = it
-                    restartService = true
-                },
-                valueText = {
-                    it.displayName
-                },
-            )
-            RestartPlayerService(restartService, onRestart = { restartService = false })
-        }
+                    EnumValueSelectorSettingsEntry(
+                        title = stringResource(R.string.notificationPlayerSecondIcon),
+                        selectedValue = notificationPlayerSecondIcon,
+                        onValueSelected = {
+                            notificationPlayerSecondIcon = it
+                            restartService = true
+                        },
+                        valueText = {
+                            it.displayName
+                        },
+                    )
+                    RestartPlayerService(restartService, onRestart = { restartService = false })
+                }
 
 
 //        if (search.input.isBlank() || stringResource(R.string.show_song_cover).contains(
@@ -2563,87 +2608,97 @@ fun AppearanceSettings(
 //                )
 //            }
 
-        if (isAtLeastAndroid7) {
-            SettingsGroupSpacer()
-            SettingsEntryGroupText(title = stringResource(R.string.wallpaper))
-            SwitchSettingEntry(
-                title = stringResource(R.string.enable_wallpaper),
-                text = "",
-                isChecked = enableWallpaper,
-                onCheckedChange = { enableWallpaper = it }
-            )
-            AnimatedVisibility(visible = enableWallpaper) {
-                Column {
-                    EnumValueSelectorSettingsEntry(
-                        title = stringResource(R.string.set_cover_thumbnail_as_wallpaper),
-                        selectedValue = wallpaperType,
-                        onValueSelected = {
-                            wallpaperType = it
-                            restartService = true
-                        },
-                        valueText = {
-                            it.displayName
-                        },
-                        modifier = Modifier.padding(start = 25.dp)
-                    )
-                    RestartPlayerService(restartService, onRestart = { restartService = false })
-                }
             }
-        }
 
-        SettingsGroupSpacer()
-        var resetToDefault by remember { mutableStateOf(false) }
-
-        ButtonBarSettingEntry(
-            title = stringResource(R.string.settings_reset),
-            text = stringResource(R.string.settings_restore_default_settings),
-            icon = R.drawable.refresh,
-            iconColor = colorPalette().text,
-            onClick = { resetToDefault = true },
-        )
-        if (resetToDefault) {
-            DefaultAppearanceSettings()
-            resetToDefault = false
-            navController.popBackStack()
-            SmartMessage(stringResource(R.string.done), context = context)
-        }
-
-        SettingsGroupSpacer()
-        ButtonBarSettingEntry(
-            title = "Export appearance settings",
-            text = "Backup or share appearance settings",
-            icon = R.drawable.export,
-            iconColor = colorPalette().text,
-            onClick = { isExporting = true },
-        )
-
-        ButtonBarSettingEntry(
-            title = "Import appearance settings",
-            text = "Restore backup or shared appearance settings",
-            icon = R.drawable.resource_import,
-            iconColor = colorPalette().text,
-            onClick = {
-                try {
-                    importLauncher.launch(
-                        arrayOf(
-                            "text/*"
-                        )
-                    )
-                } catch (e: ActivityNotFoundException) {
-                    SmartMessage(
-                        context.resources.getString(R.string.info_not_find_app_open_doc),
-                        type = PopupType.Warning, context = context
-                    )
+            if (isAtLeastAndroid7) {
+                settingsItem(
+                    isHeader = true
+                ) {
+                    SettingsGroupSpacer()
+                    SettingsEntryGroupText(title = stringResource(R.string.wallpaper))
                 }
-            },
-        )
+                settingsItem {
+                    SwitchSettingEntry(
+                        title = stringResource(R.string.enable_wallpaper),
+                        text = "",
+                        isChecked = enableWallpaper,
+                        onCheckedChange = { enableWallpaper = it }
+                    )
+                    AnimatedVisibility(visible = enableWallpaper) {
+                        Column {
+                            EnumValueSelectorSettingsEntry(
+                                title = stringResource(R.string.set_cover_thumbnail_as_wallpaper),
+                                selectedValue = wallpaperType,
+                                onValueSelected = {
+                                    wallpaperType = it
+                                    restartService = true
+                                },
+                                valueText = {
+                                    it.displayName
+                                },
+                                modifier = Modifier.padding(start = 25.dp)
+                            )
+                            RestartPlayerService(restartService, onRestart = { restartService = false })
+                        }
+                    }
+                }
 
-        SettingsGroupSpacer(
-            modifier = Modifier.height(Dimensions.bottomSpacer)
-        )
+            }
+
+            settingsItem {
+                SettingsGroupSpacer()
+                var resetToDefault by remember { mutableStateOf(false) }
+
+                ButtonBarSettingEntry(
+                    title = stringResource(R.string.settings_reset),
+                    text = stringResource(R.string.settings_restore_default_settings),
+                    icon = R.drawable.refresh,
+                    iconColor = colorPalette().text,
+                    onClick = { resetToDefault = true },
+                )
+                if (resetToDefault) {
+                    DefaultAppearanceSettings()
+                    resetToDefault = false
+                    navController.popBackStack()
+                    SmartMessage(stringResource(R.string.done), context = context)
+                }
+
+                SettingsGroupSpacer()
+                ButtonBarSettingEntry(
+                    title = "Export appearance settings",
+                    text = "Backup or share appearance settings",
+                    icon = R.drawable.export,
+                    iconColor = colorPalette().text,
+                    onClick = { isExporting = true },
+                )
+
+                ButtonBarSettingEntry(
+                    title = "Import appearance settings",
+                    text = "Restore backup or shared appearance settings",
+                    icon = R.drawable.resource_import,
+                    iconColor = colorPalette().text,
+                    onClick = {
+                        try {
+                            importLauncher.launch(
+                                arrayOf(
+                                    "text/*"
+                                )
+                            )
+                        } catch (e: ActivityNotFoundException) {
+                            SmartMessage(
+                                context.resources.getString(R.string.info_not_find_app_open_doc),
+                                type = PopupType.Warning, context = context
+                            )
+                        }
+                    },
+                )
+            }
+
+
+//            SettingsGroupSpacer(
+//                modifier = Modifier.height(Dimensions.bottomSpacer)
+//            )
+        }
     }
-
-
-
 
 }

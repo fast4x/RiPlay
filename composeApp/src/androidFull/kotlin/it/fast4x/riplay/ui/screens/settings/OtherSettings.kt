@@ -9,12 +9,15 @@ import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -38,6 +41,7 @@ import it.fast4x.riplay.ui.components.themed.HeaderWithIcon
 import it.fast4x.riplay.ui.components.themed.InputTextDialog
 import it.fast4x.riplay.ui.components.themed.SecondaryTextButton
 import it.fast4x.riplay.ui.components.themed.SmartMessage
+import it.fast4x.riplay.ui.components.themed.settingsItem
 import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.ui.styling.LocalAppearance
 import it.fast4x.riplay.utils.CheckAvailableNewVersion
@@ -202,7 +206,7 @@ fun OtherSettings() {
                 ) 1f
                 else Dimensions.contentWidthRightBar
             )
-            .verticalScroll(rememberScrollState())
+            //.verticalScroll(rememberScrollState())
         /*
         .padding(
             LocalPlayerAwareWindowInsets.current
@@ -212,110 +216,133 @@ fun OtherSettings() {
 
          */
     ) {
-        HeaderWithIcon(
-            title = stringResource(R.string.tab_miscellaneous),
-            iconId = R.drawable.equalizer,
-            enabled = false,
-            showIcon = true,
-            modifier = Modifier,
-            onClick = {}
-        )
+        LazyColumn(
+            state = rememberLazyListState(),
+            contentPadding = PaddingValues(bottom = Dimensions.bottomSpacer)
+        ) {
+            settingsItem {
+                HeaderWithIcon(
+                    title = stringResource(R.string.tab_miscellaneous),
+                    iconId = R.drawable.equalizer,
+                    enabled = false,
+                    showIcon = true,
+                    modifier = Modifier,
+                    onClick = {}
+                )
+            }
 
-        SettingsEntryGroupText(title = stringResource(R.string.check_update))
+            settingsItem(
+                isHeader = true
+            ) {
+                SettingsEntryGroupText(title = stringResource(R.string.check_update))
+            }
 
-        var checkUpdateNow by remember { mutableStateOf(false) }
-        if (checkUpdateNow)
-            CheckAvailableNewVersion(
-                onDismiss = { checkUpdateNow = false },
-                updateAvailable = {
-                    if (!it)
-                        SmartMessage(
-                            context.resources.getString(R.string.info_no_update_available),
-                            type = PopupType.Info,
-                            context = context
+            settingsItem {
+                var checkUpdateNow by remember { mutableStateOf(false) }
+                if (checkUpdateNow)
+                    CheckAvailableNewVersion(
+                        onDismiss = { checkUpdateNow = false },
+                        updateAvailable = {
+                            if (!it)
+                                SmartMessage(
+                                    context.resources.getString(R.string.info_no_update_available),
+                                    type = PopupType.Info,
+                                    context = context
+                                )
+                        }
+                    )
+
+                EnumValueSelectorSettingsEntry(
+                    online = false,
+                    offline = false,
+                    title = stringResource(R.string.enable_check_for_update),
+                    selectedValue = checkUpdateState,
+                    onValueSelected = { checkUpdateState = it },
+                    valueText = {
+                        when (it) {
+                            CheckUpdateState.Disabled -> stringResource(R.string.vt_disabled)
+                            CheckUpdateState.Enabled -> stringResource(R.string.enabled)
+                            CheckUpdateState.Ask -> stringResource(R.string.ask)
+                        }
+
+                    }
+                )
+                SettingsDescription(text = stringResource(R.string.when_enabled_a_new_version_is_checked_and_notified_during_startup))
+                AnimatedVisibility(visible = checkUpdateState != CheckUpdateState.Disabled) {
+                    Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                        SettingsDescription(
+                            text = stringResource(R.string.check_update),
+                            important = true,
+                            modifier = Modifier.weight(1f)
                         )
-                }
-            )
 
-        EnumValueSelectorSettingsEntry(
-            online = false,
-            offline = false,
-            title = stringResource(R.string.enable_check_for_update),
-            selectedValue = checkUpdateState,
-            onValueSelected = { checkUpdateState = it },
-            valueText = {
-                when (it) {
-                    CheckUpdateState.Disabled -> stringResource(R.string.vt_disabled)
-                    CheckUpdateState.Enabled -> stringResource(R.string.enabled)
-                    CheckUpdateState.Ask -> stringResource(R.string.ask)
+                        SecondaryTextButton(
+                            text = stringResource(R.string.info_check_update_now),
+                            onClick = { checkUpdateNow = true },
+                            modifier = Modifier
+                                .weight(1f)
+                                .padding(end = 24.dp)
+                        )
+                    }
                 }
-
             }
-        )
-        SettingsDescription(text = stringResource(R.string.when_enabled_a_new_version_is_checked_and_notified_during_startup))
-        AnimatedVisibility(visible = checkUpdateState != CheckUpdateState.Disabled) {
-            Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                SettingsDescription(
-                    text = stringResource(R.string.check_update),
-                    important = true,
-                    modifier = Modifier.weight(1f)
+
+            settingsItem(
+                isHeader = true
+            ) {
+                SettingsGroupSpacer()
+                SettingsEntryGroupText(stringResource(R.string.on_device))
+            }
+
+            settingsItem {
+                StringListValueSelectorSettingsEntry(
+                    online = false,
+                    title = stringResource(R.string.blacklisted_folders),
+                    text = stringResource(R.string.edit_blacklist_for_on_device_songs),
+                    addTitle = stringResource(R.string.add_folder),
+                    addPlaceholder = if (isAtLeastAndroid10) {
+                        "Android/media/com.whatsapp/WhatsApp/Media"
+                    } else {
+                        "/storage/emulated/0/Android/media/com.whatsapp/"
+                    },
+                    conflictTitle = stringResource(R.string.this_folder_already_exists),
+                    removeTitle = stringResource(R.string.are_you_sure_you_want_to_remove_this_folder_from_the_blacklist),
+                    context = LocalContext.current,
+                    list = blackListedPaths,
+                    add = { newPath ->
+                        blackListedPaths = blackListedPaths + newPath
+                        val file = File(context.filesDir, "Blacklisted_paths.txt")
+                        file.writeText(blackListedPaths.joinToString("\n"))
+                    },
+                    remove = { path ->
+                        blackListedPaths = blackListedPaths.filter { it != path }
+                        val file = File(context.filesDir, "Blacklisted_paths.txt")
+                        file.writeText(blackListedPaths.joinToString("\n"))
+                    }
                 )
 
-                SecondaryTextButton(
-                    text = stringResource(R.string.info_check_update_now),
-                    onClick = { checkUpdateNow = true },
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(end = 24.dp)
+                SwitchSettingEntry(
+                    online = false,
+                    title = stringResource(R.string.folders),
+                    text = stringResource(R.string.show_folders_in_on_device_page),
+                    isChecked = showFolders,
+                    onCheckedChange = { showFolders = it }
                 )
+                AnimatedVisibility(visible = showFolders) {
+                    TextDialogSettingEntry(
+                        title = stringResource(R.string.folder_that_will_show_when_you_open_on_device_page),
+                        text = defaultFolder,
+                        currentText = defaultFolder,
+                        onTextSave = { defaultFolder = it }
+                    )
+                }
+
             }
-        }
 
-        SettingsGroupSpacer()
-        SettingsEntryGroupText(stringResource(R.string.on_device))
-        StringListValueSelectorSettingsEntry(
-            online = false,
-            title = stringResource(R.string.blacklisted_folders),
-            text = stringResource(R.string.edit_blacklist_for_on_device_songs),
-            addTitle = stringResource(R.string.add_folder),
-            addPlaceholder = if (isAtLeastAndroid10) {
-                "Android/media/com.whatsapp/WhatsApp/Media"
-            } else {
-                "/storage/emulated/0/Android/media/com.whatsapp/"
-            },
-            conflictTitle = stringResource(R.string.this_folder_already_exists),
-            removeTitle = stringResource(R.string.are_you_sure_you_want_to_remove_this_folder_from_the_blacklist),
-            context = LocalContext.current,
-            list = blackListedPaths,
-            add = { newPath ->
-                blackListedPaths = blackListedPaths + newPath
-                val file = File(context.filesDir, "Blacklisted_paths.txt")
-                file.writeText(blackListedPaths.joinToString("\n"))
-            },
-            remove = { path ->
-                blackListedPaths = blackListedPaths.filter { it != path }
-                val file = File(context.filesDir, "Blacklisted_paths.txt")
-                file.writeText(blackListedPaths.joinToString("\n"))
-            }
-        )
-
-        SwitchSettingEntry(
-            online = false,
-            title = stringResource(R.string.folders),
-            text = stringResource(R.string.show_folders_in_on_device_page),
-            isChecked = showFolders,
-            onCheckedChange = { showFolders = it }
-        )
-        AnimatedVisibility(visible = showFolders) {
-            TextDialogSettingEntry(
-                title = stringResource(R.string.folder_that_will_show_when_you_open_on_device_page),
-                text = defaultFolder,
-                currentText = defaultFolder,
-                onTextSave = { defaultFolder = it }
-            )
-        }
-
-        SettingsGroupSpacer()
+            settingsItem(
+                isHeader = true
+            ) {
+                SettingsGroupSpacer()
 
 //        SettingsEntryGroupText(title = stringResource(R.string.android_auto))
 //
@@ -330,13 +357,16 @@ fun OtherSettings() {
 //
 //        SettingsGroupSpacer()
 
-        SettingsEntryGroupText(title = stringResource(R.string.androidheadunit))
-        SwitchSettingEntry(
-            title = stringResource(R.string.extra_space),
-            text = "",
-            isChecked = extraspace,
-            onCheckedChange = { extraspace = it }
-        )
+                SettingsEntryGroupText(title = stringResource(R.string.androidheadunit))
+            }
+
+            settingsItem {
+                SwitchSettingEntry(
+                    title = stringResource(R.string.extra_space),
+                    text = "",
+                    isChecked = extraspace,
+                    onCheckedChange = { extraspace = it }
+                )
 
 //        SettingsGroupSpacer()
 //
@@ -390,14 +420,14 @@ fun OtherSettings() {
 //            }
 //        )
 
-        /*
-        SwitchSettingEntry(
-            title = stringResource(R.string.invincible_service),
-            text = stringResource(R.string.turning_off_battery_optimizations_is_not_enough),
-            isChecked = isInvincibilityEnabled,
-            onCheckedChange = { isInvincibilityEnabled = it }
-        )
-         */
+                /*
+                SwitchSettingEntry(
+                    title = stringResource(R.string.invincible_service),
+                    text = stringResource(R.string.turning_off_battery_optimizations_is_not_enough),
+                    isChecked = isInvincibilityEnabled,
+                    onCheckedChange = { isInvincibilityEnabled = it }
+                )
+                 */
 
 //        SettingsGroupSpacer()
 //
@@ -432,62 +462,73 @@ fun OtherSettings() {
 //                    onTextSave = { proxyPort = it.toIntOrNull() ?: 1080 })
 //            }
 //        }
-
-        SettingsGroupSpacer()
-
-        SettingsEntryGroupText(title = stringResource(R.string.parental_control))
-
-        SwitchSettingEntry(
-            online = false,
-            offline = false,
-            title = stringResource(R.string.parental_control),
-            text = stringResource(R.string.info_prevent_play_songs_with_age_limitation),
-            isChecked = parentalControlEnabled,
-            onCheckedChange = { parentalControlEnabled = it }
-        )
-
-
-        SettingsGroupSpacer()
-
-
-
-        SettingsEntryGroupText(title = stringResource(R.string.debug))
-        SwitchSettingEntry(
-            online = false,
-            offline = false,
-            title = stringResource(R.string.enable_log_debug),
-            text = stringResource(R.string.if_enabled_create_a_log_file_to_highlight_errors),
-            isChecked = logDebugEnabled,
-            onCheckedChange = {
-                logDebugEnabled = it
-                if (!it) {
-                    val file = File(context.filesDir.resolve("logs"), "RiPlay_log.txt")
-                    if (file.exists())
-                        file.delete()
-
-                    val filec = File(context.filesDir.resolve("logs"), "RiPlay_crash_log.txt")
-                    if (filec.exists())
-                        filec.delete()
-
-
-                } else
-                    SmartMessage(
-                        context.resources.getString(R.string.restarting_riplay_is_required),
-                        type = PopupType.Info, context = context
-                    )
             }
-        )
-        ImportantSettingsDescription(text = stringResource(R.string.restarting_riplay_is_required))
-        ButtonBarSettingEntry(
-            online = false,
-            offline = false,
-            isEnabled = logDebugEnabled,
-            title = stringResource(R.string.export_log),
-            text = "",
-            icon = R.drawable.export,
-            onClick = {
-                exportCrashlog = false
-                isExporting = true
+
+
+            settingsItem(
+                isHeader = true
+            ) {
+                SettingsGroupSpacer()
+                SettingsEntryGroupText(title = stringResource(R.string.parental_control))
+            }
+
+            settingsItem {
+                SwitchSettingEntry(
+                    online = false,
+                    offline = false,
+                    title = stringResource(R.string.parental_control),
+                    text = stringResource(R.string.info_prevent_play_songs_with_age_limitation),
+                    isChecked = parentalControlEnabled,
+                    onCheckedChange = { parentalControlEnabled = it }
+                )
+            }
+
+
+            settingsItem(
+                isHeader = true
+            ) {
+                SettingsGroupSpacer()
+                SettingsEntryGroupText(title = stringResource(R.string.debug))
+            }
+
+            settingsItem {
+                SwitchSettingEntry(
+                    online = false,
+                    offline = false,
+                    title = stringResource(R.string.enable_log_debug),
+                    text = stringResource(R.string.if_enabled_create_a_log_file_to_highlight_errors),
+                    isChecked = logDebugEnabled,
+                    onCheckedChange = {
+                        logDebugEnabled = it
+                        if (!it) {
+                            val file = File(context.filesDir.resolve("logs"), "RiPlay_log.txt")
+                            if (file.exists())
+                                file.delete()
+
+                            val filec =
+                                File(context.filesDir.resolve("logs"), "RiPlay_crash_log.txt")
+                            if (filec.exists())
+                                filec.delete()
+
+
+                        } else
+                            SmartMessage(
+                                context.resources.getString(R.string.restarting_riplay_is_required),
+                                type = PopupType.Info, context = context
+                            )
+                    }
+                )
+                ImportantSettingsDescription(text = stringResource(R.string.restarting_riplay_is_required))
+                ButtonBarSettingEntry(
+                    online = false,
+                    offline = false,
+                    isEnabled = logDebugEnabled,
+                    title = stringResource(R.string.export_log),
+                    text = "",
+                    icon = R.drawable.export,
+                    onClick = {
+                        exportCrashlog = false
+                        isExporting = true
 
 //                val file = File(context.filesDir.resolve("logs"), "RiMusic_log.txt")
 //                if (file.exists()) {
@@ -497,18 +538,18 @@ fun OtherSettings() {
 //                    }
 //                } else
 //                    SmartMessage(noLogAvailable, type = PopupType.Info, context = context)
-            }
-        )
-        ButtonBarSettingEntry(
-            online = false,
-            offline = false,
-            //isEnabled = logDebugEnabled,
-            title = stringResource(R.string.export_crash_log),
-            text = "Is always enabled",
-            icon = R.drawable.export,
-            onClick = {
-                exportCrashlog = true
-                isExporting = true
+                    }
+                )
+                ButtonBarSettingEntry(
+                    online = false,
+                    offline = false,
+                    //isEnabled = logDebugEnabled,
+                    title = stringResource(R.string.export_crash_log),
+                    text = "Is always enabled",
+                    icon = R.drawable.export,
+                    onClick = {
+                        exportCrashlog = true
+                        isExporting = true
 //                val file = File(context.filesDir.resolve("logs"), "RiPlay_crash_log.txt")
 //                if (file.exists()) {
 //                    text = file.readText()
@@ -517,10 +558,12 @@ fun OtherSettings() {
 //                    }
 //                } else
 //                    SmartMessage(noLogAvailable, type = PopupType.Info, context = context)
+                    }
+                )
             }
-        )
+        }
 
-        Spacer(modifier = Modifier.height(Dimensions.bottomSpacer))
+        //Spacer(modifier = Modifier.height(Dimensions.bottomSpacer))
 
     }
 }
