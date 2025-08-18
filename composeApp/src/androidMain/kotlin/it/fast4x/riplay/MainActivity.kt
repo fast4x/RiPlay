@@ -182,6 +182,7 @@ import it.fast4x.riplay.utils.animatedGradientKey
 import it.fast4x.riplay.utils.applyFontPaddingKey
 import it.fast4x.riplay.utils.asMediaItem
 import it.fast4x.riplay.utils.backgroundProgressKey
+import it.fast4x.riplay.utils.capitalized
 import it.fast4x.riplay.utils.checkUpdateStateKey
 import it.fast4x.riplay.utils.closeWithBackButtonKey
 import it.fast4x.riplay.utils.colorPaletteModeKey
@@ -289,7 +290,7 @@ class MainActivity :
 
     var client = OkHttpClient()
     var request = OkHttpRequest(client)
-    lateinit var backup: RoomBackup
+    lateinit var backupHandler: RoomBackup
 
     private val serviceConnection = object : ServiceConnection {
         override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
@@ -447,7 +448,7 @@ class MainActivity :
                 )
         }
 
-        backup = RoomBackup(this)
+        backupHandler = RoomBackup(this)
 
         checkIfAppIsRunningInBackground()
 
@@ -1271,6 +1272,7 @@ class MainActivity :
                             LocalLinkDevices provides linkDevices.value,
                             LocalOnlinePlayerPlayingState provides onlinePlayerPlayingState.value,
                             LocalSelectedQueue provides selectedQueue.value,
+                            LocalBackupHandler provides backupHandler,
                             //LocalInternetAvailable provides isInternetAvailable
                         ) {
 
@@ -1279,7 +1281,7 @@ class MainActivity :
                                     onBackup = {
                                         @SuppressLint("SimpleDateFormat")
                                         val dateFormat = SimpleDateFormat("yyyyMMddHHmmss")
-                                        backup.database(Database.getInstance)
+                                        backupHandler.database(Database.getInstance)
                                             .backupLocation(RoomBackup.BACKUP_FILE_LOCATION_CUSTOM_DIALOG)
                                             .customBackupFileName(
                                                 "RiPlay_RescueBackup_${
@@ -1290,7 +1292,14 @@ class MainActivity :
                                             )
                                             .apply {
                                                 onCompleteListener { success, message, exitCode ->
-                                                    //Timber.d(TAG,"Rescue backup success: $success, message: $message, exitCode: $exitCode")
+                                                    SmartMessage(
+                                                        message = if (success) context.resources.getString(R.string.done)
+                                                        else message.capitalized(),
+                                                        type = if(success) PopupType.Info else PopupType.Warning,
+                                                        context = context,
+                                                        durationLong = true
+                                                    )
+                                                    Timber.d("Rescue backup success: $success, message: $message, exitCode: $exitCode")
                                                     println("Rescue backup success: $success, message: $message, exitCode: $exitCode")
 
                                                 }
@@ -1299,12 +1308,19 @@ class MainActivity :
 
                                     },
                                     onRestore = {
-                                        backup.database(Database.getInstance)
+                                        backupHandler.database(Database.getInstance)
                                             .backupLocation(RoomBackup.BACKUP_FILE_LOCATION_CUSTOM_DIALOG)
                                             .apply {
                                                 onCompleteListener { success, message, exitCode ->
-                                                    //Timber.d(TAG,"Rescue restore success: $success, message: $message, exitCode: $exitCode")
-                                                    println("Rescue restore success: $success, message: $message, exitCode: $exitCode")
+                                                    SmartMessage(
+                                                        message = if (success) context.resources.getString(R.string.restore_completed)
+                                                        else message.capitalized(),
+                                                        type = if(success) PopupType.Info else PopupType.Warning,
+                                                        context = context,
+                                                        durationLong = true
+                                                    )
+                                                    Timber.d("Rescue restore: success $success, message: $message, exitCode: $exitCode")
+                                                    println("Rescue restore: success  $success, message: $message, exitCode: $exitCode")
 
                                                 }
                                             }
@@ -1947,4 +1963,6 @@ val LocalLinkDevices =
     staticCompositionLocalOf<List<NsdServiceInfo>> { error("No link devices provided") }
 
 val LocalSelectedQueue = staticCompositionLocalOf<Queues?> { error("No selected queue provided") }
+
+val LocalBackupHandler = staticCompositionLocalOf<RoomBackup> { error("No backup handler provided") }
 

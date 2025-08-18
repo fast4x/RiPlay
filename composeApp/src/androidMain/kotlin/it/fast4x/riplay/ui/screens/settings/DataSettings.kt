@@ -1,8 +1,6 @@
 package it.fast4x.riplay.ui.screens.settings
 
 import android.annotation.SuppressLint
-import android.content.ActivityNotFoundException
-import android.os.Build
 import android.text.format.Formatter
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -35,16 +33,14 @@ import androidx.compose.ui.unit.dp
 import androidx.media3.common.util.UnstableApi
 import coil.Coil
 import coil.annotation.ExperimentalCoilApi
+import de.raphaelebner.roomdatabasebackup.core.RoomBackup
 import it.fast4x.riplay.Database
+import it.fast4x.riplay.LocalBackupHandler
 import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.CacheType
 import it.fast4x.riplay.enums.CoilDiskCacheMaxSize
-import it.fast4x.riplay.enums.ExoPlayerCacheLocation
-import it.fast4x.riplay.enums.ExoPlayerDiskCacheMaxSize
-import it.fast4x.riplay.enums.ExoPlayerDiskDownloadCacheMaxSize
 import it.fast4x.riplay.enums.NavigationBarPosition
-import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.service.OfflinePlayerService
 import it.fast4x.riplay.ui.components.themed.CacheSpaceIndicator
 import it.fast4x.riplay.ui.components.themed.ConfirmationDialog
@@ -52,17 +48,12 @@ import it.fast4x.riplay.ui.components.themed.DefaultDialog
 import it.fast4x.riplay.ui.components.themed.HeaderIconButton
 import it.fast4x.riplay.ui.components.themed.HeaderWithIcon
 import it.fast4x.riplay.ui.components.themed.InputNumericDialog
-import it.fast4x.riplay.ui.components.themed.SmartMessage
 import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.ui.styling.shimmer
 import it.fast4x.riplay.utils.RestartPlayerService
 import it.fast4x.riplay.utils.bold
 import it.fast4x.riplay.utils.coilCustomDiskCacheKey
 import it.fast4x.riplay.utils.coilDiskCacheMaxSizeKey
-import it.fast4x.riplay.utils.exoPlayerCacheLocationKey
-import it.fast4x.riplay.utils.exoPlayerCustomCacheKey
-import it.fast4x.riplay.utils.exoPlayerDiskCacheMaxSizeKey
-import it.fast4x.riplay.utils.exoPlayerDiskDownloadCacheMaxSizeKey
 import it.fast4x.riplay.utils.intent
 import it.fast4x.riplay.utils.pauseSearchHistoryKey
 import it.fast4x.riplay.utils.rememberPreference
@@ -72,11 +63,16 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import it.fast4x.riplay.colorPalette
+import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.typography
+import it.fast4x.riplay.ui.components.themed.SmartMessage
+import it.fast4x.riplay.utils.capitalized
+import timber.log.Timber
 import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.text.SimpleDateFormat
 import java.util.Date
+import java.util.Locale
 import kotlin.system.exitProcess
 
 @SuppressLint("SuspiciousIndentation")
@@ -88,14 +84,17 @@ fun DataSettings() {
     val context = LocalContext.current
     val binder = LocalPlayerServiceBinder.current
 
+    val backupHandler = LocalBackupHandler.current
+    var resultMessage = remember { Triple(false,"",-1) }
+
     var coilDiskCacheMaxSize by rememberPreference(
         coilDiskCacheMaxSizeKey,
         CoilDiskCacheMaxSize.`128MB`
     )
-    var exoPlayerDiskCacheMaxSize by rememberPreference(
-        exoPlayerDiskCacheMaxSizeKey,
-        ExoPlayerDiskCacheMaxSize.`2GB`
-    )
+//    var exoPlayerDiskCacheMaxSize by rememberPreference(
+//        exoPlayerDiskCacheMaxSizeKey,
+//        ExoPlayerDiskCacheMaxSize.`2GB`
+//    )
 
 //    var exoPlayerDiskDownloadCacheMaxSize by rememberPreference(
 //        exoPlayerDiskDownloadCacheMaxSizeKey,
@@ -136,7 +135,7 @@ fun DataSettings() {
     )
 
     //val release = Build.VERSION.RELEASE;
-    val sdkVersion = Build.VERSION.SDK_INT;
+    //val sdkVersion = Build.VERSION.SDK_INT;
     //if (sdkVersion.toShort() < 29) exoPlayerAlternateCacheLocation=""
     //Log.d("SystemInfo","Android SDK: " + sdkVersion + " (" + release +")")
 
@@ -196,26 +195,35 @@ fun DataSettings() {
             },
             content = {
                 BasicText(
-                    text = stringResource(R.string.restore_completed),
+                    text = if (resultMessage.first) stringResource(R.string.restore_completed)
+                    else "Restore failed!", //stringResource(R.string.restore_failed),
                     style = typography().s.bold.copy(color = colorPalette().text),
                 )
                 Spacer(modifier = Modifier.height(20.dp))
-                BasicText(
-                    text = stringResource(R.string.click_to_close),
-                    style = typography().xs.semiBold.copy(color = colorPalette().textSecondary),
-                )
+                if (!resultMessage.first)
+                    BasicText(
+                        text = resultMessage.second,
+                        style = typography().xs.semiBold.copy(color = colorPalette().textSecondary),
+                    )
                 Spacer(modifier = Modifier.height(10.dp))
-                Image(
-                    painter = painterResource(R.drawable.server),
-                    contentDescription = null,
-                    colorFilter = ColorFilter.tint(colorPalette().shimmer),
-                    modifier = Modifier
-                        .size(40.dp)
-                        .clickable {
-                            exitAfterRestore = false
-                            exitProcess(0)
-                        }
-                )
+                if (resultMessage.first) {
+                    BasicText(
+                        text = stringResource(R.string.click_to_close),
+                        style = typography().xs.semiBold.copy(color = colorPalette().textSecondary),
+                    )
+                    Spacer(modifier = Modifier.height(10.dp))
+                    Image(
+                        painter = painterResource(R.drawable.server),
+                        contentDescription = null,
+                        colorFilter = ColorFilter.tint(colorPalette().shimmer),
+                        modifier = Modifier
+                            .size(40.dp)
+                            .clickable {
+                                exitAfterRestore = false
+                                exitProcess(0)
+                            }
+                    )
+                }
             }
 
         )
@@ -228,13 +236,40 @@ fun DataSettings() {
             text = stringResource(R.string.export_the_database),
             onDismiss = { isExporting = false },
             onConfirm = {
+//                @SuppressLint("SimpleDateFormat")
+//                val dateFormat = SimpleDateFormat("yyyyMMddHHmmss")
+//                try {
+//                    backupLauncher.launch("riplay_${dateFormat.format(Date())}.db")
+//                } catch (e: ActivityNotFoundException) {
+//                    SmartMessage(context.resources.getString(R.string.info_not_find_app_create_doc), type = PopupType.Warning, context = context)
+//                }
                 @SuppressLint("SimpleDateFormat")
                 val dateFormat = SimpleDateFormat("yyyyMMddHHmmss")
-                try {
-                    backupLauncher.launch("riplay_${dateFormat.format(Date())}.db")
-                } catch (e: ActivityNotFoundException) {
-                    SmartMessage(context.resources.getString(R.string.info_not_find_app_create_doc), type = PopupType.Warning, context = context)
-                }
+                backupHandler.database(Database.getInstance)
+                    .backupLocation(RoomBackup.BACKUP_FILE_LOCATION_CUSTOM_DIALOG)
+                    .customBackupFileName(
+                        "RiPlay_Backup_${
+                            dateFormat.format(
+                                Date()
+                            )
+                        }.db"
+                    )
+                    .apply {
+                        onCompleteListener { success, message, exitCode ->
+                            //resultMessage = Triple(success, message, exitCode)
+                            SmartMessage(
+                                message = if (success) context.resources.getString(R.string.done)
+                                else message.capitalized(),
+                                type = if(success) PopupType.Info else PopupType.Warning,
+                                context = context,
+                                durationLong = true
+                            )
+                            Timber.d("Data backup success: $success, message: $message, exitCode: $exitCode")
+                            println("Data backup success: $success, message: $message, exitCode: $exitCode")
+
+                        }
+                    }
+                    .backup()
             }
         )
     }
@@ -243,17 +278,40 @@ fun DataSettings() {
             text = stringResource(R.string.import_the_database),
             onDismiss = { isImporting = false },
             onConfirm = {
-                try {
-                    restoreLauncher.launch(
-                        arrayOf(
-                            "application/vnd.sqlite3",
-                            "application/x-sqlite3",
-                            "application/octet-stream"
-                        )
-                    )
-                } catch (e: ActivityNotFoundException) {
-                    SmartMessage(context.resources.getString(R.string.info_not_find_app_open_doc), type = PopupType.Warning, context = context)
-                }
+//                try {
+//                    restoreLauncher.launch(
+//                        arrayOf(
+//                            "application/vnd.sqlite3",
+//                            "application/x-sqlite3",
+//                            "application/octet-stream"
+//                        )
+//                    )
+//                } catch (e: ActivityNotFoundException) {
+//                    SmartMessage(context.resources.getString(R.string.info_not_find_app_open_doc), type = PopupType.Warning, context = context)
+//                }
+                backupHandler.database(Database.getInstance)
+                    .backupLocation(RoomBackup.BACKUP_FILE_LOCATION_CUSTOM_DIALOG)
+                    .apply {
+                        onCompleteListener { success, message, exitCode ->
+                            //resultMessage = Triple(success, message, exitCode)
+
+                            //exitAfterRestore = true
+                            SmartMessage(
+                                message = if (success) context.resources.getString(R.string.restore_completed)
+                                else message.capitalized(),
+                                type = if(success) PopupType.Info else PopupType.Warning,
+                                context = context,
+                                durationLong = true
+                            )
+
+                            Timber.d("Data restore: success $success, message: $message, exitCode: $exitCode")
+                            println("Data restore: success  $success, message: $message, exitCode: $exitCode")
+
+                        }
+                    }
+                    .restore()
+
+
             }
         )
     }
@@ -309,7 +367,7 @@ fun DataSettings() {
             //.fillMaxSize()
             .fillMaxHeight()
             .fillMaxWidth(
-                if( NavigationBarPosition.Right.isCurrent() )
+                if (NavigationBarPosition.Right.isCurrent())
                     Dimensions.contentWidthRightBar
                 else
                     1f

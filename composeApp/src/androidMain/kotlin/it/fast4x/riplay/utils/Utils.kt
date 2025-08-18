@@ -450,6 +450,13 @@ fun String?.asKey(): String? {
     return  cleanText?.lowercase(getDefault())
 }
 
+fun String.capitalized(): String =
+    this.replaceFirstChar {
+        if (it.isLowerCase())
+            it.titlecase(getDefault())
+        else it.toString()
+    }
+
 fun formatAsDuration(millis: Long) = DateUtils.formatElapsedTime(millis / 1000).removePrefix("0")
 fun durationToMillis(duration: String): Long {
     val parts = duration.split(":")
