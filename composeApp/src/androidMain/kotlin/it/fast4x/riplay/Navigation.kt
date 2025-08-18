@@ -1,4 +1,4 @@
-package it.fast4x.riplay.ui.screens
+package it.fast4x.riplay
 
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.EnterTransition
@@ -42,8 +42,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.PlayerConstants
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
-import it.fast4x.riplay.Database
-import it.fast4x.riplay.cleanString
 import it.fast4x.riplay.enums.BuiltInPlaylist
 import it.fast4x.riplay.enums.DeviceLists
 import it.fast4x.riplay.enums.NavRoutes
