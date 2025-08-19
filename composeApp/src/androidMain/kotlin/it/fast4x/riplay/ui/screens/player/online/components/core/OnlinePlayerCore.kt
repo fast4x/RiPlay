@@ -42,20 +42,22 @@ fun OnlinePlayerCore(
     onPlayerStateChange: (PlayerConstants.PlayerState) -> Unit,
     onTap: () -> Unit
 ) {
+    println("OnlinePlayerCore: called")
     val binder = LocalPlayerServiceBinder.current
-    binder?.player ?: return
-    if (binder.player.currentTimeline.windowCount == 0) return
+//    binder?.player ?: return
+//    if (binder.player.currentTimeline.windowCount == 0) return
 
-    var nullableMediaItem by remember {
-        mutableStateOf(binder.player.currentMediaItem, neverEqualPolicy())
-    }
+//    var nullableMediaItem by remember {
+//        mutableStateOf(binder?.player?.currentMediaItem, neverEqualPolicy())
+//    }
+    var localMediaItem = remember { binder?.player?.currentMediaItem }
 
     val player = remember { mutableStateOf<YouTubePlayer?>(null) }
 
-    binder.player.DisposableListener {
+    binder?.player?.DisposableListener {
         object : Player.Listener {
             override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
-                nullableMediaItem = mediaItem
+                localMediaItem = mediaItem
                 if (mediaItem != null) {
                     player.value?.loadVideo(mediaItem.mediaId, 0f)
                     println("OnlinePlayerCore: onMediaItemTransition loaded ${mediaItem.mediaId}")
@@ -63,7 +65,7 @@ fun OnlinePlayerCore(
             }
         }
     }
-    val mediaItem = nullableMediaItem ?: return
+    //val mediaItem = nullableMediaItem //?: return
 
     val inflatedView = remember { LayoutInflater.from(context()).inflate(R.layout.youtube_player, null, false) }
     val onlinePlayerView = remember { inflatedView as YouTubePlayerView }
@@ -76,6 +78,8 @@ fun OnlinePlayerCore(
         playerThumbnailSizeKey,
         PlayerThumbnailSize.Biggest
     )
+
+    println("OnlinePlayerCore: before create androidview")
 
     AndroidView(
 
@@ -123,10 +127,12 @@ fun OnlinePlayerCore(
 
                     //youTubePlayer.loadOrCueVideo(lifecycleOwner.lifecycle, mediaItem.mediaId, lastYTVideoSeconds)
                     println("OnlinePlayerCore: onReady shouldBePlaying: $shouldBePlaying")
-                    if (!load)
-                        youTubePlayer.cueVideo(mediaItem.mediaId, playFromSecond)
-                    else
-                        youTubePlayer.loadVideo(mediaItem.mediaId, playFromSecond)
+                    if (localMediaItem != null) {
+                        if (!load)
+                            youTubePlayer.cueVideo(localMediaItem!!.mediaId, playFromSecond)
+                        else
+                            youTubePlayer.loadVideo(localMediaItem!!.mediaId, playFromSecond)
+                    }
 
                 }
 
@@ -163,7 +169,9 @@ fun OnlinePlayerCore(
                     lifecycleOwner.lifecycle.addObserver(this)
 
                 initialize(listener, iFramePlayerOptions)
+                println("OnlinePlayerCore: initialize")
             }
+
 
         },
         update = {
