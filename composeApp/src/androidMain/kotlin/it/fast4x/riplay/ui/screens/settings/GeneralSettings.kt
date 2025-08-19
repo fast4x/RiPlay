@@ -563,7 +563,7 @@ fun GeneralSettings(
                 }
                     var isInvincibilityEnabled by rememberPreference(
                         isInvincibilityEnabledKey,
-                        false
+                        true
                     )
 
                     if (search.input.isBlank() || stringResource(R.string.invincible_service).contains(

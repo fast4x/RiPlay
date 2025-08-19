@@ -517,7 +517,7 @@ class OfflinePlayerService : MediaLibraryService(),
     override fun onUpdateNotification(session: MediaSession, startInForegroundRequired: Boolean) {
         println("OfflinePlayerService onUpdateNotification called startInForegroundRequired ${startInForegroundRequired}")
         // Foreground keep alive
-        if (!(!player.isPlaying && preferences.getBoolean(isInvincibilityEnabledKey, false))) {
+        if (!(!player.isPlaying && preferences.getBoolean(isInvincibilityEnabledKey, true))) {
             println("OfflinePlayerService onUpdateNotification PASSED WITH startInForegroundRequired ${startInForegroundRequired}")
             super.onUpdateNotification(session, startInForegroundRequired)
         }

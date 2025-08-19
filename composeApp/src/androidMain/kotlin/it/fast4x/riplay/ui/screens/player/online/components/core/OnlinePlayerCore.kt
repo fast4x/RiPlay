@@ -69,7 +69,7 @@ fun OnlinePlayerCore(
     val onlinePlayerView = remember { inflatedView as YouTubePlayerView }
     var shouldBePlaying by remember { mutableStateOf(false) }
     val lifecycleOwner = LocalLifecycleOwner.current
-    val enableBackgroundPlayback by rememberPreference(isInvincibilityEnabledKey, false)
+    val enableBackgroundPlayback by rememberPreference(isInvincibilityEnabledKey, true)
     //var lastYTVideoSeconds by rememberPreference(key = lastVideoSecondsKey, defaultValue = 0f)
     val isLandscape = isLandscape
     val playerThumbnailSize by rememberPreference(
