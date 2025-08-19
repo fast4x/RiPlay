@@ -1218,8 +1218,6 @@ class MainActivity :
                     )
                 }
 
-                onlineCore.invoke()
-
                 val pip = isInPip(
                     onChange = {
                         if (!it || (binder?.player?.isPlaying != true && !onlinePlayerPlayingState.value))
