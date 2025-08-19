@@ -22,6 +22,7 @@ internal fun HeaderIcon(
     size: Dp = 24.dp,
     onClick: () -> Unit
 ) {
+
     IconButton( onClick ) {
         Icon(
             imageVector = ImageVector.vectorResource( iconId ),
