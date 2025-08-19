@@ -39,7 +39,6 @@ import it.fast4x.environment.requests.ArtistSection
 import it.fast4x.riplay.Database
 import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.R
-import it.fast4x.riplay.YT_ARTIST_SHARE_BASEURL
 import it.fast4x.riplay.cleanPrefix
 import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.enums.ThumbnailRoundness
@@ -49,10 +48,10 @@ import it.fast4x.riplay.ui.components.themed.HeaderIconButton
 import it.fast4x.riplay.ui.components.themed.HeaderPlaceholder
 import it.fast4x.riplay.ui.components.themed.SecondaryTextButton
 import it.fast4x.riplay.ui.components.themed.adaptiveThumbnailContent
-import it.fast4x.riplay.utils.disableScrollingTextKey
-import it.fast4x.riplay.utils.parentalControlEnabledKey
-import it.fast4x.riplay.utils.rememberPreference
-import it.fast4x.riplay.utils.thumbnailRoundnessKey
+import it.fast4x.riplay.extensions.preferences.disableScrollingTextKey
+import it.fast4x.riplay.extensions.preferences.parentalControlEnabledKey
+import it.fast4x.riplay.extensions.preferences.rememberPreference
+import it.fast4x.riplay.extensions.preferences.thumbnailRoundnessKey
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.combine

@@ -14,6 +14,8 @@ import it.fast4x.environment.models.bodies.BrowseBody
 import it.fast4x.environment.requests.albumPage
 import it.fast4x.environment.requests.artistPage
 import it.fast4x.riplay.Database
+import it.fast4x.riplay.extensions.preferences.artistScreenTabIndexKey
+import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.models.Album
 import it.fast4x.riplay.models.Artist
 import it.fast4x.riplay.models.SongAlbumMap

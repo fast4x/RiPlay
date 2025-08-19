@@ -21,15 +21,15 @@ import it.fast4x.riplay.enums.DeviceLists
 import it.fast4x.riplay.enums.MaxTopPlaylistItems
 import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.ui.screens.ondevice.DeviceListSongs
-import it.fast4x.riplay.utils.MaxTopPlaylistItemsKey
-import it.fast4x.riplay.utils.rememberPreference
-import it.fast4x.riplay.utils.showCachedPlaylistKey
-import it.fast4x.riplay.utils.showDownloadedPlaylistKey
-import it.fast4x.riplay.utils.showFavoritesPlaylistKey
-import it.fast4x.riplay.utils.showMyTopPlaylistKey
-import it.fast4x.riplay.utils.showOnDevicePlaylistKey
+import it.fast4x.riplay.extensions.preferences.MaxTopPlaylistItemsKey
+import it.fast4x.riplay.extensions.preferences.rememberPreference
+import it.fast4x.riplay.extensions.preferences.showCachedPlaylistKey
+import it.fast4x.riplay.extensions.preferences.showDownloadedPlaylistKey
+import it.fast4x.riplay.extensions.preferences.showFavoritesPlaylistKey
+import it.fast4x.riplay.extensions.preferences.showMyTopPlaylistKey
+import it.fast4x.riplay.extensions.preferences.showOnDevicePlaylistKey
 import it.fast4x.riplay.ui.components.Skeleton
-import it.fast4x.riplay.utils.showDislikedPlaylistKey
+import it.fast4x.riplay.extensions.preferences.showDislikedPlaylistKey
 
 @ExperimentalMaterialApi
 @ExperimentalTextApi

@@ -1,4 +1,4 @@
-package it.fast4x.riplay.utils
+package it.fast4x.riplay.extensions.preferences
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState

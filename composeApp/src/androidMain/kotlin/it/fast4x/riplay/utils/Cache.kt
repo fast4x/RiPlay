@@ -17,6 +17,11 @@ import androidx.media3.datasource.cache.SimpleCache
 import it.fast4x.riplay.appContext
 import it.fast4x.riplay.enums.ExoPlayerCacheLocation
 import it.fast4x.riplay.enums.ExoPlayerDiskCacheMaxSize
+import it.fast4x.riplay.extensions.preferences.exoPlayerCacheLocationKey
+import it.fast4x.riplay.extensions.preferences.exoPlayerCustomCacheKey
+import it.fast4x.riplay.extensions.preferences.exoPlayerDiskCacheMaxSizeKey
+import it.fast4x.riplay.extensions.preferences.getEnum
+import it.fast4x.riplay.extensions.preferences.preferences
 import java.io.File
 
 object principalCache {

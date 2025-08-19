@@ -14,7 +14,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import it.fast4x.riplay.Database
 import it.fast4x.riplay.PINNED_PREFIX
-import it.fast4x.riplay.PIPED_PREFIX
 import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.MenuStyle
 import it.fast4x.riplay.enums.PlaylistSongSortBy
@@ -28,7 +27,11 @@ import it.fast4x.riplay.ui.components.themed.SmartMessage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.runBlocking
 import it.fast4x.riplay.appContext
-import it.fast4x.riplay.cleanPrefix
+import it.fast4x.riplay.extensions.preferences.menuStyleKey
+import it.fast4x.riplay.extensions.preferences.playlistSongSortByKey
+import it.fast4x.riplay.extensions.preferences.rememberPreference
+import it.fast4x.riplay.extensions.preferences.reorderInQueueEnabledKey
+import it.fast4x.riplay.extensions.preferences.songSortOrderKey
 import it.fast4x.riplay.ui.components.themed.DeleteDialog
 import it.fast4x.riplay.ui.components.themed.IDialog
 import it.fast4x.riplay.ui.components.tab.Sort
@@ -38,7 +41,6 @@ import it.fast4x.riplay.ui.components.tab.toolbar.DualIcon
 import it.fast4x.riplay.ui.components.tab.toolbar.DynamicColor
 import it.fast4x.riplay.ui.components.tab.toolbar.MenuIcon
 import it.fast4x.riplay.typography
-import java.util.UUID
 
 
 @Composable
@@ -83,7 +85,7 @@ class PositionLock private constructor(
         @JvmStatic
         @Composable
         fun init( sortOrder: SortOrder ) = PositionLock(
-            rememberPreference( reorderInQueueEnabledKey, true ),
+            rememberPreference(reorderInQueueEnabledKey, true),
             rememberSaveable( sortOrder ) { mutableStateOf( sortOrder == SortOrder.Ascending ) }
         )
     }
@@ -130,10 +132,10 @@ class PlaylistSongsSort private constructor(
         @JvmStatic
         @Composable
         fun init() = PlaylistSongsSort(
-            rememberPreference( songSortOrderKey, SortOrder.Descending ),
-            rememberPreference ( playlistSongSortByKey, PlaylistSongSortBy.Title ),
+            rememberPreference(songSortOrderKey, SortOrder.Descending),
+            rememberPreference(playlistSongSortByKey, PlaylistSongSortBy.Title),
             LocalMenuState.current,
-            rememberPreference( menuStyleKey, MenuStyle.List )
+            rememberPreference(menuStyleKey, MenuStyle.List)
         )
     }
 

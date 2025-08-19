@@ -21,14 +21,14 @@ import it.fast4x.environment.Environment
 import it.fast4x.riplay.LocalPlayerAwareWindowInsets
 import it.fast4x.riplay.R
 import it.fast4x.riplay.ui.components.themed.Title
-import it.fast4x.riplay.utils.ytVisitorDataKey
-import it.fast4x.riplay.utils.ytCookieKey
-import it.fast4x.riplay.utils.ytAccountNameKey
-import it.fast4x.riplay.utils.ytAccountEmailKey
-import it.fast4x.riplay.utils.ytAccountChannelHandleKey
-import it.fast4x.riplay.utils.rememberPreference
-import it.fast4x.riplay.utils.ytAccountThumbnailKey
-import it.fast4x.riplay.utils.ytDataSyncIdKey
+import it.fast4x.riplay.extensions.preferences.ytVisitorDataKey
+import it.fast4x.riplay.extensions.preferences.ytCookieKey
+import it.fast4x.riplay.extensions.preferences.ytAccountNameKey
+import it.fast4x.riplay.extensions.preferences.ytAccountEmailKey
+import it.fast4x.riplay.extensions.preferences.ytAccountChannelHandleKey
+import it.fast4x.riplay.extensions.preferences.rememberPreference
+import it.fast4x.riplay.extensions.preferences.ytAccountThumbnailKey
+import it.fast4x.riplay.extensions.preferences.ytDataSyncIdKey
 import kotlinx.coroutines.DelicateCoroutinesApi
 
 @OptIn(DelicateCoroutinesApi::class)

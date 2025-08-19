@@ -41,12 +41,12 @@ import it.fast4x.riplay.models.SongArtistMap
 import it.fast4x.riplay.service.MediaSessionConstants.ID_FAVORITES
 import it.fast4x.riplay.service.MediaSessionConstants.ID_ONDEVICE
 import it.fast4x.riplay.service.MediaSessionConstants.ID_TOP
-import it.fast4x.riplay.utils.MaxTopPlaylistItemsKey
+import it.fast4x.riplay.extensions.preferences.MaxTopPlaylistItemsKey
 import it.fast4x.riplay.utils.asMediaItem
 import it.fast4x.riplay.utils.asSong
-import it.fast4x.riplay.utils.getEnum
-import it.fast4x.riplay.utils.persistentQueueKey
-import it.fast4x.riplay.utils.preferences
+import it.fast4x.riplay.extensions.preferences.getEnum
+import it.fast4x.riplay.extensions.preferences.persistentQueueKey
+import it.fast4x.riplay.extensions.preferences.preferences
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -54,7 +54,6 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.guava.future
 import kotlinx.coroutines.runBlocking
-import timber.log.Timber
 
 @UnstableApi
 class MediaLibrarySessionCallback (

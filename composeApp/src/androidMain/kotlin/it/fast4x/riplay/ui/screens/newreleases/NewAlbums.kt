@@ -35,10 +35,10 @@ import it.fast4x.riplay.ui.components.themed.HeaderWithIcon
 import it.fast4x.riplay.ui.items.AlbumItem
 import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.ui.styling.px
-import it.fast4x.riplay.utils.disableScrollingTextKey
-import it.fast4x.riplay.utils.navigationBarPositionKey
-import it.fast4x.riplay.utils.rememberPreference
-import it.fast4x.riplay.utils.showSearchTabKey
+import it.fast4x.riplay.extensions.preferences.disableScrollingTextKey
+import it.fast4x.riplay.extensions.preferences.navigationBarPositionKey
+import it.fast4x.riplay.extensions.preferences.rememberPreference
+import it.fast4x.riplay.extensions.preferences.showSearchTabKey
 import it.fast4x.riplay.colorPalette
 
 @ExperimentalTextApi

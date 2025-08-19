@@ -56,10 +56,10 @@ import it.fast4x.riplay.models.PlaylistPreview
 import it.fast4x.riplay.ui.items.PlaylistItem
 import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.ui.styling.px
-import it.fast4x.riplay.utils.menuStyleKey
-import it.fast4x.riplay.utils.playlistSortByKey
-import it.fast4x.riplay.utils.playlistSortOrderKey
-import it.fast4x.riplay.utils.rememberPreference
+import it.fast4x.riplay.extensions.preferences.menuStyleKey
+import it.fast4x.riplay.extensions.preferences.playlistSortByKey
+import it.fast4x.riplay.extensions.preferences.playlistSortOrderKey
+import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.utils.semiBold
 import kotlinx.coroutines.Dispatchers
 import it.fast4x.riplay.colorPalette

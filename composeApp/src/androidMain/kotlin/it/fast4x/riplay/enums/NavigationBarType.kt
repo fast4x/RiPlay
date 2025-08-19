@@ -1,8 +1,8 @@
 package it.fast4x.riplay.enums
 
 import androidx.compose.runtime.Composable
-import it.fast4x.riplay.utils.navigationBarTypeKey
-import it.fast4x.riplay.utils.rememberPreference
+import it.fast4x.riplay.extensions.preferences.navigationBarTypeKey
+import it.fast4x.riplay.extensions.preferences.rememberPreference
 
 
 enum class NavigationBarType {

@@ -76,11 +76,11 @@ import it.fast4x.riplay.ui.items.AlbumItemPlaceholder
 import it.fast4x.riplay.ui.screens.searchresult.ItemsPage
 import it.fast4x.riplay.ui.styling.px
 import it.fast4x.riplay.utils.asMediaItem
-import it.fast4x.riplay.utils.disableScrollingTextKey
-import it.fast4x.riplay.utils.playerPositionKey
-import it.fast4x.riplay.utils.rememberPreference
-import it.fast4x.riplay.utils.thumbnailRoundnessKey
-import it.fast4x.riplay.utils.transitionEffectKey
+import it.fast4x.riplay.extensions.preferences.disableScrollingTextKey
+import it.fast4x.riplay.extensions.preferences.playerPositionKey
+import it.fast4x.riplay.extensions.preferences.rememberPreference
+import it.fast4x.riplay.extensions.preferences.thumbnailRoundnessKey
+import it.fast4x.riplay.extensions.preferences.transitionEffectKey
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch

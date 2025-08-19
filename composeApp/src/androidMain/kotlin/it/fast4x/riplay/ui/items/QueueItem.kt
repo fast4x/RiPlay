@@ -2,7 +2,6 @@ package it.fast4x.riplay.ui.items
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
@@ -26,8 +25,8 @@ import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.ui.styling.LocalAppearance
 import it.fast4x.riplay.ui.styling.favoritesOverlay
 import it.fast4x.riplay.utils.applyIf
-import it.fast4x.riplay.utils.disableScrollingTextKey
-import it.fast4x.riplay.utils.rememberPreference
+import it.fast4x.riplay.extensions.preferences.disableScrollingTextKey
+import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.utils.semiBold
 
 @Composable

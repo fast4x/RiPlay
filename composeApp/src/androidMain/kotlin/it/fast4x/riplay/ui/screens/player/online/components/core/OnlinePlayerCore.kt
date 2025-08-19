@@ -25,10 +25,10 @@ import it.fast4x.riplay.context
 import it.fast4x.riplay.enums.PlayerThumbnailSize
 import it.fast4x.riplay.ui.screens.player.online.components.customui.CustomDefaultPlayerUiController
 import it.fast4x.riplay.utils.DisposableListener
-import it.fast4x.riplay.utils.isInvincibilityEnabledKey
+import it.fast4x.riplay.extensions.preferences.isInvincibilityEnabledKey
 import it.fast4x.riplay.utils.isLandscape
-import it.fast4x.riplay.utils.playerThumbnailSizeKey
-import it.fast4x.riplay.utils.rememberPreference
+import it.fast4x.riplay.extensions.preferences.playerThumbnailSizeKey
+import it.fast4x.riplay.extensions.preferences.rememberPreference
 
 @OptIn(UnstableApi::class)
 @Composable

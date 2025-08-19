@@ -25,8 +25,8 @@ import it.fast4x.riplay.enums.PlayerThumbnailSize
 import it.fast4x.riplay.ui.styling.px
 import it.fast4x.riplay.ui.styling.shimmer
 import it.fast4x.riplay.utils.isLandscape
-import it.fast4x.riplay.utils.playerThumbnailSizeKey
-import it.fast4x.riplay.utils.rememberPreference
+import it.fast4x.riplay.extensions.preferences.playerThumbnailSizeKey
+import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.utils.thumbnail
 import it.fast4x.riplay.colorPalette
 import it.fast4x.riplay.thumbnailShape

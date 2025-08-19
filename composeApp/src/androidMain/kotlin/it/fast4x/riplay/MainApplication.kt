@@ -1,6 +1,5 @@
 package it.fast4x.riplay
 
-import android.app.Application
 import androidx.multidex.MultiDexApplication
 import coil.ImageLoader
 import coil.ImageLoaderFactory
@@ -11,12 +10,12 @@ import it.fast4x.riplay.enums.CoilDiskCacheMaxSize
 import it.fast4x.riplay.utils.CaptureCrash
 import it.fast4x.riplay.utils.FileLoggingTree
 import it.fast4x.riplay.utils.InitializeEnvironment
-import it.fast4x.riplay.utils.coilCustomDiskCacheKey
-import it.fast4x.riplay.utils.coilDiskCacheMaxSizeKey
-import it.fast4x.riplay.utils.getEnum
-import it.fast4x.riplay.utils.logDebugEnabledKey
-import it.fast4x.riplay.utils.preferences
-import it.fast4x.riplay.utils.usePlaceholderInImageLoaderKey
+import it.fast4x.riplay.extensions.preferences.coilCustomDiskCacheKey
+import it.fast4x.riplay.extensions.preferences.coilDiskCacheMaxSizeKey
+import it.fast4x.riplay.extensions.preferences.getEnum
+import it.fast4x.riplay.extensions.preferences.logDebugEnabledKey
+import it.fast4x.riplay.extensions.preferences.preferences
+import it.fast4x.riplay.extensions.preferences.usePlaceholderInImageLoaderKey
 import timber.log.Timber
 import java.io.File
 

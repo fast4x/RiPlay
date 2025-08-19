@@ -4,13 +4,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.glance.layout.Row
 import androidx.navigation.NavController
 import it.fast4x.riplay.R
 import it.fast4x.riplay.colorPalette
 import it.fast4x.riplay.enums.MenuStyle
-import it.fast4x.riplay.utils.menuStyleKey
-import it.fast4x.riplay.utils.rememberPreference
+import it.fast4x.riplay.extensions.preferences.menuStyleKey
+import it.fast4x.riplay.extensions.preferences.rememberPreference
 
 @Composable
 fun QueueItemMenu(

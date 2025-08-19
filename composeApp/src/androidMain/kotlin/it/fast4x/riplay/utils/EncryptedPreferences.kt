@@ -11,6 +11,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.edit
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
+import it.fast4x.riplay.extensions.preferences.getEnum
+import it.fast4x.riplay.extensions.preferences.putEnum
 import timber.log.Timber
 
 

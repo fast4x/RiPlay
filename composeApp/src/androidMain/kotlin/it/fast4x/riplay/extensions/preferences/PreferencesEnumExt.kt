@@ -1,4 +1,4 @@
-package it.fast4x.riplay.utils
+package it.fast4x.riplay.extensions.preferences
 
 import android.content.SharedPreferences
 import android.os.Bundle

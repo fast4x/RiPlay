@@ -1,6 +1,5 @@
 package it.fast4x.riplay.ui.components.themed
 
-import android.content.Intent
 import androidx.activity.compose.BackHandler
 import androidx.annotation.OptIn
 import androidx.compose.animation.AnimatedContent
@@ -77,10 +76,10 @@ import it.fast4x.riplay.utils.addNext
 import it.fast4x.riplay.utils.enqueue
 import it.fast4x.riplay.utils.formatAsDuration
 import it.fast4x.riplay.utils.mediaItemToggleLike
-import it.fast4x.riplay.utils.playlistSortByKey
-import it.fast4x.riplay.utils.playlistSortOrderKey
+import it.fast4x.riplay.extensions.preferences.playlistSortByKey
+import it.fast4x.riplay.extensions.preferences.playlistSortOrderKey
 import it.fast4x.riplay.utils.positionAndDurationState
-import it.fast4x.riplay.utils.rememberPreference
+import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.utils.semiBold
 import it.fast4x.riplay.utils.thumbnail
 import kotlinx.coroutines.CoroutineScope
@@ -94,13 +93,11 @@ import it.fast4x.riplay.extensions.fastshare.FastShare
 import it.fast4x.riplay.models.Queues
 import it.fast4x.riplay.models.Song
 import it.fast4x.riplay.models.defaultQueue
-import it.fast4x.riplay.models.defaultQueueId
 import it.fast4x.riplay.typography
 import it.fast4x.riplay.ui.screens.player.fastPlay
 import it.fast4x.riplay.ui.screens.settings.isYouTubeSyncEnabled
 import it.fast4x.riplay.utils.addSongToYtPlaylist
 import it.fast4x.riplay.utils.addToYtLikedSong
-import it.fast4x.riplay.utils.asSong
 import org.dailyislam.android.utilities.isNetworkConnected
 import it.fast4x.riplay.utils.getLikeState
 import it.fast4x.riplay.utils.setDisLikeState

@@ -2,7 +2,6 @@ package it.fast4x.riplay.ui.components.themed
 
 
 import android.annotation.SuppressLint
-import android.content.ComponentName
 import android.content.Intent
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
@@ -99,11 +98,11 @@ import it.fast4x.riplay.utils.enqueue
 import it.fast4x.riplay.utils.formatAsDuration
 import it.fast4x.riplay.utils.getLikeState
 import it.fast4x.riplay.utils.medium
-import it.fast4x.riplay.utils.menuStyleKey
-import it.fast4x.riplay.utils.playlistSortByKey
-import it.fast4x.riplay.utils.playlistSortOrderKey
+import it.fast4x.riplay.extensions.preferences.menuStyleKey
+import it.fast4x.riplay.extensions.preferences.playlistSortByKey
+import it.fast4x.riplay.extensions.preferences.playlistSortOrderKey
 import it.fast4x.riplay.utils.positionAndDurationState
-import it.fast4x.riplay.utils.rememberPreference
+import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.utils.semiBold
 import it.fast4x.riplay.utils.thumbnail
 import kotlinx.coroutines.CoroutineScope

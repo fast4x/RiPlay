@@ -55,9 +55,9 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import it.fast4x.riplay.R
 import it.fast4x.riplay.ui.styling.favoritesIcon
-import it.fast4x.riplay.utils.multiFloatActionIconOffsetXkey
-import it.fast4x.riplay.utils.multiFloatActionIconOffsetYkey
-import it.fast4x.riplay.utils.rememberPreference
+import it.fast4x.riplay.extensions.preferences.multiFloatActionIconOffsetXkey
+import it.fast4x.riplay.extensions.preferences.multiFloatActionIconOffsetYkey
+import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.colorPalette
 
 enum class MultiFabState {

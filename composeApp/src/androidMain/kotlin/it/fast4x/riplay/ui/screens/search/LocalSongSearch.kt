@@ -56,11 +56,11 @@ import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.ui.styling.px
 import it.fast4x.riplay.utils.align
 import it.fast4x.riplay.utils.asMediaItem
-import it.fast4x.riplay.utils.disableScrollingTextKey
+import it.fast4x.riplay.extensions.preferences.disableScrollingTextKey
 import it.fast4x.riplay.utils.isNowPlaying
 import it.fast4x.riplay.utils.medium
-import it.fast4x.riplay.utils.rememberPreference
-import it.fast4x.riplay.utils.thumbnailRoundnessKey
+import it.fast4x.riplay.extensions.preferences.rememberPreference
+import it.fast4x.riplay.extensions.preferences.thumbnailRoundnessKey
 import kotlinx.coroutines.delay
 import it.fast4x.riplay.colorPalette
 import it.fast4x.riplay.typography

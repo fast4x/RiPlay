@@ -11,7 +11,7 @@ import it.fast4x.riplay.ui.components.themed.MenuEntry
 import it.fast4x.riplay.ui.components.tab.toolbar.Descriptive
 import it.fast4x.riplay.ui.components.tab.toolbar.MenuIcon
 import it.fast4x.riplay.enums.HomeItemSize
-import it.fast4x.riplay.utils.Preference
+import it.fast4x.riplay.extensions.preferences.Preference
 
 class ItemSize private constructor(
     val menuState: MenuState,

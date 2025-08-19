@@ -19,8 +19,8 @@ import androidx.compose.ui.unit.dp
 import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.MaxTopPlaylistItems
 import it.fast4x.riplay.enums.TopPlaylistPeriod
-import it.fast4x.riplay.utils.MaxTopPlaylistItemsKey
-import it.fast4x.riplay.utils.rememberPreference
+import it.fast4x.riplay.extensions.preferences.MaxTopPlaylistItemsKey
+import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.utils.semiBold
 import it.fast4x.riplay.typography
 

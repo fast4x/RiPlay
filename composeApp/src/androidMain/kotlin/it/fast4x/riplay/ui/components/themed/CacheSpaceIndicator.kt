@@ -20,10 +20,10 @@ import it.fast4x.riplay.enums.CacheType
 import it.fast4x.riplay.enums.CoilDiskCacheMaxSize
 import it.fast4x.riplay.enums.ExoPlayerDiskCacheMaxSize
 import it.fast4x.riplay.enums.ExoPlayerDiskDownloadCacheMaxSize
-import it.fast4x.riplay.utils.coilDiskCacheMaxSizeKey
-import it.fast4x.riplay.utils.exoPlayerDiskCacheMaxSizeKey
-import it.fast4x.riplay.utils.exoPlayerDiskDownloadCacheMaxSizeKey
-import it.fast4x.riplay.utils.rememberPreference
+import it.fast4x.riplay.extensions.preferences.coilDiskCacheMaxSizeKey
+import it.fast4x.riplay.extensions.preferences.exoPlayerDiskCacheMaxSizeKey
+import it.fast4x.riplay.extensions.preferences.exoPlayerDiskDownloadCacheMaxSizeKey
+import it.fast4x.riplay.extensions.preferences.rememberPreference
 
 
 @androidx.annotation.OptIn(UnstableApi::class)

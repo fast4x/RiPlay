@@ -27,8 +27,8 @@ import it.fast4x.riplay.LocalOnlinePlayerPlayingState
 import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.enums.MusicAnimationType
 import it.fast4x.riplay.utils.DisposableListener
-import it.fast4x.riplay.utils.nowPlayingIndicatorKey
-import it.fast4x.riplay.utils.rememberPreference
+import it.fast4x.riplay.extensions.preferences.nowPlayingIndicatorKey
+import it.fast4x.riplay.extensions.preferences.rememberPreference
 import kotlinx.coroutines.launch
 
 @OptIn(UnstableApi::class)

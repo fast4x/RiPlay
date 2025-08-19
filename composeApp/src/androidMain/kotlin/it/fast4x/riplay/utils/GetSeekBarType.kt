@@ -56,6 +56,15 @@ import it.fast4x.riplay.ui.styling.collapsedPlayerProgressBar
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import it.fast4x.riplay.colorPalette
+import it.fast4x.riplay.extensions.preferences.colorPaletteModeKey
+import it.fast4x.riplay.extensions.preferences.pauseBetweenSongsKey
+import it.fast4x.riplay.extensions.preferences.playerTimelineTypeKey
+import it.fast4x.riplay.extensions.preferences.rememberObservedPreference
+import it.fast4x.riplay.extensions.preferences.rememberPreference
+import it.fast4x.riplay.extensions.preferences.seekWithTapKey
+import it.fast4x.riplay.extensions.preferences.showRemainingSongTimeKey
+import it.fast4x.riplay.extensions.preferences.textoutlineKey
+import it.fast4x.riplay.extensions.preferences.transparentbarKey
 import it.fast4x.riplay.typography
 import org.jetbrains.compose.resources.painterResource
 import riplay.composeapp.generated.resources.Res
@@ -72,7 +81,10 @@ fun GetSeekBar(
 
     val binder = LocalPlayerServiceBinder.current
     binder?.player ?: return
-    val playerTimelineType by rememberPreference(playerTimelineTypeKey, PlayerTimelineType.FakeAudioBar)
+    val playerTimelineType by rememberPreference(
+        playerTimelineTypeKey,
+        PlayerTimelineType.FakeAudioBar
+    )
     var scrubbingPosition by remember(mediaId) {
         mutableStateOf<Long?>(null)
     }

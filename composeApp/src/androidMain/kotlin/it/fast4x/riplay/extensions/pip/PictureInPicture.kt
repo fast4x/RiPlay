@@ -31,13 +31,13 @@ import androidx.core.graphics.toRect
 import it.fast4x.compose.persist.findActivityNullable
 import it.fast4x.riplay.R
 import it.fast4x.riplay.utils.ActionReceiver
-import it.fast4x.riplay.utils.enablePictureInPictureAutoKey
-import it.fast4x.riplay.utils.enablePictureInPictureKey
+import it.fast4x.riplay.extensions.preferences.enablePictureInPictureAutoKey
+import it.fast4x.riplay.extensions.preferences.enablePictureInPictureKey
 import it.fast4x.riplay.utils.findActivity
 import it.fast4x.riplay.utils.isAtLeastAndroid12
 import it.fast4x.riplay.utils.isAtLeastAndroid7
 import it.fast4x.riplay.utils.isAtLeastAndroid8
-import it.fast4x.riplay.utils.rememberPreference
+import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.appContext
 import it.fast4x.riplay.isPipModeAutoEnabled
 

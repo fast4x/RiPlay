@@ -39,9 +39,9 @@ import it.fast4x.riplay.ui.components.FabItem
 import it.fast4x.riplay.ui.components.MultiFloatingActionsButton
 import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.utils.ScrollingInfo
-import it.fast4x.riplay.utils.floatActionIconOffsetXkey
-import it.fast4x.riplay.utils.floatActionIconOffsetYkey
-import it.fast4x.riplay.utils.rememberPreference
+import it.fast4x.riplay.extensions.preferences.floatActionIconOffsetXkey
+import it.fast4x.riplay.extensions.preferences.floatActionIconOffsetYkey
+import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.utils.scrollingInfo
 import it.fast4x.riplay.utils.smoothScrollToTop
 import kotlinx.coroutines.launch

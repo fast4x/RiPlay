@@ -18,6 +18,12 @@ import androidx.media3.common.util.UnstableApi
 import it.fast4x.riplay.enums.PlayerBackgroundColors
 import it.fast4x.riplay.enums.PlayerControlsType
 import it.fast4x.riplay.enums.PlayerPlayButtonType
+import it.fast4x.riplay.extensions.preferences.playbackDurationKey
+import it.fast4x.riplay.extensions.preferences.playbackSpeedKey
+import it.fast4x.riplay.extensions.preferences.playerBackgroundColorsKey
+import it.fast4x.riplay.extensions.preferences.playerControlsTypeKey
+import it.fast4x.riplay.extensions.preferences.playerPlayButtonTypeKey
+import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.service.OfflinePlayerService
 import it.fast4x.riplay.ui.components.themed.PlaybackParamsDialog
 import it.fast4x.riplay.ui.screens.player.offline.components.controls.ControlsEssential
@@ -34,7 +40,10 @@ fun GetControls(
     mediaId: String,
     onBlurScaleChange: (Float) -> Unit
 ) {
-    val playerControlsType by rememberPreference(playerControlsTypeKey, PlayerControlsType.Essential)
+    val playerControlsType by rememberPreference(
+        playerControlsTypeKey,
+        PlayerControlsType.Essential
+    )
     val playerPlayButtonType by rememberPreference(
         playerPlayButtonTypeKey,
         PlayerPlayButtonType.Disabled

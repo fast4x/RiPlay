@@ -74,8 +74,8 @@ import it.fast4x.riplay.ui.styling.px
 import it.fast4x.riplay.utils.asMediaItem
 import org.dailyislam.android.utilities.getHttpClient
 import it.fast4x.riplay.utils.languageDestination
-import it.fast4x.riplay.utils.parentalControlEnabledKey
-import it.fast4x.riplay.utils.rememberPreference
+import it.fast4x.riplay.extensions.preferences.parentalControlEnabledKey
+import it.fast4x.riplay.extensions.preferences.rememberPreference
 import me.bush.translator.Translator
 import it.fast4x.riplay.colorPalette
 import it.fast4x.riplay.enums.MaxSongs
@@ -83,7 +83,6 @@ import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.models.Song
 import it.fast4x.riplay.models.Album
 import it.fast4x.riplay.models.defaultQueue
-import it.fast4x.riplay.models.defaultQueueId
 import it.fast4x.riplay.ui.components.SwipeablePlaylistItem
 import it.fast4x.riplay.ui.components.themed.AddToPlaylistArtistSongs
 import it.fast4x.riplay.ui.components.themed.ConfirmationDialog
@@ -104,7 +103,7 @@ import it.fast4x.riplay.utils.formatAsDuration
 import it.fast4x.riplay.utils.isExplicit
 import org.dailyislam.android.utilities.isNetworkConnected
 import it.fast4x.riplay.utils.isNowPlaying
-import it.fast4x.riplay.utils.maxSongsInQueueKey
+import it.fast4x.riplay.extensions.preferences.maxSongsInQueueKey
 import it.fast4x.riplay.utils.setLikeState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

@@ -8,9 +8,9 @@ import androidx.media3.common.util.UnstableApi
 import es.dmoral.toasty.Toasty
 import it.fast4x.riplay.enums.MessageType
 import it.fast4x.riplay.enums.PopupType
-import it.fast4x.riplay.utils.getEnum
-import it.fast4x.riplay.utils.messageTypeKey
-import it.fast4x.riplay.utils.preferences
+import it.fast4x.riplay.extensions.preferences.getEnum
+import it.fast4x.riplay.extensions.preferences.messageTypeKey
+import it.fast4x.riplay.extensions.preferences.preferences
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch

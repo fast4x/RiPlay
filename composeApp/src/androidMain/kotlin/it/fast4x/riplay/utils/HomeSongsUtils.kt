@@ -10,6 +10,10 @@ import androidx.compose.ui.res.stringResource
 import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.MenuStyle
 import it.fast4x.riplay.enums.TopPlaylistPeriod
+import it.fast4x.riplay.extensions.preferences.autoShuffleKey
+import it.fast4x.riplay.extensions.preferences.menuStyleKey
+import it.fast4x.riplay.extensions.preferences.rememberPreference
+import it.fast4x.riplay.extensions.preferences.topPlaylistPeriodKey
 import it.fast4x.riplay.ui.components.LocalMenuState
 import it.fast4x.riplay.ui.components.MenuState
 import it.fast4x.riplay.ui.components.themed.PeriodMenu
@@ -52,7 +56,7 @@ class HiddenSongs private constructor(
 @Composable
 fun randomSort(): MenuIcon = object: MenuIcon, DynamicColor, Descriptive {
 
-    override var isFirstColor: Boolean by rememberPreference( autoShuffleKey, false )
+    override var isFirstColor: Boolean by rememberPreference(autoShuffleKey, false)
     override val iconId: Int = R.drawable.random
     override val messageId: Int = R.string.random_sorting
     override val menuIconTitle: String
@@ -72,9 +76,9 @@ class PeriodSelector private constructor(
         @JvmStatic
         @Composable
         fun init() = PeriodSelector(
-            rememberPreference( topPlaylistPeriodKey, TopPlaylistPeriod.PastWeek ),
+            rememberPreference(topPlaylistPeriodKey, TopPlaylistPeriod.PastWeek),
             LocalMenuState.current,
-            rememberPreference( menuStyleKey, MenuStyle.List )
+            rememberPreference(menuStyleKey, MenuStyle.List)
         )
     }
 

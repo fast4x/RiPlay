@@ -6,6 +6,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.res.stringResource
 import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.Languages
+import it.fast4x.riplay.extensions.preferences.otherLanguageAppKey
+import it.fast4x.riplay.extensions.preferences.rememberPreference
 import me.bush.translator.Language
 import java.util.Locale
 

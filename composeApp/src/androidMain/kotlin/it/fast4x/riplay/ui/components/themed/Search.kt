@@ -39,10 +39,10 @@ import androidx.compose.ui.unit.dp
 import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.ThumbnailRoundness
 import it.fast4x.riplay.ui.styling.favoritesIcon
-import it.fast4x.riplay.utils.rememberPreference
+import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.utils.secondary
 import it.fast4x.riplay.utils.semiBold
-import it.fast4x.riplay.utils.thumbnailRoundnessKey
+import it.fast4x.riplay.extensions.preferences.thumbnailRoundnessKey
 import it.fast4x.riplay.colorPalette
 import it.fast4x.riplay.ui.components.tab.toolbar.Descriptive
 import it.fast4x.riplay.ui.components.tab.toolbar.MenuIcon

@@ -35,8 +35,9 @@ import it.fast4x.riplay.ui.items.VideoItem
 import it.fast4x.riplay.ui.items.VideoItemPlaceholder
 import it.fast4x.riplay.ui.screens.searchresult.ItemsPage
 import it.fast4x.riplay.colorPalette
+import it.fast4x.riplay.extensions.preferences.preferences
+import it.fast4x.riplay.extensions.preferences.showButtonPlayerVideoKey
 import it.fast4x.riplay.models.defaultQueue
-import it.fast4x.riplay.models.defaultQueueId
 import it.fast4x.riplay.ui.components.themed.SmartMessage
 import it.fast4x.riplay.ui.screens.player.fastPlay
 

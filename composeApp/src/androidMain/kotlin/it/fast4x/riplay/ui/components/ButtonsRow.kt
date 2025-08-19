@@ -14,8 +14,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import it.fast4x.riplay.enums.ColorPaletteMode
-import it.fast4x.riplay.utils.colorPaletteModeKey
-import it.fast4x.riplay.utils.rememberPreference
+import it.fast4x.riplay.extensions.preferences.colorPaletteModeKey
+import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.colorPalette
 
 @Composable

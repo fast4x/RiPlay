@@ -34,9 +34,9 @@ import it.fast4x.riplay.extensions.nextvisualizer.NextVisualizer
 import it.fast4x.riplay.ui.components.themed.SecondaryTextButton
 import it.fast4x.riplay.utils.hasPermission
 import it.fast4x.riplay.utils.isCompositionLaunched
-import it.fast4x.riplay.utils.rememberPreference
+import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.utils.semiBold
-import it.fast4x.riplay.utils.visualizerEnabledKey
+import it.fast4x.riplay.extensions.preferences.visualizerEnabledKey
 import it.fast4x.riplay.typography
 
 @UnstableApi

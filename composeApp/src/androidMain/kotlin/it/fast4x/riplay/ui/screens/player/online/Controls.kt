@@ -48,21 +48,21 @@ import it.fast4x.riplay.models.Song
 import it.fast4x.riplay.models.ui.UiMedia
 import it.fast4x.riplay.ui.screens.player.online.components.controls.InfoAlbumAndArtistEssential
 import it.fast4x.riplay.ui.screens.player.online.components.controls.InfoAlbumAndArtistModern
-import it.fast4x.riplay.utils.buttonzoomoutKey
+import it.fast4x.riplay.extensions.preferences.buttonzoomoutKey
 import it.fast4x.riplay.utils.applyIf
-import it.fast4x.riplay.utils.disableScrollingTextKey
+import it.fast4x.riplay.extensions.preferences.disableScrollingTextKey
 import it.fast4x.riplay.utils.isCompositionLaunched
 import it.fast4x.riplay.utils.isLandscape
-import it.fast4x.riplay.utils.playerControlsTypeKey
-import it.fast4x.riplay.utils.playerInfoTypeKey
-import it.fast4x.riplay.utils.playerPlayButtonTypeKey
-import it.fast4x.riplay.utils.playerSwapControlsWithTimelineKey
-import it.fast4x.riplay.utils.playerTimelineSizeKey
-import it.fast4x.riplay.utils.playerTypeKey
-import it.fast4x.riplay.utils.rememberPreference
-import it.fast4x.riplay.utils.showlyricsthumbnailKey
-import it.fast4x.riplay.utils.showthumbnailKey
-import it.fast4x.riplay.utils.transparentBackgroundPlayerActionBarKey
+import it.fast4x.riplay.extensions.preferences.playerControlsTypeKey
+import it.fast4x.riplay.extensions.preferences.playerInfoTypeKey
+import it.fast4x.riplay.extensions.preferences.playerPlayButtonTypeKey
+import it.fast4x.riplay.extensions.preferences.playerSwapControlsWithTimelineKey
+import it.fast4x.riplay.extensions.preferences.playerTimelineSizeKey
+import it.fast4x.riplay.extensions.preferences.playerTypeKey
+import it.fast4x.riplay.extensions.preferences.rememberPreference
+import it.fast4x.riplay.extensions.preferences.showlyricsthumbnailKey
+import it.fast4x.riplay.extensions.preferences.showthumbnailKey
+import it.fast4x.riplay.extensions.preferences.transparentBackgroundPlayerActionBarKey
 import kotlinx.coroutines.flow.distinctUntilChanged
 
 

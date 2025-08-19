@@ -18,10 +18,12 @@ import it.fast4x.riplay.R
 import it.fast4x.riplay.context
 import it.fast4x.riplay.enums.DurationInMinutes
 import it.fast4x.riplay.enums.PopupType
+import it.fast4x.riplay.extensions.preferences.excludeSongsWithDurationLimitKey
+import it.fast4x.riplay.extensions.preferences.getEnum
+import it.fast4x.riplay.extensions.preferences.preferences
 import it.fast4x.riplay.isPersistentQueueEnabled
 import it.fast4x.riplay.models.QueuedMediaItem
 import it.fast4x.riplay.models.Queues
-import it.fast4x.riplay.models.defaultQueue
 import it.fast4x.riplay.models.defaultQueueId
 import it.fast4x.riplay.ui.components.themed.SmartMessage
 import kotlinx.coroutines.CoroutineScope

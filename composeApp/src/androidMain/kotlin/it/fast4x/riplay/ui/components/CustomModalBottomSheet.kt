@@ -26,9 +26,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogWindowProvider
 import androidx.core.view.WindowCompat
 import it.fast4x.riplay.enums.ColorPaletteMode
-import it.fast4x.riplay.utils.colorPaletteModeKey
+import it.fast4x.riplay.extensions.preferences.colorPaletteModeKey
 import it.fast4x.riplay.utils.isLandscape
-import it.fast4x.riplay.utils.rememberPreference
+import it.fast4x.riplay.extensions.preferences.rememberPreference
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

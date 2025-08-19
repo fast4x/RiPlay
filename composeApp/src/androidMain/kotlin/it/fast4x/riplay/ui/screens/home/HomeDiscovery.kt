@@ -70,13 +70,13 @@ import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.ui.styling.px
 import it.fast4x.riplay.ui.styling.shimmer
 import it.fast4x.riplay.utils.center
-import it.fast4x.riplay.utils.disableScrollingTextKey
+import it.fast4x.riplay.extensions.preferences.disableScrollingTextKey
 import it.fast4x.riplay.utils.isLandscape
-import it.fast4x.riplay.utils.rememberPreference
+import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.utils.secondary
 import it.fast4x.riplay.utils.semiBold
-import it.fast4x.riplay.utils.showSearchTabKey
-import it.fast4x.riplay.utils.thumbnailRoundnessKey
+import it.fast4x.riplay.extensions.preferences.showSearchTabKey
+import it.fast4x.riplay.extensions.preferences.thumbnailRoundnessKey
 import it.fast4x.riplay.colorPalette
 import it.fast4x.riplay.typography
 

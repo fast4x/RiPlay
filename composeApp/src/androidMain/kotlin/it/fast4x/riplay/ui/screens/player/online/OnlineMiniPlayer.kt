@@ -1,13 +1,6 @@
 package it.fast4x.riplay.ui.screens.player.online
 
-import android.app.PendingIntent
-import android.content.Intent
 import android.database.SQLException
-import android.media.session.PlaybackState
-import android.support.v4.media.MediaMetadataCompat
-import android.support.v4.media.RatingCompat
-import android.support.v4.media.session.MediaSessionCompat
-import android.support.v4.media.session.PlaybackStateCompat
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateDp
 import androidx.compose.animation.core.animateFloatAsState
@@ -67,7 +60,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
@@ -77,12 +69,10 @@ import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.PlayerConstan
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
 import it.fast4x.riplay.Database
 import it.fast4x.riplay.LocalPlayerServiceBinder
-import it.fast4x.riplay.MainActivity
 import it.fast4x.riplay.R
 import it.fast4x.riplay.appContext
 import it.fast4x.riplay.cleanPrefix
 import it.fast4x.riplay.colorPalette
-import it.fast4x.riplay.context
 import it.fast4x.riplay.enums.BackgroundProgress
 import it.fast4x.riplay.enums.MiniPlayerType
 import it.fast4x.riplay.enums.NavRoutes
@@ -95,7 +85,6 @@ import it.fast4x.riplay.models.Event
 import it.fast4x.riplay.models.Info
 import it.fast4x.riplay.service.OfflinePlayerService
 import it.fast4x.riplay.models.Song
-import it.fast4x.riplay.service.BitmapProvider
 import it.fast4x.riplay.thumbnailShape
 import it.fast4x.riplay.typography
 import it.fast4x.riplay.ui.components.themed.IconButton
@@ -107,25 +96,23 @@ import it.fast4x.riplay.ui.styling.collapsedPlayerProgressBar
 import it.fast4x.riplay.ui.styling.favoritesIcon
 import it.fast4x.riplay.ui.styling.favoritesOverlay
 import it.fast4x.riplay.ui.styling.px
-import it.fast4x.riplay.utils.ActionIntent
 import it.fast4x.riplay.utils.DisposableListener
 import it.fast4x.riplay.utils.addToYtLikedSong
-import it.fast4x.riplay.utils.backgroundProgressKey
+import it.fast4x.riplay.extensions.preferences.backgroundProgressKey
 import it.fast4x.riplay.utils.applyIf
 import it.fast4x.riplay.utils.asSong
-import it.fast4x.riplay.utils.disableClosingPlayerSwipingDownKey
-import it.fast4x.riplay.utils.disableScrollingTextKey
-import it.fast4x.riplay.utils.effectRotationKey
+import it.fast4x.riplay.extensions.preferences.disableClosingPlayerSwipingDownKey
+import it.fast4x.riplay.extensions.preferences.disableScrollingTextKey
+import it.fast4x.riplay.extensions.preferences.effectRotationKey
 import it.fast4x.riplay.utils.getLikeState
 import it.fast4x.riplay.utils.intent
-import it.fast4x.riplay.utils.isAtLeastAndroid12
 import it.fast4x.riplay.utils.isExplicit
 import org.dailyislam.android.utilities.isNetworkConnected
 import it.fast4x.riplay.utils.mediaItemToggleLike
-import it.fast4x.riplay.utils.miniPlayerTypeKey
+import it.fast4x.riplay.extensions.preferences.miniPlayerTypeKey
 import it.fast4x.riplay.utils.playNext
 import it.fast4x.riplay.utils.playPrevious
-import it.fast4x.riplay.utils.rememberPreference
+import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.utils.semiBold
 import it.fast4x.riplay.utils.setDisLikeState
 import it.fast4x.riplay.utils.thumbnail
@@ -137,7 +124,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 import kotlin.math.absoluteValue
-import kotlin.math.roundToInt
 
 @ExperimentalMaterial3Api
 @ExperimentalFoundationApi

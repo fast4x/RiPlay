@@ -57,11 +57,11 @@ import it.fast4x.riplay.ui.items.SongItem
 import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.ui.styling.px
 import it.fast4x.riplay.utils.asMediaItem
-import it.fast4x.riplay.utils.disableScrollingTextKey
+import it.fast4x.riplay.extensions.preferences.disableScrollingTextKey
 import it.fast4x.riplay.utils.isNowPlaying
-import it.fast4x.riplay.utils.parentalControlEnabledKey
-import it.fast4x.riplay.utils.rememberPreference
-import it.fast4x.riplay.utils.thumbnailRoundnessKey
+import it.fast4x.riplay.extensions.preferences.parentalControlEnabledKey
+import it.fast4x.riplay.extensions.preferences.rememberPreference
+import it.fast4x.riplay.extensions.preferences.thumbnailRoundnessKey
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.map
 import it.fast4x.riplay.colorPalette
@@ -70,7 +70,7 @@ import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.ui.components.ButtonsRow
 import it.fast4x.riplay.ui.screens.player.fastPlay
 import it.fast4x.riplay.ui.screens.settings.isYouTubeLoggedIn
-import it.fast4x.riplay.utils.historyTypeKey
+import it.fast4x.riplay.extensions.preferences.historyTypeKey
 import java.time.DayOfWeek
 import java.time.Instant
 import java.time.LocalDate

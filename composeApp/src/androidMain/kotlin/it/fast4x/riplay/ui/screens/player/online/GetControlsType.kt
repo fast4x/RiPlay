@@ -23,12 +23,12 @@ import it.fast4x.riplay.enums.PlayerPlayButtonType
 import it.fast4x.riplay.ui.components.themed.PlaybackParamsDialog
 import it.fast4x.riplay.ui.screens.player.online.components.controls.ControlsEssential
 import it.fast4x.riplay.ui.screens.player.online.components.controls.ControlsModern
-import it.fast4x.riplay.utils.playbackDurationKey
-import it.fast4x.riplay.utils.playbackSpeedKey
-import it.fast4x.riplay.utils.playerBackgroundColorsKey
-import it.fast4x.riplay.utils.playerControlsTypeKey
-import it.fast4x.riplay.utils.playerPlayButtonTypeKey
-import it.fast4x.riplay.utils.rememberPreference
+import it.fast4x.riplay.extensions.preferences.playbackDurationKey
+import it.fast4x.riplay.extensions.preferences.playbackSpeedKey
+import it.fast4x.riplay.extensions.preferences.playerBackgroundColorsKey
+import it.fast4x.riplay.extensions.preferences.playerControlsTypeKey
+import it.fast4x.riplay.extensions.preferences.playerPlayButtonTypeKey
+import it.fast4x.riplay.extensions.preferences.rememberPreference
 
 @OptIn(UnstableApi::class)
 @Composable

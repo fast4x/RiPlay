@@ -46,11 +46,11 @@ import it.fast4x.riplay.ui.components.themed.InputTextDialog
 import it.fast4x.riplay.ui.items.PlaylistItem
 import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.ui.styling.favoritesIcon
-import it.fast4x.riplay.utils.disableScrollingTextKey
-import it.fast4x.riplay.utils.playlistSortByKey
-import it.fast4x.riplay.utils.playlistSortOrderKey
-import it.fast4x.riplay.utils.rememberPreference
-import it.fast4x.riplay.utils.showSearchTabKey
+import it.fast4x.riplay.extensions.preferences.disableScrollingTextKey
+import it.fast4x.riplay.extensions.preferences.playlistSortByKey
+import it.fast4x.riplay.extensions.preferences.playlistSortOrderKey
+import it.fast4x.riplay.extensions.preferences.rememberPreference
+import it.fast4x.riplay.extensions.preferences.showSearchTabKey
 import it.fast4x.riplay.colorPalette
 import it.fast4x.riplay.thumbnailShape
 

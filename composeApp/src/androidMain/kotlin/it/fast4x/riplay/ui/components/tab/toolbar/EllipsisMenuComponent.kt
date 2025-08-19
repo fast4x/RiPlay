@@ -16,8 +16,8 @@ import it.fast4x.riplay.enums.MenuStyle
 import it.fast4x.riplay.ui.components.LocalMenuState
 import it.fast4x.riplay.ui.components.MenuState
 import it.fast4x.riplay.ui.components.themed.Menu
-import it.fast4x.riplay.utils.menuStyleKey
-import it.fast4x.riplay.utils.rememberPreference
+import it.fast4x.riplay.extensions.preferences.menuStyleKey
+import it.fast4x.riplay.extensions.preferences.rememberPreference
 
 class EllipsisMenuComponent private constructor(
     private val buttons: () -> List<Button>,

@@ -73,13 +73,13 @@ import it.fast4x.riplay.ui.screens.settings.SettingsScreen
 import it.fast4x.riplay.ui.screens.statistics.StatisticsScreen
 import it.fast4x.riplay.ui.screens.welcome.WelcomeScreen
 import it.fast4x.riplay.utils.ShowVideoOrSongInfo
-import it.fast4x.riplay.utils.clearPreference
-import it.fast4x.riplay.utils.homeScreenTabIndexKey
-import it.fast4x.riplay.utils.pauseSearchHistoryKey
-import it.fast4x.riplay.utils.preferences
-import it.fast4x.riplay.utils.rememberPreference
-import it.fast4x.riplay.utils.thumbnailRoundnessKey
-import it.fast4x.riplay.utils.transitionEffectKey
+import it.fast4x.riplay.extensions.preferences.clearPreference
+import it.fast4x.riplay.extensions.preferences.homeScreenTabIndexKey
+import it.fast4x.riplay.extensions.preferences.pauseSearchHistoryKey
+import it.fast4x.riplay.extensions.preferences.preferences
+import it.fast4x.riplay.extensions.preferences.rememberPreference
+import it.fast4x.riplay.extensions.preferences.thumbnailRoundnessKey
+import it.fast4x.riplay.extensions.preferences.transitionEffectKey
 
 @androidx.annotation.OptIn(UnstableApi::class)
 @OptIn(ExperimentalFoundationApi::class, ExperimentalAnimationApi::class,

@@ -1,7 +1,6 @@
 package it.fast4x.riplay.ui.screens.album
 
 import android.annotation.SuppressLint
-import android.content.Intent
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
@@ -115,7 +114,7 @@ import it.fast4x.riplay.utils.asMediaItem
 import it.fast4x.riplay.utils.center
 import it.fast4x.riplay.utils.color
 import it.fast4x.riplay.utils.applyIf
-import it.fast4x.riplay.utils.disableScrollingTextKey
+import it.fast4x.riplay.extensions.preferences.disableScrollingTextKey
 import it.fast4x.riplay.utils.durationTextToMillis
 import it.fast4x.riplay.utils.enqueue
 import it.fast4x.riplay.utils.fadingEdge
@@ -127,12 +126,12 @@ import it.fast4x.riplay.utils.isLandscape
 import it.fast4x.riplay.utils.isNowPlaying
 import it.fast4x.riplay.utils.languageDestination
 import it.fast4x.riplay.utils.medium
-import it.fast4x.riplay.utils.parentalControlEnabledKey
-import it.fast4x.riplay.utils.rememberPreference
+import it.fast4x.riplay.extensions.preferences.parentalControlEnabledKey
+import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.utils.resize
 import it.fast4x.riplay.utils.secondary
 import it.fast4x.riplay.utils.semiBold
-import it.fast4x.riplay.utils.showFloatingIconKey
+import it.fast4x.riplay.extensions.preferences.showFloatingIconKey
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -144,7 +143,6 @@ import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.extensions.fastshare.FastShare
 import it.fast4x.riplay.models.SongAlbumMap
 import it.fast4x.riplay.models.defaultQueue
-import it.fast4x.riplay.models.defaultQueueId
 import it.fast4x.riplay.typography
 import it.fast4x.riplay.ui.components.PullToRefreshBox
 import it.fast4x.riplay.ui.components.themed.QueuesDialog

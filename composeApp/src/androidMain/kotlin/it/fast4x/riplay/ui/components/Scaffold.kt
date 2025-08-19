@@ -41,9 +41,9 @@ import it.fast4x.riplay.enums.NavigationBarPosition
 import it.fast4x.riplay.enums.PlayerPosition
 import it.fast4x.riplay.enums.TransitionEffect
 import it.fast4x.riplay.enums.UiType
-import it.fast4x.riplay.utils.playerPositionKey
-import it.fast4x.riplay.utils.rememberPreference
-import it.fast4x.riplay.utils.transitionEffectKey
+import it.fast4x.riplay.extensions.preferences.playerPositionKey
+import it.fast4x.riplay.extensions.preferences.rememberPreference
+import it.fast4x.riplay.extensions.preferences.transitionEffectKey
 import it.fast4x.riplay.colorPalette
 import it.fast4x.riplay.ui.components.navigation.header.AppHeader
 import it.fast4x.riplay.ui.components.navigation.nav.VerticalNavigationBar

@@ -19,8 +19,8 @@ import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.extensions.pip.isPipSupported
 import it.fast4x.riplay.extensions.pip.rememberPipHandler
-import it.fast4x.riplay.utils.enablePictureInPictureKey
-import it.fast4x.riplay.utils.rememberPreference
+import it.fast4x.riplay.extensions.preferences.enablePictureInPictureKey
+import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.colorPalette
 import it.fast4x.riplay.thumbnailShape
 import it.fast4x.riplay.ui.components.themed.DropdownMenu
