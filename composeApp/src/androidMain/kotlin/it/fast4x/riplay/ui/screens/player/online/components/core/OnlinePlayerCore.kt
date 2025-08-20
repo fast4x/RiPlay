@@ -184,7 +184,6 @@ fun OnlinePlayerCore(
                     )
                 }
                 false -> {
-                    it.visibility
                     it.layoutParams = if (!isLandscape) {
                             ViewGroup.LayoutParams(
                                 ViewGroup.LayoutParams.MATCH_PARENT,
