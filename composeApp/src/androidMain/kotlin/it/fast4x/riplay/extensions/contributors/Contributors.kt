@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -68,7 +69,8 @@ fun ShowDevelopers() {
     if ( developersList.isEmpty() ) return
 
     Box( Modifier.fillMaxWidth().height( 600.dp ) ) {
-        LazyColumn( Modifier.fillMaxWidth().padding( top = 15.dp ) ) {
+        val state = rememberLazyListState()
+        LazyColumn( modifier = Modifier.fillMaxWidth().padding( top = 15.dp ), state = state ) {
             items( developersList.filterNot { it.username == "eddisch2010" } ) { it.Draw() }
         }
     }
@@ -116,7 +118,8 @@ fun ShowTranslators() {
     if ( translatorsList.isEmpty() ) return
 
     Box( Modifier.fillMaxWidth().height( 600.dp ) ) {
-        LazyColumn( Modifier.fillMaxWidth().padding( top = 15.dp ) ) {
+        val state = rememberLazyListState()
+        LazyColumn(modifier =  Modifier.fillMaxWidth().padding( top = 15.dp ), state = state ) {
             items( translatorsList.filterNot { it.username == "eddisch2010" } ) { it.Draw() }
         }
     }

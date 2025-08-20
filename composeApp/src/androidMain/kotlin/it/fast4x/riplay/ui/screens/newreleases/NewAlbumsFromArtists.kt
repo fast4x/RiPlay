@@ -49,6 +49,7 @@ import it.fast4x.riplay.utils.secondary
 import it.fast4x.riplay.extensions.preferences.showSearchTabKey
 import it.fast4x.riplay.colorPalette
 import it.fast4x.riplay.typography
+import it.fast4x.riplay.utils.LazyListContainer
 
 @ExperimentalTextApi
 @UnstableApi
@@ -109,64 +110,68 @@ fun NewAlbumsFromArtists(
                 }
             }
 
-            LazyVerticalGrid(
+            LazyListContainer(
                 state = lazyGridState,
-                columns = GridCells.Adaptive(Dimensions.thumbnails.album + 24.dp),
-                //contentPadding = LocalPlayerAwareWindowInsets.current.asPaddingValues(),
-                modifier = Modifier
-                    .background(colorPalette().background0)
-                //.fillMaxSize()
             ) {
-                item(
-                    key = "header",
-                    contentType = 0,
-                    span = { GridItemSpan(maxLineSpan) }
+                LazyVerticalGrid(
+                    state = lazyGridState,
+                    columns = GridCells.Adaptive(Dimensions.thumbnails.album + 24.dp),
+                    //contentPadding = LocalPlayerAwareWindowInsets.current.asPaddingValues(),
+                    modifier = Modifier
+                        .background(colorPalette().background0)
+                    //.fillMaxSize()
                 ) {
-                    HeaderWithIcon(
-                        title = stringResource(R.string.new_albums_of_your_artists),
-                        iconId = R.drawable.search,
-                        enabled = true,
-                        showIcon = !showSearchTab,
-                        modifier = Modifier,
-                        onClick = {}
-                    )
-
-                }
-
-                if (newReleaseAlbumsFiltered.isNotEmpty()) {
-                    items(
-                        items = newReleaseAlbumsFiltered.distinct(),
-                        key = { it.key }) {
-                        AlbumItem(
-                            album = it,
-                            thumbnailSizePx = thumbnailSizePx,
-                            thumbnailSizeDp = thumbnailSizeDp,
-                            alternative = true,
-                            modifier = Modifier.clickable(onClick = {
-                                navController.navigate(route = "${NavRoutes.album.name}/${it.key}")
-                            }),
-                            disableScrollingText = disableScrollingText
-                        )
-                    }
-                } else {
                     item(
-                        key = "noAlbums",
+                        key = "header",
+                        contentType = 0,
+                        span = { GridItemSpan(maxLineSpan) }
+                    ) {
+                        HeaderWithIcon(
+                            title = stringResource(R.string.new_albums_of_your_artists),
+                            iconId = R.drawable.search,
+                            enabled = true,
+                            showIcon = !showSearchTab,
+                            modifier = Modifier,
+                            onClick = {}
+                        )
+
+                    }
+
+                    if (newReleaseAlbumsFiltered.isNotEmpty()) {
+                        items(
+                            items = newReleaseAlbumsFiltered.distinct(),
+                            key = { it.key }) {
+                            AlbumItem(
+                                album = it,
+                                thumbnailSizePx = thumbnailSizePx,
+                                thumbnailSizeDp = thumbnailSizeDp,
+                                alternative = true,
+                                modifier = Modifier.clickable(onClick = {
+                                    navController.navigate(route = "${NavRoutes.album.name}/${it.key}")
+                                }),
+                                disableScrollingText = disableScrollingText
+                            )
+                        }
+                    } else {
+                        item(
+                            key = "noAlbums",
+                            contentType = 0,
+                        ) {
+                            BasicText(
+                                text = "There are no new releases for your favorite artists",
+                                style = typography().s.secondary.center,
+                                modifier = Modifier
+                                    .align(Alignment.CenterHorizontally)
+                                    .padding(all = 16.dp)
+                            )
+                        }
+                    }
+                    item(
+                        key = "footer",
                         contentType = 0,
                     ) {
-                        BasicText(
-                            text = "There are no new releases for your favorite artists",
-                            style = typography().s.secondary.center,
-                            modifier = Modifier
-                                .align(Alignment.CenterHorizontally)
-                                .padding(all = 16.dp)
-                        )
+                        Spacer(modifier = Modifier.height(Dimensions.bottomSpacer))
                     }
-                }
-                item(
-                    key = "footer",
-                    contentType = 0,
-                ) {
-                    Spacer(modifier = Modifier.height(Dimensions.bottomSpacer))
                 }
             }
 

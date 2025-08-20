@@ -58,6 +58,7 @@ import kotlinx.coroutines.withContext
 import it.fast4x.riplay.colorPalette
 import it.fast4x.riplay.typography
 import it.fast4x.riplay.ui.screens.player.fastPlay
+import it.fast4x.riplay.utils.LazyListContainer
 
 @ExperimentalTextApi
 @SuppressLint("SuspiciousIndentation")
@@ -97,106 +98,111 @@ fun GoToLink(
             )
     ) {
 
-        LazyColumn(
+        LazyListContainer(
             state = lazyListState,
-            contentPadding = LocalPlayerAwareWindowInsets.current
-                .only(WindowInsetsSides.Vertical + WindowInsetsSides.End).asPaddingValues(),
-            modifier = Modifier
-                .fillMaxSize()
         ) {
-            item(
-                key = "header",
-                contentType = 0
+            LazyColumn(
+                state = lazyListState,
+                contentPadding = LocalPlayerAwareWindowInsets.current
+                    .only(WindowInsetsSides.Vertical + WindowInsetsSides.End).asPaddingValues(),
+                modifier = Modifier
+                    .fillMaxSize()
             ) {
-
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(10.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .fillMaxWidth()
+                item(
+                    key = "header",
+                    contentType = 0
                 ) {
-                    HeaderWithIcon(
-                        title = stringResource(R.string.go_to_link),
-                        iconId = R.drawable.query_stats,
-                        enabled = true,
-                        showIcon = true,
+
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(10.dp),
+                        verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier
-                            .padding(bottom = 8.dp),
-                        onClick = {}
+                            .fillMaxWidth()
+                    ) {
+                        HeaderWithIcon(
+                            title = stringResource(R.string.go_to_link),
+                            iconId = R.drawable.query_stats,
+                            enabled = true,
+                            showIcon = true,
+                            modifier = Modifier
+                                .padding(bottom = 8.dp),
+                            onClick = {}
+                        )
+
+                    }
+
+                    InputTextField(
+                        onDismiss = { },
+                        title = stringResource(R.string.paste_or_type_a_valid_url),
+                        value = textFieldValue.text,
+                        placeholder = "https://........",
+                        setValue = { textLink = it }
                     )
 
-                }
+                    BasicText(
+                        text = stringResource(R.string.you_can_put_a_complete_link),
+                        style = typography().s.semiBold,
+                        modifier = Modifier
+                            .padding(vertical = 8.dp, horizontal = 24.dp)
+                    )
 
-                InputTextField(
-                    onDismiss = { },
-                    title = stringResource(R.string.paste_or_type_a_valid_url),
-                    value = textFieldValue.text,
-                    placeholder = "https://........",
-                    setValue = { textLink = it }
-                )
+                    if (textLink.isNotEmpty()) {
 
-                BasicText(
-                    text = stringResource(R.string.you_can_put_a_complete_link),
-                    style = typography().s.semiBold,
-                    modifier = Modifier
-                        .padding(vertical = 8.dp, horizontal = 24.dp)
-                )
+                        val uri = textLink.toUri()
 
-                if (textLink.isNotEmpty()) {
+                        LaunchedEffect(Unit) {
+                            coroutineScope.launch(Dispatchers.Main) {
+                                println("mediaItem channelId: ${uri.pathSegments}")
+                                when (val path = uri.pathSegments.firstOrNull()) {
+                                    "playlist" -> uri.getQueryParameter("list")?.let { playlistId ->
+                                        val browseId = "VL$playlistId"
 
-                    val uri = textLink.toUri()
-
-                    LaunchedEffect(Unit) {
-                        coroutineScope.launch(Dispatchers.Main) {
-                            println("mediaItem channelId: ${uri.pathSegments}")
-                            when (val path = uri.pathSegments.firstOrNull()) {
-                                "playlist" -> uri.getQueryParameter("list")?.let { playlistId ->
-                                    val browseId = "VL$playlistId"
-
-                                    if (playlistId.startsWith("OLAK5uy_")) {
-                                        Environment.playlistPage(BrowseBody(browseId = browseId))
-                                            ?.getOrNull()?.let {
-                                                it.songsPage?.items?.firstOrNull()?.album?.endpoint?.browseId?.let { browseId ->
-                                                    //albumRoute.ensureGlobal(browseId)
-                                                    navController.navigate(route = "${NavRoutes.album.name}/$browseId")
+                                        if (playlistId.startsWith("OLAK5uy_")) {
+                                            Environment.playlistPage(BrowseBody(browseId = browseId))
+                                                ?.getOrNull()?.let {
+                                                    it.songsPage?.items?.firstOrNull()?.album?.endpoint?.browseId?.let { browseId ->
+                                                        //albumRoute.ensureGlobal(browseId)
+                                                        navController.navigate(route = "${NavRoutes.album.name}/$browseId")
+                                                    }
                                                 }
-                                            }
-                                    } else {
-                                        navController.navigate(route = "${NavRoutes.playlist.name}/$browseId")
+                                        } else {
+                                            navController.navigate(route = "${NavRoutes.playlist.name}/$browseId")
+                                        }
                                     }
-                                }
 
-                                "channel", "c" -> uri.lastPathSegment?.let { channelId ->
-                                    navController.navigate(route = "${NavRoutes.artist.name}/$channelId")
-                                }
+                                    "channel", "c" -> uri.lastPathSegment?.let { channelId ->
+                                        navController.navigate(route = "${NavRoutes.artist.name}/$channelId")
+                                    }
 
-                                "search" -> uri.getQueryParameter("q")?.let { query ->
+                                    "search" -> uri.getQueryParameter("q")?.let { query ->
                                         navController.navigate(route = "${NavRoutes.searchResults.name}/$query")
-                                }
+                                    }
 
-                                else -> when {
-                                    path == "watch" -> uri.getQueryParameter("v")
-                                    uri.host == "youtu.be" -> path
-                                    else -> null
-                                }?.let { videoId ->
-                                    Environment.song(videoId)?.getOrNull()?.let { song ->
-                                        val binder = snapshotFlow { binder }.filterNotNull().first()
-                                        withContext(Dispatchers.Main) {
-                                            //binder.player.forcePlay(song.asMediaItem)
-                                            fastPlay(song.asMediaItem, binder)
+                                    else -> when {
+                                        path == "watch" -> uri.getQueryParameter("v")
+                                        uri.host == "youtu.be" -> path
+                                        else -> null
+                                    }?.let { videoId ->
+                                        Environment.song(videoId)?.getOrNull()?.let { song ->
+                                            val binder =
+                                                snapshotFlow { binder }.filterNotNull().first()
+                                            withContext(Dispatchers.Main) {
+                                                //binder.player.forcePlay(song.asMediaItem)
+                                                fastPlay(song.asMediaItem, binder)
+                                            }
                                         }
                                     }
                                 }
+
+
                             }
 
-
                         }
-
                     }
+
                 }
 
             }
-
         }
 
     }

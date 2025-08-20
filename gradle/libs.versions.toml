@@ -50,6 +50,7 @@ hypnoticcanvas = "0.4.1"
 okhttpDnsOverHttps = "5.1.0"
 reorderable = "2.5.1"
 multidex = "2.0.1"
+fastscroller = "0.3.2"
 #gmsCast = "21.3.0"
 
 [libraries]
@@ -135,6 +136,10 @@ okhttp-dnsoverhttps = { group = "com.squareup.okhttp3", name = "okhttp-dnsoverht
 room-backup = { group = "de.raphaelebner", name = "roomdatabasebackup", version = "1.1.0" }
 reorderable = { module = "sh.calvin.reorderable:reorderable", version.ref = "reorderable" }
 multidex = { group = "androidx.multidex", name = "multidex", version.ref = "multidex" }
+fastscroller = { group = "io.github.oikvpqya.compose.fastscroller", name = "fastscroller-core", version.ref = "fastscroller" }
+fastscroller-material3 = { group = "io.github.oikvpqya.compose.fastscroller", name = "fastscroller-material3", version.ref = "fastscroller" }
+fastscroller-indicator = { group = "io.github.oikvpqya.compose.fastscroller", name = "fastscroller-indicator", version.ref = "fastscroller" }
+
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

@@ -65,6 +65,7 @@ import kotlinx.coroutines.delay
 import it.fast4x.riplay.colorPalette
 import it.fast4x.riplay.typography
 import it.fast4x.riplay.ui.screens.player.fastPlay
+import it.fast4x.riplay.utils.LazyListContainer
 
 @ExperimentalTextApi
 @SuppressLint("SuspiciousIndentation")
@@ -126,78 +127,82 @@ fun LocalSongSearch(
                     1f
             )
     ) {
-        LazyColumn(
+        LazyListContainer(
             state = lazyListState,
-            contentPadding = LocalPlayerAwareWindowInsets.current
-                .only(WindowInsetsSides.Vertical + WindowInsetsSides.End).asPaddingValues(),
-            modifier = Modifier
-                .fillMaxSize()
         ) {
-            item(
-                key = "header",
-                contentType = 0
+            LazyColumn(
+                state = lazyListState,
+                contentPadding = LocalPlayerAwareWindowInsets.current
+                    .only(WindowInsetsSides.Vertical + WindowInsetsSides.End).asPaddingValues(),
+                modifier = Modifier
+                    .fillMaxSize()
             ) {
+                item(
+                    key = "header",
+                    contentType = 0
+                ) {
 
-                Header(
-                    titleContent = {
-                        BasicTextField(
-                            value = textFieldValue,
-                            onValueChange = onTextFieldValueChanged,
-                            textStyle = typography().l.medium.align(TextAlign.Start),
-                            singleLine = true,
-                            maxLines = 1,
-                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                            cursorBrush = SolidColor(colorPalette().text),
-                            decorationBox = decorationBox,
-                            modifier = Modifier
-                                .background(
-                                    colorPalette().background1,
-                                    shape = thumbnailRoundness.shape()
-                                )
-                                .padding(all = 4.dp)
-                                .focusRequester(focusRequester)
-                                .fillMaxWidth()
-                        )
-                    },
-                    actionsContent = {},
-                )
-            }
+                    Header(
+                        titleContent = {
+                            BasicTextField(
+                                value = textFieldValue,
+                                onValueChange = onTextFieldValueChanged,
+                                textStyle = typography().l.medium.align(TextAlign.Start),
+                                singleLine = true,
+                                maxLines = 1,
+                                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                                cursorBrush = SolidColor(colorPalette().text),
+                                decorationBox = decorationBox,
+                                modifier = Modifier
+                                    .background(
+                                        colorPalette().background1,
+                                        shape = thumbnailRoundness.shape()
+                                    )
+                                    .padding(all = 4.dp)
+                                    .focusRequester(focusRequester)
+                                    .fillMaxWidth()
+                            )
+                        },
+                        actionsContent = {},
+                    )
+                }
 
-            items(
-                items = items,
-                key = Song::id,
-            ) { song ->
-                val isLocal by remember { derivedStateOf { song.asMediaItem.isLocal } }
-                SongItem(
-                    song = song,
-                    thumbnailSizePx = thumbnailSizePx,
-                    thumbnailSizeDp = thumbnailSizeDp,
-                    modifier = Modifier
-                        .combinedClickable(
-                            onLongClick = {
-                                menuState.display {
-                                    InHistoryMediaItemMenu(
-                                        navController = navController,
-                                        song = song,
-                                        onDismiss = menuState::hide,
-                                        disableScrollingText = disableScrollingText
+                items(
+                    items = items,
+                    key = Song::id,
+                ) { song ->
+                    val isLocal by remember { derivedStateOf { song.asMediaItem.isLocal } }
+                    SongItem(
+                        song = song,
+                        thumbnailSizePx = thumbnailSizePx,
+                        thumbnailSizeDp = thumbnailSizeDp,
+                        modifier = Modifier
+                            .combinedClickable(
+                                onLongClick = {
+                                    menuState.display {
+                                        InHistoryMediaItemMenu(
+                                            navController = navController,
+                                            song = song,
+                                            onDismiss = menuState::hide,
+                                            disableScrollingText = disableScrollingText
+                                        )
+                                    }
+                                },
+                                onClick = {
+                                    val mediaItem = song.asMediaItem
+                                    binder?.stopRadio()
+                                    //binder?.player?.forcePlay(mediaItem)
+                                    fastPlay(mediaItem, binder)
+                                    binder?.setupRadio(
+                                        NavigationEndpoint.Endpoint.Watch(videoId = mediaItem.mediaId)
                                     )
                                 }
-                            },
-                            onClick = {
-                                val mediaItem = song.asMediaItem
-                                binder?.stopRadio()
-                                //binder?.player?.forcePlay(mediaItem)
-                                fastPlay(mediaItem, binder)
-                                binder?.setupRadio(
-                                    NavigationEndpoint.Endpoint.Watch(videoId = mediaItem.mediaId)
-                                )
-                            }
-                        )
-                        .animateItem(),
-                    disableScrollingText = disableScrollingText,
-                    isNowPlaying = binder?.player?.isNowPlaying(song.id) ?: false
-                )
+                            )
+                            .animateItem(),
+                        disableScrollingText = disableScrollingText,
+                        isNowPlaying = binder?.player?.isNowPlaying(song.id) ?: false
+                    )
+                }
             }
         }
 

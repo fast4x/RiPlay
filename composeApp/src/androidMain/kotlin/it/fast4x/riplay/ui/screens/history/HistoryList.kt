@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.Checkbox
 import androidx.compose.material.CheckboxDefaults
 import androidx.compose.runtime.Composable
@@ -71,6 +72,7 @@ import it.fast4x.riplay.ui.components.ButtonsRow
 import it.fast4x.riplay.ui.screens.player.fastPlay
 import it.fast4x.riplay.ui.screens.settings.isYouTubeLoggedIn
 import it.fast4x.riplay.extensions.preferences.historyTypeKey
+import it.fast4x.riplay.utils.LazyListContainer
 import java.time.DayOfWeek
 import java.time.Instant
 import java.time.LocalDate
@@ -173,208 +175,220 @@ fun HistoryList(
                     1f
             )
     ) {
-
-        LazyColumn(
-            contentPadding = LocalPlayerAwareWindowInsets.current
-                .only(WindowInsetsSides.Vertical + WindowInsetsSides.End).asPaddingValues(),
-            modifier = Modifier
-                .background(colorPalette().background0)
-                .fillMaxSize()
+        val state = rememberLazyListState()
+        LazyListContainer(
+            state = state
         ) {
-
-            item(key = "header", contentType = 0) {
-                HeaderWithIcon(
-                    title = stringResource(R.string.history),
-                    iconId = R.drawable.history,
-                    enabled = false,
-                    showIcon = false,
-                    modifier = Modifier,
-                    onClick = {}
-                )
-            }
-
-            item(
-                key = "tabList", contentType = 0,
+            LazyColumn(
+                state = state,
+                contentPadding = LocalPlayerAwareWindowInsets.current
+                    .only(WindowInsetsSides.Vertical + WindowInsetsSides.End).asPaddingValues(),
+                modifier = Modifier
+                    .background(colorPalette().background0)
+                    .fillMaxSize()
             ) {
-                ButtonsRow(
-                    chips = buttonsList,
-                    currentValue = historyType,
-                    onValueUpdate = { historyType = it },
-                    modifier = Modifier.padding(start = 12.dp, end = 12.dp)
-                )
-            }
 
-            if (historyType == HistoryType.History)
-                events.value.forEach { (dateAgo, events) ->
-                    stickyHeader {
-                        Title(
-                            title = when (dateAgo) {
-                                DateAgo.Today -> stringResource(R.string.today)
-                                DateAgo.Yesterday -> stringResource(R.string.yesterday)
-                                DateAgo.ThisWeek -> stringResource(R.string.this_week)
-                                DateAgo.LastWeek -> stringResource(R.string.last_week)
-                                is DateAgo.Other -> dateAgo.date.format(DateTimeFormatter.ofPattern("yyyy/MM"))
-                            },
-                            modifier = Modifier
-                                .background(
-                                    colorPalette().background3,
-                                    shape = thumbnailRoundness.shape()
-                                )
+                item(key = "header", contentType = 0) {
+                    HeaderWithIcon(
+                        title = stringResource(R.string.history),
+                        iconId = R.drawable.history,
+                        enabled = false,
+                        showIcon = false,
+                        modifier = Modifier,
+                        onClick = {}
+                    )
+                }
 
+                item(
+                    key = "tabList", contentType = 0,
+                ) {
+                    ButtonsRow(
+                        chips = buttonsList,
+                        currentValue = historyType,
+                        onValueUpdate = { historyType = it },
+                        modifier = Modifier.padding(start = 12.dp, end = 12.dp)
+                    )
+                }
 
-                        )
-                    }
-
-                    items(
-                        items = events.map {
-                                           it.apply {
-                                               this.event.timestamp = this.timestampDay!!
-                                           }
-                        }.distinctBy { it.song.id},
-                        key = { it.event.id }
-                    ) { event ->
-                        val isLocal by remember { derivedStateOf { event.song.asMediaItem.isLocal } }
-                        val checkedState = rememberSaveable { mutableStateOf(false) }
-                        var forceRecompose by remember { mutableStateOf(false) }
-
-                        SongItem(
-                                    song = event.song,
-                                    thumbnailSizeDp = thumbnailSizeDp,
-                                    thumbnailSizePx = thumbnailSizePx,
-                                    onThumbnailContent = {
-                                            NowPlayingSongIndicator(event.song.asMediaItem.mediaId, binder?.player)
-                                    },
-                                    trailingContent = {
-                                        if (selectItems)
-                                            Checkbox(
-                                                checked = checkedState.value,
-                                                onCheckedChange = {
-                                                    checkedState.value = it
-                                                    if (it) listMediaItems.add(event.song.asMediaItem) else
-                                                        listMediaItems.remove(event.song.asMediaItem)
-                                                },
-                                                colors = CheckboxDefaults.colors(
-                                                    checkedColor = colorPalette().accent,
-                                                    uncheckedColor = colorPalette().text
-                                                ),
-                                                modifier = Modifier
-                                                    .scale(0.7f)
-                                            )
-                                        else checkedState.value = false
-                                    },
-                                    modifier = Modifier
-                                        .combinedClickable(
-                                            onLongClick = {
-                                                menuState.display {
-                                                    NonQueuedMediaItemMenuLibrary(
-                                                        navController = navController,
-                                                        mediaItem = event.song.asMediaItem,
-                                                        onDismiss = {
-                                                            menuState.hide()
-                                                            forceRecompose = true
-                                                        },
-                                                        onInfo = {
-                                                            navController.navigate("${NavRoutes.videoOrSongInfo.name}/${event.song.id}")
-                                                        },
-                                                        disableScrollingText = disableScrollingText
-                                                    )
-                                                }
-                                            },
-                                            onClick = {
-                                                //binder?.player?.forcePlay(event.song.asMediaItem)
-                                                fastPlay(event.song.asMediaItem, binder)
-                                            }
+                if (historyType == HistoryType.History)
+                    events.value.forEach { (dateAgo, events) ->
+                        stickyHeader {
+                            Title(
+                                title = when (dateAgo) {
+                                    DateAgo.Today -> stringResource(R.string.today)
+                                    DateAgo.Yesterday -> stringResource(R.string.yesterday)
+                                    DateAgo.ThisWeek -> stringResource(R.string.this_week)
+                                    DateAgo.LastWeek -> stringResource(R.string.last_week)
+                                    is DateAgo.Other -> dateAgo.date.format(
+                                        DateTimeFormatter.ofPattern(
+                                            "yyyy/MM"
                                         )
-                                        .background(color = colorPalette().background0)
-                                        .animateItem(),
-                                    disableScrollingText = disableScrollingText,
-                                    isNowPlaying = binder?.player?.isNowPlaying(event.song.id) ?: false,
-                                    forceRecompose = forceRecompose
-                                )
-
-                    }
-                }
-
-            if (historyType == HistoryType.YTMHistory)
-                historyPage?.getOrNull()?.sections?.forEach { section ->
-                    stickyHeader {
-                        Title(
-                            title = section.title,
-                            modifier = Modifier
-                                .background(
-                                    colorPalette().background3,
-                                    shape = thumbnailRoundness.shape()
-                                )
-
-
-                        )
-                    }
-                    items(
-                        items = section.songs.map { it.asMediaItem }
-                            .filter { it.mediaId.isNotEmpty() },
-                        key = { it.mediaId }
-                    ) { song ->
-                        val isLocal by remember { derivedStateOf { song.isLocal } }
-                        val checkedState = rememberSaveable { mutableStateOf(false) }
-                        var forceRecompose by remember { mutableStateOf(false) }
-                        SongItem(
-                            song = song,
-                            thumbnailSizeDp = thumbnailSizeDp,
-                            thumbnailSizePx = thumbnailSizePx,
-                            onThumbnailContent = {
-                                NowPlayingSongIndicator(song.mediaId, binder?.player)
-                            },
-                            trailingContent = {
-                                if (selectItems)
-                                    Checkbox(
-                                        checked = checkedState.value,
-                                        onCheckedChange = {
-                                            checkedState.value = it
-                                            if (it) listMediaItems.add(song) else
-                                                listMediaItems.remove(song)
-                                        },
-                                        colors = CheckboxDefaults.colors(
-                                            checkedColor = colorPalette().accent,
-                                            uncheckedColor = colorPalette().text
-                                        ),
-                                        modifier = Modifier
-                                            .scale(0.7f)
                                     )
-                                else checkedState.value = false
-                            },
-                            modifier = Modifier
-                                .combinedClickable(
-                                    onLongClick = {
-                                        menuState.display {
-                                            NonQueuedMediaItemMenuLibrary(
-                                                navController = navController,
-                                                mediaItem = song,
-                                                onDismiss = {
-                                                    menuState.hide()
-                                                    forceRecompose = true
-                                                },
-                                                onInfo = {
-                                                    navController.navigate("${NavRoutes.videoOrSongInfo.name}/${song.mediaId}")
-                                                },
-                                                disableScrollingText = disableScrollingText
-                                            )
+                                },
+                                modifier = Modifier
+                                    .background(
+                                        colorPalette().background3,
+                                        shape = thumbnailRoundness.shape()
+                                    )
+
+
+                            )
+                        }
+
+                        items(
+                            items = events.map {
+                                it.apply {
+                                    this.event.timestamp = this.timestampDay!!
+                                }
+                            }.distinctBy { it.song.id },
+                            key = { it.event.id }
+                        ) { event ->
+                            val isLocal by remember { derivedStateOf { event.song.asMediaItem.isLocal } }
+                            val checkedState = rememberSaveable { mutableStateOf(false) }
+                            var forceRecompose by remember { mutableStateOf(false) }
+
+                            SongItem(
+                                song = event.song,
+                                thumbnailSizeDp = thumbnailSizeDp,
+                                thumbnailSizePx = thumbnailSizePx,
+                                onThumbnailContent = {
+                                    NowPlayingSongIndicator(
+                                        event.song.asMediaItem.mediaId,
+                                        binder?.player
+                                    )
+                                },
+                                trailingContent = {
+                                    if (selectItems)
+                                        Checkbox(
+                                            checked = checkedState.value,
+                                            onCheckedChange = {
+                                                checkedState.value = it
+                                                if (it) listMediaItems.add(event.song.asMediaItem) else
+                                                    listMediaItems.remove(event.song.asMediaItem)
+                                            },
+                                            colors = CheckboxDefaults.colors(
+                                                checkedColor = colorPalette().accent,
+                                                uncheckedColor = colorPalette().text
+                                            ),
+                                            modifier = Modifier
+                                                .scale(0.7f)
+                                        )
+                                    else checkedState.value = false
+                                },
+                                modifier = Modifier
+                                    .combinedClickable(
+                                        onLongClick = {
+                                            menuState.display {
+                                                NonQueuedMediaItemMenuLibrary(
+                                                    navController = navController,
+                                                    mediaItem = event.song.asMediaItem,
+                                                    onDismiss = {
+                                                        menuState.hide()
+                                                        forceRecompose = true
+                                                    },
+                                                    onInfo = {
+                                                        navController.navigate("${NavRoutes.videoOrSongInfo.name}/${event.song.id}")
+                                                    },
+                                                    disableScrollingText = disableScrollingText
+                                                )
+                                            }
+                                        },
+                                        onClick = {
+                                            //binder?.player?.forcePlay(event.song.asMediaItem)
+                                            fastPlay(event.song.asMediaItem, binder)
                                         }
-                                    },
-                                    onClick = {
-                                        //binder?.player?.forcePlay(song)
-                                        fastPlay(song, binder)
-                                    }
-                                )
-                                .background(color = colorPalette().background0)
-                                .animateItem(),
-                            disableScrollingText = disableScrollingText,
-                            isNowPlaying = binder?.player?.isNowPlaying(song.mediaId) ?: false,
-                            forceRecompose = forceRecompose
-                        )
+                                    )
+                                    .background(color = colorPalette().background0)
+                                    .animateItem(),
+                                disableScrollingText = disableScrollingText,
+                                isNowPlaying = binder?.player?.isNowPlaying(event.song.id) ?: false,
+                                forceRecompose = forceRecompose
+                            )
+
+                        }
                     }
 
-                }
+                if (historyType == HistoryType.YTMHistory)
+                    historyPage?.getOrNull()?.sections?.forEach { section ->
+                        stickyHeader {
+                            Title(
+                                title = section.title,
+                                modifier = Modifier
+                                    .background(
+                                        colorPalette().background3,
+                                        shape = thumbnailRoundness.shape()
+                                    )
 
+
+                            )
+                        }
+                        items(
+                            items = section.songs.map { it.asMediaItem }
+                                .filter { it.mediaId.isNotEmpty() },
+                            key = { it.mediaId }
+                        ) { song ->
+                            val isLocal by remember { derivedStateOf { song.isLocal } }
+                            val checkedState = rememberSaveable { mutableStateOf(false) }
+                            var forceRecompose by remember { mutableStateOf(false) }
+                            SongItem(
+                                song = song,
+                                thumbnailSizeDp = thumbnailSizeDp,
+                                thumbnailSizePx = thumbnailSizePx,
+                                onThumbnailContent = {
+                                    NowPlayingSongIndicator(song.mediaId, binder?.player)
+                                },
+                                trailingContent = {
+                                    if (selectItems)
+                                        Checkbox(
+                                            checked = checkedState.value,
+                                            onCheckedChange = {
+                                                checkedState.value = it
+                                                if (it) listMediaItems.add(song) else
+                                                    listMediaItems.remove(song)
+                                            },
+                                            colors = CheckboxDefaults.colors(
+                                                checkedColor = colorPalette().accent,
+                                                uncheckedColor = colorPalette().text
+                                            ),
+                                            modifier = Modifier
+                                                .scale(0.7f)
+                                        )
+                                    else checkedState.value = false
+                                },
+                                modifier = Modifier
+                                    .combinedClickable(
+                                        onLongClick = {
+                                            menuState.display {
+                                                NonQueuedMediaItemMenuLibrary(
+                                                    navController = navController,
+                                                    mediaItem = song,
+                                                    onDismiss = {
+                                                        menuState.hide()
+                                                        forceRecompose = true
+                                                    },
+                                                    onInfo = {
+                                                        navController.navigate("${NavRoutes.videoOrSongInfo.name}/${song.mediaId}")
+                                                    },
+                                                    disableScrollingText = disableScrollingText
+                                                )
+                                            }
+                                        },
+                                        onClick = {
+                                            //binder?.player?.forcePlay(song)
+                                            fastPlay(song, binder)
+                                        }
+                                    )
+                                    .background(color = colorPalette().background0)
+                                    .animateItem(),
+                                disableScrollingText = disableScrollingText,
+                                isNowPlaying = binder?.player?.isNowPlaying(song.mediaId) ?: false,
+                                forceRecompose = forceRecompose
+                            )
+                        }
+
+                    }
+
+            }
         }
 
     }

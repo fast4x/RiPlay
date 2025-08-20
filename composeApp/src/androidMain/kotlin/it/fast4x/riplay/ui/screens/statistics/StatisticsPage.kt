@@ -98,6 +98,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import it.fast4x.riplay.colorPalette
 import it.fast4x.riplay.typography
+import it.fast4x.riplay.utils.LazyListContainer
 import timber.log.Timber
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.days
@@ -238,10 +239,13 @@ fun StatisticsPage(
             )
     ) {
             val lazyGridState = rememberLazyGridState()
+        LazyListContainer(
+            state = lazyGridState,
+        ) {
             LazyVerticalGrid(
                 state = lazyGridState,
                 columns = GridCells.Adaptive(
-                    if(statisticsCategory == StatisticsCategory.Songs) 200.dp else playlistThumbnailSizeDp
+                    if (statisticsCategory == StatisticsCategory.Songs) 200.dp else playlistThumbnailSizeDp
                 ),
                 modifier = Modifier
                     .background(colorPalette().background0)
@@ -294,34 +298,37 @@ fun StatisticsPage(
 
                 if (statisticsCategory == StatisticsCategory.Songs) {
 
-                        if (showStatsListeningTime)
-                            item(
-                                key = "headerListeningTime",
-                                span = { GridItemSpan(maxLineSpan) }
+                    if (showStatsListeningTime)
+                        item(
+                            key = "headerListeningTime",
+                            span = { GridItemSpan(maxLineSpan) }
+                        ) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)
+                                    .padding(bottom = 8.dp)
                             ) {
-                                Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp).padding(bottom = 8.dp)) {
-                                    SettingsEntry(
-                                        title = "${allSongs.size} ${stringResource(R.string.statistics_songs_heard)}",
-                                        text = "${formatAsTime(totalPlayTimes)} ${stringResource(R.string.statistics_of_time_taken)}",
-                                        onClick = {},
-                                        trailingContent = {
-                                            Image(
-                                                painter = painterResource(R.drawable.musical_notes),
-                                                contentDescription = null,
-                                                colorFilter = ColorFilter.tint(colorPalette().shimmer),
-                                                modifier = Modifier
-                                                    .size(34.dp)
-                                            )
-                                        },
-                                        modifier = Modifier
-                                            .background(
-                                                color = colorPalette().background4,
-                                                shape = thumbnailRoundness.shape()
-                                            )
+                                SettingsEntry(
+                                    title = "${allSongs.size} ${stringResource(R.string.statistics_songs_heard)}",
+                                    text = "${formatAsTime(totalPlayTimes)} ${stringResource(R.string.statistics_of_time_taken)}",
+                                    onClick = {},
+                                    trailingContent = {
+                                        Image(
+                                            painter = painterResource(R.drawable.musical_notes),
+                                            contentDescription = null,
+                                            colorFilter = ColorFilter.tint(colorPalette().shimmer),
+                                            modifier = Modifier
+                                                .size(34.dp)
+                                        )
+                                    },
+                                    modifier = Modifier
+                                        .background(
+                                            color = colorPalette().background4,
+                                            shape = thumbnailRoundness.shape()
+                                        )
 
-                                    )
-                                }
+                                )
                             }
+                        }
 
 
                     items(
@@ -355,7 +362,13 @@ fun StatisticsPage(
                                                     forceRecompose = true
                                                 },
                                                 onInfo = {
-                                                    navController.navigate("${NavRoutes.videoOrSongInfo.name}/${songs.get(it).id}")
+                                                    navController.navigate(
+                                                        "${NavRoutes.videoOrSongInfo.name}/${
+                                                            songs.get(
+                                                                it
+                                                            ).id
+                                                        }"
+                                                    )
                                                 },
                                                 disableScrollingText = disableScrollingText
                                             )
@@ -387,7 +400,7 @@ fun StatisticsPage(
 
                         ArtistItem(
                             thumbnailUrl = artists[it].thumbnailUrl,
-                            name = "${it+1}. ${artists[it].name}",
+                            name = "${it + 1}. ${artists[it].name}",
                             showName = true,
                             subscribersCount = null,
                             thumbnailSizePx = artistThumbnailSizePx,
@@ -413,7 +426,7 @@ fun StatisticsPage(
 
                         AlbumItem(
                             thumbnailUrl = albums[it].thumbnailUrl,
-                            title = "${it+1}. ${albums[it].title}",
+                            title = "${it + 1}. ${albums[it].title}",
                             authors = albums[it].authorsText,
                             year = albums[it].year,
                             thumbnailSizePx = albumThumbnailSizePx,
@@ -433,7 +446,8 @@ fun StatisticsPage(
                         count = playlists.count()
                     ) {
                         val thumbnails by remember {
-                            Database.playlistThumbnailUrls(playlists[it].playlist.id).distinctUntilChanged().map {
+                            Database.playlistThumbnailUrls(playlists[it].playlist.id)
+                                .distinctUntilChanged().map {
                                 it.map { url ->
                                     url.thumbnail(playlistThumbnailSizePx / 2)
                                 }
@@ -448,7 +462,7 @@ fun StatisticsPage(
                                             .data(thumbnails.first())
                                             .setHeader("User-Agent", "Mozilla/5.0")
                                             .build(), //thumbnails.first().thumbnail(thumbnailSizePx),
-                                        onError = {error ->
+                                        onError = { error ->
                                             Timber.e("Failed AsyncImage in PlaylistItem ${error.result.throwable.stackTraceToString()}")
                                         },
                                         contentDescription = null,
@@ -472,32 +486,33 @@ fun StatisticsPage(
                                                         .data(thumbnail)
                                                         .setHeader("User-Agent", "Mozilla/5.0")
                                                         .build(),
-                                                    onError = {error ->
+                                                    onError = { error ->
                                                         Timber.e("Failed AsyncImage 1 in PlaylistItem ${error.result.throwable.stackTraceToString()}")
                                                     },
                                                     contentDescription = null,
                                                     contentScale = ContentScale.Crop,
                                                     modifier = Modifier
                                                         .align(alignment)
-                                                        .size(playlistThumbnailSizeDp /2)
+                                                        .size(playlistThumbnailSizeDp / 2)
                                                 )
                                         }
                                     }
                                 }
                             },
                             songCount = playlists[it].songCount,
-                            name = "${it+1}. ${playlists[it].playlist.name}",
+                            name = "${it + 1}. ${playlists[it].playlist.name}",
                             channelName = null,
                             thumbnailSizeDp = playlistThumbnailSizeDp,
                             alternative = true,
                             modifier = Modifier
                                 .clickable(onClick = {
                                     val playlistId: String = playlists[it].playlist.id.toString()
-                                    if ( playlistId.isEmpty() ) return@clickable    // Fail-safe??
+                                    if (playlistId.isEmpty()) return@clickable    // Fail-safe??
 
-                                    val pBrowseId: String = cleanPrefix(playlists[it].playlist.browseId ?: "")
+                                    val pBrowseId: String =
+                                        cleanPrefix(playlists[it].playlist.browseId ?: "")
                                     val route: String =
-                                        if ( pBrowseId.isNotEmpty() )
+                                        if (pBrowseId.isNotEmpty())
                                             "${NavRoutes.playlist.name}/$pBrowseId"
                                         else
                                             "${NavRoutes.localPlaylist.name}/$playlistId"
@@ -511,8 +526,9 @@ fun StatisticsPage(
 
 
             }
+        }
 
-            Spacer(modifier = Modifier.height(Dimensions.bottomSpacer))
+        Spacer(modifier = Modifier.height(Dimensions.bottomSpacer))
 
         }
 }

@@ -92,6 +92,7 @@ import it.fast4x.riplay.utils.importYTMPrivatePlaylists
 import it.fast4x.riplay.extensions.preferences.Preference.HOME_LIBRARY_ITEM_SIZE
 import it.fast4x.riplay.utils.autoSyncToolbutton
 import it.fast4x.riplay.extensions.preferences.autosyncKey
+import it.fast4x.riplay.utils.LazyListContainer
 import it.fast4x.riplay.utils.viewTypeToolbutton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -344,142 +345,151 @@ fun HomePlaylists(
                 search.SearchBar( this )
 
                 if (getViewType() == ViewType.List) {
-                    LazyColumn(
-                        state = rememberLazyListState(),
-                        modifier = Modifier
-
+                    val state = rememberLazyListState()
+                    LazyListContainer(
+                        state = state
                     ) {
-                        item(
-                            key = "separator",
-                            contentType = 0
-                        ) {
-                            ButtonsRow(
-                                chips = buttonsList,
-                                currentValue = playlistType,
-                                onValueUpdate = { playlistType = it },
-                                modifier = Modifier.padding(start = 12.dp, end = 12.dp)
-                            )
-                        }
+                        LazyColumn(
+                            state = state,
+                            modifier = Modifier
 
-                        val listPrefix =
-                            when (playlistType) {
-                                PlaylistsType.Playlist -> ""    // Matches everything
-                                PlaylistsType.PinnedPlaylist -> PINNED_PREFIX
-                                PlaylistsType.MonthlyPlaylist -> MONTHLY_PREFIX
-                                PlaylistsType.PodcastPlaylist -> ""
-                                PlaylistsType.YTPlaylist -> YTP_PREFIX
+                        ) {
+                            item(
+                                key = "separator",
+                                contentType = 0
+                            ) {
+                                ButtonsRow(
+                                    chips = buttonsList,
+                                    currentValue = playlistType,
+                                    onValueUpdate = { playlistType = it },
+                                    modifier = Modifier.padding(start = 12.dp, end = 12.dp)
+                                )
                             }
-                        val condition: (PlaylistPreview) -> Boolean = {
-                            when(playlistType){
-                                PlaylistsType.YTPlaylist -> it.playlist.isYoutubePlaylist
-                                PlaylistsType.PodcastPlaylist -> it.playlist.isPodcast
-                                else -> it.playlist.name.startsWith(listPrefix, true)
-                            }
+
+                            val listPrefix =
+                                when (playlistType) {
+                                    PlaylistsType.Playlist -> ""    // Matches everything
+                                    PlaylistsType.PinnedPlaylist -> PINNED_PREFIX
+                                    PlaylistsType.MonthlyPlaylist -> MONTHLY_PREFIX
+                                    PlaylistsType.PodcastPlaylist -> ""
+                                    PlaylistsType.YTPlaylist -> YTP_PREFIX
+                                }
+                            val condition: (PlaylistPreview) -> Boolean = {
+                                when (playlistType) {
+                                    PlaylistsType.YTPlaylist -> it.playlist.isYoutubePlaylist
+                                    PlaylistsType.PodcastPlaylist -> it.playlist.isPodcast
+                                    else -> it.playlist.name.startsWith(listPrefix, true)
+                                }
 //                            if (playlistType == PlaylistsType.YTPlaylist) {
 //                                it.playlist.isYoutubePlaylist
 //                            } else it.playlist.name.startsWith(listPrefix, true)
-                        }
-                        items(
-                            items = itemsOnDisplay.filter(condition),
-                            key = { it.playlist.id }
-                        ) { preview ->
-                            PlaylistItem(
-                                playlist = preview,
-                                thumbnailSizeDp = itemSize.size.dp,
-                                thumbnailSizePx = itemSize.size.px,
-                                homepage = true,
-                                iconSize = itemSize.size.dp,
-                                alternative = false,
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .animateItem(fadeInSpec = null, fadeOutSpec = null)
-                                    .clickable(onClick = {
-                                        search.onItemSelected()
-                                        onPlaylistClick(preview.playlist)
-                                    }),
-                                disableScrollingText = disableScrollingText,
-                                isYoutubePlaylist = preview.playlist.isYoutubePlaylist,
-                                isEditable = preview.playlist.isEditable
-                            )
-                        }
+                            }
+                            items(
+                                items = itemsOnDisplay.filter(condition),
+                                key = { it.playlist.id }
+                            ) { preview ->
+                                PlaylistItem(
+                                    playlist = preview,
+                                    thumbnailSizeDp = itemSize.size.dp,
+                                    thumbnailSizePx = itemSize.size.px,
+                                    homepage = true,
+                                    iconSize = itemSize.size.dp,
+                                    alternative = false,
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .animateItem(fadeInSpec = null, fadeOutSpec = null)
+                                        .clickable(onClick = {
+                                            search.onItemSelected()
+                                            onPlaylistClick(preview.playlist)
+                                        }),
+                                    disableScrollingText = disableScrollingText,
+                                    isYoutubePlaylist = preview.playlist.isYoutubePlaylist,
+                                    isEditable = preview.playlist.isEditable
+                                )
+                            }
 
-                        item(
-                            key = "footer",
-                            contentType = 0
-                        ) {
-                            Spacer(modifier = Modifier.height(Dimensions.bottomSpacer))
-                        }
+                            item(
+                                key = "footer",
+                                contentType = 0
+                            ) {
+                                Spacer(modifier = Modifier.height(Dimensions.bottomSpacer))
+                            }
 
+                        }
                     }
                 } else {
-                    LazyVerticalGrid(
-                        state = lazyGridState,
-                        columns = GridCells.Adaptive(itemSize.size.dp),
-                        modifier = Modifier
-                            .background(colorPalette().background0)
+                    LazyListContainer(
+                        state = lazyGridState
                     ) {
-                        item(
-                            key = "separator",
-                            contentType = 0,
-                            span = { GridItemSpan(maxLineSpan) }) {
-                            ButtonsRow(
-                                chips = buttonsList,
-                                currentValue = playlistType,
-                                onValueUpdate = { playlistType = it },
-                                modifier = Modifier.padding(start = 12.dp, end = 12.dp)
-                            )
-                        }
+                        LazyVerticalGrid(
+                            state = lazyGridState,
+                            columns = GridCells.Adaptive(itemSize.size.dp),
+                            modifier = Modifier
+                                .background(colorPalette().background0)
+                        ) {
+                            item(
+                                key = "separator",
+                                contentType = 0,
+                                span = { GridItemSpan(maxLineSpan) }) {
+                                ButtonsRow(
+                                    chips = buttonsList,
+                                    currentValue = playlistType,
+                                    onValueUpdate = { playlistType = it },
+                                    modifier = Modifier.padding(start = 12.dp, end = 12.dp)
+                                )
+                            }
 
-                        val listPrefix =
-                            when (playlistType) {
-                                PlaylistsType.Playlist -> ""    // Matches everything
-                                PlaylistsType.PinnedPlaylist -> PINNED_PREFIX
-                                PlaylistsType.MonthlyPlaylist -> MONTHLY_PREFIX
-                                PlaylistsType.PodcastPlaylist -> ""
-                                PlaylistsType.YTPlaylist -> YTP_PREFIX
-                            }
-                        val condition: (PlaylistPreview) -> Boolean = {
-                            when(playlistType){
-                                PlaylistsType.YTPlaylist -> it.playlist.isYoutubePlaylist
-                                PlaylistsType.PodcastPlaylist -> it.playlist.isPodcast
-                                else -> it.playlist.name.startsWith(listPrefix, true)
-                            }
+                            val listPrefix =
+                                when (playlistType) {
+                                    PlaylistsType.Playlist -> ""    // Matches everything
+                                    PlaylistsType.PinnedPlaylist -> PINNED_PREFIX
+                                    PlaylistsType.MonthlyPlaylist -> MONTHLY_PREFIX
+                                    PlaylistsType.PodcastPlaylist -> ""
+                                    PlaylistsType.YTPlaylist -> YTP_PREFIX
+                                }
+                            val condition: (PlaylistPreview) -> Boolean = {
+                                when (playlistType) {
+                                    PlaylistsType.YTPlaylist -> it.playlist.isYoutubePlaylist
+                                    PlaylistsType.PodcastPlaylist -> it.playlist.isPodcast
+                                    else -> it.playlist.name.startsWith(listPrefix, true)
+                                }
 //                            if (playlistType == PlaylistsType.YTPlaylist) {
 //                                it.playlist.isYoutubePlaylist
 //                            } else it.playlist.name.startsWith(listPrefix, true)
-                        }
-                        items(
-                            items = itemsOnDisplay.filter(condition),
-                            key = { it.playlist.id }
-                        ) { preview ->
-                            PlaylistItem(
-                                playlist = preview,
-                                thumbnailSizeDp = itemSize.size.dp,
-                                thumbnailSizePx = itemSize.size.px,
-                                alternative = true,
-                                homepage = true,
-                                iconSize = itemSize.size.dp,
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .animateItem(fadeInSpec = null, fadeOutSpec = null)
-                                    .clickable(onClick = {
-                                        search.onItemSelected()
-                                        onPlaylistClick(preview.playlist)
-                                    }),
-                                disableScrollingText = disableScrollingText,
-                                isYoutubePlaylist = preview.playlist.isYoutubePlaylist,
-                                isEditable = preview.playlist.isEditable,
-                            )
-                        }
+                            }
+                            items(
+                                items = itemsOnDisplay.filter(condition),
+                                key = { it.playlist.id }
+                            ) { preview ->
+                                PlaylistItem(
+                                    playlist = preview,
+                                    thumbnailSizeDp = itemSize.size.dp,
+                                    thumbnailSizePx = itemSize.size.px,
+                                    alternative = true,
+                                    homepage = true,
+                                    iconSize = itemSize.size.dp,
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .animateItem(fadeInSpec = null, fadeOutSpec = null)
+                                        .clickable(onClick = {
+                                            search.onItemSelected()
+                                            onPlaylistClick(preview.playlist)
+                                        }),
+                                    disableScrollingText = disableScrollingText,
+                                    isYoutubePlaylist = preview.playlist.isYoutubePlaylist,
+                                    isEditable = preview.playlist.isEditable,
+                                )
+                            }
 
-                        item(
-                            key = "footer",
-                            contentType = 0,
-                            span = { GridItemSpan(maxLineSpan) }
-                        ) {
-                            Spacer(modifier = Modifier.height(Dimensions.bottomSpacer))
-                        }
+                            item(
+                                key = "footer",
+                                contentType = 0,
+                                span = { GridItemSpan(maxLineSpan) }
+                            ) {
+                                Spacer(modifier = Modifier.height(Dimensions.bottomSpacer))
+                            }
 
+                        }
                     }
                 }
 

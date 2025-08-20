@@ -82,6 +82,11 @@ import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
 import com.github.doyaaaaaken.kotlincsv.dsl.csvWriter
+import io.github.oikvpqya.compose.fastscroller.ScrollbarStyle
+import io.github.oikvpqya.compose.fastscroller.VerticalScrollbar
+import io.github.oikvpqya.compose.fastscroller.defaultScrollbarStyle
+import io.github.oikvpqya.compose.fastscroller.material3.defaultMaterialScrollbarStyle
+import io.github.oikvpqya.compose.fastscroller.rememberScrollbarAdapter
 import it.fast4x.compose.persist.persistList
 import it.fast4x.riplay.Database
 import it.fast4x.riplay.EXPLICIT_PREFIX
@@ -1933,6 +1938,13 @@ fun HomeSongs(
             }
 
         }
+
+        VerticalScrollbar(
+            modifier = Modifier.align(Alignment.TopEnd).fillMaxHeight(),
+            adapter = rememberScrollbarAdapter(scrollState = lazyListState),
+            style = it.fast4x.riplay.utils.defaultScrollbarStyle(),
+            enablePressToScroll = true,
+        )
 
         FloatingActionsContainerWithScrollToTop(lazyListState = lazyListState)
 

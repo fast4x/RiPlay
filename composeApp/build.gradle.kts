@@ -104,6 +104,10 @@ kotlin {
             implementation(libs.translator)
             implementation(libs.reorderable)
 
+            implementation(libs.fastscroller)
+            implementation(libs.fastscroller.material3)
+            implementation(libs.fastscroller.indicator)
+
         }
     }
 }
@@ -138,8 +142,8 @@ android {
         applicationId = "it.fast4x.riplay"
         minSdk = 21
         targetSdk = 36
-        versionCode = 10
-        versionName = "0.0.10-alpha"
+        versionCode = 11
+        versionName = "0.0.11-alpha"
 
         multiDexEnabled = true
 

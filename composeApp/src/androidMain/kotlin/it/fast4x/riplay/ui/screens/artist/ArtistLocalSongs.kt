@@ -54,6 +54,7 @@ import it.fast4x.riplay.utils.isNowPlaying
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.extensions.preferences.showFloatingIconKey
 import it.fast4x.riplay.colorPalette
+import it.fast4x.riplay.utils.LazyListContainer
 
 @OptIn(ExperimentalMaterial3Api::class)
 @ExperimentalTextApi
@@ -132,102 +133,115 @@ fun ArtistLocalSongs(
                         1f
                 )
         ) {
-            LazyColumn(
+            LazyListContainer(
                 state = lazyListState,
-                //contentPadding = LocalPlayerAwareWindowInsets.current
-                //.only(WindowInsetsSides.Vertical + WindowInsetsSides.End).asPaddingValues(),
-                modifier = Modifier
-                    .background(colorPalette().background0)
-                    .fillMaxSize()
             ) {
-                item(
-                    key = "header",
-                    contentType = 0
+                LazyColumn(
+                    state = lazyListState,
+                    //contentPadding = LocalPlayerAwareWindowInsets.current
+                    //.only(WindowInsetsSides.Vertical + WindowInsetsSides.End).asPaddingValues(),
+                    modifier = Modifier
+                        .background(colorPalette().background0)
+                        .fillMaxSize()
                 ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        headerContent {
+                    item(
+                        key = "header",
+                        contentType = 0
+                    ) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            headerContent {
 
-                            HeaderIconButton(
-                                icon = R.drawable.enqueue,
-                                enabled = !songs.isNullOrEmpty(),
-                                color = if (!songs.isNullOrEmpty()) colorPalette().text else colorPalette().textDisabled,
-                                onClick = {  },
-                                modifier = Modifier
-                                    .combinedClickable(
-                                        onClick = {
-                                            binder?.player?.enqueue(songs!!.map(Song::asMediaItem), context)
-                                        },
-                                        onLongClick = {
-                                            SmartMessage(context.resources.getString(R.string.info_enqueue_songs), context = context)
-                                        }
-                                    )
-                            )
-                            HeaderIconButton(
-                                icon = R.drawable.shuffle,
-                                enabled = !songs.isNullOrEmpty(),
-                                color = if (!songs.isNullOrEmpty()) colorPalette().text else colorPalette().textDisabled,
-                                onClick = {},
-                                modifier = Modifier
-                                    .combinedClickable(
-                                        onClick = {
-                                            songs?.let { songs ->
-                                                if (songs.isNotEmpty()) {
-                                                    binder?.stopRadio()
-                                                    binder?.player?.forcePlayFromBeginning(
-                                                        songs.shuffled().map(Song::asMediaItem)
-                                                    )
+                                HeaderIconButton(
+                                    icon = R.drawable.enqueue,
+                                    enabled = !songs.isNullOrEmpty(),
+                                    color = if (!songs.isNullOrEmpty()) colorPalette().text else colorPalette().textDisabled,
+                                    onClick = { },
+                                    modifier = Modifier
+                                        .combinedClickable(
+                                            onClick = {
+                                                binder?.player?.enqueue(
+                                                    songs!!.map(Song::asMediaItem),
+                                                    context
+                                                )
+                                            },
+                                            onLongClick = {
+                                                SmartMessage(
+                                                    context.resources.getString(R.string.info_enqueue_songs),
+                                                    context = context
+                                                )
+                                            }
+                                        )
+                                )
+                                HeaderIconButton(
+                                    icon = R.drawable.shuffle,
+                                    enabled = !songs.isNullOrEmpty(),
+                                    color = if (!songs.isNullOrEmpty()) colorPalette().text else colorPalette().textDisabled,
+                                    onClick = {},
+                                    modifier = Modifier
+                                        .combinedClickable(
+                                            onClick = {
+                                                songs?.let { songs ->
+                                                    if (songs.isNotEmpty()) {
+                                                        binder?.stopRadio()
+                                                        binder?.player?.forcePlayFromBeginning(
+                                                            songs.shuffled().map(Song::asMediaItem)
+                                                        )
+                                                    }
                                                 }
+                                            },
+                                            onLongClick = {
+                                                SmartMessage(
+                                                    context.resources.getString(R.string.info_shuffle),
+                                                    context = context
+                                                )
+                                            }
+                                        )
+                                )
+                            }
+
+                            thumbnailContent()
+                        }
+                    }
+
+                    songs?.let { songs ->
+                        itemsIndexed(
+                            items = songs,
+                            key = { _, song -> song.id }
+                        ) { index, song ->
+
+                            SongItem(
+                                song = song,
+                                thumbnailSizeDp = songThumbnailSizeDp,
+                                thumbnailSizePx = songThumbnailSizePx,
+                                modifier = Modifier
+                                    .combinedClickable(
+                                        onLongClick = {
+                                            menuState.display {
+                                                NonQueuedMediaItemMenu(
+                                                    navController = navController,
+                                                    onDismiss = menuState::hide,
+                                                    mediaItem = song.asMediaItem,
+                                                    disableScrollingText = disableScrollingText
+                                                )
                                             }
                                         },
-                                        onLongClick = {
-                                            SmartMessage(context.resources.getString(R.string.info_shuffle), context = context)
-                                        }
-                                    )
-                            )
-                        }
-
-                        thumbnailContent()
-                    }
-                }
-
-                songs?.let { songs ->
-                    itemsIndexed(
-                        items = songs,
-                        key = { _, song -> song.id }
-                    ) { index, song ->
-
-                        SongItem(
-                            song = song,
-                            thumbnailSizeDp = songThumbnailSizeDp,
-                            thumbnailSizePx = songThumbnailSizePx,
-                            modifier = Modifier
-                                .combinedClickable(
-                                    onLongClick = {
-                                        menuState.display {
-                                            NonQueuedMediaItemMenu(
-                                                navController = navController,
-                                                onDismiss = menuState::hide,
-                                                mediaItem = song.asMediaItem,
-                                                disableScrollingText = disableScrollingText
+                                        onClick = {
+                                            binder?.stopRadio()
+                                            binder?.player?.forcePlayAtIndex(
+                                                songs.map(Song::asMediaItem),
+                                                index
                                             )
                                         }
-                                    },
-                                    onClick = {
-                                        binder?.stopRadio()
-                                        binder?.player?.forcePlayAtIndex(
-                                            songs.map(Song::asMediaItem),
-                                            index
-                                        )
-                                    }
-                                ),
-                            disableScrollingText = disableScrollingText,
-                            isNowPlaying = binder?.player?.isNowPlaying(song.id) ?: false
-                        )
-                    }
-                } ?: item(key = "loading") {
-                    ShimmerHost {
-                        repeat(4) {
-                            SongItemPlaceholder(thumbnailSizeDp = Dimensions.thumbnails.song)
+                                    ),
+                                disableScrollingText = disableScrollingText,
+                                isNowPlaying = binder?.player?.isNowPlaying(song.id) ?: false
+                            )
+                        }
+                    } ?: item(key = "loading") {
+                        ShimmerHost {
+                            repeat(4) {
+                                SongItemPlaceholder(thumbnailSizeDp = Dimensions.thumbnails.song)
+                            }
                         }
                     }
                 }

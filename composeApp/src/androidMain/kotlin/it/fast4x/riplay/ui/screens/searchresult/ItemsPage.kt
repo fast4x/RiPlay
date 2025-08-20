@@ -35,6 +35,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import it.fast4x.riplay.colorPalette
 import it.fast4x.riplay.typography
+import it.fast4x.riplay.utils.LazyListContainer
 
 @ExperimentalAnimationApi
 @Composable
@@ -88,59 +89,63 @@ inline fun <T : Environment.Item> ItemsPage(
                     1f
             )
     ) {
-        LazyColumn(
+        LazyListContainer(
             state = lazyListState,
-            //contentPadding = LocalPlayerAwareWindowInsets.current
-            //    .only(WindowInsetsSides.Vertical + WindowInsetsSides.End).asPaddingValues(),
-            modifier = modifier
-                .fillMaxSize()
         ) {
-            item(
-                key = "header",
-                contentType = "header",
+            LazyColumn(
+                state = lazyListState,
+                //contentPadding = LocalPlayerAwareWindowInsets.current
+                //    .only(WindowInsetsSides.Vertical + WindowInsetsSides.End).asPaddingValues(),
+                modifier = modifier
+                    .fillMaxSize()
             ) {
-                headerContent(null)
-            }
-
-            items(
-                items = itemsPage?.items ?: emptyList(),
-                key = Environment.Item::key,
-                itemContent = itemContent
-            )
-
-            if (itemsPage != null && itemsPage?.items.isNullOrEmpty()) {
-                item(key = "empty") {
-                    BasicText(
-                        text = emptyItemsText,
-                        style = typography().xs.secondary.center,
-                        modifier = Modifier
-                            .padding(horizontal = 16.dp, vertical = 32.dp)
-                            .fillMaxWidth()
-                    )
+                item(
+                    key = "header",
+                    contentType = "header",
+                ) {
+                    headerContent(null)
                 }
-            }
 
-            if (!(itemsPage != null && itemsPage?.continuation == null)) {
-                item(key = "loading") {
-                    val isFirstLoad = itemsPage?.items.isNullOrEmpty()
-                    ShimmerHost(
-                        modifier = Modifier
-                            .run {
-                                if (isFirstLoad) fillParentMaxSize() else this
+                items(
+                    items = itemsPage?.items ?: emptyList(),
+                    key = Environment.Item::key,
+                    itemContent = itemContent
+                )
+
+                if (itemsPage != null && itemsPage?.items.isNullOrEmpty()) {
+                    item(key = "empty") {
+                        BasicText(
+                            text = emptyItemsText,
+                            style = typography().xs.secondary.center,
+                            modifier = Modifier
+                                .padding(horizontal = 16.dp, vertical = 32.dp)
+                                .fillMaxWidth()
+                        )
+                    }
+                }
+
+                if (!(itemsPage != null && itemsPage?.continuation == null)) {
+                    item(key = "loading") {
+                        val isFirstLoad = itemsPage?.items.isNullOrEmpty()
+                        ShimmerHost(
+                            modifier = Modifier
+                                .run {
+                                    if (isFirstLoad) fillParentMaxSize() else this
+                                }
+                        ) {
+                            repeat(if (isFirstLoad) initialPlaceholderCount else continuationPlaceholderCount) {
+                                itemPlaceholderContent()
                             }
-                    ) {
-                        repeat(if (isFirstLoad) initialPlaceholderCount else continuationPlaceholderCount) {
-                            itemPlaceholderContent()
                         }
                     }
                 }
-            }
 
-            item(
-                key = "footer",
-                contentType = 0,
-            ) {
-                Spacer(modifier = Modifier.height(Dimensions.bottomSpacer))
+                item(
+                    key = "footer",
+                    contentType = 0,
+                ) {
+                    Spacer(modifier = Modifier.height(Dimensions.bottomSpacer))
+                }
             }
         }
 

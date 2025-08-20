@@ -40,6 +40,7 @@ import it.fast4x.riplay.extensions.preferences.navigationBarPositionKey
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.extensions.preferences.showSearchTabKey
 import it.fast4x.riplay.colorPalette
+import it.fast4x.riplay.utils.LazyListContainer
 
 @ExperimentalTextApi
 @UnstableApi
@@ -86,49 +87,53 @@ fun NewAlbums(
 
         /***************/
         discoverPage?.getOrNull()?.let { page ->
-            LazyVerticalGrid(
+            LazyListContainer(
                 state = lazyGridState,
-                columns = GridCells.Adaptive(Dimensions.thumbnails.album + 24.dp),
-                //contentPadding = LocalPlayerAwareWindowInsets.current.asPaddingValues(),
-                modifier = Modifier
-                    .background(colorPalette().background0)
-                //.fillMaxSize()
             ) {
-                item(
-                    key = "header",
-                    contentType = 0,
-                    span = { GridItemSpan(maxLineSpan) }
+                LazyVerticalGrid(
+                    state = lazyGridState,
+                    columns = GridCells.Adaptive(Dimensions.thumbnails.album + 24.dp),
+                    //contentPadding = LocalPlayerAwareWindowInsets.current.asPaddingValues(),
+                    modifier = Modifier
+                        .background(colorPalette().background0)
+                    //.fillMaxSize()
                 ) {
-                    HeaderWithIcon(
-                        title = stringResource(R.string.new_albums),
-                        iconId = R.drawable.search,
-                        enabled = true,
-                        showIcon = !showSearchTab,
-                        modifier = Modifier,
-                        onClick = {}
-                    )
+                    item(
+                        key = "header",
+                        contentType = 0,
+                        span = { GridItemSpan(maxLineSpan) }
+                    ) {
+                        HeaderWithIcon(
+                            title = stringResource(R.string.new_albums),
+                            iconId = R.drawable.search,
+                            enabled = true,
+                            showIcon = !showSearchTab,
+                            modifier = Modifier,
+                            onClick = {}
+                        )
 
-                }
+                    }
 
-                items(
-                    items = page.newReleaseAlbums.distinct(),
-                    key = { it.key }) {
-                    AlbumItem(
-                        album = it,
-                        thumbnailSizePx = thumbnailSizePx,
-                        thumbnailSizeDp = thumbnailSizeDp,
-                        alternative = true,
-                        modifier = Modifier.clickable(onClick = {
-                            navController.navigate(route = "${NavRoutes.album.name}/${it.key}")
-                        }),
-                        disableScrollingText = disableScrollingText
-                    )
-                }
-                item(
-                    key = "footer",
-                    contentType = 0,
-                ) {
-                    Spacer(modifier = Modifier.height(Dimensions.bottomSpacer))
+                    items(
+                        items = page.newReleaseAlbums.distinct(),
+                        key = { it.key }) {
+                        AlbumItem(
+                            album = it,
+                            thumbnailSizePx = thumbnailSizePx,
+                            thumbnailSizeDp = thumbnailSizeDp,
+                            alternative = true,
+                            modifier = Modifier.clickable(onClick = {
+                                navController.navigate(route = "${NavRoutes.album.name}/${it.key}")
+                            }),
+                            disableScrollingText = disableScrollingText
+                        )
+                    }
+                    item(
+                        key = "footer",
+                        contentType = 0,
+                    ) {
+                        Spacer(modifier = Modifier.height(Dimensions.bottomSpacer))
+                    }
                 }
             }
 

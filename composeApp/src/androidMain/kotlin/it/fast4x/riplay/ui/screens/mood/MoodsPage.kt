@@ -49,6 +49,7 @@ import it.fast4x.riplay.utils.center
 import it.fast4x.riplay.utils.secondary
 import it.fast4x.riplay.colorPalette
 import it.fast4x.riplay.typography
+import it.fast4x.riplay.utils.LazyListContainer
 
 @ExperimentalFoundationApi
 @ExperimentalAnimationApi
@@ -86,30 +87,33 @@ fun MoodsPage(
             )
     ) {
         discoverPage?.getOrNull()?.let { moodResult ->
-            LazyVerticalGrid(
+            LazyListContainer(
                 state = moodAngGenresLazyGridState,
-                columns = GridCells.Adaptive(Dimensions.thumbnails.album + 24.dp),
-                modifier = Modifier
-                    .background(colorPalette().background0)
-                    .fillMaxSize()
             ) {
-                item(
-                    key = "header",
-                    contentType = 0,
-                    span = { GridItemSpan(maxLineSpan) }
+                LazyVerticalGrid(
+                    state = moodAngGenresLazyGridState,
+                    columns = GridCells.Adaptive(Dimensions.thumbnails.album + 24.dp),
+                    modifier = Modifier
+                        .background(colorPalette().background0)
+                        .fillMaxSize()
                 ) {
-                    HeaderWithIcon(
-                        title = stringResource(R.string.moods_and_genres),
-                        iconId = R.drawable.search,
-                        enabled = true,
-                        showIcon = false,
-                        modifier = Modifier,
-                        onClick = {}
-                    )
-                }
+                    item(
+                        key = "header",
+                        contentType = 0,
+                        span = { GridItemSpan(maxLineSpan) }
+                    ) {
+                        HeaderWithIcon(
+                            title = stringResource(R.string.moods_and_genres),
+                            iconId = R.drawable.search,
+                            enabled = true,
+                            showIcon = false,
+                            modifier = Modifier,
+                            onClick = {}
+                        )
+                    }
 
-                discoverPage?.getOrNull()?.let { page ->
-                    if (page.moods.isNotEmpty()) {
+                    discoverPage?.getOrNull()?.let { page ->
+                        if (page.moods.isNotEmpty()) {
 
                             items(
                                 items = page.moods.sortedBy { it.title },
@@ -117,10 +121,15 @@ fun MoodsPage(
                             ) {
                                 MoodGridItemColored(
                                     mood = it,
-                                    onClick = { it.endpoint.browseId?.let { _ ->
-                                        navController.currentBackStackEntry?.savedStateHandle?.set("mood", it.toUiMood())
-                                        navController.navigate(NavRoutes.mood.name)
-                                    } },
+                                    onClick = {
+                                        it.endpoint.browseId?.let { _ ->
+                                            navController.currentBackStackEntry?.savedStateHandle?.set(
+                                                "mood",
+                                                it.toUiMood()
+                                            )
+                                            navController.navigate(NavRoutes.mood.name)
+                                        }
+                                    },
                                     thumbnailSizeDp = thumbnailSizeDp,
                                     modifier = Modifier
                                         .animateItem()
@@ -131,13 +140,12 @@ fun MoodsPage(
 
                     }
 
-                item(key = "bottom") {
-                    Spacer(modifier = Modifier.height(Dimensions.bottomSpacer))
-                }
+                    item(key = "bottom") {
+                        Spacer(modifier = Modifier.height(Dimensions.bottomSpacer))
+                    }
 
                 }
-
-
+            }
         } ?: discoverPage?.exceptionOrNull()?.let {
             BasicText(
                 text = stringResource(R.string.page_not_been_loaded),

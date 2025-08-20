@@ -87,6 +87,7 @@ import it.fast4x.riplay.extensions.preferences.Preference.HOME_ARTIST_ITEM_SIZE
 import it.fast4x.riplay.utils.autoSyncToolbutton
 import it.fast4x.riplay.extensions.preferences.autosyncKey
 import it.fast4x.riplay.extensions.preferences.filterByKey
+import it.fast4x.riplay.utils.LazyListContainer
 import it.fast4x.riplay.utils.importYTMSubscribedChannels
 import it.fast4x.riplay.utils.semiBold
 import it.fast4x.riplay.utils.viewTypeToolbutton
@@ -321,61 +322,70 @@ fun HomeArtists(
                 search.SearchBar( this )
 
                 if (getViewType() == ViewType.List) {
-                    LazyColumn(
-                        state = rememberLazyListState(),
-                        modifier = Modifier
+                    val state = rememberLazyListState()
+                    LazyListContainer(
+                        state = state,
                     ) {
-                        items(items = itemsOnDisplay, key = Artist::id) { artist ->
-                            ArtistItem(
-                                artist = artist,
-                                thumbnailSizeDp = itemSize.size.dp,
-                                thumbnailSizePx = itemSize.size.px,
-                                homePage = true,
-                                iconSize = itemSize.size.dp,
-                                alternative = false,
-                                modifier = Modifier
-                                    .animateItem(
-                                        fadeInSpec = null,
-                                        fadeOutSpec = null
-                                    )
-                                    .clickable(onClick = {
-                                        search.onItemSelected()
-                                        onArtistClick(artist)
-                                    }),
-                                disableScrollingText = disableScrollingText,
-                                isYoutubeArtist = artist.isYoutubeArtist
-                            )
+                        LazyColumn(
+                            state = state,
+                            modifier = Modifier
+                        ) {
+                            items(items = itemsOnDisplay, key = Artist::id) { artist ->
+                                ArtistItem(
+                                    artist = artist,
+                                    thumbnailSizeDp = itemSize.size.dp,
+                                    thumbnailSizePx = itemSize.size.px,
+                                    homePage = true,
+                                    iconSize = itemSize.size.dp,
+                                    alternative = false,
+                                    modifier = Modifier
+                                        .animateItem(
+                                            fadeInSpec = null,
+                                            fadeOutSpec = null
+                                        )
+                                        .clickable(onClick = {
+                                            search.onItemSelected()
+                                            onArtistClick(artist)
+                                        }),
+                                    disableScrollingText = disableScrollingText,
+                                    isYoutubeArtist = artist.isYoutubeArtist
+                                )
+                            }
                         }
                     }
                 } else {
-                    LazyVerticalGrid(
+                    LazyListContainer(
                         state = lazyGridState,
-                        columns = GridCells.Adaptive(itemSize.size.dp),
-                        modifier = Modifier
-                            .background(colorPalette().background0)
-                            .fillMaxSize(),
-                        contentPadding = PaddingValues(bottom = Dimensions.bottomSpacer)
                     ) {
-                        items(items = itemsOnDisplay, key = Artist::id) { artist ->
-                            ArtistItem(
-                                artist = artist,
-                                thumbnailSizeDp = itemSize.size.dp,
-                                thumbnailSizePx = itemSize.size.px,
-                                homePage = true,
-                                iconSize = itemSize.size.dp,
-                                alternative = true,
-                                modifier = Modifier
-                                    .animateItem(
-                                        fadeInSpec = null,
-                                        fadeOutSpec = null
-                                    )
-                                    .clickable(onClick = {
-                                        search.onItemSelected()
-                                        onArtistClick(artist)
-                                    }),
-                                disableScrollingText = disableScrollingText,
-                                isYoutubeArtist = artist.isYoutubeArtist
-                            )
+                        LazyVerticalGrid(
+                            state = lazyGridState,
+                            columns = GridCells.Adaptive(itemSize.size.dp),
+                            modifier = Modifier
+                                .background(colorPalette().background0)
+                                .fillMaxSize(),
+                            contentPadding = PaddingValues(bottom = Dimensions.bottomSpacer)
+                        ) {
+                            items(items = itemsOnDisplay, key = Artist::id) { artist ->
+                                ArtistItem(
+                                    artist = artist,
+                                    thumbnailSizeDp = itemSize.size.dp,
+                                    thumbnailSizePx = itemSize.size.px,
+                                    homePage = true,
+                                    iconSize = itemSize.size.dp,
+                                    alternative = true,
+                                    modifier = Modifier
+                                        .animateItem(
+                                            fadeInSpec = null,
+                                            fadeOutSpec = null
+                                        )
+                                        .clickable(onClick = {
+                                            search.onItemSelected()
+                                            onArtistClick(artist)
+                                        }),
+                                    disableScrollingText = disableScrollingText,
+                                    isYoutubeArtist = artist.isYoutubeArtist
+                                )
+                            }
                         }
                     }
                 }

@@ -57,6 +57,7 @@ import it.fast4x.riplay.utils.secondary
 import it.fast4x.riplay.utils.semiBold
 import it.fast4x.riplay.colorPalette
 import it.fast4x.riplay.typography
+import it.fast4x.riplay.utils.LazyListContainer
 
 internal const val defaultBrowseId = "FEmusic_moods_and_genres_category"
 
@@ -103,87 +104,90 @@ fun MoodList(
             )
     ) {
         moodPage?.getOrNull()?.let { moodResult ->
-            LazyColumn(
+            LazyListContainer(
                 state = lazyListState,
-                //contentPadding = LocalPlayerAwareWindowInsets.current
-                //    .only(WindowInsetsSides.Vertical + WindowInsetsSides.End).asPaddingValues(),
-                modifier = Modifier
-                    .background(colorPalette().background0)
-                    .fillMaxSize()
             ) {
-                item(
-                    key = "header",
-                    contentType = 0
+                LazyColumn(
+                    state = lazyListState,
+                    //contentPadding = LocalPlayerAwareWindowInsets.current
+                    //    .only(WindowInsetsSides.Vertical + WindowInsetsSides.End).asPaddingValues(),
+                    modifier = Modifier
+                        .background(colorPalette().background0)
+                        .fillMaxSize()
                 ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        HeaderWithIcon(
-                            title = mood.name,
-                            iconId = R.drawable.internet,
-                            enabled = true,
-                            showIcon = true,
-                            modifier = Modifier,
-                            onClick = {}
-                        )
+                    item(
+                        key = "header",
+                        contentType = 0
+                    ) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            HeaderWithIcon(
+                                title = mood.name,
+                                iconId = R.drawable.internet,
+                                enabled = true,
+                                showIcon = true,
+                                modifier = Modifier,
+                                onClick = {}
+                            )
+                        }
                     }
-                }
 
-                moodResult.items.forEach { item ->
-                    item {
-                        BasicText(
-                            text = item.title,
-                            style = typography().m.semiBold,
-                            modifier = sectionTextModifier
-                        )
-                    }
-                    item {
-                        LazyRow {
-                            items(items = item.items, key = { it.key }) { childItem ->
-                                if (childItem.key == defaultBrowseId) return@items
-                                when (childItem) {
-                                    is Environment.AlbumItem -> AlbumItem(
-                                        album = childItem,
-                                        thumbnailSizePx = thumbnailSizePx,
-                                        thumbnailSizeDp = thumbnailSizeDp,
-                                        alternative = true,
-                                        modifier = Modifier.clickable {
-                                            childItem.info?.endpoint?.browseId?.let {
-                                                //albumRoute.global(it)
-                                                navController.navigate(route = "${NavRoutes.album.name}/$it")
-                                            }
-                                        },
-                                        disableScrollingText = disableScrollingText
-                                    )
+                    moodResult.items.forEach { item ->
+                        item {
+                            BasicText(
+                                text = item.title,
+                                style = typography().m.semiBold,
+                                modifier = sectionTextModifier
+                            )
+                        }
+                        item {
+                            LazyRow {
+                                items(items = item.items, key = { it.key }) { childItem ->
+                                    if (childItem.key == defaultBrowseId) return@items
+                                    when (childItem) {
+                                        is Environment.AlbumItem -> AlbumItem(
+                                            album = childItem,
+                                            thumbnailSizePx = thumbnailSizePx,
+                                            thumbnailSizeDp = thumbnailSizeDp,
+                                            alternative = true,
+                                            modifier = Modifier.clickable {
+                                                childItem.info?.endpoint?.browseId?.let {
+                                                    //albumRoute.global(it)
+                                                    navController.navigate(route = "${NavRoutes.album.name}/$it")
+                                                }
+                                            },
+                                            disableScrollingText = disableScrollingText
+                                        )
 
-                                    is Environment.ArtistItem -> ArtistItem(
-                                        artist = childItem,
-                                        thumbnailSizePx = thumbnailSizePx,
-                                        thumbnailSizeDp = thumbnailSizeDp,
-                                        alternative = true,
-                                        modifier = Modifier.clickable {
-                                            childItem.info?.endpoint?.browseId?.let {
-                                                navController.navigate(route = "${NavRoutes.artist.name}/$it")
-                                            }
-                                        },
-                                        disableScrollingText = disableScrollingText
-                                    )
+                                        is Environment.ArtistItem -> ArtistItem(
+                                            artist = childItem,
+                                            thumbnailSizePx = thumbnailSizePx,
+                                            thumbnailSizeDp = thumbnailSizeDp,
+                                            alternative = true,
+                                            modifier = Modifier.clickable {
+                                                childItem.info?.endpoint?.browseId?.let {
+                                                    navController.navigate(route = "${NavRoutes.artist.name}/$it")
+                                                }
+                                            },
+                                            disableScrollingText = disableScrollingText
+                                        )
 
-                                    is Environment.PlaylistItem -> PlaylistItem(
-                                        playlist = childItem,
-                                        thumbnailSizePx = thumbnailSizePx,
-                                        thumbnailSizeDp = thumbnailSizeDp,
-                                        alternative = true,
-                                        modifier = Modifier.clickable {
-                                            childItem.info?.endpoint?.let { endpoint ->
-                                                /*
+                                        is Environment.PlaylistItem -> PlaylistItem(
+                                            playlist = childItem,
+                                            thumbnailSizePx = thumbnailSizePx,
+                                            thumbnailSizeDp = thumbnailSizeDp,
+                                            alternative = true,
+                                            modifier = Modifier.clickable {
+                                                childItem.info?.endpoint?.let { endpoint ->
+                                                    /*
                                                 playlistRoute.global(
                                                     p0 = endpoint.browseId,
                                                     p1 = endpoint.params,
                                                     p2 = childItem.songCount?.let { it / 100 }
                                                 )
                                                  */
-                                                navController.navigate(route = "${NavRoutes.playlist.name}/${endpoint.browseId}")
-                                            }
-                                            /*
+                                                    navController.navigate(route = "${NavRoutes.playlist.name}/${endpoint.browseId}")
+                                                }
+                                                /*
                                             childItem.info?.endpoint?.browseId?.let {
                                                 playlistRoute.global(
                                                     it,
@@ -192,21 +196,22 @@ fun MoodList(
                                                 )
                                             }
                                              */
-                                        },
-                                        disableScrollingText = disableScrollingText
-                                    )
+                                            },
+                                            disableScrollingText = disableScrollingText
+                                        )
 
-                                    else -> {}
+                                        else -> {}
+                                    }
                                 }
                             }
                         }
                     }
-                }
 
-                item(key = "bottom") {
-                    Spacer(modifier = Modifier.height(Dimensions.bottomSpacer))
-                }
+                    item(key = "bottom") {
+                        Spacer(modifier = Modifier.height(Dimensions.bottomSpacer))
+                    }
 
+                }
             }
         } ?: moodPage?.exceptionOrNull()?.let {
             BasicText(

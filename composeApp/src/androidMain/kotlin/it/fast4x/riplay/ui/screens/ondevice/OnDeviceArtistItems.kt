@@ -24,6 +24,7 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -79,6 +80,7 @@ import it.fast4x.riplay.utils.forcePlayFromBeginning
 import it.fast4x.riplay.utils.isExplicit
 import it.fast4x.riplay.utils.isNowPlaying
 import it.fast4x.riplay.extensions.preferences.maxSongsInQueueKey
+import it.fast4x.riplay.utils.LazyListContainer
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -159,244 +161,16 @@ fun OnDeviceArtistItems(
     ) {
 
         if (artistItem == ArtistItem.Songs) {
-
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                contentPadding = WindowInsets.systemBars.asPaddingValues()
+            val state = rememberLazyListState()
+            LazyListContainer(
+                state = state
             ) {
-                item {
-                    Title(
-                        title = artistName ?: "",
-                        modifier = sectionTextModifier,
-                        icon = R.drawable.chevron_down,
-                        onClick = onDismiss
-                    )
-                    TitleSection(
-                        title = stringResource(id = R.string.songs),
-                        modifier = Modifier
-                            .padding(bottom = 16.dp)
-                            .padding(horizontal = 16.dp)
-                    )
-                    Row(verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceEvenly,
-                        modifier = Modifier
-                            .padding(horizontal = 10.dp)
-                            .padding(vertical = 10.dp)
-                            .fillMaxWidth()){
-                        HeaderIconButton(
-                            icon = R.drawable.shuffle,
-                            color = if (songs.any { it?.thumbnailUrl != "" }) colorPalette().text else colorPalette().textDisabled,
-                            onClick = {},
-                            modifier = Modifier
-                                .combinedClickable(
-                                    onClick = {
-                                        coroutineScope.launch(Dispatchers.IO) {
-                                            if (songs
-                                                .mapNotNull{ it?.asMediaItem }
-                                                .any { Database.getLikedAt(it.mediaId) != -1L }) {
-                                                songs
-                                                    .mapNotNull{ it?.asMediaItem }
-                                                    .filter { Database.getLikedAt(it.mediaId) != -1L }
-                                                    .let { songs ->
-                                                        if (songs.isNotEmpty()) {
-                                                            val itemsLimited =
-                                                                if (songs.size > maxSongsInQueue.number) songs.shuffled()
-                                                                    .take(maxSongsInQueue.number.toInt()) else songs
-                                                            withContext(Dispatchers.Main){
-                                                                binder?.stopRadio()
-                                                                binder?.player?.forcePlayFromBeginning(
-                                                                    itemsLimited.shuffled()
-                                                                )
-                                                            }
-                                                        }
-                                                    }
-                                            } else {
-                                                SmartMessage(
-                                                    context.resources.getString(R.string.disliked_this_collection),
-                                                    type = PopupType.Error,
-                                                    context = context
-                                                )
-                                            }
-                                        }
-                                    },
-                                    onLongClick = {
-                                        SmartMessage(context.resources.getString(R.string.info_shuffle), context = context)
-                                    }
-                                )
-                        )
-                        HeaderIconButton(
-                            icon = R.drawable.enqueue,
-                            //enabled = artistSongs.any { it.mediaMetadata.artworkUri.toString() != "" && it.song.likedAt != -1L },
-                            color = if (songs.any { it?.thumbnailUrl != "" }) colorPalette().text else colorPalette().textDisabled,
-                            onClick = {},
-                            modifier = Modifier
-                                .combinedClickable(
-                                    onClick = {
-                                        coroutineScope.launch(Dispatchers.IO) {
-                                            if (songs
-                                                .mapNotNull{ it?.asMediaItem }
-                                                .any { Database.getLikedAt(it.mediaId) != -1L }) {
-                                                val filteredArtistSongs = songs
-                                                    .mapNotNull{ it?.asMediaItem }
-                                                    .filter {Database.getLikedAt(it.mediaId) != -1L}
-                                                withContext(Dispatchers.Main) {
-                                                    binder?.player?.enqueue(filteredArtistSongs, context)
-                                                }
-                                            } else {
-                                                SmartMessage(context.resources.getString(R.string.disliked_this_collection),type = PopupType.Error, context = context)
-                                            }
-                                        }
-                                    },
-                                    onLongClick = {
-                                        SmartMessage(context.resources.getString(R.string.info_enqueue_songs), context = context)
-                                    }
-                                )
-                        )
-                        HeaderIconButton(
-                            icon = R.drawable.play_skip_forward,
-                            color = if (songs.any { it?.thumbnailUrl != "" }) colorPalette().text else colorPalette().textDisabled,
-                            onClick = {},
-                            modifier = Modifier
-                                .combinedClickable(
-                                    onClick = {
-                                        coroutineScope.launch(Dispatchers.IO) {
-                                            if (songs
-                                                    .mapNotNull{ it?.asMediaItem }
-                                                    .any { Database.getLikedAt(it.mediaId) != -1L }) {
-                                                val filteredArtistSongs = songs
-                                                    .mapNotNull{ it?.asMediaItem }
-                                                    .filter {Database.getLikedAt(it.mediaId) != -1L}
-                                                withContext(Dispatchers.Main) {
-                                                    binder?.player?.addNext(filteredArtistSongs, context,
-                                                        selectedQueue ?: defaultQueue())
-                                                }
-                                            } else {
-                                                SmartMessage(context.resources.getString(R.string.disliked_this_collection),type = PopupType.Error, context = context)
-                                            }
-                                        }
-                                    },
-                                    onLongClick = {
-                                        SmartMessage(context.resources.getString(R.string.play_next), context = context)
-                                    }
-                                )
-                        )
-
-                        HeaderIconButton(
-                            icon = R.drawable.add_in_playlist,
-                            color = colorPalette().text,
-                            onClick = {},
-                            modifier = Modifier
-                                .padding(horizontal = 5.dp)
-                                .combinedClickable(
-                                    onClick = {
-                                        menuState.display {
-                                            AddToPlaylistArtistSongs(
-                                                navController = navController,
-                                                onDismiss = {
-                                                    menuState.hide()
-                                                    forceRecompose = true
-                                                },
-                                                mediaItems = songs.mapNotNull { it?.asMediaItem },
-                                                onClosePlayer = {
-                                                    onDismiss()
-                                                },
-                                            )
-                                        }
-                                    },
-                                    onLongClick = {
-                                        SmartMessage(
-                                            context.resources.getString(R.string.info_add_in_playlist),
-                                            context = context
-                                        )
-                                    }
-                                )
-                        )
-                    }
-                }
-                items(songs.mapNotNull{ it?.asMediaItem }) { item ->
-
-                    println("ArtistOverviewItems item: ${item}")
-
-                    if (parentalControlEnabled && item.isExplicit) return@items
-
-                    SwipeablePlaylistItem(
-                        mediaItem = item,
-                        onPlayNext = {
-                            binder?.player?.addNext(item, queue = selectedQueue ?: defaultQueue())
-                        },
-                        onDownload = {},
-                        onEnqueue = {
-                            binder?.player?.enqueue(item, queue = it)
-                        }
-                    ) {
-                        SongItem(
-                            song = item,
-                            onThumbnailContent = {
-                                NowPlayingSongIndicator(item.mediaId, binder?.player)
-                            },
-                            thumbnailSizeDp = songThumbnailSizeDp,
-                            thumbnailSizePx = songThumbnailSizePx,
-                            modifier = Modifier
-                                .combinedClickable(
-                                    onLongClick = {
-                                        menuState.display {
-                                            NonQueuedMediaItemMenu(
-                                                navController = navController,
-                                                onDismiss = {
-                                                    menuState.hide()
-                                                    forceRecompose = true
-                                                },
-                                                onInfo = {
-                                                    navController.navigate("${NavRoutes.videoOrSongInfo.name}/${item.mediaId}")
-                                                },
-                                                mediaItem = item,
-                                                disableScrollingText = disableScrollingText
-                                            )
-                                        };
-                                        hapticFeedback.performHapticFeedback(
-                                            HapticFeedbackType.LongPress
-                                        )
-                                    },
-                                    onClick = {
-                                        coroutineScope.launch(Dispatchers.IO) {
-                                            val filteredArtistSongs = songs
-                                                .mapNotNull{ it?.asMediaItem }
-                                                .filter {Database.getLikedAt(it.mediaId) != -1L}
-                                            if (item in filteredArtistSongs){
-                                                withContext(Dispatchers.Main) {
-                                                    binder?.player?.forcePlayAtIndex(
-                                                        filteredArtistSongs,
-                                                        filteredArtistSongs.indexOf(item)
-                                                    )
-                                                }
-                                            } else {
-                                                SmartMessage(context.resources.getString(R.string.disliked_this_song),type = PopupType.Error, context = context)
-                                            }
-
-                                        }
-                                    }
-                                ),
-                            disableScrollingText = disableScrollingText,
-                            isNowPlaying = binder?.player?.isNowPlaying(item.mediaId) ?: false,
-                            forceRecompose = forceRecompose
-                        )
-                    }
-
-                }
-
-            }
-        } else {
-            LazyVerticalGrid(
-                state = rememberLazyGridState(),
-                columns = GridCells.Adaptive(Dimensions.thumbnails.album + 24.dp),
-                modifier = Modifier
-                    .background(colorPalette().background0)
-                    .fillMaxSize(),
-                contentPadding = WindowInsets.systemBars.asPaddingValues()
-            ) {
-
-                item(span = { GridItemSpan(maxLineSpan) }) {
-                    Column{
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    state = state,
+                    contentPadding = WindowInsets.systemBars.asPaddingValues()
+                ) {
+                    item {
                         Title(
                             title = artistName ?: "",
                             modifier = sectionTextModifier,
@@ -404,29 +178,301 @@ fun OnDeviceArtistItems(
                             onClick = onDismiss
                         )
                         TitleSection(
-                            title = stringResource(R.string.albums),
+                            title = stringResource(id = R.string.songs),
                             modifier = Modifier
                                 .padding(bottom = 16.dp)
                                 .padding(horizontal = 16.dp)
                         )
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceEvenly,
+                            modifier = Modifier
+                                .padding(horizontal = 10.dp)
+                                .padding(vertical = 10.dp)
+                                .fillMaxWidth()
+                        ) {
+                            HeaderIconButton(
+                                icon = R.drawable.shuffle,
+                                color = if (songs.any { it?.thumbnailUrl != "" }) colorPalette().text else colorPalette().textDisabled,
+                                onClick = {},
+                                modifier = Modifier
+                                    .combinedClickable(
+                                        onClick = {
+                                            coroutineScope.launch(Dispatchers.IO) {
+                                                if (songs
+                                                        .mapNotNull { it?.asMediaItem }
+                                                        .any { Database.getLikedAt(it.mediaId) != -1L }
+                                                ) {
+                                                    songs
+                                                        .mapNotNull { it?.asMediaItem }
+                                                        .filter { Database.getLikedAt(it.mediaId) != -1L }
+                                                        .let { songs ->
+                                                            if (songs.isNotEmpty()) {
+                                                                val itemsLimited =
+                                                                    if (songs.size > maxSongsInQueue.number) songs.shuffled()
+                                                                        .take(maxSongsInQueue.number.toInt()) else songs
+                                                                withContext(Dispatchers.Main) {
+                                                                    binder?.stopRadio()
+                                                                    binder?.player?.forcePlayFromBeginning(
+                                                                        itemsLimited.shuffled()
+                                                                    )
+                                                                }
+                                                            }
+                                                        }
+                                                } else {
+                                                    SmartMessage(
+                                                        context.resources.getString(R.string.disliked_this_collection),
+                                                        type = PopupType.Error,
+                                                        context = context
+                                                    )
+                                                }
+                                            }
+                                        },
+                                        onLongClick = {
+                                            SmartMessage(
+                                                context.resources.getString(R.string.info_shuffle),
+                                                context = context
+                                            )
+                                        }
+                                    )
+                            )
+                            HeaderIconButton(
+                                icon = R.drawable.enqueue,
+                                //enabled = artistSongs.any { it.mediaMetadata.artworkUri.toString() != "" && it.song.likedAt != -1L },
+                                color = if (songs.any { it?.thumbnailUrl != "" }) colorPalette().text else colorPalette().textDisabled,
+                                onClick = {},
+                                modifier = Modifier
+                                    .combinedClickable(
+                                        onClick = {
+                                            coroutineScope.launch(Dispatchers.IO) {
+                                                if (songs
+                                                        .mapNotNull { it?.asMediaItem }
+                                                        .any { Database.getLikedAt(it.mediaId) != -1L }
+                                                ) {
+                                                    val filteredArtistSongs = songs
+                                                        .mapNotNull { it?.asMediaItem }
+                                                        .filter { Database.getLikedAt(it.mediaId) != -1L }
+                                                    withContext(Dispatchers.Main) {
+                                                        binder?.player?.enqueue(
+                                                            filteredArtistSongs,
+                                                            context
+                                                        )
+                                                    }
+                                                } else {
+                                                    SmartMessage(
+                                                        context.resources.getString(R.string.disliked_this_collection),
+                                                        type = PopupType.Error,
+                                                        context = context
+                                                    )
+                                                }
+                                            }
+                                        },
+                                        onLongClick = {
+                                            SmartMessage(
+                                                context.resources.getString(R.string.info_enqueue_songs),
+                                                context = context
+                                            )
+                                        }
+                                    )
+                            )
+                            HeaderIconButton(
+                                icon = R.drawable.play_skip_forward,
+                                color = if (songs.any { it?.thumbnailUrl != "" }) colorPalette().text else colorPalette().textDisabled,
+                                onClick = {},
+                                modifier = Modifier
+                                    .combinedClickable(
+                                        onClick = {
+                                            coroutineScope.launch(Dispatchers.IO) {
+                                                if (songs
+                                                        .mapNotNull { it?.asMediaItem }
+                                                        .any { Database.getLikedAt(it.mediaId) != -1L }
+                                                ) {
+                                                    val filteredArtistSongs = songs
+                                                        .mapNotNull { it?.asMediaItem }
+                                                        .filter { Database.getLikedAt(it.mediaId) != -1L }
+                                                    withContext(Dispatchers.Main) {
+                                                        binder?.player?.addNext(
+                                                            filteredArtistSongs, context,
+                                                            selectedQueue ?: defaultQueue()
+                                                        )
+                                                    }
+                                                } else {
+                                                    SmartMessage(
+                                                        context.resources.getString(R.string.disliked_this_collection),
+                                                        type = PopupType.Error,
+                                                        context = context
+                                                    )
+                                                }
+                                            }
+                                        },
+                                        onLongClick = {
+                                            SmartMessage(
+                                                context.resources.getString(R.string.play_next),
+                                                context = context
+                                            )
+                                        }
+                                    )
+                            )
+
+                            HeaderIconButton(
+                                icon = R.drawable.add_in_playlist,
+                                color = colorPalette().text,
+                                onClick = {},
+                                modifier = Modifier
+                                    .padding(horizontal = 5.dp)
+                                    .combinedClickable(
+                                        onClick = {
+                                            menuState.display {
+                                                AddToPlaylistArtistSongs(
+                                                    navController = navController,
+                                                    onDismiss = {
+                                                        menuState.hide()
+                                                        forceRecompose = true
+                                                    },
+                                                    mediaItems = songs.mapNotNull { it?.asMediaItem },
+                                                    onClosePlayer = {
+                                                        onDismiss()
+                                                    },
+                                                )
+                                            }
+                                        },
+                                        onLongClick = {
+                                            SmartMessage(
+                                                context.resources.getString(R.string.info_add_in_playlist),
+                                                context = context
+                                            )
+                                        }
+                                    )
+                            )
+                        }
+                    }
+                    items(songs.mapNotNull { it?.asMediaItem }) { item ->
+
+                        println("ArtistOverviewItems item: ${item}")
+
+                        if (parentalControlEnabled && item.isExplicit) return@items
+
+                        SwipeablePlaylistItem(
+                            mediaItem = item,
+                            onPlayNext = {
+                                binder?.player?.addNext(
+                                    item,
+                                    queue = selectedQueue ?: defaultQueue()
+                                )
+                            },
+                            onDownload = {},
+                            onEnqueue = {
+                                binder?.player?.enqueue(item, queue = it)
+                            }
+                        ) {
+                            SongItem(
+                                song = item,
+                                onThumbnailContent = {
+                                    NowPlayingSongIndicator(item.mediaId, binder?.player)
+                                },
+                                thumbnailSizeDp = songThumbnailSizeDp,
+                                thumbnailSizePx = songThumbnailSizePx,
+                                modifier = Modifier
+                                    .combinedClickable(
+                                        onLongClick = {
+                                            menuState.display {
+                                                NonQueuedMediaItemMenu(
+                                                    navController = navController,
+                                                    onDismiss = {
+                                                        menuState.hide()
+                                                        forceRecompose = true
+                                                    },
+                                                    onInfo = {
+                                                        navController.navigate("${NavRoutes.videoOrSongInfo.name}/${item.mediaId}")
+                                                    },
+                                                    mediaItem = item,
+                                                    disableScrollingText = disableScrollingText
+                                                )
+                                            };
+                                            hapticFeedback.performHapticFeedback(
+                                                HapticFeedbackType.LongPress
+                                            )
+                                        },
+                                        onClick = {
+                                            coroutineScope.launch(Dispatchers.IO) {
+                                                val filteredArtistSongs = songs
+                                                    .mapNotNull { it?.asMediaItem }
+                                                    .filter { Database.getLikedAt(it.mediaId) != -1L }
+                                                if (item in filteredArtistSongs) {
+                                                    withContext(Dispatchers.Main) {
+                                                        binder?.player?.forcePlayAtIndex(
+                                                            filteredArtistSongs,
+                                                            filteredArtistSongs.indexOf(item)
+                                                        )
+                                                    }
+                                                } else {
+                                                    SmartMessage(
+                                                        context.resources.getString(R.string.disliked_this_song),
+                                                        type = PopupType.Error,
+                                                        context = context
+                                                    )
+                                                }
+
+                                            }
+                                        }
+                                    ),
+                                disableScrollingText = disableScrollingText,
+                                isNowPlaying = binder?.player?.isNowPlaying(item.mediaId) ?: false,
+                                forceRecompose = forceRecompose
+                            )
+                        }
+
                     }
 
                 }
-                items(items = albums) { item ->
-                            if (item == null) return@items
-                            AlbumItem(
-                                album = item,
-                                thumbnailSizePx = thumbnailSizePx,
-                                thumbnailSizeDp = thumbnailSizeDp,
-                                alternative = true,
-                                yearCentered = true,
-                                showAuthors = true,
-                                modifier = Modifier.clickable(onClick = {
-                                    navController.navigate(route = "${NavRoutes.onDeviceAlbum.name}/${item.id}")
-                                }),
-                                disableScrollingText = disableScrollingText
-                            )
+            }
+        } else {
+            val gridState = rememberLazyGridState()
+            LazyListContainer(
+                state = gridState
+            ) {
+                LazyVerticalGrid(
+                    state = gridState,
+                    columns = GridCells.Adaptive(Dimensions.thumbnails.album + 24.dp),
+                    modifier = Modifier
+                        .background(colorPalette().background0)
+                        .fillMaxSize(),
+                    contentPadding = WindowInsets.systemBars.asPaddingValues()
+                ) {
 
+                    item(span = { GridItemSpan(maxLineSpan) }) {
+                        Column {
+                            Title(
+                                title = artistName ?: "",
+                                modifier = sectionTextModifier,
+                                icon = R.drawable.chevron_down,
+                                onClick = onDismiss
+                            )
+                            TitleSection(
+                                title = stringResource(R.string.albums),
+                                modifier = Modifier
+                                    .padding(bottom = 16.dp)
+                                    .padding(horizontal = 16.dp)
+                            )
+                        }
+
+                    }
+                    items(items = albums) { item ->
+                        if (item == null) return@items
+                        AlbumItem(
+                            album = item,
+                            thumbnailSizePx = thumbnailSizePx,
+                            thumbnailSizeDp = thumbnailSizeDp,
+                            alternative = true,
+                            yearCentered = true,
+                            showAuthors = true,
+                            modifier = Modifier.clickable(onClick = {
+                                navController.navigate(route = "${NavRoutes.onDeviceAlbum.name}/${item.id}")
+                            }),
+                            disableScrollingText = disableScrollingText
+                        )
+
+                    }
                 }
             }
         }
