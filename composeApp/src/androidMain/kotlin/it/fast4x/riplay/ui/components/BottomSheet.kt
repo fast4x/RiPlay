@@ -40,9 +40,9 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.Velocity
-import androidx.compose.ui.zIndex
 import androidx.media3.common.util.UnstableApi
 import it.fast4x.riplay.colorPalette
+import it.fast4x.riplay.ui.styling.applyTransparency
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
@@ -100,15 +100,20 @@ fun BottomSheet(
                     .graphicsLayer {
                         alpha = 0f + (state.progress * 16).coerceAtMost(1f)
                     }
-                    .navigationBarsPadding()
+                    //.navigationBarsPadding()
             ) {
                 content()
             }
 
         } else {
             if (!state.isCollapsed) {
-                BackHandler(onBack = state::collapseSoft)
-                content()
+                Box(
+                    modifier = Modifier.fillMaxSize()
+                ){
+                    BackHandler(onBack = state::collapseSoft)
+                    content()
+                }
+
             }
         }
 
