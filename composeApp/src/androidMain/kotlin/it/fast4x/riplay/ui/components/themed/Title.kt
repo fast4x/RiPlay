@@ -72,8 +72,8 @@ fun Title(
 
 @Composable
 fun Title2Actions(
-    title: String,
     modifier: Modifier = Modifier,
+    title: String,
     @DrawableRes icon1: Int? = R.drawable.arrow_forward,
     @DrawableRes icon2: Int? = R.drawable.arrow_forward,
     enableClick: Boolean = true,

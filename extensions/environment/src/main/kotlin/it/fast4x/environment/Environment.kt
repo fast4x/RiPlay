@@ -277,6 +277,27 @@ object Environment {
         override val key get() = info?.endpoint?.videoId ?: ""
         override val title get() = info?.name
 
+        val isOfficialMusicVideo: Boolean
+            get() = info
+                ?.endpoint
+                ?.watchEndpointMusicSupportedConfigs
+                ?.watchEndpointMusicConfig
+                ?.musicVideoType == "MUSIC_VIDEO_TYPE_OMV"
+
+        val isUserGeneratedContent: Boolean
+            get() = info
+                ?.endpoint
+                ?.watchEndpointMusicSupportedConfigs
+                ?.watchEndpointMusicConfig
+                ?.musicVideoType == "MUSIC_VIDEO_TYPE_UGC"
+
+        val isOfficialUploadByArtistContent: Boolean
+            get() = info
+                ?.endpoint
+                ?.watchEndpointMusicSupportedConfigs
+                ?.watchEndpointMusicConfig
+                ?.musicVideoType == "MUSIC_VIDEO_TYPE_ATV"
+
         val shareYTUrl: String
             get() = "${YT_VIDEOORSONG_SHARE_BASEURL}${key}"
 
@@ -310,6 +331,13 @@ object Environment {
                 ?.watchEndpointMusicSupportedConfigs
                 ?.watchEndpointMusicConfig
                 ?.musicVideoType == "MUSIC_VIDEO_TYPE_UGC"
+
+        val isOfficialUploadByArtistContent: Boolean
+            get() = info
+                ?.endpoint
+                ?.watchEndpointMusicSupportedConfigs
+                ?.watchEndpointMusicConfig
+                ?.musicVideoType == "MUSIC_VIDEO_TYPE_ATV"
 
         val shareYTUrl: String
             get() = "${YT_VIDEOORSONG_SHARE_BASEURL}${key}"

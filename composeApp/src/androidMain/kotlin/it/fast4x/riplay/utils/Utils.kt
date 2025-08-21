@@ -203,6 +203,9 @@ val Environment.SongItem.asMediaItem: MediaItem
                         "artistIds" to authors?.mapNotNull { it.endpoint?.browseId },
                         EXPLICIT_BUNDLE_TAG to explicit,
                         "setVideoId" to setVideoId,
+                        "isOfficialMusicVideo" to isOfficialMusicVideo,
+                        "isOfficialUploadByArtistContent" to isOfficialUploadByArtistContent,
+                        "isUserGeneratedContent" to isUserGeneratedContent,
                         "isVideo" to !isAudioOnly,
                     )
                 )
@@ -231,6 +234,9 @@ val Environment.SongItem.asVideoMediaItem: MediaItem
                         "artistIds" to authors?.mapNotNull { it.endpoint?.browseId },
                         EXPLICIT_BUNDLE_TAG to explicit,
                         "setVideoId" to setVideoId,
+                        "isOfficialMusicVideo" to isOfficialMusicVideo,
+                        "isOfficialUploadByArtistContent" to isOfficialUploadByArtistContent,
+                        "isUserGeneratedContent" to isUserGeneratedContent,
                         "isVideo" to true,
                     )
                 )
@@ -266,6 +272,7 @@ val Environment.VideoItem.asMediaItem: MediaItem
                             ?.mapNotNull { it.name },
                         "artistIds" to authors?.mapNotNull { it.endpoint?.browseId },
                         "isOfficialMusicVideo" to isOfficialMusicVideo,
+                        "isOfficialUploadByArtistContent" to isOfficialUploadByArtistContent,
                         "isUserGeneratedContent" to isUserGeneratedContent,
                         "isVideo" to true,
                         // "artistNames" to if (isOfficialMusicVideo) authors?.filter { it.endpoint != null }?.mapNotNull { it.name } else null,
@@ -405,6 +412,13 @@ val MediaItem.isExplicit: Boolean
 
         return isTitleContain == true || isBundleContain == true
     }
+
+val MediaItem.isOfficialContent: Boolean
+    get() = mediaMetadata.extras?.getBoolean("isOfficialMusicVideo") == true
+            || mediaMetadata.extras?.getBoolean("isOfficialUploadByArtistContent") == true
+
+val MediaItem.isUserGeneratedContent: Boolean
+    get() = mediaMetadata.extras?.getBoolean("isUserGeneratedContent") == true
 
 fun String.resize(
     width: Int? = null,

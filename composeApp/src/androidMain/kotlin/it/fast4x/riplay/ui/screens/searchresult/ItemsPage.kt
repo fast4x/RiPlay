@@ -34,6 +34,7 @@ import it.fast4x.riplay.utils.secondary
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import it.fast4x.riplay.colorPalette
+import it.fast4x.riplay.enums.ContentType
 import it.fast4x.riplay.typography
 import it.fast4x.riplay.utils.LazyListContainer
 
@@ -49,6 +50,7 @@ inline fun <T : Environment.Item> ItemsPage(
     continuationPlaceholderCount: Int = 3,
     emptyItemsText: String = "No items found",
     noinline itemsPageProvider: (suspend (String?) -> Result<Environment.ItemsPage<T>?>?)? = null,
+    filterContentType: ContentType = ContentType.UserGenerated
 ) {
     val updatedItemsPageProvider by rememberUpdatedState(itemsPageProvider)
 
@@ -83,7 +85,7 @@ inline fun <T : Environment.Item> ItemsPage(
             //.fillMaxSize()
             .fillMaxHeight()
             .fillMaxWidth(
-                if( NavigationBarPosition.Right.isCurrent() )
+                if (NavigationBarPosition.Right.isCurrent())
                     Dimensions.contentWidthRightBar
                 else
                     1f
@@ -107,7 +109,27 @@ inline fun <T : Environment.Item> ItemsPage(
                 }
 
                 items(
-                    items = itemsPage?.items ?: emptyList(),
+                    items = itemsPage?.items?.filter { item ->
+                        when (item) {
+                            is Environment.VideoItem-> {
+                                val mediaItem = (item as Environment.VideoItem)
+                                when (filterContentType) {
+                                    ContentType.All -> true
+                                    ContentType.Official -> !mediaItem.isUserGeneratedContent
+                                    ContentType.UserGenerated -> mediaItem.isUserGeneratedContent
+                                }
+                            }
+                            is Environment.SongItem-> {
+                                val mediaItem = (item as Environment.SongItem)
+                                when (filterContentType) {
+                                    ContentType.All -> true
+                                    ContentType.Official -> !mediaItem.isUserGeneratedContent
+                                    ContentType.UserGenerated -> mediaItem.isUserGeneratedContent
+                                }
+                            }
+                            else -> true
+                        }
+                    } ?: emptyList(),
                     key = Environment.Item::key,
                     itemContent = itemContent
                 )

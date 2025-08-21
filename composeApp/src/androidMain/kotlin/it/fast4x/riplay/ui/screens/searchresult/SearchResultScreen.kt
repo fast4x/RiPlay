@@ -3,10 +3,15 @@ package it.fast4x.riplay.ui.screens.searchresult
 import android.annotation.SuppressLint
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.BasicText
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -16,6 +21,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
@@ -39,7 +45,10 @@ import it.fast4x.riplay.Database
 import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.LocalSelectedQueue
 import it.fast4x.riplay.R
+import it.fast4x.riplay.colorPalette
+import it.fast4x.riplay.enums.ContentType
 import it.fast4x.riplay.enums.NavRoutes
+import it.fast4x.riplay.enums.PlayEventsType
 import it.fast4x.riplay.models.Album
 import it.fast4x.riplay.models.Artist
 import it.fast4x.riplay.models.Playlist
@@ -76,6 +85,13 @@ import it.fast4x.riplay.extensions.preferences.preferences
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.extensions.preferences.searchResultScreenTabIndexKey
 import it.fast4x.riplay.extensions.preferences.showButtonPlayerVideoKey
+import it.fast4x.riplay.typography
+import it.fast4x.riplay.ui.components.themed.Menu
+import it.fast4x.riplay.ui.components.themed.MenuEntry
+import it.fast4x.riplay.ui.components.themed.Title2Actions
+import it.fast4x.riplay.ui.components.themed.TitleMiniSection
+import it.fast4x.riplay.ui.components.themed.TitleSection
+import it.fast4x.riplay.utils.secondary
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.combine
@@ -104,56 +120,88 @@ fun SearchResultScreen(
     val saveableStateHolder = rememberSaveableStateHolder()
     val (tabIndex, onTabIndexChanges) = rememberPreference(searchResultScreenTabIndexKey, 0)
 
-
-    var downloadState by remember {
-        mutableStateOf(Download.STATE_STOPPED)
-    }
     val hapticFeedback = LocalHapticFeedback.current
 
-    val isVideoEnabled = LocalContext.current.preferences.getBoolean(showButtonPlayerVideoKey, false)
     val parentalControlEnabled by rememberPreference(parentalControlEnabledKey, false)
 
     val disableScrollingText by rememberPreference(disableScrollingTextKey, false)
+    val menuState = LocalMenuState.current
+    var contentType by remember { mutableStateOf(ContentType.All) }
 
-    //PersistMapCleanup(tagPrefix = "searchResults/$query/")
+                val headerContent: @Composable (textButton: (@Composable () -> Unit)?) -> Unit = {
+                    Title(
+                        title = stringResource(R.string.search_results_for),
+                        verticalPadding = 4.dp
+                    )
+                    Title(
+                        title = query,
+                        icon = R.drawable.pencil,
+                        onClick = {
+                            /*
+                                    context.persistMap?.keys?.removeAll {
+                                       it.startsWith("searchResults/$query/")
+                                    }
+                                    onSearchAgain()
+                                    */
+                            navController.navigate("searchScreenRoute/${query}")
+                        },
+                        verticalPadding = 4.dp
+                    )
 
-            val headerContent: @Composable (textButton: (@Composable () -> Unit)?) -> Unit = {
-                Title(
-                    title = stringResource(R.string.search_results_for),
-                    verticalPadding = 4.dp
-                )
-                Title(
-                    title = query,
-                    icon = R.drawable.pencil,
-                    onClick = {
-                        /*
-                                context.persistMap?.keys?.removeAll {
-                                   it.startsWith("searchResults/$query/")
+                    Column(
+                        modifier = Modifier.background(colorPalette().accent.copy(alpha = 0.15f))
+                    ) {
+                        Title2Actions(
+                            title = "Content type",
+                            onClick1 = {
+                                menuState.display {
+                                    Menu {
+                                        ContentType.entries.forEach {
+                                            MenuEntry(
+                                                icon = it.icon,
+                                                text = it.textName,
+                                                onClick = {
+                                                    contentType = it
+                                                    menuState.hide()
+                                                }
+                                            )
+                                        }
+                                    }
                                 }
-                                onSearchAgain()
-                                */
-                        navController.navigate("searchScreenRoute/${query}")
-                    },
-                    verticalPadding = 4.dp
-                )
-                Spacer(modifier = Modifier.height(12.dp))
-                /*
-                Header(
-                    title = query,
-                    modifier = Modifier
-                        .pointerInput(Unit) {
-                            detectTapGestures {
-                                /*
-                                context.persistMap?.keys?.removeAll {
-                                   it.startsWith("searchResults/$query/")
-                                }
-                                onSearchAgain()
-                                */
-                                navController.navigate("searchScreenRoute/${query}")
                             }
-                        }
-                )
-                 */
+                        )
+                        BasicText(
+                            text = when (contentType) {
+                                ContentType.All -> "All"
+                                ContentType.Official -> "Official"
+                                ContentType.UserGenerated -> "User Generated"
+
+                            },
+                            style = typography().xxs.secondary,
+                            modifier = Modifier
+                                .padding(horizontal = 16.dp)
+                                .padding(bottom = 8.dp)
+                        )
+                    }
+
+
+                    /*
+                    Header(
+                        title = query,
+                        modifier = Modifier
+                            .pointerInput(Unit) {
+                                detectTapGestures {
+                                    /*
+                                    context.persistMap?.keys?.removeAll {
+                                       it.startsWith("searchResults/$query/")
+                                    }
+                                    onSearchAgain()
+                                    */
+                                    navController.navigate("searchScreenRoute/${query}")
+                                }
+                            }
+                    )
+                     */
             }
 
             val emptyItemsText = stringResource(R.string.no_results_found)
@@ -261,7 +309,8 @@ fun SearchResultScreen(
                                 },
                                 itemPlaceholderContent = {
                                     SongItemPlaceholder(thumbnailSizeDp = thumbnailSizeDp)
-                                }
+                                },
+                                filterContentType = contentType
                             )
                         }
 
@@ -485,7 +534,8 @@ fun SearchResultScreen(
                                 },
                                 itemPlaceholderContent = {
                                     AlbumItemPlaceholder(thumbnailSizeDp = thumbnailSizeDp)
-                                }
+                                },
+                                filterContentType = contentType
                             )
                         }
 
@@ -535,7 +585,8 @@ fun SearchResultScreen(
                                 },
                                 itemPlaceholderContent = {
                                     ArtistItemPlaceholder(thumbnailSizeDp = thumbnailSizeDp)
-                                }
+                                },
+                                filterContentType = contentType
                             )
                         }
 
@@ -626,7 +677,8 @@ fun SearchResultScreen(
                                         thumbnailHeightDp = thumbnailHeightDp,
                                         thumbnailWidthDp = thumbnailWidthDp
                                     )
-                                }
+                                },
+                                filterContentType = contentType
                             )
                         }
 
@@ -686,7 +738,8 @@ fun SearchResultScreen(
                                 },
                                 itemPlaceholderContent = {
                                     PlaylistItemPlaceholder(thumbnailSizeDp = thumbnailSizeDp)
-                                }
+                                },
+                                filterContentType = contentType
                             )
                         }
 
@@ -732,7 +785,8 @@ fun SearchResultScreen(
                                 },
                                 itemPlaceholderContent = {
                                     PlaylistItemPlaceholder(thumbnailSizeDp = thumbnailSizeDp)
-                                }
+                                },
+                                filterContentType = contentType
                             )
                         }
                     }
