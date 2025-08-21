@@ -185,9 +185,7 @@
     <string name="system">시스템</string>
     <string name="unlimited">무제한</string>
     <string name="_light">밝게</string>
-    <string name="downloaded">다운로드됨</string>
     <string name="turn_off">사용 중지</string>
-    <string name="download">다운로드</string>
     <string name="_default">기본값</string>
     <string name="dynamic">다이나믹</string>
     <string name="discovery">탐색</string>
@@ -218,7 +216,6 @@
     <string name="new_albums_of_your_artists">아티스트의 새 앨범</string>
     <string name="timeline">재생바</string>
     <string name="song_cache_by_player">음악 캐시 (재생)</string>
-    <string name="song_cache_by_download">음악 캐시 (다운로드)</string>
     <string name="visualizer">시각적 효과</string>
     <string name="visualizer_require_mic_permission">시각적 효과는 \"마이크 권한이 필요해요!\"</string>
     <string name="restart_app_please">앱을 다시 시작해주세요.</string>
@@ -259,7 +256,6 @@
     <string name="audio_quality_format_medium">중간</string>
     <string name="audio_quality_format_low">낮게</string>
     <string name="audio_quality_format_unknown">알 수 없음</string>
-    <string name="do_you_really_want_to_delete_download">정말로 다운로드를 삭제하실건가요?</string>
     <string name="enqueue_all">대기열에 모두 추가</string>
     <string name="enqueue_selected">대기열에 선택 추가</string>
     <string name="greek">그리스어</string>
@@ -273,8 +269,6 @@
     <string name="background_player">"백그라운드 플레이어 "</string>
     <string name="show_favorite_button">즐겨찾기 버튼 표시</string>
     <string name="show_favorite_button_in_lock_screen_and_notification_area">잠금화면과 알림창에서 즐겨찾기 버튼 표시하기</string>
-    <string name="show_download_button">다운로드 버튼 표시</string>
-    <string name="show_download_button_in_lock_screen_and_notification_area">잠금화면과 알림창에서 다운로드 버튼 표시하기</string>
     <string name="by_most_played_song">재생 빈도 기준</string>
     <string name="by_last_played_song">최근 재생 기준</string>
     <string name="audio_quality_automatic">자동</string>
@@ -284,7 +278,6 @@
     <string name="arabic">아랍어</string>
     <string name="chinese_simplified">중국어(간체)</string>
     <string name="chinese_traditional">중국어(번체)</string>
-    <string name="do_you_really_want_to_download_all">정말로 모든 곡을 다운로드하실 건가요?</string>
     <string name="import_playlist">재생목록 가져오기</string>
     <string name="lang_ukrainian">우크라이나어</string>
     <string name="proxy">프록시</string>
@@ -305,7 +298,6 @@
     <string name="paste_or_type_a_valid_url">올바른 링크 입력</string>
     <string name="you_can_put_a_complete_link">재생목록, 앨범, 채널 또는 단일 곡의 전체 링크를 YouTube 또는 YT Music에 넣을 수 있습니다</string>
     <string name="go_to_link">링크로 이동</string>
-    <string name="action_bar_show_download_button">다운로드 버튼 표시</string>
     <string name="action_bar_show_add_to_playlist_button">재생목록에 추가 버튼 표시</string>
     <string name="action_bar_show_loop_button">반복 버튼 표시</string>
     <string name="action_bar_show_shuffle_button">셔플 버튼 표시</string>
@@ -377,7 +369,6 @@
     <string name="tab_data">데이터</string>
     <string name="image_cache_max_size">이미지 캐시 최대 크기</string>
     <string name="song_cache_max_size">음악 캐시 최대 크기</string>
-    <string name="song_download_max_size">음악 다운로드 최대 크기</string>
     <string name="save_to_backup">백업 저장</string>
     <string name="restore_from_backup">백업에서 복원</string>
     <string name="tab_miscellaneous">기타</string>
@@ -431,7 +422,6 @@
     <string name="folder_was_not_found">폴더를 찾을 수 없음</string>
     <string name="direction_top">상단</string>
     <string name="pick_from">다음 중에서 선택:</string>
-    <string name="download_cover">표지 다운로드</string>
     <string name="menu_style">메뉴 스타일</string>
     <string name="style_grid">그리드</string>
     <string name="style_list">목록</string>
@@ -454,8 +444,6 @@
     <string name="info_shuffle">셔플</string>
     <string name="info_includes_excludes_songs_on_the_device">이 기기의 곡을 포함하기/제외하기</string>
     <string name="info_enqueue_songs">대기열에 추가</string>
-    <string name="info_download_all_songs">모든 곡 다운로드</string>
-    <string name="info_remove_all_downloaded_songs">모든 다운로드된 곡 삭제</string>
     <string name="info_start_radio">팟캐스트 시작</string>
     <string name="info_translation">번역</string>
     <string name="info_find_the_song_that_is_playing">재생 중인 곡 찾기</string>
@@ -835,9 +823,6 @@
     <string name="action_bar_show_start_radio_button">라디오 버튼 표시</string>
     <string name="tab_accounts">계정</string>
     <string name="blankspace">상단의 빈 공간</string>
-    <string name="settings_enable_autodownload_song">곡 자동 다운로드 활성화</string>
-    <string name="settings_enable_autodownload_song_when_liked">곡이 \'좋아요\' 되었을 때 자동 다운로드</string>
-    <string name="settings_enable_autodownload_song_when_album_bookmarked">앨범이 \'북마크\' 되었을 때 자동 다운로드</string>
     <string name="tab_general">일반</string>
     <string name="queue_and_local_playlists_left_swipe">대기열 및 기기 재생목록 왼쪽으로 스와이프</string>
     <string name="queue_and_local_playlists_right_swipe">대기열 및 기기 재생목록 오른쪽으로 스와이프</string>
@@ -846,7 +831,6 @@
     <string name="album_left_swipe">앨범 왼쪽으로 스와이프</string>
     <string name="album_right_swipe">앨범 오른쪽으로 스와이프</string>
     <string name="bookmark">북마크</string>
-    <string name="downloading_videos_not_supported">동영상 다운로드는 지원되지 않습니다</string>
     <string name="animatedgradient">애니메이션 그라데이션</string>
     <string name="linear">선형 그라데이션</string>
     <string name="mesh">메쉬 그라데이션</string>

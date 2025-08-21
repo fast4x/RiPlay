@@ -185,9 +185,7 @@
     <string name="system">Система</string>
     <string name="unlimited">Необмежено</string>
     <string name="_light">Світло</string>
-    <string name="downloaded">Завантажено</string>
     <string name="turn_off">Вимкнути</string>
-    <string name="download">Завантажити</string>
     <string name="_default">За замовчуванням</string>
     <string name="dynamic">Динамічна</string>
     <string name="discovery">Відкриття</string>
@@ -218,7 +216,6 @@
     <string name="new_albums_of_your_artists">Нові альбоми ваших виконавців</string>
     <string name="timeline">Таймлайн</string>
     <string name="song_cache_by_player">КЕШ ПІСНІ (по плеєру)</string>
-    <string name="song_cache_by_download">КЕШ ПІСНІ (завантажити)</string>
     <string name="visualizer">Візуалізатор</string>
     <string name="visualizer_require_mic_permission">Візуалізатору потрібен дозвіл на використання мікрофона</string>
     <string name="restart_app_please">Перезапустіть програму, будь ласка.</string>
@@ -259,7 +256,6 @@
     <string name="audio_quality_format_medium">Середні</string>
     <string name="audio_quality_format_low">Низько</string>
     <string name="audio_quality_format_unknown">Невідомо</string>
-    <string name="do_you_really_want_to_delete_download">Ви дійсно хочете видалити завантаження?</string>
     <string name="enqueue_all">Поставити всіх в чергу</string>
     <string name="enqueue_selected">Вибрана черга</string>
     <string name="greek">Вибрана черга</string>
@@ -273,8 +269,6 @@
     <string name="background_player">"ФОНОВИЙ ПРОГРАВАЧ "</string>
     <string name="show_favorite_button">Показати кнопку Вибране</string>
     <string name="show_favorite_button_in_lock_screen_and_notification_area">Показати кнопку Вибране на екрані блокування та в області сповіщень</string>
-    <string name="show_download_button">Показати кнопку завантаження</string>
-    <string name="show_download_button_in_lock_screen_and_notification_area">Показати кнопку завантаження на екрані блокування та в області сповіщень</string>
     <string name="by_most_played_song">За найпопулярнішою піснею</string>
     <string name="by_last_played_song">За останньою відтвореною піснею</string>
     <string name="audio_quality_automatic">Автоматично</string>
@@ -284,7 +278,6 @@
     <string name="arabic">Арабська (اَلْعَرَبِيَّةُ)</string>
     <string name="chinese_simplified">Китайський спрощений (汉语)</string>
     <string name="chinese_traditional">Китайський традиційний (漢語)</string>
-    <string name="do_you_really_want_to_download_all">Ви дійсно хочете завантажити все?</string>
     <string name="import_playlist">Імпортувати плейлист</string>
     <string name="lang_ukrainian">Ukrainian (Українська)</string>
     <string name="proxy">ПРОКСІ</string>
@@ -305,7 +298,6 @@
     <string name="paste_or_type_a_valid_url">Вставити або ввести дійсний url</string>
     <string name="you_can_put_a_complete_link">Ви можете вставити повне посилання на список відтворення, альбом, канал або окрему пісню на YouTube або YouTube Music</string>
     <string name="go_to_link">Перейти за посиланням</string>
-    <string name="action_bar_show_download_button">Показати кнопку завантаження</string>
     <string name="action_bar_show_add_to_playlist_button">Показати кнопку Додати до списку відтворення</string>
     <string name="action_bar_show_loop_button">Показати кнопку циклу</string>
     <string name="action_bar_show_shuffle_button">Показати кнопку перемішати</string>
@@ -377,7 +369,6 @@
     <string name="tab_data">Дані</string>
     <string name="image_cache_max_size">Максимальний розмір кешу зображень</string>
     <string name="song_cache_max_size">Максимальний розмір кешу пісень</string>
-    <string name="song_download_max_size">Максимальний розмір завантаження пісень</string>
     <string name="save_to_backup">Зберегти до резервної копії</string>
     <string name="restore_from_backup">Відновити з резервної копії</string>
     <string name="tab_miscellaneous">Різне</string>
@@ -431,7 +422,6 @@
     <string name="folder_was_not_found">Тека не знайдена</string>
     <string name="direction_top">Direction Top</string>
     <string name="pick_from">Вибрати із</string>
-    <string name="download_cover">Завантажити обкладинку</string>
     <string name="menu_style">Стиль меню</string>
     <string name="style_grid">Сітка</string>
     <string name="style_list">Список</string>
@@ -454,8 +444,6 @@
     <string name="info_shuffle">Перемішати</string>
     <string name="info_includes_excludes_songs_on_the_device">Включає/Виключає пісні на пристрої</string>
     <string name="info_enqueue_songs">Поставити пісні в чергу</string>
-    <string name="info_download_all_songs">Завантажити всі пісні</string>
-    <string name="info_remove_all_downloaded_songs">Видалити всі завантажені пісні</string>
     <string name="info_start_radio">Запустити радіо</string>
     <string name="info_translation">Переклад</string>
     <string name="info_find_the_song_that_is_playing">Знайти пісню, яка грає</string>
@@ -835,9 +823,6 @@
     <string name="action_bar_show_start_radio_button">Запустити радіо</string>
     <string name="tab_accounts">Аккаунти</string>
     <string name="blankspace">Порожнє місце у верхній частині</string>
-    <string name="settings_enable_autodownload_song">Увімкнути автоматичне завантаження пісні</string>
-    <string name="settings_enable_autodownload_song_when_liked">Автоматичне скачування пісні, що сподобалася</string>
-    <string name="settings_enable_autodownload_song_when_album_bookmarked">Автоматичне завантаження пісні при додаванні альбому до закладок</string>
     <string name="tab_general">Загальні</string>
     <string name="queue_and_local_playlists_left_swipe">Черга та локальні плейлисти Свайп вліво</string>
     <string name="queue_and_local_playlists_right_swipe">Черга та локальні плейлисти Свайп праворуч</string>
@@ -846,7 +831,6 @@
     <string name="album_left_swipe">Альбом Свайп вліво</string>
     <string name="album_right_swipe">Альбом Свайп праворуч</string>
     <string name="bookmark">Закладка</string>
-    <string name="downloading_videos_not_supported">Завантаження відео не підтримується</string>
     <string name="animatedgradient">Анімація градієнта</string>
     <string name="linear">Лінійний градієнт</string>
     <string name="mesh">Сітчастий градієнт</string>

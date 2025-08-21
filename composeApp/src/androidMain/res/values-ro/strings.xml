@@ -185,9 +185,7 @@
     <string name="system">Sistem</string>
     <string name="unlimited">Nelimitat</string>
     <string name="_light">Luminos</string>
-    <string name="downloaded">Descărcate</string>
     <string name="turn_off">Oprește</string>
-    <string name="download">Descarcă</string>
     <string name="_default">Implicit</string>
     <string name="dynamic">Dinamic</string>
     <string name="discovery">Descoperiri</string>
@@ -218,7 +216,6 @@
     <string name="new_albums_of_your_artists">Albume noi ale artiștilor tăi</string>
     <string name="timeline">Cronologie</string>
     <string name="song_cache_by_player">CACHE MELODII (Automatic)</string>
-    <string name="song_cache_by_download">CACHE MELODII (Descărcare)</string>
     <string name="visualizer">Vizualizator</string>
     <string name="visualizer_require_mic_permission">Vizualizatorul NECESITA PERMISIUNEA MICROFONULUI</string>
     <string name="restart_app_please">Repornește aplicația, te rog.</string>
@@ -259,7 +256,6 @@
     <string name="audio_quality_format_medium">Mediu</string>
     <string name="audio_quality_format_low">Scăzută</string>
     <string name="audio_quality_format_unknown">Necunoscut</string>
-    <string name="do_you_really_want_to_delete_download">Vrei cu adevărat să ștergi descărcările?</string>
     <string name="enqueue_all">Adaugă toate în coadă</string>
     <string name="enqueue_selected">Adaugă selecția în coadă</string>
     <string name="greek">Greacă (Ελληνικά)</string>
@@ -273,8 +269,6 @@
     <string name="background_player">"PLAYER ÎN FUNDAL "</string>
     <string name="show_favorite_button">Afișează butonul „Apreciază”</string>
     <string name="show_favorite_button_in_lock_screen_and_notification_area">Afișează butonul „Apreciază” pe ecranul de blocare și în zona de notificări</string>
-    <string name="show_download_button">Afișează butonul „Descarcă”</string>
-    <string name="show_download_button_in_lock_screen_and_notification_area">Afișează butonul „Descarcă” pe ecranul de blocare și în zona de notificări</string>
     <string name="by_most_played_song">Melodia cel mai ascultată</string>
     <string name="by_last_played_song">Melodia redată ultima dată</string>
     <string name="audio_quality_automatic">Automatic</string>
@@ -284,7 +278,6 @@
     <string name="arabic">Arabă (العربية)</string>
     <string name="chinese_simplified">Chineză Simplificată (简体中文)</string>
     <string name="chinese_traditional">Chineză Traditională (繁體中文)</string>
-    <string name="do_you_really_want_to_download_all">Vrei cu adevărat să descarci toate melodiile?</string>
     <string name="import_playlist">Importă playlist-ul</string>
     <string name="lang_ukrainian">Ucraineană (Українська)</string>
     <string name="proxy">PROXY</string>
@@ -305,7 +298,6 @@
     <string name="paste_or_type_a_valid_url">Lipește un Url valid</string>
     <string name="you_can_put_a_complete_link">Poți adăuga linkul complet al unui playlist, album, profil sau melodie de pe YouTube sau YouTube Music</string>
     <string name="go_to_link">Accesează linkul</string>
-    <string name="action_bar_show_download_button">Butonul „Descarcă”</string>
     <string name="action_bar_show_add_to_playlist_button">Butonul „Adaugă la playlist”</string>
     <string name="action_bar_show_loop_button">Butonul „Buclă”</string>
     <string name="action_bar_show_shuffle_button">Butonul „Amestecă”</string>
@@ -377,7 +369,6 @@
     <string name="tab_data">Date</string>
     <string name="image_cache_max_size">Dimensiunea maximă a cache-ului de imagini</string>
     <string name="song_cache_max_size">Dimensiunea maximă a cache-ului de melodii</string>
-    <string name="song_download_max_size">Dimensiunea maximă a descărcărilor de melodii</string>
     <string name="save_to_backup">Salvează în o copie de siguranță</string>
     <string name="restore_from_backup">Restaurează din o copie de siguranță</string>
     <string name="tab_miscellaneous">Diverse</string>
@@ -431,7 +422,6 @@
     <string name="folder_was_not_found">Dosarul nu a fost găsit</string>
     <string name="direction_top">Sus</string>
     <string name="pick_from">Selectează din</string>
-    <string name="download_cover">Descarcă coperta</string>
     <string name="menu_style">Stilul meniului</string>
     <string name="style_grid">Grilă</string>
     <string name="style_list">Listă</string>
@@ -454,8 +444,6 @@
     <string name="info_shuffle">Amestecă</string>
     <string name="info_includes_excludes_songs_on_the_device">Include/exclude melodiile de pe dispozitiv</string>
     <string name="info_enqueue_songs">Adaugă melodiile în coadă</string>
-    <string name="info_download_all_songs">Descarcă toate melodiile</string>
-    <string name="info_remove_all_downloaded_songs">Șterge toate melodiile descărcate</string>
     <string name="info_start_radio">Pornește radioul</string>
     <string name="info_translation">Traducere</string>
     <string name="info_find_the_song_that_is_playing">Afișează melodia redată în prezent</string>
@@ -835,9 +823,6 @@
     <string name="action_bar_show_start_radio_button">Butonul de pornire radio</string>
     <string name="tab_accounts">Conturi</string>
     <string name="blankspace">Spațiu gol în sus</string>
-    <string name="settings_enable_autodownload_song">Activează descărcarea automată a melodiilor</string>
-    <string name="settings_enable_autodownload_song_when_liked">Descarcă automat melodia când este apreciată</string>
-    <string name="settings_enable_autodownload_song_when_album_bookmarked">Descarcă automat melodia când albumul este marcat</string>
     <string name="tab_general">General</string>
     <string name="queue_and_local_playlists_left_swipe">Glisare la stânga în coada si local</string>
     <string name="queue_and_local_playlists_right_swipe">Glisare la dreapta în coada si local</string>
@@ -846,7 +831,6 @@
     <string name="album_left_swipe">Glisare la stânga în album</string>
     <string name="album_right_swipe">Glisare la dreapta în playlist</string>
     <string name="bookmark">Marchează</string>
-    <string name="downloading_videos_not_supported">Descărcarea videoclipurilor nu este suportată</string>
     <string name="animatedgradient">Gradient animat</string>
     <string name="linear">Gradient liniar</string>
     <string name="mesh">Gradient de plasă</string>

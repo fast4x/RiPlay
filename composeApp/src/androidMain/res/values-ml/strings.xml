@@ -185,9 +185,7 @@
     <string name="system">സിസ്റ്റം</string>
     <string name="unlimited">പരിധിയില്ലാത്തത്</string>
     <string name="_light">പ്രകാശമുള്ളത്</string>
-    <string name="downloaded">ഡൗൺലോഡ് ചെയ്‌തു</string>
     <string name="turn_off">ഓഫാക്കുക</string>
-    <string name="download">ഡൗൺലോഡ്</string>
     <string name="_default">ഡിഫോൾട്ട്</string>
     <string name="dynamic">ഡൈനാമിക്</string>
     <string name="discovery">കണ്ടെത്തൽ</string>
@@ -218,7 +216,6 @@
     <string name="new_albums_of_your_artists">നിങ്ങളുടെ കലാകാരന്മാരുടെ പുതിയ ആൽബങ്ങൾ</string>
     <string name="timeline">ടൈംലൈൻ</string>
     <string name="song_cache_by_player">SONG CACHE (പ്ലെയർ ഉപയോഗിച്ച്)</string>
-    <string name="song_cache_by_download">SONG CACHE (ഡൗൺലോഡ് ഉപയോഗിച്ച്)</string>
     <string name="visualizer">വിസ്വലൈസർ</string>
     <string name="visualizer_require_mic_permission">വിസ്വലൈസർക്ക് മൈക്ക് അനുമതി ആവശ്യമുണ്ട്</string>
     <string name="restart_app_please">ദയവായി ആപ്പ് പുനരാരംഭിക്കുക.</string>
@@ -259,7 +256,6 @@
     <string name="audio_quality_format_medium">ഇടത്തരം</string>
     <string name="audio_quality_format_low">കുറഞ്ഞത്</string>
     <string name="audio_quality_format_unknown">അജ്ഞാതം</string>
-    <string name="do_you_really_want_to_delete_download">നിങ്ങൾക്ക് ഡൗൺലോഡ് നീക്കം ചെയ്യണമെന്ന് തീർച്ചയാണോ?</string>
     <string name="enqueue_all">എല്ലാം എൻക്യൂ ചെയ്യുക</string>
     <string name="enqueue_selected">Enqueue selected</string>
     <string name="greek">ഗ്രീക്ക്</string>
@@ -273,8 +269,6 @@
     <string name="background_player">"ബാക്ക്‌ഗ്രൗണ്ട് പ്ലെയർ "</string>
     <string name="show_favorite_button">പ്രിയപ്പെട്ട ബട്ടൺ പ്രദർശിപ്പിക്കുക</string>
     <string name="show_favorite_button_in_lock_screen_and_notification_area">ലോക്ക്സ്ക്രീനിലും അറിയിപ്പ് മേഖലയിലും പ്രിയപ്പെട്ട ബട്ടൺ പ്രദർശിപ്പിക്കുക</string>
-    <string name="show_download_button">ഡൗൺലോഡ് ബട്ടൺ പ്രദർശിപ്പിക്കുക</string>
-    <string name="show_download_button_in_lock_screen_and_notification_area">ലോക്ക്സ്ക്രീനിലും അറിയിപ്പ് മേഖലയിലും ഡൗൺലോഡ് ബട്ടൺ പ്രദർശിപ്പിക്കുക</string>
     <string name="by_most_played_song">ഏറ്റവും കൂടുതൽ പ്ലേ ചെയ്ത ഗാനം അടിസ്ഥാനമാക്കി</string>
     <string name="by_last_played_song">അവസാനമായി പ്ലേ ചെയ്ത ഗാനം അടിസ്ഥാനമാക്കി</string>
     <string name="audio_quality_automatic">ഓട്ടോമാറ്റിക്</string>
@@ -284,7 +278,6 @@
     <string name="arabic">അറബിക്</string>
     <string name="chinese_simplified">ലളിത ചൈനീസ്</string>
     <string name="chinese_traditional">പരമ്പരാഗത ചൈനീസ്</string>
-    <string name="do_you_really_want_to_download_all">നിങ്ങൾക്ക് എല്ലാം ഡൗൺലോഡ് ചെയ്യണമെന്ന് തീർച്ചയാണോ?</string>
     <string name="import_playlist">പ്ലേലിസ്റ്റ് ഇമ്പോർട്ട് ചെയ്യുക</string>
     <string name="lang_ukrainian">യുക്രേനിയൻ</string>
     <string name="proxy">പ്രോക്സി</string>
@@ -305,7 +298,6 @@
     <string name="paste_or_type_a_valid_url">സാധുവായ URL ഒട്ടിക്കാൻ അല്ലെങ്കിൽ ടൈപ്പ് ചെയ്യുക</string>
     <string name="you_can_put_a_complete_link">നിങ്ങൾ YouTube അല്ലെങ്കിൽ YouTube Music-ൽ ഒരു പ്ലേലിസ്റ്റ്, ആൽബം, ചാനൽ, അല്ലെങ്കിൽ ഒറ്റ ഗാനത്തിന്റെ ലിങ്ക് മുഴുവൻ നൽകാം</string>
     <string name="go_to_link">ലിങ്കിലേക്ക് പോകുക</string>
-    <string name="action_bar_show_download_button">ഡൗൺലോഡ് ബട്ടൺ കാണിക്കുക</string>
     <string name="action_bar_show_add_to_playlist_button">പ്ലേലിസ്റ്റിലേക്ക് ചേർക്കാനുള്ള ബട്ടൺ കാണിക്കുക</string>
     <string name="action_bar_show_loop_button">ലൂപ്പ് ബട്ടൺ കാണിക്കുക</string>
     <string name="action_bar_show_shuffle_button">ഷഫിൾ ബട്ടൺ കാണിക്കുക</string>
@@ -377,7 +369,6 @@
     <string name="tab_data">Data</string>
     <string name="image_cache_max_size">Image cache max size</string>
     <string name="song_cache_max_size">Song cache max size</string>
-    <string name="song_download_max_size">Song download max size</string>
     <string name="save_to_backup">Save to backup</string>
     <string name="restore_from_backup">Restore from backup</string>
     <string name="tab_miscellaneous">Miscellaneous</string>
@@ -431,7 +422,6 @@
     <string name="folder_was_not_found">ഫോളഡർ കണ്ടെത്താനായില്ല</string>
     <string name="direction_top">മുകളില്‍</string>
     <string name="pick_from">തിരഞ്ഞെടുക്കുക</string>
-    <string name="download_cover">കവർ ഡൗൺലോഡ് ചെയ്യുക</string>
     <string name="menu_style">മെനു ശൈലി</string>
     <string name="style_grid">ഗ്രിഡ്</string>
     <string name="style_list">പട്ടിക</string>
@@ -454,8 +444,6 @@
     <string name="info_shuffle">ഷഫിൾ</string>
     <string name="info_includes_excludes_songs_on_the_device">ഡിവൈസിലെ ഗീതങ്ങൾ ഉൾപ്പെടുത്തുകയും ഒഴിവാക്കുകയും ചെയ്യുന്നു</string>
     <string name="info_enqueue_songs">ഗീതങ്ങൾ ക്യൂവിൽ ചേർക്കുക</string>
-    <string name="info_download_all_songs">എല്ലാ ഗാനങ്ങളും ഡൗൺലോഡുചെയ്യുക</string>
-    <string name="info_remove_all_downloaded_songs">എല്ലാ ഗാനങ്ങളും ഡൗൺലോഡ് ചെയ്യുക</string>
     <string name="info_start_radio">റേഡിയോ ആരംഭിക്കുക</string>
     <string name="info_translation">വിവര്‍ത്തനം</string>
     <string name="info_find_the_song_that_is_playing">Find the song that is playing</string>
@@ -835,9 +823,6 @@
     <string name="action_bar_show_start_radio_button">Start radio button</string>
     <string name="tab_accounts">Accounts</string>
     <string name="blankspace">Blank Space at Top</string>
-    <string name="settings_enable_autodownload_song">Enable auto download song</string>
-    <string name="settings_enable_autodownload_song_when_liked">Auto download song when liked</string>
-    <string name="settings_enable_autodownload_song_when_album_bookmarked">Auto download song when album bookmarked</string>
     <string name="tab_general">General</string>
     <string name="queue_and_local_playlists_left_swipe">Queue and Local Playlists Left Swipe</string>
     <string name="queue_and_local_playlists_right_swipe">Queue and Local Playlists Right Swipe</string>
@@ -846,7 +831,6 @@
     <string name="album_left_swipe">Album Left Swipe</string>
     <string name="album_right_swipe">Album Right Swipe</string>
     <string name="bookmark">Bookmark</string>
-    <string name="downloading_videos_not_supported">Downloading videos not supported</string>
     <string name="animatedgradient">Animated Gradient</string>
     <string name="linear">Linear Gradient</string>
     <string name="mesh">Mesh Gradient</string>

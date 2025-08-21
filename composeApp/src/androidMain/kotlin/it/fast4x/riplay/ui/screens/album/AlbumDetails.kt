@@ -450,14 +450,6 @@ fun AlbumDetails(
             }
         )
 
-    if (showConfirmDeleteDownloadDialog) {
-        ConfirmationDialog(
-            text = stringResource(R.string.do_you_really_want_to_delete_download),
-            onDismiss = { showConfirmDeleteDownloadDialog = false },
-            onConfirm = {}
-        )
-    }
-
     var isViewingQueues by remember { mutableStateOf(false) }
     if (isViewingQueues) {
         QueuesDialog(

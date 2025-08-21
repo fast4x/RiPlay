@@ -185,9 +185,7 @@
     <string name="system">Rendszer</string>
     <string name="unlimited">Korlátlan</string>
     <string name="_light">Világos</string>
-    <string name="downloaded">Letöltött</string>
     <string name="turn_off">Kikapcsolás</string>
-    <string name="download">Letöltés</string>
     <string name="_default">Alapértelmezett</string>
     <string name="dynamic">Dinamikus</string>
     <string name="discovery">Felfedezés</string>
@@ -218,7 +216,6 @@
     <string name="new_albums_of_your_artists">Előadóid új albumai</string>
     <string name="timeline">Idővonal</string>
     <string name="song_cache_by_player">DAL GYORSÍTÓTÁR (a lejátszó által)</string>
-    <string name="song_cache_by_download">DAL GYORSÍTÓTÁR (letöltés alapján)</string>
     <string name="visualizer">Vizualizáció</string>
     <string name="visualizer_require_mic_permission">A vizualizációhoz MIKROFON ENGEDÉLY SZÜKSÉGES</string>
     <string name="restart_app_please">Kérjük, indítsd újra az alkalmazást.</string>
@@ -259,7 +256,6 @@
     <string name="audio_quality_format_medium">Közepes</string>
     <string name="audio_quality_format_low">Alacsony</string>
     <string name="audio_quality_format_unknown">Ismeretlen</string>
-    <string name="do_you_really_want_to_delete_download">Biztosan törölni szeretnéd a letöltést?</string>
     <string name="enqueue_all">Sorba állítani az összeset</string>
     <string name="enqueue_selected">Sor kiválasztva</string>
     <string name="greek">Görög</string>
@@ -273,8 +269,6 @@
     <string name="background_player">"HÁTTÉR LEJÁTSZÓ "</string>
     <string name="show_favorite_button">Kedvencek gomb megjelenítése</string>
     <string name="show_favorite_button_in_lock_screen_and_notification_area">A Kedvenc gomb megjelenítése a lezárt képernyőn és az értesítési felületen</string>
-    <string name="show_download_button">Letöltés gomb megjelenítése</string>
-    <string name="show_download_button_in_lock_screen_and_notification_area">A Letöltés gomb megjelenítése a lezárt képernyőn és az értesítési felületen</string>
     <string name="by_most_played_song">A legtöbbet játszott dalok alapján</string>
     <string name="by_last_played_song">Utoljára lejátszott dalok alapján</string>
     <string name="audio_quality_automatic">Automatikus</string>
@@ -284,7 +278,6 @@
     <string name="arabic">Arab</string>
     <string name="chinese_simplified">Kínai egyszerűsített</string>
     <string name="chinese_traditional">Hagyományos kínai</string>
-    <string name="do_you_really_want_to_download_all">Biztosan le akarod tölteni az összeset?</string>
     <string name="import_playlist">Lejátszási lista importálása</string>
     <string name="lang_ukrainian">Ukrán</string>
     <string name="proxy">PROXY</string>
@@ -305,7 +298,6 @@
     <string name="paste_or_type_a_valid_url">Illessz be vagy írj be egy érvényes URL-t</string>
     <string name="you_can_put_a_complete_link">Elhelyezhetsz egy lejátszási lista, album, csatorna vagy egyetlen dal teljes linkjét a YouTube-on vagy a YouTube Music-on</string>
     <string name="go_to_link">Ugrás a hivatkozásra</string>
-    <string name="action_bar_show_download_button">Letöltés gomb megjelenítése</string>
     <string name="action_bar_show_add_to_playlist_button">Hozzáadás a lejátszási listához gomb megjelenítése</string>
     <string name="action_bar_show_loop_button">Ismétlés gomb megjelenítése</string>
     <string name="action_bar_show_shuffle_button">Véletlenszerű lejátszás gomb megjelenítése</string>
@@ -377,7 +369,6 @@
     <string name="tab_data">Adat</string>
     <string name="image_cache_max_size">Kép gyorsítótár maximális mérete</string>
     <string name="song_cache_max_size">Dal gyorsítótár maximális mérete</string>
-    <string name="song_download_max_size">Dal letöltés maximális mérete</string>
     <string name="save_to_backup">Mentés biztonsági mentésbe</string>
     <string name="restore_from_backup">Visszaállítás biztonsági mentésből</string>
     <string name="tab_miscellaneous">Egyéb</string>
@@ -431,7 +422,6 @@
     <string name="folder_was_not_found">A mappa nem található</string>
     <string name="direction_top">Fel</string>
     <string name="pick_from">Válassz innen</string>
-    <string name="download_cover">Borító letöltése</string>
     <string name="menu_style">Menü stílus</string>
     <string name="style_grid">Rács</string>
     <string name="style_list">Lista</string>
@@ -454,8 +444,6 @@
     <string name="info_shuffle">Keverés</string>
     <string name="info_includes_excludes_songs_on_the_device">Eszközre letöltött zenék felhasználása/eltávolítása</string>
     <string name="info_enqueue_songs">Zenék sorba állítása</string>
-    <string name="info_download_all_songs">Összes zene letöltése</string>
-    <string name="info_remove_all_downloaded_songs">Összes letöltött zene eltávolítása</string>
     <string name="info_start_radio">Rádió indítása</string>
     <string name="info_translation">Fordítás</string>
     <string name="info_find_the_song_that_is_playing">Lejátszott zene megkeresése</string>
@@ -835,9 +823,6 @@
     <string name="action_bar_show_start_radio_button">Start radio button</string>
     <string name="tab_accounts">Accounts</string>
     <string name="blankspace">Blank Space at Top</string>
-    <string name="settings_enable_autodownload_song">Enable auto download song</string>
-    <string name="settings_enable_autodownload_song_when_liked">Auto download song when liked</string>
-    <string name="settings_enable_autodownload_song_when_album_bookmarked">Auto download song when album bookmarked</string>
     <string name="tab_general">General</string>
     <string name="queue_and_local_playlists_left_swipe">Queue and Local Playlists Left Swipe</string>
     <string name="queue_and_local_playlists_right_swipe">Queue and Local Playlists Right Swipe</string>
@@ -846,7 +831,6 @@
     <string name="album_left_swipe">Album Left Swipe</string>
     <string name="album_right_swipe">Album Right Swipe</string>
     <string name="bookmark">Bookmark</string>
-    <string name="downloading_videos_not_supported">Downloading videos not supported</string>
     <string name="animatedgradient">Animated Gradient</string>
     <string name="linear">Linear Gradient</string>
     <string name="mesh">Mesh Gradient</string>

@@ -185,9 +185,7 @@
     <string name="system">Sistema</string>
     <string name="unlimited">Mugagabea</string>
     <string name="_light">Argia</string>
-    <string name="downloaded">Deskargatuta</string>
     <string name="turn_off">Itzali</string>
-    <string name="download">Deskargatu</string>
     <string name="_default">Lehenetsia</string>
     <string name="dynamic">Dinamikoa</string>
     <string name="discovery">Discovery</string>
@@ -218,7 +216,6 @@
     <string name="new_albums_of_your_artists">Zure artisten albuma berriak</string>
     <string name="timeline">Denbora-lerroa</string>
     <string name="song_cache_by_player">KANTA CACHEA (erreproduktorearena)</string>
-    <string name="song_cache_by_download">KANTA CACHEA (deskargena)</string>
     <string name="visualizer">Bistaratzailea</string>
     <string name="visualizer_require_mic_permission">Bistaratzaileak MIC BAIMENA BEHAR DU</string>
     <string name="restart_app_please">App-a berrabiarazi mesedez.</string>
@@ -259,7 +256,6 @@
     <string name="audio_quality_format_medium">Ertaina</string>
     <string name="audio_quality_format_low">Baxua</string>
     <string name="audio_quality_format_unknown">Ezezaguna</string>
-    <string name="do_you_really_want_to_delete_download">Benetan deskarga hau ezabatu nahi duzu?</string>
     <string name="enqueue_all">Dena ilarara gehitu</string>
     <string name="enqueue_selected">Aukeraketa ilarara gehitu</string>
     <string name="greek">Greziera</string>
@@ -273,8 +269,6 @@
     <string name="background_player">"ATZEKALDEKO ERREPRODUKTOREA"</string>
     <string name="show_favorite_button">Gogokoenen botoia erakutsi</string>
     <string name="show_favorite_button_in_lock_screen_and_notification_area">Gustokoen botoia blokeatze pantailan eta jakinarazpen arean erakutsi</string>
-    <string name="show_download_button">Deskargatzeko botoia erakutsi</string>
-    <string name="show_download_button_in_lock_screen_and_notification_area">Deskargatzeko botoia blokeo pantailan eta jakinarazpen arean erakutsi</string>
     <string name="by_most_played_song">Gehien erreproduzitutako abestiengatik</string>
     <string name="by_last_played_song">Azkenez erreproduzitutako abestiengatik</string>
     <string name="audio_quality_automatic">Automatikoa</string>
@@ -284,7 +278,6 @@
     <string name="arabic">Arabiera</string>
     <string name="chinese_simplified">Txinera sinplifikatua</string>
     <string name="chinese_traditional">Txinera tradizionala</string>
-    <string name="do_you_really_want_to_download_all">Dena deskargatu nahi duzulaz seguru zaude?</string>
     <string name="import_playlist">Zerrenda inportatu</string>
     <string name="lang_ukrainian">Ukrainiera</string>
     <string name="proxy">PROXYA</string>
@@ -305,7 +298,6 @@
     <string name="paste_or_type_a_valid_url">URL onargarri bat idatzi ala itsatsi</string>
     <string name="you_can_put_a_complete_link">YouTube edo YouTube Music-eko zerrenda, album, kanal edota kanta baten linka jarri dezakezu.</string>
     <string name="go_to_link">Linkera joan</string>
-    <string name="action_bar_show_download_button">Deskargatzeko botoia erakutsi</string>
     <string name="action_bar_show_add_to_playlist_button">\"Zerrendara gehitu\" botoia erakutsi</string>
     <string name="action_bar_show_loop_button">\"Buklean botoia\" erakutsi</string>
     <string name="action_bar_show_shuffle_button">Ausazko botoia(aleatorio) erakutsi</string>
@@ -377,7 +369,6 @@
     <string name="tab_data">Datuak</string>
     <string name="image_cache_max_size">Argazkien cachearen gehienezko tamaina</string>
     <string name="song_cache_max_size">Abestiaen cachearen gehienezko tamaina</string>
-    <string name="song_download_max_size">Abestien deskargen gehienezko tamaina</string>
     <string name="save_to_backup">Babeskopia bat gorde</string>
     <string name="restore_from_backup">Babeskopiatik berrezarri</string>
     <string name="tab_miscellaneous">Miscellaneous</string>
@@ -431,7 +422,6 @@
     <string name="folder_was_not_found">Ez da karpeta aurkitu</string>
     <string name="direction_top">Goia</string>
     <string name="pick_from">Hemendik aukeratu: </string>
-    <string name="download_cover">Azala deskargatu</string>
     <string name="menu_style">Menuaren itxura</string>
     <string name="style_grid">Sarea</string>
     <string name="style_list">Zerrenda</string>
@@ -454,8 +444,6 @@
     <string name="info_shuffle">Shuffle</string>
     <string name="info_includes_excludes_songs_on_the_device">Includes/Excludes songs on the device</string>
     <string name="info_enqueue_songs">Abestiak ilaran jarri</string>
-    <string name="info_download_all_songs">Abesti guztiak deskargatu</string>
-    <string name="info_remove_all_downloaded_songs">Deskargatutako abesti guztiak ezabatu</string>
     <string name="info_start_radio">Irratia hasi</string>
     <string name="info_translation">Itzulpena</string>
     <string name="info_find_the_song_that_is_playing">Find the song that is playing</string>
@@ -835,9 +823,6 @@
     <string name="action_bar_show_start_radio_button">Start radio button</string>
     <string name="tab_accounts">Kontuak</string>
     <string name="blankspace">Blank Space at Top</string>
-    <string name="settings_enable_autodownload_song">Enable auto download song</string>
-    <string name="settings_enable_autodownload_song_when_liked">Auto download song when liked</string>
-    <string name="settings_enable_autodownload_song_when_album_bookmarked">Auto download song when album bookmarked</string>
     <string name="tab_general">Orokorra</string>
     <string name="queue_and_local_playlists_left_swipe">Queue and Local Playlists Left Swipe</string>
     <string name="queue_and_local_playlists_right_swipe">Queue and Local Playlists Right Swipe</string>
@@ -846,7 +831,6 @@
     <string name="album_left_swipe">Album Left Swipe</string>
     <string name="album_right_swipe">Album Right Swipe</string>
     <string name="bookmark">Bookmark</string>
-    <string name="downloading_videos_not_supported">Downloading videos not supported</string>
     <string name="animatedgradient">Animated Gradient</string>
     <string name="linear">Linear Gradient</string>
     <string name="mesh">Mesh Gradient</string>

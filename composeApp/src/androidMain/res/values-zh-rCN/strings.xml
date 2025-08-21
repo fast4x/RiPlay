@@ -185,9 +185,7 @@
     <string name="system">系统</string>
     <string name="unlimited">无限制</string>
     <string name="_light">浅色</string>
-    <string name="downloaded">已下载</string>
     <string name="turn_off">关闭</string>
-    <string name="download">下载</string>
     <string name="_default">默认</string>
     <string name="dynamic">动态</string>
     <string name="discovery">发现</string>
@@ -218,7 +216,6 @@
     <string name="new_albums_of_your_artists">您的艺术家的新专辑</string>
     <string name="timeline">时间线</string>
     <string name="song_cache_by_player">歌曲缓存 (由播放器)</string>
-    <string name="song_cache_by_download">歌曲缓存(通过下载)</string>
     <string name="visualizer">音乐可视化</string>
     <string name="visualizer_require_mic_permission">音乐可视化需要麦克风权限</string>
     <string name="restart_app_please">请重启应用程序。</string>
@@ -259,7 +256,6 @@
     <string name="audio_quality_format_medium">中</string>
     <string name="audio_quality_format_low">低</string>
     <string name="audio_quality_format_unknown">未知的</string>
-    <string name="do_you_really_want_to_delete_download">你真的想要删除下载吗？</string>
     <string name="enqueue_all">将所有加入队列</string>
     <string name="enqueue_selected">已选择队列</string>
     <string name="greek">希腊语</string>
@@ -273,8 +269,6 @@
     <string name="background_player">"背景播放器 "</string>
     <string name="show_favorite_button">显示收藏夹按钮</string>
     <string name="show_favorite_button_in_lock_screen_and_notification_area">在锁定屏幕和通知区域显示收藏夹按钮</string>
-    <string name="show_download_button">显示下载按钮</string>
-    <string name="show_download_button_in_lock_screen_and_notification_area">在锁屏界面和通知区域显示下载按钮</string>
     <string name="by_most_played_song">按播放次数最多的歌曲</string>
     <string name="by_last_played_song">按最后播放的歌曲</string>
     <string name="audio_quality_automatic">自动</string>
@@ -284,7 +278,6 @@
     <string name="arabic">阿拉伯语</string>
     <string name="chinese_simplified">简体中文</string>
     <string name="chinese_traditional">繁體中文</string>
-    <string name="do_you_really_want_to_download_all">您真的要全部下载吗？</string>
     <string name="import_playlist">导入播放列表</string>
     <string name="lang_ukrainian">乌克兰语</string>
     <string name="proxy">代理</string>
@@ -305,7 +298,6 @@
     <string name="paste_or_type_a_valid_url">粘贴或输入有效的 url</string>
     <string name="you_can_put_a_complete_link">您可以输入一个在YouTube或者YouTube Music上完整的播放列表、专辑、频道或单首歌的链接</string>
     <string name="go_to_link">访问链接</string>
-    <string name="action_bar_show_download_button">显示下载按钮</string>
     <string name="action_bar_show_add_to_playlist_button">显示添加到播放列表按钮</string>
     <string name="action_bar_show_loop_button">显示循环按钮</string>
     <string name="action_bar_show_shuffle_button">显示随机播放按钮</string>
@@ -377,7 +369,6 @@
     <string name="tab_data">数据</string>
     <string name="image_cache_max_size">图像缓存最大大小</string>
     <string name="song_cache_max_size">歌曲缓存最大大小</string>
-    <string name="song_download_max_size">歌曲下载最大大小</string>
     <string name="save_to_backup">保存到备份</string>
     <string name="restore_from_backup">从备份恢复</string>
     <string name="tab_miscellaneous">杂项</string>
@@ -431,7 +422,6 @@
     <string name="folder_was_not_found">文件夹不存在</string>
     <string name="direction_top">Direction Top</string>
     <string name="pick_from">选择自</string>
-    <string name="download_cover">下载专辑封面</string>
     <string name="menu_style">菜单样式</string>
     <string name="style_grid">网格</string>
     <string name="style_list">列表</string>
@@ -454,8 +444,6 @@
     <string name="info_shuffle">随机播放</string>
     <string name="info_includes_excludes_songs_on_the_device">包括/排除设备上的歌曲</string>
     <string name="info_enqueue_songs">加入歌曲排列</string>
-    <string name="info_download_all_songs">下载所有歌曲</string>
-    <string name="info_remove_all_downloaded_songs">删除所有已下载的歌曲</string>
     <string name="info_start_radio">开始播放电台</string>
     <string name="info_translation">翻译</string>
     <string name="info_find_the_song_that_is_playing">查找正在播放的歌曲</string>
@@ -835,9 +823,6 @@
     <string name="action_bar_show_start_radio_button">开始电台模式按钮</string>
     <string name="tab_accounts">帐户</string>
     <string name="blankspace">在顶部留空</string>
-    <string name="settings_enable_autodownload_song">启用自动下载歌曲</string>
-    <string name="settings_enable_autodownload_song_when_liked">点喜欢后自动下载歌曲</string>
-    <string name="settings_enable_autodownload_song_when_album_bookmarked">当专辑被收藏时自动下载</string>
     <string name="tab_general">常规</string>
     <string name="queue_and_local_playlists_left_swipe">队列和本地播放列表 左滑动</string>
     <string name="queue_and_local_playlists_right_swipe">队列和本地播放列表 右滑动</string>
@@ -846,7 +831,6 @@
     <string name="album_left_swipe">专辑 左滑动</string>
     <string name="album_right_swipe">专辑 右滑动</string>
     <string name="bookmark">收藏</string>
-    <string name="downloading_videos_not_supported">不支持下载视频</string>
     <string name="animatedgradient">动画渐变</string>
     <string name="linear">线性渐变</string>
     <string name="mesh">网格渐变</string>

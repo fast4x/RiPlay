@@ -185,9 +185,7 @@
     <string name="system">Süsteem</string>
     <string name="unlimited">Piiramatu</string>
     <string name="_light">Hele</string>
-    <string name="downloaded">Allalaetud</string>
     <string name="turn_off">Lülita välja</string>
-    <string name="download">Lae alla</string>
     <string name="_default">Vaikimisi</string>
     <string name="dynamic">Dünaamiline</string>
     <string name="discovery">Avastus</string>
@@ -218,7 +216,6 @@
     <string name="new_albums_of_your_artists">Teie valitud esitajate uued albumid</string>
     <string name="timeline">Ajatelg</string>
     <string name="song_cache_by_player">LOO VAHEMÄLU (pleier)</string>
-    <string name="song_cache_by_download">LOO VAHEMÄLU (allalaadimine)</string>
     <string name="visualizer">Visualiseeria</string>
     <string name="visualizer_require_mic_permission">Visualiseeria VAJAB MIKROFONILE LIGIPÄÄSU</string>
     <string name="restart_app_please">Taaskäivitage rakendus.</string>
@@ -259,7 +256,6 @@
     <string name="audio_quality_format_medium">Keskmine</string>
     <string name="audio_quality_format_low">Madal</string>
     <string name="audio_quality_format_unknown">Tundmatu</string>
-    <string name="do_you_really_want_to_delete_download">Kas soovite allalaetud faili kustutada?</string>
     <string name="enqueue_all">Lisa kõik järjekorda</string>
     <string name="enqueue_selected">Lisa valitud järjekorda</string>
     <string name="greek">Kreeka</string>
@@ -273,8 +269,6 @@
     <string name="background_player">"TAUSTAPLEIER "</string>
     <string name="show_favorite_button">Kuva lemmikute nupp</string>
     <string name="show_favorite_button_in_lock_screen_and_notification_area">Kuva lemmikute nupp lukustuskuval ja teavituste alal</string>
-    <string name="show_download_button">Kuva allalaadimise nupp</string>
-    <string name="show_download_button_in_lock_screen_and_notification_area">Kuva Allalaadimise nupp lukustuskuval ja teavituste alal</string>
     <string name="by_most_played_song">Kõige esitatavamad lood</string>
     <string name="by_last_played_song">Viimati esitatud lugu</string>
     <string name="audio_quality_automatic">Automaatne</string>
@@ -284,7 +278,6 @@
     <string name="arabic">Araabia</string>
     <string name="chinese_simplified">Hiina (lihtsustatud)</string>
     <string name="chinese_traditional">Hiina (Traditsiooniline)</string>
-    <string name="do_you_really_want_to_download_all">Kas te soovite kõik alla laadida?</string>
     <string name="import_playlist">Impordi esitusloend</string>
     <string name="lang_ukrainian">Ukraina</string>
     <string name="proxy">PROKSI</string>
@@ -305,7 +298,6 @@
     <string name="paste_or_type_a_valid_url">Kleebi või tipi korrektne URL</string>
     <string name="you_can_put_a_complete_link">Võite panna täieliku lingi esitusloendi, albumi, kanali või üksiku loo juurde YouTube\'is või YouTube Music\'us</string>
     <string name="go_to_link">Mine lingile</string>
-    <string name="action_bar_show_download_button">Kuva allalaadimise nupp</string>
     <string name="action_bar_show_add_to_playlist_button">Kuva Lisa esitusloendisse nupp</string>
     <string name="action_bar_show_loop_button">Kuva Silmuse nupp</string>
     <string name="action_bar_show_shuffle_button">Kuva Segamise nupp</string>
@@ -377,7 +369,6 @@
     <string name="tab_data">Andmed</string>
     <string name="image_cache_max_size">Pildi vahemälu maks. suurus</string>
     <string name="song_cache_max_size">Loo vahemälu maks. suurus</string>
-    <string name="song_download_max_size">Allalaetud loo maks. suurus</string>
     <string name="save_to_backup">Salvesta varundusfaili</string>
     <string name="restore_from_backup">Taasta varundusest</string>
     <string name="tab_miscellaneous">Mitmesugust</string>
@@ -431,7 +422,6 @@
     <string name="folder_was_not_found">Kausta ei leitud</string>
     <string name="direction_top">Ülal</string>
     <string name="pick_from">Vali</string>
-    <string name="download_cover">Lae kaas alla</string>
     <string name="menu_style">Menüü laad</string>
     <string name="style_grid">Ruudustik</string>
     <string name="style_list">Nimekiri</string>
@@ -454,8 +444,6 @@
     <string name="info_shuffle">Sega</string>
     <string name="info_includes_excludes_songs_on_the_device">Kaasa/välja arvatud seadmel asuvad lood</string>
     <string name="info_enqueue_songs">Lisa lood järjekorda</string>
-    <string name="info_download_all_songs">Lae alla kõik laulud</string>
-    <string name="info_remove_all_downloaded_songs">Eemalda kõik allalaetud lood</string>
     <string name="info_start_radio">Käivita raadio</string>
     <string name="info_translation">Tõlge</string>
     <string name="info_find_the_song_that_is_playing">Leia esitatav lugu</string>
@@ -835,9 +823,6 @@
     <string name="action_bar_show_start_radio_button">Start radio button</string>
     <string name="tab_accounts">Accounts</string>
     <string name="blankspace">Blank Space at Top</string>
-    <string name="settings_enable_autodownload_song">Enable auto download song</string>
-    <string name="settings_enable_autodownload_song_when_liked">Auto download song when liked</string>
-    <string name="settings_enable_autodownload_song_when_album_bookmarked">Auto download song when album bookmarked</string>
     <string name="tab_general">General</string>
     <string name="queue_and_local_playlists_left_swipe">Queue and Local Playlists Left Swipe</string>
     <string name="queue_and_local_playlists_right_swipe">Queue and Local Playlists Right Swipe</string>
@@ -846,7 +831,6 @@
     <string name="album_left_swipe">Album Left Swipe</string>
     <string name="album_right_swipe">Album Right Swipe</string>
     <string name="bookmark">Bookmark</string>
-    <string name="downloading_videos_not_supported">Downloading videos not supported</string>
     <string name="animatedgradient">Animated Gradient</string>
     <string name="linear">Linear Gradient</string>
     <string name="mesh">Mesh Gradient</string>

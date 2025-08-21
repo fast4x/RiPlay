@@ -185,9 +185,7 @@
     <string name="system">Sistem</string>
     <string name="unlimited">Tanpa batas</string>
     <string name="_light">Terang</string>
-    <string name="downloaded">Terunduh</string>
     <string name="turn_off">Matikan</string>
-    <string name="download">Unduh</string>
     <string name="_default">Setelan awal</string>
     <string name="dynamic">Dinamis</string>
     <string name="discovery">Jelajah</string>
@@ -218,7 +216,6 @@
     <string name="new_albums_of_your_artists">Album baru dari artis anda</string>
     <string name="timeline">Bilah waktu</string>
     <string name="song_cache_by_player">CACHE LAGU (Pemutar)</string>
-    <string name="song_cache_by_download">CACHE LAGU (Unduhan)</string>
     <string name="visualizer">Visualizer</string>
     <string name="visualizer_require_mic_permission">Visualizer MEMBUTUHKAN IZIN MIKROFON</string>
     <string name="restart_app_please">Silakan mulai ulang aplikasi.</string>
@@ -259,7 +256,6 @@
     <string name="audio_quality_format_medium">Sedang</string>
     <string name="audio_quality_format_low">Rendah</string>
     <string name="audio_quality_format_unknown">Tidak diketahui</string>
-    <string name="do_you_really_want_to_delete_download">Apakah anda yakin ingin menghapus unduhan?</string>
     <string name="enqueue_all">Antrekan semua</string>
     <string name="enqueue_selected">Antrekan terpilih</string>
     <string name="greek">Yunani (Ελληνικά)</string>
@@ -273,8 +269,6 @@
     <string name="background_player">"PEMUTAR LATAR BELAKANG"</string>
     <string name="show_favorite_button">Tampilkan tombol Favorit</string>
     <string name="show_favorite_button_in_lock_screen_and_notification_area">Tampilkan tombol Favorit di dalam layar kunci dan notifikasi</string>
-    <string name="show_download_button">Tampilkan tombol Unduh</string>
-    <string name="show_download_button_in_lock_screen_and_notification_area">Tampilkan tombol Unduh di dalam layar kunci dan notifikasi</string>
     <string name="by_most_played_song">Berdasarkan lagu yang paling banyak diputar</string>
     <string name="by_last_played_song">Berdasarkan lagu yang terakhir kali diputar</string>
     <string name="audio_quality_automatic">Otomatis</string>
@@ -284,7 +278,6 @@
     <string name="arabic">Arab (العربيّة)</string>
     <string name="chinese_simplified">Mandarin sederhana (简体中文)</string>
     <string name="chinese_traditional">Mandarin tradisional (繁體中文)</string>
-    <string name="do_you_really_want_to_download_all">Apakah anda yakin ingin mengunduh semua?</string>
     <string name="import_playlist">Impor daftar putar</string>
     <string name="lang_ukrainian">Ukraina (українська)</string>
     <string name="proxy">PROXY</string>
@@ -305,7 +298,6 @@
     <string name="paste_or_type_a_valid_url">Tempel atau ketik URL yang valid</string>
     <string name="you_can_put_a_complete_link">Anda dapat mengisi dengan tautan lengkap YouTube atau YouTube Music dari daftar putar, album, channel, atau single lagu</string>
     <string name="go_to_link">Buka tautan</string>
-    <string name="action_bar_show_download_button">Tombol Unduh</string>
     <string name="action_bar_show_add_to_playlist_button">Tombol Tambahkan ke daftar putar</string>
     <string name="action_bar_show_loop_button">Tombol Putar ulang</string>
     <string name="action_bar_show_shuffle_button">Tombol Putar acak</string>
@@ -377,7 +369,6 @@
     <string name="tab_data">Data</string>
     <string name="image_cache_max_size">Ukuran maksimal cache gambar</string>
     <string name="song_cache_max_size">Ukuran maksimal cache lagu</string>
-    <string name="song_download_max_size">Ukuran maksimal unduhan lagu</string>
     <string name="save_to_backup">Simpan untuk mencadangkan</string>
     <string name="restore_from_backup">Pulihkan dari cadangan</string>
     <string name="tab_miscellaneous">Lain-lain</string>
@@ -431,7 +422,6 @@
     <string name="folder_was_not_found">Folder tidak ditemukan</string>
     <string name="direction_top">Atas</string>
     <string name="pick_from">Pilih dari</string>
-    <string name="download_cover">Unduh sampul</string>
     <string name="menu_style">Gaya bilah navigasi</string>
     <string name="style_grid">Kisi</string>
     <string name="style_list">Daftar</string>
@@ -454,8 +444,6 @@
     <string name="info_shuffle">Putar acak</string>
     <string name="info_includes_excludes_songs_on_the_device">Muat lagu dalam perangkat</string>
     <string name="info_enqueue_songs">Antrekan lagu</string>
-    <string name="info_download_all_songs">Unduh semua lagu</string>
-    <string name="info_remove_all_downloaded_songs">Hapus semua lagu yang telah terunduh</string>
     <string name="info_start_radio">Mulai radio</string>
     <string name="info_translation">Terjemahan</string>
     <string name="info_find_the_song_that_is_playing">Tampilkan lagu yang sedang diputar</string>
@@ -835,9 +823,6 @@
     <string name="action_bar_show_start_radio_button">Tombol mulai radio</string>
     <string name="tab_accounts">Akun</string>
     <string name="blankspace">ruang kosong di atas</string>
-    <string name="settings_enable_autodownload_song">Mengaktifkan otomatis unduhan lagu</string>
-    <string name="settings_enable_autodownload_song_when_liked">unduh lagu secara otomatis saat disukai</string>
-    <string name="settings_enable_autodownload_song_when_album_bookmarked">Mengunduh lagu secara otomatis saat album Ditandai</string>
     <string name="tab_general">Umum</string>
     <string name="queue_and_local_playlists_left_swipe">antrean dan daftar putar lokal geser ke kiri</string>
     <string name="queue_and_local_playlists_right_swipe">antrian dan daftar putar lokal geser ke kanan</string>
@@ -846,7 +831,6 @@
     <string name="album_left_swipe">album geser ke kiri</string>
     <string name="album_right_swipe">album geser ke kanan</string>
     <string name="bookmark">penanda</string>
-    <string name="downloading_videos_not_supported">Mengunduh video tidak didakung</string>
     <string name="animatedgradient">Animasi Gradien</string>
     <string name="linear">gradien linier</string>
     <string name="mesh">gradasi mesh</string>

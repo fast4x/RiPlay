@@ -185,9 +185,7 @@
     <string name="system">Sistem</string>
     <string name="unlimited">Neograničeno</string>
     <string name="_light">Svetla</string>
-    <string name="downloaded">Preuzimanja</string>
     <string name="turn_off">Isključi</string>
-    <string name="download">Prеuzmi</string>
     <string name="_default">Podrazumevano</string>
     <string name="dynamic">Dinamička</string>
     <string name="discovery">Otkrijte</string>
@@ -218,7 +216,6 @@
     <string name="new_albums_of_your_artists">Novi albumi vaših izvođača</string>
     <string name="timeline">Vremenska linija</string>
     <string name="song_cache_by_player">KEŠ PESME (od Plejera)</string>
-    <string name="song_cache_by_download">KEŠ PESME (od Preuzimanja)</string>
     <string name="visualizer">Vizuеlizator</string>
     <string name="visualizer_require_mic_permission">Vizuelizator ZAHTEVA DOZVOLU MIKROFONA</string>
     <string name="restart_app_please">Restartujte aplikaciju molim vas.</string>
@@ -259,7 +256,6 @@
     <string name="audio_quality_format_medium">Srednji</string>
     <string name="audio_quality_format_low">Nizak</string>
     <string name="audio_quality_format_unknown">Nepoznat</string>
-    <string name="do_you_really_want_to_delete_download">Da li zaista želite da izbrišete preuzimanje?</string>
     <string name="enqueue_all">Stavi sve u redosled</string>
     <string name="enqueue_selected">Stavi u redosled izabrano</string>
     <string name="greek">Grčki</string>
@@ -273,8 +269,6 @@
     <string name="background_player">"POZADINSKI PLEJER "</string>
     <string name="show_favorite_button">Prikaži dugme Omiljeno</string>
     <string name="show_favorite_button_in_lock_screen_and_notification_area">Prikaži dugme Omiljeno na zaključanom ekranu i polju za obaveštenja</string>
-    <string name="show_download_button">Prikaži dugme za Preuzimanje</string>
-    <string name="show_download_button_in_lock_screen_and_notification_area">Prikaži dugme za preuzimanje na zaključanom ekranu i polju za obaveštenja</string>
     <string name="by_most_played_song">Najčešće puštana pesma</string>
     <string name="by_last_played_song">Poslednja puštena pesma</string>
     <string name="audio_quality_automatic">Automatski</string>
@@ -284,7 +278,6 @@
     <string name="arabic">Arapski</string>
     <string name="chinese_simplified">Kineski Pojednostavljeni</string>
     <string name="chinese_traditional">Kineski Tradicionalni</string>
-    <string name="do_you_really_want_to_download_all">Da li zaista želite da preuzmete sve?</string>
     <string name="import_playlist">Uvezi plejlistu</string>
     <string name="lang_ukrainian">Ukrajinski</string>
     <string name="proxy">PROXY</string>
@@ -305,7 +298,6 @@
     <string name="paste_or_type_a_valid_url">Nalepi ili unesi važeći url</string>
     <string name="you_can_put_a_complete_link">Možeš da postaviš kompletnu vezu plejliste, albuma, kanala ili jedne pesme na YouTube ili YouTube Music</string>
     <string name="go_to_link">Idi na link</string>
-    <string name="action_bar_show_download_button">Prikaži dugme za Preuzimanje</string>
     <string name="action_bar_show_add_to_playlist_button">Prikaži dugme za Dodaj u plejlistu</string>
     <string name="action_bar_show_loop_button">Prikaži dugme za Ponavljanje</string>
     <string name="action_bar_show_shuffle_button">Prikaži dugme za Nasumično</string>
@@ -377,7 +369,6 @@
     <string name="tab_data">Podaci</string>
     <string name="image_cache_max_size">Maksimalna veličina keša slika</string>
     <string name="song_cache_max_size">Maksimalna veličina keša pesme</string>
-    <string name="song_download_max_size">Maksimalna veličina za preuzimanje pesme</string>
     <string name="save_to_backup">Sačuvaj u rezervnu kopiju</string>
     <string name="restore_from_backup">Vrati iz rezervne kopije</string>
     <string name="tab_miscellaneous">Razno</string>
@@ -431,7 +422,6 @@
     <string name="folder_was_not_found">Fascikla nije pronađena</string>
     <string name="direction_top">Vrh</string>
     <string name="pick_from">Odaberi iz</string>
-    <string name="download_cover">Preuzmi omot</string>
     <string name="menu_style">Stil menija</string>
     <string name="style_grid">Mreža</string>
     <string name="style_list">Lista</string>
@@ -454,8 +444,6 @@
     <string name="info_shuffle">Nasumično</string>
     <string name="info_includes_excludes_songs_on_the_device">Uključuje/Isključuje pesme na uređaju</string>
     <string name="info_enqueue_songs">Pesme u redosledu</string>
-    <string name="info_download_all_songs">Preuzmi sve pesme</string>
-    <string name="info_remove_all_downloaded_songs">Ukloni sve preuzete pesme</string>
     <string name="info_start_radio">Pokreni radio</string>
     <string name="info_translation">Prevod</string>
     <string name="info_find_the_song_that_is_playing">Pronađi pesmu koja se reprodukuje</string>
@@ -835,9 +823,6 @@
     <string name="action_bar_show_start_radio_button">Dugme za pokreni radio</string>
     <string name="tab_accounts">Nalozi</string>
     <string name="blankspace">Prazan Prostor na Vrhu</string>
-    <string name="settings_enable_autodownload_song">Omogući automatsko preuzimanje pesme</string>
-    <string name="settings_enable_autodownload_song_when_liked">Automatsko preuzimanje pesme kada se lajkuje</string>
-    <string name="settings_enable_autodownload_song_when_album_bookmarked">Automatsko preuzimanje pesme kada je album dodat u omiljeno</string>
     <string name="tab_general">Opšte</string>
     <string name="queue_and_local_playlists_left_swipe">Prevlačenje ulevo u redosledu i u lokalnim plejlistama</string>
     <string name="queue_and_local_playlists_right_swipe">Prevlačenje udesno u redosledu i u lokalnim plejlistama</string>
@@ -846,7 +831,6 @@
     <string name="album_left_swipe">Prevlačenje ulevo u Albumu</string>
     <string name="album_right_swipe">Prevlačenje udesno u Albumu</string>
     <string name="bookmark">Omiljeno</string>
-    <string name="downloading_videos_not_supported">Preuzimanje video zapisa nije podržano</string>
     <string name="animatedgradient">Animirana prelazna boja</string>
     <string name="linear">Linearna prelazna boja</string>
     <string name="mesh">Mrežasta prelazna boja</string>

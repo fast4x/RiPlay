@@ -185,9 +185,7 @@
     <string name="system">Système</string>
     <string name="unlimited">Illimité</string>
     <string name="_light">Clair</string>
-    <string name="downloaded">Téléchargés</string>
     <string name="turn_off">Desactivé</string>
-    <string name="download">Télécharger</string>
     <string name="_default">Par défaut</string>
     <string name="dynamic">Dynamique</string>
     <string name="discovery">Découverte</string>
@@ -218,7 +216,6 @@
     <string name="new_albums_of_your_artists">Nouveaux albums de vos artistes</string>
     <string name="timeline">Barre de navigation</string>
     <string name="song_cache_by_player">CACHE DE TITRE (Pour le lecteur)</string>
-    <string name="song_cache_by_download">CACHE DE TITRE (Pour le télechargement)</string>
     <string name="visualizer">Visualiseur</string>
     <string name="visualizer_require_mic_permission">Visualiseur exige L\'AUTORISATION DU MICRO</string>
     <string name="restart_app_please">Redémarrez l\'application</string>
@@ -259,7 +256,6 @@
     <string name="audio_quality_format_medium">Moyen</string>
     <string name="audio_quality_format_low">Bas</string>
     <string name="audio_quality_format_unknown">Inconnu</string>
-    <string name="do_you_really_want_to_delete_download">Voulez-vous vraiment supprimer le téléchargement ?</string>
     <string name="enqueue_all">Tout mettre en file d’attente</string>
     <string name="enqueue_selected">Mettre en file d\'attente ce qui est sélectionné</string>
     <string name="greek">Grecque (Ελληνικά)</string>
@@ -273,8 +269,6 @@
     <string name="background_player">"LECTEUR D'ARRIÈRE PLAN "</string>
     <string name="show_favorite_button">Afficher le bouton des favoris</string>
     <string name="show_favorite_button_in_lock_screen_and_notification_area">Afficher le bouton des favoris dans l\'écran de verrouillage et la zone des notifications</string>
-    <string name="show_download_button">Affiche le bouton de téléchargement</string>
-    <string name="show_download_button_in_lock_screen_and_notification_area">Afficher le bouton des téléchargements dans la zone de verrouillage de l\'écran et des notifications</string>
     <string name="by_most_played_song">Par les titres les plus joués</string>
     <string name="by_last_played_song">Par les titres joués dernièrement</string>
     <string name="audio_quality_automatic">Automatique</string>
@@ -284,7 +278,6 @@
     <string name="arabic">Arabe (عرب)</string>
     <string name="chinese_simplified">Chinois Simplifié (简体中文)</string>
     <string name="chinese_traditional">Chinois traditionnel (繁體中文)</string>
-    <string name="do_you_really_want_to_download_all">Voulez-vous vraiment tout télécharger ?</string>
     <string name="import_playlist">Importer une playlist</string>
     <string name="lang_ukrainian">Ukrainien (українська)</string>
     <string name="proxy">PROXY</string>
@@ -305,7 +298,6 @@
     <string name="paste_or_type_a_valid_url">Coller ou taper une URL valide</string>
     <string name="you_can_put_a_complete_link">Vous pouvez mettre un lien complet d\'une playlist, d\'un album, d\'une chaîne ou d\'un seul titre sur YouTube ou YouTube Music</string>
     <string name="go_to_link">Accéder au lien</string>
-    <string name="action_bar_show_download_button">Affiche le bouton de téléchargement</string>
     <string name="action_bar_show_add_to_playlist_button">Afficher le bouton ajouter à la playlist</string>
     <string name="action_bar_show_loop_button">Afficher le bouton boucle</string>
     <string name="action_bar_show_shuffle_button">Afficher le bouton lecture aléatoire</string>
@@ -377,7 +369,6 @@
     <string name="tab_data">Données</string>
     <string name="image_cache_max_size">Taille maximale du cache des images</string>
     <string name="song_cache_max_size">Taille maximale du cache des titres</string>
-    <string name="song_download_max_size">Taille maximale du téléchargement des titres</string>
     <string name="save_to_backup">Sauvegarder pour restaurer</string>
     <string name="restore_from_backup">Restaurer depuis une sauvegarde</string>
     <string name="tab_miscellaneous">Divers</string>
@@ -431,7 +422,6 @@
     <string name="folder_was_not_found">Le dossier n\'a pas été trouvé</string>
     <string name="direction_top">En haut</string>
     <string name="pick_from">Choisir parmi</string>
-    <string name="download_cover">Télécharger l\'album</string>
     <string name="menu_style">Style du menu</string>
     <string name="style_grid">Grille</string>
     <string name="style_list">Liste</string>
@@ -456,8 +446,6 @@
     <string name="info_shuffle">Aléatoire</string>
     <string name="info_includes_excludes_songs_on_the_device">Inclure / Exclure les titres présents sur l\'appareil</string>
     <string name="info_enqueue_songs">Mettre les titres en file d\'attente</string>
-    <string name="info_download_all_songs">Télécharger tous les titres</string>
-    <string name="info_remove_all_downloaded_songs">Supprimer tous les titres téléchargés</string>
     <string name="info_start_radio">Démarrer la radio</string>
     <string name="info_translation">Traduction</string>
     <string name="info_find_the_song_that_is_playing">Trouver le titre qui est en cours de lecture</string>
@@ -838,9 +826,6 @@ Volume BAS : titre précédent</string>
     <string name="action_bar_show_start_radio_button">Afficher le bouton radio</string>
     <string name="tab_accounts">Comptes</string>
     <string name="blankspace">Espace Vide en Haut</string>
-    <string name="settings_enable_autodownload_song">Activer le téléchargement automatique du titre</string>
-    <string name="settings_enable_autodownload_song_when_liked">Téléchargement automatique du titre lorsqu\'il est apprécié</string>
-    <string name="settings_enable_autodownload_song_when_album_bookmarked">Téléchargement automatique du titre lorsque l\'album est ajouté aux favoris</string>
     <string name="tab_general">Général</string>
     <string name="queue_and_local_playlists_left_swipe">Balayage vers la gauche de la file d\'attente et des playlists locales</string>
     <string name="queue_and_local_playlists_right_swipe">Balayage vers la droite de la file d\'attente et des playlists locales</string>
@@ -849,7 +834,6 @@ Volume BAS : titre précédent</string>
     <string name="album_left_swipe">Balayage vers la gauche de l\'album</string>
     <string name="album_right_swipe">Balayage vers la droite de l\'album</string>
     <string name="bookmark">Signet</string>
-    <string name="downloading_videos_not_supported">Le téléchargement de vidéos n\'est pas pris en charge</string>
     <string name="animatedgradient">Dégradé Animé</string>
     <string name="linear">Dégradé linéaire</string>
     <string name="mesh">Dégradé de maillage</string>

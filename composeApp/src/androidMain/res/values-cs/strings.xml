@@ -185,9 +185,7 @@
     <string name="system">Podle systému</string>
     <string name="unlimited">Neomezený</string>
     <string name="_light">Světlý</string>
-    <string name="downloaded">Stažený</string>
     <string name="turn_off">Vypnout</string>
-    <string name="download">Stáhnout</string>
     <string name="_default">Výchozí</string>
     <string name="dynamic">Dynamický</string>
     <string name="discovery">Objevit</string>
@@ -218,7 +216,6 @@
     <string name="new_albums_of_your_artists">Nová alba vašich umělců</string>
     <string name="timeline">Časová osa</string>
     <string name="song_cache_by_player">MEZIPAMĚŤ SKLADEB (Přehrávače)</string>
-    <string name="song_cache_by_download">MEZIPAMĚŤ SKLADEB (Stahování)</string>
     <string name="visualizer">Vizualizér</string>
     <string name="visualizer_require_mic_permission">Vizualizér VYŽADUJE POVOLENÍ MIKROFONU</string>
     <string name="restart_app_please">Restartujte aplikaci, prosím.</string>
@@ -259,7 +256,6 @@
     <string name="audio_quality_format_medium">Střední</string>
     <string name="audio_quality_format_low">Nízká</string>
     <string name="audio_quality_format_unknown">Neznámá</string>
-    <string name="do_you_really_want_to_delete_download">Opravdu chcete odstranit stahování?</string>
     <string name="enqueue_all">Zařadit vše do fronty</string>
     <string name="enqueue_selected">Zařadit vybrané do fronty</string>
     <string name="greek">Řečtina (Ελληνικά)</string>
@@ -273,8 +269,6 @@
     <string name="background_player">"PŘEHRÁVAČ NA POZADÍ "</string>
     <string name="show_favorite_button">Zobrazit tlačítko Oblíbené</string>
     <string name="show_favorite_button_in_lock_screen_and_notification_area">Zobrazit tlačítko Oblíbené na uzamčené obrazovce a v oznamovací oblasti</string>
-    <string name="show_download_button">Zobrazit tlačítko Stáhnout</string>
-    <string name="show_download_button_in_lock_screen_and_notification_area">Zobrazit tlačítko Stáhnout na uzamčené obrazovce a v oznamovací oblasti</string>
     <string name="by_most_played_song">Podle nejčastěji přehrávané skladby</string>
     <string name="by_last_played_song">Podle naposledy přehrávané skladby</string>
     <string name="audio_quality_automatic">Automaticky</string>
@@ -284,7 +278,6 @@
     <string name="arabic">Arabština (العربية)</string>
     <string name="chinese_simplified">Zjednodušená čínština (汉语)</string>
     <string name="chinese_traditional">Tradiční čínština (漢語)</string>
-    <string name="do_you_really_want_to_download_all">Opravdu chcete stahovat vše?</string>
     <string name="import_playlist">Importovat playlist</string>
     <string name="lang_ukrainian">Ukrajinština (Украї́нська)</string>
     <string name="proxy">PROXY</string>
@@ -305,7 +298,6 @@
     <string name="paste_or_type_a_valid_url">Vložit nebo zadat platnou adresu url</string>
     <string name="you_can_put_a_complete_link">Můžete vložit úplný odkaz na playlist, album, kanál nebo jednu skladbu na YouTube nebo YouTube Music</string>
     <string name="go_to_link">Přejít na odkaz</string>
-    <string name="action_bar_show_download_button">Zobrazit tlačítko Stáhnout</string>
     <string name="action_bar_show_add_to_playlist_button">Zobrazit tlačítko Přidat do playlistu</string>
     <string name="action_bar_show_loop_button">Zobrazit tlačítko Smyčky</string>
     <string name="action_bar_show_shuffle_button">Zobrazit tlačítko Náhodně</string>
@@ -377,7 +369,6 @@
     <string name="tab_data">Data</string>
     <string name="image_cache_max_size">Maximální velikost mezipaměti obrázků</string>
     <string name="song_cache_max_size">Maximální velikost mezipaměti skladeb</string>
-    <string name="song_download_max_size">Maximální velikost stahování skladeb</string>
     <string name="save_to_backup">Uložit do zálohy</string>
     <string name="restore_from_backup">Obnovení ze zálohy</string>
     <string name="tab_miscellaneous">Různé</string>
@@ -431,7 +422,6 @@
     <string name="folder_was_not_found">Složka nebyla nalezena</string>
     <string name="direction_top">Direction Top</string>
     <string name="pick_from">Vybrat z</string>
-    <string name="download_cover">Stáhnout obal</string>
     <string name="menu_style">Styl menu</string>
     <string name="style_grid">Mřížka</string>
     <string name="style_list">Seznam</string>
@@ -454,8 +444,6 @@
     <string name="info_shuffle">Náhodně</string>
     <string name="info_includes_excludes_songs_on_the_device">Zahrnuje/vylučuje skladby v zařízení</string>
     <string name="info_enqueue_songs">Přidat skladby do fronty</string>
-    <string name="info_download_all_songs">Stáhnout všechny skladby</string>
-    <string name="info_remove_all_downloaded_songs">Odstranit všechny stažené skladby</string>
     <string name="info_start_radio">Spustit rádio</string>
     <string name="info_translation">Překlad</string>
     <string name="info_find_the_song_that_is_playing">Vyhledat přehrávanou skladbu</string>
@@ -835,9 +823,6 @@
     <string name="action_bar_show_start_radio_button">Spustit tlačítko rádia</string>
     <string name="tab_accounts">Účty</string>
     <string name="blankspace">Prázdné místo nahoře</string>
-    <string name="settings_enable_autodownload_song">Povolit automatické stahování skladby</string>
-    <string name="settings_enable_autodownload_song_when_liked">Automaticky stahovat skladbu, pokud se líbí</string>
-    <string name="settings_enable_autodownload_song_when_album_bookmarked">Automaticky stahovat skladbu, pokud je album označeno záložkou</string>
     <string name="tab_general">Obecné</string>
     <string name="queue_and_local_playlists_left_swipe">Fronta a místní playlisty přejetím vlevo</string>
     <string name="queue_and_local_playlists_right_swipe">Fronta a místní playlisty přejetím vpravo</string>
@@ -846,7 +831,6 @@
     <string name="album_left_swipe">Album přejetím vlevo</string>
     <string name="album_right_swipe">Album přejetím vpravo</string>
     <string name="bookmark">Záložka</string>
-    <string name="downloading_videos_not_supported">Stahování videí není podporováno</string>
     <string name="animatedgradient">Animovaný přechod</string>
     <string name="linear">Lineární přechod</string>
     <string name="mesh">Síťový přechod</string>

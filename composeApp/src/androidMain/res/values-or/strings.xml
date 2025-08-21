@@ -185,9 +185,7 @@
     <string name="system">ତନ୍ତ୍ର</string>
     <string name="unlimited">ଅସୀମିତ</string>
     <string name="_light">ଆଲୋକ</string>
-    <string name="downloaded">ଆହରଣ କରାଯାଇଛି</string>
     <string name="turn_off">ବନ୍ଦ କରନ୍ତୁ</string>
-    <string name="download">ଆହରଣ କରନ୍ତୁ</string>
     <string name="_default">ପୂର୍ବନିର୍ଦ୍ଧାରିତ</string>
     <string name="dynamic">ଗତିଶୀଳ</string>
     <string name="discovery">ଆବିଷ୍କାର</string>
@@ -218,7 +216,6 @@
     <string name="new_albums_of_your_artists">ଆପଣଙ୍କ କଳାକାରଙ୍କ ନୂଆ ଆଲବମ</string>
     <string name="timeline">ସମୟ ରେଖା</string>
     <string name="song_cache_by_player">ଗୀତ କ୍ୟାଶେ (ପ୍ଲେୟାର ଦ୍ୱାରା)</string>
-    <string name="song_cache_by_download">ଗୀତ କ୍ୟାଶେ (ଡାଉନଲୋଡ ଦ୍ୱାରା)</string>
     <string name="visualizer">ଭିଜୁଆଲାଇଜର୍</string>
     <string name="visualizer_require_mic_permission">ଭିଜୁଆଲିଜର୍ ପାଇଁ ମାଇକ୍ରୋ ଅନୁମତି ଆବଶ୍ୟକ</string>
     <string name="restart_app_please">ଦୟାକରି ଆପ୍ ‌ କୁ ପୁନଃଚାଳନ କରନ୍ତୁ ।.</string>
@@ -259,7 +256,6 @@
     <string name="audio_quality_format_medium">ମଧ୍ୟମ</string>
     <string name="audio_quality_format_low">ନିମ୍ନ</string>
     <string name="audio_quality_format_unknown">ଅଜ୍ଞାତ</string>
-    <string name="do_you_really_want_to_delete_download">ଆପଣ ପ୍ରକୃତରେ ଡାଉନଲୋଡ୍ ଡିଲିଟ୍ କରିବାକୁ ଚାହୁଁଛନ୍ତି କି?</string>
     <string name="enqueue_all">ସମସ୍ତଙ୍କୁ ଉତ୍ସାହିତ କର</string>
     <string name="enqueue_selected">ବଚ୍ଛିତକୁ ସଂଗୁପ୍ତ କରନ୍ତୁ</string>
     <string name="greek">ଗ୍ରୀକ</string>
@@ -273,8 +269,6 @@
     <string name="background_player">"ପୃଷ୍ଠଭୂମି ଚାଳକ "</string>
     <string name="show_favorite_button">ମନପସନ୍ଦ ବଟନ ଦର୍ଶାନ୍ତୁ</string>
     <string name="show_favorite_button_in_lock_screen_and_notification_area">ଲକ ପରଦା ଏବଂ ବିଜ୍ଞପ୍ତି କ୍ଷେତ୍ର ରେ ପ୍ରିୟ ବଟନକୁ ଦର୍ଶାନ୍ତୁ</string>
-    <string name="show_download_button">ଆହରଣ ବଟନ୍ ଦର୍ଶାନ୍ତୁ</string>
-    <string name="show_download_button_in_lock_screen_and_notification_area">ଲକ ପରଦା ଏବଂ ବିଜ୍ଞପ୍ତି କ୍ଷେତ୍ର ରେ ଆହରଣ ବଟନ ଦର୍ଶାନ୍ତୁ</string>
     <string name="by_most_played_song">ସର୍ବାଧିକ ବଜାଯାଇଥିବା ଗୀତ ଦ୍ୱାରା</string>
     <string name="by_last_played_song">ଅନ୍ତିମ ଗୀତ ଦ୍ୱାରା</string>
     <string name="audio_quality_automatic">ସ୍ୱୟଂଚାଳିତ</string>
@@ -284,7 +278,6 @@
     <string name="arabic">ଆରବୀ</string>
     <string name="chinese_simplified">ଚାଇନିଜ୍ ସରଳୀକୃତ</string>
     <string name="chinese_traditional">ଚାଇନିଜ୍ ପାରମ୍ପାରିକ</string>
-    <string name="do_you_really_want_to_download_all">ଆପଣ ପ୍ରକୃତରେ ସମସ୍ତ ଡାଉନଲୋଡ୍ କରିବାକୁ ଚାହୁଁଛନ୍ତି କି?</string>
     <string name="import_playlist">ପ୍ଲେଲିଷ୍ଟ ଆମଦାନୀ କରନ୍ତୁ</string>
     <string name="lang_ukrainian">ୟୁକ୍ରେନ୍</string>
     <string name="proxy">ପ୍ରୋକ୍ସି</string>
@@ -305,7 +298,6 @@
     <string name="paste_or_type_a_valid_url">ଗୋଟିଏ ବୈଧ Url ଲଗାନ୍ତୁ କିମ୍ବା ଟାଇପ କରନ୍ତୁ</string>
     <string name="you_can_put_a_complete_link">ୟୁଟ୍ୟୁବ କିମ୍ବା ୟୁଟ୍ୟୁବ ମ୍ୟୁଜିକରେ ଆପଣ ପ୍ଲେଲିଷ୍ଟ, ଆଲବମ, ଚ୍ୟାନେଲ କିମ୍ବା ଗୋଟିଏ ଗୀତର ସମ୍ପୂର୍ଣ୍ଣ ଲିଙ୍କ ରଖିପାରିବେ</string>
     <string name="go_to_link">ଲିଙ୍କକୁ ଯାଆନ୍ତୁ</string>
-    <string name="action_bar_show_download_button">ଆହରଣ ବଟନ୍ ଦର୍ଶାନ୍ତୁ</string>
     <string name="action_bar_show_add_to_playlist_button">ପ୍ଲେ-ଲିଷ୍ଟ ବଟନକୁ ଯୋଗକରନ୍ତୁ</string>
     <string name="action_bar_show_loop_button">ଲୁପ ବଟନ ଦର୍ଶାନ୍ତୁ</string>
     <string name="action_bar_show_shuffle_button">Shuffle ବଟନକୁ ଦର୍ଶାନ୍ତୁ</string>
@@ -377,7 +369,6 @@
     <string name="tab_data">Data</string>
     <string name="image_cache_max_size">Image cache max size</string>
     <string name="song_cache_max_size">Song cache max size</string>
-    <string name="song_download_max_size">Song download max size</string>
     <string name="save_to_backup">Save to backup</string>
     <string name="restore_from_backup">Restore from backup</string>
     <string name="tab_miscellaneous">Miscellaneous</string>
@@ -431,7 +422,6 @@
     <string name="folder_was_not_found">Folder was not found</string>
     <string name="direction_top">Direction Top</string>
     <string name="pick_from">Pick from</string>
-    <string name="download_cover">Download cover</string>
     <string name="menu_style">Menu style</string>
     <string name="style_grid">Grid</string>
     <string name="style_list">List</string>
@@ -454,8 +444,6 @@
     <string name="info_shuffle">Shuffle</string>
     <string name="info_includes_excludes_songs_on_the_device">Includes/Excludes songs on the device</string>
     <string name="info_enqueue_songs">Enqueue songs</string>
-    <string name="info_download_all_songs">Download all songs</string>
-    <string name="info_remove_all_downloaded_songs">Remove all downloaded songs</string>
     <string name="info_start_radio">Start radio</string>
     <string name="info_translation">Translation</string>
     <string name="info_find_the_song_that_is_playing">Find the song that is playing</string>
@@ -835,9 +823,6 @@
     <string name="action_bar_show_start_radio_button">Start radio button</string>
     <string name="tab_accounts">Accounts</string>
     <string name="blankspace">Blank Space at Top</string>
-    <string name="settings_enable_autodownload_song">Enable auto download song</string>
-    <string name="settings_enable_autodownload_song_when_liked">Auto download song when liked</string>
-    <string name="settings_enable_autodownload_song_when_album_bookmarked">Auto download song when album bookmarked</string>
     <string name="tab_general">General</string>
     <string name="queue_and_local_playlists_left_swipe">Queue and Local Playlists Left Swipe</string>
     <string name="queue_and_local_playlists_right_swipe">Queue and Local Playlists Right Swipe</string>
@@ -846,7 +831,6 @@
     <string name="album_left_swipe">Album Left Swipe</string>
     <string name="album_right_swipe">Album Right Swipe</string>
     <string name="bookmark">Bookmark</string>
-    <string name="downloading_videos_not_supported">Downloading videos not supported</string>
     <string name="animatedgradient">Animated Gradient</string>
     <string name="linear">Linear Gradient</string>
     <string name="mesh">Mesh Gradient</string>

@@ -185,9 +185,7 @@
     <string name="system">Sistema</string>
     <string name="unlimited">Walang limitasyon</string>
     <string name="_light">Maliwanag</string>
-    <string name="downloaded">Na-Download</string>
     <string name="turn_off">Patayin</string>
-    <string name="download">I-download</string>
     <string name="_default">Default</string>
     <string name="dynamic">Daynamiko</string>
     <string name="discovery">Discovery</string>
@@ -218,7 +216,6 @@
     <string name="new_albums_of_your_artists">Bangong album galing sa mga artista</string>
     <string name="timeline">Timeline</string>
     <string name="song_cache_by_player">SONG CACHE (ng Player)</string>
-    <string name="song_cache_by_download">SONG CACHE (ng Download)</string>
     <string name="visualizer">Visualizer</string>
     <string name="visualizer_require_mic_permission">Visualizer KAILANGAN NG MIC PERMISSION</string>
     <string name="restart_app_please">Paki restart ang app.</string>
@@ -259,7 +256,6 @@
     <string name="audio_quality_format_medium">Medium</string>
     <string name="audio_quality_format_low">Mababa</string>
     <string name="audio_quality_format_unknown">Unknown</string>
-    <string name="do_you_really_want_to_delete_download">Gusto mo ba talagang burahin ang download na ito?</string>
     <string name="enqueue_all">I-enqueue lahat</string>
     <string name="enqueue_selected">Na-select ang enqueue</string>
     <string name="greek">Greek</string>
@@ -273,8 +269,6 @@
     <string name="background_player">"BACKGROUND PLAYER "</string>
     <string name="show_favorite_button">Ipakita ang Favorite button</string>
     <string name="show_favorite_button_in_lock_screen_and_notification_area">Ipakita ang Favorite button sa lock screen at notification area</string>
-    <string name="show_download_button">Ipakita ang download button</string>
-    <string name="show_download_button_in_lock_screen_and_notification_area">Ipakita ang download button sa lock screen at notification area</string>
     <string name="by_most_played_song">Sa pinakamaraming pinatugtog na kanta</string>
     <string name="by_last_played_song">Sa huling pinatugtog na kanta</string>
     <string name="audio_quality_automatic">Awtomatiko</string>
@@ -284,7 +278,6 @@
     <string name="arabic">Arabe</string>
     <string name="chinese_simplified">Chinese Simplified</string>
     <string name="chinese_traditional">Chinese Traditional</string>
-    <string name="do_you_really_want_to_download_all">Gusto mo ba talagang i-download lahat?</string>
     <string name="import_playlist">I-import ang playlist</string>
     <string name="lang_ukrainian">Ukrainian</string>
     <string name="proxy">PROXY</string>
@@ -305,7 +298,6 @@
     <string name="paste_or_type_a_valid_url">I-paste o mag-type ng valid url</string>
     <string name="you_can_put_a_complete_link">Maaari kang maglagay ng kumpletong link ng isang playlist, album, channel, o isang kanta sa YouTube o YouTube Music</string>
     <string name="go_to_link">Punta sa link</string>
-    <string name="action_bar_show_download_button">Ipakita ang download button</string>
     <string name="action_bar_show_add_to_playlist_button">Ipakita ang add to playlist button</string>
     <string name="action_bar_show_loop_button">Ipakita ang loop button</string>
     <string name="action_bar_show_shuffle_button">Ipakita ang shuffle button</string>
@@ -377,7 +369,6 @@
     <string name="tab_data">Data</string>
     <string name="image_cache_max_size">Image cache max size</string>
     <string name="song_cache_max_size">Song cache max size</string>
-    <string name="song_download_max_size">Song download max size</string>
     <string name="save_to_backup">I-save sa backup</string>
     <string name="restore_from_backup">I-restore galing sa backup</string>
     <string name="tab_miscellaneous">Miscellaneous</string>
@@ -431,7 +422,6 @@
     <string name="folder_was_not_found">Hindi mahanap ang folder</string>
     <string name="direction_top">Pinakaitaas</string>
     <string name="pick_from">Pumili sa</string>
-    <string name="download_cover">I-download ang cover</string>
     <string name="menu_style">Style ng menu</string>
     <string name="style_grid">Grid</string>
     <string name="style_list">Listahan</string>
@@ -454,8 +444,6 @@
     <string name="info_shuffle">Shuffle</string>
     <string name="info_includes_excludes_songs_on_the_device">Kinasama/Inaalis ang mga kanta sa device</string>
     <string name="info_enqueue_songs">Enqueue songs</string>
-    <string name="info_download_all_songs">I-download lahat ng kanta</string>
-    <string name="info_remove_all_downloaded_songs">I-remove lahat ng downloaded songs</string>
     <string name="info_start_radio">Umpisahin and radyo</string>
     <string name="info_translation">Translation</string>
     <string name="info_find_the_song_that_is_playing">Hanapin ang kanta na tumutugtog</string>
@@ -835,9 +823,6 @@
     <string name="action_bar_show_start_radio_button">Start radio button</string>
     <string name="tab_accounts">Accounts</string>
     <string name="blankspace">Blank Space at Top</string>
-    <string name="settings_enable_autodownload_song">Enable auto download song</string>
-    <string name="settings_enable_autodownload_song_when_liked">Auto download song when liked</string>
-    <string name="settings_enable_autodownload_song_when_album_bookmarked">Auto download song when album bookmarked</string>
     <string name="tab_general">General</string>
     <string name="queue_and_local_playlists_left_swipe">Queue and Local Playlists Left Swipe</string>
     <string name="queue_and_local_playlists_right_swipe">Queue and Local Playlists Right Swipe</string>
@@ -846,7 +831,6 @@
     <string name="album_left_swipe">Album Left Swipe</string>
     <string name="album_right_swipe">Album Right Swipe</string>
     <string name="bookmark">Bookmark</string>
-    <string name="downloading_videos_not_supported">Downloading videos not supported</string>
     <string name="animatedgradient">Animated Gradient</string>
     <string name="linear">Linear Gradient</string>
     <string name="mesh">Mesh Gradient</string>

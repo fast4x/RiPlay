@@ -185,9 +185,7 @@
     <string name="system">System</string>
     <string name="unlimited">Unbegrenzt</string>
     <string name="_light">Hell</string>
-    <string name="downloaded">Offline-Songs</string>
     <string name="turn_off">Ausschalten</string>
-    <string name="download">Herunterladen</string>
     <string name="_default">Standard</string>
     <string name="dynamic">Dynamisch</string>
     <string name="discovery">Entdecken</string>
@@ -218,7 +216,6 @@
     <string name="new_albums_of_your_artists">Neue Alben Deiner Künstler</string>
     <string name="timeline">Zeitachse</string>
     <string name="song_cache_by_player">Song-Zwischenspeicher</string>
-    <string name="song_cache_by_download">Download-Speicher</string>
     <string name="visualizer">Visualizer</string>
     <string name="visualizer_require_mic_permission">Visualizer erfordert Mikrofonberechtigung</string>
     <string name="restart_app_please">Starte bitte die App neu.</string>
@@ -259,7 +256,6 @@
     <string name="audio_quality_format_medium">Mittel</string>
     <string name="audio_quality_format_low">Niedrig</string>
     <string name="audio_quality_format_unknown">Unbekannt</string>
-    <string name="do_you_really_want_to_delete_download">Möchtest Du den Download wirklich löschen?</string>
     <string name="enqueue_all">Alle in die Warteschlange</string>
     <string name="enqueue_selected">Ausgewählte einreihen</string>
     <string name="greek">Griechisch (Ελληνική)</string>
@@ -273,8 +269,6 @@
     <string name="background_player">"HINTERGRUND-PLAYER "</string>
     <string name="show_favorite_button">Schaltfläche \"Favoriten\" anzeigen</string>
     <string name="show_favorite_button_in_lock_screen_and_notification_area">Favoriten-Schaltfläche auf dem Sperrbildschirm und im Benachrichtigungsbereich anzeigen</string>
-    <string name="show_download_button">Download-Button anzeigen</string>
-    <string name="show_download_button_in_lock_screen_and_notification_area">Download-Button im Sperrbildschirm und Benachrichtigungsbereich anzeigen</string>
     <string name="by_most_played_song">Nach meistgespieltem Lied</string>
     <string name="by_last_played_song">Nach zuletzt gespieltem Lied</string>
     <string name="audio_quality_automatic">Automatisch</string>
@@ -284,7 +278,6 @@
     <string name="arabic">Arabisch (اَلْعَرَبِيَّة)</string>
     <string name="chinese_simplified">Chinesisch vereinfacht (汉字)</string>
     <string name="chinese_traditional">Chinesisch traditionell (繁體字)</string>
-    <string name="do_you_really_want_to_download_all">Willst du wirklich alle herunterladen?</string>
     <string name="import_playlist">Wiedergabeliste importieren</string>
     <string name="lang_ukrainian">Ukrainisch (українська)</string>
     <string name="proxy">PROXY</string>
@@ -305,7 +298,6 @@
     <string name="paste_or_type_a_valid_url">Füge eine gültige URL ein</string>
     <string name="you_can_put_a_complete_link">Du kannst einen vollständigen Link zu einer Playlist, einem Album, einem Kanal oder einem einzelnen Song auf YouTube oder YouTube Music einfügen</string>
     <string name="go_to_link">Link</string>
-    <string name="action_bar_show_download_button">Herunterladen-Schaltfläche anzeigen</string>
     <string name="action_bar_show_add_to_playlist_button">\"Zur Wiedergabeliste hinzufügen\" Schaltfläche anzeigen</string>
     <string name="action_bar_show_loop_button">Wiederholungsschaltfläche anzeigen</string>
     <string name="action_bar_show_shuffle_button">Zufallswiedergabe-Schaltfläche anzeigen</string>
@@ -377,7 +369,6 @@
     <string name="tab_data">Daten</string>
     <string name="image_cache_max_size">Maximale Größe des Bild-Cache</string>
     <string name="song_cache_max_size">Maximale Größe des Song-Cache</string>
-    <string name="song_download_max_size">Maximale Größe der Song-Downloads</string>
     <string name="save_to_backup">In Backup speichern</string>
     <string name="restore_from_backup">Aus Backup wiederherstellen</string>
     <string name="tab_miscellaneous">Sonstiges</string>
@@ -431,7 +422,6 @@
     <string name="folder_was_not_found">Ordner wurde nicht gefunden</string>
     <string name="direction_top">Oben</string>
     <string name="pick_from">Auswählen von</string>
-    <string name="download_cover">Cover herunterladen</string>
     <string name="menu_style">Menüdarstellung</string>
     <string name="style_grid">Raster</string>
     <string name="style_list">Liste</string>
@@ -454,8 +444,6 @@
     <string name="info_shuffle">Zufallswiedergabe</string>
     <string name="info_includes_excludes_songs_on_the_device">Schließt Titel auf dem Gerät ein/aus</string>
     <string name="info_enqueue_songs">Titel einreihen</string>
-    <string name="info_download_all_songs">Alle Titel herunterladen</string>
-    <string name="info_remove_all_downloaded_songs">Alle heruntergeladenen Titel entfernen</string>
     <string name="info_start_radio">Radio starten</string>
     <string name="info_translation">Übersetzung</string>
     <string name="info_find_the_song_that_is_playing">Finde den Titel, der gerade abgespielt wird</string>
@@ -835,9 +823,6 @@
     <string name="action_bar_show_start_radio_button">Radio starten Schaltfläche anzeigen</string>
     <string name="tab_accounts">Konten</string>
     <string name="blankspace">Leerer Abstand oben</string>
-    <string name="settings_enable_autodownload_song">Automatisches Herunterladen aktivieren</string>
-    <string name="settings_enable_autodownload_song_when_liked">Titel herunterladen, wenn mit \"Gefällt mir\" markiert</string>
-    <string name="settings_enable_autodownload_song_when_album_bookmarked">Titel herunterladen, wenn Album in Lesezeichen</string>
     <string name="tab_general">Allgemein</string>
     <string name="queue_and_local_playlists_left_swipe">Warteschlange und lokale Wiedergabelisten links wischen</string>
     <string name="queue_and_local_playlists_right_swipe">Warteschlange und lokale Wiedergabelisten rechts wischen</string>
@@ -846,7 +831,6 @@
     <string name="album_left_swipe">Album links wischen</string>
     <string name="album_right_swipe">Album rechts wischen</string>
     <string name="bookmark">Lesezeichen</string>
-    <string name="downloading_videos_not_supported">Herunterladen von Videos nicht unterstützt</string>
     <string name="animatedgradient">Animierter Farbverlauf</string>
     <string name="linear">Linearer Farbverlauf</string>
     <string name="mesh">Mesh Farbverlauf</string>

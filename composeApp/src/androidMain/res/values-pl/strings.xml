@@ -185,9 +185,7 @@
     <string name="system">Systemowy</string>
     <string name="unlimited">Nielimitowane</string>
     <string name="_light">Jasny</string>
-    <string name="downloaded">Pobrane</string>
     <string name="turn_off">Wyłącz</string>
-    <string name="download">Pobierz</string>
     <string name="_default">Domyślny</string>
     <string name="dynamic">Dynamiczny</string>
     <string name="discovery">Odkrywanie</string>
@@ -218,7 +216,6 @@
     <string name="new_albums_of_your_artists">Nowe albumy od twoich wykonawców</string>
     <string name="timeline">Oś czasu</string>
     <string name="song_cache_by_player">PAMIĘĆ PODRĘCZNA (Odtwarzacz)</string>
-    <string name="song_cache_by_download">PAMIĘĆ PODRĘCZNA (Pobrane)</string>
     <string name="visualizer">Wizualizator</string>
     <string name="visualizer_require_mic_permission">Wizualizator wymaga uprawnień do mikrofonu</string>
     <string name="restart_app_please">Zrestartuj aplikację.</string>
@@ -259,7 +256,6 @@
     <string name="audio_quality_format_medium">Średnia</string>
     <string name="audio_quality_format_low">Niska</string>
     <string name="audio_quality_format_unknown">Nieznana</string>
-    <string name="do_you_really_want_to_delete_download">Chcesz usunąć pobraną piosenkę?</string>
     <string name="enqueue_all">Dodaj do kolejki wszystkie</string>
     <string name="enqueue_selected">Dodaj do kolejki zaznaczone</string>
     <string name="greek">Grecki</string>
@@ -273,8 +269,6 @@
     <string name="background_player">"GRANIE W TLE "</string>
     <string name="show_favorite_button">Pokaż przycisk Ulubione</string>
     <string name="show_favorite_button_in_lock_screen_and_notification_area">Pokaż przycisk Ulubiony na ekranie blokady i obszarze powiadomień</string>
-    <string name="show_download_button">Pokaż przycisk Pobierania</string>
-    <string name="show_download_button_in_lock_screen_and_notification_area">Pokaż przycisk Pobrania na ekranie blokady i obszarze powiadomień</string>
     <string name="by_most_played_song">Według najczęściej odtwarzanych utworów</string>
     <string name="by_last_played_song">Według Ostatnio odtwarzanego utworu</string>
     <string name="audio_quality_automatic">Automatyczne</string>
@@ -284,7 +278,6 @@
     <string name="arabic">Arabski</string>
     <string name="chinese_simplified">Chiński Uproszczony</string>
     <string name="chinese_traditional">Chiński Tradycyjny</string>
-    <string name="do_you_really_want_to_download_all">Czy na pewno chcesz pobrać wszystkie?</string>
     <string name="import_playlist">Importuj playlistę</string>
     <string name="lang_ukrainian">Ukraiński</string>
     <string name="proxy">PROXY</string>
@@ -305,7 +298,6 @@
     <string name="paste_or_type_a_valid_url">Wklej albo wpisz poprawny adres url</string>
     <string name="you_can_put_a_complete_link">Możesz umieścić link do playlisty, albumu, kanału lub piosenki z YouTube lub YouTube Music</string>
     <string name="go_to_link">Idź do linku</string>
-    <string name="action_bar_show_download_button">Pokaż przycisk Pobierania</string>
     <string name="action_bar_show_add_to_playlist_button">Pokaż przycisk dodający do playlisty</string>
     <string name="action_bar_show_loop_button">Pokaż przycisk Powtarzania</string>
     <string name="action_bar_show_shuffle_button">Pokaż przycisk Tasowania</string>
@@ -377,7 +369,6 @@
     <string name="tab_data">Dane</string>
     <string name="image_cache_max_size">Maksymalny rozmiar pamięci podręcznej obrazów</string>
     <string name="song_cache_max_size">Maksymalny rozmiar pamięci podręcznej utworów</string>
-    <string name="song_download_max_size">Maksymalny rozmiar pobranych utworów</string>
     <string name="save_to_backup">Zapisz do kopii zapasowej</string>
     <string name="restore_from_backup">Przywróć z kopii zapasowej</string>
     <string name="tab_miscellaneous">Różne</string>
@@ -431,7 +422,6 @@
     <string name="folder_was_not_found">Nie znaleziono folderu</string>
     <string name="direction_top">Górny</string>
     <string name="pick_from">Wybierz spośród</string>
-    <string name="download_cover">Pobierz okładkę</string>
     <string name="menu_style">Styl menu</string>
     <string name="style_grid">Siatka</string>
     <string name="style_list">Lista</string>
@@ -454,8 +444,6 @@
     <string name="info_shuffle">Losowo</string>
     <string name="info_includes_excludes_songs_on_the_device">Zawiera/Wyklucza utwory na urządzeniu</string>
     <string name="info_enqueue_songs">Dodaj utwory do kolejki</string>
-    <string name="info_download_all_songs">Pobierz wszystkie utwory</string>
-    <string name="info_remove_all_downloaded_songs">Usuń wszystkie pobrane utwory</string>
     <string name="info_start_radio">Włącz radio</string>
     <string name="info_translation">Tłumaczenia</string>
     <string name="info_find_the_song_that_is_playing">Znajdź odtwarzany utwór</string>
@@ -835,9 +823,6 @@
     <string name="action_bar_show_start_radio_button">Przycisk Uruchomienia Radia</string>
     <string name="tab_accounts">Konta</string>
     <string name="blankspace">Pusta przestrzeń na górze</string>
-    <string name="settings_enable_autodownload_song">Włącz automatyczne pobieranie utworu</string>
-    <string name="settings_enable_autodownload_song_when_liked">Pobierz automatycznie, gdy polubiono</string>
-    <string name="settings_enable_autodownload_song_when_album_bookmarked">Auto download song when album bookmarked</string>
     <string name="tab_general">Ogólne</string>
     <string name="queue_and_local_playlists_left_swipe">Queue and Local Playlists Left Swipe</string>
     <string name="queue_and_local_playlists_right_swipe">Queue and Local Playlists Right Swipe</string>
@@ -846,7 +831,6 @@
     <string name="album_left_swipe">Album Left Swipe</string>
     <string name="album_right_swipe">Album Right Swipe</string>
     <string name="bookmark">Bookmark</string>
-    <string name="downloading_videos_not_supported">Downloading videos not supported</string>
     <string name="animatedgradient">Animowany gradient</string>
     <string name="linear">Gradient liniowy</string>
     <string name="mesh">Mesh Gradient</string>

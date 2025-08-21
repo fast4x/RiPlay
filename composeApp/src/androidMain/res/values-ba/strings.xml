@@ -185,9 +185,7 @@
     <string name="system">Система</string>
     <string name="unlimited">Сикләнмәгән</string>
     <string name="_light">Яҡты</string>
-    <string name="downloaded">Йөкләнгәндәр</string>
     <string name="turn_off">Һүндерергә</string>
-    <string name="download">Йөкләргә</string>
     <string name="_default">Ғәҙәти</string>
     <string name="dynamic">Динамик</string>
     <string name="discovery">Тикшереү</string>
@@ -218,7 +216,6 @@
     <string name="new_albums_of_your_artists">Һеҙҙең артисттарығыҙҙың яңы альбомдары</string>
     <string name="timeline">Ваҡыт йәҙүәле</string>
     <string name="song_cache_by_player">ЙЫР КЭШЫ (by Player)</string>
-    <string name="song_cache_by_download">ЙЫР КЭШЫ (by Download)</string>
     <string name="visualizer">Визуализатор</string>
     <string name="visualizer_require_mic_permission">Визуализаторға МИКРОФОНҒА РИЗАЛЫҠ КӘРӘК</string>
     <string name="restart_app_please">Ҡушымтаны яңынан һүндереп яндырығыҙ, зинһар.</string>
@@ -259,7 +256,6 @@
     <string name="audio_quality_format_medium">Урта</string>
     <string name="audio_quality_format_low">Түбән</string>
     <string name="audio_quality_format_unknown">Билдәһеҙ</string>
-    <string name="do_you_really_want_to_delete_download">Һеҙ ысынлап та был йөкләүҙе юйырға теләйһегеҙме?</string>
     <string name="enqueue_all">Сиратҡа ҡушырға</string>
     <string name="enqueue_selected">Һайланғандарҙы сиратҡа ҡушырға</string>
     <string name="greek">Грек</string>
@@ -273,8 +269,6 @@
     <string name="background_player">"Фон плееры "</string>
     <string name="show_favorite_button">\"Яратҡан\" тигән төймәне күрһәтергә</string>
     <string name="show_favorite_button_in_lock_screen_and_notification_area">Яратҡандар төймәне блокировка экранында һәм белдереү урында күрһәтергә</string>
-    <string name="show_download_button">\"Йөкләү\" тигән төймәне күрһәтергә</string>
-    <string name="show_download_button_in_lock_screen_and_notification_area">Йөкләнгән төймәне блокировка экранында һәм белдереү урында күрһәтергә</string>
     <string name="by_most_played_song">Иң уйнатылған йыр</string>
     <string name="by_last_played_song">Һуңғы уйнатылған йыр</string>
     <string name="audio_quality_automatic">Автоматик</string>
@@ -284,7 +278,6 @@
     <string name="arabic">Ғәрәп теле</string>
     <string name="chinese_simplified">Ҡытай Еңелдәнгән</string>
     <string name="chinese_traditional">Ҡытай Ғәҙәти</string>
-    <string name="do_you_really_want_to_download_all">Һеҙ ысынлап та бөтә йөкләргә теләйһегеҙме?</string>
     <string name="import_playlist">Плейлистты импортлаштырырға</string>
     <string name="lang_ukrainian">Украина</string>
     <string name="proxy">PROXY</string>
@@ -305,7 +298,6 @@
     <string name="paste_or_type_a_valid_url">Ҡуйырға йәки тоғро url-адресты индерергә</string>
     <string name="you_can_put_a_complete_link">YouTube-та йәғни YouTube Music-та: плейлистҡа, альбомға, каналға йәки йырҙарға тулы һылтанманы урынлаштырырға мөмкин</string>
     <string name="go_to_link">Һылтанма аша кисергә</string>
-    <string name="action_bar_show_download_button">\"Йөкләү\" тигән төймәне күрһәтергә</string>
     <string name="action_bar_show_add_to_playlist_button">Плейлист өҫтәү төймәне күрһәтергә</string>
     <string name="action_bar_show_loop_button">Сират төймәне күрһәтергә</string>
     <string name="action_bar_show_shuffle_button">Булғатыу төймәне күрһәтергә</string>
@@ -377,7 +369,6 @@
     <string name="tab_data">Data</string>
     <string name="image_cache_max_size">Image cache max size</string>
     <string name="song_cache_max_size">Song cache max size</string>
-    <string name="song_download_max_size">Song download max size</string>
     <string name="save_to_backup">Save to backup</string>
     <string name="restore_from_backup">Restore from backup</string>
     <string name="tab_miscellaneous">Miscellaneous</string>
@@ -431,7 +422,6 @@
     <string name="folder_was_not_found">Folder was not found</string>
     <string name="direction_top">Direction Top</string>
     <string name="pick_from">Pick from</string>
-    <string name="download_cover">Download cover</string>
     <string name="menu_style">Menu style</string>
     <string name="style_grid">Grid</string>
     <string name="style_list">List</string>
@@ -454,8 +444,6 @@
     <string name="info_shuffle">Shuffle</string>
     <string name="info_includes_excludes_songs_on_the_device">Includes/Excludes songs on the device</string>
     <string name="info_enqueue_songs">Enqueue songs</string>
-    <string name="info_download_all_songs">Download all songs</string>
-    <string name="info_remove_all_downloaded_songs">Remove all downloaded songs</string>
     <string name="info_start_radio">Start radio</string>
     <string name="info_translation">Translation</string>
     <string name="info_find_the_song_that_is_playing">Find the song that is playing</string>
@@ -835,9 +823,6 @@
     <string name="action_bar_show_start_radio_button">Start radio button</string>
     <string name="tab_accounts">Accounts</string>
     <string name="blankspace">Blank Space at Top</string>
-    <string name="settings_enable_autodownload_song">Enable auto download song</string>
-    <string name="settings_enable_autodownload_song_when_liked">Auto download song when liked</string>
-    <string name="settings_enable_autodownload_song_when_album_bookmarked">Auto download song when album bookmarked</string>
     <string name="tab_general">General</string>
     <string name="queue_and_local_playlists_left_swipe">Queue and Local Playlists Left Swipe</string>
     <string name="queue_and_local_playlists_right_swipe">Queue and Local Playlists Right Swipe</string>
@@ -846,7 +831,6 @@
     <string name="album_left_swipe">Album Left Swipe</string>
     <string name="album_right_swipe">Album Right Swipe</string>
     <string name="bookmark">Bookmark</string>
-    <string name="downloading_videos_not_supported">Downloading videos not supported</string>
     <string name="animatedgradient">Animated Gradient</string>
     <string name="linear">Linear Gradient</string>
     <string name="mesh">Mesh Gradient</string>

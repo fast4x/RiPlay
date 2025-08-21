@@ -186,9 +186,7 @@
     <string name="system">Система</string>
     <string name="unlimited">Неограниченный</string>
     <string name="_light">Светлый</string>
-    <string name="downloaded">Загружено</string>
     <string name="turn_off">Выключить</string>
-    <string name="download">Загрузить</string>
     <string name="_default">По умолчанию</string>
     <string name="dynamic">Динамически</string>
     <string name="discovery">Открытия</string>
@@ -219,7 +217,6 @@
     <string name="new_albums_of_your_artists">Новые альбомы ваших исполнителей</string>
     <string name="timeline">Стиль перемотки</string>
     <string name="song_cache_by_player">КЭШ ФАЙЛОВ (воспроизведения)</string>
-    <string name="song_cache_by_download">КЭШ ФАЙЛОВ (загрузки)</string>
     <string name="visualizer">Визуализация</string>
     <string name="visualizer_require_mic_permission">Для визуализации ТРЕБУЕТСЯ ДОСТУП К МИКРОФОНУ</string>
     <string name="restart_app_please">Перезапустите приложение.</string>
@@ -260,7 +257,6 @@
     <string name="audio_quality_format_medium">Средний</string>
     <string name="audio_quality_format_low">Низкий</string>
     <string name="audio_quality_format_unknown">Неизвестен</string>
-    <string name="do_you_really_want_to_delete_download">Вы действительно хотите удалить загрузку?</string>
     <string name="enqueue_all">Добавить все в очередь</string>
     <string name="enqueue_selected">Вставить в очередь выбранные</string>
     <string name="greek">Греческий (Ελληνικά)</string>
@@ -274,8 +270,6 @@
     <string name="background_player">"ФОНОВЫЙ ПЛЕЕР "</string>
     <string name="show_favorite_button">Показать кнопку Мне нравится</string>
     <string name="show_favorite_button_in_lock_screen_and_notification_area">Показывать кнопку Избранное на экране блокировки и области уведомлений</string>
-    <string name="show_download_button">Показать кнопку Загрузить</string>
-    <string name="show_download_button_in_lock_screen_and_notification_area">Показать кнопку загрузки на экране блокировки и области уведомлений</string>
     <string name="by_most_played_song">По самым прослушиваемым трекам</string>
     <string name="by_last_played_song">По последнему прослушанному треку</string>
     <string name="audio_quality_automatic">Авто</string>
@@ -285,7 +279,6 @@
     <string name="arabic">Арабский (اَلْعَرَبِيَّةُ)</string>
     <string name="chinese_simplified">Китайский упрощенный (汉语)</string>
     <string name="chinese_traditional">Китайский традиционный (漢語)</string>
-    <string name="do_you_really_want_to_download_all">Вы действительно хотите загрузить все?</string>
     <string name="import_playlist">Импортировать плейлист</string>
     <string name="lang_ukrainian">Украинский (Українська)</string>
     <string name="proxy">ПРОКСИ</string>
@@ -306,7 +299,6 @@
     <string name="paste_or_type_a_valid_url">Вставить или ввести правильный url-дрес</string>
     <string name="you_can_put_a_complete_link">Вы можете разместить полную ссылку на плейлист, альбом, канал или отдельную песню в YouTube или YouTube Music</string>
     <string name="go_to_link">Перейти по ссылке</string>
-    <string name="action_bar_show_download_button">Показать кнопку загрузить</string>
     <string name="action_bar_show_add_to_playlist_button">Показать кнопку добавить в плейлист</string>
     <string name="action_bar_show_loop_button">Показать кнопку очереди</string>
     <string name="action_bar_show_shuffle_button">Показать кнопку перемешать</string>
@@ -378,7 +370,6 @@
     <string name="tab_data">Данные</string>
     <string name="image_cache_max_size">Макс. размер кэша изображений</string>
     <string name="song_cache_max_size">Макс. размер кэша песен</string>
-    <string name="song_download_max_size">Макс. размер загруженных песен</string>
     <string name="save_to_backup">Создать резервную копию</string>
     <string name="restore_from_backup">Восстановить из резервной копии</string>
     <string name="tab_miscellaneous">Прочее</string>
@@ -432,7 +423,6 @@
     <string name="folder_was_not_found">Папка не найдена</string>
     <string name="direction_top">Сверху</string>
     <string name="pick_from">Выбрать из</string>
-    <string name="download_cover">Скачать обложку</string>
     <string name="menu_style">Стиль меню</string>
     <string name="style_grid">Сетка</string>
     <string name="style_list">Список</string>
@@ -455,8 +445,6 @@
     <string name="info_shuffle">Перемешать</string>
     <string name="info_includes_excludes_songs_on_the_device">Включить/исключить песни на устройстве</string>
     <string name="info_enqueue_songs">Добавить песни в очередь</string>
-    <string name="info_download_all_songs">Скачать все песни</string>
-    <string name="info_remove_all_downloaded_songs">Удалить все скачанные песни</string>
     <string name="info_start_radio">Включить радио</string>
     <string name="info_translation">Перевод</string>
     <string name="info_find_the_song_that_is_playing">Найти воспроизводимую песню</string>
@@ -837,9 +825,6 @@
     <string name="action_bar_show_start_radio_button">Запустить радио</string>
     <string name="tab_accounts">Аккаунты</string>
     <string name="blankspace">Пустое место в верхней части</string>
-    <string name="settings_enable_autodownload_song">Включить автоматическую загрузку песни</string>
-    <string name="settings_enable_autodownload_song_when_liked">Автоматическое скачивание понравившейся песни</string>
-    <string name="settings_enable_autodownload_song_when_album_bookmarked">Автоматическая загрузка песни при добавлении альбома в закладки</string>
     <string name="tab_general">Общие</string>
     <string name="queue_and_local_playlists_left_swipe">Очередь и локальные плейлисты Свайп влево</string>
     <string name="queue_and_local_playlists_right_swipe">Очередь и локальные плейлисты Свайп вправо</string>
@@ -848,7 +833,6 @@
     <string name="album_left_swipe">Альбом Свайп влево</string>
     <string name="album_right_swipe">Альбом Свайп вправо</string>
     <string name="bookmark">Закладка</string>
-    <string name="downloading_videos_not_supported">Загрузка видео не поддерживается</string>
     <string name="animatedgradient">Анимация градиента</string>
     <string name="linear">Линейный градиент</string>
     <string name="mesh">Сетчатый градиент</string>

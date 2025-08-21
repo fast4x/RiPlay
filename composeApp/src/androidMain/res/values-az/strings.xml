@@ -185,9 +185,7 @@
     <string name="system">Sistem</string>
     <string name="unlimited">Hədsiz</string>
     <string name="_light">İşıqlı</string>
-    <string name="downloaded">Yüklənilən</string>
     <string name="turn_off">Qapat</string>
-    <string name="download">Yüklə</string>
     <string name="_default">İlkin</string>
     <string name="dynamic">Dinamik</string>
     <string name="discovery">Kəşf</string>
@@ -218,7 +216,6 @@
     <string name="new_albums_of_your_artists">Sənətkarlarınızın yeni albomları</string>
     <string name="timeline">Vaxt cizgisi</string>
     <string name="song_cache_by_player">MAHNI QALIĞI (Səsləndirici)</string>
-    <string name="song_cache_by_download">MAHNI QALIĞI (Yükləmə)</string>
     <string name="visualizer">Təsviredici</string>
     <string name="visualizer_require_mic_permission">Təsviredici MİKROFON İCAZƏSİ TƏLƏB EDİR</string>
     <string name="restart_app_please">Xahiş olunur, təbiqi yenidən başlat.</string>
@@ -259,7 +256,6 @@
     <string name="audio_quality_format_medium">Orta</string>
     <string name="audio_quality_format_low">Zəif</string>
     <string name="audio_quality_format_unknown">Naməlum</string>
-    <string name="do_you_really_want_to_delete_download">Həqiqətən yükləməni silmək istəyirsiniz?</string>
     <string name="enqueue_all">Hamısını növbələ</string>
     <string name="enqueue_selected">Seçiləni növbələ</string>
     <string name="greek">Yunanca (Greek)</string>
@@ -273,8 +269,6 @@
     <string name="background_player">"ARXA PLAN SƏSLƏNDİRİCİ "</string>
     <string name="show_favorite_button">Sevimli düyməsin göstər</string>
     <string name="show_favorite_button_in_lock_screen_and_notification_area">Sevimli düyməsin kilid ekranı və bildiriş sahəsində göstər</string>
-    <string name="show_download_button">Yükləmə düyməsin göstər</string>
-    <string name="show_download_button_in_lock_screen_and_notification_area">Yükləmə düyməsin kilid ekranı və bildiriş sahəsində göstər</string>
     <string name="by_most_played_song">Ən çox dinlənən mahnıya görə</string>
     <string name="by_last_played_song">Son dinlənən mahnıya görə</string>
     <string name="audio_quality_automatic">Avtomatik</string>
@@ -284,7 +278,6 @@
     <string name="arabic">Ərəbcə (Arabic)</string>
     <string name="chinese_simplified">Sadələşdirilmiş Çincə (Chinese Simplified)</string>
     <string name="chinese_traditional">Ənənəvi Çincə (Chinese Traditional)</string>
-    <string name="do_you_really_want_to_download_all">Həqiqətən hamısın yükləmək istəyirsiniz?</string>
     <string name="import_playlist">Pleylisti İdxal Et</string>
     <string name="lang_ukrainian">Ukrayna dili (Ukrainian)</string>
     <string name="proxy">PROXY</string>
@@ -305,7 +298,6 @@
     <string name="paste_or_type_a_valid_url">İşlək url yapışdır və ya yaz</string>
     <string name="you_can_put_a_complete_link">YouTube və ya YouTube Music-dəki pleylist, albom, kanal və ya bir mahnının tam linkin yerləşdirə bilərsiniz</string>
     <string name="go_to_link">Linkə Keç</string>
-    <string name="action_bar_show_download_button">Yükləmə Düyməsini Göstər</string>
     <string name="action_bar_show_add_to_playlist_button">Pleylistə əlavə et düyməsini göstər</string>
     <string name="action_bar_show_loop_button">Təkrarla düyməsin göstər</string>
     <string name="action_bar_show_shuffle_button">Qarışdır düyməsin göstər</string>
@@ -377,7 +369,6 @@
     <string name="tab_data">Məlumat</string>
     <string name="image_cache_max_size">Şəkil qalığı maksimum həcmi</string>
     <string name="song_cache_max_size">Mahnı qalığı maksimum həcmi</string>
-    <string name="song_download_max_size">Mahnı yükləmə maksimum həcmi</string>
     <string name="save_to_backup">Nüsxələmə üçün saxla</string>
     <string name="restore_from_backup">Nüsxədən bərpa et</string>
     <string name="tab_miscellaneous">Müxtəlif</string>
@@ -431,7 +422,6 @@
     <string name="folder_was_not_found">Qovluq tapılmadı</string>
     <string name="direction_top">Ən yeni</string>
     <string name="pick_from">Buradan seç</string>
-    <string name="download_cover">Yükləmə cildi</string>
     <string name="menu_style">Menyu üslubu</string>
     <string name="style_grid">Şəbəkə</string>
     <string name="style_list">Siyahı</string>
@@ -454,8 +444,6 @@
     <string name="info_shuffle">Qarışdır</string>
     <string name="info_includes_excludes_songs_on_the_device">Cihazdakı mahnıları ehtiva edir/xaric edir</string>
     <string name="info_enqueue_songs">Mahnıları növbəyə sal</string>
-    <string name="info_download_all_songs">Bütün mahnıları yüklə</string>
-    <string name="info_remove_all_downloaded_songs">Endirilən bütün mahnıları sil</string>
     <string name="info_start_radio">Radioya başla</string>
     <string name="info_translation">Tərcümə</string>
     <string name="info_find_the_song_that_is_playing">Dinlənən mahnını tapın</string>
@@ -835,9 +823,6 @@
     <string name="action_bar_show_start_radio_button">Radio düyməsin başlat</string>
     <string name="tab_accounts">Hesablar</string>
     <string name="blankspace">Üzərindəki Boş Sahə</string>
-    <string name="settings_enable_autodownload_song">Avtomatik mahnı yükləməni aktivləşdir</string>
-    <string name="settings_enable_autodownload_song_when_liked">Bəyənildikdə mahnını birbaşa yüklə</string>
-    <string name="settings_enable_autodownload_song_when_album_bookmarked">Albom əlfəcinlənəndə mahnını birbaşa yüklə</string>
     <string name="tab_general">Ümumi</string>
     <string name="queue_and_local_playlists_left_swipe">Növbə və Yerli Pleylistlərin Sola Sürüşdür</string>
     <string name="queue_and_local_playlists_right_swipe">Növbə və Yerli Pleylistlərin Sağa Sürüşdür</string>
@@ -846,7 +831,6 @@
     <string name="album_left_swipe">Albom Sola Sürüşdürmə</string>
     <string name="album_right_swipe">Albom Sağa Sürüşdürmə</string>
     <string name="bookmark">Əlfəcin</string>
-    <string name="downloading_videos_not_supported">Videoların endirilməsi dəstəklənmir</string>
     <string name="animatedgradient">Dəyişkən Animasiyalı</string>
     <string name="linear">Dəyişkən Xətti</string>
     <string name="mesh">Dəyişkən Tor</string>

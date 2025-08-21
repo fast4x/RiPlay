@@ -185,9 +185,7 @@
     <string name="system">Sistema</string>
     <string name="unlimited">Il·limitat</string>
     <string name="_light">Clar</string>
-    <string name="downloaded">Descarregat</string>
     <string name="turn_off">Apaga</string>
-    <string name="download">Descarrega</string>
     <string name="_default">Per defecte</string>
     <string name="dynamic">Dinàmic</string>
     <string name="discovery">Descobreix</string>
@@ -218,7 +216,6 @@
     <string name="new_albums_of_your_artists">Nous àlbums dels teus artistes</string>
     <string name="timeline">Cronologia</string>
     <string name="song_cache_by_player">CACHE CANÇONS (per reproductor)</string>
-    <string name="song_cache_by_download">CACHE CANÇONS (per descarregar)</string>
     <string name="visualizer">Visualitzador</string>
     <string name="visualizer_require_mic_permission">Visualitzador REQUEREIX PERMÍS DE MICRÒFON</string>
     <string name="restart_app_please">Reinicieu l\'aplicació, si us plau.</string>
@@ -259,7 +256,6 @@
     <string name="audio_quality_format_medium">Mitjana</string>
     <string name="audio_quality_format_low">Baixa</string>
     <string name="audio_quality_format_unknown">Desconegut</string>
-    <string name="do_you_really_want_to_delete_download">Realment voleu suprimir la descàrrega?</string>
     <string name="enqueue_all">Posa-ho tot a la cua</string>
     <string name="enqueue_selected">Cua seleccionada</string>
     <string name="greek">Grec</string>
@@ -273,8 +269,6 @@
     <string name="background_player">"REPRODUCTOR DE FONS "</string>
     <string name="show_favorite_button">Mostra el botó Preferits</string>
     <string name="show_favorite_button_in_lock_screen_and_notification_area">Mostra el botó Preferit a la pantalla de bloqueig i a l\'àrea de notificacions</string>
-    <string name="show_download_button">Mostra el botó de Descàrrega</string>
-    <string name="show_download_button_in_lock_screen_and_notification_area">Mostra el botó de Descàrrega a la pantalla de bloqueig i a l\'àrea de notificacions</string>
     <string name="by_most_played_song">Per Cançó més reproduïda</string>
     <string name="by_last_played_song">Per Darrera cançó reproduïda</string>
     <string name="audio_quality_automatic">Automàtic</string>
@@ -284,7 +278,6 @@
     <string name="arabic">Àrab</string>
     <string name="chinese_simplified">Xinès simplificat</string>
     <string name="chinese_traditional">Xinès tradicional</string>
-    <string name="do_you_really_want_to_download_all">De veritat vols descarregar-ho tot?</string>
     <string name="import_playlist">Importa la llista de reproducció</string>
     <string name="lang_ukrainian">Ucraïnès</string>
     <string name="proxy">SERVIDOR INTERMEDIARI</string>
@@ -305,7 +298,6 @@
     <string name="paste_or_type_a_valid_url">Enganxeu o escriviu una direcció URL vàlida</string>
     <string name="you_can_put_a_complete_link">Pots posar un enllaç complet d\'una llista de reproducció, un àlbum, un canal o una sola cançó a YouTube o YouTube Music</string>
     <string name="go_to_link">Vés a l\'enllaç</string>
-    <string name="action_bar_show_download_button">Mostra el botó de Descàrrega</string>
     <string name="action_bar_show_add_to_playlist_button">Mostra el botó Afegeix a la llista de reproducció</string>
     <string name="action_bar_show_loop_button">Mostra el botó de Bucle</string>
     <string name="action_bar_show_shuffle_button">Mostra el botó Shuffle</string>
@@ -377,7 +369,6 @@
     <string name="tab_data">Dades</string>
     <string name="image_cache_max_size">Mida màxima de la memòria cau d\'imatges</string>
     <string name="song_cache_max_size">Mida màxima de la memòria cau de cançons</string>
-    <string name="song_download_max_size">Mida màxima de la descàrrega de la cançó</string>
     <string name="save_to_backup">Desa una còpia de seguretat</string>
     <string name="restore_from_backup">Restaura una còpia de seguretat</string>
     <string name="tab_miscellaneous">Miscel·lània</string>
@@ -431,7 +422,6 @@
     <string name="folder_was_not_found">No s\'ha trobat la carpeta</string>
     <string name="direction_top">A dalt</string>
     <string name="pick_from">Tria de</string>
-    <string name="download_cover">Descarrega la portada</string>
     <string name="menu_style">Estil del menú</string>
     <string name="style_grid">Quadrícula</string>
     <string name="style_list">Llista</string>
@@ -454,8 +444,6 @@
     <string name="info_shuffle">Reprodueix aleatòriament</string>
     <string name="info_includes_excludes_songs_on_the_device">Inclou/exclou cançons al dispositiu</string>
     <string name="info_enqueue_songs">Posar cançons a la cua</string>
-    <string name="info_download_all_songs">Descarrega totes les cançons</string>
-    <string name="info_remove_all_downloaded_songs">Elimina totes les cançons descarregades</string>
     <string name="info_start_radio">Inicieu la ràdio</string>
     <string name="info_translation">Traducció</string>
     <string name="info_find_the_song_that_is_playing">Cerca la cançó que s\'està reproduint</string>
@@ -835,9 +823,6 @@
     <string name="action_bar_show_start_radio_button">Botó d\'iniciar ràdio</string>
     <string name="tab_accounts">Comptes</string>
     <string name="blankspace">Espai en blanc a la part superior</string>
-    <string name="settings_enable_autodownload_song">Activa la baixada automàtica de la cançó</string>
-    <string name="settings_enable_autodownload_song_when_liked">Descarrega automàticament la cançó quan t\'agrada</string>
-    <string name="settings_enable_autodownload_song_when_album_bookmarked">Baixa automàticament la cançó quan l\'àlbum es marca com a preferit</string>
     <string name="tab_general">General</string>
     <string name="queue_and_local_playlists_left_swipe">Cua i llistes de reproducció locals Llisca cap a l\'esquerra</string>
     <string name="queue_and_local_playlists_right_swipe">Cua i llistes de reproducció locals Llisca cap a la dreta</string>
@@ -846,7 +831,6 @@
     <string name="album_left_swipe">Llisca cap a l\'esquerra de l\'àlbum</string>
     <string name="album_right_swipe">Llisca cap a la dreta de l\'àlbum</string>
     <string name="bookmark">Marcador</string>
-    <string name="downloading_videos_not_supported">No s\'admet la baixada de vídeos</string>
     <string name="animatedgradient">Degradat animat</string>
     <string name="linear">Degradat lineal</string>
     <string name="mesh">Degradat de malla</string>

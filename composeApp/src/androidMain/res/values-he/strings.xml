@@ -185,9 +185,7 @@
     <string name="system">מערכת</string>
     <string name="unlimited">ללא הגבלה</string>
     <string name="_light">בהיר</string>
-    <string name="downloaded">ירד</string>
     <string name="turn_off">כיבוי</string>
-    <string name="download">הורדה</string>
     <string name="_default">ברירת מחדל</string>
     <string name="dynamic">דינמי</string>
     <string name="discovery">גילוי</string>
@@ -218,7 +216,6 @@
     <string name="new_albums_of_your_artists">אלבומים חדשים של האמנים שלך</string>
     <string name="timeline">ציר הזמן</string>
     <string name="song_cache_by_player">מטמון השיר (לפי נגן)</string>
-    <string name="song_cache_by_download">מטמון השיר (לפי הורדה)</string>
     <string name="visualizer">הנפשה</string>
     <string name="visualizer_require_mic_permission">Visualizer REQUIRE MIC PERMISSION</string>
     <string name="restart_app_please">הפעל בבקשה מחדש את האפליקציה.</string>
@@ -259,7 +256,6 @@
     <string name="audio_quality_format_medium">בינוני</string>
     <string name="audio_quality_format_low">נמוך</string>
     <string name="audio_quality_format_unknown">לא ידוע</string>
-    <string name="do_you_really_want_to_delete_download">האם אתה באמת רוצה למחוק את ההורדה הזו?</string>
     <string name="enqueue_all">הוסף את כולם לתור</string>
     <string name="enqueue_selected">התור נבחר</string>
     <string name="greek">יוונית</string>
@@ -273,8 +269,6 @@
     <string name="background_player">"נגן רקע "</string>
     <string name="show_favorite_button">הצג כפתור מועדף</string>
     <string name="show_favorite_button_in_lock_screen_and_notification_area">הצג כפתור מועדף במסך הנעילה ובאזור ההודעות</string>
-    <string name="show_download_button">הצג כפתור הורדה</string>
-    <string name="show_download_button_in_lock_screen_and_notification_area">הצג את לחצן ההורדה במסך הנעילה ובאזור ההודעות</string>
     <string name="by_most_played_song">מאת שיר המושמע ביותר</string>
     <string name="by_last_played_song">מאת שיר שהושמע לאחרונה</string>
     <string name="audio_quality_automatic">אוטומטי</string>
@@ -284,7 +278,6 @@
     <string name="arabic">ערבית</string>
     <string name="chinese_simplified">סינית פשוטה</string>
     <string name="chinese_traditional">סינית מסורתית</string>
-    <string name="do_you_really_want_to_download_all">האם אתה באמת רוצה להוריד הכל?</string>
     <string name="import_playlist">ייבוא ​​רשימת השמעה</string>
     <string name="lang_ukrainian">אוקראינית</string>
     <string name="proxy">פרוקסי</string>
@@ -305,7 +298,6 @@
     <string name="paste_or_type_a_valid_url">הדבק או הקלד כתובת אתר חוקית</string>
     <string name="you_can_put_a_complete_link">אתה יכול לשים קישור שלם של פלייליסט, אלבום, ערוץ או שיר בודד ביוטיוב או ביוטיוב מיוזיק</string>
     <string name="go_to_link">עבור לקישור</string>
-    <string name="action_bar_show_download_button">הצג כפתור הורדה</string>
     <string name="action_bar_show_add_to_playlist_button">הצג כפתור הוסף לפלייליסט</string>
     <string name="action_bar_show_loop_button">הצג כפתור לולאה</string>
     <string name="action_bar_show_shuffle_button">הצג את כפתור ערבוב</string>
@@ -377,7 +369,6 @@
     <string name="tab_data">נתונים</string>
     <string name="image_cache_max_size">גודל מקסימלי של מטמון תמונה</string>
     <string name="song_cache_max_size">גודל מקסימלי של מטמון השיר</string>
-    <string name="song_download_max_size">גודל מקסימלי להורדה של שיר</string>
     <string name="save_to_backup">שמור לגיבוי</string>
     <string name="restore_from_backup">שחזר מגיבוי</string>
     <string name="tab_miscellaneous">שונות</string>
@@ -431,7 +422,6 @@
     <string name="folder_was_not_found">התיקיה לא נמצאה</string>
     <string name="direction_top">Direction Top</string>
     <string name="pick_from">לאסוף מ</string>
-    <string name="download_cover">הורד עטיפה</string>
     <string name="menu_style">עיצוב תפריט</string>
     <string name="style_grid">רשת</string>
     <string name="style_list">רשימה</string>
@@ -454,8 +444,6 @@
     <string name="info_shuffle">ערבוב</string>
     <string name="info_includes_excludes_songs_on_the_device">כולל/לא כולל שירים במכשיר</string>
     <string name="info_enqueue_songs">תור שירים</string>
-    <string name="info_download_all_songs">הורד את כל השירים</string>
-    <string name="info_remove_all_downloaded_songs">הסר את כל השירים שהורדת</string>
     <string name="info_start_radio">הפעל רדיו</string>
     <string name="info_translation">תרגום</string>
     <string name="info_find_the_song_that_is_playing">מצא את השיר שמתנגן</string>
@@ -835,9 +823,6 @@
     <string name="action_bar_show_start_radio_button">Start radio button</string>
     <string name="tab_accounts">Accounts</string>
     <string name="blankspace">Blank Space at Top</string>
-    <string name="settings_enable_autodownload_song">Enable auto download song</string>
-    <string name="settings_enable_autodownload_song_when_liked">Auto download song when liked</string>
-    <string name="settings_enable_autodownload_song_when_album_bookmarked">Auto download song when album bookmarked</string>
     <string name="tab_general">General</string>
     <string name="queue_and_local_playlists_left_swipe">Queue and Local Playlists Left Swipe</string>
     <string name="queue_and_local_playlists_right_swipe">Queue and Local Playlists Right Swipe</string>
@@ -846,7 +831,6 @@
     <string name="album_left_swipe">Album Left Swipe</string>
     <string name="album_right_swipe">Album Right Swipe</string>
     <string name="bookmark">Bookmark</string>
-    <string name="downloading_videos_not_supported">Downloading videos not supported</string>
     <string name="animatedgradient">Animated Gradient</string>
     <string name="linear">Linear Gradient</string>
     <string name="mesh">Mesh Gradient</string>

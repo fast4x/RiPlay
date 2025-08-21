@@ -185,9 +185,7 @@
     <string name="system">システム</string>
     <string name="unlimited">無制限</string>
     <string name="_light">ライト</string>
-    <string name="downloaded">ダウンロード済み</string>
     <string name="turn_off">オフにする</string>
-    <string name="download">ダウンロード</string>
     <string name="_default">デフォルト</string>
     <string name="dynamic">動的</string>
     <string name="discovery">探索</string>
@@ -218,7 +216,6 @@
     <string name="new_albums_of_your_artists">アーティストの新作アルバム</string>
     <string name="timeline">タイムライン</string>
     <string name="song_cache_by_player">曲のキャッシュ (プレイヤーによる)</string>
-    <string name="song_cache_by_download">曲のキャッシュ (ダウンロードによる)</string>
     <string name="visualizer">ビジュアライザー</string>
     <string name="visualizer_require_mic_permission">ビジュアライザーにはマイクの許可が必要です</string>
     <string name="restart_app_please">アプリを再起動してください。</string>
@@ -259,7 +256,6 @@
     <string name="audio_quality_format_medium">中</string>
     <string name="audio_quality_format_low">低</string>
     <string name="audio_quality_format_unknown">不明</string>
-    <string name="do_you_really_want_to_delete_download">本当にダウンロードを削除しますか？</string>
     <string name="enqueue_all">すべてキューに入れる</string>
     <string name="enqueue_selected">選択したものをキューに追加</string>
     <string name="greek">ギリシャ語</string>
@@ -273,8 +269,6 @@
     <string name="background_player">"バックグラウンドプレイヤー "</string>
     <string name="show_favorite_button">お気に入りボタンを表示</string>
     <string name="show_favorite_button_in_lock_screen_and_notification_area">ロック画面と通知領域にお気に入りボタンを表示する</string>
-    <string name="show_download_button">ダウンロードボタンを表示</string>
-    <string name="show_download_button_in_lock_screen_and_notification_area">ロック画面と通知領域にダウンロードボタンを表示する</string>
     <string name="by_most_played_song">最も再生された曲</string>
     <string name="by_last_played_song">最後に再生した曲</string>
     <string name="audio_quality_automatic">自動</string>
@@ -284,7 +278,6 @@
     <string name="arabic">アラビア語</string>
     <string name="chinese_simplified">簡体字中国語</string>
     <string name="chinese_traditional">繁体中国語</string>
-    <string name="do_you_really_want_to_download_all">すべてダウンロードしてもよろしいですか？</string>
     <string name="import_playlist">プレイリストをインポート</string>
     <string name="lang_ukrainian">ウクライナ語</string>
     <string name="proxy">プロキシ</string>
@@ -305,7 +298,6 @@
     <string name="paste_or_type_a_valid_url">有効なURLを貼り付けるか入力してください</string>
     <string name="you_can_put_a_complete_link">YouTubeやYouTube Musicのプレイリスト、アルバム、チャンネル、または単一の曲の完全なリンクを入れることができます</string>
     <string name="go_to_link">リンクへ移動</string>
-    <string name="action_bar_show_download_button">ダウンロードボタンを表示</string>
     <string name="action_bar_show_add_to_playlist_button">プレイリストに追加ボタンを表示</string>
     <string name="action_bar_show_loop_button">ループボタンを表示</string>
     <string name="action_bar_show_shuffle_button">シャッフルボタンを表示</string>
@@ -377,7 +369,6 @@
     <string name="tab_data">データ</string>
     <string name="image_cache_max_size">画像キャッシュの最大サイズ</string>
     <string name="song_cache_max_size">曲キャッシュの最大サイズ</string>
-    <string name="song_download_max_size">曲ダウンロードの最大サイズ</string>
     <string name="save_to_backup">バックアップに保存</string>
     <string name="restore_from_backup">バックアップから復元</string>
     <string name="tab_miscellaneous">その他</string>
@@ -431,7 +422,6 @@
     <string name="folder_was_not_found">フォルダーが見つかりませんでした</string>
     <string name="direction_top">上</string>
     <string name="pick_from">次から選択</string>
-    <string name="download_cover">カバー画像のダウンロード</string>
     <string name="menu_style">メニュースタイル</string>
     <string name="style_grid">グリッド</string>
     <string name="style_list">リスト</string>
@@ -454,8 +444,6 @@
     <string name="info_shuffle">シャッフル</string>
     <string name="info_includes_excludes_songs_on_the_device">端末内の曲を含める/除外する</string>
     <string name="info_enqueue_songs">曲をキューに挿入</string>
-    <string name="info_download_all_songs">すべての曲をダウンロード</string>
-    <string name="info_remove_all_downloaded_songs">すべてのダウンロード済みの曲を削除</string>
     <string name="info_start_radio">ラジオを開始</string>
     <string name="info_translation">翻訳</string>
     <string name="info_find_the_song_that_is_playing">再生中の曲を探す</string>
@@ -835,9 +823,6 @@
     <string name="action_bar_show_start_radio_button">ラジオボタンを開始</string>
     <string name="tab_accounts">アカウント</string>
     <string name="blankspace">上部に空白</string>
-    <string name="settings_enable_autodownload_song">曲の自動ダウンロードを有効にする</string>
-    <string name="settings_enable_autodownload_song_when_liked">いいねをした時に自動で曲をダウンロードする</string>
-    <string name="settings_enable_autodownload_song_when_album_bookmarked">アルバムをブックマークしたときに自動で曲をダウンロードする</string>
     <string name="tab_general">一般</string>
     <string name="queue_and_local_playlists_left_swipe">キューとローカルプレイリスト 左スワイプ</string>
     <string name="queue_and_local_playlists_right_swipe">キューとローカルプレイリスト 右スワイプ</string>
@@ -846,7 +831,6 @@
     <string name="album_left_swipe">アルバム 左スワイプ</string>
     <string name="album_right_swipe">アルバム 右スワイプ</string>
     <string name="bookmark">ブックマーク</string>
-    <string name="downloading_videos_not_supported">動画のダウンロードはサポートされていません</string>
     <string name="animatedgradient">動くグラデーション</string>
     <string name="linear">線形グラデーション</string>
     <string name="mesh">メッシュグラデーション</string>

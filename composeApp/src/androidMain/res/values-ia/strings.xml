@@ -185,9 +185,7 @@
     <string name="system">Systema</string>
     <string name="unlimited">Unlimited</string>
     <string name="_light">Clar</string>
-    <string name="downloaded">Discargate</string>
     <string name="turn_off">Disactivar</string>
-    <string name="download">Discargar</string>
     <string name="_default">Predefinite</string>
     <string name="dynamic">Dynamic</string>
     <string name="discovery">Discoperir</string>
@@ -218,7 +216,6 @@
     <string name="new_albums_of_your_artists">Nove albumes de tu artistas</string>
     <string name="timeline">Chronologia</string>
     <string name="song_cache_by_player">SONG CACHE (by Player)</string>
-    <string name="song_cache_by_download">SONG CACHE (by Download)</string>
     <string name="visualizer">Visualisator</string>
     <string name="visualizer_require_mic_permission">Visualizer REQUIRE MIC PERMISSION</string>
     <string name="restart_app_please">Reinitia le app per favor.</string>
@@ -259,7 +256,6 @@
     <string name="audio_quality_format_medium">Medie</string>
     <string name="audio_quality_format_low">Basse</string>
     <string name="audio_quality_format_unknown">Incognite</string>
-    <string name="do_you_really_want_to_delete_download">Desira tu vermente deler le discarga?</string>
     <string name="enqueue_all">Adder toto al cauda</string>
     <string name="enqueue_selected">Adder le seligite al cauda</string>
     <string name="greek">Greco</string>
@@ -273,8 +269,6 @@
     <string name="background_player">"REPRODUCTOR IN SECUNDE PLANO "</string>
     <string name="show_favorite_button">Show Favorite button</string>
     <string name="show_favorite_button_in_lock_screen_and_notification_area">Show Favorite button in lock screen and notification area</string>
-    <string name="show_download_button">Monstrar le button de discarga</string>
-    <string name="show_download_button_in_lock_screen_and_notification_area">Monstrar le button de Discarga in le schermo de blocada e le area de notificationes</string>
     <string name="by_most_played_song">Per Le canto plus reproducite</string>
     <string name="by_last_played_song">Per Le ultime canto reproducite</string>
     <string name="audio_quality_automatic">Automatic</string>
@@ -284,7 +278,6 @@
     <string name="arabic">Arabe</string>
     <string name="chinese_simplified">Chinese simplificate</string>
     <string name="chinese_traditional">Chinese traditional</string>
-    <string name="do_you_really_want_to_download_all">Desira tu vermente discargar toto?</string>
     <string name="import_playlist">Importar un lista de reproduction</string>
     <string name="lang_ukrainian">Ukrainian</string>
     <string name="proxy">PROXY</string>
@@ -305,7 +298,6 @@
     <string name="paste_or_type_a_valid_url">Colla o scribe un Url valide</string>
     <string name="you_can_put_a_complete_link">You can put a complete link of a playlist, an album, a channel or a single song on YouTube or YouTube Music</string>
     <string name="go_to_link">Vader al ligamine</string>
-    <string name="action_bar_show_download_button">Monstrar le button de discarga</string>
     <string name="action_bar_show_add_to_playlist_button">Monstrar le button Adder al lista de reproduction</string>
     <string name="action_bar_show_loop_button">Show Loop button</string>
     <string name="action_bar_show_shuffle_button">Monstrar le button Aleatori</string>
@@ -377,7 +369,6 @@
     <string name="tab_data">Datos</string>
     <string name="image_cache_max_size">Dimension maxime del cache de imagines</string>
     <string name="song_cache_max_size">Dimension maxime del cache de cantos</string>
-    <string name="song_download_max_size">Dimension maxime del discargamento de cantos</string>
     <string name="save_to_backup">Salveguardar al copia de securitate</string>
     <string name="restore_from_backup">Restaurar ab le copia de securitate</string>
     <string name="tab_miscellaneous">Miscellanea</string>
@@ -431,7 +422,6 @@
     <string name="folder_was_not_found">Dossier non trovate</string>
     <string name="direction_top">In alto</string>
     <string name="pick_from">Pick from</string>
-    <string name="download_cover">Discargar le copertura</string>
     <string name="menu_style">Stilo del menu</string>
     <string name="style_grid">Grillia</string>
     <string name="style_list">Lista</string>
@@ -454,8 +444,6 @@
     <string name="info_shuffle">Reproduction aleatori</string>
     <string name="info_includes_excludes_songs_on_the_device">Includes/Excludes songs on the device</string>
     <string name="info_enqueue_songs">Mitter cantos al cauda</string>
-    <string name="info_download_all_songs">Discargar tote le cantos</string>
-    <string name="info_remove_all_downloaded_songs">Remover tote le cantos discargate</string>
     <string name="info_start_radio">Initiar le radio</string>
     <string name="info_translation">Traduction</string>
     <string name="info_find_the_song_that_is_playing">Trova le canto in reproduction</string>
@@ -835,9 +823,6 @@
     <string name="action_bar_show_start_radio_button">Start radio button</string>
     <string name="tab_accounts">Accounts</string>
     <string name="blankspace">Blank Space at Top</string>
-    <string name="settings_enable_autodownload_song">Enable auto download song</string>
-    <string name="settings_enable_autodownload_song_when_liked">Auto download song when liked</string>
-    <string name="settings_enable_autodownload_song_when_album_bookmarked">Auto download song when album bookmarked</string>
     <string name="tab_general">General</string>
     <string name="queue_and_local_playlists_left_swipe">Queue and Local Playlists Left Swipe</string>
     <string name="queue_and_local_playlists_right_swipe">Queue and Local Playlists Right Swipe</string>
@@ -846,7 +831,6 @@
     <string name="album_left_swipe">Album Left Swipe</string>
     <string name="album_right_swipe">Album Right Swipe</string>
     <string name="bookmark">Bookmark</string>
-    <string name="downloading_videos_not_supported">Downloading videos not supported</string>
     <string name="animatedgradient">Animated Gradient</string>
     <string name="linear">Linear Gradient</string>
     <string name="mesh">Mesh Gradient</string>

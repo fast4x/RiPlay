@@ -185,9 +185,7 @@
     <string name="system">সিস্টেম</string>
     <string name="unlimited">আনলিমিটেড</string>
     <string name="_light">লাইট</string>
-    <string name="downloaded">ডাউনলোড</string>
     <string name="turn_off">বন্ধ করুন</string>
-    <string name="download">ডাউনলোড</string>
     <string name="_default">পূর্ব-নির্ধারিত</string>
     <string name="dynamic">ডায়নামিক</string>
     <string name="discovery">আবিষ্কার</string>
@@ -218,7 +216,6 @@
     <string name="new_albums_of_your_artists">আপনার আর্টিস্টের নতুন এলবাম</string>
     <string name="timeline">টাইমলাইন</string>
     <string name="song_cache_by_player">গানের ক্যাশে (প্লেয়ারের)</string>
-    <string name="song_cache_by_download">গানের ক্যাশে (ডাওনলোডের)</string>
     <string name="visualizer">ভিজ্যুয়ালাইজার</string>
     <string name="visualizer_require_mic_permission">ভিজ্যুয়ালাইজারের মাইক পার্মিশন দরকার</string>
     <string name="restart_app_please">এপ রিস্টার্ট করুন</string>
@@ -259,7 +256,6 @@
     <string name="audio_quality_format_medium">মাঝারি</string>
     <string name="audio_quality_format_low">নিচু</string>
     <string name="audio_quality_format_unknown">অজানা</string>
-    <string name="do_you_really_want_to_delete_download">আপনি কি সত্যি ডাওনলোড মুছতে চান?</string>
     <string name="enqueue_all">সব সারিতে রাখুন</string>
     <string name="enqueue_selected">বাছাই করা গুলো কিউতে রাখুন</string>
     <string name="greek">গ্রীক</string>
@@ -273,8 +269,6 @@
     <string name="background_player">"ব্যাকগ্রাউন্ড প্লেয়ার"</string>
     <string name="show_favorite_button">\"প্রিয়\" বাটন দেখান</string>
     <string name="show_favorite_button_in_lock_screen_and_notification_area">লক স্ক্রিন আর নোটিফিকেশন এরিয়াতে প্রিয় বাটন দেখান</string>
-    <string name="show_download_button">ডাউনলোড বাটন দেখান</string>
-    <string name="show_download_button_in_lock_screen_and_notification_area">লক স্ক্রিন আর নোটিফিকেশন এরিয়াতে ডাওনলোড বাটন দেখান</string>
     <string name="by_most_played_song">সবচে বেশি বার শোনা গান গুলো</string>
     <string name="by_last_played_song">শেষের দিকে শোনা গান গুলো</string>
     <string name="audio_quality_automatic">স্বয়ংক্রিয়</string>
@@ -284,7 +278,6 @@
     <string name="arabic">আরবি</string>
     <string name="chinese_simplified">চাইনিজ সিমপ্লিফাইড</string>
     <string name="chinese_traditional">ঐতিহ্যবাহী চীনা</string>
-    <string name="do_you_really_want_to_download_all">আপনি কি সত্যি সবগুলো ডাওনলোড করতে চান?</string>
     <string name="import_playlist">প্লেলিস্ট আমদানি করুন</string>
     <string name="lang_ukrainian">ইউক্রেনিয়ান</string>
     <string name="proxy">প্রক্সি</string>
@@ -305,7 +298,6 @@
     <string name="paste_or_type_a_valid_url">ভ্যালিড ইউয়ারেল টাইপ কিংবা পেস্ট করুন</string>
     <string name="you_can_put_a_complete_link">ইউটিউব কিংবা ইউটিউব মিউজিকে আপনি একটা প্লে-লিস্ট, এলবাম, চ্যানেল কিংবা সিংগেল গানের পুরো লিংক দিতে পারবেন।</string>
     <string name="go_to_link">লিংকে যান</string>
-    <string name="action_bar_show_download_button">ডাওনলোড বাটন দেখান</string>
     <string name="action_bar_show_add_to_playlist_button">এড টু প্লে-লিস্ট বাটন দেখান</string>
     <string name="action_bar_show_loop_button">লুপ বাটন দেখান</string>
     <string name="action_bar_show_shuffle_button">শাফল বাটন দেখান</string>
@@ -377,7 +369,6 @@
     <string name="tab_data">ডাটা</string>
     <string name="image_cache_max_size">ইমেজ ক্যাশের সর্বোচ্চ আকার</string>
     <string name="song_cache_max_size">গানের ক্যাশের সর্বোচ্চ আকার</string>
-    <string name="song_download_max_size">গান ডাওনলোডের সর্বোচ্চ আকার</string>
     <string name="save_to_backup">ব্যাকআপে সেভ করুন</string>
     <string name="restore_from_backup">ব্যাকআপ থেকে পুনরুদ্ধার করুন</string>
     <string name="tab_miscellaneous">বিবিধ</string>
@@ -431,7 +422,6 @@
     <string name="folder_was_not_found">ফোল্ডার পাওয়া যায় নি</string>
     <string name="direction_top">উপর</string>
     <string name="pick_from">থেকে পিক করুন</string>
-    <string name="download_cover">কাভার ডাওনলোড করুন</string>
     <string name="menu_style">মেনু স্টাইল</string>
     <string name="style_grid">গ্রিড</string>
     <string name="style_list">লিস্ট</string>
@@ -454,8 +444,6 @@
     <string name="info_shuffle">শাফল</string>
     <string name="info_includes_excludes_songs_on_the_device">ডিভাইসে থাকা গান ইনক্লুড/এক্সক্লুড করুন</string>
     <string name="info_enqueue_songs">গান এনকিউ করুন</string>
-    <string name="info_download_all_songs">সব গান ডাউনলোড করুন</string>
-    <string name="info_remove_all_downloaded_songs">সকল ডাওনলোড করা গান সড়ান</string>
     <string name="info_start_radio">রেডিও চালু করুন</string>
     <string name="info_translation">অনুবাদ</string>
     <string name="info_find_the_song_that_is_playing">যে গান বাজানো হচ্ছে সেটা বের করুন</string>
@@ -835,9 +823,6 @@
     <string name="action_bar_show_start_radio_button">Start radio button</string>
     <string name="tab_accounts">Accounts</string>
     <string name="blankspace">Blank Space at Top</string>
-    <string name="settings_enable_autodownload_song">Enable auto download song</string>
-    <string name="settings_enable_autodownload_song_when_liked">Auto download song when liked</string>
-    <string name="settings_enable_autodownload_song_when_album_bookmarked">Auto download song when album bookmarked</string>
     <string name="tab_general">General</string>
     <string name="queue_and_local_playlists_left_swipe">Queue and Local Playlists Left Swipe</string>
     <string name="queue_and_local_playlists_right_swipe">Queue and Local Playlists Right Swipe</string>
@@ -846,7 +831,6 @@
     <string name="album_left_swipe">Album Left Swipe</string>
     <string name="album_right_swipe">Album Right Swipe</string>
     <string name="bookmark">Bookmark</string>
-    <string name="downloading_videos_not_supported">Downloading videos not supported</string>
     <string name="animatedgradient">Animated Gradient</string>
     <string name="linear">Linear Gradient</string>
     <string name="mesh">Mesh Gradient</string>

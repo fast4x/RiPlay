@@ -185,9 +185,7 @@
     <string name="system">System</string>
     <string name="unlimited">Obegränsad</string>
     <string name="_light">Ljust</string>
-    <string name="downloaded">Hämtade</string>
     <string name="turn_off">Stäng av</string>
-    <string name="download">Ladda ner</string>
     <string name="_default">Standard</string>
     <string name="dynamic">Dynamisk</string>
     <string name="discovery">Discovery</string>
@@ -218,7 +216,6 @@
     <string name="new_albums_of_your_artists">Nya album av dina artister</string>
     <string name="timeline">Tidslinje</string>
     <string name="song_cache_by_player">SONG CACHE (av spelare)</string>
-    <string name="song_cache_by_download">SONG CACHE (av nedladdning)</string>
     <string name="visualizer">Visualizer</string>
     <string name="visualizer_require_mic_permission">Visualizer KRÄVER ÅTKOMST TILL MIKROFONEN</string>
     <string name="restart_app_please">Vänligen starta om appen.</string>
@@ -259,7 +256,6 @@
     <string name="audio_quality_format_medium">Mellan</string>
     <string name="audio_quality_format_low">Låg</string>
     <string name="audio_quality_format_unknown">Okänt</string>
-    <string name="do_you_really_want_to_delete_download">Vill du verkligen ta bort hämtning?</string>
     <string name="enqueue_all">Köa alla</string>
     <string name="enqueue_selected">Köa markerade</string>
     <string name="greek">Grekiska</string>
@@ -273,8 +269,6 @@
     <string name="background_player">"BAKGRUNDSSPELARE "</string>
     <string name="show_favorite_button">Visa favoritknapp</string>
     <string name="show_favorite_button_in_lock_screen_and_notification_area">Visa favoritknappen på låsskärmen och aviseringsområdet</string>
-    <string name="show_download_button">Visa nedladdningsknapp</string>
-    <string name="show_download_button_in_lock_screen_and_notification_area">Visa favoritknappen på låsskärmen och aviseringsområdet</string>
     <string name="by_most_played_song">Efter mest spelade låten</string>
     <string name="by_last_played_song">Efter Senast spelade låt</string>
     <string name="audio_quality_automatic">Auto</string>
@@ -284,7 +278,6 @@
     <string name="arabic">Arabiska</string>
     <string name="chinese_simplified">Kinesiska (förenklad)</string>
     <string name="chinese_traditional">Kinesiska (Traditionell)</string>
-    <string name="do_you_really_want_to_download_all">Vill du verkligen ladda ner alla?</string>
     <string name="import_playlist">Importera spellista</string>
     <string name="lang_ukrainian">Ukrainska</string>
     <string name="proxy">PROXY</string>
@@ -305,7 +298,6 @@
     <string name="paste_or_type_a_valid_url">Klistra in eller skriv in en giltig URL</string>
     <string name="you_can_put_a_complete_link">Du kan lägga till en komplett länk till en spellista, ett album, en kanal eller en låt från YouTube eller YouTube Musik</string>
     <string name="go_to_link">Gå till länk</string>
-    <string name="action_bar_show_download_button">Visa nedladdningsknapp</string>
     <string name="action_bar_show_add_to_playlist_button">Visa Lägg till i spellista-knappen</string>
     <string name="action_bar_show_loop_button">Visa loop-knapp</string>
     <string name="action_bar_show_shuffle_button">Visa Shuffle knapp</string>
@@ -377,7 +369,6 @@
     <string name="tab_data">Data</string>
     <string name="image_cache_max_size">Bildcachens maxstorlek</string>
     <string name="song_cache_max_size">Låtcachens maxstorlek</string>
-    <string name="song_download_max_size">Maxstorlek för låtnedladdning</string>
     <string name="save_to_backup">Spara till säkerhetskopia</string>
     <string name="restore_from_backup">Återställ från säkerhetskopia</string>
     <string name="tab_miscellaneous">Övrigt</string>
@@ -431,7 +422,6 @@
     <string name="folder_was_not_found">Mappen hittades inte</string>
     <string name="direction_top">Direction Top</string>
     <string name="pick_from">Välj från</string>
-    <string name="download_cover">Ladda Ner Omslag</string>
     <string name="menu_style">Menystil</string>
     <string name="style_grid">Rutnät</string>
     <string name="style_list">Lista</string>
@@ -454,8 +444,6 @@
     <string name="info_shuffle">Blanda</string>
     <string name="info_includes_excludes_songs_on_the_device">Inkluderar/exkluderar låtar på enheten</string>
     <string name="info_enqueue_songs">Köa låtar</string>
-    <string name="info_download_all_songs">Ladda ned alla låtar</string>
-    <string name="info_remove_all_downloaded_songs">Ta bort alla nedladdade låtar</string>
     <string name="info_start_radio">Starta radio</string>
     <string name="info_translation">Översättning</string>
     <string name="info_find_the_song_that_is_playing">Hitta låten som spelas</string>
@@ -835,9 +823,6 @@
     <string name="action_bar_show_start_radio_button">Start radio button</string>
     <string name="tab_accounts">Accounts</string>
     <string name="blankspace">Blank Space at Top</string>
-    <string name="settings_enable_autodownload_song">Enable auto download song</string>
-    <string name="settings_enable_autodownload_song_when_liked">Auto download song when liked</string>
-    <string name="settings_enable_autodownload_song_when_album_bookmarked">Auto download song when album bookmarked</string>
     <string name="tab_general">General</string>
     <string name="queue_and_local_playlists_left_swipe">Queue and Local Playlists Left Swipe</string>
     <string name="queue_and_local_playlists_right_swipe">Queue and Local Playlists Right Swipe</string>
@@ -846,7 +831,6 @@
     <string name="album_left_swipe">Album Left Swipe</string>
     <string name="album_right_swipe">Album Right Swipe</string>
     <string name="bookmark">Bookmark</string>
-    <string name="downloading_videos_not_supported">Downloading videos not supported</string>
     <string name="animatedgradient">Animated Gradient</string>
     <string name="linear">Linear Gradient</string>
     <string name="mesh">Mesh Gradient</string>

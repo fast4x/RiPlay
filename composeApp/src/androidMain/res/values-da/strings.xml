@@ -185,9 +185,7 @@
     <string name="system">System</string>
     <string name="unlimited">Ubegrænset</string>
     <string name="_light">Lys</string>
-    <string name="downloaded">Hentet</string>
     <string name="turn_off">Slå fra</string>
-    <string name="download">Hent</string>
     <string name="_default">Standard</string>
     <string name="dynamic">Dynamisk</string>
     <string name="discovery">Opdag</string>
@@ -218,7 +216,6 @@
     <string name="new_albums_of_your_artists">Nye album af dine kunstnere</string>
     <string name="timeline">Tidslinje</string>
     <string name="song_cache_by_player">SANGCACHE (af Afspiller)</string>
-    <string name="song_cache_by_download">SANGCACHE (af Hentet)</string>
     <string name="visualizer">Visualisering</string>
     <string name="visualizer_require_mic_permission">Visualisering KRÆVER MIKROFONADGANG</string>
     <string name="restart_app_please">Genstart venligst appen.</string>
@@ -259,7 +256,6 @@
     <string name="audio_quality_format_medium">Mellem</string>
     <string name="audio_quality_format_low">Lav</string>
     <string name="audio_quality_format_unknown">Ukendt</string>
-    <string name="do_you_really_want_to_delete_download">Vil du virkelig slette hentningen?</string>
     <string name="enqueue_all">Sæt alle i kø</string>
     <string name="enqueue_selected">Sæt valgte i kø</string>
     <string name="greek">Græsk</string>
@@ -273,8 +269,6 @@
     <string name="background_player">"BAGGRUNDSAFSPILLER "</string>
     <string name="show_favorite_button">Vis Favorit-knap</string>
     <string name="show_favorite_button_in_lock_screen_and_notification_area">Vis Favorit-knap på låseskærm og i statuslinje</string>
-    <string name="show_download_button">Vis Hent-knap</string>
-    <string name="show_download_button_in_lock_screen_and_notification_area">Vis Hent-knap på låseskærm og i statuslinje</string>
     <string name="by_most_played_song">Efter Mest afspillet sang</string>
     <string name="by_last_played_song">Efter Sidst afspillet sang</string>
     <string name="audio_quality_automatic">Automatisk</string>
@@ -284,7 +278,6 @@
     <string name="arabic">Arabisk</string>
     <string name="chinese_simplified">Kinesisk (forenklet)</string>
     <string name="chinese_traditional">Kinesisk (traditionelt)</string>
-    <string name="do_you_really_want_to_download_all">Vil du virkelig hente alle?</string>
     <string name="import_playlist">Importér playliste</string>
     <string name="lang_ukrainian">Ukrainsk</string>
     <string name="proxy">PROXY</string>
@@ -305,7 +298,6 @@
     <string name="paste_or_type_a_valid_url">Indsæt eller skriv en gyldig URL</string>
     <string name="you_can_put_a_complete_link">Du kan sætte et komplet link til en playliste, et album, en kanal eller enkelt sang på YouTube eller YouTube Musik</string>
     <string name="go_to_link">Gå til link</string>
-    <string name="action_bar_show_download_button">Vis Hent-knap</string>
     <string name="action_bar_show_add_to_playlist_button">Vis Føj til playliste-knap</string>
     <string name="action_bar_show_loop_button">Vis Loop-knap</string>
     <string name="action_bar_show_shuffle_button">Vis Bland-knap</string>
@@ -377,7 +369,6 @@
     <string name="tab_data">Data</string>
     <string name="image_cache_max_size">Maks. størrelse for billedcache</string>
     <string name="song_cache_max_size">Maks. størrelse for sangcache</string>
-    <string name="song_download_max_size">Maks. størrelse for sanghentning</string>
     <string name="save_to_backup">Gem til sikkerhedskopi</string>
     <string name="restore_from_backup">Gendan fra sikkerhedskopi</string>
     <string name="tab_miscellaneous">Diverse</string>
@@ -431,7 +422,6 @@
     <string name="folder_was_not_found">Mappe blev ikke fundet</string>
     <string name="direction_top">Op</string>
     <string name="pick_from">Vælg fra</string>
-    <string name="download_cover">Hent cover</string>
     <string name="menu_style">Menustil</string>
     <string name="style_grid">Gitter</string>
     <string name="style_list">Liste</string>
@@ -454,8 +444,6 @@
     <string name="info_shuffle">Bland</string>
     <string name="info_includes_excludes_songs_on_the_device">Inkluderer/eksluderer sange på enheden</string>
     <string name="info_enqueue_songs">Sæt sange i kø</string>
-    <string name="info_download_all_songs">Hent alle sange</string>
-    <string name="info_remove_all_downloaded_songs">Fjern alle hentede sange</string>
     <string name="info_start_radio">Start radio</string>
     <string name="info_translation">Oversættelse</string>
     <string name="info_find_the_song_that_is_playing">Find sangen, der bliver afspillet</string>
@@ -835,9 +823,6 @@
     <string name="action_bar_show_start_radio_button">Start radio button</string>
     <string name="tab_accounts">Konti</string>
     <string name="blankspace">Tom plads i toppen</string>
-    <string name="settings_enable_autodownload_song">Enable auto download song</string>
-    <string name="settings_enable_autodownload_song_when_liked">Auto download song when liked</string>
-    <string name="settings_enable_autodownload_song_when_album_bookmarked">Auto download song when album bookmarked</string>
     <string name="tab_general">Generelt</string>
     <string name="queue_and_local_playlists_left_swipe">Queue and Local Playlists Left Swipe</string>
     <string name="queue_and_local_playlists_right_swipe">Queue and Local Playlists Right Swipe</string>
@@ -846,7 +831,6 @@
     <string name="album_left_swipe">Album Left Swipe</string>
     <string name="album_right_swipe">Album Right Swipe</string>
     <string name="bookmark">Bookmark</string>
-    <string name="downloading_videos_not_supported">Downloading videos not supported</string>
     <string name="animatedgradient">Animated Gradient</string>
     <string name="linear">Linear Gradient</string>
     <string name="mesh">Mesh Gradient</string>

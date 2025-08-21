@@ -185,9 +185,7 @@
     <string name="system">Σύστημα</string>
     <string name="unlimited">Απεριόριστο</string>
     <string name="_light">Ελαφρύ</string>
-    <string name="downloaded">Ληφθέντα</string>
     <string name="turn_off">Απενεργοποίηση</string>
-    <string name="download">Λήψη</string>
     <string name="_default">Προεπιλογή</string>
     <string name="dynamic">Δυναμικό</string>
     <string name="discovery">Εξερεύνηση</string>
@@ -218,7 +216,6 @@
     <string name="new_albums_of_your_artists">Νέα άλμπουμ από τους καλλιτέχνες σας</string>
     <string name="timeline">Γραμμή χρόνου</string>
     <string name="song_cache_by_player">ΚΡΥΦΗ ΜΝΗΜΗ (Από αναπαραγωγό μουσικής)</string>
-    <string name="song_cache_by_download">ΚΡΥΦΗ ΜΝΗΜΗ (Από λήψεις)</string>
     <string name="visualizer">Απεικονίσεις</string>
     <string name="visualizer_require_mic_permission">Οι απεικονίσεις απαιτούν πρόσβαση στο μικρόφωνο</string>
     <string name="restart_app_please">Παρακαλώ επανεκκινήστε την εφαρμογή.</string>
@@ -258,7 +255,6 @@
     <string name="audio_quality_format_medium">Μεσαίο</string>
     <string name="audio_quality_format_low">Χαμηλό</string>
     <string name="audio_quality_format_unknown">Άγνωστο</string>
-    <string name="do_you_really_want_to_delete_download">Θέλετε πραγματικά να διαγράψετε τις λήψεις;</string>
     <string name="enqueue_all">Προσθήκη όλων στην ουρά</string>
     <string name="enqueue_selected">Προσθήκη επιλεγμένων στην ουρά</string>
     <string name="greek">Ελληνικά</string>
@@ -272,8 +268,6 @@
     <string name="background_player">"ΑΝΑΠΑΡΑΓΩΓΟΣ ΠΑΡΑΣΚΗΝΕΙΟΥ "</string>
     <string name="show_favorite_button">Εμφάνιση κουμπιού αγαπημένων</string>
     <string name="show_favorite_button_in_lock_screen_and_notification_area">Εμφάνιση κουμπιού αγαπημένων στην οθόνη κλειδώματος και στην περιοχή ειδοποιήσεων</string>
-    <string name="show_download_button">Εμφάνιση κουμπιού λήψης</string>
-    <string name="show_download_button_in_lock_screen_and_notification_area">Εμφάνιση κουμπιού λήψης στην οθόνη κλειδώματος και στην περιοχή ειδοποιήσεων</string>
     <string name="by_most_played_song">By Most played song</string>
     <string name="by_last_played_song">By Last played song</string>
     <string name="audio_quality_automatic">Automatic</string>
@@ -283,7 +277,6 @@
     <string name="arabic">Arabic</string>
     <string name="chinese_simplified">Chinese Simplified</string>
     <string name="chinese_traditional">Chinese Traditional</string>
-    <string name="do_you_really_want_to_download_all">Do you really want to download all?</string>
     <string name="import_playlist">Import playlist</string>
     <string name="lang_ukrainian">Ukrainian</string>
     <string name="proxy">PROXY</string>
@@ -304,7 +297,6 @@
     <string name="paste_or_type_a_valid_url">Paste or type a valid url</string>
     <string name="you_can_put_a_complete_link">You can put a complete link of a playlist, an album, a channel or a single song on YouTube or YouTube Music</string>
     <string name="go_to_link">Go to link</string>
-    <string name="action_bar_show_download_button">Show Download button</string>
     <string name="action_bar_show_add_to_playlist_button">Show Add to playlist button</string>
     <string name="action_bar_show_loop_button">Show Loop button</string>
     <string name="action_bar_show_shuffle_button">Show Shuffle button</string>
@@ -376,7 +368,6 @@
     <string name="tab_data">Data</string>
     <string name="image_cache_max_size">Image cache max size</string>
     <string name="song_cache_max_size">Song cache max size</string>
-    <string name="song_download_max_size">Song download max size</string>
     <string name="save_to_backup">Save to backup</string>
     <string name="restore_from_backup">Restore from backup</string>
     <string name="tab_miscellaneous">Miscellaneous</string>
@@ -430,7 +421,6 @@
     <string name="folder_was_not_found">Folder was not found</string>
     <string name="direction_top">Direction Top</string>
     <string name="pick_from">Pick from</string>
-    <string name="download_cover">Download cover</string>
     <string name="menu_style">Menu style</string>
     <string name="style_grid">Grid</string>
     <string name="style_list">List</string>
@@ -453,8 +443,6 @@
     <string name="info_shuffle">Shuffle</string>
     <string name="info_includes_excludes_songs_on_the_device">Includes/Excludes songs on the device</string>
     <string name="info_enqueue_songs">Enqueue songs</string>
-    <string name="info_download_all_songs">Download all songs</string>
-    <string name="info_remove_all_downloaded_songs">Remove all downloaded songs</string>
     <string name="info_start_radio">Start radio</string>
     <string name="info_translation">Translation</string>
     <string name="info_find_the_song_that_is_playing">Find the song that is playing</string>
@@ -834,9 +822,6 @@
     <string name="action_bar_show_start_radio_button">Start radio button</string>
     <string name="tab_accounts">Accounts</string>
     <string name="blankspace">Blank Space at Top</string>
-    <string name="settings_enable_autodownload_song">Enable auto download song</string>
-    <string name="settings_enable_autodownload_song_when_liked">Auto download song when liked</string>
-    <string name="settings_enable_autodownload_song_when_album_bookmarked">Auto download song when album bookmarked</string>
     <string name="tab_general">General</string>
     <string name="queue_and_local_playlists_left_swipe">Queue and Local Playlists Left Swipe</string>
     <string name="queue_and_local_playlists_right_swipe">Queue and Local Playlists Right Swipe</string>
@@ -845,7 +830,6 @@
     <string name="album_left_swipe">Album Left Swipe</string>
     <string name="album_right_swipe">Album Right Swipe</string>
     <string name="bookmark">Bookmark</string>
-    <string name="downloading_videos_not_supported">Downloading videos not supported</string>
     <string name="animatedgradient">Animated Gradient</string>
     <string name="linear">Linear Gradient</string>
     <string name="mesh">Mesh Gradient</string>

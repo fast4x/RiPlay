@@ -185,9 +185,7 @@
     <string name="system">Järjestelmä</string>
     <string name="unlimited">Rajoittamaton</string>
     <string name="_light">Vaalea</string>
-    <string name="downloaded">Ladatut</string>
     <string name="turn_off">Sammuta</string>
-    <string name="download">Lataa</string>
     <string name="_default">Oletus</string>
     <string name="dynamic">Dynaaminen</string>
     <string name="discovery">Löydä uutta</string>
@@ -218,7 +216,6 @@
     <string name="new_albums_of_your_artists">Uudet albumit suosikkiartisteiltasi</string>
     <string name="timeline">Aikajana</string>
     <string name="song_cache_by_player">KAPPALEEN VÄLIMUISTI (soittimen)</string>
-    <string name="song_cache_by_download">KAPPALEEN VÄLIMUISTI (latauksen)</string>
     <string name="visualizer">Visualisointi</string>
     <string name="visualizer_require_mic_permission">Visualisointi VAATII LUVAN KÄYTTÄÄ MIKROFONIA</string>
     <string name="restart_app_please">Käynnistä sovellus uudelleen.</string>
@@ -259,7 +256,6 @@
     <string name="audio_quality_format_medium">Keskitaso</string>
     <string name="audio_quality_format_low">Matala</string>
     <string name="audio_quality_format_unknown">Tuntematon</string>
-    <string name="do_you_really_want_to_delete_download">Haluatko varmasti poistaa latauksen?</string>
     <string name="enqueue_all">Lisää kaikki jonoon</string>
     <string name="enqueue_selected">Lisää valitut jonoon</string>
     <string name="greek">kreikka</string>
@@ -273,8 +269,6 @@
     <string name="background_player">"TAUSTASOITIN "</string>
     <string name="show_favorite_button">Näytä Suosikki -nappi</string>
     <string name="show_favorite_button_in_lock_screen_and_notification_area">Näytä Suosikki -nappi lukitusnäytössä ja ilmoituksissa</string>
-    <string name="show_download_button">Näytä Lataa -nappi</string>
-    <string name="show_download_button_in_lock_screen_and_notification_area">Näytä Lataa -nappi lukitusnäytössä ja ilmoituksissa</string>
     <string name="by_most_played_song">Soitetuimman kappaleen mukaan</string>
     <string name="by_last_played_song">Viimeksi soitetun kappaleen mukaan</string>
     <string name="audio_quality_automatic">Automaattinen</string>
@@ -284,7 +278,6 @@
     <string name="arabic">arabia</string>
     <string name="chinese_simplified">kiina yksinkertaistettu</string>
     <string name="chinese_traditional">kiina perinteinen</string>
-    <string name="do_you_really_want_to_download_all">Haluatko varmasti ladata kaikki?</string>
     <string name="import_playlist">Tuo soittolista</string>
     <string name="lang_ukrainian">ukraina</string>
     <string name="proxy">VÄLITYSPALVELIN</string>
@@ -305,7 +298,6 @@
     <string name="paste_or_type_a_valid_url">Liitä tai kirjoita kelvollinen url</string>
     <string name="you_can_put_a_complete_link">Täydellinen linkki voidaan asettaa soittolistaan, albumiin, kanavaan tai yksittäiseen kappaleeseen YouTubessa tai YouTube Musicissa</string>
     <string name="go_to_link">Siirry linkkiin</string>
-    <string name="action_bar_show_download_button">Näytä Lataa -nappi</string>
     <string name="action_bar_show_add_to_playlist_button">Näytä Lisää soittolistaan -nappi</string>
     <string name="action_bar_show_loop_button">Näytä Silmukka -nappi</string>
     <string name="action_bar_show_shuffle_button">Näytä Sekoita -nappi</string>
@@ -377,7 +369,6 @@
     <string name="tab_data">Tiedot</string>
     <string name="image_cache_max_size">Kuvien välimuistin enimmäiskoko</string>
     <string name="song_cache_max_size">Kappaleiden välimuistin enimmäiskoko</string>
-    <string name="song_download_max_size">Kappaleiden tallennustilan suurin koko</string>
     <string name="save_to_backup">Tallenna varmuuskopio</string>
     <string name="restore_from_backup">Palauta varmuuskopiosta</string>
     <string name="tab_miscellaneous">Sekalaiset</string>
@@ -431,7 +422,6 @@
     <string name="folder_was_not_found">Kansiota ei löydy</string>
     <string name="direction_top">Ylhäällä</string>
     <string name="pick_from">Valitse palvelusta</string>
-    <string name="download_cover">Lataa kansikuva</string>
     <string name="menu_style">Valikon tyyli</string>
     <string name="style_grid">Ruudukko</string>
     <string name="style_list">Lista</string>
@@ -454,8 +444,6 @@
     <string name="info_shuffle">Sekoitus</string>
     <string name="info_includes_excludes_songs_on_the_device">Sisällyttää/jättää pois laitteella olevat kappaleet</string>
     <string name="info_enqueue_songs">Lisää kappaleet jonoon</string>
-    <string name="info_download_all_songs">Lataa kaikki kappaleet</string>
-    <string name="info_remove_all_downloaded_songs">Poista kaikki ladatut kappaleet</string>
     <string name="info_start_radio">Käynnistä radio</string>
     <string name="info_translation">Käännös</string>
     <string name="info_find_the_song_that_is_playing">Etsi kappale, joka soi</string>
@@ -835,9 +823,6 @@
     <string name="action_bar_show_start_radio_button">Käynnistä radio painike</string>
     <string name="tab_accounts">Tilit</string>
     <string name="blankspace">Tyhjä tila ylhäällä</string>
-    <string name="settings_enable_autodownload_song">Ota automaattinen kappaleiden lataus käyttöön</string>
-    <string name="settings_enable_autodownload_song_when_liked">Lataa kappale automaattisesti, kun se lisätään suosikkeihin</string>
-    <string name="settings_enable_autodownload_song_when_album_bookmarked">Lataa kappale automaattisesti, jos albumi on lisätty kirjastoon</string>
     <string name="tab_general">Yleiset</string>
     <string name="queue_and_local_playlists_left_swipe">Jono ja paikalliset soittolistat pyyhkäisemällä vasemmalle</string>
     <string name="queue_and_local_playlists_right_swipe">Jono ja paikalliset soittolistat pyyhkäisemällä oikealle</string>
@@ -846,7 +831,6 @@
     <string name="album_left_swipe">Albumi pyyhkäisemällä vasemmalle</string>
     <string name="album_right_swipe">Albumi pyyhkäisemällä oikealle</string>
     <string name="bookmark">Kirjanmerkki</string>
-    <string name="downloading_videos_not_supported">Videoiden lataamista ei tueta</string>
     <string name="animatedgradient">Animoitu liukuväri</string>
     <string name="linear">Lineaarinen liukuväri</string>
     <string name="mesh">Mesh-liukuväri</string>

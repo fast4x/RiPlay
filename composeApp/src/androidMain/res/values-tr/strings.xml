@@ -185,9 +185,7 @@
     <string name="system">Sistem</string>
     <string name="unlimited">Sınırsız</string>
     <string name="_light">Açık</string>
-    <string name="downloaded">İndirilenler</string>
     <string name="turn_off">Kapat</string>
-    <string name="download">İndir</string>
     <string name="_default">Varsayılan</string>
     <string name="dynamic">Dinamik</string>
     <string name="discovery">Keşfet</string>
@@ -218,7 +216,6 @@
     <string name="new_albums_of_your_artists">Sanatçılarınızın yeni albümleri</string>
     <string name="timeline">Zaman çizgisi</string>
     <string name="song_cache_by_player">ŞARKI ÖNBELLEĞİ (Oynatma)</string>
-    <string name="song_cache_by_download">ŞARKI ÖNBELLEĞİ (İndirme)</string>
     <string name="visualizer">Görselleştirme</string>
     <string name="visualizer_require_mic_permission">Görselleştirici MİKROFON İZNİ GEREKTİRİR</string>
     <string name="restart_app_please">Lütfen uygulamayı yeniden başlat.</string>
@@ -259,7 +256,6 @@
     <string name="audio_quality_format_medium">Orta</string>
     <string name="audio_quality_format_low">Düşük</string>
     <string name="audio_quality_format_unknown">Bilinmeyen</string>
-    <string name="do_you_really_want_to_delete_download">İndirilen dosyayı silmek istediğine emin misin?</string>
     <string name="enqueue_all">Hepsini sıraya ekle</string>
     <string name="enqueue_selected">Seçilenleri sıraya ekle</string>
     <string name="greek">Yunanca (Greek)</string>
@@ -273,8 +269,6 @@
     <string name="background_player">"ARKA PLAN OYNATICISI "</string>
     <string name="show_favorite_button">Favori düğmesini göster</string>
     <string name="show_favorite_button_in_lock_screen_and_notification_area">Favori düğmesini kilit ekranında ve bildirimlerde göster</string>
-    <string name="show_download_button">İndirme düğmesini göster</string>
-    <string name="show_download_button_in_lock_screen_and_notification_area">İndirme düğmesini kilit ekranında ve bildirimlerde göster</string>
     <string name="by_most_played_song">En çok oynatılan şarkıya göre</string>
     <string name="by_last_played_song">En son oynatılan şarkıya göre</string>
     <string name="audio_quality_automatic">Otomatik</string>
@@ -284,7 +278,6 @@
     <string name="arabic">Arapça (Arabic)</string>
     <string name="chinese_simplified">Basitleştirilmiş Çince (Chinese Simplified)</string>
     <string name="chinese_traditional">Geleneksel Çince (Chinese Traditional)</string>
-    <string name="do_you_really_want_to_download_all">Tümünü indirmek istediğine emin misin?</string>
     <string name="import_playlist">Oynatma listesini içe aktar</string>
     <string name="lang_ukrainian">Ukraynaca (Ukrainian)</string>
     <string name="proxy">PROXY</string>
@@ -305,7 +298,6 @@
     <string name="paste_or_type_a_valid_url">Geçerli bir URL yapıştırın veya yazın</string>
     <string name="you_can_put_a_complete_link">YouTube veya YouTube Music\'ten bir oynatma listesinin, albümün, kanalın veya tek bir şarkının bağlantısını ekleyebilirsiniz</string>
     <string name="go_to_link">Bağlantıya git</string>
-    <string name="action_bar_show_download_button">İndirme düğmesini göster</string>
     <string name="action_bar_show_add_to_playlist_button">Oynatma listesine ekle düğmesini göster</string>
     <string name="action_bar_show_loop_button">Döngü düğmesini göster</string>
     <string name="action_bar_show_shuffle_button">Karışık çal düğmesini göster</string>
@@ -377,7 +369,6 @@
     <string name="tab_data">Veri</string>
     <string name="image_cache_max_size">Görüntü önbelleği maksimum boyutu</string>
     <string name="song_cache_max_size">Şarkı önbelleği maksimum boyutu</string>
-    <string name="song_download_max_size">Şarkı indirme maksimum boyutu</string>
     <string name="save_to_backup">Yedeğe kaydet</string>
     <string name="restore_from_backup">Yedekten geri yükle</string>
     <string name="tab_miscellaneous">Çeşitli</string>
@@ -431,7 +422,6 @@
     <string name="folder_was_not_found">Klasör bulunamadı</string>
     <string name="direction_top">Üstte</string>
     <string name="pick_from">Şuradan seç</string>
-    <string name="download_cover">Kapak resmini indir</string>
     <string name="menu_style">Menü stili</string>
     <string name="style_grid">Izgara</string>
     <string name="style_list">Liste</string>
@@ -454,8 +444,6 @@
     <string name="info_shuffle">Karıştır</string>
     <string name="info_includes_excludes_songs_on_the_device">Cihazdaki şarkıları içerir/dışlar</string>
     <string name="info_enqueue_songs">Şarkıları sıraya ekle</string>
-    <string name="info_download_all_songs">Tüm şarkıları indir</string>
-    <string name="info_remove_all_downloaded_songs">İndirilen tüm şarkıları sil</string>
     <string name="info_start_radio">Radyoyu başlat</string>
     <string name="info_translation">Çeviri</string>
     <string name="info_find_the_song_that_is_playing">Çalmakta olan şarkıyı bul</string>
@@ -835,9 +823,6 @@
     <string name="action_bar_show_start_radio_button">Radyoyu başlat düğmesi</string>
     <string name="tab_accounts">Hesaplar</string>
     <string name="blankspace">En Üstte Boş Alan</string>
-    <string name="settings_enable_autodownload_song">Şarkıyı otomatik indirmeyi etkinleştir</string>
-    <string name="settings_enable_autodownload_song_when_liked">Şarkı beğenilirse otomatik indir</string>
-    <string name="settings_enable_autodownload_song_when_album_bookmarked">Albüme yer işareti eklenirse şarkıyı otomatik indir</string>
     <string name="tab_general">Genel</string>
     <string name="queue_and_local_playlists_left_swipe">Oynatma sırası ve Yerel çalma listelerinde sola kaydırma</string>
     <string name="queue_and_local_playlists_right_swipe">Oynatma sırası ve Yerel çalma listelerinde sağa kaydırma</string>
@@ -846,7 +831,6 @@
     <string name="album_left_swipe">Albümde Sola Kaydırma</string>
     <string name="album_right_swipe">Albümde Sağa Kaydırma</string>
     <string name="bookmark">Yer işareti</string>
-    <string name="downloading_videos_not_supported">Video indirme desteklenmiyor</string>
     <string name="animatedgradient">Animasyonlu Renk Geçişi</string>
     <string name="linear">Doğrusal gradyan</string>
     <string name="mesh">Ağ gradyan</string>

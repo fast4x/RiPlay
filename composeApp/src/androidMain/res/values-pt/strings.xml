@@ -185,9 +185,7 @@
     <string name="system">Sistema</string>
     <string name="unlimited">Ilimitado</string>
     <string name="_light">Claro</string>
-    <string name="downloaded">Transferidos</string>
     <string name="turn_off">Desligar</string>
-    <string name="download">Transferência</string>
     <string name="_default">Predefinição</string>
     <string name="dynamic">Dinâmico</string>
     <string name="discovery">Descobrir</string>
@@ -218,7 +216,6 @@
     <string name="new_albums_of_your_artists">Novos álbuns dos seus artistas</string>
     <string name="timeline">Barra de navegação</string>
     <string name="song_cache_by_player">CACHE DA MÚSICA (por Player)</string>
-    <string name="song_cache_by_download">CACHE DA MÚSICA (por Transferência)</string>
     <string name="visualizer">Visualizador</string>
     <string name="visualizer_require_mic_permission">Vizualizador REQUER PERMISSÃO DO MICROFONE</string>
     <string name="restart_app_please">Reiniciar aplicativo, por favor.</string>
@@ -259,7 +256,6 @@
     <string name="audio_quality_format_medium">Médio</string>
     <string name="audio_quality_format_low">Baixa</string>
     <string name="audio_quality_format_unknown">Desconhecido</string>
-    <string name="do_you_really_want_to_delete_download">Tem a certeza que quer apagar estas transferências?</string>
     <string name="enqueue_all">Colocar todos em fila de espera</string>
     <string name="enqueue_selected">Enfileirar selecionados</string>
     <string name="greek">Grego (Ελληνικά)</string>
@@ -273,8 +269,6 @@
     <string name="background_player">"PLAYER DE FUNDO "</string>
     <string name="show_favorite_button">Mostrar botão dos Favoritos</string>
     <string name="show_favorite_button_in_lock_screen_and_notification_area">Mostrar o botão favorito na tela de bloqueio e na área de notificação</string>
-    <string name="show_download_button">Mostrar o botão de Transferir</string>
-    <string name="show_download_button_in_lock_screen_and_notification_area">Mostrar botão Transferir na tela de bloqueio e na área de notificação</string>
     <string name="by_most_played_song">Pela música mais tocada</string>
     <string name="by_last_played_song">Pela última música reproduzida</string>
     <string name="audio_quality_automatic">Automático</string>
@@ -284,7 +278,6 @@
     <string name="arabic">Árabe (العربية)</string>
     <string name="chinese_simplified">Chinês Simplificado (简体中文)</string>
     <string name="chinese_traditional">Chinês Tradicional (繁體中文)</string>
-    <string name="do_you_really_want_to_download_all">Tem a certeza que quer transferir tudo?</string>
     <string name="import_playlist">Importar uma playlist</string>
     <string name="lang_ukrainian">Ucraniano (Українська)</string>
     <string name="proxy">PROXY</string>
@@ -305,7 +298,6 @@
     <string name="paste_or_type_a_valid_url">Cole ou digite um URL válido</string>
     <string name="you_can_put_a_complete_link">Pode colocar um link completo duma playlist, dum álbum, dum canal, ou duma música no YouTube ou no YouTube Music</string>
     <string name="go_to_link">Ir para o link</string>
-    <string name="action_bar_show_download_button">Mostrar o botão Transferir</string>
     <string name="action_bar_show_add_to_playlist_button">Mostrar ao botão de adicionar lista de reprodução</string>
     <string name="action_bar_show_loop_button">Mostrar botão Loop</string>
     <string name="action_bar_show_shuffle_button">Mostrar botão Aleatório</string>
@@ -377,7 +369,6 @@
     <string name="tab_data">Dados</string>
     <string name="image_cache_max_size">Tamanho máximo do cache de imagens</string>
     <string name="song_cache_max_size">Tamanho máximo do cache de músicas</string>
-    <string name="song_download_max_size">Tamanho máximo para download de músicas</string>
     <string name="save_to_backup">Salvar para backup</string>
     <string name="restore_from_backup">Restaurar do backup</string>
     <string name="tab_miscellaneous">Outros</string>
@@ -431,7 +422,6 @@
     <string name="folder_was_not_found">Pasta não foi encontrada</string>
     <string name="direction_top">Em cima</string>
     <string name="pick_from">Selecionar de:</string>
-    <string name="download_cover">Transferir capa</string>
     <string name="menu_style">Estilo de menu</string>
     <string name="style_grid">Grelha</string>
     <string name="style_list">Lista</string>
@@ -454,8 +444,6 @@
     <string name="info_shuffle">Misturar</string>
     <string name="info_includes_excludes_songs_on_the_device">Inclui/Exclui músicas no dispositivo</string>
     <string name="info_enqueue_songs">Enfileirar músicas</string>
-    <string name="info_download_all_songs">Transferir todas as músicas</string>
-    <string name="info_remove_all_downloaded_songs">Remover todas as músicas transferidas</string>
     <string name="info_start_radio">Iniciar rádio</string>
     <string name="info_translation">Tradução</string>
     <string name="info_find_the_song_that_is_playing">Encontrar a música que está a tocar</string>
@@ -835,9 +823,6 @@
     <string name="action_bar_show_start_radio_button">Start radio button</string>
     <string name="tab_accounts">Accounts</string>
     <string name="blankspace">Blank Space at Top</string>
-    <string name="settings_enable_autodownload_song">Enable auto download song</string>
-    <string name="settings_enable_autodownload_song_when_liked">Auto download song when liked</string>
-    <string name="settings_enable_autodownload_song_when_album_bookmarked">Auto download song when album bookmarked</string>
     <string name="tab_general">General</string>
     <string name="queue_and_local_playlists_left_swipe">Queue and Local Playlists Left Swipe</string>
     <string name="queue_and_local_playlists_right_swipe">Queue and Local Playlists Right Swipe</string>
@@ -846,7 +831,6 @@
     <string name="album_left_swipe">Album Left Swipe</string>
     <string name="album_right_swipe">Album Right Swipe</string>
     <string name="bookmark">Bookmark</string>
-    <string name="downloading_videos_not_supported">Downloading videos not supported</string>
     <string name="animatedgradient">Animated Gradient</string>
     <string name="linear">Linear Gradient</string>
     <string name="mesh">Mesh Gradient</string>
