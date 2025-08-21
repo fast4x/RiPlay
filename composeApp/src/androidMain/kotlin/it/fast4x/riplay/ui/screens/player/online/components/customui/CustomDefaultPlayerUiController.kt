@@ -25,7 +25,7 @@ import com.pierfrancescosoffritti.androidyoutubeplayer.core.customui.views.YouTu
 class CustomDefaultPlayerUiController(
     private val youTubePlayerView: YouTubePlayerView,
     private val youTubePlayer: YouTubePlayer,
-    onTap: () -> Unit
+    onTap: () -> Unit? = {}
 ) : PlayerUiController {
 
     private val internalOnTap: () -> Unit = {
@@ -149,7 +149,7 @@ class CustomDefaultPlayerUiController(
         }
         panel.setOnClickListener {
             fadeControlsContainer.toggleVisibility()
-            internalOnTap()
+            //internalOnTap()
         }
         playPauseButton.setOnClickListener { onPlayButtonPressed() }
         fullscreenButton.setOnClickListener { onFullscreenButtonListener.onClick(fullscreenButton) }

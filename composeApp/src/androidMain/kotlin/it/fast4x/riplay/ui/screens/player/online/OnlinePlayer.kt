@@ -350,6 +350,7 @@ import it.fast4x.riplay.extensions.preferences.topPaddingKey
 import it.fast4x.riplay.extensions.preferences.transparentBackgroundPlayerActionBarKey
 import it.fast4x.riplay.utils.unlikeYtVideoOrSong
 import it.fast4x.riplay.extensions.preferences.visualizerEnabledKey
+import it.fast4x.riplay.utils.detectGestures
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -386,7 +387,7 @@ fun OnlinePlayer(
     playerState: MutableState<PlayerConstants.PlayerState>,
     currentDuration: Float,
     currentSecond: Float,
-    showControls: Boolean,
+    //showControls: Boolean,
     playerSheetState: BottomSheetState,
     onDismiss: () -> Unit,
 ) {
@@ -1462,7 +1463,9 @@ fun OnlinePlayer(
         ThumbnailRoundness.Heavy
     )
 
+    val swipeModifier = remember {
 
+    }
 
     val controlsContent: @Composable (
         modifier: Modifier
@@ -1518,6 +1521,14 @@ fun OnlinePlayer(
 
     /***** NEW PLAYER *****/
 
+    var showControls by remember { mutableStateOf(true) }
+    LaunchedEffect(showControls) {
+        if (showControls) {
+            delay(5000)
+            showControls = false
+        }
+    }
+
     val thumbnailContent: @Composable (
         modifier: Modifier,
     ) -> Unit = { innerModifier ->
@@ -1563,7 +1574,8 @@ fun OnlinePlayer(
                                 items = linkDevices.distinct()
                             ) { device ->
                                 Row(
-                                    modifier = Modifier.fillMaxWidth()
+                                    modifier = Modifier
+                                        .fillMaxWidth()
                                         .height(36.dp),
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
@@ -1597,7 +1609,9 @@ fun OnlinePlayer(
 
                         LinearProgressIndicator(
                             modifier = Modifier
-                                .fillMaxWidth().height(1.dp).align(Alignment.BottomCenter),
+                                .fillMaxWidth()
+                                .height(1.dp)
+                                .align(Alignment.BottomCenter),
                         )
 
                     }
@@ -1615,8 +1629,72 @@ fun OnlinePlayer(
                             .background(Color.Gray.copy(alpha = .4f), thumbnailRoundness.shape())
                             .fillMaxWidth(0.9f)
                             .fillMaxHeight(0.8f)
+                            .detectGestures(
+                                detectPlayerGestures = true,
+                                onTap = {
+                                    showControls = !showControls
+                                    println("OnlinePlayer inside showControls - $showControls")
+                                }
+                            )
                     ) {
                         controlsContent(Modifier.padding(top = 20.dp))
+                        Image(
+                            painter = painterResource(R.drawable.ellipsis_vertical),
+                            contentDescription = null,
+                            colorFilter = ColorFilter.tint(if (playerBackgroundColors == PlayerBackgroundColors.MidnightOdyssey) dynamicColorPalette.background2 else colorPalette().collapsedPlayerProgressBar),
+                            modifier = Modifier
+                                .align(Alignment.TopEnd)
+                                .clickable {
+                                    menuState.display {
+                                        PlayerMenu(
+                                            navController = navController,
+                                            onDismiss = menuState::hide,
+                                            mediaItem = mediaItem,
+                                            binder = binder,
+                                            onClosePlayer = {
+                                                onDismiss()
+                                            },
+                                            onInfo = {
+                                                navController.navigate("${NavRoutes.videoOrSongInfo.name}/${mediaItem.mediaId}")
+                                            },
+                                            disableScrollingText = disableScrollingText
+                                        )
+                                    }
+                                }
+                                .rotate(rotationAngle)
+                                .padding(top = 10.dp, end = 10.dp)
+                                .size(24.dp)
+
+                        )
+                    }
+                }
+
+                AnimatedVisibility(
+                    modifier = Modifier
+                        .zIndex(1f)
+                        .align(Alignment.Center),
+                    visible = !showControls && it.fast4x.riplay.utils.isLandscape && !castToLinkDevice,
+                    enter = fadeIn(),
+                    exit = fadeOut()
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .detectGestures(
+                                detectPlayerGestures = true,
+                                onSwipeToLeft = {
+                                    binder.player.playNext()
+                                },
+                                onSwipeToRight = {
+                                    binder.player.playPrevious()
+                                },
+                                onTap = {
+                                    showControls = !showControls
+                                    println("OnlinePlayer inside showControls - $showControls")
+                                }
+                            )
+                    ) {
+                        Text("yeah...")
                     }
                 }
 
@@ -3516,11 +3594,11 @@ fun OnlinePlayer(
                                    )
 
                                      val coverModifier = Modifier
-                                        .conditional(thumbnailType == ThumbnailType.Modern) {
-                                            padding(
-                                                all = 10.dp
-                                            )
-                                        }
+                                         .conditional(thumbnailType == ThumbnailType.Modern) {
+                                             padding(
+                                                 all = 10.dp
+                                             )
+                                         }
                                          .conditional(thumbnailType == ThumbnailType.Modern) {
                                              doubleShadowDrop(
                                                  if (showCoverThumbnailAnimation) CircleShape else thumbnailRoundness.shape(),

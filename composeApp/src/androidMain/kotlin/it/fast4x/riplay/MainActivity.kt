@@ -1190,7 +1190,7 @@ class MainActivity :
                 var currentSecond by remember { mutableFloatStateOf(0f) }
                 val playerState1 =
                     remember { mutableStateOf(PlayerConstants.PlayerState.UNSTARTED) }
-                var showControls by remember { mutableStateOf(true) }
+                //var showControls by remember { mutableStateOf(true) }
                 var currentDuration by remember { mutableFloatStateOf(0f) }
                 val onlineCore: @Composable () -> Unit = {
                     OnlinePlayerCore(
@@ -1214,7 +1214,9 @@ class MainActivity :
                             updateOnlineNotification()
 
                         },
-                        onTap = { showControls = !showControls }
+                        onTap = {
+                            //showControls = !showControls
+                        }
                     )
                 }
 
@@ -1336,12 +1338,12 @@ class MainActivity :
                                     expandedBound = maxHeight
                                 )
 
-                                LaunchedEffect(showControls) {
-                                    if (showControls) {
-                                        delay(5000)
-                                        showControls = false
-                                    }
-                                }
+//                                LaunchedEffect(showControls) {
+//                                    if (showControls) {
+//                                        delay(5000)
+//                                        showControls = false
+//                                    }
+//                                }
 
                                 AppNavigation(
                                     navController = navController,
@@ -1403,7 +1405,7 @@ class MainActivity :
                                         playerState = playerState1,
                                         currentDuration = currentDuration,
                                         currentSecond = currentSecond,
-                                        showControls = showControls,
+                                        //showControls = showControls,
                                         playerSheetState = localPlayerSheetState,
                                         onDismiss = {
                                             localPlayerSheetState.collapseSoft()
