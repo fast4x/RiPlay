@@ -103,7 +103,7 @@ import it.fast4x.riplay.ui.items.PlaylistItem
 import it.fast4x.riplay.ui.items.SongItem
 import it.fast4x.riplay.ui.items.VideoItem
 import it.fast4x.riplay.ui.screens.player.fastPlay
-import it.fast4x.riplay.ui.screens.settings.isYouTubeSyncEnabled
+import it.fast4x.riplay.ui.screens.settings.isSyncEnabled
 import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.ui.styling.px
 import it.fast4x.riplay.utils.addNext
@@ -355,7 +355,7 @@ fun ArtistOverview(
                             R.string.following
                         ),
                         onClick = {
-                            if (isYouTubeSyncEnabled() && !isNetworkConnected(context)){
+                            if (isSyncEnabled() && !isNetworkConnected(context)){
                                 SmartMessage(context.resources.getString(R.string.no_connection), context = context, type = PopupType.Error)
                             } else {
                                 val bookmarkedAt =
@@ -365,7 +365,7 @@ fun ArtistOverview(
                                     artist?.copy(bookmarkedAt = bookmarkedAt)
                                         ?.let(::update)
                                 }
-                                if (isYouTubeSyncEnabled())
+                                if (isSyncEnabled())
                                     CoroutineScope(Dispatchers.IO).launch {
                                         if (bookmarkedAt == null)
                                             artistPage.artist.channelId.let {

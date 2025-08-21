@@ -82,10 +82,7 @@ import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
 import com.github.doyaaaaaken.kotlincsv.dsl.csvWriter
-import io.github.oikvpqya.compose.fastscroller.ScrollbarStyle
 import io.github.oikvpqya.compose.fastscroller.VerticalScrollbar
-import io.github.oikvpqya.compose.fastscroller.defaultScrollbarStyle
-import io.github.oikvpqya.compose.fastscroller.material3.defaultMaterialScrollbarStyle
 import io.github.oikvpqya.compose.fastscroller.rememberScrollbarAdapter
 import it.fast4x.compose.persist.persistList
 import it.fast4x.riplay.Database
@@ -192,7 +189,7 @@ import java.util.Date
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.time.Duration
-import it.fast4x.riplay.ui.screens.settings.isYouTubeSyncEnabled
+import it.fast4x.riplay.ui.screens.settings.isSyncEnabled
 import it.fast4x.riplay.utils.addToYtLikedSongs
 import it.fast4x.riplay.utils.addToYtPlaylist
 import it.fast4x.riplay.utils.asSong
@@ -1215,9 +1212,9 @@ fun HomeSongs(
                                             }
                                         },
                                         onAddToPreferites = {
-                                            if (!isNetworkConnected(appContext()) && isYouTubeSyncEnabled()) {
+                                            if (!isNetworkConnected(appContext()) && isSyncEnabled()) {
                                                 SmartMessage(appContext().resources.getString(R.string.no_connection), context = appContext(), type = PopupType.Error)
-                                            } else if (!isYouTubeSyncEnabled()){
+                                            } else if (!isSyncEnabled()){
                                                 if (listMediaItems.isNotEmpty()) {
                                                     Database.asyncTransaction {
                                                         listMediaItems.filter{getLikedAt(it.mediaId) in listOf(-1L,null)}.map {
@@ -1243,7 +1240,7 @@ fun HomeSongs(
                                                 showYoutubeLikeConfirmDialog = true
                                             }
                                         },
-                                        showonAddToPreferitesYoutube = isYouTubeSyncEnabled(),
+                                        showonAddToPreferitesYoutube = isSyncEnabled(),
                                         onAddToPreferitesYoutube = {
                                             if (!isNetworkConnected(appContext())) {
                                                 SmartMessage(appContext().resources.getString(R.string.no_connection), context = appContext(), type = PopupType.Error)
@@ -1259,9 +1256,9 @@ fun HomeSongs(
                                             if (position > 0) position++ else position = 0
 
                                             val filteredItems = items.filterNot {it.asMediaItem.mediaId.startsWith(LOCAL_KEY_PREFIX) || it.song.thumbnailUrl == ""}
-                                            if ((filteredItems.size + playlistPreview.songCount) > 5000 && playlistPreview.playlist.isYoutubePlaylist && isYouTubeSyncEnabled()){
+                                            if ((filteredItems.size + playlistPreview.songCount) > 5000 && playlistPreview.playlist.isYoutubePlaylist && isSyncEnabled()){
                                                 SmartMessage(context.resources.getString(R.string.yt_playlist_limited), context = context, type = PopupType.Error)
-                                            } else if (!isYouTubeSyncEnabled() || !playlistPreview.playlist.isYoutubePlaylist) {
+                                            } else if (!isSyncEnabled() || !playlistPreview.playlist.isYoutubePlaylist) {
                                                 items.forEachIndexed { index, song ->
                                                     runCatching {
                                                         CoroutineScope(Dispatchers.IO).launch {

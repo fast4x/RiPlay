@@ -70,7 +70,7 @@ import it.fast4x.riplay.enums.HistoryType
 import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.ui.components.ButtonsRow
 import it.fast4x.riplay.ui.screens.player.fastPlay
-import it.fast4x.riplay.ui.screens.settings.isYouTubeLoggedIn
+import it.fast4x.riplay.ui.screens.settings.isLoggedIn
 import it.fast4x.riplay.extensions.preferences.historyTypeKey
 import it.fast4x.riplay.utils.LazyListContainer
 import java.time.DayOfWeek
@@ -134,13 +134,15 @@ fun HistoryList(
         .collectAsState(initial = emptyMap(), context = Dispatchers.IO)
 
     val buttonsList = mutableListOf(HistoryType.History to stringResource(R.string.history))
-    buttonsList += HistoryType.YTMHistory to stringResource(R.string.yt_history)
+
+    if (isLoggedIn())
+        buttonsList += HistoryType.YTMHistory to stringResource(R.string.yt_history)
 
     var historyType by rememberPreference(historyTypeKey, HistoryType.History)
 
     var historyPage by persist<Result<HistoryPage>>("home/historyPage")
     LaunchedEffect(Unit, historyType) {
-        if (isYouTubeLoggedIn())
+        if (isLoggedIn())
             historyPage = EnvironmentExt.getHistory()
     }
 

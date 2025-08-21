@@ -124,7 +124,7 @@ import it.fast4x.riplay.colorPalette
 import it.fast4x.riplay.extensions.fastshare.FastShare
 import it.fast4x.riplay.models.defaultQueue
 import it.fast4x.riplay.typography
-import it.fast4x.riplay.ui.screens.settings.isYouTubeSyncEnabled
+import it.fast4x.riplay.ui.screens.settings.isSyncEnabled
 import it.fast4x.riplay.utils.LazyListContainer
 import it.fast4x.riplay.utils.addToYtPlaylist
 import it.fast4x.riplay.utils.toPlaylist
@@ -528,7 +528,7 @@ fun Podcast(
                                                             if (position > 0) position++ else position =
                                                                 0
 
-                                                            if (!isYouTubeSyncEnabled() || !playlistPreview.playlist.isYoutubePlaylist) {
+                                                            if (!isSyncEnabled() || !playlistPreview.playlist.isYoutubePlaylist) {
                                                                 podcastPage?.listEpisode?.forEachIndexed { index, song ->
                                                                     runCatching {
                                                                         Database.insert(song.asMediaItem)

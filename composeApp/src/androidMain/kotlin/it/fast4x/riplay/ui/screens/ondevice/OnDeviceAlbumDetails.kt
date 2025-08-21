@@ -124,7 +124,7 @@ import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.models.defaultQueue
 import it.fast4x.riplay.typography
 import it.fast4x.riplay.ui.components.themed.QueuesDialog
-import it.fast4x.riplay.ui.screens.settings.isYouTubeSyncEnabled
+import it.fast4x.riplay.ui.screens.settings.isSyncEnabled
 import it.fast4x.riplay.utils.LazyListContainer
 import it.fast4x.riplay.utils.addToYtLikedSongs
 import org.dailyislam.android.utilities.isNetworkConnected
@@ -656,7 +656,7 @@ fun OnDeviceAlbumDetails(
                                                             0
                                                         //Log.d("mediaItem", "next initial pos ${position}")
                                                         if (listMediaItems.isEmpty()) {
-                                                            if (!isYouTubeSyncEnabled() || !playlistPreview.playlist.isYoutubePlaylist) {
+                                                            if (!isSyncEnabled() || !playlistPreview.playlist.isYoutubePlaylist) {
                                                                 songs.forEachIndexed { index, song ->
                                                                     Database.asyncTransaction {
                                                                         insert(song.asMediaItem)
@@ -671,7 +671,7 @@ fun OnDeviceAlbumDetails(
                                                                 }
                                                             }
                                                         } else {
-                                                            if (!isYouTubeSyncEnabled() || !playlistPreview.playlist.isYoutubePlaylist) {
+                                                            if (!isSyncEnabled() || !playlistPreview.playlist.isYoutubePlaylist) {
                                                                 listMediaItems.forEachIndexed { index, song ->
                                                                     //Log.d("mediaItemMaxPos", position.toString())
                                                                     Database.asyncTransaction {
@@ -691,7 +691,7 @@ fun OnDeviceAlbumDetails(
                                                         }
                                                     },
                                                     onAddToFavourites = {
-                                                        if (!isNetworkConnected(appContext()) && isYouTubeSyncEnabled()) {
+                                                        if (!isNetworkConnected(appContext()) && isSyncEnabled()) {
                                                             SmartMessage(
                                                                 appContext().resources.getString(
                                                                     R.string.no_connection
@@ -699,7 +699,7 @@ fun OnDeviceAlbumDetails(
                                                                 context = appContext(),
                                                                 type = PopupType.Error
                                                             )
-                                                        } else if (!isYouTubeSyncEnabled()) {
+                                                        } else if (!isSyncEnabled()) {
                                                             songs.forEach { song ->
                                                                 mediaItemSetLiked(song.asMediaItem)
                                                             }

@@ -118,7 +118,7 @@ import it.fast4x.riplay.models.Queues
 import it.fast4x.riplay.models.defaultQueue
 import it.fast4x.riplay.typography
 import it.fast4x.riplay.ui.screens.player.fastPlay
-import it.fast4x.riplay.ui.screens.settings.isYouTubeSyncEnabled
+import it.fast4x.riplay.ui.screens.settings.isSyncEnabled
 import it.fast4x.riplay.utils.addSongToYtPlaylist
 import it.fast4x.riplay.utils.addToYtLikedSong
 import it.fast4x.riplay.utils.asSong
@@ -153,9 +153,9 @@ fun InHistoryMediaItemMenu(
         onHideFromDatabase = onHideFromDatabase,
         onDeleteFromDatabase = onDeleteFromDatabase,
         onAddToPreferites = {
-            if (!isNetworkConnected(context()) && isYouTubeSyncEnabled()){
+            if (!isNetworkConnected(context()) && isSyncEnabled()){
                 SmartMessage(context().resources.getString(R.string.no_connection), context = context(), type = PopupType.Error)
-            } else if (!isYouTubeSyncEnabled()){
+            } else if (!isSyncEnabled()){
                 Database.asyncTransaction {
                     like(
                         song.asMediaItem.mediaId,
@@ -200,7 +200,7 @@ fun InPlaylistMediaItemMenu(
         mediaItem = song.asMediaItem,
         onDismiss = onDismiss,
         onRemoveFromPlaylist = {
-            if (!isNetworkConnected(context) && playlist?.playlist?.isYoutubePlaylist == true && playlist.playlist.isEditable && isYouTubeSyncEnabled()){
+            if (!isNetworkConnected(context) && playlist?.playlist?.isYoutubePlaylist == true && playlist.playlist.isEditable && isSyncEnabled()){
                 SmartMessage(context.resources.getString(R.string.no_connection), context = context, type = PopupType.Error)
             } else if (playlist?.playlist?.isEditable == true) {
 
@@ -208,7 +208,7 @@ fun InPlaylistMediaItemMenu(
                     CoroutineScope(Dispatchers.IO).launch {
                         playlist.playlist.browseId.let {
                             println("InPlaylistMediaItemMenu isYoutubePlaylist ${playlist.playlist.isYoutubePlaylist} isEditable ${playlist.playlist.isEditable} songId ${song.id} browseId ${playlist.playlist.browseId} playlistId $playlistId")
-                            if (isYouTubeSyncEnabled() && playlist.playlist.isYoutubePlaylist && playlist.playlist.isEditable) {
+                            if (isSyncEnabled() && playlist.playlist.isYoutubePlaylist && playlist.playlist.isEditable) {
                                 CoroutineScope(Dispatchers.IO).launch {
                                     if (removeYTSongFromPlaylist(song.id,playlist.playlist.browseId ?: "",playlistId))
                                         deleteSongFromPlaylist(song.id, playlistId)
@@ -229,9 +229,9 @@ fun InPlaylistMediaItemMenu(
             }
         },
         onAddToPreferites = {
-            if (!isNetworkConnected(context()) && isYouTubeSyncEnabled()){
+            if (!isNetworkConnected(context()) && isSyncEnabled()){
                 SmartMessage(context.resources.getString(R.string.no_connection), context = context, type = PopupType.Error)
-            } else if (!isYouTubeSyncEnabled()){
+            } else if (!isSyncEnabled()){
                 Database.asyncTransaction {
                     like(
                         song.asMediaItem.mediaId,
@@ -339,9 +339,9 @@ fun NonQueuedMediaItemMenuLibrary(
             onHideFromDatabase = { isHiding = true },
             onRemoveFromQuickPicks = onRemoveFromQuickPicks,
             onAddToPreferites = {
-                if (!isNetworkConnected(context()) && isYouTubeSyncEnabled()){
+                if (!isNetworkConnected(context()) && isSyncEnabled()){
                     SmartMessage(context().resources.getString(R.string.no_connection), context = context(), type = PopupType.Error)
-                } else if (!isYouTubeSyncEnabled()){
+                } else if (!isSyncEnabled()){
                     Database.asyncTransaction {
                         like(
                             mediaItem.mediaId,
@@ -381,9 +381,9 @@ fun NonQueuedMediaItemMenuLibrary(
             onHideFromDatabase = { isHiding = true },
             onRemoveFromQuickPicks = onRemoveFromQuickPicks,
             onAddToPreferites = {
-                if (!isNetworkConnected(context()) && isYouTubeSyncEnabled()){
+                if (!isNetworkConnected(context()) && isSyncEnabled()){
                     SmartMessage(context().resources.getString(R.string.no_connection), context = context(), type = PopupType.Error)
-                } else if (!isYouTubeSyncEnabled()){
+                } else if (!isSyncEnabled()){
                     Database.asyncTransaction {
                         like(
                             mediaItem.mediaId,
@@ -544,9 +544,9 @@ fun QueuedMediaItemMenu(
                 navController.navigate(route = "${NavRoutes.localPlaylist.name}/$it")
             },
             onAddToPreferites = {
-                if (!isNetworkConnected(context()) && isYouTubeSyncEnabled()){
+                if (!isNetworkConnected(context()) && isSyncEnabled()){
                     SmartMessage(context.resources.getString(R.string.no_connection), context = context, type = PopupType.Error)
-                } else if (!isYouTubeSyncEnabled()){
+                } else if (!isSyncEnabled()){
                     Database.asyncTransaction {
                         like(
                             mediaItem.mediaId,
@@ -588,9 +588,9 @@ fun QueuedMediaItemMenu(
                 navController.navigate(route = "${NavRoutes.playlist.name}/$it")
             },
             onAddToPreferites = {
-                if (!isNetworkConnected(context()) && isYouTubeSyncEnabled()){
+                if (!isNetworkConnected(context()) && isSyncEnabled()){
                     SmartMessage(context.resources.getString(R.string.no_connection), context = context, type = PopupType.Error)
-                } else if (!isYouTubeSyncEnabled()){
+                } else if (!isSyncEnabled()){
                     Database.asyncTransaction {
                         like(
                             mediaItem.mediaId,
@@ -656,7 +656,7 @@ fun BaseMediaItemMenu(
         onAddToPreferites = onAddToPreferites,
         onMatchingSong =  onMatchingSong,
         onAddToPlaylist = { playlist, position ->
-            if (!isYouTubeSyncEnabled() || !playlist.isYoutubePlaylist){
+            if (!isSyncEnabled() || !playlist.isYoutubePlaylist){
                 Database.asyncTransaction {
                     insert(mediaItem)
                     insert(
@@ -746,7 +746,7 @@ fun MiniMediaItemMenu(
         mediaItem = mediaItem,
         onDismiss = onDismiss,
         onAddToPlaylist = { playlist, position ->
-            if (!isYouTubeSyncEnabled() || !playlist.isYoutubePlaylist){
+            if (!isSyncEnabled() || !playlist.isYoutubePlaylist){
                 Database.asyncTransaction {
                     insert(mediaItem)
                     insert(
@@ -1288,9 +1288,9 @@ fun MediaItemMenu(
                             color = colorPalette().favoritesIcon,
                             //color = if (likedAt == null) colorPalette().textDisabled else colorPalette().text,
                             onClick = {
-                                if (!isNetworkConnected(appContext()) && isYouTubeSyncEnabled()) {
+                                if (!isNetworkConnected(appContext()) && isSyncEnabled()) {
                                     SmartMessage(appContext().resources.getString(R.string.no_connection), context = appContext(), type = PopupType.Error)
-                                } else if (!isYouTubeSyncEnabled()){
+                                } else if (!isSyncEnabled()){
                                     Database.asyncTransaction {
                                         mediaItemToggleLike(mediaItem)
                                     }
@@ -1301,9 +1301,9 @@ fun MediaItemMenu(
                                 }
                             },
                             onLongClick = {
-                                if (!isNetworkConnected(appContext()) && isYouTubeSyncEnabled()) {
+                                if (!isNetworkConnected(appContext()) && isSyncEnabled()) {
                                     SmartMessage(appContext().resources.getString(R.string.no_connection), context = appContext(), type = PopupType.Error)
-                                } else if (!isYouTubeSyncEnabled()){
+                                } else if (!isSyncEnabled()){
                                     Database.asyncTransaction {
                                         if (like(mediaItem.mediaId, setDisLikeState(likedAt)) == 0) {
                                             insert(mediaItem, Song::toggleDislike)

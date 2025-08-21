@@ -75,7 +75,7 @@ import it.fast4x.riplay.ui.components.themed.IconButton
 import it.fast4x.riplay.ui.components.themed.SelectorArtistsDialog
 import it.fast4x.riplay.ui.components.themed.SmartMessage
 import it.fast4x.riplay.ui.screens.player.offline.bounceClick
-import it.fast4x.riplay.ui.screens.settings.isYouTubeSyncEnabled
+import it.fast4x.riplay.ui.screens.settings.isSyncEnabled
 import it.fast4x.riplay.ui.styling.favoritesIcon
 import it.fast4x.riplay.utils.HorizontalfadingEdge2
 import it.fast4x.riplay.utils.addToYtLikedSong
@@ -266,9 +266,9 @@ fun InfoAlbumAndArtistEssential(
                         color = colorPalette().favoritesIcon,
                         icon = getLikeState(mediaId),
                         onClick = {
-                            if (!isNetworkConnected(appContext()) && isYouTubeSyncEnabled()) {
+                            if (!isNetworkConnected(appContext()) && isSyncEnabled()) {
                                 SmartMessage(appContext().resources.getString(R.string.no_connection), context = appContext(), type = PopupType.Error)
-                            } else if (!isYouTubeSyncEnabled()){
+                            } else if (!isSyncEnabled()){
                                 Database.asyncTransaction {
                                     CoroutineScope(Dispatchers.IO).launch {
                                         currentMediaItem.takeIf { it?.mediaId == mediaId }.let { mediaItem ->
@@ -288,9 +288,9 @@ fun InfoAlbumAndArtistEssential(
                             if (effectRotationEnabled) isRotated = !isRotated
                         },
                         onLongClick = {
-                            if (!isNetworkConnected(appContext()) && isYouTubeSyncEnabled()) {
+                            if (!isNetworkConnected(appContext()) && isSyncEnabled()) {
                                 SmartMessage(appContext().resources.getString(R.string.no_connection), context = appContext(), type = PopupType.Error)
-                            } else if (!isYouTubeSyncEnabled()){
+                            } else if (!isSyncEnabled()){
                                 Database.asyncTransaction {
                                     CoroutineScope(Dispatchers.IO).launch {
                                         if (like(mediaId, setDisLikeState(likedAt)) == 0) {
@@ -468,9 +468,9 @@ fun ControlsEssential(
                 color = colorPalette().favoritesIcon,
                 icon = getLikeState(mediaId),
                 onClick = {
-                    if (!isNetworkConnected(appContext()) && isYouTubeSyncEnabled()) {
+                    if (!isNetworkConnected(appContext()) && isSyncEnabled()) {
                         SmartMessage(appContext().resources.getString(R.string.no_connection), context = appContext(), type = PopupType.Error)
-                    } else if (!isYouTubeSyncEnabled()){
+                    } else if (!isSyncEnabled()){
                         Database.asyncTransaction {
                             CoroutineScope(Dispatchers.IO).launch {
                                 currentMediaItem?.takeIf { it.mediaId == mediaId }?.let { mediaItem ->
@@ -488,9 +488,9 @@ fun ControlsEssential(
                     if (effectRotationEnabled) isRotated = !isRotated
                 },
                 onLongClick = {
-                    if (!isNetworkConnected(appContext()) && isYouTubeSyncEnabled()) {
+                    if (!isNetworkConnected(appContext()) && isSyncEnabled()) {
                         SmartMessage(appContext().resources.getString(R.string.no_connection), context = appContext(), type = PopupType.Error)
-                    } else if (!isYouTubeSyncEnabled()){
+                    } else if (!isSyncEnabled()){
                         Database.asyncTransaction {
                             CoroutineScope(Dispatchers.IO).launch {
                                 currentMediaItem?.takeIf { it.mediaId == mediaId }?.let { mediaItem ->

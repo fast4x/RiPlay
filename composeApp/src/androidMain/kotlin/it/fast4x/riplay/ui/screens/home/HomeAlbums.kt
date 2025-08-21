@@ -95,7 +95,7 @@ import it.fast4x.riplay.thumbnailShape
 import it.fast4x.riplay.ui.components.PullToRefreshBox
 import it.fast4x.riplay.ui.components.themed.FilterMenu
 import it.fast4x.riplay.ui.components.themed.HeaderIconButton
-import it.fast4x.riplay.ui.screens.settings.isYouTubeSyncEnabled
+import it.fast4x.riplay.ui.screens.settings.isSyncEnabled
 import it.fast4x.riplay.ui.styling.LocalAppearance
 import it.fast4x.riplay.utils.addToYtPlaylist
 import it.fast4x.riplay.utils.autoSyncToolbutton
@@ -162,7 +162,7 @@ fun HomeAlbums(
     val buttonsList = AlbumsType.entries.map { it to it.textName }
     val coroutineScope = rememberCoroutineScope()
 
-    if (!isYouTubeSyncEnabled()) {
+    if (!isSyncEnabled()) {
         filterBy = FilterBy.All
     }
 
@@ -279,7 +279,7 @@ fun HomeAlbums(
                             onValueUpdate = { albumType = it },
                             modifier = Modifier.padding(end = 12.dp)
                         )
-                        if (isYouTubeSyncEnabled()) {
+                        if (isSyncEnabled()) {
                             Row(
                                 modifier = Modifier
                                     .align(Alignment.CenterEnd)
@@ -461,7 +461,7 @@ fun HomeAlbums(
                                                             if (position > 0) position++ else position =
                                                                 0
 
-                                                            if (!isYouTubeSyncEnabled() || !playlistPreview.playlist.isYoutubePlaylist) {
+                                                            if (!isSyncEnabled() || !playlistPreview.playlist.isYoutubePlaylist) {
                                                                 songs.forEachIndexed { index, song ->
                                                                     Database.asyncTransaction {
                                                                         insert(song.asMediaItem)
@@ -639,7 +639,7 @@ fun HomeAlbums(
                                                             if (position > 0) position++ else position =
                                                                 0
 
-                                                            if (!isYouTubeSyncEnabled() || !playlistPreview.playlist.isYoutubePlaylist) {
+                                                            if (!isSyncEnabled() || !playlistPreview.playlist.isYoutubePlaylist) {
                                                                 songs.forEachIndexed { index, song ->
                                                                     Database.asyncTransaction {
                                                                         insert(song.asMediaItem)

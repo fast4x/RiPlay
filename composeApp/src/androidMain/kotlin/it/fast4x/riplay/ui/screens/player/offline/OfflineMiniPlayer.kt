@@ -80,7 +80,7 @@ import it.fast4x.riplay.typography
 import it.fast4x.riplay.ui.components.themed.IconButton
 import it.fast4x.riplay.ui.components.themed.NowPlayingSongIndicator
 import it.fast4x.riplay.ui.components.themed.SmartMessage
-import it.fast4x.riplay.ui.screens.settings.isYouTubeSyncEnabled
+import it.fast4x.riplay.ui.screens.settings.isSyncEnabled
 import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.ui.styling.collapsedPlayerProgressBar
 import it.fast4x.riplay.ui.styling.favoritesIcon
@@ -183,9 +183,9 @@ fun OfflineMiniPlayer(
 
     LaunchedEffect(updateLike, updateDislike) {
         if (updateLike) {
-            if (!isNetworkConnected(appContext()) && isYouTubeSyncEnabled()) {
+            if (!isNetworkConnected(appContext()) && isSyncEnabled()) {
                 SmartMessage(appContext().resources.getString(R.string.no_connection), context = appContext(), type = PopupType.Error)
-            } else if (!isYouTubeSyncEnabled()){
+            } else if (!isSyncEnabled()){
                 mediaItemToggleLike(mediaItem)
                 if (likedAt == null || likedAt == -1L)
                     SmartMessage(context.resources.getString(R.string.added_to_favorites), context = context)
@@ -199,9 +199,9 @@ fun OfflineMiniPlayer(
             updateLike = false
         }
         if (updateDislike) {
-            if (!isNetworkConnected(appContext()) && isYouTubeSyncEnabled()) {
+            if (!isNetworkConnected(appContext()) && isSyncEnabled()) {
                 SmartMessage(appContext().resources.getString(R.string.no_connection), context = appContext(), type = PopupType.Error)
-            } else if (!isYouTubeSyncEnabled()){
+            } else if (!isSyncEnabled()){
                 Database.asyncTransaction {
                     if (like(mediaItem.mediaId, setDisLikeState(likedAt)) == 0)
                         insert(mediaItem, Song::toggleDislike)

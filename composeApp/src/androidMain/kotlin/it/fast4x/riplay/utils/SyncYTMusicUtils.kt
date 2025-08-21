@@ -27,7 +27,7 @@ import it.fast4x.riplay.ui.components.tab.toolbar.Descriptive
 import it.fast4x.riplay.ui.components.tab.toolbar.DynamicColor
 import it.fast4x.riplay.ui.components.tab.toolbar.MenuIcon
 import it.fast4x.riplay.ui.components.themed.SmartMessage
-import it.fast4x.riplay.ui.screens.settings.isYouTubeSyncEnabled
+import it.fast4x.riplay.ui.screens.settings.isSyncEnabled
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.firstOrNull
@@ -36,7 +36,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 
 suspend fun importYTMPrivatePlaylists(): Boolean {
-    if (isYouTubeSyncEnabled()) {
+    if (isSyncEnabled()) {
 
         SmartMessage(
             message = appContext().resources.getString(R.string.syncing),
@@ -171,8 +171,8 @@ fun ytmPrivatePlaylistSync(playlist: Playlist, playlistId: Long) {
 }
 
 suspend fun importYTMSubscribedChannels(): Boolean {
-    println("importYTMSubscribedChannels isYouTubeSyncEnabled() = ${isYouTubeSyncEnabled()} and isAutoSyncEnabled() = ${isAutoSyncEnabled()}")
-    if (isYouTubeSyncEnabled()) {
+    println("importYTMSubscribedChannels isYouTubeSyncEnabled() = ${isSyncEnabled()} and isAutoSyncEnabled() = ${isAutoSyncEnabled()}")
+    if (isSyncEnabled()) {
 
         SmartMessage(
             message = appContext().resources.getString(R.string.syncing),
@@ -230,8 +230,8 @@ suspend fun importYTMSubscribedChannels(): Boolean {
 }
 
 suspend fun importYTMLikedAlbums(): Boolean {
-    println("importYTMLikedAlbums isYouTubeSyncEnabled() = ${isYouTubeSyncEnabled()} and isAutoSyncEnabled() = ${isAutoSyncEnabled()}")
-    if (isYouTubeSyncEnabled()) {
+    println("importYTMLikedAlbums isYouTubeSyncEnabled() = ${isSyncEnabled()} and isAutoSyncEnabled() = ${isAutoSyncEnabled()}")
+    if (isSyncEnabled()) {
 
         SmartMessage(
             message = appContext().resources.getString(R.string.syncing),
@@ -297,7 +297,7 @@ suspend fun removeYTSongFromPlaylist(
 
     println("removeYTSongFromPlaylist removeSongFromPlaylist params songId = $songId, playlistBrowseId = $playlistBrowseId, playlistId = $playlistId")
 
-    if (isYouTubeSyncEnabled()) {
+    if (isSyncEnabled()) {
         Database.asyncTransaction {
             CoroutineScope(Dispatchers.IO).launch {
                 val songSetVideoId = Database.getSetVideoIdFromPlaylist(songId, playlistId).firstOrNull()

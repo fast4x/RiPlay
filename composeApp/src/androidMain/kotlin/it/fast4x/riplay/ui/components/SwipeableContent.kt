@@ -52,7 +52,7 @@ import it.fast4x.riplay.colorPalette
 import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.models.Queues
 import it.fast4x.riplay.ui.components.themed.QueuesDialog
-import it.fast4x.riplay.ui.screens.settings.isYouTubeSyncEnabled
+import it.fast4x.riplay.ui.screens.settings.isSyncEnabled
 import it.fast4x.riplay.utils.addToYtLikedSong
 import org.dailyislam.android.utilities.isNetworkConnected
 import kotlinx.coroutines.CoroutineScope
@@ -150,9 +150,9 @@ fun SwipeableQueueItem(
         Database.likedAt(mediaItem.mediaId).distinctUntilChanged().collect { likedAt = it }
     }
     val onFavourite: () -> Unit = {
-        if (!isNetworkConnected(appContext()) && isYouTubeSyncEnabled()) {
+        if (!isNetworkConnected(appContext()) && isSyncEnabled()) {
             SmartMessage(appContext().resources.getString(R.string.no_connection), context = appContext(), type = PopupType.Error)
-        } else if (!isYouTubeSyncEnabled()){
+        } else if (!isSyncEnabled()){
             mediaItemToggleLike(mediaItem)
             val message: String
             val mTitle: String = cleanPrefix(mediaItem.mediaMetadata.title?.toString() ?: "")
@@ -235,9 +235,9 @@ fun SwipeablePlaylistItem(
         Database.likedAt(mediaItem.mediaId).distinctUntilChanged().collect { likedAt = it }
     }
     val onFavourite: () -> Unit = {
-        if (!isNetworkConnected(appContext()) && isYouTubeSyncEnabled()) {
+        if (!isNetworkConnected(appContext()) && isSyncEnabled()) {
             SmartMessage(appContext().resources.getString(R.string.no_connection), context = appContext(), type = PopupType.Error)
-        } else if (!isYouTubeSyncEnabled()){
+        } else if (!isSyncEnabled()){
             mediaItemToggleLike(mediaItem)
             val message: String
             val mTitle: String = cleanPrefix(mediaItem.mediaMetadata.title?.toString() ?: "")

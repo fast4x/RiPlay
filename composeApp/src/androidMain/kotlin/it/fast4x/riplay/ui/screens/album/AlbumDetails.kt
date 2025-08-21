@@ -147,7 +147,7 @@ import it.fast4x.riplay.typography
 import it.fast4x.riplay.ui.components.PullToRefreshBox
 import it.fast4x.riplay.ui.components.themed.QueuesDialog
 import it.fast4x.riplay.ui.components.themed.Title
-import it.fast4x.riplay.ui.screens.settings.isYouTubeSyncEnabled
+import it.fast4x.riplay.ui.screens.settings.isSyncEnabled
 import it.fast4x.riplay.utils.LazyListContainer
 import it.fast4x.riplay.utils.addToYtLikedSongs
 import it.fast4x.riplay.utils.addToYtPlaylist
@@ -702,7 +702,7 @@ fun AlbumDetails(
                                         .padding(horizontal = 25.dp)
                                         .combinedClickable(
                                             onClick = {
-                                                if (isYouTubeSyncEnabled() && !isNetworkConnected(
+                                                if (isSyncEnabled() && !isNetworkConnected(
                                                         context
                                                     )
                                                 ) {
@@ -723,7 +723,7 @@ fun AlbumDetails(
 
 
 
-                                                    if (isYouTubeSyncEnabled())
+                                                    if (isSyncEnabled())
                                                         CoroutineScope(Dispatchers.IO).launch {
                                                             if (bookmarkedAt == null)
                                                                 albumPage?.album?.playlistId.let {
@@ -1041,7 +1041,7 @@ fun AlbumDetails(
                                                             0
                                                         //Log.d("mediaItem", "next initial pos ${position}")
                                                         if (listMediaItems.isEmpty()) {
-                                                            if (!isYouTubeSyncEnabled() || !playlistPreview.playlist.isYoutubePlaylist) {
+                                                            if (!isSyncEnabled() || !playlistPreview.playlist.isYoutubePlaylist) {
                                                                 songs.forEachIndexed { index, song ->
                                                                     Database.asyncTransaction {
                                                                         insert(song.asMediaItem)
@@ -1082,7 +1082,7 @@ fun AlbumDetails(
                                                                 }
                                                             }
                                                         } else {
-                                                            if (!isYouTubeSyncEnabled() || !playlistPreview.playlist.isYoutubePlaylist) {
+                                                            if (!isSyncEnabled() || !playlistPreview.playlist.isYoutubePlaylist) {
                                                                 listMediaItems.forEachIndexed { index, song ->
                                                                     //Log.d("mediaItemMaxPos", position.toString())
                                                                     Database.asyncTransaction {
@@ -1114,7 +1114,7 @@ fun AlbumDetails(
                                                         }
                                                     },
                                                     onAddToFavourites = {
-                                                        if (!isNetworkConnected(appContext()) && isYouTubeSyncEnabled()) {
+                                                        if (!isNetworkConnected(appContext()) && isSyncEnabled()) {
                                                             SmartMessage(
                                                                 appContext().resources.getString(
                                                                     R.string.no_connection
@@ -1122,7 +1122,7 @@ fun AlbumDetails(
                                                                 context = appContext(),
                                                                 type = PopupType.Error
                                                             )
-                                                        } else if (!isYouTubeSyncEnabled()) {
+                                                        } else if (!isSyncEnabled()) {
                                                             songs.forEach { song ->
                                                                 mediaItemSetLiked(song.asMediaItem)
                                                             }

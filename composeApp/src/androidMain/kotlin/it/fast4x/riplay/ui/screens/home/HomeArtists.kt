@@ -81,7 +81,7 @@ import it.fast4x.riplay.ui.components.tab.toolbar.Randomizer
 import it.fast4x.riplay.ui.components.tab.toolbar.SongsShuffle
 import it.fast4x.riplay.ui.components.themed.FilterMenu
 import it.fast4x.riplay.ui.components.themed.HeaderIconButton
-import it.fast4x.riplay.ui.screens.settings.isYouTubeSyncEnabled
+import it.fast4x.riplay.ui.screens.settings.isSyncEnabled
 import it.fast4x.riplay.ui.styling.LocalAppearance
 import it.fast4x.riplay.extensions.preferences.Preference.HOME_ARTIST_ITEM_SIZE
 import it.fast4x.riplay.utils.autoSyncToolbutton
@@ -157,7 +157,7 @@ fun HomeArtists(
     val menuState = LocalMenuState.current
     val coroutineScope = rememberCoroutineScope()
 
-    if (!isYouTubeSyncEnabled()) {
+    if (!isSyncEnabled()) {
         filterBy = FilterBy.All
     }
 
@@ -269,7 +269,7 @@ fun HomeArtists(
                             onValueUpdate = { artistType = it },
                             modifier = Modifier.padding(end = 12.dp)
                         )
-                        if (isYouTubeSyncEnabled()) {
+                        if (isSyncEnabled()) {
                             Row(
                                 modifier = Modifier
                                     .align(Alignment.CenterEnd)

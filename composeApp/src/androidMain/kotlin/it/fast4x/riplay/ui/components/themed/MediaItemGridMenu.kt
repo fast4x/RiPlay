@@ -95,7 +95,7 @@ import it.fast4x.riplay.models.Song
 import it.fast4x.riplay.models.defaultQueue
 import it.fast4x.riplay.typography
 import it.fast4x.riplay.ui.screens.player.fastPlay
-import it.fast4x.riplay.ui.screens.settings.isYouTubeSyncEnabled
+import it.fast4x.riplay.ui.screens.settings.isSyncEnabled
 import it.fast4x.riplay.utils.addSongToYtPlaylist
 import it.fast4x.riplay.utils.addToYtLikedSong
 import org.dailyislam.android.utilities.isNetworkConnected
@@ -184,7 +184,7 @@ fun BaseMediaItemGridMenu(
         onAddToPreferites = onAddToPreferites,
         onMatchingSong =  onMatchingSong,
         onAddToPlaylist = { playlist, position ->
-            if (!isYouTubeSyncEnabled() || !playlist.isYoutubePlaylist){
+            if (!isSyncEnabled() || !playlist.isYoutubePlaylist){
                 Database.asyncTransaction {
                     insert(mediaItem)
                     insert(
@@ -257,7 +257,7 @@ fun MiniMediaItemGridMenu(
         mediaItem = mediaItem,
         onDismiss = onDismiss,
         onAddToPlaylist = { playlist, position ->
-            if (!isYouTubeSyncEnabled() || !playlist.isYoutubePlaylist){
+            if (!isSyncEnabled() || !playlist.isYoutubePlaylist){
                 Database.asyncTransaction {
                     insert(mediaItem)
                     insert(
@@ -441,9 +441,9 @@ fun MediaItemGridMenu (
                     icon = getLikeState(mediaItem.mediaId),
                     color = colorPalette().favoritesIcon,
                     onClick = {
-                        if (!isNetworkConnected(appContext()) && isYouTubeSyncEnabled()) {
+                        if (!isNetworkConnected(appContext()) && isSyncEnabled()) {
                             SmartMessage(appContext().resources.getString(R.string.no_connection), context = appContext(), type = PopupType.Error)
-                        } else if (!isYouTubeSyncEnabled()){
+                        } else if (!isSyncEnabled()){
                             mediaItemToggleLike(mediaItem)
                             updateData = !updateData
                         } else {
@@ -453,9 +453,9 @@ fun MediaItemGridMenu (
                         }
                     },
                     onLongClick = {
-                        if (!isNetworkConnected(appContext()) && isYouTubeSyncEnabled()) {
+                        if (!isNetworkConnected(appContext()) && isSyncEnabled()) {
                             SmartMessage(appContext().resources.getString(R.string.no_connection), context = appContext(), type = PopupType.Error)
-                        } else if (!isYouTubeSyncEnabled()){
+                        } else if (!isSyncEnabled()){
                             Database.asyncTransaction {
                                 if (like(mediaItem.mediaId, setDisLikeState(likedAt)) == 0){
                                     insert(mediaItem, Song::toggleDislike)

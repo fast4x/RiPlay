@@ -154,7 +154,7 @@ import it.fast4x.riplay.models.SongPlaylistMap
 import it.fast4x.riplay.models.defaultQueue
 import it.fast4x.riplay.typography
 import it.fast4x.riplay.ui.items.SongItem
-import it.fast4x.riplay.ui.screens.settings.isYouTubeSyncEnabled
+import it.fast4x.riplay.ui.screens.settings.isSyncEnabled
 import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.ui.styling.px
 import it.fast4x.riplay.utils.asMediaItem
@@ -1989,7 +1989,7 @@ fun SongMatchingDialog(
                                         .padding(horizontal = 10.dp)
                                         .clickable(onClick = {
                                             Database.asyncTransaction {
-                                                if (isYouTubeSyncEnabled() && playlist?.isYoutubePlaylist == true && playlist.isEditable) {
+                                                if (isSyncEnabled() && playlist?.isYoutubePlaylist == true && playlist.isEditable) {
                                                     CoroutineScope(Dispatchers.IO).launch {
                                                         if (removeYTSongFromPlaylist(
                                                                 songToRematch.id,
@@ -2035,7 +2035,7 @@ fun SongMatchingDialog(
                                                     album?.copy(thumbnailUrl = song.thumbnail?.url)
                                                         ?.let { update(it) }
 
-                                                    if (isYouTubeSyncEnabled() && playlist?.isYoutubePlaylist == true && playlist.isEditable) {
+                                                    if (isSyncEnabled() && playlist?.isYoutubePlaylist == true && playlist.isEditable) {
                                                         EnvironmentExt.addToPlaylist(
                                                             playlist.browseId ?: "",
                                                             song.asMediaItem.mediaId

@@ -16,7 +16,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.toLowerCase
 import androidx.core.net.toUri
 import androidx.core.os.bundleOf
 import androidx.media3.common.MediaItem
@@ -58,7 +57,7 @@ import it.fast4x.riplay.service.LOCAL_KEY_PREFIX
 import it.fast4x.riplay.service.isLocal
 import it.fast4x.riplay.ui.components.themed.NewVersionDialog
 import it.fast4x.riplay.ui.components.themed.SmartMessage
-import it.fast4x.riplay.ui.screens.settings.isYouTubeSyncEnabled
+import it.fast4x.riplay.ui.screens.settings.isSyncEnabled
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -72,7 +71,6 @@ import java.time.Duration
 import java.util.Calendar
 import java.util.Date
 import java.util.GregorianCalendar
-import java.util.Locale
 import java.util.Locale.getDefault
 import kotlin.math.absoluteValue
 import kotlin.random.Random
@@ -774,7 +772,7 @@ suspend fun getAlbumVersionFromVideo(song: Song,playlistId : Long, position : In
 
     Database.asyncTransaction {
         if (findSongIndex() != -1) {
-            if (isYouTubeSyncEnabled() && playlist?.isYoutubePlaylist == true && playlist.isEditable){
+            if (isSyncEnabled() && playlist?.isYoutubePlaylist == true && playlist.isEditable){
                 Database.asyncTransaction {
                     CoroutineScope(Dispatchers.IO).launch {
                         if (removeYTSongFromPlaylist(
@@ -810,7 +808,7 @@ suspend fun getAlbumVersionFromVideo(song: Song,playlistId : Long, position : In
                     val album = Database.album(matchedSong.album?.endpoint?.browseId ?: "").firstOrNull()
                     album?.copy(thumbnailUrl = matchedSong.thumbnail?.url)?.let { update(it) }
 
-                    if (isYouTubeSyncEnabled() && playlist?.isYoutubePlaylist == true && playlist.isEditable){
+                    if (isSyncEnabled() && playlist?.isYoutubePlaylist == true && playlist.isEditable){
                         EnvironmentExt.addToPlaylist(playlist.browseId ?: "", matchedSong.asMediaItem.mediaId)
                     }
                 }
@@ -1030,7 +1028,7 @@ suspend fun addToYtPlaylist(localPlaylistId: Long, position: Int, ytplaylistId: 
 }
 
 suspend fun addSongToYtPlaylist(localPlaylistId: Long, position: Int, ytplaylistId: String, mediaItem: MediaItem){
-    if (isYouTubeSyncEnabled()) {
+    if (isSyncEnabled()) {
         addToPlaylist(ytplaylistId,mediaItem.mediaId)
             .onSuccess {
                 Database.asyncTransaction {
@@ -1065,7 +1063,7 @@ suspend fun addSongToYtPlaylist(localPlaylistId: Long, position: Int, ytplaylist
 
 @OptIn(UnstableApi::class)
 suspend fun addToYtLikedSong(mediaItem: MediaItem){
-    if (isYouTubeSyncEnabled()) {
+    if (isSyncEnabled()) {
         if (getLikedAt(mediaItem.mediaId) in listOf(-1L, null)) {
             likeVideoOrSong(mediaItem.mediaId)
                 .onSuccess {
@@ -1097,7 +1095,7 @@ suspend fun addToYtLikedSong(mediaItem: MediaItem){
 
 @OptIn(UnstableApi::class)
 suspend fun unlikeYtVideoOrSong(mediaItem: MediaItem){
-    if(isYouTubeSyncEnabled()){
+    if(isSyncEnabled()){
         removelikeVideoOrSong(mediaItem.mediaId)
             .onSuccess {
                 Database.asyncTransaction {
@@ -1125,7 +1123,7 @@ suspend fun unlikeYtVideoOrSong(mediaItem: MediaItem){
 
 @OptIn(UnstableApi::class)
 suspend fun addToYtLikedSongs(mediaItems: List<MediaItem>){
-    if (isYouTubeSyncEnabled()) {
+    if (isSyncEnabled()) {
         mediaItems.forEachIndexed { index, item ->
             delay(1000)
             likeVideoOrSong(item.mediaId).onSuccess {

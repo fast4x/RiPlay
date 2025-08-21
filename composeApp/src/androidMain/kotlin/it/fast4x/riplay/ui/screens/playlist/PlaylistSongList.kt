@@ -141,7 +141,7 @@ import it.fast4x.riplay.extensions.fastshare.FastShare
 import it.fast4x.riplay.models.defaultQueue
 import it.fast4x.riplay.typography
 import it.fast4x.riplay.ui.components.themed.ConfirmationDialog
-import it.fast4x.riplay.ui.screens.settings.isYouTubeSyncEnabled
+import it.fast4x.riplay.ui.screens.settings.isSyncEnabled
 import it.fast4x.riplay.utils.LazyListContainer
 import it.fast4x.riplay.utils.addToYtLikedSongs
 import it.fast4x.riplay.utils.align
@@ -655,7 +655,7 @@ fun PlaylistSongList(
                                                             val playlistSize =
                                                                 playlistPage?.songs?.size ?: 0
 
-                                                            if ((playlistSize + playlistPreview.songCount) > 5000 && playlistPreview.playlist.isYoutubePlaylist && isYouTubeSyncEnabled()) {
+                                                            if ((playlistSize + playlistPreview.songCount) > 5000 && playlistPreview.playlist.isYoutubePlaylist && isSyncEnabled()) {
                                                                 SmartMessage(
                                                                     context.resources.getString(
                                                                         R.string.yt_playlist_limited
@@ -663,7 +663,7 @@ fun PlaylistSongList(
                                                                     context = context,
                                                                     type = PopupType.Error
                                                                 )
-                                                            } else if (!isYouTubeSyncEnabled() || !playlistPreview.playlist.isYoutubePlaylist) {
+                                                            } else if (!isSyncEnabled() || !playlistPreview.playlist.isYoutubePlaylist) {
                                                                 playlistPage!!.songs.forEachIndexed { index, song ->
                                                                     runCatching {
                                                                         coroutineScope.launch(
@@ -728,13 +728,13 @@ fun PlaylistSongList(
                                         .padding(horizontal = 5.dp)
                                         .combinedClickable(
                                             onClick = {
-                                                if (!isNetworkConnected(appContext()) && isYouTubeSyncEnabled()) {
+                                                if (!isNetworkConnected(appContext()) && isSyncEnabled()) {
                                                     SmartMessage(
                                                         appContext().resources.getString(R.string.no_connection),
                                                         context = appContext(),
                                                         type = PopupType.Error
                                                     )
-                                                } else if (!isYouTubeSyncEnabled()) {
+                                                } else if (!isSyncEnabled()) {
                                                     Database.asyncTransaction {
                                                         playlistPage!!.songs.filter {
                                                             getLikedAt(it.asMediaItem.mediaId) in listOf(
@@ -761,7 +761,7 @@ fun PlaylistSongList(
                                             }
                                         )
                                 )
-                                if (isYouTubeSyncEnabled()) {
+                                if (isSyncEnabled()) {
                                     HeaderIconButton(
                                         icon = if (localPlaylist?.isYoutubePlaylist == true) R.drawable.bookmark else R.drawable.bookmark_outline,
                                         color = colorPalette().text,

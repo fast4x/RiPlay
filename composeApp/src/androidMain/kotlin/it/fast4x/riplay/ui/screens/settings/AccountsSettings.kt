@@ -403,17 +403,17 @@ fun AccountsSettings() {
 
 }
 
-fun isYouTubeLoginEnabled(): Boolean {
-    val isYouTubeLoginEnabled = appContext().preferences.getBoolean(enableYouTubeLoginKey, false)
-    return isYouTubeLoginEnabled
+fun isLoginEnabled(): Boolean {
+    val isLoginEnabled = appContext().preferences.getBoolean(enableYouTubeLoginKey, false)
+    return isLoginEnabled
 }
 
-fun isYouTubeSyncEnabled(): Boolean {
-    val isYouTubeSyncEnabled = appContext().preferences.getBoolean(enableYouTubeSyncKey, false)
-    return isYouTubeSyncEnabled && isYouTubeLoggedIn() && isYouTubeLoginEnabled()
+fun isSyncEnabled(): Boolean {
+    val isSyncEnabled = appContext().preferences.getBoolean(enableYouTubeSyncKey, false)
+    return isSyncEnabled && isLoggedIn() && isLoginEnabled()
 }
 
-fun isYouTubeLoggedIn(): Boolean {
+fun isLoggedIn(): Boolean {
     val cookie = appContext().preferences.getString(ytCookieKey, "")
     val isLoggedIn = cookie?.let { parseCookieString(it) }?.contains("SAPISID") == true
     return isLoggedIn

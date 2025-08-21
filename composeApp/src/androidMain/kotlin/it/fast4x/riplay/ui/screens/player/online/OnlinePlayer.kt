@@ -233,7 +233,7 @@ import it.fast4x.riplay.ui.screens.player.offline.NextVisualizer
 import it.fast4x.riplay.ui.screens.player.offline.Queue
 import it.fast4x.riplay.ui.screens.player.offline.StatsForNerds
 import it.fast4x.riplay.ui.screens.player.offline.animatedGradient
-import it.fast4x.riplay.ui.screens.settings.isYouTubeSyncEnabled
+import it.fast4x.riplay.ui.screens.settings.isSyncEnabled
 import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.ui.styling.collapsedPlayerProgressBar
 import it.fast4x.riplay.ui.styling.dynamicColorPaletteOf
@@ -3733,13 +3733,13 @@ fun OnlinePlayer(
                                         color = colorPalette().favoritesIcon,
                                         icon = getLikeState(mediaItem.mediaId),
                                         onClick = {
-                                            if (!isNetworkConnected(appContext()) && isYouTubeSyncEnabled()) {
+                                            if (!isNetworkConnected(appContext()) && isSyncEnabled()) {
                                                 SmartMessage(
                                                     appContext().resources.getString(R.string.no_connection),
                                                     context = appContext(),
                                                     type = PopupType.Error
                                                 )
-                                            } else if (!isYouTubeSyncEnabled()) {
+                                            } else if (!isSyncEnabled()) {
                                                 Database.asyncTransaction {
                                                     CoroutineScope(Dispatchers.IO).launch {
                                                         mediaItem.takeIf { it.mediaId == mediaItem.mediaId }
@@ -3756,13 +3756,13 @@ fun OnlinePlayer(
                                             if (effectRotationEnabled) isRotated = !isRotated
                                         },
                                         onLongClick = {
-                                            if (!isNetworkConnected(appContext()) && isYouTubeSyncEnabled()) {
+                                            if (!isNetworkConnected(appContext()) && isSyncEnabled()) {
                                                 SmartMessage(
                                                     appContext().resources.getString(R.string.no_connection),
                                                     context = appContext(),
                                                     type = PopupType.Error
                                                 )
-                                            } else if (!isYouTubeSyncEnabled()) {
+                                            } else if (!isSyncEnabled()) {
                                                 Database.asyncTransaction {
                                                     CoroutineScope(Dispatchers.IO).launch {
                                                         mediaItem.takeIf { it.mediaId == mediaItem.mediaId }

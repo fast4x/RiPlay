@@ -175,7 +175,7 @@ import it.fast4x.riplay.ui.screens.player.online.MediaSessionCallback
 import it.fast4x.riplay.ui.screens.player.online.OnlineMiniPlayer
 import it.fast4x.riplay.ui.screens.player.online.OnlinePlayer
 import it.fast4x.riplay.ui.screens.player.online.components.core.OnlinePlayerCore
-import it.fast4x.riplay.ui.screens.settings.isYouTubeLoggedIn
+import it.fast4x.riplay.ui.screens.settings.isLoggedIn
 import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.extensions.preferences.UiTypeKey
 import it.fast4x.riplay.extensions.preferences.animatedGradientKey
@@ -254,7 +254,6 @@ import it.fast4x.riplay.extensions.preferences.ytVisitorDataKey
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -736,7 +735,7 @@ class MainActivity :
             println("MainActivity.onCreate visitorData in use: ${visitorData.value}")
 
             cookie.let {
-                if (isYouTubeLoggedIn())
+                if (isLoggedIn())
                     Environment.cookie = it.value
                 else {
                     Environment.cookie = ""

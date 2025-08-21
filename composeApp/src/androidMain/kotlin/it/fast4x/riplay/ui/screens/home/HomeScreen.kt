@@ -41,7 +41,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import it.fast4x.riplay.ui.components.Skeleton
-import it.fast4x.riplay.ui.screens.settings.isYouTubeLoggedIn
+import it.fast4x.riplay.ui.screens.settings.isLoggedIn
 import kotlin.system.exitProcess
 
 
@@ -95,9 +95,9 @@ fun HomeScreen(
         onTabChanged,
         miniPlayer,
         navBarContent = { Item ->
-            Item(0, if (!isYouTubeLoggedIn())
+            Item(0, if (!isLoggedIn())
                 stringResource(R.string.quick_picks) else stringResource(R.string.home),
-                if (!isYouTubeLoggedIn()) R.drawable.sparkles else R.drawable.internet)
+                if (!isLoggedIn()) R.drawable.sparkles else R.drawable.internet)
             Item(1, stringResource(R.string.songs), R.drawable.disc)
             Item(2, stringResource(R.string.artists), R.drawable.artists)
             Item(3, stringResource(R.string.albums), R.drawable.album)

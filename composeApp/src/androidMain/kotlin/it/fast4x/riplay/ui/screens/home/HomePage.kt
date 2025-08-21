@@ -135,7 +135,7 @@ import it.fast4x.riplay.typography
 import it.fast4x.riplay.ui.components.themed.TitleMiniSection
 import it.fast4x.riplay.ui.items.VideoItem
 import it.fast4x.riplay.ui.screens.player.fastPlay
-import it.fast4x.riplay.ui.screens.settings.isYouTubeLoggedIn
+import it.fast4x.riplay.ui.screens.settings.isLoggedIn
 import it.fast4x.riplay.utils.asVideoMediaItem
 import it.fast4x.riplay.extensions.preferences.quickPicsHomePageKey
 import kotlin.time.Duration
@@ -289,7 +289,7 @@ fun HomePage(
                 discoverPageResult = Environment.discoverPage()
             }
 
-            if (isYouTubeLoggedIn())
+            if (isLoggedIn())
                 homePageResult = EnvironmentExt.getHomePage()
 
         }.onFailure {
@@ -464,7 +464,7 @@ fun HomePage(
 
                 if (UiType.ViMusic.isCurrent())
                     HeaderWithIcon(
-                        title = if (!isYouTubeLoggedIn()) stringResource(R.string.quick_picks)
+                        title = if (!isLoggedIn()) stringResource(R.string.quick_picks)
                         else stringResource(R.string.home),
                         iconId = R.drawable.search,
                         enabled = true,

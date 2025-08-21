@@ -315,7 +315,7 @@ import it.fast4x.riplay.LocalSelectedQueue
 import it.fast4x.riplay.appContext
 import it.fast4x.riplay.models.defaultQueue
 import it.fast4x.riplay.ui.components.themed.AddToPlaylistPlayerMenu
-import it.fast4x.riplay.ui.screens.settings.isYouTubeSyncEnabled
+import it.fast4x.riplay.ui.screens.settings.isSyncEnabled
 import it.fast4x.riplay.ui.styling.favoritesIcon
 import it.fast4x.riplay.utils.addToYtLikedSong
 import it.fast4x.riplay.utils.getLikeState
@@ -3239,9 +3239,9 @@ fun OfflinePlayer(
                                 color = colorPalette().favoritesIcon,
                                 icon = getLikeState(mediaItem.mediaId),
                                 onClick = {
-                                    if (!isNetworkConnected(appContext()) && isYouTubeSyncEnabled()) {
+                                    if (!isNetworkConnected(appContext()) && isSyncEnabled()) {
                                         SmartMessage(appContext().resources.getString(R.string.no_connection), context = appContext(), type = PopupType.Error)
-                                    } else if (!isYouTubeSyncEnabled()){
+                                    } else if (!isSyncEnabled()){
                                         Database.asyncTransaction {
                                             CoroutineScope(Dispatchers.IO).launch {
                                                 mediaItem.takeIf { it.mediaId == mediaItem.mediaId }?.let { mediaItem ->
@@ -3257,9 +3257,9 @@ fun OfflinePlayer(
                                     if (effectRotationEnabled) isRotated = !isRotated
                                 },
                                 onLongClick = {
-                                    if (!isNetworkConnected(appContext()) && isYouTubeSyncEnabled()) {
+                                    if (!isNetworkConnected(appContext()) && isSyncEnabled()) {
                                         SmartMessage(appContext().resources.getString(R.string.no_connection), context = appContext(), type = PopupType.Error)
-                                    } else if (!isYouTubeSyncEnabled()){
+                                    } else if (!isSyncEnabled()){
                                         Database.asyncTransaction {
                                             CoroutineScope(Dispatchers.IO).launch {
                                                 mediaItem.takeIf { it.mediaId == mediaItem.mediaId }?.let { mediaItem ->

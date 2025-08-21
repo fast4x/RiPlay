@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -38,7 +37,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.graphics.asAndroidColorFilter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -93,8 +91,8 @@ fun SettingsScreen(
                     item(0, stringResource(R.string.tab_general), R.drawable.app_icon)
                     item(1, stringResource(R.string.ui_tab), R.drawable.ui)
                     item(2, stringResource(R.string.player_appearance), R.drawable.color_palette)
-                    item(3, if (!isYouTubeLoggedIn()) stringResource(R.string.quick_picks)
-                    else stringResource(R.string.home), if (!isYouTubeLoggedIn()) R.drawable.sparkles
+                    item(3, if (!isLoggedIn()) stringResource(R.string.quick_picks)
+                    else stringResource(R.string.home), if (!isLoggedIn()) R.drawable.sparkles
                     else R.drawable.internet)
                     item(4, stringResource(R.string.tab_data), R.drawable.server)
                     item(5, stringResource(R.string.tab_accounts), R.drawable.person)

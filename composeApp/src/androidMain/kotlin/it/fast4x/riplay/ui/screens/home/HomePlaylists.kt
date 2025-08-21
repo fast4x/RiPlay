@@ -87,7 +87,7 @@ import it.fast4x.riplay.ui.components.tab.TabHeader
 import it.fast4x.riplay.ui.components.tab.toolbar.Descriptive
 import it.fast4x.riplay.ui.components.tab.toolbar.MenuIcon
 import it.fast4x.riplay.ui.components.tab.toolbar.SongsShuffle
-import it.fast4x.riplay.ui.screens.settings.isYouTubeSyncEnabled
+import it.fast4x.riplay.ui.screens.settings.isSyncEnabled
 import it.fast4x.riplay.utils.importYTMPrivatePlaylists
 import it.fast4x.riplay.extensions.preferences.Preference.HOME_LIBRARY_ITEM_SIZE
 import it.fast4x.riplay.utils.autoSyncToolbutton
@@ -173,7 +173,7 @@ fun HomePlaylists(
         override fun onShortClick() = super.onShortClick()
 
         override fun onSet(newValue: String) {
-            if (isYouTubeSyncEnabled()) {
+            if (isSyncEnabled()) {
                 CoroutineScope(Dispatchers.IO).launch {
                     EnvironmentExt.createPlaylist(newValue).getOrNull()
                         .also {

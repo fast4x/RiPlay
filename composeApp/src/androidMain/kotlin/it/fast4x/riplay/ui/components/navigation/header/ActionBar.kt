@@ -24,7 +24,7 @@ import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.colorPalette
 import it.fast4x.riplay.thumbnailShape
 import it.fast4x.riplay.ui.components.themed.DropdownMenu
-import it.fast4x.riplay.ui.screens.settings.isYouTubeLoggedIn
+import it.fast4x.riplay.ui.screens.settings.isLoggedIn
 import it.fast4x.riplay.ytAccountThumbnail
 
 @Composable
@@ -85,7 +85,7 @@ fun ActionBar(
     // Search Icon
     HeaderIcon( R.drawable.search) { navController.navigate(NavRoutes.search.name) }
 
-    if (isYouTubeLoggedIn()) {
+    if (isLoggedIn()) {
         if (ytAccountThumbnail() != "")
             AsyncImage(
                 model = ytAccountThumbnail(),

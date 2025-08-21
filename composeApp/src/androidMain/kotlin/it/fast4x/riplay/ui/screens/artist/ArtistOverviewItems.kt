@@ -93,7 +93,7 @@ import it.fast4x.riplay.ui.components.themed.TitleSection
 import it.fast4x.riplay.ui.items.ArtistItem
 import it.fast4x.riplay.ui.items.VideoItem
 import it.fast4x.riplay.ui.screens.player.fastPlay
-import it.fast4x.riplay.ui.screens.settings.isYouTubeSyncEnabled
+import it.fast4x.riplay.ui.screens.settings.isSyncEnabled
 import it.fast4x.riplay.utils.addNext
 import it.fast4x.riplay.utils.addToYtLikedSongs
 import it.fast4x.riplay.utils.asSong
@@ -458,13 +458,13 @@ fun ArtistOverviewItems(
                                     .padding(horizontal = 5.dp)
                                     .combinedClickable(
                                         onClick = {
-                                            if (!isNetworkConnected(appContext()) && isYouTubeSyncEnabled()) {
+                                            if (!isNetworkConnected(appContext()) && isSyncEnabled()) {
                                                 SmartMessage(
                                                     appContext().resources.getString(R.string.no_connection),
                                                     context = appContext(),
                                                     type = PopupType.Error
                                                 )
-                                            } else if (!isYouTubeSyncEnabled()) {
+                                            } else if (!isSyncEnabled()) {
                                                 artistSongs.forEachIndexed { _, song ->
                                                     Database.asyncTransaction {
                                                         if (like(
