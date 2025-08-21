@@ -703,7 +703,7 @@ fun OnlinePlayer(
         showButtonPlayerSystemEqualizerKey,
         false
     )
-    val showButtonPlayerVideo by rememberObservedPreference(showButtonPlayerVideoKey, false)
+    val showButtonPlayerVideo by rememberObservedPreference(showButtonPlayerVideoKey, true)
 
     val showTotalTimeQueue by rememberObservedPreference(showTotalTimeQueueKey, true)
     val backgroundProgress by rememberObservedPreference(
