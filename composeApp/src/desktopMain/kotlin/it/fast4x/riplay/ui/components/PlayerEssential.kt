@@ -61,8 +61,6 @@ fun MiniPlayer(
                     authors = song?.artistsText,
                     duration = song?.durationText,
                     title = song?.title,
-                    isDownloaded = false,
-                    onDownloadClick = {},
                     thumbnailSizeDp = 80.dp,
                     modifier = Modifier.fillMaxWidth(0.2f)
                 )

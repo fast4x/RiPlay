@@ -169,16 +169,20 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import it.fast4x.riplay.appContext
+import it.fast4x.riplay.enums.ContentType
 import it.fast4x.riplay.enums.PresetsReverb
 import it.fast4x.riplay.isHandleAudioFocusEnabled
 import it.fast4x.riplay.extensions.preferences.audioReverbPresetKey
 import it.fast4x.riplay.extensions.preferences.bassboostEnabledKey
 import it.fast4x.riplay.extensions.preferences.bassboostLevelKey
+import it.fast4x.riplay.extensions.preferences.filterContentTypeKey
 import it.fast4x.riplay.extensions.preferences.isInvincibilityEnabledKey
 import it.fast4x.riplay.utils.loadMasterQueue
 import it.fast4x.riplay.utils.principalCache
 import it.fast4x.riplay.utils.saveMasterQueue
 import it.fast4x.riplay.extensions.preferences.volumeBoostLevelKey
+import it.fast4x.riplay.utils.isOfficialContent
+import it.fast4x.riplay.utils.isUserGeneratedContent
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
@@ -778,6 +782,8 @@ class OfflinePlayerService : MediaLibraryService(),
         if (!preferences.getBoolean(autoLoadSongsInQueueKey, true)) return
 
         val isDiscoverEnabled = applicationContext.preferences.getBoolean(discoverKey, false)
+        val filterContentType = applicationContext.preferences.getEnum(filterContentTypeKey,
+            ContentType.All)
         if (reason != Player.MEDIA_ITEM_TRANSITION_REASON_REPEAT &&
             player.mediaItemCount - player.currentMediaItemIndex <= if (
                 isDiscoverEnabled) 10 else 3
@@ -792,7 +798,16 @@ class OfflinePlayerService : MediaLibraryService(),
                 radio?.let { radio ->
                     coroutineScope.launch(Dispatchers.Main) {
                         if (player.playbackState != STATE_IDLE)
-                            player.addMediaItems(radio.process())
+                            player.addMediaItems(
+                                radio.process()
+                                    .filter { song ->
+                                        when (filterContentType) {
+                                            ContentType.All -> true
+                                            ContentType.Official -> song.isOfficialContent
+                                            ContentType.UserGenerated -> song.isUserGeneratedContent
+                                        }
+                                    }
+                            )
                     }
 
                 }
@@ -1599,6 +1614,8 @@ class OfflinePlayerService : MediaLibraryService(),
             radioJob?.cancel()
             radio = null
             val isDiscoverEnabled = applicationContext.preferences.getBoolean(discoverKey, false)
+            val filterContentType = applicationContext.preferences.getEnum(filterContentTypeKey,
+                ContentType.All)
             YouTubeRadio(
                 endpoint?.videoId,
                 endpoint?.playlistId,
@@ -1612,8 +1629,16 @@ class OfflinePlayerService : MediaLibraryService(),
                 isLoadingRadio = true
                 radioJob = coroutineScope.launch(Dispatchers.Main) {
 
-                    val songs = if (filterArtist.isEmpty()) it.process()
-                    else it.process().filter { song -> song.mediaMetadata.artist == filterArtist }
+                    val songs =
+                        (if (filterArtist.isEmpty()) it.process()
+                    else it.process().filter { song -> song.mediaMetadata.artist == filterArtist })
+                            .filter { song ->
+                                when (filterContentType) {
+                                    ContentType.All -> true
+                                    ContentType.Official -> song.isOfficialContent
+                                    ContentType.UserGenerated -> song.isUserGeneratedContent
+                                }
+                            }
 
                     songs.forEach {
                         Database.asyncTransaction { insert(it) }

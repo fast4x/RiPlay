@@ -1927,8 +1927,6 @@ fun SongMatchingDialog(
             }
             SongItem(
                 song = songToRematch,
-                //onDownloadClick = {},
-                //downloadState = null,
                 thumbnailSizeDp = songThumbnailSizeDp,
                 thumbnailSizePx = songThumbnailSizePx,
                 disableScrollingText = disableScrollingText,
@@ -1979,8 +1977,6 @@ fun SongMatchingDialog(
                                     song = song,
                                     thumbnailSizePx = songThumbnailSizePx,
                                     thumbnailSizeDp = songThumbnailSizeDp,
-//                                    onDownloadClick = {},
-//                                    downloadState = Download.STATE_STOPPED,
                                     disableScrollingText = disableScrollingText,
                                     isNowPlaying = false,
                                     forceRecompose = false,

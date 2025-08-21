@@ -296,13 +296,6 @@ fun LocalPlaylistSongs(
                     playlistAllSongs.filter { it.asMediaItem.isExplicit }
             }
 
-            PlaylistSongsTypeFilter.Downloaded -> {
-                playlistSongs = downloadedPlaylistSongs
-            }
-
-            PlaylistSongsTypeFilter.Cached -> {
-                playlistSongs = cachedPlaylistSongs
-            }
         }
     }
 
@@ -1961,8 +1954,6 @@ fun LocalPlaylistSongs(
                                     PlaylistSongsTypeFilter.Local -> stringResource(R.string.on_device)
                                     PlaylistSongsTypeFilter.Favorites -> stringResource(R.string.favorites)
                                     PlaylistSongsTypeFilter.Unmatched -> stringResource(R.string.unmatched)
-                                    PlaylistSongsTypeFilter.Downloaded -> stringResource(R.string.downloaded)
-                                    PlaylistSongsTypeFilter.Cached -> stringResource(R.string.cached)
                                     PlaylistSongsTypeFilter.Explicit -> stringResource(R.string.explicit)
                                 },
                                 style = typography.xs.semiBold,
@@ -1998,14 +1989,6 @@ fun LocalPlaylistSongs(
                                                 onUnmatched = {
                                                     playlistSongsTypeFilter =
                                                         PlaylistSongsTypeFilter.Unmatched
-                                                },
-                                                onDownloaded = {
-                                                    playlistSongsTypeFilter =
-                                                        PlaylistSongsTypeFilter.Downloaded
-                                                },
-                                                onCached = {
-                                                    playlistSongsTypeFilter =
-                                                        PlaylistSongsTypeFilter.Cached
                                                 },
                                                 onExplicit = {
                                                     playlistSongsTypeFilter =

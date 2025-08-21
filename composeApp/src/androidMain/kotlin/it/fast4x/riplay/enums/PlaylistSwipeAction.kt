@@ -8,7 +8,6 @@ import it.fast4x.riplay.appContext
 enum class PlaylistSwipeAction {
     NoAction,
     PlayNext,
-    Download,
     Favourite,
     Enqueue;
 
@@ -16,7 +15,6 @@ enum class PlaylistSwipeAction {
         get() = when (this) {
             NoAction -> appContext().resources.getString(R.string.none)
             PlayNext -> appContext().resources.getString(R.string.play_next)
-            Download  -> appContext().resources.getString(R.string.download)
             Favourite -> appContext().resources.getString(R.string.favorites)
             Enqueue  -> appContext().resources.getString(R.string.enqueue)
         }
@@ -25,7 +23,6 @@ enum class PlaylistSwipeAction {
         get() = when (this) {
             NoAction -> null
             PlayNext -> R.drawable.play_skip_forward
-            Download -> R.drawable.download
             Favourite -> R.drawable.heart_outline
             Enqueue -> R.drawable.enqueue
         }

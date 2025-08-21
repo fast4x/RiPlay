@@ -6,10 +6,7 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.material.ExperimentalMaterialApi
@@ -21,7 +18,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
@@ -31,7 +27,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.util.UnstableApi
-import androidx.media3.exoplayer.offline.Download
 import androidx.navigation.NavController
 import it.fast4x.compose.persist.persist
 import it.fast4x.environment.Environment
@@ -48,7 +43,6 @@ import it.fast4x.riplay.R
 import it.fast4x.riplay.colorPalette
 import it.fast4x.riplay.enums.ContentType
 import it.fast4x.riplay.enums.NavRoutes
-import it.fast4x.riplay.enums.PlayEventsType
 import it.fast4x.riplay.models.Album
 import it.fast4x.riplay.models.Artist
 import it.fast4x.riplay.models.Playlist
@@ -60,7 +54,6 @@ import it.fast4x.riplay.ui.components.SwipeableAlbumItem
 import it.fast4x.riplay.ui.components.SwipeablePlaylistItem
 import it.fast4x.riplay.ui.components.themed.NonQueuedMediaItemMenu
 import it.fast4x.riplay.ui.components.themed.NowPlayingSongIndicator
-import it.fast4x.riplay.ui.components.themed.SmartMessage
 import it.fast4x.riplay.ui.components.themed.Title
 import it.fast4x.riplay.ui.items.AlbumItem
 import it.fast4x.riplay.ui.items.AlbumItemPlaceholder
@@ -81,16 +74,12 @@ import it.fast4x.riplay.extensions.preferences.disableScrollingTextKey
 import it.fast4x.riplay.utils.enqueue
 import it.fast4x.riplay.utils.isNowPlaying
 import it.fast4x.riplay.extensions.preferences.parentalControlEnabledKey
-import it.fast4x.riplay.extensions.preferences.preferences
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.extensions.preferences.searchResultScreenTabIndexKey
-import it.fast4x.riplay.extensions.preferences.showButtonPlayerVideoKey
 import it.fast4x.riplay.typography
 import it.fast4x.riplay.ui.components.themed.Menu
 import it.fast4x.riplay.ui.components.themed.MenuEntry
 import it.fast4x.riplay.ui.components.themed.Title2Actions
-import it.fast4x.riplay.ui.components.themed.TitleMiniSection
-import it.fast4x.riplay.ui.components.themed.TitleSection
 import it.fast4x.riplay.utils.secondary
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -126,7 +115,7 @@ fun SearchResultScreen(
 
     val disableScrollingText by rememberPreference(disableScrollingTextKey, false)
     val menuState = LocalMenuState.current
-    var contentType by remember { mutableStateOf(ContentType.All) }
+    var filterContentType by remember { mutableStateOf(ContentType.All) }
 
                 val headerContent: @Composable (textButton: (@Composable () -> Unit)?) -> Unit = {
                     Title(
@@ -152,7 +141,7 @@ fun SearchResultScreen(
                         modifier = Modifier.background(colorPalette().accent.copy(alpha = 0.15f))
                     ) {
                         Title2Actions(
-                            title = "Content type",
+                            title = "Filter content type",
                             onClick1 = {
                                 menuState.display {
                                     Menu {
@@ -161,7 +150,7 @@ fun SearchResultScreen(
                                                 icon = it.icon,
                                                 text = it.textName,
                                                 onClick = {
-                                                    contentType = it
+                                                    filterContentType = it
                                                     menuState.hide()
                                                 }
                                             )
@@ -171,7 +160,7 @@ fun SearchResultScreen(
                             }
                         )
                         BasicText(
-                            text = when (contentType) {
+                            text = when (filterContentType) {
                                 ContentType.All -> "All"
                                 ContentType.Official -> "Official"
                                 ContentType.UserGenerated -> "User Generated"
@@ -259,7 +248,6 @@ fun SearchResultScreen(
                                         onPlayNext = {
                                             localBinder?.player?.addNext(song.asMediaItem, queue = selectedQueue ?: defaultQueue())
                                         },
-                                        onDownload = {},
                                         onEnqueue = {
                                             localBinder?.player?.enqueue(song.asMediaItem, queue = it)
                                         }
@@ -310,7 +298,7 @@ fun SearchResultScreen(
                                 itemPlaceholderContent = {
                                     SongItemPlaceholder(thumbnailSizeDp = thumbnailSizeDp)
                                 },
-                                filterContentType = contentType
+                                filterContentType = filterContentType
                             )
                         }
 
@@ -535,7 +523,7 @@ fun SearchResultScreen(
                                 itemPlaceholderContent = {
                                     AlbumItemPlaceholder(thumbnailSizeDp = thumbnailSizeDp)
                                 },
-                                filterContentType = contentType
+                                filterContentType = filterContentType
                             )
                         }
 
@@ -586,7 +574,7 @@ fun SearchResultScreen(
                                 itemPlaceholderContent = {
                                     ArtistItemPlaceholder(thumbnailSizeDp = thumbnailSizeDp)
                                 },
-                                filterContentType = contentType
+                                filterContentType = filterContentType
                             )
                         }
 
@@ -621,15 +609,6 @@ fun SearchResultScreen(
                                         mediaItem = video.asMediaItem,
                                         onPlayNext = {
                                             localBinder?.player?.addNext(video.asMediaItem, queue = selectedQueue ?: defaultQueue())
-                                        },
-                                        onDownload = {
-                                            val message = context.resources.getString(R.string.downloading_videos_not_supported)
-
-                                            SmartMessage(
-                                                message,
-                                                durationLong = false,
-                                                context = context
-                                            )
                                         },
                                         onEnqueue = {
                                             localBinder?.player?.enqueue(video.asMediaItem, queue = it)
@@ -678,7 +657,7 @@ fun SearchResultScreen(
                                         thumbnailWidthDp = thumbnailWidthDp
                                     )
                                 },
-                                filterContentType = contentType
+                                filterContentType = filterContentType
                             )
                         }
 
@@ -739,7 +718,7 @@ fun SearchResultScreen(
                                 itemPlaceholderContent = {
                                     PlaylistItemPlaceholder(thumbnailSizeDp = thumbnailSizeDp)
                                 },
-                                filterContentType = contentType
+                                filterContentType = filterContentType
                             )
                         }
 
@@ -786,7 +765,7 @@ fun SearchResultScreen(
                                 itemPlaceholderContent = {
                                     PlaylistItemPlaceholder(thumbnailSizeDp = thumbnailSizeDp)
                                 },
-                                filterContentType = contentType
+                                filterContentType = filterContentType
                             )
                         }
                     }

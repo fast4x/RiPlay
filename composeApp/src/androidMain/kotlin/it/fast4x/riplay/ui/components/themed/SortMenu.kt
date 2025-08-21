@@ -238,7 +238,6 @@ fun FilterMenu (
     onLocal: (() -> Unit)? = null,
     onFavorites: (() -> Unit)? = null,
     onUnmatched: (() -> Unit)? = null,
-    onDownloaded: (() -> Unit)? = null,
     onCached: (() -> Unit)? = null,
     onExplicit: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
@@ -345,26 +344,7 @@ fun FilterMenu (
                 }
             )
         }
-//        onDownloaded?.let {
-//            MenuEntry(
-//                icon = R.drawable.downloaded,
-//                text = stringResource(R.string.downloaded),
-//                onClick = {
-//                    onDismiss()
-//                    onDownloaded()
-//                }
-//            )
-//        }
-//        onCached?.let {
-//            MenuEntry(
-//                icon = R.drawable.download,
-//                text = stringResource(R.string.cached),
-//                onClick = {
-//                    onDismiss()
-//                    onCached()
-//                }
-//            )
-//        }
+
         onExplicit?.let {
             MenuEntry(
                 icon = R.drawable.explicit,

@@ -508,7 +508,6 @@ fun ArtistOverviewItems(
                                     queue = selectedQueue ?: defaultQueue()
                                 )
                             },
-                            onDownload = {},
                             onEnqueue = {
                                 binder?.player?.enqueue(item, queue = it)
                             }
@@ -672,18 +671,7 @@ fun ArtistOverviewItems(
 ////                                onPlayNext = {
 ////                                    binder?.player?.addNext(item.asMediaItem)
 ////                                },
-////                                onDownload = {
-////                                    binder?.cache?.removeResource(item.asMediaItem.mediaId)
-////                                    CoroutineScope(Dispatchers.IO).launch {
-////                                        Database.resetContentLength( item.asMediaItem.mediaId )
-////                                    }
-////
-////                                    manageDownload(
-////                                        context = context,
-////                                        mediaItem = item.asMediaItem,
-////                                        downloadState = isDownloaded
-////                                    )
-////                                },
+
 ////                                onEnqueue = {
 ////                                    binder?.player?.enqueue(item.asMediaItem)
 ////                                }

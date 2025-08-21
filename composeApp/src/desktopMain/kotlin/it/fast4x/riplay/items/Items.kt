@@ -62,8 +62,6 @@ fun SongItem(
     thumbnailSizeDp: Dp,
     modifier: Modifier = Modifier,
     trailingContent: @Composable (() -> Unit)? = null,
-    isDownloaded: Boolean,
-    onDownloadClick: () -> Unit
 ) {
 
     ItemContainer(
@@ -113,16 +111,6 @@ fun SongItem(
 
             Row(verticalAlignment = Alignment.CenterVertically) {
 
-                /*
-                IconButton(
-                    onClick = onDownloadClick,
-                    icon = if (isDownloaded) R.drawable.downloaded else R.drawable.download,
-                    color = if (isDownloaded) colorPalette.text else colorPalette.textDisabled,
-                    modifier = Modifier
-                        .size(16.dp)
-                )
-                 */
-
                 Spacer(modifier = Modifier.padding(horizontal = 2.dp))
 
                 BasicText(
@@ -162,7 +150,6 @@ fun SongItem(
 fun SongItem(
     song: Environment.SongItem,
     isDownloaded: Boolean = false,
-    onDownloadClick: () -> Unit = {},
     thumbnailSizeDp: Dp = 50.dp,
     modifier: Modifier
 ) {
@@ -172,7 +159,6 @@ fun SongItem(
         duration = song.durationText,
         thumbnailSizeDp = thumbnailSizeDp,
         modifier = modifier,
-        isDownloaded = isDownloaded,
         thumbnailContent = {
 
             song.thumbnail?.url.let {
@@ -183,7 +169,6 @@ fun SongItem(
             //onThumbnailContent?.invoke(this)
         },
         trailingContent = {},
-        onDownloadClick = onDownloadClick
     )
 }
 
@@ -191,7 +176,6 @@ fun SongItem(
 fun SongItem(
     songEntity: SongEntity,
     isDownloaded: Boolean = false,
-    onDownloadClick: () -> Unit = {},
     thumbnailSizeDp: Dp = 50.dp,
     modifier: Modifier
 ) {
@@ -201,7 +185,6 @@ fun SongItem(
         duration = songEntity.song.durationText,
         thumbnailSizeDp = thumbnailSizeDp,
         modifier = modifier,
-        isDownloaded = isDownloaded,
         thumbnailContent = {
 
             songEntity.song.thumbnailUrl.let {
@@ -212,7 +195,6 @@ fun SongItem(
             //onThumbnailContent?.invoke(this)
         },
         trailingContent = {},
-        onDownloadClick = onDownloadClick
     )
 }
 

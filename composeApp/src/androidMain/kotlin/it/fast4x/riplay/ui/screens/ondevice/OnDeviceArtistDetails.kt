@@ -399,7 +399,6 @@ fun OnDeviceArtistDetails(
                                 queue = selectedQueue ?: defaultQueue()
                             )
                         },
-                        onDownload = {},
                         onEnqueue = {
                             binder?.player?.enqueue(item.asMediaItem, queue = it)
                         }

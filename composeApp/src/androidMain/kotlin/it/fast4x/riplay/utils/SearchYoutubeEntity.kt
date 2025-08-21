@@ -8,10 +8,15 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.systemBarsPadding
+import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.ExperimentalTextApi
@@ -35,10 +40,12 @@ import it.fast4x.riplay.ui.items.VideoItem
 import it.fast4x.riplay.ui.items.VideoItemPlaceholder
 import it.fast4x.riplay.ui.screens.searchresult.ItemsPage
 import it.fast4x.riplay.colorPalette
-import it.fast4x.riplay.extensions.preferences.preferences
-import it.fast4x.riplay.extensions.preferences.showButtonPlayerVideoKey
+import it.fast4x.riplay.enums.ContentType
 import it.fast4x.riplay.models.defaultQueue
-import it.fast4x.riplay.ui.components.themed.SmartMessage
+import it.fast4x.riplay.typography
+import it.fast4x.riplay.ui.components.themed.Menu
+import it.fast4x.riplay.ui.components.themed.MenuEntry
+import it.fast4x.riplay.ui.components.themed.Title2Actions
 import it.fast4x.riplay.ui.screens.player.fastPlay
 
 @ExperimentalAnimationApi
@@ -56,19 +63,18 @@ fun SearchYoutubeEntity (
     val binder = LocalPlayerServiceBinder.current
     val menuState = LocalMenuState.current
     val hapticFeedback = LocalHapticFeedback.current
-    val context = LocalContext.current
     val selectedQueue = LocalSelectedQueue.current
-    //val context = LocalContext.current
     val thumbnailHeightDp = 72.dp
     val thumbnailWidthDp = 128.dp
     val emptyItemsText = stringResource(R.string.no_results_found)
     val headerContent: @Composable (textButton: (@Composable () -> Unit)?) -> Unit = {
-        Title(
-            title = stringResource(id = R.string.videos),
-            modifier = Modifier.padding(bottom = 12.dp)
-        )
+//        Title(
+//            title = stringResource(id = R.string.videos),
+//            modifier = Modifier.padding(bottom = 12.dp)
+//        )
     }
-    val isVideoEnabled = LocalContext.current.preferences.getBoolean(showButtonPlayerVideoKey, false)
+
+    var filterContentType by remember { mutableStateOf(ContentType.All) }
 
     Box(
         modifier = Modifier
@@ -77,9 +83,50 @@ fun SearchYoutubeEntity (
     ) {
         Column(
             modifier = Modifier
-                .padding(top = 16.dp)
                 .padding(horizontal = 16.dp)
+                .systemBarsPadding(),
+
         ) {
+            Title(
+                title = stringResource(id = R.string.videos),
+                modifier = Modifier.padding(bottom = 12.dp)
+            )
+            Column(
+                modifier = Modifier.background(colorPalette().accent.copy(alpha = 0.15f))
+            ) {
+                Title2Actions(
+                    title = "Filter content type",
+                    onClick1 = {
+                        menuState.display {
+                            Menu {
+                                ContentType.entries.forEach {
+                                    MenuEntry(
+                                        icon = it.icon,
+                                        text = it.textName,
+                                        onClick = {
+                                            filterContentType = it
+                                            menuState.hide()
+                                        }
+                                    )
+                                }
+                            }
+                        }
+                    }
+                )
+                BasicText(
+                    text = when (filterContentType) {
+                        ContentType.All -> "All"
+                        ContentType.Official -> "Official"
+                        ContentType.UserGenerated -> "User Generated"
+
+                    },
+                    style = typography().xxs.secondary,
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp)
+                        .padding(bottom = 8.dp)
+                )
+            }
+
             ItemsPage(
                 tag = "searchYTEntity/$query/videos",
                 itemsPageProvider = { continuation ->
@@ -87,7 +134,7 @@ fun SearchYoutubeEntity (
                         Environment.searchPage(
                             body = SearchBody(
                                 query = query,
-                                params = Environment.SearchFilter.Video.value
+                                params = filter.value
                             ),
                             fromMusicShelfRendererContent = Environment.VideoItem::from
                         )
@@ -105,15 +152,6 @@ fun SearchYoutubeEntity (
                         mediaItem = video.asMediaItem,
                         onPlayNext = {
                             binder?.player?.addNext(video.asMediaItem, queue = selectedQueue ?: defaultQueue())
-                        },
-                        onDownload = {
-                            val message = context.resources.getString(R.string.downloading_videos_not_supported)
-
-                            SmartMessage(
-                                message,
-                                durationLong = false,
-                                context = context
-                            )
                         },
                         onEnqueue = {
                             binder?.player?.enqueue(video.asMediaItem, queue = it)
@@ -158,7 +196,8 @@ fun SearchYoutubeEntity (
                         thumbnailHeightDp = thumbnailHeightDp,
                         thumbnailWidthDp = thumbnailWidthDp
                     )
-                }
+                },
+                filterContentType = filterContentType
             )
         }
     }

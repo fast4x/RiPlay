@@ -735,7 +735,6 @@ fun Queue(
                                 selectedQueue ?: defaultQueue()
                             )
                         },
-                        onDownload = {},
                         onRemoveFromQueue = {
                             binderPlayer.removeMediaItem(currentItem.firstPeriodIndex)
                             SmartMessage(
@@ -814,7 +813,6 @@ fun Queue(
                                                     menuState.hide()
                                                     forceRecompose = true
                                                 },
-                                                onDownload = {},
                                                 onInfo = {},
                                                 disableScrollingText = disableScrollingText
                                             )

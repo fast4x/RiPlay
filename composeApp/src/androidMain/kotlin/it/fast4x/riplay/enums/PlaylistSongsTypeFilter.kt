@@ -7,7 +7,5 @@ enum class PlaylistSongsTypeFilter {
     Favorites,
     Local,
     Unmatched,
-    Downloaded,
-    Cached,
     Explicit
 }

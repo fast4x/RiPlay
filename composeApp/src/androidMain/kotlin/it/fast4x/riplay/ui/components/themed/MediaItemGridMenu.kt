@@ -113,7 +113,6 @@ fun NonQueuedMediaItemGridMenu(
     onRemoveFromPlaylist: (() -> Unit)? = null,
     onHideFromDatabase: (() -> Unit)? = null,
     onRemoveFromQuickPicks: (() -> Unit)? = null,
-    onDownload: (() -> Unit)? = null,
     disableScrollingText: Boolean
 ) {
     val binder = LocalPlayerServiceBinder.current
@@ -136,7 +135,6 @@ fun NonQueuedMediaItemGridMenu(
         },
         onPlayNext = { binder?.player?.addNext(mediaItem, context, selectedQueue ?: defaultQueue()) },
         onEnqueue = { binder?.player?.enqueue(mediaItem, context, it) },
-        onDownload = onDownload,
         onRemoveFromPlaylist = onRemoveFromPlaylist,
         onHideFromDatabase = onHideFromDatabase,
         onRemoveFromQuickPicks = onRemoveFromQuickPicks,
@@ -156,7 +154,6 @@ fun BaseMediaItemGridMenu(
     onStartRadio: (() -> Unit)? = null,
     onPlayNext: (() -> Unit)? = null,
     onEnqueue: ((Queues) -> Unit)? = null,
-    onDownload: (() -> Unit)? = null,
     onRemoveFromQueue: (() -> Unit)? = null,
     onRemoveFromPlaylist: (() -> Unit)? = null,
     onHideFromDatabase: (() -> Unit)? = null,
@@ -180,7 +177,6 @@ fun BaseMediaItemGridMenu(
         onStartRadio = onStartRadio,
         onPlayNext = onPlayNext,
         onEnqueue = onEnqueue,
-        onDownload = onDownload,
         onAddToPreferites = onAddToPreferites,
         onMatchingSong =  onMatchingSong,
         onAddToPlaylist = { playlist, position ->
@@ -301,7 +297,6 @@ fun MediaItemGridMenu (
     onStartRadio: (() -> Unit)? = null,
     onPlayNext: (() -> Unit)? = null,
     onEnqueue: ((Queues) -> Unit)? = null,
-    onDownload: (() -> Unit)? = null,
     onHideFromDatabase: (() -> Unit)? = null,
     onDeleteFromDatabase: (() -> Unit)? = null,
     onRemoveFromQueue: (() -> Unit)? = null,
@@ -962,20 +957,6 @@ fun MediaItemGridMenu (
                         }
                     )
                 }
-
-
-//                onDownload?.let { onDownload ->
-//                    GridMenuItem(
-//                        icon = if (!isDownloaded) R.drawable.download else R.drawable.downloaded,
-//                        title = if (!isDownloaded) R.string.download else R.string.downloaded,
-//                        colorIcon = colorPalette.text,
-//                        colorText = colorPalette.text,
-//                        onClick = {
-//                            onDismiss()
-//                            onDownload()
-//                        }
-//                    )
-//                }
 
                 onGoToEqualizer?.let { onGoToEqualizer ->
                     GridMenuItem(

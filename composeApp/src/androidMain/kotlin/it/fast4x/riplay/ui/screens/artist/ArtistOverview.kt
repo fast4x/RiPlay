@@ -655,7 +655,6 @@ fun ArtistOverview(
                                     onPlayNext = {
                                         binder?.player?.addNext(item.asMediaItem, queue = selectedQueue ?: defaultQueue())
                                     },
-                                    onDownload = {},
                                     onEnqueue = {
                                         binder?.player?.enqueue(item.asMediaItem, queue = it)
                                     }

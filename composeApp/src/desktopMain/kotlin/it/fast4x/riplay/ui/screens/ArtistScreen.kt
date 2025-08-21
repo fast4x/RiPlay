@@ -329,9 +329,6 @@ fun ArtistScreen(
 
                             SongItem(
                                 song = song,
-                                isDownloaded = false,
-                                onDownloadClick = {},
-                                //thumbnailSizeDp = songThumbnailSizeDp,
                                 modifier = Modifier
                                     .combinedClickable(
                                         onLongClick = {

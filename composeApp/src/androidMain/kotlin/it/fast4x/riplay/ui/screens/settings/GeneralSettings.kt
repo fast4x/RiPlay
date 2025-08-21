@@ -142,7 +142,9 @@ import it.fast4x.riplay.extensions.preferences.volumeBoostLevelKey
 import java.net.Proxy
 import androidx.core.net.toUri
 import androidx.core.text.isDigitsOnly
+import it.fast4x.riplay.enums.ContentType
 import it.fast4x.riplay.enums.StreamingPlayerType
+import it.fast4x.riplay.extensions.preferences.filterContentTypeKey
 import it.fast4x.riplay.ui.components.themed.settingsItem
 import it.fast4x.riplay.ui.components.themed.settingsSearchBarItem
 import it.fast4x.riplay.extensions.preferences.streamingPlayerTypeKey
@@ -191,6 +193,7 @@ fun GeneralSettings(
     //var navigationBarType by rememberPreference(navigationBarTypeKey, NavigationBarType.IconAndText)
     var pauseBetweenSongs  by rememberPreference(pauseBetweenSongsKey, PauseBetweenSongs.`0`)
     var maxSongsInQueue  by rememberPreference(maxSongsInQueueKey, MaxSongs.`500`)
+    var filterContentType by rememberPreference(filterContentTypeKey, ContentType.All)
 
     val search = Search.init()
 
@@ -894,6 +897,20 @@ fun GeneralSettings(
                                     MaxSongs.`2000` -> MaxSongs.`2000`.name
                                     MaxSongs.`3000` -> MaxSongs.`3000`.name
                                 }
+                            }
+                        )
+
+                    if (search.input.isBlank() || "Filter content type".contains(
+                            search.input,
+                            true
+                        )
+                    )
+                        EnumValueSelectorSettingsEntry(
+                            title = "Filter content type",
+                            selectedValue = filterContentType,
+                            onValueSelected = { filterContentType = it },
+                            valueText = {
+                                it.textName
                             }
                         )
 

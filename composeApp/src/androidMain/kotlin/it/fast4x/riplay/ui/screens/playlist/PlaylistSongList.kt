@@ -1088,7 +1088,6 @@ fun PlaylistSongList(
                                     queue = selectedQueue ?: defaultQueue()
                                 )
                             },
-                            onDownload = {},
                             onEnqueue = {
                                 binder?.player?.enqueue(song.asMediaItem, queue = it)
                             }

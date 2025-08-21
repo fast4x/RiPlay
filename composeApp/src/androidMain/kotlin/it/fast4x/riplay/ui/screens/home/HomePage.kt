@@ -579,8 +579,6 @@ fun HomePage(
                                                                 clearEventsFor(song.id)
                                                             }
                                                         },
-
-                                                        onDownload = {},
                                                         onInfo = {
                                                             navController.navigate("${NavRoutes.videoOrSongInfo.name}/${song.id}")
                                                         },
@@ -648,7 +646,6 @@ fun HomePage(
                                                             forceRecompose = true
                                                         },
                                                         mediaItem = song.asMediaItem,
-                                                        onDownload = {},
                                                         onInfo = {
                                                             navController.navigate("${NavRoutes.videoOrSongInfo.name}/${song.key}")
                                                         },

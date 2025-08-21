@@ -134,7 +134,6 @@ fun SwipeableContent(
 fun SwipeableQueueItem(
     mediaItem: MediaItem,
     onPlayNext: (() -> Unit) = {},
-    onDownload: (() -> Unit) = {},
     onRemoveFromQueue: (() -> Unit) = {},
     onEnqueue: ((Queues) -> Unit) = {},
     modifier: Modifier = Modifier,
@@ -222,7 +221,6 @@ fun SwipeableQueueItem(
 fun SwipeablePlaylistItem(
     mediaItem: MediaItem,
     onPlayNext: (() -> Unit) = {},
-    onDownload: (() -> Unit) = {},
     onEnqueue: ((Queues) -> Unit) = {},
     content: @Composable () -> Unit
 ) {
@@ -270,7 +268,6 @@ fun SwipeablePlaylistItem(
     fun getActionCallback(actionName: PlaylistSwipeAction): () -> Unit {
         return when (actionName) {
             PlaylistSwipeAction.PlayNext -> onPlayNext
-            PlaylistSwipeAction.Download -> onDownload
             PlaylistSwipeAction.Favourite -> onFavourite
             PlaylistSwipeAction.Enqueue -> ({ isViewingQueues = true })
             else -> ({})

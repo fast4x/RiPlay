@@ -111,9 +111,6 @@ fun QuickPicsScreen(
 
                 SongItem(
                     song = song,
-                    isDownloaded = false,
-                    onDownloadClick = {},
-                    //thumbnailSizeDp = 50.dp,
                     modifier = Modifier
                         .combinedClickable(
                             onLongClick = {},

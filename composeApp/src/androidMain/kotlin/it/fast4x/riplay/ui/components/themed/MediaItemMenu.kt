@@ -264,7 +264,6 @@ fun NonQueuedMediaItemMenuLibrary(
     modifier: Modifier = Modifier,
     onRemoveFromPlaylist: (() -> Unit)? = null,
     onRemoveFromQuickPicks: (() -> Unit)? = null,
-    onDownload: (() -> Unit)? = null,
     onMatchingSong: (() -> Unit)? = null,
     onInfo: (() -> Unit)?,
     disableScrollingText: Boolean
@@ -334,7 +333,6 @@ fun NonQueuedMediaItemMenuLibrary(
             },
             onPlayNext = { binder?.player?.addNext(mediaItem, context, selectedQueue ?: defaultQueue()) },
             onEnqueue = { binder?.player?.enqueue(mediaItem, context, it) },
-            onDownload = onDownload,
             onRemoveFromPlaylist = onRemoveFromPlaylist,
             onHideFromDatabase = { isHiding = true },
             onRemoveFromQuickPicks = onRemoveFromQuickPicks,
@@ -418,7 +416,6 @@ fun NonQueuedMediaItemMenu(
     onHideFromDatabase: (() -> Unit)? = null,
     onDeleteFromDatabase: (() -> Unit)? = null,
     onRemoveFromQuickPicks: (() -> Unit)? = null,
-    onDownload: (() -> Unit)? = null,
     onAddToPreferites: (() -> Unit)? = null,
     onMatchingSong: (() -> Unit)? = null,
     onInfo: (() -> Unit)? = null,
@@ -502,7 +499,6 @@ fun NonQueuedMediaItemMenu(
 fun QueuedMediaItemMenu(
     navController: NavController,
     onDismiss: () -> Unit,
-    onDownload: (() -> Unit)?,
     onMatchingSong: (() -> Unit)? = null,
     onInfo: (() -> Unit)?,
     mediaItem: MediaItem,
@@ -523,7 +519,6 @@ fun QueuedMediaItemMenu(
             navController = navController,
             mediaItem = mediaItem,
             onDismiss = onDismiss,
-            onDownload = onDownload,
             onRemoveFromQueue = if (indexInQueue != null) ({
                 binder?.player?.removeMediaItem(indexInQueue)
             }) else null,

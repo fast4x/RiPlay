@@ -366,6 +366,8 @@ const val usePlaceholderInImageLoaderKey = "usePlaceholderInImageLoader"
 
 const val seekWithTapKey = "seekWithTap"
 
+const val filterContentTypeKey = "filterContentType"
+
 inline fun <reified T : Enum<T>> SharedPreferences.getEnum(
     key: String,
     defaultValue: T

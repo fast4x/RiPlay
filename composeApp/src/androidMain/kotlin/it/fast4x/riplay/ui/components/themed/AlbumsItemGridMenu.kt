@@ -79,7 +79,6 @@ fun AlbumsItemGridMenu(
     onChangeAlbumTitle: (() -> Unit)? = null,
     onChangeAlbumAuthors: (() -> Unit)? = null,
     onChangeAlbumCover: (() -> Unit)? = null,
-    onDownloadAlbumCover: (() -> Unit)? = null,
     album: Album,
     modifier: Modifier = Modifier,
     onPlayNext: (() -> Unit)? = null,
@@ -427,19 +426,6 @@ fun AlbumsItemGridMenu(
                             onClick = {
                                 onDismiss()
                                 onChangeAlbumCover()
-                            }
-                        )
-                    }
-
-                    onDownloadAlbumCover?.let {
-                        GridMenuItem(
-                            icon = R.drawable.download_cover,
-                            title = R.string.download_cover,
-                            colorIcon = color,
-                            colorText = color,
-                            onClick = {
-                                onDismiss()
-                                onDownloadAlbumCover()
                             }
                         )
                     }

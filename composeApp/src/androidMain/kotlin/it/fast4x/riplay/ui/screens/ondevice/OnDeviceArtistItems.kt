@@ -360,7 +360,6 @@ fun OnDeviceArtistItems(
                                     queue = selectedQueue ?: defaultQueue()
                                 )
                             },
-                            onDownload = {},
                             onEnqueue = {
                                 binder?.player?.enqueue(item, queue = it)
                             }
