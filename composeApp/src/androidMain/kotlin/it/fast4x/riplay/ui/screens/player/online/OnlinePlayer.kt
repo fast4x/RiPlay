@@ -1693,9 +1693,7 @@ fun OnlinePlayer(
                                     println("OnlinePlayer inside showControls - $showControls")
                                 }
                             )
-                    ) {
-                        Text("yeah...")
-                    }
+                    ) {}
                 }
 
                 onlineCore()
@@ -2750,7 +2748,7 @@ fun OnlinePlayer(
                                                 }
                                                 .conditional(thumbnailType == ThumbnailType.Modern) {
                                                     doubleShadowDrop(
-                                                        if (showCoverThumbnailAnimation) CircleShape else thumbnailRoundness.shape(),
+                                                        if (showCoverThumbnailAnimation && !binder.player.getMediaItemAt(it).isVideo) CircleShape else thumbnailRoundness.shape(),
                                                         4.dp,
                                                         8.dp
                                                     )
@@ -2775,6 +2773,7 @@ fun OnlinePlayer(
                                                     }
                                                 )
 
+                                            if (!binder.player.getMediaItemAt(it).isVideo ) {
                                             if (showCoverThumbnailAnimation)
                                                 RotateThumbnailCoverAnimationModern(
                                                     painter = coverPainter,
@@ -2794,7 +2793,7 @@ fun OnlinePlayer(
                                                     imageCoverSize = imageCoverSize,
                                                     type = coverThumbnailAnimation
                                                 )
-                                            else
+                                                else
                                                 Box(
                                                     modifier = Modifier
                                                         .zIndex(
@@ -2828,6 +2827,7 @@ fun OnlinePlayer(
                                                         }
                                                     }
                                                 }
+                                            }
                                         }
 
 
@@ -3497,7 +3497,7 @@ fun OnlinePlayer(
                                             }
                                             .conditional(thumbnailType == ThumbnailType.Modern) {
                                                 doubleShadowDrop(
-                                                    if (showCoverThumbnailAnimation) CircleShape else thumbnailRoundness.shape(),
+                                                    if (showCoverThumbnailAnimation && !binder.player.getMediaItemAt(it).isVideo) CircleShape else thumbnailRoundness.shape(),
                                                     4.dp,
                                                     8.dp
                                                 )
@@ -3522,64 +3522,66 @@ fun OnlinePlayer(
                                                 }
                                             )
 
-                                        if (showCoverThumbnailAnimation)
-                                            RotateThumbnailCoverAnimationModern(
-                                                painter = coverPainter,
-                                                isSongPlaying = binderPlayer.isPlaying  || shouldBePlaying,
-                                                modifier = coverModifier
-                                                    .zIndex(
-                                                        if (it == pagerState.currentPage) 1f
-                                                        else if (it == (pagerState.currentPage + 1) || it == (pagerState.currentPage - 1)) 0.85f
-                                                        else if (it == (pagerState.currentPage + 2) || it == (pagerState.currentPage - 2)) 0.78f
-                                                        else if (it == (pagerState.currentPage + 3) || it == (pagerState.currentPage - 3)) 0.73f
-                                                        else if (it == (pagerState.currentPage + 4) || it == (pagerState.currentPage - 4)) 0.68f
-                                                        else if (it == (pagerState.currentPage + 5) || it == (pagerState.currentPage - 5)) 0.63f
-                                                        else 0.57f
-                                                    ),
-                                                state = pagerState,
-                                                it = it,
-                                                imageCoverSize = imageCoverSize,
-                                                type = coverThumbnailAnimation
-                                            )
-                                        else
-                                            Box(
-                                                modifier = Modifier
-                                                    .zIndex(
-                                                        if (it == pagerState.currentPage) 1f
-                                                        else if (it == (pagerState.currentPage + 1) || it == (pagerState.currentPage - 1)) 0.85f
-                                                        else if (it == (pagerState.currentPage + 2) || it == (pagerState.currentPage - 2)) 0.78f
-                                                        else if (it == (pagerState.currentPage + 3) || it == (pagerState.currentPage - 3)) 0.73f
-                                                        else if (it == (pagerState.currentPage + 4) || it == (pagerState.currentPage - 4)) 0.68f
-                                                        else if (it == (pagerState.currentPage + 5) || it == (pagerState.currentPage - 5)) 0.63f
-                                                        else 0.57f
-                                                    )
-                                            ) {
-
-                                                val isVideo =
-                                                    remember { binder.player.getMediaItemAt(it).isVideo }
-                                                if (!isVideo)
-                                                    Image(
-                                                        painter = coverPainter,
-                                                        contentDescription = "",
-                                                        contentScale = ContentScale.Fit,
-                                                        modifier = coverModifier
-                                                    )
-
-                                                if (isDragged && expandedplayer && it == binder.player.currentMediaItemIndex) {
-                                                    Box(
-                                                        modifier = Modifier
-                                                            .align(Alignment.Center)
-                                                            .matchParentSize()
-                                                    ) {
-                                                        NowPlayingSongIndicator(
-                                                            binder.player.getMediaItemAt(
-                                                                binder.player.currentMediaItemIndex
-                                                            ).mediaId, binder.player,
-                                                            Dimensions.thumbnails.album
+                                        if (!binder.player.getMediaItemAt(it).isVideo ) {
+                                            if (showCoverThumbnailAnimation)
+                                                RotateThumbnailCoverAnimationModern(
+                                                    painter = coverPainter,
+                                                    isSongPlaying = binderPlayer.isPlaying || shouldBePlaying,
+                                                    modifier = coverModifier
+                                                        .zIndex(
+                                                            if (it == pagerState.currentPage) 1f
+                                                            else if (it == (pagerState.currentPage + 1) || it == (pagerState.currentPage - 1)) 0.85f
+                                                            else if (it == (pagerState.currentPage + 2) || it == (pagerState.currentPage - 2)) 0.78f
+                                                            else if (it == (pagerState.currentPage + 3) || it == (pagerState.currentPage - 3)) 0.73f
+                                                            else if (it == (pagerState.currentPage + 4) || it == (pagerState.currentPage - 4)) 0.68f
+                                                            else if (it == (pagerState.currentPage + 5) || it == (pagerState.currentPage - 5)) 0.63f
+                                                            else 0.57f
+                                                        ),
+                                                    state = pagerState,
+                                                    it = it,
+                                                    imageCoverSize = imageCoverSize,
+                                                    type = coverThumbnailAnimation
+                                                )
+                                            else
+                                                Box(
+                                                    modifier = Modifier
+                                                        .zIndex(
+                                                            if (it == pagerState.currentPage) 1f
+                                                            else if (it == (pagerState.currentPage + 1) || it == (pagerState.currentPage - 1)) 0.85f
+                                                            else if (it == (pagerState.currentPage + 2) || it == (pagerState.currentPage - 2)) 0.78f
+                                                            else if (it == (pagerState.currentPage + 3) || it == (pagerState.currentPage - 3)) 0.73f
+                                                            else if (it == (pagerState.currentPage + 4) || it == (pagerState.currentPage - 4)) 0.68f
+                                                            else if (it == (pagerState.currentPage + 5) || it == (pagerState.currentPage - 5)) 0.63f
+                                                            else 0.57f
                                                         )
+                                                ) {
+
+                                                    val isVideo =
+                                                        remember { binder.player.getMediaItemAt(it).isVideo }
+                                                    if (!isVideo)
+                                                        Image(
+                                                            painter = coverPainter,
+                                                            contentDescription = "",
+                                                            contentScale = ContentScale.Fit,
+                                                            modifier = coverModifier
+                                                        )
+
+                                                    if (isDragged && expandedplayer && it == binder.player.currentMediaItemIndex) {
+                                                        Box(
+                                                            modifier = Modifier
+                                                                .align(Alignment.Center)
+                                                                .matchParentSize()
+                                                        ) {
+                                                            NowPlayingSongIndicator(
+                                                                binder.player.getMediaItemAt(
+                                                                    binder.player.currentMediaItemIndex
+                                                                ).mediaId, binder.player,
+                                                                Dimensions.thumbnails.album
+                                                            )
+                                                        }
                                                     }
                                                 }
-                                            }
+                                        }
                                     }
 
                                 } else {
@@ -3601,7 +3603,7 @@ fun OnlinePlayer(
                                          }
                                          .conditional(thumbnailType == ThumbnailType.Modern) {
                                              doubleShadowDrop(
-                                                 if (showCoverThumbnailAnimation) CircleShape else thumbnailRoundness.shape(),
+                                                 if (showCoverThumbnailAnimation && !mediaItem.isVideo) CircleShape else thumbnailRoundness.shape(),
                                                  4.dp,
                                                  8.dp
                                              )
@@ -3681,7 +3683,7 @@ fun OnlinePlayer(
                                     all = 10.dp
                                 )
                                 doubleShadowDrop(
-                                    if (showCoverThumbnailAnimation) CircleShape else thumbnailRoundness.shape(),
+                                    if (showCoverThumbnailAnimation && !mediaItem.isVideo) CircleShape else thumbnailRoundness.shape(),
                                     4.dp,
                                     8.dp
                                 )
