@@ -1399,7 +1399,7 @@ class MainActivity :
                                     OnlinePlayer(
                                         navController = navController,
                                         playFromSecond = currentSecond,
-                                        onlineCore = { onlineCore.invoke() },
+                                        onlineCore = onlineCore,
                                         player = onlinePlayer,
                                         playerState = onlinePlayerState,
                                         currentDuration = currentDuration,

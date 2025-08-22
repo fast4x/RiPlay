@@ -626,7 +626,7 @@ fun OnlinePlayer(
         )
     }
     val actionspacedevenly by rememberObservedPreference(actionspacedevenlyKey, false)
-    var expandedplayer by rememberObservedPreference(expandedplayerKey, false)
+    var expandedplayer by rememberPreference(expandedplayerKey, false)
 
     var updateBrush by remember { mutableStateOf(false) }
 
@@ -695,7 +695,7 @@ fun OnlinePlayer(
     val showButtonPlayerDownload by rememberObservedPreference(showButtonPlayerDownloadKey, true)
     val showButtonPlayerLoop by rememberObservedPreference(showButtonPlayerLoopKey, true)
     val showButtonPlayerLyrics by rememberObservedPreference(showButtonPlayerLyricsKey, true)
-    val expandedplayertoggle by rememberObservedPreference(expandedplayertoggleKey, true)
+    val expandedplayertoggle by rememberPreference(expandedplayertoggleKey, true)
     val showButtonPlayerShuffle by rememberObservedPreference(showButtonPlayerShuffleKey, true)
     val showButtonPlayerSleepTimer by rememberObservedPreference(showButtonPlayerSleepTimerKey, false)
     val showButtonPlayerMenu by rememberObservedPreference(showButtonPlayerMenuKey, false)
