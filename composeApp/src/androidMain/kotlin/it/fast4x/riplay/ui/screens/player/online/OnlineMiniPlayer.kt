@@ -134,7 +134,6 @@ fun OnlineMiniPlayer(
     showPlayer: () -> Unit,
     hidePlayer: () -> Unit,
     navController: NavController? = null,
-    onlineCore: @Composable () -> Unit,
     player: MutableState<YouTubePlayer?>,
     playerState: MutableState<PlayerConstants.PlayerState>,
     currentDuration: Float,
@@ -374,7 +373,6 @@ fun OnlineMiniPlayer(
                 modifier = Modifier
                     .height(Dimensions.miniPlayerHeight)
             ) {
-                Box( modifier = Modifier.hide() ) { onlineCore() }
                 AsyncImage(
                     model = mediaItem.mediaMetadata.artworkUri.thumbnail(Dimensions.thumbnails.song.px),
                     contentDescription = null,
