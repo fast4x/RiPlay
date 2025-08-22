@@ -1187,7 +1187,7 @@ class MainActivity :
                 }
 
                 var currentSecond by remember { mutableFloatStateOf(0f) }
-                val playerState1 =
+                val onlinePlayerState =
                     remember { mutableStateOf(PlayerConstants.PlayerState.UNSTARTED) }
                 //var showControls by remember { mutableStateOf(true) }
                 var currentDuration by remember { mutableFloatStateOf(0f) }
@@ -1207,7 +1207,7 @@ class MainActivity :
                             println("MainActivity onDurationChange ${currentPlaybackDuration.value}")
                         },
                         onPlayerStateChange = {
-                            playerState1.value = it
+                            onlinePlayerState.value = it
                             onlinePlayerPlayingState.value =
                                 it == PlayerConstants.PlayerState.PLAYING
                             updateOnlineNotification()
@@ -1361,16 +1361,15 @@ class MainActivity :
                                                 },
                                                 hidePlayer = { localPlayerSheetState.collapseSoft() },
                                                 navController = navController,
-                                                onlineCore = { onlineCore() },
                                                 player = onlinePlayer,
-                                                playerState = playerState1,
+                                                playerState = onlinePlayerState,
                                                 currentDuration = currentDuration,
                                                 currentSecond = currentSecond,
                                             )
                                         }
                                     },
                                     player = onlinePlayer,
-                                    playerState = playerState1,
+                                    playerState = onlinePlayerState,
                                     openTabFromShortcut = openTabFromShortcut
                                 )
 
@@ -1386,7 +1385,7 @@ class MainActivity :
                                     OfflinePlayer(
                                         navController = navController,
                                         playerOnline = onlinePlayer,
-                                        playerState = playerState1,
+                                        playerState = onlinePlayerState,
                                         onDismiss = {
                                             localPlayerSheetState.collapseSoft()
                                         }
@@ -1400,9 +1399,9 @@ class MainActivity :
                                     OnlinePlayer(
                                         navController = navController,
                                         playFromSecond = currentSecond,
-                                        onlineCore = { onlineCore() },
+                                        onlineCore = { onlineCore.invoke() },
                                         player = onlinePlayer,
-                                        playerState = playerState1,
+                                        playerState = onlinePlayerState,
                                         currentDuration = currentDuration,
                                         currentSecond = currentSecond,
                                         //showControls = showControls,
