@@ -113,6 +113,7 @@ import it.fast4x.riplay.extensions.preferences.miniPlayerTypeKey
 import it.fast4x.riplay.utils.playNext
 import it.fast4x.riplay.utils.playPrevious
 import it.fast4x.riplay.extensions.preferences.rememberPreference
+import it.fast4x.riplay.utils.hide
 import it.fast4x.riplay.utils.semiBold
 import it.fast4x.riplay.utils.setDisLikeState
 import it.fast4x.riplay.utils.thumbnail
@@ -133,6 +134,7 @@ fun OnlineMiniPlayer(
     showPlayer: () -> Unit,
     hidePlayer: () -> Unit,
     navController: NavController? = null,
+    onlineCore: @Composable () -> Unit,
     player: MutableState<YouTubePlayer?>,
     playerState: MutableState<PlayerConstants.PlayerState>,
     currentDuration: Float,
@@ -372,6 +374,7 @@ fun OnlineMiniPlayer(
                 modifier = Modifier
                     .height(Dimensions.miniPlayerHeight)
             ) {
+                Box( modifier = Modifier.hide() ) { onlineCore() }
                 AsyncImage(
                     model = mediaItem.mediaMetadata.artworkUri.thumbnail(Dimensions.thumbnails.song.px),
                     contentDescription = null,

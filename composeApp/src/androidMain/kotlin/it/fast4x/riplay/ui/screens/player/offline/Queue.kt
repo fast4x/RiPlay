@@ -919,16 +919,16 @@ fun Queue(
                                 },
                                 hidePlayer = {}
                             )
-                        else
-                            OnlineMiniPlayer(
-                                showPlayer = { showPlayer() },
-                                hidePlayer = { hidePlayer() },
-                                navController = navController,
-                                player = player,
-                                playerState = playerState,
-                                currentDuration = currentDuration,
-                                currentSecond = currentSecond,
-                            )
+//                        else
+//                            OnlineMiniPlayer(
+//                                showPlayer = { showPlayer() },
+//                                hidePlayer = { hidePlayer() },
+//                                navController = navController,
+//                                player = player,
+//                                playerState = playerState,
+//                                currentDuration = currentDuration,
+//                                currentSecond = currentSecond,
+//                            )
                     }
 
 

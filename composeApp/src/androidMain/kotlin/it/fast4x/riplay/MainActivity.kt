@@ -1361,6 +1361,7 @@ class MainActivity :
                                                 },
                                                 hidePlayer = { localPlayerSheetState.collapseSoft() },
                                                 navController = navController,
+                                                onlineCore = { onlineCore() },
                                                 player = onlinePlayer,
                                                 playerState = playerState1,
                                                 currentDuration = currentDuration,

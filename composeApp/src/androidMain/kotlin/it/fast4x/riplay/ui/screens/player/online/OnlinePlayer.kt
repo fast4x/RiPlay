@@ -351,6 +351,7 @@ import it.fast4x.riplay.extensions.preferences.transparentBackgroundPlayerAction
 import it.fast4x.riplay.utils.unlikeYtVideoOrSong
 import it.fast4x.riplay.extensions.preferences.visualizerEnabledKey
 import it.fast4x.riplay.utils.detectGestures
+import it.fast4x.riplay.utils.hide
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -1089,10 +1090,7 @@ fun OnlinePlayer(
         }
     }
 
-    // This hide androidview when media is not video
-    fun Modifier.hidePlayer(): Modifier {
-        return this.size(0.dp)
-    }
+
 
     if (animatedGradient == AnimatedGradient.Random) {
         LaunchedEffect(mediaItem.mediaId) {
@@ -3693,7 +3691,7 @@ fun OnlinePlayer(
                         //use online player
                         thumbnailContent(
                             if ((!mediaItem.isVideo || isShowingVisualizer) && !castToLinkDevice)
-                                Modifier.hidePlayer()
+                                Modifier.hide()
                             else
                                 coverModifier
                         )
