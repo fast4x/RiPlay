@@ -1397,6 +1397,7 @@ fun OfflinePlayer(
 
     Box(
         modifier = Modifier
+            .padding(windowInsets.only(WindowInsetsSides.Bottom).asPaddingValues())
             .fillMaxSize()
     ) {
         val actionsBarContent: @Composable () -> Unit = {

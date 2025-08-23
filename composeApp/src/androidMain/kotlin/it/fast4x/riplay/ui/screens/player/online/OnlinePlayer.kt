@@ -1047,7 +1047,7 @@ fun OnlinePlayer(
     var showQueue by remember { mutableStateOf(false) }
     var showSearchEntity by remember { mutableStateOf(false) }
 
-    val transparentBackgroundActionBarPlayer by rememberPreference(
+    val transparentBackgroundActionBarPlayer by rememberObservedPreference(
         transparentBackgroundPlayerActionBarKey,
         false
     )
@@ -1720,6 +1720,7 @@ fun OnlinePlayer(
 
     Box(
         modifier = Modifier
+            .padding(windowInsets.only(WindowInsetsSides.Bottom).asPaddingValues())
             .fillMaxSize()
     ) {
         val actionsBarContent: @Composable () -> Unit = {
