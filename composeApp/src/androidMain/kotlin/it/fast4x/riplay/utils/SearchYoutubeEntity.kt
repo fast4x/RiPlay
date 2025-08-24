@@ -3,6 +3,7 @@ package it.fast4x.riplay.utils
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -46,7 +47,10 @@ import it.fast4x.riplay.typography
 import it.fast4x.riplay.ui.components.themed.Menu
 import it.fast4x.riplay.ui.components.themed.MenuEntry
 import it.fast4x.riplay.ui.components.themed.Title2Actions
+import it.fast4x.riplay.ui.items.SongItem
 import it.fast4x.riplay.ui.screens.player.fastPlay
+import it.fast4x.riplay.ui.styling.Dimensions
+import it.fast4x.riplay.ui.styling.px
 
 @ExperimentalAnimationApi
 @ExperimentalTextApi
@@ -66,6 +70,8 @@ fun SearchYoutubeEntity (
     val selectedQueue = LocalSelectedQueue.current
     val thumbnailHeightDp = 72.dp
     val thumbnailWidthDp = 128.dp
+    val songThumbnailSizeDp = Dimensions.thumbnails.song
+    val songThumbnailSizePx = songThumbnailSizeDp.px
     val emptyItemsText = stringResource(R.string.no_results_found)
     val headerContent: @Composable (textButton: (@Composable () -> Unit)?) -> Unit = {
 //        Title(
@@ -74,7 +80,7 @@ fun SearchYoutubeEntity (
 //        )
     }
 
-    var filterContentType by remember { mutableStateOf(ContentType.All) }
+    var filterContentType by remember { mutableStateOf(ContentType.Official) }
 
     Box(
         modifier = Modifier
@@ -88,7 +94,8 @@ fun SearchYoutubeEntity (
 
         ) {
             Title(
-                title = stringResource(id = R.string.videos),
+                title = stringResource(id = if (filter == Environment.SearchFilter.Video) R.string.videos
+                else R.string.songs),
                 modifier = Modifier.padding(bottom = 12.dp)
             )
             Column(
@@ -128,7 +135,7 @@ fun SearchYoutubeEntity (
             }
 
             ItemsPage(
-                tag = "searchYTEntity/$query/videos",
+                tag = "searchYTEntity/$query/entities",
                 itemsPageProvider = { continuation ->
                     if (continuation == null) {
                         Environment.searchPage(
@@ -136,59 +143,115 @@ fun SearchYoutubeEntity (
                                 query = query,
                                 params = filter.value
                             ),
-                            fromMusicShelfRendererContent = Environment.VideoItem::from
+                            fromMusicShelfRendererContent = if (filter == Environment.SearchFilter.Video) Environment.VideoItem::from
+                            else Environment.SongItem::from
                         )
                     } else {
                         Environment.searchPage(
                             body = ContinuationBody(continuation = continuation),
-                            fromMusicShelfRendererContent = Environment.VideoItem::from
+                            fromMusicShelfRendererContent = if (filter == Environment.SearchFilter.Video) Environment.VideoItem::from
+                            else Environment.SongItem::from
                         )
                     }
                 },
                 emptyItemsText = emptyItemsText,
                 headerContent = headerContent,
-                itemContent = { video ->
-                    SwipeablePlaylistItem(
-                        mediaItem = video.asMediaItem,
-                        onPlayNext = {
-                            binder?.player?.addNext(video.asMediaItem, queue = selectedQueue ?: defaultQueue())
-                        },
-                        onEnqueue = {
-                            binder?.player?.enqueue(video.asMediaItem, queue = it)
-                        }
-                    ) {
-                        VideoItem(
-                            video = video,
-                            thumbnailWidthDp = thumbnailWidthDp,
-                            thumbnailHeightDp = thumbnailHeightDp,
-                            modifier = Modifier
-                                .combinedClickable(
-                                    onLongClick = {
-                                        menuState.display {
-                                            NonQueuedMediaItemMenu(
-                                                navController = rememberNavController(),
-                                                mediaItem = video.asMediaItem,
-                                                onDismiss = menuState::hide,
-                                                disableScrollingText = disableScrollingText
-                                            )
-                                        };
-                                        hapticFeedback.performHapticFeedback(
-                                            HapticFeedbackType.LongPress
-                                        )
+                itemContent = { media ->
+                    if (media is Environment.VideoItem || media is Environment.SongItem) {
+                        SwipeablePlaylistItem(
+                            mediaItem = when (media) {
+                                is Environment.VideoItem -> media.asMediaItem
+                                is Environment.SongItem -> media.asMediaItem
+                                else -> throw IllegalArgumentException("Unknown media type")
+                            },
+                            onPlayNext = {
+                                binder?.player?.addNext(
+                                    when (media) {
+                                        is Environment.VideoItem -> media.asMediaItem
+                                        is Environment.SongItem -> media.asMediaItem
+                                        else -> throw IllegalArgumentException("Unknown media type")
                                     },
-                                    onClick = {
-                                        binder?.stopRadio()
-//                                        if (isVideoEnabled)
-//                                            binder?.player?.playOnline(video.asMediaItem)
-//                                        else
-//                                            binder?.player?.forcePlay(video.asMediaItem)
-                                        //binder?.setupRadio(video.info?.endpoint)
-                                        fastPlay(video.asMediaItem, binder)
-                                        onDismiss()
-                                    }
-                                ),
-                            disableScrollingText = disableScrollingText
-                        )
+                                    queue = selectedQueue ?: defaultQueue()
+                                )
+                            },
+                            onEnqueue = {
+                                binder?.player?.enqueue(when (media) {
+                                    is Environment.VideoItem -> media.asMediaItem
+                                    is Environment.SongItem -> media.asMediaItem
+                                    else -> throw IllegalArgumentException("Unknown media type")
+                                }, queue = it)
+                            }
+                        ) {
+                            if (media is Environment.VideoItem) {
+                                VideoItem(
+                                    video = media,
+                                    thumbnailWidthDp = thumbnailWidthDp,
+                                    thumbnailHeightDp = thumbnailHeightDp,
+                                    modifier = Modifier
+                                        .combinedClickable(
+                                            onLongClick = {
+                                                menuState.display {
+                                                    NonQueuedMediaItemMenu(
+                                                        navController = rememberNavController(),
+                                                        mediaItem = media.asMediaItem,
+                                                        onDismiss = menuState::hide,
+                                                        disableScrollingText = disableScrollingText
+                                                    )
+                                                };
+                                                hapticFeedback.performHapticFeedback(
+                                                    HapticFeedbackType.LongPress
+                                                )
+                                            },
+                                            onClick = {
+                                                binder?.stopRadio()
+        //                                        if (isVideoEnabled)
+        //                                            binder?.player?.playOnline(video.asMediaItem)
+        //                                        else
+        //                                            binder?.player?.forcePlay(video.asMediaItem)
+        //binder?.setupRadio(video.info?.endpoint)
+                                                fastPlay(media.asMediaItem, binder, replace = true)
+                                                onDismiss()
+                                            }
+                                        ),
+                                    disableScrollingText = disableScrollingText
+                                )
+                            }
+                            if (media is Environment.SongItem) {
+                                SongItem(
+                                    song = media,
+                                    thumbnailSizePx = songThumbnailSizePx,
+                                    thumbnailSizeDp = songThumbnailSizeDp,
+                                    disableScrollingText = disableScrollingText,
+                                    isNowPlaying = false,
+                                    modifier = Modifier
+                                        .combinedClickable(
+                                            onLongClick = {
+                                                menuState.display {
+                                                    NonQueuedMediaItemMenu(
+                                                        navController = rememberNavController(),
+                                                        mediaItem = media.asMediaItem,
+                                                        onDismiss = menuState::hide,
+                                                        disableScrollingText = disableScrollingText
+                                                    )
+                                                };
+                                                hapticFeedback.performHapticFeedback(
+                                                    HapticFeedbackType.LongPress
+                                                )
+                                            },
+                                            onClick = {
+                                                binder?.stopRadio()
+    //                                        if (isVideoEnabled)
+    //                                            binder?.player?.playOnline(video.asMediaItem)
+    //                                        else
+    //                                            binder?.player?.forcePlay(video.asMediaItem)
+    //binder?.setupRadio(video.info?.endpoint)
+                                                fastPlay(media.asMediaItem, binder, replace = true)
+                                                onDismiss()
+                                            }
+                                        )
+                                )
+                            }
+                        }
                     }
                 },
                 itemPlaceholderContent = {

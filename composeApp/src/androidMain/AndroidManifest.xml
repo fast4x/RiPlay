@@ -23,14 +23,14 @@
     <uses-permission android:name = "android.permission.MODIFY_AUDIO_SETTINGS"/>
     <uses-permission android:name = "android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name ="android.permission.SET_WALLPAPER" />
-
+    <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" />
 
     <uses-feature    android:name="android.software.leanback" android:required="false" />
     <uses-feature    android:name="android.hardware.touchscreen" android:required="false" />
     <uses-feature    android:name="android.hardware.microphone" android:required="false" />
     <uses-feature    android:name="android.hardware.type.automotive" android:required="false" />
 
-    <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" />
+
 
     <queries>
         <intent>

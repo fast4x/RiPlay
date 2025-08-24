@@ -1693,7 +1693,7 @@ fun OfflinePlayer(
                     ) {
                         if (showButtonPlayerVideo)
                             IconButton(
-                                icon = R.drawable.video,
+                                icon = R.drawable.left_and_right_arrows,
                                 color = colorPalette().accent,
                                 enabled = true,
                                 onClick = {

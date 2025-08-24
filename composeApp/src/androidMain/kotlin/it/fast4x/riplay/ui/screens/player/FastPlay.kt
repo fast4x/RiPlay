@@ -16,7 +16,8 @@ fun fastPlay(
     mediaItem: MediaItem,
     binder: OfflinePlayerService.Binder?,
     mediaItems: List<MediaItem>? = emptyList(),
-    playlistId: String? = null
+    playlistId: String? = null,
+    replace: Boolean = false
 ) {
 
     Database.asyncTransaction {
@@ -24,11 +25,11 @@ fun fastPlay(
     }
 
     binder?.stopRadio()
-    if (mediaItem.isLocal) {
-        binder?.player?.forcePlay(mediaItem)
 
+    if (mediaItem.isLocal) {
+        binder?.player?.forcePlay(mediaItem, replace)
     } else {
-        binder?.player?.playOnline(mediaItem)
+        binder?.player?.playOnline(mediaItem, replace)
     }
     if (mediaItems != null) binder?.player?.addMediaItems(mediaItems)
 }

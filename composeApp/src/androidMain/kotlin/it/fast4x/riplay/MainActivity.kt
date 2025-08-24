@@ -701,7 +701,7 @@ class MainActivity :
             val locale = Locale.getDefault()
             val languageTag = locale.toLanguageTag().replace("-Hant", "")
             val languageApp =
-                appContext().preferences.getEnum(languageAppKey, getSystemlanguage())
+                context().preferences.getEnum(languageAppKey, getSystemlanguage())
             LocalePreferences.preference =
                 LocalePreferenceItem(
                     hl = languageApp.code.takeIf { it != Languages.System.code }
@@ -1605,7 +1605,7 @@ class MainActivity :
     fun initializeMediasession() {
         val currentMediaItem = binder?.player?.currentMediaItem
         if (mediaSession == null)
-            mediaSession = MediaSessionCompat(this@MainActivity, "OnlinePlayer")
+            mediaSession = MediaSessionCompat(this, "OnlinePlayer")
 
         mediaSession?.setFlags(0)
         mediaSession?.setRepeatMode(PlaybackStateCompat.REPEAT_MODE_NONE)
@@ -1681,18 +1681,19 @@ class MainActivity :
             .setShowBadge(false)
             .build()
 
-        NotificationManagerCompat.from(appContext()).createNotificationChannel(channel)
+        NotificationManagerCompat.from(this).createNotificationChannel(channel)
     }
 
     @UnstableApi
     fun updateOnlineNotification() {
-        if (mediaItemIsLocal.value) return
+        val currentMediaItem = binder?.player?.currentMediaItem
+        if (currentMediaItem?.isLocal == true) return
 
         initializeMediasession()
 
         createNotificationChannel()
 
-        val currentMediaItem = binder?.player?.currentMediaItem
+
 
         // todo Improve custom actions in online player notification
 //        val notificationPlayerFirstIcon = preferences.getEnum(notificationPlayerFirstIconKey, NotificationButtons.Repeat)
@@ -1734,9 +1735,9 @@ class MainActivity :
         ).build()
 
         val notification = if (isAtLeastAndroid8) {
-            NotificationCompat.Builder(appContext(), NOTIFICATION_CHANNEL)
+            NotificationCompat.Builder(this, NOTIFICATION_CHANNEL)
         } else {
-            NotificationCompat.Builder(appContext())
+            NotificationCompat.Builder(this)
         }
             .setContentTitle(currentMediaItem?.mediaMetadata?.title)
             .setContentText(currentMediaItem?.mediaMetadata?.artist)
@@ -1760,9 +1761,9 @@ class MainActivity :
             )
             .setContentIntent(
                 PendingIntent.getActivity(
-                    appContext(),
+                    this,
                     0,
-                    Intent(appContext(), MainActivity::class.java)
+                    Intent(this, MainActivity::class.java)
                         .putExtra("expandPlayerBottomSheet", true),
                     PendingIntent.FLAG_IMMUTABLE
                 )
@@ -1776,9 +1777,9 @@ class MainActivity :
     value class Action(val value: String) {
         val pendingIntent: PendingIntent
             get() = PendingIntent.getBroadcast(
-                appContext(),
+                context(),
                 100,
-                Intent(appContext(), OnlinePlayerNotificationActionReceiver::class.java).setAction(
+                Intent(context(), OnlinePlayerNotificationActionReceiver::class.java).setAction(
                     value
                 ),
                 PendingIntent.FLAG_UPDATE_CURRENT.or(if (isAtLeastAndroid6) PendingIntent.FLAG_IMMUTABLE else 0)

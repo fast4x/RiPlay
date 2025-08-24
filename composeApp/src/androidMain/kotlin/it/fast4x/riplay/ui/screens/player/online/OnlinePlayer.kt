@@ -166,6 +166,7 @@ import dev.chrisbanes.haze.HazeDefaults
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.haze
 import dev.chrisbanes.haze.hazeChild
+import it.fast4x.environment.Environment
 import it.fast4x.environment.models.NavigationEndpoint
 import it.fast4x.riplay.Database
 import it.fast4x.riplay.LocalLinkDevices
@@ -2047,7 +2048,7 @@ fun OnlinePlayer(
 
                             if (showButtonPlayerVideo)
                                 IconButton(
-                                    icon = R.drawable.video,
+                                    icon = R.drawable.left_and_right_arrows,
                                     color = colorPalette().accent,
                                     enabled = true,
                                     onClick = {
@@ -4004,6 +4005,7 @@ fun OnlinePlayer(
                 navController = navController,
                 onDismiss = { showSearchEntity = false },
                 query = "${mediaItem.mediaMetadata.artist.toString()} - ${mediaItem.mediaMetadata.title.toString()}",
+                filter = if (mediaItem.isVideo) Environment.SearchFilter.Song else Environment.SearchFilter.Video,
                 disableScrollingText = disableScrollingText
             )
         }

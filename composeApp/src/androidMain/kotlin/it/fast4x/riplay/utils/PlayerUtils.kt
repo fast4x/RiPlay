@@ -113,15 +113,23 @@ fun Player.playAtMedia(mediaItems: List<MediaItem>, mediaId: String) {
 
 }
 
-fun Player.forcePlay(mediaItem: MediaItem) {
-    setMediaItem(mediaItem.cleaned, true)
+fun Player.forcePlay(mediaItem: MediaItem, replace: Boolean = false) {
+    if (!replace)
+        setMediaItem(mediaItem.cleaned, true)
+    else
+        replaceMediaItem(currentMediaItemIndex, mediaItem.cleaned)
+
     prepare()
     restoreGlobalVolume()
     playWhenReady = true
 }
 
-fun Player.playOnline(mediaItem: MediaItem) {
-    setMediaItem(mediaItem.cleaned, true)
+fun Player.playOnline(mediaItem: MediaItem, replace: Boolean = false) {
+    if (!replace)
+        setMediaItem(mediaItem.cleaned, true)
+    else
+        replaceMediaItem(currentMediaItemIndex, mediaItem.cleaned)
+
     pause()
 }
 

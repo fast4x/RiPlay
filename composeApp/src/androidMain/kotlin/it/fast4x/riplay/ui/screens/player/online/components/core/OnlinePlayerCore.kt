@@ -4,6 +4,7 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.annotation.OptIn
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.neverEqualPolicy
@@ -26,9 +27,18 @@ import it.fast4x.riplay.enums.PlayerThumbnailSize
 import it.fast4x.riplay.ui.screens.player.online.components.customui.CustomDefaultPlayerUiController
 import it.fast4x.riplay.utils.DisposableListener
 import it.fast4x.riplay.extensions.preferences.isInvincibilityEnabledKey
+import it.fast4x.riplay.extensions.preferences.playbackDurationKey
 import it.fast4x.riplay.utils.isLandscape
 import it.fast4x.riplay.extensions.preferences.playerThumbnailSizeKey
+import it.fast4x.riplay.extensions.preferences.rememberObservedPreference
 import it.fast4x.riplay.extensions.preferences.rememberPreference
+import it.fast4x.riplay.utils.playNext
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.withContext
+import kotlin.math.roundToInt
+import kotlin.time.Duration.Companion.seconds
 
 @OptIn(UnstableApi::class)
 @Composable
@@ -78,6 +88,21 @@ fun OnlinePlayerCore(
         playerThumbnailSizeKey,
         PlayerThumbnailSize.Biggest
     )
+
+    //todo medley mode online player
+//    val playbackDuration by rememberObservedPreference(playbackDurationKey, 0f)
+//    var playerState by
+//        remember { mutableStateOf(PlayerConstants.PlayerState.UNSTARTED) }
+//    LaunchedEffect(playbackDuration) {
+//        if (playbackDuration > 0f)
+//            while (isActive) {
+//                delay(1.seconds * playbackDuration.roundToInt())
+//                withContext(Dispatchers.Main) {
+//                    if (playerState == PlayerConstants.PlayerState.PLAYING)
+//                        binder?.player?.playNext()
+//                }
+//            }
+//    }
 
     println("OnlinePlayerCore: before create androidview")
 
@@ -153,7 +178,7 @@ fun OnlinePlayerCore(
                     state: PlayerConstants.PlayerState
                 ) {
                     super.onStateChange(youTubePlayer, state)
-
+                    //playerState = state
                     onPlayerStateChange(state)
                 }
 
