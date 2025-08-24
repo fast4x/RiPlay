@@ -1607,7 +1607,7 @@ class MainActivity :
         if (mediaSession == null)
             mediaSession = MediaSessionCompat(this, "OnlinePlayer")
 
-        mediaSession?.setFlags(0)
+        //mediaSession?.setFlags(0)
         mediaSession?.setRepeatMode(PlaybackStateCompat.REPEAT_MODE_NONE)
         mediaSession?.setMetadata(
             MediaMetadataCompat.Builder()
@@ -1858,6 +1858,9 @@ class MainActivity :
             Timber.e("MainActivity.onResume registerListener sensorManager ${it.stackTraceToString()}")
         }
         appRunningInBackground = false
+
+        updateOnlineNotification()
+
         println("MainActivity.onResume $appRunningInBackground")
     }
 
