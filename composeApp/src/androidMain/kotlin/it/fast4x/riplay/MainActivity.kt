@@ -138,6 +138,7 @@ import it.fast4x.riplay.enums.PipModule
 import it.fast4x.riplay.enums.PlayerBackgroundColors
 import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.enums.ThumbnailRoundness
+import it.fast4x.riplay.extensions.history.updateOnlineHistory
 import it.fast4x.riplay.extensions.nsd.discoverNsdServices
 import it.fast4x.riplay.extensions.pip.PipModuleContainer
 import it.fast4x.riplay.extensions.pip.PipModuleCover
@@ -1488,30 +1489,29 @@ class MainActivity :
                                 playerSheetState.dismissSoft()
                             }
 
-                            mediaItemIsLocal.value = mediaItem?.isLocal == true
-                            currentPlaybackPosition.value = 0L
+                            mediaItem?.let{
+                                mediaItemIsLocal.value = it.isLocal == true
+                                currentPlaybackPosition.value = 0L
 
-//                            if (!mediaItemIsLocal.value && mediaItem != null) {
-//                                onlinePlayer.value?.loadVideo(mediaItem.mediaId, 0f)
-//                            }
-
-                            if (reason == Player.MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED && mediaItem != null) {
-                                if (mediaItem.mediaMetadata.extras?.getBoolean("isFromPersistentQueue") != true) {
-                                    if (preferences.getBoolean(keepPlayerMinimizedKey, false))
-                                        playerSheetState.collapseSoft()
-                                    else playerSheetState.expandSoft()
+//
+                                if (reason == Player.MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED) {
+                                    if (it.mediaMetadata.extras?.getBoolean("isFromPersistentQueue") != true) {
+                                        if (preferences.getBoolean(keepPlayerMinimizedKey, false))
+                                            playerSheetState.collapseSoft()
+                                        else playerSheetState.expandSoft()
+                                    }
                                 }
+
+                                setDynamicPalette(
+                                    it.mediaMetadata.artworkUri.thumbnail(
+                                        1200
+                                    ).toString()
+                                )
+
+                                bitmapProvider?.load(it.mediaMetadata.artworkUri) {}
+
+                                updateSelectedQueue()
                             }
-
-                            setDynamicPalette(
-                                mediaItem?.mediaMetadata?.artworkUri.thumbnail(
-                                    1200
-                                ).toString()
-                            )
-
-                            bitmapProvider?.load(mediaItem?.mediaMetadata?.artworkUri) {}
-
-                            updateSelectedQueue()
 
                         }
                     }

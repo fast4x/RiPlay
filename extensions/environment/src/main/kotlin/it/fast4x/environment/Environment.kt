@@ -46,6 +46,7 @@ import it.fast4x.environment.models.bodies.CreatePlaylistBody
 import it.fast4x.environment.models.bodies.EditPlaylistBody
 import it.fast4x.environment.models.bodies.LikeBody
 import it.fast4x.environment.models.bodies.NextBody
+import it.fast4x.environment.models.bodies.PlayerBody
 import it.fast4x.environment.models.bodies.PlaylistDeleteBody
 import it.fast4x.environment.models.bodies.SubscribeBody
 import it.fast4x.environment.utils.EnvironmentLocale
@@ -83,6 +84,7 @@ object Environment {
     val _uMYwa66ycM = EnvironmentPreferences.preference?.p38 ?: ""
     val _3djbhqyLpE = EnvironmentPreferences.preference?.p1 ?: ""
     val _NXIvG4ve8N = EnvironmentPreferences.preference?.p8 ?: ""
+    val _cdSL7DrPbA = EnvironmentPreferences.preference?.p5 ?: ""
     val _QPWiB5riY1 = EnvironmentPreferences.preference?.p11 ?: ""
     val _QPmE9fYezr = EnvironmentPreferences.preference?.p7 ?: ""
     val _Uwjb1AiI8t = EnvironmentPreferences.preference?.p13 ?: ""
@@ -1000,4 +1002,61 @@ object Environment {
 
         }
 
+    suspend fun simplePlayer(
+        clientType: Client,
+        videoId: String,
+        playlistId: String?,
+        signatureTimestamp: Int?,
+        webPlayerPot: String?,
+    ) = client.post(_cdSL7DrPbA) {
+        setLogin(clientType, setLogin = true)
+        setBody(
+            PlayerBody(
+                context =
+                    clientType.toContext(locale, visitorData).let {
+                        if ((clientType.isEmbedded)) {
+                            it.copy(
+                                thirdParty =
+                                    Context.ThirdParty(
+                                        embedUrl = "https://www.youtube.com/watch?v=$videoId",
+                                    ),
+                            )
+                        } else {
+                            it
+                        }
+                    },
+                videoId = videoId,
+                playlistId = playlistId,
+                playbackContext = if (clientType.useSignatureTimestamp && signatureTimestamp != null) {
+                    PlayerBody.PlaybackContext(
+                        PlayerBody.PlaybackContext.ContentPlaybackContext(
+                            signatureTimestamp = signatureTimestamp
+                        )
+                    )
+                } else null,
+                serviceIntegrityDimensions = if (clientType.useWebPoTokens && webPlayerPot != null) {
+                    PlayerBody.ServiceIntegrityDimensions(webPlayerPot)
+                } else null
+            ),
+        )
+    }
+
+    suspend fun addPlaybackToHistory(
+        url: String,
+        cpn: String,
+        playlistId: String?,
+        clientType: Client = DefaultWeb.client
+    ) = client.get(url) {
+        setLogin(clientType, true)
+        parameter("ver", "2")
+        parameter("c", clientType.clientName)
+        parameter("cpn", cpn)
+
+        if (playlistId != null) {
+            parameter("list", playlistId)
+            parameter("referrer", "$_XsHo8IdebO/playlist?list=$playlistId")
+        }
+    }
+
 }
+

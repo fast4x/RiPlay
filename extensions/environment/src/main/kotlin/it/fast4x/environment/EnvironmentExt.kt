@@ -7,6 +7,7 @@ import it.fast4x.environment.models.BrowseResponse
 import it.fast4x.environment.models.Context
 import it.fast4x.environment.models.CreatePlaylistResponse
 import it.fast4x.environment.models.NavigationEndpoint
+import it.fast4x.environment.models.PlayerResponse
 import it.fast4x.environment.models.VideoOrSongInfo
 import it.fast4x.environment.models.getContinuation
 import it.fast4x.environment.models.oddElements
@@ -19,6 +20,7 @@ import it.fast4x.environment.requests.HomePage
 import it.fast4x.environment.requests.NewReleaseAlbumPage
 import it.fast4x.environment.requests.PlaylistContinuationPage
 import it.fast4x.environment.requests.PlaylistPage
+import kotlin.random.Random
 
 object EnvironmentExt {
 
@@ -517,5 +519,36 @@ object EnvironmentExt {
         return response
     }.onFailure {
         println("EnvironmentExt getVideOrSongInfo error: ${it.stackTraceToString()}")
+    }
+
+    /**************
+     * Simple player without use of potoken
+     */
+    suspend fun simplePlayer(videoId: String, playlistId: String? = null, client: Context.Client, signatureTimestamp: Int? = null, webPlayerPot: String? = null): Result<PlayerResponse> = runCatching {
+        Environment.simplePlayer(client, videoId, playlistId, signatureTimestamp, webPlayerPot).body<PlayerResponse>()
+    }.onFailure {
+        println("EnvironmentExt simplePlayer error: ${it.stackTraceToString()}")
+    }
+
+    suspend fun addPlaybackToHistory(playlistId: String? = null, playbackTracking: String) = runCatching {
+        val cpn = (1..16).map {
+            "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_"[Random.Default.nextInt(
+                0,
+                64
+            )]
+        }.joinToString("")
+
+        val playbackUrl = playbackTracking.replace(
+            "https://s.youtube.com",
+            "https://music.youtube.com",
+        )
+
+        Environment.addPlaybackToHistory(
+            url = playbackUrl,
+            playlistId = playlistId,
+            cpn = cpn
+        )
+    }.onFailure {
+        println("EnvironmentExt addPlaybackToHistory error: ${it.stackTraceToString()}")
     }
 }

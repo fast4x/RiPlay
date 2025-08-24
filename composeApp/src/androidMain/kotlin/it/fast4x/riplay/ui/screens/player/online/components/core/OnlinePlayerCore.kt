@@ -24,6 +24,7 @@ import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.R
 import it.fast4x.riplay.context
 import it.fast4x.riplay.enums.PlayerThumbnailSize
+import it.fast4x.riplay.extensions.history.updateOnlineHistory
 import it.fast4x.riplay.ui.screens.player.online.components.customui.CustomDefaultPlayerUiController
 import it.fast4x.riplay.utils.DisposableListener
 import it.fast4x.riplay.extensions.preferences.isInvincibilityEnabledKey
@@ -37,6 +38,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.withContext
+import timber.log.Timber
 import kotlin.math.roundToInt
 import kotlin.time.Duration.Companion.seconds
 
@@ -67,15 +69,16 @@ fun OnlinePlayerCore(
     binder?.player?.DisposableListener {
         object : Player.Listener {
             override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
-                localMediaItem = mediaItem
-                if (mediaItem != null) {
-                    player.value?.loadVideo(mediaItem.mediaId, 0f)
-                    println("OnlinePlayerCore: onMediaItemTransition loaded ${mediaItem.mediaId}")
+
+                mediaItem?.let {
+                    localMediaItem = it
+                    player.value?.loadVideo(it.mediaId, 0f)
+                    updateOnlineHistory(it)
+                    Timber.d("OnlinePlayerCore: onMediaItemTransition loaded ${it.mediaId}")
                 }
             }
         }
     }
-    //val mediaItem = nullableMediaItem //?: return
 
     val inflatedView = remember { LayoutInflater.from(context()).inflate(R.layout.youtube_player, null, false) }
     val onlinePlayerView = remember { inflatedView as YouTubePlayerView }
