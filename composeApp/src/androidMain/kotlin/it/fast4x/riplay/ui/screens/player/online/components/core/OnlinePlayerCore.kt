@@ -92,20 +92,26 @@ fun OnlinePlayerCore(
         PlayerThumbnailSize.Biggest
     )
 
-    //todo medley mode online player
-//    val playbackDuration by rememberObservedPreference(playbackDurationKey, 0f)
-//    var playerState by
-//        remember { mutableStateOf(PlayerConstants.PlayerState.UNSTARTED) }
-//    LaunchedEffect(playbackDuration) {
-//        if (playbackDuration > 0f)
-//            while (isActive) {
-//                delay(1.seconds * playbackDuration.roundToInt())
-//                withContext(Dispatchers.Main) {
-//                    if (playerState == PlayerConstants.PlayerState.PLAYING)
-//                        binder?.player?.playNext()
-//                }
-//            }
-//    }
+    //MedleyMode for online player
+    val playbackDuration by rememberObservedPreference(playbackDurationKey, 0f)
+    var playerState by
+        remember { mutableStateOf(PlayerConstants.PlayerState.UNSTARTED) }
+
+    LaunchedEffect(playbackDuration) {
+        if (playbackDuration > 0f)
+            while (isActive) {
+                delay((1.seconds * playbackDuration.roundToInt()) + 2.seconds)
+                withContext(Dispatchers.Main) {
+                    Timber.d("MedleyMode: Pre fired next")
+                    if (playerState == PlayerConstants.PlayerState.PLAYING) {
+                        player.value?.pause()
+                        player.value?.seekTo(0f)
+                        binder?.player?.playNext()
+                        Timber.d("MedleyMode: next fired")
+                    }
+                }
+            }
+    }
 
     println("OnlinePlayerCore: before create androidview")
 
@@ -181,7 +187,7 @@ fun OnlinePlayerCore(
                     state: PlayerConstants.PlayerState
                 ) {
                     super.onStateChange(youTubePlayer, state)
-                    //playerState = state
+                    playerState = state
                     onPlayerStateChange(state)
                 }
 

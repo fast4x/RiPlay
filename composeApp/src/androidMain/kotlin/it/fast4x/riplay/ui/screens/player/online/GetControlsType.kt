@@ -89,12 +89,6 @@ fun GetControls(
         )
     }
 
-//TODO CHECK MEDLEY MODE
-//    MedleyMode(
-//        binder = binder,
-//        seconds = if (playbackDuration < 1f) 0 else playbackDuration.roundToInt()
-//    )
-
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceEvenly,
