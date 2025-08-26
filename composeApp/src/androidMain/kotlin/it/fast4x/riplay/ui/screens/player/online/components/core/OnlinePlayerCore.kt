@@ -29,6 +29,7 @@ import it.fast4x.riplay.ui.screens.player.online.components.customui.CustomDefau
 import it.fast4x.riplay.utils.DisposableListener
 import it.fast4x.riplay.extensions.preferences.isInvincibilityEnabledKey
 import it.fast4x.riplay.extensions.preferences.playbackDurationKey
+import it.fast4x.riplay.extensions.preferences.playbackSpeedKey
 import it.fast4x.riplay.utils.isLandscape
 import it.fast4x.riplay.extensions.preferences.playerThumbnailSizeKey
 import it.fast4x.riplay.extensions.preferences.rememberObservedPreference
@@ -111,6 +112,23 @@ fun OnlinePlayerCore(
                     }
                 }
             }
+    }
+
+    //Playback speed for online player
+    var playbackSpeed by rememberObservedPreference(playbackSpeedKey, 1f)
+    LaunchedEffect(playbackSpeed) {
+        val plabackRate = when {
+            (playbackSpeed.toDouble() in 0.0..0.25)     -> PlayerConstants.PlaybackRate.RATE_0_25
+            (playbackSpeed.toDouble() in 0.26..0.5)     -> PlayerConstants.PlaybackRate.RATE_0_5
+            (playbackSpeed.toDouble() in 0.51..0.75)    -> PlayerConstants.PlaybackRate.RATE_0_75
+            (playbackSpeed.toDouble() in 0.76..1.0)     -> PlayerConstants.PlaybackRate.RATE_1
+            (playbackSpeed.toDouble() in 1.01..1.25)    -> PlayerConstants.PlaybackRate.RATE_1_25
+            (playbackSpeed.toDouble() in 1.26..1.5)     -> PlayerConstants.PlaybackRate.RATE_1_5
+            (playbackSpeed.toDouble() in 1.51..1.75)    -> PlayerConstants.PlaybackRate.RATE_1_75
+            (playbackSpeed.toDouble() > 1.76) -> PlayerConstants.PlaybackRate.RATE_2
+            else -> PlayerConstants.PlaybackRate.RATE_1
+        }
+        player.value?.setPlaybackRate(plabackRate)
     }
 
     println("OnlinePlayerCore: before create androidview")
