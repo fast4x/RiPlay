@@ -18,7 +18,6 @@ import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
-import android.media.session.PlaybackState
 import android.net.Uri
 import android.net.nsd.NsdServiceInfo
 import android.os.Build
@@ -347,7 +346,7 @@ class MainActivity :
                 PlaybackStateCompat.ACTION_SEEK_TO
     val stateBuilder =
         PlaybackStateCompat.Builder().setActions(actions.let {
-            if (isAtLeastAndroid12) it or PlaybackState.ACTION_SET_PLAYBACK_SPEED else it
+            if (isAtLeastAndroid12) it or PlaybackStateCompat.ACTION_SET_PLAYBACK_SPEED else it
         })
 
     var bitmapProvider: BitmapProvider? = null
@@ -1205,6 +1204,7 @@ class MainActivity :
                         onDurationChange = {
                             currentDuration = it
                             currentPlaybackDuration.value = (it * 1000).toLong()
+                            updateOnlineNotification()
                             println("MainActivity onDurationChange ${currentPlaybackDuration.value}")
                         },
                         onPlayerStateChange = {
