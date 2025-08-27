@@ -18,14 +18,26 @@ import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
+import android.media.AudioAttributes
+import android.media.AudioDeviceCallback
+import android.media.AudioDeviceInfo
+import android.media.AudioFormat
+import android.media.AudioManager
+import android.media.AudioTrack
+import android.media.audiofx.BassBoost
+import android.media.audiofx.LoudnessEnhancer
+import android.media.audiofx.PresetReverb
 import android.net.Uri
 import android.net.nsd.NsdServiceInfo
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
 import android.os.IBinder
+import android.os.Looper
 import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
+import android.view.View
 import android.view.WindowManager
 import android.window.OnBackInvokedDispatcher
 import androidx.activity.ComponentActivity
@@ -97,7 +109,10 @@ import androidx.core.content.edit
 import androidx.core.net.toUri
 import androidx.core.os.LocaleListCompat
 import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.lifecycleScope
+import androidx.media3.common.AuxEffectInfo
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.common.util.Log
@@ -136,8 +151,10 @@ import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.enums.PipModule
 import it.fast4x.riplay.enums.PlayerBackgroundColors
 import it.fast4x.riplay.enums.PopupType
+import it.fast4x.riplay.enums.PresetsReverb
 import it.fast4x.riplay.enums.ThumbnailRoundness
-import it.fast4x.riplay.extensions.history.updateOnlineHistory
+import it.fast4x.riplay.extensions.audiovolume.AudioVolumeObserver
+import it.fast4x.riplay.extensions.audiovolume.OnAudioVolumeChangedListener
 import it.fast4x.riplay.extensions.nsd.discoverNsdServices
 import it.fast4x.riplay.extensions.pip.PipModuleContainer
 import it.fast4x.riplay.extensions.pip.PipModuleCover
@@ -180,8 +197,11 @@ import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.extensions.preferences.UiTypeKey
 import it.fast4x.riplay.extensions.preferences.animatedGradientKey
 import it.fast4x.riplay.extensions.preferences.applyFontPaddingKey
+import it.fast4x.riplay.extensions.preferences.audioReverbPresetKey
 import it.fast4x.riplay.utils.asMediaItem
 import it.fast4x.riplay.extensions.preferences.backgroundProgressKey
+import it.fast4x.riplay.extensions.preferences.bassboostEnabledKey
+import it.fast4x.riplay.extensions.preferences.bassboostLevelKey
 import it.fast4x.riplay.utils.capitalized
 import it.fast4x.riplay.extensions.preferences.checkUpdateStateKey
 import it.fast4x.riplay.extensions.preferences.closeWithBackButtonKey
@@ -219,12 +239,14 @@ import it.fast4x.riplay.utils.isAtLeastAndroid12
 import it.fast4x.riplay.utils.isAtLeastAndroid6
 import it.fast4x.riplay.utils.isAtLeastAndroid8
 import it.fast4x.riplay.extensions.preferences.isKeepScreenOnEnabledKey
+import it.fast4x.riplay.extensions.preferences.isPauseOnVolumeZeroEnabledKey
 import it.fast4x.riplay.extensions.preferences.isProxyEnabledKey
 import it.fast4x.riplay.utils.isValidHttpUrl
 import it.fast4x.riplay.utils.isValidIP
 import it.fast4x.riplay.extensions.preferences.keepPlayerMinimizedKey
 import it.fast4x.riplay.extensions.preferences.languageAppKey
 import it.fast4x.riplay.extensions.preferences.loadedDataKey
+import it.fast4x.riplay.extensions.preferences.loudnessBaseGainKey
 import it.fast4x.riplay.extensions.preferences.miniPlayerTypeKey
 import it.fast4x.riplay.extensions.preferences.navigationBarPositionKey
 import it.fast4x.riplay.extensions.preferences.navigationBarTypeKey
@@ -240,6 +262,7 @@ import it.fast4x.riplay.extensions.preferences.proxyPortKey
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.utils.resize
 import it.fast4x.riplay.extensions.preferences.restartActivityKey
+import it.fast4x.riplay.extensions.preferences.resumePlaybackWhenDeviceConnectedKey
 import it.fast4x.riplay.utils.setDefaultPalette
 import it.fast4x.riplay.extensions.preferences.shakeEventEnabledKey
 import it.fast4x.riplay.extensions.preferences.showSearchTabKey
@@ -248,12 +271,19 @@ import it.fast4x.riplay.utils.thumbnail
 import it.fast4x.riplay.extensions.preferences.thumbnailRoundnessKey
 import it.fast4x.riplay.extensions.preferences.transitionEffectKey
 import it.fast4x.riplay.extensions.preferences.useSystemFontKey
+import it.fast4x.riplay.extensions.preferences.volumeBoostLevelKey
+import it.fast4x.riplay.extensions.preferences.volumeNormalizationKey
 import it.fast4x.riplay.extensions.preferences.ytCookieKey
 import it.fast4x.riplay.extensions.preferences.ytDataSyncIdKey
 import it.fast4x.riplay.extensions.preferences.ytVisitorDataKey
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.cancellable
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -358,6 +388,16 @@ class MainActivity :
 
     var mediaItemIsLocal: MutableState<Boolean> = mutableStateOf(false)
 
+    private val coroutineScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+    private var volumeNormalizationJob: Job? = null
+    private var loudnessEnhancer: LoudnessEnhancer? = null
+    private var bassBoost: BassBoost? = null
+    private var audioManager: AudioManager? = null
+    private var audioDeviceCallback: AudioDeviceCallback? = null
+    private val handler = Handler(Looper.getMainLooper())
+    private lateinit var audioVolumeObserver: AudioVolumeObserver
+
+
 
     override fun onStart() {
         super.onStart()
@@ -389,6 +429,8 @@ class MainActivity :
         super.onCreate(savedInstanceState)
         MonetCompat.enablePaletteCompat()
 
+        enableFullscreenMode()
+
         enableEdgeToEdge(
             statusBarStyle = SystemBarStyle.dark(
                 scrim = Color.Transparent.toArgb(),
@@ -398,26 +440,6 @@ class MainActivity :
                 darkScrim = Color.Transparent.toArgb()
             )
         )
-
-        WindowCompat.setDecorFitsSystemWindows(window, false)
-
-        /***********/
-        // TODO() enable fullscreen mode
-        // Old method to hide status bar
-        // requestWindowFeature(Window.FEATURE_NO_TITLE)
-        // this.window.setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN)
-
-        // New method to hide system bars
-//        val windowInsetsController =
-//            WindowCompat.getInsetsController(window, window.decorView)
-//        // Configure the behavior of the hidden system bars.
-//        windowInsetsController.systemBarsBehavior =
-//            WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
-//
-//        windowInsetsController.hide(WindowInsetsCompat.Type.systemBars())
-////        windowInsetsController.hide(WindowInsetsCompat.Type.statusBars())
-////        windowInsetsController.hide(WindowInsetsCompat.Type.navigationBars())
-        /***********/
 
         MonetCompat.setup(this)
         _monet = MonetCompat.getInstance()
@@ -483,6 +505,43 @@ class MainActivity :
         updateOnlineNotification()
 
         updateSelectedQueue()
+
+        processBassBoost()
+
+        resumePlaybackWhenDeviceConnected()
+
+        initializeAudioVolumeObserver()
+
+    }
+
+    private fun enableFullscreenMode() {
+
+        // Prepare the Activity to go in immersive mode
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+
+        // Old method to hide status bar
+        // requestWindowFeature(Window.FEATURE_NO_TITLE)
+        // this.window.setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN)
+
+        // New method to hide system bars
+        val windowInsetsController =
+            WindowCompat.getInsetsController(window, window.decorView)
+        // Configure the behavior of the hidden system bars.
+        windowInsetsController.systemBarsBehavior =
+            WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+        //windowInsetsController.hide(WindowInsetsCompat.Type.systemBars())
+//        windowInsetsController.hide(WindowInsetsCompat.Type.statusBars())
+        windowInsetsController.hide(WindowInsetsCompat.Type.navigationBars())
+
+        //Other method
+//        if (Build.VERSION.SDK_INT < 16) {
+//            window.setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+//                WindowManager.LayoutParams.FLAG_FULLSCREEN)
+//        }
+//        if (Build.VERSION.SDK_INT > 15) {
+//            window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_FULLSCREEN
+//            actionBar?.hide()
+//        }
 
     }
 
@@ -1057,6 +1116,10 @@ class MainActivity :
                                         sharedPreferences.getString(ytVisitorDataKey, "").toString()
                             }
 
+                            volumeNormalizationKey, loudnessBaseGainKey, volumeBoostLevelKey -> processNormalizeVolume()
+                            bassboostLevelKey, bassboostEnabledKey -> processBassBoost()
+                            resumePlaybackWhenDeviceConnectedKey -> resumePlaybackWhenDeviceConnected()
+                            isPauseOnVolumeZeroEnabledKey -> initializeAudioVolumeObserver()
                         }
                     }
 
@@ -1511,6 +1574,8 @@ class MainActivity :
                                 bitmapProvider?.load(it.mediaMetadata.artworkUri) {}
 
                                 updateSelectedQueue()
+
+                                processNormalizeVolume()
                             }
 
                         }
@@ -1771,6 +1836,158 @@ class MainActivity :
             .build()
 
         NotificationManagerCompat.from(this).notify(NOTIFICATION_ID, notification)
+    }
+
+    private fun processBassBoost() {
+        if (!preferences.getBoolean(bassboostEnabledKey, false)) {
+            runCatching {
+                bassBoost?.enabled = false
+                bassBoost?.release()
+            }
+            bassBoost = null
+            processNormalizeVolume()
+            return
+        }
+
+        runCatching {
+            if (bassBoost == null) bassBoost = BassBoost(0, 0)
+            val bassboostLevel =
+                (preferences.getFloat(bassboostLevelKey, 0.5f) * 1000f).toInt().toShort()
+            Timber.d("MainActivity processBassBoost bassboostLevel $bassboostLevel")
+            println("MainActivity processBassBoost bassboostLevel $bassboostLevel")
+            bassBoost?.enabled = false
+            bassBoost?.setStrength(bassboostLevel)
+            bassBoost?.enabled = true
+        }.onFailure {
+            SmartMessage(
+                "Can't enable bass boost",
+                context = this
+            )
+        }
+    }
+
+    @UnstableApi
+    private fun processNormalizeVolume() {
+        if (!preferences.getBoolean(volumeNormalizationKey, false)) {
+            loudnessEnhancer?.enabled = false
+            loudnessEnhancer?.release()
+            loudnessEnhancer = null
+            volumeNormalizationJob?.cancel()
+            return
+        }
+
+        runCatching {
+            if (loudnessEnhancer == null) {
+                loudnessEnhancer = LoudnessEnhancer(0)
+            }
+        }.onFailure {
+            Timber.e("MainActivity processNormalizeVolume load loudnessEnhancer ${it.stackTraceToString()}")
+            println("MainActivity processNormalizeVolume load loudnessEnhancer ${it.stackTraceToString()}")
+            return
+        }
+
+        val baseGain = preferences.getFloat(loudnessBaseGainKey, 5.00f)
+        val volumeBoostLevel = preferences.getFloat(volumeBoostLevelKey, 0f)
+        binder?.player?.currentMediaItem?.mediaId?.let { songId ->
+            volumeNormalizationJob?.cancel()
+            volumeNormalizationJob = coroutineScope.launch(Dispatchers.IO) {
+                fun Float?.toMb() = ((this ?: 0f) * 100).toInt()
+                Database.loudnessDb(songId).cancellable().collectLatest { loudnessDb ->
+                    val loudnessMb = loudnessDb.toMb().let {
+                        if (it !in -2000..2000) {
+                            withContext(Dispatchers.IO) {
+                                SmartMessage(
+                                    "Extreme loudness detected",
+                                    context = this@MainActivity
+                                )
+                            }
+
+                            0
+                        } else it
+                    }
+                    try {
+                        loudnessEnhancer?.setTargetGain(baseGain.toMb() + volumeBoostLevel.toMb() - loudnessMb)
+                        loudnessEnhancer?.enabled = true
+                    } catch (e: Exception) {
+                        Timber.e("MainActivity processNormalizeVolume apply targetGain ${e.stackTraceToString()}")
+                        println("MainActivity processNormalizeVolume apply targetGain ${e.stackTraceToString()}")
+                    }
+                }
+            }
+        }
+    }
+
+    private fun resumePlaybackWhenDeviceConnected() {
+        if (!isAtLeastAndroid6) return
+
+        if (preferences.getBoolean(resumePlaybackWhenDeviceConnectedKey, false)) {
+            if (audioManager == null) {
+                audioManager = getSystemService(AUDIO_SERVICE) as AudioManager?
+            }
+
+            audioDeviceCallback = object : AudioDeviceCallback() {
+                private fun canPlayMusic(audioDeviceInfo: AudioDeviceInfo): Boolean {
+                    if (!audioDeviceInfo.isSink) return false
+
+                    return audioDeviceInfo.type == AudioDeviceInfo.TYPE_BLUETOOTH_A2DP ||
+                            audioDeviceInfo.type == AudioDeviceInfo.TYPE_WIRED_HEADSET ||
+                            audioDeviceInfo.type == AudioDeviceInfo.TYPE_WIRED_HEADPHONES ||
+                            audioDeviceInfo.type == AudioDeviceInfo.TYPE_USB_HEADSET ||
+                            audioDeviceInfo.type == AudioDeviceInfo.TYPE_USB_DEVICE ||
+                            audioDeviceInfo.type == AudioDeviceInfo.TYPE_USB_ACCESSORY ||
+                            audioDeviceInfo.type == AudioDeviceInfo.TYPE_REMOTE_SUBMIX
+                }
+
+                override fun onAudioDevicesAdded(addedDevices: Array<AudioDeviceInfo>) {
+                    Timber.d("MainActivity onAudioDevicesAdded addedDevices ${addedDevices.map { it.type }}")
+                    if (!onlinePlayerPlayingState.value && addedDevices.any(::canPlayMusic)) {
+                        Timber.d("MainActivity onAudioDevicesAdded device known ${addedDevices.map { it.productName }}")
+                        onlinePlayer.value?.play()
+                    }
+                }
+
+                override fun onAudioDevicesRemoved(removedDevices: Array<AudioDeviceInfo>) = Unit
+            }
+
+            audioManager?.registerAudioDeviceCallback(audioDeviceCallback, handler)
+
+        } else {
+            audioManager?.unregisterAudioDeviceCallback(audioDeviceCallback)
+            audioDeviceCallback = null
+        }
+    }
+
+    private fun initializeAudioVolumeObserver() {
+        val onAudioVolumeChangedListener = object : OnAudioVolumeChangedListener {
+            private var pausedByZeroVolume = false
+            override fun onAudioVolumeChanged(currentVolume: Int, maxVolume: Int) {
+                if (context().preferences.getBoolean(isPauseOnVolumeZeroEnabledKey, false)) {
+                    if (onlinePlayerPlayingState.value && currentVolume < 1) {
+                        onlinePlayer.value?.pause()
+                        pausedByZeroVolume = true
+                    } else if (pausedByZeroVolume && currentVolume >= 1) {
+                        onlinePlayer.value?.play()
+                        pausedByZeroVolume = false
+                    }
+                }
+            }
+
+            override fun onAudioVolumeDirectionChanged(direction: Int) {
+                // todo handle volume keys to change media
+//            if (!context().preferences.getBoolean(useVolumeKeysToChangeSongKey, false)) return
+//
+//            if (direction == 0) {
+//                binder?.player?.playPrevious()
+//            } else {
+//                binder?.player?.playNext()
+//            }
+
+            }
+        }
+
+        audioVolumeObserver = AudioVolumeObserver(context())
+        audioVolumeObserver.register(AudioManager.STREAM_MUSIC, onAudioVolumeChangedListener)
+
     }
 
     @JvmInline
