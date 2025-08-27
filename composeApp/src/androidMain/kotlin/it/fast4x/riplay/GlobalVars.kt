@@ -6,6 +6,7 @@ import androidx.compose.runtime.ReadOnlyComposable
 import it.fast4x.riplay.enums.AudioQualityFormat
 import it.fast4x.riplay.enums.ColorPaletteMode
 import it.fast4x.riplay.enums.DnsOverHttpsType
+import it.fast4x.riplay.enums.DurationInMilliseconds
 import it.fast4x.riplay.enums.MinTimeForEvent
 import it.fast4x.riplay.enums.PlayerTimelineType
 import it.fast4x.riplay.enums.QueueLoopType
@@ -28,6 +29,7 @@ import it.fast4x.riplay.extensions.preferences.logDebugEnabledKey
 import it.fast4x.riplay.extensions.preferences.parentalControlEnabledKey
 import it.fast4x.riplay.extensions.preferences.pauseListenHistoryKey
 import it.fast4x.riplay.extensions.preferences.persistentQueueKey
+import it.fast4x.riplay.extensions.preferences.playbackFadeAudioDurationKey
 import it.fast4x.riplay.extensions.preferences.playerTimelineTypeKey
 import it.fast4x.riplay.extensions.preferences.preferences
 import it.fast4x.riplay.extensions.preferences.queueLoopTypeKey
@@ -73,6 +75,7 @@ fun getLastYTVideoId() = appContext().preferences.getString(lastVideoIdKey, "")
 fun getLastYTVideoSeconds() = appContext().preferences.getFloat(lastVideoSecondsKey, 0f)
 fun getResumePlaybackOnStart() = appContext().preferences.getBoolean(resumePlaybackOnStartKey, false)
 fun getPlayerTimelineType() = appContext().preferences.getEnum(playerTimelineTypeKey, PlayerTimelineType.Default)
+fun getPlaybackFadeAudioDuration() = appContext().preferences.getEnum(playbackFadeAudioDurationKey, DurationInMilliseconds.Disabled)
 
 fun ytAccountName() = appContext().preferences.getString(ytAccountNameKey, "")
 fun ytAccountThumbnail() = appContext().preferences.getString(ytAccountThumbnailKey, "")
@@ -83,3 +86,5 @@ fun isDebugModeEnabled() = appContext().preferences.getBoolean(logDebugEnabledKe
 fun isParentalControlEnabled() = appContext().preferences.getBoolean(parentalControlEnabledKey, false)
 fun isPersistentQueueEnabled() = appContext().preferences.getBoolean(persistentQueueKey, true)
 fun isPipModeAutoEnabled() = appContext().preferences.getBoolean(enablePictureInPictureAutoKey, false)
+
+

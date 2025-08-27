@@ -181,6 +181,7 @@ import it.fast4x.riplay.utils.loadMasterQueue
 import it.fast4x.riplay.utils.principalCache
 import it.fast4x.riplay.utils.saveMasterQueue
 import it.fast4x.riplay.extensions.preferences.volumeBoostLevelKey
+import it.fast4x.riplay.getPlaybackFadeAudioDuration
 import it.fast4x.riplay.utils.isOfficialContent
 import it.fast4x.riplay.utils.isUserGeneratedContent
 import kotlinx.coroutines.SupervisorJob
@@ -697,14 +698,8 @@ class OfflinePlayerService : MediaLibraryService(),
 
     @UnstableApi
     override fun onIsPlayingChanged(isPlaying: Boolean) {
-        val fadeDisabled = preferences.getEnum(
-            playbackFadeAudioDurationKey,
-            DurationInMilliseconds.Disabled
-        ) == DurationInMilliseconds.Disabled
-        val duration = preferences.getEnum(
-            playbackFadeAudioDurationKey,
-            DurationInMilliseconds.Disabled
-        ).milliSeconds
+        val fadeDisabled = getPlaybackFadeAudioDuration() == DurationInMilliseconds.Disabled
+        val duration = getPlaybackFadeAudioDuration().milliSeconds
         if (isPlaying && !fadeDisabled)
             startFadeAnimator(
                 player = binder.player,

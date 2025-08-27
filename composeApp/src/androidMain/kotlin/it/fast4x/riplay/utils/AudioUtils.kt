@@ -3,6 +3,8 @@ package it.fast4x.riplay.utils
 import android.animation.ValueAnimator
 import android.content.Context
 import android.content.Context.AUDIO_SERVICE
+import android.media.AudioDeviceCallback
+import android.media.AudioDeviceInfo
 import android.media.AudioManager
 import androidx.media3.exoplayer.ExoPlayer
 import android.os.Handler
@@ -10,16 +12,33 @@ import android.os.Looper
 import androidx.annotation.OptIn
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.core.animation.doOnEnd
 import androidx.media3.common.util.UnstableApi
+import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
+import it.fast4x.riplay.LocalPlayerServiceBinder
+import it.fast4x.riplay.context
+import it.fast4x.riplay.extensions.audiovolume.AudioVolumeObserver
+import it.fast4x.riplay.extensions.audiovolume.OnAudioVolumeChangedListener
+import it.fast4x.riplay.extensions.preferences.Preference.remember
+import it.fast4x.riplay.extensions.preferences.isPauseOnVolumeZeroEnabledKey
+import it.fast4x.riplay.extensions.preferences.preferences
+import it.fast4x.riplay.extensions.preferences.resumePlaybackWhenDeviceConnectedKey
+import it.fast4x.riplay.extensions.preferences.useVolumeKeysToChangeSongKey
 import it.fast4x.riplay.service.OfflinePlayerService
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import timber.log.Timber
 import java.math.RoundingMode
+import kotlin.math.roundToInt
 import kotlin.time.Duration.Companion.seconds
 
 var volume = 0f
@@ -134,6 +153,37 @@ fun startFadeAnimator(
     animator.doOnEnd {
         callback?.run()
         player.restoreGlobalVolume()
+    }
+    animator.start()
+}
+
+fun startFadeAnimator(
+    player: MutableState<YouTubePlayer?>,
+    duration: Int,
+    fadeIn: Boolean, /* fadeIn -> true  fadeOut -> false*/
+    callback: Runnable? = null, /* Code to run when Animator Ends*/
+) {
+    //println("mediaItem startFadeAnimator: fadeIn $fadeIn duration $duration callback $callback")
+    val fadeDuration = duration.toLong()
+    if (fadeDuration == 0L) {
+        callback?.run()
+        return
+    }
+
+    val volumeDevice = (getDeviceVolume(context()) * 100).roundToInt()
+    val startValue = if (fadeIn) 0 else volumeDevice
+    val endValue = if (fadeIn) volumeDevice else 0
+    val animator = ValueAnimator.ofInt(startValue, endValue)
+    animator.duration = fadeDuration
+    if (fadeIn) player.value?.setVolume(startValue)
+    animator.addUpdateListener { animation: ValueAnimator ->
+        val volume = (animation.animatedValue as Int)
+        Timber.d("FadeAnimator startFadeAnimator: fadeIn $fadeIn endValue $endValue volume $volume")
+        player.value?.setVolume(volume)
+    }
+    animator.doOnEnd {
+        callback?.run()
+        //player.restoreGlobalVolume()
     }
     animator.start()
 }

@@ -23,18 +23,24 @@ import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTube
 import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.R
 import it.fast4x.riplay.context
+import it.fast4x.riplay.enums.DurationInMilliseconds
 import it.fast4x.riplay.enums.PlayerThumbnailSize
 import it.fast4x.riplay.extensions.history.updateOnlineHistory
+import it.fast4x.riplay.extensions.preferences.getEnum
 import it.fast4x.riplay.ui.screens.player.online.components.customui.CustomDefaultPlayerUiController
 import it.fast4x.riplay.utils.DisposableListener
 import it.fast4x.riplay.extensions.preferences.isInvincibilityEnabledKey
 import it.fast4x.riplay.extensions.preferences.playbackDurationKey
+import it.fast4x.riplay.extensions.preferences.playbackFadeAudioDurationKey
 import it.fast4x.riplay.extensions.preferences.playbackSpeedKey
 import it.fast4x.riplay.utils.isLandscape
 import it.fast4x.riplay.extensions.preferences.playerThumbnailSizeKey
+import it.fast4x.riplay.extensions.preferences.preferences
 import it.fast4x.riplay.extensions.preferences.rememberObservedPreference
 import it.fast4x.riplay.extensions.preferences.rememberPreference
+import it.fast4x.riplay.getPlaybackFadeAudioDuration
 import it.fast4x.riplay.utils.playNext
+import it.fast4x.riplay.utils.startFadeAnimator
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
@@ -205,6 +211,16 @@ fun OnlinePlayerCore(
                     state: PlayerConstants.PlayerState
                 ) {
                     super.onStateChange(youTubePlayer, state)
+
+//                    val fadeDisabled = getPlaybackFadeAudioDuration() == DurationInMilliseconds.Disabled
+//                    val duration = getPlaybackFadeAudioDuration().milliSeconds
+//                    if (!fadeDisabled)
+//                        startFadeAnimator(
+//                            player = player,
+//                            duration = duration,
+//                            fadeIn = true
+//                        )
+
                     playerState = state
                     onPlayerStateChange(state)
                 }
@@ -254,4 +270,24 @@ fun OnlinePlayerCore(
 
         }
     )
+
+    fun callPause(
+        onPause: () -> Unit
+    ) {
+        val fadeDisabled = getPlaybackFadeAudioDuration() == DurationInMilliseconds.Disabled
+        val duration = getPlaybackFadeAudioDuration().milliSeconds
+        if (playerState == PlayerConstants.PlayerState.PLAYING) {
+            if (fadeDisabled) {
+                player.value?.pause()
+                onPause()
+            } else {
+                //fadeOut
+                startFadeAnimator(player, duration, false) {
+                    player.value?.pause()
+                    onPause()
+                }
+            }
+        }
+    }
+
 }

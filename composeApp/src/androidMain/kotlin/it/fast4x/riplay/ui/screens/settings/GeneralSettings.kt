@@ -198,7 +198,7 @@ fun GeneralSettings(
     val search = Search.init()
 
     var shakeEventEnabled by rememberPreference(shakeEventEnabledKey, false)
-    var useVolumeKeysToChangeSong by rememberPreference(useVolumeKeysToChangeSongKey, false)
+    //var useVolumeKeysToChangeSong by rememberPreference(useVolumeKeysToChangeSongKey, false)
 
     var customThemeLight_Background0 by rememberPreference(customThemeLight_Background0Key, DefaultLightColorPalette.background0.hashCode())
     var customThemeLight_Background1 by rememberPreference(customThemeLight_Background1Key, DefaultLightColorPalette.background1.hashCode())
@@ -1122,7 +1122,6 @@ fun GeneralSettings(
                         )
                     ) {
                         SwitchSettingEntry(
-                            online = false,
                             title = stringResource(R.string.loudness_normalization),
                             text = stringResource(R.string.autoadjust_the_volume),
                             isChecked = volumeNormalization,
@@ -1186,7 +1185,6 @@ fun GeneralSettings(
                         )
                     ) {
                         SwitchSettingEntry(
-                            online = false,
                             title = stringResource(R.string.settings_audio_bass_boost),
                             text = "",
                             isChecked = bassboostEnabled,
@@ -1257,23 +1255,24 @@ fun GeneralSettings(
                         )
                     }
 
-                    if (search.input.isBlank() || stringResource(R.string.event_volumekeys).contains(
-                            search.input,
-                            true
-                        )
-                    ) {
-                        SwitchSettingEntry(
-                            online = false,
-                            title = stringResource(R.string.event_volumekeys),
-                            text = stringResource(R.string.event_volumekeysinfo),
-                            isChecked = useVolumeKeysToChangeSong,
-                            onCheckedChange = {
-                                useVolumeKeysToChangeSong = it
-                                restartService = true
-                            }
-                        )
-                        RestartPlayerService(restartService, onRestart = { restartService = false })
-                    }
+
+//                    if (search.input.isBlank() || stringResource(R.string.event_volumekeys).contains(
+//                            search.input,
+//                            true
+//                        )
+//                    ) {
+//                        SwitchSettingEntry(
+//                            online = false,
+//                            title = stringResource(R.string.event_volumekeys),
+//                            text = stringResource(R.string.event_volumekeysinfo),
+//                            isChecked = useVolumeKeysToChangeSong,
+//                            onCheckedChange = {
+//                                useVolumeKeysToChangeSong = it
+//                                restartService = true
+//                            }
+//                        )
+//                        RestartPlayerService(restartService, onRestart = { restartService = false })
+//                    }
 
 
                     if (search.input.isBlank() || stringResource(R.string.event_shake).contains(
