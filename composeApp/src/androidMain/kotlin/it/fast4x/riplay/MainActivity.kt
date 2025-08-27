@@ -429,8 +429,6 @@ class MainActivity :
         super.onCreate(savedInstanceState)
         MonetCompat.enablePaletteCompat()
 
-        enableFullscreenMode()
-
         enableEdgeToEdge(
             statusBarStyle = SystemBarStyle.dark(
                 scrim = Color.Transparent.toArgb(),
@@ -440,6 +438,8 @@ class MainActivity :
                 darkScrim = Color.Transparent.toArgb()
             )
         )
+
+        enableFullscreenMode()
 
         MonetCompat.setup(this)
         _monet = MonetCompat.getInstance()
@@ -529,9 +529,9 @@ class MainActivity :
         // Configure the behavior of the hidden system bars.
         windowInsetsController.systemBarsBehavior =
             WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
-        //windowInsetsController.hide(WindowInsetsCompat.Type.systemBars())
+        windowInsetsController.hide(WindowInsetsCompat.Type.systemBars())
 //        windowInsetsController.hide(WindowInsetsCompat.Type.statusBars())
-        windowInsetsController.hide(WindowInsetsCompat.Type.navigationBars())
+        //windowInsetsController.hide(WindowInsetsCompat.Type.navigationBars())
 
         //Other method
 //        if (Build.VERSION.SDK_INT < 16) {

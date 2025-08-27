@@ -1,5 +1,7 @@
 package it.fast4x.riplay.ui.components.navigation.header
 
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.only
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarColors
@@ -65,7 +67,10 @@ class AppHeader(
             actions = { ActionBar( navController ) },
             navigationIcon = { BackButton() },
             scrollBehavior = scrollBehavior,
-            colors = colors()
+            colors = colors(),
+            windowInsets = TopAppBarDefaults.windowInsets.only(
+                WindowInsetsSides.Horizontal
+            )
         )
     }
 }
