@@ -372,7 +372,7 @@ class OfflinePlayerService : MediaLibraryService(),
                     )
                 )
                 //TODO CHECK IF THIS IS NEEDED
-//                .setBitmapLoader(CoilBitmapLoader(
+//                .setBitmapLoader(BitmapLoader(
 //                    this,
 //                    coroutineScope,
 //                    512 * resources.displayMetrics.density.toInt()

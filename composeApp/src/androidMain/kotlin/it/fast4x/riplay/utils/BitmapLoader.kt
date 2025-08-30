@@ -17,7 +17,7 @@ import kotlinx.coroutines.guava.future
 import java.util.concurrent.ExecutionException
 
 @UnstableApi
-class CoilBitmapLoader(
+class BitmapLoader(
     private val context: Context,
     private val scope: CoroutineScope,
     private val bitmapSize: Int,
