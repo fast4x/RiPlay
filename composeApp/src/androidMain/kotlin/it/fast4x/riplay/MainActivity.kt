@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.ActivityManager
 import android.app.PendingIntent
+import android.app.Service
 import android.content.BroadcastReceiver
 import android.content.ComponentName
 import android.content.Context
@@ -11,6 +12,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.content.ServiceConnection
 import android.content.SharedPreferences
+import android.content.pm.ServiceInfo
 import android.content.res.Configuration
 import android.graphics.Bitmap
 import android.graphics.drawable.BitmapDrawable
@@ -82,6 +84,7 @@ import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -104,6 +107,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.app.NotificationChannelCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import androidx.core.app.ServiceCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.edit
 import androidx.core.net.toUri
@@ -333,7 +337,7 @@ class MainActivity :
 
         override fun onServiceDisconnected(name: ComponentName?) {
             binder = null
-            endlessService = null
+            //endlessService = null
         }
 
     }
@@ -381,10 +385,10 @@ class MainActivity :
 
     var bitmapProvider: BitmapProvider? = null
     var onlinePlayerNotificationActionReceiver: OnlinePlayerNotificationActionReceiver? = null
-    var currentPlaybackPosition: MutableState<Long> = mutableStateOf(0)
-    var currentPlaybackDuration: MutableState<Long> = mutableStateOf(0)
+    var currentPlaybackPosition: MutableState<Long> = mutableLongStateOf(0)
+    var currentPlaybackDuration: MutableState<Long> = mutableLongStateOf(0)
 
-    var endlessService: EndlessService? = null
+    lateinit var endlessService: Service
 
     var mediaItemIsLocal: MutableState<Boolean> = mutableStateOf(false)
 
@@ -1854,6 +1858,24 @@ class MainActivity :
                 )
             )
             .build()
+
+        //workaround for android 12+
+        runCatching {
+            notification.let {
+                ServiceCompat.startForeground(
+                    endlessService,
+                    NOTIFICATION_ID,
+                    it,
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                        ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK
+                    } else {
+                        0
+                    }
+                )
+            }
+        }.onFailure {
+            Timber.e("PlayerService oncreate startForeground ${it.stackTraceToString()}")
+        }
 
         NotificationManagerCompat.from(this).notify(NOTIFICATION_ID, notification)
     }
