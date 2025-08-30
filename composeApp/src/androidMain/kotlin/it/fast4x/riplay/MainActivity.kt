@@ -481,8 +481,6 @@ class MainActivity :
             }
         )
 
-        initializeMediasession()
-
         initializeBitmapProvider()
 
         onlinePlayerNotificationActionReceiver = OnlinePlayerNotificationActionReceiver()
@@ -1672,10 +1670,21 @@ class MainActivity :
         if (mediaSession == null)
             mediaSession = MediaSessionCompat(this, "OnlinePlayer")
 
-        //mediaSession?.setFlags(0)
+        mediaSession?.setFlags(
+            MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS or
+                    MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS
+        )
         mediaSession?.setRepeatMode(PlaybackStateCompat.REPEAT_MODE_NONE)
         mediaSession?.setMetadata(
             MediaMetadataCompat.Builder()
+                .putString(
+                    MediaMetadataCompat.METADATA_KEY_MEDIA_ID,
+                    currentMediaItem?.mediaId
+                )
+                .putBitmap(
+                    MediaMetadataCompat.METADATA_KEY_ALBUM_ART,
+                    bitmapProvider?.bitmap
+                )
                 .putString(
                     MediaMetadataCompat.METADATA_KEY_TITLE,
                     currentMediaItem?.mediaMetadata?.title.toString()
@@ -1684,9 +1693,16 @@ class MainActivity :
                     MediaMetadataCompat.METADATA_KEY_ARTIST,
                     currentMediaItem?.mediaMetadata?.artist.toString()
                 )
+                .putString(
+                    MediaMetadataCompat.METADATA_KEY_ALBUM,
+                    currentMediaItem?.mediaMetadata?.albumTitle.toString()
+                )
                 .putLong(MediaMetadataCompat.METADATA_KEY_DURATION, currentPlaybackDuration.value)
                 .build()
         )
+
+        mediaSession?.isActive = true
+
         mediaSession?.setPlaybackState(
             stateBuilder
                 .setState(
@@ -1719,9 +1735,8 @@ class MainActivity :
             )
         }
 
-
         mediaSession?.setPlaybackState(stateBuilder.build())
-        mediaSession?.isActive = true
+
     }
 
     fun initializeBitmapProvider() {
@@ -1806,9 +1821,11 @@ class MainActivity :
         }
             .setContentTitle(currentMediaItem?.mediaMetadata?.title)
             .setContentText(currentMediaItem?.mediaMetadata?.artist)
-            .setSubText(currentMediaItem?.mediaMetadata?.artist)
+            //.setSubText(currentMediaItem?.mediaMetadata?.artist)
+            .setContentInfo(currentMediaItem?.mediaMetadata?.albumTitle)
             .setSmallIcon(R.drawable.app_icon)
             .setLargeIcon(bitmapProvider?.bitmap)
+            .setShowWhen(false)
             .setSilent(true)
             .setColorized(false)
             .setAutoCancel(false)
