@@ -1769,6 +1769,9 @@ class MainActivity :
         val currentMediaItem = binder?.player?.currentMediaItem
         if (currentMediaItem?.isLocal == true) return
 
+        if (bitmapProvider?.bitmap == null)
+            bitmapProvider?.load(currentMediaItem?.mediaMetadata?.artworkUri) {}
+
         initializeMediasession()
 
         createNotificationChannel()
