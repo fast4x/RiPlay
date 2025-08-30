@@ -711,6 +711,9 @@ class OfflinePlayerService : MediaLibraryService(),
     }
 
     override fun onPlayerError(error: PlaybackException) {
+
+        currentMediaItem.value?.isLocal?.let { if (!it) return }
+
         super.onPlayerError(error)
 
         Timber.e("PlayerServiceModern onPlayerError error code ${error.errorCode} message ${error.message} cause ${error.cause?.cause}")
