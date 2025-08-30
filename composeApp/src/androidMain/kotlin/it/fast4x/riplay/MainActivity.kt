@@ -1877,7 +1877,7 @@ class MainActivity :
             Timber.e("PlayerService oncreate startForeground ${it.stackTraceToString()}")
         }
 
-        NotificationManagerCompat.from(this).notify(NOTIFICATION_ID, notification)
+        NotificationManagerCompat.from(this@MainActivity).notify(NOTIFICATION_ID, notification)
     }
 
     private fun processBassBoost() {
