@@ -666,10 +666,13 @@ class OfflinePlayerService : MediaLibraryService(),
 
         currentMediaItem.update { mediaItem }
 
-        recoverPlaybackError()
+        if (mediaItem?.isLocal == true)
+            recoverPlaybackError()
+
         processNormalizeVolume()
 
-        loadFromRadio(reason)
+        if (preferences.getEnum(queueLoopTypeKey, QueueLoopType.Default).type == Player.REPEAT_MODE_OFF)
+            loadFromRadio(reason)
 
         with(bitmapProvider) {
             var newUriForLoad = binder.player.currentMediaItem?.mediaMetadata?.artworkUri

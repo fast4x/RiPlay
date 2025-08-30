@@ -25,6 +25,7 @@ import it.fast4x.riplay.R
 import it.fast4x.riplay.context
 import it.fast4x.riplay.enums.DurationInMilliseconds
 import it.fast4x.riplay.enums.PlayerThumbnailSize
+import it.fast4x.riplay.enums.QueueLoopType
 import it.fast4x.riplay.extensions.history.updateOnlineHistory
 import it.fast4x.riplay.extensions.preferences.getEnum
 import it.fast4x.riplay.ui.screens.player.online.components.customui.CustomDefaultPlayerUiController
@@ -36,6 +37,7 @@ import it.fast4x.riplay.extensions.preferences.playbackSpeedKey
 import it.fast4x.riplay.utils.isLandscape
 import it.fast4x.riplay.extensions.preferences.playerThumbnailSizeKey
 import it.fast4x.riplay.extensions.preferences.preferences
+import it.fast4x.riplay.extensions.preferences.queueLoopTypeKey
 import it.fast4x.riplay.extensions.preferences.rememberObservedPreference
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.getPlaybackFadeAudioDuration
@@ -73,10 +75,11 @@ fun OnlinePlayerCore(
 
     val player = remember { mutableStateOf<YouTubePlayer?>(null) }
 
+    //val repeatMode = rememberObservedPreference(queueLoopTypeKey, QueueLoopType.Default)
+
     binder?.player?.DisposableListener {
         object : Player.Listener {
             override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
-
                 mediaItem?.let {
                     localMediaItem = it
                     player.value?.loadVideo(it.mediaId, 0f)
@@ -84,6 +87,7 @@ fun OnlinePlayerCore(
                     Timber.d("OnlinePlayerCore: onMediaItemTransition loaded ${it.mediaId}")
                 }
             }
+
         }
     }
 

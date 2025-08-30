@@ -156,6 +156,7 @@ import it.fast4x.riplay.enums.PipModule
 import it.fast4x.riplay.enums.PlayerBackgroundColors
 import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.enums.PresetsReverb
+import it.fast4x.riplay.enums.QueueLoopType
 import it.fast4x.riplay.enums.ThumbnailRoundness
 import it.fast4x.riplay.extensions.audiovolume.AudioVolumeObserver
 import it.fast4x.riplay.extensions.audiovolume.OnAudioVolumeChangedListener
@@ -263,6 +264,7 @@ import it.fast4x.riplay.extensions.preferences.preferences
 import it.fast4x.riplay.extensions.preferences.proxyHostnameKey
 import it.fast4x.riplay.extensions.preferences.proxyModeKey
 import it.fast4x.riplay.extensions.preferences.proxyPortKey
+import it.fast4x.riplay.extensions.preferences.queueLoopTypeKey
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.utils.resize
 import it.fast4x.riplay.extensions.preferences.restartActivityKey
@@ -1674,11 +1676,13 @@ class MainActivity :
         if (mediaSession == null)
             mediaSession = MediaSessionCompat(this, "OnlinePlayer")
 
+        val repeatMode = preferences.getEnum(queueLoopTypeKey, QueueLoopType.Default).type
+
         mediaSession?.setFlags(
             MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS or
                     MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS
         )
-        mediaSession?.setRepeatMode(PlaybackStateCompat.REPEAT_MODE_NONE)
+        mediaSession?.setRepeatMode(repeatMode)
         mediaSession?.setMetadata(
             MediaMetadataCompat.Builder()
                 .putString(
@@ -1774,7 +1778,10 @@ class MainActivity :
         if (currentMediaItem?.isLocal == true) return
 
         if (bitmapProvider?.bitmap == null)
-            bitmapProvider?.load(currentMediaItem?.mediaMetadata?.artworkUri) {}
+            runBlocking {
+                bitmapProvider?.load(currentMediaItem?.mediaMetadata?.artworkUri) {}
+            }
+
 
         initializeMediasession()
 

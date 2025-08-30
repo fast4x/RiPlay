@@ -1,5 +1,6 @@
 package it.fast4x.riplay.enums
 
+import android.support.v4.media.session.PlaybackStateCompat
 import androidx.media3.common.Player
 
 enum class QueueLoopType {
@@ -13,6 +14,13 @@ enum class QueueLoopType {
         RepeatOne -> Player.REPEAT_MODE_ONE
         RepeatAll -> Player.REPEAT_MODE_ALL
     }
+
+    val typeCompat: Int
+        get() = when (this) {
+            Default -> PlaybackStateCompat.REPEAT_MODE_NONE
+            RepeatOne -> PlaybackStateCompat.REPEAT_MODE_ONE
+            RepeatAll -> PlaybackStateCompat.REPEAT_MODE_ALL
+        }
 
     companion object {
         @JvmStatic
