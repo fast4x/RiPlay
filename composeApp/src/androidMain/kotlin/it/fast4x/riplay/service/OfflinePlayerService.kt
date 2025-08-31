@@ -393,12 +393,12 @@ class OfflinePlayerService : MediaLibraryService(),
 
         player.repeatMode = preferences.getEnum(queueLoopTypeKey, QueueLoopType.Default).type
 
-        binder.player.playbackParameters = PlaybackParameters(
+        player.playbackParameters = PlaybackParameters(
             preferences.getFloat(playbackSpeedKey, 1f),
             preferences.getFloat(playbackPitchKey, 1f)
         )
-        binder.player.volume = preferences.getFloat(playbackVolumeKey, 1f)
-        binder.player.setGlobalVolume(binder.player.volume)
+        player.volume = preferences.getFloat(playbackVolumeKey, 1f)
+        player.setGlobalVolume(player.volume)
 
         audioVolumeObserver = AudioVolumeObserver(this)
         audioVolumeObserver.register(AudioManager.STREAM_MUSIC, this)
