@@ -41,6 +41,7 @@ import it.fast4x.riplay.extensions.preferences.queueLoopTypeKey
 import it.fast4x.riplay.extensions.preferences.rememberObservedPreference
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.getPlaybackFadeAudioDuration
+import it.fast4x.riplay.getQueueLoopType
 import it.fast4x.riplay.utils.playNext
 import it.fast4x.riplay.utils.startFadeAnimator
 import kotlinx.coroutines.Dispatchers
@@ -75,7 +76,7 @@ fun OnlinePlayerCore(
 
     val player = remember { mutableStateOf<YouTubePlayer?>(null) }
 
-    //val repeatMode = rememberObservedPreference(queueLoopTypeKey, QueueLoopType.Default)
+    val queueLoopType by rememberObservedPreference(queueLoopTypeKey, QueueLoopType.Default)
 
     binder?.player?.DisposableListener {
         object : Player.Listener {
@@ -107,6 +108,45 @@ fun OnlinePlayerCore(
     val playbackDuration by rememberObservedPreference(playbackDurationKey, 0f)
     var playerState by
         remember { mutableStateOf(PlayerConstants.PlayerState.UNSTARTED) }
+
+    LaunchedEffect(playerState) {
+        if (playerState == PlayerConstants.PlayerState.ENDED) {
+            // TODO Implement repeat mode in queue
+            when (queueLoopType) {
+                QueueLoopType.RepeatOne -> {
+                    player.value?.seekTo(0f)
+                    Timber.d("OnlinePlayerCore Repeat: RepeatOne fired")
+                }
+                QueueLoopType.Default -> {
+                    val hasNext = binder?.player?.hasNextMediaItem()
+                    Timber.d("OnlinePlayerCore Repeat: Default fired")
+                    if (hasNext == true) {
+                        binder.player.playNext()
+                        Timber.d("OnlinePlayerCore Repeat: Default fired next")
+                    }
+                }
+                QueueLoopType.RepeatAll -> {
+                    val hasNext = binder?.player?.hasNextMediaItem()
+                    Timber.d("OnlinePlayerCore Repeat: RepeatAll fired")
+                    if (hasNext == false) {
+                        binder.player.seekTo(0, 0)
+                        player.value?.play()
+                        Timber.d("OnlinePlayerCore Repeat: RepeatAll fired first")
+                    } else {
+                        binder?.player?.playNext()
+                        Timber.d("OnlinePlayerCore Repeat: RepeatAll fired next")
+                    }
+                }
+            }
+//            if (getQueueLoopType() == QueueLoopType.RepeatOne) {
+//                player.value?.seekTo(0f)
+//            }
+//
+//            if (binder?.player?.hasNextMediaItem() == true)
+//                binder.player.playNext()
+
+        }
+    }
 
     LaunchedEffect(playbackDuration) {
         if (playbackDuration > 0f)

@@ -713,7 +713,7 @@ fun OnlinePlayer(
         BackgroundProgress.MiniPlayer
     )
 
-    var queueLoopType by rememberObservedPreference(queueLoopTypeKey, defaultValue = QueueLoopType.Default)
+    var queueLoopType by rememberPreference(queueLoopTypeKey, defaultValue = QueueLoopType.Default)
     var showCircularSlider by remember {
         mutableStateOf(false)
     }
@@ -1439,15 +1439,15 @@ fun OnlinePlayer(
 
         shouldBePlaying = playerState.value == PlayerConstants.PlayerState.PLAYING
 
-        if (playerState.value == PlayerConstants.PlayerState.ENDED) {
-            // TODO Implement repeat mode in queue
-            if (getQueueLoopType() != QueueLoopType.Default)
-                player.value?.seekTo(0f)
-
-            if (binder.player.hasNextMediaItem())
-                binder.player.playNext()
-
-        }
+//        if (playerState.value == PlayerConstants.PlayerState.ENDED) {
+//            // TODO Implement repeat mode in queue
+//            if (getQueueLoopType() != QueueLoopType.Default)
+//                player.value?.seekTo(0f)
+//
+//            if (binder.player.hasNextMediaItem())
+//                binder.player.playNext()
+//
+//        }
 
         linkServiceClientSend(
             if (shouldBePlaying) mediaItem.mediaId.toCommandPlay() else LINKWEB_COMMAND_PAUSE.toCommand(),

@@ -539,11 +539,11 @@ fun OnlineMiniPlayer(
         LaunchedEffect(playerState.value) {
             shouldBePlaying = playerState.value == PlayerConstants.PlayerState.PLAYING
 
-            if (playerState.value == PlayerConstants.PlayerState.ENDED) {
-                // TODO Implement repeat mode in queue
-                if (getQueueLoopType() != QueueLoopType.Default)
-                    player.value?.seekTo(0f)
-            }
+//            if (playerState.value == PlayerConstants.PlayerState.ENDED) {
+//                // TODO Implement repeat mode in queue
+//                if (getQueueLoopType() != QueueLoopType.Default)
+//                    player.value?.seekTo(0f)
+//            }
 
         }
 
