@@ -52,10 +52,12 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.MediaItem
+import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.PlayerConstants
 import it.fast4x.riplay.Database
+import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.R
 import it.fast4x.riplay.appContext
 import it.fast4x.riplay.cleanPrefix
@@ -104,6 +106,7 @@ import it.fast4x.riplay.utils.setQueueLoopState
 import it.fast4x.riplay.extensions.preferences.showthumbnailKey
 import it.fast4x.riplay.utils.copyTextToClipboard
 import it.fast4x.riplay.extensions.preferences.textoutlineKey
+import it.fast4x.riplay.utils.DisposableListener
 import it.fast4x.riplay.utils.unlikeYtVideoOrSong
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -467,7 +470,19 @@ fun ControlsEssential(
     val currentMediaItem = mediaItem
     var lightTheme = colorPaletteMode == ColorPaletteMode.Light || (colorPaletteMode == ColorPaletteMode.System && (!isSystemInDarkTheme()))
 
-    //val binder = binder()
+    val binder = LocalPlayerServiceBinder.current
+    binder?.player?.DisposableListener {
+        object : Player.Listener {
+            override fun onRepeatModeChanged(repeatMode: Int) {
+                queueLoopType = when (repeatMode) {
+                    Player.REPEAT_MODE_ONE -> QueueLoopType.RepeatOne
+                    Player.REPEAT_MODE_ALL -> QueueLoopType.RepeatAll
+                    else -> QueueLoopType.Default
+                }
+                super.onRepeatModeChanged(repeatMode)
+            }
+        }
+    }
 
     Box {
         if (playerBackgroundColors != PlayerBackgroundColors.MidnightOdyssey){

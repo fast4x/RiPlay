@@ -551,6 +551,7 @@ fun OnlinePlayer(
         linkDevicesSelected.addAll(linkDevicesSavedAsState.value.devices())
     }
 
+    var queueLoopType by rememberPreference(queueLoopTypeKey, defaultValue = QueueLoopType.Default)
 
     binder.player.DisposableListener {
         object : Player.Listener {
@@ -560,14 +561,20 @@ fun OnlinePlayer(
                 mediaItem?.let {
                     linkServiceClientSend(it.mediaId.toCommandLoad(), castToLinkDevice, linkDevicesSelected)
                 }
-
-
-//        }
             }
 
             override fun onTimelineChanged(timeline: Timeline, reason: Int) {
                 mediaItems = timeline.mediaItems
                 mediaItemIndex = binder.player.currentMediaItemIndex
+            }
+
+            override fun onRepeatModeChanged(repeatMode: Int) {
+                queueLoopType = when (repeatMode) {
+                    Player.REPEAT_MODE_ONE -> QueueLoopType.RepeatOne
+                    Player.REPEAT_MODE_ALL -> QueueLoopType.RepeatAll
+                    else -> QueueLoopType.Default
+                }
+                super.onRepeatModeChanged(repeatMode)
             }
 
         }
@@ -713,7 +720,7 @@ fun OnlinePlayer(
         BackgroundProgress.MiniPlayer
     )
 
-    var queueLoopType by rememberPreference(queueLoopTypeKey, defaultValue = QueueLoopType.Default)
+
     var showCircularSlider by remember {
         mutableStateOf(false)
     }
