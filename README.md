@@ -1,21 +1,24 @@
 <div align="center">
-  <img src="./assets/design/latest/app_logo.svg" width="300" height="100" />    
-  <p><b>RiPlay</b> is a <b>multilingual</b> Android application for streaming music.</p>
-  <p>It began as an <b>extension</b> of <b>ViMusic</b>, then acquired its own identity.</p>
-<p><b>It allows the user to customize it at will.</b></p>
-<p><b>RiPlay does not collect any data.</b></p>
+  <img src="./assets/design/latest/app_icon.svg" width="100" height="100" />      
+  <p><b>RiPlay</b> is a multiplatform music player, customizable at will</p>
 
-  <a href="https://github.com/fast4x/RiPlay/releases"><img src="https://img.shields.io/github/downloads/fast4x/RiPlay/total?label=Total%20Downloads"></a>
-  <a href="https://github.com/fast4x/RiPlay/releases/latest"><img src="https://img.shields.io/github/downloads/fast4x/RiPlay/latest/total?label=Downloads%20of%20latest%20Release"></a>
-  <a href="https://github.com/fast4x/RiPlay/releases/latest"><img src="https://img.shields.io/github/v/release/fast4x/RiPlay?label=Release"></a>
+<a href="https://github.com/fast4x/RiPlay/releases"><img src="https://img.shields.io/github/downloads/fast4x/RiPlay/total?label=Total%20Downloads"></a>
+<a href="https://github.com/fast4x/RiPlay/releases/latest"><img src="https://img.shields.io/github/downloads/fast4x/RiPlay/latest/total?label=Downloads%20of%20latest%20Release"></a>
+<a href="https://github.com/fast4x/RiPlay/releases/latest"><img src="https://img.shields.io/github/v/release/fast4x/RiPlay?label=Release"></a>
 </div>
+
+## ❗ Disclaimer
+RiPlay:
+- <b>does <b>not collect any data</b>.</b>
+- <b>does <b>not include online content download, cache or background playback</b> functionality</b>
+- For online content use Youtube Player library as a wrapper around the official [IFrame Player API](https://developers.google.com/youtube/iframe_api_reference), which runs inside of a WebView.
+<p>Therefore there are <b>no issues with YouTube Terms of Service</b></p>.
+
 
 ## ✨ Features
 - **Multilingual:** English, Italian, German, Russian, French, Spanish, Czech, Turkish, Romanian and more. Contributions for other languages are welcome
-- UI Mode, swtich from RiPlay to classic ViMusic style, viceversa
-- Auto cache songs for offline playback with a custom cache size
-- Download songs or entire playlists for offline playback (not cache) 
-- Background playback
+- Play offline and online songs, videos, artists, albums, playlists, podcasts
+- Multiple mixed queues, can contain audio or video or both
 - Listening statistics
 - Audio visualizer on player with many type of effects.
   - THIS FEATURE REQUIRES MIC PERMISSION, ONLY AVAILABLE IF ACTIVATED FROM SETTINGS. [Full list of permissions](https://github.com/fast4x/RiPlay/wiki/FAQs#what-permissions-are-used)
@@ -24,19 +27,24 @@
 - Fetch, display, edit, translate synchronized, or not, songs lyrics
 - Customizable themes
 - Sleep timer with customizable time
-- Audio control: volume app, device, playback speed, pitch, normalization, skip silence
-- Android Auto, Android TV, YT Video support
-- Widgets (experimental)
+- Audio control: volume app, device, playback speed, pitch, normalization, skip silence, bassboost
+- Support Android Auto only for offline songs
+- Support Android TV (experimental)
+- Support Widgets (experimental)
 - Check for Updates, which can be enabled or disabled in settings
 
 ## 📷 Screenshots
 <div align="center">
-  <img src="./fastlane/metadata/android/en-US/images/phoneScreenshots/1.jpg" width="15%" />
-  <img src="./fastlane/metadata/android/en-US/images/phoneScreenshots/2.jpg" width="15%" />
-  <img src="./fastlane/metadata/android/en-US/images/phoneScreenshots/3.jpg" width="15%" />
-  <img src="./fastlane/metadata/android/en-US/images/phoneScreenshots/4.jpg" width="15%" />
-  <img src="./fastlane/metadata/android/en-US/images/phoneScreenshots/5.jpg" width="15%" />
-  <img src="./fastlane/metadata/android/en-US/images/phoneScreenshots/6.jpg" width="15%" />
+  <img src="./fastlane/metadata/android/en-US/images/phoneScreenshots/1.png" width="15%" />
+  <img src="./fastlane/metadata/android/en-US/images/phoneScreenshots/2.png" width="15%" />
+  <img src="./fastlane/metadata/android/en-US/images/phoneScreenshots/3.png" width="15%" />
+  <img src="./fastlane/metadata/android/en-US/images/phoneScreenshots/4.png" width="15%" />
+  <img src="./fastlane/metadata/android/en-US/images/phoneScreenshots/5.png" width="15%" />
+  <img src="./fastlane/metadata/android/en-US/images/phoneScreenshots/6.png" width="15%" />
+  <img src="./fastlane/metadata/android/en-US/images/phoneScreenshots/7.png" width="15%" />
+  <img src="./fastlane/metadata/android/en-US/images/phoneScreenshots/8.png" width="15%" />
+  <img src="./fastlane/metadata/android/en-US/images/phoneScreenshots/9.png" width="15%" />
+  <img src="./fastlane/metadata/android/en-US/images/phoneScreenshots/10.png" width="15%" />
 </div>
 
 ## 🌐 Languages available
@@ -65,7 +73,7 @@
 - **Hindi:** thanks to [NikunjKhangwal](https://crowdin.com/profile/nikunjkhangwal), [Sharunkumar](https://crowdin.com/profile/sharunkumar), [Th3-C0der](https://github.com/Th3-C0der)
 - **Hungarìan:** thanks to [Zan1456](https://crowdin.com/profile/Zan1456), [Ndvok](https://crowdin.com/profile/ndvok)
 - **Italian:** thanks to [Fabio Iotti](https://crowdin.com/profile/bruce965), [agefcgo](https://crowdin.com/profile/agefcgo), [CiccioDerole](https://crowdin.com/profile/CiccioDerole), [fast4x](https://github.com/fast4x)
-- **Indonesian:** thanks to [luthfialfarabi](https://crowdin.com/profile/luthfialfarabi), [teddysulaimanGL](https://github.com/teddysulaimanGL), [Fausta Ahmad](https://crowdin.com/profile/faustaahmad)  
+- **Indonesian:** thanks to [luthfialfarabi](https://crowdin.com/profile/luthfialfarabi), [teddysulaimanGL](https://github.com/teddysulaimanGL), [Fausta Ahmad](https://crowdin.com/profile/faustaahmad)
 - **Interlingua** thanks to [softinterlingua](https://github.com/softinterlingua)
 - **Japanese:** thanks to [maboroshin](https://crowdin.com/profile/maboroshin), [Mid_Vur_Shaan](https://crowdin.com/profile/Mid_Vur_Shaan)
 - **Malayalam** thanks to [chayotic](https://github.com/chayotic), [XDreamist](https://crowdin.com/profile/xdreamist)
@@ -85,401 +93,42 @@
 - **Tamil** thanks to [Vignesh-p-s](https://crowdin.com/profile/vignesh-p-s)
 - **Turkish:** thanks to [LinuxUsersLinuxMint](https://github.com/LinuxUsersLinuxMint), [abfreeman](https://github.com/abfreeman), [2010furs](https://github.com/2010furs), [Muha Aliss](https://crowdin.com/profile/muhaaliss)
 - **Telugu** thanks to [SureshTimma](https://crowdin.com/profile/sureshtimma)
-- **Ukrainian:** thanks to [Avin](https://crowdin.com/profile/avinateachip), [Michael Müller](https://crowdin.com/profile/xqzme1337), [NiXT0y](https://crowdin.com/profile/nixt0y), [Crayz310](https://github.com/Crayz310) 
+- **Ukrainian:** thanks to [Avin](https://crowdin.com/profile/avinateachip), [Michael Müller](https://crowdin.com/profile/xqzme1337), [NiXT0y](https://crowdin.com/profile/nixt0y), [Crayz310](https://github.com/Crayz310)
 - **Vietnamese:** thanks to [teaminh](https://crowdin.com/profile/teaminh)
 
 ## 📲 Installation
 [<img src="./assets/images/getItGithub.png" alt="GitHub" height="80">](https://github.com/fast4x/RiPlay/releases/latest)
+<!--
 [<img src="./assets/images/getItOpenapk.png" alt="OpenAPK" height="80">](https://www.openapk.net/rimusic/it.fast4x.rimusic/)
 [<img src="./assets/images/getItAccrescent.png" alt="Accrescent" height="80">](https://accrescent.app/app/it.fast4x.rimusic)
 [<img src="./assets/images/getItObtainium.png" alt="Obtainium" height="80">](https://apps.obtainium.imranr.dev/redirect?r=obtainium://app/%7B%22id%22%3A%22it.fast4x.rimusic%22%2C%22url%22%3A%22https%3A%2F%2Fgithub.com%2Ffast4x%2Frimusic%22%2C%22author%22%3A%22fast4x%22%2C%22name%22%3A%22RiMusic%22%2C%22preferredApkIndex%22%3A0%2C%22additionalSettings%22%3A%22%7B%5C%22includePrereleases%5C%22%3Afalse%2C%5C%22fallbackToOlderReleases%5C%22%3Atrue%2C%5C%22filterReleaseTitlesByRegEx%5C%22%3A%5C%22%5C%22%2C%5C%22filterReleaseNotesByRegEx%5C%22%3A%5C%22%5C%22%2C%5C%22verifyLatestTag%5C%22%3Afalse%2C%5C%22dontSortReleasesList%5C%22%3Afalse%2C%5C%22useLatestAssetDateAsReleaseDate%5C%22%3Afalse%2C%5C%22trackOnly%5C%22%3Afalse%2C%5C%22versionExtractionRegEx%5C%22%3A%5C%22%5C%22%2C%5C%22matchGroupToUse%5C%22%3A%5C%22%5C%22%2C%5C%22versionDetection%5C%22%3Atrue%2C%5C%22releaseDateAsVersion%5C%22%3Afalse%2C%5C%22useVersionCodeAsOSVersion%5C%22%3Afalse%2C%5C%22apkFilterRegEx%5C%22%3A%5C%22%5C%22%2C%5C%22invertAPKFilter%5C%22%3Afalse%2C%5C%22autoApkFilterByArch%5C%22%3Atrue%2C%5C%22appName%5C%22%3A%5C%22%5C%22%2C%5C%22shizukuPretendToBeGooglePlay%5C%22%3Afalse%2C%5C%22allowInsecure%5C%22%3Afalse%2C%5C%22exemptFromBackgroundUpdates%5C%22%3Afalse%2C%5C%22skipUpdateNotifications%5C%22%3Afalse%2C%5C%22about%5C%22%3A%5C%22RiMusic%20is%20a%20multilingual%20Android%20application%20for%20streaming%20music%20from%20YouTube%20Music.%20It%20began%20as%20an%20extension%20of%20ViMusic%2C%20then%20acquired%20its%20own%20identity.%20It%20allowing%20the%20user%20to%20customize%20it%20at%20will.%5C%22%7D%22%2C%22overrideSource%22%3Anull%7D)
 [<img src="./assets/images/getItIzzyOnDroid.png" alt="IzzyOnDroid" height="80">](https://apt.izzysoft.de/fdroid/index/apk/it.fast4x.rimusic/)
 [<img src="./assets/images/getItf-droid.png" alt="F-Droid" height="80">](https://f-droid.org/packages/it.fast4x.rimusic/)
-
-## ❗ CUSTOM VERSION
-WARNING, the custom version is **not** an official release, download only if invited by the developer!
-[Go to custom version](https://github.com/fast4x/RiMusic/tree/master/customVersion)
+-->
 
 ## ❓ FAQs
-- [Wiki page FAQs](https://github.com/fast4x/RiMusic/wiki/FAQs)
-- [Group on Telegram ](https://t.me/rimusic_app)
+- [Wiki page FAQs](https://github.com/fast4x/RiPlay/wiki/FAQs)
+- [Group on Telegram ](https://t.me/riplay_app)
 - [Community on Reddit](https://www.reddit.com/r/RiMusicApp/)
-- [Server on Discord](https://discord.gg/h7eS2PcGeW)
 
 ## 🤝 Contributing
-**Pull requests are welcome**
-- If you want:
-    - to **develop new functions** or **fix a bug**, fork the repository, send a pull request.
-    - to **translate** or **improve a translation** read the section Translations
+**Pull requests are welcome if you accept t distribute your code with GPL3.0 license**
+- If you accept GPL license, you can:
+  - **develop new functions** or **fix a bug**, fork the repository, send a pull request.
+  - **translate** or **improve a translation** read the section Translations
 
 
 ### 🔤 Translations
-- Go to [Crowdin](https://crowdin.com/project/rimusic/invite?h=73f0e6b64be1c64a8aebd467d286cf851925330), help with the translations.
-
-### 🤝 **Developer /../ Designer that contribute:**
-
-<table>
-<tr>
-    <td align="center" style="word-wrap: break-word; width: 90.0; height: 90.0">
-        <a href=https://github.com/fast4x>
-            <img src=https://avatars.githubusercontent.com/u/1484476?v=4 width="60;"  style="border-radius:50%;align-items:center;justify-content:center;overflow:hidden;padding-top:10px" alt=Rino Russo/>
-            <br />
-            <sub style="font-size:14px"><b>Rino Russo</b></sub>
-        </a>
-    </td>
-    <td align="center" style="word-wrap: break-word; width: 90.0; height: 90.0">
-        <a href=https://github.com/vfsfitvnm>
-            <img src=https://avatars.githubusercontent.com/u/46219656?v=4 width="60;"  style="border-radius:50%;align-items:center;justify-content:center;overflow:hidden;padding-top:10px" alt=vfsfitvnm/>
-            <br />
-            <sub style="font-size:14px"><b>vfsfitvnm</b></sub>
-        </a>
-    </td>
-    <td align="center" style="word-wrap: break-word; width: 90.0; height: 90.0">
-        <a href=https://github.com/aneesh1122>
-            <img src=https://avatars.githubusercontent.com/u/45353488?v=4 width="60;"  style="border-radius:50%;align-items:center;justify-content:center;overflow:hidden;padding-top:10px" alt=aneesh1122/>
-            <br />
-            <sub style="font-size:14px"><b>aneesh1122</b></sub>
-        </a>
-    </td>
-    <td align="center" style="word-wrap: break-word; width: 90.0; height: 90.0">
-        <a href=https://github.com/knighthat>
-            <img src=https://avatars.githubusercontent.com/u/68310158?v=4 width="60;"  style="border-radius:50%;align-items:center;justify-content:center;overflow:hidden;padding-top:10px" alt=Knight Hat/>
-            <br />
-            <sub style="font-size:14px"><b>Knight Hat</b></sub>
-        </a>
-    </td>
-    <td align="center" style="word-wrap: break-word; width: 90.0; height: 90.0">
-        <a href=https://github.com/twistios>
-            <img src=https://avatars.githubusercontent.com/u/54811436?v=4 width="60;"  style="border-radius:50%;align-items:center;justify-content:center;overflow:hidden;padding-top:10px" alt=twistios/>
-            <br />
-            <sub style="font-size:14px"><b>twistios</b></sub>
-        </a>
-    </td>
-    <td align="center" style="word-wrap: break-word; width: 90.0; height: 90.0">
-        <a href=https://github.com/martkol>
-            <img src=https://avatars.githubusercontent.com/u/55714786?v=4 width="60;"  style="border-radius:50%;align-items:center;justify-content:center;overflow:hidden;padding-top:10px" alt=martkol/>
-            <br />
-            <sub style="font-size:14px"><b>martkol</b></sub>
-        </a>
-    </td>
-</tr>
-<tr>
-    <td align="center" style="word-wrap: break-word; width: 90.0; height: 90.0">
-        <a href=https://github.com/ikanakova>
-            <img src=https://avatars.githubusercontent.com/u/38765251?v=4 width="60;"  style="border-radius:50%;align-items:center;justify-content:center;overflow:hidden;padding-top:10px" alt=ikanakova/>
-            <br />
-            <sub style="font-size:14px"><b>ikanakova</b></sub>
-        </a>
-    </td>
-    <td align="center" style="word-wrap: break-word; width: 90.0; height: 90.0">
-        <a href=https://github.com/NEVARLeVrai>
-            <img src=https://avatars.githubusercontent.com/u/63956787?v=4 width="60;"  style="border-radius:50%;align-items:center;justify-content:center;overflow:hidden;padding-top:10px" alt=NΞVΛR/>
-            <br />
-            <sub style="font-size:14px"><b>NΞVΛR</b></sub>
-        </a>
-    </td>
-    <td align="center" style="word-wrap: break-word; width: 90.0; height: 90.0">
-        <a href=https://github.com/Abhinavreddy-B>
-            <img src=https://avatars.githubusercontent.com/u/98270503?v=4 width="60;"  style="border-radius:50%;align-items:center;justify-content:center;overflow:hidden;padding-top:10px" alt=Abhinav Reddy Boddu/>
-            <br />
-            <sub style="font-size:14px"><b>Abhinav Reddy Boddu</b></sub>
-        </a>
-    </td>
-    <td align="center" style="word-wrap: break-word; width: 90.0; height: 90.0">
-        <a href=https://github.com/jzitnik-dev>
-            <img src=https://avatars.githubusercontent.com/u/72742578?v=4 width="60;"  style="border-radius:50%;align-items:center;justify-content:center;overflow:hidden;padding-top:10px" alt=Jakub Žitník/>
-            <br />
-            <sub style="font-size:14px"><b>Jakub Žitník</b></sub>
-        </a>
-    </td>
-    <td align="center" style="word-wrap: break-word; width: 90.0; height: 90.0">
-        <a href=https://github.com/OrangeZXZ>
-            <img src=https://avatars.githubusercontent.com/u/104271365?v=4 width="60;"  style="border-radius:50%;align-items:center;justify-content:center;overflow:hidden;padding-top:10px" alt=OrangeZXZ/>
-            <br />
-            <sub style="font-size:14px"><b>OrangeZXZ</b></sub>
-        </a>
-    </td>
-    <td align="center" style="word-wrap: break-word; width: 90.0; height: 90.0">
-        <a href=https://github.com/siggi1984>
-            <img src=https://avatars.githubusercontent.com/u/103368536?v=4 width="60;"  style="border-radius:50%;align-items:center;justify-content:center;overflow:hidden;padding-top:10px" alt=siggi1984/>
-            <br />
-            <sub style="font-size:14px"><b>siggi1984</b></sub>
-        </a>
-    </td>
-</tr>
-<tr>
-    <td align="center" style="word-wrap: break-word; width: 90.0; height: 90.0">
-        <a href=https://github.com/DanielSevillano>
-            <img src=https://avatars.githubusercontent.com/u/68847306?v=4 width="60;"  style="border-radius:50%;align-items:center;justify-content:center;overflow:hidden;padding-top:10px" alt=Daniel/>
-            <br />
-            <sub style="font-size:14px"><b>Daniel</b></sub>
-        </a>
-    </td>
-    <td align="center" style="word-wrap: break-word; width: 90.0; height: 90.0">
-        <a href=https://github.com/KyNarec>
-            <img src=https://avatars.githubusercontent.com/u/113847208?v=4 width="60;"  style="border-radius:50%;align-items:center;justify-content:center;overflow:hidden;padding-top:10px" alt=KyNarec/>
-            <br />
-            <sub style="font-size:14px"><b>KyNarec</b></sub>
-        </a>
-    </td>
-    <td align="center" style="word-wrap: break-word; width: 90.0; height: 90.0">
-        <a href=https://github.com/coolcarp>
-            <img src=https://avatars.githubusercontent.com/u/76832747?v=4 width="60;"  style="border-radius:50%;align-items:center;justify-content:center;overflow:hidden;padding-top:10px" alt=coolcarp/>
-            <br />
-            <sub style="font-size:14px"><b>coolcarp</b></sub>
-        </a>
-    </td>
-    <td align="center" style="word-wrap: break-word; width: 90.0; height: 90.0">
-        <a href=https://github.com/kaanelloed>
-            <img src=https://avatars.githubusercontent.com/u/11068249?v=4 width="60;"  style="border-radius:50%;align-items:center;justify-content:center;overflow:hidden;padding-top:10px" alt=David/>
-            <br />
-            <sub style="font-size:14px"><b>David</b></sub>
-        </a>
-    </td>
-    <td align="center" style="word-wrap: break-word; width: 90.0; height: 90.0">
-        <a href=https://github.com/S0nter>
-            <img src=https://avatars.githubusercontent.com/u/108224581?v=4 width="60;"  style="border-radius:50%;align-items:center;justify-content:center;overflow:hidden;padding-top:10px" alt=Sonter/>
-            <br />
-            <sub style="font-size:14px"><b>Sonter</b></sub>
-        </a>
-    </td>
-    <td align="center" style="word-wrap: break-word; width: 90.0; height: 90.0">
-        <a href=https://github.com/AnnNaserNabil>
-            <img src=https://avatars.githubusercontent.com/u/16422192?v=4 width="60;"  style="border-radius:50%;align-items:center;justify-content:center;overflow:hidden;padding-top:10px" alt=Ann Naser Nabil/>
-            <br />
-            <sub style="font-size:14px"><b>Ann Naser Nabil</b></sub>
-        </a>
-    </td>
-</tr>
-<tr>
-    <td align="center" style="word-wrap: break-word; width: 90.0; height: 90.0">
-        <a href=https://github.com/DarkCrypt>
-            <img src=https://avatars.githubusercontent.com/u/121076677?v=4 width="60;"  style="border-radius:50%;align-items:center;justify-content:center;overflow:hidden;padding-top:10px" alt=DarkCrypt/>
-            <br />
-            <sub style="font-size:14px"><b>DarkCrypt</b></sub>
-        </a>
-    </td>
-    <td align="center" style="word-wrap: break-word; width: 90.0; height: 90.0">
-        <a href=https://github.com/muhaaliss>
-            <img src=https://avatars.githubusercontent.com/u/102979224?v=4 width="60;"  style="border-radius:50%;align-items:center;justify-content:center;overflow:hidden;padding-top:10px" alt=Muha Aliss/>
-            <br />
-            <sub style="font-size:14px"><b>Muha Aliss</b></sub>
-        </a>
-    </td>
-    <td align="center" style="word-wrap: break-word; width: 90.0; height: 90.0">
-        <a href=https://github.com/sayyid5416>
-            <img src=https://avatars.githubusercontent.com/u/78584556?v=4 width="60;"  style="border-radius:50%;align-items:center;justify-content:center;overflow:hidden;padding-top:10px" alt=Sayyid/>
-            <br />
-            <sub style="font-size:14px"><b>Sayyid</b></sub>
-        </a>
-    </td>
-    <td align="center" style="word-wrap: break-word; width: 90.0; height: 90.0">
-        <a href=https://github.com/bbyeen>
-            <img src=https://avatars.githubusercontent.com/u/80675742?v=4 width="60;"  style="border-radius:50%;align-items:center;justify-content:center;overflow:hidden;padding-top:10px" alt=Matt/>
-            <br />
-            <sub style="font-size:14px"><b>Matt</b></sub>
-        </a>
-    </td>
-    <td align="center" style="word-wrap: break-word; width: 90.0; height: 90.0">
-        <a href=https://github.com/sharunkumar>
-            <img src=https://avatars.githubusercontent.com/u/715417?v=4 width="60;"  style="border-radius:50%;align-items:center;justify-content:center;overflow:hidden;padding-top:10px" alt=Sharun/>
-            <br />
-            <sub style="font-size:14px"><b>Sharun</b></sub>
-        </a>
-    </td>
-    <td align="center" style="word-wrap: break-word; width: 90.0; height: 90.0">
-        <a href=https://github.com/leoheitmannruiz>
-            <img src=https://avatars.githubusercontent.com/u/148111793?v=4 width="60;"  style="border-radius:50%;align-items:center;justify-content:center;overflow:hidden;padding-top:10px" alt=Leo Heitmann Ruiz/>
-            <br />
-            <sub style="font-size:14px"><b>Leo Heitmann Ruiz</b></sub>
-        </a>
-    </td>
-</tr>
-<tr>
-    <td align="center" style="word-wrap: break-word; width: 90.0; height: 90.0">
-        <a href=https://github.com/KalyaSc>
-            <img src=https://avatars.githubusercontent.com/u/95717211?v=4 width="60;"  style="border-radius:50%;align-items:center;justify-content:center;overflow:hidden;padding-top:10px" alt=KalyaSc/>
-            <br />
-            <sub style="font-size:14px"><b>KalyaSc</b></sub>
-        </a>
-    </td>
-    <td align="center" style="word-wrap: break-word; width: 90.0; height: 90.0">
-        <a href=https://github.com/Bnyro>
-            <img src=https://avatars.githubusercontent.com/u/82752168?v=4 width="60;"  style="border-radius:50%;align-items:center;justify-content:center;overflow:hidden;padding-top:10px" alt=Bnyro/>
-            <br />
-            <sub style="font-size:14px"><b>Bnyro</b></sub>
-        </a>
-    </td>
-    <td align="center" style="word-wrap: break-word; width: 90.0; height: 90.0">
-        <a href=https://github.com/25huizengek1>
-            <img src=https://avatars.githubusercontent.com/u/50515369?v=4 width="60;"  style="border-radius:50%;align-items:center;justify-content:center;overflow:hidden;padding-top:10px" alt=25huizengek1/>
-            <br />
-            <sub style="font-size:14px"><b>25huizengek1</b></sub>
-        </a>
-    </td>
-    <td align="center" style="word-wrap: break-word; width: 90.0; height: 90.0">
-        <a href=https://github.com/wispl>
-            <img src=https://avatars.githubusercontent.com/u/108438586?v=4 width="60;"  style="border-radius:50%;align-items:center;justify-content:center;overflow:hidden;padding-top:10px" alt=wispl/>
-            <br />
-            <sub style="font-size:14px"><b>wispl</b></sub>
-        </a>
-    </td>
-    <td align="center" style="word-wrap: break-word; width: 90.0; height: 90.0">
-        <a href=https://github.com/Craeckie>
-            <img src=https://avatars.githubusercontent.com/u/5006444?v=4 width="60;"  style="border-radius:50%;align-items:center;justify-content:center;overflow:hidden;padding-top:10px" alt=Craeckie/>
-            <br />
-            <sub style="font-size:14px"><b>Craeckie</b></sub>
-        </a>
-    </td>
-    <td align="center" style="word-wrap: break-word; width: 90.0; height: 90.0">
-        <a href=https://github.com/offa>
-            <img src=https://avatars.githubusercontent.com/u/8887756?v=4 width="60;"  style="border-radius:50%;align-items:center;justify-content:center;overflow:hidden;padding-top:10px" alt=offa/>
-            <br />
-            <sub style="font-size:14px"><b>offa</b></sub>
-        </a>
-    </td>
-</tr>
-<tr>
-    <td align="center" style="word-wrap: break-word; width: 90.0; height: 90.0">
-        <a href=https://github.com/lrusso96>
-            <img src=https://avatars.githubusercontent.com/u/26090639?v=4 width="60;"  style="border-radius:50%;align-items:center;justify-content:center;overflow:hidden;padding-top:10px" alt=Luigi Russo/>
-            <br />
-            <sub style="font-size:14px"><b>Luigi Russo</b></sub>
-        </a>
-    </td>
-    <td align="center" style="word-wrap: break-word; width: 90.0; height: 90.0">
-        <a href=https://github.com/locxter>
-            <img src=https://avatars.githubusercontent.com/u/54595101?v=4 width="60;"  style="border-radius:50%;align-items:center;justify-content:center;overflow:hidden;padding-top:10px" alt=Luca Schultz/>
-            <br />
-            <sub style="font-size:14px"><b>Luca Schultz</b></sub>
-        </a>
-    </td>
-    <td align="center" style="word-wrap: break-word; width: 90.0; height: 90.0">
-        <a href=https://github.com/davidsalido>
-            <img src=https://avatars.githubusercontent.com/u/46091673?v=4 width="60;"  style="border-radius:50%;align-items:center;justify-content:center;overflow:hidden;padding-top:10px" alt=davidsalido/>
-            <br />
-            <sub style="font-size:14px"><b>davidsalido</b></sub>
-        </a>
-    </td>
-    <td align="center" style="word-wrap: break-word; width: 90.0; height: 90.0">
-        <a href=https://github.com/ARBoyGo>
-            <img src=https://avatars.githubusercontent.com/u/69381592?v=4 width="60;"  style="border-radius:50%;align-items:center;justify-content:center;overflow:hidden;padding-top:10px" alt=ARBoyGo/>
-            <br />
-            <sub style="font-size:14px"><b>ARBoyGo</b></sub>
-        </a>
-    </td>
-    <td align="center" style="word-wrap: break-word; width: 90.0; height: 90.0">
-        <a href=https://github.com/Surendrajat>
-            <img src=https://avatars.githubusercontent.com/u/11215000?v=4 width="60;"  style="border-radius:50%;align-items:center;justify-content:center;overflow:hidden;padding-top:10px" alt=Surendrajat/>
-            <br />
-            <sub style="font-size:14px"><b>Surendrajat</b></sub>
-        </a>
-    </td>
-    <td align="center" style="word-wrap: break-word; width: 90.0; height: 90.0">
-        <a href=https://github.com/sriio>
-            <img src=https://avatars.githubusercontent.com/u/8983976?v=4 width="60;"  style="border-radius:50%;align-items:center;justify-content:center;overflow:hidden;padding-top:10px" alt=Sylvain Rio/>
-            <br />
-            <sub style="font-size:14px"><b>Sylvain Rio</b></sub>
-        </a>
-    </td>
-</tr>
-<tr>
-    <td align="center" style="word-wrap: break-word; width: 90.0; height: 90.0">
-        <a href=https://github.com/0x5h31d0n>
-            <img src=https://avatars.githubusercontent.com/u/63775224?v=4 width="60;"  style="border-radius:50%;align-items:center;justify-content:center;overflow:hidden;padding-top:10px" alt=Sheldon Menezes/>
-            <br />
-            <sub style="font-size:14px"><b>Sheldon Menezes</b></sub>
-        </a>
-    </td>
-    <td align="center" style="word-wrap: break-word; width: 90.0; height: 90.0">
-        <a href=https://github.com/roklc>
-            <img src=https://avatars.githubusercontent.com/u/142526268?v=4 width="60;"  style="border-radius:50%;align-items:center;justify-content:center;overflow:hidden;padding-top:10px" alt=Rokic/>
-            <br />
-            <sub style="font-size:14px"><b>Rokic</b></sub>
-        </a>
-    </td>
-    <td align="center" style="word-wrap: break-word; width: 90.0; height: 90.0">
-        <a href=https://github.com/RohanTemgire>
-            <img src=https://avatars.githubusercontent.com/u/56552357?v=4 width="60;"  style="border-radius:50%;align-items:center;justify-content:center;overflow:hidden;padding-top:10px" alt=RohanTemgire/>
-            <br />
-            <sub style="font-size:14px"><b>RohanTemgire</b></sub>
-        </a>
-    </td>
-    <td align="center" style="word-wrap: break-word; width: 90.0; height: 90.0">
-        <a href=https://github.com/Poussinou>
-            <img src=https://avatars.githubusercontent.com/u/19646549?v=4 width="60;"  style="border-radius:50%;align-items:center;justify-content:center;overflow:hidden;padding-top:10px" alt=Poussinou/>
-            <br />
-            <sub style="font-size:14px"><b>Poussinou</b></sub>
-        </a>
-    </td>
-    <td align="center" style="word-wrap: break-word; width: 90.0; height: 90.0">
-        <a href=https://github.com/ov1d1u>
-            <img src=https://avatars.githubusercontent.com/u/1385202?v=4 width="60;"  style="border-radius:50%;align-items:center;justify-content:center;overflow:hidden;padding-top:10px" alt=Ovidiu D. Nițan/>
-            <br />
-            <sub style="font-size:14px"><b>Ovidiu D. Nițan</b></sub>
-        </a>
-    </td>
-    <td align="center" style="word-wrap: break-word; width: 90.0; height: 90.0">
-        <a href=https://github.com/iscle>
-            <img src=https://avatars.githubusercontent.com/u/8018823?v=4 width="60;"  style="border-radius:50%;align-items:center;justify-content:center;overflow:hidden;padding-top:10px" alt=Iscle/>
-            <br />
-            <sub style="font-size:14px"><b>Iscle</b></sub>
-        </a>
-    </td>
-</tr>
-<tr>
-    <td align="center" style="word-wrap: break-word; width: 90.0; height: 90.0">
-        <a href=https://github.com/TheRedCyclops>
-            <img src=https://avatars.githubusercontent.com/u/76230780?v=4 width="60;"  style="border-radius:50%;align-items:center;justify-content:center;overflow:hidden;padding-top:10px" alt=TheRedCyclops/>
-            <br />
-            <sub style="font-size:14px"><b>TheRedCyclops</b></sub>
-        </a>
-    </td>
-    <td align="center" style="word-wrap: break-word; width: 90.0; height: 90.0">
-        <a href=https://github.com/chayotic>
-            <img src=https://avatars.githubusercontent.com/u/152018343?v=4 width="60;"  style="border-radius:50%;align-items:center;justify-content:center;overflow:hidden;padding-top:10px" alt=TheRedCyclops/>
-            <br />
-            <sub style="font-size:14px"><b>Rohith Pai</b></sub>
-        </a>
-    </td>
-    
-</tr>
-</table>
-<!--
-- [25huizengek1](https://github.com/25huizengek1)
-- [821938089](https://github.com/821938089)
-- [aneesh1122](https://github.com/aneesh1122)
-- [Abhinavreddy-B](https://github.com/Abhinavreddy-B)
-- [bbyeen](https://github.com/bbyeen)
-- [Craeckie](https://github.com/Craeckie)
-- [DanielSevillano](https://github.com/DanielSevillano)
-- [fast4x](https://github.com/fast4x)
-- [ikanakova](https://github.com/ikanakova)
-- [iscle](https://github.com/iscle)
-- [jaimtres](https://github.com/jaimtres)
-- [JZITNIK](https://github.com/jzitnik-dev)
-- [KyNarec](https://github.com/KyNarec)
-- [knighthat](https://github.com/knighthat)
-- [locxter](https://github.com/locxter)
-- [lrusso96](https://github.com/lrusso96)
-- [martkol](https://github.com/martkol)
-- [ov1d1u ](https://github.com/ov1d1u)
-- [roklc](https://github.com/roklc)
-- [sharunkumar](https://github.com/sharunkumar/sharunkumar)
-- [SuhasDissa](https://github.com/SuhasDissa)
-- [twistios](https://github.com/twistios)
-- [wispl](https://github.com/wispl)
-- [chayotic](https://github.com/chayotic)
--->  
-
+- Go to [Crowdin](https://crwd.in/rimusic/37f0755f4e2cf99351844c27c86df0f12540778), help with the translations.
 
 ## 🫂 Acknowledgments
+- [**RiMusic**](https://github.com/fast4x/RiMusic) and all contributors
 - [**ViMusic**](https://github.com/vfsfitvnm/ViMusic)
-- **RiMusic current Logo Design from** [jaimtres](https://github.com/jaimtres)
-- **RiMusic previous Logo, many current icons from** [@ikanakova](https://github.com/ikanakova)
-- **RiMusic Website, other features from** [JZITNIK-github](https://github.com/JZITNIK-github), [martkol](https://github.com/martkol)
-- **RiMusic New player, lyrics layouts from** [aneesh1122](https://github.com/aneesh1122)
-- [**YouTube-Internal-Clients**](https://github.com/zerodytrash/YouTube-Internal-Clients): A python script that discovers hidden YouTube API clients. Just a research project.
+- **RiPlay current Logo Design from** [jaimtres](https://github.com/jaimtres)
+- **RiPlay previous Logo, many current icons from** [@ikanakova](https://github.com/ikanakova)
+- **RiPlay New player, lyrics layouts from** [aneesh1122](https://github.com/aneesh1122)
+- [**Android Youtube Player**](https://github.com/PierfrancescoSoffritti/android-youtube-player): YouTube Player library for Android and Chromecast, stable and customizable.
+- [**YouTube Internal Clients**](https://github.com/zerodytrash/YouTube-Internal-Clients): A python script that discovers hidden YouTube API clients. Just a research project.
 - [**Ionicons**](https://github.com/ionic-team/ionicons): Premium hand-crafted icons built by Ionic, for Ionic apps, web apps everywhere.
 - [**FlatIcon.com**](https://www.flaticon.com/): Download Free Icons, Stickers for your projects. Resources made by, for designers.
 - [**Translator**](https://github.com/therealbush/translator): A simple, free Google Translate library for Kotlin/JVM, Java.
@@ -488,7 +137,3 @@ WARNING, the custom version is **not** an official release, download only if inv
 - [**HypnoticCanvas**](https://mikepenz.github.io/HypnoticCanvas/): A shader modifier for Compose Multiplatform / Jetpack Compose
 
 
-## ❗ Disclaimer
-This project, its contents are not affiliated with, funded, authorized, endorsed by, or in any way associated with YouTube, Google LLC or any of its affiliates, subsidiaries.
-
-Any trademark, service mark, trade name, or other intellectual property rights used in this project are owned by the respective owners.
