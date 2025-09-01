@@ -945,4 +945,6 @@
     <string name="use_placeholder_in_imageloader">Use placeholder for image loader</string>
     <string name="use_placeholder_in_imageloader_info">Show image loader while loading images</string>
     <string name="seek_with_tap">Seek with tap</string>
+    <string name="restore_from_other_backup">Restore from other backup</string>
+    <string name="import_the_database_be_carefull">Import the database from other backup. Be careful, you may need to reinstall the app.</string>
 </resources>

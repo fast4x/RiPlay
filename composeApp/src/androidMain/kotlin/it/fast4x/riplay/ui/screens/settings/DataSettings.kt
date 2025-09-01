@@ -1,6 +1,7 @@
 package it.fast4x.riplay.ui.screens.settings
 
 import android.annotation.SuppressLint
+import android.content.ActivityNotFoundException
 import android.text.format.Formatter
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -133,6 +134,8 @@ fun DataSettings() {
         coilCustomDiskCacheKey,32
     )
 
+    var restoreFromOtherFileExtension by remember { mutableStateOf(false)}
+
     //val release = Build.VERSION.RELEASE;
     //val sdkVersion = Build.VERSION.SDK_INT;
     //if (sdkVersion.toShort() < 29) exoPlayerAlternateCacheLocation=""
@@ -194,35 +197,28 @@ fun DataSettings() {
             },
             content = {
                 BasicText(
-                    text = if (resultMessage.first) stringResource(R.string.restore_completed)
-                    else "Restore failed!", //stringResource(R.string.restore_failed),
+                    text = stringResource(R.string.restore_completed),
                     style = typography().s.bold.copy(color = colorPalette().text),
                 )
                 Spacer(modifier = Modifier.height(20.dp))
-                if (!resultMessage.first)
-                    BasicText(
-                        text = resultMessage.second,
-                        style = typography().xs.semiBold.copy(color = colorPalette().textSecondary),
-                    )
+
+                BasicText(
+                    text = stringResource(R.string.click_to_close),
+                    style = typography().xs.semiBold.copy(color = colorPalette().textSecondary),
+                )
                 Spacer(modifier = Modifier.height(10.dp))
-                if (resultMessage.first) {
-                    BasicText(
-                        text = stringResource(R.string.click_to_close),
-                        style = typography().xs.semiBold.copy(color = colorPalette().textSecondary),
-                    )
-                    Spacer(modifier = Modifier.height(10.dp))
-                    Image(
-                        painter = painterResource(R.drawable.server),
-                        contentDescription = null,
-                        colorFilter = ColorFilter.tint(colorPalette().shimmer),
-                        modifier = Modifier
-                            .size(40.dp)
-                            .clickable {
-                                exitAfterRestore = false
-                                exitProcess(0)
-                            }
-                    )
-                }
+                Image(
+                    painter = painterResource(R.drawable.server),
+                    contentDescription = null,
+                    colorFilter = ColorFilter.tint(colorPalette().shimmer),
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clickable {
+                            exitAfterRestore = false
+                            exitProcess(0)
+                        }
+                )
+
             }
 
         )
@@ -277,38 +273,47 @@ fun DataSettings() {
             text = stringResource(R.string.import_the_database),
             onDismiss = { isImporting = false },
             onConfirm = {
-//                try {
-//                    restoreLauncher.launch(
-//                        arrayOf(
-//                            "application/vnd.sqlite3",
-//                            "application/x-sqlite3",
-//                            "application/octet-stream"
-//                        )
-//                    )
-//                } catch (e: ActivityNotFoundException) {
-//                    SmartMessage(context.resources.getString(R.string.info_not_find_app_open_doc), type = PopupType.Warning, context = context)
-//                }
-                backupHandler.database(Database.getInstance)
-                    .backupLocation(RoomBackup.BACKUP_FILE_LOCATION_CUSTOM_DIALOG)
-                    .apply {
-                        onCompleteListener { success, message, exitCode ->
-                            //resultMessage = Triple(success, message, exitCode)
-
-                            //exitAfterRestore = true
-                            SmartMessage(
-                                message = if (success) context.resources.getString(R.string.restore_completed)
-                                else message.capitalized(),
-                                type = if(success) PopupType.Info else PopupType.Warning,
-                                context = context,
-                                durationLong = true
+                when (restoreFromOtherFileExtension) {
+                    true -> {
+                        try {
+                            restoreLauncher.launch(
+                                arrayOf(
+                                    "application/vnd.sqlite3",
+                                    "application/x-sqlite3",
+                                    "application/octet-stream"
+                                )
                             )
-
-                            Timber.d("Data restore: success $success, message: $message, exitCode: $exitCode")
-                            println("Data restore: success  $success, message: $message, exitCode: $exitCode")
-
+                        } catch (e: ActivityNotFoundException) {
+                            SmartMessage(context.resources.getString(R.string.info_not_find_app_open_doc), type = PopupType.Warning, context = context)
                         }
                     }
-                    .restore()
+                    false -> {
+                        backupHandler.database(Database.getInstance)
+                            .backupLocation(RoomBackup.BACKUP_FILE_LOCATION_CUSTOM_DIALOG)
+                            .apply {
+                                onCompleteListener { success, message, exitCode ->
+                                    //resultMessage = Triple(success, message, exitCode)
+
+                                    //exitAfterRestore = true
+                                    SmartMessage(
+                                        message = if (success) context.resources.getString(R.string.restore_completed)
+                                        else message.capitalized(),
+                                        type = if(success) PopupType.Info else PopupType.Warning,
+                                        context = context,
+                                        durationLong = true
+                                    )
+
+                                    Timber.d("Data restore: success $success, message: $message, exitCode: $exitCode")
+                                    println("Data restore: success  $success, message: $message, exitCode: $exitCode")
+
+                                }
+                            }
+                            .restore()
+                    }
+                }
+
+
+
 
 
             }
@@ -325,9 +330,6 @@ fun DataSettings() {
         mutableStateOf(false)
     }
 
-    var cleanDownloadCache by remember {
-        mutableStateOf(false)
-    }
     var cleanCacheImages by remember {
         mutableStateOf(false)
     }
@@ -608,6 +610,15 @@ fun DataSettings() {
             title = stringResource(R.string.restore_from_backup),
             text = stringResource(R.string.import_the_database),
             onClick = {
+                restoreFromOtherFileExtension = false
+                isImporting = true
+            }
+        )
+        SettingsEntry(
+            title = stringResource(R.string.restore_from_other_backup),
+            text = stringResource(R.string.import_the_database_be_carefull),
+            onClick = {
+                restoreFromOtherFileExtension = true
                 isImporting = true
             }
         )
