@@ -1,1 +1,1 @@
-Android Music Player
+Multiplatform Music Player
