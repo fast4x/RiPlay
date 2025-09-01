@@ -12,7 +12,7 @@ RiPlay:
 - <b>does <b>not collect any data</b>.</b>
 - <b>does <b>not include online content download, cache or background playback</b> functionality</b>
 - For online content use Youtube Player library as a wrapper around the official [IFrame Player API](https://developers.google.com/youtube/iframe_api_reference), which runs inside of a WebView.
-<p>Therefore there are <b>no issues with YouTube Terms of Service</b></p>.
+<!-- <p>Therefore there are <b>no issues with YouTube Terms of Service</b></p>. -->
 
 
 ## ✨ Features
