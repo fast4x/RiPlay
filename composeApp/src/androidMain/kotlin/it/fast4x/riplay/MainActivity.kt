@@ -246,6 +246,7 @@ import it.fast4x.riplay.utils.isAtLeastAndroid8
 import it.fast4x.riplay.extensions.preferences.isKeepScreenOnEnabledKey
 import it.fast4x.riplay.extensions.preferences.isPauseOnVolumeZeroEnabledKey
 import it.fast4x.riplay.extensions.preferences.isProxyEnabledKey
+import it.fast4x.riplay.extensions.preferences.isEnabledFullscreenKey
 import it.fast4x.riplay.utils.isValidHttpUrl
 import it.fast4x.riplay.utils.isValidIP
 import it.fast4x.riplay.extensions.preferences.keepPlayerMinimizedKey
@@ -530,12 +531,18 @@ class MainActivity :
         // New method to hide system bars
         val windowInsetsController =
             WindowCompat.getInsetsController(window, window.decorView)
-        // Configure the behavior of the hidden system bars.
-        windowInsetsController.systemBarsBehavior =
-            WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
-        windowInsetsController.hide(WindowInsetsCompat.Type.systemBars())
+        if (isEnabledFullscreen()) {
+            // Configure the behavior of the hidden system bars.
+            windowInsetsController.systemBarsBehavior =
+                WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+            windowInsetsController.hide(WindowInsetsCompat.Type.systemBars())
 //        windowInsetsController.hide(WindowInsetsCompat.Type.statusBars())
-        //windowInsetsController.hide(WindowInsetsCompat.Type.navigationBars())
+            //windowInsetsController.hide(WindowInsetsCompat.Type.navigationBars())
+        } else {
+            windowInsetsController.systemBarsBehavior =
+                WindowInsetsControllerCompat.BEHAVIOR_DEFAULT
+            windowInsetsController.show(WindowInsetsCompat.Type.systemBars())
+        }
 
         //Other method
 //        if (Build.VERSION.SDK_INT < 16) {
@@ -1124,6 +1131,7 @@ class MainActivity :
                             bassboostLevelKey, bassboostEnabledKey -> processBassBoost()
                             resumePlaybackWhenDeviceConnectedKey -> resumePlaybackWhenDeviceConnected()
                             isPauseOnVolumeZeroEnabledKey -> initializeAudioVolumeObserver()
+                            isEnabledFullscreenKey -> enableFullscreenMode()
                         }
                     }
 

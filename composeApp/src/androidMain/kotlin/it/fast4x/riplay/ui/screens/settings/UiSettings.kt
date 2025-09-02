@@ -203,6 +203,7 @@ import it.fast4x.riplay.ui.components.themed.Search
 import it.fast4x.riplay.ui.components.themed.settingsItem
 import it.fast4x.riplay.ui.components.themed.settingsSearchBarItem
 import it.fast4x.riplay.extensions.preferences.customColorKey
+import it.fast4x.riplay.extensions.preferences.isEnabledFullscreenKey
 import it.fast4x.riplay.extensions.preferences.showDislikedPlaylistKey
 import it.fast4x.riplay.extensions.preferences.usePlaceholderInImageLoaderKey
 import it.fast4x.riplay.utils.LazyListContainer
@@ -728,6 +729,8 @@ fun UiSettings(
 
     var usePlaceholder by rememberPreference(usePlaceholderInImageLoaderKey, true)
 
+    var isEnabledFullscreen by rememberPreference(isEnabledFullscreenKey, false)
+
     Column(
         modifier = Modifier
             .background(colorPalette().background0)
@@ -824,6 +827,19 @@ fun UiSettings(
             }
 
             settingsItem {
+
+                if (search.input.isBlank() || stringResource(R.string.enable_fullscreen).contains(
+                        search.input,
+                        true
+                    )
+                )
+                    SwitchSettingEntry(
+                        title = stringResource(R.string.enable_fullscreen),
+                        text = stringResource(R.string.enable_fullscreen_info),
+                        isChecked = isEnabledFullscreen,
+                        onCheckedChange = { isEnabledFullscreen = it }
+                    )
+
                 var uiType by rememberPreference(UiTypeKey, UiType.RiPlay)
                 if (search.input.isBlank() || stringResource(R.string.interface_in_use).contains(
                         search.input,

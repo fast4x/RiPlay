@@ -19,6 +19,7 @@ import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.ui.styling.favoritesIcon
 import it.fast4x.riplay.ui.components.themed.Button
 import it.fast4x.riplay.colorPalette
+import it.fast4x.riplay.isEnabledFullscreen
 
 class AppHeader(
     val navController: NavController
@@ -68,9 +69,9 @@ class AppHeader(
             navigationIcon = { BackButton() },
             scrollBehavior = scrollBehavior,
             colors = colors(),
-            windowInsets = TopAppBarDefaults.windowInsets.only(
-                WindowInsetsSides.Horizontal
-            )
+            windowInsets = if (isEnabledFullscreen()) TopAppBarDefaults.windowInsets
+                .only(WindowInsetsSides.Horizontal)
+            else TopAppBarDefaults.windowInsets
         )
     }
 }
