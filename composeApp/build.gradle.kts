@@ -1,7 +1,8 @@
+import org.gradle.kotlin.dsl.withType
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     alias(libs.plugins.android.application)
@@ -436,6 +437,18 @@ android {
             manifestPlaceholders["appName"] = "RiPlay-Acc"
         }
     }
+    productFlavors {
+        create("fdroid") {
+            dimension = "version"
+            //manifestPlaceholders["appName"] = "RiPlay"
+        }
+    }
+
+    tasks.withType<KotlinCompile> {
+        if (name.substringAfter("compile").lowercase().startsWith("fdroid")) {
+            exclude("**/extensions/chromecast/**")
+        }
+    }
 
     applicationVariants.all {
         val variant = this
@@ -580,8 +593,8 @@ dependencies {
     implementation(libs.haze)
     implementation(libs.androidyoutubeplayer)
     implementation(libs.androidyoutubeplayer.custom.ui)
-    implementation(libs.androidyoutubeplayer.chromecast.sender)
-    //implementation(libs.gmsCast)
+    "fullImplementation"(libs.androidyoutubeplayer.chromecast.sender)
+    "accrescentImplementation"(libs.androidyoutubeplayer.chromecast.sender)
     implementation(libs.androidx.mediarouter)
     implementation(libs.glance.widgets)
     implementation(libs.kizzy.rpc)

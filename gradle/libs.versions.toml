@@ -51,7 +51,6 @@ okhttpDnsOverHttps = "5.1.0"
 reorderable = "2.5.1"
 multidex = "2.0.1"
 fastscroller = "0.3.2"
-#gmsCast = "21.3.0"
 
 [libraries]
 kotlin-coroutines = {group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "kotlin-coroutine"}
@@ -110,7 +109,6 @@ androidyoutubeplayer = {group = "com.pierfrancescosoffritti.androidyoutubeplayer
 androidyoutubeplayer-custom-ui = {group = "com.pierfrancescosoffritti.androidyoutubeplayer", name = "custom-ui", version.ref = "androidyoutubeplayer"}
 androidyoutubeplayer-chromecast-sender = {group = "com.pierfrancescosoffritti.androidyoutubeplayer", name = "chromecast-sender", version.ref = "androidyoutubeplayercast"}
 androidx-mediarouter = { group = "androidx.mediarouter", name = "mediarouter", version.ref = "mediarouter" }
-#gmsCast = { group = "com.google.android.gms" , name="play-services-cast-framework", version="22.1.0" }
 glance-widgets = {group = "androidx.glance", name = "glance-appwidget", version.ref = "glance"}
 kizzy-rpc = {group = "com.github.dead8309", name = "KizzyRPC", version.ref = "kizzyrpc"}
 gson = {group = "com.google.code.gson", name = "gson", version.ref = "gson"}
