@@ -354,6 +354,7 @@ const val audioReverbPresetKey = "audioReverbPreset"
 const val handleAudioFocusEnabledKey = "handleAudioFocusEnabled"
 
 const val discordPersonalAccessTokenKey = "DiscordPersonalAccessToken"
+const val discordAccountNameKey = "DiscordAccountName"
 const val viewTypeKey = "viewType"
 const val volumeBoostLevelKey = "volumeBoostLevel"
 const val dnsOverHttpsTypeKey = "dnsOverHttpsType"

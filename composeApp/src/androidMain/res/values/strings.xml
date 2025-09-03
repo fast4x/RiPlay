@@ -949,4 +949,7 @@
     <string name="import_the_database_be_carefull">Import the database from other backup. Be careful, you may need to reinstall the app.</string>
     <string name="enable_fullscreen">Enable fullscreen mode</string>
     <string name="enable_fullscreen_info">Fullscreen hide system bars</string>
+    <string name="invalid_token">Invalid token</string>
+    <string name="unknown_title">Unknow title</string>
+    <string name="unknown_artist">Unknow artist</string>
 </resources>

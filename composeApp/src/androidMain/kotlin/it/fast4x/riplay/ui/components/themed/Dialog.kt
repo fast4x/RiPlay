@@ -1,5 +1,6 @@
 package it.fast4x.riplay.ui.components.themed
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.EaseInOut
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -176,112 +177,6 @@ import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
-
-@Composable
-fun TextFieldDialog(
-    hintText: String,
-    onDismiss: () -> Unit,
-    onDone: (String) -> Unit,
-    modifier: Modifier = Modifier,
-    cancelText: String = stringResource(R.string.cancel),
-    doneText: String = stringResource(R.string.done),
-    initialTextInput: String = "",
-    singleLine: Boolean = true,
-    maxLines: Int = 1,
-    onCancel: () -> Unit = onDismiss,
-    isTextInputValid: (String) -> Boolean = { it.isNotEmpty() }
-) {
-    val focusRequester = remember {
-        FocusRequester()
-    }
-
-    var textFieldValue by rememberSaveable(initialTextInput, stateSaver = TextFieldValue.Saver) {
-        mutableStateOf(
-            TextFieldValue(
-                text = initialTextInput,
-                selection = TextRange(initialTextInput.length)
-            )
-        )
-    }
-
-    DefaultDialog(
-        onDismiss = onDismiss,
-        modifier = modifier
-
-    ) {
-        BasicTextField(
-            value = textFieldValue,
-            onValueChange = { textFieldValue = it },
-            textStyle = typography().xs.semiBold.center,
-            singleLine = singleLine,
-            maxLines = maxLines,
-            keyboardOptions = KeyboardOptions(imeAction = if (singleLine) ImeAction.Done else ImeAction.None),
-            keyboardActions = KeyboardActions(
-                onDone = {
-                    if (isTextInputValid(textFieldValue.text)) {
-                        onDismiss()
-                        onDone(textFieldValue.text)
-                    }
-                }
-            ),
-            cursorBrush = SolidColor(colorPalette().text),
-            decorationBox = { innerTextField ->
-                Box(
-                    contentAlignment = Alignment.Center,
-                    modifier = Modifier
-                        .weight(1f)
-                ) {
-                    androidx.compose.animation.AnimatedVisibility(
-                        visible = textFieldValue.text.isEmpty(),
-                        enter = fadeIn(tween(100)),
-                        exit = fadeOut(tween(100)),
-                    ) {
-                        BasicText(
-                            text = hintText,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                            style = typography().xs.semiBold.secondary,
-                        )
-                    }
-
-                    innerTextField()
-                }
-            },
-            modifier = Modifier
-                .padding(all = 16.dp)
-                .weight(weight = 1f, fill = false)
-                .focusRequester(focusRequester)
-
-        )
-
-        Row(
-            horizontalArrangement = Arrangement.SpaceEvenly,
-            modifier = Modifier
-                .fillMaxWidth()
-        ) {
-            DialogTextButton(
-                text = cancelText,
-                onClick = onCancel
-            )
-
-            DialogTextButton(
-                primary = true,
-                text = doneText,
-                onClick = {
-                    if (isTextInputValid(textFieldValue.text)) {
-                        onDismiss()
-                        onDone(textFieldValue.text)
-                    }
-                }
-            )
-        }
-    }
-
-    LaunchedEffect(Unit) {
-        delay(300)
-        focusRequester.requestFocus()
-    }
-}
 
 @Composable
 fun ConfirmationDialog(
@@ -3158,5 +3053,45 @@ fun QueuesDialog(
                 }
             )
         }
+    }
+}
+
+@Composable
+fun AccountInfoDialog(
+    accountName: String,
+    accountEmail: String? = null,
+    accountChannelHandle: String? = null,
+    onDismiss: () -> Unit
+) {
+    DefaultDialog(
+        onDismiss = onDismiss,
+        modifier = Modifier.padding(all = 16.dp).fillMaxWidth(),
+        horizontalAlignment = Alignment.Start
+    ) {
+        BasicText(
+            text = stringResource(R.string.information),
+            style = typography().s.bold.copy(color = colorPalette().text),
+        )
+        Spacer(modifier = Modifier.height(10.dp))
+        BasicText(
+            text = "User: $accountName",
+            style = typography().xs.semiBold.copy(color = colorPalette().textSecondary),
+        )
+        Spacer(modifier = Modifier.height(10.dp))
+        accountEmail?.let {
+            BasicText(
+                text = "Email: $it",
+                style = typography().xs.semiBold.copy(color = colorPalette().textSecondary),
+            )
+            Spacer(modifier = Modifier.height(10.dp))
+        }
+        accountChannelHandle?.let {
+            BasicText(
+                text = "Channel: $it",
+                style = typography().xs.semiBold.copy(color = colorPalette().textSecondary),
+            )
+            Spacer(modifier = Modifier.height(10.dp))
+        }
+
     }
 }

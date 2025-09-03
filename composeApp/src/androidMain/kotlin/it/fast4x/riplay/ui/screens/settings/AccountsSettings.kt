@@ -40,10 +40,13 @@ import it.fast4x.environment.utils.parseCookieString
 import it.fast4x.riplay.R
 import it.fast4x.riplay.appContext
 import it.fast4x.riplay.colorPalette
+import it.fast4x.riplay.context
 import it.fast4x.riplay.enums.NavigationBarPosition
 import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.enums.ThumbnailRoundness
 import it.fast4x.riplay.extensions.discord.DiscordLoginAndGetToken
+import it.fast4x.riplay.extensions.discord.DiscordLoginAndGetTokenOLD
+import it.fast4x.riplay.extensions.preferences.discordAccountNameKey
 import it.fast4x.riplay.extensions.youtubelogin.YouTubeLogin
 import it.fast4x.riplay.thumbnailShape
 import it.fast4x.riplay.typography
@@ -71,6 +74,8 @@ import it.fast4x.riplay.extensions.preferences.ytAccountThumbnailKey
 import it.fast4x.riplay.extensions.preferences.ytCookieKey
 import it.fast4x.riplay.extensions.preferences.ytDataSyncIdKey
 import it.fast4x.riplay.extensions.preferences.ytVisitorDataKey
+import it.fast4x.riplay.ui.components.themed.AccountInfoDialog
+import it.fast4x.riplay.utils.rememberEncryptedPreference
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -298,32 +303,12 @@ fun AccountsSettings() {
         }
 
         if (showUserInfoDialog) {
-            DefaultDialog(
-                onDismiss = { showUserInfoDialog = false },
-                modifier = Modifier.padding(all = 16.dp).fillMaxWidth(),
-                horizontalAlignment = Alignment.Start
-            ) {
-                BasicText(
-                    text = stringResource(R.string.information),
-                    style = typography().s.bold.copy(color = colorPalette().text),
-                )
-                Spacer(modifier = Modifier.height(10.dp))
-                BasicText(
-                    text = "User: $accountName",
-                    style = typography().xs.semiBold.copy(color = colorPalette().textSecondary),
-                )
-                Spacer(modifier = Modifier.height(10.dp))
-                BasicText(
-                    text = "Email: $accountEmail",
-                    style = typography().xs.semiBold.copy(color = colorPalette().textSecondary),
-                )
-                Spacer(modifier = Modifier.height(10.dp))
-                BasicText(
-                    text = "Channel: $accountChannelHandle",
-                    style = typography().xs.semiBold.copy(color = colorPalette().textSecondary),
-                )
-                Spacer(modifier = Modifier.height(10.dp))
-            }
+            AccountInfoDialog(
+                accountName = accountName,
+                accountEmail = accountEmail,
+                accountChannelHandle = accountChannelHandle,
+                onDismiss = { showUserInfoDialog = false }
+            )
         }
 
     /****** YOUTUBE LOGIN ******/
@@ -332,8 +317,13 @@ fun AccountsSettings() {
 
         var isDiscordPresenceEnabled by rememberPreference(isDiscordPresenceEnabledKey, false)
         var loginDiscord by remember { mutableStateOf(false) }
-        var discordPersonalAccessToken by rememberPreference(
+        var showDiscordUserInfoDialog by remember { mutableStateOf(false) }
+        var discordPersonalAccessToken by rememberEncryptedPreference(
             key = discordPersonalAccessTokenKey,
+            defaultValue = ""
+        )
+        var discordAccountName by rememberEncryptedPreference(
+            key = discordAccountNameKey,
             defaultValue = ""
         )
         SettingsGroupSpacer()
@@ -347,7 +337,9 @@ fun AccountsSettings() {
         )
 
         AnimatedVisibility(visible = isDiscordPresenceEnabled) {
-            Column {
+            Column(
+                modifier = Modifier.padding(start = 25.dp)
+            ) {
                 ButtonBarSettingEntry(
                     isEnabled = true,
                     title = if (discordPersonalAccessToken.isNotEmpty()) stringResource(R.string.discord_disconnect) else stringResource(
@@ -363,6 +355,27 @@ fun AccountsSettings() {
                             loginDiscord = true
                     }
                 )
+
+                if (discordPersonalAccessToken.isNotEmpty()) {
+                    ButtonBarSettingEntry(
+                        isEnabled = true,
+                        title = "Account info",
+                        text = discordAccountName,
+                        icon = R.drawable.person,
+                        iconColor = colorPalette().text,
+                        onClick = {
+                            showDiscordUserInfoDialog = true
+                        }
+                    )
+
+                    if (showDiscordUserInfoDialog) {
+                        AccountInfoDialog(
+                            accountName = discordAccountName,
+                            onDismiss = { showDiscordUserInfoDialog = false }
+                        )
+                    }
+
+                }
 
                 CustomModalBottomSheet(
                     showSheet = loginDiscord,
@@ -382,12 +395,21 @@ fun AccountsSettings() {
                     },
                     shape = thumbnailRoundness.shape()
                 ) {
+//                    DiscordLoginAndGetTokenOLD(
+//                        rememberNavController(),
+//                        onGetToken = { token ->
+//                            loginDiscord = false
+//                            discordPersonalAccessToken = token
+//                            SmartMessage(token, type = PopupType.Info, context = context)
+//                        }
+//                    )
                     DiscordLoginAndGetToken(
-                        rememberNavController(),
-                        onGetToken = { token ->
+                        navController = rememberNavController(),
+                        onGetToken = { token, username, avatar ->
                             loginDiscord = false
                             discordPersonalAccessToken = token
-                            SmartMessage(token, type = PopupType.Info, context = context)
+                            discordAccountName = username
+                            SmartMessage(context().resources.getString(R.string.discord_connected_to_discord_account) + " $username", type = PopupType.Info, context = context)
                         }
                     )
                 }
