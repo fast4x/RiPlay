@@ -351,6 +351,7 @@ import it.fast4x.riplay.extensions.preferences.topPaddingKey
 import it.fast4x.riplay.extensions.preferences.transparentBackgroundPlayerActionBarKey
 import it.fast4x.riplay.utils.unlikeYtVideoOrSong
 import it.fast4x.riplay.extensions.preferences.visualizerEnabledKey
+import it.fast4x.riplay.ui.components.DelayedControls
 import it.fast4x.riplay.utils.detectGestures
 import it.fast4x.riplay.utils.hide
 import kotlinx.coroutines.CoroutineScope
@@ -1469,10 +1470,6 @@ fun OnlinePlayer(
         ThumbnailRoundness.Heavy
     )
 
-    val swipeModifier = remember {
-
-    }
-
     val controlsContent: @Composable (
         modifier: Modifier
     ) -> Unit = { modifierValue ->
@@ -1528,12 +1525,10 @@ fun OnlinePlayer(
     /***** NEW PLAYER *****/
 
     var showControls by remember { mutableStateOf(true) }
-    LaunchedEffect(showControls) {
-        if (showControls) {
-            delay(5000)
-            showControls = false
-        }
+    DelayedControls(delayControls = showControls) {
+        showControls = false
     }
+
 
     val thumbnailContent: @Composable (
         modifier: Modifier,

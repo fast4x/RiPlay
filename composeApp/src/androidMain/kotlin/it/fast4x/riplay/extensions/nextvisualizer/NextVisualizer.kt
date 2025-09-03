@@ -9,6 +9,11 @@ import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.OptIn
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -18,6 +23,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
@@ -29,6 +35,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -75,8 +82,13 @@ import it.fast4x.riplay.utils.semiBold
 import it.fast4x.riplay.extensions.preferences.visualizerEnabledKey
 import kotlinx.coroutines.launch
 import it.fast4x.riplay.colorPalette
+import it.fast4x.riplay.enums.ThumbnailRoundness
+import it.fast4x.riplay.extensions.preferences.rememberObservedPreference
+import it.fast4x.riplay.extensions.preferences.thumbnailRoundnessKey
 import it.fast4x.riplay.service.isLocal
 import it.fast4x.riplay.typography
+import it.fast4x.riplay.ui.components.DelayedControls
+import kotlinx.coroutines.delay
 import timber.log.Timber
 
 @OptIn(UnstableApi::class)
@@ -160,6 +172,16 @@ fun NextVisualizer() {
             var currentVisualizer by rememberPreference(currentVisualizerKey, 0)
             if (currentVisualizer < 0) currentVisualizer = 0
 
+            val thumbnailRoundness by rememberObservedPreference(
+                thumbnailRoundnessKey,
+                ThumbnailRoundness.Heavy
+            )
+
+            var showControls by remember { mutableStateOf(true) }
+            DelayedControls(delayControls = showControls) {
+                showControls = false
+            }
+
             Box(
                 modifier = Modifier.fillMaxSize()
             ) {
@@ -167,7 +189,10 @@ fun NextVisualizer() {
                 AndroidView(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .fillMaxHeight(),
+                        .fillMaxHeight()
+                        .clickable{
+                            showControls = !showControls
+                        },
                         /*
                         .border(
                             BorderStroke(
@@ -199,38 +224,52 @@ fun NextVisualizer() {
                 )
 
 
+
+                AnimatedVisibility(
+                    modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 5.dp),
+                    visible = showControls,
+                    enter = fadeIn(),
+                    exit = fadeOut()
+                ) {
                     Row(
                         horizontalArrangement = Arrangement.SpaceEvenly,
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier
-                            .fillMaxWidth()
+                            .fillMaxWidth(.9f)
                             .align(Alignment.BottomCenter)
                             .height(50.dp)
+                            .background(Color.Gray.copy(alpha = .4f), thumbnailRoundness.shape())
+
                     ) {
                         IconButton(
                             onClick = {
                                 if (currentVisualizer <= visualizersList.lastIndex) currentVisualizer--
-                                if (currentVisualizer < 0) currentVisualizer = visualizersList.lastIndex
+                                if (currentVisualizer < 0) currentVisualizer =
+                                    visualizersList.lastIndex
                             },
                             icon = R.drawable.arrow_left,
                             color = colorPalette().text,
                             modifier = Modifier
                                 .size(32.dp)
                         )
-                        
+
                         BasicText(
                             text = "${currentVisualizer + 1}/${visualizersList.size}",
                             style = typography().xs.semiBold.copy(color = colorPalette().text),
                         )
-                        
+
                         IconButton(
-                            onClick = { if (currentVisualizer < visualizersList.lastIndex) currentVisualizer++ else currentVisualizer = 0 },
+                            onClick = {
+                                if (currentVisualizer < visualizersList.lastIndex) currentVisualizer++ else currentVisualizer =
+                                    0
+                            },
                             icon = R.drawable.arrow_right,
                             color = colorPalette().text,
                             modifier = Modifier
                                 .size(32.dp)
                         )
                     }
+                }
 
             }
         }
