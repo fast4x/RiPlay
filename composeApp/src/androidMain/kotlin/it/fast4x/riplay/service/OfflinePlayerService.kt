@@ -97,7 +97,6 @@ import it.fast4x.riplay.enums.QueueLoopType
 import it.fast4x.riplay.enums.WallpaperType
 import it.fast4x.riplay.extensions.audiovolume.AudioVolumeObserver
 import it.fast4x.riplay.extensions.audiovolume.OnAudioVolumeChangedListener
-import it.fast4x.riplay.extensions.discord.sendDiscordPresenceOLD
 import it.fast4x.riplay.models.Event
 import it.fast4x.riplay.models.Song
 import it.fast4x.riplay.ui.components.themed.SmartMessage
@@ -123,7 +122,6 @@ import it.fast4x.riplay.utils.isAtLeastAndroid10
 import it.fast4x.riplay.utils.isAtLeastAndroid6
 import it.fast4x.riplay.utils.isAtLeastAndroid7
 import it.fast4x.riplay.utils.isAtLeastAndroid8
-import it.fast4x.riplay.utils.isAtLeastAndroid81
 import it.fast4x.riplay.extensions.preferences.isDiscordPresenceEnabledKey
 import it.fast4x.riplay.extensions.preferences.isPauseOnVolumeZeroEnabledKey
 import it.fast4x.riplay.extensions.preferences.loudnessBaseGainKey
@@ -173,6 +171,7 @@ import it.fast4x.riplay.appContext
 import it.fast4x.riplay.enums.ContentType
 import it.fast4x.riplay.enums.PresetsReverb
 import it.fast4x.riplay.extensions.discord.DiscordPresenceManager
+import it.fast4x.riplay.extensions.discord.updateDiscordPresenceWithOfflinePlayer
 import it.fast4x.riplay.isHandleAudioFocusEnabled
 import it.fast4x.riplay.extensions.preferences.audioReverbPresetKey
 import it.fast4x.riplay.extensions.preferences.bassboostEnabledKey
@@ -468,9 +467,12 @@ class OfflinePlayerService : MediaLibraryService(),
 
             updateDefaultNotification()
             withContext(Dispatchers.Main) {
-                if (song != null) {
-                    updateDiscordPresence()
-                }
+//                if (song != null) {
+//                    updateDiscordPresence(
+//                        discordPresenceManager,
+//                        binder
+//                    )
+//                }
                 updateWidgets()
             }
         }
@@ -538,7 +540,10 @@ class OfflinePlayerService : MediaLibraryService(),
         reason: Int
     ) {
         if (reason == Player.DISCONTINUITY_REASON_SEEK || reason == Player.DISCONTINUITY_REASON_SKIP)
-            updateDiscordPresence()
+            updateDiscordPresenceWithOfflinePlayer(
+                discordPresenceManager,
+                binder
+            )
 
         super.onPositionDiscontinuity(oldPosition, newPosition, reason)
     }
@@ -715,7 +720,10 @@ class OfflinePlayerService : MediaLibraryService(),
             })
         }
 
-        updateDiscordPresence()
+        updateDiscordPresenceWithOfflinePlayer(
+            discordPresenceManager,
+            binder
+        )
 
     }
 
@@ -742,7 +750,10 @@ class OfflinePlayerService : MediaLibraryService(),
             )
 
 
-        updateDiscordPresence()
+        updateDiscordPresenceWithOfflinePlayer(
+            discordPresenceManager,
+            binder
+        )
 
 
         super.onIsPlayingChanged(isPlaying)
@@ -1260,40 +1271,32 @@ class OfflinePlayerService : MediaLibraryService(),
     }
 
 
-    private fun updateDiscordPresence() {
-        val isDiscordPresenceEnabled = preferences.getBoolean(isDiscordPresenceEnabledKey, false)
-        if (!isDiscordPresenceEnabled || !isAtLeastAndroid8) return
-
-        val discordPersonalAccessToken = encryptedPreferences.getString(
-            discordPersonalAccessTokenKey, ""
-        )
-
-        runCatching {
-            if (!discordPersonalAccessToken.isNullOrEmpty()) {
-                player.currentMediaItem?.let {
-                    discordPresenceManager?.onPlayingStateChanged(
-                        it,
-                        player.isPlaying,
-                        player.currentPosition,
-                        player.duration,
-                        System.currentTimeMillis(),
-                        getCurrentPosition = { player.currentPosition },
-                        isPlayingProvider = { player.isPlaying }
-                    )
-//                    sendDiscordPresenceOLD(
-//                        discordPersonalAccessToken,
+//    private fun updateDiscordPresence() {
+//        val isDiscordPresenceEnabled = preferences.getBoolean(isDiscordPresenceEnabledKey, false)
+//        if (!isDiscordPresenceEnabled || !isAtLeastAndroid8) return
+//
+//        val discordPersonalAccessToken = encryptedPreferences.getString(
+//            discordPersonalAccessTokenKey, ""
+//        )
+//
+//        runCatching {
+//            if (!discordPersonalAccessToken.isNullOrEmpty()) {
+//                player.currentMediaItem?.let {
+//                    discordPresenceManager?.onPlayingStateChanged(
 //                        it,
-//                        timeStart = if (player.isPlaying)
-//                            System.currentTimeMillis() - player.currentPosition else 0L,
-//                        timeEnd = if (player.isPlaying)
-//                            (System.currentTimeMillis() - player.currentPosition) + player.duration else 0L
+//                        player.isPlaying,
+//                        player.currentPosition,
+//                        player.duration,
+//                        System.currentTimeMillis(),
+//                        getCurrentPosition = { player.currentPosition },
+//                        isPlayingProvider = { player.isPlaying }
 //                    )
-                }
-            }
-        }.onFailure {
-            Timber.e("PlayerService Failed sendDiscordPresence in PlayerService ${it.stackTraceToString()}")
-        }
-    }
+//                }
+//            }
+//        }.onFailure {
+//            Timber.e("PlayerService Failed sendDiscordPresence in PlayerService ${it.stackTraceToString()}")
+//        }
+//    }
 
 
     fun toggleLike() {

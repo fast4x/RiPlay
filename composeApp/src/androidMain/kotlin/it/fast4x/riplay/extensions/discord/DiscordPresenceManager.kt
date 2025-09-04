@@ -2,14 +2,18 @@ package it.fast4x.riplay.extensions.discord
 
 import android.content.Context
 import android.net.Uri
+import androidx.compose.runtime.MutableState
 import androidx.core.net.toUri
 import androidx.media3.common.MediaItem
+import androidx.media3.common.util.UnstableApi
 import it.fast4x.riplay.R
 import com.my.kizzyrpc.KizzyRPC
 import com.my.kizzyrpc.model.Activity
 import com.my.kizzyrpc.model.Assets
 import com.my.kizzyrpc.model.Metadata
 import com.my.kizzyrpc.model.Timestamps
+import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.PlayerConstants
+import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
 import io.ktor.client.call.body
 import io.ktor.client.request.forms.formData
 import io.ktor.client.request.forms.submitFormWithBinaryData
@@ -21,10 +25,14 @@ import io.ktor.http.HttpHeaders
 import it.fast4x.environment.Environment
 import it.fast4x.riplay.context
 import it.fast4x.riplay.enums.PopupType
+import it.fast4x.riplay.extensions.preferences.discordPersonalAccessTokenKey
+import it.fast4x.riplay.extensions.preferences.isDiscordPresenceEnabledKey
 import it.fast4x.riplay.extensions.preferences.preferences
+import it.fast4x.riplay.service.OfflinePlayerService
+import it.fast4x.riplay.service.isLocal
 import it.fast4x.riplay.ui.components.themed.SmartMessage
 import it.fast4x.riplay.utils.ImageProcessor
-import it.fast4x.riplay.utils.isAtLeastAndroid6
+import it.fast4x.riplay.utils.encryptedPreferences
 import it.fast4x.riplay.utils.isAtLeastAndroid8
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -173,14 +181,14 @@ class DiscordPresenceManager(
         if ( smallImage != null )
             smallImage
         else
-            getDiscordAssetUri( "https://raw.githubusercontent.com/fast4x/RiPlay/main/assets/discord/fallback_app.png" )
+            getDiscordAssetUri( "https://raw.githubusercontent.com/fast4x/RiMusic/master/assets/design/latest/icon.png" )
                 ?.also { smallImage = it }
 
     private suspend fun getLargeImageFallback(): String? =
         if ( largeImage != null )
             largeImage
         else
-            getDiscordAssetUri( "https://raw.githubusercontent.com/fast4x/RiPlay/main/assets/discord/fallback_album.png" )
+            getDiscordAssetUri( "https://raw.githubusercontent.com/fast4x/RiMusic/master/assets/design/latest/icon.png" )
                 ?.also { largeImage = it }
 
 
@@ -241,11 +249,13 @@ class DiscordPresenceManager(
             sendPausedPresence(duration, now, position)
             return
         }
+        Timber.d("DiscordPresenceManager onPlayingStateChanged isPlaying: $isPlaying")
         if (isPlaying) {
             sendPlayingPresence(mediaItem, position, duration, now)
             // Store current values to avoid calling lambdas later
             val currentIsPlaying = isPlaying
             val currentPosition = position
+
             startRefreshJob(
                 isPlayingProvider = { currentIsPlaying },
                 mediaItem = mediaItem,
@@ -446,5 +456,77 @@ class DiscordPresenceManager(
                 }
             }
         }
+    }
+}
+
+@androidx.annotation.OptIn(UnstableApi::class)
+fun updateDiscordPresenceWithOfflinePlayer(
+    discordPresenceManager: DiscordPresenceManager?,
+    binder: OfflinePlayerService.Binder
+) {
+    if (binder.player.currentMediaItem?.isLocal == false) return
+
+    val isDiscordPresenceEnabled = context().preferences.getBoolean(isDiscordPresenceEnabledKey, false)
+    if (!isDiscordPresenceEnabled || !isAtLeastAndroid8) return
+
+    val player = binder.player
+
+    val discordPersonalAccessToken = context().encryptedPreferences.getString(
+        discordPersonalAccessTokenKey, ""
+    )
+
+    runCatching {
+        if (!discordPersonalAccessToken.isNullOrEmpty()) {
+            Timber.d("UpdateDiscordPresence with OfflinePlayer called, currentPosition = ${player.currentPosition} currentDuration = ${player.duration}")
+            player.currentMediaItem?.let {
+                discordPresenceManager?.onPlayingStateChanged(
+                    it,
+                    player.isPlaying,
+                    player.currentPosition,
+                    player.duration,
+                    System.currentTimeMillis(),
+                    getCurrentPosition = { player.currentPosition },
+                    isPlayingProvider = { player.isPlaying }
+                )
+            }
+        }
+    }.onFailure {
+        Timber.e("UpdateDiscordPresence error OfflinePLayer ${it.stackTraceToString()}")
+    }
+}
+
+fun updateDiscordPresenceWithOnlinePlayer(
+    discordPresenceManager: DiscordPresenceManager?,
+    mediaItem: MediaItem,
+    playerState: MutableState<PlayerConstants.PlayerState>,
+    currentDuration: Float,
+    currentSecond: Float,
+) {
+    if (mediaItem.isLocal) return
+
+    val isDiscordPresenceEnabled = context().preferences.getBoolean(isDiscordPresenceEnabledKey, false)
+    if (!isDiscordPresenceEnabled || !isAtLeastAndroid8) return
+
+    val discordPersonalAccessToken = context().encryptedPreferences.getString(
+        discordPersonalAccessTokenKey, ""
+    )
+    val isPlaying = playerState.value == PlayerConstants.PlayerState.PLAYING
+    val currentPosition = (currentSecond * 1000).toLong()
+    runCatching {
+        if (!discordPersonalAccessToken.isNullOrEmpty()) {
+            Timber.d("UpdateDiscordPresence with OnlinePlayer called currentPosition = $currentPosition currentDuration = $currentDuration")
+            discordPresenceManager?.onPlayingStateChanged(
+                mediaItem,
+                isPlaying,
+                currentPosition,
+                (currentDuration * 1000).toLong(),
+                System.currentTimeMillis(),
+                getCurrentPosition = { currentPosition },
+                isPlayingProvider = { isPlaying }
+            )
+
+        }
+    }.onFailure {
+        Timber.e("UpdateDiscordPresence error OnlinePlayer ${it.stackTraceToString()}")
     }
 }

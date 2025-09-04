@@ -42,6 +42,7 @@ class OnlineCoreViewModel: ViewModel() {
         OnlinePlayerCore(
             load = getResumePlaybackOnStart(),
             playFromSecond = currentSecond.value,
+            discordPresenceManager = null,
             onPlayerReady = {
                 onlinePlayer.value = it
                 updateState()
@@ -69,7 +70,7 @@ class OnlineCoreViewModel: ViewModel() {
             },
             onTap = {
                 //showControls = !showControls
-            }
+            },
         )
     }
 

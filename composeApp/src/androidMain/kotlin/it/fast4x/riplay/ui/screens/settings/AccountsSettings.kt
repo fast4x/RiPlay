@@ -45,17 +45,13 @@ import it.fast4x.riplay.enums.NavigationBarPosition
 import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.enums.ThumbnailRoundness
 import it.fast4x.riplay.extensions.discord.DiscordLoginAndGetToken
-import it.fast4x.riplay.extensions.discord.DiscordLoginAndGetTokenOLD
 import it.fast4x.riplay.extensions.preferences.discordAccountNameKey
 import it.fast4x.riplay.extensions.youtubelogin.YouTubeLogin
 import it.fast4x.riplay.thumbnailShape
-import it.fast4x.riplay.typography
 import it.fast4x.riplay.ui.components.CustomModalBottomSheet
-import it.fast4x.riplay.ui.components.themed.DefaultDialog
 import it.fast4x.riplay.ui.components.themed.HeaderWithIcon
 import it.fast4x.riplay.ui.components.themed.SmartMessage
 import it.fast4x.riplay.ui.styling.Dimensions
-import it.fast4x.riplay.utils.bold
 import it.fast4x.riplay.extensions.preferences.discordPersonalAccessTokenKey
 import it.fast4x.riplay.extensions.preferences.enableYouTubeLoginKey
 import it.fast4x.riplay.extensions.preferences.enableYouTubeSyncKey

@@ -20,15 +20,11 @@ import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
-import android.media.AudioAttributes
 import android.media.AudioDeviceCallback
 import android.media.AudioDeviceInfo
-import android.media.AudioFormat
 import android.media.AudioManager
-import android.media.AudioTrack
 import android.media.audiofx.BassBoost
 import android.media.audiofx.LoudnessEnhancer
-import android.media.audiofx.PresetReverb
 import android.net.Uri
 import android.net.nsd.NsdServiceInfo
 import android.os.Build
@@ -39,7 +35,6 @@ import android.os.Looper
 import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
-import android.view.View
 import android.view.WindowManager
 import android.window.OnBackInvokedDispatcher
 import androidx.activity.ComponentActivity
@@ -116,7 +111,6 @@ import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.lifecycleScope
-import androidx.media3.common.AuxEffectInfo
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.common.util.Log
@@ -155,11 +149,12 @@ import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.enums.PipModule
 import it.fast4x.riplay.enums.PlayerBackgroundColors
 import it.fast4x.riplay.enums.PopupType
-import it.fast4x.riplay.enums.PresetsReverb
 import it.fast4x.riplay.enums.QueueLoopType
 import it.fast4x.riplay.enums.ThumbnailRoundness
 import it.fast4x.riplay.extensions.audiovolume.AudioVolumeObserver
 import it.fast4x.riplay.extensions.audiovolume.OnAudioVolumeChangedListener
+import it.fast4x.riplay.extensions.discord.DiscordPresenceManager
+import it.fast4x.riplay.extensions.discord.updateDiscordPresenceWithOnlinePlayer
 import it.fast4x.riplay.extensions.nsd.discoverNsdServices
 import it.fast4x.riplay.extensions.pip.PipModuleContainer
 import it.fast4x.riplay.extensions.pip.PipModuleCover
@@ -202,7 +197,6 @@ import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.extensions.preferences.UiTypeKey
 import it.fast4x.riplay.extensions.preferences.animatedGradientKey
 import it.fast4x.riplay.extensions.preferences.applyFontPaddingKey
-import it.fast4x.riplay.extensions.preferences.audioReverbPresetKey
 import it.fast4x.riplay.utils.asMediaItem
 import it.fast4x.riplay.extensions.preferences.backgroundProgressKey
 import it.fast4x.riplay.extensions.preferences.bassboostEnabledKey
@@ -236,8 +230,10 @@ import it.fast4x.riplay.extensions.preferences.customThemeLight_textDisabledKey
 import it.fast4x.riplay.extensions.preferences.customThemeLight_textSecondaryKey
 import it.fast4x.riplay.extensions.preferences.disableClosingPlayerSwipingDownKey
 import it.fast4x.riplay.extensions.preferences.disablePlayerHorizontalSwipeKey
+import it.fast4x.riplay.extensions.preferences.discordPersonalAccessTokenKey
 import it.fast4x.riplay.extensions.preferences.fontTypeKey
 import it.fast4x.riplay.extensions.preferences.getEnum
+import it.fast4x.riplay.extensions.preferences.isDiscordPresenceEnabledKey
 import it.fast4x.riplay.utils.getSystemlanguage
 import it.fast4x.riplay.utils.invokeOnReady
 import it.fast4x.riplay.utils.isAtLeastAndroid12
@@ -283,6 +279,7 @@ import it.fast4x.riplay.extensions.preferences.volumeNormalizationKey
 import it.fast4x.riplay.extensions.preferences.ytCookieKey
 import it.fast4x.riplay.extensions.preferences.ytDataSyncIdKey
 import it.fast4x.riplay.extensions.preferences.ytVisitorDataKey
+import it.fast4x.riplay.utils.encryptedPreferences
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -403,7 +400,7 @@ class MainActivity :
     private var audioDeviceCallback: AudioDeviceCallback? = null
     private val handler = Handler(Looper.getMainLooper())
     private lateinit var audioVolumeObserver: AudioVolumeObserver
-
+    private var discordPresenceManager: DiscordPresenceManager? = null
 
 
     override fun onStart() {
@@ -517,6 +514,9 @@ class MainActivity :
 
         initializeAudioVolumeObserver()
 
+        initializeDiscordPresence()
+
+
     }
 
     private fun enableFullscreenMode() {
@@ -554,6 +554,18 @@ class MainActivity :
 //            actionBar?.hide()
 //        }
 
+    }
+
+    private fun initializeDiscordPresence() {
+        if (preferences.getBoolean(isDiscordPresenceEnabledKey, false)) {
+            val token = encryptedPreferences.getString(discordPersonalAccessTokenKey, "")
+            if (token?.isNotEmpty() == true) {
+                discordPresenceManager = DiscordPresenceManager(
+                    context = this,
+                    getToken = { token },
+                )
+            }
+        }
     }
 
     private fun checkIfAppIsRunningInBackground() {
@@ -1270,6 +1282,7 @@ class MainActivity :
                     OnlinePlayerCore(
                         load = getResumePlaybackOnStart(),
                         playFromSecond = currentSecond,
+                        discordPresenceManager = discordPresenceManager,
                         onPlayerReady = { onlinePlayer.value = it },
                         onSecondChange = {
                             currentSecond = it
@@ -1280,18 +1293,37 @@ class MainActivity :
                             currentDuration = it
                             currentPlaybackDuration.value = (it * 1000).toLong()
                             updateOnlineNotification()
+                            val mediaItem = binder?.player?.currentMediaItem
+                            if (mediaItem != null)
+                                updateDiscordPresenceWithOnlinePlayer(
+                                    discordPresenceManager,
+                                    mediaItem,
+                                    onlinePlayerState,
+                                    currentDuration,
+                                    currentSecond
+                                )
                             println("MainActivity onDurationChange ${currentPlaybackDuration.value}")
                         },
                         onPlayerStateChange = {
                             onlinePlayerState.value = it
                             onlinePlayerPlayingState.value =
                                 it == PlayerConstants.PlayerState.PLAYING
+
                             updateOnlineNotification()
 
+                            val mediaItem = binder?.player?.currentMediaItem
+                            if (mediaItem != null)
+                                updateDiscordPresenceWithOnlinePlayer(
+                                    discordPresenceManager,
+                                    mediaItem,
+                                    onlinePlayerState,
+                                    currentDuration,
+                                    currentSecond
+                                )
                         },
                         onTap = {
                             //showControls = !showControls
-                        }
+                        },
                     )
                 }
 
@@ -1588,7 +1620,20 @@ class MainActivity :
                                 updateSelectedQueue()
 
                                 processNormalizeVolume()
+
+                                updateOnlineNotification()
+
+                                updateDiscordPresenceWithOnlinePlayer(
+                                    discordPresenceManager,
+                                    mediaItem,
+                                    onlinePlayerState,
+                                    currentDuration,
+                                    currentSecond
+                                )
+
                             }
+
+
 
                         }
                     }
@@ -2169,6 +2214,11 @@ class MainActivity :
     @UnstableApi
     override fun onDestroy() {
         super.onDestroy()
+
+        if (preferences.getBoolean(isDiscordPresenceEnabledKey, false)) {
+            Timber.d("[DiscordPresence] onStop: call the manager (close discord presence)")
+            discordPresenceManager?.onStop()
+        }
 
         runCatching {
             localMonet.removeMonetColorsChangedListener(this)

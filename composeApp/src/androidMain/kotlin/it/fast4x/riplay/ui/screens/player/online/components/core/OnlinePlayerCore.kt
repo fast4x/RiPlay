@@ -6,8 +6,8 @@ import androidx.annotation.OptIn
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.neverEqualPolicy
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.viewinterop.AndroidView
@@ -26,22 +26,20 @@ import it.fast4x.riplay.context
 import it.fast4x.riplay.enums.DurationInMilliseconds
 import it.fast4x.riplay.enums.PlayerThumbnailSize
 import it.fast4x.riplay.enums.QueueLoopType
+import it.fast4x.riplay.extensions.discord.DiscordPresenceManager
+import it.fast4x.riplay.extensions.discord.updateDiscordPresenceWithOnlinePlayer
 import it.fast4x.riplay.extensions.history.updateOnlineHistory
-import it.fast4x.riplay.extensions.preferences.getEnum
 import it.fast4x.riplay.ui.screens.player.online.components.customui.CustomDefaultPlayerUiController
 import it.fast4x.riplay.utils.DisposableListener
 import it.fast4x.riplay.extensions.preferences.isInvincibilityEnabledKey
 import it.fast4x.riplay.extensions.preferences.playbackDurationKey
-import it.fast4x.riplay.extensions.preferences.playbackFadeAudioDurationKey
 import it.fast4x.riplay.extensions.preferences.playbackSpeedKey
 import it.fast4x.riplay.utils.isLandscape
 import it.fast4x.riplay.extensions.preferences.playerThumbnailSizeKey
-import it.fast4x.riplay.extensions.preferences.preferences
 import it.fast4x.riplay.extensions.preferences.queueLoopTypeKey
 import it.fast4x.riplay.extensions.preferences.rememberObservedPreference
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.getPlaybackFadeAudioDuration
-import it.fast4x.riplay.getQueueLoopType
 import it.fast4x.riplay.utils.playNext
 import it.fast4x.riplay.utils.startFadeAnimator
 import kotlinx.coroutines.Dispatchers
@@ -58,11 +56,12 @@ fun OnlinePlayerCore(
     actAsMini: Boolean = false,
     load: Boolean = false,
     playFromSecond: Float = 0f,
+    discordPresenceManager: DiscordPresenceManager?,
     onPlayerReady: (YouTubePlayer?) -> Unit,
     onSecondChange: (Float) -> Unit,
     onDurationChange: (Float) -> Unit,
     onPlayerStateChange: (PlayerConstants.PlayerState) -> Unit,
-    onTap: () -> Unit
+    onTap: () -> Unit,
 ) {
     println("OnlinePlayerCore: called")
     val binder = LocalPlayerServiceBinder.current
@@ -77,6 +76,9 @@ fun OnlinePlayerCore(
     val player = remember { mutableStateOf<YouTubePlayer?>(null) }
 
     val queueLoopType by rememberObservedPreference(queueLoopTypeKey, QueueLoopType.Default)
+    var playerState by remember { mutableStateOf(PlayerConstants.PlayerState.UNSTARTED) }
+    var currentDuration by remember { mutableFloatStateOf(0f) }
+    var currentSecond by remember { mutableFloatStateOf(0f) }
 
     binder?.player?.DisposableListener {
         object : Player.Listener {
@@ -85,6 +87,15 @@ fun OnlinePlayerCore(
                     localMediaItem = it
                     player.value?.loadVideo(it.mediaId, 0f)
                     updateOnlineHistory(it)
+
+//                    updateDiscordPresenceWithOnlinePlayer(
+//                        discordPresenceManager,
+//                        mediaItem = it,
+//                        playerState = mutableStateOf(playerState),
+//                        currentDuration,
+//                        currentSecond
+//                    )
+
                     Timber.d("OnlinePlayerCore: onMediaItemTransition loaded ${it.mediaId}")
                 }
             }
@@ -106,8 +117,7 @@ fun OnlinePlayerCore(
 
     //MedleyMode for online player
     val playbackDuration by rememberObservedPreference(playbackDurationKey, 0f)
-    var playerState by
-        remember { mutableStateOf(PlayerConstants.PlayerState.UNSTARTED) }
+
 
     LaunchedEffect(playerState) {
         if (playerState == PlayerConstants.PlayerState.ENDED) {
@@ -146,6 +156,14 @@ fun OnlinePlayerCore(
 //                binder.player.playNext()
 
         }
+
+//        updateDiscordPresenceWithOnlinePlayer(
+//            discordPresenceManager,
+//            mediaItem = localMediaItem!!,
+//            playerState = mutableStateOf(playerState),
+//            currentDuration,
+//            currentSecond
+//        )
     }
 
     LaunchedEffect(playbackDuration) {
