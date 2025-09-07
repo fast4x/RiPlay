@@ -35,8 +35,11 @@ private val MAIN_CLIENT: Context.Client = Context.DefaultWeb.client
 suspend fun getOnlineMetadata(
     videoId: String,
     playlistId: String? = null,
-): Result<PlayerResponse> =
-    EnvironmentExt.simplePlayer(videoId, playlistId, client = MAIN_CLIENT)
+): PlayerResponse? {
+    val metaData = EnvironmentExt.simplePlayer(videoId, playlistId, client = MAIN_CLIENT).getOrNull()
+    Timber.d("getOnlineMetadata $metaData")
+    return metaData
+}
 
 
 fun updateOnlineHistory(mediaItem: MediaItem) {
@@ -48,7 +51,7 @@ fun updateOnlineHistory(mediaItem: MediaItem) {
         CoroutineScope(Dispatchers.IO).launch {
             val playbackUrl = Database.format(mediaItem.mediaId).first()?.playbackUrl
                 ?: getOnlineMetadata(mediaItem.mediaId)
-                .getOrNull()?.playbackTracking?.videostatsPlaybackUrl?.baseUrl
+                    ?.playbackTracking?.videostatsPlaybackUrl?.baseUrl
 
                 playbackUrl?.let { playbackUrl ->
                     Timber.d("UpdateOnlineHistory upsert playbackUrl in database")
