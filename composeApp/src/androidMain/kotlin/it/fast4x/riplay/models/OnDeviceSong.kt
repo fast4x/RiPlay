@@ -8,6 +8,7 @@ import androidx.room.PrimaryKey
 @Entity
 data class OnDeviceSong (
     @PrimaryKey val id: String,
+    val mediaId: String? = null,
     val title: String,
     val artistsText: String? = null,
     val durationText: String?,
@@ -37,6 +38,7 @@ data class OnDeviceSong (
     fun toSong(): Song {
         return Song(
             id = id,
+            mediaId = mediaId,
             title = title,
             artistsText = artistsText,
             durationText = durationText,

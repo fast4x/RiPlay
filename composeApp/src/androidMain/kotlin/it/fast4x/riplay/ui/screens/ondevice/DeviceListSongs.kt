@@ -1134,8 +1134,12 @@ fun Context.musicFilesAsFlow(
                             if (cursor.getInt(isMusicIdx) == 0) continue
                             val id = cursor.getLong(idIdx)
                             val name = cursor.getString(nameIdx).substringBeforeLast(".")
-                            val trackName = cursor.getString(titleIdx)
+                            var mediaId = name.substringAfterLast('[',"").substringBeforeLast(']',"")
+                            if (mediaId.contains(" ")) mediaId = ""
+                            Timber.i(" DeviceListSongs name $name mediaId $mediaId")
 
+
+                            val trackName = cursor.getString(titleIdx)
                             val duration = cursor.getInt(durationIdx)
                             if (duration == 0) continue
                             val artist = cursor.getString(artistIdx)
@@ -1166,6 +1170,7 @@ fun Context.musicFilesAsFlow(
                                         }
                                     val song = OnDeviceSong(
                                         id = "$LOCAL_KEY_PREFIX$id",
+                                        mediaId = mediaId,
                                         title = trackName ?: name,
                                         artistsText = artist,
                                         durationText = durationText,

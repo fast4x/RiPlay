@@ -19,6 +19,7 @@ import kotlinx.serialization.Serializable
 @Entity
 data class Song(
     @PrimaryKey val id: String,
+    val mediaId: String? = null,
     val title: String,
     val artistsText: String? = null,
     val durationText: String?,

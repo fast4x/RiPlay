@@ -560,7 +560,7 @@ dependencies {
 }
 
 dependencies {
-    //implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.aar", "*.jar"))))
+    implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.aar", "*.jar"))))
     implementation(projects.composePersist)
     implementation(libs.compose.activity)
     implementation(libs.compose.foundation)
