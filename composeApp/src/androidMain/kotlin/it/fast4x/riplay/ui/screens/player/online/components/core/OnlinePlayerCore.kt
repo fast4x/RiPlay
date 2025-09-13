@@ -82,8 +82,8 @@ fun OnlinePlayerCore(
 
     val queueLoopType by rememberObservedPreference(queueLoopTypeKey, QueueLoopType.Default)
     var playerState by remember { mutableStateOf(PlayerConstants.PlayerState.UNSTARTED) }
-    var currentDuration by remember { mutableFloatStateOf(0f) }
-    var currentSecond by remember { mutableFloatStateOf(0f) }
+    //var currentDuration by remember { mutableFloatStateOf(0f) }
+    //var currentSecond by remember { mutableFloatStateOf(0f) }
 
     binder?.player?.DisposableListener {
         object : Player.Listener {
