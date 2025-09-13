@@ -1,5 +1,6 @@
 package it.fast4x.riplay.ui.screens.player.online
 
+import android.content.Intent
 import android.database.SQLException
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateDp
@@ -113,6 +114,7 @@ import it.fast4x.riplay.extensions.preferences.miniPlayerTypeKey
 import it.fast4x.riplay.utils.playNext
 import it.fast4x.riplay.utils.playPrevious
 import it.fast4x.riplay.extensions.preferences.rememberPreference
+import it.fast4x.riplay.service.OnlinePlayerService
 import it.fast4x.riplay.utils.hide
 import it.fast4x.riplay.utils.semiBold
 import it.fast4x.riplay.utils.setDisLikeState

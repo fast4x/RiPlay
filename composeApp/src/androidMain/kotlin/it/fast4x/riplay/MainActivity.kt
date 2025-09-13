@@ -161,47 +161,12 @@ import it.fast4x.riplay.extensions.pip.PipModuleCover
 import it.fast4x.riplay.extensions.pip.isInPip
 import it.fast4x.riplay.extensions.pip.maybeEnterPip
 import it.fast4x.riplay.extensions.pip.maybeExitPip
-import it.fast4x.riplay.service.OfflinePlayerService
-import it.fast4x.riplay.ui.components.CustomModalBottomSheet
-import it.fast4x.riplay.ui.components.LocalMenuState
-import it.fast4x.riplay.ui.components.themed.CrossfadeContainer
-import it.fast4x.riplay.ui.components.themed.SmartMessage
-import it.fast4x.riplay.ui.screens.player.offline.OfflineMiniPlayer
-import it.fast4x.riplay.ui.styling.Appearance
-import it.fast4x.riplay.ui.styling.LocalAppearance
-import it.fast4x.riplay.ui.styling.applyPitchBlack
-import it.fast4x.riplay.ui.styling.colorPaletteOf
-import it.fast4x.riplay.ui.styling.customColorPalette
-import it.fast4x.riplay.ui.styling.dynamicColorPaletteOf
-import it.fast4x.riplay.ui.styling.typographyOf
-import it.fast4x.riplay.utils.LocalMonetCompat
-import it.fast4x.riplay.utils.OkHttpRequest
-import it.fast4x.riplay.extensions.rescuecenter.RescueScreen
-import it.fast4x.riplay.models.Queues
-import it.fast4x.riplay.models.defaultQueue
-import it.fast4x.riplay.service.BitmapProvider
-import it.fast4x.riplay.service.EndlessService
-import it.fast4x.riplay.service.isLocal
-import it.fast4x.riplay.ui.components.BottomSheet
-import it.fast4x.riplay.ui.components.rememberBottomSheetState
-import it.fast4x.riplay.ui.screens.player.fastPlay
-import it.fast4x.riplay.ui.screens.player.offline.OfflinePlayer
-import it.fast4x.riplay.ui.screens.player.offline.PlayerSheetState
-import it.fast4x.riplay.ui.screens.player.offline.rememberPlayerSheetState
-import it.fast4x.riplay.ui.screens.player.online.MediaSessionCallback
-import it.fast4x.riplay.ui.screens.player.online.OnlineMiniPlayer
-import it.fast4x.riplay.ui.screens.player.online.OnlinePlayer
-import it.fast4x.riplay.ui.screens.player.online.components.core.OnlinePlayerCore
-import it.fast4x.riplay.ui.screens.settings.isLoggedIn
-import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.extensions.preferences.UiTypeKey
 import it.fast4x.riplay.extensions.preferences.animatedGradientKey
 import it.fast4x.riplay.extensions.preferences.applyFontPaddingKey
-import it.fast4x.riplay.utils.asMediaItem
 import it.fast4x.riplay.extensions.preferences.backgroundProgressKey
 import it.fast4x.riplay.extensions.preferences.bassboostEnabledKey
 import it.fast4x.riplay.extensions.preferences.bassboostLevelKey
-import it.fast4x.riplay.utils.capitalized
 import it.fast4x.riplay.extensions.preferences.checkUpdateStateKey
 import it.fast4x.riplay.extensions.preferences.closeWithBackButtonKey
 import it.fast4x.riplay.extensions.preferences.colorPaletteModeKey
@@ -234,17 +199,10 @@ import it.fast4x.riplay.extensions.preferences.discordPersonalAccessTokenKey
 import it.fast4x.riplay.extensions.preferences.fontTypeKey
 import it.fast4x.riplay.extensions.preferences.getEnum
 import it.fast4x.riplay.extensions.preferences.isDiscordPresenceEnabledKey
-import it.fast4x.riplay.utils.getSystemlanguage
-import it.fast4x.riplay.utils.invokeOnReady
-import it.fast4x.riplay.utils.isAtLeastAndroid12
-import it.fast4x.riplay.utils.isAtLeastAndroid6
-import it.fast4x.riplay.utils.isAtLeastAndroid8
+import it.fast4x.riplay.extensions.preferences.isEnabledFullscreenKey
 import it.fast4x.riplay.extensions.preferences.isKeepScreenOnEnabledKey
 import it.fast4x.riplay.extensions.preferences.isPauseOnVolumeZeroEnabledKey
 import it.fast4x.riplay.extensions.preferences.isProxyEnabledKey
-import it.fast4x.riplay.extensions.preferences.isEnabledFullscreenKey
-import it.fast4x.riplay.utils.isValidHttpUrl
-import it.fast4x.riplay.utils.isValidIP
 import it.fast4x.riplay.extensions.preferences.keepPlayerMinimizedKey
 import it.fast4x.riplay.extensions.preferences.languageAppKey
 import it.fast4x.riplay.extensions.preferences.loadedDataKey
@@ -254,8 +212,6 @@ import it.fast4x.riplay.extensions.preferences.navigationBarPositionKey
 import it.fast4x.riplay.extensions.preferences.navigationBarTypeKey
 import it.fast4x.riplay.extensions.preferences.parentalControlEnabledKey
 import it.fast4x.riplay.extensions.preferences.pipModuleKey
-import it.fast4x.riplay.utils.playNext
-import it.fast4x.riplay.utils.playPrevious
 import it.fast4x.riplay.extensions.preferences.playerBackgroundColorsKey
 import it.fast4x.riplay.extensions.preferences.preferences
 import it.fast4x.riplay.extensions.preferences.proxyHostnameKey
@@ -263,14 +219,11 @@ import it.fast4x.riplay.extensions.preferences.proxyModeKey
 import it.fast4x.riplay.extensions.preferences.proxyPortKey
 import it.fast4x.riplay.extensions.preferences.queueLoopTypeKey
 import it.fast4x.riplay.extensions.preferences.rememberPreference
-import it.fast4x.riplay.utils.resize
 import it.fast4x.riplay.extensions.preferences.restartActivityKey
 import it.fast4x.riplay.extensions.preferences.resumePlaybackWhenDeviceConnectedKey
-import it.fast4x.riplay.utils.setDefaultPalette
 import it.fast4x.riplay.extensions.preferences.shakeEventEnabledKey
 import it.fast4x.riplay.extensions.preferences.showSearchTabKey
 import it.fast4x.riplay.extensions.preferences.showTotalTimeQueueKey
-import it.fast4x.riplay.utils.thumbnail
 import it.fast4x.riplay.extensions.preferences.thumbnailRoundnessKey
 import it.fast4x.riplay.extensions.preferences.transitionEffectKey
 import it.fast4x.riplay.extensions.preferences.useSystemFontKey
@@ -279,7 +232,55 @@ import it.fast4x.riplay.extensions.preferences.volumeNormalizationKey
 import it.fast4x.riplay.extensions.preferences.ytCookieKey
 import it.fast4x.riplay.extensions.preferences.ytDataSyncIdKey
 import it.fast4x.riplay.extensions.preferences.ytVisitorDataKey
+import it.fast4x.riplay.extensions.rescuecenter.RescueScreen
+import it.fast4x.riplay.models.Queues
+import it.fast4x.riplay.models.defaultQueue
+import it.fast4x.riplay.service.BitmapProvider
+import it.fast4x.riplay.service.EndlessService
+import it.fast4x.riplay.service.OfflinePlayerService
+import it.fast4x.riplay.service.OnlinePlayerService
+import it.fast4x.riplay.service.isLocal
+import it.fast4x.riplay.ui.components.BottomSheet
+import it.fast4x.riplay.ui.components.CustomModalBottomSheet
+import it.fast4x.riplay.ui.components.LocalMenuState
+import it.fast4x.riplay.ui.components.rememberBottomSheetState
+import it.fast4x.riplay.ui.components.themed.CrossfadeContainer
+import it.fast4x.riplay.ui.components.themed.SmartMessage
+import it.fast4x.riplay.ui.screens.player.fastPlay
+import it.fast4x.riplay.ui.screens.player.offline.OfflineMiniPlayer
+import it.fast4x.riplay.ui.screens.player.offline.OfflinePlayer
+import it.fast4x.riplay.ui.screens.player.offline.PlayerSheetState
+import it.fast4x.riplay.ui.screens.player.offline.rememberPlayerSheetState
+import it.fast4x.riplay.ui.screens.player.online.MediaSessionCallback
+import it.fast4x.riplay.ui.screens.player.online.OnlineMiniPlayer
+import it.fast4x.riplay.ui.screens.player.online.OnlinePlayer
+import it.fast4x.riplay.ui.screens.player.online.components.core.OnlinePlayerCore
+import it.fast4x.riplay.ui.screens.settings.isLoggedIn
+import it.fast4x.riplay.ui.styling.Appearance
+import it.fast4x.riplay.ui.styling.Dimensions
+import it.fast4x.riplay.ui.styling.LocalAppearance
+import it.fast4x.riplay.ui.styling.applyPitchBlack
+import it.fast4x.riplay.ui.styling.colorPaletteOf
+import it.fast4x.riplay.ui.styling.customColorPalette
+import it.fast4x.riplay.ui.styling.dynamicColorPaletteOf
+import it.fast4x.riplay.ui.styling.typographyOf
+import it.fast4x.riplay.utils.LocalMonetCompat
+import it.fast4x.riplay.utils.OkHttpRequest
+import it.fast4x.riplay.utils.asMediaItem
+import it.fast4x.riplay.utils.capitalized
 import it.fast4x.riplay.utils.encryptedPreferences
+import it.fast4x.riplay.utils.getSystemlanguage
+import it.fast4x.riplay.utils.invokeOnReady
+import it.fast4x.riplay.utils.isAtLeastAndroid12
+import it.fast4x.riplay.utils.isAtLeastAndroid6
+import it.fast4x.riplay.utils.isAtLeastAndroid8
+import it.fast4x.riplay.utils.isValidHttpUrl
+import it.fast4x.riplay.utils.isValidIP
+import it.fast4x.riplay.utils.playNext
+import it.fast4x.riplay.utils.playPrevious
+import it.fast4x.riplay.utils.resize
+import it.fast4x.riplay.utils.setDefaultPalette
+import it.fast4x.riplay.utils.thumbnail
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -332,6 +333,12 @@ class MainActivity :
             }
             if (service is EndlessService.LocalBinder) {
                 this@MainActivity.endlessService = service.serviceInstance
+            }
+            if (service is OnlinePlayerService.LocalBinder) {
+                this@MainActivity.onlinePlayerService = service.serviceInstance
+                //service.mediaSession = mediaSession
+                service.offlinePlayerBinder = binder
+                service.onlinePlayer = onlinePlayer
             }
         }
 
@@ -389,6 +396,7 @@ class MainActivity :
     var currentPlaybackDuration: MutableState<Long> = mutableLongStateOf(0)
 
     lateinit var endlessService: Service
+    lateinit var onlinePlayerService: OnlinePlayerService
 
     var mediaItemIsLocal: MutableState<Boolean> = mutableStateOf(false)
 
@@ -421,6 +429,14 @@ class MainActivity :
             startService(intent)
         }.onFailure {
             Timber.e("MainActivity.onStart startService EndlessService ${it.stackTraceToString()}")
+        }
+
+        runCatching {
+            val intent = Intent(this, OnlinePlayerService::class.java)
+            bindService(intent, serviceConnection, BIND_AUTO_CREATE)
+            startService(intent)
+        }.onFailure {
+            Timber.e("MainActivity.onStart startService OnlinePlayerService ${it.stackTraceToString()}")
         }
 
     }
@@ -503,8 +519,7 @@ class MainActivity :
             ContextCompat.RECEIVER_NOT_EXPORTED
         )
 
-
-        updateOnlineNotification()
+        //updateOnlineNotification()
 
         updateSelectedQueue()
 
@@ -515,7 +530,6 @@ class MainActivity :
         initializeAudioVolumeObserver()
 
         initializeDiscordPresence()
-
 
     }
 
@@ -1288,11 +1302,29 @@ class MainActivity :
                             currentSecond = it
                             currentPlaybackPosition.value = (it * 1000).toLong()
                             //println("MainActivity onSecondChange ${currentPlaybackPosition.value}")
+//                            val i = Intent(
+//                                applicationContext,
+//                                OnlinePlayerService.OnlinePlayerServiceReceiver::class.java
+//                            )
+//                            i.action = "PlaybackPosition"
+//                            i.putExtra("Position", currentPlaybackPosition.value)
+//                            sendBroadcast(i)
                         },
                         onDurationChange = {
                             currentDuration = it
                             currentPlaybackDuration.value = (it * 1000).toLong()
-                            updateOnlineNotification()
+
+
+                            val i = Intent(
+                                applicationContext,
+                                OnlinePlayerService.OnlinePlayerServiceReceiver::class.java
+                            )
+                            i.action = "PlaybackDuration"
+                            i.putExtra("Duration", currentPlaybackDuration.value)
+                            sendBroadcast(i)
+
+
+                            //updateOnlineNotification()
                             val mediaItem = binder?.player?.currentMediaItem
                             if (mediaItem != null)
                                 updateDiscordPresenceWithOnlinePlayer(
@@ -1309,7 +1341,15 @@ class MainActivity :
                             onlinePlayerPlayingState.value =
                                 it == PlayerConstants.PlayerState.PLAYING
 
-                            updateOnlineNotification()
+                            val i = Intent(
+                                appContext(),
+                                OnlinePlayerService.OnlinePlayerServiceReceiver::class.java
+                            )
+                            i.action = "PlaybackState"
+                            i.putExtra("isPlaying", onlinePlayerPlayingState.value )
+                            sendBroadcast(i)
+
+                            //updateOnlineNotification()
 
                             val mediaItem = binder?.player?.currentMediaItem
                             if (mediaItem != null)
@@ -1522,9 +1562,9 @@ class MainActivity :
                                 }
 
                                 //Needed to update time in notification
-                                LaunchedEffect(onlinePlayerPlayingState.value) {
-                                    updateOnlineNotification()
-                                }
+//                                LaunchedEffect(onlinePlayerPlayingState.value) {
+//                                    updateOnlineNotification()
+//                                }
 
                                 BottomSheet(
                                     state = localPlayerSheetState,
@@ -1621,7 +1661,7 @@ class MainActivity :
 
                                 processNormalizeVolume()
 
-                                updateOnlineNotification()
+                                //updateOnlineNotification()
 
                                 updateDiscordPresenceWithOnlinePlayer(
                                     discordPresenceManager,
@@ -2178,7 +2218,7 @@ class MainActivity :
         }
         appRunningInBackground = false
 
-        updateOnlineNotification()
+        //updateOnlineNotification()
 
         println("MainActivity.onResume $appRunningInBackground")
     }

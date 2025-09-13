@@ -179,6 +179,7 @@
         </receiver>
 
         <!-- NEW PLAYER SERVICE -->
+
         <service
             android:name=".service.OfflinePlayerService"
             android:exported="true"
@@ -186,8 +187,8 @@
             tools:ignore="ExportedService">
             <intent-filter>
                 <action android:name="androidx.media3.session.MediaLibraryService" />
-                <action android:name="android.media.browse.MediaBrowserService" />
-                <action android:name="android.intent.action.MEDIA_BUTTON" />
+               <!-- <action android:name="android.media.browse.MediaBrowserService" />
+                <action android:name="android.intent.action.MEDIA_BUTTON" /> -->
             </intent-filter>
         </service>
 
@@ -202,6 +203,16 @@
             </intent-filter>
         </service>
 
+
+        <service android:name=".service.OnlinePlayerService"
+            android:exported="true"
+            android:foregroundServiceType="mediaPlayback"
+            tools:ignore="ExportedService">
+            <intent-filter>
+                <action android:name="android.media.browse.MediaBrowserService" />
+                <action android:name="android.intent.action.MEDIA_BUTTON" />
+            </intent-filter>
+        </service>
 
         <receiver android:name="androidx.media3.session.MediaButtonReceiver"
             android:exported="true">
@@ -222,6 +233,10 @@
 
         <receiver
             android:name=".service.OfflinePlayerService$NotificationDismissReceiver"
+            android:exported="false" />
+
+        <receiver
+            android:name=".service.OnlinePlayerService$OnlinePlayerServiceReceiver"
             android:exported="false" />
 
         <meta-data android:name="com.google.android.gms.car.application"
