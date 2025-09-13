@@ -481,8 +481,8 @@ class OnlinePlayerService : MediaBrowserServiceCompat(), ServiceConnection {
         inline get() = MediaItem(
             MediaDescriptionCompat.Builder()
                 .setMediaId(MediaId.playlists)
-                .setTitle((this as Context).resources.getString(R.string.library))
-                .setIconUri(uriFor(R.drawable.library))
+                .setTitle((this as Context).resources.getString(R.string.playlists))
+                .setIconUri(uriFor(R.drawable.playlist))
                 .build(),
             MediaItem.FLAG_BROWSABLE
         )
