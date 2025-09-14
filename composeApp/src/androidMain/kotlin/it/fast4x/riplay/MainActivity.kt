@@ -235,10 +235,10 @@ import it.fast4x.riplay.extensions.preferences.ytVisitorDataKey
 import it.fast4x.riplay.extensions.rescuecenter.RescueScreen
 import it.fast4x.riplay.models.Queues
 import it.fast4x.riplay.models.defaultQueue
-import it.fast4x.riplay.service.BitmapProvider
+import it.fast4x.riplay.utils.BitmapProvider
 import it.fast4x.riplay.service.EndlessService
-import it.fast4x.riplay.service.OfflinePlayerService
-import it.fast4x.riplay.service.OnlinePlayerService
+import it.fast4x.riplay.service.LocalPlayerService
+import it.fast4x.riplay.service.AndroidAutoService
 import it.fast4x.riplay.service.isLocal
 import it.fast4x.riplay.ui.components.BottomSheet
 import it.fast4x.riplay.ui.components.CustomModalBottomSheet
@@ -328,14 +328,14 @@ class MainActivity :
 
     private val serviceConnection = object : ServiceConnection {
         override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
-            if (service is OfflinePlayerService.Binder) {
+            if (service is LocalPlayerService.Binder) {
                 this@MainActivity.binder = service
             }
             if (service is EndlessService.LocalBinder) {
                 this@MainActivity.endlessService = service.serviceInstance
             }
-            if (service is OnlinePlayerService.LocalBinder) {
-                this@MainActivity.onlinePlayerService = service.serviceInstance
+            if (service is AndroidAutoService.LocalBinder) {
+                this@MainActivity.androidAutoService = service.serviceInstance
                 //service.mediaSession = mediaSession
                 service.offlinePlayerBinder = binder
                 service.onlinePlayer = onlinePlayer
@@ -349,7 +349,7 @@ class MainActivity :
 
     }
 
-    private var binder by mutableStateOf<OfflinePlayerService.Binder?>(null)
+    private var binder by mutableStateOf<LocalPlayerService.Binder?>(null)
     private var intentUriData by mutableStateOf<Uri?>(null)
 
 
@@ -396,7 +396,7 @@ class MainActivity :
     var currentPlaybackDuration: MutableState<Long> = mutableLongStateOf(0)
 
     lateinit var endlessService: Service
-    lateinit var onlinePlayerService: OnlinePlayerService
+    lateinit var androidAutoService: AndroidAutoService
 
     var mediaItemIsLocal: MutableState<Boolean> = mutableStateOf(false)
 
@@ -415,7 +415,7 @@ class MainActivity :
         super.onStart()
 
         runCatching {
-            val intent = Intent(this, OfflinePlayerService::class.java)
+            val intent = Intent(this, LocalPlayerService::class.java)
             bindService(intent, serviceConnection, BIND_AUTO_CREATE)
             startService(intent)
 
@@ -432,11 +432,11 @@ class MainActivity :
         }
 
         runCatching {
-            val intent = Intent(this, OnlinePlayerService::class.java)
+            val intent = Intent(this, AndroidAutoService::class.java)
             bindService(intent, serviceConnection, BIND_AUTO_CREATE)
             startService(intent)
         }.onFailure {
-            Timber.e("MainActivity.onStart startService OnlinePlayerService ${it.stackTraceToString()}")
+            Timber.e("MainActivity.onStart startService AndroidAutoService ${it.stackTraceToString()}")
         }
 
     }
@@ -1292,6 +1292,8 @@ class MainActivity :
                     remember { mutableStateOf(PlayerConstants.PlayerState.UNSTARTED) }
                 //var showControls by remember { mutableStateOf(true) }
                 var currentDuration by remember { mutableFloatStateOf(0f) }
+                var onlinePositionAndDuration by remember { mutableStateOf(0L to 0L) }
+
                 val onlineCore: @Composable () -> Unit = {
                     OnlinePlayerCore(
                         load = getResumePlaybackOnStart(),
@@ -1301,10 +1303,11 @@ class MainActivity :
                         onSecondChange = {
                             currentSecond = it
                             currentPlaybackPosition.value = (it * 1000).toLong()
+                            onlinePositionAndDuration = (it * 1000).toLong() to (currentDuration * 1000).toLong()
                             //println("MainActivity onSecondChange ${currentPlaybackPosition.value}")
 //                            val i = Intent(
 //                                applicationContext,
-//                                OnlinePlayerService.OnlinePlayerServiceReceiver::class.java
+//                                AndroidAutoService.OnlinePlayerServiceReceiver::class.java
 //                            )
 //                            i.action = "PlaybackPosition"
 //                            i.putExtra("Position", currentPlaybackPosition.value)
@@ -1313,11 +1316,11 @@ class MainActivity :
                         onDurationChange = {
                             currentDuration = it
                             currentPlaybackDuration.value = (it * 1000).toLong()
-
+                            onlinePositionAndDuration = (currentSecond * 1000).toLong() to (it * 1000).toLong()
 
                             val i = Intent(
                                 applicationContext,
-                                OnlinePlayerService.OnlinePlayerServiceReceiver::class.java
+                                AndroidAutoService.OnlinePlayerServiceReceiver::class.java
                             )
                             i.action = "PlaybackDuration"
                             i.putExtra("Duration", currentPlaybackDuration.value)
@@ -1343,7 +1346,7 @@ class MainActivity :
 
                             val i = Intent(
                                 appContext(),
-                                OnlinePlayerService.OnlinePlayerServiceReceiver::class.java
+                                AndroidAutoService.OnlinePlayerServiceReceiver::class.java
                             )
                             i.action = "PlaybackState"
                             i.putExtra("isPlaying", onlinePlayerPlayingState.value )
@@ -1420,6 +1423,7 @@ class MainActivity :
                             LocalMonetCompat provides localMonet,
                             LocalLinkDevices provides linkDevices.value,
                             LocalOnlinePlayerPlayingState provides onlinePlayerPlayingState.value,
+                            LocalOnlinePositionAndDuration provides onlinePositionAndDuration,
                             LocalSelectedQueue provides selectedQueue.value,
                             LocalBackupHandler provides backupHandler,
                             //LocalInternetAvailable provides isInternetAvailable
@@ -2318,7 +2322,7 @@ class MainActivity :
 
 var appRunningInBackground: Boolean = false
 
-val LocalPlayerServiceBinder = staticCompositionLocalOf<OfflinePlayerService.Binder?> { null }
+val LocalPlayerServiceBinder = staticCompositionLocalOf<LocalPlayerService.Binder?> { null }
 
 val LocalPlayerAwareWindowInsets = staticCompositionLocalOf<WindowInsets> { TODO() }
 
@@ -2328,6 +2332,9 @@ val LocalPlayerSheetState =
 
 val LocalOnlinePlayerPlayingState =
     staticCompositionLocalOf<Boolean> { error("No player sheet state provided") }
+
+val LocalOnlinePositionAndDuration = staticCompositionLocalOf<Pair<Long, Long>> { error("No player sheet state provided") }
+
 val LocalLinkDevices =
     staticCompositionLocalOf<List<NsdServiceInfo>> { error("No link devices provided") }
 

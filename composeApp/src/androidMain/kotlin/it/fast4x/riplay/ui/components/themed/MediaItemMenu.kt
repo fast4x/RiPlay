@@ -66,6 +66,7 @@ import androidx.navigation.NavController
 import it.fast4x.compose.persist.persistList
 import it.fast4x.environment.models.NavigationEndpoint
 import it.fast4x.riplay.Database
+import it.fast4x.riplay.LocalOnlinePositionAndDuration
 import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.LocalSelectedQueue
 import it.fast4x.riplay.MODIFIED_PREFIX
@@ -1542,7 +1543,8 @@ fun MediaItemMenu(
                         ?: flowOf(null))
                         .collectAsState(initial = null)
 
-                    val positionAndDuration = binder?.player?.positionAndDurationState()
+                    val positionAndDuration = if (mediaItem.isLocal) binder?.player?.positionAndDurationState()
+                    else mutableStateOf(LocalOnlinePositionAndDuration.current)
 
                     var timeRemaining by remember { mutableIntStateOf(0) }
 
@@ -1569,7 +1571,7 @@ fun MediaItemMenu(
                                 onDismiss = { isShowingSleepTimerDialog = false }
                             ) {
                                 var amount by remember {
-                                    mutableStateOf(1)
+                                    mutableIntStateOf(1)
                                 }
 
                                 BasicText(

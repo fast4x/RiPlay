@@ -356,6 +356,7 @@ interface Database {
             "    CASE :sortOrder WHEN 'ASC' THEN totalPlayTimeMs END ASC," +
             "    CASE :sortOrder WHEN 'DESC' THEN totalPlayTimeMs END DESC")
     @RewriteQueriesToDropUnusedColumns
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     fun songsDislikedByPlayTime(sortOrder: String): Flow<List<SongEntity>>
 
     fun songsDislikedByRelativePlayTime(sortOrder: SortOrder): Flow<List<SongEntity>> {
@@ -379,6 +380,7 @@ interface Database {
             "    CASE :sortOrder WHEN 'ASC' THEN Song.title END COLLATE NOCASE ASC," +
             "    CASE :sortOrder WHEN 'DESC' THEN Song.title END COLLATE NOCASE DESC")
     @RewriteQueriesToDropUnusedColumns
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     fun songsDislikedByTitle(sortOrder: String): Flow<List<SongEntity>>
 
     @Transaction
@@ -391,6 +393,7 @@ interface Database {
             "    CASE :sortOrder WHEN 'ASC' THEN Song.ROWID END ASC," +
             "    CASE :sortOrder WHEN 'DESC' THEN Song.ROWID END DESC")
     @RewriteQueriesToDropUnusedColumns
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     fun songsDislikedByRowId(sortOrder: String): Flow<List<SongEntity>>
 
     @Transaction
@@ -403,6 +406,7 @@ interface Database {
             " ORDER BY "+
             "    CASE :sortOrder WHEN 'ASC' THEN E.timestamp END ASC," +
             "    CASE :sortOrder WHEN 'DESC' THEN E.timestamp END DESC")
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     fun songsDislikedByDatePlayed(sortOrder: String): Flow<List<SongEntity>>
 
     @Transaction
@@ -415,6 +419,7 @@ interface Database {
             "    CASE :sortOrder WHEN 'ASC' THEN artistsText END ASC," +
             "    CASE :sortOrder WHEN 'DESC' THEN artistsText END DESC")
     @RewriteQueriesToDropUnusedColumns
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     fun songsDislikedByArtist(sortOrder: String): Flow<List<SongEntity>>
 
     @Transaction
@@ -427,6 +432,7 @@ interface Database {
             "    CASE :sortOrder WHEN 'ASC' THEN durationText END ASC," +
             "    CASE :sortOrder WHEN 'DESC' THEN durationText END DESC")
     @RewriteQueriesToDropUnusedColumns
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     fun songsDislikedByDuration(sortOrder: String): Flow<List<SongEntity>>
 
     @Transaction
@@ -439,6 +445,7 @@ interface Database {
             "    CASE :sortOrder WHEN 'ASC' THEN Album.title END COLLATE NOCASE ASC," +
             "    CASE :sortOrder WHEN 'DESC' THEN Album.title END COLLATE NOCASE DESC")
     @RewriteQueriesToDropUnusedColumns
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     fun songsDislikedByAlbumName(sortOrder: String): Flow<List<SongEntity>>
 
     fun SortOrder.toSQLString(): String {
@@ -848,6 +855,7 @@ interface Database {
         WHERE Song.likedAt IS NOT NULL 
         ORDER BY artistsText
     """)
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     fun sortFavoriteSongsByArtist(): Flow<List<SongEntity>>
 
     @Query("""
@@ -859,6 +867,7 @@ interface Database {
         WHERE Song.likedAt IS NOT NULL 
         ORDER BY totalPlayTimeMs
     """)
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     fun sortFavoriteSongsByPlayTime(): Flow<List<SongEntity>>
 
     @Query("""
@@ -875,6 +884,7 @@ interface Database {
             END
         COLLATE NOCASE
     """)
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     fun sortFavoriteSongsByTitle(): Flow<List<SongEntity>>
 
     @Query("""
@@ -886,6 +896,7 @@ interface Database {
         WHERE Song.likedAt IS NOT NULL 
         ORDER BY Song.ROWID
     """)
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     fun sortFavoriteSongsByRowId(): Flow<List<SongEntity>>
 
     @Query("""
@@ -897,6 +908,7 @@ interface Database {
         WHERE Song.likedAt IS NOT NULL 
         ORDER BY likedAt
     """)
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     fun sortFavoriteSongsByLikedAt(): Flow<List<SongEntity>>
 
     @Query("""
@@ -909,6 +921,7 @@ interface Database {
         WHERE Song.likedAt IS NOT NULL 
         ORDER BY E.timestamp
     """)
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     fun sortFavoriteSongsByDatePlayed(): Flow<List<SongEntity>>
 
     @Query("""
@@ -920,6 +933,7 @@ interface Database {
         WHERE Song.likedAt IS NOT NULL 
         ORDER BY durationText
     """)
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     fun sortFavoriteSongsByDuration(): Flow<List<SongEntity>>
 
     @Query("""
@@ -931,6 +945,7 @@ interface Database {
         WHERE Song.likedAt IS NOT NULL 
         ORDER BY Album.title
     """)
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     fun sortFavoriteSongsByAlbum(): Flow<List<SongEntity>>
 
     /**
@@ -969,6 +984,7 @@ interface Database {
     }.map(sortOrder::applyTo)
 
     @Query("SELECT thumbnailUrl FROM Song WHERE likedAt IS NOT NULL AND id NOT LIKE '$LOCAL_KEY_PREFIX%'  LIMIT 4")
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     fun preferitesThumbnailUrls(): Flow<List<String?>>
 
     @Transaction
@@ -984,6 +1000,7 @@ interface Database {
         WHERE Format.contentLength IS NOT NULL 
         ORDER BY totalPlayTimeMs
     """)
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     fun sortOfflineSongsByPlayTime(): Flow<List<SongEntity>>
 
     @Query("""
@@ -1000,6 +1017,7 @@ interface Database {
             END
         COLLATE NOCASE
     """)
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     fun sortOfflineSongsByTitle(): Flow<List<SongEntity>>
 
     @Query("""
@@ -1011,6 +1029,7 @@ interface Database {
         WHERE Format.contentLength IS NOT NULL 
         ORDER BY Song.ROWID
     """)
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     fun sortOfflineSongsByRowId(): Flow<List<SongEntity>>
 
     @Query("""
@@ -1022,6 +1041,7 @@ interface Database {
         WHERE Format.contentLength IS NOT NULL 
         ORDER BY Song.likedAt
     """)
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     fun sortOfflineSongsByLikedAt(): Flow<List<SongEntity>>
 
     @Query("""
@@ -1033,6 +1053,7 @@ interface Database {
         WHERE Format.contentLength IS NOT NULL 
         ORDER BY Song.artistsText
     """)
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     fun sortOfflineSongsByArtist(): Flow<List<SongEntity>>
 
     @Query("""
@@ -1044,6 +1065,7 @@ interface Database {
         WHERE Format.contentLength IS NOT NULL 
         ORDER BY Song.durationText
     """)
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     fun sortOfflineSongsByDuration(): Flow<List<SongEntity>>
 
     @Query("""
@@ -1056,6 +1078,7 @@ interface Database {
         WHERE Format.contentLength IS NOT NULL 
         ORDER BY E.timestamp
     """)
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     fun sortOfflineSongsByDatePlayed(): Flow<List<SongEntity>>
 
     @Query("""
@@ -1067,6 +1090,7 @@ interface Database {
         WHERE Format.contentLength IS NOT NULL 
         ORDER BY Album.title COLLATE NOCASE
     """)
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     fun sortOfflineSongsByAlbum(): Flow<List<SongEntity>>
 
     /**
@@ -1111,6 +1135,7 @@ interface Database {
         WHERE Song.totalPlayTimeMs >= :showHidden 
         ORDER BY Song.ROWID
     """)
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     fun sortAllSongsByRowId(
         @MagicConstant(intValues = [1, 0]) showHidden: Int
     ): Flow<List<SongEntity>>
@@ -1140,6 +1165,7 @@ interface Database {
             END
         COLLATE NOCASE
     """)
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     fun sortAllSongsByTitle(
         @MagicConstant(intValues = [1, 0]) showHidden: Int
     ): Flow<List<SongEntity>>
@@ -1158,6 +1184,7 @@ interface Database {
             END
         COLLATE NOCASE
     """)
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     fun sortAllSongsByTitle_Filtered(filterList: List<String>): Flow<List<SongEntity>>
 
     @Query("""
@@ -1169,6 +1196,7 @@ interface Database {
         WHERE Song.totalPlayTimeMs >= :showHidden 
         ORDER BY Song.totalPlayTimeMs
     """)
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     fun sortAllSongsByPlayTime(
         @MagicConstant(intValues = [1, 0]) showHidden: Int
     ): Flow<List<SongEntity>>
@@ -1182,6 +1210,7 @@ interface Database {
         WHERE Song.id in (:filterList)
         ORDER BY Song.totalPlayTimeMs
     """)
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     fun sortAllSongsByPlayTime_Filtered(
         filterList: List<String>): Flow<List<SongEntity>>
 
@@ -1218,6 +1247,7 @@ interface Database {
         WHERE Song.totalPlayTimeMs >= :showHidden 
         ORDER BY E.timestamp
     """)
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     fun sortAllSongsByDatePlayed(
         @MagicConstant(intValues = [1, 0]) showHidden: Int
     ): Flow<List<SongEntity>>
@@ -1232,6 +1262,7 @@ interface Database {
         WHERE Song.id in (:filterList)
         ORDER BY E.timestamp
     """)
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     fun sortAllSongsByDatePlayed_Filtered(filterList: List<String>): Flow<List<SongEntity>>
 
     @Query("""
@@ -1243,6 +1274,7 @@ interface Database {
         WHERE Song.totalPlayTimeMs >= :showHidden 
         ORDER BY Song.likedAt
     """)
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     fun sortAllSongsByLikedAt(
         @MagicConstant(intValues = [1, 0]) showHidden: Int
     ): Flow<List<SongEntity>>
@@ -1256,6 +1288,7 @@ interface Database {
         WHERE Song.id in (:filterList)
         ORDER BY Song.likedAt
     """)
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     fun sortAllSongsByLikedAt_Filtered(filterList: List<String>): Flow<List<SongEntity>>
 
     @Query("""
@@ -1267,6 +1300,7 @@ interface Database {
         WHERE Song.totalPlayTimeMs >= :showHidden 
         ORDER BY Song.artistsText COLLATE NOCASE
     """)
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     fun sortAllSongsByArtist(
         @MagicConstant(intValues = [1, 0]) showHidden: Int
     ): Flow<List<SongEntity>>
@@ -1280,6 +1314,7 @@ interface Database {
         WHERE Song.id in (:filterList)
         ORDER BY Song.artistsText COLLATE NOCASE
     """)
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     fun sortAllSongsByArtist_Filtered(filterList: List<String>): Flow<List<SongEntity>>
 
     @Query("""
@@ -1291,6 +1326,7 @@ interface Database {
         WHERE Song.totalPlayTimeMs >= :showHidden 
         ORDER BY Song.durationText
     """)
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     fun sortAllSongsByDuration(
         @MagicConstant(intValues = [1, 0]) showHidden: Int
     ): Flow<List<SongEntity>>
@@ -1304,6 +1340,7 @@ interface Database {
         WHERE Song.id in (:filterList)
         ORDER BY Song.durationText
     """)
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     fun sortAllSongsByDuration_Filtered(filterList: List<String>): Flow<List<SongEntity>>
 
     @Query("""
@@ -1315,6 +1352,7 @@ interface Database {
         WHERE Song.totalPlayTimeMs >= :showHidden 
         ORDER BY Album.title COLLATE NOCASE
     """)
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     fun sortAllSongsByAlbum(
         @MagicConstant(intValues = [1, 0]) showHidden: Int
     ): Flow<List<SongEntity>>
@@ -1328,6 +1366,7 @@ interface Database {
         WHERE Song.id in (:filterList)
         ORDER BY Album.title COLLATE NOCASE
     """)
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     fun sortAllSongsByAlbum_Filtered(filterList: List<String>): Flow<List<SongEntity>>
 
     /**
@@ -2467,6 +2506,8 @@ interface Database {
             "ORDER BY 6 DESC")
     fun playlistPreviewsByMostPlayedSongsDesc(): Flow<List<PlaylistPreview>>
 
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
+    @RewriteQueriesToDropUnusedColumns
     fun playlistPreviews(
         sortBy: PlaylistSortBy,
         sortOrder: SortOrder
@@ -2496,6 +2537,8 @@ interface Database {
 
 
     @Query("SELECT * FROM Song JOIN SongArtistMap ON Song.id = SongArtistMap.songId WHERE SongArtistMap.artistId = :artistId ORDER BY Song.totalPlayTimeMs DESC LIMIT :count")
+    @RewriteQueriesToDropUnusedColumns
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     fun artistTopSongs(artistId: String, count: Int = 10): Flow<List<Song>>
 
     @Transaction

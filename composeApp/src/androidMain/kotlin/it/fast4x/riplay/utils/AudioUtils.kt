@@ -3,8 +3,6 @@ package it.fast4x.riplay.utils
 import android.animation.ValueAnimator
 import android.content.Context
 import android.content.Context.AUDIO_SERVICE
-import android.media.AudioDeviceCallback
-import android.media.AudioDeviceInfo
 import android.media.AudioManager
 import androidx.media3.exoplayer.ExoPlayer
 import android.os.Handler
@@ -13,24 +11,12 @@ import androidx.annotation.OptIn
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.core.animation.doOnEnd
 import androidx.media3.common.util.UnstableApi
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
-import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.context
-import it.fast4x.riplay.extensions.audiovolume.AudioVolumeObserver
-import it.fast4x.riplay.extensions.audiovolume.OnAudioVolumeChangedListener
-import it.fast4x.riplay.extensions.preferences.Preference.remember
-import it.fast4x.riplay.extensions.preferences.isPauseOnVolumeZeroEnabledKey
-import it.fast4x.riplay.extensions.preferences.preferences
-import it.fast4x.riplay.extensions.preferences.resumePlaybackWhenDeviceConnectedKey
-import it.fast4x.riplay.extensions.preferences.useVolumeKeysToChangeSongKey
-import it.fast4x.riplay.service.OfflinePlayerService
+import it.fast4x.riplay.service.LocalPlayerService
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
@@ -110,7 +96,7 @@ fun setDeviceVolume(context: Context, volume: Float) {
 
 @Composable
 @OptIn(UnstableApi::class)
-fun MedleyMode(binder: OfflinePlayerService.Binder?, seconds: Int) {
+fun MedleyMode(binder: LocalPlayerService.Binder?, seconds: Int) {
     if (seconds == 0) return
     if (binder != null) {
         val coroutineScope = rememberCoroutineScope()

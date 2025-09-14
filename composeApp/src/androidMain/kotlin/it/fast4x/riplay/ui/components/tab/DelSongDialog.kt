@@ -10,7 +10,7 @@ import it.fast4x.riplay.Database
 import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.R
 import it.fast4x.riplay.models.SongEntity
-import it.fast4x.riplay.service.OfflinePlayerService
+import it.fast4x.riplay.service.LocalPlayerService
 import it.fast4x.riplay.ui.components.LocalMenuState
 import it.fast4x.riplay.ui.components.MenuState
 import it.fast4x.riplay.ui.components.themed.SmartMessage
@@ -20,7 +20,7 @@ import java.util.Optional
 
 @UnstableApi
 open class DelSongDialog protected constructor(
-    private val binder: OfflinePlayerService.Binder?,
+    private val binder: LocalPlayerService.Binder?,
     activeState: MutableState<Boolean>,
     menuState: MenuState,
 ): DeleteDialog( activeState, menuState ) {

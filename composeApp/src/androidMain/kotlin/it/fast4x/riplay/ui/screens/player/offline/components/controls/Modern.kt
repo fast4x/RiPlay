@@ -62,7 +62,7 @@ import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.models.Info
 import it.fast4x.riplay.models.Song
 import it.fast4x.riplay.models.ui.UiMedia
-import it.fast4x.riplay.service.OfflinePlayerService
+import it.fast4x.riplay.service.LocalPlayerService
 import it.fast4x.riplay.typography
 import it.fast4x.riplay.ui.components.themed.CustomElevatedButton
 import it.fast4x.riplay.ui.components.themed.IconButton
@@ -103,7 +103,7 @@ import kotlinx.coroutines.launch
 @ExperimentalFoundationApi
 @Composable
 fun InfoAlbumAndArtistModern(
-    binder: OfflinePlayerService.Binder,
+    binder: LocalPlayerService.Binder,
     navController: NavController,
     albumId: String?,
     media: UiMedia,
@@ -423,7 +423,7 @@ fun InfoAlbumAndArtistModern(
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ControlsModern(
-    binder: OfflinePlayerService.Binder,
+    binder: LocalPlayerService.Binder,
     position: Long,
     playbackSpeed: Float,
     shouldBePlaying: Boolean,

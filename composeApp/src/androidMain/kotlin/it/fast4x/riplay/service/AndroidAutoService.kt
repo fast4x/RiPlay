@@ -44,6 +44,7 @@ import it.fast4x.riplay.models.Artist
 import it.fast4x.riplay.models.PlaylistPreview
 import it.fast4x.riplay.models.Song
 import it.fast4x.riplay.ui.screens.player.fastPlay
+import it.fast4x.riplay.utils.BitmapProvider
 import it.fast4x.riplay.utils.getTitleMonthlyPlaylistFromContext
 import it.fast4x.riplay.utils.intent
 import kotlinx.coroutines.CoroutineScope
@@ -62,9 +63,9 @@ import kotlinx.coroutines.SupervisorJob
 import kotlin.math.roundToInt
 
 @UnstableApi
-class OnlinePlayerService : MediaBrowserServiceCompat(), ServiceConnection {
+class AndroidAutoService : MediaBrowserServiceCompat(), ServiceConnection {
 
-    var tmpOfflinePlayerBinder: OfflinePlayerService.Binder? = null
+    var tmpOfflinePlayerBinder: LocalPlayerService.Binder? = null
         set(value) {
             offlinePlayerBinder = value
 
@@ -77,7 +78,7 @@ class OnlinePlayerService : MediaBrowserServiceCompat(), ServiceConnection {
     companion object {
 
         var mediaSession: MediaSessionCompat? = null
-        var offlinePlayerBinder: OfflinePlayerService.Binder? = null
+        var offlinePlayerBinder: LocalPlayerService.Binder? = null
         var onlinePlayer: MutableState<YouTubePlayer?> = mutableStateOf(null)
         var bitmapProvider: BitmapProvider? = null
         var isPlaying: Boolean = false
@@ -157,16 +158,16 @@ class OnlinePlayerService : MediaBrowserServiceCompat(), ServiceConnection {
      * Returns the instance of the service
      */
     inner class LocalBinder : Binder() {
-        val serviceInstance: OnlinePlayerService
-            get() = this@OnlinePlayerService
+        val serviceInstance: AndroidAutoService
+            get() = this@AndroidAutoService
 
-        var offlinePlayerBinder: OfflinePlayerService.Binder? = null
+        var offlinePlayerBinder: LocalPlayerService.Binder? = null
             set(value) {
-                this@OnlinePlayerService.tmpOfflinePlayerBinder = value
+                this@AndroidAutoService.tmpOfflinePlayerBinder = value
             }
         var onlinePlayer: MutableState<YouTubePlayer?> = mutableStateOf(null)
             set(value) {
-                this@OnlinePlayerService.tmpOnlinePlayer = value
+                this@AndroidAutoService.tmpOnlinePlayer = value
             }
 
     }
@@ -188,7 +189,7 @@ class OnlinePlayerService : MediaBrowserServiceCompat(), ServiceConnection {
                 PendingIntent.getActivity(this, 0, sessionIntent, PendingIntent.FLAG_IMMUTABLE)
             }
 
-        mediaSession = MediaSessionCompat(this, "OnlinePlayerService")
+        mediaSession = MediaSessionCompat(this, "AndroidAutoService")
         mediaSession?.setFlags(MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS or MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS)
         mediaSession?.setRatingType(RatingCompat.RATING_NONE)
         mediaSession?.setSessionActivity(sessionActivityPendingIntent)
@@ -215,13 +216,13 @@ class OnlinePlayerService : MediaBrowserServiceCompat(), ServiceConnection {
 //                    currentMediaItem = offlinePlayerBinder?.player?.currentMediaItem
 //                    //updateMediaSessionPlaybackState()
 //                }
-//                Timber.d("OnlinePlayerService Update MediaItem from LocalPlayerService")
+//                Timber.d("AndroidAutoService Update MediaItem from LocalPlayerService")
 //            }
 //        }
 
 
 
-        Timber.d("OnlinePlayerService onCreate")
+        Timber.d("AndroidAutoService onCreate")
 
 
     }
@@ -231,8 +232,8 @@ class OnlinePlayerService : MediaBrowserServiceCompat(), ServiceConnection {
         clientUid: Int,
         rootHints: Bundle?
     ): BrowserRoot? {
-        bindService(intent<OnlinePlayerService>(), this, Context.BIND_AUTO_CREATE)
-        Timber.d("OnlinePlayerService onGetRoot $clientPackageName")
+        bindService(intent<AndroidAutoService>(), this, Context.BIND_AUTO_CREATE)
+        Timber.d("AndroidAutoService onGetRoot $clientPackageName")
         return BrowserRoot(
             MediaId.root,
             //bundleOf("android.media.browse.CONTENT_STYLE_BROWSABLE_HINT" to 1)
@@ -252,7 +253,7 @@ class OnlinePlayerService : MediaBrowserServiceCompat(), ServiceConnection {
     ) {
         val data = parentId.split('/')
         val id = data.getOrNull(1) ?: ""
-        Timber.d("OnlinePlayerService onLoadChildren $parentId data $data")
+        Timber.d("AndroidAutoService onLoadChildren $parentId data $data")
         runBlocking(Dispatchers.IO) {
             result.sendResult(
                 when (data.firstOrNull()) {
@@ -318,14 +319,14 @@ class OnlinePlayerService : MediaBrowserServiceCompat(), ServiceConnection {
 
                     MediaId.albums -> {
                         if (id == "") {
-                            Timber.d("OnlinePlayerService onLoadChildren inside albums id $id")
+                            Timber.d("AndroidAutoService onLoadChildren inside albums id $id")
                             Database
                                 .albumsByRowIdDesc()
                                 .first()
                                 .map { it.asBrowserMediaItem }
                                 .toMutableList()
                         } else {
-                            Timber.d("OnlinePlayerService onLoadChildren inside albums SONGS id $id")
+                            Timber.d("AndroidAutoService onLoadChildren inside albums SONGS id $id")
                             Database.albumSongs(id)
                                 .first()
                                 .map { it.asBrowserMediaItem }
@@ -426,7 +427,7 @@ class OnlinePlayerService : MediaBrowserServiceCompat(), ServiceConnection {
                 .setTitle(if (playlist.name.startsWith(PINNED_PREFIX)) playlist.name.replace(PINNED_PREFIX,"0:",true) else
                     if (playlist.name.startsWith(MONTHLY_PREFIX)) playlist.name.replace(
                         MONTHLY_PREFIX,"1:",true) else playlist.name)
-                .setSubtitle("$songCount ${(this@OnlinePlayerService as Context).resources.getString(R.string.songs)}")
+                .setSubtitle("$songCount ${(this@AndroidAutoService as Context).resources.getString(R.string.songs)}")
                 .setIconUri(uriFor(if (playlist.name.startsWith(PINNED_PREFIX)) R.drawable.pin else
                     if (playlist.name.startsWith(MONTHLY_PREFIX)) R.drawable.stat_month else R.drawable.playlist))
                 .build(),
@@ -460,7 +461,7 @@ class OnlinePlayerService : MediaBrowserServiceCompat(), ServiceConnection {
             MediaDescriptionCompat.Builder()
                 .setMediaId(mediaId)
                 .setTitle(if (description.title.toString().startsWith("0:")) description.title.toString().substringAfter("0:") else
-                    if (description.title.toString().startsWith("1:")) getTitleMonthlyPlaylistFromContext(description.title.toString().substringAfter("1:"), this@OnlinePlayerService) else description.title.toString())
+                    if (description.title.toString().startsWith("1:")) getTitleMonthlyPlaylistFromContext(description.title.toString().substringAfter("1:"), this@AndroidAutoService) else description.title.toString())
                 .setIconUri(uriFor(if (description.title.toString().startsWith("0:")) R.drawable.pin else
                     if (description.title.toString().startsWith("1:")) R.drawable.stat_month else R.drawable.playlist))
                 .build(),
@@ -572,21 +573,21 @@ class OnlinePlayerService : MediaBrowserServiceCompat(), ServiceConnection {
                 onlinePlayer.value?.pause()
                 isPlaying = false
                 updateMediaSessionData()
-                Timber.d("OnlinePlayerService MediaSessionCompat.Callback onStop")
+                Timber.d("AndroidAutoService MediaSessionCompat.Callback onStop")
             }
             override fun onPlay() {
                 super.onPlay()
                 onlinePlayer.value?.play()
                 isPlaying = true
                 updateMediaSessionData()
-                Timber.d("OnlinePlayerService MediaSessionCompat.Callback onPlay")
+                Timber.d("AndroidAutoService MediaSessionCompat.Callback onPlay")
             }
             override fun onPause() {
                 super.onPause()
                 onlinePlayer.value?.pause()
                 isPlaying = false
                 updateMediaSessionData()
-                Timber.d("OnlinePlayerService MediaSessionCompat.Callback onPause")
+                Timber.d("AndroidAutoService MediaSessionCompat.Callback onPause")
             }
             override fun onSkipToNext() {
                 super.onSkipToNext()
@@ -602,12 +603,12 @@ class OnlinePlayerService : MediaBrowserServiceCompat(), ServiceConnection {
 
             @OptIn(UnstableApi::class)
             override fun onPlayFromMediaId(mediaId: String?, extras: Bundle?) {
-                Timber.d("OnlinePlayerService onPlayFromMediaId mediaId ${mediaId} called")
+                Timber.d("AndroidAutoService onPlayFromMediaId mediaId ${mediaId} called")
                 val data = mediaId?.split('/') ?: return
                 val id = data.getOrNull(1)
                 var index = 0
 
-                Timber.d("OnlinePlayerService onPlayFromMediaId mediaId ${mediaId} data $data elaborated")
+                Timber.d("AndroidAutoService onPlayFromMediaId mediaId ${mediaId} data $data elaborated")
 
                 coroutineScope.launch {
                     val mediaItem = Database.song(id).first()?.asMediaItem ?: return@launch
@@ -656,7 +657,7 @@ class OnlinePlayerService : MediaBrowserServiceCompat(), ServiceConnection {
     ////                            .getOrNull(1)
     ////                            ?.let(Database::artistSongsByname)
     ////                            ?.first()
-    ////                        Timber.d("OnlinePlayerService artists ${items}")
+    ////                        Timber.d("AndroidAutoService artists ${items}")
     ////                        items
     ////                    }
     ////

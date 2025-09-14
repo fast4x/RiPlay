@@ -1,5 +1,4 @@
-package it.fast4x.riplay.service
-
+package it.fast4x.riplay.utils
 
 import android.content.res.Configuration
 import android.graphics.Bitmap
@@ -9,7 +8,6 @@ import androidx.core.graphics.applyCanvas
 import coil.imageLoader
 import coil.request.Disposable
 import coil.request.ImageRequest
-import it.fast4x.riplay.utils.thumbnail
 import it.fast4x.riplay.appContext
 import timber.log.Timber
 
@@ -54,14 +52,14 @@ class BitmapProvider(
                     drawColor(colorProvider(isSystemInDarkMode))
                 }
         }.onFailure {
-            Timber.e("Failed set default bitmap in BitmapProvider ${it.stackTraceToString()}")
+            Timber.Forest.e("Failed set default bitmap in BitmapProvider ${it.stackTraceToString()}")
         }
 
         return lastBitmap == null
     }
 
     fun load(uri: Uri?, onDone: (Bitmap) -> Unit) {
-        Timber.d("BitmapProvider load method being called")
+        Timber.Forest.d("BitmapProvider load method being called")
         if (lastUri == uri || uri == null) {
             listener?.invoke(lastBitmap)
             return
@@ -81,7 +79,7 @@ class BitmapProvider(
                     .memoryCacheKey(url.toString())
                     .listener(
                         onError = { _, result ->
-                            Timber.e("Failed to load bitmap ${result.throwable.stackTraceToString()}")
+                            Timber.Forest.e("Failed to load bitmap ${result.throwable.stackTraceToString()}")
                             lastBitmap = null
                             onDone(bitmap)
                             //listener?.invoke(lastBitmap)
@@ -96,7 +94,7 @@ class BitmapProvider(
                     .build()
             )
         }.onFailure {
-            Timber.e("Failed enqueue in BitmapProvider ${it.stackTraceToString()}")
+            Timber.Forest.e("Failed enqueue in BitmapProvider ${it.stackTraceToString()}")
         }
     }
 }

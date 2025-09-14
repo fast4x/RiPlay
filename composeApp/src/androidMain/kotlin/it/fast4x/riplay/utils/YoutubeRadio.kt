@@ -11,7 +11,7 @@ import it.fast4x.environment.requests.nextPage
 import it.fast4x.riplay.Database
 import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.PopupType
-import it.fast4x.riplay.service.OfflinePlayerService
+import it.fast4x.riplay.service.LocalPlayerService
 import it.fast4x.riplay.ui.components.themed.SmartMessage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -26,7 +26,7 @@ data class YouTubeRadio @OptIn(UnstableApi::class) constructor
     private var parameters: String? = null,
     private val isDiscoverEnabled: Boolean = false,
     private val context: Context,
-    private val binder: OfflinePlayerService.Binder? = null,
+    private val binder: LocalPlayerService.Binder? = null,
     private val coroutineScope: CoroutineScope
 ) {
     private var nextContinuation: String? = null

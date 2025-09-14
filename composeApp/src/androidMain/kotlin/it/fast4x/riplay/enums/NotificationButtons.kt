@@ -13,7 +13,7 @@ import it.fast4x.riplay.service.MediaSessionConstants.CommandStartRadio
 import it.fast4x.riplay.service.MediaSessionConstants.CommandToggleLike
 import it.fast4x.riplay.service.MediaSessionConstants.CommandToggleRepeatMode
 import it.fast4x.riplay.service.MediaSessionConstants.CommandToggleShuffle
-import it.fast4x.riplay.service.OfflinePlayerService
+import it.fast4x.riplay.service.LocalPlayerService
 import it.fast4x.riplay.appContext
 
 enum class NotificationButtons {
@@ -38,11 +38,11 @@ enum class NotificationButtons {
     @OptIn(UnstableApi::class)
     get() = when (this) {
         //Download -> PlayerServiceModern.Action.download.pendingIntent
-        Favorites -> OfflinePlayerService.Action.like.pendingIntent
-        Repeat -> OfflinePlayerService.Action.repeat.pendingIntent
-        Shuffle -> OfflinePlayerService.Action.shuffle.pendingIntent
-        Radio -> OfflinePlayerService.Action.playradio.pendingIntent
-        Search -> OfflinePlayerService.Action.search.pendingIntent
+        Favorites -> LocalPlayerService.Action.like.pendingIntent
+        Repeat -> LocalPlayerService.Action.repeat.pendingIntent
+        Shuffle -> LocalPlayerService.Action.shuffle.pendingIntent
+        Radio -> LocalPlayerService.Action.playradio.pendingIntent
+        Search -> LocalPlayerService.Action.search.pendingIntent
     }
 
     val displayName: String

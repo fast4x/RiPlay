@@ -56,12 +56,12 @@ import kotlinx.coroutines.guava.future
 import kotlinx.coroutines.runBlocking
 
 @UnstableApi
-class MediaLibrarySessionCallback (
+class LocalPlayerSessionCallback (
     val context: Context,
     val database: Database,
 ) : MediaLibrarySession.Callback {
     private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
-    lateinit var binder: OfflinePlayerService.Binder
+    lateinit var binder: LocalPlayerService.Binder
     var toggleLike: () -> Unit = {}
     //var toggleDownload: () -> Unit = {}
     var toggleRepeat: () -> Unit = {}
@@ -95,7 +95,7 @@ class MediaLibrarySessionCallback (
         query: String,
         params: MediaLibraryService.LibraryParams?
     ): ListenableFuture<LibraryResult<Void>> {
-        println("PlayerServiceModern MediaLibrarySessionCallback.onSearch: $query")
+        println("PlayerServiceModern LocalPlayerSessionCallback.onSearch: $query")
         session.notifySearchResultChanged(browser, query, 0, params)
         return Futures.immediateFuture(LibraryResult.ofVoid(params))
     }
@@ -108,7 +108,7 @@ class MediaLibrarySessionCallback (
         pageSize: Int,
         params: MediaLibraryService.LibraryParams?
     ): ListenableFuture<LibraryResult<ImmutableList<MediaItem>>> {
-        println("PlayerServiceModern MediaLibrarySessionCallback.onGetSearchResult: $query")
+        println("PlayerServiceModern LocalPlayerSessionCallback.onGetSearchResult: $query")
         runBlocking(Dispatchers.IO) {
             searchedSongs = Environment.searchPage(
                 body = SearchBody(
@@ -121,14 +121,14 @@ class MediaLibrarySessionCallback (
             }?.getOrNull() ?: emptyList()
 
             val resultList = searchedSongs.map {
-                it.toMediaItem(OfflinePlayerService.SEARCHED)
+                it.toMediaItem(LocalPlayerService.SEARCHED)
             }
             return@runBlocking Futures.immediateFuture(LibraryResult.ofItemList(resultList, params))
         }
 
         return Futures.immediateFuture(LibraryResult.ofItemList(searchedSongs.map {
             it.toMediaItem(
-                OfflinePlayerService.SEARCHED
+                LocalPlayerService.SEARCHED
             )
         }, params))
     }
@@ -139,7 +139,7 @@ class MediaLibrarySessionCallback (
         customCommand: SessionCommand,
         args: Bundle,
     ): ListenableFuture<SessionResult> {
-        println("PlayerServiceModern MediaLibrarySessionCallback.onCustomCommand: ${customCommand.customAction}")
+        println("PlayerServiceModern LocalPlayerSessionCallback.onCustomCommand: ${customCommand.customAction}")
         when (customCommand.customAction) {
             MediaSessionConstants.ACTION_TOGGLE_LIKE -> toggleLike()
             //MediaSessionConstants.ACTION_TOGGLE_DOWNLOAD -> toggleDownload()
@@ -157,11 +157,11 @@ class MediaLibrarySessionCallback (
         browser: MediaSession.ControllerInfo,
         params: MediaLibraryService.LibraryParams?,
     ): ListenableFuture<LibraryResult<MediaItem>>  {
-        println("PlayerServiceModern MediaLibrarySessionCallback.onGetLibraryRoot")
+        println("PlayerServiceModern LocalPlayerSessionCallback.onGetLibraryRoot")
         return Futures.immediateFuture(
             LibraryResult.ofItem(
                 MediaItem.Builder()
-                    .setMediaId(OfflinePlayerService.ROOT)
+                    .setMediaId(LocalPlayerService.ROOT)
                     .setMediaMetadata(
                         MediaMetadata.Builder()
                             .setIsPlayable(false)
@@ -184,34 +184,34 @@ class MediaLibrarySessionCallback (
         pageSize: Int,
         params: MediaLibraryService.LibraryParams?,
     ): ListenableFuture<LibraryResult<ImmutableList<MediaItem>>> {
-        println("PlayerServiceModern MediaLibrarySessionCallback.onGetChildren")
+        println("PlayerServiceModern LocalPlayerSessionCallback.onGetChildren")
         return scope.future(Dispatchers.IO) {
                 LibraryResult.ofItemList(
                     when (parentId) {
-                        OfflinePlayerService.ROOT -> listOf(
+                        LocalPlayerService.ROOT -> listOf(
                             browsableMediaItem(
-                                OfflinePlayerService.SONG,
+                                LocalPlayerService.SONG,
                                 context.getString(R.string.songs),
                                 null,
                                 drawableUri(R.drawable.musical_notes),
                                 MediaMetadata.MEDIA_TYPE_PLAYLIST
                             ),
                             browsableMediaItem(
-                                OfflinePlayerService.ARTIST,
+                                LocalPlayerService.ARTIST,
                                 context.getString(R.string.artists),
                                 null,
                                 drawableUri(R.drawable.artists),
                                 MediaMetadata.MEDIA_TYPE_FOLDER_ARTISTS
                             ),
                             browsableMediaItem(
-                                OfflinePlayerService.ALBUM,
+                                LocalPlayerService.ALBUM,
                                 context.getString(R.string.albums),
                                 null,
                                 drawableUri(R.drawable.album),
                                 MediaMetadata.MEDIA_TYPE_FOLDER_ALBUMS
                             ),
                             browsableMediaItem(
-                                OfflinePlayerService.PLAYLIST,
+                                LocalPlayerService.PLAYLIST,
                                 context.getString(R.string.playlists),
                                 null,
                                 drawableUri(R.drawable.playlist),
@@ -219,13 +219,13 @@ class MediaLibrarySessionCallback (
                             )
                         )
 
-                        OfflinePlayerService.SONG -> database.sortAllSongsByRowId(0).first()
+                        LocalPlayerService.SONG -> database.sortAllSongsByRowId(0).first()
                             .map { it.song.toMediaItem(parentId) }
 
-                        OfflinePlayerService.ARTIST -> database.artistsByRowIdAsc().first()
+                        LocalPlayerService.ARTIST -> database.artistsByRowIdAsc().first()
                             .map { artist ->
                                 browsableMediaItem(
-                                    "${OfflinePlayerService.ARTIST}/${artist.id}",
+                                    "${LocalPlayerService.ARTIST}/${artist.id}",
                                     artist.name ?: "",
                                     "",
                                     artist.thumbnailUrl?.toUri(),
@@ -233,10 +233,10 @@ class MediaLibrarySessionCallback (
                                 )
                             }
 
-                        OfflinePlayerService.ALBUM -> database.albumsByRowIdDesc().first()
+                        LocalPlayerService.ALBUM -> database.albumsByRowIdDesc().first()
                             .map { album ->
                                 browsableMediaItem(
-                                    "${OfflinePlayerService.ALBUM}/${album.id}",
+                                    "${LocalPlayerService.ALBUM}/${album.id}",
                                     album.title ?: "",
                                     album.authorsText,
                                     album.thumbnailUrl?.toUri(),
@@ -245,28 +245,28 @@ class MediaLibrarySessionCallback (
                             }
 
 
-                        OfflinePlayerService.PLAYLIST -> {
+                        LocalPlayerService.PLAYLIST -> {
                             val likedSongCount = database.likedSongsCount().first()
                             //val cachedSongCount = getCountCachedSongs().first()
                             val onDeviceSongCount = database.onDeviceSongsCount().first()
                             val playlists = database.playlistPreviewsByDateSongCountAsc().first()
                             listOf(
                                 browsableMediaItem(
-                                    "${OfflinePlayerService.PLAYLIST}/${ID_FAVORITES}",
+                                    "${LocalPlayerService.PLAYLIST}/${ID_FAVORITES}",
                                     context.getString(R.string.favorites),
                                     likedSongCount.toString(),
                                     drawableUri(R.drawable.heart),
                                     MediaMetadata.MEDIA_TYPE_PLAYLIST
                                 ),
 //                                browsableMediaItem(
-//                                    "${OfflinePlayerService.PLAYLIST}/${ID_CACHED}",
+//                                    "${LocalPlayerService.PLAYLIST}/${ID_CACHED}",
 //                                    context.getString(R.string.cached),
 //                                    cachedSongCount.toString(),
 //                                    drawableUri(R.drawable.download),
 //                                    MediaMetadata.MEDIA_TYPE_PLAYLIST
 //                                ),
                                 browsableMediaItem(
-                                    "${OfflinePlayerService.PLAYLIST}/$ID_TOP",
+                                    "${LocalPlayerService.PLAYLIST}/$ID_TOP",
                                     context.getString(R.string.playlist_top),
                                     context.preferences.getEnum(
                                         MaxTopPlaylistItemsKey,
@@ -276,7 +276,7 @@ class MediaLibrarySessionCallback (
                                     MediaMetadata.MEDIA_TYPE_PLAYLIST
                                 ),
                                 browsableMediaItem(
-                                    "${OfflinePlayerService.PLAYLIST}/$ID_ONDEVICE",
+                                    "${LocalPlayerService.PLAYLIST}/$ID_ONDEVICE",
                                     context.getString(R.string.on_device),
                                     onDeviceSongCount.toString(),
                                     drawableUri(R.drawable.devices),
@@ -285,7 +285,7 @@ class MediaLibrarySessionCallback (
 
                             ) + playlists.map { playlist ->
                                 browsableMediaItem(
-                                    "${OfflinePlayerService.PLAYLIST}/${playlist.playlist.id}",
+                                    "${LocalPlayerService.PLAYLIST}/${playlist.playlist.id}",
                                     playlist.playlist.name,
                                     playlist.songCount.toString(),
                                     drawableUri(R.drawable.playlist),
@@ -297,9 +297,9 @@ class MediaLibrarySessionCallback (
 
                         else -> when {
 
-                            parentId.startsWith("${OfflinePlayerService.ARTIST}/") -> {
+                            parentId.startsWith("${LocalPlayerService.ARTIST}/") -> {
                                 val browseId =
-                                    parentId.removePrefix("${OfflinePlayerService.ARTIST}/")
+                                    parentId.removePrefix("${LocalPlayerService.ARTIST}/")
                                 val artist = database.artist(browseId).first()
                                 var songs = database.artistAllSongs(browseId).first()
                                 if (songs.isEmpty()) {
@@ -352,8 +352,8 @@ class MediaLibrarySessionCallback (
                                 }
                             }
 
-                            parentId.startsWith("${OfflinePlayerService.ALBUM}/") -> {
-                                val browseId = parentId.removePrefix("${OfflinePlayerService.ALBUM}/")
+                            parentId.startsWith("${LocalPlayerService.ALBUM}/") -> {
+                                val browseId = parentId.removePrefix("${LocalPlayerService.ALBUM}/")
                                 val album = database.album(browseId).first()
                                 var songs = database.albumSongs(browseId).first()
                                 if (songs.isEmpty()) {
@@ -406,10 +406,10 @@ class MediaLibrarySessionCallback (
                                 }
                             }
 
-                            parentId.startsWith("${OfflinePlayerService.PLAYLIST}/") -> {
+                            parentId.startsWith("${LocalPlayerService.PLAYLIST}/") -> {
 
                                 when (val playlistId =
-                                    parentId.removePrefix("${OfflinePlayerService.PLAYLIST}/")) {
+                                    parentId.removePrefix("${LocalPlayerService.PLAYLIST}/")) {
                                     ID_FAVORITES -> database.sortFavoriteSongsByRowId()
                                         .map { list ->
                                             list.map { it.song }
@@ -481,9 +481,9 @@ class MediaLibrarySessionCallback (
         browser: MediaSession.ControllerInfo,
         mediaId: String,
     ): ListenableFuture<LibraryResult<MediaItem>> =
-        //println("PlayerServiceModern MediaLibrarySessionCallback.onGetItem mediaId $mediaId external")
+        //println("PlayerServiceModern LocalPlayerSessionCallback.onGetItem mediaId $mediaId external")
          scope.future(Dispatchers.IO) {
-            //println("PlayerServiceModern MediaLibrarySessionCallback.onGetItem: mediaId $mediaId inside")
+            //println("PlayerServiceModern LocalPlayerSessionCallback.onGetItem: mediaId $mediaId inside")
             database.song(mediaId).first()?.toMediaItem()?.let {
                 LibraryResult.ofItem(it, null)
             } ?: LibraryResult.ofError(SessionError.ERROR_BAD_VALUE)
@@ -497,7 +497,7 @@ class MediaLibrarySessionCallback (
         startIndex: Int,
         startPositionMs: Long,
     ): ListenableFuture<MediaSession.MediaItemsWithStartPosition> {
-        println("PlayerServiceModern MediaLibrarySessionCallback.onSetMediaItems")
+        println("PlayerServiceModern LocalPlayerSessionCallback.onSetMediaItems")
         return scope.future {
             // Play from Android Auto
             val defaultResult =
@@ -510,7 +510,7 @@ class MediaLibrarySessionCallback (
                 ?: return@future defaultResult
             when (path.firstOrNull()) {
 
-                OfflinePlayerService.SEARCHED -> {
+                LocalPlayerService.SEARCHED -> {
                     val songId = path.getOrNull(1) ?: return@future defaultResult
                     MediaSession.MediaItemsWithStartPosition(
                         searchedSongs.map { it.toMediaItem() },
@@ -519,7 +519,7 @@ class MediaLibrarySessionCallback (
                     )
                 }
 
-                OfflinePlayerService.SONG -> {
+                LocalPlayerService.SONG -> {
                     val songId = path.getOrNull(1) ?: return@future defaultResult
                     val allSongs = database.listAllSongs(-1).first()
                     MediaSession.MediaItemsWithStartPosition(
@@ -529,7 +529,7 @@ class MediaLibrarySessionCallback (
                     )
                 }
 
-                OfflinePlayerService.ARTIST -> {
+                LocalPlayerService.ARTIST -> {
                     val songId = path.getOrNull(2) ?: return@future defaultResult
                     val artistId = path.getOrNull(1) ?: return@future defaultResult
                     val songs = database.artistSongs(artistId).first()
@@ -540,7 +540,7 @@ class MediaLibrarySessionCallback (
                     )
                 }
 
-                OfflinePlayerService.ALBUM -> {
+                LocalPlayerService.ALBUM -> {
                     val songId = path.getOrNull(2) ?: return@future defaultResult
                     val albumId = path.getOrNull(1) ?: return@future defaultResult
                     val albumWithSongs = database.albumSongs(albumId).first()
@@ -552,7 +552,7 @@ class MediaLibrarySessionCallback (
                     )
                 }
 
-                OfflinePlayerService.PLAYLIST -> {
+                LocalPlayerService.PLAYLIST -> {
                     val songId = path.getOrNull(2) ?: return@future defaultResult
                     val playlistId = path.getOrNull(1) ?: return@future defaultResult
                     val songs = when (playlistId) {
@@ -613,7 +613,7 @@ class MediaLibrarySessionCallback (
         mediaSession: MediaSession,
         controller: MediaSession.ControllerInfo
     ): ListenableFuture<MediaSession.MediaItemsWithStartPosition> {
-        println("PlayerServiceModern MediaLibrarySessionCallback onPlaybackResumption")
+        println("PlayerServiceModern LocalPlayerSessionCallback onPlaybackResumption")
         val settablePlaylist = SettableFuture.create<MediaSession.MediaItemsWithStartPosition>()
         val defaultResult =
             MediaSession.MediaItemsWithStartPosition(

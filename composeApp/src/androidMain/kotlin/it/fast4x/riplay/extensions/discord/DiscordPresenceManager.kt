@@ -13,7 +13,6 @@ import com.my.kizzyrpc.model.Assets
 import com.my.kizzyrpc.model.Metadata
 import com.my.kizzyrpc.model.Timestamps
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.PlayerConstants
-import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
 import io.ktor.client.call.body
 import io.ktor.client.request.forms.formData
 import io.ktor.client.request.forms.submitFormWithBinaryData
@@ -28,7 +27,7 @@ import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.extensions.preferences.discordPersonalAccessTokenKey
 import it.fast4x.riplay.extensions.preferences.isDiscordPresenceEnabledKey
 import it.fast4x.riplay.extensions.preferences.preferences
-import it.fast4x.riplay.service.OfflinePlayerService
+import it.fast4x.riplay.service.LocalPlayerService
 import it.fast4x.riplay.service.isLocal
 import it.fast4x.riplay.ui.components.themed.SmartMessage
 import it.fast4x.riplay.utils.ImageProcessor
@@ -462,7 +461,7 @@ class DiscordPresenceManager(
 @androidx.annotation.OptIn(UnstableApi::class)
 fun updateDiscordPresenceWithOfflinePlayer(
     discordPresenceManager: DiscordPresenceManager?,
-    binder: OfflinePlayerService.Binder
+    binder: LocalPlayerService.Binder
 ) {
     if (binder.player.currentMediaItem?.isLocal == false) return
 

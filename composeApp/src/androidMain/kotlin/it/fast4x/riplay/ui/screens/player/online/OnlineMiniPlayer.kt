@@ -1,6 +1,5 @@
 package it.fast4x.riplay.ui.screens.player.online
 
-import android.content.Intent
 import android.database.SQLException
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateDp
@@ -78,13 +77,11 @@ import it.fast4x.riplay.enums.BackgroundProgress
 import it.fast4x.riplay.enums.MiniPlayerType
 import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.enums.PopupType
-import it.fast4x.riplay.enums.QueueLoopType
 import it.fast4x.riplay.getMinTimeForEvent
 import it.fast4x.riplay.getPauseListenHistory
-import it.fast4x.riplay.getQueueLoopType
 import it.fast4x.riplay.models.Event
 import it.fast4x.riplay.models.Info
-import it.fast4x.riplay.service.OfflinePlayerService
+import it.fast4x.riplay.service.LocalPlayerService
 import it.fast4x.riplay.models.Song
 import it.fast4x.riplay.thumbnailShape
 import it.fast4x.riplay.typography
@@ -114,8 +111,6 @@ import it.fast4x.riplay.extensions.preferences.miniPlayerTypeKey
 import it.fast4x.riplay.utils.playNext
 import it.fast4x.riplay.utils.playPrevious
 import it.fast4x.riplay.extensions.preferences.rememberPreference
-import it.fast4x.riplay.service.OnlinePlayerService
-import it.fast4x.riplay.utils.hide
 import it.fast4x.riplay.utils.semiBold
 import it.fast4x.riplay.utils.setDisLikeState
 import it.fast4x.riplay.utils.thumbnail
@@ -336,7 +331,7 @@ fun OnlineMiniPlayer(
                                     binder.player.clearMediaItems()
                                     hidePlayer()
                                     runCatching {
-                                        context.stopService(context.intent<OfflinePlayerService>())
+                                        context.stopService(context.intent<LocalPlayerService>())
                                     }
                                     hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
                                 } else

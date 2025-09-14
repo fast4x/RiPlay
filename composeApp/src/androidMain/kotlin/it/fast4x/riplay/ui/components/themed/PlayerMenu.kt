@@ -23,7 +23,7 @@ import it.fast4x.riplay.context
 import it.fast4x.riplay.enums.MenuStyle
 import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.models.SongPlaylistMap
-import it.fast4x.riplay.service.OfflinePlayerService
+import it.fast4x.riplay.service.LocalPlayerService
 import it.fast4x.riplay.ui.screens.settings.isSyncEnabled
 import it.fast4x.riplay.utils.addSongToYtPlaylist
 import it.fast4x.riplay.utils.addToYtLikedSong
@@ -45,7 +45,7 @@ import timber.log.Timber
 @Composable
 fun PlayerMenu(
     navController: NavController,
-    binder: OfflinePlayerService.Binder,
+    binder: LocalPlayerService.Binder,
     mediaItem: MediaItem,
     onDismiss: () -> Unit,
     onClosePlayer: () -> Unit,
@@ -184,7 +184,7 @@ fun PlayerMenu(
 @Composable
 fun MiniPlayerMenu(
     navController: NavController,
-    binder: OfflinePlayerService.Binder,
+    binder: LocalPlayerService.Binder,
     mediaItem: MediaItem,
     onDismiss: () -> Unit,
     onClosePlayer: () -> Unit,
@@ -262,7 +262,7 @@ fun MiniPlayerMenu(
 @Composable
 fun AddToPlaylistPlayerMenu(
     navController: NavController,
-    binder: OfflinePlayerService.Binder,
+    binder: LocalPlayerService.Binder,
     mediaItem: MediaItem,
     onDismiss: () -> Unit,
     onClosePlayer: () -> Unit,

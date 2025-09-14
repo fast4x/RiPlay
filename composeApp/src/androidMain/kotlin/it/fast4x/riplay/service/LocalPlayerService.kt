@@ -50,11 +50,9 @@ import androidx.media3.common.Timeline
 import androidx.media3.common.audio.SonicAudioProcessor
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.DataSpec
-import androidx.media3.datasource.DefaultDataSource
 import androidx.media3.datasource.cache.Cache
 import androidx.media3.datasource.cache.CacheDataSource
 import androidx.media3.datasource.cache.SimpleCache
-import androidx.media3.datasource.okhttp.OkHttpDataSource
 import androidx.media3.exoplayer.DefaultRenderersFactory
 import androidx.media3.exoplayer.DefaultRenderersFactory.EXTENSION_RENDERER_MODE_PREFER
 import androidx.media3.exoplayer.ExoPlayer
@@ -183,12 +181,13 @@ import it.fast4x.riplay.utils.principalCache
 import it.fast4x.riplay.utils.saveMasterQueue
 import it.fast4x.riplay.extensions.preferences.volumeBoostLevelKey
 import it.fast4x.riplay.getPlaybackFadeAudioDuration
+import it.fast4x.riplay.utils.BitmapProvider
+import it.fast4x.riplay.utils.SleepTimerListener
 import it.fast4x.riplay.utils.isOfficialContent
 import it.fast4x.riplay.utils.isUserGeneratedContent
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
-import okhttp3.OkHttpClient
 import timber.log.Timber
 import kotlin.math.roundToInt
 import kotlin.system.exitProcess
@@ -208,7 +207,7 @@ val MediaItem.isLocal get() = mediaId.startsWith(LOCAL_KEY_PREFIX)
 val Song.isLocal get() = id.startsWith(LOCAL_KEY_PREFIX)
 
 @UnstableApi
-class OfflinePlayerService : MediaLibraryService(),
+class LocalPlayerService : MediaLibraryService(),
     Player.Listener,
     PlaybackStatsListener.Callback,
     SharedPreferences.OnSharedPreferenceChangeListener,
@@ -217,7 +216,7 @@ class OfflinePlayerService : MediaLibraryService(),
     private val coroutineScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
     private val handler = Handler(Looper.getMainLooper())
     private lateinit var mediaSession: MediaLibrarySession
-    private lateinit var mediaLibrarySessionCallback: MediaLibrarySessionCallback
+    private lateinit var localPlayerSessionCallback: LocalPlayerSessionCallback
     private lateinit var sessionToken: SessionToken
     private lateinit var controllerFuture: ListenableFuture<MediaController>
     lateinit var player: ExoPlayer
@@ -239,7 +238,7 @@ class OfflinePlayerService : MediaLibraryService(),
     private var showLikeButton = true
 
     lateinit var audioQualityFormat: AudioQualityFormat
-    lateinit var sleepTimer: SleepTimer
+    lateinit var sleepTimerListener: SleepTimerListener
     private var timerJob: TimerJob? = null
     private var radio: YouTubeRadio? = null
 
@@ -330,10 +329,10 @@ class OfflinePlayerService : MediaLibraryService(),
 //            )
             .build()
             .apply {
-                addListener(this@OfflinePlayerService)
-                sleepTimer = SleepTimer(coroutineScope, this)
-                addListener(sleepTimer)
-                addAnalyticsListener(PlaybackStatsListener(false, this@OfflinePlayerService))
+                addListener(this@LocalPlayerService)
+                sleepTimerListener = SleepTimerListener(coroutineScope, this)
+                addListener(sleepTimerListener)
+                addAnalyticsListener(PlaybackStatsListener(false, this@LocalPlayerService))
             }
 
         // Force player to add all commands available, prior to android 13
@@ -349,10 +348,10 @@ class OfflinePlayerService : MediaLibraryService(),
                 }
             }
 
-        mediaLibrarySessionCallback =
-            MediaLibrarySessionCallback(this, Database)
+        localPlayerSessionCallback =
+            LocalPlayerSessionCallback(this, Database)
             .apply {
-                binder = this@OfflinePlayerService.binder
+                binder = this@LocalPlayerService.binder
                 toggleLike = ::toggleLike
                 toggleRepeat = ::toggleRepeat
                 toggleShuffle = ::toggleShuffle
@@ -363,7 +362,7 @@ class OfflinePlayerService : MediaLibraryService(),
 
         // Build the media library session
         mediaSession =
-            MediaLibrarySession.Builder(this, forwardingPlayer, mediaLibrarySessionCallback)
+            MediaLibrarySession.Builder(this, forwardingPlayer, localPlayerSessionCallback)
                 .setSessionActivity(
                     PendingIntent.getActivity(
                         this,
@@ -385,13 +384,13 @@ class OfflinePlayerService : MediaLibraryService(),
                 .build()
 
         // Keep a connected controller so that notification works
-        sessionToken = SessionToken(this, ComponentName(this, OfflinePlayerService::class.java))
+        sessionToken = SessionToken(this, ComponentName(this, LocalPlayerService::class.java))
         controllerFuture = MediaController.Builder(this, sessionToken).buildAsync()
         controllerFuture.addListener({ controllerFuture.let { if (it.isDone) it.get() }}, MoreExecutors.directExecutor())
 
         player.skipSilenceEnabled = preferences.getBoolean(skipSilenceKey, false)
-        player.addListener(this@OfflinePlayerService)
-        player.addAnalyticsListener(PlaybackStatsListener(false, this@OfflinePlayerService))
+        player.addListener(this@LocalPlayerService)
+        player.addAnalyticsListener(PlaybackStatsListener(false, this@LocalPlayerService))
 
         player.repeatMode = preferences.getEnum(queueLoopTypeKey, QueueLoopType.Default).type
 
@@ -525,10 +524,10 @@ class OfflinePlayerService : MediaLibraryService(),
     }
 
     override fun onUpdateNotification(session: MediaSession, startInForegroundRequired: Boolean) {
-        println("OfflinePlayerService onUpdateNotification called startInForegroundRequired ${startInForegroundRequired}")
+        println("LocalPlayerService onUpdateNotification called startInForegroundRequired ${startInForegroundRequired}")
         // Foreground keep alive
         if (!(!player.isPlaying && preferences.getBoolean(isInvincibilityEnabledKey, true))) {
-            println("OfflinePlayerService onUpdateNotification PASSED WITH startInForegroundRequired ${startInForegroundRequired}")
+            println("LocalPlayerService onUpdateNotification PASSED WITH startInForegroundRequired ${startInForegroundRequired}")
             super.onUpdateNotification(session, startInForegroundRequired)
         }
     }
@@ -626,7 +625,7 @@ class OfflinePlayerService : MediaLibraryService(),
         player.saveMasterQueue()
 
         if (!player.isReleased) {
-            player.removeListener(this@OfflinePlayerService)
+            player.removeListener(this@LocalPlayerService)
             player.stop()
             player.release()
         }
@@ -885,7 +884,7 @@ class OfflinePlayerService : MediaLibraryService(),
         }.onFailure {
             SmartMessage(
                 "Can't enable bass boost",
-                context = this@OfflinePlayerService
+                context = this@LocalPlayerService
             )
         }
     }
@@ -946,7 +945,7 @@ class OfflinePlayerService : MediaLibraryService(),
                             withContext(Dispatchers.IO) {
                                 SmartMessage(
                                     "Extreme loudness detected",
-                                    context = this@OfflinePlayerService
+                                    context = this@LocalPlayerService
                                 )
                             }
 
@@ -1044,25 +1043,25 @@ class OfflinePlayerService : MediaLibraryService(),
     }.setExtensionRendererMode(EXTENSION_RENDERER_MODE_PREFER) // prefer extension renderers to opus format
 
     private fun createMediaSourceFactory() = DefaultMediaSourceFactory(
-            createSimpleDataSourceFactory( coroutineScope ),
+            createLocalDataSourceFactory( coroutineScope ),
         DefaultExtractorsFactory()
     )
 
-    fun createCacheDataSource(): CacheDataSource.Factory =
+    fun createLocalCacheDataSource(): CacheDataSource.Factory =
         CacheDataSource
             .Factory()
             .setCache(cache)
-            .setUpstreamDataSourceFactory(
-                DefaultDataSource.Factory(
-                    this,
-                    OkHttpDataSource.Factory(
-                        OkHttpClient
-                            .Builder()
-                            .proxy(Environment.proxy)
-                            .build(),
-                    ),
-                ),
-            )
+//            .setUpstreamDataSourceFactory(
+//                DefaultDataSource.Factory(
+//                    this,
+//                    OkHttpDataSource.Factory(
+//                        OkHttpClient
+//                            .Builder()
+//                            .proxy(Environment.proxy)
+//                            .build(),
+//                    ),
+//                ),
+//            )
 
 
     private fun buildCustomCommandButtons(): MutableList<CommandButton> {
@@ -1144,9 +1143,9 @@ class OfflinePlayerService : MediaLibraryService(),
         bitmapProvider.load(mediaMetadata.artworkUri) {}
 
         val customNotify = if (isAtLeastAndroid8) {
-            NotificationCompat.Builder(this@OfflinePlayerService, NotificationChannelId)
+            NotificationCompat.Builder(this@LocalPlayerService, NotificationChannelId)
         } else {
-            NotificationCompat.Builder(this@OfflinePlayerService)
+            NotificationCompat.Builder(this@LocalPlayerService)
         }
             .setContentTitle(cleanPrefix(player.mediaMetadata.title.toString()))
             .setContentText(
@@ -1249,7 +1248,7 @@ class OfflinePlayerService : MediaLibraryService(),
         val wallpaperType = preferences.getEnum(wallpaperTypeKey, WallpaperType.Lockscreen)
         if (isAtLeastAndroid7 && wallpaperEnabled) {
             coroutineScope.launch(Dispatchers.IO) {
-                val wpManager = WallpaperManager.getInstance(this@OfflinePlayerService)
+                val wpManager = WallpaperManager.getInstance(this@LocalPlayerService)
                 wpManager.setBitmap(bitmapProvider.bitmap, null, true,
                     when (wallpaperType) {
                         WallpaperType.Both -> (FLAG_LOCK or FLAG_SYSTEM)
@@ -1326,7 +1325,7 @@ class OfflinePlayerService : MediaLibraryService(),
                     message,
                     type = PopupType.Info,
                     durationLong = true,
-                    context = this@OfflinePlayerService
+                    context = this@LocalPlayerService
                 )
             }
         }
@@ -1553,7 +1552,7 @@ class OfflinePlayerService : MediaLibraryService(),
     class NotificationDismissReceiver : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
             runCatching {
-                context.stopService(context.intent<OfflinePlayerService>())
+                context.stopService(context.intent<LocalPlayerService>())
             }.onFailure {
                 Timber.e("Failed NotificationDismissReceiver stopService in PlayerServiceModern (PlayerServiceModern) ${it.stackTraceToString()}")
             }
@@ -1601,8 +1600,8 @@ class OfflinePlayerService : MediaLibraryService(),
     }
 
     open inner class Binder : AndroidBinder() {
-        val service: OfflinePlayerService
-            get() = this@OfflinePlayerService
+        val service: LocalPlayerService
+            get() = this@LocalPlayerService
 
         /*
         fun setBitmapListener(listener: ((Bitmap?) -> Unit)?) {
@@ -1615,10 +1614,10 @@ class OfflinePlayerService : MediaLibraryService(),
 
 
         val player: ExoPlayer
-            get() = this@OfflinePlayerService.player
+            get() = this@LocalPlayerService.player
 
         val cache: Cache
-            get() = this@OfflinePlayerService.cache
+            get() = this@LocalPlayerService.cache
 
         val sleepTimerMillisLeft: StateFlow<Long?>?
             get() = timerJob?.millisLeft
@@ -1630,7 +1629,7 @@ class OfflinePlayerService : MediaLibraryService(),
 
             timerJob = coroutineScope.timer(delayMillis) {
                 val notification = NotificationCompat
-                    .Builder(this@OfflinePlayerService, SleepTimerNotificationChannelId)
+                    .Builder(this@LocalPlayerService, SleepTimerNotificationChannelId)
                     .setContentTitle(getString(R.string.sleep_timer_ended))
                     .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                     .setAutoCancel(true)

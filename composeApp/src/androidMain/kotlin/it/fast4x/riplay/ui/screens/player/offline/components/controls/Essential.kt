@@ -69,7 +69,7 @@ import it.fast4x.riplay.enums.QueueLoopType
 import it.fast4x.riplay.models.Info
 import it.fast4x.riplay.models.Song
 import it.fast4x.riplay.models.ui.UiMedia
-import it.fast4x.riplay.service.OfflinePlayerService
+import it.fast4x.riplay.service.LocalPlayerService
 import it.fast4x.riplay.typography
 import it.fast4x.riplay.ui.components.themed.IconButton
 import it.fast4x.riplay.ui.components.themed.SelectorArtistsDialog
@@ -115,7 +115,7 @@ import kotlinx.coroutines.launch
 @ExperimentalFoundationApi
 @Composable
 fun InfoAlbumAndArtistEssential(
-    binder: OfflinePlayerService.Binder,
+    binder: LocalPlayerService.Binder,
     navController: NavController,
     albumId: String?,
     media: UiMedia,
@@ -430,7 +430,7 @@ fun InfoAlbumAndArtistEssential(
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ControlsEssential(
-    binder: OfflinePlayerService.Binder,
+    binder: LocalPlayerService.Binder,
     position: Long,
     playbackSpeed: Float,
     shouldBePlaying: Boolean,

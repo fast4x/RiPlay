@@ -181,7 +181,7 @@
         <!-- NEW PLAYER SERVICE -->
 
         <service
-            android:name=".service.OfflinePlayerService"
+            android:name=".service.LocalPlayerService"
             android:exported="true"
             android:foregroundServiceType="mediaPlayback"
             tools:ignore="ExportedService">
@@ -204,7 +204,7 @@
         </service>
 
 
-        <service android:name=".service.OnlinePlayerService"
+        <service android:name=".service.AndroidAutoService"
             android:exported="true"
             android:foregroundServiceType="mediaPlayback"
             tools:ignore="ExportedService">
@@ -232,11 +232,11 @@
         </service>
 
         <receiver
-            android:name=".service.OfflinePlayerService$NotificationDismissReceiver"
+            android:name=".service.LocalPlayerService$NotificationDismissReceiver"
             android:exported="false" />
 
         <receiver
-            android:name=".service.OnlinePlayerService$OnlinePlayerServiceReceiver"
+            android:name=".service.AndroidAutoService$OnlinePlayerServiceReceiver"
             android:exported="false" />
 
         <meta-data android:name="com.google.android.gms.car.application"

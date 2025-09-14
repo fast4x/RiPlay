@@ -15,8 +15,8 @@ import kotlinx.coroutines.CoroutineScope
 
 
 @OptIn(UnstableApi::class)
-internal fun OfflinePlayerService.createSimpleDataSourceFactory(scope: CoroutineScope): DataSource.Factory {
-    return ResolvingDataSource.Factory(createCacheDataSource()) { dataSpec ->
+internal fun LocalPlayerService.createLocalDataSourceFactory(scope: CoroutineScope): DataSource.Factory {
+    return ResolvingDataSource.Factory(createLocalCacheDataSource()) { dataSpec ->
 
         //println("createSimpleDataSourceFactory dataSpec: uri ${dataSpec.uri} isLocalUri ${dataSpec.isLocalUri} isLocal: ${dataSpec.isLocal}")
 

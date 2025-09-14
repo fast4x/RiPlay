@@ -1,4 +1,4 @@
-package it.fast4x.riplay.service
+package it.fast4x.riplay.utils
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
@@ -12,7 +12,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.time.Duration.Companion.minutes
 
-class SleepTimer(
+class SleepTimerListener(
     private val scope: CoroutineScope,
     val player: Player,
 ) : Player.Listener {

@@ -9,20 +9,20 @@ import it.fast4x.riplay.extensions.preferences.getEnum
 import it.fast4x.riplay.extensions.preferences.maxSongsInQueueKey
 import it.fast4x.riplay.extensions.preferences.preferences
 import it.fast4x.riplay.models.Song
-import it.fast4x.riplay.service.OfflinePlayerService
+import it.fast4x.riplay.service.LocalPlayerService
 import it.fast4x.riplay.ui.components.themed.SmartMessage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 @OptIn(UnstableApi::class)
-fun PlayShuffledSongs(songsList: List<Song>?, context: Context, binder: OfflinePlayerService.Binder?) {
+fun PlayShuffledSongs(songsList: List<Song>?, context: Context, binder: LocalPlayerService.Binder?) {
     if (songsList == null || binder == null) return
     playShuffledSongs( songsList.map( Song::asMediaItem ), context, binder )
 }
 
 @UnstableApi
-fun playShuffledSongs( mediaItems: List<MediaItem>, context: Context, binder: OfflinePlayerService.Binder? ) {
+fun playShuffledSongs( mediaItems: List<MediaItem>, context: Context, binder: LocalPlayerService.Binder? ) {
 
     if ( binder == null ) return
 
