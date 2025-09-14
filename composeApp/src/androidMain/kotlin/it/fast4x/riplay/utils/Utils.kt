@@ -2,12 +2,18 @@ package it.fast4x.riplay.utils
 
 
 import android.annotation.SuppressLint
+import android.app.Activity
+import android.app.UiModeManager
 import android.content.ContentUris
+import android.content.Context
 import android.content.pm.PackageManager
+import android.content.res.Configuration
 import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
 import android.text.format.DateUtils
+import android.util.DisplayMetrics
+import android.view.Display
 import androidx.annotation.OptIn
 import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
@@ -43,6 +49,7 @@ import it.fast4x.riplay.EXPLICIT_PREFIX
 import it.fast4x.riplay.R
 import it.fast4x.riplay.appContext
 import it.fast4x.riplay.cleanPrefix
+import it.fast4x.riplay.context
 import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.models.Album
 import it.fast4x.riplay.models.Artist
@@ -64,6 +71,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import timber.log.Timber
 import java.io.File
 import java.text.DecimalFormat
 import java.text.SimpleDateFormat
@@ -73,9 +81,12 @@ import java.util.Date
 import java.util.GregorianCalendar
 import java.util.Locale.getDefault
 import kotlin.math.absoluteValue
+import kotlin.math.pow
+import kotlin.math.sqrt
 import kotlin.random.Random
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.minutes
+
 
 const val EXPLICIT_BUNDLE_TAG = "is_explicit"
 
@@ -687,6 +698,34 @@ inline val isAtLeastAndroid14
 
 inline val isAtLeastAndroid15
     get() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM
+
+fun isTVDevice(): Boolean {
+        val uiModeManager = context().getSystemService(Context.UI_MODE_SERVICE) as UiModeManager
+        val isTv = uiModeManager.currentModeType == Configuration.UI_MODE_TYPE_TELEVISION
+        Timber.d("isTVDevice: $isTv")
+        return isTv
+    }
+
+fun isWatchDevice(): Boolean {
+        val uiModeManager = context().getSystemService(Context.UI_MODE_SERVICE) as UiModeManager
+        val isWatch = uiModeManager.currentModeType == Configuration.UI_MODE_TYPE_WATCH
+        Timber.d("isWatchDevice: $isWatch")
+        return isWatch
+    }
+
+fun isTabletDevice(): Boolean {
+    // Tablet is a device with >= 7 inch diagonal
+        val screenDimensions = getScreenDimensions()
+        val metrics = screenDimensions.metrics
+
+        val widthInches = metrics.widthPixels / metrics.xdpi
+        val heightInches = metrics.heightPixels / metrics.ydpi
+        val diagonalInches = sqrt(widthInches.toDouble().pow(2.0) + heightInches.toDouble().pow(2.0))
+        val isTablet = diagonalInches >= 7.0
+        Timber.d("isTabletDevice: $isTablet")
+        return isTablet
+    }
+
 
 fun Modifier.applyIf(condition : Boolean, modifier : Modifier.() -> Modifier) : Modifier {
     return if (condition) {

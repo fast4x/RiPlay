@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.res.Configuration
 import android.content.res.Resources
 import android.os.Build
+import android.util.DisplayMetrics
 import android.view.Surface
 import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
@@ -46,13 +47,15 @@ class ScreenDimensions (
     val width: Int,
     val height: Int,
     val density: Float,
+    val metrics: DisplayMetrics
 )
 
 fun getScreenDimensions(): ScreenDimensions {
     return ScreenDimensions(
         Resources.getSystem().displayMetrics.widthPixels,
         Resources.getSystem().displayMetrics.heightPixels,
-        Resources.getSystem().displayMetrics.density
+        Resources.getSystem().displayMetrics.density,
+        Resources.getSystem().displayMetrics
     )
 
 

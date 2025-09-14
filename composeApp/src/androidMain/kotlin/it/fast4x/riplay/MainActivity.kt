@@ -274,8 +274,11 @@ import it.fast4x.riplay.utils.invokeOnReady
 import it.fast4x.riplay.utils.isAtLeastAndroid12
 import it.fast4x.riplay.utils.isAtLeastAndroid6
 import it.fast4x.riplay.utils.isAtLeastAndroid8
+import it.fast4x.riplay.utils.isTVDevice
+import it.fast4x.riplay.utils.isTabletDevice
 import it.fast4x.riplay.utils.isValidHttpUrl
 import it.fast4x.riplay.utils.isValidIP
+import it.fast4x.riplay.utils.isWatchDevice
 import it.fast4x.riplay.utils.playNext
 import it.fast4x.riplay.utils.playPrevious
 import it.fast4x.riplay.utils.resize
@@ -519,7 +522,7 @@ class MainActivity :
             ContextCompat.RECEIVER_NOT_EXPORTED
         )
 
-        //updateOnlineNotification()
+        updateOnlineNotification()
 
         updateSelectedQueue()
 
@@ -1326,8 +1329,8 @@ class MainActivity :
                             i.putExtra("Duration", currentPlaybackDuration.value)
                             sendBroadcast(i)
 
+                            updateOnlineNotification()
 
-                            //updateOnlineNotification()
                             val mediaItem = binder?.player?.currentMediaItem
                             if (mediaItem != null)
                                 updateDiscordPresenceWithOnlinePlayer(
@@ -1352,7 +1355,7 @@ class MainActivity :
                             i.putExtra("isPlaying", onlinePlayerPlayingState.value )
                             sendBroadcast(i)
 
-                            //updateOnlineNotification()
+                            updateOnlineNotification()
 
                             val mediaItem = binder?.player?.currentMediaItem
                             if (mediaItem != null)
@@ -1566,9 +1569,9 @@ class MainActivity :
                                 }
 
                                 //Needed to update time in notification
-//                                LaunchedEffect(onlinePlayerPlayingState.value) {
-//                                    updateOnlineNotification()
-//                                }
+                                LaunchedEffect(onlinePlayerPlayingState.value) {
+                                    updateOnlineNotification()
+                                }
 
                                 BottomSheet(
                                     state = localPlayerSheetState,
@@ -1665,7 +1668,7 @@ class MainActivity :
 
                                 processNormalizeVolume()
 
-                                //updateOnlineNotification()
+                                updateOnlineNotification()
 
                                 updateDiscordPresenceWithOnlinePlayer(
                                     discordPresenceManager,
@@ -2222,7 +2225,7 @@ class MainActivity :
         }
         appRunningInBackground = false
 
-        //updateOnlineNotification()
+        updateOnlineNotification()
 
         println("MainActivity.onResume $appRunningInBackground")
     }

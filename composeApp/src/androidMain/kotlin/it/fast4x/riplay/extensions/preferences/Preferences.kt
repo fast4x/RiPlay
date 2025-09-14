@@ -423,7 +423,7 @@ fun rememberPreference(key: String, defaultValue: Song?): MutableState<Song?> {
                 context.preferences.getString(key, json)
                     ?.let { Json.decodeFromString<Song>(it) }
             } catch (e: Exception) {
-                Timber.e("RememberPreference RelatedPage Error: ${ e.stackTraceToString() }")
+                Timber.e("RememberPreference Song Error: ${ e.stackTraceToString() }")
                 null
             }
         ) {
