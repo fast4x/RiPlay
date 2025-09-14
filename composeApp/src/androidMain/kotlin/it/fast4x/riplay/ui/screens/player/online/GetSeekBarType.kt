@@ -68,6 +68,7 @@ import it.fast4x.riplay.utils.semiBold
 import it.fast4x.riplay.extensions.preferences.showRemainingSongTimeKey
 import it.fast4x.riplay.extensions.preferences.textoutlineKey
 import it.fast4x.riplay.extensions.preferences.transparentbarKey
+import it.fast4x.riplay.utils.pulsatingEffect
 import kotlinx.coroutines.delay
 import org.jetbrains.compose.resources.painterResource
 import riplay.composeapp.generated.resources.Res
@@ -88,7 +89,7 @@ fun GetSeekBar(
 
     val playerTimelineType by rememberObservedPreference(
         playerTimelineTypeKey,
-        PlayerTimelineType.FakeAudioBar
+        PlayerTimelineType.Default
     )
     var scrubbingPosition by remember(mediaId) {
         mutableStateOf<Long?>(null)
@@ -276,7 +277,7 @@ fun GetSeekBar(
                 waveInteraction = {
                     scrubbingPosition = (it.value * duration.toFloat()).toLong()
                     //binder.player.seekTo(scrubbingPosition!!)
-                    scrubbingPosition = null
+                    //scrubbingPosition = null
                 },
                 modifier = Modifier
                     .height(40.dp)
