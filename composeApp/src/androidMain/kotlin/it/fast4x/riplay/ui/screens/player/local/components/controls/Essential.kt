@@ -1,4 +1,4 @@
-package it.fast4x.riplay.ui.screens.player.offline.components.controls
+package it.fast4x.riplay.ui.screens.player.local.components.controls
 
 import android.annotation.SuppressLint
 import androidx.compose.animation.core.LinearEasing
@@ -74,7 +74,7 @@ import it.fast4x.riplay.typography
 import it.fast4x.riplay.ui.components.themed.IconButton
 import it.fast4x.riplay.ui.components.themed.SelectorArtistsDialog
 import it.fast4x.riplay.ui.components.themed.SmartMessage
-import it.fast4x.riplay.ui.screens.player.offline.bounceClick
+import it.fast4x.riplay.ui.screens.player.local.bounceClick
 import it.fast4x.riplay.ui.screens.settings.isSyncEnabled
 import it.fast4x.riplay.ui.styling.favoritesIcon
 import it.fast4x.riplay.utils.HorizontalfadingEdge2

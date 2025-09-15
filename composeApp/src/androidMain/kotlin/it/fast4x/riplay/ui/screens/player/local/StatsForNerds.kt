@@ -1,4 +1,4 @@
-package it.fast4x.riplay.ui.screens.player.offline
+package it.fast4x.riplay.ui.screens.player.local
 
 import android.annotation.SuppressLint
 import android.text.format.Formatter

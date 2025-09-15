@@ -1,4 +1,4 @@
-package it.fast4x.riplay.ui.screens.player.offline
+package it.fast4x.riplay.ui.screens.player.local
 
 import android.Manifest
 import android.content.Intent

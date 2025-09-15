@@ -1,4 +1,4 @@
-package it.fast4x.riplay.ui.screens.player.offline
+package it.fast4x.riplay.ui.screens.player.local
 
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateDp
@@ -119,7 +119,7 @@ import kotlin.math.absoluteValue
     ExperimentalFoundationApi::class, ExperimentalFoundationApi::class,
     ExperimentalFoundationApi::class)
 @Composable
-fun OfflineMiniPlayer(
+fun LocalMiniPlayer(
     showPlayer: () -> Unit,
     hidePlayer: () -> Unit,
     navController: NavController? = null,

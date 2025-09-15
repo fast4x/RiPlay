@@ -247,10 +247,10 @@ import it.fast4x.riplay.ui.components.rememberBottomSheetState
 import it.fast4x.riplay.ui.components.themed.CrossfadeContainer
 import it.fast4x.riplay.ui.components.themed.SmartMessage
 import it.fast4x.riplay.ui.screens.player.fastPlay
-import it.fast4x.riplay.ui.screens.player.offline.OfflineMiniPlayer
-import it.fast4x.riplay.ui.screens.player.offline.OfflinePlayer
-import it.fast4x.riplay.ui.screens.player.offline.PlayerSheetState
-import it.fast4x.riplay.ui.screens.player.offline.rememberPlayerSheetState
+import it.fast4x.riplay.ui.screens.player.local.LocalMiniPlayer
+import it.fast4x.riplay.ui.screens.player.local.LocalPlayer
+import it.fast4x.riplay.ui.screens.player.local.PlayerSheetState
+import it.fast4x.riplay.ui.screens.player.local.rememberPlayerSheetState
 import it.fast4x.riplay.ui.screens.player.online.MediaSessionCallback
 import it.fast4x.riplay.ui.screens.player.online.OnlineMiniPlayer
 import it.fast4x.riplay.ui.screens.player.online.OnlinePlayer
@@ -1501,7 +1501,7 @@ class MainActivity :
                                     miniPlayer = {
                                         //println("MainActivity miniPlayer mediaItemIsLocal ${mediaItemIsLocal.value}")
                                         if (mediaItemIsLocal.value)
-                                            OfflineMiniPlayer(
+                                            LocalMiniPlayer(
                                                 showPlayer = { localPlayerSheetState.expandSoft() },
                                                 hidePlayer = { localPlayerSheetState.collapseSoft() },
                                                 navController = navController,
@@ -1533,8 +1533,8 @@ class MainActivity :
                                     ThumbnailRoundness.Heavy
                                 )
 
-                                val offlinePlayer: @Composable () -> Unit = {
-                                    OfflinePlayer(
+                                val localPlayer: @Composable () -> Unit = {
+                                    LocalPlayer(
                                         navController = navController,
                                         playerOnline = onlinePlayer,
                                         playerState = onlinePlayerState,
@@ -1580,7 +1580,7 @@ class MainActivity :
                                     contentAlwaysAvailable = true
                                 ) {
                                     if (mediaItemIsLocal.value)
-                                        offlinePlayer()
+                                        localPlayer()
                                     else
                                         onlinePlayer()
                                 }

@@ -1,4 +1,4 @@
-package it.fast4x.riplay.ui.screens.player.offline
+package it.fast4x.riplay.ui.screens.player.local
 
 import androidx.annotation.OptIn
 import androidx.compose.animation.AnimatedContent

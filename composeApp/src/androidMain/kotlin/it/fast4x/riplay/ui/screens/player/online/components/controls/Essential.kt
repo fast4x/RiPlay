@@ -78,7 +78,7 @@ import it.fast4x.riplay.typography
 import it.fast4x.riplay.ui.components.themed.IconButton
 import it.fast4x.riplay.ui.components.themed.SelectorArtistsDialog
 import it.fast4x.riplay.ui.components.themed.SmartMessage
-import it.fast4x.riplay.ui.screens.player.offline.bounceClick
+import it.fast4x.riplay.ui.screens.player.local.bounceClick
 import it.fast4x.riplay.ui.screens.settings.isSyncEnabled
 import it.fast4x.riplay.ui.styling.collapsedPlayerProgressBar
 import it.fast4x.riplay.ui.styling.favoritesIcon

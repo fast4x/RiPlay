@@ -1,4 +1,4 @@
-package it.fast4x.riplay.ui.screens.player.offline
+package it.fast4x.riplay.ui.screens.player.local
 
 import android.annotation.SuppressLint
 import androidx.compose.animation.ExperimentalAnimationApi
@@ -45,8 +45,8 @@ import it.fast4x.riplay.enums.PlayerType
 import it.fast4x.riplay.models.Info
 import it.fast4x.riplay.models.Song
 import it.fast4x.riplay.models.ui.UiMedia
-import it.fast4x.riplay.ui.screens.player.offline.components.controls.InfoAlbumAndArtistEssential
-import it.fast4x.riplay.ui.screens.player.offline.components.controls.InfoAlbumAndArtistModern
+import it.fast4x.riplay.ui.screens.player.local.components.controls.InfoAlbumAndArtistEssential
+import it.fast4x.riplay.ui.screens.player.local.components.controls.InfoAlbumAndArtistModern
 import it.fast4x.riplay.utils.GetControls
 import it.fast4x.riplay.utils.GetSeekBar
 import it.fast4x.riplay.extensions.preferences.buttonzoomoutKey

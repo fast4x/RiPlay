@@ -205,7 +205,6 @@ import it.fast4x.riplay.extensions.link.toCommandPlayAt
 import it.fast4x.riplay.extensions.link.toLinkDevice
 import it.fast4x.riplay.getMinTimeForEvent
 import it.fast4x.riplay.getPauseListenHistory
-import it.fast4x.riplay.getQueueLoopType
 import it.fast4x.riplay.models.Event
 import it.fast4x.riplay.models.Info
 import it.fast4x.riplay.models.Song
@@ -229,11 +228,11 @@ import it.fast4x.riplay.ui.components.themed.SecondaryTextButton
 import it.fast4x.riplay.ui.components.themed.SmartMessage
 import it.fast4x.riplay.ui.components.themed.ThumbnailOffsetDialog
 import it.fast4x.riplay.ui.components.themed.animateBrushRotation
-import it.fast4x.riplay.ui.screens.player.offline.Lyrics
-import it.fast4x.riplay.ui.screens.player.offline.NextVisualizer
-import it.fast4x.riplay.ui.screens.player.offline.Queue
-import it.fast4x.riplay.ui.screens.player.offline.StatsForNerds
-import it.fast4x.riplay.ui.screens.player.offline.animatedGradient
+import it.fast4x.riplay.ui.screens.player.local.Lyrics
+import it.fast4x.riplay.ui.screens.player.local.NextVisualizer
+import it.fast4x.riplay.ui.screens.player.local.Queue
+import it.fast4x.riplay.ui.screens.player.local.StatsForNerds
+import it.fast4x.riplay.ui.screens.player.local.animatedGradient
 import it.fast4x.riplay.ui.screens.settings.isSyncEnabled
 import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.ui.styling.collapsedPlayerProgressBar

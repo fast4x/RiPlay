@@ -1,4 +1,4 @@
-package it.fast4x.riplay.ui.screens.player.offline.components
+package it.fast4x.riplay.ui.screens.player.local.components
 
 /*
 @OptIn(UnstableApi::class)

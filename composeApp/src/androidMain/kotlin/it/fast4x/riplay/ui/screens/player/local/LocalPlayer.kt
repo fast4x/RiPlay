@@ -1,4 +1,4 @@
-package it.fast4x.riplay.ui.screens.player.offline
+package it.fast4x.riplay.ui.screens.player.local
 
 import android.annotation.SuppressLint
 import android.content.ActivityNotFoundException
@@ -334,7 +334,7 @@ import kotlin.math.sqrt
 @ExperimentalAnimationApi
 @UnstableApi
 @Composable
-fun OfflinePlayer(
+fun LocalPlayer(
     navController: NavController,
     playerOnline: MutableState<YouTubePlayer?>,
     playerState: MutableState<PlayerConstants.PlayerState>,

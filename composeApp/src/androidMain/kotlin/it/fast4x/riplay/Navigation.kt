@@ -63,8 +63,8 @@ import it.fast4x.riplay.ui.screens.mood.MoodsPageScreen
 import it.fast4x.riplay.ui.screens.newreleases.NewreleasesScreen
 import it.fast4x.riplay.ui.screens.ondevice.DeviceListSongsScreen
 import it.fast4x.riplay.ui.screens.ondevice.OnDeviceArtistScreen
-import it.fast4x.riplay.ui.screens.player.offline.OfflinePlayer
-import it.fast4x.riplay.ui.screens.player.offline.Queue
+import it.fast4x.riplay.ui.screens.player.local.LocalPlayer
+import it.fast4x.riplay.ui.screens.player.local.Queue
 import it.fast4x.riplay.ui.screens.playlist.PlaylistScreen
 import it.fast4x.riplay.ui.screens.podcast.PodcastScreen
 import it.fast4x.riplay.ui.screens.search.SearchScreen
@@ -239,7 +239,7 @@ fun AppNavigation(
 
         composable(route = NavRoutes.player.name) {
             modalBottomSheetPage {
-                OfflinePlayer(
+                LocalPlayer(
                     navController = navController,
                     playerOnline = player,
                     playerState = playerState,

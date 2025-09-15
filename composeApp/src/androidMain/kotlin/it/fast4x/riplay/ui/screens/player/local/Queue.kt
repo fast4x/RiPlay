@@ -1,4 +1,4 @@
-package it.fast4x.riplay.ui.screens.player.offline
+package it.fast4x.riplay.ui.screens.player.local
 
 
 import android.annotation.SuppressLint
@@ -913,7 +913,7 @@ fun Queue(
                             .align(Alignment.TopCenter)
                     ) {
                         if (binderPlayer.currentMediaItem?.isLocal == true)
-                            OfflineMiniPlayer(
+                            LocalMiniPlayer(
                                 showPlayer = {
                                     onDismiss(queueLoopType)
                                 },
