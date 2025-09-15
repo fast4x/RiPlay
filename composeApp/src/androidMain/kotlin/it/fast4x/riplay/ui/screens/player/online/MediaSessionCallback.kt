@@ -22,7 +22,9 @@ class MediaSessionCallback (
     val binder: LocalPlayerService.Binder,
     val onPlayClick: () -> Unit,
     val onPauseClick: () -> Unit,
-    val onSeekToPos: (Long) -> Unit
+    val onSeekToPos: (Long) -> Unit,
+    val onPlayNext: () -> Unit,
+    val onPlayPrevious: () -> Unit,
 ) : MediaSessionCompat.Callback() {
 
     override fun onPlay() {
@@ -36,10 +38,12 @@ class MediaSessionCallback (
     override fun onSkipToPrevious() {
         Timber.d("MediaSessionCallback onSkipToPrevious()")
         binder.player.playPrevious()
+        onPlayPrevious()
     }
     override fun onSkipToNext() {
         Timber.d("MediaSessionCallback onSkipToNext()")
         binder.player.playNext()
+        onPlayNext()
     }
 
     override fun onSeekTo(pos: Long) {
@@ -60,7 +64,7 @@ class MediaSessionCallback (
             val mediaItem = Database.song(id).first()?.asMediaItem ?: return@launch
             fastPlay(
                 mediaItem,
-                localPlayerBinder
+                binder
             )
         }
     }

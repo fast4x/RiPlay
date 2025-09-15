@@ -519,6 +519,8 @@ class MainActivity :
             ContextCompat.RECEIVER_NOT_EXPORTED
         )
 
+        initializeMediaSession()
+
         updateOnlineNotification()
 
         updateSelectedQueue()
@@ -532,6 +534,8 @@ class MainActivity :
         initializeDiscordPresence()
 
     }
+
+
 
     private fun enableFullscreenMode() {
 
@@ -1305,26 +1309,11 @@ class MainActivity :
                             currentPlaybackPosition.value = (it * 1000).toLong()
                             onlinePositionAndDuration = (it * 1000).toLong() to (currentDuration * 1000).toLong()
                             //println("MainActivity onSecondChange ${currentPlaybackPosition.value}")
-//                            val i = Intent(
-//                                applicationContext,
-//                                AndroidAutoService.OnlinePlayerServiceReceiver::class.java
-//                            )
-//                            i.action = "PlaybackPosition"
-//                            i.putExtra("Position", currentPlaybackPosition.value)
-//                            sendBroadcast(i)
                         },
                         onDurationChange = {
                             currentDuration = it
                             currentPlaybackDuration.value = (it * 1000).toLong()
                             onlinePositionAndDuration = (currentSecond * 1000).toLong() to (it * 1000).toLong()
-
-//                            val i = Intent(
-//                                applicationContext,
-//                                AndroidAutoService.OnlinePlayerServiceReceiver::class.java
-//                            )
-//                            i.action = "PlaybackDuration"
-//                            i.putExtra("Duration", currentPlaybackDuration.value)
-//                            sendBroadcast(i)
 
                             updateOnlineNotification()
 
@@ -1343,16 +1332,6 @@ class MainActivity :
                             onlinePlayerState.value = it
                             onlinePlayerPlayingState.value =
                                 it == PlayerConstants.PlayerState.PLAYING
-
-//                            val i = Intent(
-//                                appContext(),
-//                                AndroidAutoService.OnlinePlayerServiceReceiver::class.java
-//                            )
-//                            i.action = "PlaybackState"
-//                            i.putExtra("isPlaying", onlinePlayerPlayingState.value )
-//                            sendBroadcast(i)
-
-                            updateOnlineNotification()
 
                             val mediaItem = binder?.player?.currentMediaItem
                             if (mediaItem != null)
@@ -1567,7 +1546,10 @@ class MainActivity :
 
                                 //Needed to update time in notification
                                 LaunchedEffect(onlinePlayerPlayingState.value) {
-                                    updateOnlineNotification()
+                                    if (onlinePlayerState.value == PlayerConstants.PlayerState.PLAYING
+                                        || onlinePlayerState.value == PlayerConstants.PlayerState.PAUSED )
+                                        updateOnlineNotification()
+                                    Timber.d("MainActivity LaunchedEffect initializeMediasession onlinePlayerState ${onlinePlayerState.value}")
                                 }
 
                                 BottomSheet(
@@ -1768,8 +1750,7 @@ class MainActivity :
         }
     }
 
-    fun initializeMediasession() {
-        val currentMediaItem = binder?.player?.currentMediaItem
+    private fun initializeMediaSession() {
         if (mediaSession == null)
             mediaSession = MediaSessionCompat(this, "OnlinePlayer")
 
@@ -1780,6 +1761,13 @@ class MainActivity :
                     MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS
         )
         mediaSession?.setRepeatMode(repeatMode)
+        mediaSession?.isActive = true
+    }
+
+    private fun updateMediasessionData() {
+        Timber.d("MainActivity initializeMediasession")
+        val currentMediaItem = binder?.player?.currentMediaItem
+
         mediaSession?.setMetadata(
             MediaMetadataCompat.Builder()
                 .putString(
@@ -1806,8 +1794,6 @@ class MainActivity :
                 .build()
         )
 
-        mediaSession?.isActive = true
-
         mediaSession?.setPlaybackState(
             stateBuilder
                 .setState(
@@ -1823,19 +1809,21 @@ class MainActivity :
                 MediaSessionCallback(
                     it,
                     {
-                        println("OnlinePlayer callback play")
+                        Timber.d("MainActivity MediaSessionCallback onPlayClick")
                         onlinePlayer.value?.play()
                     },
                     {
-                        println("OnlinePlayer callback pause")
+                        Timber.d("MainActivity MediaSessionCallback onPauseClick")
                         onlinePlayer.value?.pause()
                     },
                     { second ->
                         val newPosition = (second / 1000).toFloat()
-                        println("OnlinePlayer callback seekTo ${newPosition}")
+                        Timber.d("MainActivity MediaSessionCallback onSeekPosTo ${newPosition}")
                         onlinePlayer.value?.seekTo(newPosition)
                         currentPlaybackPosition.value = second
-                    }
+                    },
+                    {},
+                    {}
                 )
             )
         }
@@ -1844,7 +1832,7 @@ class MainActivity :
 
     }
 
-    fun initializeBitmapProvider() {
+    private fun initializeBitmapProvider() {
         runCatching {
             bitmapProvider = BitmapProvider(
                 bitmapSize = (512 * resources.displayMetrics.density).roundToInt(),
@@ -1880,7 +1868,7 @@ class MainActivity :
             }
 
 
-        initializeMediasession()
+        updateMediasessionData()
 
         createNotificationChannel()
 

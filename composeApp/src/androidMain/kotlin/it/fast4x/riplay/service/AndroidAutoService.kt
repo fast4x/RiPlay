@@ -41,6 +41,7 @@ import it.fast4x.riplay.models.Artist
 import it.fast4x.riplay.models.PlaylistPreview
 import it.fast4x.riplay.models.Song
 import it.fast4x.riplay.ui.screens.player.fastPlay
+import it.fast4x.riplay.ui.screens.player.online.MediaSessionCallback
 import it.fast4x.riplay.utils.BitmapProvider
 import it.fast4x.riplay.utils.getTitleMonthlyPlaylistFromContext
 import it.fast4x.riplay.utils.intent
@@ -190,6 +191,7 @@ class AndroidAutoService : MediaBrowserServiceCompat(), ServiceConnection {
 
     override fun onCreate() {
         super.onCreate()
+        // not necessary because mediasession is passed by mainactivity
 //        val sessionActivityPendingIntent =
 //            packageManager?.getLaunchIntentForPackage(packageName)?.let { sessionIntent ->
 //                PendingIntent.getActivity(this, 0, sessionIntent, PendingIntent.FLAG_IMMUTABLE)
@@ -214,19 +216,6 @@ class AndroidAutoService : MediaBrowserServiceCompat(), ServiceConnection {
         }.onFailure {
             Timber.e("Failed init bitmap provider in PlayerService ${it.stackTraceToString()}")
         }
-
-//        coroutineScope.launch {
-//            while (isActive) {
-//                delay(1.seconds)
-//                withContext(Dispatchers.Main) {
-//                    currentMediaItem = offlinePlayerBinder?.player?.currentMediaItem
-//                    //updateMediaSessionPlaybackState()
-//                }
-//                Timber.d("AndroidAutoService Update MediaItem from LocalPlayerService")
-//            }
-//        }
-
-
 
         Timber.d("AndroidAutoService onCreate")
 
@@ -563,7 +552,39 @@ class AndroidAutoService : MediaBrowserServiceCompat(), ServiceConnection {
                 sessionToken = mediaSession?.sessionToken
             }
 
-            mediaSession?.setCallback(SessionCallback())
+            localPlayerBinder?.let{
+                mediaSession?.setCallback(
+                    MediaSessionCallback(
+                        it,
+                        {
+                            Timber.d("AndroidAutoservice MediaSessionCallback onPlayClick")
+                            onlinePlayer.value?.play()
+                            isPlaying = true
+                            updateMediaSessionData()
+                        },
+                        {
+                            Timber.d("AndroidAutoservice MediaSessionCallback onPauseClick")
+                            onlinePlayer.value?.pause()
+                            isPlaying = false
+                            updateMediaSessionData()
+                        },
+                        { second ->
+                            val newPosition = (second / 1000).toFloat()
+                            Timber.d("AndroidAutoservice MediaSessionCallback onSeekPosTo ${newPosition}")
+                            onlinePlayer.value?.seekTo(newPosition)
+                            updateMediaSessionData()
+                        },
+                        {
+                            updateMediaSessionData()
+                        },
+                        {
+                            updateMediaSessionData()
+                        }
+                    )
+                )
+            }
+
+
             updateMediaSessionData()
         }
         Timber.d("onServiceConnected")
@@ -631,20 +652,6 @@ class AndroidAutoService : MediaBrowserServiceCompat(), ServiceConnection {
             }
         }
 
-//    class OnlinePlayerServiceReceiver : BroadcastReceiver() {
-//        override fun onReceive(context: Context, intent: Intent) {
-//            when(intent.action) {
-//                "PlaybackDuration" -> playbackDuration = intent.getLongExtra("Duration", 0)
-//                //"PlaybackPosition" -> playbackPosition = intent.getLongExtra("Position", 0)
-//                "PlaybackState" -> isPlaying = intent.getBooleanExtra("isPlaying", false)
-//
-//            }
-//
-//            //updateMediaSessionData()
-//
-//            Timber.d("OnlinePlayerServiceReceiver onReceive intent ${intent.action} playbackDuration $playbackDuration playbackPosition $playbackPosition isPlaying $isPlaying")
-//        }
-//    }
 
     private object MediaId {
         const val root = "root"

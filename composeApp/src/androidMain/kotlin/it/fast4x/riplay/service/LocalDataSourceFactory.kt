@@ -12,13 +12,14 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.CoroutineScope
+import timber.log.Timber
 
 
 @OptIn(UnstableApi::class)
 internal fun LocalPlayerService.createLocalDataSourceFactory(scope: CoroutineScope): DataSource.Factory {
     return ResolvingDataSource.Factory(createLocalCacheDataSource()) { dataSpec ->
 
-        //println("createSimpleDataSourceFactory dataSpec: uri ${dataSpec.uri} isLocalUri ${dataSpec.isLocalUri} isLocal: ${dataSpec.isLocal}")
+        Timber.d("createLocalDataSourceFactory dataSpec: uri ${dataSpec.uri} isLocalUri ${dataSpec.isLocalUri} isLocal: ${dataSpec.isLocal}")
 
         // Get current song from player, is same as current dataSpec
         val mediaItem = runBlocking {
@@ -35,9 +36,11 @@ internal fun LocalPlayerService.createLocalDataSourceFactory(scope: CoroutineSco
 
         when {
             dataSpec.isLocal && dataSpec.isLocalUri -> {
+                Timber.d("createLocalDataSourceFactory dataSpec.isLocalUri: YES")
                 return@Factory dataSpec
             }
             dataSpec.isLocal && !dataSpec.isLocalUri-> {
+                Timber.d("createLocalDataSourceFactory dataSpec.isLocalUri: NO")
                 val uri = "${LOCAL_AUDIO_URI_PATH}${dataSpec.key?.removePrefix(LOCAL_KEY_PREFIX)}".toUri()
                 return@Factory dataSpec.withUri(uri)
             }

@@ -233,10 +233,6 @@
             android:name=".service.LocalPlayerService$NotificationDismissReceiver"
             android:exported="false" />
 
-        <!-- <receiver
-            android:name=".service.AndroidAutoService$OnlinePlayerServiceReceiver"
-            android:exported="false" /> -->
-
         <meta-data android:name="com.google.android.gms.car.application"
             android:resource="@xml/automotive_app_desc"/>
 

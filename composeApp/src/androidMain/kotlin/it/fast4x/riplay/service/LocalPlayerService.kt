@@ -50,9 +50,11 @@ import androidx.media3.common.Timeline
 import androidx.media3.common.audio.SonicAudioProcessor
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.DataSpec
+import androidx.media3.datasource.DefaultDataSource
 import androidx.media3.datasource.cache.Cache
 import androidx.media3.datasource.cache.CacheDataSource
 import androidx.media3.datasource.cache.SimpleCache
+import androidx.media3.datasource.okhttp.OkHttpDataSource
 import androidx.media3.exoplayer.DefaultRenderersFactory
 import androidx.media3.exoplayer.DefaultRenderersFactory.EXTENSION_RENDERER_MODE_PREFER
 import androidx.media3.exoplayer.ExoPlayer
@@ -188,6 +190,7 @@ import it.fast4x.riplay.utils.isUserGeneratedContent
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
+import okhttp3.OkHttpClient
 import timber.log.Timber
 import kotlin.math.roundToInt
 import kotlin.system.exitProcess
@@ -1051,17 +1054,18 @@ class LocalPlayerService : MediaLibraryService(),
         CacheDataSource
             .Factory()
             .setCache(cache)
-//            .setUpstreamDataSourceFactory(
-//                DefaultDataSource.Factory(
-//                    this,
-//                    OkHttpDataSource.Factory(
-//                        OkHttpClient
-//                            .Builder()
-//                            .proxy(Environment.proxy)
-//                            .build(),
-//                    ),
-//                ),
-//            )
+            // Remove upstream cause issue with local files
+            .setUpstreamDataSourceFactory(
+                DefaultDataSource.Factory(
+                    this,
+                    OkHttpDataSource.Factory(
+                        OkHttpClient
+                            .Builder()
+                            .proxy(Environment.proxy)
+                            .build(),
+                    ),
+                ),
+            )
 
 
     private fun buildCustomCommandButtons(): MutableList<CommandButton> {
