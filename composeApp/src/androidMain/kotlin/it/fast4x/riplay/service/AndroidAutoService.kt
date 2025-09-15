@@ -1,7 +1,5 @@
 package it.fast4x.riplay.service
 
-import android.app.PendingIntent
-import android.content.BroadcastReceiver
 import android.content.ComponentName
 import android.content.ContentResolver
 import android.content.Context
@@ -16,7 +14,6 @@ import android.support.v4.media.MediaBrowserCompat
 import android.support.v4.media.MediaBrowserCompat.MediaItem
 import android.support.v4.media.MediaDescriptionCompat
 import android.support.v4.media.MediaMetadataCompat
-import android.support.v4.media.RatingCompat
 import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import androidx.annotation.DrawableRes
@@ -65,10 +62,9 @@ import kotlin.math.roundToInt
 @UnstableApi
 class AndroidAutoService : MediaBrowserServiceCompat(), ServiceConnection {
 
-    var tmpOfflinePlayerBinder: LocalPlayerService.Binder? = null
+    var tmpLocalPlayerBinder: LocalPlayerService.Binder? = null
         set(value) {
-            offlinePlayerBinder = value
-
+            localPlayerBinder = value
         }
     var tmpOnlinePlayer: MutableState<YouTubePlayer?> = mutableStateOf(null)
         set(value) {
@@ -83,7 +79,7 @@ class AndroidAutoService : MediaBrowserServiceCompat(), ServiceConnection {
     companion object {
 
         var mediaSession: MediaSessionCompat? = null
-        var offlinePlayerBinder: LocalPlayerService.Binder? = null
+        var localPlayerBinder: LocalPlayerService.Binder? = null
         var onlinePlayer: MutableState<YouTubePlayer?> = mutableStateOf(null)
         var bitmapProvider: BitmapProvider? = null
         var isPlaying: Boolean = false
@@ -107,7 +103,7 @@ class AndroidAutoService : MediaBrowserServiceCompat(), ServiceConnection {
 
         private fun updateMediaSessionData() {
             Timber.d("updateMediaSessionPlaybackState")
-            val mediaItem = offlinePlayerBinder?.player?.currentMediaItem ?: return
+            val mediaItem = localPlayerBinder?.player?.currentMediaItem ?: return
             bitmapProvider?.load(mediaItem.mediaMetadata.artworkUri) {}
             mediaSession?.setMetadata(
                 MediaMetadataCompat.Builder()
@@ -171,9 +167,9 @@ class AndroidAutoService : MediaBrowserServiceCompat(), ServiceConnection {
                 this@AndroidAutoService.tmpMediaSessionCompat = value
             }
 
-        var offlinePlayerBinder: LocalPlayerService.Binder? = null
+        var localPlayerBinder: LocalPlayerService.Binder? = null
             set(value) {
-                this@AndroidAutoService.tmpOfflinePlayerBinder = value
+                this@AndroidAutoService.tmpLocalPlayerBinder = value
             }
         var onlinePlayer: MutableState<YouTubePlayer?> = mutableStateOf(null)
             set(value) {
@@ -602,13 +598,13 @@ class AndroidAutoService : MediaBrowserServiceCompat(), ServiceConnection {
             }
             override fun onSkipToNext() {
                 super.onSkipToNext()
-                offlinePlayerBinder?.player?.playNext()
+                localPlayerBinder?.player?.playNext()
                 updateMediaSessionData()
             }
 
             override fun onSkipToPrevious() {
                 super.onSkipToPrevious()
-                offlinePlayerBinder?.player?.playPrevious()
+                localPlayerBinder?.player?.playPrevious()
                 updateMediaSessionData()
             }
 
@@ -691,7 +687,7 @@ class AndroidAutoService : MediaBrowserServiceCompat(), ServiceConnection {
 
                         fastPlay(
                             mediaItem,
-                            offlinePlayerBinder
+                            localPlayerBinder
                         )
                         isPlaying = true
                         updateMediaSessionData()

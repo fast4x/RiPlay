@@ -274,11 +274,8 @@ import it.fast4x.riplay.utils.invokeOnReady
 import it.fast4x.riplay.utils.isAtLeastAndroid12
 import it.fast4x.riplay.utils.isAtLeastAndroid6
 import it.fast4x.riplay.utils.isAtLeastAndroid8
-import it.fast4x.riplay.utils.isTVDevice
-import it.fast4x.riplay.utils.isTabletDevice
 import it.fast4x.riplay.utils.isValidHttpUrl
 import it.fast4x.riplay.utils.isValidIP
-import it.fast4x.riplay.utils.isWatchDevice
 import it.fast4x.riplay.utils.playNext
 import it.fast4x.riplay.utils.playPrevious
 import it.fast4x.riplay.utils.resize
@@ -340,7 +337,7 @@ class MainActivity :
             if (service is AndroidAutoService.LocalBinder) {
                 this@MainActivity.androidAutoService = service.serviceInstance
                 service.mediaSession = mediaSession
-                service.offlinePlayerBinder = binder
+                service.localPlayerBinder = binder
                 service.onlinePlayer = onlinePlayer
             }
         }
