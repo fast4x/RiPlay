@@ -619,72 +619,7 @@ class AndroidAutoService : MediaBrowserServiceCompat(), ServiceConnection {
 
                 coroutineScope.launch {
                     val mediaItem = Database.song(id).first()?.asMediaItem ?: return@launch
-
-
-    //                val mediaItems = when (data.getOrNull(0)) {
-    //                    //MediaId.shuffle -> lastSongs.shuffled()
-    //
-    //                    MediaId.songs ->  data
-    //                        .getOrNull(1)
-    //                        ?.let { songId ->
-    //                            index = lastSongs.indexOfFirst { it.id == songId }
-    //                            lastSongs
-    //                        }
-    //
-    ////                    MediaId.favorites -> Database
-    ////                        .favorites()
-    ////                        .first()
-    ////
-    ////                    MediaId.ondevice -> Database
-    ////                        .songsOnDevice()
-    ////                        .first()
-    ////
-    ////                    MediaId.top -> {
-    ////                        val maxTopSongs = preferences.getEnum(MaxTopPlaylistItemsKey,
-    ////                            MaxTopPlaylistItems.`10`).number.toInt()
-    ////
-    ////                        Database.trending(maxTopSongs)
-    ////                            .first()
-    ////                    }
-    ////
-    ////                    MediaId.playlists -> data
-    ////                        .getOrNull(1)
-    ////                        ?.toLongOrNull()
-    ////                        ?.let(Database::playlistWithSongs)
-    ////                        ?.first()
-    ////                        ?.songs
-    ////
-    ////                    MediaId.albums -> data
-    ////                        .getOrNull(1)
-    ////                        ?.let(Database::albumSongs)
-    ////                        ?.first()
-    ////
-    ////                    MediaId.artists -> {
-    ////                        val items = data
-    ////                            .getOrNull(1)
-    ////                            ?.let(Database::artistSongsByname)
-    ////                            ?.first()
-    ////                        Timber.d("AndroidAutoService artists ${items}")
-    ////                        items
-    ////                    }
-    ////
-    ////                    MediaId.searched -> data
-    ////                        .getOrNull(1)
-    ////                        ?.let { songId ->
-    ////                            searchedSongs.filter { it.id == songId }
-    ////                            /*index = searchedSongs.indexOfFirst { it.id == songId }
-    ////                            searchedSongs*/
-    ////                        }
-    //
-    //                    else -> emptyList()
-    //                }?.map(Song::asMediaItem) ?: return@launch
-
                     withContext(Dispatchers.Main) {
-    //                    offlinePlayerBinder?.player?.forcePlayAtIndex(
-    //                        mediaItems,
-    //                        index.coerceIn(0, mediaItems.size)
-    //                    )
-
                         fastPlay(
                             mediaItem,
                             localPlayerBinder
