@@ -1649,22 +1649,23 @@ fun MediaItemMenu(
                                     }
                                 }
 
-                                Row(
-                                    horizontalArrangement = Arrangement.SpaceEvenly,
-                                    modifier = Modifier
-                                        .padding(bottom = 20.dp)
-                                        .fillMaxWidth()
-                                ) {
-                                    SecondaryTextButton(
-                                        text = stringResource(R.string.set_to) + " "
-                                                + formatAsDuration(timeRemaining.toLong())
-                                                + " " + stringResource(R.string.end_of_song),
-                                        onClick = {
-                                            binder?.startSleepTimer(timeRemaining.toLong())
-                                            isShowingSleepTimerDialog = false
-                                        }
-                                    )
-                                }
+                                if (timeRemaining > 0)
+                                    Row(
+                                        horizontalArrangement = Arrangement.SpaceEvenly,
+                                        modifier = Modifier
+                                            .padding(bottom = 20.dp)
+                                            .fillMaxWidth()
+                                    ) {
+                                        SecondaryTextButton(
+                                            text = stringResource(R.string.set_to) + " "
+                                                    + formatAsDuration(timeRemaining.toLong())
+                                                    + " " + stringResource(R.string.end_of_song),
+                                            onClick = {
+                                                binder?.startSleepTimer(timeRemaining.toLong())
+                                                isShowingSleepTimerDialog = false
+                                            }
+                                        )
+                                    }
 
                                 Row(
                                     horizontalArrangement = Arrangement.SpaceEvenly,
