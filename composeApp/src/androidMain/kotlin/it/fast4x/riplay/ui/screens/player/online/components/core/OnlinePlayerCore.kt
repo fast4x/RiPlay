@@ -86,14 +86,6 @@ fun OnlinePlayerCore(
                     player.value?.loadVideo(it.mediaId, 0f)
                     updateOnlineHistory(it)
 
-//                    updateDiscordPresenceWithOnlinePlayer(
-//                        discordPresenceManager,
-//                        mediaItem = it,
-//                        playerState = mutableStateOf(playerState),
-//                        currentDuration,
-//                        currentSecond
-//                    )
-
                     Timber.d("OnlinePlayerCore: onMediaItemTransition loaded ${it.mediaId}")
                 }
             }

@@ -37,19 +37,16 @@ class MediaSessionCallback (
     }
     override fun onSkipToPrevious() {
         Timber.d("MediaSessionCallback onSkipToPrevious()")
-        binder.player.playPrevious()
         onPlayPrevious()
     }
     override fun onSkipToNext() {
         Timber.d("MediaSessionCallback onSkipToNext()")
-        binder.player.playNext()
         onPlayNext()
     }
 
     override fun onSeekTo(pos: Long) {
         Timber.d("MediaSessionCallback onSeekTo() $pos")
         onSeekToPos(pos)
-
     }
 
     @OptIn(UnstableApi::class)

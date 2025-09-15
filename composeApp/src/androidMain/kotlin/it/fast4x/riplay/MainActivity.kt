@@ -372,6 +372,7 @@ class MainActivity :
     var linkDevices: MutableState<List<NsdServiceInfo>> = mutableStateOf(emptyList())
 
     var onlinePlayerPlayingState: MutableState<Boolean> = mutableStateOf(false)
+    var localPlayerPlayingState: MutableState<Boolean> = mutableStateOf(false)
 
     var selectedQueue: MutableState<Queues> = mutableStateOf(defaultQueue())
 
@@ -1468,13 +1469,6 @@ class MainActivity :
                                     expandedBound = maxHeight
                                 )
 
-//                                LaunchedEffect(showControls) {
-//                                    if (showControls) {
-//                                        delay(5000)
-//                                        showControls = false
-//                                    }
-//                                }
-
                                 AppNavigation(
                                     navController = navController,
                                     miniPlayer = {
@@ -1614,6 +1608,11 @@ class MainActivity :
                     }
 
                     val listener = object : Player.Listener {
+                        override fun onIsPlayingChanged(isPlaying: Boolean) {
+                            println("MainActivity Player.Listener onIsPlayingChanged isPlaying $isPlaying")
+                            localPlayerPlayingState.value = isPlaying
+                            updateMediasessionData()
+                        }
                         override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
                             println("MainActivity Player.Listener onMediaItemTransition mediaItem $mediaItem reason $reason foreground $appRunningInBackground")
 
@@ -1651,7 +1650,7 @@ class MainActivity :
 
                                 updateDiscordPresenceWithOnlinePlayer(
                                     discordPresenceManager,
-                                    mediaItem,
+                                    it,
                                     onlinePlayerState,
                                     currentDuration,
                                     currentSecond
@@ -1794,10 +1793,13 @@ class MainActivity :
                 .build()
         )
 
+        Timber.d("MainActivity updateMediasessionData onlineplayer playing ${onlinePlayerPlayingState.value} localplayer playing ${binder?.player?.isPlaying}")
+
         mediaSession?.setPlaybackState(
             stateBuilder
                 .setState(
-                    if (onlinePlayerPlayingState.value) PlaybackStateCompat.STATE_PLAYING else PlaybackStateCompat.STATE_PAUSED,
+                    if (onlinePlayerPlayingState.value || localPlayerPlayingState.value)
+                        PlaybackStateCompat.STATE_PLAYING else PlaybackStateCompat.STATE_PAUSED,
                     currentPlaybackPosition.value,
                     1f
                 )
@@ -1807,23 +1809,29 @@ class MainActivity :
         binder?.let {
             mediaSession?.setCallback(
                 MediaSessionCallback(
-                    it,
-                    {
+                    binder = it,
+                    onPlayClick = {
                         Timber.d("MainActivity MediaSessionCallback onPlayClick")
+                        it.player.play()
                         onlinePlayer.value?.play()
                     },
-                    {
+                    onPauseClick = {
                         Timber.d("MainActivity MediaSessionCallback onPauseClick")
+                        it.player.pause()
                         onlinePlayer.value?.pause()
                     },
-                    { second ->
+                    onSeekToPos = { second ->
                         val newPosition = (second / 1000).toFloat()
                         Timber.d("MainActivity MediaSessionCallback onSeekPosTo ${newPosition}")
                         onlinePlayer.value?.seekTo(newPosition)
                         currentPlaybackPosition.value = second
                     },
-                    {},
-                    {}
+                    onPlayNext = {
+                        it.player.playNext()
+                    },
+                    onPlayPrevious = {
+                        it.player.playPrevious()
+                    }
                 )
             )
         }

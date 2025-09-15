@@ -552,37 +552,37 @@ class AndroidAutoService : MediaBrowserServiceCompat(), ServiceConnection {
                 sessionToken = mediaSession?.sessionToken
             }
 
-            localPlayerBinder?.let{
-                mediaSession?.setCallback(
-                    MediaSessionCallback(
-                        it,
-                        {
-                            Timber.d("AndroidAutoservice MediaSessionCallback onPlayClick")
-                            onlinePlayer.value?.play()
-                            isPlaying = true
-                            updateMediaSessionData()
-                        },
-                        {
-                            Timber.d("AndroidAutoservice MediaSessionCallback onPauseClick")
-                            onlinePlayer.value?.pause()
-                            isPlaying = false
-                            updateMediaSessionData()
-                        },
-                        { second ->
-                            val newPosition = (second / 1000).toFloat()
-                            Timber.d("AndroidAutoservice MediaSessionCallback onSeekPosTo ${newPosition}")
-                            onlinePlayer.value?.seekTo(newPosition)
-                            updateMediaSessionData()
-                        },
-                        {
-                            updateMediaSessionData()
-                        },
-                        {
-                            updateMediaSessionData()
-                        }
-                    )
-                )
-            }
+//            localPlayerBinder?.let{
+//                mediaSession?.setCallback(
+//                    MediaSessionCallback(
+//                        it,
+//                        {
+//                            Timber.d("AndroidAutoservice MediaSessionCallback onPlayClick")
+//                            onlinePlayer.value?.play()
+//                            isPlaying = true
+//                            updateMediaSessionData()
+//                        },
+//                        {
+//                            Timber.d("AndroidAutoservice MediaSessionCallback onPauseClick")
+//                            onlinePlayer.value?.pause()
+//                            isPlaying = false
+//                            updateMediaSessionData()
+//                        },
+//                        { second ->
+//                            val newPosition = (second / 1000).toFloat()
+//                            Timber.d("AndroidAutoservice MediaSessionCallback onSeekPosTo ${newPosition}")
+//                            onlinePlayer.value?.seekTo(newPosition)
+//                            updateMediaSessionData()
+//                        },
+//                        {
+//                            updateMediaSessionData()
+//                        },
+//                        {
+//                            updateMediaSessionData()
+//                        }
+//                    )
+//                )
+//            }
 
 
             updateMediaSessionData()
