@@ -1308,13 +1308,15 @@ class MainActivity :
                         onSecondChange = {
                             currentSecond = it
                             currentPlaybackPosition.value = (it * 1000).toLong()
-                            onlinePositionAndDuration = (it * 1000).toLong() to (currentDuration * 1000).toLong()
+                            //TODO Improve this for sleeptimer
+                            //onlinePositionAndDuration = (it * 1000).toLong() to (currentDuration * 1000).toLong()
                             //println("MainActivity onSecondChange ${currentPlaybackPosition.value}")
                         },
                         onDurationChange = {
                             currentDuration = it
                             currentPlaybackDuration.value = (it * 1000).toLong()
-                            onlinePositionAndDuration = (currentSecond * 1000).toLong() to (it * 1000).toLong()
+                            //TODO Improve this for sleeptimer
+                            //onlinePositionAndDuration = (currentSecond * 1000).toLong() to (it * 1000).toLong()
 
                             updateOnlineNotification()
 
