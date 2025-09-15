@@ -2166,7 +2166,7 @@ class MainActivity :
         @ExperimentalCoroutinesApi
         @FlowPreview
         override fun onReceive(context: Context, intent: Intent) {
-            println("OnlinePlayerNotificationActionReceiver onReceive intent.action: ${intent.action}")
+            Timber.d("OnlinePlayerNotificationActionReceiver onReceive intent.action: ${intent.action}")
             when (intent.action) {
                 Action.pause.value -> onlinePlayer.value?.pause()
                 Action.play.value -> onlinePlayer.value?.play()
@@ -2238,7 +2238,7 @@ class MainActivity :
             Timber.e("MainActivity.onPause unregisterListener sensorListener ${it.stackTraceToString()}")
         }
         appRunningInBackground = true
-
+        updateOnlineNotification()
         println("MainActivity.onPause $appRunningInBackground")
     }
 
