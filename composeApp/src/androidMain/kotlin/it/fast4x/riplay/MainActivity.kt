@@ -336,7 +336,7 @@ class MainActivity :
             }
             if (service is AndroidAutoService.LocalBinder) {
                 this@MainActivity.androidAutoService = service.serviceInstance
-                service.mediaSession = mediaSession
+                service.mediaSession = unifiedMediaSession
                 service.localPlayerBinder = binder
                 service.onlinePlayer = onlinePlayer
             }
@@ -376,7 +376,7 @@ class MainActivity :
 
     var selectedQueue: MutableState<Queues> = mutableStateOf(defaultQueue())
 
-    var mediaSession: MediaSessionCompat? = null
+    var unifiedMediaSession: MediaSessionCompat? = null
     var onlinePlayer: MutableState<YouTubePlayer?> = mutableStateOf(null)
     val actions =
         PlaybackStateCompat.ACTION_PLAY or
@@ -520,7 +520,7 @@ class MainActivity :
             ContextCompat.RECEIVER_NOT_EXPORTED
         )
 
-        initializeMediaSession()
+        initializeUnifiedMediaSession()
 
         updateOnlineNotification()
 
@@ -1613,7 +1613,7 @@ class MainActivity :
                         override fun onIsPlayingChanged(isPlaying: Boolean) {
                             println("MainActivity Player.Listener onIsPlayingChanged isPlaying $isPlaying")
                             localPlayerPlayingState.value = isPlaying
-                            updateMediasessionData()
+                            updateUnifiedMediasessionData()
                         }
                         override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
                             println("MainActivity Player.Listener onMediaItemTransition mediaItem $mediaItem reason $reason foreground $appRunningInBackground")
@@ -1751,25 +1751,25 @@ class MainActivity :
         }
     }
 
-    private fun initializeMediaSession() {
-        if (mediaSession == null)
-            mediaSession = MediaSessionCompat(this, "OnlinePlayer")
+    private fun initializeUnifiedMediaSession() {
+        if (unifiedMediaSession == null)
+            unifiedMediaSession = MediaSessionCompat(this, "OnlinePlayer")
 
         val repeatMode = preferences.getEnum(queueLoopTypeKey, QueueLoopType.Default).type
 
-        mediaSession?.setFlags(
+        unifiedMediaSession?.setFlags(
             MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS or
                     MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS
         )
-        mediaSession?.setRepeatMode(repeatMode)
-        mediaSession?.isActive = true
+        unifiedMediaSession?.setRepeatMode(repeatMode)
+        unifiedMediaSession?.isActive = true
     }
 
-    private fun updateMediasessionData() {
+    private fun updateUnifiedMediasessionData() {
         Timber.d("MainActivity initializeMediasession")
         val currentMediaItem = binder?.player?.currentMediaItem
 
-        mediaSession?.setMetadata(
+        unifiedMediaSession?.setMetadata(
             MediaMetadataCompat.Builder()
                 .putString(
                     MediaMetadataCompat.METADATA_KEY_MEDIA_ID,
@@ -1797,7 +1797,7 @@ class MainActivity :
 
         Timber.d("MainActivity updateMediasessionData onlineplayer playing ${onlinePlayerPlayingState.value} localplayer playing ${binder?.player?.isPlaying}")
 
-        mediaSession?.setPlaybackState(
+        unifiedMediaSession?.setPlaybackState(
             stateBuilder
                 .setState(
                     if (onlinePlayerPlayingState.value || localPlayerPlayingState.value)
@@ -1809,7 +1809,7 @@ class MainActivity :
         )
 
         binder?.let {
-            mediaSession?.setCallback(
+            unifiedMediaSession?.setCallback(
                 MediaSessionCallback(
                     binder = it,
                     onPlayClick = {
@@ -1838,7 +1838,7 @@ class MainActivity :
             )
         }
 
-        mediaSession?.setPlaybackState(stateBuilder.build())
+        unifiedMediaSession?.setPlaybackState(stateBuilder.build())
 
     }
 
@@ -1878,7 +1878,7 @@ class MainActivity :
             }
 
 
-        updateMediasessionData()
+        updateUnifiedMediasessionData()
 
         createNotificationChannel()
 
@@ -1947,7 +1947,7 @@ class MainActivity :
                 androidx.media.app.NotificationCompat.MediaStyle()
                     .setShowActionsInCompactView(0, 1, 2)
                     .setShowCancelButton(false)
-                    .setMediaSession(mediaSession?.sessionToken)
+                    .setMediaSession(unifiedMediaSession?.sessionToken)
 
             )
             .setContentIntent(
