@@ -339,7 +339,7 @@ class MainActivity :
             }
             if (service is AndroidAutoService.LocalBinder) {
                 this@MainActivity.androidAutoService = service.serviceInstance
-                //service.mediaSession = mediaSession
+                service.mediaSession = mediaSession
                 service.offlinePlayerBinder = binder
                 service.onlinePlayer = onlinePlayer
             }
@@ -1321,13 +1321,13 @@ class MainActivity :
                             currentPlaybackDuration.value = (it * 1000).toLong()
                             onlinePositionAndDuration = (currentSecond * 1000).toLong() to (it * 1000).toLong()
 
-                            val i = Intent(
-                                applicationContext,
-                                AndroidAutoService.OnlinePlayerServiceReceiver::class.java
-                            )
-                            i.action = "PlaybackDuration"
-                            i.putExtra("Duration", currentPlaybackDuration.value)
-                            sendBroadcast(i)
+//                            val i = Intent(
+//                                applicationContext,
+//                                AndroidAutoService.OnlinePlayerServiceReceiver::class.java
+//                            )
+//                            i.action = "PlaybackDuration"
+//                            i.putExtra("Duration", currentPlaybackDuration.value)
+//                            sendBroadcast(i)
 
                             updateOnlineNotification()
 
@@ -1347,13 +1347,13 @@ class MainActivity :
                             onlinePlayerPlayingState.value =
                                 it == PlayerConstants.PlayerState.PLAYING
 
-                            val i = Intent(
-                                appContext(),
-                                AndroidAutoService.OnlinePlayerServiceReceiver::class.java
-                            )
-                            i.action = "PlaybackState"
-                            i.putExtra("isPlaying", onlinePlayerPlayingState.value )
-                            sendBroadcast(i)
+//                            val i = Intent(
+//                                appContext(),
+//                                AndroidAutoService.OnlinePlayerServiceReceiver::class.java
+//                            )
+//                            i.action = "PlaybackState"
+//                            i.putExtra("isPlaying", onlinePlayerPlayingState.value )
+//                            sendBroadcast(i)
 
                             updateOnlineNotification()
 

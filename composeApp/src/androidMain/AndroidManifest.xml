@@ -178,8 +178,6 @@
                 android:resource="@xml/player_horizontal_widget_info" />
         </receiver>
 
-        <!-- NEW PLAYER SERVICE -->
-
         <service
             android:name=".service.LocalPlayerService"
             android:exported="true"
@@ -220,7 +218,7 @@
                 <action android:name="android.intent.action.MEDIA_BUTTON" />
             </intent-filter>
         </receiver>
-        <!-- NEW PLAYER SERVICE -->
+
 
         <service
             android:name="androidx.appcompat.app.AppLocalesMetadataHolderService"
@@ -235,9 +233,9 @@
             android:name=".service.LocalPlayerService$NotificationDismissReceiver"
             android:exported="false" />
 
-        <receiver
+        <!-- <receiver
             android:name=".service.AndroidAutoService$OnlinePlayerServiceReceiver"
-            android:exported="false" />
+            android:exported="false" /> -->
 
         <meta-data android:name="com.google.android.gms.car.application"
             android:resource="@xml/automotive_app_desc"/>

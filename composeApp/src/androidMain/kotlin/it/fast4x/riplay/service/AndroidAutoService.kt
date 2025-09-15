@@ -75,6 +75,11 @@ class AndroidAutoService : MediaBrowserServiceCompat(), ServiceConnection {
             onlinePlayer = value
         }
 
+    var tmpMediaSessionCompat: MediaSessionCompat? = null
+        set(value) {
+            mediaSession = value
+        }
+
     companion object {
 
         var mediaSession: MediaSessionCompat? = null
@@ -161,6 +166,11 @@ class AndroidAutoService : MediaBrowserServiceCompat(), ServiceConnection {
         val serviceInstance: AndroidAutoService
             get() = this@AndroidAutoService
 
+        var mediaSession: MediaSessionCompat? = null
+            set(value) {
+                this@AndroidAutoService.tmpMediaSessionCompat = value
+            }
+
         var offlinePlayerBinder: LocalPlayerService.Binder? = null
             set(value) {
                 this@AndroidAutoService.tmpOfflinePlayerBinder = value
@@ -184,18 +194,18 @@ class AndroidAutoService : MediaBrowserServiceCompat(), ServiceConnection {
 
     override fun onCreate() {
         super.onCreate()
-        val sessionActivityPendingIntent =
-            packageManager?.getLaunchIntentForPackage(packageName)?.let { sessionIntent ->
-                PendingIntent.getActivity(this, 0, sessionIntent, PendingIntent.FLAG_IMMUTABLE)
-            }
-
-        mediaSession = MediaSessionCompat(this, "AndroidAutoService")
-        mediaSession?.setFlags(MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS or MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS)
-        mediaSession?.setRatingType(RatingCompat.RATING_NONE)
-        mediaSession?.setSessionActivity(sessionActivityPendingIntent)
-//        if (mediaSession?.sessionToken != null)
-//            setSessionToken(mediaSession?.sessionToken)
-        mediaSession?.isActive = true
+//        val sessionActivityPendingIntent =
+//            packageManager?.getLaunchIntentForPackage(packageName)?.let { sessionIntent ->
+//                PendingIntent.getActivity(this, 0, sessionIntent, PendingIntent.FLAG_IMMUTABLE)
+//            }
+//
+//        mediaSession = MediaSessionCompat(this, "AndroidAutoService")
+//        mediaSession?.setFlags(MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS or MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS)
+//        mediaSession?.setRatingType(RatingCompat.RATING_NONE)
+//        mediaSession?.setSessionActivity(sessionActivityPendingIntent)
+////        if (mediaSession?.sessionToken != null)
+////            setSessionToken(mediaSession?.sessionToken)
+//        mediaSession?.isActive = true
 
 
         runCatching {
@@ -565,6 +575,7 @@ class AndroidAutoService : MediaBrowserServiceCompat(), ServiceConnection {
 
     override fun onServiceDisconnected(name: ComponentName) = Unit
 
+    //Used also as media button receiver
     private inner class SessionCallback() :
         MediaSessionCompat.Callback() {
 
@@ -689,20 +700,20 @@ class AndroidAutoService : MediaBrowserServiceCompat(), ServiceConnection {
             }
         }
 
-    class OnlinePlayerServiceReceiver : BroadcastReceiver() {
-        override fun onReceive(context: Context, intent: Intent) {
-            when(intent.action) {
-                "PlaybackDuration" -> playbackDuration = intent.getLongExtra("Duration", 0)
-                //"PlaybackPosition" -> playbackPosition = intent.getLongExtra("Position", 0)
-                "PlaybackState" -> isPlaying = intent.getBooleanExtra("isPlaying", false)
-
-            }
-
-            updateMediaSessionData()
-
-            Timber.d("OnlinePlayerServiceReceiver onReceive intent ${intent.action} playbackDuration $playbackDuration playbackPosition $playbackPosition isPlaying $isPlaying")
-        }
-    }
+//    class OnlinePlayerServiceReceiver : BroadcastReceiver() {
+//        override fun onReceive(context: Context, intent: Intent) {
+//            when(intent.action) {
+//                "PlaybackDuration" -> playbackDuration = intent.getLongExtra("Duration", 0)
+//                //"PlaybackPosition" -> playbackPosition = intent.getLongExtra("Position", 0)
+//                "PlaybackState" -> isPlaying = intent.getBooleanExtra("isPlaying", false)
+//
+//            }
+//
+//            //updateMediaSessionData()
+//
+//            Timber.d("OnlinePlayerServiceReceiver onReceive intent ${intent.action} playbackDuration $playbackDuration playbackPosition $playbackPosition isPlaying $isPlaying")
+//        }
+//    }
 
     private object MediaId {
         const val root = "root"
