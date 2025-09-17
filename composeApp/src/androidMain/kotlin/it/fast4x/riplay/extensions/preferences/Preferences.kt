@@ -401,7 +401,7 @@ fun rememberPreference(key: String, defaultValue: LinkDevices?): MutableState<Li
                 context.preferences.getString(key, json)
                     ?.let { Json.decodeFromString<LinkDevices>(it) }
             } catch (e: Exception) {
-                Timber.e("RememberPreference LinkDevices Error: ${ e.stackTraceToString() }")
+                Timber.e("RememberPreference LinkDevices Error: ${ e.message }")
                 null
             }
         ) {
@@ -423,7 +423,7 @@ fun rememberPreference(key: String, defaultValue: Song?): MutableState<Song?> {
                 context.preferences.getString(key, json)
                     ?.let { Json.decodeFromString<Song>(it) }
             } catch (e: Exception) {
-                Timber.e("RememberPreference Song Error: ${ e.stackTraceToString() }")
+                Timber.e("RememberPreference Song Error: ${ e.message }")
                 null
             }
         ) {
@@ -445,7 +445,7 @@ fun rememberPreference(key: String, defaultValue: Environment.DiscoverPage?): Mu
                 context.preferences.getString(key, json)
                     ?.let { Json.decodeFromString<Environment.DiscoverPage>(it) }
             } catch (e: Exception) {
-                Timber.e("RememberPreference DiscoverPage Error: ${ e.stackTraceToString() }")
+                Timber.e("RememberPreference DiscoverPage Error: ${ e.message }")
                 null
             }
         ) {
@@ -467,7 +467,7 @@ fun rememberPreference(key: String, defaultValue: Environment.ChartsPage?): Muta
                 context.preferences.getString(key, json)
                     ?.let { Json.decodeFromString<Environment.ChartsPage>(it) }
             } catch (e: Exception) {
-                Timber.e("RememberPreference ChartsPage Error: ${ e.stackTraceToString() }")
+                Timber.e("RememberPreference ChartsPage Error: ${ e.message }")
                 null
             }
         ) {
@@ -489,7 +489,7 @@ fun rememberPreference(key: String, defaultValue: Environment.RelatedPage?): Mut
                 context.preferences.getString(key, json)
                     ?.let { Json.decodeFromString<Environment.RelatedPage>(it) }
             } catch (e: Exception) {
-                Timber.e("RememberPreference RelatedPage Error: ${ e.stackTraceToString() }")
+                Timber.e("RememberPreference RelatedPage Error: ${ e.message }")
                 null
             }
         ) {
@@ -511,7 +511,7 @@ fun rememberPreference(key: String, defaultValue: HomePage?): MutableState<HomeP
                 context.preferences.getString(key, json)
                     ?.let { Json.decodeFromString<HomePage>(it) }
             } catch (e: Exception) {
-                Timber.e("RememberPreference HomePage Error: ${ e.stackTraceToString() }")
+                Timber.e("RememberPreference HomePage Error: ${ e.message }")
                 null
             }
         ) {
@@ -629,7 +629,7 @@ fun clearPreference(context: Context, key: String): Unit {
     try {
         context.preferences.edit { remove(key) }
     } catch (e: Exception) {
-        Timber.e("ClearPreference Error: ${e.stackTraceToString()}")
+        Timber.e("ClearPreference Error: ${e.message}")
     }
 }
 
@@ -667,7 +667,7 @@ inline fun <reified T: Enum<T>> SharedPreferences.observeKeyEnum(key: String, de
     try {
         send(getEnum(key, default))
     } catch (e: Exception) {
-        Timber.e("observeKeyEnum Error: ${e.stackTraceToString()}")
+        Timber.e("observeKeyEnum Error: ${e.message}")
     }
 
 
@@ -676,7 +676,7 @@ inline fun <reified T: Enum<T>> SharedPreferences.observeKeyEnum(key: String, de
             try {
                 trySend(getEnum(key, default))
             } catch (e: Exception) {
-                Timber.e("observeKeyEnum Error: ${e.stackTraceToString()}")
+                Timber.e("observeKeyEnum Error: ${e.message}")
             }
         }
     }
