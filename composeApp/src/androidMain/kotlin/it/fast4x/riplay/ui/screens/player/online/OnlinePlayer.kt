@@ -1633,7 +1633,7 @@ fun OnlinePlayer(
                                 detectPlayerGestures = true,
                                 onTap = {
                                     showControls = !showControls
-                                    println("OnlinePlayer inside showControls - $showControls")
+                                    Timber.d("OnlinePlayer inside showControls - $showControls")
                                 }
                             )
                     ) {
@@ -1706,7 +1706,7 @@ fun OnlinePlayer(
                                 },
                                 onTap = {
                                     showControls = !showControls
-                                    println("OnlinePlayer inside showControls - $showControls")
+                                    Timber.d("OnlinePlayer inside showControls - $showControls")
                                 }
                             )
                     ) {}

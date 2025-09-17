@@ -61,7 +61,7 @@ fun OnlinePlayerCore(
     onPlayerStateChange: (PlayerConstants.PlayerState) -> Unit,
     onTap: () -> Unit,
 ) {
-    println("OnlinePlayerCore: called")
+    Timber.d("OnlinePlayerCore: called")
     val binder = LocalPlayerServiceBinder.current
 //    binder?.player ?: return
 //    if (binder.player.currentTimeline.windowCount == 0) return
@@ -189,7 +189,7 @@ fun OnlinePlayerCore(
         player.value?.setPlaybackRate(plabackRate)
     }
 
-    println("OnlinePlayerCore: before create androidview")
+    Timber.d("OnlinePlayerCore: before create androidview")
 
     AndroidView(
 
@@ -236,7 +236,7 @@ fun OnlinePlayerCore(
                     onlinePlayerView.setCustomPlayerUi(customUiController.rootView)
 
                     //youTubePlayer.loadOrCueVideo(lifecycleOwner.lifecycle, mediaItem.mediaId, lastYTVideoSeconds)
-                    println("OnlinePlayerCore: onReady shouldBePlaying: $shouldBePlaying")
+                    Timber.d("OnlinePlayerCore: onReady shouldBePlaying: $shouldBePlaying")
                     if (localMediaItem != null) {
                         if (!load)
                             youTubePlayer.cueVideo(localMediaItem!!.mediaId, playFromSecond)
@@ -277,6 +277,13 @@ fun OnlinePlayerCore(
                     onPlayerStateChange(state)
                 }
 
+                override fun onError(
+                    youTubePlayer: YouTubePlayer,
+                    error: PlayerConstants.PlayerError
+                ) {
+                    super.onError(youTubePlayer, error)
+                    Timber.e("OnlinePlayerCore: onError $error")
+                }
 
             }
 
@@ -289,7 +296,7 @@ fun OnlinePlayerCore(
                     lifecycleOwner.lifecycle.addObserver(this)
 
                 initialize(listener, iFramePlayerOptions)
-                println("OnlinePlayerCore: initialize")
+                Timber.d("OnlinePlayerCore: initialize")
             }
 
 

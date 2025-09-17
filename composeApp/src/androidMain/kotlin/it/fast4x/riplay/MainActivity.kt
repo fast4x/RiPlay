@@ -332,10 +332,10 @@ class MainActivity :
                 this@MainActivity.binder = service
             }
             if (service is EndlessService.LocalBinder) {
-                this@MainActivity.endlessService = service.serviceInstance
+                this@MainActivity.endlessService = service.serviceInstance.LocalBinder()
             }
             if (service is AndroidAutoService.LocalBinder) {
-                this@MainActivity.androidAutoService = service.serviceInstance
+                this@MainActivity.androidAutoService = service.serviceInstance.LocalBinder()
                 service.mediaSession = unifiedMediaSession
                 service.localPlayerBinder = binder
                 service.onlinePlayer = onlinePlayer
@@ -396,8 +396,8 @@ class MainActivity :
     var currentPlaybackPosition: MutableState<Long> = mutableLongStateOf(0)
     var currentPlaybackDuration: MutableState<Long> = mutableLongStateOf(0)
 
-    lateinit var endlessService: Service
-    lateinit var androidAutoService: AndroidAutoService
+    var endlessService by mutableStateOf<EndlessService.LocalBinder?>(null)
+    var androidAutoService by mutableStateOf<AndroidAutoService.LocalBinder?>(null)
 
     var mediaItemIsLocal: MutableState<Boolean> = mutableStateOf(false)
 
@@ -1962,22 +1962,22 @@ class MainActivity :
             .build()
 
         //workaround for android 12+
-        runCatching {
-            notification.let {
-                ServiceCompat.startForeground(
-                    endlessService,
-                    NOTIFICATION_ID,
-                    it,
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                        ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK
-                    } else {
-                        0
-                    }
-                )
-            }
-        }.onFailure {
-            Timber.e("PlayerService oncreate startForeground ${it.stackTraceToString()}")
-        }
+//        runCatching {
+//            notification.let {
+//                ServiceCompat.startForeground(
+//                    endlessService,
+//                    NOTIFICATION_ID,
+//                    it,
+//                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+//                        ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK
+//                    } else {
+//                        0
+//                    }
+//                )
+//            }
+//        }.onFailure {
+//            Timber.e("PlayerService oncreate startForeground ${it.stackTraceToString()}")
+//        }
 
         NotificationManagerCompat.from(this@MainActivity).notify(NOTIFICATION_ID, notification)
     }
