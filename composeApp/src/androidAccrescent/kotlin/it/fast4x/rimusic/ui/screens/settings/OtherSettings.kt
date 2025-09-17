@@ -126,7 +126,7 @@ fun OtherSettings() {
 
             val file =
                 File(context.filesDir.resolve("logs"),
-                    if (exportCrashlog) "RiPlay_crash_log.txt" else  "RiMusic_log.txt"
+                    if (exportCrashlog) "RiPlay_crash_log.txt" else  "RiPlay_log.txt"
                 )
             if (file.exists()) {
                 text = file.readText()
