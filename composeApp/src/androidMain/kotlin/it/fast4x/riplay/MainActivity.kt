@@ -616,38 +616,30 @@ class MainActivity :
 
     override fun onLowMemory() {
         super.onLowMemory()
-        println("MainActivity.onLowMemory")
         Timber.d("MainActivity.onLowMemory")
     }
 
     override fun onTrimMemory(level: Int) {
         super.onTrimMemory(level)
         if (level == TRIM_MEMORY_UI_HIDDEN) {
-            println("MainActivity.onTrimMemory TRIM_MEMORY_UI_HIDDEN")
             Timber.d("MainActivity.onTrimMemory TRIM_MEMORY_UI_HIDDEN")
         }
         if (level == TRIM_MEMORY_RUNNING_LOW) {
-            println("MainActivity.onTrimMemory TRIM_MEMORY_RUNNING_LOW")
             Timber.d("MainActivity.onTrimMemory TRIM_MEMORY_RUNNING_LOW")
         }
         if (level == TRIM_MEMORY_RUNNING_CRITICAL) {
-            println("MainActivity.onTrimMemory TRIM_MEMORY_RUNNING_CRITICAL")
             Timber.d("MainActivity.onTrimMemory TRIM_MEMORY_RUNNING_CRITICAL")
         }
         if (level == TRIM_MEMORY_BACKGROUND) {
-            println("MainActivity.onTrimMemory TRIM_MEMORY_BACKGROUND")
             Timber.d("MainActivity.onTrimMemory TRIM_MEMORY_BACKGROUND")
         }
         if (level == TRIM_MEMORY_COMPLETE) {
-            println("MainActivity.onTrimMemory TRIM_MEMORY_COMPLETE")
             Timber.d("MainActivity.onTrimMemory TRIM_MEMORY_COMPLETE")
         }
         if (level == TRIM_MEMORY_MODERATE) {
-            println("MainActivity.onTrimMemory TRIM_MEMORY_MODERATE")
             Timber.d("MainActivity.onTrimMemory TRIM_MEMORY_MODERATE")
         }
         if (level == TRIM_MEMORY_RUNNING_MODERATE) {
-            println("MainActivity.onTrimMemory TRIM_MEMORY_RUNNING_MODERATE")
             Timber.d("MainActivity.onTrimMemory TRIM_MEMORY_RUNNING_MODERATE")
         }
     }
@@ -711,7 +703,7 @@ class MainActivity :
                 it.getBoolean("expandPlayerBottomSheet") || it.getBoolean("fromWidget")
             } ?: false
 
-        println("MainActivity.onCreate launchedFromNotification: $launchedFromNotification intent $intent.action")
+        Timber.d("MainActivity.onCreate launchedFromNotification: $launchedFromNotification intent $intent.action")
 
         intentUriData = intent.data ?: intent.getStringExtra(Intent.EXTRA_TEXT)?.toUri()
 
@@ -820,7 +812,7 @@ class MainActivity :
             // If visitorData is empty, get it from the server with or without login
             if (visitorData.value.isEmpty() || visitorData.value == "null")
                 runCatching {
-                    println("MainActivity.onCreate visitorData.isEmpty() getInitialVisitorData visitorData ${visitorData.value}")
+                    Timber.d("MainActivity.onCreate visitorData.isEmpty() getInitialVisitorData visitorData ${visitorData.value}")
                     visitorData.value = runBlocking {
                         Environment.getInitialVisitorData().getOrNull()
                     }.takeIf { it != "null" } ?: Environment._uMYwa66ycM
@@ -828,12 +820,11 @@ class MainActivity :
                     preferences.edit { putString(ytVisitorDataKey, visitorData.value) }
                 }.onFailure {
                     Timber.e("MainActivity.onCreate visitorData.isEmpty() getInitialVisitorData ${it.stackTraceToString()}")
-                    println("MainActivity.onCreate visitorData.isEmpty() getInitialVisitorData ${it.stackTraceToString()}")
                     visitorData.value = Environment._uMYwa66ycM
                 }
 
             Environment.visitorData = visitorData.value
-            println("MainActivity.onCreate visitorData in use: ${visitorData.value}")
+            Timber.d("MainActivity.onCreate visitorData in use: ${visitorData.value}")
 
             cookie.let {
                 if (isLoggedIn())
@@ -847,7 +838,7 @@ class MainActivity :
 
             Environment.dataSyncId = preferences.getString(ytDataSyncIdKey, "").toString()
 
-            println("MainActivity.onCreate cookie: ${cookie.value}")
+            Timber.d("MainActivity.onCreate cookie: ${cookie.value}")
             val customDnsOverHttpsServer =
                 preferences.getString(customDnsOverHttpsServerKey, "")
 
@@ -889,12 +880,12 @@ class MainActivity :
                         )
                     }
                     if (colorPaletteName == ColorPaletteName.CustomColor) {
-                        println("MainActivity.startApp SetContent with(preferences) customColor PRE colorPalette: $colorPalette")
+                        Timber.d("MainActivity.startApp SetContent with(preferences) customColor PRE colorPalette: $colorPalette")
                         colorPalette = dynamicColorPaletteOf(
                             Color(customColor),
                             !lightTheme
                         )
-                        println("MainActivity.startApp SetContent with(preferences) customColor POST colorPalette: $colorPalette")
+                        Timber.d("MainActivity.startApp SetContent with(preferences) customColor POST colorPalette: $colorPalette")
                     }
 
                     setSystemBarAppearance(colorPalette.isDark)
@@ -1014,7 +1005,7 @@ class MainActivity :
                             restartActivityKey
                                 -> {
                                 this@MainActivity.recreate()
-                                println("MainActivity.recreate()")
+                                Timber.d("MainActivity.recreate()")
                             }
 
                             colorPaletteNameKey, colorPaletteModeKey,
@@ -1098,12 +1089,12 @@ class MainActivity :
                                         )
                                     }
                                     if (colorPaletteName == ColorPaletteName.CustomColor) {
-                                        println("MainActivity.startApp SetContent DisposableEffect customColor PRE colorPalette: $colorPalette")
+                                        Timber.d("MainActivity.startApp SetContent DisposableEffect customColor PRE colorPalette: $colorPalette")
                                         colorPalette = dynamicColorPaletteOf(
                                             Color(customColor),
                                             !lightTheme
                                         )
-                                        println("MainActivity.startApp SetContent DisposableEffect customColor POST colorPalette: $colorPalette")
+                                        Timber.d("MainActivity.startApp SetContent DisposableEffect customColor POST colorPalette: $colorPalette")
                                     }
 
                                     setSystemBarAppearance(colorPalette.isDark)
@@ -1310,7 +1301,7 @@ class MainActivity :
                             currentPlaybackPosition.value = (it * 1000).toLong()
                             //TODO Improve this for sleeptimer
                             //onlinePositionAndDuration = (it * 1000).toLong() to (currentDuration * 1000).toLong()
-                            //println("MainActivity onSecondChange ${currentPlaybackPosition.value}")
+                            //Timber.d("MainActivity onSecondChange ${currentPlaybackPosition.value}")
                         },
                         onDurationChange = {
                             currentDuration = it
@@ -1329,7 +1320,7 @@ class MainActivity :
                                     currentDuration,
                                     currentSecond
                                 )
-                            println("MainActivity onDurationChange ${currentPlaybackDuration.value}")
+                            Timber.d("MainActivity onDurationChange ${currentPlaybackDuration.value}")
                         },
                         onPlayerStateChange = {
                             onlinePlayerState.value = it
@@ -1364,7 +1355,7 @@ class MainActivity :
                 CrossfadeContainer(
                     state = pip //pipState.value
                 ) { isCurrentInPip ->
-                    println("MainActivity pipState ${pipState.value} CrossfadeContainer isCurrentInPip $isCurrentInPip ")
+                    Timber.d("MainActivity pipState ${pipState.value} CrossfadeContainer isCurrentInPip $isCurrentInPip ")
                     val pipModule by rememberPreference(pipModuleKey, PipModule.Cover)
                     if (isCurrentInPip) {
                         Box(
@@ -1435,7 +1426,6 @@ class MainActivity :
                                                         durationLong = true
                                                     )
                                                     Timber.d("Rescue backup success: $success, message: $message, exitCode: $exitCode")
-                                                    println("Rescue backup success: $success, message: $message, exitCode: $exitCode")
 
                                                 }
                                             }
@@ -1455,7 +1445,6 @@ class MainActivity :
                                                         durationLong = true
                                                     )
                                                     Timber.d("Rescue restore: success $success, message: $message, exitCode: $exitCode")
-                                                    println("Rescue restore: success  $success, message: $message, exitCode: $exitCode")
 
                                                 }
                                             }
@@ -1474,7 +1463,7 @@ class MainActivity :
                                 AppNavigation(
                                     navController = navController,
                                     miniPlayer = {
-                                        //println("MainActivity miniPlayer mediaItemIsLocal ${mediaItemIsLocal.value}")
+
                                         if (mediaItemIsLocal.value)
                                             LocalMiniPlayer(
                                                 showPlayer = { localPlayerSheetState.expandSoft() },
@@ -1611,12 +1600,12 @@ class MainActivity :
 
                     val listener = object : Player.Listener {
                         override fun onIsPlayingChanged(isPlaying: Boolean) {
-                            println("MainActivity Player.Listener onIsPlayingChanged isPlaying $isPlaying")
+                            Timber.d("MainActivity Player.Listener onIsPlayingChanged isPlaying $isPlaying")
                             localPlayerPlayingState.value = isPlaying
                             updateUnifiedMediasessionData()
                         }
                         override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
-                            println("MainActivity Player.Listener onMediaItemTransition mediaItem $mediaItem reason $reason foreground $appRunningInBackground")
+                            Timber.d("MainActivity Player.Listener onMediaItemTransition mediaItem $mediaItem reason $reason foreground $appRunningInBackground")
 
                             if (mediaItem == null) {
                                 maybeExitPip()
@@ -1998,7 +1987,6 @@ class MainActivity :
             val bassboostLevel =
                 (preferences.getFloat(bassboostLevelKey, 0.5f) * 1000f).toInt().toShort()
             Timber.d("MainActivity processBassBoost bassboostLevel $bassboostLevel")
-            println("MainActivity processBassBoost bassboostLevel $bassboostLevel")
             bassBoost?.enabled = false
             bassBoost?.setStrength(bassboostLevel)
             bassBoost?.enabled = true
@@ -2026,7 +2014,6 @@ class MainActivity :
             }
         }.onFailure {
             Timber.e("MainActivity processNormalizeVolume load loudnessEnhancer ${it.stackTraceToString()}")
-            println("MainActivity processNormalizeVolume load loudnessEnhancer ${it.stackTraceToString()}")
             return
         }
 
@@ -2054,7 +2041,6 @@ class MainActivity :
                         loudnessEnhancer?.enabled = true
                     } catch (e: Exception) {
                         Timber.e("MainActivity processNormalizeVolume apply targetGain ${e.stackTraceToString()}")
-                        println("MainActivity processNormalizeVolume apply targetGain ${e.stackTraceToString()}")
                     }
                 }
             }
@@ -2222,7 +2208,7 @@ class MainActivity :
 
         updateOnlineNotification()
 
-        println("MainActivity.onResume $appRunningInBackground")
+        Timber.d("MainActivity.onResume $appRunningInBackground")
     }
 
     override fun onPause() {
@@ -2234,7 +2220,7 @@ class MainActivity :
         }
         appRunningInBackground = true
         updateOnlineNotification()
-        println("MainActivity.onPause $appRunningInBackground")
+        Timber.d("MainActivity.onPause $appRunningInBackground")
     }
 
     @UnstableApi
