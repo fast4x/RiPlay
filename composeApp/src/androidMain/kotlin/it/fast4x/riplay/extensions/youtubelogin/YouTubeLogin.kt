@@ -40,7 +40,7 @@ fun YouTubeLogin(
 
     val scope = rememberCoroutineScope()
 
-    var visitorData by rememberPreference(key = ytVisitorDataKey, defaultValue = Environment._uMYwa66ycM)
+    var visitorData by rememberPreference(key = ytVisitorDataKey, defaultValue = "") //Environment._uMYwa66ycM
     var dataSyncId by rememberPreference(key = ytDataSyncIdKey, defaultValue = "")
     var cookie by rememberPreference(key = ytCookieKey, defaultValue = "")
     var accountName by rememberPreference(key = ytAccountNameKey, defaultValue = "")
@@ -118,7 +118,8 @@ fun YouTubeLogin(
                         }
                     }, "Android")
                     webView = this
-                    loadUrl("https://accounts.google.com/ServiceLogin?ltmpl=music&service=youtube&passive=true&continue=https%3A%2F%2Fwww.youtube.com%2Fsignin%3Faction_handle_signin%3Dtrue%26next%3Dhttps%253A%252F%252Fmusic.youtube.com%252F")
+                    //loadUrl("https://accounts.google.com/ServiceLogin?ltmpl=music&service=youtube&passive=true&continue=https%3A%2F%2Fwww.youtube.com%2Fsignin%3Faction_handle_signin%3Dtrue%26next%3Dhttps%253A%252F%252Fmusic.youtube.com%252F")
+                    loadUrl("https://accounts.google.com/ServiceLogin?continue=https%3A%2F%2Fmusic.youtube.com")
                 }
             }
         )

@@ -58,6 +58,7 @@ import it.fast4x.environment.utils.sha1
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonPrimitive
 import okhttp3.HttpUrl.Companion.toHttpUrl
@@ -77,6 +78,8 @@ const val YT_ARTIST_SHARE_BASEURL = "https://www.youtube.com/channel/"
 const val YTM_ARTIST_SHARE_BASEURL = "https://music.youtube.com/channel/"
 const val YT_ALBUM_SHARE_BASEURL = "https://www.youtube.com/browse/"
 const val YTM_ALBUM_SHARE_BASEURL = "https://music.youtube.com/browse/"
+
+private val VISITOR_DATA_SUFFIX = Regex("^Cg[t|s]")
 
 object Environment {
 
@@ -215,7 +218,7 @@ object Environment {
         //hl = LocalePreferences.preference?.hl ?: "en"
     )
 
-    var visitorData: String = _uMYwa66ycM
+    var visitorData: String = "" //_uMYwa66ycM
     var dataSyncId: String? = null
 
     var cookie: String? = null
@@ -569,6 +572,8 @@ object Environment {
             .jsonArray[0]
             .jsonArray[2]
             .jsonArray.first { (it as? JsonPrimitive)?.content?.startsWith(_7ZoUy0mkCP) == true }
+//            .jsonArray.first { (it as? JsonPrimitive)?.contentOrNull?.let { suffix ->
+//                    VISITOR_DATA_SUFFIX.containsMatchIn(suffix) } ?: false }
             .jsonPrimitive.content
     }.onFailure {
         println("Environment Error in getInitialVisitorData(): ${it.stackTraceToString()}")

@@ -809,18 +809,19 @@ class MainActivity :
             visitorData.value = preferences.getString(ytVisitorDataKey, "").toString()
 
 
+
             // If visitorData is empty, get it from the server with or without login
-            if (visitorData.value.isEmpty() || visitorData.value == "null")
+            if (visitorData.value.isEmpty() || visitorData.value == "null" || visitorData.value == "")
                 runCatching {
                     Timber.d("MainActivity.onCreate visitorData.isEmpty() getInitialVisitorData visitorData ${visitorData.value}")
                     visitorData.value = runBlocking {
                         Environment.getInitialVisitorData().getOrNull()
-                    }.takeIf { it != "null" } ?: Environment._uMYwa66ycM
+                    }.takeIf { it != "null" } ?: ""
                     // Save visitorData in SharedPreferences
                     preferences.edit { putString(ytVisitorDataKey, visitorData.value) }
                 }.onFailure {
                     Timber.e("MainActivity.onCreate visitorData.isEmpty() getInitialVisitorData ${it.stackTraceToString()}")
-                    visitorData.value = Environment._uMYwa66ycM
+                    visitorData.value = "" //Environment._uMYwa66ycM
                 }
 
             Environment.visitorData = visitorData.value
