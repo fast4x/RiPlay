@@ -534,7 +534,7 @@ fun ControlsModern(
                           .size(30.dp)
                   )
               } else CircularProgressIndicator(
-                  modifier = Modifier.size(30.dp),
+                  modifier = Modifier.align(Alignment.Center).size(30.dp),
                   color = colorPalette().collapsedPlayerProgressBar
               )
           }

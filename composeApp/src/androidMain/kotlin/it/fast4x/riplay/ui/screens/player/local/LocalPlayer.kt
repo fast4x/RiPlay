@@ -649,8 +649,8 @@ fun LocalPlayer(
     val showalbumcover by rememberPreference(showalbumcoverKey, true)
     val tapqueue by rememberPreference(tapqueueKey, true)
     val swipeUpQueue by rememberPreference(swipeUpQueueKey, true)
-    val playerType by rememberPreference(playerTypeKey, PlayerType.Essential)
-    val queueType by rememberPreference(queueTypeKey, QueueType.Essential)
+    val playerType by rememberPreference(playerTypeKey, PlayerType.Modern)
+    val queueType by rememberPreference(queueTypeKey, QueueType.Modern)
     val noblur by rememberPreference(noblurKey, true)
     val fadingedge by rememberPreference(fadingedgeKey, false)
     val configuration = LocalConfiguration.current

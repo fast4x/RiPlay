@@ -166,7 +166,7 @@ fun Controls(
     var playerControlsType by rememberPreference(playerControlsTypeKey, PlayerControlsType.Essential)
     var playerPlayButtonType by rememberPreference(playerPlayButtonTypeKey, PlayerPlayButtonType.Disabled)
     var showthumbnail by rememberPreference(showthumbnailKey, true)
-    var playerType by rememberPreference(playerTypeKey, PlayerType.Essential)
+    var playerType by rememberPreference(playerTypeKey, PlayerType.Modern)
     val expandedlandscape = (isLandscape && playerType == PlayerType.Modern) || (expandedplayer && !showthumbnail)
 
     Box(

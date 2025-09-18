@@ -728,8 +728,8 @@ fun OnlinePlayer(
     val showalbumcover by rememberObservedPreference(showalbumcoverKey, true)
     val tapqueue by rememberObservedPreference(tapqueueKey, true)
     val swipeUpQueue by rememberObservedPreference(swipeUpQueueKey, true)
-    val playerType by rememberObservedPreference(playerTypeKey, PlayerType.Essential)
-    val queueType by rememberObservedPreference(queueTypeKey, QueueType.Essential)
+    val playerType by rememberObservedPreference(playerTypeKey, PlayerType.Modern)
+    val queueType by rememberObservedPreference(queueTypeKey, QueueType.Modern)
     val noblur by rememberObservedPreference(noblurKey, true)
     val fadingedge by rememberObservedPreference(fadingedgeKey, false)
     val configuration = LocalConfiguration.current

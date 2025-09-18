@@ -654,7 +654,7 @@ fun ControlsEssential(
                     .bounceClick()
             )
         } else CircularProgressIndicator(
-            modifier = Modifier.size(imgSize),
+            modifier = Modifier.align(Alignment.Center).size(imgSize),
             color = colorPalette().collapsedPlayerProgressBar
         )
 

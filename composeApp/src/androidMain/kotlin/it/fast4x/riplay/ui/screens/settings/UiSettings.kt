@@ -395,10 +395,10 @@ fun DefaultUiSettings() {
     playerControlsType = PlayerControlsType.Modern
     var playerInfoType by rememberPreference(playerInfoTypeKey, PlayerInfoType.Essential)
     playerInfoType = PlayerInfoType.Modern
-    var playerType by rememberPreference(playerTypeKey, PlayerType.Essential)
-    playerType = PlayerType.Essential
-    var queueType by rememberPreference(queueTypeKey, QueueType.Essential)
-    queueType = QueueType.Essential
+    var playerType by rememberPreference(playerTypeKey, PlayerType.Modern)
+    playerType = PlayerType.Modern
+    var queueType by rememberPreference(queueTypeKey, QueueType.Modern)
+    queueType = QueueType.Modern
     var fadingedge by rememberPreference(fadingedgeKey, false)
     fadingedge = false
     var carousel by rememberPreference(carouselKey, true)
@@ -625,8 +625,8 @@ fun UiSettings(
     var showTopActionsBar by rememberPreference(showTopActionsBarKey, true)
     var playerControlsType by rememberPreference(playerControlsTypeKey, PlayerControlsType.Essential)
     var playerInfoType by rememberPreference(playerInfoTypeKey, PlayerInfoType.Essential)
-    var playerType by rememberPreference(playerTypeKey, PlayerType.Essential)
-    var queueType by rememberPreference(queueTypeKey, QueueType.Essential)
+    var playerType by rememberPreference(playerTypeKey, PlayerType.Modern)
+    var queueType by rememberPreference(queueTypeKey, QueueType.Modern)
     var fadingedge by rememberPreference(fadingedgeKey, false)
     var carousel by rememberPreference(carouselKey, true)
     var carouselSize by rememberPreference(carouselSizeKey, CarouselSize.Biggest)

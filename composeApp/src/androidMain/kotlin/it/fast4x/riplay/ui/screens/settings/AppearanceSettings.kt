@@ -342,10 +342,10 @@ fun DefaultAppearanceSettings() {
     swipeUpQueue = true
     var statsfornerds by rememberPreference(statsfornerdsKey, false)
     statsfornerds = false
-    var playerType by rememberPreference(playerTypeKey, PlayerType.Essential)
-    playerType = PlayerType.Essential
-    var queueType by rememberPreference(queueTypeKey, QueueType.Essential)
-    queueType = QueueType.Essential
+    var playerType by rememberPreference(playerTypeKey, PlayerType.Modern)
+    playerType = PlayerType.Modern
+    var queueType by rememberPreference(queueTypeKey, QueueType.Modern)
+    queueType = QueueType.Modern
     var noblur by rememberPreference(noblurKey, true)
     noblur = true
     var fadingedge by rememberPreference(fadingedgeKey, false)
@@ -505,8 +505,8 @@ fun AppearanceSettings(
     var swipeUpQueue by rememberPreference(swipeUpQueueKey, true)
     var statsfornerds by rememberPreference(statsfornerdsKey, false)
 
-    var playerType by rememberPreference(playerTypeKey, PlayerType.Essential)
-    var queueType by rememberPreference(queueTypeKey, QueueType.Essential)
+    var playerType by rememberPreference(playerTypeKey, PlayerType.Modern)
+    var queueType by rememberPreference(queueTypeKey, QueueType.Modern)
     var noblur by rememberPreference(noblurKey, true)
     var fadingedge by rememberPreference(fadingedgeKey, false)
     var carousel by rememberPreference(carouselKey, true)

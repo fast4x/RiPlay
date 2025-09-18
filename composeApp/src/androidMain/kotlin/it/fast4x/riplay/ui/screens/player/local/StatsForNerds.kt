@@ -97,7 +97,7 @@ fun StatsForNerds(
         }
         val showThumbnail by rememberPreference(showthumbnailKey, true)
         val statsForNerds by rememberPreference(statsfornerdsKey, false)
-        val playerType by rememberPreference(playerTypeKey, PlayerType.Essential)
+        val playerType by rememberPreference(playerTypeKey, PlayerType.Modern)
         val transparentBackgroundActionBarPlayer by rememberPreference(
             transparentBackgroundPlayerActionBarKey,
             false
