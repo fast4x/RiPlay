@@ -3,12 +3,16 @@ package it.fast4x.riplay.ui.screens.player.online.components.core
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.annotation.OptIn
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.media3.common.MediaItem
@@ -24,6 +28,7 @@ import it.fast4x.riplay.R
 import it.fast4x.riplay.context
 import it.fast4x.riplay.enums.DurationInMilliseconds
 import it.fast4x.riplay.enums.PlayerThumbnailSize
+import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.enums.QueueLoopType
 import it.fast4x.riplay.extensions.discord.DiscordPresenceManager
 import it.fast4x.riplay.extensions.history.updateOnlineHistory
@@ -38,6 +43,7 @@ import it.fast4x.riplay.extensions.preferences.queueLoopTypeKey
 import it.fast4x.riplay.extensions.preferences.rememberObservedPreference
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.getPlaybackFadeAudioDuration
+import it.fast4x.riplay.ui.components.themed.SmartMessage
 import it.fast4x.riplay.utils.playNext
 import it.fast4x.riplay.utils.startFadeAnimator
 import kotlinx.coroutines.Dispatchers
@@ -192,7 +198,7 @@ fun OnlinePlayerCore(
     Timber.d("OnlinePlayerCore: before create androidview")
 
     AndroidView(
-
+        modifier = Modifier.windowInsetsPadding(WindowInsets.safeDrawing),
         factory = {
 
             val iFramePlayerOptions = IFramePlayerOptions.Builder()
@@ -283,6 +289,7 @@ fun OnlinePlayerCore(
                 ) {
                     super.onError(youTubePlayer, error)
                     Timber.e("OnlinePlayerCore: onError $error")
+                    SmartMessage(error.toString(), PopupType.Error, durationLong = true, context = context())
                 }
 
             }
