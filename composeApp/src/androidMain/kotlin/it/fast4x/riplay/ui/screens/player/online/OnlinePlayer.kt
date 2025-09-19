@@ -3662,7 +3662,7 @@ fun OnlinePlayer(
                                         )
                                 }
                             }
-                            
+
                             NextVisualizer(
                                 isDisplayed = isShowingVisualizer
                             )
