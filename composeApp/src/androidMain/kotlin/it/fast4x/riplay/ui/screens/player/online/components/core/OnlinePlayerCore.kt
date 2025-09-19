@@ -198,7 +198,7 @@ fun OnlinePlayerCore(
     Timber.d("OnlinePlayerCore: before create androidview")
 
     AndroidView(
-        modifier = Modifier.windowInsetsPadding(WindowInsets.safeDrawing),
+        //modifier = Modifier.windowInsetsPadding(WindowInsets.safeDrawing),
         factory = {
 
             val iFramePlayerOptions = IFramePlayerOptions.Builder()

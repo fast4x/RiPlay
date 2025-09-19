@@ -3662,6 +3662,10 @@ fun OnlinePlayer(
                                         )
                                 }
                             }
+                            
+                            NextVisualizer(
+                                isDisplayed = isShowingVisualizer
+                            )
                         }
 
                         Box(
