@@ -204,6 +204,7 @@ fun OnlinePlayerCore(
             val iFramePlayerOptions = IFramePlayerOptions.Builder()
                 .controls(0) // show/hide controls
                 .listType("playlist")
+                .origin(context().resources.getString(R.string.env_fqqhBZd0cf))
                 .build()
 
             val listener = object : AbstractYouTubePlayerListener() {
