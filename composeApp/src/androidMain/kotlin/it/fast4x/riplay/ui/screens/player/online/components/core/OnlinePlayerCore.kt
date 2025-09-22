@@ -2,6 +2,8 @@ package it.fast4x.riplay.ui.screens.player.online.components.core
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import android.webkit.CookieManager
+import android.webkit.WebStorage
 import androidx.annotation.OptIn
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.safeDrawing
@@ -201,7 +203,7 @@ fun OnlinePlayerCore(
         //modifier = Modifier.windowInsetsPadding(WindowInsets.safeDrawing),
         factory = {
 
-            val iFramePlayerOptions = IFramePlayerOptions.Builder()
+            val iFramePlayerOptions = IFramePlayerOptions.Builder(context())
                 .controls(0) // show/hide controls
                 .listType("playlist")
                 .origin(context().resources.getString(R.string.env_fqqhBZd0cf))
@@ -295,8 +297,27 @@ fun OnlinePlayerCore(
                         PlayerConstants.PlayerError.VIDEO_NOT_FOUND -> "Content not found, perhaps no longer available"
                         else -> null
                     }
-                    if (errorString != null)
-                        SmartMessage(errorString, PopupType.Error, durationLong = true, context = context())
+                    if (errorString != null) {
+                        SmartMessage(
+                            errorString,
+                            PopupType.Error,
+                            durationLong = true,
+                            context = context()
+                        )
+
+                        // Try delete all data cache and cookies
+                        runCatching {
+                            WebStorage.getInstance().deleteAllData()
+                            CookieManager.getInstance().removeAllCookies(null)
+                            CookieManager.getInstance().flush()
+                            if (localMediaItem != null)
+                                youTubePlayer.loadVideo(localMediaItem.mediaId, 0f)
+                        }.onFailure {
+                            Timber.e("OnlinePlayerCore: onError trying to clear cache failed: ${it.message}")
+                        }
+                    }
+
+
                 }
 
             }
