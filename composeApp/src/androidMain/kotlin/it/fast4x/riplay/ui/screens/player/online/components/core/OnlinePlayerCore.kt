@@ -292,21 +292,26 @@ fun OnlinePlayerCore(
                     error: PlayerConstants.PlayerError
                 ) {
                     super.onError(youTubePlayer, error)
+                    youTubePlayer.pause()
+                    clearWebViewData()
+
                     Timber.e("OnlinePlayerCore: onError $error")
                     val errorString = when (error) {
-                        PlayerConstants.PlayerError.VIDEO_NOT_PLAYABLE_IN_EMBEDDED_PLAYER -> "Content not playable, try to login"
+                        PlayerConstants.PlayerError.VIDEO_NOT_PLAYABLE_IN_EMBEDDED_PLAYER -> "Content not playable, recovery in progress, if the error persists try to log in"
                         PlayerConstants.PlayerError.VIDEO_NOT_FOUND -> "Content not found, perhaps no longer available"
                         else -> null
                     }
+
                     if (errorString != null) {
                         SmartMessage(
                             errorString,
                             PopupType.Error,
-                            durationLong = true,
+                            //durationLong = true,
                             context = context()
                         )
-                        youTubePlayer.pause()
-                        clearWebViewData()
+                        if (localMediaItem != null)
+                            youTubePlayer.loadVideo(localMediaItem.mediaId, 0f)
+
                     }
 
 
