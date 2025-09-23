@@ -46,6 +46,7 @@ import it.fast4x.riplay.extensions.preferences.rememberObservedPreference
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.getPlaybackFadeAudioDuration
 import it.fast4x.riplay.ui.components.themed.SmartMessage
+import it.fast4x.riplay.utils.clearWebViewData
 import it.fast4x.riplay.utils.playNext
 import it.fast4x.riplay.utils.startFadeAnimator
 import kotlinx.coroutines.Dispatchers
@@ -304,17 +305,8 @@ fun OnlinePlayerCore(
                             durationLong = true,
                             context = context()
                         )
-
-                        // Try delete all data cache and cookies
-                        runCatching {
-                            WebStorage.getInstance().deleteAllData()
-                            CookieManager.getInstance().removeAllCookies(null)
-                            CookieManager.getInstance().flush()
-                            if (localMediaItem != null)
-                                youTubePlayer.loadVideo(localMediaItem.mediaId, 0f)
-                        }.onFailure {
-                            Timber.e("OnlinePlayerCore: onError trying to clear cache failed: ${it.message}")
-                        }
+                        youTubePlayer.pause()
+                        clearWebViewData()
                     }
 
 
