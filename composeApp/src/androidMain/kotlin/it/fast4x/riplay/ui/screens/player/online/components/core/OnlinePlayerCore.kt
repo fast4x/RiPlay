@@ -37,6 +37,7 @@ import it.fast4x.riplay.extensions.history.updateOnlineHistory
 import it.fast4x.riplay.ui.screens.player.online.components.customui.CustomDefaultPlayerUiController
 import it.fast4x.riplay.utils.DisposableListener
 import it.fast4x.riplay.extensions.preferences.isInvincibilityEnabledKey
+import it.fast4x.riplay.extensions.preferences.lastVideoIdKey
 import it.fast4x.riplay.extensions.preferences.playbackDurationKey
 import it.fast4x.riplay.extensions.preferences.playbackSpeedKey
 import it.fast4x.riplay.utils.isLandscape
@@ -72,26 +73,23 @@ fun OnlinePlayerCore(
 ) {
     Timber.d("OnlinePlayerCore: called")
     val binder = LocalPlayerServiceBinder.current
-//    binder?.player ?: return
-//    if (binder.player.currentTimeline.windowCount == 0) return
 
-//    var nullableMediaItem by remember {
-//        mutableStateOf(binder?.player?.currentMediaItem, neverEqualPolicy())
-//    }
     var localMediaItem = remember { binder?.player?.currentMediaItem }
 
     val player = remember { mutableStateOf<YouTubePlayer?>(null) }
 
     val queueLoopType by rememberObservedPreference(queueLoopTypeKey, QueueLoopType.Default)
     var playerState by remember { mutableStateOf(PlayerConstants.PlayerState.UNSTARTED) }
-    //var currentDuration by remember { mutableFloatStateOf(0f) }
-    //var currentSecond by remember { mutableFloatStateOf(0f) }
+
+    var lastError = remember { mutableStateOf<PlayerConstants.PlayerError?>(null) }
+    val lastVideoId = rememberPreference(lastVideoIdKey, "")
 
     binder?.player?.DisposableListener {
         object : Player.Listener {
             override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
                 mediaItem?.let {
                     localMediaItem = it
+                    lastVideoId.value = it.mediaId
                     player.value?.loadVideo(it.mediaId, 0f)
                     updateOnlineHistory(it)
 
@@ -147,22 +145,9 @@ fun OnlinePlayerCore(
                     }
                 }
             }
-//            if (getQueueLoopType() == QueueLoopType.RepeatOne) {
-//                player.value?.seekTo(0f)
-//            }
-//
-//            if (binder?.player?.hasNextMediaItem() == true)
-//                binder.player.playNext()
 
         }
 
-//        updateDiscordPresenceWithOnlinePlayer(
-//            discordPresenceManager,
-//            mediaItem = localMediaItem!!,
-//            playerState = mutableStateOf(playerState),
-//            currentDuration,
-//            currentSecond
-//        )
     }
 
     LaunchedEffect(playbackDuration) {
@@ -292,6 +277,7 @@ fun OnlinePlayerCore(
                     error: PlayerConstants.PlayerError
                 ) {
                     super.onError(youTubePlayer, error)
+
                     youTubePlayer.pause()
                     clearWebViewData()
 
@@ -302,7 +288,7 @@ fun OnlinePlayerCore(
                         else -> null
                     }
 
-                    if (errorString != null) {
+                    if (errorString != null && lastError.value != error) {
                         SmartMessage(
                             errorString,
                             PopupType.Error,
@@ -314,7 +300,7 @@ fun OnlinePlayerCore(
 
                     }
 
-
+                    lastError.value = error
                 }
 
             }

@@ -321,7 +321,7 @@ class DiscordPresenceManager(
         when (validateToken(token)) {
             false -> {
                 Timber.tag("DiscordPresence").e("Invalid token, stopping presence updates")
-                SmartMessage( context().resources.getString(R.string.invalid_token), PopupType.Error, context = context)
+                SmartMessage( "Your Discord presence is in error, try to disconnect and login again.", PopupType.Error, context = context)
                 return
             }
             null -> {
