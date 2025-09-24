@@ -1583,6 +1583,7 @@ class MainActivity :
                 }
                 DisposableEffect(binder?.player) {
                     val player = binder?.player ?: return@DisposableEffect onDispose { }
+                    mediaItemIsLocal.value = player.currentMediaItem?.isLocal == true
 
                     if (player.currentMediaItem == null) {
                         if (playerSheetState.isExpanded) {

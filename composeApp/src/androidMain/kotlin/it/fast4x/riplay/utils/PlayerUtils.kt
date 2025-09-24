@@ -30,6 +30,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import timber.log.Timber
 import java.util.ArrayDeque
 
@@ -454,13 +455,12 @@ fun Player.saveMasterQueue() {
     println("SaveMasterQueue onCreate savePersistentQueue is enabled, called")
     if (!isPersistentQueueEnabled()) return
 
-    Timber.d("SaveMasterQueue savePersistentQueue is enabled, processing")
-    println("SaveMasterQueue onCreate savePersistentQueue is enabled, processing")
-
     CoroutineScope(Dispatchers.Main).launch {
         val mediaItems = currentTimeline.mediaItems
         val mediaItemIndex = currentMediaItemIndex
         val mediaItemPosition = currentPosition
+
+        Timber.d("SaveMasterQueue savePersistentQueue mediaItems ${mediaItems.size} mediaItemIndex $mediaItemIndex mediaItemPosition $mediaItemPosition")
 
         if (mediaItems.isEmpty()) return@launch
 
@@ -469,22 +469,24 @@ fun Player.saveMasterQueue() {
             QueuedMediaItem(
                 mediaItem = mediaItem,
                 mediaId = mediaItem.mediaId,
-                position = if (index == mediaItemIndex) mediaItemPosition else null,
+                //position = if (index == mediaItemIndex) mediaItemPosition else null,
+                position = if (index == mediaItemIndex) mediaItemIndex.toLong() else -1,
                 idQueue = mediaItem.mediaMetadata.extras?.getLong("idQueue", defaultQueueId())
             )
         }.let { queuedMediaItems ->
             if (queuedMediaItems.isEmpty()) return@let
 
-            Database.asyncTransaction {
-                insert(queuedMediaItems)
-//                queuedMediaItems.forEach {
-//                    insert(it)
-//                    Timber.d("SaveMasterQueue QueuePersistentEnabled Saved queue")
-//                    println("SaveMasterQueue saved")
-//                }
+            withContext(Dispatchers.IO) {
+                Database.asyncTransaction {
+//                    insert(queuedMediaItems)
+//                    Timber.d("SaveMasterQueue QueuePersistentEnabled Saved mediaItems ${queuedMediaItems.size}")
+                    queuedMediaItems.forEach {
+                        insert(it)
+                        Timber.d("SaveMasterQueue QueuePersistentEnabled Save mediaItem ${it.mediaId}")
+                    }
+                }
             }
 
-            Timber.d("SaveMasterQueue QueuePersistentEnabled Saved queue")
         }
 
     }
@@ -501,7 +503,8 @@ fun Player.loadMasterQueue() {
 
             if (queuedSong.isEmpty()) return@asyncQuery
 
-            val index = queuedSong.indexOfFirst { it.position != null }.coerceAtLeast(0)
+            //val index = queuedSong.indexOfFirst { it.position != null }.coerceAtLeast(0)
+            val index = queuedSong.indexOfFirst { (it.position ?: -1) >= 0L }.coerceAtLeast(0)
 
             runBlocking(Dispatchers.Main) {
                 setMediaItems(
@@ -515,7 +518,7 @@ fun Player.loadMasterQueue() {
                             }
                     },
                     index,
-                    queuedSong[index].position ?: C.TIME_UNSET
+                    0 //queuedSong[index].position ?: C.TIME_UNSET
                 )
                 prepare()
             }

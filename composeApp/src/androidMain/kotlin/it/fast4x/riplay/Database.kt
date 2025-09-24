@@ -2752,7 +2752,7 @@ interface Database {
     fun insert(song: Song, format: Format)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insert(queuedMediaItems: List<QueuedMediaItem>)
+    fun insert(queuedMediaItem: QueuedMediaItem)
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     fun insertSongPlaylistMaps(songPlaylistMaps: List<SongPlaylistMap>)

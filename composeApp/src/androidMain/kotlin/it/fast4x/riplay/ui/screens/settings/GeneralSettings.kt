@@ -149,6 +149,7 @@ import it.fast4x.riplay.ui.components.themed.settingsItem
 import it.fast4x.riplay.ui.components.themed.settingsSearchBarItem
 import it.fast4x.riplay.extensions.preferences.streamingPlayerTypeKey
 import it.fast4x.riplay.utils.LazyListContainer
+import it.fast4x.riplay.utils.loadMasterQueue
 
 
 @ExperimentalAnimationApi
@@ -986,6 +987,7 @@ fun GeneralSettings(
                             isChecked = persistentQueue,
                             onCheckedChange = {
                                 persistentQueue = it
+                                if(it) binder?.player?.loadMasterQueue() // try to load last known queue now
                                 restartService = true
                             }
                         )

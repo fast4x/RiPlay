@@ -440,8 +440,8 @@ class LocalPlayerService : MediaLibraryService(),
 //                                startForeground(notificationId, notification)
 //                            }
 //                        }.onFailure {
-//                            Timber.e("PlayerServiceModern onNotificationPosted startForeground failed ${it.stackTraceToString()}")
-//                            println("PlayerServiceModern onNotificationPosted startForeground failed ${it.stackTraceToString()}")
+//                            Timber.e("LocalPlayerService onNotificationPosted startForeground failed ${it.stackTraceToString()}")
+//                            println("LocalPlayerService onNotificationPosted startForeground failed ${it.stackTraceToString()}")
 //                        }
 //
 //                    }
@@ -464,8 +464,8 @@ class LocalPlayerService : MediaLibraryService(),
 
         // Ensure that song is updated
         currentSong.debounce(1000).collect(coroutineScope) { song ->
-            Timber.d("PlayerServiceModern onCreate currentSong $song")
-            println("PlayerServiceModern onCreate currentSong $song")
+            Timber.d("LocalPlayerService onCreate currentSong $song")
+            println("LocalPlayerService onCreate currentSong $song")
 
             updateDefaultNotification()
             withContext(Dispatchers.Main) {
@@ -479,9 +479,6 @@ class LocalPlayerService : MediaLibraryService(),
             }
         }
 
-        //restorePlayerQueue()
-        player.loadMasterQueue()
-
         resumePlaybackWhenDeviceConnected()
 
         processBassBoost()
@@ -491,14 +488,14 @@ class LocalPlayerService : MediaLibraryService(),
         /* Queue is saved in events without scheduling it (remove this in future)*/
         // Load persistent queue when start activity and save periodically in background
         if (isPersistentQueueEnabled) {
+            //restorePlayerQueue()
+            player.loadMasterQueue()
             resumePlaybackOnStart()
             coroutineScope.launch {
                 while (isActive) {
                     delay(30.seconds)
                     //savePlayerQueue()
                     player.saveMasterQueue()
-                    Timber.d("PlayerServiceModern onCreate savePersistentQueue")
-                    println("PlayerServiceModern onCreate savePersistentQueue")
                 }
             }
 
@@ -554,7 +551,7 @@ class LocalPlayerService : MediaLibraryService(),
         eventTime: AnalyticsListener.EventTime,
         playbackStats: PlaybackStats
     ) {
-        println("PlayerServiceModern onPlaybackStatsReady called ")
+        println("LocalPlayerService onPlaybackStatsReady called ")
         // if pause listen history is enabled, don't register statistic event
         if (preferences.getBoolean(pauseListenHistoryKey, false)) return
 
@@ -584,7 +581,7 @@ class LocalPlayerService : MediaLibraryService(),
                         )
                     )
                 } catch (e: SQLException) {
-                    Timber.e("PlayerServiceModern onPlaybackStatsReady SQLException ${e.stackTraceToString()}")
+                    Timber.e("LocalPlayerService onPlaybackStatsReady SQLException ${e.stackTraceToString()}")
                 }
             }
 
@@ -692,8 +689,8 @@ class LocalPlayerService : MediaLibraryService(),
     }
 
     override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
-        Timber.d("PlayerServiceModern onMediaItemTransition mediaItem $mediaItem reason $reason")
-        println("PlayerServiceModern onMediaItemTransition mediaItem $mediaItem reason $reason")
+        Timber.d("LocalPlayerService onMediaItemTransition mediaItem $mediaItem reason $reason")
+        println("LocalPlayerService onMediaItemTransition mediaItem $mediaItem reason $reason")
 
         if (player.isPlaying && reason == MEDIA_ITEM_TRANSITION_REASON_SEEK) {
             player.prepare()
@@ -767,8 +764,8 @@ class LocalPlayerService : MediaLibraryService(),
 
         super.onPlayerError(error)
 
-        Timber.e("PlayerServiceModern onPlayerError error code ${error.errorCode} message ${error.message} cause ${error.cause?.cause}")
-        println("PlayerServiceModern onPlayerError error code ${error.errorCode} message ${error.message} cause ${error.cause?.cause}")
+        Timber.e("LocalPlayerService onPlayerError error code ${error.errorCode} message ${error.message} cause ${error.cause?.cause}")
+        println("LocalPlayerService onPlayerError error code ${error.errorCode} message ${error.message} cause ${error.cause?.cause}")
 
 //        val playbackHttpExeptionList = listOf(
 //            PlaybackException.ERROR_CODE_IO_BAD_HTTP_STATUS,
@@ -777,8 +774,8 @@ class LocalPlayerService : MediaLibraryService(),
 //        )
 //
 //        if (error.errorCode in playbackHttpExeptionList) {
-//            Timber.e("PlayerServiceModern onPlayerError recovered occurred errorCodeName ${error.errorCodeName} cause ${error.cause?.cause}")
-//            println("PlayerServiceModern onPlayerError recovered occurred errorCodeName ${error.errorCodeName} cause ${error.cause?.cause}")
+//            Timber.e("LocalPlayerService onPlayerError recovered occurred errorCodeName ${error.errorCodeName} cause ${error.cause?.cause}")
+//            println("LocalPlayerService onPlayerError recovered occurred errorCodeName ${error.errorCodeName} cause ${error.cause?.cause}")
 //            player.pause()
 //            player.prepare()
 //            player.play()
@@ -879,8 +876,8 @@ class LocalPlayerService : MediaLibraryService(),
             if (bassBoost == null) bassBoost = BassBoost(0, player.audioSessionId)
             val bassboostLevel =
                 (preferences.getFloat(bassboostLevelKey, 0.5f) * 1000f).toInt().toShort()
-            Timber.d("PlayerServiceModern processBassBoost bassboostLevel $bassboostLevel")
-            println("PlayerServiceModern processBassBoost bassboostLevel $bassboostLevel")
+            Timber.d("LocalPlayerService processBassBoost bassboostLevel $bassboostLevel")
+            println("LocalPlayerService processBassBoost bassboostLevel $bassboostLevel")
             bassBoost?.enabled = false
             bassBoost?.setStrength(bassboostLevel)
             bassBoost?.enabled = true
@@ -894,8 +891,8 @@ class LocalPlayerService : MediaLibraryService(),
 
     private fun processReverb() {
         val presetType = preferences.getEnum(audioReverbPresetKey, PresetsReverb.NONE)
-        Timber.d("PlayerServiceModern processReverb presetType $presetType")
-        println("PlayerServiceModern processReverb presetType $presetType")
+        Timber.d("LocalPlayerService processReverb presetType $presetType")
+        println("LocalPlayerService processReverb presetType $presetType")
         if (presetType == PresetsReverb.NONE) {
             runCatching {
                 reverbPreset?.enabled = false
@@ -931,8 +928,8 @@ class LocalPlayerService : MediaLibraryService(),
                 loudnessEnhancer = LoudnessEnhancer(player.audioSessionId)
             }
         }.onFailure {
-            Timber.e("PlayerServiceModern processNormalizeVolume load loudnessEnhancer ${it.stackTraceToString()}")
-            println("PlayerServiceModern processNormalizeVolume load loudnessEnhancer ${it.stackTraceToString()}")
+            Timber.e("LocalPlayerService processNormalizeVolume load loudnessEnhancer ${it.stackTraceToString()}")
+            println("LocalPlayerService processNormalizeVolume load loudnessEnhancer ${it.stackTraceToString()}")
             return
         }
 
@@ -959,8 +956,8 @@ class LocalPlayerService : MediaLibraryService(),
                         loudnessEnhancer?.setTargetGain(baseGain.toMb() + volumeBoostLevel.toMb() - loudnessMb)
                         loudnessEnhancer?.enabled = true
                     } catch (e: Exception) {
-                        Timber.e("PlayerServiceModern processNormalizeVolume apply targetGain ${e.stackTraceToString()}")
-                        println("PlayerServiceModern processNormalizeVolume apply targetGain ${e.stackTraceToString()}")
+                        Timber.e("LocalPlayerService processNormalizeVolume apply targetGain ${e.stackTraceToString()}")
+                        println("LocalPlayerService processNormalizeVolume apply targetGain ${e.stackTraceToString()}")
                     }
                 }
             }
@@ -991,9 +988,9 @@ class LocalPlayerService : MediaLibraryService(),
                 }
 
                 override fun onAudioDevicesAdded(addedDevices: Array<AudioDeviceInfo>) {
-                    Timber.d("PlayerServiceModern onAudioDevicesAdded addedDevices ${addedDevices.map { it.type }}")
+                    Timber.d("LocalPlayerService onAudioDevicesAdded addedDevices ${addedDevices.map { it.type }}")
                     if (!player.isPlaying && addedDevices.any(::canPlayMusic)) {
-                        Timber.d("PlayerServiceModern onAudioDevicesAdded device known ${addedDevices.map { it.productName }}")
+                        Timber.d("LocalPlayerService onAudioDevicesAdded device known ${addedDevices.map { it.productName }}")
                         player.play()
                     }
                 }
@@ -1388,11 +1385,11 @@ class LocalPlayerService : MediaLibraryService(),
 
 
 //    private fun savePlayerQueue() {
-//        Timber.d("PlayerServiceModern onCreate savePersistentQueue")
-//        println("PlayerServiceModern onCreate savePersistentQueue")
+//        Timber.d("LocalPlayerService onCreate savePersistentQueue")
+//        println("LocalPlayerService onCreate savePersistentQueue")
 //        if (!isPersistentQueueEnabled) return
-//        Timber.d("PlayerServiceModern onCreate savePersistentQueue is enabled, processing")
-//        println("PlayerServiceModern onCreate savePersistentQueue is enabled, processing")
+//        Timber.d("LocalPlayerService onCreate savePersistentQueue is enabled, processing")
+//        println("LocalPlayerService onCreate savePersistentQueue is enabled, processing")
 //
 //        CoroutineScope(Dispatchers.Main).launch {
 //            val mediaItems = player.currentTimeline.mediaItems
@@ -1416,7 +1413,7 @@ class LocalPlayerService : MediaLibraryService(),
 //                    insert( queuedMediaItems )
 //                }
 //
-//                Timber.d("PlayerServiceModern QueuePersistentEnabled Saved queue")
+//                Timber.d("LocalPlayerService QueuePersistentEnabled Saved queue")
 //            }
 //
 //        }
@@ -1558,7 +1555,7 @@ class LocalPlayerService : MediaLibraryService(),
             runCatching {
                 context.stopService(context.intent<LocalPlayerService>())
             }.onFailure {
-                Timber.e("Failed NotificationDismissReceiver stopService in PlayerServiceModern (PlayerServiceModern) ${it.stackTraceToString()}")
+                Timber.e("Failed NotificationDismissReceiver stopService in LocalPlayerService (LocalPlayerService) ${it.stackTraceToString()}")
             }
         }
     }
