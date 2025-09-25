@@ -67,7 +67,6 @@ fun OnlinePlayerCore(
     actAsMini: Boolean = false,
     load: Boolean = false,
     playFromSecond: Float = 0f,
-    discordPresenceManager: DiscordPresenceManager?,
     onPlayerReady: (YouTubePlayer?) -> Unit,
     onSecondChange: (Float) -> Unit,
     onDurationChange: (Float) -> Unit,
@@ -253,8 +252,6 @@ fun OnlinePlayerCore(
                 override fun onCurrentSecond(youTubePlayer: YouTubePlayer, second: Float) {
                     super.onCurrentSecond(youTubePlayer, second)
                     onSecondChange(second)
-                    //lastYTVideoSeconds = second
-
                 }
 
                 override fun onVideoDuration(youTubePlayer: YouTubePlayer, duration: Float) {

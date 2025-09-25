@@ -394,8 +394,10 @@ class MainActivity :
 
     var bitmapProvider: BitmapProvider? = null
     var onlinePlayerNotificationActionReceiver: OnlinePlayerNotificationActionReceiver? = null
-    var currentPlaybackPosition: MutableState<Long> = mutableLongStateOf(0)
-    var currentPlaybackDuration: MutableState<Long> = mutableLongStateOf(0)
+    //var currentPlaybackPosition: MutableState<Long> = mutableLongStateOf(0)
+    //var currentPlaybackDuration: MutableState<Long> = mutableLongStateOf(0)
+    var currentSecond: MutableState<Float> = mutableFloatStateOf(0f)
+    var currentDuration: MutableState<Float> = mutableFloatStateOf(0f)
 
     var endlessService by mutableStateOf<EndlessService.LocalBinder?>(null)
     var androidAutoService by mutableStateOf<AndroidAutoService.LocalBinder?>(null)
@@ -1299,29 +1301,32 @@ class MainActivity :
                     return activityResultRegistry.register(key, contract, callback)
                 }
 
-                var currentSecond by remember { mutableFloatStateOf(0f) }
+                //var currentSecond by remember { mutableFloatStateOf(0f) }
                 val onlinePlayerState =
                     remember { mutableStateOf(PlayerConstants.PlayerState.UNSTARTED) }
                 //var showControls by remember { mutableStateOf(true) }
-                var currentDuration by remember { mutableFloatStateOf(0f) }
+                //var currentDuration by remember { mutableFloatStateOf(0f) }
+                //actually not used
                 var onlinePositionAndDuration by remember { mutableStateOf(0L to 0L) }
 
                 val onlineCore: @Composable () -> Unit = {
                     OnlinePlayerCore(
                         load = getResumePlaybackOnStart(),
-                        playFromSecond = currentSecond,
-                        discordPresenceManager = discordPresenceManager,
+                        playFromSecond = currentSecond.value,
                         onPlayerReady = { onlinePlayer.value = it },
                         onSecondChange = {
-                            currentSecond = it
-                            currentPlaybackPosition.value = (it * 1000).toLong()
+                            coroutineScope.launch(Dispatchers.IO + SupervisorJob()) {
+                                currentSecond.value = it
+                            }
+
+                            //currentPlaybackPosition.value = (it * 1000).toLong()
                             //TODO Improve this for sleeptimer
                             //onlinePositionAndDuration = (it * 1000).toLong() to (currentDuration * 1000).toLong()
                             //Timber.d("MainActivity onSecondChange ${currentPlaybackPosition.value}")
                         },
                         onDurationChange = {
-                            currentDuration = it
-                            currentPlaybackDuration.value = (it * 1000).toLong()
+                            currentDuration.value = it
+                            //currentPlaybackDuration.value = (it * 1000).toLong()
                             //TODO Improve this for sleeptimer
                             //onlinePositionAndDuration = (currentSecond * 1000).toLong() to (it * 1000).toLong()
 
@@ -1333,10 +1338,9 @@ class MainActivity :
                                     discordPresenceManager,
                                     mediaItem,
                                     onlinePlayerState,
-                                    currentDuration,
-                                    currentSecond
+                                    currentDuration.value,
+                                    currentSecond.value
                                 )
-                            Timber.d("MainActivity onDurationChange ${currentPlaybackDuration.value}")
                         },
                         onPlayerStateChange = {
                             onlinePlayerState.value = it
@@ -1349,8 +1353,8 @@ class MainActivity :
                                     discordPresenceManager,
                                     mediaItem,
                                     onlinePlayerState,
-                                    currentDuration,
-                                    currentSecond
+                                    currentDuration.value,
+                                    currentSecond.value
                                 )
                         },
                         onTap = {
@@ -1495,8 +1499,8 @@ class MainActivity :
                                                 navController = navController,
                                                 player = onlinePlayer,
                                                 playerState = onlinePlayerState,
-                                                currentDuration = currentDuration,
-                                                currentSecond = currentSecond,
+                                                currentDuration = currentDuration.value,
+                                                currentSecond = currentSecond.value,
                                             )
                                         }
                                     },
@@ -1530,12 +1534,12 @@ class MainActivity :
                                 val onlinePlayer: @Composable () -> Unit = {
                                     OnlinePlayer(
                                         navController = navController,
-                                        playFromSecond = currentSecond,
+                                        playFromSecond = currentSecond.value,
                                         onlineCore = onlineCore,
                                         player = onlinePlayer,
                                         playerState = onlinePlayerState,
-                                        currentDuration = currentDuration,
-                                        currentSecond = currentSecond,
+                                        currentDuration = currentDuration.value,
+                                        currentSecond = currentSecond.value,
                                         //showControls = showControls,
                                         playerSheetState = localPlayerSheetState,
                                         onDismiss = {
@@ -1631,7 +1635,8 @@ class MainActivity :
 
                             mediaItem?.let{
                                 mediaItemIsLocal.value = it.isLocal == true
-                                currentPlaybackPosition.value = 0L
+                                //currentPlaybackPosition.value = 0L
+                                currentSecond.value = 0F
 
 //
                                 if (reason == Player.MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED) {
@@ -1660,8 +1665,8 @@ class MainActivity :
                                     discordPresenceManager,
                                     it,
                                     onlinePlayerState,
-                                    currentDuration,
-                                    currentSecond
+                                    currentDuration.value,
+                                    currentSecond.value
                                 )
 
                             }
@@ -1797,7 +1802,7 @@ class MainActivity :
                     MediaMetadataCompat.METADATA_KEY_ALBUM,
                     currentMediaItem?.mediaMetadata?.albumTitle.toString()
                 )
-                .putLong(MediaMetadataCompat.METADATA_KEY_DURATION, currentPlaybackDuration.value)
+                .putLong(MediaMetadataCompat.METADATA_KEY_DURATION, (currentDuration.value * 1000).toLong())
                 .build()
         )
 
@@ -1808,7 +1813,7 @@ class MainActivity :
                 .setState(
                     if (onlinePlayerPlayingState.value || localPlayerPlayingState.value)
                         PlaybackStateCompat.STATE_PLAYING else PlaybackStateCompat.STATE_PAUSED,
-                    currentPlaybackPosition.value,
+                    (currentSecond.value * 1000).toLong(), //currentPlaybackPosition.value,
                     1f
                 )
                 .build()
@@ -1832,7 +1837,8 @@ class MainActivity :
                         val newPosition = (second / 1000).toFloat()
                         Timber.d("MainActivity MediaSessionCallback onSeekPosTo ${newPosition}")
                         onlinePlayer.value?.seekTo(newPosition)
-                        currentPlaybackPosition.value = second
+                        //currentPlaybackPosition.value = second
+                        currentSecond.value = second.toFloat()
                     },
                     onPlayNext = {
                         it.player.playNext()
