@@ -15,6 +15,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.media3.common.MediaItem
@@ -105,7 +106,9 @@ fun OnlinePlayerCore(
         }
     }
 
-    val inflatedView = remember { LayoutInflater.from(context()).inflate(R.layout.youtube_player, null, false) }
+    val context = LocalContext.current
+
+    val inflatedView = remember { LayoutInflater.from(context).inflate(R.layout.youtube_player, null, false) }
     val onlinePlayerView = remember { inflatedView as YouTubePlayerView }
     var shouldBePlaying by remember { mutableStateOf(false) }
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -219,6 +222,7 @@ fun OnlinePlayerCore(
                     // Used to show default player ui with defaultPlayerUiController as custom view
                     val customUiController =
                         CustomDefaultPlayerUiController(
+                            context,
                             onlinePlayerView,
                             youTubePlayer,
                             onTap = onTap

@@ -543,7 +543,7 @@ fun OnlinePlayer(
 
     val linkDevicesSavedProvider = MutableStateFlow<LinkDevicesSelected>(LinkDevicesSelected(context))
 
-    @kotlin.OptIn(ExperimentalCoroutinesApi::class)
+    @OptIn(ExperimentalCoroutinesApi::class)
     val linkDevicesSavedAsState = linkDevicesSavedProvider.collectAsState()
 
     val linkDevicesSelected = remember { mutableListOf<LinkDevice>() }

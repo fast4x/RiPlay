@@ -1,5 +1,6 @@
 package it.fast4x.riplay.ui.screens.player.online.components.customui
 
+import android.content.Context
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.customui.PlayerUiController
 
 import it.fast4x.riplay.R
@@ -21,8 +22,10 @@ import com.pierfrancescosoffritti.androidyoutubeplayer.core.customui.menu.YouTub
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.customui.utils.FadeViewHelper
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.customui.views.YouTubePlayerSeekBar
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.customui.views.YouTubePlayerSeekBarListener
+import it.fast4x.riplay.appContext
 
 class CustomDefaultPlayerUiController(
+    context: Context,
     private val youTubePlayerView: YouTubePlayerView,
     private val youTubePlayer: YouTubePlayer,
     onTap: () -> Unit? = {}
@@ -32,7 +35,7 @@ class CustomDefaultPlayerUiController(
         onTap()
     }
 
-    val rootView: View = View.inflate(youTubePlayerView.context, R.layout.ayp_default_player_ui, null)
+    val rootView: View = View.inflate(context, R.layout.ayp_default_player_ui, null)
 
     private var youTubePlayerMenu: YouTubePlayerMenu = CustomDefaultYouTubePlayerMenu(
         youTubePlayerView.context
