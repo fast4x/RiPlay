@@ -27,6 +27,7 @@ import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.options.IFram
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
 import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.R
+import it.fast4x.riplay.appContext
 import it.fast4x.riplay.context
 import it.fast4x.riplay.enums.DurationInMilliseconds
 import it.fast4x.riplay.enums.PlayerThumbnailSize
@@ -193,7 +194,7 @@ fun OnlinePlayerCore(
         //modifier = Modifier.windowInsetsPadding(WindowInsets.safeDrawing),
         factory = {
 
-            val iFramePlayerOptions = IFramePlayerOptions.Builder(context())
+            val iFramePlayerOptions = IFramePlayerOptions.Builder(appContext())
                 .controls(0) // show/hide controls
                 .listType("playlist")
                 .origin(context().resources.getString(R.string.env_fqqhBZd0cf))
