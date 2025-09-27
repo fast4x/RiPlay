@@ -539,7 +539,6 @@ class MainActivity :
 
         updateOnlineNotification()
 
-
         updateSelectedQueue()
 
         processBassBoost()
@@ -1780,6 +1779,8 @@ class MainActivity :
         )
         unifiedMediaSession?.setRepeatMode(repeatMode)
         unifiedMediaSession?.isActive = true
+
+        updateOnlineNotification()
     }
 
     private fun updateUnifiedMediasessionData() {
