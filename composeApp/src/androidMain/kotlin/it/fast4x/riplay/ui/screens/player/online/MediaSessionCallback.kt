@@ -5,12 +5,9 @@ import android.support.v4.media.session.MediaSessionCompat
 import androidx.annotation.OptIn
 import androidx.media3.common.util.UnstableApi
 import it.fast4x.riplay.Database
-import it.fast4x.riplay.service.AndroidAutoService.Companion.localPlayerBinder
 import it.fast4x.riplay.service.LocalPlayerService
 import it.fast4x.riplay.ui.screens.player.fastPlay
 import it.fast4x.riplay.utils.asMediaItem
-import it.fast4x.riplay.utils.playNext
-import it.fast4x.riplay.utils.playPrevious
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
@@ -25,6 +22,7 @@ class MediaSessionCallback (
     val onSeekToPos: (Long) -> Unit,
     val onPlayNext: () -> Unit,
     val onPlayPrevious: () -> Unit,
+    val onCustomClick: (String) -> Unit,
 ) : MediaSessionCompat.Callback() {
 
     override fun onPlay() {
@@ -66,10 +64,8 @@ class MediaSessionCallback (
         }
     }
 
-//    @ExperimentalCoroutinesApi
-//    @FlowPreview
-//    override fun onCustomAction(action: String, extras: Bundle?) {
-//        super.onCustomAction(action, extras)
-//
-//    }
+    override fun onCustomAction(action: String, extras: Bundle?) {
+        Timber.d("MediaSessionCallback onCustomAction() action $action")
+        onCustomClick(action)
+    }
 }

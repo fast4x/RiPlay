@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.ActivityManager
 import android.app.PendingIntent
-import android.app.Service
 import android.content.BroadcastReceiver
 import android.content.ComponentName
 import android.content.Context
@@ -12,7 +11,6 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.content.ServiceConnection
 import android.content.SharedPreferences
-import android.content.pm.ServiceInfo
 import android.content.res.Configuration
 import android.graphics.Bitmap
 import android.graphics.drawable.BitmapDrawable
@@ -80,7 +78,6 @@ import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -103,7 +100,6 @@ import androidx.compose.ui.unit.dp
 import androidx.core.app.NotificationChannelCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
-import androidx.core.app.ServiceCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.edit
 import androidx.core.net.toUri
@@ -131,6 +127,7 @@ import com.valentinilk.shimmer.defaultShimmerTheme
 import de.raphaelebner.roomdatabasebackup.core.RoomBackup
 import dev.kdrag0n.monet.theme.ColorScheme
 import it.fast4x.environment.Environment
+import it.fast4x.environment.models.NavigationEndpoint
 import it.fast4x.environment.models.bodies.BrowseBody
 import it.fast4x.environment.requests.playlistPage
 import it.fast4x.environment.requests.song
@@ -147,6 +144,7 @@ import it.fast4x.riplay.enums.FontType
 import it.fast4x.riplay.enums.HomeScreenTabs
 import it.fast4x.riplay.enums.Languages
 import it.fast4x.riplay.enums.NavRoutes
+import it.fast4x.riplay.enums.NotificationButtons
 import it.fast4x.riplay.enums.PipModule
 import it.fast4x.riplay.enums.PlayerBackgroundColors
 import it.fast4x.riplay.enums.PopupType
@@ -211,6 +209,8 @@ import it.fast4x.riplay.extensions.preferences.loudnessBaseGainKey
 import it.fast4x.riplay.extensions.preferences.miniPlayerTypeKey
 import it.fast4x.riplay.extensions.preferences.navigationBarPositionKey
 import it.fast4x.riplay.extensions.preferences.navigationBarTypeKey
+import it.fast4x.riplay.extensions.preferences.notificationPlayerFirstIconKey
+import it.fast4x.riplay.extensions.preferences.notificationPlayerSecondIconKey
 import it.fast4x.riplay.extensions.preferences.parentalControlEnabledKey
 import it.fast4x.riplay.extensions.preferences.pipModuleKey
 import it.fast4x.riplay.extensions.preferences.playerBackgroundColorsKey
@@ -218,6 +218,7 @@ import it.fast4x.riplay.extensions.preferences.preferences
 import it.fast4x.riplay.extensions.preferences.proxyHostnameKey
 import it.fast4x.riplay.extensions.preferences.proxyModeKey
 import it.fast4x.riplay.extensions.preferences.proxyPortKey
+import it.fast4x.riplay.extensions.preferences.putEnum
 import it.fast4x.riplay.extensions.preferences.queueLoopTypeKey
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.extensions.preferences.restartActivityKey
@@ -235,6 +236,7 @@ import it.fast4x.riplay.extensions.preferences.ytDataSyncIdKey
 import it.fast4x.riplay.extensions.preferences.ytVisitorDataKey
 import it.fast4x.riplay.extensions.rescuecenter.RescueScreen
 import it.fast4x.riplay.models.Queues
+import it.fast4x.riplay.models.Song
 import it.fast4x.riplay.models.defaultQueue
 import it.fast4x.riplay.utils.BitmapProvider
 import it.fast4x.riplay.service.EndlessService
@@ -277,10 +279,15 @@ import it.fast4x.riplay.utils.isAtLeastAndroid6
 import it.fast4x.riplay.utils.isAtLeastAndroid8
 import it.fast4x.riplay.utils.isValidHttpUrl
 import it.fast4x.riplay.utils.isValidIP
+import it.fast4x.riplay.utils.mediaItemToggleLike
 import it.fast4x.riplay.utils.playNext
 import it.fast4x.riplay.utils.playPrevious
 import it.fast4x.riplay.utils.resize
+import it.fast4x.riplay.utils.seamlessPlay
+import it.fast4x.riplay.utils.seamlessQueue
 import it.fast4x.riplay.utils.setDefaultPalette
+import it.fast4x.riplay.utils.setQueueLoopState
+import it.fast4x.riplay.utils.shuffleQueue
 import it.fast4x.riplay.utils.thumbnail
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -290,6 +297,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -297,6 +305,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import okhttp3.Call
 import okhttp3.Callback
+import okhttp3.Dispatcher
 import okhttp3.OkHttpClient
 import okhttp3.Response
 import timber.log.Timber
@@ -353,6 +362,7 @@ class MainActivity :
     private var binder by mutableStateOf<LocalPlayerService.Binder?>(null)
     private var intentUriData by mutableStateOf<Uri?>(null)
 
+    private val coroutineScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
     private var sensorManager: SensorManager? = null
     private var acceleration = 0f
@@ -379,18 +389,6 @@ class MainActivity :
 
     var unifiedMediaSession: MediaSessionCompat? = null
     var onlinePlayer: MutableState<YouTubePlayer?> = mutableStateOf(null)
-    val actions =
-        PlaybackStateCompat.ACTION_PLAY or
-                PlaybackStateCompat.ACTION_PAUSE or
-                PlaybackStateCompat.ACTION_PLAY_PAUSE or
-                PlaybackStateCompat.ACTION_STOP or
-                PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS or
-                PlaybackStateCompat.ACTION_SKIP_TO_NEXT or
-                PlaybackStateCompat.ACTION_SEEK_TO
-    val stateBuilder =
-        PlaybackStateCompat.Builder().setActions(actions.let {
-            if (isAtLeastAndroid12) it or PlaybackStateCompat.ACTION_SET_PLAYBACK_SPEED else it
-        })
 
     var bitmapProvider: BitmapProvider? = null
     var onlinePlayerNotificationActionReceiver: OnlinePlayerNotificationActionReceiver? = null
@@ -402,9 +400,8 @@ class MainActivity :
     var endlessService by mutableStateOf<EndlessService.LocalBinder?>(null)
     var androidAutoService by mutableStateOf<AndroidAutoService.LocalBinder?>(null)
 
-    var mediaItemIsLocal: MutableState<Boolean> = mutableStateOf(false)
+    //var mediaItemIsLocal: MutableState<Boolean> = mutableStateOf(false)
 
-    private val coroutineScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
     private var volumeNormalizationJob: Job? = null
     private var loudnessEnhancer: LoudnessEnhancer? = null
     private var bassBoost: BassBoost? = null
@@ -445,6 +442,7 @@ class MainActivity :
 
     }
 
+    @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
     @ExperimentalMaterialApi
     @ExperimentalTextApi
     @UnstableApi
@@ -541,6 +539,7 @@ class MainActivity :
 
         updateOnlineNotification()
 
+
         updateSelectedQueue()
 
         processBassBoost()
@@ -550,6 +549,7 @@ class MainActivity :
         initializeAudioVolumeObserver()
 
         initializeDiscordPresence()
+
 
     }
 
@@ -695,7 +695,7 @@ class MainActivity :
     @OptIn(
         ExperimentalTextApi::class,
         ExperimentalFoundationApi::class, ExperimentalAnimationApi::class,
-        ExperimentalMaterial3Api::class
+        ExperimentalMaterial3Api::class, FlowPreview::class
     )
     fun startApp() {
 
@@ -1172,6 +1172,8 @@ class MainActivity :
                             resumePlaybackWhenDeviceConnectedKey -> resumePlaybackWhenDeviceConnected()
                             isPauseOnVolumeZeroEnabledKey -> initializeAudioVolumeObserver()
                             isEnabledFullscreenKey -> enableFullscreenMode()
+                            notificationPlayerFirstIconKey, notificationPlayerSecondIconKey -> updateUnifiedMediasessionData()
+                            queueLoopTypeKey -> updateOnlineNotification()
                         }
                     }
 
@@ -1484,7 +1486,7 @@ class MainActivity :
                                     navController = navController,
                                     miniPlayer = {
 
-                                        if (mediaItemIsLocal.value)
+                                        if (binder?.currentMediaItemAsSong?.isLocal == true)
                                             LocalMiniPlayer(
                                                 showPlayer = { localPlayerSheetState.expandSoft() },
                                                 hidePlayer = { localPlayerSheetState.collapseSoft() },
@@ -1566,7 +1568,7 @@ class MainActivity :
                                     },
                                     contentAlwaysAvailable = true
                                 ) {
-                                    if (mediaItemIsLocal.value)
+                                    if (binder?.currentMediaItemAsSong?.isLocal == true)
                                         localPlayer()
                                     else
                                         onlinePlayer()
@@ -1602,7 +1604,8 @@ class MainActivity :
                 }
                 DisposableEffect(binder?.player) {
                     val player = binder?.player ?: return@DisposableEffect onDispose { }
-                    mediaItemIsLocal.value = player.currentMediaItem?.isLocal == true
+
+                    //Timber.d("MainActivity DisposableEffecty mediaItemAsSong ${binder!!.currentMediaItemAsSong}")
 
                     if (player.currentMediaItem == null) {
                         if (playerSheetState.isExpanded) {
@@ -1634,11 +1637,11 @@ class MainActivity :
                             }
 
                             mediaItem?.let{
-                                mediaItemIsLocal.value = it.isLocal == true
                                 //currentPlaybackPosition.value = 0L
                                 currentSecond.value = 0F
 
-//
+                                //Timber.d("MainActivity Player.Listener onMediaItemTransition mediaItemAsSong ${binder!!.currentMediaItemAsSong}")
+
                                 if (reason == Player.MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED) {
                                     if (it.mediaMetadata.extras?.getBoolean("isFromPersistentQueue") != true) {
                                         if (preferences.getBoolean(keepPlayerMinimizedKey, false))
@@ -1671,8 +1674,11 @@ class MainActivity :
 
                             }
 
+                        }
 
-
+                        override fun onRepeatModeChanged(repeatMode: Int) {
+                            super.onRepeatModeChanged(repeatMode)
+                            updateOnlineNotification()
                         }
                     }
 
@@ -1779,6 +1785,66 @@ class MainActivity :
     private fun updateUnifiedMediasessionData() {
         Timber.d("MainActivity initializeMediasession")
         val currentMediaItem = binder?.player?.currentMediaItem
+        val queueLoopType = preferences.getEnum(queueLoopTypeKey, defaultValue = QueueLoopType.Default)
+        binder?.let {
+            unifiedMediaSession?.setCallback(
+                MediaSessionCallback(
+                    binder = it,
+                    onPlayClick = {
+                        Timber.d("MainActivity MediaSessionCallback onPlayClick")
+                        it.player.play()
+                        onlinePlayer.value?.play()
+                    },
+                    onPauseClick = {
+                        Timber.d("MainActivity MediaSessionCallback onPauseClick")
+                        it.player.pause()
+                        onlinePlayer.value?.pause()
+                    },
+                    onSeekToPos = { second ->
+                        val newPosition = (second / 1000).toFloat()
+                        Timber.d("MainActivity MediaSessionCallback onSeekPosTo ${newPosition}")
+                        onlinePlayer.value?.seekTo(newPosition)
+                        //currentPlaybackPosition.value = second
+                        currentSecond.value = second.toFloat()
+                    },
+                    onPlayNext = {
+                        it.player.playNext()
+                    },
+                    onPlayPrevious = {
+                        it.player.playPrevious()
+                    },
+                    onCustomClick = { customAction ->
+                        Timber.d("MainActivity MediaSessionCallback onCustomClick $customAction")
+                        when (customAction) {
+                            NotificationButtons.Favorites.action -> {
+                                if (currentMediaItem != null)
+                                    mediaItemToggleLike(currentMediaItem)
+                            }
+                            NotificationButtons.Repeat.action -> {
+                                preferences.edit(commit = true) { putEnum(queueLoopTypeKey, setQueueLoopState(queueLoopType)) }
+                            }
+                            NotificationButtons.Shuffle.action -> {
+                                it.player.shuffleQueue()
+                            }
+                            NotificationButtons.Radio.action -> {
+                                if (currentMediaItem != null) {
+                                    it.stopRadio()
+                                    it.player.seamlessQueue(currentMediaItem)
+                                    onlinePlayer.value?.play()
+                                    it.setupRadio(
+                                        NavigationEndpoint.Endpoint.Watch(videoId = currentMediaItem.mediaId)
+                                    )
+                                }
+                            }
+                            NotificationButtons.Search.action -> {
+                                it.actionSearch()
+                            }
+                        }
+                        updateOnlineNotification()
+                    }
+                )
+            )
+        }
 
         unifiedMediaSession?.setMetadata(
             MediaMetadataCompat.Builder()
@@ -1808,49 +1874,69 @@ class MainActivity :
 
         Timber.d("MainActivity updateMediasessionData onlineplayer playing ${onlinePlayerPlayingState.value} localplayer playing ${binder?.player?.isPlaying}")
 
+        val actions =
+            PlaybackStateCompat.ACTION_PLAY or
+                    PlaybackStateCompat.ACTION_PAUSE or
+                    PlaybackStateCompat.ACTION_PLAY_PAUSE or
+                    PlaybackStateCompat.ACTION_STOP or
+                    PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS or
+                    PlaybackStateCompat.ACTION_SKIP_TO_NEXT or
+                    PlaybackStateCompat.ACTION_SEEK_TO
+
+        // todo Improve custom actions in online player notification
+        val notificationPlayerFirstIcon = preferences.getEnum(notificationPlayerFirstIconKey, NotificationButtons.Repeat)
+        val notificationPlayerSecondIcon = preferences.getEnum(notificationPlayerSecondIconKey, NotificationButtons.Favorites)
+
+        val firstCustomAction = NotificationButtons.entries
+            .filter { it == notificationPlayerFirstIcon }
+            .map {
+                PlaybackStateCompat.CustomAction.Builder(
+                    it.action,
+                    it.name,
+                    it.getStateIcon(
+                        it,
+                        binder?.currentMediaItemAsSong?.likedAt,
+                        binder?.player?.repeatMode ?: 0,
+                        binder?.player?.shuffleModeEnabled ?: false
+                    ),
+                ).build()
+            }.first()
+
+
+        val secondCustomAction = NotificationButtons.entries
+            .filter { it == notificationPlayerSecondIcon }
+            .map {
+                PlaybackStateCompat.CustomAction.Builder(
+                    it.action,
+                    it.name,
+                    it.getStateIcon(
+                        it,
+                        binder?.currentMediaItemAsSong?.likedAt,
+                        binder?.player?.repeatMode ?: 0,
+                        binder?.player?.shuffleModeEnabled ?: false
+                    ),
+                ).build()
+            }.first()
+
+
         unifiedMediaSession?.setPlaybackState(
-            stateBuilder
-                .setState(
-                    if (onlinePlayerPlayingState.value || localPlayerPlayingState.value)
-                        PlaybackStateCompat.STATE_PLAYING else PlaybackStateCompat.STATE_PAUSED,
-                    (currentSecond.value * 1000).toLong(), //currentPlaybackPosition.value,
-                    1f
-                )
-                .build()
+            PlaybackStateCompat.Builder().setActions(actions.let {
+                if (isAtLeastAndroid12) it or PlaybackStateCompat.ACTION_SET_PLAYBACK_SPEED else it
+            })
+                .apply {
+                    addCustomAction(firstCustomAction)
+                    addCustomAction(secondCustomAction)
+                    setState(
+                        if (onlinePlayerPlayingState.value || localPlayerPlayingState.value)
+                            PlaybackStateCompat.STATE_PLAYING else PlaybackStateCompat.STATE_PAUSED,
+                        (currentSecond.value * 1000).toLong(), //currentPlaybackPosition.value,
+                        1f
+                    )
+                }
+            .build()
         )
 
-        binder?.let {
-            unifiedMediaSession?.setCallback(
-                MediaSessionCallback(
-                    binder = it,
-                    onPlayClick = {
-                        Timber.d("MainActivity MediaSessionCallback onPlayClick")
-                        it.player.play()
-                        onlinePlayer.value?.play()
-                    },
-                    onPauseClick = {
-                        Timber.d("MainActivity MediaSessionCallback onPauseClick")
-                        it.player.pause()
-                        onlinePlayer.value?.pause()
-                    },
-                    onSeekToPos = { second ->
-                        val newPosition = (second / 1000).toFloat()
-                        Timber.d("MainActivity MediaSessionCallback onSeekPosTo ${newPosition}")
-                        onlinePlayer.value?.seekTo(newPosition)
-                        //currentPlaybackPosition.value = second
-                        currentSecond.value = second.toFloat()
-                    },
-                    onPlayNext = {
-                        it.player.playNext()
-                    },
-                    onPlayPrevious = {
-                        it.player.playPrevious()
-                    }
-                )
-            )
-        }
 
-        unifiedMediaSession?.setPlaybackState(stateBuilder.build())
 
     }
 
@@ -1894,28 +1980,6 @@ class MainActivity :
 
         createNotificationChannel()
 
-
-
-        // todo Improve custom actions in online player notification
-//        val notificationPlayerFirstIcon = preferences.getEnum(notificationPlayerFirstIconKey, NotificationButtons.Repeat)
-//        val notificationPlayerSecondIcon = preferences.getEnum(notificationPlayerSecondIconKey, NotificationButtons.Favorites)
-//
-//        val firstActionButton = NotificationButtons.entries
-//            .filter { it == notificationPlayerFirstIcon }
-//            .map {
-//                NotificationCompat.Action.Builder(
-//                    it.getStateIcon(
-//                        it,
-//                        0,
-//                        binder?.player?.repeatMode ?: 0,
-//                        binder?.player?.shuffleModeEnabled ?: false
-//                    ),
-//                    it.name,
-//                    it.pendingIntent
-//                ).build()
-//            }
-//
-
         val forwardAction = NotificationCompat.Action.Builder(
             R.drawable.play_skip_forward,
             "next",
@@ -1948,17 +2012,14 @@ class MainActivity :
             .setLargeIcon(bitmapProvider?.bitmap)
             .setShowWhen(false)
             .setSilent(true)
-            .setColorized(false)
-            .setAutoCancel(false)
-            .setOngoing(true)
+            .setAutoCancel(true)
+            .setOngoing(false)
             .addAction(previousAction)
             .addAction(playPauseAction)
             .addAction(forwardAction)
-            //.addAction(firstActionButton as NotificationCompat.Action?)
             .setStyle(
                 androidx.media.app.NotificationCompat.MediaStyle()
-                    .setShowActionsInCompactView(0, 1, 2)
-                    .setShowCancelButton(false)
+                    //.setShowActionsInCompactView(0, 1, 2)
                     .setMediaSession(unifiedMediaSession?.sessionToken)
 
             )
@@ -1971,6 +2032,8 @@ class MainActivity :
                     PendingIntent.FLAG_IMMUTABLE
                 )
             )
+            .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+            .setCategory(NotificationCompat.CATEGORY_TRANSPORT)
             .build()
 
         //workaround for android 12+

@@ -91,6 +91,14 @@ fun Player.seamlessPlay(mediaItem: MediaItem) {
     } else forcePlay(mediaItem)
 }
 
+fun Player.seamlessQueue(mediaItem: MediaItem) {
+    if (mediaItem.mediaId == currentMediaItem?.mediaId) {
+        if (currentMediaItemIndex > 0) removeMediaItems(0 until currentMediaItemIndex)
+        if (currentMediaItemIndex < mediaItemCount - 1)
+            removeMediaItems(currentMediaItemIndex + 1 until mediaItemCount)
+    }
+}
+
 
 fun Player.shuffleQueue() {
     val mediaItems = currentTimeline.mediaItems.toMutableList().apply { removeAt(currentMediaItemIndex) }

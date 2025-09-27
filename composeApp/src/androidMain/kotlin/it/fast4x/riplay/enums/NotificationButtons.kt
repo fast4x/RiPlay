@@ -17,7 +17,6 @@ import it.fast4x.riplay.service.LocalPlayerService
 import it.fast4x.riplay.appContext
 
 enum class NotificationButtons {
-    //Download,
     Favorites,
     Repeat,
     Shuffle,
@@ -26,7 +25,6 @@ enum class NotificationButtons {
 
     val sessionCommand: SessionCommand
     get() = when (this) {
-       // Download -> CommandToggleDownload
         Favorites -> CommandToggleLike
         Repeat -> CommandToggleRepeatMode
         Shuffle -> CommandToggleShuffle
@@ -37,7 +35,6 @@ enum class NotificationButtons {
     val pendingIntent: PendingIntent
     @OptIn(UnstableApi::class)
     get() = when (this) {
-        //Download -> PlayerServiceModern.Action.download.pendingIntent
         Favorites -> LocalPlayerService.Action.like.pendingIntent
         Repeat -> LocalPlayerService.Action.repeat.pendingIntent
         Shuffle -> LocalPlayerService.Action.shuffle.pendingIntent
@@ -45,9 +42,17 @@ enum class NotificationButtons {
         Search -> LocalPlayerService.Action.search.pendingIntent
     }
 
+    val action: String
+        get() = when (this) {
+            Favorites -> "FAVORITES"
+            Repeat -> "REPEAT"
+            Shuffle -> "SHUFFLE"
+            Radio -> "RADIO"
+            Search -> "SEARCH"
+        }
+
     val displayName: String
     get() = when (this) {
-        //Download -> appContext().resources.getString(R.string.download)
         Favorites -> appContext().resources.getString(R.string.favorites)
         Repeat -> appContext().resources.getString(R.string.repeat)
         Shuffle -> appContext().resources.getString(R.string.shuffle)
@@ -57,7 +62,6 @@ enum class NotificationButtons {
 
     val icon: Int
         get() = when (this) {
-            //Download -> R.drawable.download
             Favorites -> R.drawable.heart_outline
             Repeat -> R.drawable.repeat
             Shuffle -> R.drawable.shuffle

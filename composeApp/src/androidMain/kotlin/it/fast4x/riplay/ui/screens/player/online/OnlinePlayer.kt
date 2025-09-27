@@ -1446,16 +1446,6 @@ fun OnlinePlayer(
 
         shouldBePlaying = playerState.value == PlayerConstants.PlayerState.PLAYING
 
-//        if (playerState.value == PlayerConstants.PlayerState.ENDED) {
-//            // TODO Implement repeat mode in queue
-//            if (getQueueLoopType() != QueueLoopType.Default)
-//                player.value?.seekTo(0f)
-//
-//            if (binder.player.hasNextMediaItem())
-//                binder.player.playNext()
-//
-//        }
-
         linkServiceClientSend(
             if (shouldBePlaying) mediaItem.mediaId.toCommandPlay() else LINKWEB_COMMAND_PAUSE.toCommand(),
             castToLinkDevice,

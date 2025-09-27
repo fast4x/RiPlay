@@ -1623,6 +1623,9 @@ class LocalPlayerService : MediaLibraryService(),
         val sleepTimerMillisLeft: StateFlow<Long?>?
             get() = timerJob?.millisLeft
 
+        val currentMediaItemAsSong: Song?
+            get() = this@LocalPlayerService.currentSong.value
+
         fun startSleepTimer(delayMillis: Long) {
             timerJob?.cancel()
 
@@ -1796,6 +1799,8 @@ class LocalPlayerService : MediaLibraryService(),
                 .setAction(MainActivity.action_search)
                 .setFlags(FLAG_ACTIVITY_NEW_TASK + FLAG_ACTIVITY_CLEAR_TASK))
         }
+
+
 
     }
 
