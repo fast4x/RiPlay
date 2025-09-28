@@ -1315,18 +1315,9 @@ class MainActivity :
                             coroutineScope.launch(Dispatchers.IO + SupervisorJob()) {
                                 currentSecond.value = it
                             }
-
-                            //currentPlaybackPosition.value = (it * 1000).toLong()
-                            //TODO Improve this for sleeptimer
-                            //onlinePositionAndDuration = (it * 1000).toLong() to (currentDuration * 1000).toLong()
-                            //Timber.d("MainActivity onSecondChange ${currentPlaybackPosition.value}")
                         },
                         onDurationChange = {
                             currentDuration.value = it
-                            //currentPlaybackDuration.value = (it * 1000).toLong()
-                            //TODO Improve this for sleeptimer
-                            //onlinePositionAndDuration = (currentSecond * 1000).toLong() to (it * 1000).toLong()
-
                             updateOnlineNotification()
 
                             val mediaItem = binder?.player?.currentMediaItem
