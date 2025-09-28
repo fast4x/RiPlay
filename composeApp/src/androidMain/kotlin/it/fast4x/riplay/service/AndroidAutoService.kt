@@ -22,6 +22,7 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.core.net.toUri
 import androidx.media.MediaBrowserServiceCompat
+import androidx.media.session.MediaButtonReceiver
 import androidx.media3.common.util.UnstableApi
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
 import it.fast4x.environment.Environment
@@ -219,6 +220,11 @@ class AndroidAutoService : MediaBrowserServiceCompat(), ServiceConnection {
         Timber.d("AndroidAutoService onCreate")
 
 
+    }
+
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        MediaButtonReceiver.handleIntent(mediaSession, intent)
+        return super.onStartCommand(intent, flags, startId)
     }
 
     override fun onGetRoot(

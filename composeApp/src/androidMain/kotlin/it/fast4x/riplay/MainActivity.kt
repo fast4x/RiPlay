@@ -8,7 +8,6 @@ import android.content.BroadcastReceiver
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
-import android.content.IntentFilter
 import android.content.ServiceConnection
 import android.content.SharedPreferences
 import android.content.res.Configuration
@@ -100,7 +99,6 @@ import androidx.compose.ui.unit.dp
 import androidx.core.app.NotificationChannelCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
-import androidx.core.content.ContextCompat
 import androidx.core.content.edit
 import androidx.core.net.toUri
 import androidx.core.os.LocaleListCompat
@@ -236,7 +234,6 @@ import it.fast4x.riplay.extensions.preferences.ytDataSyncIdKey
 import it.fast4x.riplay.extensions.preferences.ytVisitorDataKey
 import it.fast4x.riplay.extensions.rescuecenter.RescueScreen
 import it.fast4x.riplay.models.Queues
-import it.fast4x.riplay.models.Song
 import it.fast4x.riplay.models.defaultQueue
 import it.fast4x.riplay.utils.BitmapProvider
 import it.fast4x.riplay.service.EndlessService
@@ -283,7 +280,6 @@ import it.fast4x.riplay.utils.mediaItemToggleLike
 import it.fast4x.riplay.utils.playNext
 import it.fast4x.riplay.utils.playPrevious
 import it.fast4x.riplay.utils.resize
-import it.fast4x.riplay.utils.seamlessPlay
 import it.fast4x.riplay.utils.seamlessQueue
 import it.fast4x.riplay.utils.setDefaultPalette
 import it.fast4x.riplay.utils.setQueueLoopState
@@ -297,7 +293,6 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -305,7 +300,6 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import okhttp3.Call
 import okhttp3.Callback
-import okhttp3.Dispatcher
 import okhttp3.OkHttpClient
 import okhttp3.Response
 import timber.log.Timber
@@ -391,7 +385,9 @@ class MainActivity :
     var onlinePlayer: MutableState<YouTubePlayer?> = mutableStateOf(null)
 
     var bitmapProvider: BitmapProvider? = null
-    var onlinePlayerNotificationActionReceiver: OnlinePlayerNotificationActionReceiver? = null
+    // it needed?
+    //var onlinePlayerNotificationActionReceiver: OnlinePlayerNotificationActionReceiver? = null
+
     //var currentPlaybackPosition: MutableState<Long> = mutableLongStateOf(0)
     //var currentPlaybackDuration: MutableState<Long> = mutableLongStateOf(0)
     var currentSecond: MutableState<Float> = mutableFloatStateOf(0f)
@@ -519,21 +515,21 @@ class MainActivity :
 
         initializeBitmapProvider()
 
-        onlinePlayerNotificationActionReceiver = OnlinePlayerNotificationActionReceiver()
-        val filter = IntentFilter().apply {
-            addAction(Action.play.value)
-            addAction(Action.pause.value)
-            addAction(Action.next.value)
-            addAction(Action.previous.value)
-
-        }
-
-        ContextCompat.registerReceiver(
-            this@MainActivity,
-            onlinePlayerNotificationActionReceiver,
-            filter,
-            ContextCompat.RECEIVER_NOT_EXPORTED
-        )
+//        onlinePlayerNotificationActionReceiver = OnlinePlayerNotificationActionReceiver()
+//        val filter = IntentFilter().apply {
+//            addAction(Action.play.value)
+//            addAction(Action.pause.value)
+//            addAction(Action.next.value)
+//            addAction(Action.previous.value)
+//
+//        }
+//
+//        ContextCompat.registerReceiver(
+//            this@MainActivity,
+//            onlinePlayerNotificationActionReceiver,
+//            filter,
+//            ContextCompat.RECEIVER_NOT_EXPORTED
+//        )
 
         initializeUnifiedMediaSession()
 
@@ -541,7 +537,7 @@ class MainActivity :
 
         updateSelectedQueue()
 
-        processBassBoost()
+        initializeBassBoost()
 
         resumePlaybackWhenDeviceConnected()
 
@@ -1166,8 +1162,8 @@ class MainActivity :
                                         sharedPreferences.getString(ytVisitorDataKey, "").toString()
                             }
 
-                            volumeNormalizationKey, loudnessBaseGainKey, volumeBoostLevelKey -> processNormalizeVolume()
-                            bassboostLevelKey, bassboostEnabledKey -> processBassBoost()
+                            volumeNormalizationKey, loudnessBaseGainKey, volumeBoostLevelKey -> initializeNormalizeVolume()
+                            bassboostLevelKey, bassboostEnabledKey -> initializeBassBoost()
                             resumePlaybackWhenDeviceConnectedKey -> resumePlaybackWhenDeviceConnected()
                             isPauseOnVolumeZeroEnabledKey -> initializeAudioVolumeObserver()
                             isEnabledFullscreenKey -> enableFullscreenMode()
@@ -1659,7 +1655,7 @@ class MainActivity :
 
                                 updateSelectedQueue()
 
-                                processNormalizeVolume()
+                                initializeNormalizeVolume()
 
                                 updateOnlineNotification()
 
@@ -1679,6 +1675,12 @@ class MainActivity :
                             super.onRepeatModeChanged(repeatMode)
                             updateOnlineNotification()
                         }
+
+                        override fun onIsLoadingChanged(isLoading: Boolean) {
+                            super.onIsLoadingChanged(isLoading)
+                            updateOnlineNotification()
+                        }
+
                     }
 
                     player.addListener(listener)
@@ -1950,7 +1952,7 @@ class MainActivity :
                 }
             )
         }.onFailure {
-            Timber.e("Failed init bitmap provider in PlayerService ${it.stackTraceToString()}")
+            Timber.e("Failed init bitmap provider in MainActivity ${it.stackTraceToString()}")
         }
     }
 
@@ -1971,34 +1973,34 @@ class MainActivity :
         val currentMediaItem = binder?.player?.currentMediaItem
         if (currentMediaItem?.isLocal == true) return
 
-        if (bitmapProvider?.bitmap == null)
-            runBlocking {
+        //if (bitmapProvider?.bitmap == null)
+        //    runBlocking {
                 bitmapProvider?.load(currentMediaItem?.mediaMetadata?.artworkUri) {}
-            }
+        //    }
 
 
         updateUnifiedMediasessionData()
 
         createNotificationChannel()
 
-        val forwardAction = NotificationCompat.Action.Builder(
-            R.drawable.play_skip_forward,
-            "next",
-            Action.next.pendingIntent
-        ).build()
-
-        val playPauseAction = NotificationCompat.Action.Builder(
-            if (onlinePlayerPlayingState.value) R.drawable.pause else R.drawable.play,
-            if (onlinePlayerPlayingState.value) "pause" else "play",
-            if (onlinePlayerPlayingState.value) Action.pause.pendingIntent
-            else Action.play.pendingIntent,
-        ).build()
-
-        val previousAction = NotificationCompat.Action.Builder(
-            R.drawable.play_skip_back,
-            "prev",
-            Action.previous.pendingIntent
-        ).build()
+//        val forwardAction = NotificationCompat.Action.Builder(
+//            R.drawable.play_skip_forward,
+//            "next",
+//            Action.next.pendingIntent
+//        ).build()
+//
+//        val playPauseAction = NotificationCompat.Action.Builder(
+//            if (onlinePlayerPlayingState.value) R.drawable.pause else R.drawable.play,
+//            if (onlinePlayerPlayingState.value) "pause" else "play",
+//            if (onlinePlayerPlayingState.value) Action.pause.pendingIntent
+//            else Action.play.pendingIntent,
+//        ).build()
+//
+//        val previousAction = NotificationCompat.Action.Builder(
+//            R.drawable.play_skip_back,
+//            "prev",
+//            Action.previous.pendingIntent
+//        ).build()
 
         val notification = if (isAtLeastAndroid8) {
             NotificationCompat.Builder(this, NOTIFICATION_CHANNEL)
@@ -2015,9 +2017,9 @@ class MainActivity :
             .setSilent(true)
             .setAutoCancel(true)
             .setOngoing(false)
-            .addAction(previousAction)
-            .addAction(playPauseAction)
-            .addAction(forwardAction)
+//            .addAction(previousAction)
+//            .addAction(playPauseAction)
+//            .addAction(forwardAction)
             .setStyle(
                 androidx.media.app.NotificationCompat.MediaStyle()
                     //.setShowActionsInCompactView(0, 1, 2)
@@ -2058,14 +2060,14 @@ class MainActivity :
         NotificationManagerCompat.from(this@MainActivity).notify(NOTIFICATION_ID, notification)
     }
 
-    private fun processBassBoost() {
+    private fun initializeBassBoost() {
         if (!preferences.getBoolean(bassboostEnabledKey, false)) {
             runCatching {
                 bassBoost?.enabled = false
                 bassBoost?.release()
             }
             bassBoost = null
-            processNormalizeVolume()
+            initializeNormalizeVolume()
             return
         }
 
@@ -2086,7 +2088,7 @@ class MainActivity :
     }
 
     @UnstableApi
-    private fun processNormalizeVolume() {
+    private fun initializeNormalizeVolume() {
         if (!preferences.getBoolean(volumeNormalizationKey, false)) {
             loudnessEnhancer?.enabled = false
             loudnessEnhancer?.release()
@@ -2100,7 +2102,7 @@ class MainActivity :
                 loudnessEnhancer = LoudnessEnhancer(0)
             }
         }.onFailure {
-            Timber.e("MainActivity processNormalizeVolume load loudnessEnhancer ${it.stackTraceToString()}")
+            Timber.e("MainActivity processNormalizeVolume loudnessEnhancer ${it.stackTraceToString()}")
             return
         }
 
@@ -2207,43 +2209,43 @@ class MainActivity :
 
     }
 
-    @JvmInline
-    value class Action(val value: String) {
-        val pendingIntent: PendingIntent
-            get() = PendingIntent.getBroadcast(
-                context(),
-                100,
-                Intent(context(), OnlinePlayerNotificationActionReceiver::class.java).setAction(
-                    value
-                ),
-                PendingIntent.FLAG_UPDATE_CURRENT.or(if (isAtLeastAndroid6) PendingIntent.FLAG_IMMUTABLE else 0)
-            )
-
-        companion object {
-
-            val pause = Action("it.fast4x.riplay.onlineplayer.pause")
-            val play = Action("it.fast4x.riplay.onlineplayer.play")
-            val next = Action("it.fast4x.riplay.onlineplayer.next")
-            val previous = Action("it.fast4x.riplay.onlineplayer.previous")
-
-        }
-    }
-
-    inner class OnlinePlayerNotificationActionReceiver() : BroadcastReceiver() {
-
-        @ExperimentalCoroutinesApi
-        @FlowPreview
-        override fun onReceive(context: Context, intent: Intent) {
-            Timber.d("OnlinePlayerNotificationActionReceiver onReceive intent.action: ${intent.action}")
-            when (intent.action) {
-                Action.pause.value -> onlinePlayer.value?.pause()
-                Action.play.value -> onlinePlayer.value?.play()
-                Action.next.value -> binder?.player?.playNext()
-                Action.previous.value -> binder?.player?.playPrevious()
-            }
-        }
-
-    }
+//    @JvmInline
+//    value class Action(val value: String) {
+//        val pendingIntent: PendingIntent
+//            get() = PendingIntent.getBroadcast(
+//                context(),
+//                100,
+//                Intent(context(), OnlinePlayerNotificationActionReceiver::class.java).setAction(
+//                    value
+//                ),
+//                PendingIntent.FLAG_UPDATE_CURRENT.or(if (isAtLeastAndroid6) PendingIntent.FLAG_IMMUTABLE else 0)
+//            )
+//
+//        companion object {
+//
+//            val pause = Action("it.fast4x.riplay.onlineplayer.pause")
+//            val play = Action("it.fast4x.riplay.onlineplayer.play")
+//            val next = Action("it.fast4x.riplay.onlineplayer.next")
+//            val previous = Action("it.fast4x.riplay.onlineplayer.previous")
+//
+//        }
+//    }
+//
+//    inner class OnlinePlayerNotificationActionReceiver() : BroadcastReceiver() {
+//
+//        @ExperimentalCoroutinesApi
+//        @FlowPreview
+//        override fun onReceive(context: Context, intent: Intent) {
+//            Timber.d("OnlinePlayerNotificationActionReceiver onReceive intent.action: ${intent.action}")
+//            when (intent.action) {
+//                Action.pause.value -> onlinePlayer.value?.pause()
+//                Action.play.value -> onlinePlayer.value?.play()
+//                Action.next.value -> binder?.player?.playNext()
+//                Action.previous.value -> binder?.player?.playPrevious()
+//            }
+//        }
+//
+//    }
 
     private val sensorListener: SensorEventListener = object : SensorEventListener {
         override fun onSensorChanged(event: SensorEvent) {
