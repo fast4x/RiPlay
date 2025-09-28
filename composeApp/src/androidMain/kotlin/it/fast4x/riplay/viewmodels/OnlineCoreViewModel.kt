@@ -31,8 +31,8 @@ class OnlineCoreViewModel: ViewModel() {
     val state: StateFlow<OnlineCoreState> = _state.asStateFlow()
 
     private val onlinePlayer: MutableState<YouTubePlayer?> = mutableStateOf(null)
-    private val currentSecond: MutableState<Float> = mutableStateOf(0f)
-    private val currentDuration: MutableState<Float> = mutableStateOf(0f)
+    private val currentSecond: MutableState<Float> = mutableFloatStateOf(0f)
+    private val currentDuration: MutableState<Float> = mutableFloatStateOf(0f)
     private val currentPlaybackPosition: MutableState<Long> = mutableLongStateOf(0)
     private val currentPlaybackDuration: MutableState<Long> = mutableLongStateOf(0)
     private val onlinePlayerState: MutableState<PlayerConstants.PlayerState> =
