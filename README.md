@@ -8,5 +8,7 @@ If you want can download and try [Android Alpha Version 0.0.27](https://raw.gith
 
 Also if you want cast to android devices, try [RiPlayLink](https://github.com/fast4x/RiPlayLink) 
 
+Also if you want to use a real time audio equalizer, try [RiEqualizer](https://github.com/fast4x/RiEqualizer)
+
 
 - [Group on Telegram ](https://t.me/riplay_app
