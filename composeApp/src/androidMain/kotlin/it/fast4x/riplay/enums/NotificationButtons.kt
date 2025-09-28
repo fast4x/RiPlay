@@ -7,6 +7,7 @@ import androidx.media3.common.Player.REPEAT_MODE_OFF
 import androidx.media3.common.Player.REPEAT_MODE_ONE
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.SessionCommand
+import it.fast4x.riplay.MainActivity
 import it.fast4x.riplay.R
 import it.fast4x.riplay.service.MediaSessionConstants.CommandSearch
 import it.fast4x.riplay.service.MediaSessionConstants.CommandStartRadio
@@ -41,6 +42,16 @@ enum class NotificationButtons {
         Radio -> LocalPlayerService.Action.playradio.pendingIntent
         Search -> LocalPlayerService.Action.search.pendingIntent
     }
+
+    val pendingIntentOnline: PendingIntent
+        @OptIn(UnstableApi::class)
+        get() = when (this) {
+            Favorites -> MainActivity.Action.like.pendingIntent
+            Repeat -> MainActivity.Action.repeat.pendingIntent
+            Shuffle -> MainActivity.Action.shuffle.pendingIntent
+            Radio -> MainActivity.Action.playradio.pendingIntent
+            Search -> MainActivity.Action.search.pendingIntent
+        }
 
     val action: String
         get() = when (this) {

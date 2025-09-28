@@ -8,6 +8,7 @@ import android.content.BroadcastReceiver
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.content.ServiceConnection
 import android.content.SharedPreferences
 import android.content.res.Configuration
@@ -99,6 +100,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.app.NotificationChannelCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import androidx.core.content.ContextCompat
 import androidx.core.content.edit
 import androidx.core.net.toUri
 import androidx.core.os.LocaleListCompat
@@ -271,6 +273,7 @@ import it.fast4x.riplay.utils.capitalized
 import it.fast4x.riplay.utils.encryptedPreferences
 import it.fast4x.riplay.utils.getSystemlanguage
 import it.fast4x.riplay.utils.invokeOnReady
+import it.fast4x.riplay.utils.isAtLeastAndroid11
 import it.fast4x.riplay.utils.isAtLeastAndroid12
 import it.fast4x.riplay.utils.isAtLeastAndroid6
 import it.fast4x.riplay.utils.isAtLeastAndroid8
@@ -385,8 +388,8 @@ class MainActivity :
     var onlinePlayer: MutableState<YouTubePlayer?> = mutableStateOf(null)
 
     var bitmapProvider: BitmapProvider? = null
-    // it needed?
-    //var onlinePlayerNotificationActionReceiver: OnlinePlayerNotificationActionReceiver? = null
+    // Needed up to android 11
+    var notificationActionReceiverUpAndroid11: NotificationActionReceiverUpAndroid11? = null
 
     //var currentPlaybackPosition: MutableState<Long> = mutableLongStateOf(0)
     //var currentPlaybackDuration: MutableState<Long> = mutableLongStateOf(0)
@@ -515,21 +518,7 @@ class MainActivity :
 
         initializeBitmapProvider()
 
-//        onlinePlayerNotificationActionReceiver = OnlinePlayerNotificationActionReceiver()
-//        val filter = IntentFilter().apply {
-//            addAction(Action.play.value)
-//            addAction(Action.pause.value)
-//            addAction(Action.next.value)
-//            addAction(Action.previous.value)
-//
-//        }
-//
-//        ContextCompat.registerReceiver(
-//            this@MainActivity,
-//            onlinePlayerNotificationActionReceiver,
-//            filter,
-//            ContextCompat.RECEIVER_NOT_EXPORTED
-//        )
+        initializeNotificationActionReceiverUpAndroid11()
 
         initializeUnifiedMediaSession()
 
@@ -547,7 +536,6 @@ class MainActivity :
 
 
     }
-
 
 
     private fun enableFullscreenMode() {
@@ -585,6 +573,31 @@ class MainActivity :
 //            actionBar?.hide()
 //        }
 
+    }
+
+    private fun initializeNotificationActionReceiverUpAndroid11() {
+        if (!isAtLeastAndroid11) return
+
+        notificationActionReceiverUpAndroid11 = NotificationActionReceiverUpAndroid11()
+
+        val filter = IntentFilter().apply {
+            addAction(Action.play.value)
+            addAction(Action.pause.value)
+            addAction(Action.next.value)
+            addAction(Action.previous.value)
+            addAction(Action.like.value)
+            addAction(Action.playradio.value)
+            addAction(Action.shuffle.value)
+            addAction(Action.search.value)
+            addAction(Action.repeat.value)
+        }
+
+        ContextCompat.registerReceiver(
+            this@MainActivity,
+            notificationActionReceiverUpAndroid11,
+            filter,
+            ContextCompat.RECEIVER_NOT_EXPORTED
+        )
     }
 
     private fun initializeDiscordPresence() {
@@ -1974,24 +1987,60 @@ class MainActivity :
 
         createNotificationChannel()
 
-//        val forwardAction = NotificationCompat.Action.Builder(
-//            R.drawable.play_skip_forward,
-//            "next",
-//            Action.next.pendingIntent
-//        ).build()
-//
-//        val playPauseAction = NotificationCompat.Action.Builder(
-//            if (onlinePlayerPlayingState.value) R.drawable.pause else R.drawable.play,
-//            if (onlinePlayerPlayingState.value) "pause" else "play",
-//            if (onlinePlayerPlayingState.value) Action.pause.pendingIntent
-//            else Action.play.pendingIntent,
-//        ).build()
-//
-//        val previousAction = NotificationCompat.Action.Builder(
-//            R.drawable.play_skip_back,
-//            "prev",
-//            Action.previous.pendingIntent
-//        ).build()
+        val forwardAction = NotificationCompat.Action.Builder(
+            R.drawable.play_skip_forward,
+            "next",
+            Action.next.pendingIntent
+        ).build()
+
+        val playPauseAction = NotificationCompat.Action.Builder(
+            if (onlinePlayerPlayingState.value) R.drawable.pause else R.drawable.play,
+            if (onlinePlayerPlayingState.value) "pause" else "play",
+            if (onlinePlayerPlayingState.value) Action.pause.pendingIntent
+            else Action.play.pendingIntent,
+        ).build()
+
+        val previousAction = NotificationCompat.Action.Builder(
+            R.drawable.play_skip_back,
+            "prev",
+            Action.previous.pendingIntent
+        ).build()
+
+
+        val notificationPlayerFirstIcon = preferences.getEnum(notificationPlayerFirstIconKey, NotificationButtons.Repeat)
+        val notificationPlayerSecondIcon = preferences.getEnum(notificationPlayerSecondIconKey, NotificationButtons.Favorites)
+
+        val firstCustomAction = NotificationButtons.entries
+            .filter { it == notificationPlayerFirstIcon }
+            .map {
+                NotificationCompat.Action.Builder(
+                    it.getStateIcon(
+                        it,
+                        binder?.currentMediaItemAsSong?.likedAt,
+                        binder?.player?.repeatMode ?: 0,
+                        binder?.player?.shuffleModeEnabled ?: false
+                    ),
+                    it.name,
+                    it.pendingIntentOnline,
+                ).build()
+            }.first()
+
+
+        val secondCustomAction = NotificationButtons.entries
+            .filter { it == notificationPlayerSecondIcon }
+            .map {
+                NotificationCompat.Action.Builder(
+                    it.getStateIcon(
+                        it,
+                        binder?.currentMediaItemAsSong?.likedAt,
+                        binder?.player?.repeatMode ?: 0,
+                        binder?.player?.shuffleModeEnabled ?: false
+                    ),
+                    it.name,
+                    it.pendingIntentOnline,
+                ).build()
+            }.first()
+
 
         val notification = if (isAtLeastAndroid8) {
             NotificationCompat.Builder(this, NOTIFICATION_CHANNEL)
@@ -2008,12 +2057,14 @@ class MainActivity :
             .setSilent(true)
             .setAutoCancel(true)
             .setOngoing(false)
-//            .addAction(previousAction)
-//            .addAction(playPauseAction)
-//            .addAction(forwardAction)
+            .addAction(firstCustomAction)
+            .addAction(previousAction)
+            .addAction(playPauseAction)
+            .addAction(forwardAction)
+            .addAction(secondCustomAction)
             .setStyle(
                 androidx.media.app.NotificationCompat.MediaStyle()
-                    //.setShowActionsInCompactView(0, 1, 2)
+                    .setShowActionsInCompactView(1, 2, 3)
                     .setMediaSession(unifiedMediaSession?.sessionToken)
 
             )
@@ -2200,43 +2251,75 @@ class MainActivity :
 
     }
 
-//    @JvmInline
-//    value class Action(val value: String) {
-//        val pendingIntent: PendingIntent
-//            get() = PendingIntent.getBroadcast(
-//                context(),
-//                100,
-//                Intent(context(), OnlinePlayerNotificationActionReceiver::class.java).setAction(
-//                    value
-//                ),
-//                PendingIntent.FLAG_UPDATE_CURRENT.or(if (isAtLeastAndroid6) PendingIntent.FLAG_IMMUTABLE else 0)
-//            )
-//
-//        companion object {
-//
-//            val pause = Action("it.fast4x.riplay.onlineplayer.pause")
-//            val play = Action("it.fast4x.riplay.onlineplayer.play")
-//            val next = Action("it.fast4x.riplay.onlineplayer.next")
-//            val previous = Action("it.fast4x.riplay.onlineplayer.previous")
-//
-//        }
-//    }
-//
-//    inner class OnlinePlayerNotificationActionReceiver() : BroadcastReceiver() {
-//
-//        @ExperimentalCoroutinesApi
-//        @FlowPreview
-//        override fun onReceive(context: Context, intent: Intent) {
-//            Timber.d("OnlinePlayerNotificationActionReceiver onReceive intent.action: ${intent.action}")
-//            when (intent.action) {
-//                Action.pause.value -> onlinePlayer.value?.pause()
-//                Action.play.value -> onlinePlayer.value?.play()
-//                Action.next.value -> binder?.player?.playNext()
-//                Action.previous.value -> binder?.player?.playPrevious()
-//            }
-//        }
-//
-//    }
+    @JvmInline
+    value class Action(val value: String) {
+        val pendingIntent: PendingIntent
+            get() = PendingIntent.getBroadcast(
+                appContext(),
+                110,
+                Intent(value).setPackage(appContext().packageName),
+                PendingIntent.FLAG_UPDATE_CURRENT.or(if (isAtLeastAndroid6) PendingIntent.FLAG_IMMUTABLE else 0)
+            )
+
+        companion object {
+
+            val pause = Action("it.fast4x.riplay.onlineplayer.pause")
+            val play = Action("it.fast4x.riplay.onlineplayer.play")
+            val next = Action("it.fast4x.riplay.onlineplayer.next")
+            val previous = Action("it.fast4x.riplay.onlineplayer.previous")
+            val like = Action("it.fast4x.riplay.onlineplayer.like")
+            val playradio = Action("it.fast4x.riplay.onlineplayer.playradio")
+            val shuffle = Action("it.fast4x.riplay.onlineplayer.shuffle")
+            val search = Action("it.fast4x.riplay.onlineplayer.search")
+            val repeat = Action("it.fast4x.riplay.onlineplayer.repeat")
+
+        }
+    }
+
+    inner class NotificationActionReceiverUpAndroid11() : BroadcastReceiver() {
+
+        @ExperimentalCoroutinesApi
+        @FlowPreview
+        override fun onReceive(context: Context, intent: Intent) {
+            Timber.d("MainActivity onReceive intent.action: ${intent.action}")
+            val currentMediaItem = binder?.player?.currentMediaItem
+            val queueLoopType = preferences.getEnum(queueLoopTypeKey, defaultValue = QueueLoopType.Default)
+            binder?.let {
+                when (intent.action) {
+                    Action.pause.value -> onlinePlayer.value?.pause()
+                    Action.play.value -> onlinePlayer.value?.play()
+                    Action.next.value -> it.player.playNext()
+                    Action.previous.value -> it.player.playPrevious()
+                    Action.like.value -> {
+                        if (currentMediaItem != null)
+                            mediaItemToggleLike(currentMediaItem)
+                    }
+                    Action.repeat.value -> {
+                        preferences.edit(commit = true) { putEnum(queueLoopTypeKey, setQueueLoopState(queueLoopType)) }
+                    }
+                    Action.shuffle.value -> {
+                        it.player.shuffleQueue()
+                    }
+                    Action.playradio.value -> {
+                        if (currentMediaItem != null) {
+                            it.stopRadio()
+                            it.player.seamlessQueue(currentMediaItem)
+                            onlinePlayer.value?.play()
+                            it.setupRadio(
+                                NavigationEndpoint.Endpoint.Watch(videoId = currentMediaItem.mediaId)
+                            )
+                        }
+                    }
+                    Action.search.value -> {
+                        it.actionSearch()
+                    }
+
+                }
+            }
+            updateOnlineNotification()
+        }
+
+    }
 
     private val sensorListener: SensorEventListener = object : SensorEventListener {
         override fun onSensorChanged(event: SensorEvent) {
