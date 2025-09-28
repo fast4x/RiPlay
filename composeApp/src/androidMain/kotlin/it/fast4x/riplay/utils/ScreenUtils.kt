@@ -16,7 +16,7 @@ fun getScreenOrientation(context: Context): Int {
     return when (context.resources.configuration.orientation) {
         Configuration.ORIENTATION_PORTRAIT -> Configuration.ORIENTATION_PORTRAIT
         Configuration.ORIENTATION_LANDSCAPE -> Configuration.ORIENTATION_LANDSCAPE
-        else -> 0
+        else -> Configuration.ORIENTATION_UNDEFINED
     }
 }
 
