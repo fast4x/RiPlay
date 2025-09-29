@@ -39,6 +39,10 @@ fun cleanPrefix(text: String): String {
     return splitText.subList(i, splitText.size).joinToString(":")
 }
 
+fun String.removePrefix(): String {
+    return cleanPrefix(this)
+}
+
 fun cleanString(text: String): String {
     var cleanText = text.replace("/", "", true)
     cleanText = cleanText.replace("#", "", true)

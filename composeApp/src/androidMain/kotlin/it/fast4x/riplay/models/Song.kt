@@ -5,7 +5,6 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import it.fast4x.riplay.LOCAL_KEY_PREFIX
-import it.fast4x.riplay.YTM_PLAYLIST_SHARE_BASEURL
 import it.fast4x.riplay.YTM_VIDEOORSONG_SHARE_BASEURL
 import it.fast4x.riplay.YT_VIDEOORSONG_SHARE_BASEURL
 import it.fast4x.riplay.cleanPrefix

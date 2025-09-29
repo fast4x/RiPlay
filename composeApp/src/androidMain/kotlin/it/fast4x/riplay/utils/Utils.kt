@@ -2,7 +2,6 @@ package it.fast4x.riplay.utils
 
 
 import android.annotation.SuppressLint
-import android.app.Activity
 import android.app.UiModeManager
 import android.content.ContentUris
 import android.content.Context
@@ -12,8 +11,6 @@ import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
 import android.text.format.DateUtils
-import android.util.DisplayMetrics
-import android.view.Display
 import androidx.annotation.OptIn
 import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable

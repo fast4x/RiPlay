@@ -18,13 +18,10 @@ import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import androidx.annotation.DrawableRes
 import androidx.annotation.OptIn
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateOf
 import androidx.core.net.toUri
 import androidx.media.MediaBrowserServiceCompat
 import androidx.media.session.MediaButtonReceiver
 import androidx.media3.common.util.UnstableApi
-import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
 import it.fast4x.environment.Environment
 import it.fast4x.environment.models.bodies.SearchBody
 import it.fast4x.environment.requests.searchPage
@@ -33,31 +30,25 @@ import it.fast4x.riplay.Database
 import it.fast4x.riplay.MONTHLY_PREFIX
 import it.fast4x.riplay.PINNED_PREFIX
 import it.fast4x.riplay.R
+import it.fast4x.riplay.removePrefix
 import it.fast4x.riplay.enums.MaxTopPlaylistItems
 import it.fast4x.riplay.extensions.preferences.MaxTopPlaylistItemsKey
 import it.fast4x.riplay.extensions.preferences.getEnum
 import it.fast4x.riplay.extensions.preferences.preferences
+import it.fast4x.riplay.isAppRunning
 import it.fast4x.riplay.models.Album
 import it.fast4x.riplay.models.Artist
 import it.fast4x.riplay.models.PlaylistPreview
 import it.fast4x.riplay.models.Song
-import it.fast4x.riplay.ui.screens.player.fastPlay
 import it.fast4x.riplay.utils.BitmapProvider
 import it.fast4x.riplay.utils.getTitleMonthlyPlaylistFromContext
 import it.fast4x.riplay.utils.intent
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withContext
 import timber.log.Timber
-import it.fast4x.riplay.utils.asMediaItem
 import it.fast4x.riplay.utils.asSong
 import it.fast4x.riplay.utils.isAtLeastAndroid12
-import it.fast4x.riplay.utils.playNext
-import it.fast4x.riplay.utils.playPrevious
-import kotlinx.coroutines.SupervisorJob
 import kotlin.math.roundToInt
 
 @UnstableApi
@@ -67,10 +58,10 @@ class AndroidAutoService : MediaBrowserServiceCompat(), ServiceConnection {
         set(value) {
             localPlayerBinder = value
         }
-    var tmpOnlinePlayer: MutableState<YouTubePlayer?> = mutableStateOf(null)
-        set(value) {
-            onlinePlayer = value
-        }
+//    var tmpOnlinePlayer: MutableState<YouTubePlayer?> = mutableStateOf(null)
+//        set(value) {
+//            onlinePlayer = value
+//        }
 
     var tmpMediaSessionCompat: MediaSessionCompat? = null
         set(value) {
@@ -81,7 +72,7 @@ class AndroidAutoService : MediaBrowserServiceCompat(), ServiceConnection {
 
         var mediaSession: MediaSessionCompat? = null
         var localPlayerBinder: LocalPlayerService.Binder? = null
-        var onlinePlayer: MutableState<YouTubePlayer?> = mutableStateOf(null)
+        //var onlinePlayer: MutableState<YouTubePlayer?> = mutableStateOf(null)
         var bitmapProvider: BitmapProvider? = null
         var isPlaying: Boolean = false
 
@@ -103,7 +94,7 @@ class AndroidAutoService : MediaBrowserServiceCompat(), ServiceConnection {
 
 
         private fun updateMediaSessionData() {
-            Timber.d("updateMediaSessionPlaybackState")
+            Timber.d("AndroidAutoService updateMediaSessionPlaybackState")
             val mediaItem = localPlayerBinder?.player?.currentMediaItem ?: return
             bitmapProvider?.load(mediaItem.mediaMetadata.artworkUri) {}
             mediaSession?.setMetadata(
@@ -148,10 +139,9 @@ class AndroidAutoService : MediaBrowserServiceCompat(), ServiceConnection {
         }
     }
 
-    private val coroutineScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+    //private val coroutineScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
     private var lastSongs = emptyList<Song>()
     private var searchedSongs = emptyList<Song>()
-
 
     var currentMediaItem: androidx.media3.common.MediaItem? = null
 
@@ -172,10 +162,10 @@ class AndroidAutoService : MediaBrowserServiceCompat(), ServiceConnection {
             set(value) {
                 this@AndroidAutoService.tmpLocalPlayerBinder = value
             }
-        var onlinePlayer: MutableState<YouTubePlayer?> = mutableStateOf(null)
-            set(value) {
-                this@AndroidAutoService.tmpOnlinePlayer = value
-            }
+//        var onlinePlayer: MutableState<YouTubePlayer?> = mutableStateOf(null)
+//            set(value) {
+//                this@AndroidAutoService.tmpOnlinePlayer = value
+//            }
 
     }
 
@@ -224,7 +214,8 @@ class AndroidAutoService : MediaBrowserServiceCompat(), ServiceConnection {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         MediaButtonReceiver.handleIntent(mediaSession, intent)
-        return super.onStartCommand(intent, flags, startId)
+        //return super.onStartCommand(intent, flags, startId)
+        return START_STICKY // If the service is killed, it will be automatically restarted
     }
 
     override fun onGetRoot(
@@ -232,10 +223,14 @@ class AndroidAutoService : MediaBrowserServiceCompat(), ServiceConnection {
         clientUid: Int,
         rootHints: Bundle?
     ): BrowserRoot? {
+        Timber.d("AndroidAutoService onGetRoot $clientPackageName but app is running ? ${isAppRunning()} mediaSession $mediaSession")
         bindService(intent<AndroidAutoService>(), this, Context.BIND_AUTO_CREATE)
-        Timber.d("AndroidAutoService onGetRoot $clientPackageName")
+
+        //if(!isAppRunning())
+            //return BrowserRoot(MediaId.fault, Bundle().apply { putInt(CONTENT_STYLE_BROWSABLE_HINT, CONTENT_STYLE_LIST) })
+
         return BrowserRoot(
-            MediaId.root,
+            if(isAppRunning()) MediaId.root else MediaId.fault,
             //bundleOf("android.media.browse.CONTENT_STYLE_BROWSABLE_HINT" to 1)
             Bundle().apply {
                 putBoolean(MEDIA_SEARCH_SUPPORTED, true)
@@ -257,6 +252,11 @@ class AndroidAutoService : MediaBrowserServiceCompat(), ServiceConnection {
         runBlocking(Dispatchers.IO) {
             result.sendResult(
                 when (data.firstOrNull()) {
+
+                    MediaId.fault ->listOf(
+                        faultBrowserMediaItem
+                    )
+
                     // Start Navigation items
                     MediaId.root -> listOf(
                         songsBrowserMediaItem,
@@ -389,7 +389,7 @@ class AndroidAutoService : MediaBrowserServiceCompat(), ServiceConnection {
                 MediaItem(
                     MediaDescriptionCompat.Builder()
                         .setMediaId(MediaId.forSearched(it.id))
-                        .setTitle(it.title)
+                        .setTitle(it.title.removePrefix())
                         .setSubtitle(it.artistsText)
                         .setIconUri(it.thumbnailUrl?.toUri())
                         .build(),
@@ -412,7 +412,7 @@ class AndroidAutoService : MediaBrowserServiceCompat(), ServiceConnection {
         inline get() = MediaItem(
             MediaDescriptionCompat.Builder()
                 .setMediaId(MediaId.forSong(id))
-                .setTitle(title)
+                .setTitle(title.removePrefix())
                 .setSubtitle(artistsText)
                 .setIconUri(thumbnailUrl?.toUri())
                 .build(),
@@ -438,7 +438,7 @@ class AndroidAutoService : MediaBrowserServiceCompat(), ServiceConnection {
         inline get() = MediaItem(
             MediaDescriptionCompat.Builder()
                 .setMediaId(MediaId.forAlbum(id))
-                .setTitle(title)
+                .setTitle(title?.removePrefix())
                 .setSubtitle(authorsText)
                 .setIconUri(thumbnailUrl?.toUri())
                 .build(),
@@ -449,7 +449,7 @@ class AndroidAutoService : MediaBrowserServiceCompat(), ServiceConnection {
         inline get() = MediaItem(
             MediaDescriptionCompat.Builder()
                 .setMediaId(MediaId.forArtistByName(name ?: ""))
-                .setTitle(name)
+                .setTitle(name?.removePrefix())
                 //.setSubtitle()
                 .setIconUri(thumbnailUrl?.toUri())
                 .build(),
@@ -464,6 +464,17 @@ class AndroidAutoService : MediaBrowserServiceCompat(), ServiceConnection {
                     if (description.title.toString().startsWith("1:")) getTitleMonthlyPlaylistFromContext(description.title.toString().substringAfter("1:"), this@AndroidAutoService) else description.title.toString())
                 .setIconUri(uriFor(if (description.title.toString().startsWith("0:")) R.drawable.pin else
                     if (description.title.toString().startsWith("1:")) R.drawable.stat_month else R.drawable.playlist))
+                .build(),
+            MediaItem.FLAG_BROWSABLE
+        )
+
+    private val faultBrowserMediaItem
+        inline get() = MediaItem(
+            MediaDescriptionCompat.Builder()
+                .setMediaId(MediaId.fault)
+                //.setTitle((this as Context).resources.getString(R.string.songs))
+                .setTitle("Fault")
+                .setIconUri(uriFor(R.drawable.close))
                 .build(),
             MediaItem.FLAG_BROWSABLE
         )
@@ -551,6 +562,21 @@ class AndroidAutoService : MediaBrowserServiceCompat(), ServiceConnection {
         )
 
     override fun onServiceConnected(p0: ComponentName?, p1: IBinder?) {
+
+        Timber.d("AndroidAutoService onServiceConnected isAppRunning ${isAppRunning()}")
+
+//        val intent = Intent(this, MainActivity::class.java)
+//        intent.action = Intent.ACTION_MAIN
+//        intent.addCategory(Intent.CATEGORY_LAUNCHER)
+//        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+//
+//        runCatching {
+//            startActivity(intent)
+//            Timber.d("AndroidAutoService onServiceConnected started MainActivity with intent")
+//        }.onFailure {
+//            Timber.d("AndroidAutoService onServiceConnected failed to start MainActivity with intent ${it.stackTraceToString()}")
+//        }
+
         val service = p1
         if (service is LocalBinder) {
             if (mediaSession?.sessionToken != null) {
@@ -592,73 +618,74 @@ class AndroidAutoService : MediaBrowserServiceCompat(), ServiceConnection {
 
             updateMediaSessionData()
         }
-        Timber.d("onServiceConnected")
+        Timber.d("AndroidAutoService onServiceConnected")
     }
 
     override fun onServiceDisconnected(name: ComponentName) = Unit
 
     //Used also as media button receiver
-    private inner class SessionCallback() :
-        MediaSessionCompat.Callback() {
-
-            override fun onStop() {
-                super.onStop()
-                onlinePlayer.value?.pause()
-                isPlaying = false
-                updateMediaSessionData()
-                Timber.d("AndroidAutoService MediaSessionCompat.Callback onStop")
-            }
-            override fun onPlay() {
-                super.onPlay()
-                onlinePlayer.value?.play()
-                isPlaying = true
-                updateMediaSessionData()
-                Timber.d("AndroidAutoService MediaSessionCompat.Callback onPlay")
-            }
-            override fun onPause() {
-                super.onPause()
-                onlinePlayer.value?.pause()
-                isPlaying = false
-                updateMediaSessionData()
-                Timber.d("AndroidAutoService MediaSessionCompat.Callback onPause")
-            }
-            override fun onSkipToNext() {
-                super.onSkipToNext()
-                localPlayerBinder?.player?.playNext()
-                updateMediaSessionData()
-            }
-
-            override fun onSkipToPrevious() {
-                super.onSkipToPrevious()
-                localPlayerBinder?.player?.playPrevious()
-                updateMediaSessionData()
-            }
-
-            @OptIn(UnstableApi::class)
-            override fun onPlayFromMediaId(mediaId: String?, extras: Bundle?) {
-                Timber.d("AndroidAutoService onPlayFromMediaId mediaId ${mediaId} called")
-                val data = mediaId?.split('/') ?: return
-                val id = data.getOrNull(1)
-                var index = 0
-
-                Timber.d("AndroidAutoService onPlayFromMediaId mediaId ${mediaId} data $data elaborated")
-
-                coroutineScope.launch {
-                    val mediaItem = Database.song(id).first()?.asMediaItem ?: return@launch
-                    withContext(Dispatchers.Main) {
-                        fastPlay(
-                            mediaItem,
-                            localPlayerBinder
-                        )
-                        isPlaying = true
-                        updateMediaSessionData()
-                    }
-                }
-            }
-        }
+//    private inner class SessionCallback() :
+//        MediaSessionCompat.Callback() {
+//
+//            override fun onStop() {
+//                super.onStop()
+//                onlinePlayer.value?.pause()
+//                isPlaying = false
+//                updateMediaSessionData()
+//                Timber.d("AndroidAutoService MediaSessionCompat.Callback onStop")
+//            }
+//            override fun onPlay() {
+//                super.onPlay()
+//                onlinePlayer.value?.play()
+//                isPlaying = true
+//                updateMediaSessionData()
+//                Timber.d("AndroidAutoService MediaSessionCompat.Callback onPlay")
+//            }
+//            override fun onPause() {
+//                super.onPause()
+//                onlinePlayer.value?.pause()
+//                isPlaying = false
+//                updateMediaSessionData()
+//                Timber.d("AndroidAutoService MediaSessionCompat.Callback onPause")
+//            }
+//            override fun onSkipToNext() {
+//                super.onSkipToNext()
+//                localPlayerBinder?.player?.playNext()
+//                updateMediaSessionData()
+//            }
+//
+//            override fun onSkipToPrevious() {
+//                super.onSkipToPrevious()
+//                localPlayerBinder?.player?.playPrevious()
+//                updateMediaSessionData()
+//            }
+//
+//            @OptIn(UnstableApi::class)
+//            override fun onPlayFromMediaId(mediaId: String?, extras: Bundle?) {
+//                Timber.d("AndroidAutoService onPlayFromMediaId mediaId ${mediaId} called")
+//                val data = mediaId?.split('/') ?: return
+//                val id = data.getOrNull(1)
+//                //var index = 0
+//
+//                Timber.d("AndroidAutoService onPlayFromMediaId mediaId ${mediaId} data $data elaborated")
+//
+//                coroutineScope.launch {
+//                    val mediaItem = Database.song(id).first()?.asMediaItem ?: return@launch
+//                    withContext(Dispatchers.Main) {
+//                        fastPlay(
+//                            mediaItem,
+//                            localPlayerBinder
+//                        )
+//                        isPlaying = true
+//                        updateMediaSessionData()
+//                    }
+//                }
+//            }
+//        }
 
 
     private object MediaId {
+        const val fault = "fault"
         const val root = "root"
         const val songs = "songs"
         const val playlists = "playlists"
