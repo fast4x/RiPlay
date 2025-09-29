@@ -995,7 +995,13 @@ class LocalPlayerService : MediaLibraryService(),
                     }
                 }
 
-                override fun onAudioDevicesRemoved(removedDevices: Array<AudioDeviceInfo>) = Unit
+                override fun onAudioDevicesRemoved(removedDevices: Array<AudioDeviceInfo>) {
+                    Timber.d("LocalPlayerService onAudioDevicesRemoved removedDevices ${removedDevices.map { it.type }}")
+                    if (player.isPlaying && removedDevices.any(::canPlayMusic)) {
+                        Timber.d("LocalPlayerService onAudioDevicesRemoved device known ${removedDevices.map { it.productName }}")
+                        player.pause()
+                    }
+                }
             }
 
             audioManager?.registerAudioDeviceCallback(audioDeviceCallback, handler)

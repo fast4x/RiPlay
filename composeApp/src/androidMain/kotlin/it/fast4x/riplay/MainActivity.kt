@@ -2217,7 +2217,14 @@ class MainActivity :
                     }
                 }
 
-                override fun onAudioDevicesRemoved(removedDevices: Array<AudioDeviceInfo>) = Unit
+                override fun onAudioDevicesRemoved(removedDevices: Array<AudioDeviceInfo>) {
+                    Timber.d("MainActivity onAudioDevicesRemoved removedDevices ${removedDevices.map { it.type }}")
+                    if (onlinePlayerPlayingState.value && removedDevices.any(::canPlayMusic)) {
+                        Timber.d("MainActivity onAudioDevicesRemoved device known ${removedDevices.map { it.productName }}")
+                        onlinePlayer.value?.pause()
+                    }
+
+                }
             }
 
             audioManager?.registerAudioDeviceCallback(audioDeviceCallback, handler)
