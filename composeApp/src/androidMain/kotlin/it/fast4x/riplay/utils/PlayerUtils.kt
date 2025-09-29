@@ -505,30 +505,30 @@ fun Player.loadMasterQueue() {
     Timber.d("LoadMasterQueue loadPersistentQueue is enabled, called")
     if (!isPersistentQueueEnabled()) return
 
-        println("LoadMasterQueue loadPersistentQueue is enabled, processing")
-        Database.asyncQuery {
-            val queuedSong = queuedMediaItems()
+    println("LoadMasterQueue loadPersistentQueue is enabled, processing")
+    Database.asyncQuery {
+        val queuedSong = queuedMediaItems()
 
-            if (queuedSong.isEmpty()) return@asyncQuery
+        if (queuedSong.isEmpty()) return@asyncQuery
 
-            //val index = queuedSong.indexOfFirst { it.position != null }.coerceAtLeast(0)
-            val index = queuedSong.indexOfFirst { (it.position ?: -1) >= 0L }.coerceAtLeast(0)
+        //val index = queuedSong.indexOfFirst { it.position != null }.coerceAtLeast(0)
+        val index = queuedSong.indexOfFirst { (it.position ?: -1) >= 0L }.coerceAtLeast(0)
 
-            runBlocking(Dispatchers.Main) {
-                setMediaItems(
-                    queuedSong.map { mediaItem ->
-                        mediaItem.mediaItem.buildUpon()
-                            .setUri(mediaItem.mediaItem.mediaId)
-                            .setCustomCacheKey(mediaItem.mediaItem.mediaId)
-                            .build().apply {
-                                mediaMetadata.extras?.putBoolean("isFromPersistentQueue", true)
-                                mediaMetadata.extras?.putLong("idQueue", mediaItem.idQueue ?: defaultQueueId())
-                            }
-                    },
-                    index,
-                    0 //queuedSong[index].position ?: C.TIME_UNSET
-                )
-                prepare()
-            }
+        runBlocking(Dispatchers.Main) {
+            setMediaItems(
+                queuedSong.map { mediaItem ->
+                    mediaItem.mediaItem.buildUpon()
+                        .setUri(mediaItem.mediaItem.mediaId)
+                        .setCustomCacheKey(mediaItem.mediaItem.mediaId)
+                        .build().apply {
+                            mediaMetadata.extras?.putBoolean("isFromPersistentQueue", true)
+                            mediaMetadata.extras?.putLong("idQueue", mediaItem.idQueue ?: defaultQueueId())
+                        }
+                },
+                index,
+                0 //queuedSong[index].position ?: C.TIME_UNSET
+            )
+            prepare()
         }
+    }
 }
