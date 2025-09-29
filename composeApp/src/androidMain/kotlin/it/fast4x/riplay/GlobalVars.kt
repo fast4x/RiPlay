@@ -14,6 +14,7 @@ import it.fast4x.riplay.enums.UiType
 import it.fast4x.riplay.enums.ViewType
 import it.fast4x.riplay.ui.styling.LocalAppearance
 import it.fast4x.riplay.extensions.preferences.UiTypeKey
+import it.fast4x.riplay.extensions.preferences.appIsRunningKey
 import it.fast4x.riplay.extensions.preferences.audioQualityFormatKey
 import it.fast4x.riplay.extensions.preferences.autosyncKey
 import it.fast4x.riplay.extensions.preferences.bassboostEnabledKey
@@ -88,5 +89,6 @@ fun isParentalControlEnabled() = appContext().preferences.getBoolean(parentalCon
 fun isPersistentQueueEnabled() = appContext().preferences.getBoolean(persistentQueueKey, true)
 fun isPipModeAutoEnabled() = appContext().preferences.getBoolean(enablePictureInPictureAutoKey, false)
 fun isEnabledFullscreen() = appContext().preferences.getBoolean(isEnabledFullscreenKey, false)
+fun isAppRunning() = appContext().preferences.getBoolean(appIsRunningKey, false)
 
 

@@ -370,6 +370,8 @@ const val seekWithTapKey = "seekWithTap"
 const val filterContentTypeKey = "filterContentType"
 const val isEnabledFullscreenKey = "isEnabledFullscreen"
 
+const val appIsRunningKey = "appIsRunning"
+
 inline fun <reified T : Enum<T>> SharedPreferences.getEnum(
     key: String,
     defaultValue: T
