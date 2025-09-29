@@ -25,6 +25,7 @@ import it.fast4x.riplay.extensions.preferences.exoPlayerMinTimeForEventKey
 import it.fast4x.riplay.extensions.preferences.getEnum
 import it.fast4x.riplay.extensions.preferences.handleAudioFocusEnabledKey
 import it.fast4x.riplay.extensions.preferences.isEnabledFullscreenKey
+import it.fast4x.riplay.extensions.preferences.keepPlayerMinimizedKey
 import it.fast4x.riplay.extensions.preferences.lastVideoIdKey
 import it.fast4x.riplay.extensions.preferences.lastVideoSecondsKey
 import it.fast4x.riplay.extensions.preferences.logDebugEnabledKey
@@ -78,6 +79,7 @@ fun getLastYTVideoSeconds() = appContext().preferences.getFloat(lastVideoSeconds
 fun getResumePlaybackOnStart() = appContext().preferences.getBoolean(resumePlaybackOnStartKey, false)
 fun getPlayerTimelineType() = appContext().preferences.getEnum(playerTimelineTypeKey, PlayerTimelineType.Default)
 fun getPlaybackFadeAudioDuration() = appContext().preferences.getEnum(playbackFadeAudioDurationKey, DurationInMilliseconds.Disabled)
+fun getKeepPlayerMinimized() = appContext().preferences.getBoolean(keepPlayerMinimizedKey, false)
 
 fun ytAccountName() = appContext().preferences.getString(ytAccountNameKey, "")
 fun ytAccountThumbnail() = appContext().preferences.getString(ytAccountThumbnailKey, "")
@@ -90,5 +92,6 @@ fun isPersistentQueueEnabled() = appContext().preferences.getBoolean(persistentQ
 fun isPipModeAutoEnabled() = appContext().preferences.getBoolean(enablePictureInPictureAutoKey, false)
 fun isEnabledFullscreen() = appContext().preferences.getBoolean(isEnabledFullscreenKey, false)
 fun isAppRunning() = appContext().preferences.getBoolean(appIsRunningKey, false)
+
 
 

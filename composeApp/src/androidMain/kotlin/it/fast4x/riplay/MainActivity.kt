@@ -244,6 +244,7 @@ import it.fast4x.riplay.service.LocalPlayerService
 import it.fast4x.riplay.service.AndroidAutoService
 import it.fast4x.riplay.service.isLocal
 import it.fast4x.riplay.ui.components.BottomSheet
+import it.fast4x.riplay.ui.components.BottomSheetState
 import it.fast4x.riplay.ui.components.CustomModalBottomSheet
 import it.fast4x.riplay.ui.components.LocalMenuState
 import it.fast4x.riplay.ui.components.rememberBottomSheetState
@@ -1264,6 +1265,13 @@ class MainActivity :
                 val windowsInsets = WindowInsets.systemBars
                 val bottomDp = with(density) { windowsInsets.getBottom(density).toDp() }
 
+                val localPlayerSheetState = rememberBottomSheetState(
+                    dismissedBound = 0.dp,
+                    collapsedBound = 5.dp, //Dimensions.collapsedPlayer,
+                    expandedBound = maxHeight
+                )
+
+                // TODO remove in the future
                 val playerSheetState = rememberPlayerSheetState(
                     dismissedBound = 0.dp,
                     collapsedBound = Dimensions.collapsedPlayer + bottomDp,
@@ -1373,7 +1381,7 @@ class MainActivity :
                         if (!it || (binder?.player?.isPlaying != true && !onlinePlayerPlayingState.value))
                             return@isInPip
 
-                        playerSheetState.expandSoft()
+                        localPlayerSheetState.expandSoft()
                     }
                 )
 
@@ -1417,7 +1425,7 @@ class MainActivity :
                             LocalPlayerServiceBinder provides binder,
                             LocalPlayerAwareWindowInsets provides playerAwareWindowInsets,
                             LocalLayoutDirection provides LayoutDirection.Ltr,
-                            LocalPlayerSheetState provides playerSheetState,
+                            LocalPlayerSheetState provides localPlayerSheetState,
                             LocalMonetCompat provides localMonet,
                             LocalLinkDevices provides linkDevices.value,
                             LocalOnlinePlayerPlayingState provides onlinePlayerPlayingState.value,
@@ -1479,11 +1487,7 @@ class MainActivity :
                             } else {
 
 
-                                val localPlayerSheetState = rememberBottomSheetState(
-                                    dismissedBound = 0.dp,
-                                    collapsedBound = 5.dp, //Dimensions.collapsedPlayer,
-                                    expandedBound = maxHeight
-                                )
+
 
                                 AppNavigation(
                                     navController = navController,
@@ -1611,18 +1615,19 @@ class MainActivity :
                     //Timber.d("MainActivity DisposableEffecty mediaItemAsSong ${binder!!.currentMediaItemAsSong}")
 
                     if (player.currentMediaItem == null) {
-                        if (playerSheetState.isExpanded) {
-                            playerSheetState.collapseSoft()
+                        if (localPlayerSheetState.isExpanded) {
+                            localPlayerSheetState.collapseSoft()
                         }
                     } else {
                         if (launchedFromNotification) {
                             intent.replaceExtras(Bundle())
-                            if (preferences.getBoolean(keepPlayerMinimizedKey, false))
-                                playerSheetState.collapseSoft()
-                            else playerSheetState.expandSoft()
+                            if (getKeepPlayerMinimized())
+                                localPlayerSheetState.collapseSoft()
+                            else localPlayerSheetState.expandSoft()
                         } else {
-                            playerSheetState.collapseSoft()
+                            localPlayerSheetState.collapseSoft()
                         }
+
                     }
 
                     val listener = object : Player.Listener {
@@ -1636,7 +1641,7 @@ class MainActivity :
 
                             if (mediaItem == null) {
                                 maybeExitPip()
-                                playerSheetState.dismissSoft()
+                                localPlayerSheetState.dismissSoft()
                             }
 
                             mediaItem?.let{
@@ -1645,13 +1650,14 @@ class MainActivity :
 
                                 //Timber.d("MainActivity Player.Listener onMediaItemTransition mediaItemAsSong ${binder!!.currentMediaItemAsSong}")
 
-                                if (reason == Player.MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED) {
-                                    if (it.mediaMetadata.extras?.getBoolean("isFromPersistentQueue") != true) {
-                                        if (preferences.getBoolean(keepPlayerMinimizedKey, false))
-                                            playerSheetState.collapseSoft()
-                                        else playerSheetState.expandSoft()
-                                    }
-                                }
+                                // TODO Maybe is not needed
+                                //if (reason == Player.MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED) {
+                                    //if (it.mediaMetadata.extras?.getBoolean("isFromPersistentQueue") != true) {
+                                        if (getKeepPlayerMinimized())
+                                            localPlayerSheetState.collapseSoft()
+                                        else localPlayerSheetState.expandSoft()
+                                    //}
+                                //}
 
                                 setDynamicPalette(
                                     it.mediaMetadata.artworkUri.thumbnail(
@@ -2487,7 +2493,7 @@ val LocalPlayerAwareWindowInsets = staticCompositionLocalOf<WindowInsets> { TODO
 
 @OptIn(ExperimentalMaterial3Api::class)
 val LocalPlayerSheetState =
-    staticCompositionLocalOf<PlayerSheetState> { error("No player sheet state provided") }
+    staticCompositionLocalOf<BottomSheetState> { error("No sheet state provided") }
 
 val LocalOnlinePlayerPlayingState =
     staticCompositionLocalOf<Boolean> { error("No player sheet state provided") }

@@ -1,15 +1,18 @@
 package it.fast4x.riplay.service
 
 import android.annotation.SuppressLint
+import android.app.AlarmManager
 import android.app.Notification
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
+import android.content.Context
 import android.content.Intent
 import android.os.Binder
 import android.os.Build
 import android.os.IBinder
 import android.os.PowerManager
+import android.os.SystemClock
 import androidx.annotation.OptIn
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationChannelCompat
@@ -60,12 +63,12 @@ class EndlessService : Service() {
         createNotificationChannel()
         startForeground(NOTIFICATION_ID, this.notification)
         println("EndlessService onStartCommand")
-        return START_NOT_STICKY
+        return START_STICKY //START_NOT_STICKY
     }
 
     @SuppressLint("WakelockTimeout")
     override fun onBind(intent: Intent?): IBinder {
-        if (wakeLock != null && !wakeLock!!.isHeld()) {
+        if (wakeLock != null && !wakeLock!!.isHeld) {
             wakeLock!!.acquire()
         }
         println("EndlessService onBind")
@@ -74,11 +77,21 @@ class EndlessService : Service() {
 
     override fun onDestroy() {
         // PARTIAL_WAKELOCK
-        if (wakeLock != null && wakeLock!!.isHeld()) {
+        if (wakeLock != null && wakeLock!!.isHeld) {
             wakeLock!!.release()
         }
         println("EndlessService onDestroy")
         super.onDestroy()
+    }
+
+    override fun onTaskRemoved(rootIntent: Intent?) {
+        val restartServiceIntent = Intent(applicationContext, EndlessService::class.java).also {
+            it.setPackage(packageName)
+        }
+        val restartServicePendingIntent: PendingIntent = PendingIntent.getService(this, 1, restartServiceIntent, PendingIntent.FLAG_ONE_SHOT)
+        val alarmService: AlarmManager = applicationContext.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        alarmService.set(AlarmManager.ELAPSED_REALTIME, SystemClock.elapsedRealtime() + 1000, restartServicePendingIntent)
+        println("EndlessService onTaskRemoved schedule restart service")
     }
 
     fun createNotificationChannel() {

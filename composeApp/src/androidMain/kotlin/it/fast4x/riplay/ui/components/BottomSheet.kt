@@ -199,10 +199,12 @@ class BottomSheetState(
         expand(tween(300))
     }
 
-    fun dismiss() {
+    fun dismissSoft() = dismiss(tween(300))
+
+    fun dismiss(animationSpec: AnimationSpec<Dp> = SpringSpec()) {
         onAnchorChanged(dismissedAnchor)
         coroutineScope.launch {
-            animatable.animateTo(animatable.lowerBound!!)
+            animatable.animateTo(animatable.lowerBound!!, animationSpec)
         }
     }
 
