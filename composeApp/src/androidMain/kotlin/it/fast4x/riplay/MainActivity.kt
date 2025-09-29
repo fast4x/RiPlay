@@ -162,6 +162,7 @@ import it.fast4x.riplay.extensions.pip.maybeEnterPip
 import it.fast4x.riplay.extensions.pip.maybeExitPip
 import it.fast4x.riplay.extensions.preferences.UiTypeKey
 import it.fast4x.riplay.extensions.preferences.animatedGradientKey
+import it.fast4x.riplay.extensions.preferences.appIsRunningKey
 import it.fast4x.riplay.extensions.preferences.applyFontPaddingKey
 import it.fast4x.riplay.extensions.preferences.backgroundProgressKey
 import it.fast4x.riplay.extensions.preferences.bassboostEnabledKey
@@ -345,7 +346,7 @@ class MainActivity :
                 this@MainActivity.androidAutoService = service.serviceInstance.LocalBinder()
                 service.mediaSession = unifiedMediaSession
                 service.localPlayerBinder = binder
-                service.onlinePlayer = onlinePlayer
+                //service.onlinePlayer = onlinePlayer
             }
         }
 
@@ -709,6 +710,9 @@ class MainActivity :
 
         // Used in QuickPics for load data from remote instead of last saved in SharedPreferences
         preferences.edit(commit = true) { putBoolean(loadedDataKey, false) }
+
+        // Used for android auto to show notification to invite user launch app
+        preferences.edit(commit = true) { putBoolean(appIsRunningKey, true) }
 
         if (!preferences.getBoolean(closeWithBackButtonKey, false))
             if (Build.VERSION.SDK_INT >= 33) {
@@ -2358,6 +2362,9 @@ class MainActivity :
 
     override fun onResume() {
         super.onResume()
+
+        preferences.edit(commit = true) { putBoolean(appIsRunningKey, true) }
+
         runCatching {
             sensorManager?.registerListener(
                 sensorListener, sensorManager!!.getDefaultSensor(
@@ -2376,6 +2383,9 @@ class MainActivity :
 
     override fun onPause() {
         super.onPause()
+
+        preferences.edit(commit = true) { putBoolean(appIsRunningKey, false) }
+
         runCatching {
             sensorListener.let { sensorManager?.unregisterListener(it) }
         }.onFailure {
@@ -2405,6 +2415,8 @@ class MainActivity :
     @UnstableApi
     override fun onDestroy() {
         super.onDestroy()
+
+        preferences.edit(commit = true) { putBoolean(appIsRunningKey, false) }
 
         if (preferences.getBoolean(isDiscordPresenceEnabledKey, false)) {
             Timber.d("[DiscordPresence] onStop: call the manager (close discord presence)")
