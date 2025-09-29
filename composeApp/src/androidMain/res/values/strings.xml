@@ -952,4 +952,5 @@
     <string name="invalid_token">Invalid token</string>
     <string name="unknown_title">Unknow title</string>
     <string name="unknown_artist">Unknow artist</string>
+    <string name="share_with_external_app">Share with external app</string>
 </resources>

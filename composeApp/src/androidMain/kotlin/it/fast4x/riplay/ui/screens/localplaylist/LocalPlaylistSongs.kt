@@ -1041,8 +1041,8 @@ fun LocalPlaylistSongs(
 
     FastShare(
         showFastShare,
-        playlistPreview?.playlist ?: return,
-        onDismissRequest = { showFastShare = false}
+        onDismissRequest = { showFastShare = false},
+        content = playlistPreview?.playlist ?: return
     )
 
     println("LocalPlaylistSongs playlist browseId ${playlistPreview?.playlist?.browseId}")

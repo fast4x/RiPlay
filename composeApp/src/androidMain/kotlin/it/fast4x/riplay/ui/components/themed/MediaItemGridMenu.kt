@@ -883,6 +883,14 @@ fun MediaItemGridMenu (
                 )
             }
 
+            var showFastShare by remember { mutableStateOf(false) }
+            FastShare(
+                showFastShare,
+                showLinks = false,
+                showShareWith = false,
+                onDismissRequest = { showFastShare = false },
+                content = mediaItem
+            )
 
             GridMenu(
                 contentPadding = PaddingValues(
@@ -896,6 +904,7 @@ fun MediaItemGridMenu (
                     topContent()
                 }
             ) {
+
                 if (!isLocal) onInfo?.let { onInfo ->
                     GridMenuItem(
                         icon = R.drawable.information,
@@ -905,6 +914,18 @@ fun MediaItemGridMenu (
                         onClick = {
                             onDismiss()
                             onInfo()
+                        }
+                    )
+                }
+
+                if (!isLocal) {
+                    GridMenuItem(
+                        icon = R.drawable.get_app,
+                        title = R.string.share_with_external_app,
+                        colorIcon = colorPalette.text,
+                        colorText = colorPalette.text,
+                        onClick = {
+                            showFastShare = true
                         }
                     )
                 }

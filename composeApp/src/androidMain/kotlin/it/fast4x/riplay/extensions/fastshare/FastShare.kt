@@ -42,6 +42,7 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.MediaItem
 import it.fast4x.riplay.Database
@@ -76,11 +77,16 @@ import kotlinx.coroutines.Dispatchers
 @OptIn(ExperimentalMaterial3Api::class)
 fun FastShare(
     showFastShare: Boolean,
-    content: Any,
-    typeOfShare: ShareType = ShareType.Classic,
+    showLinks: Boolean? = true,
+    showShareWith: Boolean? = true,
+    showShareWithExternalApps: Boolean? = true,
+    //typeOfShare: ShareType = ShareType.Classic,
     //typeOfUrl: LinkType = LinkType.Alternative,
     onDismissRequest: () -> Unit,
+    content: Any,
 ) {
+    //if (content.toString().isEmpty()) return
+
 //    if (content.toString().isEmpty()) {
 //        SmartMessage(message = "No content to share!", type = PopupType.Error, context = context())
 //        return
@@ -91,7 +97,7 @@ fun FastShare(
 
     LaunchedEffect(Unit, typeOfUrl) {
         urlToShare = when (typeOfUrl) {
-            LinkType.Alternative -> {
+            LinkType.Main -> {
                 when (content) {
                     is MediaItem -> content.asSong.shareYTUrl
                     is Playlist -> {
@@ -105,7 +111,7 @@ fun FastShare(
                 }
             }
 
-            LinkType.Main -> {
+            LinkType.Alternative -> {
                 when (content) {
                     is MediaItem -> content.asSong.shareYTMUrl
                     is Playlist -> {
@@ -171,206 +177,103 @@ fun FastShare(
                 )
                 .fillMaxWidth()
         ) {
-            Row (
-                modifier = Modifier.padding(bottom = 20.dp)
-            ) {
-                Column(
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .border(BorderStroke(1.dp, colorPalette().accent), shape = thumbnailShape())
+
+            if (showLinks == true) {
+                Row(
+                    modifier = Modifier.padding(bottom = 20.dp)
                 ) {
-                    TitleMiniSection(
-                        title = "Copy link"
-                    )
-                    Row(
-                        horizontalArrangement = Arrangement.Center,
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text(
-                            "Use main link",
-                            fontSize = typography().xs.fontSize,
-                            fontFamily = typography().xs.fontFamily,
-                            fontWeight = typography().xs.fontWeight,
-                            fontStyle = typography().xs.fontStyle,
-                            color = colorPalette().text,
-                        )
-                        Checkbox(
-                            checked = typeOfUrl == LinkType.Main,
-                            onCheckedChange = {
-                                if (it) typeOfUrl = LinkType.Main else typeOfUrl =
-                                    LinkType.Alternative
-                            },
-                            colors = CheckboxDefaults.colors(
-                                checkedColor = colorPalette().accent,
-                                uncheckedColor = colorPalette().text
-                            ),
-                            modifier = Modifier
-                                .scale(0.7f),
-                        )
-                    }
-                    Row(
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically,
+                    Column(
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally,
                         modifier = Modifier
-                            .requiredHeight(60.dp)
-                            .background(colorPalette().background2, shape = thumbnailShape())
-                            .padding(horizontal = 20.dp)
                             .fillMaxWidth()
+                            .border(
+                                BorderStroke(1.dp, colorPalette().accent),
+                                shape = thumbnailShape()
+                            )
                     ) {
-                        Text(
-                            text = urlToShare,
-                            fontSize = typography().xs.fontSize,
-                            fontFamily = typography().xs.fontFamily,
-                            fontWeight = typography().xs.fontWeight,
-                            fontStyle = typography().xs.fontStyle,
-                            color = colorPalette().text,
-                            modifier = Modifier
-                                .fillMaxWidth(0.9f)
-                                .clickable {
-                                    copyTextToClipboard(urlToShare, context())
-                                }
+                        TitleMiniSection(
+                            title = "Copy link"
                         )
-                        Image(
-                            painter = painterResource(R.drawable.copy),
-                            colorFilter = ColorFilter.tint(colorPalette().text),
-                            contentDescription = "Copy link",
-                            modifier = Modifier
-                                .size(24.dp)
-                                .clickable {
-                                    copyTextToClipboard(urlToShare, context())
-                                }
-                        )
-                    }
-                }
-            }
-            Row (
-                modifier = Modifier.padding(bottom = 20.dp)
-            ) {
-                Column(
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .border(BorderStroke(1.dp, colorPalette().accent), shape = thumbnailShape())
-                ) {
-                    TitleMiniSection(
-                        title = "Open link",
-                        modifier = Modifier.padding(bottom = 16.dp)
-                    )
-
-                    Row(
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier
-                            .requiredHeight(60.dp)
-                            .background(colorPalette().background2, shape = thumbnailShape())
-                            .padding(horizontal = 20.dp)
-                            .fillMaxWidth()
-                    ) {
-                        Text(
-                            text = urlToShare,
-                            fontSize = typography().xs.fontSize,
-                            fontFamily = typography().xs.fontFamily,
-                            fontWeight = typography().xs.fontWeight,
-                            fontStyle = typography().xs.fontStyle,
-                            color = colorPalette().text,
-                            modifier = Modifier
-                                .fillMaxWidth(0.9f)
-                                .clickable {
-                                    uriHandler.openUri(urlToShare)
-                                }
-                        )
-                        Image(
-                            painter = painterResource(R.drawable.internet),
-                            colorFilter = ColorFilter.tint(colorPalette().text),
-                            contentDescription = "Open link",
-                            modifier = Modifier
-                                .size(24.dp)
-                                .clickable {
-                                    uriHandler.openUri(urlToShare)
-                                }
-                        )
-                    }
-
-                }
-            }
-            Row (
-                modifier = Modifier.padding(bottom = 20.dp)
-            ) {
-                Column(
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .border(BorderStroke(1.dp, colorPalette().accent), shape = thumbnailShape())
-                ) {
-                    TitleMiniSection(
-                        title = "Share with...",
-                        modifier = Modifier.padding(bottom = 16.dp)
-                    )
-
-                    Row(
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier
-                            .requiredHeight(60.dp)
-                            .background(colorPalette().background2, shape = thumbnailShape())
-                            .padding(horizontal = 20.dp)
-                            .fillMaxWidth()
-                    ) {
-                        Text(
-                            text = "Choose destination...",
-                            fontSize = typography().xs.fontSize,
-                            fontFamily = typography().xs.fontFamily,
-                            fontWeight = typography().xs.fontWeight,
-                            fontStyle = typography().xs.fontStyle,
-                            color = colorPalette().text,
-                            modifier = Modifier
-                                .fillMaxWidth(0.9f)
-                                .clickable {
-                                    classicShare(urlToShare, context())
-                                }
-                        )
-                        Image(
-                            painter = painterResource(R.drawable.share_social),
-                            colorFilter = ColorFilter.tint(colorPalette().text),
-                            contentDescription = "Share with...",
-                            modifier = Modifier
-                                .size(24.dp)
-                                .clickable {
-                                    classicShare(urlToShare, context())
-                                }
-                        )
-                    }
-
-                }
-            }
-            Row (
-                modifier = Modifier.padding(bottom = 20.dp)
-            ) {
-                LazyColumn(
-                    state = rememberLazyListState(),
-                    modifier = Modifier
-                        .height(300.dp)
-                        .fillMaxWidth()
-                        .border(BorderStroke(1.dp, colorPalette().accent), shape = thumbnailShape())
-                ) {
-                    stickyHeader {
-                        Row (
+                        Row(
                             horizontalArrangement = Arrangement.Center,
                             verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .background(colorPalette().background0)
+                            modifier = Modifier.fillMaxWidth()
                         ) {
-                            TitleMiniSection(
-                                title = "Share with external app",
-                                modifier = Modifier.padding(bottom = 16.dp)
+                            Text(
+                                "Use main link",
+                                fontSize = typography().xs.fontSize,
+                                fontFamily = typography().xs.fontFamily,
+                                fontWeight = typography().xs.fontWeight,
+                                fontStyle = typography().xs.fontStyle,
+                                color = colorPalette().text,
+                            )
+                            Checkbox(
+                                checked = typeOfUrl == LinkType.Main,
+                                onCheckedChange = {
+                                    if (it) typeOfUrl = LinkType.Main else typeOfUrl =
+                                        LinkType.Alternative
+                                },
+                                colors = CheckboxDefaults.colors(
+                                    checkedColor = colorPalette().accent,
+                                    uncheckedColor = colorPalette().text
+                                ),
+                                modifier = Modifier
+                                    .scale(0.7f),
                             )
                         }
+                        Row(
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier
+                                .requiredHeight(60.dp)
+                                .background(colorPalette().background2, shape = thumbnailShape())
+                                .padding(horizontal = 20.dp)
+                                .fillMaxWidth()
+                        ) {
+                            Text(
+                                text = urlToShare,
+                                fontSize = typography().xs.fontSize,
+                                fontFamily = typography().xs.fontFamily,
+                                fontWeight = typography().xs.fontWeight,
+                                fontStyle = typography().xs.fontStyle,
+                                color = colorPalette().text,
+                                modifier = Modifier
+                                    .fillMaxWidth(0.9f)
+                                    .clickable {
+                                        copyTextToClipboard(urlToShare, context())
+                                    }
+                            )
+                            Image(
+                                painter = painterResource(R.drawable.copy),
+                                colorFilter = ColorFilter.tint(colorPalette().text),
+                                contentDescription = "Copy link",
+                                modifier = Modifier
+                                    .size(24.dp)
+                                    .clickable {
+                                        copyTextToClipboard(urlToShare, context())
+                                    }
+                            )
+                        }
+                    }
+                }
+                Row(
+                    modifier = Modifier.padding(bottom = 20.dp)
+                ) {
+                    Column(
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .border(
+                                BorderStroke(1.dp, colorPalette().accent),
+                                shape = thumbnailShape()
+                            )
+                    ) {
+                        TitleMiniSection(
+                            title = "Open link",
+                            modifier = Modifier.padding(bottom = 16.dp)
+                        )
 
                         Row(
                             horizontalArrangement = Arrangement.SpaceBetween,
@@ -382,7 +285,7 @@ fun FastShare(
                                 .fillMaxWidth()
                         ) {
                             Text(
-                                text = "Choose installed app",
+                                text = urlToShare,
                                 fontSize = typography().xs.fontSize,
                                 fontFamily = typography().xs.fontFamily,
                                 fontWeight = typography().xs.fontWeight,
@@ -391,65 +294,191 @@ fun FastShare(
                                 modifier = Modifier
                                     .fillMaxWidth(0.9f)
                                     .clickable {
-                                        showAppSelector = true
+                                        uriHandler.openUri(urlToShare)
                                     }
                             )
                             Image(
-                                painter = painterResource(R.drawable.add_app),
+                                painter = painterResource(R.drawable.internet),
                                 colorFilter = ColorFilter.tint(colorPalette().text),
-                                contentDescription = "Add app",
+                                contentDescription = "Open link",
                                 modifier = Modifier
                                     .size(24.dp)
                                     .clickable {
-                                        showAppSelector = true
+                                        uriHandler.openUri(urlToShare)
                                     }
                             )
                         }
+
                     }
-                    items(externalApps.size) {
-                        val app = externalApps[it]
-                        Spacer(modifier = Modifier.height(5.dp))
+                }
+            }
+            if (showShareWith == true) {
+                Row(
+                    modifier = Modifier.padding(bottom = 20.dp)
+                ) {
+                    Column(
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .border(
+                                BorderStroke(1.dp, colorPalette().accent),
+                                shape = thumbnailShape()
+                            )
+                    ) {
+                        TitleMiniSection(
+                            title = "Share with...",
+                            modifier = Modifier.padding(bottom = 16.dp)
+                        )
+
                         Row(
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier
-                                .border(
-                                    BorderStroke(1.dp, colorPalette().background2),
-                                    shape = thumbnailShape()
-                                )
-                                //.background(colorPalette().background2, shape = thumbnailShape())
+                                .requiredHeight(60.dp)
+                                .background(colorPalette().background2, shape = thumbnailShape())
+                                .padding(horizontal = 20.dp)
                                 .fillMaxWidth()
-                                .padding(all = 10.dp)
-                                .clickable {
-                                    directShare(urlToShare, app.componentName, context())
-                                }
-
-                        ){
+                        ) {
                             Text(
-                                text = app.appName.toString(),
-                                color = colorPalette().text,
+                                text = "Choose destination...",
                                 fontSize = typography().xs.fontSize,
                                 fontFamily = typography().xs.fontFamily,
                                 fontWeight = typography().xs.fontWeight,
                                 fontStyle = typography().xs.fontStyle,
+                                color = colorPalette().text,
                                 modifier = Modifier
+                                    .fillMaxWidth(0.9f)
+                                    .clickable {
+                                        classicShare(urlToShare, context())
+                                    }
                             )
                             Image(
-                                painter = painterResource(R.drawable.close),
+                                painter = painterResource(R.drawable.share_social),
                                 colorFilter = ColorFilter.tint(colorPalette().text),
-                                contentDescription = "Delete app",
+                                contentDescription = "Share with...",
                                 modifier = Modifier
                                     .size(24.dp)
                                     .clickable {
-                                        Database.asyncTransaction {
-                                            delete(app)
-                                        }
+                                        classicShare(urlToShare, context())
                                     }
                             )
                         }
-                        Spacer(modifier = Modifier.height(5.dp))
-                    }
 
+                    }
+                }
+            }
+
+            if (showShareWithExternalApps == true) {
+                Row(
+                    modifier = Modifier.padding(bottom = 20.dp)
+                ) {
+                    LazyColumn(
+                        state = rememberLazyListState(),
+                        modifier = Modifier
+                            .height(300.dp)
+                            .fillMaxWidth()
+                            .border(
+                                BorderStroke(1.dp, colorPalette().accent),
+                                shape = thumbnailShape()
+                            )
+                    ) {
+                        stickyHeader {
+                            Row(
+                                horizontalArrangement = Arrangement.Center,
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .background(colorPalette().background0)
+                            ) {
+                                TitleMiniSection(
+                                    title = stringResource(R.string.share_with_external_app),
+                                    modifier = Modifier.padding(bottom = 16.dp)
+                                )
+                            }
+
+                            Row(
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier
+                                    .requiredHeight(60.dp)
+                                    .background(
+                                        colorPalette().background2,
+                                        shape = thumbnailShape()
+                                    )
+                                    .padding(horizontal = 20.dp)
+                                    .fillMaxWidth()
+                            ) {
+                                Text(
+                                    text = "Choose installed app",
+                                    fontSize = typography().xs.fontSize,
+                                    fontFamily = typography().xs.fontFamily,
+                                    fontWeight = typography().xs.fontWeight,
+                                    fontStyle = typography().xs.fontStyle,
+                                    color = colorPalette().text,
+                                    modifier = Modifier
+                                        .fillMaxWidth(0.9f)
+                                        .clickable {
+                                            showAppSelector = true
+                                        }
+                                )
+                                Image(
+                                    painter = painterResource(R.drawable.add_app),
+                                    colorFilter = ColorFilter.tint(colorPalette().text),
+                                    contentDescription = "Add app",
+                                    modifier = Modifier
+                                        .size(24.dp)
+                                        .clickable {
+                                            showAppSelector = true
+                                        }
+                                )
+                            }
+                        }
+                        items(externalApps.size) {
+                            val app = externalApps[it]
+                            Spacer(modifier = Modifier.height(5.dp))
+                            Row(
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier
+                                    .border(
+                                        BorderStroke(1.dp, colorPalette().background2),
+                                        shape = thumbnailShape()
+                                    )
+                                    //.background(colorPalette().background2, shape = thumbnailShape())
+                                    .fillMaxWidth()
+                                    .padding(all = 10.dp)
+                                    .clickable {
+                                        directShare(urlToShare, app.componentName, context())
+                                    }
+
+                            ) {
+                                Text(
+                                    text = app.appName.toString(),
+                                    color = colorPalette().text,
+                                    fontSize = typography().xs.fontSize,
+                                    fontFamily = typography().xs.fontFamily,
+                                    fontWeight = typography().xs.fontWeight,
+                                    fontStyle = typography().xs.fontStyle,
+                                    modifier = Modifier
+                                )
+                                Image(
+                                    painter = painterResource(R.drawable.close),
+                                    colorFilter = ColorFilter.tint(colorPalette().text),
+                                    contentDescription = "Delete app",
+                                    modifier = Modifier
+                                        .size(24.dp)
+                                        .clickable {
+                                            Database.asyncTransaction {
+                                                delete(app)
+                                            }
+                                        }
+                                )
+                            }
+                            Spacer(modifier = Modifier.height(5.dp))
+                        }
+
+                    }
                 }
             }
         }

@@ -497,12 +497,18 @@ fun AlbumDetails(
     var readMore by remember { mutableStateOf(false) }
 
     var showFastShare by remember { mutableStateOf(false) }
-
+    var showDirectFastShare by remember { mutableStateOf(false) }
     FastShare(
         showFastShare,
-        album ?: return,
-        onDismissRequest = { showFastShare = false}
+        showLinks = !showDirectFastShare,
+        showShareWith = !showDirectFastShare,
+        onDismissRequest = {
+            showFastShare = false
+            showDirectFastShare = false
+        },
+        content = album ?: return
     )
+
 
     LayoutWithAdaptiveThumbnail(thumbnailContent = thumbnailContent) {
         PullToRefreshBox(
@@ -761,72 +767,6 @@ fun AlbumDetails(
                                         ),
                                     onClick = {}
                                 )
-//                            HeaderIconButton(
-//                                icon = R.drawable.downloaded,
-//                                color = if (songs.any { it.likedAt != -1L }) colorPalette().text else colorPalette().textDisabled,
-//                                onClick = {},
-//                                modifier = Modifier
-//                                    .padding(horizontal = 5.dp)
-//                                    .combinedClickable(
-//                                        onClick = {
-//                                            if (songs.any { it.likedAt != -1L }) {
-//                                                showConfirmDownloadAllDialog = true
-//                                            } else {
-//                                                SmartMessage(
-//                                                    context.resources.getString(R.string.disliked_this_collection),
-//                                                    type = PopupType.Error,
-//                                                    context = context
-//                                                )
-//                                            }
-//                                        },
-//                                        onLongClick = {
-//                                            SmartMessage(
-//                                                context.resources.getString(R.string.info_download_all_songs),
-//                                                context = context
-//                                            )
-//                                        }
-//                                    )
-//                            )
-//
-//                            HeaderIconButton(
-//                                icon = R.drawable.download,
-//                                color = colorPalette().text,
-//                                onClick = {},
-//                                modifier = Modifier
-//                                    .padding(horizontal = 5.dp)
-//                                    .combinedClickable(
-//                                        onClick = {
-//                                            showConfirmDeleteDownloadDialog = true
-//                                        },
-//                                        onLongClick = {
-//                                            SmartMessage(
-//                                                context.resources.getString(R.string.info_remove_all_downloaded_songs),
-//                                                context = context
-//                                            )
-//                                        }
-//                                    )
-//                            )
-
-
-                                /*
-                    HeaderIconButton(
-                        icon = R.drawable.enqueue,
-                        enabled = songs.isNotEmpty(),
-                        color = if (songs.isNotEmpty()) colorPalette()
-.text else colorPalette()
-.textDisabled,
-                        onClick = {
-                            if (!selectItems)
-                            showSelectDialog = true else {
-                                binder?.player?.enqueue(listMediaItems)
-                                listMediaItems.clear()
-                                selectItems = false
-                            }
-
-                        }
-                    )
-                     */
-
 
 
                                 HeaderIconButton(
@@ -924,10 +864,28 @@ fun AlbumDetails(
                                     enabled = songs.isNotEmpty(),
                                     color = if (songs.isNotEmpty()) colorPalette().text else colorPalette().textDisabled,
                                     onClick = {}
-
-
                                 )
 
+                                HeaderIconButton(
+                                    modifier = Modifier
+                                        .padding(horizontal = 5.dp)
+                                        .combinedClickable(
+                                            onClick = {
+                                                showFastShare = true
+                                                showDirectFastShare = true
+                                            },
+                                            onLongClick = {
+                                                SmartMessage(
+                                                    context.resources.getString(R.string.share_with_external_app),
+                                                    context = context
+                                                )
+                                            }
+                                        ),
+                                    icon = R.drawable.get_app,
+                                    enabled = songs.isNotEmpty(),
+                                    color = if (songs.isNotEmpty()) colorPalette().text else colorPalette().textDisabled,
+                                    onClick = {}
+                                )
 
                                 HeaderIconButton(
                                     modifier = Modifier

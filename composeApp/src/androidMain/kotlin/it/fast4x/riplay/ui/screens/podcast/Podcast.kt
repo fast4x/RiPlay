@@ -254,8 +254,8 @@ fun Podcast(
 
     FastShare(
         showFastShare,
-        podcastPage?.toPlaylist(browseId) ?: return,
-        onDismissRequest = { showFastShare = false}
+        onDismissRequest = { showFastShare = false},
+        content = podcastPage?.toPlaylist(browseId) ?: return
     )
 
     LayoutWithAdaptiveThumbnail(thumbnailContent = thumbnailContent) {

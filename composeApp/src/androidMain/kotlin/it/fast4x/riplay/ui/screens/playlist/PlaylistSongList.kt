@@ -344,11 +344,17 @@ fun PlaylistSongList(
     val coroutineScope = rememberCoroutineScope()
 
     var showFastShare by remember { mutableStateOf(false) }
+    var showDirectFastShare by remember { mutableStateOf(false) }
 
     FastShare(
         showFastShare,
-        playlistPage?.playlist?.asPlaylist ?: return,
-        onDismissRequest = { showFastShare = false}
+        showLinks = !showDirectFastShare,
+        showShareWith = !showDirectFastShare,
+        onDismissRequest = {
+            showFastShare = false
+            showDirectFastShare = false
+        },
+        content = playlistPage?.playlist?.asPlaylist ?: return
     )
 
     LayoutWithAdaptiveThumbnail(thumbnailContent = thumbnailContent) {
@@ -761,6 +767,28 @@ fun PlaylistSongList(
                                             }
                                         )
                                 )
+
+                                HeaderIconButton(
+                                    modifier = Modifier
+                                        .padding(horizontal = 5.dp)
+                                        .combinedClickable(
+                                            onClick = {
+                                                showFastShare = true
+                                                showDirectFastShare = true
+                                            },
+                                            onLongClick = {
+                                                SmartMessage(
+                                                    context.resources.getString(R.string.share_with_external_app),
+                                                    context = context
+                                                )
+                                            }
+                                        ),
+                                    icon = R.drawable.get_app,
+                                    enabled = playlistPage?.songs?.isNotEmpty() == true,
+                                    color = colorPalette().text,
+                                    onClick = {}
+                                )
+
                                 if (isSyncEnabled()) {
                                     HeaderIconButton(
                                         icon = if (localPlaylist?.isYoutubePlaylist == true) R.drawable.bookmark else R.drawable.bookmark_outline,

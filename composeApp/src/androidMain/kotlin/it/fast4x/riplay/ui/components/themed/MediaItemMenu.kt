@@ -715,8 +715,8 @@ fun BaseMediaItemMenu(
 
     FastShare(
         showFastShare,
-        mediaItem,
-        onDismissRequest = { showFastShare = false}
+        onDismissRequest = { showFastShare = false },
+        content = mediaItem
     )
 
 }
@@ -1243,6 +1243,15 @@ fun MediaItemMenu(
                 val thumbnailArtistSizeDp = Dimensions.thumbnails.song + 10.dp
                 val thumbnailArtistSizePx = thumbnailArtistSizeDp.px
 
+                var showFastShare by remember { mutableStateOf(false) }
+                FastShare(
+                    showFastShare,
+                    showLinks = false,
+                    showShareWith = false,
+                    onDismissRequest = { showFastShare = false },
+                    content = mediaItem
+                )
+
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
@@ -1388,6 +1397,16 @@ fun MediaItemMenu(
                         onClick = {
                             onDismiss()
                             onInfo()
+                        }
+                    )
+                }
+
+                if (!isLocal) {
+                    MenuEntry(
+                        icon = R.drawable.get_app,
+                        text = stringResource(R.string.share_with_external_app),
+                        onClick = {
+                            showFastShare = true
                         }
                     )
                 }

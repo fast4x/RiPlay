@@ -210,8 +210,8 @@ fun ArtistOverview(
 
     FastShare(
         showFastShare,
-        artist ?: return,
-        onDismissRequest = { showFastShare = false}
+        onDismissRequest = { showFastShare = false},
+        content = artist ?: return
     )
 
     Box(
