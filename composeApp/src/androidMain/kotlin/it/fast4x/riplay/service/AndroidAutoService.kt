@@ -143,6 +143,8 @@ class AndroidAutoService : MediaBrowserServiceCompat(), ServiceConnection {
     private var lastSongs = emptyList<Song>()
     private var searchedSongs = emptyList<Song>()
 
+    var isRunning = false
+
     var currentMediaItem: androidx.media3.common.MediaItem? = null
 
 
@@ -215,6 +217,7 @@ class AndroidAutoService : MediaBrowserServiceCompat(), ServiceConnection {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         MediaButtonReceiver.handleIntent(mediaSession, intent)
         //return super.onStartCommand(intent, flags, startId)
+        isRunning = true
         return START_STICKY // If the service is killed, it will be automatically restarted
     }
 
@@ -223,14 +226,15 @@ class AndroidAutoService : MediaBrowserServiceCompat(), ServiceConnection {
         clientUid: Int,
         rootHints: Bundle?
     ): BrowserRoot? {
-        Timber.d("AndroidAutoService onGetRoot $clientPackageName but app is running ? ${isAppRunning()} mediaSession $mediaSession")
+        Timber.d("AndroidAutoService onGetRoot $clientPackageName but app is running ? ${isAppRunning()} mediaSession $mediaSession but service is running ? $isRunning")
         bindService(intent<AndroidAutoService>(), this, Context.BIND_AUTO_CREATE)
 
         //if(!isAppRunning())
             //return BrowserRoot(MediaId.fault, Bundle().apply { putInt(CONTENT_STYLE_BROWSABLE_HINT, CONTENT_STYLE_LIST) })
 
         return BrowserRoot(
-            if(isAppRunning()) MediaId.root else MediaId.fault,
+            //if(isAppRunning()) MediaId.root else MediaId.fault,
+            MediaId.root,
             //bundleOf("android.media.browse.CONTENT_STYLE_BROWSABLE_HINT" to 1)
             Bundle().apply {
                 putBoolean(MEDIA_SEARCH_SUPPORTED, true)

@@ -1653,9 +1653,9 @@ class MainActivity :
                                 // TODO Maybe is not needed
                                 //if (reason == Player.MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED) {
                                     //if (it.mediaMetadata.extras?.getBoolean("isFromPersistentQueue") != true) {
-                                        if (getKeepPlayerMinimized())
-                                            localPlayerSheetState.collapseSoft()
-                                        else localPlayerSheetState.expandSoft()
+                                if (getKeepPlayerMinimized())
+                                    localPlayerSheetState.collapseSoft()
+                                else localPlayerSheetState.expandSoft()
                                     //}
                                 //}
 
