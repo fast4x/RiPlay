@@ -1614,21 +1614,21 @@ class MainActivity :
 
                     //Timber.d("MainActivity DisposableEffecty mediaItemAsSong ${binder!!.currentMediaItemAsSong}")
 
-                    if (player.currentMediaItem == null) {
-                        if (localPlayerSheetState.isExpanded) {
-                            localPlayerSheetState.collapseSoft()
-                        }
-                    } else {
-                        if (launchedFromNotification) {
-                            intent.replaceExtras(Bundle())
-                            if (getKeepPlayerMinimized())
-                                localPlayerSheetState.collapseSoft()
-                            else localPlayerSheetState.expandSoft()
-                        } else {
-                            localPlayerSheetState.collapseSoft()
-                        }
-
-                    }
+//                    if (player.currentMediaItem == null) {
+//                        if (localPlayerSheetState.isExpanded) {
+//                            localPlayerSheetState.collapseSoft()
+//                        }
+//                    } else {
+//                        if (launchedFromNotification) {
+//                            intent.replaceExtras(Bundle())
+//                            if (getKeepPlayerMinimized())
+//                                localPlayerSheetState.collapseSoft()
+//                            else localPlayerSheetState.expandSoft()
+//                        } else {
+//                            localPlayerSheetState.collapseSoft()
+//                        }
+//
+//                    }
 
                     val listener = object : Player.Listener {
                         override fun onIsPlayingChanged(isPlaying: Boolean) {
@@ -1644,7 +1644,7 @@ class MainActivity :
                                 localPlayerSheetState.dismissSoft()
                             }
 
-                            mediaItem?.let{
+                            mediaItem?.let {
                                 //currentPlaybackPosition.value = 0L
                                 currentSecond.value = 0F
 

@@ -10,13 +10,17 @@ import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.compose.ui.window.DialogWindowProvider
+import androidx.core.view.WindowCompat
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
@@ -39,6 +43,7 @@ import it.fast4x.riplay.extensions.history.updateOnlineHistory
 import it.fast4x.riplay.ui.screens.player.online.components.customui.CustomDefaultPlayerUiController
 import it.fast4x.riplay.utils.DisposableListener
 import it.fast4x.riplay.extensions.preferences.isInvincibilityEnabledKey
+import it.fast4x.riplay.extensions.preferences.isKeepScreenOnEnabledKey
 import it.fast4x.riplay.extensions.preferences.lastVideoIdKey
 import it.fast4x.riplay.extensions.preferences.playbackDurationKey
 import it.fast4x.riplay.extensions.preferences.playbackSpeedKey
@@ -73,6 +78,7 @@ fun OnlinePlayerCore(
     onPlayerStateChange: (PlayerConstants.PlayerState) -> Unit,
     onTap: () -> Unit,
 ) {
+
     Timber.d("OnlinePlayerCore: called")
     val binder = LocalPlayerServiceBinder.current
 
@@ -112,6 +118,7 @@ fun OnlinePlayerCore(
     var shouldBePlaying by remember { mutableStateOf(false) }
     val lifecycleOwner = LocalLifecycleOwner.current
     val enableBackgroundPlayback by rememberPreference(isInvincibilityEnabledKey, true)
+    val enableKeepScreenOn by rememberPreference(isKeepScreenOnEnabledKey, false)
     //var lastYTVideoSeconds by rememberPreference(key = lastVideoSecondsKey, defaultValue = 0f)
     val isLandscape = isLandscape
     val playerThumbnailSize by rememberPreference(
@@ -319,6 +326,9 @@ fun OnlinePlayerCore(
                 else
                     lifecycleOwner.lifecycle.addObserver(this)
 
+                //Timber.d("OnlinePlayerCore: onlinePlayerView.keepScreenOn ${onlinePlayerView.keepScreenOn} enableKeepScreenOn $enableKeepScreenOn")
+                onlinePlayerView.keepScreenOn = enableKeepScreenOn
+
                 initialize(listener, iFramePlayerOptions)
                 Timber.d("OnlinePlayerCore: initialize")
             }
@@ -326,7 +336,13 @@ fun OnlinePlayerCore(
 
         },
         update = {
+
+//            (it.parent as? DialogWindowProvider)
+//                ?.window?.clearFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+
             it.enableBackgroundPlayback(enableBackgroundPlayback)
+            it.keepScreenOn = enableKeepScreenOn
+
             when(actAsMini) {
                 true -> {
                     it.layoutParams = ViewGroup.LayoutParams(

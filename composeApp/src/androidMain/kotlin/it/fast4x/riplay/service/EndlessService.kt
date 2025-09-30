@@ -33,7 +33,7 @@ import it.fast4x.riplay.utils.isAtLeastAndroid8
 class EndlessService : Service() {
 
     private var mNotificationManager: NotificationManager? = null
-    private var wakeLock: PowerManager.WakeLock? = null // PARTIAL_WAKELOCK
+    private var wakeLock: PowerManager.WakeLock? = null
 
     /**
      * Returns the instance of the service
@@ -52,7 +52,7 @@ class EndlessService : Service() {
         val powerManager: PowerManager = getSystemService(POWER_SERVICE) as PowerManager
         wakeLock = powerManager.newWakeLock(
             PowerManager.PARTIAL_WAKE_LOCK,
-            "INSERT_YOUR_APP_NAME:wakelock"
+            "RIPLAY:wakelock"
         )
         println("EndlessService onCreate")
     }
@@ -131,7 +131,7 @@ class EndlessService : Service() {
                 .setCategory(NotificationCompat.CATEGORY_SERVICE)
                 .setOngoing(true)
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
-                .setContentText("Tips will be displayed here")
+                .setContentText("Tips will be displayed here, for now can disable notification permission in app settings")
                 .setContentIntent(contentIntent)
                 .setSilent(true)
                 .build()
