@@ -318,6 +318,7 @@ fun OnlinePlayerCore(
 
             }
 
+            inflatedView.keepScreenOn = enableKeepScreenOn
             onlinePlayerView.apply {
                 enableAutomaticInitialization = false
 
@@ -341,6 +342,7 @@ fun OnlinePlayerCore(
 //                ?.window?.clearFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
 
             it.enableBackgroundPlayback(enableBackgroundPlayback)
+            inflatedView.keepScreenOn = enableKeepScreenOn
             it.keepScreenOn = enableKeepScreenOn
 
             when(actAsMini) {
