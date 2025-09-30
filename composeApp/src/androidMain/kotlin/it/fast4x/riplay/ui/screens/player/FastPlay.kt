@@ -7,31 +7,44 @@ import it.fast4x.riplay.Database
 import it.fast4x.riplay.service.LocalPlayerService
 import it.fast4x.riplay.service.isLocal
 import it.fast4x.riplay.utils.forcePlay
+import it.fast4x.riplay.utils.mediaItems
 import it.fast4x.riplay.utils.playAtIndex
 import it.fast4x.riplay.utils.playOnline
 import it.fast4x.riplay.utils.playOnlineAtIndex
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import kotlin.random.Random
 
 @OptIn(UnstableApi::class)
 fun fastPlay(
-    mediaItem: MediaItem,
+    mediaItem: MediaItem? = null,
     binder: LocalPlayerService.Binder?,
     mediaItems: List<MediaItem>? = emptyList(),
-    playlistId: String? = null,
-    replace: Boolean = false
+    withReplace: Boolean = false,
+    withShuffle: Boolean = false,
 ) {
 
-    Database.asyncTransaction {
-        insert(mediaItem)
+    CoroutineScope(Dispatchers.IO).launch {
+        Database.asyncTransaction {
+            mediaItem?.let { insert(it) }
+            mediaItems?.onEach { insert(it) }
+        }
+
+        withContext(Dispatchers.Main) {
+            binder?.stopRadio()
+            mediaItems?.let { binder?.player?.setMediaItems(if (withShuffle) it.shuffled() else it) }
+            val mediaItemToPlay = if (!withShuffle) mediaItem ?: binder?.player?.mediaItems?.first()
+                else binder?.player?.mediaItems?.get(Random.nextInt(binder.player.mediaItems.size-1))
+            if (mediaItemToPlay?.isLocal == true) {
+                binder?.player?.forcePlay(mediaItemToPlay, withReplace)
+            } else {
+                mediaItemToPlay?.let { binder?.player?.playOnline(it, withReplace) }
+            }
+        }
     }
 
-    binder?.stopRadio()
-
-    if (mediaItem.isLocal) {
-        binder?.player?.forcePlay(mediaItem, replace)
-    } else {
-        binder?.player?.playOnline(mediaItem, replace)
-    }
-    if (mediaItems != null) binder?.player?.addMediaItems(mediaItems)
 }
 
 @OptIn(UnstableApi::class)

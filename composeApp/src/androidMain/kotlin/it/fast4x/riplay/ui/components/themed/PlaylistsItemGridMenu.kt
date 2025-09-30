@@ -80,6 +80,8 @@ fun PlaylistsItemGridMenu(
     playlist: PlaylistPreview? = null,
     modifier: Modifier = Modifier,
     onPlayNext: (() -> Unit)? = null,
+    onPlayNow: (() -> Unit)? = null,
+    onShufflePlay: (() -> Unit)? = null,
     onDeleteSongsNotInLibrary: (() -> Unit)? = null,
     onEnqueue: (() -> Unit)? = null,
     onImportOnlinePlaylist: (() -> Unit)? = null,
@@ -424,6 +426,32 @@ fun PlaylistsItemGridMenu(
                         onClick = {
                             onDismiss()
                             onPlayNext()
+                        }
+                    )
+                }
+
+                onPlayNow?.let { onPlayNow ->
+                    GridMenuItem(
+                        icon = R.drawable.play,
+                        title = R.string.play_now,
+                        colorIcon = colorPalette.text,
+                        colorText = colorPalette.text,
+                        onClick = {
+                            onDismiss()
+                            onPlayNow()
+                        }
+                    )
+                }
+
+                onShufflePlay?.let { onShufflePlay ->
+                    GridMenuItem(
+                        icon = R.drawable.playlist_played,
+                        title = R.string.shuffle_play,
+                        colorIcon = colorPalette.text,
+                        colorText = colorPalette.text,
+                        onClick = {
+                            onDismiss()
+                            onShufflePlay()
                         }
                     )
                 }

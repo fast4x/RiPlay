@@ -3,7 +3,6 @@ package it.fast4x.riplay.utils
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -209,7 +208,7 @@ fun SearchYoutubeEntity (
         //                                        else
         //                                            binder?.player?.forcePlay(video.asMediaItem)
         //binder?.setupRadio(video.info?.endpoint)
-                                                fastPlay(media.asMediaItem, binder, replace = true)
+                                                fastPlay(media.asMediaItem, binder, withReplace = true)
                                                 onDismiss()
                                             }
                                         ),
@@ -245,7 +244,7 @@ fun SearchYoutubeEntity (
     //                                        else
     //                                            binder?.player?.forcePlay(video.asMediaItem)
     //binder?.setupRadio(video.info?.endpoint)
-                                                fastPlay(media.asMediaItem, binder, replace = true)
+                                                fastPlay(media.asMediaItem, binder, withReplace = true)
                                                 onDismiss()
                                             }
                                         )

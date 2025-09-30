@@ -77,6 +77,8 @@ fun PlaylistsItemMenu(
     playlist: PlaylistPreview? = null,
     modifier: Modifier = Modifier,
     onPlayNext: (() -> Unit)? = null,
+    onPlayNow: (() -> Unit)? = null,
+    onShufflePlay: (() -> Unit)? = null,
     onDeleteSongsNotInLibrary: (() -> Unit)? = null,
     onEnqueue: (() -> Unit)? = null,
     onImportOnlinePlaylist: (() -> Unit)? = null,
@@ -122,6 +124,8 @@ fun PlaylistsItemMenu(
             playlist = playlist,
             onSelectUnselect = onSelectUnselect,
             onPlayNext = onPlayNext,
+            onPlayNow = onPlayNow,
+            onShufflePlay = onShufflePlay,
             onDeleteSongsNotInLibrary = onDeleteSongsNotInLibrary,
             onEnqueue = onEnqueue,
             onImportOnlinePlaylist = onImportOnlinePlaylist,
@@ -216,7 +220,7 @@ fun PlaylistsItemMenu(
                 val density = LocalDensity.current
                 Menu(
                     modifier = modifier
-                        .fillMaxHeight()
+                        //.fillMaxHeight()
                         //.requiredHeight(height)
                         //.onPlaced { height = with(density) { it.size.height.toDp()+100.dp } }
                 ) {
@@ -407,7 +411,7 @@ fun PlaylistsItemMenu(
                 val density = LocalDensity.current
                 Menu(
                     modifier = modifier
-                        .fillMaxHeight()
+                        //.fillMaxHeight()
                         //.onPlaced { height = with(density) { it.size.height.toDp()+100.dp } }
 
 //                        .onPlaced {
@@ -515,6 +519,26 @@ fun PlaylistsItemMenu(
                             onClick = {
                                 onDismiss()
                                 onPlayNext()
+                            }
+                        )
+                    }
+                    onPlayNow?.let { onPlayNow ->
+                        MenuEntry(
+                            icon = R.drawable.play,
+                            text = stringResource(R.string.play_now),
+                            onClick = {
+                                onDismiss()
+                                onPlayNow()
+                            }
+                        )
+                    }
+                    onShufflePlay?.let { onShufflePlay ->
+                        MenuEntry(
+                            icon = R.drawable.playlist_played,
+                            text = stringResource(R.string.shuffle_play),
+                            onClick = {
+                                onDismiss()
+                                onShufflePlay()
                             }
                         )
                     }

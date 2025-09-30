@@ -5,6 +5,7 @@ import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -35,15 +36,20 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.util.UnstableApi
+import androidx.navigation.compose.rememberNavController
 import it.fast4x.compose.persist.persistList
 import it.fast4x.environment.EnvironmentExt
 import it.fast4x.riplay.Database
+import it.fast4x.riplay.LocalPlayerServiceBinder
+import it.fast4x.riplay.LocalSelectedQueue
 import it.fast4x.riplay.MONTHLY_PREFIX
 import it.fast4x.riplay.PINNED_PREFIX
 import it.fast4x.riplay.R
 import it.fast4x.riplay.YTP_PREFIX
+import it.fast4x.riplay.appContext
 import it.fast4x.riplay.enums.NavigationBarPosition
 import it.fast4x.riplay.enums.PlaylistSortBy
 import it.fast4x.riplay.enums.PlaylistsType
@@ -92,16 +98,26 @@ import it.fast4x.riplay.utils.importYTMPrivatePlaylists
 import it.fast4x.riplay.extensions.preferences.Preference.HOME_LIBRARY_ITEM_SIZE
 import it.fast4x.riplay.utils.autoSyncToolbutton
 import it.fast4x.riplay.extensions.preferences.autosyncKey
+import it.fast4x.riplay.models.defaultQueue
+import it.fast4x.riplay.ui.components.LocalMenuState
+import it.fast4x.riplay.ui.components.themed.PlaylistsItemMenu
+import it.fast4x.riplay.ui.screens.player.fastPlay
 import it.fast4x.riplay.utils.LazyListContainer
+import it.fast4x.riplay.utils.addNext
 import it.fast4x.riplay.utils.viewTypeToolbutton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 
+@OptIn(ExperimentalTextApi::class)
 @ExperimentalMaterial3Api
 @UnstableApi
 @ExperimentalMaterialApi
@@ -118,6 +134,10 @@ fun HomePlaylists(
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
     val lazyGridState = rememberLazyGridState()
+    val menuState = LocalMenuState.current
+    val navController = rememberNavController()
+    val binder = LocalPlayerServiceBinder.current
+    val selectedQueue = LocalSelectedQueue.current
 
     // Non-vital
     var plistId by remember { mutableLongStateOf( 0L ) }
@@ -398,10 +418,38 @@ fun HomePlaylists(
                                     modifier = Modifier
                                         .fillMaxSize()
                                         .animateItem(fadeInSpec = null, fadeOutSpec = null)
-                                        .clickable(onClick = {
-                                            search.onItemSelected()
-                                            onPlaylistClick(preview.playlist)
-                                        }),
+                                        .combinedClickable(
+                                            onClick = {
+                                                search.onItemSelected()
+                                                onPlaylistClick(preview.playlist)
+                                            },
+                                            onLongClick = {
+                                                menuState.display {
+                                                    PlaylistsItemMenu(
+                                                        navController = navController,
+                                                        onDismiss = menuState::hide,
+                                                        playlist = preview,
+                                                        disableScrollingText = disableScrollingText,
+                                                        onPlayNext = {
+                                                            coroutineScope.launch(Dispatchers.IO) {
+                                                                Database.playlistSongs(preview.playlist.id).distinctUntilChanged()
+                                                                    .map { it?.map( Song::asMediaItem) }
+                                                                    .onEach {
+                                                                        withContext(Dispatchers.Main) {
+                                                                            binder?.player?.addNext(it ?: emptyList(),
+                                                                                appContext(), selectedQueue ?: defaultQueue()
+                                                                            )
+                                                                        }
+                                                                    }
+                                                                    .collect()
+                                                            }
+
+                                                        }
+                                                    )
+                                                }
+                                            }
+
+                                    ),
                                     disableScrollingText = disableScrollingText,
                                     isYoutubePlaylist = preview.playlist.isYoutubePlaylist,
                                     isEditable = preview.playlist.isEditable
@@ -471,10 +519,60 @@ fun HomePlaylists(
                                     modifier = Modifier
                                         .fillMaxSize()
                                         .animateItem(fadeInSpec = null, fadeOutSpec = null)
-                                        .clickable(onClick = {
-                                            search.onItemSelected()
-                                            onPlaylistClick(preview.playlist)
-                                        }),
+                                        .combinedClickable(
+                                            onClick = {
+                                                search.onItemSelected()
+                                                onPlaylistClick(preview.playlist)
+                                            },
+                                            onLongClick = {
+                                                menuState.display {
+                                                    PlaylistsItemMenu(
+                                                        navController = navController,
+                                                        onDismiss = menuState::hide,
+                                                        playlist = preview,
+                                                        disableScrollingText = disableScrollingText,
+                                                        onPlayNext = {
+                                                            coroutineScope.launch(Dispatchers.IO) {
+                                                                Database.playlistSongs(preview.playlist.id).distinctUntilChanged()
+                                                                    .map { it?.map( Song::asMediaItem) }
+                                                                    .onEach {
+                                                                        withContext(Dispatchers.Main) {
+                                                                            binder?.player?.addNext(it ?: emptyList(),
+                                                                                appContext(), selectedQueue ?: defaultQueue()
+                                                                            )
+                                                                        }
+                                                                    }
+                                                                    .collect()
+                                                            }
+                                                        },
+                                                        onPlayNow = {
+                                                            coroutineScope.launch(Dispatchers.IO) {
+                                                                Database.playlistSongs(preview.playlist.id).distinctUntilChanged()
+                                                                    .map { it?.map( Song::asMediaItem) }
+                                                                    .onEach {
+                                                                        if (it != null)
+                                                                            fastPlay(it.first(),
+                                                                                binder, it
+                                                                            )
+                                                                    }
+                                                                    .collect()
+                                                            }
+                                                        },
+                                                        onShufflePlay = {
+                                                            coroutineScope.launch(Dispatchers.IO) {
+                                                                Database.playlistSongs(preview.playlist.id).distinctUntilChanged()
+                                                                    .map { it?.map( Song::asMediaItem) }
+                                                                    .onEach {
+                                                                        if (it != null)
+                                                                            fastPlay(binder = binder, mediaItems = it, withShuffle = true)
+                                                                    }
+                                                                    .collect()
+                                                            }
+                                                        }
+                                                    )
+                                                }
+                                            }
+                                        ),
                                     disableScrollingText = disableScrollingText,
                                     isYoutubePlaylist = preview.playlist.isYoutubePlaylist,
                                     isEditable = preview.playlist.isEditable,

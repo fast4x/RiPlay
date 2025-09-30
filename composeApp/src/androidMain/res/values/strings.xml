@@ -953,4 +953,6 @@
     <string name="unknown_title">Unknow title</string>
     <string name="unknown_artist">Unknow artist</string>
     <string name="share_with_external_app">Share with external app</string>
+    <string name="play_now">Play now</string>
+    <string name="shuffle_play">Shuffle play</string>
 </resources>
