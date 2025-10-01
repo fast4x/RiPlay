@@ -217,7 +217,7 @@ fun PlaylistsItemMenu(
                 BackHandler {
                     isViewingPlaylists = false
                 }
-                val density = LocalDensity.current
+                //val density = LocalDensity.current
                 Menu(
                     modifier = modifier
                         //.fillMaxHeight()
@@ -408,7 +408,7 @@ fun PlaylistsItemMenu(
                     }
                 }
             } else {
-                val density = LocalDensity.current
+                //val density = LocalDensity.current
                 Menu(
                     modifier = modifier
                         //.fillMaxHeight()
