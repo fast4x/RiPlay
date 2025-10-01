@@ -122,6 +122,8 @@ import it.fast4x.riplay.utils.secondary
 import it.fast4x.riplay.utils.semiBold
 import it.fast4x.riplay.extensions.preferences.showFloatingIconKey
 import it.fast4x.riplay.extensions.preferences.thumbnailRoundnessKey
+import it.fast4x.riplay.models.Song
+import it.fast4x.riplay.ui.components.themed.FastPlayActionsBar
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.firstOrNull
@@ -319,6 +321,42 @@ fun ArtistOverview(
 //                                    null
 //                                )
 //                            )
+                        }
+                    )
+
+                    FastPlayActionsBar(
+                        modifier = Modifier.fillMaxWidth(.5f).align(Alignment.BottomCenter).padding(bottom = 50.dp),
+                        onPlayNowClick = {
+                            CoroutineScope(Dispatchers.IO).launch {
+                                EnvironmentExt.getArtistItemsPage(
+                                    BrowseEndpoint(
+                                        browseId = songsBrowseId,
+                                        params = songsParams
+                                    )
+                                ).completed().getOrNull()
+                                    ?.items
+                                    ?.map { it as Environment.SongItem }
+                                    ?.map { it.asMediaItem }
+                                    .let {
+                                        fastPlay(binder = binder, mediaItems = it)
+                                    }
+                            }
+                        },
+                        onShufflePlayClick = {
+                            CoroutineScope(Dispatchers.IO).launch {
+                                EnvironmentExt.getArtistItemsPage(
+                                    BrowseEndpoint(
+                                        browseId = songsBrowseId,
+                                        params = songsParams
+                                    )
+                                ).completed().getOrNull()
+                                    ?.items
+                                    ?.map { it as Environment.SongItem }
+                                    ?.map { it.asMediaItem }
+                                    .let {
+                                        fastPlay(binder = binder, mediaItems = it, withShuffle = true)
+                                    }
+                            }
                         }
                     )
 

@@ -197,6 +197,7 @@ import org.dailyislam.android.utilities.isNetworkConnected
 import it.fast4x.riplay.utils.mediaItemToggleLike
 import it.fast4x.riplay.utils.move
 import it.fast4x.riplay.extensions.preferences.playlistSongsTypeFilterKey
+import it.fast4x.riplay.ui.components.themed.FastPlayActionsBar
 import it.fast4x.riplay.utils.LazyListContainer
 import it.fast4x.riplay.utils.removeYTSongFromPlaylist
 import it.fast4x.riplay.utils.unlikeYtVideoOrSong
@@ -1163,161 +1164,39 @@ fun LocalPlaylistSongs(
                                 }
                                 Spacer(modifier = Modifier.height(30.dp))
 
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.SpaceEvenly,
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    HeaderIconButton(
-                                        icon = R.drawable.play_now,
-                                        color = colorPalette.text,
-                                        onClick = {},
-                                        modifier = Modifier
-                                            .combinedClickable(
-                                                onClick = {
-                                                    fastPlay(binder = binder, mediaItems = playlistSongs.map(SongEntity::asMediaItem))
-                                                },
-                                                onLongClick = {
-                                                    SmartMessage(
-                                                        context.resources.getString(R.string.play_now),
-                                                        context = context
-                                                    )
-                                                }
-                                            ),
-                                        iconSize = 36.dp
-                                    )
-                                    HeaderIconButton(
-                                        icon = R.drawable.play_shuffle,
-                                        color = colorPalette.text,
-                                        onClick = {},
-                                        modifier = Modifier
-                                            .combinedClickable(
-                                                onClick = {
-                                                    if (playlistSongs.any { it.song.thumbnailUrl != "" && it.song.likedAt != -1L }) {
-                                                        playlistSongs.filter { it.song.thumbnailUrl != "" && it.song.likedAt != -1L }
-                                                            .let { songs ->
-                                                                if (songs.isNotEmpty()) {
-                                                                    val itemsLimited =
-                                                                        if (songs.size > maxSongsInQueue.number) songs.shuffled()
-                                                                            .take(maxSongsInQueue.number.toInt()) else songs
-                                                                    binder?.stopRadio()
-                                                                    fastPlay(binder = binder, mediaItems = itemsLimited.map(SongEntity::asMediaItem), withShuffle = true)
-                                                                }
-                                                            }
-                                                    } else {
-                                                        SmartMessage(
-                                                            context.resources.getString(R.string.disliked_this_collection),
-                                                            type = PopupType.Error,
-                                                            context = context
-                                                        )
+                                FastPlayActionsBar(
+                                    modifier = Modifier
+                                        .fillMaxWidth(),
+                                    onPlayNowClick = {
+                                        fastPlay(binder = binder, mediaItems = playlistSongs.map(SongEntity::asMediaItem))
+                                    },
+                                    onShufflePlayClick = {
+                                        if (playlistSongs.any { it.song.thumbnailUrl != "" && it.song.likedAt != -1L }) {
+                                            playlistSongs.filter { it.song.thumbnailUrl != "" && it.song.likedAt != -1L }
+                                                .let { songs ->
+                                                    if (songs.isNotEmpty()) {
+                                                        val itemsLimited =
+                                                            if (songs.size > maxSongsInQueue.number) songs.shuffled()
+                                                                .take(maxSongsInQueue.number.toInt()) else songs
+                                                        binder?.stopRadio()
+                                                        fastPlay(binder = binder, mediaItems = itemsLimited.map(SongEntity::asMediaItem), withShuffle = true)
                                                     }
-
-                                                },
-                                                onLongClick = {
-                                                    SmartMessage(
-                                                        context.resources.getString(R.string.shuffle_play),
-                                                        context = context
-                                                    )
                                                 }
-                                            ),
-                                        iconSize = 36.dp
-                                    )
-                                    HeaderIconButton(
-                                        icon = R.drawable.smart_shuffle,
-                                        color = if (isRecommendationEnabled) colorPalette.text else colorPalette.textDisabled,
-                                        onClick = {},
-                                        modifier = Modifier
-                                            .combinedClickable(
-                                                onClick = {
-                                                    isRecommendationEnabled = !isRecommendationEnabled
-                                                },
-                                                onLongClick = {
-                                                    SmartMessage(
-                                                        context.resources.getString(R.string.info_smart_recommendation),
-                                                        context = context
-                                                    )
-                                                }
-                                            ),
-                                        iconSize = 36.dp
-                                    )
-                                }
-                            }
-
-                            /*
-                            Column(
-                                verticalArrangement = Arrangement.Top,
-                                horizontalAlignment = Alignment.CenterHorizontally
-                            ) {
-                                HeaderIconButton(
-                                    icon = R.drawable.smart_shuffle,
-                                    enabled = true,
-                                    color = if (isRecommendationEnabled) colorPalette.text else colorPalette.textDisabled,
-                                    onClick = {},
-                                    modifier = Modifier
-                                        .combinedClickable(
-                                            onClick = {
-                                                isRecommendationEnabled = !isRecommendationEnabled
-                                            },
-                                            onLongClick = {
-                                                SmartMessage(
-                                                    context.resources.getString(R.string.info_smart_recommendation),
-                                                    context = context
-                                                )
-                                            }
-                                        )
-                                )
-                                /*
-                                Spacer(modifier = Modifier.height(10.dp))
-                                HeaderIconButton(
-                                    icon = R.drawable.shuffle,
-                                    enabled = playlistSongs.any { it.song.thumbnailUrl != "" && it.song.likedAt != -1L },
-                                    color = if (playlistSongs.any { it.song.thumbnailUrl != "" && it.song.likedAt != -1L }) colorPalette.text else colorPalette.textDisabled,
-                                    onClick = {},
-                                    modifier = Modifier
-                                        .combinedClickable(
-                                            onClick = {
-                                                if (playlistSongs.any { it.song.thumbnailUrl != "" && it.song.likedAt != -1L }) {
-                                                    playlistSongs.filter { it.song.thumbnailUrl != "" && it.song.likedAt != -1L }
-                                                        .let { songs ->
-                                                            if (songs.isNotEmpty()) {
-                                                                val itemsLimited =
-                                                                    if (songs.size > maxSongsInQueue.number) songs.shuffled()
-                                                                        .take(maxSongsInQueue.number.toInt()) else songs
-                                                                binder?.stopRadio()
-                                                                binder?.player?.forcePlayFromBeginning(
-                                                                    itemsLimited.shuffled()
-                                                                        .map(SongEntity::asMediaItem)
-                                                                )
-                                                            }
-                                                        }
-                                                } else {
-                                                    SmartMessage(
-                                                        context.resources.getString(R.string.disliked_this_collection),
-                                                        type = PopupType.Error,
-                                                        context = context
-                                                    )
-                                                }
-                                            },
-                                            onLongClick = {
-                                                SmartMessage(
-                                                    context.resources.getString(R.string.info_shuffle),
-                                                    context = context
-                                                )
-                                            }
-                                        )
+                                        } else {
+                                            SmartMessage(
+                                                context.resources.getString(R.string.disliked_this_collection),
+                                                type = PopupType.Error,
+                                                context = context
+                                            )
+                                        }
+                                    },
+                                    onSmartRecommendationClick = {
+                                        isRecommendationEnabled = !isRecommendationEnabled
+                                    },
+                                    isRecommendationEnabled = isRecommendationEnabled
                                 )
 
-                                 */
-//                                Spacer(modifier = Modifier.height(10.dp))
-//                                HeaderIconButton(
-//                                    modifier = Modifier.padding(horizontal = 5.dp),
-//                                    onClick = { searching = !searching },
-//                                    icon = R.drawable.search_circle,
-//                                    color = colorPalette.text,
-//                                    iconSize = 24.dp
-//                                )
                             }
-                            */
 
                         }
 

@@ -141,11 +141,14 @@ import it.fast4x.riplay.colorPalette
 import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.extensions.fastshare.FastShare
 import it.fast4x.riplay.models.SongAlbumMap
+import it.fast4x.riplay.models.SongEntity
 import it.fast4x.riplay.models.defaultQueue
 import it.fast4x.riplay.typography
 import it.fast4x.riplay.ui.components.PullToRefreshBox
+import it.fast4x.riplay.ui.components.themed.FastPlayActionsBar
 import it.fast4x.riplay.ui.components.themed.QueuesDialog
 import it.fast4x.riplay.ui.components.themed.Title
+import it.fast4x.riplay.ui.screens.player.fastPlay
 import it.fast4x.riplay.ui.screens.settings.isSyncEnabled
 import it.fast4x.riplay.utils.LazyListContainer
 import it.fast4x.riplay.utils.addToYtLikedSongs
@@ -624,6 +627,16 @@ fun AlbumDetails(
 //                                                )
 //                                            )
 //                                        }
+                                        }
+                                    )
+
+                                    FastPlayActionsBar(
+                                        modifier = Modifier.fillMaxWidth(.5f).align(Alignment.BottomCenter).padding(bottom = 50.dp),
+                                        onPlayNowClick = {
+                                            fastPlay(binder = binder, mediaItems = songs.map(Song::asMediaItem))
+                                        },
+                                        onShufflePlayClick = {
+                                            fastPlay(binder = binder, mediaItems = songs.map(Song::asMediaItem), withShuffle = true)
                                         }
                                     )
 
