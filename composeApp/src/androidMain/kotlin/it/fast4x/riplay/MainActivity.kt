@@ -1501,9 +1501,7 @@ class MainActivity :
                                             )
                                         else {
                                             OnlineMiniPlayer(
-                                                showPlayer = {
-                                                    localPlayerSheetState.expandSoft()
-                                                },
+                                                showPlayer = { localPlayerSheetState.expandSoft() },
                                                 hidePlayer = { localPlayerSheetState.collapseSoft() },
                                                 navController = navController,
                                                 player = onlinePlayer,
@@ -1519,7 +1517,7 @@ class MainActivity :
                                 )
 
                                 checkIfAppIsRunningInBackground()
-
+                                if (appRunningInBackground) localPlayerSheetState.collapseSoft()
 
                                 val thumbnailRoundness by rememberPreference(
                                     thumbnailRoundnessKey,
@@ -1614,21 +1612,21 @@ class MainActivity :
 
                     //Timber.d("MainActivity DisposableEffecty mediaItemAsSong ${binder!!.currentMediaItemAsSong}")
 
-//                    if (player.currentMediaItem == null) {
-//                        if (localPlayerSheetState.isExpanded) {
-//                            localPlayerSheetState.collapseSoft()
-//                        }
-//                    } else {
-//                        if (launchedFromNotification) {
-//                            intent.replaceExtras(Bundle())
-//                            if (getKeepPlayerMinimized())
-//                                localPlayerSheetState.collapseSoft()
-//                            else localPlayerSheetState.expandSoft()
-//                        } else {
-//                            localPlayerSheetState.collapseSoft()
-//                        }
-//
-//                    }
+                    if (player.currentMediaItem == null) {
+                        if (localPlayerSheetState.isExpanded) {
+                            localPlayerSheetState.collapseSoft()
+                        }
+                    } else {
+                        if (launchedFromNotification) {
+                            intent.replaceExtras(Bundle())
+                            if (getKeepPlayerMinimized())
+                                localPlayerSheetState.collapseSoft()
+                            else localPlayerSheetState.expandSoft()
+                        } else {
+                            localPlayerSheetState.collapseSoft()
+                        }
+
+                    }
 
                     val listener = object : Player.Listener {
                         override fun onIsPlayingChanged(isPlaying: Boolean) {
@@ -1641,7 +1639,7 @@ class MainActivity :
 
                             if (mediaItem == null) {
                                 maybeExitPip()
-                                localPlayerSheetState.dismissSoft()
+                                localPlayerSheetState.collapseSoft()
                             }
 
                             mediaItem?.let {
@@ -1650,14 +1648,15 @@ class MainActivity :
 
                                 //Timber.d("MainActivity Player.Listener onMediaItemTransition mediaItemAsSong ${binder!!.currentMediaItemAsSong}")
 
-                                // TODO Maybe is not needed
-                                //if (reason == Player.MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED) {
-                                    //if (it.mediaMetadata.extras?.getBoolean("isFromPersistentQueue") != true) {
-                                if (getKeepPlayerMinimized())
-                                    localPlayerSheetState.collapseSoft()
-                                else localPlayerSheetState.expandSoft()
-                                    //}
-                                //}
+                                if (reason == Player.MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED) {
+                                    if (it.mediaMetadata.extras?.getBoolean("isFromPersistentQueue") != true) {
+                                        if (getKeepPlayerMinimized())
+                                            localPlayerSheetState.collapseSoft()
+                                        else localPlayerSheetState.expandSoft()
+                                    } else {
+                                        localPlayerSheetState.collapseSoft()
+                                    }
+                                }
 
                                 setDynamicPalette(
                                     it.mediaMetadata.artworkUri.thumbnail(
