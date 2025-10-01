@@ -107,9 +107,9 @@ fun PlaylistsItemMenu(
         mutableStateOf(false)
     }
 
-    var height by remember {
-        mutableStateOf(0.dp)
-    }
+//    var height by remember {
+//        mutableStateOf(0.dp)
+//    }
 
     val menuStyle by rememberPreference(
         menuStyleKey,
@@ -524,7 +524,7 @@ fun PlaylistsItemMenu(
                     }
                     onPlayNow?.let { onPlayNow ->
                         MenuEntry(
-                            icon = R.drawable.play,
+                            icon = R.drawable.play_now,
                             text = stringResource(R.string.play_now),
                             onClick = {
                                 onDismiss()
@@ -534,7 +534,7 @@ fun PlaylistsItemMenu(
                     }
                     onShufflePlay?.let { onShufflePlay ->
                         MenuEntry(
-                            icon = R.drawable.playlist_played,
+                            icon = R.drawable.play_shuffle,
                             text = stringResource(R.string.shuffle_play),
                             onClick = {
                                 onDismiss()

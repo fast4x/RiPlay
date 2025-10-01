@@ -12,8 +12,10 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -1103,7 +1105,8 @@ fun LocalPlaylistSongs(
                             verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier
                                 //.background(colorPalette.background4)
-                                .fillMaxSize(0.99F)
+                                //.fillMaxSize(0.99F)
+                                .fillMaxWidth()
                                 .background(
                                     color = colorPalette.background1,
                                     shape = thumbnailRoundness.shape()
@@ -1131,7 +1134,8 @@ fun LocalPlaylistSongs(
                                 modifier = Modifier
                                     //.fillMaxHeight()
                                     .padding(end = 10.dp)
-                                    .fillMaxWidth(if (isLandscape) 0.90f else 0.80f)
+                                    //.fillMaxWidth(if (isLandscape) 0.90f else 0.80f)
+                                    .fillMaxWidth()
                             ) {
                                 Spacer(modifier = Modifier.height(10.dp))
                                 IconInfo(
@@ -1158,10 +1162,90 @@ fun LocalPlaylistSongs(
                                     )
                                 }
                                 Spacer(modifier = Modifier.height(30.dp))
+
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceEvenly,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    HeaderIconButton(
+                                        icon = R.drawable.play_now,
+                                        color = colorPalette.text,
+                                        onClick = {},
+                                        modifier = Modifier
+                                            .combinedClickable(
+                                                onClick = {
+                                                    fastPlay(binder = binder, mediaItems = playlistSongs.map(SongEntity::asMediaItem))
+                                                },
+                                                onLongClick = {
+                                                    SmartMessage(
+                                                        context.resources.getString(R.string.play_now),
+                                                        context = context
+                                                    )
+                                                }
+                                            ),
+                                        iconSize = 36.dp
+                                    )
+                                    HeaderIconButton(
+                                        icon = R.drawable.play_shuffle,
+                                        color = colorPalette.text,
+                                        onClick = {},
+                                        modifier = Modifier
+                                            .combinedClickable(
+                                                onClick = {
+                                                    if (playlistSongs.any { it.song.thumbnailUrl != "" && it.song.likedAt != -1L }) {
+                                                        playlistSongs.filter { it.song.thumbnailUrl != "" && it.song.likedAt != -1L }
+                                                            .let { songs ->
+                                                                if (songs.isNotEmpty()) {
+                                                                    val itemsLimited =
+                                                                        if (songs.size > maxSongsInQueue.number) songs.shuffled()
+                                                                            .take(maxSongsInQueue.number.toInt()) else songs
+                                                                    binder?.stopRadio()
+                                                                    fastPlay(binder = binder, mediaItems = itemsLimited.map(SongEntity::asMediaItem), withShuffle = true)
+                                                                }
+                                                            }
+                                                    } else {
+                                                        SmartMessage(
+                                                            context.resources.getString(R.string.disliked_this_collection),
+                                                            type = PopupType.Error,
+                                                            context = context
+                                                        )
+                                                    }
+
+                                                },
+                                                onLongClick = {
+                                                    SmartMessage(
+                                                        context.resources.getString(R.string.shuffle_play),
+                                                        context = context
+                                                    )
+                                                }
+                                            ),
+                                        iconSize = 36.dp
+                                    )
+                                    HeaderIconButton(
+                                        icon = R.drawable.smart_shuffle,
+                                        color = if (isRecommendationEnabled) colorPalette.text else colorPalette.textDisabled,
+                                        onClick = {},
+                                        modifier = Modifier
+                                            .combinedClickable(
+                                                onClick = {
+                                                    isRecommendationEnabled = !isRecommendationEnabled
+                                                },
+                                                onLongClick = {
+                                                    SmartMessage(
+                                                        context.resources.getString(R.string.info_smart_recommendation),
+                                                        context = context
+                                                    )
+                                                }
+                                            ),
+                                        iconSize = 36.dp
+                                    )
+                                }
                             }
 
+                            /*
                             Column(
-                                verticalArrangement = Arrangement.Center,
+                                verticalArrangement = Arrangement.Top,
                                 horizontalAlignment = Alignment.CenterHorizontally
                             ) {
                                 HeaderIconButton(
@@ -1182,6 +1266,7 @@ fun LocalPlaylistSongs(
                                             }
                                         )
                                 )
+                                /*
                                 Spacer(modifier = Modifier.height(10.dp))
                                 HeaderIconButton(
                                     icon = R.drawable.shuffle,
@@ -1221,16 +1306,18 @@ fun LocalPlaylistSongs(
                                             }
                                         )
                                 )
-                                Spacer(modifier = Modifier.height(10.dp))
-                                HeaderIconButton(
-                                    modifier = Modifier.padding(horizontal = 5.dp),
-                                    onClick = { searching = !searching },
-                                    icon = R.drawable.search_circle,
-                                    color = colorPalette.text,
-                                    iconSize = 24.dp
-                                )
-                            }
 
+                                 */
+//                                Spacer(modifier = Modifier.height(10.dp))
+//                                HeaderIconButton(
+//                                    modifier = Modifier.padding(horizontal = 5.dp),
+//                                    onClick = { searching = !searching },
+//                                    icon = R.drawable.search_circle,
+//                                    color = colorPalette.text,
+//                                    iconSize = 24.dp
+//                                )
+                            }
+                            */
 
                         }
 
@@ -1243,6 +1330,23 @@ fun LocalPlaylistSongs(
                                 .padding(horizontal = 10.dp)
                                 .fillMaxWidth()
                         ) {
+                            HeaderIconButton(
+                                onClick = {},
+                                icon = R.drawable.search,
+                                color = colorPalette.text,
+                                modifier = Modifier
+                                    .combinedClickable(
+                                        onClick = {
+                                            searching = !searching
+                                        },
+                                        onLongClick = {
+                                            SmartMessage(
+                                                context.resources.getString(R.string.search),
+                                                context = context
+                                            )
+                                        }
+                                    )
+                            )
 
                             HeaderIconButton(
                                 icon = R.drawable.pin,

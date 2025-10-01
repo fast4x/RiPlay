@@ -432,7 +432,7 @@ fun PlaylistsItemGridMenu(
 
                 onPlayNow?.let { onPlayNow ->
                     GridMenuItem(
-                        icon = R.drawable.play,
+                        icon = R.drawable.play_now,
                         title = R.string.play_now,
                         colorIcon = colorPalette.text,
                         colorText = colorPalette.text,
@@ -445,7 +445,7 @@ fun PlaylistsItemGridMenu(
 
                 onShufflePlay?.let { onShufflePlay ->
                     GridMenuItem(
-                        icon = R.drawable.playlist_played,
+                        icon = R.drawable.play_shuffle,
                         title = R.string.shuffle_play,
                         colorIcon = colorPalette.text,
                         colorText = colorPalette.text,
