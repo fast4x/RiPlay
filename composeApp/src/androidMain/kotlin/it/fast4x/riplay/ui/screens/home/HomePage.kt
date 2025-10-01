@@ -509,7 +509,7 @@ fun HomePage(
                                 }
                             }
                         },
-                        icon2 = R.drawable.play,
+                        icon2 = R.drawable.play_now,
                         onClick2 = {
                             trending?.let { fastPlay(it.asMediaItem, binder, relatedInit?.songs?.map { it.asMediaItem }) }
 //                            binder?.stopRadio()
