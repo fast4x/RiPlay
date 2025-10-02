@@ -1,11 +1,14 @@
 package it.fast4x.riplay.utils
 
+import android.content.Context
 import android.util.Log
 import it.fast4x.riplay.enums.OnDeviceFolderSortBy
 import it.fast4x.riplay.enums.SortOrder
 import it.fast4x.riplay.models.Folder
+import it.fast4x.riplay.models.OnDeviceBlacklistPath
 import it.fast4x.riplay.models.OnDeviceSong
 import it.fast4x.riplay.models.SongEntity
+import java.io.File
 
 class OnDeviceOrganize {
     companion object {
@@ -98,5 +101,22 @@ class OnDeviceOrganize {
                 logFolderStructure(subFolder, "$indent    ")
             }
         }
+    }
+}
+
+class OnDeviceBlacklist(context: Context) {
+    var paths: List<OnDeviceBlacklistPath> = emptyList()
+
+    init {
+        val file = File(context.filesDir, "Blacklisted_paths.txt")
+        paths = if (file.exists()) {
+            file.readLines().map { OnDeviceBlacklistPath(path = it) }
+        } else {
+            emptyList()
+        }
+    }
+
+    fun contains(path: String): Boolean {
+        return paths.any { it.test(path) }
     }
 }
