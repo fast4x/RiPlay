@@ -1120,7 +1120,7 @@ fun PlaylistSongList(
                                 binder?.player?.enqueue(song.asMediaItem, queue = it)
                             }
                         ) {
-                            var forceRecompose by remember { mutableStateOf(false) }
+                            //var forceRecompose by remember { mutableStateOf(false) }
                             SongItem(
                                 song = song,
                                 thumbnailSizePx = songThumbnailSizePx,
@@ -1133,7 +1133,7 @@ fun PlaylistSongList(
                                                     navController = navController,
                                                     onDismiss = {
                                                         menuState.hide()
-                                                        forceRecompose = true
+                                                        //forceRecompose = true
                                                     },
                                                     onInfo = {
                                                         navController.navigate("${NavRoutes.videoOrSongInfo.name}/${song.key}")
@@ -1166,9 +1166,9 @@ fun PlaylistSongList(
                                             }
                                         }
                                     ),
-                                disableScrollingText = disableScrollingText,
-                                isNowPlaying = binder?.player?.isNowPlaying(song.key) ?: false,
-                                forceRecompose = forceRecompose
+                                //disableScrollingText = disableScrollingText,
+                                //isNowPlaying = binder?.player?.isNowPlaying(song.key) ?: false,
+                                //forceRecompose = forceRecompose
                             )
                         }
                     }

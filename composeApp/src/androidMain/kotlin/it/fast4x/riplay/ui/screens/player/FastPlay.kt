@@ -35,7 +35,8 @@ fun fastPlay(
         withContext(Dispatchers.Main) {
             binder?.stopRadio()
             mediaItems?.let { binder?.player?.setMediaItems(if (withShuffle) it.shuffled() else it) }
-            val mediaItemToPlay = if (!withShuffle) mediaItem ?: binder?.player?.mediaItems?.first()
+            val mediaItemToPlay = mediaItem
+                ?: if (!withShuffle) binder?.player?.mediaItems?.first()
                 else binder?.player?.mediaItems?.get(Random.nextInt(binder.player.mediaItems.size-1))
             if (mediaItemToPlay?.isLocal == true) {
                 binder?.player?.forcePlay(mediaItemToPlay, withReplace)

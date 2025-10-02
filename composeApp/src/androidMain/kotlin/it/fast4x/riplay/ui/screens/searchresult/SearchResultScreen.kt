@@ -252,7 +252,7 @@ fun SearchResultScreen(
                                             localBinder?.player?.enqueue(song.asMediaItem, queue = it)
                                         }
                                     ) {
-                                        var forceRecompose by remember { mutableStateOf(false) }
+                                        //var forceRecompose by remember { mutableStateOf(false) }
                                         SongItem(
                                             song = song,
                                             thumbnailContent = {
@@ -268,7 +268,7 @@ fun SearchResultScreen(
                                                                 navController = navController,
                                                                 onDismiss = {
                                                                     menuState.hide()
-                                                                    forceRecompose = true
+                                                                    //forceRecompose = true
                                                                 },
                                                                 onInfo = {
                                                                     navController.navigate("${NavRoutes.videoOrSongInfo.name}/${song.key}")
@@ -285,13 +285,13 @@ fun SearchResultScreen(
                                                         localBinder?.stopRadio()
                                                         //localBinder?.player?.forcePlay(song.asMediaItem)
                                                         fastPlay(song.asMediaItem, localBinder)
-                                                        forceRecompose = true
+                                                        //forceRecompose = true
                                                         localBinder?.setupRadio(song.info?.endpoint)
                                                     }
                                                 ),
-                                            disableScrollingText = disableScrollingText,
-                                            isNowPlaying = binder?.player?.isNowPlaying(song.key) ?: false,
-                                            forceRecompose = forceRecompose
+                                            //disableScrollingText = disableScrollingText,
+                                            //isNowPlaying = binder?.player?.isNowPlaying(song.key) ?: false,
+                                            //forceRecompose = forceRecompose
                                         )
                                     }
                                 },

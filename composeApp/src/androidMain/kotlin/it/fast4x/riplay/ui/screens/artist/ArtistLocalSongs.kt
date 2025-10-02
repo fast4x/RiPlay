@@ -233,8 +233,8 @@ fun ArtistLocalSongs(
                                             )
                                         }
                                     ),
-                                disableScrollingText = disableScrollingText,
-                                isNowPlaying = binder?.player?.isNowPlaying(song.id) ?: false
+                                //disableScrollingText = disableScrollingText,
+                                //isNowPlaying = binder?.player?.isNowPlaying(song.id) ?: false
                             )
                         }
                     } ?: item(key = "loading") {

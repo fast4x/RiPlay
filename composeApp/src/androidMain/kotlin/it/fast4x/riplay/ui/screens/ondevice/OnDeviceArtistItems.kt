@@ -127,7 +127,7 @@ fun OnDeviceArtistItems(
     val thumbnailSizeDp = Dimensions.thumbnails.album //+ 24.dp
     val thumbnailSizePx = thumbnailSizeDp.px
     val maxSongsInQueue by rememberPreference(maxSongsInQueueKey, MaxSongs.`500`)
-    var forceRecompose by remember { mutableStateOf(false) }
+    //var forceRecompose by remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
     var songs by persistList<Song?>("")
     var albums by persistList<Album?>("")
@@ -327,7 +327,7 @@ fun OnDeviceArtistItems(
                                                     navController = navController,
                                                     onDismiss = {
                                                         menuState.hide()
-                                                        forceRecompose = true
+                                                        //forceRecompose = true
                                                     },
                                                     mediaItems = songs.mapNotNull { it?.asMediaItem },
                                                     onClosePlayer = {
@@ -379,7 +379,7 @@ fun OnDeviceArtistItems(
                                                     navController = navController,
                                                     onDismiss = {
                                                         menuState.hide()
-                                                        forceRecompose = true
+                                                        //forceRecompose = true
                                                     },
                                                     onInfo = {
                                                         navController.navigate("${NavRoutes.videoOrSongInfo.name}/${item.mediaId}")
@@ -415,9 +415,9 @@ fun OnDeviceArtistItems(
                                             }
                                         }
                                     ),
-                                disableScrollingText = disableScrollingText,
-                                isNowPlaying = binder?.player?.isNowPlaying(item.mediaId) ?: false,
-                                forceRecompose = forceRecompose
+                                //disableScrollingText = disableScrollingText,
+                                //isNowPlaying = binder?.player?.isNowPlaying(item.mediaId) ?: false,
+                                //forceRecompose = forceRecompose
                             )
                         }
 

@@ -334,7 +334,7 @@ fun StatisticsPage(
                     items(
                         count = songs.count(),
                     ) {
-                        var forceRecompose by remember { mutableStateOf(false) }
+                        //var forceRecompose by remember { mutableStateOf(false) }
                         SongItem(
                             song = songs.get(it).asMediaItem,
                             thumbnailSizeDp = thumbnailSizeDp,
@@ -359,7 +359,7 @@ fun StatisticsPage(
                                                 mediaItem = songs.get(it).asMediaItem,
                                                 onDismiss = {
                                                     menuState.hide()
-                                                    forceRecompose = true
+                                                    //forceRecompose = true
                                                 },
                                                 onInfo = {
                                                     navController.navigate(
@@ -383,9 +383,9 @@ fun StatisticsPage(
                                     }
                                 )
                                 .fillMaxWidth(),
-                            disableScrollingText = disableScrollingText,
-                            isNowPlaying = binder?.player?.isNowPlaying(songs.get(it).id) ?: false,
-                            forceRecompose = forceRecompose
+                            //disableScrollingText = disableScrollingText,
+                            //isNowPlaying = binder?.player?.isNowPlaying(songs.get(it).id) ?: false,
+                            //forceRecompose = forceRecompose
                         )
                     }
                 }

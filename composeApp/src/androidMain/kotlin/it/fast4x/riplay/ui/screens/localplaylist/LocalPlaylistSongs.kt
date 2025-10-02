@@ -2158,9 +2158,8 @@ fun LocalPlaylistSongs(
                                                 //binder?.player?.forcePlay(it)
                                                 fastPlay(it, binder)
                                             },
-                                        disableScrollingText = disableScrollingText,
-                                        isNowPlaying = binder?.player?.isNowPlaying(it.mediaId)
-                                            ?: false
+                                        //disableScrollingText = disableScrollingText,
+                                        //isNowPlaying = binder?.player?.isNowPlaying(it.mediaId) ?: false
 
                                     )
                                 }
@@ -2172,7 +2171,7 @@ fun LocalPlaylistSongs(
                                     .animateItem()
 
                             ) {
-                                val isLocal by remember { derivedStateOf { song.asMediaItem.isLocal } }
+                                //val isLocal by remember { derivedStateOf { song.asMediaItem.isLocal } }
                                 val checkedState = rememberSaveable { mutableStateOf(false) }
                                 val positionInPlaylist: Int = index
                                 Box(
@@ -2269,7 +2268,7 @@ fun LocalPlaylistSongs(
                                         )
                                     }
                                 ) {
-                                    var forceRecompose by remember { mutableStateOf(false) }
+                                    //var forceRecompose by remember { mutableStateOf(false) }
                                     SongItem(
                                         song = song.song,
                                         thumbnailSizePx = thumbnailSizePx,
@@ -2447,9 +2446,8 @@ fun LocalPlaylistSongs(
                                             )
 
                                             .background(color = colorPalette.background0),
-                                        disableScrollingText = disableScrollingText,
-                                        isNowPlaying = binder?.player?.isNowPlaying(song.song.id)
-                                            ?: false
+                                        //disableScrollingText = disableScrollingText,
+                                        //isNowPlaying = binder?.player?.isNowPlaying(song.song.id) ?: false
                                     )
                                 }
                             }

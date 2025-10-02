@@ -40,6 +40,8 @@ import it.fast4x.riplay.models.Album
 import it.fast4x.riplay.models.Artist
 import it.fast4x.riplay.models.PlaylistPreview
 import it.fast4x.riplay.models.Song
+import it.fast4x.riplay.service.AndroidAutoService.MediaId.lastSongs
+import it.fast4x.riplay.service.AndroidAutoService.MediaId.searchedSongs
 import it.fast4x.riplay.utils.BitmapProvider
 import it.fast4x.riplay.utils.getTitleMonthlyPlaylistFromContext
 import it.fast4x.riplay.utils.intent
@@ -138,10 +140,6 @@ class AndroidAutoService : MediaBrowserServiceCompat(), ServiceConnection {
             )
         }
     }
-
-    //private val coroutineScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
-    private var lastSongs = emptyList<Song>()
-    private var searchedSongs = emptyList<Song>()
 
     var isRunning = false
 
@@ -300,6 +298,7 @@ class AndroidAutoService : MediaBrowserServiceCompat(), ServiceConnection {
                             Database.playlistWithSongs(id.toLong())
                                 .first()
                                 ?.songs
+                                .also { lastSongs = it ?: emptyList() }
                                 ?.map { it.asBrowserMediaItem }
                                 ?.toMutableList()
                         }
@@ -316,6 +315,7 @@ class AndroidAutoService : MediaBrowserServiceCompat(), ServiceConnection {
                         } else {
                             Database.artistSongsByname(id)
                                 .first()
+                                .also { lastSongs = it }
                                 .map { it.asBrowserMediaItem }
                                 .toMutableList()
                         }
@@ -333,6 +333,7 @@ class AndroidAutoService : MediaBrowserServiceCompat(), ServiceConnection {
                             Timber.d("AndroidAutoService onLoadChildren inside albums SONGS id $id")
                             Database.albumSongs(id)
                                 .first()
+                                .also { lastSongs = it }
                                 .map { it.asBrowserMediaItem }
                                 .toMutableList()
                         }
@@ -345,18 +346,22 @@ class AndroidAutoService : MediaBrowserServiceCompat(), ServiceConnection {
                     MediaId.favorites -> Database
                         .favorites()
                         .first()
+                        .also { lastSongs = it }
                         .map { it.asBrowserMediaItem }
                         .toMutableList()
                     MediaId.top -> {
                         val maxTopSongs = preferences.getEnum(MaxTopPlaylistItemsKey,
                             MaxTopPlaylistItems.`10`).number.toInt()
 
-                        Database.trending(maxTopSongs).first()
+                        Database.trending(maxTopSongs)
+                            .first()
+                            .also { lastSongs = it }
                             .map { it.asBrowserMediaItem }.toMutableList()
                     }
                     MediaId.ondevice -> Database
                         .songsOnDevice()
                         .first()
+                        .also { lastSongs = it }
                         .map { it.asBrowserMediaItem }
                         .toMutableList()
 
@@ -688,7 +693,7 @@ class AndroidAutoService : MediaBrowserServiceCompat(), ServiceConnection {
 //        }
 
 
-    private object MediaId {
+    object MediaId {
         const val fault = "fault"
         const val root = "root"
         const val songs = "songs"
@@ -701,6 +706,10 @@ class AndroidAutoService : MediaBrowserServiceCompat(), ServiceConnection {
         const val shuffle = "shuffle"
         const val ondevice = "ondevice"
         const val top = "top"
+
+        var lastSongs: List<Song> = emptyList()
+        var searchedSongs: List<Song> = emptyList()
+
 
         fun forSong(id: String) = "$songs/$id"
         fun forPlaylist(id: Long) = "$playlists/$id"

@@ -704,6 +704,10 @@ interface Database {
     @Query("SELECT count(playlistId) FROM SongPlaylistMap WHERE songId = :id")
     fun songUsedInPlaylists(id: String): Int
 
+    @Transaction
+    @Query("SELECT count(playlistId) FROM SongPlaylistMap WHERE songId = :id")
+    fun songUsedInPlaylistsAsFlow(id: String): Flow<Int>
+
     data class PlayListIdPosition(val playlistId: Long, val position: Int)
     @Transaction
     @Query("SELECT playlistId, position FROM SongPlaylistMap WHERE songId = :id")
@@ -2754,8 +2758,11 @@ interface Database {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     fun insert(song: Song, format: Format)
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Insert(onConflict = OnConflictStrategy.ABORT)
     fun insert(queuedMediaItem: QueuedMediaItem)
+
+    @Insert(onConflict = OnConflictStrategy.ABORT)
+    fun insert(queuedMediaItems: List<QueuedMediaItem>)
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     fun insertSongPlaylistMaps(songPlaylistMaps: List<SongPlaylistMap>)

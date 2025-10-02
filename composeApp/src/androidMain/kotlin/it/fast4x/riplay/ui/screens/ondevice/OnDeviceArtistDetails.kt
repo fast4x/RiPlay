@@ -403,14 +403,14 @@ fun OnDeviceArtistDetails(
                             binder?.player?.enqueue(item.asMediaItem, queue = it)
                         }
                     ) {
-                        var forceRecompose by remember { mutableStateOf(false) }
+                        //var forceRecompose by remember { mutableStateOf(false) }
                         SongItem(
                             song = item,
                             thumbnailSizePx = songThumbnailSizePx,
                             thumbnailSizeDp = songThumbnailSizeDp,
-                            disableScrollingText = disableScrollingText,
-                            isNowPlaying = false,
-                            forceRecompose = forceRecompose,
+                            //disableScrollingText = disableScrollingText,
+                            //isNowPlaying = false,
+                            //forceRecompose = forceRecompose,
                             modifier = Modifier
                                 .combinedClickable(
                                     onLongClick = {
@@ -419,7 +419,7 @@ fun OnDeviceArtistDetails(
                                                 navController = navController,
                                                 onDismiss = {
                                                     menuState.hide()
-                                                    forceRecompose = true
+                                                    //forceRecompose = true
                                                 },
                                                 onInfo = {
                                                     navController.navigate("${NavRoutes.videoOrSongInfo.name}/${item.id}")

@@ -1049,7 +1049,7 @@ fun BuiltInPlaylistSongs(
                         val songRecommended =
                             relatedSongsRecommendationResult?.getOrNull()?.songs?.shuffled()
                                 ?.lastOrNull()
-                        val duration = songRecommended?.durationText
+                        //val duration = songRecommended?.durationText
                         songRecommended?.asMediaItem?.let {
                             SongItem(
                                 song = it,
@@ -1064,15 +1064,15 @@ fun BuiltInPlaylistSongs(
                                         //binder?.player?.forcePlay(it)
                                         fastPlay(it, binder)
                                     },
-                                disableScrollingText = disableScrollingText,
-                                isNowPlaying = binder?.player?.isNowPlaying(it.mediaId) ?: false
+                                //disableScrollingText = disableScrollingText,
+                                //isNowPlaying = binder?.player?.isNowPlaying(it.mediaId) ?: false
                             )
                         }
                     }
 
                     //BehindMotionSwipe(
                     //    content = {
-                    val isLocal by remember { derivedStateOf { song.asMediaItem.isLocal } }
+                    //val isLocal by remember { derivedStateOf { song.asMediaItem.isLocal } }
                     val checkedState = rememberSaveable { mutableStateOf(false) }
                     Modifier
                         .combinedClickable(
@@ -1179,8 +1179,8 @@ fun BuiltInPlaylistSongs(
                             else checkedState.value = false
                         },
                         modifier = Modifier.animateItem(),
-                        disableScrollingText = disableScrollingText,
-                        isNowPlaying = binder?.player?.isNowPlaying(song.id) ?: false
+                        //disableScrollingText = disableScrollingText,
+                        //isNowPlaying = binder?.player?.isNowPlaying(song.id) ?: false
                     )
                     /*
                     },

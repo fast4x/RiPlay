@@ -472,31 +472,31 @@ fun Player.saveMasterQueue() {
 
         if (mediaItems.isEmpty()) return@launch
 
+        withContext(Dispatchers.IO) {
 
-        mediaItems.mapIndexed { index, mediaItem ->
-            QueuedMediaItem(
-                mediaItem = mediaItem,
-                mediaId = mediaItem.mediaId,
-                //position = if (index == mediaItemIndex) mediaItemPosition else null,
-                position = if (index == mediaItemIndex) mediaItemIndex.toLong() else -1,
-                idQueue = mediaItem.mediaMetadata.extras?.getLong("idQueue", defaultQueueId())
-            )
-        }.let { queuedMediaItems ->
-            if (queuedMediaItems.isEmpty()) return@let
+            mediaItems.mapIndexed { index, mediaItem ->
+                QueuedMediaItem(
+                    mediaItem = mediaItem,
+                    mediaId = mediaItem.mediaId,
+                    //position = if (index == mediaItemIndex) mediaItemPosition else null,
+                    position = if (index == mediaItemIndex) mediaItemIndex.toLong() else -1,
+                    idQueue = mediaItem.mediaMetadata.extras?.getLong("idQueue", defaultQueueId())
+                )
+            }.let { queuedMediaItems ->
+                if (queuedMediaItems.isEmpty()) return@let
 
-            withContext(Dispatchers.IO) {
                 Database.asyncTransaction {
-//                    insert(queuedMediaItems)
-//                    Timber.d("SaveMasterQueue QueuePersistentEnabled Saved mediaItems ${queuedMediaItems.size}")
-                    queuedMediaItems.forEach {
-                        insert(it)
-                        Timber.d("SaveMasterQueue QueuePersistentEnabled Save mediaItem ${it.mediaId}")
-                    }
+                    clearQueuedMediaItems()
+                    insert(queuedMediaItems)
+                    Timber.d("SaveMasterQueue QueuePersistentEnabled Saved mediaItems ${queuedMediaItems.size}")
+//                    queuedMediaItems.forEach {
+//                        insert(it)
+//                        Timber.d("SaveMasterQueue QueuePersistentEnabled Save mediaItem ${it.mediaId}")
+//                    }
                 }
+
             }
-
         }
-
     }
 }
 

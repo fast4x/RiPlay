@@ -944,7 +944,7 @@ fun DeviceListSongs(
                         contentType = { _, song -> song },
                     ) { index, song ->
 
-                        var forceRecompose by remember { mutableStateOf(false) }
+                        //var forceRecompose by remember { mutableStateOf(false) }
                         SongItem(
                             song = song.song,
                             thumbnailSizeDp = thumbnailSizeDp,
@@ -982,7 +982,7 @@ fun DeviceListSongs(
                                                     song = song.song,
                                                     onDismiss = {
                                                         menuState.hide()
-                                                        forceRecompose = true
+                                                        //forceRecompose = true
                                                     },
                                                     disableScrollingText = disableScrollingText
                                                 )
@@ -1002,9 +1002,9 @@ fun DeviceListSongs(
                                     }
                                 )
                                 .animateItem(),
-                            disableScrollingText = disableScrollingText,
-                            isNowPlaying = binder?.player?.isNowPlaying(song.song.id) ?: false,
-                            forceRecompose = forceRecompose
+                            //disableScrollingText = disableScrollingText,
+                            //isNowPlaying = binder?.player?.isNowPlaying(song.song.id) ?: false,
+                            //forceRecompose = forceRecompose
                         )
                     }
                 }

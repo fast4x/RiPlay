@@ -220,8 +220,8 @@ fun SearchYoutubeEntity (
                                     song = media,
                                     thumbnailSizePx = songThumbnailSizePx,
                                     thumbnailSizeDp = songThumbnailSizeDp,
-                                    disableScrollingText = disableScrollingText,
-                                    isNowPlaying = false,
+                                    //disableScrollingText = disableScrollingText,
+                                    //isNowPlaying = false,
                                     modifier = Modifier
                                         .combinedClickable(
                                             onLongClick = {

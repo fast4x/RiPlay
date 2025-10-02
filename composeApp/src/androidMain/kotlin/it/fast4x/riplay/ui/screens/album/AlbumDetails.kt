@@ -215,7 +215,10 @@ fun AlbumDetails(
                 Database.asyncTransaction {
                     val albumSongsStateList = mutableListOf<AlbumSongsState>()
                     songs.forEach { song ->
-                        songPlaylist = Database.songUsedInPlaylists(song.id)
+                        CoroutineScope(Dispatchers.IO).launch {
+                            Database.songUsedInPlaylistsAsFlow(song.id)
+                                .collect { songPlaylist = it }
+                        }
                         if (songPlaylist > 0) songExists = true
                         playlistsList = Database.playlistsUsedForSong(song.id)
                         likedAt = song.likedAt
@@ -1285,7 +1288,7 @@ fun AlbumDetails(
                                 }
                             ) {
                                 val checkedState = rememberSaveable { mutableStateOf(false) }
-                                var forceRecompose by remember { mutableStateOf(false) }
+                                //var forceRecompose by remember { mutableStateOf(false) }
                                 SongItem(
                                     mediaItem = song.asMediaItem,
                                     thumbnailSizeDp = thumbnailSizeDp,
@@ -1326,7 +1329,7 @@ fun AlbumDetails(
                                                         navController = navController,
                                                         onDismiss = {
                                                             menuState.hide()
-                                                            forceRecompose = true
+                                                            //forceRecompose = true
                                                         },
                                                         onInfo = {
                                                             navController.navigate("${NavRoutes.videoOrSongInfo.name}/${song.id}")
@@ -1378,10 +1381,10 @@ fun AlbumDetails(
                                             )
                                         else checkedState.value = false
                                     },
-                                    isLocal = isLocal,
-                                    disableScrollingText = disableScrollingText,
-                                    isNowPlaying = binder?.player?.isNowPlaying(song.id) ?: false,
-                                    forceRecompose = forceRecompose
+                                    //isLocal = isLocal,
+                                    //disableScrollingText = disableScrollingText,
+                                    //isNowPlaying = binder?.player?.isNowPlaying(song.id) ?: false,
+                                    //forceRecompose = forceRecompose
                                 )
                             }
                         }

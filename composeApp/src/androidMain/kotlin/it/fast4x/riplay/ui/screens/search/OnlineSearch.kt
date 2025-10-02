@@ -264,9 +264,8 @@ fun OnlineSearch(
                                                 fastPlay(mediaItem, binder)
                                             }
                                         ),
-                                    disableScrollingText = disableScrollingText,
-                                    isNowPlaying = binder?.player?.isNowPlaying(mediaItem.mediaId)
-                                        ?: false
+                                    //disableScrollingText = disableScrollingText,
+                                    //isNowPlaying = binder?.player?.isNowPlaying(mediaItem.mediaId)  ?: false
                                 )
                             }
                         }

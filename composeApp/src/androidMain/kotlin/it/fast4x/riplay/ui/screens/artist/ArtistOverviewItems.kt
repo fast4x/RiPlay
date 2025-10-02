@@ -562,9 +562,9 @@ fun ArtistOverviewItems(
                                             }
                                         }
                                     ),
-                                disableScrollingText = disableScrollingText,
-                                isNowPlaying = binder?.player?.isNowPlaying(item.mediaId) ?: false,
-                                forceRecompose = forceRecompose
+                                //disableScrollingText = disableScrollingText,
+                                //isNowPlaying = binder?.player?.isNowPlaying(item.mediaId) ?: false,
+                                //forceRecompose = forceRecompose
                             )
                         }
                         /*else -> {}

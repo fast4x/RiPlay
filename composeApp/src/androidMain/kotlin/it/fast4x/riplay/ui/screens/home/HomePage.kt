@@ -548,8 +548,8 @@ fun HomePage(
                     ) {
                         trending?.let { song ->
                             item {
-                                val isLocal by remember { derivedStateOf { song.asMediaItem.isLocal } }
-                                var forceRecompose by remember { mutableStateOf(false) }
+                                //val isLocal by remember { derivedStateOf { song.asMediaItem.isLocal } }
+                                //var forceRecompose by remember { mutableStateOf(false) }
                                 SongItem(
                                     song = song,
                                     thumbnailSizePx = songThumbnailSizePx,
@@ -571,7 +571,7 @@ fun HomePage(
                                                         navController = navController,
                                                         onDismiss = {
                                                             menuState.hide()
-                                                            forceRecompose = true
+                                                            //forceRecompose = true
                                                         },
                                                         mediaItem = song.asMediaItem,
                                                         onRemoveFromQuickPicks = {
@@ -606,9 +606,9 @@ fun HomePage(
                                             fadeOutSpec = null
                                         )
                                         .width(itemInHorizontalGridWidth),
-                                    disableScrollingText = disableScrollingText,
-                                    isNowPlaying = binder?.player?.isNowPlaying(song.id) ?: false,
-                                    forceRecompose = forceRecompose
+                                    //disableScrollingText = disableScrollingText,
+                                    //isNowPlaying = binder?.player?.isNowPlaying(song.id) ?: false,
+                                    //forceRecompose = forceRecompose
                                 )
                             }
                         }
@@ -624,8 +624,8 @@ fun HomePage(
                                     ?: emptyList(),
                                 key = Environment.SongItem::key
                             ) { song ->
-                                val isLocal by remember { derivedStateOf { song.asMediaItem.isLocal } }
-                                var forceRecompose by remember { mutableStateOf(false) }
+                                //val isLocal by remember { derivedStateOf { song.asMediaItem.isLocal } }
+                                //var forceRecompose by remember { mutableStateOf(false) }
                                 SongItem(
                                     song = song,
                                     thumbnailSizePx = songThumbnailSizePx,
@@ -643,7 +643,7 @@ fun HomePage(
                                                         navController = navController,
                                                         onDismiss = {
                                                             menuState.hide()
-                                                            forceRecompose = true
+                                                            //forceRecompose = true
                                                         },
                                                         mediaItem = song.asMediaItem,
                                                         onInfo = {
@@ -667,9 +667,9 @@ fun HomePage(
                                                 )
                                             }
                                         ),
-                                    disableScrollingText = disableScrollingText,
-                                    isNowPlaying = binder?.player?.isNowPlaying(song.key) ?: false,
-                                    forceRecompose = forceRecompose
+                                    //disableScrollingText = disableScrollingText,
+                                    //isNowPlaying = binder?.player?.isNowPlaying(song.key) ?: false,
+                                    //forceRecompose = forceRecompose
                                 )
                             }
                         }
@@ -1014,8 +1014,8 @@ fun HomePage(
                                                         binder?.player?.addMediaItems(songs.map { it.asMediaItem })
                                                     })
                                                     .width(itemWidth),
-                                                disableScrollingText = disableScrollingText,
-                                                isNowPlaying = binder?.player?.isNowPlaying(song.key) ?: false
+                                                //disableScrollingText = disableScrollingText,
+                                                //isNowPlaying = binder?.player?.isNowPlaying(song.key) ?: false
                                             )
                                         }
                                     }
@@ -1099,8 +1099,8 @@ fun HomePage(
                                             song = item,
                                             thumbnailSizePx = albumThumbnailSizePx,
                                             thumbnailSizeDp = albumThumbnailSizeDp,
-                                            disableScrollingText = disableScrollingText,
-                                            isNowPlaying = false,
+                                            //disableScrollingText = disableScrollingText,
+                                            //isNowPlaying = false,
                                             modifier = Modifier.clickable(onClick = {
                                                 fastPlay(item.asMediaItem, binder)
                                             })

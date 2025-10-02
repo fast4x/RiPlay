@@ -171,7 +171,7 @@ fun LocalSongSearch(
                     items = items,
                     key = Song::id,
                 ) { song ->
-                    val isLocal by remember { derivedStateOf { song.asMediaItem.isLocal } }
+                    //val isLocal by remember { derivedStateOf { song.asMediaItem.isLocal } }
                     SongItem(
                         song = song,
                         thumbnailSizePx = thumbnailSizePx,
@@ -199,8 +199,8 @@ fun LocalSongSearch(
                                 }
                             )
                             .animateItem(),
-                        disableScrollingText = disableScrollingText,
-                        isNowPlaying = binder?.player?.isNowPlaying(song.id) ?: false
+                        //disableScrollingText = disableScrollingText,
+                        //isNowPlaying = binder?.player?.isNowPlaying(song.id) ?: false
                     )
                 }
             }

@@ -3,16 +3,31 @@ package it.fast4x.riplay.ui.screens.player.online
 import android.os.Bundle
 import android.support.v4.media.session.MediaSessionCompat
 import androidx.annotation.OptIn
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.media3.common.MediaItem
 import androidx.media3.common.util.UnstableApi
+import androidx.media3.exoplayer.offline.Download
 import it.fast4x.riplay.Database
+import it.fast4x.riplay.context
+import it.fast4x.riplay.enums.MaxTopPlaylistItems
+import it.fast4x.riplay.extensions.preferences.MaxTopPlaylistItemsKey
+import it.fast4x.riplay.extensions.preferences.getEnum
+import it.fast4x.riplay.extensions.preferences.preferences
+import it.fast4x.riplay.models.Song
+import it.fast4x.riplay.service.AndroidAutoService
+import it.fast4x.riplay.service.AndroidAutoService.MediaId.lastSongs
+import it.fast4x.riplay.service.AndroidAutoService.MediaId.searchedSongs
 import it.fast4x.riplay.service.LocalPlayerService
 import it.fast4x.riplay.ui.screens.player.fastPlay
 import it.fast4x.riplay.utils.asMediaItem
+import it.fast4x.riplay.utils.forcePlayAtIndex
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import timber.log.Timber
+import kotlin.collections.emptyList
 
 @UnstableApi
 class MediaSessionCallback (
@@ -51,17 +66,86 @@ class MediaSessionCallback (
     override fun onPlayFromMediaId(mediaId: String?, extras: Bundle?) {
         Timber.d("MediaSessionCallback onPlayFromMediaId mediaId ${mediaId} called")
         val data = mediaId?.split('/') ?: return
-        val id = data.getOrNull(1)
+        var index = 0
+        var mediaItemSelected: MediaItem? = null
 
-        Timber.d("MediaSessionCallback onPlayFromMediaId mediaId ${mediaId} data $data elaborated")
+        Timber.d("MediaSessionCallback onPlayFromMediaId mediaId ${mediaId} data $data processing")
 
-        CoroutineScope(Dispatchers.Main).launch {
-            val mediaItem = Database.song(id).first()?.asMediaItem ?: return@launch
-            fastPlay(
-                mediaItem,
-                binder
-            )
+        CoroutineScope(Dispatchers.IO).launch {
+            val mediaItems = when (data.getOrNull(0)) {
+
+                AndroidAutoService.MediaId.songs ->  data
+                    .getOrNull(1)
+                    ?.let { songId ->
+                        index = lastSongs.indexOfFirst { it.id == songId }
+
+                        if (index < 0) return@launch // index not found
+
+                        mediaItemSelected = lastSongs[index].asMediaItem
+                        lastSongs
+                    }
+
+                // Maybe it needed in the future
+                /*
+                AndroidAutoService.MediaId.shuffle -> lastSongs.shuffled()
+
+                AndroidAutoService.MediaId.favorites -> Database
+                    .favorites()
+                    .first()
+
+                AndroidAutoService.MediaId.ondevice -> Database
+                    .songsOnDevice()
+                    .first()
+
+                AndroidAutoService.MediaId.top -> {
+                    val maxTopSongs = context().preferences.getEnum(MaxTopPlaylistItemsKey,
+                        MaxTopPlaylistItems.`10`).number.toInt()
+
+                    Database.trending(maxTopSongs)
+                        .first()
+                }
+
+                AndroidAutoService.MediaId.playlists -> data
+                    .getOrNull(1)
+                    ?.toLongOrNull()
+                    ?.let(Database::playlistWithSongs)
+                    ?.first()
+                    ?.songs
+
+                AndroidAutoService.MediaId.albums -> data
+                    .getOrNull(1)
+                    ?.let(Database::albumSongs)
+                    ?.first()
+
+                AndroidAutoService.MediaId.artists -> {
+                    data
+                        .getOrNull(1)
+                        ?.let(Database::artistSongsByname)
+                        ?.first()
+                }
+
+                AndroidAutoService.MediaId.searched -> data
+                    .getOrNull(1)
+                    ?.let { songId ->
+                        searchedSongs.filter { it.id == songId }
+                            .also {
+                                index = searchedSongs.indexOfFirst { it.id == songId }
+                                mediaItemSelected = it.first().asMediaItem
+                            }
+                    }
+                */
+
+                else -> emptyList()
+            }?.map(Song::asMediaItem) ?: return@launch
+
+            withContext(Dispatchers.Main) {
+                Timber.d("MediaSessionCallback onPlayFromMediaId mediaId ${mediaId} mediaItems ${mediaItems.size} ready to play")
+                fastPlay(mediaItem = mediaItemSelected, binder = binder, mediaItems = mediaItems)
+            }
         }
+
+        // END PROCESSING
+
     }
 
     override fun onCustomAction(action: String, extras: Bundle?) {

@@ -1810,8 +1810,8 @@ fun SongMatchingDialog(
                 song = songToRematch,
                 thumbnailSizeDp = songThumbnailSizeDp,
                 thumbnailSizePx = songThumbnailSizePx,
-                disableScrollingText = disableScrollingText,
-                isNowPlaying = binder?.player?.isNowPlaying(songToRematch.id) ?: false
+                //disableScrollingText = disableScrollingText,
+                //isNowPlaying = binder?.player?.isNowPlaying(songToRematch.id) ?: false
             )
             Row(
                 verticalAlignment = Alignment.CenterVertically
@@ -1858,9 +1858,9 @@ fun SongMatchingDialog(
                                     song = song,
                                     thumbnailSizePx = songThumbnailSizePx,
                                     thumbnailSizeDp = songThumbnailSizeDp,
-                                    disableScrollingText = disableScrollingText,
-                                    isNowPlaying = false,
-                                    forceRecompose = false,
+                                    //disableScrollingText = disableScrollingText,
+                                    //isNowPlaying = false,
+                                    //forceRecompose = false,
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .padding(horizontal = 10.dp)

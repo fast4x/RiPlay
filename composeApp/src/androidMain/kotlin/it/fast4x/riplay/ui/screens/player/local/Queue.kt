@@ -687,8 +687,8 @@ fun Queue(
                 val isPlayingThisMediaItem =
                     mediaItemIndex == window.firstPeriodIndex
                 //val currentItem by rememberUpdatedState(window)
-                val isLocal by remember { derivedStateOf { window.mediaItem.isLocal } }
-                var forceRecompose by remember { mutableStateOf(false) }
+                //val isLocal by remember { derivedStateOf { window.mediaItem.isLocal } }
+                //var forceRecompose by remember { mutableStateOf(false) }
 
                 Box(
                     modifier = Modifier
@@ -811,7 +811,7 @@ fun Queue(
                                                 indexInQueue = if (isPlayingThisMediaItem) null else window.firstPeriodIndex,
                                                 onDismiss = {
                                                     menuState.hide()
-                                                    forceRecompose = true
+                                                    //forceRecompose = true
                                                 },
                                                 onInfo = {},
                                                 disableScrollingText = disableScrollingText
@@ -838,10 +838,9 @@ fun Queue(
                                     }
                                 )
                                 .background(color = if (queueType == QueueType.Modern) Color.Transparent else colorPalette().background0),
-                            disableScrollingText = disableScrollingText,
-                            isNowPlaying = binder.player.isNowPlaying(window.mediaItem.mediaId)
-                                ?: false,
-                            forceRecompose = forceRecompose
+                            //disableScrollingText = disableScrollingText,
+                            //isNowPlaying = binder.player.isNowPlaying(window.mediaItem.mediaId),
+                            //forceRecompose = forceRecompose
                         )
                     }
                 }

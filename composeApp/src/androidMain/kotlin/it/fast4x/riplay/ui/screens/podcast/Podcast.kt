@@ -726,7 +726,7 @@ fun Podcast(
                                 binder?.player?.enqueue(song.asMediaItem, queue = it)
                             }
                         ) {
-                            var forceRecompose by remember { mutableStateOf(false) }
+                            //var forceRecompose by remember { mutableStateOf(false) }
                             SongItem(
                                 song = song.asMediaItem,
                                 thumbnailSizePx = songThumbnailSizePx,
@@ -739,7 +739,7 @@ fun Podcast(
                                                     navController = navController,
                                                     onDismiss = {
                                                         menuState.hide()
-                                                        forceRecompose = true
+                                                        //forceRecompose = true
                                                     },
                                                     onInfo = {
                                                         navController.navigate("${NavRoutes.videoOrSongInfo.name}/${song.videoId}")
@@ -763,9 +763,9 @@ fun Podcast(
                                                 }
                                         }
                                     ),
-                                disableScrollingText = disableScrollingText,
-                                isNowPlaying = binder?.player?.isNowPlaying(song.videoId) ?: false,
-                                forceRecompose = forceRecompose
+                                //disableScrollingText = disableScrollingText,
+                                //isNowPlaying = binder?.player?.isNowPlaying(song.videoId) ?: false,
+                                //forceRecompose = forceRecompose
                             )
                         }
                     }

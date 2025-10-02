@@ -245,9 +245,9 @@ fun HistoryList(
                             }.distinctBy { it.song.id },
                             key = { it.event.id }
                         ) { event ->
-                            val isLocal by remember { derivedStateOf { event.song.asMediaItem.isLocal } }
+                            //val isLocal by remember { derivedStateOf { event.song.asMediaItem.isLocal } }
                             val checkedState = rememberSaveable { mutableStateOf(false) }
-                            var forceRecompose by remember { mutableStateOf(false) }
+                            //var forceRecompose by remember { mutableStateOf(false) }
 
                             SongItem(
                                 song = event.song,
@@ -286,7 +286,7 @@ fun HistoryList(
                                                     mediaItem = event.song.asMediaItem,
                                                     onDismiss = {
                                                         menuState.hide()
-                                                        forceRecompose = true
+                                                        //forceRecompose = true
                                                     },
                                                     onInfo = {
                                                         navController.navigate("${NavRoutes.videoOrSongInfo.name}/${event.song.id}")
@@ -302,9 +302,9 @@ fun HistoryList(
                                     )
                                     .background(color = colorPalette().background0)
                                     .animateItem(),
-                                disableScrollingText = disableScrollingText,
-                                isNowPlaying = binder?.player?.isNowPlaying(event.song.id) ?: false,
-                                forceRecompose = forceRecompose
+                                //disableScrollingText = disableScrollingText,
+                                //isNowPlaying = binder?.player?.isNowPlaying(event.song.id) ?: false,
+                                //forceRecompose = forceRecompose
                             )
 
                         }
@@ -329,9 +329,9 @@ fun HistoryList(
                                 .filter { it.mediaId.isNotEmpty() },
                             key = { it.mediaId }
                         ) { song ->
-                            val isLocal by remember { derivedStateOf { song.isLocal } }
+                            //val isLocal by remember { derivedStateOf { song.isLocal } }
                             val checkedState = rememberSaveable { mutableStateOf(false) }
-                            var forceRecompose by remember { mutableStateOf(false) }
+                            //var forceRecompose by remember { mutableStateOf(false) }
                             SongItem(
                                 song = song,
                                 thumbnailSizeDp = thumbnailSizeDp,
@@ -366,7 +366,7 @@ fun HistoryList(
                                                     mediaItem = song,
                                                     onDismiss = {
                                                         menuState.hide()
-                                                        forceRecompose = true
+                                                        //forceRecompose = true
                                                     },
                                                     onInfo = {
                                                         navController.navigate("${NavRoutes.videoOrSongInfo.name}/${song.mediaId}")
@@ -382,9 +382,9 @@ fun HistoryList(
                                     )
                                     .background(color = colorPalette().background0)
                                     .animateItem(),
-                                disableScrollingText = disableScrollingText,
-                                isNowPlaying = binder?.player?.isNowPlaying(song.mediaId) ?: false,
-                                forceRecompose = forceRecompose
+                                //disableScrollingText = disableScrollingText,
+                                //isNowPlaying = binder?.player?.isNowPlaying(song.mediaId) ?: false,
+                                //forceRecompose = forceRecompose
                             )
                         }
 

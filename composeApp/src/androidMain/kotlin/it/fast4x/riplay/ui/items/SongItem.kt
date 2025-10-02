@@ -21,6 +21,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.State
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -64,6 +66,7 @@ import it.fast4x.riplay.ui.styling.favoritesOverlay
 import it.fast4x.riplay.ui.styling.shimmer
 import it.fast4x.riplay.utils.asMediaItem
 import it.fast4x.riplay.extensions.preferences.colorPaletteNameKey
+import it.fast4x.riplay.extensions.preferences.disableScrollingTextKey
 import it.fast4x.riplay.utils.applyIf
 import it.fast4x.riplay.utils.getLikeState
 import it.fast4x.riplay.utils.isExplicit
@@ -71,6 +74,7 @@ import it.fast4x.riplay.utils.isVideo
 import it.fast4x.riplay.utils.medium
 import it.fast4x.riplay.extensions.preferences.playlistindicatorKey
 import it.fast4x.riplay.extensions.preferences.rememberPreference
+import it.fast4x.riplay.utils.isNowPlaying
 import it.fast4x.riplay.utils.secondary
 import it.fast4x.riplay.utils.semiBold
 import it.fast4x.riplay.utils.shimmerEffect
@@ -87,10 +91,10 @@ fun SongItem(
     thumbnailSizeDp: Dp,
     modifier: Modifier = Modifier,
     thumbnailContent: (@Composable BoxScope.() -> Unit)? = null,
-    disableScrollingText: Boolean,
-    isNowPlaying: Boolean = false,
-    isLocal: Boolean = false,
-    forceRecompose: Boolean = false
+    //disableScrollingText: Boolean,
+    //isNowPlaying: Boolean = false,
+    //isLocal: Boolean = false,
+    //forceRecompose: Boolean = false
 ) {
     SongItem(
         thumbnailUrl = song.thumbnail?.size(thumbnailSizePx),
@@ -98,10 +102,10 @@ fun SongItem(
         modifier = modifier,
         mediaItem = song.asMediaItem,
         onThumbnailContent = thumbnailContent,
-        disableScrollingText = disableScrollingText,
-        isNowPlaying = isNowPlaying,
-        isLocal = isLocal,
-        forceRecompose = forceRecompose
+        //disableScrollingText = disableScrollingText,
+        //isNowPlaying = isNowPlaying,
+        //isLocal = isLocal,
+        //forceRecompose = forceRecompose
     )
 }
 
@@ -115,10 +119,10 @@ fun SongItem(
     onThumbnailContent: (@Composable BoxScope.() -> Unit)? = null,
     trailingContent: (@Composable () -> Unit)? = null,
     isRecommended: Boolean = false,
-    disableScrollingText: Boolean,
-    isNowPlaying: Boolean = false,
-    isLocal: Boolean = false,
-    forceRecompose: Boolean = false
+    //disableScrollingText: Boolean,
+    //isNowPlaying: Boolean = false,
+    //isLocal: Boolean = false,
+    //forceRecompose: Boolean = false
 ) {
     SongItem(
         thumbnailUrl = song.mediaMetadata.artworkUri.thumbnail(thumbnailSizePx)?.toString(),
@@ -128,10 +132,10 @@ fun SongItem(
         modifier = modifier,
         isRecommended = isRecommended,
         mediaItem = song,
-        disableScrollingText = disableScrollingText,
-        isNowPlaying = isNowPlaying,
-        isLocal = isLocal,
-        forceRecompose = forceRecompose
+        //disableScrollingText = disableScrollingText,
+        //isNowPlaying = isNowPlaying,
+        //isLocal = isLocal,
+        //forceRecompose = forceRecompose
     )
 }
 
@@ -144,10 +148,10 @@ fun SongItem(
     modifier: Modifier = Modifier,
     onThumbnailContent: (@Composable BoxScope.() -> Unit)? = null,
     trailingContent: (@Composable () -> Unit)? = null,
-    disableScrollingText: Boolean,
-    isNowPlaying: Boolean = false,
-    isLocal: Boolean = false,
-    forceRecompose: Boolean = false
+    //disableScrollingText: Boolean,
+    //isNowPlaying: Boolean = false,
+    //isLocal: Boolean = false,
+    //forceRecompose: Boolean = false
 ) {
     SongItem(
         thumbnailUrl = song.thumbnailUrl?.thumbnail(thumbnailSizePx),
@@ -156,10 +160,10 @@ fun SongItem(
         trailingContent = trailingContent,
         modifier = modifier,
         mediaItem = song.asMediaItem,
-        disableScrollingText = disableScrollingText,
-        isNowPlaying = isNowPlaying,
-        isLocal = isLocal,
-        forceRecompose = forceRecompose
+        //disableScrollingText = disableScrollingText,
+        //isNowPlaying = isNowPlaying,
+        //isLocal = isLocal,
+        //forceRecompose = forceRecompose
     )
 }
 
@@ -173,10 +177,10 @@ fun SongItem(
     trailingContent: (@Composable () -> Unit)? = null,
     isRecommended: Boolean = false,
     mediaItem: MediaItem,
-    disableScrollingText: Boolean,
-    isNowPlaying: Boolean = false,
-    isLocal: Boolean = false,
-    forceRecompose: Boolean = false
+    //disableScrollingText: Boolean,
+    //isNowPlaying: Boolean = false,
+    //isLocal: Boolean = false,
+    //forceRecompose: Boolean = false
 ) {
     val binder = LocalPlayerServiceBinder.current
 
@@ -202,11 +206,11 @@ fun SongItem(
         modifier = modifier,
         trailingContent = trailingContent,
         isRecommended = isRecommended,
-        isLocal = mediaItem.isLocal,
+        //isLocal = mediaItem.isLocal,
         mediaItem = mediaItem,
-        disableScrollingText = disableScrollingText,
-        isNowPlaying = isNowPlaying,
-        forceRecompose = forceRecompose
+        //disableScrollingText = disableScrollingText,
+        //isNowPlaying = isNowPlaying,
+        //forceRecompose = forceRecompose
     )
 }
 
@@ -221,12 +225,12 @@ fun SongItem(
     modifier: Modifier = Modifier,
     trailingContent: @Composable (() -> Unit)? = null,
     isRecommended: Boolean = false,
-    isLocal: Boolean,
+    //isLocal: Boolean,
     mediaItem: MediaItem,
-    disableScrollingText: Boolean,
-    isNowPlaying: Boolean = false,
+    //disableScrollingText: Boolean,
+    //isNowPlaying: Boolean = false,
     isLocalSong: Boolean = false,
-    forceRecompose: Boolean = false
+    //forceRecompose: Boolean = false
 ) {
 
     val title = mediaItem.mediaMetadata.title.toString()
@@ -234,20 +238,18 @@ fun SongItem(
     val duration = mediaItem.mediaMetadata.extras?.getString("durationText")
 
     val playlistindicator by rememberPreference(playlistindicatorKey,false)
-    var songPlaylist by remember {
+    var songPlaylist: State<Int> = remember {
         mutableIntStateOf(0)
     }
     val colorPaletteName by rememberPreference(colorPaletteNameKey, ColorPaletteName.Dynamic)
 
-    // TODO improve playlist indicator without recompose
-    // There's no need, turning this into Flow is much more efficient
     if (playlistindicator)
-        LaunchedEffect(Unit, forceRecompose) {
-            withContext(Dispatchers.IO) {
-                songPlaylist = Database.songUsedInPlaylists(mediaItem.mediaId)
-            }
-        }
+        songPlaylist = Database.songUsedInPlaylistsAsFlow(mediaItem.mediaId).collectAsState(initial = 0)
 
+    val binder = LocalPlayerServiceBinder.current
+    val isNowPlaying = binder?.player?.isNowPlaying(mediaItem.mediaId)
+
+    val disableScrollingText by rememberPreference(disableScrollingTextKey, false)
 
     val context = LocalContext.current
     val colorPalette = LocalAppearance.current.colorPalette
@@ -258,7 +260,7 @@ fun SongItem(
         modifier = modifier
             .padding(end = 8.dp)
             .clip(RoundedCornerShape(10.dp))
-            .applyIf(isNowPlaying){
+            .applyIf(isNowPlaying == true){
                 background(colorPalette.favoritesOverlay)
             }
 
@@ -343,7 +345,7 @@ fun SongItem(
                                 .size(18.dp)
                         )
 
-                    if (playlistindicator && (songPlaylist > 0)) {
+                    if (playlistindicator && (songPlaylist.value > 0)) {
                         IconButton(
                             icon = R.drawable.add_in_playlist,
                             color = if (colorPaletteName == ColorPaletteName.PureBlack) Color.Black else colorPalette().text,
@@ -360,9 +362,9 @@ fun SongItem(
                                                 navController = navController,
                                                 onDismiss = {
                                                     menuState.hide()
-                                                    Database.asyncTransaction {
-                                                        songPlaylist = songUsedInPlaylists(mediaItem.mediaId)
-                                                    }
+//                                                    Database.asyncTransaction {
+//                                                        songPlaylist = songUsedInPlaylists(mediaItem.mediaId)
+//                                                    }
                                                 },
                                                 mediaItem = mediaItem,
                                                 binder = binder,
@@ -431,15 +433,16 @@ fun SongItem(
                 val menuState = LocalMenuState.current
                 val navController = rememberNavController()
                 val binder = LocalPlayerServiceBinder.current
-                    if (isRecommended)
-                        IconButton(
-                            icon = R.drawable.smart_shuffle,
-                            color = colorPalette().accent,
-                            enabled = true,
-                            onClick = {},
-                            modifier = Modifier
-                                .size(18.dp)
-                        )
+
+                if (isRecommended)
+                    IconButton(
+                        icon = R.drawable.smart_shuffle,
+                        color = colorPalette().accent,
+                        enabled = true,
+                        onClick = {},
+                        modifier = Modifier
+                            .size(18.dp)
+                    )
 
                     if ( mediaItem.isExplicit )
                         IconButton(
@@ -459,7 +462,7 @@ fun SongItem(
                             .applyIf(!disableScrollingText) { basicMarquee(iterations = Int.MAX_VALUE) }
                             .weight(1f)
                     )
-                if (playlistindicator && (songPlaylist > 0)) {
+                if (playlistindicator && (songPlaylist.value > 0)) {
                     IconButton(
                         icon = R.drawable.add_in_playlist,
                         color = if (colorPaletteName == ColorPaletteName.PureBlack) Color.Black else colorPalette().text,
@@ -476,9 +479,9 @@ fun SongItem(
                                             navController = navController,
                                             onDismiss = {
                                                 menuState.hide()
-                                                Database.asyncTransaction {
-                                                    songPlaylist = songUsedInPlaylists(mediaItem.mediaId)
-                                                }
+//                                                Database.asyncTransaction {
+//                                                    songPlaylist = songUsedInPlaylists(mediaItem.mediaId)
+//                                                }
                                             },
                                             mediaItem = mediaItem,
                                             binder = binder,
@@ -522,7 +525,7 @@ fun SongItem(
 
                 Spacer(modifier = Modifier.padding(horizontal = 4.dp))
 
-                if (isLocal)
+                if (mediaItem.isLocal)
                     IconButton(
                         onClick = {},
                         icon = R.drawable.folder,

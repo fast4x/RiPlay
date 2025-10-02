@@ -427,7 +427,7 @@ fun MediaItemGridMenu (
                 thumbnailSizeDp = thumbnailSizeDp,
                 modifier = Modifier
                     .weight(1f),
-                disableScrollingText = disableScrollingText
+                //disableScrollingText = disableScrollingText
             )
 
 

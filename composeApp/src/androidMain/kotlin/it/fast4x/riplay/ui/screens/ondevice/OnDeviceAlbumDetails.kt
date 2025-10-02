@@ -740,7 +740,7 @@ fun OnDeviceAlbumDetails(
                             items = songs,
                             key = { _, song -> song.id }
                         ) { index, song ->
-                            val isLocal by remember { derivedStateOf { song.asMediaItem.isLocal } }
+                            //val isLocal by remember { derivedStateOf { song.asMediaItem.isLocal } }
 
                             SwipeablePlaylistItem(
                                 mediaItem = song.asMediaItem,
@@ -755,7 +755,7 @@ fun OnDeviceAlbumDetails(
                                 }
                             ) {
                                 val checkedState = rememberSaveable { mutableStateOf(false) }
-                                var forceRecompose by remember { mutableStateOf(false) }
+                                //var forceRecompose by remember { mutableStateOf(false) }
                                 SongItem(
                                     mediaItem = song.asMediaItem,
                                     thumbnailSizeDp = thumbnailSizeDp,
@@ -786,7 +786,7 @@ fun OnDeviceAlbumDetails(
                                                         navController = navController,
                                                         onDismiss = {
                                                             menuState.hide()
-                                                            forceRecompose = true
+                                                            //forceRecompose = true
                                                         },
                                                         onInfo = {
                                                             navController.navigate("${NavRoutes.videoOrSongInfo.name}/${song.id}")
@@ -838,10 +838,10 @@ fun OnDeviceAlbumDetails(
                                             )
                                         else checkedState.value = false
                                     },
-                                    isLocal = isLocal,
-                                    disableScrollingText = disableScrollingText,
-                                    isNowPlaying = binder?.player?.isNowPlaying(song.id) ?: false,
-                                    forceRecompose = forceRecompose
+                                    //isLocal = isLocal,
+                                    //disableScrollingText = disableScrollingText,
+                                    //isNowPlaying = binder?.player?.isNowPlaying(song.id) ?: false,
+                                    //forceRecompose = forceRecompose
                                 )
                             }
                         }

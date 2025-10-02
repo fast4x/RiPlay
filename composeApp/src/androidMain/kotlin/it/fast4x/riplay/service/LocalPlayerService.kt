@@ -183,6 +183,7 @@ import it.fast4x.riplay.utils.principalCache
 import it.fast4x.riplay.utils.saveMasterQueue
 import it.fast4x.riplay.extensions.preferences.volumeBoostLevelKey
 import it.fast4x.riplay.getPlaybackFadeAudioDuration
+import it.fast4x.riplay.isPersistentQueueEnabled
 import it.fast4x.riplay.utils.BitmapProvider
 import it.fast4x.riplay.utils.SleepTimerListener
 import it.fast4x.riplay.utils.isOfficialContent
@@ -194,6 +195,7 @@ import okhttp3.OkHttpClient
 import timber.log.Timber
 import kotlin.math.roundToInt
 import kotlin.system.exitProcess
+import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 import android.os.Binder as AndroidBinder
 
@@ -229,7 +231,7 @@ class LocalPlayerService : MediaLibraryService(),
     private lateinit var audioVolumeObserver: AudioVolumeObserver
     private lateinit var bitmapProvider: BitmapProvider
     private var volumeNormalizationJob: Job? = null
-    private var isPersistentQueueEnabled: Boolean = false
+
     private var isclosebackgroundPlayerEnabled = false
     private var audioManager: AudioManager? = null
     private var audioDeviceCallback: AudioDeviceCallback? = null
@@ -300,7 +302,7 @@ class LocalPlayerService : MediaLibraryService(),
         preferences.registerOnSharedPreferenceChangeListener(this)
 
         val preferences = preferences
-        isPersistentQueueEnabled = preferences.getBoolean(persistentQueueKey, true)
+
 
         audioQualityFormat = preferences.getEnum(audioQualityFormatKey, AudioQualityFormat.Auto)
         showLikeButton = preferences.getBoolean(showLikeButtonBackgroundPlayerKey, true)
@@ -487,17 +489,21 @@ class LocalPlayerService : MediaLibraryService(),
 
         /* Queue is saved in events without scheduling it (remove this in future)*/
         // Load persistent queue when start activity and save periodically in background
-        if (isPersistentQueueEnabled) {
+        if (isPersistentQueueEnabled()) {
             //restorePlayerQueue()
             player.loadMasterQueue()
             resumePlaybackOnStart()
-            coroutineScope.launch {
-                while (isActive) {
-                    delay(30.seconds)
-                    //savePlayerQueue()
-                    player.saveMasterQueue()
-                }
-            }
+            // todo maybe not needed
+//            coroutineScope.launch {
+//                while (isActive) {
+//                    delay(
+//                    //    30.seconds
+//                        5.minutes
+//                    )
+//                    //savePlayerQueue()
+//                    player.saveMasterQueue()
+//                }
+//            }
 
         }
 
@@ -596,7 +602,20 @@ class LocalPlayerService : MediaLibraryService(),
         return START_STICKY
     }
 
+    override fun onTimelineChanged(timeline: Timeline, reason: Int) {
+        Timber.d("LocalPlayerService onTimelineChanged timeline $timeline reason $reason")
+        if (isPersistentQueueEnabled())
+            player.saveMasterQueue()
+    }
+
+    override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) {
+        Timber.d("LocalPlayerService onPlayWhenReadyChanged playWhenReady $playWhenReady reason $reason")
+        if (isPersistentQueueEnabled())
+            player.saveMasterQueue()
+    }
+
     override fun onTaskRemoved(rootIntent: Intent?) {
+
         isclosebackgroundPlayerEnabled = preferences.getBoolean(closebackgroundPlayerKey, false)
         if (isclosebackgroundPlayerEnabled
             //|| !player.shouldBePlaying // also stop if player is not playing
@@ -616,13 +635,14 @@ class LocalPlayerService : MediaLibraryService(),
     @UnstableApi
     override fun onDestroy() {
 
+        //savePlayerQueue()
+        if (isPersistentQueueEnabled())
+            player.saveMasterQueue()
+
         if (preferences.getBoolean(isDiscordPresenceEnabledKey, false)) {
             Timber.d("[DiscordPresence] onStop: call the manager (close discord presence)")
             discordPresenceManager?.onStop()
         }
-
-        //savePlayerQueue()
-        player.saveMasterQueue()
 
         if (!player.isReleased) {
             player.removeListener(this@LocalPlayerService)
@@ -637,13 +657,8 @@ class LocalPlayerService : MediaLibraryService(),
         super.onDestroy()
     }
 
-
     override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences?, key: String?) {
         when (key) {
-            persistentQueueKey -> if (sharedPreferences != null) {
-                isPersistentQueueEnabled =
-                    sharedPreferences.getBoolean(key, isPersistentQueueEnabled)
-            }
 
             volumeNormalizationKey, loudnessBaseGainKey, volumeBoostLevelKey -> processNormalizeVolume()
 
@@ -1426,7 +1441,7 @@ class LocalPlayerService : MediaLibraryService(),
 //    }
 
     private fun resumePlaybackOnStart() {
-        if(!isPersistentQueueEnabled || !preferences.getBoolean(resumePlaybackOnStartKey, false)) return
+        if(!isPersistentQueueEnabled() || !preferences.getBoolean(resumePlaybackOnStartKey, false)) return
 
         if(!player.isPlaying) {
             player.play()
