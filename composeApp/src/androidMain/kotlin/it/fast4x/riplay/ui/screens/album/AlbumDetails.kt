@@ -300,7 +300,7 @@ fun AlbumDetails(
     LaunchedEffect(Unit) {
         Database.albumSongs(browseId).collect {
             songs = if (parentalControlEnabled)
-                it.filter { !it.title.startsWith(EXPLICIT_PREFIX) } else it
+                it.filter { s -> !s.title.startsWith(EXPLICIT_PREFIX) || s.mediaId?.isNotEmpty() == true } else it
         }
     }
 
@@ -634,10 +634,42 @@ fun AlbumDetails(
                                     FastPlayActionsBar(
                                         modifier = Modifier.fillMaxWidth(.5f).align(Alignment.BottomCenter).padding(bottom = 50.dp),
                                         onPlayNowClick = {
-                                            fastPlay(binder = binder, mediaItems = songs.map(Song::asMediaItem))
+                                            if (songs.any { it.likedAt != -1L }) {
+                                                //binder?.stopRadio()
+                                                fastPlay(binder = binder, mediaItems = songs.filter { it.likedAt != -1L }.map(Song::asMediaItem))
+//                                                binder?.player?.forcePlayAtIndex(
+//                                                    songs.filter { it.likedAt != -1L }
+//                                                        .map(Song::asMediaItem),
+//                                                    songs.filter { it.likedAt != -1L }
+//                                                        .map(Song::asMediaItem)
+//                                                        .indexOf(song.asMediaItem)
+//                                                )
+                                            } else {
+                                                SmartMessage(
+                                                    context.resources.getString(R.string.disliked_this_song),
+                                                    type = PopupType.Error,
+                                                    context = context
+                                                )
+                                            }
+                                            //fastPlay(binder = binder, mediaItems = songs.map(Song::asMediaItem))
                                         },
                                         onShufflePlayClick = {
-                                            fastPlay(binder = binder, mediaItems = songs.map(Song::asMediaItem), withShuffle = true)
+                                            if (songs.any { it.likedAt != -1L }) {
+                                                //binder?.stopRadio()
+                                                fastPlay(binder = binder, mediaItems = songs.map(Song::asMediaItem), withShuffle = true)
+//                                                binder?.player?.forcePlayFromBeginning(
+//                                                    songs.filter { it.likedAt != -1L }
+//                                                        .shuffled()
+//                                                        .map(Song::asMediaItem)
+//                                                )
+                                            } else {
+                                                SmartMessage(
+                                                    context.resources.getString(R.string.disliked_this_collection),
+                                                    type = PopupType.Error,
+                                                    context = context
+                                                )
+                                            }
+
                                         }
                                     )
 
@@ -1271,7 +1303,7 @@ fun AlbumDetails(
                             items = songs,
                             key = { _, song -> song.id }
                         ) { index, song ->
-                            val isLocal by remember { derivedStateOf { song.asMediaItem.isLocal } }
+                            //val isLocal by remember { derivedStateOf { song.asMediaItem.isLocal } }
 
                             SwipeablePlaylistItem(
                                 mediaItem = song.asMediaItem,

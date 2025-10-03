@@ -65,7 +65,6 @@ import it.fast4x.riplay.enums.ThumbnailRoundness
 import it.fast4x.riplay.enums.TransitionEffect
 import it.fast4x.riplay.enums.UiType
 import it.fast4x.riplay.models.Album
-import it.fast4x.riplay.models.SongAlbumMap
 import it.fast4x.riplay.ui.components.navigation.header.AppHeader
 import it.fast4x.riplay.ui.components.themed.Header
 import it.fast4x.riplay.ui.components.themed.HeaderIconButton
@@ -75,12 +74,13 @@ import it.fast4x.riplay.ui.items.AlbumItem
 import it.fast4x.riplay.ui.items.AlbumItemPlaceholder
 import it.fast4x.riplay.ui.screens.searchresult.ItemsPage
 import it.fast4x.riplay.ui.styling.px
-import it.fast4x.riplay.utils.asMediaItem
 import it.fast4x.riplay.extensions.preferences.disableScrollingTextKey
 import it.fast4x.riplay.extensions.preferences.playerPositionKey
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.extensions.preferences.thumbnailRoundnessKey
 import it.fast4x.riplay.extensions.preferences.transitionEffectKey
+import it.fast4x.riplay.models.SongAlbumMap
+import it.fast4x.riplay.utils.asMediaItem
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -123,6 +123,7 @@ fun AlbumScreen(
     val disableScrollingText by rememberPreference(disableScrollingTextKey, false)
 
     PersistMapCleanup(tagPrefix = "album/$browseId/")
+
 
     LaunchedEffect(Unit) {
         Database

@@ -194,7 +194,7 @@ import it.fast4x.riplay.ui.styling.favoritesOverlay
 import it.fast4x.riplay.ui.styling.px
 import it.fast4x.riplay.utils.BlurTransformation
 import it.fast4x.riplay.utils.DisposableListener
-import it.fast4x.riplay.utils.SearchYoutubeEntity
+import it.fast4x.riplay.utils.SearchOnlineEntity
 import it.fast4x.riplay.utils.verticalfadingEdge2
 import it.fast4x.riplay.extensions.preferences.VinylSizeKey
 import it.fast4x.riplay.extensions.preferences.actionExpandedKey
@@ -3460,7 +3460,7 @@ fun LocalPlayer(
             },
             shape = thumbnailRoundness.shape()
         ) {
-            SearchYoutubeEntity(
+            SearchOnlineEntity(
                 navController = navController,
                 onDismiss = { showSearchEntity = false },
                 query = "${mediaItem.mediaMetadata.artist.toString()} - ${mediaItem.mediaMetadata.title.toString()}",

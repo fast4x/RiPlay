@@ -103,7 +103,7 @@ import it.fast4x.riplay.ui.components.themed.SmartMessage
 import it.fast4x.riplay.ui.widgets.PlayerHorizontalWidget
 import it.fast4x.riplay.ui.widgets.PlayerVerticalWidget
 import it.fast4x.riplay.utils.TimerJob
-import it.fast4x.riplay.utils.YouTubeRadio
+import it.fast4x.riplay.utils.OnlineRadio
 import it.fast4x.riplay.utils.activityPendingIntent
 import it.fast4x.riplay.extensions.preferences.audioQualityFormatKey
 import it.fast4x.riplay.extensions.preferences.autoLoadSongsInQueueKey
@@ -240,7 +240,7 @@ class LocalPlayerService : MediaLibraryService(),
     lateinit var audioQualityFormat: AudioQualityFormat
     lateinit var sleepTimerListener: SleepTimerListener
     private var timerJob: TimerJob? = null
-    private var radio: YouTubeRadio? = null
+    private var radio: OnlineRadio? = null
 
     val currentMediaItem = MutableStateFlow<MediaItem?>(null)
 
@@ -1683,7 +1683,7 @@ class LocalPlayerService : MediaLibraryService(),
             val isDiscoverEnabled = applicationContext.preferences.getBoolean(discoverKey, false)
             val filterContentType = applicationContext.preferences.getEnum(filterContentTypeKey,
                 ContentType.All)
-            YouTubeRadio(
+            OnlineRadio(
                 endpoint?.videoId,
                 endpoint?.playlistId,
                 endpoint?.playlistSetVideoId,

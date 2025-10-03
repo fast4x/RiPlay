@@ -42,6 +42,7 @@ fun fastPlay(
             .number
             .toInt()
 
+        // todo implement isLiked and manage isExplicit in mediaItem
         withContext(Dispatchers.Main) {
             binder?.stopRadio()
             mediaItems?.let {

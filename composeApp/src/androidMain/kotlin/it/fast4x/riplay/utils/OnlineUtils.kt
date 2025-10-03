@@ -26,7 +26,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
@@ -49,7 +48,7 @@ import it.fast4x.environment.models.bodies.BrowseBody
 import it.fast4x.environment.models.bodies.ContinuationBody
 import it.fast4x.environment.models.bodies.NextBody
 import it.fast4x.environment.models.bodies.SearchBody
-import it.fast4x.environment.requests.albumPage
+import it.fast4x.environment.requests.AlbumPage
 import it.fast4x.environment.requests.artistPage
 import it.fast4x.environment.requests.nextPage
 import it.fast4x.environment.requests.searchPage
@@ -57,6 +56,7 @@ import it.fast4x.environment.utils.from
 import it.fast4x.riplay.Database
 import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.LocalSelectedQueue
+import it.fast4x.riplay.MODIFIED_PREFIX
 import it.fast4x.riplay.R
 import it.fast4x.riplay.colorPalette
 import it.fast4x.riplay.enums.ContentType
@@ -96,11 +96,13 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
+import timber.log.Timber
 
 @UnstableApi
-data class YouTubeRadio (
+data class OnlineRadio (
     private val videoId: String? = null,
     private var playlistId: String? = null,
     private var playlistSetVideoId: String? = null,
@@ -199,7 +201,7 @@ data class YouTubeRadio (
 @ExperimentalFoundationApi
 @UnstableApi
 @Composable
-fun SearchYoutubeEntity (
+fun SearchOnlineEntity (
     navController: NavController,
     onDismiss: () -> Unit,
     query: String,
@@ -409,7 +411,7 @@ fun SearchYoutubeEntity (
 }
 
 @Composable
-fun UpdateYoutubeArtist(browseId: String) {
+fun UpdateOnlineArtist(browseId: String) {
 
     var artistPage by persist<Environment.ArtistInfoPage?>("artist/$browseId/artistPage")
     var artist by persist<Artist?>("artist/$browseId/artist")
@@ -448,56 +450,114 @@ fun UpdateYoutubeArtist(browseId: String) {
 
 @UnstableApi
 @Composable
-fun UpdateYoutubeAlbum (browseId: String) {
+fun UpdateOnlineAlbum (
+    browseId: String,
+    onFetch: ((album: Album?, albumPage: AlbumPage?) -> Unit)? = null
+) {
     var album by persist<Album?>("album/$browseId/album")
-    var albumPage by persist<Environment.PlaylistOrAlbumPage?>("album/$browseId/albumPage")
-    val tabIndex by rememberSaveable {mutableStateOf(0)}
+    var albumPage by persist<AlbumPage?>("album/$browseId/albumPage")
     LaunchedEffect(browseId) {
         Database
-            .album(browseId)
-            .combine(snapshotFlow { tabIndex }) { album, tabIndex -> album to tabIndex }
-            .collect { (currentAlbum, tabIndex) ->
+            .album(browseId).collect { currentAlbum ->
+                Timber.d("UpdateYoutubeAlbum collect ${currentAlbum?.title}")
                 album = currentAlbum
-
-                if (albumPage == null && (currentAlbum?.timestamp == null || tabIndex == 1)) {
-                    withContext(Dispatchers.IO) {
-                        Environment.albumPage(BrowseBody(browseId = browseId))
-                            ?.onSuccess { currentAlbumPage ->
+                CoroutineScope(Dispatchers.IO).launch {
+                    if (albumPage == null)
+                        EnvironmentExt.getAlbum(browseId)
+                            .onSuccess { currentAlbumPage ->
                                 albumPage = currentAlbumPage
 
-                                Database.clearAlbum(browseId)
-
+                                Timber.d("UpdateYoutubeAlbum otherVersion ${currentAlbumPage.otherVersions}")
                                 Database.upsert(
                                     Album(
                                         id = browseId,
-                                        title = currentAlbumPage?.title,
-                                        thumbnailUrl = currentAlbumPage?.thumbnail?.url,
-                                        year = currentAlbumPage?.year,
-                                        authorsText = currentAlbumPage?.authors
-                                            ?.joinToString("") { it.name ?: "" },
-                                        shareUrl = currentAlbumPage?.url,
+                                        title = album?.title ?: currentAlbumPage.album.title,
+                                        thumbnailUrl = if (album?.thumbnailUrl?.startsWith(
+                                                MODIFIED_PREFIX
+                                            ) == true
+                                        ) album?.thumbnailUrl else currentAlbumPage.album.thumbnail?.url,
+                                        year = currentAlbumPage.album.year,
+                                        authorsText = if (album?.authorsText?.startsWith(
+                                                MODIFIED_PREFIX
+                                            ) == true
+                                        ) album?.authorsText else currentAlbumPage.album.authors
+                                            ?.joinToString(", ") { it.name ?: "" },
+                                        shareUrl = currentAlbumPage.url,
                                         timestamp = System.currentTimeMillis(),
-                                        bookmarkedAt = album?.bookmarkedAt
+                                        bookmarkedAt = album?.bookmarkedAt,
+                                        isYoutubeAlbum = album?.isYoutubeAlbum == true
                                     ),
                                     currentAlbumPage
-                                        ?.songsPage
-                                        ?.items
-                                        ?.map(Environment.SongItem::asMediaItem)
-                                        ?.onEach(Database::insert)
-                                        ?.mapIndexed { position, mediaItem ->
+                                        .songs.distinct()
+                                        .map(Environment.SongItem::asMediaItem)
+                                        .onEach(Database::insert)
+                                        .mapIndexed { position, mediaItem ->
                                             SongAlbumMap(
                                                 songId = mediaItem.mediaId,
                                                 albumId = browseId,
                                                 position = position
                                             )
-                                        } ?: emptyList()
+                                        }
                                 )
                             }
-                    }
-
+                            .onFailure {
+                                Timber.e("AlbumScreen error ${it.stackTraceToString()}")
+//                            if (it.message?.contains("NOT_FOUND") == true) {
+//                                // This album no longer exists in YouTube Music
+//                                Database.asyncTransaction {
+//                                    album?.let(::delete)
+//                                }
+//                            }
+                            }
                 }
             }
+//        Database
+//            .album(browseId)
+//            .combine(snapshotFlow { tabIndex }) { album, tabIndex -> album to tabIndex }
+//            .collect { (currentAlbum, tabIndex) ->
+//                album = currentAlbum
+//
+//                if (albumPage == null && (currentAlbum?.timestamp == null || tabIndex == 1)) {
+//                    withContext(Dispatchers.IO) {
+//                        Environment.albumPage(BrowseBody(browseId = browseId))
+//                            ?.onSuccess { currentAlbumPage ->
+//                                albumPage = currentAlbumPage
+//
+//                                Database.clearAlbum(browseId)
+//
+//                                Database.upsert(
+//                                    Album(
+//                                        id = browseId,
+//                                        title = currentAlbumPage?.title,
+//                                        thumbnailUrl = currentAlbumPage?.thumbnail?.url,
+//                                        year = currentAlbumPage?.year,
+//                                        authorsText = currentAlbumPage?.authors
+//                                            ?.joinToString("") { it.name ?: "" },
+//                                        shareUrl = currentAlbumPage?.url,
+//                                        timestamp = System.currentTimeMillis(),
+//                                        bookmarkedAt = album?.bookmarkedAt
+//                                    ),
+//                                    currentAlbumPage
+//                                        ?.songsPage
+//                                        ?.items
+//                                        ?.map(Environment.SongItem::asMediaItem)
+//                                        ?.onEach(Database::insert)
+//                                        ?.mapIndexed { position, mediaItem ->
+//                                            SongAlbumMap(
+//                                                songId = mediaItem.mediaId,
+//                                                albumId = browseId,
+//                                                position = position
+//                                            )
+//                                        } ?: emptyList()
+//                                )
+//                            }
+//                    }
+//
+//                }
+//            }
+        onFetch?.invoke(album, albumPage)
     }
+
 }
 
 @UnstableApi

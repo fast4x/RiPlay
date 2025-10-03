@@ -164,6 +164,7 @@ import it.fast4x.riplay.ui.items.QueueItem
 import it.fast4x.riplay.ui.screens.player.local.LocalMiniPlayer
 import it.fast4x.riplay.ui.screens.player.online.OnlineMiniPlayer
 import it.fast4x.riplay.utils.getScreenDimensions
+import kotlinx.coroutines.withContext
 
 @ExperimentalMaterial3Api
 @ExperimentalTextApi
@@ -280,12 +281,21 @@ fun Queue(
             onDismiss = { showConfirmDeleteAllDialog = false },
             onConfirm = {
                 showConfirmDeleteAllDialog = false
-                val mediacount = binder.player.mediaItemCount - 1
-                for (i in mediacount.downTo(0)) {
-                    if (i == mediaItemIndex) null else binder.player.removeMediaItem(i)
+                CoroutineScope(Dispatchers.IO).launch {
+                    Database.asyncTransaction {
+                        clearQueuedMediaItems()
+                    }
+                    withContext(Dispatchers.Main) {
+                        binderPlayer.clearMediaItems()
+                    }
                 }
+//                val mediacount = binder.player.mediaItemCount - 1
+//                for (i in mediacount.downTo(0)) {
+//                    if (i == mediaItemIndex) null else binder.player.removeMediaItem(i)
+//                }
                 listMediaItems.clear()
                 listMediaItemsIndex.clear()
+
             }
         )
     }

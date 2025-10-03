@@ -76,8 +76,8 @@ import it.fast4x.riplay.ui.screens.settings.SettingsEntry
 import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.ui.styling.px
 import it.fast4x.riplay.ui.styling.shimmer
-import it.fast4x.riplay.utils.UpdateYoutubeAlbum
-import it.fast4x.riplay.utils.UpdateYoutubeArtist
+import it.fast4x.riplay.utils.UpdateOnlineAlbum
+import it.fast4x.riplay.utils.UpdateOnlineArtist
 import it.fast4x.riplay.utils.asMediaItem
 import it.fast4x.riplay.ui.styling.center
 import it.fast4x.riplay.ui.styling.color
@@ -395,7 +395,7 @@ fun StatisticsPage(
                     ) {
 
                         if (artists[it].thumbnailUrl.toString() == "null")
-                            UpdateYoutubeArtist(artists[it].id)
+                            UpdateOnlineArtist(artists[it].id)
 
                         ArtistItem(
                             thumbnailUrl = artists[it].thumbnailUrl,
@@ -421,7 +421,7 @@ fun StatisticsPage(
                     ) {
 
                         if (albums[it].thumbnailUrl.toString() == "null")
-                            UpdateYoutubeAlbum(albums[it].id)
+                            UpdateOnlineAlbum(albums[it].id)
 
                         AlbumItem(
                             thumbnailUrl = albums[it].thumbnailUrl,

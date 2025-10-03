@@ -140,6 +140,7 @@ class MediaSessionCallback (
 
             withContext(Dispatchers.Main) {
                 Timber.d("MediaSessionCallback onPlayFromMediaId mediaId ${mediaId} mediaItems ${mediaItems.size} ready to play")
+                binder.stopRadio()
                 fastPlay(mediaItem = mediaItemSelected, binder = binder, mediaItems = mediaItems)
             }
         }

@@ -231,7 +231,7 @@ fun AppNavigation(
                     playerState = playerState,
                     currentDuration = 0f,
                     currentSecond = 0f,
-                    onDismiss = {},
+                    onDismiss = {}, // todo fix close queue opened from navigation
                     onDiscoverClick = {}
                 )
             }
