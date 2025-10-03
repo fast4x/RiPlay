@@ -633,39 +633,19 @@ fun AlbumDetails(
                                     FastPlayActionsBar(
                                         modifier = Modifier.fillMaxWidth(.5f).align(Alignment.BottomCenter).padding(bottom = 50.dp),
                                         onPlayNowClick = {
-                                            if (songs.any { it.likedAt != -1L }) {
-                                                binder?.stopRadio()
-                                                //fastPlay(binder = binder, mediaItems = songs.filter { it.likedAt != -1L }.map(Song::asMediaItem))
-                                                binder?.player?.forcePlayFromBeginning(
-                                                    songs.filter { it.likedAt != -1L }
-                                                        .map(Song::asMediaItem)
-                                                )
-                                            } else {
-                                                SmartMessage(
-                                                    context.resources.getString(R.string.disliked_this_song),
-                                                    type = PopupType.Error,
-                                                    context = context
-                                                )
-                                            }
-                                            //fastPlay(binder = binder, mediaItems = songs.map(Song::asMediaItem))
+                                            binder?.stopRadio()
+                                            binder?.player?.forcePlayFromBeginning(
+                                                songs.filter { it.likedAt != -1L }
+                                                    .map(Song::asMediaItem)
+                                            )
                                         },
                                         onShufflePlayClick = {
-                                            if (songs.any { it.likedAt != -1L }) {
-                                                binder?.stopRadio()
-                                                //fastPlay(binder = binder, mediaItems = songs.map(Song::asMediaItem), withShuffle = true)
-                                                binder?.player?.forcePlayFromBeginning(
-                                                    songs.filter { it.likedAt != -1L }
-                                                        .shuffled()
-                                                        .map(Song::asMediaItem)
-                                                )
-                                            } else {
-                                                SmartMessage(
-                                                    context.resources.getString(R.string.disliked_this_collection),
-                                                    type = PopupType.Error,
-                                                    context = context
-                                                )
-                                            }
-
+                                            binder?.stopRadio()
+                                            binder?.player?.forcePlayFromBeginning(
+                                                songs.filter { it.likedAt != -1L }
+                                                    .shuffled()
+                                                    .map(Song::asMediaItem)
+                                            )
                                         }
                                     )
 

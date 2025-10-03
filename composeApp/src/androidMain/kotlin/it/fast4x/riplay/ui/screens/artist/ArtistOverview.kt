@@ -328,38 +328,50 @@ fun ArtistOverview(
                         modifier = Modifier.fillMaxWidth(.5f).align(Alignment.BottomCenter).padding(bottom = 50.dp),
                         onPlayNowClick = {
                             CoroutineScope(Dispatchers.IO).launch {
-                                EnvironmentExt.getArtistItemsPage(
-                                    BrowseEndpoint(
-                                        browseId = songsBrowseId,
-                                        params = songsParams
-                                    )
-                                ).completed().getOrNull()
-                                    ?.items
-                                    ?.map { it as Environment.SongItem }
-                                    ?.map { it.asMediaItem }
-                                    .let {
-                                        if (it != null)
-                                            binder?.player?.forcePlayFromBeginning(it)
-                                        //fastPlay(binder = binder, mediaItems = it)
-                                    }
+                                artistPage.sections.firstOrNull{sec -> sec.items.firstOrNull() is Environment.SongItem}.let {
+                                    songsBrowseId = it?.moreEndpoint?.browseId.toString()
+                                    songsParams = it?.moreEndpoint?.params.toString()
+                                }
+                                if (songsBrowseId.isNotEmpty())
+                                    EnvironmentExt.getArtistItemsPage(
+                                        BrowseEndpoint(
+                                            browseId = songsBrowseId,
+                                            params = songsParams
+                                        )
+                                    ).completed().getOrNull()
+                                        ?.items
+                                        ?.map { it as Environment.SongItem }
+                                        ?.map { it.asMediaItem }
+                                        .let {
+                                            if (it != null)
+                                                withContext(Dispatchers.Main) {
+                                                    binder?.player?.forcePlayFromBeginning(it)
+                                                }
+                                        }
                             }
                         },
                         onShufflePlayClick = {
                             CoroutineScope(Dispatchers.IO).launch {
-                                EnvironmentExt.getArtistItemsPage(
-                                    BrowseEndpoint(
-                                        browseId = songsBrowseId,
-                                        params = songsParams
-                                    )
-                                ).completed().getOrNull()
-                                    ?.items
-                                    ?.map { it as Environment.SongItem }
-                                    ?.map { it.asMediaItem }
-                                    .let {
-                                        if (it != null)
-                                            binder?.player?.forcePlayFromBeginning(it.shuffled())
-                                        //fastPlay(binder = binder, mediaItems = it, withShuffle = true)
-                                    }
+                                artistPage.sections.firstOrNull{sec -> sec.items.firstOrNull() is Environment.SongItem}.let {
+                                    songsBrowseId = it?.moreEndpoint?.browseId.toString()
+                                    songsParams = it?.moreEndpoint?.params.toString()
+                                }
+                                if (songsBrowseId.isNotEmpty())
+                                    EnvironmentExt.getArtistItemsPage(
+                                        BrowseEndpoint(
+                                            browseId = songsBrowseId,
+                                            params = songsParams
+                                        )
+                                    ).completed().getOrNull()
+                                        ?.items
+                                        ?.map { it as Environment.SongItem }
+                                        ?.map { it.asMediaItem }
+                                        .let {
+                                            if (it != null)
+                                                withContext(Dispatchers.Main) {
+                                                    binder?.player?.forcePlayFromBeginning(it.shuffled())
+                                                }
+                                        }
                             }
                         }
                     )
@@ -692,6 +704,7 @@ fun ArtistOverview(
                                 if (parentalControlEnabled && item.explicit) return@items
 
                                 println("Innertube artistmodern SongItem: ${item.info?.name}")
+
                                 SwipeablePlaylistItem(
                                     mediaItem = item.asMediaItem,
                                     onPlayNext = {
