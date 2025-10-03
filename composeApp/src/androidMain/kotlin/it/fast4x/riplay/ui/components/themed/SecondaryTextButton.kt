@@ -10,7 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import it.fast4x.riplay.ui.styling.primaryButton
-import it.fast4x.riplay.utils.medium
+import it.fast4x.riplay.ui.styling.medium
 import it.fast4x.riplay.colorPalette
 import it.fast4x.riplay.typography
 

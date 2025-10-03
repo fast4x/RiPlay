@@ -203,7 +203,6 @@ import it.fast4x.riplay.extensions.preferences.isEnabledFullscreenKey
 import it.fast4x.riplay.extensions.preferences.isKeepScreenOnEnabledKey
 import it.fast4x.riplay.extensions.preferences.isPauseOnVolumeZeroEnabledKey
 import it.fast4x.riplay.extensions.preferences.isProxyEnabledKey
-import it.fast4x.riplay.extensions.preferences.keepPlayerMinimizedKey
 import it.fast4x.riplay.extensions.preferences.languageAppKey
 import it.fast4x.riplay.extensions.preferences.loadedDataKey
 import it.fast4x.riplay.extensions.preferences.loudnessBaseGainKey
@@ -253,8 +252,7 @@ import it.fast4x.riplay.ui.components.themed.SmartMessage
 import it.fast4x.riplay.ui.screens.player.fastPlay
 import it.fast4x.riplay.ui.screens.player.local.LocalMiniPlayer
 import it.fast4x.riplay.ui.screens.player.local.LocalPlayer
-import it.fast4x.riplay.ui.screens.player.local.PlayerSheetState
-import it.fast4x.riplay.ui.screens.player.local.rememberPlayerSheetState
+import it.fast4x.riplay.ui.screens.player.local.rememberLocalPlayerSheetState
 import it.fast4x.riplay.ui.screens.player.online.MediaSessionCallback
 import it.fast4x.riplay.ui.screens.player.online.OnlineMiniPlayer
 import it.fast4x.riplay.ui.screens.player.online.OnlinePlayer
@@ -272,7 +270,7 @@ import it.fast4x.riplay.utils.LocalMonetCompat
 import it.fast4x.riplay.utils.OkHttpRequest
 import it.fast4x.riplay.utils.asMediaItem
 import it.fast4x.riplay.utils.capitalized
-import it.fast4x.riplay.utils.encryptedPreferences
+import it.fast4x.riplay.extensions.encryptedpreferences.encryptedPreferences
 import it.fast4x.riplay.utils.getSystemlanguage
 import it.fast4x.riplay.utils.invokeOnReady
 import it.fast4x.riplay.utils.isAtLeastAndroid11
@@ -1272,7 +1270,7 @@ class MainActivity :
                 )
 
                 // TODO remove in the future
-                val playerSheetState = rememberPlayerSheetState(
+                val playerSheetState = rememberLocalPlayerSheetState(
                     dismissedBound = 0.dp,
                     collapsedBound = Dimensions.collapsedPlayer + bottomDp,
                     expandedBound = maxHeight,

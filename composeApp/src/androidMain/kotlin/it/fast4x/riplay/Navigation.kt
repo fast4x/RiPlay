@@ -64,7 +64,7 @@ import it.fast4x.riplay.ui.screens.newreleases.NewreleasesScreen
 import it.fast4x.riplay.ui.screens.ondevice.DeviceListSongsScreen
 import it.fast4x.riplay.ui.screens.ondevice.OnDeviceArtistScreen
 import it.fast4x.riplay.ui.screens.player.local.LocalPlayer
-import it.fast4x.riplay.ui.screens.player.local.Queue
+import it.fast4x.riplay.ui.screens.player.common.Queue
 import it.fast4x.riplay.ui.screens.playlist.PlaylistScreen
 import it.fast4x.riplay.ui.screens.podcast.PodcastScreen
 import it.fast4x.riplay.ui.screens.search.SearchScreen

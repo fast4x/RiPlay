@@ -15,8 +15,8 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import it.fast4x.riplay.utils.center
-import it.fast4x.riplay.utils.semiBold
+import it.fast4x.riplay.ui.styling.center
+import it.fast4x.riplay.ui.styling.semiBold
 import it.fast4x.riplay.typography
 
 @Composable

@@ -55,9 +55,9 @@ import it.fast4x.riplay.ui.components.themed.SmartMessage
 import it.fast4x.riplay.ui.components.themed.StringListDialog
 import it.fast4x.riplay.ui.components.themed.Switch
 import it.fast4x.riplay.ui.components.themed.ValueSelectorDialog
-import it.fast4x.riplay.utils.color
-import it.fast4x.riplay.utils.secondary
-import it.fast4x.riplay.utils.semiBold
+import it.fast4x.riplay.ui.styling.color
+import it.fast4x.riplay.ui.styling.secondary
+import it.fast4x.riplay.ui.styling.semiBold
 import it.fast4x.riplay.ui.components.Skeleton
 import it.fast4x.riplay.colorPalette
 import it.fast4x.riplay.ui.components.themed.IDialog

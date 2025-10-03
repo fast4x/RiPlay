@@ -47,8 +47,6 @@ import it.fast4x.riplay.models.Song
 import it.fast4x.riplay.models.ui.UiMedia
 import it.fast4x.riplay.ui.screens.player.local.components.controls.InfoAlbumAndArtistEssential
 import it.fast4x.riplay.ui.screens.player.local.components.controls.InfoAlbumAndArtistModern
-import it.fast4x.riplay.utils.GetControls
-import it.fast4x.riplay.utils.GetSeekBar
 import it.fast4x.riplay.extensions.preferences.buttonzoomoutKey
 import it.fast4x.riplay.utils.applyIf
 import it.fast4x.riplay.extensions.preferences.disableScrollingTextKey

@@ -74,7 +74,7 @@ import it.fast4x.riplay.ui.screens.settings.isSyncEnabled
 import it.fast4x.riplay.ui.styling.collapsedPlayerProgressBar
 import it.fast4x.riplay.ui.styling.favoritesIcon
 import it.fast4x.riplay.utils.addToYtLikedSong
-import it.fast4x.riplay.utils.bold
+import it.fast4x.riplay.ui.styling.bold
 import it.fast4x.riplay.extensions.preferences.colorPaletteModeKey
 import it.fast4x.riplay.utils.doubleShadowDrop
 import it.fast4x.riplay.utils.dropShadow
@@ -88,7 +88,7 @@ import it.fast4x.riplay.extensions.preferences.playerBackgroundColorsKey
 import it.fast4x.riplay.extensions.preferences.playerControlsTypeKey
 import it.fast4x.riplay.extensions.preferences.playerInfoShowIconsKey
 import it.fast4x.riplay.extensions.preferences.rememberPreference
-import it.fast4x.riplay.utils.semiBold
+import it.fast4x.riplay.ui.styling.semiBold
 import it.fast4x.riplay.utils.setDisLikeState
 import it.fast4x.riplay.extensions.preferences.showthumbnailKey
 import it.fast4x.riplay.utils.copyTextToClipboard

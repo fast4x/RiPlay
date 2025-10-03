@@ -7,12 +7,12 @@ import androidx.media3.common.util.UnstableApi
 import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.R
 import it.fast4x.riplay.service.LocalPlayerService
-import it.fast4x.riplay.utils.playShuffledSongs
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import it.fast4x.riplay.appContext
+import it.fast4x.riplay.ui.screens.player.fastPlay
 import kotlin.coroutines.cancellation.CancellationException
 
 @UnstableApi
@@ -37,7 +37,7 @@ class SongsShuffle private constructor(
     override fun onShortClick() {
         CoroutineScope( Dispatchers.IO ).launch {
             songs().collect {
-                playShuffledSongs( it, appContext(), binder )
+                fastPlay(binder = binder, mediaItems = it, withShuffle = true )
                 throw CancellationException()
             }
         }

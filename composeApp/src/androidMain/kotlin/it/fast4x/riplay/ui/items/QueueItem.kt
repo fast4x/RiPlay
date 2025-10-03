@@ -27,7 +27,7 @@ import it.fast4x.riplay.ui.styling.favoritesOverlay
 import it.fast4x.riplay.utils.applyIf
 import it.fast4x.riplay.extensions.preferences.disableScrollingTextKey
 import it.fast4x.riplay.extensions.preferences.rememberPreference
-import it.fast4x.riplay.utils.semiBold
+import it.fast4x.riplay.ui.styling.semiBold
 
 @Composable
 fun QueueItem(

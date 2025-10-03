@@ -29,8 +29,8 @@ import it.fast4x.riplay.enums.NavigationBarPosition
 import it.fast4x.riplay.ui.components.ShimmerHost
 import it.fast4x.riplay.ui.components.themed.FloatingActionsContainerWithScrollToTop
 import it.fast4x.riplay.ui.styling.Dimensions
-import it.fast4x.riplay.utils.center
-import it.fast4x.riplay.utils.secondary
+import it.fast4x.riplay.ui.styling.center
+import it.fast4x.riplay.ui.styling.secondary
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import it.fast4x.riplay.colorPalette

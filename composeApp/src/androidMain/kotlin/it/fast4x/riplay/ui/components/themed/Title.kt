@@ -22,8 +22,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import it.fast4x.riplay.R
-import it.fast4x.riplay.utils.bold
-import it.fast4x.riplay.utils.semiBold
+import it.fast4x.riplay.ui.styling.bold
+import it.fast4x.riplay.ui.styling.semiBold
 import it.fast4x.riplay.colorPalette
 import it.fast4x.riplay.typography
 

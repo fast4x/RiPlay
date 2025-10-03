@@ -113,7 +113,7 @@ import it.fast4x.riplay.utils.collect
 import it.fast4x.riplay.extensions.preferences.discordPersonalAccessTokenKey
 import it.fast4x.riplay.extensions.preferences.discoverKey
 import it.fast4x.riplay.extensions.preferences.enableWallpaperKey
-import it.fast4x.riplay.utils.encryptedPreferences
+import it.fast4x.riplay.extensions.encryptedpreferences.encryptedPreferences
 import it.fast4x.riplay.extensions.preferences.exoPlayerMinTimeForEventKey
 import it.fast4x.riplay.utils.forcePlayFromBeginning
 import it.fast4x.riplay.extensions.preferences.getEnum
@@ -129,7 +129,6 @@ import it.fast4x.riplay.extensions.preferences.minimumSilenceDurationKey
 import it.fast4x.riplay.extensions.preferences.notificationPlayerFirstIconKey
 import it.fast4x.riplay.extensions.preferences.notificationPlayerSecondIconKey
 import it.fast4x.riplay.extensions.preferences.pauseListenHistoryKey
-import it.fast4x.riplay.extensions.preferences.persistentQueueKey
 import it.fast4x.riplay.utils.playNext
 import it.fast4x.riplay.utils.playPrevious
 import it.fast4x.riplay.extensions.preferences.playbackFadeAudioDurationKey
@@ -189,14 +188,10 @@ import it.fast4x.riplay.utils.SleepTimerListener
 import it.fast4x.riplay.utils.isOfficialContent
 import it.fast4x.riplay.utils.isUserGeneratedContent
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.isActive
 import okhttp3.OkHttpClient
 import timber.log.Timber
 import kotlin.math.roundToInt
 import kotlin.system.exitProcess
-import kotlin.time.Duration.Companion.minutes
-import kotlin.time.Duration.Companion.seconds
 import android.os.Binder as AndroidBinder
 
 

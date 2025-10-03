@@ -14,8 +14,10 @@ import android.text.format.DateUtils
 import androidx.annotation.OptIn
 import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -1224,3 +1226,11 @@ fun isValidHex(hex: String): Boolean {
     return hex.length == 7 && hex.startsWith("#")
 }
 
+@Composable
+fun isCompositionLaunched(): Boolean {
+    var isLaunched by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) {
+        isLaunched = true
+    }
+    return isLaunched
+}

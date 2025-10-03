@@ -37,10 +37,10 @@ import it.fast4x.riplay.enums.NavigationBarPosition
 import it.fast4x.riplay.enums.UiType
 import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.ui.styling.shimmer
-import it.fast4x.riplay.utils.bold
+import it.fast4x.riplay.ui.styling.bold
 import it.fast4x.riplay.utils.applyIf
-import it.fast4x.riplay.utils.medium
-import it.fast4x.riplay.utils.semiBold
+import it.fast4x.riplay.ui.styling.medium
+import it.fast4x.riplay.ui.styling.semiBold
 import it.fast4x.riplay.colorPalette
 import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.typography

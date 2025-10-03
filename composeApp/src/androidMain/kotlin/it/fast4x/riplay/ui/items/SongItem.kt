@@ -71,16 +71,14 @@ import it.fast4x.riplay.utils.applyIf
 import it.fast4x.riplay.utils.getLikeState
 import it.fast4x.riplay.utils.isExplicit
 import it.fast4x.riplay.utils.isVideo
-import it.fast4x.riplay.utils.medium
+import it.fast4x.riplay.ui.styling.medium
 import it.fast4x.riplay.extensions.preferences.playlistindicatorKey
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.utils.isNowPlaying
-import it.fast4x.riplay.utils.secondary
-import it.fast4x.riplay.utils.semiBold
+import it.fast4x.riplay.ui.styling.secondary
+import it.fast4x.riplay.ui.styling.semiBold
 import it.fast4x.riplay.utils.shimmerEffect
 import it.fast4x.riplay.utils.thumbnail
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 
 
 @UnstableApi

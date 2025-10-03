@@ -4,6 +4,11 @@ import androidx.annotation.OptIn
 import androidx.media3.common.MediaItem
 import androidx.media3.common.util.UnstableApi
 import it.fast4x.riplay.Database
+import it.fast4x.riplay.context
+import it.fast4x.riplay.enums.MaxSongs
+import it.fast4x.riplay.extensions.preferences.getEnum
+import it.fast4x.riplay.extensions.preferences.maxSongsInQueueKey
+import it.fast4x.riplay.extensions.preferences.preferences
 import it.fast4x.riplay.service.LocalPlayerService
 import it.fast4x.riplay.service.isLocal
 import it.fast4x.riplay.utils.forcePlay
@@ -32,9 +37,16 @@ fun fastPlay(
             mediaItems?.onEach { insert(it) }
         }
 
+        val maxSongsInQueue = context().preferences
+            .getEnum(maxSongsInQueueKey, MaxSongs.`500` )
+            .number
+            .toInt()
+
         withContext(Dispatchers.Main) {
             binder?.stopRadio()
-            mediaItems?.let { binder?.player?.setMediaItems(if (withShuffle) it.shuffled() else it) }
+            mediaItems?.let {
+                binder?.player?.setMediaItems(if (withShuffle) it.shuffled().take( maxSongsInQueue ) else it.take( maxSongsInQueue ))
+            }
             val mediaItemToPlay = mediaItem
                 ?: if (!withShuffle) binder?.player?.mediaItems?.first()
                 else binder?.player?.mediaItems?.get(Random.nextInt(binder.player.mediaItems.size-1))

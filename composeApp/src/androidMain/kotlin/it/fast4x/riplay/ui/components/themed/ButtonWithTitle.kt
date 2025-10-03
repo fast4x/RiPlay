@@ -19,7 +19,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import it.fast4x.riplay.ui.styling.favoritesIcon
-import it.fast4x.riplay.utils.semiBold
+import it.fast4x.riplay.ui.styling.semiBold
 import it.fast4x.riplay.colorPalette
 import it.fast4x.riplay.typography
 

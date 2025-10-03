@@ -19,10 +19,10 @@ import androidx.media3.common.util.UnstableApi
 import it.fast4x.riplay.R
 import it.fast4x.riplay.models.Folder
 import it.fast4x.riplay.utils.applyIf
-import it.fast4x.riplay.utils.semiBold
+import it.fast4x.riplay.ui.styling.semiBold
 import it.fast4x.riplay.colorPalette
 import it.fast4x.riplay.typography
-import it.fast4x.riplay.utils.secondary
+import it.fast4x.riplay.ui.styling.secondary
 
 @UnstableApi
 @Composable

@@ -103,7 +103,7 @@ import it.fast4x.riplay.extensions.preferences.autosyncKey
 import it.fast4x.riplay.extensions.preferences.filterByKey
 import it.fast4x.riplay.utils.LazyListContainer
 import it.fast4x.riplay.utils.importYTMLikedAlbums
-import it.fast4x.riplay.utils.semiBold
+import it.fast4x.riplay.ui.styling.semiBold
 import it.fast4x.riplay.utils.viewTypeToolbutton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

@@ -96,7 +96,7 @@ import it.fast4x.riplay.utils.isLandscape
 import it.fast4x.riplay.extensions.preferences.parentalControlEnabledKey
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.utils.resize
-import it.fast4x.riplay.utils.semiBold
+import it.fast4x.riplay.ui.styling.semiBold
 import it.fast4x.riplay.extensions.preferences.thumbnailRoundnessKey
 import it.fast4x.riplay.utils.LazyListContainer
 import kotlinx.coroutines.Dispatchers

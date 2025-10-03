@@ -2758,10 +2758,10 @@ interface Database {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     fun insert(song: Song, format: Format)
 
-    @Insert(onConflict = OnConflictStrategy.ABORT)
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insert(queuedMediaItem: QueuedMediaItem)
 
-    @Insert(onConflict = OnConflictStrategy.ABORT)
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insert(queuedMediaItems: List<QueuedMediaItem>)
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)

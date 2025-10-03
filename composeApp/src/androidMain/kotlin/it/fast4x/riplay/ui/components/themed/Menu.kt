@@ -1,6 +1,5 @@
 package it.fast4x.riplay.ui.components.themed
 
-import android.graphics.drawable.Drawable
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
@@ -22,14 +21,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import androidx.core.graphics.drawable.toBitmap
 import it.fast4x.riplay.R
-import it.fast4x.riplay.utils.medium
-import it.fast4x.riplay.utils.secondary
+import it.fast4x.riplay.ui.styling.medium
+import it.fast4x.riplay.ui.styling.secondary
 import it.fast4x.riplay.colorPalette
 import it.fast4x.riplay.typography
 

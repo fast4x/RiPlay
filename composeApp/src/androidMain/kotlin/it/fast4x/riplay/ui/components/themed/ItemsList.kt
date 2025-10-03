@@ -20,8 +20,8 @@ import it.fast4x.compose.persist.persist
 import it.fast4x.environment.Environment
 import it.fast4x.environment.utils.plus
 import it.fast4x.riplay.ui.components.ShimmerHost
-import it.fast4x.riplay.utils.center
-import it.fast4x.riplay.utils.secondary
+import it.fast4x.riplay.ui.styling.center
+import it.fast4x.riplay.ui.styling.secondary
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import it.fast4x.riplay.typography

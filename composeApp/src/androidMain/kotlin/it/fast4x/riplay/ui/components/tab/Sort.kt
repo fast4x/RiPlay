@@ -26,7 +26,7 @@ import it.fast4x.riplay.ui.components.MenuState
 import it.fast4x.riplay.ui.components.themed.MenuEntry
 import it.fast4x.riplay.extensions.preferences.menuStyleKey
 import it.fast4x.riplay.extensions.preferences.rememberPreference
-import it.fast4x.riplay.utils.semiBold
+import it.fast4x.riplay.ui.styling.semiBold
 import it.fast4x.riplay.ui.components.navigation.header.TabToolBar
 import it.fast4x.riplay.ui.components.tab.toolbar.Clickable
 import it.fast4x.riplay.ui.components.tab.toolbar.Menu

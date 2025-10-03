@@ -22,11 +22,11 @@ import it.fast4x.riplay.ui.components.themed.TextPlaceholder
 import it.fast4x.riplay.ui.styling.onOverlay
 import it.fast4x.riplay.ui.styling.overlay
 import it.fast4x.riplay.ui.styling.shimmer
-import it.fast4x.riplay.utils.color
+import it.fast4x.riplay.ui.styling.color
 import it.fast4x.riplay.utils.applyIf
-import it.fast4x.riplay.utils.medium
-import it.fast4x.riplay.utils.secondary
-import it.fast4x.riplay.utils.semiBold
+import it.fast4x.riplay.ui.styling.medium
+import it.fast4x.riplay.ui.styling.secondary
+import it.fast4x.riplay.ui.styling.semiBold
 import it.fast4x.riplay.colorPalette
 import it.fast4x.riplay.thumbnailShape
 import it.fast4x.riplay.typography

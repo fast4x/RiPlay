@@ -228,11 +228,11 @@ import it.fast4x.riplay.ui.components.themed.SecondaryTextButton
 import it.fast4x.riplay.ui.components.themed.SmartMessage
 import it.fast4x.riplay.ui.components.themed.ThumbnailOffsetDialog
 import it.fast4x.riplay.ui.components.themed.animateBrushRotation
-import it.fast4x.riplay.ui.screens.player.local.Lyrics
-import it.fast4x.riplay.ui.screens.player.local.NextVisualizer
-import it.fast4x.riplay.ui.screens.player.local.Queue
-import it.fast4x.riplay.ui.screens.player.local.StatsForNerds
-import it.fast4x.riplay.ui.screens.player.local.animatedGradient
+import it.fast4x.riplay.ui.screens.player.common.Lyrics
+import it.fast4x.riplay.ui.screens.player.common.NextVisualizer
+import it.fast4x.riplay.ui.screens.player.common.Queue
+import it.fast4x.riplay.ui.screens.player.common.StatsForNerds
+import it.fast4x.riplay.utils.animatedGradient
 import it.fast4x.riplay.ui.screens.settings.isSyncEnabled
 import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.ui.styling.collapsedPlayerProgressBar
@@ -243,7 +243,7 @@ import it.fast4x.riplay.ui.styling.px
 import it.fast4x.riplay.utils.BlurTransformation
 import it.fast4x.riplay.utils.DisposableListener
 import it.fast4x.riplay.utils.SearchYoutubeEntity
-import it.fast4x.riplay.utils.VerticalfadingEdge2
+import it.fast4x.riplay.utils.verticalfadingEdge2
 import it.fast4x.riplay.extensions.preferences.VinylSizeKey
 import it.fast4x.riplay.extensions.preferences.actionExpandedKey
 import it.fast4x.riplay.extensions.preferences.actionspacedevenlyKey
@@ -305,7 +305,7 @@ import it.fast4x.riplay.extensions.preferences.queueTypeKey
 import it.fast4x.riplay.extensions.preferences.rememberObservedPreference
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.utils.seamlessPlay
-import it.fast4x.riplay.utils.semiBold
+import it.fast4x.riplay.ui.styling.semiBold
 import it.fast4x.riplay.utils.setDisLikeState
 import it.fast4x.riplay.utils.setQueueLoopState
 import it.fast4x.riplay.extensions.preferences.showButtonPlayerAddToPlaylistKey
@@ -3476,7 +3476,7 @@ fun OnlinePlayer(
                                                 )
                                             )
                                             .conditional(fadingedge) {
-                                                VerticalfadingEdge2(
+                                                verticalfadingEdge2(
                                                     fade = (if (expandedplayer) thumbnailFadeEx else thumbnailFade) * 0.05f,
                                                     showTopActionsBar,
                                                     topPadding,

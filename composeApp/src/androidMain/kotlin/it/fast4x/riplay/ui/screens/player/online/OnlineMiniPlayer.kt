@@ -111,7 +111,7 @@ import it.fast4x.riplay.extensions.preferences.miniPlayerTypeKey
 import it.fast4x.riplay.utils.playNext
 import it.fast4x.riplay.utils.playPrevious
 import it.fast4x.riplay.extensions.preferences.rememberPreference
-import it.fast4x.riplay.utils.semiBold
+import it.fast4x.riplay.ui.styling.semiBold
 import it.fast4x.riplay.utils.setDisLikeState
 import it.fast4x.riplay.utils.thumbnail
 import it.fast4x.riplay.utils.unlikeYtVideoOrSong

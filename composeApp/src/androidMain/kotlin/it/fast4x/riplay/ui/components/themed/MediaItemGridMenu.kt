@@ -80,7 +80,7 @@ import it.fast4x.riplay.extensions.preferences.playlistSortByKey
 import it.fast4x.riplay.extensions.preferences.playlistSortOrderKey
 import it.fast4x.riplay.utils.positionAndDurationState
 import it.fast4x.riplay.extensions.preferences.rememberPreference
-import it.fast4x.riplay.utils.semiBold
+import it.fast4x.riplay.ui.styling.semiBold
 import it.fast4x.riplay.utils.thumbnail
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

@@ -32,7 +32,6 @@ import androidx.compose.material.CheckboxDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -76,7 +75,6 @@ import it.fast4x.riplay.models.Info
 import it.fast4x.riplay.models.Playlist
 import it.fast4x.riplay.models.Song
 import it.fast4x.riplay.models.SongPlaylistMap
-import it.fast4x.riplay.service.isLocal
 import it.fast4x.riplay.ui.components.LocalMenuState
 import it.fast4x.riplay.ui.components.ShimmerHost
 import it.fast4x.riplay.ui.components.SwipeablePlaylistItem
@@ -95,10 +93,10 @@ import it.fast4x.riplay.ui.items.SongItem
 import it.fast4x.riplay.ui.items.SongItemPlaceholder
 import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.utils.addNext
-import it.fast4x.riplay.utils.align
+import it.fast4x.riplay.ui.styling.align
 import it.fast4x.riplay.utils.asMediaItem
-import it.fast4x.riplay.utils.center
-import it.fast4x.riplay.utils.color
+import it.fast4x.riplay.ui.styling.center
+import it.fast4x.riplay.ui.styling.color
 import it.fast4x.riplay.utils.applyIf
 import it.fast4x.riplay.extensions.preferences.disableScrollingTextKey
 import it.fast4x.riplay.utils.durationTextToMillis
@@ -108,12 +106,11 @@ import it.fast4x.riplay.utils.forcePlayAtIndex
 import it.fast4x.riplay.utils.forcePlayFromBeginning
 import it.fast4x.riplay.utils.formatAsTime
 import it.fast4x.riplay.utils.isLandscape
-import it.fast4x.riplay.utils.isNowPlaying
-import it.fast4x.riplay.utils.medium
+import it.fast4x.riplay.ui.styling.medium
 import it.fast4x.riplay.extensions.preferences.parentalControlEnabledKey
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.utils.resize
-import it.fast4x.riplay.utils.semiBold
+import it.fast4x.riplay.ui.styling.semiBold
 import it.fast4x.riplay.extensions.preferences.showFloatingIconKey
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

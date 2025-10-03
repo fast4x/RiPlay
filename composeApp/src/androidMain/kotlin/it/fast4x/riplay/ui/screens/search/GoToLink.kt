@@ -46,7 +46,7 @@ import it.fast4x.riplay.ui.components.themed.HeaderWithIcon
 import it.fast4x.riplay.ui.components.themed.InputTextField
 import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.utils.asMediaItem
-import it.fast4x.riplay.utils.semiBold
+import it.fast4x.riplay.ui.styling.semiBold
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job

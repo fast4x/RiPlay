@@ -89,7 +89,7 @@ import it.fast4x.riplay.extensions.preferences.autosyncKey
 import it.fast4x.riplay.extensions.preferences.filterByKey
 import it.fast4x.riplay.utils.LazyListContainer
 import it.fast4x.riplay.utils.importYTMSubscribedChannels
-import it.fast4x.riplay.utils.semiBold
+import it.fast4x.riplay.ui.styling.semiBold
 import it.fast4x.riplay.utils.viewTypeToolbutton
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay

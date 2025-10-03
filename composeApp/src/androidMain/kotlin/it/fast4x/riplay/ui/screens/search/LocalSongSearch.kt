@@ -20,7 +20,6 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -46,7 +45,6 @@ import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.enums.NavigationBarPosition
 import it.fast4x.riplay.enums.ThumbnailRoundness
 import it.fast4x.riplay.models.Song
-import it.fast4x.riplay.service.isLocal
 import it.fast4x.riplay.ui.components.LocalMenuState
 import it.fast4x.riplay.ui.components.themed.FloatingActionsContainerWithScrollToTop
 import it.fast4x.riplay.ui.components.themed.Header
@@ -54,11 +52,10 @@ import it.fast4x.riplay.ui.components.themed.InHistoryMediaItemMenu
 import it.fast4x.riplay.ui.items.SongItem
 import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.ui.styling.px
-import it.fast4x.riplay.utils.align
+import it.fast4x.riplay.ui.styling.align
 import it.fast4x.riplay.utils.asMediaItem
 import it.fast4x.riplay.extensions.preferences.disableScrollingTextKey
-import it.fast4x.riplay.utils.isNowPlaying
-import it.fast4x.riplay.utils.medium
+import it.fast4x.riplay.ui.styling.medium
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.extensions.preferences.thumbnailRoundnessKey
 import kotlinx.coroutines.delay

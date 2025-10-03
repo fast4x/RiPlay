@@ -69,12 +69,12 @@ import it.fast4x.riplay.ui.items.AlbumItemPlaceholder
 import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.ui.styling.px
 import it.fast4x.riplay.ui.styling.shimmer
-import it.fast4x.riplay.utils.center
+import it.fast4x.riplay.ui.styling.center
 import it.fast4x.riplay.extensions.preferences.disableScrollingTextKey
 import it.fast4x.riplay.utils.isLandscape
 import it.fast4x.riplay.extensions.preferences.rememberPreference
-import it.fast4x.riplay.utils.secondary
-import it.fast4x.riplay.utils.semiBold
+import it.fast4x.riplay.ui.styling.secondary
+import it.fast4x.riplay.ui.styling.semiBold
 import it.fast4x.riplay.extensions.preferences.showSearchTabKey
 import it.fast4x.riplay.extensions.preferences.thumbnailRoundnessKey
 import it.fast4x.riplay.colorPalette

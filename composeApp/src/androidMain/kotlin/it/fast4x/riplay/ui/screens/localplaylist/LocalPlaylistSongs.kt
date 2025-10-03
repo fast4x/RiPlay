@@ -12,10 +12,8 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -44,7 +42,6 @@ import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
@@ -135,14 +132,13 @@ import it.fast4x.riplay.ui.styling.px
 import it.fast4x.riplay.extensions.preferences.UiTypeKey
 import it.fast4x.riplay.utils.addNext
 import it.fast4x.riplay.utils.asMediaItem
-import it.fast4x.riplay.utils.center
-import it.fast4x.riplay.utils.color
+import it.fast4x.riplay.ui.styling.center
+import it.fast4x.riplay.ui.styling.color
 import it.fast4x.riplay.utils.durationTextToMillis
 import it.fast4x.riplay.utils.enqueue
 import it.fast4x.riplay.utils.forcePlayAtIndex
 import it.fast4x.riplay.utils.forcePlayFromBeginning
 import it.fast4x.riplay.utils.formatAsTime
-import it.fast4x.riplay.utils.isLandscape
 import it.fast4x.riplay.extensions.preferences.isRecommendationEnabledKey
 import it.fast4x.riplay.extensions.preferences.maxSongsInQueueKey
 import it.fast4x.riplay.extensions.preferences.navigationBarPositionKey
@@ -150,8 +146,8 @@ import it.fast4x.riplay.extensions.preferences.playlistSongSortByKey
 import it.fast4x.riplay.extensions.preferences.recommendationsNumberKey
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.extensions.preferences.reorderInQueueEnabledKey
-import it.fast4x.riplay.utils.secondary
-import it.fast4x.riplay.utils.semiBold
+import it.fast4x.riplay.ui.styling.secondary
+import it.fast4x.riplay.ui.styling.semiBold
 import it.fast4x.riplay.extensions.preferences.showFloatingIconKey
 import it.fast4x.riplay.extensions.preferences.songSortOrderKey
 import it.fast4x.riplay.extensions.preferences.thumbnailRoundnessKey
@@ -177,7 +173,6 @@ import it.fast4x.riplay.ui.screens.settings.isSyncEnabled
 import it.fast4x.riplay.utils.checkFileExists
 import it.fast4x.riplay.utils.deleteFileIfExists
 import it.fast4x.riplay.extensions.preferences.disableScrollingTextKey
-import it.fast4x.riplay.utils.isNowPlaying
 import it.fast4x.riplay.utils.saveImageToInternalStorage
 import kotlinx.coroutines.CoroutineScope
 import it.fast4x.riplay.models.SongEntity

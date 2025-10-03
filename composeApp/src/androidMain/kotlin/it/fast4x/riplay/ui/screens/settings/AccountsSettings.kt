@@ -9,13 +9,11 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Surface
@@ -60,7 +58,6 @@ import it.fast4x.riplay.extensions.preferences.isDiscordPresenceEnabledKey
 import it.fast4x.riplay.extensions.preferences.preferences
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.extensions.preferences.restartActivityKey
-import it.fast4x.riplay.utils.semiBold
 import it.fast4x.riplay.extensions.preferences.thumbnailRoundnessKey
 import it.fast4x.riplay.extensions.preferences.useYtLoginOnlyForBrowseKey
 import it.fast4x.riplay.extensions.preferences.ytAccountChannelHandleKey
@@ -71,7 +68,7 @@ import it.fast4x.riplay.extensions.preferences.ytCookieKey
 import it.fast4x.riplay.extensions.preferences.ytDataSyncIdKey
 import it.fast4x.riplay.extensions.preferences.ytVisitorDataKey
 import it.fast4x.riplay.ui.components.themed.AccountInfoDialog
-import it.fast4x.riplay.utils.rememberEncryptedPreference
+import it.fast4x.riplay.extensions.encryptedpreferences.rememberEncryptedPreference
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch

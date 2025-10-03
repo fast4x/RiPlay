@@ -47,11 +47,11 @@ import it.fast4x.riplay.ui.styling.shimmer
 import it.fast4x.riplay.MONTHLY_PREFIX
 import it.fast4x.riplay.cleanPrefix
 import it.fast4x.riplay.utils.checkFileExists
-import it.fast4x.riplay.utils.color
+import it.fast4x.riplay.ui.styling.color
 import it.fast4x.riplay.utils.applyIf
-import it.fast4x.riplay.utils.medium
-import it.fast4x.riplay.utils.secondary
-import it.fast4x.riplay.utils.semiBold
+import it.fast4x.riplay.ui.styling.medium
+import it.fast4x.riplay.ui.styling.secondary
+import it.fast4x.riplay.ui.styling.semiBold
 import it.fast4x.riplay.utils.thumbnail
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.distinctUntilChanged

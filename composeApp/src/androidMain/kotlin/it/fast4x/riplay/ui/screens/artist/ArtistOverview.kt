@@ -107,9 +107,9 @@ import it.fast4x.riplay.ui.screens.settings.isSyncEnabled
 import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.ui.styling.px
 import it.fast4x.riplay.utils.addNext
-import it.fast4x.riplay.utils.align
+import it.fast4x.riplay.ui.styling.align
 import it.fast4x.riplay.utils.asMediaItem
-import it.fast4x.riplay.utils.color
+import it.fast4x.riplay.ui.styling.color
 import it.fast4x.riplay.utils.applyIf
 import it.fast4x.riplay.utils.enqueue
 import it.fast4x.riplay.utils.fadingEdge
@@ -118,11 +118,10 @@ import org.dailyislam.android.utilities.isNetworkConnected
 import it.fast4x.riplay.extensions.preferences.parentalControlEnabledKey
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.utils.resize
-import it.fast4x.riplay.utils.secondary
-import it.fast4x.riplay.utils.semiBold
+import it.fast4x.riplay.ui.styling.secondary
+import it.fast4x.riplay.ui.styling.semiBold
 import it.fast4x.riplay.extensions.preferences.showFloatingIconKey
 import it.fast4x.riplay.extensions.preferences.thumbnailRoundnessKey
-import it.fast4x.riplay.models.Song
 import it.fast4x.riplay.ui.components.themed.FastPlayActionsBar
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

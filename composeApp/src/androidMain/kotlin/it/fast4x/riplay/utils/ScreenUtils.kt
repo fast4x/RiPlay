@@ -8,9 +8,15 @@ import android.util.DisplayMetrics
 import android.view.Surface
 import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.ReadOnlyComposable
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 
+val isLandscape
+    @Composable
+    @ReadOnlyComposable
+    get() = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
 
 fun getScreenOrientation(context: Context): Int {
     return when (context.resources.configuration.orientation) {

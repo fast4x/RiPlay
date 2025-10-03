@@ -37,7 +37,6 @@ import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -79,7 +78,6 @@ import it.fast4x.riplay.enums.UiType
 import it.fast4x.riplay.models.Artist
 import it.fast4x.riplay.models.PlaylistPreview
 import it.fast4x.riplay.models.Song
-import it.fast4x.riplay.service.isLocal
 import it.fast4x.riplay.ui.components.LocalMenuState
 import it.fast4x.riplay.ui.components.PullToRefreshBox
 import it.fast4x.riplay.ui.components.themed.HeaderWithIcon
@@ -96,15 +94,14 @@ import it.fast4x.riplay.ui.items.PlaylistItem
 import it.fast4x.riplay.ui.items.SongItem
 import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.ui.styling.px
-import it.fast4x.riplay.utils.WelcomeMessage
+import it.fast4x.riplay.ui.screens.welcome.WelcomeMessage
 import it.fast4x.riplay.utils.asMediaItem
 import it.fast4x.riplay.utils.asSong
-import it.fast4x.riplay.utils.bold
-import it.fast4x.riplay.utils.center
-import it.fast4x.riplay.utils.color
+import it.fast4x.riplay.ui.styling.bold
+import it.fast4x.riplay.ui.styling.center
+import it.fast4x.riplay.ui.styling.color
 import it.fast4x.riplay.extensions.preferences.disableScrollingTextKey
 import it.fast4x.riplay.utils.isLandscape
-import it.fast4x.riplay.utils.isNowPlaying
 import it.fast4x.riplay.extensions.preferences.loadedDataKey
 import it.fast4x.riplay.extensions.preferences.parentalControlEnabledKey
 import it.fast4x.riplay.extensions.preferences.playEventsTypeKey
@@ -112,9 +109,9 @@ import it.fast4x.riplay.extensions.preferences.quickPicsDiscoverPageKey
 import it.fast4x.riplay.extensions.preferences.quickPicsRelatedPageKey
 import it.fast4x.riplay.extensions.preferences.quickPicsTrendingSongKey
 import it.fast4x.riplay.extensions.preferences.rememberPreference
-import it.fast4x.riplay.utils.secondary
+import it.fast4x.riplay.ui.styling.secondary
 import it.fast4x.riplay.extensions.preferences.selectedCountryCodeKey
-import it.fast4x.riplay.utils.semiBold
+import it.fast4x.riplay.ui.styling.semiBold
 import it.fast4x.riplay.extensions.preferences.showChartsKey
 import it.fast4x.riplay.extensions.preferences.showFloatingIconKey
 import it.fast4x.riplay.extensions.preferences.showMonthlyPlaylistInQuickPicksKey

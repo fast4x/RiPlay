@@ -164,7 +164,7 @@ import it.fast4x.riplay.extensions.preferences.colorPaletteModeKey
 import it.fast4x.riplay.extensions.preferences.colorPaletteNameKey
 import it.fast4x.riplay.extensions.preferences.playerThumbnailSizeLKey
 import it.fast4x.riplay.extensions.preferences.seekWithTapKey
-import it.fast4x.riplay.utils.semiBold
+import it.fast4x.riplay.ui.styling.semiBold
 import it.fast4x.riplay.extensions.preferences.swipeAnimationsNoThumbnailKey
 import it.fast4x.riplay.extensions.preferences.thumbnailFadeExKey
 import it.fast4x.riplay.extensions.preferences.thumbnailFadeKey

@@ -58,7 +58,7 @@ import it.fast4x.riplay.extensions.preferences.menuStyleKey
 import it.fast4x.riplay.extensions.preferences.playlistSortByKey
 import it.fast4x.riplay.extensions.preferences.playlistSortOrderKey
 import it.fast4x.riplay.extensions.preferences.rememberPreference
-import it.fast4x.riplay.utils.semiBold
+import it.fast4x.riplay.ui.styling.semiBold
 import kotlinx.coroutines.Dispatchers
 import it.fast4x.riplay.colorPalette
 import it.fast4x.riplay.enums.NavRoutes

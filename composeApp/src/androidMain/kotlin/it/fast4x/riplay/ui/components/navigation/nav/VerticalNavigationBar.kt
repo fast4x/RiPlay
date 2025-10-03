@@ -34,7 +34,7 @@ import it.fast4x.riplay.enums.NavigationBarType
 import it.fast4x.riplay.enums.UiType
 import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.utils.isLandscape
-import it.fast4x.riplay.utils.semiBold
+import it.fast4x.riplay.ui.styling.semiBold
 import it.fast4x.riplay.ui.components.themed.Button
 import it.fast4x.riplay.colorPalette
 import it.fast4x.riplay.showSearchIconInNav

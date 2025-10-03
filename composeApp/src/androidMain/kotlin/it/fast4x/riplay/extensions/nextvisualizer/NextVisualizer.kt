@@ -78,7 +78,7 @@ import it.fast4x.riplay.utils.hasPermission
 import it.fast4x.riplay.utils.isCompositionLaunched
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.utils.resize
-import it.fast4x.riplay.utils.semiBold
+import it.fast4x.riplay.ui.styling.semiBold
 import it.fast4x.riplay.extensions.preferences.visualizerEnabledKey
 import kotlinx.coroutines.launch
 import it.fast4x.riplay.colorPalette
@@ -88,7 +88,6 @@ import it.fast4x.riplay.extensions.preferences.thumbnailRoundnessKey
 import it.fast4x.riplay.service.isLocal
 import it.fast4x.riplay.typography
 import it.fast4x.riplay.ui.components.DelayedControls
-import kotlinx.coroutines.delay
 import timber.log.Timber
 
 @OptIn(UnstableApi::class)

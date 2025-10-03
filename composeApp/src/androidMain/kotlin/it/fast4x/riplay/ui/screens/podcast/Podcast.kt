@@ -108,12 +108,11 @@ import it.fast4x.riplay.utils.forcePlayAtIndex
 import it.fast4x.riplay.utils.forcePlayFromBeginning
 import it.fast4x.riplay.utils.formatAsTime
 import it.fast4x.riplay.utils.isLandscape
-import it.fast4x.riplay.utils.isNowPlaying
-import it.fast4x.riplay.utils.medium
+import it.fast4x.riplay.ui.styling.medium
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.utils.resize
-import it.fast4x.riplay.utils.secondary
-import it.fast4x.riplay.utils.semiBold
+import it.fast4x.riplay.ui.styling.secondary
+import it.fast4x.riplay.ui.styling.semiBold
 import it.fast4x.riplay.extensions.preferences.showFloatingIconKey
 import it.fast4x.riplay.extensions.preferences.thumbnailRoundnessKey
 import kotlinx.coroutines.CoroutineScope

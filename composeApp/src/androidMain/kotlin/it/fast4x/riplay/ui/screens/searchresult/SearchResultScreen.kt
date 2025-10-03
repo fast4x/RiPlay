@@ -72,7 +72,6 @@ import it.fast4x.riplay.utils.addNext
 import it.fast4x.riplay.utils.asMediaItem
 import it.fast4x.riplay.extensions.preferences.disableScrollingTextKey
 import it.fast4x.riplay.utils.enqueue
-import it.fast4x.riplay.utils.isNowPlaying
 import it.fast4x.riplay.extensions.preferences.parentalControlEnabledKey
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.extensions.preferences.searchResultScreenTabIndexKey
@@ -80,7 +79,7 @@ import it.fast4x.riplay.typography
 import it.fast4x.riplay.ui.components.themed.Menu
 import it.fast4x.riplay.ui.components.themed.MenuEntry
 import it.fast4x.riplay.ui.components.themed.Title2Actions
-import it.fast4x.riplay.utils.secondary
+import it.fast4x.riplay.ui.styling.secondary
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.combine

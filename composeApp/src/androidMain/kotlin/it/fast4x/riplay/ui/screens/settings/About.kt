@@ -19,15 +19,10 @@ import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.NavigationBarPosition
-import it.fast4x.riplay.extensions.contributors.ShowDevelopers
-import it.fast4x.riplay.extensions.contributors.ShowTranslators
-import it.fast4x.riplay.extensions.contributors.countDevelopers
-import it.fast4x.riplay.extensions.contributors.countTranslators
 import it.fast4x.riplay.ui.components.themed.HeaderWithIcon
-import it.fast4x.riplay.ui.components.themed.Title
 import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.utils.getVersionName
-import it.fast4x.riplay.utils.secondary
+import it.fast4x.riplay.ui.styling.secondary
 import it.fast4x.riplay.colorPalette
 import it.fast4x.riplay.typography
 

@@ -195,7 +195,7 @@ import it.fast4x.riplay.ui.styling.px
 import it.fast4x.riplay.utils.BlurTransformation
 import it.fast4x.riplay.utils.DisposableListener
 import it.fast4x.riplay.utils.SearchYoutubeEntity
-import it.fast4x.riplay.utils.VerticalfadingEdge2
+import it.fast4x.riplay.utils.verticalfadingEdge2
 import it.fast4x.riplay.extensions.preferences.VinylSizeKey
 import it.fast4x.riplay.extensions.preferences.actionExpandedKey
 import it.fast4x.riplay.extensions.preferences.actionspacedevenlyKey
@@ -249,7 +249,7 @@ import it.fast4x.riplay.extensions.preferences.queueLoopTypeKey
 import it.fast4x.riplay.extensions.preferences.queueTypeKey
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.utils.seamlessPlay
-import it.fast4x.riplay.utils.semiBold
+import it.fast4x.riplay.ui.styling.semiBold
 import it.fast4x.riplay.utils.setQueueLoopState
 import it.fast4x.riplay.utils.shouldBePlaying
 import it.fast4x.riplay.extensions.preferences.showButtonPlayerAddToPlaylistKey
@@ -315,9 +315,16 @@ import it.fast4x.riplay.LocalSelectedQueue
 import it.fast4x.riplay.appContext
 import it.fast4x.riplay.models.defaultQueue
 import it.fast4x.riplay.ui.components.themed.AddToPlaylistPlayerMenu
+import it.fast4x.riplay.ui.screens.player.common.Lyrics
+import it.fast4x.riplay.ui.screens.player.common.NextVisualizer
+import it.fast4x.riplay.ui.screens.player.common.Queue
+import it.fast4x.riplay.ui.screens.player.common.StatsForNerds
+import it.fast4x.riplay.ui.screens.player.common.Thumbnail
+import it.fast4x.riplay.ui.screens.player.common.thumbnailpause
 import it.fast4x.riplay.ui.screens.settings.isSyncEnabled
 import it.fast4x.riplay.ui.styling.favoritesIcon
 import it.fast4x.riplay.utils.addToYtLikedSong
+import it.fast4x.riplay.utils.animatedGradient
 import it.fast4x.riplay.utils.getLikeState
 import it.fast4x.riplay.utils.mediaItemToggleLike
 import it.fast4x.riplay.utils.setDisLikeState
@@ -1288,67 +1295,67 @@ fun LocalPlayer(
         var deltaX by remember { mutableStateOf(0f) }
         //var direction by remember { mutableIntStateOf(-1)}
 
-            Thumbnail(
-                thumbnailTapEnabledKey = thumbnailTapEnabled,
-                isShowingLyrics = isShowingLyrics,
-                onShowLyrics = { isShowingLyrics = it },
-                isShowingStatsForNerds = isShowingStatsForNerds,
-                onShowStatsForNerds = { isShowingStatsForNerds = it },
-                isShowingVisualizer = isShowingVisualizer,
-                onShowEqualizer = { isShowingVisualizer = it },
-                showthumbnail = showthumbnail,
-                onMaximize = {
-                    showFullLyrics = true
-                },
-                onDoubleTap = {
-                    val currentMediaItem = binder.player.currentMediaItem
-                    Database.asyncTransaction {
-                        if (like(
-                                mediaItem.mediaId,
-                                if (likedAt == null) System.currentTimeMillis() else null
-                            ) == 0
-                        ) {
-                            currentMediaItem
-                                ?.takeIf { it.mediaId == mediaItem.mediaId }
-                                ?.let {
-                                    insert(currentMediaItem, Song::toggleLike)
-                                }
-                        }
+        Thumbnail(
+            thumbnailTapEnabledKey = thumbnailTapEnabled,
+            isShowingLyrics = isShowingLyrics,
+            onShowLyrics = { isShowingLyrics = it },
+            isShowingStatsForNerds = isShowingStatsForNerds,
+            onShowStatsForNerds = { isShowingStatsForNerds = it },
+            isShowingVisualizer = isShowingVisualizer,
+            onShowEqualizer = { isShowingVisualizer = it },
+            showthumbnail = showthumbnail,
+            onMaximize = {
+                showFullLyrics = true
+            },
+            onDoubleTap = {
+                val currentMediaItem = binder.player.currentMediaItem
+                Database.asyncTransaction {
+                    if (like(
+                            mediaItem.mediaId,
+                            if (likedAt == null) System.currentTimeMillis() else null
+                        ) == 0
+                    ) {
+                        currentMediaItem
+                            ?.takeIf { it.mediaId == mediaItem.mediaId }
+                            ?.let {
+                                insert(currentMediaItem, Song::toggleLike)
+                            }
                     }
-                    if (effectRotationEnabled) isRotated = !isRotated
-                },
-                modifier = Modifier
-                    //.nestedScroll( connection = scrollConnection )
-                    .pointerInput(Unit) {
-                        detectHorizontalDragGestures(
-                            onHorizontalDrag = { change, dragAmount ->
-                                deltaX = dragAmount
-                            },
-                            onDragStart = {
-                                //Log.d("mediaItemGesture","ondragStart offset ${it}")
-                            },
-                            onDragEnd = {
-                                if (!disablePlayerHorizontalSwipe && playerType == PlayerType.Essential) {
-                                    if (deltaX > 5) {
-                                        binder.player.playPrevious()
-                                        //Log.d("mediaItem","Swipe to LEFT")
-                                    } else if (deltaX < -5) {
-                                        binder.player.playNext()
-                                        //Log.d("mediaItem","Swipe to RIGHT")
-                                    }
-
+                }
+                if (effectRotationEnabled) isRotated = !isRotated
+            },
+            modifier = Modifier
+                //.nestedScroll( connection = scrollConnection )
+                .pointerInput(Unit) {
+                    detectHorizontalDragGestures(
+                        onHorizontalDrag = { change, dragAmount ->
+                            deltaX = dragAmount
+                        },
+                        onDragStart = {
+                            //Log.d("mediaItemGesture","ondragStart offset ${it}")
+                        },
+                        onDragEnd = {
+                            if (!disablePlayerHorizontalSwipe && playerType == PlayerType.Essential) {
+                                if (deltaX > 5) {
+                                    binder.player.playPrevious()
+                                    //Log.d("mediaItem","Swipe to LEFT")
+                                } else if (deltaX < -5) {
+                                    binder.player.playNext()
+                                    //Log.d("mediaItem","Swipe to RIGHT")
                                 }
 
                             }
 
-                        )
-                    }
-                    .padding(all = if (isLandscape) playerThumbnailSizeL.padding.dp else playerThumbnailSize.padding.dp)
-                    .thumbnailpause(
-                        shouldBePlaying = shouldBePlaying
-                    )
+                        }
 
-            )
+                    )
+                }
+                .padding(all = if (isLandscape) playerThumbnailSizeL.padding.dp else playerThumbnailSize.padding.dp)
+                .thumbnailpause(
+                    shouldBePlaying = shouldBePlaying
+                )
+
+        )
 
     }
 
@@ -2219,8 +2226,8 @@ fun LocalPlayer(
                                 }
                         ) {
                             NextVisualizer(
-                                    isDisplayed = isShowingVisualizer
-                                )
+                                isDisplayed = isShowingVisualizer
+                            )
                         }
                     }
 
@@ -2235,7 +2242,7 @@ fun LocalPlayer(
                                 mediaId = mediaItem.mediaId,
                                 isDisplayed = isShowingLyrics,
                                 onDismiss = {
-                                        isShowingLyrics = false
+                                    isShowingLyrics = false
                                 },
                                 ensureSongInserted = { Database.insert(mediaItem) },
                                 size = 1000.dp,
@@ -3040,7 +3047,7 @@ fun LocalPlayer(
                                              )
                                          )
                                          .conditional(fadingedge) {
-                                             VerticalfadingEdge2(fade = (if (expandedplayer) thumbnailFadeEx else thumbnailFade)*0.05f,showTopActionsBar,topPadding,expandedplayer)
+                                             verticalfadingEdge2(fade = (if (expandedplayer) thumbnailFadeEx else thumbnailFade)*0.05f,showTopActionsBar,topPadding,expandedplayer)
                                          }
                                  ){ it ->
 
@@ -3195,7 +3202,7 @@ fun LocalPlayer(
                                 mediaId = mediaItem.mediaId,
                                 isDisplayed = isShowingLyrics,
                                 onDismiss = {
-                                        isShowingLyrics = false
+                                    isShowingLyrics = false
                                 },
                                 ensureSongInserted = { Database.insert(mediaItem) },
                                 size = 1000.dp,

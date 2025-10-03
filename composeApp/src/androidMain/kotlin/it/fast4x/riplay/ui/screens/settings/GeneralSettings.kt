@@ -106,11 +106,10 @@ import it.fast4x.riplay.utils.rememberEqualizerLauncher
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.extensions.preferences.resumePlaybackOnStartKey
 import it.fast4x.riplay.extensions.preferences.resumePlaybackWhenDeviceConnectedKey
-import it.fast4x.riplay.utils.semiBold
+import it.fast4x.riplay.ui.styling.semiBold
 import it.fast4x.riplay.extensions.preferences.shakeEventEnabledKey
 import it.fast4x.riplay.extensions.preferences.skipMediaOnErrorKey
 import it.fast4x.riplay.extensions.preferences.skipSilenceKey
-import it.fast4x.riplay.extensions.preferences.useVolumeKeysToChangeSongKey
 import it.fast4x.riplay.extensions.preferences.volumeNormalizationKey
 import it.fast4x.riplay.colorPalette
 import it.fast4x.riplay.enums.DnsOverHttpsType

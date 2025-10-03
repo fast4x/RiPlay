@@ -47,7 +47,6 @@ import androidx.compose.material.CheckboxDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
@@ -114,7 +113,6 @@ import it.fast4x.riplay.models.SongEntity
 import it.fast4x.riplay.models.SongPlaylistMap
 import it.fast4x.riplay.models.defaultQueue
 import it.fast4x.riplay.service.LOCAL_KEY_PREFIX
-import it.fast4x.riplay.service.isLocal
 import it.fast4x.riplay.thumbnailShape
 import it.fast4x.riplay.typography
 import it.fast4x.riplay.ui.components.ButtonsRow
@@ -151,8 +149,8 @@ import it.fast4x.riplay.utils.addNext
 import it.fast4x.riplay.utils.asMediaItem
 import it.fast4x.riplay.extensions.preferences.autoShuffleKey
 import it.fast4x.riplay.extensions.preferences.builtInPlaylistKey
-import it.fast4x.riplay.utils.center
-import it.fast4x.riplay.utils.color
+import it.fast4x.riplay.ui.styling.center
+import it.fast4x.riplay.ui.styling.color
 import it.fast4x.riplay.extensions.preferences.defaultFolderKey
 import it.fast4x.riplay.extensions.preferences.disableScrollingTextKey
 import it.fast4x.riplay.utils.durationTextToMillis
@@ -168,8 +166,8 @@ import it.fast4x.riplay.extensions.preferences.onDeviceFolderSortByKey
 import it.fast4x.riplay.extensions.preferences.onDeviceSongSortByKey
 import it.fast4x.riplay.extensions.preferences.parentalControlEnabledKey
 import it.fast4x.riplay.extensions.preferences.rememberPreference
-import it.fast4x.riplay.utils.secondary
-import it.fast4x.riplay.utils.semiBold
+import it.fast4x.riplay.ui.styling.secondary
+import it.fast4x.riplay.ui.styling.semiBold
 import it.fast4x.riplay.extensions.preferences.showFavoritesPlaylistKey
 import it.fast4x.riplay.extensions.preferences.showFloatingIconKey
 import it.fast4x.riplay.extensions.preferences.showFoldersOnDeviceKey
@@ -195,7 +193,6 @@ import it.fast4x.riplay.utils.addToYtPlaylist
 import it.fast4x.riplay.utils.asSong
 import it.fast4x.riplay.utils.formatAsDuration
 import org.dailyislam.android.utilities.isNetworkConnected
-import it.fast4x.riplay.utils.isNowPlaying
 import it.fast4x.riplay.extensions.preferences.showDislikedPlaylistKey
 
 

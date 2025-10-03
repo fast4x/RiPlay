@@ -124,12 +124,11 @@ import it.fast4x.riplay.utils.hasPermission
 import it.fast4x.riplay.utils.isAtLeastAndroid10
 import it.fast4x.riplay.utils.isAtLeastAndroid11
 import it.fast4x.riplay.utils.isCompositionLaunched
-import it.fast4x.riplay.utils.isNowPlaying
 import it.fast4x.riplay.extensions.preferences.onDeviceFolderSortByKey
 import it.fast4x.riplay.extensions.preferences.onDeviceSongSortByKey
 import it.fast4x.riplay.extensions.preferences.rememberPreference
-import it.fast4x.riplay.utils.secondary
-import it.fast4x.riplay.utils.semiBold
+import it.fast4x.riplay.ui.styling.secondary
+import it.fast4x.riplay.ui.styling.semiBold
 import it.fast4x.riplay.extensions.preferences.showFoldersOnDeviceKey
 import it.fast4x.riplay.extensions.preferences.showSearchTabKey
 import it.fast4x.riplay.extensions.preferences.songSortOrderKey

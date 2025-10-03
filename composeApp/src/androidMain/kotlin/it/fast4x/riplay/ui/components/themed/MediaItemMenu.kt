@@ -98,13 +98,13 @@ import it.fast4x.riplay.utils.asMediaItem
 import it.fast4x.riplay.utils.enqueue
 import it.fast4x.riplay.utils.formatAsDuration
 import it.fast4x.riplay.utils.getLikeState
-import it.fast4x.riplay.utils.medium
+import it.fast4x.riplay.ui.styling.medium
 import it.fast4x.riplay.extensions.preferences.menuStyleKey
 import it.fast4x.riplay.extensions.preferences.playlistSortByKey
 import it.fast4x.riplay.extensions.preferences.playlistSortOrderKey
 import it.fast4x.riplay.utils.positionAndDurationState
 import it.fast4x.riplay.extensions.preferences.rememberPreference
-import it.fast4x.riplay.utils.semiBold
+import it.fast4x.riplay.ui.styling.semiBold
 import it.fast4x.riplay.utils.thumbnail
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

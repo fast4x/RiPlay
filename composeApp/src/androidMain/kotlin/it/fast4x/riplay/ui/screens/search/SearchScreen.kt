@@ -33,7 +33,7 @@ import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.UiType
 import it.fast4x.riplay.ui.components.themed.IconButton
 import it.fast4x.riplay.ui.styling.favoritesIcon
-import it.fast4x.riplay.utils.secondary
+import it.fast4x.riplay.ui.styling.secondary
 import it.fast4x.riplay.ui.components.Skeleton
 import it.fast4x.riplay.colorPalette
 import it.fast4x.riplay.typography

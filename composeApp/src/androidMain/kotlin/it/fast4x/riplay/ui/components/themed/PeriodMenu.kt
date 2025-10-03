@@ -21,7 +21,7 @@ import it.fast4x.riplay.enums.MaxTopPlaylistItems
 import it.fast4x.riplay.enums.TopPlaylistPeriod
 import it.fast4x.riplay.extensions.preferences.MaxTopPlaylistItemsKey
 import it.fast4x.riplay.extensions.preferences.rememberPreference
-import it.fast4x.riplay.utils.semiBold
+import it.fast4x.riplay.ui.styling.semiBold
 import it.fast4x.riplay.typography
 
 

@@ -103,8 +103,8 @@ import it.fast4x.riplay.ui.styling.favoritesIcon
 import it.fast4x.riplay.ui.styling.shimmer
 import it.fast4x.riplay.extensions.preferences.blurDarkenFactorKey
 import it.fast4x.riplay.extensions.preferences.blurStrengthKey
-import it.fast4x.riplay.utils.bold
-import it.fast4x.riplay.utils.center
+import it.fast4x.riplay.ui.styling.bold
+import it.fast4x.riplay.ui.styling.center
 import it.fast4x.riplay.cleanPrefix
 import it.fast4x.riplay.extensions.preferences.VinylSizeKey
 import it.fast4x.riplay.extensions.preferences.colorPaletteModeKey
@@ -114,7 +114,7 @@ import it.fast4x.riplay.extensions.preferences.fadingedgeKey
 import it.fast4x.riplay.utils.getDeviceVolume
 import it.fast4x.riplay.utils.isLandscape
 import it.fast4x.riplay.utils.isValidIP
-import it.fast4x.riplay.utils.medium
+import it.fast4x.riplay.ui.styling.medium
 import it.fast4x.riplay.extensions.preferences.playbackDeviceVolumeKey
 import it.fast4x.riplay.extensions.preferences.playbackDurationKey
 import it.fast4x.riplay.extensions.preferences.playbackPitchKey
@@ -122,7 +122,7 @@ import it.fast4x.riplay.extensions.preferences.playbackSpeedKey
 import it.fast4x.riplay.extensions.preferences.playbackVolumeKey
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.utils.resize
-import it.fast4x.riplay.utils.semiBold
+import it.fast4x.riplay.ui.styling.semiBold
 import it.fast4x.riplay.utils.setDeviceVolume
 import it.fast4x.riplay.utils.setGlobalVolume
 import it.fast4x.riplay.extensions.preferences.showCoverThumbnailAnimationKey
@@ -148,7 +148,6 @@ import it.fast4x.riplay.utils.asMediaItem
 import it.fast4x.riplay.utils.asSong
 import it.fast4x.riplay.extensions.preferences.bassboostLevelKey
 import it.fast4x.riplay.extensions.preferences.disableScrollingTextKey
-import it.fast4x.riplay.utils.isNowPlaying
 import it.fast4x.riplay.utils.isValidHex
 import it.fast4x.riplay.utils.isValidHttpUrl
 import it.fast4x.riplay.utils.isValidUrl

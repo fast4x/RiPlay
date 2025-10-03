@@ -52,13 +52,13 @@ import it.fast4x.riplay.ui.components.themed.InputNumericDialog
 import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.ui.styling.shimmer
 import it.fast4x.riplay.utils.RestartPlayerService
-import it.fast4x.riplay.utils.bold
+import it.fast4x.riplay.ui.styling.bold
 import it.fast4x.riplay.extensions.preferences.coilCustomDiskCacheKey
 import it.fast4x.riplay.extensions.preferences.coilDiskCacheMaxSizeKey
 import it.fast4x.riplay.utils.intent
 import it.fast4x.riplay.extensions.preferences.pauseSearchHistoryKey
 import it.fast4x.riplay.extensions.preferences.rememberPreference
-import it.fast4x.riplay.utils.semiBold
+import it.fast4x.riplay.ui.styling.semiBold
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.distinctUntilChanged

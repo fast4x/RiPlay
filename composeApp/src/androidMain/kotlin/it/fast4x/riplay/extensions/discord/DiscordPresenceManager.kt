@@ -30,8 +30,7 @@ import it.fast4x.riplay.extensions.preferences.preferences
 import it.fast4x.riplay.service.LocalPlayerService
 import it.fast4x.riplay.service.isLocal
 import it.fast4x.riplay.ui.components.themed.SmartMessage
-import it.fast4x.riplay.utils.ImageProcessor
-import it.fast4x.riplay.utils.encryptedPreferences
+import it.fast4x.riplay.extensions.encryptedpreferences.encryptedPreferences
 import it.fast4x.riplay.utils.isAtLeastAndroid8
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
