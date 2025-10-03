@@ -1629,6 +1629,12 @@ fun HomeSongs(
                                                     onInfo = {
                                                         navController.navigate("${NavRoutes.videoOrSongInfo.name}/${song.song.id}")
                                                     },
+                                                    onSelectUnselect = {
+                                                        selectItems = !selectItems
+                                                        if (!selectItems) {
+                                                            listMediaItems.clear()
+                                                        }
+                                                    },
                                                     disableScrollingText = disableScrollingText
                                                 )
                                             }

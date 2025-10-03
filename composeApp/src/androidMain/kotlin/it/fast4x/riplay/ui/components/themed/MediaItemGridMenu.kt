@@ -164,6 +164,7 @@ fun BaseMediaItemGridMenu(
     onAddToPreferites: (() -> Unit)? = null,
     onMatchingSong: (() -> Unit)? = null,
     onInfo: (() -> Unit)? = null,
+    onSelectUnselect: (() -> Unit)? = null,
     disableScrollingText: Boolean
 ) {
     //val context = LocalContext.current
@@ -232,6 +233,7 @@ fun BaseMediaItemGridMenu(
             navController.navigate(route = "${NavRoutes.localPlaylist.name}/$it")
         },
         onInfo = onInfo,
+        onSelectUnselect = onSelectUnselect,
         modifier = modifier,
         disableScrollingText = disableScrollingText
     )
@@ -309,6 +311,7 @@ fun MediaItemGridMenu (
     onRemoveFromQuickPicks: (() -> Unit)? = null,
     onGoToPlaylist: ((Long) -> Unit)?,
     onInfo: (() -> Unit)? = null,
+    onSelectUnselect: (() -> Unit)? = null,
     disableScrollingText: Boolean
 ) {
     val binder = LocalPlayerServiceBinder.current
@@ -904,6 +907,18 @@ fun MediaItemGridMenu (
                     topContent()
                 }
             ) {
+                onSelectUnselect?.let { onSelectUnselect ->
+                    GridMenuItem(
+                        icon = R.drawable.checked,
+                        title = R.string.item_select,
+                        colorIcon = colorPalette.text,
+                        colorText = colorPalette.text,
+                        onClick = {
+                            onDismiss()
+                            onSelectUnselect()
+                        }
+                    )
+                }
 
                 if (!isLocal) onInfo?.let { onInfo ->
                     GridMenuItem(

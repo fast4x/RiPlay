@@ -51,6 +51,7 @@ fun PlayerMenu(
     onClosePlayer: () -> Unit,
     onMatchingSong: (() -> Unit)? = null,
     onInfo: (() -> Unit)? = null,
+    onSelectUnselect: (() -> Unit)? = null,
     disableScrollingText: Boolean
     ) {
 
@@ -171,6 +172,7 @@ fun PlayerMenu(
             onClosePlayer = onClosePlayer,
             onMatchingSong = onMatchingSong,
             onInfo = onInfo,
+            onSelectUnselect = onSelectUnselect,
             disableScrollingText = disableScrollingText
         )
     }

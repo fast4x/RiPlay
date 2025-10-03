@@ -143,6 +143,7 @@ fun InHistoryMediaItemMenu(
     onHideFromDatabase: (() -> Unit)? = {},
     onDeleteFromDatabase: (() -> Unit)? = {},
     onInfo: (() -> Unit)? = {},
+    onSelectUnselect: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
     disableScrollingText: Boolean
 ) {
@@ -172,6 +173,7 @@ fun InHistoryMediaItemMenu(
             }
         },
         onInfo = onInfo,
+        onSelectUnselect = onSelectUnselect,
         modifier = modifier,
         disableScrollingText = disableScrollingText
     )
@@ -266,7 +268,8 @@ fun NonQueuedMediaItemMenuLibrary(
     onRemoveFromPlaylist: (() -> Unit)? = null,
     onRemoveFromQuickPicks: (() -> Unit)? = null,
     onMatchingSong: (() -> Unit)? = null,
-    onInfo: (() -> Unit)?,
+    onInfo: (() -> Unit)? = null,
+    onSelectUnselect: (() -> Unit)? = null,
     disableScrollingText: Boolean
 ) {
     val binder = LocalPlayerServiceBinder.current
@@ -398,6 +401,7 @@ fun NonQueuedMediaItemMenuLibrary(
             },
             onMatchingSong = onMatchingSong,
             onInfo = onInfo,
+            onSelectUnselect = onSelectUnselect,
             modifier = modifier,
             disableScrollingText = disableScrollingText
         )
@@ -420,6 +424,7 @@ fun NonQueuedMediaItemMenu(
     onAddToPreferites: (() -> Unit)? = null,
     onMatchingSong: (() -> Unit)? = null,
     onInfo: (() -> Unit)? = null,
+    onSelectUnselect: (() -> Unit)? = null,
     disableScrollingText: Boolean
 ) {
     val binder = LocalPlayerServiceBinder.current
@@ -458,6 +463,7 @@ fun NonQueuedMediaItemMenu(
             onAddToPreferites = onAddToPreferites,
             onMatchingSong =  onMatchingSong,
             onInfo = onInfo,
+            onSelectUnselect = onSelectUnselect,
             modifier = modifier,
             disableScrollingText = disableScrollingText
         )
@@ -487,6 +493,7 @@ fun NonQueuedMediaItemMenu(
             onAddToPreferites = onAddToPreferites,
             onMatchingSong =  onMatchingSong,
             onInfo = onInfo,
+            onSelectUnselect = onSelectUnselect,
             modifier = modifier,
             disableScrollingText = disableScrollingText
         )
@@ -501,7 +508,8 @@ fun QueuedMediaItemMenu(
     navController: NavController,
     onDismiss: () -> Unit,
     onMatchingSong: (() -> Unit)? = null,
-    onInfo: (() -> Unit)?,
+    onInfo: (() -> Unit)? = null,
+    onSelectUnselect: (() -> Unit)? = null,
     mediaItem: MediaItem,
     indexInQueue: Int?,
     modifier: Modifier = Modifier,
@@ -603,6 +611,7 @@ fun QueuedMediaItemMenu(
             },
             onMatchingSong = onMatchingSong,
             onInfo = onInfo,
+            onSelectUnselect = onSelectUnselect,
             disableScrollingText = disableScrollingText
         )
     }
@@ -633,6 +642,7 @@ fun BaseMediaItemMenu(
     onAddToPreferites: (() -> Unit)?,
     onMatchingSong: (() -> Unit)?,
     onInfo: (() -> Unit)?,
+    onSelectUnselect: (() -> Unit)?,
     disableScrollingText: Boolean
 ) {
     val context = LocalContext.current
@@ -710,6 +720,7 @@ fun BaseMediaItemMenu(
             navController.navigate(route = "${NavRoutes.localPlaylist.name}/$it")
         },
         onInfo = onInfo,
+        onSelectUnselect = onSelectUnselect,
         modifier = modifier,
         disableScrollingText = disableScrollingText
     )
@@ -869,10 +880,11 @@ fun MediaItemMenu(
     onGoToAlbum: ((String) -> Unit)? = null,
     onGoToArtist: ((String) -> Unit)? = null,
     onRemoveFromQuickPicks: (() -> Unit)? = null,
-    onShare: () -> Unit,
+    onShare: (() -> Unit)? = null,
     onGoToPlaylist: ((Long) -> Unit)? = null,
     onMatchingSong: (() -> Unit)? = null,
-    onInfo: (() -> Unit)?,
+    onInfo: (() -> Unit)? = null,
+    onSelectUnselect: (() -> Unit)? = null,
     disableScrollingText: Boolean
 ) {
     val density = LocalDensity.current
@@ -1330,7 +1342,7 @@ fun MediaItemMenu(
                         if (!isLocal) IconButton(
                             icon = R.drawable.share_social,
                             color = colorPalette().text,
-                            onClick = onShare,
+                            onClick = { onShare?.invoke() },
                             modifier = Modifier
                                 .padding(all = 4.dp)
                                 .size(24.dp)
@@ -1390,6 +1402,17 @@ fun MediaItemMenu(
                     modifier = Modifier
                         .height(8.dp)
                 )
+
+                onSelectUnselect?.let { onSelectUnselect ->
+                    MenuEntry(
+                        icon = R.drawable.checked,
+                        text = "${stringResource(R.string.item_select)}/${stringResource(R.string.item_deselect)}",
+                        onClick = {
+                            onDismiss()
+                            onSelectUnselect()
+                        }
+                    )
+                }
 
                 if (!isLocal) onInfo?.let { onInfo ->
                     MenuEntry(
