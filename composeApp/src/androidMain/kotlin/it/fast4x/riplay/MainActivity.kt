@@ -270,6 +270,7 @@ import it.fast4x.riplay.utils.OkHttpRequest
 import it.fast4x.riplay.utils.asMediaItem
 import it.fast4x.riplay.utils.capitalized
 import it.fast4x.riplay.extensions.encryptedpreferences.encryptedPreferences
+import it.fast4x.riplay.extensions.preferences.lastMediaItemWasLocalKey
 import it.fast4x.riplay.utils.forcePlay
 import it.fast4x.riplay.utils.getSystemlanguage
 import it.fast4x.riplay.utils.invokeOnReady
@@ -1331,7 +1332,7 @@ class MainActivity :
 
                 val onlineCore: @Composable () -> Unit = {
                     OnlinePlayerCore(
-                        load = getResumePlaybackOnStart(),
+                        load = getResumePlaybackOnStart() || lastMediaItemWasLocal(),
                         playFromSecond = currentSecond.value,
                         onPlayerReady = { onlinePlayer.value = it },
                         onSecondChange = {

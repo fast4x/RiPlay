@@ -307,7 +307,9 @@ val Song.asMediaItem: MediaItem
                         "durationText" to durationText,
                         EXPLICIT_BUNDLE_TAG to title.startsWith( EXPLICIT_PREFIX, true ),
                         "isVideo" to (isAudioOnly != 1),
-                        "isPodcast" to (isPodcast == 1)
+                        "isPodcast" to (isPodcast == 1),
+                        "isDisliked" to (likedAt?.toInt() == -1),
+                        "isLiked" to ((likedAt?.toInt() ?: 0) > 0),
                     )
                 )
                 .build()

@@ -26,6 +26,7 @@ import it.fast4x.riplay.extensions.preferences.getEnum
 import it.fast4x.riplay.extensions.preferences.handleAudioFocusEnabledKey
 import it.fast4x.riplay.extensions.preferences.isEnabledFullscreenKey
 import it.fast4x.riplay.extensions.preferences.keepPlayerMinimizedKey
+import it.fast4x.riplay.extensions.preferences.lastMediaItemWasLocalKey
 import it.fast4x.riplay.extensions.preferences.lastVideoIdKey
 import it.fast4x.riplay.extensions.preferences.lastVideoSecondsKey
 import it.fast4x.riplay.extensions.preferences.logDebugEnabledKey
@@ -92,6 +93,7 @@ fun isPersistentQueueEnabled() = appContext().preferences.getBoolean(persistentQ
 fun isPipModeAutoEnabled() = appContext().preferences.getBoolean(enablePictureInPictureAutoKey, false)
 fun isEnabledFullscreen() = appContext().preferences.getBoolean(isEnabledFullscreenKey, false)
 fun isAppRunning() = appContext().preferences.getBoolean(appIsRunningKey, false)
+fun lastMediaItemWasLocal() = appContext().preferences.getBoolean(lastMediaItemWasLocalKey, false)
 
 
 

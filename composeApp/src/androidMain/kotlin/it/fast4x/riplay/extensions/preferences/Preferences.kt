@@ -372,6 +372,9 @@ const val isEnabledFullscreenKey = "isEnabledFullscreen"
 
 const val appIsRunningKey = "appIsRunning"
 
+const val lastMediaItemWasLocalKey = "lastMediaItemWasLocal"
+
+
 inline fun <reified T : Enum<T>> SharedPreferences.getEnum(
     key: String,
     defaultValue: T

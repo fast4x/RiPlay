@@ -55,6 +55,14 @@ data class Song(
     val isVideo: Boolean
         get() = isAudioOnly == 0
 
+    val isDisliked: Boolean
+        get() = likedAt == -1L
+
+    val isLiked: Boolean
+        get() = likedAt != null && likedAt > 0
+
+
+
     fun toggleLike(): Song {
         return copy(
             //likedAt = if (likedAt == null) System.currentTimeMillis() else null

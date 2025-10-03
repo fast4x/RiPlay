@@ -33,6 +33,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
+import androidx.core.content.edit
 import androidx.media3.common.AudioAttributes
 import androidx.media3.common.AuxEffectInfo
 import androidx.media3.common.C
@@ -177,6 +178,7 @@ import it.fast4x.riplay.extensions.preferences.bassboostEnabledKey
 import it.fast4x.riplay.extensions.preferences.bassboostLevelKey
 import it.fast4x.riplay.extensions.preferences.filterContentTypeKey
 import it.fast4x.riplay.extensions.preferences.isInvincibilityEnabledKey
+import it.fast4x.riplay.extensions.preferences.lastMediaItemWasLocalKey
 import it.fast4x.riplay.utils.loadMasterQueue
 import it.fast4x.riplay.utils.principalCache
 import it.fast4x.riplay.utils.saveMasterQueue
@@ -749,6 +751,10 @@ class LocalPlayerService : MediaLibraryService(),
 
     @UnstableApi
     override fun onIsPlayingChanged(isPlaying: Boolean) {
+        Timber.d("LocalPlayerService onIsPlayingChanged isPlaying $isPlaying")
+
+        preferences.edit(commit = true) { putBoolean(lastMediaItemWasLocalKey, currentMediaItem.value?.isLocal == true) }
+
         val fadeDisabled = getPlaybackFadeAudioDuration() == DurationInMilliseconds.Disabled
         val duration = getPlaybackFadeAudioDuration().milliSeconds
         if (isPlaying && !fadeDisabled)
