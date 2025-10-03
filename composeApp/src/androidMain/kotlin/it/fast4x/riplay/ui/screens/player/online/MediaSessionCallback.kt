@@ -3,27 +3,15 @@ package it.fast4x.riplay.ui.screens.player.online
 import android.os.Bundle
 import android.support.v4.media.session.MediaSessionCompat
 import androidx.annotation.OptIn
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.media3.common.MediaItem
 import androidx.media3.common.util.UnstableApi
-import androidx.media3.exoplayer.offline.Download
-import it.fast4x.riplay.Database
-import it.fast4x.riplay.context
-import it.fast4x.riplay.enums.MaxTopPlaylistItems
-import it.fast4x.riplay.extensions.preferences.MaxTopPlaylistItemsKey
-import it.fast4x.riplay.extensions.preferences.getEnum
-import it.fast4x.riplay.extensions.preferences.preferences
 import it.fast4x.riplay.models.Song
 import it.fast4x.riplay.service.AndroidAutoService
-import it.fast4x.riplay.service.AndroidAutoService.MediaId.lastSongs
-import it.fast4x.riplay.service.AndroidAutoService.MediaId.searchedSongs
 import it.fast4x.riplay.service.LocalPlayerService
 import it.fast4x.riplay.ui.screens.player.fastPlay
 import it.fast4x.riplay.utils.asMediaItem
-import it.fast4x.riplay.utils.forcePlayAtIndex
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
@@ -77,12 +65,12 @@ class MediaSessionCallback (
                 AndroidAutoService.MediaId.songs ->  data
                     .getOrNull(1)
                     ?.let { songId ->
-                        index = lastSongs.indexOfFirst { it.id == songId }
+                        index = AndroidAutoService.lastSongs .indexOfFirst { it.id == songId }
 
                         if (index < 0) return@launch // index not found
 
-                        mediaItemSelected = lastSongs[index].asMediaItem
-                        lastSongs
+                        mediaItemSelected = AndroidAutoService.lastSongs[index].asMediaItem
+                        AndroidAutoService.lastSongs
                     }
 
                 // Maybe it needed in the future

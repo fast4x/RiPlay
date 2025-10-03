@@ -40,8 +40,6 @@ import it.fast4x.riplay.models.Album
 import it.fast4x.riplay.models.Artist
 import it.fast4x.riplay.models.PlaylistPreview
 import it.fast4x.riplay.models.Song
-import it.fast4x.riplay.service.AndroidAutoService.MediaId.lastSongs
-import it.fast4x.riplay.service.AndroidAutoService.MediaId.searchedSongs
 import it.fast4x.riplay.utils.BitmapProvider
 import it.fast4x.riplay.utils.getTitleMonthlyPlaylistFromContext
 import it.fast4x.riplay.utils.intent
@@ -77,6 +75,10 @@ class AndroidAutoService : MediaBrowserServiceCompat(), ServiceConnection {
         //var onlinePlayer: MutableState<YouTubePlayer?> = mutableStateOf(null)
         var bitmapProvider: BitmapProvider? = null
         var isPlaying: Boolean = false
+        var lastSongs: List<Song> = emptyList()
+        var searchedSongs: List<Song> = emptyList()
+
+
 
         val actions =
             PlaybackStateCompat.ACTION_PLAY or
@@ -342,7 +344,7 @@ class AndroidAutoService : MediaBrowserServiceCompat(), ServiceConnection {
                     // End Navigation items
 
                     // Start Browsable and playable items
-                    MediaId.shuffle -> lastSongs.shuffled().map { it.asBrowserMediaItem }.toMutableList()
+                    MediaId.shuffle -> lastSongs.shuffled().map { it?.asBrowserMediaItem }.toMutableList()
                     MediaId.favorites -> Database
                         .favorites()
                         .first()
@@ -706,10 +708,6 @@ class AndroidAutoService : MediaBrowserServiceCompat(), ServiceConnection {
         const val shuffle = "shuffle"
         const val ondevice = "ondevice"
         const val top = "top"
-
-        var lastSongs: List<Song> = emptyList()
-        var searchedSongs: List<Song> = emptyList()
-
 
         fun forSong(id: String) = "$songs/$id"
         fun forPlaylist(id: Long) = "$playlists/$id"
