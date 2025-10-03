@@ -98,12 +98,13 @@ import it.fast4x.riplay.utils.importYTMPrivatePlaylists
 import it.fast4x.riplay.extensions.preferences.Preference.HOME_LIBRARY_ITEM_SIZE
 import it.fast4x.riplay.utils.autoSyncToolbutton
 import it.fast4x.riplay.extensions.preferences.autosyncKey
+import it.fast4x.riplay.models.SongEntity
 import it.fast4x.riplay.models.defaultQueue
 import it.fast4x.riplay.ui.components.LocalMenuState
 import it.fast4x.riplay.ui.components.themed.PlaylistsItemMenu
-import it.fast4x.riplay.ui.screens.player.fastPlay
 import it.fast4x.riplay.utils.LazyListContainer
 import it.fast4x.riplay.utils.addNext
+import it.fast4x.riplay.utils.forcePlayFromBeginning
 import it.fast4x.riplay.utils.viewTypeToolbutton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -551,9 +552,10 @@ fun HomePlaylists(
                                                                     .map { it?.map( Song::asMediaItem) }
                                                                     .onEach {
                                                                         if (it != null)
-                                                                            fastPlay(it.first(),
-                                                                                binder, it
-                                                                            )
+                                                                            binder?.player?.forcePlayFromBeginning(it)
+//                                                                            fastPlay(it.first(),
+//                                                                                binder, it
+//                                                                            )
                                                                     }
                                                                     .collect()
                                                             }
@@ -564,7 +566,8 @@ fun HomePlaylists(
                                                                     .map { it?.map( Song::asMediaItem) }
                                                                     .onEach {
                                                                         if (it != null)
-                                                                            fastPlay(binder = binder, mediaItems = it, withShuffle = true)
+                                                                            binder?.player?.forcePlayFromBeginning(it.shuffled())
+                                                                            //fastPlay(binder = binder, mediaItems = it, withShuffle = true)
                                                                     }
                                                                     .collect()
                                                             }

@@ -84,7 +84,6 @@ import it.fast4x.riplay.ui.components.themed.TitleMiniSection
 import it.fast4x.riplay.ui.items.SongItem
 import it.fast4x.riplay.ui.items.VideoItem
 import it.fast4x.riplay.ui.items.VideoItemPlaceholder
-import it.fast4x.riplay.ui.screens.player.fastPlay
 import it.fast4x.riplay.ui.screens.searchresult.ItemsPage
 import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.ui.styling.align
@@ -351,9 +350,9 @@ fun SearchOnlineEntity (
                                                 //                                        if (isVideoEnabled)
                                                 //                                            binder?.player?.playOnline(video.asMediaItem)
                                                 //                                        else
-                                                //                                            binder?.player?.forcePlay(video.asMediaItem)
-                                                //binder?.setupRadio(video.info?.endpoint)
-                                                fastPlay(media.asMediaItem, binder, withReplace = true)
+                                                binder?.player?.forcePlay(media.asMediaItem)
+                                                binder?.setupRadio(media.info?.endpoint)
+                                                //fastPlay(media.asMediaItem, binder, withReplace = true)
                                                 onDismiss()
                                             }
                                         ),
@@ -387,9 +386,9 @@ fun SearchOnlineEntity (
                                                 //                                        if (isVideoEnabled)
                                                 //                                            binder?.player?.playOnline(video.asMediaItem)
                                                 //                                        else
-                                                //                                            binder?.player?.forcePlay(video.asMediaItem)
-                                                //binder?.setupRadio(video.info?.endpoint)
-                                                fastPlay(media.asMediaItem, binder, withReplace = true)
+                                                binder?.player?.forcePlay(media.asMediaItem)
+                                                binder?.setupRadio(media.info?.endpoint)
+                                                //fastPlay(media.asMediaItem, binder, withReplace = true)
                                                 onDismiss()
                                             }
                                         )

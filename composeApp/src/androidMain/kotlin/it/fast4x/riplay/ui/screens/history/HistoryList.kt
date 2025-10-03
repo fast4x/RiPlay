@@ -69,10 +69,10 @@ import it.fast4x.riplay.colorPalette
 import it.fast4x.riplay.enums.HistoryType
 import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.ui.components.ButtonsRow
-import it.fast4x.riplay.ui.screens.player.fastPlay
 import it.fast4x.riplay.ui.screens.settings.isLoggedIn
 import it.fast4x.riplay.extensions.preferences.historyTypeKey
 import it.fast4x.riplay.utils.LazyListContainer
+import it.fast4x.riplay.utils.forcePlay
 import java.time.DayOfWeek
 import java.time.Instant
 import java.time.LocalDate
@@ -296,8 +296,8 @@ fun HistoryList(
                                             }
                                         },
                                         onClick = {
-                                            //binder?.player?.forcePlay(event.song.asMediaItem)
-                                            fastPlay(event.song.asMediaItem, binder)
+                                            binder?.player?.forcePlay(event.song.asMediaItem)
+                                            //fastPlay(event.song.asMediaItem, binder)
                                         }
                                     )
                                     .background(color = colorPalette().background0)
@@ -376,8 +376,8 @@ fun HistoryList(
                                             }
                                         },
                                         onClick = {
-                                            //binder?.player?.forcePlay(song)
-                                            fastPlay(song, binder)
+                                            binder?.player?.forcePlay(song)
+                                            //fastPlay(song, binder)
                                         }
                                     )
                                     .background(color = colorPalette().background0)

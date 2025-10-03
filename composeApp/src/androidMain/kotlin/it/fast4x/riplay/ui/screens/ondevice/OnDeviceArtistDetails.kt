@@ -82,7 +82,6 @@ import it.fast4x.riplay.ui.components.themed.SmartMessage
 import it.fast4x.riplay.ui.components.themed.Title2Actions
 import it.fast4x.riplay.ui.items.AlbumItem
 import it.fast4x.riplay.ui.items.SongItem
-import it.fast4x.riplay.ui.screens.player.fastPlay
 import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.ui.styling.px
 import it.fast4x.riplay.utils.addNext
@@ -99,6 +98,7 @@ import it.fast4x.riplay.utils.resize
 import it.fast4x.riplay.ui.styling.semiBold
 import it.fast4x.riplay.extensions.preferences.thumbnailRoundnessKey
 import it.fast4x.riplay.utils.LazyListContainer
+import it.fast4x.riplay.utils.forcePlay
 import kotlinx.coroutines.Dispatchers
 import kotlin.random.Random
 
@@ -382,7 +382,8 @@ fun OnDeviceArtistDetails(
                                     Random(System.currentTimeMillis()).nextInt(0, topSongs.size - 1)
                                 else 0
                             )
-                            fastPlay(item.asMediaItem, binder)
+                            binder?.player?.forcePlay(item.asMediaItem)
+                            //fastPlay(item.asMediaItem, binder)
                         }
                     )
                 }
@@ -433,8 +434,9 @@ fun OnDeviceArtistDetails(
                                         )
                                     },
                                     onClick = {
-                                        //binder?.stopRadio()
-                                        fastPlay(item.asMediaItem, binder)
+                                        binder?.stopRadio()
+                                        binder?.player?.forcePlay(item.asMediaItem)
+                                        //fastPlay(item.asMediaItem, binder)
                                     }
                                 )
                         )

@@ -92,8 +92,8 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import it.fast4x.riplay.colorPalette
 import it.fast4x.riplay.typography
-import it.fast4x.riplay.ui.screens.player.fastPlay
 import it.fast4x.riplay.utils.LazyListContainer
+import it.fast4x.riplay.utils.forcePlay
 
 @UnstableApi
 @ExperimentalFoundationApi
@@ -259,8 +259,8 @@ fun OnlineSearch(
                                                 )
                                             },
                                             onClick = {
-                                                //binder?.player?.forcePlay(mediaItem)
-                                                fastPlay(mediaItem, binder)
+                                                binder?.player?.forcePlay(mediaItem)
+                                                //fastPlay(mediaItem, binder)
                                             }
                                         ),
                                     //disableScrollingText = disableScrollingText,

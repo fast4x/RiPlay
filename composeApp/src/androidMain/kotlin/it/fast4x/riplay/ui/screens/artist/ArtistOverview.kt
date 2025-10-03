@@ -102,7 +102,6 @@ import it.fast4x.riplay.ui.items.ArtistItem
 import it.fast4x.riplay.ui.items.PlaylistItem
 import it.fast4x.riplay.ui.items.SongItem
 import it.fast4x.riplay.ui.items.VideoItem
-import it.fast4x.riplay.ui.screens.player.fastPlay
 import it.fast4x.riplay.ui.screens.settings.isSyncEnabled
 import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.ui.styling.px
@@ -123,6 +122,8 @@ import it.fast4x.riplay.ui.styling.semiBold
 import it.fast4x.riplay.extensions.preferences.showFloatingIconKey
 import it.fast4x.riplay.extensions.preferences.thumbnailRoundnessKey
 import it.fast4x.riplay.ui.components.themed.FastPlayActionsBar
+import it.fast4x.riplay.utils.forcePlay
+import it.fast4x.riplay.utils.forcePlayFromBeginning
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.firstOrNull
@@ -337,7 +338,9 @@ fun ArtistOverview(
                                     ?.map { it as Environment.SongItem }
                                     ?.map { it.asMediaItem }
                                     .let {
-                                        fastPlay(binder = binder, mediaItems = it)
+                                        if (it != null)
+                                            binder?.player?.forcePlayFromBeginning(it)
+                                        //fastPlay(binder = binder, mediaItems = it)
                                     }
                             }
                         },
@@ -353,7 +356,9 @@ fun ArtistOverview(
                                     ?.map { it as Environment.SongItem }
                                     ?.map { it.asMediaItem }
                                     .let {
-                                        fastPlay(binder = binder, mediaItems = it, withShuffle = true)
+                                        if (it != null)
+                                            binder?.player?.forcePlayFromBeginning(it.shuffled())
+                                        //fastPlay(binder = binder, mediaItems = it, withShuffle = true)
                                     }
                             }
                         }
@@ -749,8 +754,8 @@ fun ArtistOverview(
 
                                                                     //if (artistSongs?.contains(item.asMediaItem) == false){
                                                                         withContext(Dispatchers.Main) {
-                                                                            //binder?.player?.forcePlay(item.asMediaItem)
-                                                                            fastPlay(item.asMediaItem, binder)
+                                                                            binder?.player?.forcePlay(item.asMediaItem)
+                                                                            //fastPlay(item.asMediaItem, binder)
                                                                             if (filteredArtistSongs != null) {
                                                                                 binder?.player?.addMediaItems(filteredArtistSongs.filterNot { it.mediaId == item.key })
                                                                             }

@@ -57,8 +57,8 @@ import kotlinx.coroutines.plus
 import kotlinx.coroutines.withContext
 import it.fast4x.riplay.colorPalette
 import it.fast4x.riplay.typography
-import it.fast4x.riplay.ui.screens.player.fastPlay
 import it.fast4x.riplay.utils.LazyListContainer
+import it.fast4x.riplay.utils.forcePlay
 
 @ExperimentalTextApi
 @SuppressLint("SuspiciousIndentation")
@@ -187,8 +187,8 @@ fun GoToLink(
                                             val binder =
                                                 snapshotFlow { binder }.filterNotNull().first()
                                             withContext(Dispatchers.Main) {
-                                                //binder.player.forcePlay(song.asMediaItem)
-                                                fastPlay(song.asMediaItem, binder)
+                                                binder.player.forcePlay(song.asMediaItem)
+                                                //fastPlay(song.asMediaItem, binder)
                                             }
                                         }
                                     }

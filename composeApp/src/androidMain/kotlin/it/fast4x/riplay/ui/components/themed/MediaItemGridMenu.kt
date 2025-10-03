@@ -94,10 +94,10 @@ import it.fast4x.riplay.models.Queues
 import it.fast4x.riplay.models.Song
 import it.fast4x.riplay.models.defaultQueue
 import it.fast4x.riplay.typography
-import it.fast4x.riplay.ui.screens.player.fastPlay
 import it.fast4x.riplay.ui.screens.settings.isSyncEnabled
 import it.fast4x.riplay.utils.addSongToYtPlaylist
 import it.fast4x.riplay.utils.addToYtLikedSong
+import it.fast4x.riplay.utils.forcePlay
 import org.dailyislam.android.utilities.isNetworkConnected
 import it.fast4x.riplay.utils.getLikeState
 import it.fast4x.riplay.utils.setDisLikeState
@@ -124,8 +124,8 @@ fun NonQueuedMediaItemGridMenu(
         onDismiss = onDismiss,
         onStartRadio = {
             binder?.stopRadio()
-            //binder?.player?.forcePlay(mediaItem)
-            fastPlay(mediaItem, binder)
+            binder?.player?.forcePlay(mediaItem)
+            //fastPlay(mediaItem, binder)
             binder?.setupRadio(
                 NavigationEndpoint.Endpoint.Watch(
                     videoId = mediaItem.mediaId,

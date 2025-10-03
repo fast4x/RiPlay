@@ -249,7 +249,6 @@ import it.fast4x.riplay.ui.components.LocalMenuState
 import it.fast4x.riplay.ui.components.rememberBottomSheetState
 import it.fast4x.riplay.ui.components.themed.CrossfadeContainer
 import it.fast4x.riplay.ui.components.themed.SmartMessage
-import it.fast4x.riplay.ui.screens.player.fastPlay
 import it.fast4x.riplay.ui.screens.player.local.LocalMiniPlayer
 import it.fast4x.riplay.ui.screens.player.local.LocalPlayer
 import it.fast4x.riplay.ui.screens.player.local.rememberLocalPlayerSheetState
@@ -271,6 +270,7 @@ import it.fast4x.riplay.utils.OkHttpRequest
 import it.fast4x.riplay.utils.asMediaItem
 import it.fast4x.riplay.utils.capitalized
 import it.fast4x.riplay.extensions.encryptedpreferences.encryptedPreferences
+import it.fast4x.riplay.utils.forcePlay
 import it.fast4x.riplay.utils.getSystemlanguage
 import it.fast4x.riplay.utils.invokeOnReady
 import it.fast4x.riplay.utils.isAtLeastAndroid11
@@ -1754,8 +1754,8 @@ class MainActivity :
                                             false
                                         )
                                     )
-                                    //binder?.player?.forcePlay(song.asMediaItem)
-                                        fastPlay(song.asMediaItem, binder)
+                                        binder.player.forcePlay(song.asMediaItem)
+                                        //fastPlay(song.asMediaItem, binder)
                                     else
                                         SmartMessage(
                                             "Parental control is enabled",

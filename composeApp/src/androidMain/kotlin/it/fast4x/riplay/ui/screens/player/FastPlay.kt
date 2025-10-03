@@ -11,7 +11,10 @@ import it.fast4x.riplay.extensions.preferences.maxSongsInQueueKey
 import it.fast4x.riplay.extensions.preferences.preferences
 import it.fast4x.riplay.service.LocalPlayerService
 import it.fast4x.riplay.service.isLocal
+import it.fast4x.riplay.utils.findMediaItemIndexById
 import it.fast4x.riplay.utils.forcePlay
+import it.fast4x.riplay.utils.forcePlayAtIndex
+import it.fast4x.riplay.utils.getQueueWindows
 import it.fast4x.riplay.utils.mediaItems
 import it.fast4x.riplay.utils.playAtIndex
 import it.fast4x.riplay.utils.playOnline
@@ -23,7 +26,7 @@ import kotlinx.coroutines.withContext
 import kotlin.random.Random
 
 @OptIn(UnstableApi::class)
-fun fastPlay(
+fun __fastPlay(
     mediaItem: MediaItem? = null,
     binder: LocalPlayerService.Binder?,
     mediaItems: List<MediaItem>? = emptyList(),
@@ -42,20 +45,37 @@ fun fastPlay(
             .number
             .toInt()
 
+
         // todo implement isLiked and manage isExplicit in mediaItem
         withContext(Dispatchers.Main) {
-            binder?.stopRadio()
-            mediaItems?.let {
-                binder?.player?.setMediaItems(if (withShuffle) it.shuffled().take( maxSongsInQueue ) else it.take( maxSongsInQueue ))
-            }
-            val mediaItemToPlay = mediaItem
-                ?: if (!withShuffle) binder?.player?.mediaItems?.first()
-                else binder?.player?.mediaItems?.get(Random.nextInt(binder.player.mediaItems.size-1))
-            if (mediaItemToPlay?.isLocal == true) {
-                binder?.player?.forcePlay(mediaItemToPlay, withReplace)
-            } else {
-                mediaItemToPlay?.let { binder?.player?.playOnline(it, withReplace) }
-            }
+
+            if (mediaItems?.isNotEmpty() == true && mediaItem != null)
+                binder?.player?.forcePlayAtIndex(
+                    if (withShuffle) mediaItems.shuffled().take( maxSongsInQueue ) else mediaItems.take( maxSongsInQueue ),
+                    binder.player.findMediaItemIndexById(mediaItem.mediaId),
+                )
+
+            if (mediaItem != null)
+                binder?.player?.forcePlay(mediaItem,true)
+
+
+
+
+            //binder?.stopRadio()
+//            mediaItems?.let {
+//                binder?.player?.setMediaItems(
+//                    if (withShuffle) it.shuffled().take( maxSongsInQueue ) else it.take( maxSongsInQueue ),
+//                    if (mediaItem != null) binder.player.findMediaItemIndexById(mediaItem.mediaId) else 0,
+//                    0
+//                )
+//            }
+
+
+//            if (mediaItemToPlay?.isLocal == true) {
+//                binder?.player?.forcePlay(mediaItemToPlay, withReplace)
+//            } else {
+//                mediaItemToPlay?.let { binder?.player?.playOnline(it, withReplace) }
+//            }
         }
     }
 

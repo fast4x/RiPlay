@@ -61,8 +61,8 @@ import it.fast4x.riplay.extensions.preferences.thumbnailRoundnessKey
 import kotlinx.coroutines.delay
 import it.fast4x.riplay.colorPalette
 import it.fast4x.riplay.typography
-import it.fast4x.riplay.ui.screens.player.fastPlay
 import it.fast4x.riplay.utils.LazyListContainer
+import it.fast4x.riplay.utils.forcePlay
 
 @ExperimentalTextApi
 @SuppressLint("SuspiciousIndentation")
@@ -188,8 +188,8 @@ fun LocalSongSearch(
                                 onClick = {
                                     val mediaItem = song.asMediaItem
                                     binder?.stopRadio()
-                                    //binder?.player?.forcePlay(mediaItem)
-                                    fastPlay(mediaItem, binder)
+                                    binder?.player?.forcePlay(mediaItem)
+                                    //fastPlay(mediaItem, binder)
                                     binder?.setupRadio(
                                         NavigationEndpoint.Endpoint.Watch(videoId = mediaItem.mediaId)
                                     )

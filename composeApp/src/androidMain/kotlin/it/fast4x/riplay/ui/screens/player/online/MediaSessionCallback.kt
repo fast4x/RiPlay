@@ -8,8 +8,8 @@ import androidx.media3.common.util.UnstableApi
 import it.fast4x.riplay.models.Song
 import it.fast4x.riplay.service.AndroidAutoService
 import it.fast4x.riplay.service.LocalPlayerService
-import it.fast4x.riplay.ui.screens.player.fastPlay
 import it.fast4x.riplay.utils.asMediaItem
+import it.fast4x.riplay.utils.forcePlayAtIndex
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -129,7 +129,8 @@ class MediaSessionCallback (
             withContext(Dispatchers.Main) {
                 Timber.d("MediaSessionCallback onPlayFromMediaId mediaId ${mediaId} mediaItems ${mediaItems.size} ready to play")
                 binder.stopRadio()
-                fastPlay(mediaItem = mediaItemSelected, binder = binder, mediaItems = mediaItems)
+                binder.player.forcePlayAtIndex(mediaItems, index)
+                //fastPlay(mediaItem = mediaItemSelected, binder = binder, mediaItems = mediaItems)
             }
         }
 

@@ -181,7 +181,6 @@ import it.fast4x.riplay.service.LOCAL_KEY_PREFIX
 import it.fast4x.riplay.ui.components.PullToRefreshBox
 import it.fast4x.riplay.ui.components.themed.FilterMenu
 import it.fast4x.riplay.ui.components.themed.InProgressDialog
-import it.fast4x.riplay.ui.screens.player.fastPlay
 import it.fast4x.riplay.utils.addToYtLikedSongs
 import it.fast4x.riplay.utils.addToYtPlaylist
 import it.fast4x.riplay.utils.asSong
@@ -194,6 +193,7 @@ import it.fast4x.riplay.utils.move
 import it.fast4x.riplay.extensions.preferences.playlistSongsTypeFilterKey
 import it.fast4x.riplay.ui.components.themed.FastPlayActionsBar
 import it.fast4x.riplay.utils.LazyListContainer
+import it.fast4x.riplay.utils.forcePlay
 import it.fast4x.riplay.utils.removeYTSongFromPlaylist
 import it.fast4x.riplay.utils.unlikeYtVideoOrSong
 import it.fast4x.riplay.utils.updateLocalPlaylist
@@ -1163,7 +1163,29 @@ fun LocalPlaylistSongs(
                                     modifier = Modifier
                                         .fillMaxWidth(),
                                     onPlayNowClick = {
-                                        fastPlay(binder = binder, mediaItems = playlistSongs.map(SongEntity::asMediaItem))
+                                        if (playlistSongs.any { it.song.thumbnailUrl != "" && it.song.likedAt != -1L }) {
+                                            playlistSongs.filter { it.song.thumbnailUrl != "" && it.song.likedAt != -1L }
+                                                .let { songs ->
+                                                    if (songs.isNotEmpty()) {
+                                                        val itemsLimited =
+                                                            if (songs.size > maxSongsInQueue.number) songs
+                                                                .take(maxSongsInQueue.number.toInt()) else songs
+                                                        binder?.stopRadio()
+                                                        binder?.player?.forcePlayFromBeginning(
+                                                            itemsLimited
+                                                                .map(SongEntity::asMediaItem)
+                                                        )
+                                                        //fastPlay(binder = binder, mediaItems = itemsLimited.map(SongEntity::asMediaItem), withShuffle = true)
+                                                    }
+                                                }
+                                        } else {
+                                            SmartMessage(
+                                                context.resources.getString(R.string.disliked_this_collection),
+                                                type = PopupType.Error,
+                                                context = context
+                                            )
+                                        }
+                                        //fastPlay(binder = binder, mediaItems = playlistSongs.map(SongEntity::asMediaItem))
                                     },
                                     onShufflePlayClick = {
                                         if (playlistSongs.any { it.song.thumbnailUrl != "" && it.song.likedAt != -1L }) {
@@ -1174,7 +1196,11 @@ fun LocalPlaylistSongs(
                                                             if (songs.size > maxSongsInQueue.number) songs.shuffled()
                                                                 .take(maxSongsInQueue.number.toInt()) else songs
                                                         binder?.stopRadio()
-                                                        fastPlay(binder = binder, mediaItems = itemsLimited.map(SongEntity::asMediaItem), withShuffle = true)
+                                                        binder?.player?.forcePlayFromBeginning(
+                                                            itemsLimited.shuffled()
+                                                                .map(SongEntity::asMediaItem)
+                                                        )
+                                                        //fastPlay(binder = binder, mediaItems = itemsLimited.map(SongEntity::asMediaItem), withShuffle = true)
                                                     }
                                                 }
                                         } else {
@@ -2150,8 +2176,8 @@ fun LocalPlaylistSongs(
                                         modifier = Modifier
                                             .clickable {
                                                 binder?.stopRadio()
-                                                //binder?.player?.forcePlay(it)
-                                                fastPlay(it, binder)
+                                                binder?.player?.forcePlay(it)
+                                                //fastPlay(it, binder)
                                             },
                                         //disableScrollingText = disableScrollingText,
                                         //isNowPlaying = binder?.player?.isNowPlaying(it.mediaId) ?: false

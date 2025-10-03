@@ -146,7 +146,6 @@ import it.fast4x.riplay.ui.components.PullToRefreshBox
 import it.fast4x.riplay.ui.components.themed.FastPlayActionsBar
 import it.fast4x.riplay.ui.components.themed.QueuesDialog
 import it.fast4x.riplay.ui.components.themed.Title
-import it.fast4x.riplay.ui.screens.player.fastPlay
 import it.fast4x.riplay.ui.screens.settings.isSyncEnabled
 import it.fast4x.riplay.utils.LazyListContainer
 import it.fast4x.riplay.utils.addToYtLikedSongs
@@ -635,15 +634,12 @@ fun AlbumDetails(
                                         modifier = Modifier.fillMaxWidth(.5f).align(Alignment.BottomCenter).padding(bottom = 50.dp),
                                         onPlayNowClick = {
                                             if (songs.any { it.likedAt != -1L }) {
-                                                //binder?.stopRadio()
-                                                fastPlay(binder = binder, mediaItems = songs.filter { it.likedAt != -1L }.map(Song::asMediaItem))
-//                                                binder?.player?.forcePlayAtIndex(
-//                                                    songs.filter { it.likedAt != -1L }
-//                                                        .map(Song::asMediaItem),
-//                                                    songs.filter { it.likedAt != -1L }
-//                                                        .map(Song::asMediaItem)
-//                                                        .indexOf(song.asMediaItem)
-//                                                )
+                                                binder?.stopRadio()
+                                                //fastPlay(binder = binder, mediaItems = songs.filter { it.likedAt != -1L }.map(Song::asMediaItem))
+                                                binder?.player?.forcePlayFromBeginning(
+                                                    songs.filter { it.likedAt != -1L }
+                                                        .map(Song::asMediaItem)
+                                                )
                                             } else {
                                                 SmartMessage(
                                                     context.resources.getString(R.string.disliked_this_song),
@@ -655,13 +651,13 @@ fun AlbumDetails(
                                         },
                                         onShufflePlayClick = {
                                             if (songs.any { it.likedAt != -1L }) {
-                                                //binder?.stopRadio()
-                                                fastPlay(binder = binder, mediaItems = songs.map(Song::asMediaItem), withShuffle = true)
-//                                                binder?.player?.forcePlayFromBeginning(
-//                                                    songs.filter { it.likedAt != -1L }
-//                                                        .shuffled()
-//                                                        .map(Song::asMediaItem)
-//                                                )
+                                                binder?.stopRadio()
+                                                //fastPlay(binder = binder, mediaItems = songs.map(Song::asMediaItem), withShuffle = true)
+                                                binder?.player?.forcePlayFromBeginning(
+                                                    songs.filter { it.likedAt != -1L }
+                                                        .shuffled()
+                                                        .map(Song::asMediaItem)
+                                                )
                                             } else {
                                                 SmartMessage(
                                                     context.resources.getString(R.string.disliked_this_collection),

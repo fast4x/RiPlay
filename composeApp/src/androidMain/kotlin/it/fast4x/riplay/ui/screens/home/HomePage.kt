@@ -131,10 +131,10 @@ import it.fast4x.riplay.colorPalette
 import it.fast4x.riplay.typography
 import it.fast4x.riplay.ui.components.themed.TitleMiniSection
 import it.fast4x.riplay.ui.items.VideoItem
-import it.fast4x.riplay.ui.screens.player.fastPlay
 import it.fast4x.riplay.ui.screens.settings.isLoggedIn
 import it.fast4x.riplay.utils.asVideoMediaItem
 import it.fast4x.riplay.extensions.preferences.quickPicsHomePageKey
+import it.fast4x.riplay.utils.forcePlay
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.days
 
@@ -508,11 +508,11 @@ fun HomePage(
                         },
                         icon2 = R.drawable.play_now,
                         onClick2 = {
-                            trending?.let { fastPlay(it.asMediaItem, binder, relatedInit?.songs?.map { it.asMediaItem }) }
-//                            binder?.stopRadio()
-//                            trending?.let { binder?.player?.forcePlay(it.asMediaItem) }
-//                            binder?.player?.addMediaItems(relatedInit?.songs?.map { it.asMediaItem }
-//                                ?: emptyList())
+                            //trending?.let { fastPlay(it.asMediaItem, binder, relatedInit?.songs?.map { it.asMediaItem }) }
+                            binder?.stopRadio()
+                            trending?.let { binder?.player?.forcePlay(it.asMediaItem) }
+                            binder?.player?.addMediaItems(relatedInit?.songs?.map { it.asMediaItem }
+                                ?: emptyList())
                         }
 
                         //modifier = Modifier.fillMaxWidth(0.7f)
@@ -590,9 +590,9 @@ fun HomePage(
 
                                                 val mediaItem = song.asVideoMediaItem
                                                 binder?.stopRadio()
-                                                //binder?.player?.forcePlay(mediaItem)
+                                                binder?.player?.forcePlay(mediaItem)
                                                 //binder?.player?.playOnline(mediaItem)
-                                                fastPlay(mediaItem, binder)
+                                                //fastPlay(mediaItem, binder)
                                                 binder?.setupRadio(
                                                     NavigationEndpoint.Endpoint.Watch(videoId = mediaItem.mediaId)
                                                 )
@@ -657,8 +657,8 @@ fun HomePage(
                                                 println("HomePage Clicked on song")
                                                 val mediaItem = song.asVideoMediaItem
                                                 binder?.stopRadio()
-                                                //binder?.player?.forcePlay(mediaItem)
-                                                fastPlay(mediaItem, binder)
+                                                binder?.player?.forcePlay(mediaItem)
+                                                //fastPlay(mediaItem, binder)
                                                 binder?.setupRadio(
                                                     NavigationEndpoint.Endpoint.Watch(videoId = mediaItem.mediaId)
                                                 )
@@ -1006,8 +1006,8 @@ fun HomePage(
                                                     .clickable(onClick = {
                                                         val mediaItem = song.asMediaItem
                                                         binder?.stopRadio()
-                                                        //binder?.player?.forcePlay(mediaItem)
-                                                        fastPlay(mediaItem, binder)
+                                                        binder?.player?.forcePlay(mediaItem)
+                                                        //fastPlay(mediaItem, binder)
                                                         binder?.player?.addMediaItems(songs.map { it.asMediaItem })
                                                     })
                                                     .width(itemWidth),
@@ -1099,7 +1099,8 @@ fun HomePage(
                                             //disableScrollingText = disableScrollingText,
                                             //isNowPlaying = false,
                                             modifier = Modifier.clickable(onClick = {
-                                                fastPlay(item.asMediaItem, binder)
+                                                binder?.player?.forcePlay(item.asMediaItem)
+                                                //fastPlay(item.asMediaItem, binder)
                                             })
                                         )
                                     }
@@ -1158,8 +1159,8 @@ fun HomePage(
 //                                                if (isVideoEnabled())
 //                                                    binder?.player?.playOnline(item.asMediaItem)
 //                                                else
-//                                                    binder?.player?.forcePlay(item.asMediaItem)
-                                                fastPlay(item.asMediaItem, binder)
+                                                binder?.player?.forcePlay(item.asMediaItem)
+                                                //fastPlay(item.asMediaItem, binder)
                                             })
                                         )
                                     }

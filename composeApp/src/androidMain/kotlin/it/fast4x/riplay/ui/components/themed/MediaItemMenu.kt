@@ -118,11 +118,11 @@ import it.fast4x.riplay.extensions.fastshare.FastShare
 import it.fast4x.riplay.models.Queues
 import it.fast4x.riplay.models.defaultQueue
 import it.fast4x.riplay.typography
-import it.fast4x.riplay.ui.screens.player.fastPlay
 import it.fast4x.riplay.ui.screens.settings.isSyncEnabled
 import it.fast4x.riplay.utils.addSongToYtPlaylist
 import it.fast4x.riplay.utils.addToYtLikedSong
 import it.fast4x.riplay.utils.asSong
+import it.fast4x.riplay.utils.forcePlay
 import org.dailyislam.android.utilities.isNetworkConnected
 import it.fast4x.riplay.utils.removeYTSongFromPlaylist
 import it.fast4x.riplay.utils.mediaItemToggleLike
@@ -323,8 +323,8 @@ fun NonQueuedMediaItemMenuLibrary(
             onDismiss = onDismiss,
             onStartRadio = {
                 binder?.stopRadio()
-                //binder?.player?.forcePlay(mediaItem)
-                fastPlay(mediaItem, binder)
+                binder?.player?.forcePlay(mediaItem)
+                //fastPlay(mediaItem, binder)
                 binder?.setupRadio(
                     NavigationEndpoint.Endpoint.Watch(
                         videoId = mediaItem.mediaId,
@@ -365,8 +365,8 @@ fun NonQueuedMediaItemMenuLibrary(
             onDismiss = onDismiss,
             onStartRadio = {
                 binder?.stopRadio()
-                //binder?.player?.forcePlay(mediaItem)
-                fastPlay(mediaItem, binder)
+                binder?.player?.forcePlay(mediaItem)
+                //fastPlay(mediaItem, binder)
                 binder?.setupRadio(
                     NavigationEndpoint.Endpoint.Watch(
                         videoId = mediaItem.mediaId,
@@ -440,8 +440,8 @@ fun NonQueuedMediaItemMenu(
             onDismiss = onDismiss,
             onStartRadio = {
                 binder?.stopRadio()
-                //binder?.player?.forcePlay(mediaItem)
-                fastPlay(mediaItem, binder)
+                binder?.player?.forcePlay(mediaItem)
+                //fastPlay(mediaItem, binder)
                 binder?.setupRadio(
                     NavigationEndpoint.Endpoint.Watch(
                         videoId = mediaItem.mediaId,
@@ -469,8 +469,8 @@ fun NonQueuedMediaItemMenu(
             onDismiss = onDismiss,
             onStartRadio = {
                 binder?.stopRadio()
-                //binder?.player?.forcePlay(mediaItem)
-                fastPlay(mediaItem, binder)
+                binder?.player?.forcePlay(mediaItem)
+                //fastPlay(mediaItem, binder)
                 binder?.setupRadio(
                     NavigationEndpoint.Endpoint.Watch(
                         videoId = mediaItem.mediaId,
@@ -527,7 +527,8 @@ fun QueuedMediaItemMenu(
             onEnqueue = { binder?.player?.enqueue(mediaItem, queue = it) },
             onStartRadio = {
                 binder?.stopRadio()
-                fastPlay(mediaItem, binder)
+                binder?.player?.forcePlay(mediaItem)
+                //fastPlay(mediaItem, binder)
                 binder?.setupRadio(
                     NavigationEndpoint.Endpoint.Watch(
                         videoId = mediaItem.mediaId,
@@ -570,8 +571,8 @@ fun QueuedMediaItemMenu(
             onEnqueue = { binder?.player?.enqueue(mediaItem, queue = it) },
             onStartRadio = {
                 binder?.stopRadio()
-                //binder?.player?.forcePlay(mediaItem)
-                fastPlay(mediaItem, binder)
+                binder?.player?.forcePlay(mediaItem)
+                //fastPlay(mediaItem, binder)
                 binder?.setupRadio(
                     NavigationEndpoint.Endpoint.Watch(
                         videoId = mediaItem.mediaId,

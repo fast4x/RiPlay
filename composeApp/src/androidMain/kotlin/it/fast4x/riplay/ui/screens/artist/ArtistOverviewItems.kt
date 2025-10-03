@@ -92,7 +92,6 @@ import it.fast4x.riplay.ui.components.themed.NowPlayingSongIndicator
 import it.fast4x.riplay.ui.components.themed.TitleSection
 import it.fast4x.riplay.ui.items.ArtistItem
 import it.fast4x.riplay.ui.items.VideoItem
-import it.fast4x.riplay.ui.screens.player.fastPlay
 import it.fast4x.riplay.ui.screens.settings.isSyncEnabled
 import it.fast4x.riplay.utils.addNext
 import it.fast4x.riplay.utils.addToYtLikedSongs
@@ -106,6 +105,7 @@ import org.dailyislam.android.utilities.isNetworkConnected
 import it.fast4x.riplay.utils.isNowPlaying
 import it.fast4x.riplay.extensions.preferences.maxSongsInQueueKey
 import it.fast4x.riplay.utils.LazyListContainer
+import it.fast4x.riplay.utils.forcePlay
 import it.fast4x.riplay.utils.setLikeState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -786,8 +786,8 @@ fun ArtistOverviewItems(
 //                                    if (isVideoEnabled())
 //                                        binder?.player?.playOnline(item.asMediaItem)
 //                                    else
-//                                        binder?.player?.forcePlay(item.asMediaItem)
-                                        fastPlay(item.asMediaItem, binder)
+                                        binder?.player?.forcePlay(item.asMediaItem)
+                                        //fastPlay(item.asMediaItem, binder)
                                     })
                                 )
                             }

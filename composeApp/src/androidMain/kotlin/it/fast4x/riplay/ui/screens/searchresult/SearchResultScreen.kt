@@ -65,7 +65,6 @@ import it.fast4x.riplay.ui.items.SongItem
 import it.fast4x.riplay.ui.items.SongItemPlaceholder
 import it.fast4x.riplay.ui.items.VideoItem
 import it.fast4x.riplay.ui.items.VideoItemPlaceholder
-import it.fast4x.riplay.ui.screens.player.fastPlay
 import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.ui.styling.px
 import it.fast4x.riplay.utils.addNext
@@ -80,6 +79,7 @@ import it.fast4x.riplay.ui.components.themed.Menu
 import it.fast4x.riplay.ui.components.themed.MenuEntry
 import it.fast4x.riplay.ui.components.themed.Title2Actions
 import it.fast4x.riplay.ui.styling.secondary
+import it.fast4x.riplay.utils.forcePlay
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.combine
@@ -282,8 +282,8 @@ fun SearchResultScreen(
                                                     },
                                                     onClick = {
                                                         localBinder?.stopRadio()
-                                                        //localBinder?.player?.forcePlay(song.asMediaItem)
-                                                        fastPlay(song.asMediaItem, localBinder)
+                                                        localBinder?.player?.forcePlay(song.asMediaItem)
+                                                        //fastPlay(song.asMediaItem, localBinder)
                                                         //forceRecompose = true
                                                         localBinder?.setupRadio(song.info?.endpoint)
                                                     }
@@ -640,9 +640,9 @@ fun SearchResultScreen(
 //                                                        if (isVideoEnabled)
 //                                                            localBinder?.player?.playOnline(video.asMediaItem)
 //                                                        else
-//                                                            localBinder?.player?.forcePlay(video.asMediaItem)
+                                                        localBinder?.player?.forcePlay(video.asMediaItem)
                                                         //binder?.setupRadio(video.info?.endpoint)
-                                                        fastPlay(video.asMediaItem, localBinder)
+                                                        //fastPlay(video.asMediaItem, localBinder)
                                                         localBinder?.setupRadio(video.info?.endpoint)
                                                     }
                                                 ),
