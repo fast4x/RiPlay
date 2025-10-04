@@ -19,16 +19,16 @@ palette = "1.0.0"
 desugaring = "2.1.5"
 appcompat = "1.7.1"
 support = "1.0.0"
-media = "1.7.0"
-material = "1.8.3"
+media = "1.7.1"
+material = "1.9.2"
 materialdesktop = "1.7.3"
-material3 = "1.4.0-beta01"
-androidmaterial = "1.12.0"
+material3 = "1.4.0"
+androidmaterial = "1.13.0"
 constraintlayout = "1.1.1"
 translator = "1.1.1"
-kotlin-csv = "1.9.3"
+kotlin-csv = "1.10.0"
 monetcompat = "0.4.1"
-navigation = "2.9.0"
+navigation = "2.9.5"
 timber = "5.0.1"
 crypto = "1.1.0"
 loggingInterceptor = "5.1.0"
@@ -36,19 +36,19 @@ math3 = "3.6.1"
 toasty = "1.5.2"
 haze = "0.7.3"
 androidyoutubeplayer = "13.0.0"
-androidyoutubeplayercast = "0.31"
+androidyoutubeplayercast = "0.32"
 mediarouter = "1.8.1"
 glance = "1.1.1"
 kizzyrpc = "1.0.71"
-gson = "2.13.1"
-mediaPlayerKMP = "2.0.9"
-navigationKMP = "2.7.0-alpha07"
+gson = "2.13.2"
+mediaPlayerKMP = "2.1.0"
+navigationKMP = "2.9.0"
 vlcj = "4.11.0"
 kotlinxCoroutinesSwing = "1.10.2"
-hilt = "2.57"
+hilt = "2.57.2"
 hypnoticcanvas = "0.4.1"
 okhttpDnsOverHttps = "5.1.0"
-reorderable = "2.5.1"
+reorderable = "3.0.0"
 multidex = "2.0.1"
 fastscroller = "0.3.2"
 
@@ -125,10 +125,6 @@ hilt-compiler = { group = "com.google.dagger", name = "hilt-android-compiler", v
 hypnoticcanvas = {group = "com.mikepenz.hypnoticcanvas", name = "hypnoticcanvas", version.ref = "hypnoticcanvas"}
 hypnoticcanvas-shaders = {group = "com.mikepenz.hypnoticcanvas", name = "hypnoticcanvas-shaders", version.ref = "hypnoticcanvas"}
 
-#ksoup-html = { group = "com.mohamedrejeb.ksoup", name = "ksoup-html", version.ref = "ksoup" }
-#ksoup-entities = { group = "com.mohamedrejeb.ksoup", name = "ksoup-entities", version.ref = "ksoup" }
-#newpipe-extractor = { group = "com.github.TeamNewPipe", name = "NewPipeExtractor", version = "v0.24.5" } #before was used v0.24.3
-#nanojson = { group = "com.github.TeamNewPipe", name = "nanojson", version = "1d9e1aea9049fc9f85e68b43ba39fe7be1c1f751" }
 androidx-webkit = { group = "androidx.webkit", name = "webkit", version = "1.14.0" }
 okhttp-dnsoverhttps = { group = "com.squareup.okhttp3", name = "okhttp-dnsoverhttps", version.ref = "okhttpDnsOverHttps" }
 room-backup = { group = "de.raphaelebner", name = "roomdatabasebackup", version = "1.1.0" }
