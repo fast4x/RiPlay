@@ -12,7 +12,7 @@ import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import it.fast4x.compose.persist.PersistMapCleanup
 import it.fast4x.riplay.R
-import it.fast4x.riplay.ui.components.Skeleton
+import it.fast4x.riplay.ui.components.ScreenContainer
 
 @ExperimentalMaterialApi
 @ExperimentalTextApi
@@ -31,7 +31,7 @@ fun PodcastScreen(
     val saveableStateHolder = rememberSaveableStateHolder()
     PersistMapCleanup(tagPrefix = "podcast/$browseId")
 
-            Skeleton(
+            ScreenContainer(
                 navController,
                 miniPlayer = miniPlayer,
                 navBarContent = { item ->

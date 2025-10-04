@@ -27,7 +27,7 @@ import it.fast4x.riplay.extensions.preferences.showDownloadedPlaylistKey
 import it.fast4x.riplay.extensions.preferences.showFavoritesPlaylistKey
 import it.fast4x.riplay.extensions.preferences.showMyTopPlaylistKey
 import it.fast4x.riplay.extensions.preferences.showOnDevicePlaylistKey
-import it.fast4x.riplay.ui.components.Skeleton
+import it.fast4x.riplay.ui.components.ScreenContainer
 import it.fast4x.riplay.extensions.preferences.showDislikedPlaylistKey
 
 @ExperimentalMaterialApi
@@ -64,7 +64,7 @@ fun DeviceListSongsScreen(
 
     PersistMapCleanup(tagPrefix = "${deviceLists.name}/")
 
-            Skeleton(
+            ScreenContainer(
                 navController,
                 tabIndex,
                 onTabIndexChanged,

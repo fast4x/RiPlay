@@ -59,7 +59,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import it.fast4x.riplay.colorPalette
-import it.fast4x.riplay.ui.components.Skeleton
+import it.fast4x.riplay.ui.components.ScreenContainer
 import kotlinx.coroutines.flow.firstOrNull
 
 @ExperimentalMaterialApi
@@ -228,7 +228,7 @@ fun ArtistScreen(
                     }
                 }
 
-    Skeleton(
+    ScreenContainer(
         navController,
         tabIndex,
         onTabChanged = { tabIndex = it },

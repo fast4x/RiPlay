@@ -58,7 +58,7 @@ import it.fast4x.riplay.ui.components.themed.ValueSelectorDialog
 import it.fast4x.riplay.ui.styling.color
 import it.fast4x.riplay.ui.styling.secondary
 import it.fast4x.riplay.ui.styling.semiBold
-import it.fast4x.riplay.ui.components.Skeleton
+import it.fast4x.riplay.ui.components.ScreenContainer
 import it.fast4x.riplay.colorPalette
 import it.fast4x.riplay.ui.components.themed.IDialog
 import it.fast4x.riplay.typography
@@ -82,7 +82,7 @@ fun SettingsScreen(
         mutableStateOf(0)
     }
 
-            Skeleton(
+            ScreenContainer(
                 navController,
                 tabIndex,
                 onTabChanged,

@@ -8,8 +8,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavController
 import it.fast4x.riplay.R
-import it.fast4x.riplay.ui.components.SimpleScaffold
-import it.fast4x.riplay.ui.components.Skeleton
+import it.fast4x.riplay.ui.components.SimpleScreenContainer
 
 @Composable
 fun WelcomeScreen(
@@ -18,7 +17,7 @@ fun WelcomeScreen(
 
     var tabIndex by remember { mutableIntStateOf(0) }
 
-    SimpleScaffold (
+    SimpleScreenContainer (
         navController,
         tabIndex,
         onTabChanged = { tabIndex = it },

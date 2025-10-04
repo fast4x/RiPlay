@@ -49,7 +49,7 @@ import it.fast4x.riplay.models.Playlist
 import it.fast4x.riplay.models.SongAlbumMap
 import it.fast4x.riplay.models.defaultQueue
 import it.fast4x.riplay.ui.components.LocalMenuState
-import it.fast4x.riplay.ui.components.Skeleton
+import it.fast4x.riplay.ui.components.ScreenContainer
 import it.fast4x.riplay.ui.components.SwipeableAlbumItem
 import it.fast4x.riplay.ui.components.SwipeablePlaylistItem
 import it.fast4x.riplay.ui.components.themed.NonQueuedMediaItemMenu
@@ -194,7 +194,7 @@ fun SearchResultScreen(
 
             val emptyItemsText = stringResource(R.string.no_results_found)
 
-            Skeleton(
+            ScreenContainer(
                 navController,
                 tabIndex,
                 onTabIndexChanges,

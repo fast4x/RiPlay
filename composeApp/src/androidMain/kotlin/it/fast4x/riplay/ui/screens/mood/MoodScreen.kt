@@ -13,7 +13,7 @@ import androidx.navigation.NavController
 import it.fast4x.compose.persist.PersistMapCleanup
 import it.fast4x.riplay.R
 import it.fast4x.riplay.models.Mood
-import it.fast4x.riplay.ui.components.Skeleton
+import it.fast4x.riplay.ui.components.ScreenContainer
 
 @ExperimentalMaterialApi
 @ExperimentalTextApi
@@ -31,7 +31,7 @@ fun MoodScreen(
 
     PersistMapCleanup(tagPrefix = "playlist/$defaultBrowseId")
 
-            Skeleton(
+            ScreenContainer(
                 navController,
                 navBarContent = { item ->
                     item(0, stringResource(R.string.mood), R.drawable.album)

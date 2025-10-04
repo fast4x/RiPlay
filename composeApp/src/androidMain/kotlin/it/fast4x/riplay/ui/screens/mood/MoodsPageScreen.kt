@@ -12,7 +12,7 @@ import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import it.fast4x.compose.persist.PersistMapCleanup
 import it.fast4x.riplay.R
-import it.fast4x.riplay.ui.components.Skeleton
+import it.fast4x.riplay.ui.components.ScreenContainer
 
 @ExperimentalMaterialApi
 @ExperimentalTextApi
@@ -28,7 +28,7 @@ fun MoodsPageScreen(
 
     PersistMapCleanup(tagPrefix = "playlist/$defaultBrowseId")
 
-            Skeleton(
+            ScreenContainer(
                 navController,
                 navBarContent = { item ->
                     item(0, stringResource(R.string.moods_and_genres), R.drawable.album)

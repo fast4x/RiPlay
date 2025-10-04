@@ -263,6 +263,9 @@ class LocalPlayerService : MediaLibraryService(),
     override fun onCreate() {
         super.onCreate()
 
+        // reset lastMediaItemstate
+        preferences.edit(commit = true) { putBoolean(lastMediaItemWasLocalKey, false) }
+
         // DEFAULT NOTIFICATION PROVIDER MODDED
         setMediaNotificationProvider(CustomMediaNotificationProvider(this)
             .apply {

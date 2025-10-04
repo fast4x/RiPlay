@@ -27,7 +27,7 @@ import it.fast4x.riplay.utils.transition
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SimpleScaffold(
+fun SimpleScreenContainer(
     navController: NavController,
     tabIndex: Int = 0,
     onTabChanged: (Int) -> Unit = {},

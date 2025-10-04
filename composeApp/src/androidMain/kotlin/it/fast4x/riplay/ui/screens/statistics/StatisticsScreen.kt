@@ -15,7 +15,7 @@ import androidx.navigation.NavController
 import it.fast4x.compose.persist.PersistMapCleanup
 import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.StatisticsType
-import it.fast4x.riplay.ui.components.Skeleton
+import it.fast4x.riplay.ui.components.ScreenContainer
 
 @ExperimentalMaterialApi
 @ExperimentalTextApi
@@ -45,7 +45,7 @@ fun StatisticsScreen(
 
     PersistMapCleanup(tagPrefix = "${statisticsType.name}/")
 
-            Skeleton(
+            ScreenContainer(
                 navController,
                 tabIndex,
                 onTabIndexChanged,

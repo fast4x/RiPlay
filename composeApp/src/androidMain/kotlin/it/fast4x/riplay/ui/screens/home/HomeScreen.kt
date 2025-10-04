@@ -40,7 +40,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import it.fast4x.riplay.ui.components.Skeleton
+import it.fast4x.riplay.ui.components.ScreenContainer
 import it.fast4x.riplay.ui.screens.settings.isLoggedIn
 import kotlin.system.exitProcess
 
@@ -89,7 +89,7 @@ fun HomeScreen(
 
     //if (!enableQuickPicksPage && tabIndex==0) tabIndex = 1
 
-    Skeleton(
+    ScreenContainer(
         navController,
         tabIndex,
         onTabChanged,

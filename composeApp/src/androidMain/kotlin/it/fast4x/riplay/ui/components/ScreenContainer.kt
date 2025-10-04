@@ -2,9 +2,7 @@ package it.fast4x.riplay.ui.components
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibilityScope
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -20,7 +18,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.BottomNavigationDefaults.windowInsets
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -42,10 +39,9 @@ import it.fast4x.riplay.ui.components.navigation.nav.HorizontalNavigationBar
 import it.fast4x.riplay.ui.components.navigation.nav.VerticalNavigationBar
 import it.fast4x.riplay.utils.transition
 
-// THIS IS THE SCAFFOLD
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Skeleton(
+fun ScreenContainer(
     navController: NavController,
     tabIndex: Int = 0,
     onTabChanged: (Int) -> Unit = {},
