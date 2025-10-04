@@ -94,9 +94,7 @@ fun AppTitle(
             AppLogo(navController, context)
         }
         Column {
-
-                AppLogoText(navController)
-
+            AppLogoText(navController)
         }
         Column {
             if (isAtLeastAndroid7) {
