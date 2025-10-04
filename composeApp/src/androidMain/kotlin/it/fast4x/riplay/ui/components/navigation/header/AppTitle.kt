@@ -67,7 +67,9 @@ private fun AppLogoText( navController: NavController ) {
         style = typography().xxl.copy(
             color = colorPalette().text
         ),
-        modifier = Modifier.clickable { iconTextClick() }
+        modifier = Modifier.clickable {
+            iconTextClick()
+        }
     )
 
 //    Button(
