@@ -724,7 +724,7 @@ interface Database {
     fun onDeviceSongsCount(): Flow<Int>
 
     @Transaction
-    @Query("SELECT * FROM Song WHERE artistsText = :name ")
+    @Query("SELECT * FROM Song WHERE artistsText = :name ORDER BY title COLLATE NOCASE ASC")
     fun artistSongsByname(name: String): Flow<List<Song>>
 
     @Transaction
@@ -1550,13 +1550,13 @@ interface Database {
     @Query("SELECT * FROM Artist WHERE id = :id")
     fun artist(id: String): Flow<Artist?>
 
-    @Query("SELECT * FROM Artist WHERE bookmarkedAt IS NOT NULL ORDER BY name")
+    @Query("SELECT * FROM Artist WHERE bookmarkedAt IS NOT NULL ORDER BY name COLLATE NOCASE ASC")
     fun preferitesArtistsByName(): Flow<List<Artist>>
 
-    @Query("SELECT * FROM Artist WHERE bookmarkedAt IS NOT NULL ORDER BY name DESC")
+    @Query("SELECT * FROM Artist WHERE bookmarkedAt IS NOT NULL ORDER BY name COLLATE NOCASE DESC")
     fun artistsByNameDesc(): Flow<List<Artist>>
 
-    @Query("SELECT * FROM Artist WHERE bookmarkedAt IS NOT NULL ORDER BY name ASC")
+    @Query("SELECT * FROM Artist WHERE bookmarkedAt IS NOT NULL ORDER BY name COLLATE NOCASE ASC")
     fun artistsByNameAsc(): Flow<List<Artist>>
 
     @Query("SELECT * FROM Artist WHERE bookmarkedAt IS NOT NULL ORDER BY bookmarkedAt DESC")

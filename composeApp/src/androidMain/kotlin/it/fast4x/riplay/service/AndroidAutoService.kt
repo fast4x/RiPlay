@@ -49,6 +49,7 @@ import kotlinx.coroutines.runBlocking
 import timber.log.Timber
 import it.fast4x.riplay.utils.asSong
 import it.fast4x.riplay.utils.isAtLeastAndroid12
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlin.math.roundToInt
 
 @UnstableApi
@@ -310,12 +311,12 @@ class AndroidAutoService : MediaBrowserServiceCompat(), ServiceConnection {
                     MediaId.artists -> {
                         if (id == "") {
                             Database
-                                .artistsByRowIdDesc()
+                                .artistsByNameAsc().distinctUntilChanged()
                                 .first()
                                 .map { it.asBrowserMediaItem }
                                 .toMutableList()
                         } else {
-                            Database.artistSongsByname(id)
+                            Database.artistSongsByname(id).distinctUntilChanged()
                                 .first()
                                 .also { lastSongs = it }
                                 .map { it.asBrowserMediaItem }
@@ -327,7 +328,7 @@ class AndroidAutoService : MediaBrowserServiceCompat(), ServiceConnection {
                         if (id == "") {
                             Timber.d("AndroidAutoService onLoadChildren inside albums id $id")
                             Database
-                                .albumsByRowIdDesc()
+                                .albumsByTitleAsc()
                                 .first()
                                 .map { it.asBrowserMediaItem }
                                 .toMutableList()
