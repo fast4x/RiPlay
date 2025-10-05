@@ -114,6 +114,11 @@ import androidx.media3.common.util.Log
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.compose.rememberNavController
 import androidx.palette.graphics.Palette
+import androidx.work.Constraints
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.NetworkType
+import androidx.work.PeriodicWorkRequest
+import androidx.work.WorkManager
 import coil.imageLoader
 import coil.request.ImageRequest
 import com.kieronquinn.monetcompat.app.MonetCompatActivity
@@ -270,6 +275,7 @@ import it.fast4x.riplay.utils.OkHttpRequest
 import it.fast4x.riplay.utils.asMediaItem
 import it.fast4x.riplay.utils.capitalized
 import it.fast4x.riplay.extensions.encryptedpreferences.encryptedPreferences
+import it.fast4x.riplay.service.ToolsWorker
 import it.fast4x.riplay.utils.forcePlay
 import it.fast4x.riplay.utils.getSystemlanguage
 import it.fast4x.riplay.utils.invokeOnReady
@@ -314,6 +320,7 @@ import java.util.Date
 import java.util.Locale
 import java.util.Objects
 import java.util.UUID
+import java.util.concurrent.TimeUnit
 import kotlin.math.roundToInt
 import kotlin.math.sqrt
 
@@ -534,6 +541,7 @@ class MainActivity :
 
         initializeDiscordPresence()
 
+        //initializeWorker()
 
     }
 
@@ -555,8 +563,8 @@ class MainActivity :
             windowInsetsController.systemBarsBehavior =
                 WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
             windowInsetsController.hide(WindowInsetsCompat.Type.systemBars())
-//        windowInsetsController.hide(WindowInsetsCompat.Type.statusBars())
-            //windowInsetsController.hide(WindowInsetsCompat.Type.navigationBars())
+//          windowInsetsController.hide(WindowInsetsCompat.Type.statusBars())
+//          windowInsetsController.hide(WindowInsetsCompat.Type.navigationBars())
         } else {
             windowInsetsController.systemBarsBehavior =
                 WindowInsetsControllerCompat.BEHAVIOR_DEFAULT
@@ -739,6 +747,7 @@ class MainActivity :
             if (getBoolean(isKeepScreenOnEnabledKey, false)) {
                 window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
             }
+
             if (getBoolean(isProxyEnabledKey, false)) {
                 val hostName = getString(proxyHostnameKey, null)
                 val proxyPort = getInt(proxyPortKey, 8080)
@@ -2262,6 +2271,31 @@ class MainActivity :
 
         audioVolumeObserver = AudioVolumeObserver(context())
         audioVolumeObserver.register(AudioManager.STREAM_MUSIC, onAudioVolumeChangedListener)
+
+    }
+
+    private fun initializeWorker() {
+
+        val constraints = Constraints.Builder()
+            .setRequiredNetworkType(NetworkType.NOT_REQUIRED)
+            .build()
+
+        val keepAliveRequest = PeriodicWorkRequest.Builder(
+            ToolsWorker::class.java,
+            5,
+            TimeUnit.SECONDS
+        ).setConstraints(constraints)
+            .addTag("RiPlayKaIdWorker")
+            .build()
+
+        WorkManager.getInstance(this)
+            .enqueueUniquePeriodicWork(
+                "RiPlayKaIdWorker",
+                ExistingPeriodicWorkPolicy.KEEP,
+                keepAliveRequest
+            )
+
+        //WorkManager.getInstance(this).cancelAllWorkByTag("RiPlayKaIdWorker")
 
     }
 

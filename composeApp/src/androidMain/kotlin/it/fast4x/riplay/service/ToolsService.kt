@@ -34,7 +34,8 @@ import it.fast4x.riplay.utils.isAtLeastAndroid8
 class ToolsService : Service() {
 
     private var mNotificationManager: NotificationManager? = null
-    private var wakeLock: PowerManager.WakeLock? = null
+    // Maybe not needed
+    //private var wakeLock: PowerManager.WakeLock? = null
 
     /**
      * Returns the instance of the service
@@ -50,14 +51,14 @@ class ToolsService : Service() {
     override fun onCreate() {
         super.onCreate()
         // Android 15 kill inactive service in the background, so we need to keep it alive with wake lock
-        if (isAtLeastAndroid15) {
-            // PARTIAL_WAKELOCK
-            val powerManager: PowerManager = getSystemService(POWER_SERVICE) as PowerManager
-            wakeLock = powerManager.newWakeLock(
-                PowerManager.PARTIAL_WAKE_LOCK,
-                "RIPLAY:wakelock"
-            )
-        }
+//        if (isAtLeastAndroid15) {
+//            // PARTIAL_WAKELOCK
+//            val powerManager: PowerManager = getSystemService(POWER_SERVICE) as PowerManager
+//            wakeLock = powerManager.newWakeLock(
+//                PowerManager.PARTIAL_WAKE_LOCK,
+//                "RIPLAY:wakelock"
+//            )
+//        }
 
         println("ToolsService onCreate")
     }
@@ -73,22 +74,22 @@ class ToolsService : Service() {
 
     @SuppressLint("WakelockTimeout")
     override fun onBind(intent: Intent?): IBinder {
-        if (isAtLeastAndroid15) {
-            if (wakeLock != null && !wakeLock!!.isHeld) {
-                wakeLock!!.acquire()
-            }
-        }
+//        if (isAtLeastAndroid15) {
+//            if (wakeLock != null && !wakeLock!!.isHeld) {
+//                wakeLock!!.acquire()
+//            }
+//        }
         println("ToolsService onBind")
         return mBinder
     }
 
     override fun onDestroy() {
-        if (isAtLeastAndroid15) {
-            // PARTIAL_WAKELOCK
-            if (wakeLock != null && wakeLock!!.isHeld) {
-                wakeLock!!.release()
-            }
-        }
+//        if (isAtLeastAndroid15) {
+//            // PARTIAL_WAKELOCK
+//            if (wakeLock != null && wakeLock!!.isHeld) {
+//                wakeLock!!.release()
+//            }
+//        }
         println("ToolsService onDestroy")
         super.onDestroy()
     }

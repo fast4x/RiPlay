@@ -71,6 +71,7 @@ kotlin {
             implementation(libs.kotlin.concurrent.futures)
             implementation(libs.androidx.webkit)
             implementation(libs.room.backup)
+            implementation(libs.workmanager)
         }
         commonMain.dependencies {
             implementation(compose.runtime)
