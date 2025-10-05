@@ -293,6 +293,8 @@ fun OnlinePlayerCore(
                 ) {
                     super.onError(youTubePlayer, error)
 
+                    localMediaItem?.isLocal?.let { if (it) return }
+
                     youTubePlayer.pause()
                     clearWebViewData()
 
