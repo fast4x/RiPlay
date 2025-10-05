@@ -25,6 +25,7 @@ import it.fast4x.riplay.extensions.preferences.exoPlayerMinTimeForEventKey
 import it.fast4x.riplay.extensions.preferences.getEnum
 import it.fast4x.riplay.extensions.preferences.handleAudioFocusEnabledKey
 import it.fast4x.riplay.extensions.preferences.isEnabledFullscreenKey
+import it.fast4x.riplay.extensions.preferences.isInvincibilityEnabledKey
 import it.fast4x.riplay.extensions.preferences.keepPlayerMinimizedKey
 import it.fast4x.riplay.extensions.preferences.lastMediaItemWasLocalKey
 import it.fast4x.riplay.extensions.preferences.lastVideoIdKey
@@ -94,6 +95,7 @@ fun isPipModeAutoEnabled() = appContext().preferences.getBoolean(enablePictureIn
 fun isEnabledFullscreen() = appContext().preferences.getBoolean(isEnabledFullscreenKey, false)
 fun isAppRunning() = appContext().preferences.getBoolean(appIsRunningKey, false)
 fun lastMediaItemWasLocal() = appContext().preferences.getBoolean(lastMediaItemWasLocalKey, false)
+fun isInvincibleServiceEnabled() = appContext().preferences.getBoolean(isInvincibilityEnabledKey, false)
 
 
 

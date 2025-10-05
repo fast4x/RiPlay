@@ -23,14 +23,15 @@ import it.fast4x.riplay.MainActivity
 import it.fast4x.riplay.NOTIFICATION_CHANNEL
 import it.fast4x.riplay.R
 import it.fast4x.riplay.appContext
+import it.fast4x.riplay.utils.isAtLeastAndroid15
 import it.fast4x.riplay.utils.isAtLeastAndroid6
 import it.fast4x.riplay.utils.isAtLeastAndroid8
 
 /**
- * Endless Service is a service that runs in the background to keep the webview running.
- * Same service will be used as tips service
+ * Tools Service is a service that can be used to keep app in the background on Android 15 and up.
+ * Also will be used as tips service and others
  */
-class EndlessService : Service() {
+class ToolsService : Service() {
 
     private var mNotificationManager: NotificationManager? = null
     private var wakeLock: PowerManager.WakeLock? = null
@@ -39,8 +40,8 @@ class EndlessService : Service() {
      * Returns the instance of the service
      */
     inner class LocalBinder : Binder() {
-        val serviceInstance: EndlessService
-            get() = this@EndlessService
+        val serviceInstance: ToolsService
+            get() = this@ToolsService
     }
 
     private val mBinder: IBinder = LocalBinder() // IBinder
@@ -48,13 +49,17 @@ class EndlessService : Service() {
 
     override fun onCreate() {
         super.onCreate()
-        // PARTIAL_WAKELOCK
-        val powerManager: PowerManager = getSystemService(POWER_SERVICE) as PowerManager
-        wakeLock = powerManager.newWakeLock(
-            PowerManager.PARTIAL_WAKE_LOCK,
-            "RIPLAY:wakelock"
-        )
-        println("EndlessService onCreate")
+        // Android 15 kill inactive service in the background, so we need to keep it alive with wake lock
+        if (isAtLeastAndroid15) {
+            // PARTIAL_WAKELOCK
+            val powerManager: PowerManager = getSystemService(POWER_SERVICE) as PowerManager
+            wakeLock = powerManager.newWakeLock(
+                PowerManager.PARTIAL_WAKE_LOCK,
+                "RIPLAY:wakelock"
+            )
+        }
+
+        println("ToolsService onCreate")
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
@@ -62,36 +67,40 @@ class EndlessService : Service() {
         mNotificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager?
         createNotificationChannel()
         startForeground(NOTIFICATION_ID, this.notification)
-        println("EndlessService onStartCommand")
+        println("ToolsService onStartCommand")
         return START_STICKY //START_NOT_STICKY
     }
 
     @SuppressLint("WakelockTimeout")
     override fun onBind(intent: Intent?): IBinder {
-        if (wakeLock != null && !wakeLock!!.isHeld) {
-            wakeLock!!.acquire()
+        if (isAtLeastAndroid15) {
+            if (wakeLock != null && !wakeLock!!.isHeld) {
+                wakeLock!!.acquire()
+            }
         }
-        println("EndlessService onBind")
+        println("ToolsService onBind")
         return mBinder
     }
 
     override fun onDestroy() {
-        // PARTIAL_WAKELOCK
-        if (wakeLock != null && wakeLock!!.isHeld) {
-            wakeLock!!.release()
+        if (isAtLeastAndroid15) {
+            // PARTIAL_WAKELOCK
+            if (wakeLock != null && wakeLock!!.isHeld) {
+                wakeLock!!.release()
+            }
         }
-        println("EndlessService onDestroy")
+        println("ToolsService onDestroy")
         super.onDestroy()
     }
 
     override fun onTaskRemoved(rootIntent: Intent?) {
-        val restartServiceIntent = Intent(applicationContext, EndlessService::class.java).also {
+        val restartServiceIntent = Intent(applicationContext, ToolsService::class.java).also {
             it.setPackage(packageName)
         }
         val restartServicePendingIntent: PendingIntent = PendingIntent.getService(this, 1, restartServiceIntent, PendingIntent.FLAG_ONE_SHOT)
         val alarmService: AlarmManager = applicationContext.getSystemService(Context.ALARM_SERVICE) as AlarmManager
         alarmService.set(AlarmManager.ELAPSED_REALTIME, SystemClock.elapsedRealtime() + 1000, restartServicePendingIntent)
-        println("EndlessService onTaskRemoved schedule restart service")
+        println("ToolsService onTaskRemoved schedule restart service")
     }
 
     fun createNotificationChannel() {
@@ -142,6 +151,6 @@ class EndlessService : Service() {
 
     companion object {
         private const val NOTIFICATION_ID = 10 // The id of the notification
-        private const val CHANNEL_ID = "EndlessServiceChannel" // The id of the channel
+        private const val CHANNEL_ID = "ToolsServiceChannel" // The id of the channel
     }
 }

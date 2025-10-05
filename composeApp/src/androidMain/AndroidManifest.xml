@@ -191,7 +191,7 @@
 
         <service
             android:enabled="true"
-            android:name=".service.EndlessService"
+            android:name=".service.ToolsService"
             android:exported="false"
             android:foregroundServiceType="mediaPlayback"
             tools:ignore="ExportedService">

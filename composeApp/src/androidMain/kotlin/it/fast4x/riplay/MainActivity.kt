@@ -238,7 +238,7 @@ import it.fast4x.riplay.extensions.rescuecenter.RescueScreen
 import it.fast4x.riplay.models.Queues
 import it.fast4x.riplay.models.defaultQueue
 import it.fast4x.riplay.utils.BitmapProvider
-import it.fast4x.riplay.service.EndlessService
+import it.fast4x.riplay.service.ToolsService
 import it.fast4x.riplay.service.LocalPlayerService
 import it.fast4x.riplay.service.AndroidAutoService
 import it.fast4x.riplay.service.isLocal
@@ -270,7 +270,6 @@ import it.fast4x.riplay.utils.OkHttpRequest
 import it.fast4x.riplay.utils.asMediaItem
 import it.fast4x.riplay.utils.capitalized
 import it.fast4x.riplay.extensions.encryptedpreferences.encryptedPreferences
-import it.fast4x.riplay.extensions.preferences.lastMediaItemWasLocalKey
 import it.fast4x.riplay.utils.forcePlay
 import it.fast4x.riplay.utils.getSystemlanguage
 import it.fast4x.riplay.utils.invokeOnReady
@@ -339,8 +338,8 @@ class MainActivity :
             if (service is LocalPlayerService.Binder) {
                 this@MainActivity.binder = service
             }
-            if (service is EndlessService.LocalBinder) {
-                this@MainActivity.endlessService = service.serviceInstance.LocalBinder()
+            if (service is ToolsService.LocalBinder) {
+                this@MainActivity.toolsService = service.serviceInstance.LocalBinder()
             }
             if (service is AndroidAutoService.LocalBinder) {
                 this@MainActivity.androidAutoService = service.serviceInstance.LocalBinder()
@@ -352,7 +351,7 @@ class MainActivity :
 
         override fun onServiceDisconnected(name: ComponentName?) {
             binder = null
-            //endlessService = null
+            //toolsService = null
         }
 
     }
@@ -397,7 +396,7 @@ class MainActivity :
     var currentSecond: MutableState<Float> = mutableFloatStateOf(0f)
     var currentDuration: MutableState<Float> = mutableFloatStateOf(0f)
 
-    var endlessService by mutableStateOf<EndlessService.LocalBinder?>(null)
+    var toolsService by mutableStateOf<ToolsService.LocalBinder?>(null)
     var androidAutoService by mutableStateOf<AndroidAutoService.LocalBinder?>(null)
 
     //var mediaItemIsLocal: MutableState<Boolean> = mutableStateOf(false)
@@ -425,11 +424,11 @@ class MainActivity :
         }
 
         runCatching {
-            val intent = Intent(this, EndlessService::class.java)
+            val intent = Intent(this, ToolsService::class.java)
             bindService(intent, serviceConnection, BIND_AUTO_CREATE)
             startService(intent)
         }.onFailure {
-            Timber.e("MainActivity.onStart startService EndlessService ${it.stackTraceToString()}")
+            Timber.e("MainActivity.onStart startService ToolsService ${it.stackTraceToString()}")
         }
 
         runCatching {
@@ -2093,7 +2092,7 @@ class MainActivity :
 //        runCatching {
 //            notification.let {
 //                ServiceCompat.startForeground(
-//                    endlessService,
+//                    toolsService,
 //                    NOTIFICATION_ID,
 //                    it,
 //                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
