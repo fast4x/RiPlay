@@ -311,12 +311,12 @@ class AndroidAutoService : MediaBrowserServiceCompat(), ServiceConnection {
                     MediaId.artists -> {
                         if (id == "") {
                             Database
-                                .artistsByNameAsc().distinctUntilChanged()
+                                .artistsByNameAsc()
                                 .first()
                                 .map { it.asBrowserMediaItem }
                                 .toMutableList()
                         } else {
-                            Database.artistSongsByname(id).distinctUntilChanged()
+                            Database.artistSongsByname(id)
                                 .first()
                                 .also { lastSongs = it }
                                 .map { it.asBrowserMediaItem }
