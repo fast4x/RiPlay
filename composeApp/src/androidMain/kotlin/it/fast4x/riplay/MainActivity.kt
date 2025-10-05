@@ -30,6 +30,7 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
+import android.os.PowerManager
 import android.os.StrictMode
 import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaSessionCompat
@@ -159,6 +160,7 @@ import it.fast4x.riplay.extensions.audiovolume.AudioVolumeObserver
 import it.fast4x.riplay.extensions.audiovolume.OnAudioVolumeChangedListener
 import it.fast4x.riplay.extensions.discord.DiscordPresenceManager
 import it.fast4x.riplay.extensions.discord.updateDiscordPresenceWithOnlinePlayer
+import it.fast4x.riplay.extensions.encryptedpreferences.encryptedPreferences
 import it.fast4x.riplay.extensions.nsd.discoverNsdServices
 import it.fast4x.riplay.extensions.pip.PipModuleContainer
 import it.fast4x.riplay.extensions.pip.PipModuleCover
@@ -242,10 +244,10 @@ import it.fast4x.riplay.extensions.preferences.ytVisitorDataKey
 import it.fast4x.riplay.extensions.rescuecenter.RescueScreen
 import it.fast4x.riplay.models.Queues
 import it.fast4x.riplay.models.defaultQueue
-import it.fast4x.riplay.utils.BitmapProvider
-import it.fast4x.riplay.service.ToolsService
-import it.fast4x.riplay.service.LocalPlayerService
 import it.fast4x.riplay.service.AndroidAutoService
+import it.fast4x.riplay.service.LocalPlayerService
+import it.fast4x.riplay.service.ToolsService
+import it.fast4x.riplay.service.ToolsWorker
 import it.fast4x.riplay.service.isLocal
 import it.fast4x.riplay.ui.components.BottomSheet
 import it.fast4x.riplay.ui.components.BottomSheetState
@@ -270,12 +272,11 @@ import it.fast4x.riplay.ui.styling.colorPaletteOf
 import it.fast4x.riplay.ui.styling.customColorPalette
 import it.fast4x.riplay.ui.styling.dynamicColorPaletteOf
 import it.fast4x.riplay.ui.styling.typographyOf
+import it.fast4x.riplay.utils.BitmapProvider
 import it.fast4x.riplay.utils.LocalMonetCompat
 import it.fast4x.riplay.utils.OkHttpRequest
 import it.fast4x.riplay.utils.asMediaItem
 import it.fast4x.riplay.utils.capitalized
-import it.fast4x.riplay.extensions.encryptedpreferences.encryptedPreferences
-import it.fast4x.riplay.service.ToolsWorker
 import it.fast4x.riplay.utils.forcePlay
 import it.fast4x.riplay.utils.getSystemlanguage
 import it.fast4x.riplay.utils.invokeOnReady
