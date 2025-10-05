@@ -49,10 +49,12 @@ import it.fast4x.riplay.extensions.preferences.playbackDurationKey
 import it.fast4x.riplay.extensions.preferences.playbackSpeedKey
 import it.fast4x.riplay.utils.isLandscape
 import it.fast4x.riplay.extensions.preferences.playerThumbnailSizeKey
+import it.fast4x.riplay.extensions.preferences.preferences
 import it.fast4x.riplay.extensions.preferences.queueLoopTypeKey
 import it.fast4x.riplay.extensions.preferences.rememberObservedPreference
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.getPlaybackFadeAudioDuration
+import it.fast4x.riplay.isSkipMediaOnErrorEnabled
 import it.fast4x.riplay.service.isLocal
 import it.fast4x.riplay.ui.components.themed.SmartMessage
 import it.fast4x.riplay.utils.clearWebViewData
@@ -314,6 +316,20 @@ fun OnlinePlayerCore(
                     }
 
                     lastError.value = error
+
+                    if (!isSkipMediaOnErrorEnabled()) return
+                    val prev = binder?.player?.currentMediaItem ?: return
+
+                    binder.player.playNext()
+
+                    SmartMessage(
+                        message = context().getString(
+                            R.string.skip_media_on_error_message,
+                            prev.mediaMetadata.title
+                        ),
+                        context = context(),
+                    )
+
                 }
 
             }

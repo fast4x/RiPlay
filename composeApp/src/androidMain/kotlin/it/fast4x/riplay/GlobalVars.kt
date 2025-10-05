@@ -42,6 +42,7 @@ import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.extensions.preferences.resumePlaybackOnStartKey
 import it.fast4x.riplay.extensions.preferences.showSearchTabKey
 import it.fast4x.riplay.extensions.preferences.showStatsInNavbarKey
+import it.fast4x.riplay.extensions.preferences.skipMediaOnErrorKey
 import it.fast4x.riplay.extensions.preferences.viewTypeKey
 import it.fast4x.riplay.extensions.preferences.ytAccountNameKey
 import it.fast4x.riplay.extensions.preferences.ytAccountThumbnailKey
@@ -96,6 +97,7 @@ fun isEnabledFullscreen() = appContext().preferences.getBoolean(isEnabledFullscr
 fun isAppRunning() = appContext().preferences.getBoolean(appIsRunningKey, false)
 fun lastMediaItemWasLocal() = appContext().preferences.getBoolean(lastMediaItemWasLocalKey, false)
 fun isInvincibleServiceEnabled() = appContext().preferences.getBoolean(isInvincibilityEnabledKey, false)
+fun isSkipMediaOnErrorEnabled() = appContext().preferences.getBoolean(skipMediaOnErrorKey, false)
 
 
 
