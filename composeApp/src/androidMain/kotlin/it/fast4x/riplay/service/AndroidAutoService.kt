@@ -203,12 +203,15 @@ class AndroidAutoService : MediaBrowserServiceCompat(), ServiceConnection {
 
     private val mBinder: IBinder = LocalBinder() // IBinder
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onBind(intent: Intent?): IBinder? {
         Timber.d("AndroidAutoService onBind called with intent ${intent?.action}")
         if (SERVICE_INTERFACE == intent!!.action) {
             return super.onBind(intent)
         }
         Timber.d("AndroidAutoService onBind process intent ${intent?.action}")
+
+        startNotification()
 
         return mBinder
     }
@@ -294,7 +297,7 @@ class AndroidAutoService : MediaBrowserServiceCompat(), ServiceConnection {
                 NotificationCompat.Builder(appContext())
             }
                 .setSmallIcon(R.drawable.app_icon)
-                .setContentTitle("RiPlay Android Auto Require Your Attention!")
+                .setContentTitle("RiPlay Android Auto")
                 .setShowWhen(false)
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .setCategory(NotificationCompat.CATEGORY_SERVICE)
