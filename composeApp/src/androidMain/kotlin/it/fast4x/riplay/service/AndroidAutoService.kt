@@ -1,5 +1,7 @@
 package it.fast4x.riplay.service
 
+import android.app.Notification
+import android.app.PendingIntent
 import android.content.ComponentName
 import android.content.ContentResolver
 import android.content.Context
@@ -8,6 +10,7 @@ import android.content.ServiceConnection
 import android.graphics.Color
 import android.net.Uri
 import android.os.Binder
+import android.os.Build
 import android.os.Bundle
 import android.os.IBinder
 import android.support.v4.media.MediaBrowserCompat
@@ -18,6 +21,10 @@ import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import androidx.annotation.DrawableRes
 import androidx.annotation.OptIn
+import androidx.annotation.RequiresApi
+import androidx.core.app.NotificationChannelCompat
+import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
 import androidx.core.net.toUri
 import androidx.media.MediaBrowserServiceCompat
 import androidx.media.session.MediaButtonReceiver
@@ -32,8 +39,11 @@ import it.fast4x.environment.utils.from
 import it.fast4x.riplay.Database
 import it.fast4x.riplay.MODIFIED_PREFIX
 import it.fast4x.riplay.MONTHLY_PREFIX
+import it.fast4x.riplay.MainActivity
+import it.fast4x.riplay.UNIFIED_NOTIFICATION_CHANNEL
 import it.fast4x.riplay.PINNED_PREFIX
 import it.fast4x.riplay.R
+import it.fast4x.riplay.appContext
 import it.fast4x.riplay.enums.AlbumSortBy
 import it.fast4x.riplay.enums.ArtistSortBy
 import it.fast4x.riplay.removePrefix
@@ -60,10 +70,14 @@ import it.fast4x.riplay.utils.asSong
 import it.fast4x.riplay.utils.isAtLeastAndroid12
 import kotlin.math.roundToInt
 import it.fast4x.riplay.utils.asMediaItem
+import it.fast4x.riplay.utils.isAtLeastAndroid6
+import it.fast4x.riplay.utils.isAtLeastAndroid8
 
 
 @UnstableApi
 class AndroidAutoService : MediaBrowserServiceCompat(), ServiceConnection {
+
+    //private var mNotificationManager: NotificationManager? = null
 
     var tmpLocalPlayerBinder: LocalPlayerService.Binder? = null
         set(value) {
@@ -152,6 +166,11 @@ class AndroidAutoService : MediaBrowserServiceCompat(), ServiceConnection {
                     .build()
             )
         }
+
+
+        private const val NOTIFICATION_ID = 20 // The id of the notification
+        //private const val CHANNEL_ID = "AAServiceChannel" // The id of the channel
+
     }
 
     var isRunning = false
@@ -185,9 +204,11 @@ class AndroidAutoService : MediaBrowserServiceCompat(), ServiceConnection {
     private val mBinder: IBinder = LocalBinder() // IBinder
 
     override fun onBind(intent: Intent?): IBinder? {
+        Timber.d("AndroidAutoService onBind called with intent ${intent?.action}")
         if (SERVICE_INTERFACE == intent!!.action) {
             return super.onBind(intent)
         }
+        Timber.d("AndroidAutoService onBind process intent ${intent?.action}")
 
         return mBinder
     }
@@ -225,12 +246,66 @@ class AndroidAutoService : MediaBrowserServiceCompat(), ServiceConnection {
 
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        Timber.d("AndroidAutoService onStartCommand")
         MediaButtonReceiver.handleIntent(mediaSession, intent)
-        //return super.onStartCommand(intent, flags, startId)
+        //mNotificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager?
+        //NotificationManagerCompat.from(this@AndroidAutoService).notify(NOTIFICATION_ID, notification)
+        startNotification()
         isRunning = true
         return START_STICKY // If the service is killed, it will be automatically restarted
     }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    private fun startNotification(){
+        createNotificationChannel()
+        startForeground(NOTIFICATION_ID, this.notification)
+    }
+
+    fun createNotificationChannel() {
+        val channel = NotificationChannelCompat.Builder(
+            NOTIFICATION_ID.toString(),
+            NotificationManagerCompat.IMPORTANCE_DEFAULT
+        )
+            .setName(UNIFIED_NOTIFICATION_CHANNEL)
+            .setShowBadge(false)
+            .build()
+
+        NotificationManagerCompat.from(this@AndroidAutoService).createNotificationChannel(channel)
+    }
+
+    private val notification: Notification
+        @OptIn(UnstableApi::class)
+        @RequiresApi(Build.VERSION_CODES.O)
+        get() {
+
+            val startIntent = Intent(appContext(), MainActivity::class.java)
+            startIntent.action = Intent.ACTION_MAIN
+            startIntent.addCategory(Intent.CATEGORY_LAUNCHER)
+            startIntent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
+            val contentIntent: PendingIntent? =
+                PendingIntent.getActivity(appContext(), 1, startIntent, if (isAtLeastAndroid6) PendingIntent.FLAG_IMMUTABLE else 0)
+
+
+            return if (isAtLeastAndroid8) {
+                NotificationCompat.Builder(appContext(), UNIFIED_NOTIFICATION_CHANNEL)
+            } else {
+                NotificationCompat.Builder(appContext())
+            }
+                .setSmallIcon(R.drawable.app_icon)
+                .setContentTitle("RiPlay Android Auto Require Your Attention!")
+                .setShowWhen(false)
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setCategory(NotificationCompat.CATEGORY_SERVICE)
+                .setOngoing(true)
+                .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+                .setContentText("RiPlay must be started before AA, click here to start RiPlay now.")
+                .setContentIntent(contentIntent)
+                .setSilent(false)
+                .build()
+
+        }
 
     override fun onGetRoot(
         clientPackageName: String,
@@ -938,9 +1013,20 @@ class AndroidAutoService : MediaBrowserServiceCompat(), ServiceConnection {
             MediaItem.FLAG_BROWSABLE
         )
 
+
+
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onServiceConnected(p0: ComponentName?, p1: IBinder?) {
 
         Timber.d("AndroidAutoService onServiceConnected isAppRunning ${isAppRunning()}")
+
+//        if(!isAppRunning()) {
+//            startService(intent<AndroidAutoService>())
+//            startNotification()
+//            Timber.d("AndroidAutoService onServiceConnected started AndroidAutoService")
+//        }
+
+
 
 //        val intent = Intent(this, MainActivity::class.java)
 //        intent.action = Intent.ACTION_MAIN
@@ -1091,8 +1177,6 @@ class AndroidAutoService : MediaBrowserServiceCompat(), ServiceConnection {
 
         fun forSearched(id: String) = "$SEARCHED/$id"
     }
-
-
 
 }
 

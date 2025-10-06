@@ -11,7 +11,6 @@ import android.content.Intent
 import android.os.Binder
 import android.os.Build
 import android.os.IBinder
-import android.os.PowerManager
 import android.os.SystemClock
 import androidx.annotation.OptIn
 import androidx.annotation.RequiresApi
@@ -20,10 +19,9 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.media3.common.util.UnstableApi
 import it.fast4x.riplay.MainActivity
-import it.fast4x.riplay.NOTIFICATION_CHANNEL
+import it.fast4x.riplay.UNIFIED_NOTIFICATION_CHANNEL
 import it.fast4x.riplay.R
 import it.fast4x.riplay.appContext
-import it.fast4x.riplay.utils.isAtLeastAndroid15
 import it.fast4x.riplay.utils.isAtLeastAndroid6
 import it.fast4x.riplay.utils.isAtLeastAndroid8
 
@@ -109,7 +107,7 @@ class ToolsService : Service() {
             NOTIFICATION_ID.toString(),
             NotificationManagerCompat.IMPORTANCE_DEFAULT
         )
-            .setName(CHANNEL_ID)
+            .setName(UNIFIED_NOTIFICATION_CHANNEL)
             .setShowBadge(false)
             .build()
 
@@ -130,7 +128,7 @@ class ToolsService : Service() {
 
 
             return if (isAtLeastAndroid8) {
-                NotificationCompat.Builder(appContext(), NOTIFICATION_CHANNEL)
+                NotificationCompat.Builder(appContext(), UNIFIED_NOTIFICATION_CHANNEL)
             } else {
                 NotificationCompat.Builder(appContext())
             }
@@ -146,12 +144,10 @@ class ToolsService : Service() {
                 .setSilent(true)
                 .build()
 
-
-
         }
 
     companion object {
         private const val NOTIFICATION_ID = 10 // The id of the notification
-        private const val CHANNEL_ID = "ToolsServiceChannel" // The id of the channel
+        //private const val CHANNEL_ID = "ToolsServiceChannel" // The id of the channel
     }
 }

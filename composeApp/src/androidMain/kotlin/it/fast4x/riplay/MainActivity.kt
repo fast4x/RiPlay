@@ -30,7 +30,6 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
-import android.os.PowerManager
 import android.os.StrictMode
 import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaSessionCompat
@@ -326,7 +325,7 @@ import kotlin.math.roundToInt
 import kotlin.math.sqrt
 
 
-const val NOTIFICATION_CHANNEL = "OnlinePlayer"
+const val UNIFIED_NOTIFICATION_CHANNEL = "UnifiedNotificationChannel"
 const val NOTIFICATION_ID = 1
 
 @UnstableApi
@@ -1979,10 +1978,10 @@ class MainActivity :
 
     fun createNotificationChannel() {
         val channel = NotificationChannelCompat.Builder(
-            NOTIFICATION_CHANNEL,
+            UNIFIED_NOTIFICATION_CHANNEL,
             NotificationManagerCompat.IMPORTANCE_HIGH
         )
-            .setName(NOTIFICATION_CHANNEL)
+            .setName(UNIFIED_NOTIFICATION_CHANNEL)
             .setShowBadge(false)
             .build()
 
@@ -2060,7 +2059,7 @@ class MainActivity :
 
 
         val notification = if (isAtLeastAndroid8) {
-            NotificationCompat.Builder(this, NOTIFICATION_CHANNEL)
+            NotificationCompat.Builder(this, UNIFIED_NOTIFICATION_CHANNEL)
         } else {
             NotificationCompat.Builder(this)
         }
