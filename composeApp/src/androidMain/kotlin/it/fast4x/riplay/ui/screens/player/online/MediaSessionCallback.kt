@@ -55,22 +55,35 @@ class MediaSessionCallback (
         Timber.d("MediaSessionCallback onPlayFromMediaId mediaId ${mediaId} called")
         val data = mediaId?.split('/') ?: return
         var index = 0
-        var mediaItemSelected: MediaItem? = null
+        //var mediaItemSelected: MediaItem? = null
 
         Timber.d("MediaSessionCallback onPlayFromMediaId mediaId ${mediaId} data $data processing")
 
         CoroutineScope(Dispatchers.IO).launch {
             val mediaItems = when (data.getOrNull(0)) {
 
-                AndroidAutoService.MediaId.songs ->  data
+                AndroidAutoService.MediaId.SONGS ->  data
                     .getOrNull(1)
                     ?.let { songId ->
-                        index = AndroidAutoService.lastSongs .indexOfFirst { it.id == songId }
+                        index = AndroidAutoService.lastSongs.indexOfFirst { it.id == songId }
 
                         if (index < 0) return@launch // index not found
 
-                        mediaItemSelected = AndroidAutoService.lastSongs[index].asMediaItem
+                        //mediaItemSelected = AndroidAutoService.lastSongs[index].asMediaItem
                         AndroidAutoService.lastSongs
+                    }
+                    .also { Timber.d("MediaSessionCallback onPlayFromMediaId processing songs, mediaId ${mediaId} index $index songs ${it?.size}") }
+
+                AndroidAutoService.MediaId.SEARCHED -> data
+                    .getOrNull(1)
+                    ?.let { songId ->
+                        index = AndroidAutoService.searchedSongs.indexOfFirst { it.id == songId }
+
+                        if (index < 0) return@launch // index not found
+
+                        //mediaItemSelected = AndroidAutoService.searchedSongs[index].asMediaItem
+                        AndroidAutoService.searchedSongs
+
                     }
 
                 // Maybe it needed in the future
@@ -112,15 +125,7 @@ class MediaSessionCallback (
                         ?.first()
                 }
 
-                AndroidAutoService.MediaId.searched -> data
-                    .getOrNull(1)
-                    ?.let { songId ->
-                        searchedSongs.filter { it.id == songId }
-                            .also {
-                                index = searchedSongs.indexOfFirst { it.id == songId }
-                                mediaItemSelected = it.first().asMediaItem
-                            }
-                    }
+
                 */
 
                 else -> emptyList()
