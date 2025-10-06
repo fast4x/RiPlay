@@ -45,7 +45,7 @@
     </queries>
     <queries>
         <intent>
-            <action android:name="androidx.media3.session.MediaSessionService" />
+            <action android:name="android.media.browse.MediaBrowserService" />
         </intent>
     </queries>
 

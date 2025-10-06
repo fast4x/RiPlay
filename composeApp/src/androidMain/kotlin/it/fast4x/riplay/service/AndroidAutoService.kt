@@ -318,8 +318,8 @@ class AndroidAutoService : MediaBrowserServiceCompat(), ServiceConnection {
         Timber.d("AndroidAutoService onGetRoot $clientPackageName but app is running ? ${isAppRunning()} mediaSession $mediaSession but service is running ? $isRunning")
         bindService(intent<AndroidAutoService>(), this, Context.BIND_AUTO_CREATE)
 
-        //if(!isAppRunning())
-            //return BrowserRoot(MediaId.fault, Bundle().apply { putInt(CONTENT_STYLE_BROWSABLE_HINT, CONTENT_STYLE_LIST) })
+//        if(!isAppRunning())
+//            return BrowserRoot(MediaId.FAULT, Bundle().apply { putInt(CONTENT_STYLE_BROWSABLE_HINT, CONTENT_STYLE_LIST) })
 
         return BrowserRoot(
             //if(isAppRunning()) MediaId.root else MediaId.fault,
