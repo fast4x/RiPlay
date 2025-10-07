@@ -493,10 +493,10 @@ class MainActivity :
         )
         localMonet.updateMonetColors()
 
-        Timber.d("MainActivity onCreate Before localMonet.invokeOnReady")
+        Timber.d("MainActivity.onCreate Before localMonet.invokeOnReady")
 
         localMonet.invokeOnReady {
-            Timber.d("MainActivity onCreate Inside localMonet.invokeOnReady")
+            Timber.d("MainActivity.onCreate Inside localMonet.invokeOnReady")
             startApp()
         }
 
@@ -686,6 +686,11 @@ class MainActivity :
         ) maybeEnterPip()
     }
 
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+        Timber.d("MainActivity.onConfigurationChanged")
+    }
+
 
     @Composable
     fun ThemeApp(
@@ -850,19 +855,19 @@ class MainActivity :
             // If visitorData is empty, get it from the server with or without login
             if (visitorData.value.isEmpty() || visitorData.value == "null" || visitorData.value == "")
                 runCatching {
-                    Timber.d("MainActivity.onCreate visitorData.isEmpty() getInitialVisitorData visitorData ${visitorData.value}")
+                    Timber.d("MainActivity.setContent visitorData.isEmpty() getInitialVisitorData visitorData ${visitorData.value}")
                     visitorData.value = runBlocking {
                         Environment.getInitialVisitorData().getOrNull()
                     }.takeIf { it != "null" } ?: ""
                     // Save visitorData in SharedPreferences
                     preferences.edit { putString(ytVisitorDataKey, visitorData.value) }
                 }.onFailure {
-                    Timber.e("MainActivity.onCreate visitorData.isEmpty() getInitialVisitorData ${it.stackTraceToString()}")
+                    Timber.e("MainActivity.setContent visitorData.isEmpty() getInitialVisitorData ${it.stackTraceToString()}")
                     visitorData.value = "" //Environment._uMYwa66ycM
                 }
 
             Environment.visitorData = visitorData.value
-            Timber.d("MainActivity.onCreate visitorData in use: ${visitorData.value}")
+            Timber.d("MainActivity.setContent visitorData in use: ${visitorData.value}")
 
             cookie.let {
                 if (isLoggedIn())
@@ -876,7 +881,7 @@ class MainActivity :
 
             Environment.dataSyncId = preferences.getString(ytDataSyncIdKey, "").toString()
 
-            Timber.d("MainActivity.onCreate cookie: ${cookie.value}")
+            Timber.d("MainActivity.setContent cookie: ${cookie.value}")
             val customDnsOverHttpsServer =
                 preferences.getString(customDnsOverHttpsServerKey, "")
 
@@ -1742,7 +1747,7 @@ class MainActivity :
                             try {
                                 navController.navigate(route = "${NavRoutes.artist.name}/$channelId")
                             } catch (e: Exception) {
-                                Timber.e("MainActivity.onCreate intentUriData ${e.stackTraceToString()}")
+                                Timber.e("MainActivity.setContent intentUriData ${e.stackTraceToString()}")
                             }
                         }
 
@@ -2459,6 +2464,9 @@ class MainActivity :
     @UnstableApi
     override fun onDestroy() {
         super.onDestroy()
+
+        Timber.d("MainActivity.onDestroy")
+
 
         preferences.edit(commit = true) { putBoolean(appIsRunningKey, false) }
 
