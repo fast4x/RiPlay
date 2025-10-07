@@ -156,6 +156,7 @@ import it.fast4x.riplay.extensions.preferences.lyricsSizeLKey
 import it.fast4x.riplay.utils.removeYTSongFromPlaylist
 import it.fast4x.riplay.extensions.preferences.thumbnailFadeExKey
 import it.fast4x.riplay.extensions.preferences.thumbnailSpacingLKey
+import it.fast4x.riplay.service.isLocal
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.firstOrNull
@@ -2458,7 +2459,8 @@ fun PlaybackParamsDialog(
                     },
                     onSlideComplete = {},
                     toDisplay = { "%.1fx".format(playbackPitch) },
-                    range = 0.1f..5f
+                    range = 0.1f..5f,
+                    isEnabled = binder?.currentMediaItemAsSong?.isLocal == true
                 )
 
                 /*
