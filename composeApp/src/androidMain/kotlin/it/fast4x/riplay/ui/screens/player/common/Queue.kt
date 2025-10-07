@@ -164,7 +164,9 @@ import it.fast4x.riplay.ui.items.QueueItem
 import it.fast4x.riplay.ui.screens.player.local.LocalMiniPlayer
 import it.fast4x.riplay.ui.screens.player.online.OnlineMiniPlayer
 import it.fast4x.riplay.utils.getScreenDimensions
+import it.fast4x.riplay.utils.move
 import kotlinx.coroutines.withContext
+import timber.log.Timber
 
 @ExperimentalMaterial3Api
 @ExperimentalTextApi
@@ -456,21 +458,49 @@ fun Queue(
             .fillMaxSize()
     ) {
 
+        var dragInfo by remember {
+            mutableStateOf<Pair<Int, Int>?>(null)
+        }
         val lazyListState = rememberLazyListState()
         val reorderableLazyListState = rememberReorderableLazyListState(
             lazyListState = lazyListState,
-            scrollThresholdPadding = WindowInsets.systemBars.asPaddingValues(),
+            //scrollThresholdPadding = WindowInsets.systemBars.asPaddingValues(),
         ) { from, to ->
-            if (to.key != binder.player.currentMediaItem?.mediaId)
-                binderPlayer.moveMediaItem(from.index, to.index)
+            if (to.key != binder.player.currentMediaItem?.mediaId) {
+                windowsInQueue = windowsInQueue.toMutableList().apply {
+                    val fromIndex = indexOfFirst { it.mediaItem.mediaId == from.key }
+                    val toIndex = indexOfFirst { it.mediaItem.mediaId == to.key }
+
+                    val currentDragInfo = dragInfo
+                    dragInfo = if (currentDragInfo == null)
+                        fromIndex to toIndex
+                    else currentDragInfo.first to toIndex
+
+                    move(fromIndex, toIndex)
+                    println("reorderableLazyListState dragInfo from ${fromIndex} to ${toIndex}")
+                }
+
+            } else dragInfo = null
+        }
+
+        LaunchedEffect(reorderableLazyListState.isAnyItemDragging) {
+            if (!reorderableLazyListState.isAnyItemDragging) {
+                dragInfo?.let { (from, to) ->
+                    val fromIndex = from
+                    val toIndex = to
+                    binderPlayer.moveMediaItem(fromIndex, toIndex)
+                    println("reorderableLazyListState.isAnyItemDragging moved from ${fromIndex} to ${toIndex}")
+                    dragInfo = null
+                }
+            }
         }
 
     LazyColumn(
         state = lazyListState,
-        contentPadding = windowInsets
-            .only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top)
-            .asPaddingValues(),
-        horizontalAlignment = Alignment.CenterHorizontally,
+//        contentPadding = windowInsets
+//            .only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top)
+//            .asPaddingValues(),
+//        horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
 
 
@@ -680,12 +710,12 @@ fun Queue(
 
 
         items(
-            items = windowsInQueue,
-            key = { it.uid.hashCode() }
+            items = windowsInQueue.distinctBy { it.mediaItem.mediaId },
+            key = { it.mediaItem.mediaId }
         ) { window ->
             ReorderableItem(
                 reorderableLazyListState,
-                key = window.uid.hashCode()
+                key = window.mediaItem.mediaId
             ) { isDragging ->
 
                 val interactionSource = remember { MutableInteractionSource() }

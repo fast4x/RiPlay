@@ -58,6 +58,7 @@ import org.dailyislam.android.utilities.isNetworkConnected
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import timber.log.Timber
 
 @Composable
 fun SwipeableContent(
@@ -69,7 +70,9 @@ fun SwipeableContent(
     content: @Composable () -> Unit
 ) {
     val hapticFeedback = LocalHapticFeedback.current
+
     val dismissState = rememberSwipeToDismissBoxState(
+        initialValue = SwipeToDismissBoxValue.Settled,
         positionalThreshold = { distance: Float -> distance * 0.25f },
         confirmValueChange = { value ->
             if (value == SwipeToDismissBoxValue.StartToEnd) {onSwipeToRight();hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)}
@@ -205,8 +208,8 @@ fun SwipeableQueueItem(
     val swipeRighCallback = getActionCallback(queueSwipeRightAction)
 
     SwipeableContent(
-        swipeToLeftIcon = null,
-        swipeToRightIcon = null,
+        swipeToLeftIcon = queueSwipeLeftAction.icon,
+        swipeToRightIcon = queueSwipeRightAction.icon,
         onSwipeToLeft = swipeLeftCallback,
         onSwipeToRight = swipeRighCallback,
         modifier = modifier
@@ -288,8 +291,8 @@ fun SwipeablePlaylistItem(
 
 
     SwipeableContent(
-        swipeToLeftIcon =  null,
-        swipeToRightIcon =  null,
+        swipeToLeftIcon =  playlistSwipeLeftAction.icon,
+        swipeToRightIcon =  playlistSwipeRightAction.icon,
         onSwipeToLeft = swipeLeftCallback,
         onSwipeToRight = swipeRighCallback
     ) {
