@@ -437,7 +437,8 @@ fun Queue(
                         ) ?: false
             }
     var windowsInQueue by remember { mutableStateOf(windows) }
-    LaunchedEffect(selectedQueue) {
+    var updateWindowsList by remember { mutableStateOf(false) }
+    LaunchedEffect(selectedQueue, updateWindowsList) {
         val win = if (searching) windowsFiltered else windows
         windowsInQueue = if (selectedQueue == defaultQueue()) win else win.filter {
                 it.mediaItem.mediaMetadata.extras
@@ -766,7 +767,7 @@ fun Queue(
                         }
                     }
 
-                    SwipeableQueueItem(
+                    SwipeableQueueItem (
                         mediaItem = window.mediaItem,
                         onPlayNext = {
                             binder.player.addNext(
@@ -774,6 +775,7 @@ fun Queue(
                                 context,
                                 selectedQueue ?: defaultQueue()
                             )
+                            updateWindowsList = !updateWindowsList
                         },
                         onRemoveFromQueue = {
                             binderPlayer.removeMediaItem(currentItem.firstPeriodIndex)
@@ -789,6 +791,7 @@ fun Queue(
                                 context,
                                 it
                             )
+                            updateWindowsList = !updateWindowsList
                         }
                     ) {
                         SongItem(
@@ -851,7 +854,7 @@ fun Queue(
                                                 indexInQueue = if (isPlayingThisMediaItem) null else window.firstPeriodIndex,
                                                 onDismiss = {
                                                     menuState.hide()
-                                                    //forceRecompose = true
+                                                    updateWindowsList = !updateWindowsList
                                                 },
                                                 onInfo = {},
                                                 disableScrollingText = disableScrollingText
@@ -1099,6 +1102,7 @@ fun Queue(
                                 lazyListState.smoothScrollToTop()
                             }.invokeOnCompletion {
                                 binderPlayer.shuffleQueue()
+                                updateWindowsList = !updateWindowsList
                             }
                         }
                     )
