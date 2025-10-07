@@ -1368,6 +1368,7 @@ class MainActivity :
                                 )
                         },
                         onPlayerStateChange = {
+                            Timber.d("MainActivity.onPlayerStateChange $it")
                             onlinePlayerState.value = it
                             onlinePlayerPlayingState.value =
                                 it == PlayerConstants.PlayerState.PLAYING
