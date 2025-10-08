@@ -374,6 +374,9 @@ const val appIsRunningKey = "appIsRunning"
 
 const val lastMediaItemWasLocalKey = "lastMediaItemWasLocal"
 
+const val notifyTipsKey = "notifyTips"
+const val notifyAndroidAutoTipsKey = "notifyAandroidAutoTips"
+
 
 inline fun <reified T : Enum<T>> SharedPreferences.getEnum(
     key: String,

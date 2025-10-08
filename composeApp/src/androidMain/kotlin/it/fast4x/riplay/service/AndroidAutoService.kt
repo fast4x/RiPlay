@@ -7,6 +7,7 @@ import android.content.ContentResolver
 import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
+import android.content.pm.ServiceInfo
 import android.graphics.Color
 import android.net.Uri
 import android.os.Binder
@@ -25,6 +26,7 @@ import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationChannelCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import androidx.core.app.ServiceCompat
 import androidx.core.net.toUri
 import androidx.media.MediaBrowserServiceCompat
 import androidx.media.session.MediaButtonReceiver
@@ -53,6 +55,7 @@ import it.fast4x.riplay.extensions.preferences.MaxTopPlaylistItemsKey
 import it.fast4x.riplay.extensions.preferences.getEnum
 import it.fast4x.riplay.extensions.preferences.preferences
 import it.fast4x.riplay.isAppRunning
+import it.fast4x.riplay.isNotifyAndroidAutoTipsEnabled
 import it.fast4x.riplay.models.Album
 import it.fast4x.riplay.models.Artist
 import it.fast4x.riplay.models.PlaylistPreview
@@ -70,6 +73,7 @@ import it.fast4x.riplay.utils.asSong
 import it.fast4x.riplay.utils.isAtLeastAndroid12
 import kotlin.math.roundToInt
 import it.fast4x.riplay.utils.asMediaItem
+import it.fast4x.riplay.utils.isAtLeastAndroid11
 import it.fast4x.riplay.utils.isAtLeastAndroid6
 import it.fast4x.riplay.utils.isAtLeastAndroid8
 
@@ -211,7 +215,19 @@ class AndroidAutoService : MediaBrowserServiceCompat(), ServiceConnection {
         }
         Timber.d("AndroidAutoService onBind process intent ${intent?.action}")
 
-        startNotification()
+        // start when client is connected
+        if (isNotifyAndroidAutoTipsEnabled())
+            ServiceCompat.startForeground(
+                this,
+                NOTIFICATION_ID,
+                notification,
+                if (isAtLeastAndroid11) {
+                    ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK
+                } else {
+                    0
+                }
+            )
+            //startNotification()
 
         return mBinder
     }
@@ -255,7 +271,9 @@ class AndroidAutoService : MediaBrowserServiceCompat(), ServiceConnection {
         MediaButtonReceiver.handleIntent(mediaSession, intent)
         //mNotificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager?
         //NotificationManagerCompat.from(this@AndroidAutoService).notify(NOTIFICATION_ID, notification)
-        startNotification()
+
+        //startNotification() not start when service start
+
         isRunning = true
         return START_STICKY // If the service is killed, it will be automatically restarted
     }
@@ -301,11 +319,12 @@ class AndroidAutoService : MediaBrowserServiceCompat(), ServiceConnection {
                 .setShowWhen(false)
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .setCategory(NotificationCompat.CATEGORY_SERVICE)
-                .setOngoing(true)
+                .setOngoing(false)
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
                 .setContentText("RiPlay must be started before AA, click here to start RiPlay now.")
                 .setContentIntent(contentIntent)
                 .setSilent(false)
+                .setAutoCancel(true)
                 .build()
 
         }

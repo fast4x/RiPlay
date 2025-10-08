@@ -144,6 +144,7 @@ import androidx.core.text.isDigitsOnly
 import it.fast4x.riplay.enums.ContentType
 import it.fast4x.riplay.enums.StreamingPlayerType
 import it.fast4x.riplay.extensions.preferences.filterContentTypeKey
+import it.fast4x.riplay.extensions.preferences.notifyAndroidAutoTipsKey
 import it.fast4x.riplay.ui.components.themed.settingsItem
 import it.fast4x.riplay.ui.components.themed.settingsSearchBarItem
 import it.fast4x.riplay.extensions.preferences.streamingPlayerTypeKey
@@ -263,7 +264,10 @@ fun GeneralSettings(
     var proxyPort by rememberPreference(proxyPortKey, 1080)
     var proxyMode by rememberPreference(proxyModeKey, Proxy.Type.HTTP)
     var customDnsOverHttpsServer by rememberPreference(customDnsOverHttpsServerKey, "")
-    var streamingPlayerType by rememberPreference(streamingPlayerTypeKey, StreamingPlayerType.Advanced)
+    //var streamingPlayerType by rememberPreference(streamingPlayerTypeKey, StreamingPlayerType.Advanced)
+
+    var notifyAAisEnabled by rememberPreference(notifyAndroidAutoTipsKey, false)
+
 
     Column(
         modifier = Modifier
@@ -1408,6 +1412,29 @@ fun GeneralSettings(
                         )
                 }
 
+                settingsItem(
+                    isHeader = true
+                ) {
+                    SettingsGroupSpacer()
+                    SettingsEntryGroupText("Notifications")
+                }
+
+                settingsItem{
+                    if (search.input.isBlank() || "Android Auto".contains(
+                            search.input,
+                            true
+                        )
+                    ) {
+                        SwitchSettingEntry(
+                            title = "Android Auto",
+                            text = "",
+                            isChecked = notifyAAisEnabled,
+                            onCheckedChange = {
+                                notifyAAisEnabled = it
+                            }
+                        )
+                    }
+                }
 
 //            SettingsGroupSpacer(
 //                modifier = Modifier.height(Dimensions.bottomSpacer)

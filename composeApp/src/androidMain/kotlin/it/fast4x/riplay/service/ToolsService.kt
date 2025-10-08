@@ -8,6 +8,7 @@ import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
 import android.content.Intent
+import android.content.pm.ServiceInfo
 import android.os.Binder
 import android.os.Build
 import android.os.IBinder
@@ -17,11 +18,13 @@ import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationChannelCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import androidx.core.app.ServiceCompat
 import androidx.media3.common.util.UnstableApi
 import it.fast4x.riplay.MainActivity
 import it.fast4x.riplay.UNIFIED_NOTIFICATION_CHANNEL
 import it.fast4x.riplay.R
 import it.fast4x.riplay.appContext
+import it.fast4x.riplay.utils.isAtLeastAndroid11
 import it.fast4x.riplay.utils.isAtLeastAndroid6
 import it.fast4x.riplay.utils.isAtLeastAndroid8
 
@@ -65,7 +68,17 @@ class ToolsService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         mNotificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager?
         createNotificationChannel()
-        startForeground(NOTIFICATION_ID, this.notification)
+        //startForeground(NOTIFICATION_ID, this.notification)
+        ServiceCompat.startForeground(
+            this,
+            NOTIFICATION_ID,
+            notification,
+            if (isAtLeastAndroid11) {
+                ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK
+            } else {
+                0
+            }
+        )
         println("ToolsService onStartCommand")
         return START_STICKY //START_NOT_STICKY
     }
@@ -137,11 +150,12 @@ class ToolsService : Service() {
                 .setShowWhen(false)
                 .setPriority(NotificationCompat.PRIORITY_LOW)
                 .setCategory(NotificationCompat.CATEGORY_SERVICE)
-                .setOngoing(true)
+                .setOngoing(false)
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
                 .setContentText("Tips will be displayed here, for now can disable notification permission in app settings")
                 .setContentIntent(contentIntent)
                 .setSilent(true)
+                .setAutoCancel(true)
                 .build()
 
         }

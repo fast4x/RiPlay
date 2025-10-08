@@ -325,7 +325,7 @@ import kotlin.math.roundToInt
 import kotlin.math.sqrt
 
 
-const val UNIFIED_NOTIFICATION_CHANNEL = "UnifiedNotificationChannel"
+const val UNIFIED_NOTIFICATION_CHANNEL = "Riplay Unified Notification Channel"
 const val NOTIFICATION_ID = 1
 
 @UnstableApi

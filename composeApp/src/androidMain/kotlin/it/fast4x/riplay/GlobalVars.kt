@@ -31,6 +31,8 @@ import it.fast4x.riplay.extensions.preferences.lastMediaItemWasLocalKey
 import it.fast4x.riplay.extensions.preferences.lastVideoIdKey
 import it.fast4x.riplay.extensions.preferences.lastVideoSecondsKey
 import it.fast4x.riplay.extensions.preferences.logDebugEnabledKey
+import it.fast4x.riplay.extensions.preferences.notifyAndroidAutoTipsKey
+import it.fast4x.riplay.extensions.preferences.notifyTipsKey
 import it.fast4x.riplay.extensions.preferences.parentalControlEnabledKey
 import it.fast4x.riplay.extensions.preferences.pauseListenHistoryKey
 import it.fast4x.riplay.extensions.preferences.persistentQueueKey
@@ -98,6 +100,8 @@ fun isAppRunning() = appContext().preferences.getBoolean(appIsRunningKey, false)
 fun lastMediaItemWasLocal() = appContext().preferences.getBoolean(lastMediaItemWasLocalKey, false)
 fun isInvincibleServiceEnabled() = appContext().preferences.getBoolean(isInvincibilityEnabledKey, false)
 fun isSkipMediaOnErrorEnabled() = appContext().preferences.getBoolean(skipMediaOnErrorKey, false)
+fun isNotifyTipsEnabled() = appContext().preferences.getBoolean(notifyTipsKey, false)
+fun isNotifyAndroidAutoTipsEnabled() = appContext().preferences.getBoolean(notifyAndroidAutoTipsKey, false)
 
 
 
