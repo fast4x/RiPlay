@@ -1427,7 +1427,7 @@ fun GeneralSettings(
                     ) {
                         SwitchSettingEntry(
                             title = "Android Auto",
-                            text = "",
+                            text = "Enable notifications for Android Auto",
                             isChecked = notifyAAisEnabled,
                             onCheckedChange = {
                                 notifyAAisEnabled = it
