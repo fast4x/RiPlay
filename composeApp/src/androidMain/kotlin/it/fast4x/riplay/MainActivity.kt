@@ -283,6 +283,7 @@ import it.fast4x.riplay.ui.screens.player.local.rememberLocalPlayerSheetState
 import it.fast4x.riplay.ui.screens.player.online.MediaSessionCallback
 import it.fast4x.riplay.ui.screens.player.online.OnlineMiniPlayer
 import it.fast4x.riplay.ui.screens.player.online.OnlinePlayer
+import it.fast4x.riplay.ui.screens.player.online.components.core.ExternalOnlineCore
 import it.fast4x.riplay.ui.screens.player.online.components.core.OnlinePlayerCore
 import it.fast4x.riplay.ui.screens.player.online.components.customui.CustomDefaultPlayerUiController
 import it.fast4x.riplay.ui.screens.settings.isLoggedIn
@@ -1375,6 +1376,55 @@ class MainActivity :
 
                 var onlinePositionAndDuration by remember { mutableStateOf(0L to 0L) }
 
+                // Val onlineCore outside activity
+                val externalOnlineCore: @Composable () -> Unit = {
+                    ExternalOnlineCore(
+                        onlinePlayerView = onlinePlayerView,
+                        onlinePlayerIsInitialized = onlinePlayerIsInitialized,
+                        load = getResumePlaybackOnStart() || lastMediaItemWasLocal(),
+                        playFromSecond = currentSecond.value,
+                        onPlayerReady = { onlinePlayer.value = it },
+                        onSecondChange = {
+                            coroutineScope.launch(Dispatchers.IO + SupervisorJob()) {
+                                currentSecond.value = it
+                            }
+                        },
+                        onDurationChange = {
+                            currentDuration.value = it
+                            updateOnlineNotification()
+
+                            val mediaItem = binder?.player?.currentMediaItem
+                            if (mediaItem != null)
+                                updateDiscordPresenceWithOnlinePlayer(
+                                    discordPresenceManager,
+                                    mediaItem,
+                                    onlinePlayerState,
+                                    currentDuration.value,
+                                    currentSecond.value
+                                )
+                        },
+                        onPlayerStateChange = {
+                            Timber.d("MainActivity.onPlayerStateChange $it")
+                            onlinePlayerState.value = it
+                            onlinePlayerPlayingState.value =
+                                it == PlayerConstants.PlayerState.PLAYING
+
+                            val mediaItem = binder?.player?.currentMediaItem
+                            if (mediaItem != null)
+                                updateDiscordPresenceWithOnlinePlayer(
+                                    discordPresenceManager,
+                                    mediaItem,
+                                    onlinePlayerState,
+                                    currentDuration.value,
+                                    currentSecond.value
+                                )
+                        },
+                        onTap = {
+                            //showControls = !showControls
+                        },
+                    )
+                }
+
                 val pip = isInPip(
                     onChange = {
                         if (!it || (binder?.player?.isPlaying != true && !onlinePlayerPlayingState.value))
@@ -1541,7 +1591,10 @@ class MainActivity :
                                     OnlinePlayer(
                                         navController = navController,
                                         playFromSecond = currentSecond.value,
-                                        onlineCore = { OnlineCore() },
+                                        onlineCore = {
+                                            //OnlineCore()
+                                            externalOnlineCore()
+                                        },
                                         player = onlinePlayer,
                                         playerState = onlinePlayerState,
                                         currentDuration = currentDuration.value,
@@ -1780,7 +1833,9 @@ class MainActivity :
         if (localMediaItem?.isLocal == true) return
 
 
-        val queueLoopType by rememberObservedPreference(queueLoopTypeKey, QueueLoopType.Default)
+        //val queueLoopType by rememberObservedPreference(queueLoopTypeKey, QueueLoopType.Default)
+        val queueLoopType =preferences.getEnum(queueLoopTypeKey, QueueLoopType.Default)
+
 
         val lastVideoId = rememberPreference(lastVideoIdKey, "")
 
@@ -1802,20 +1857,30 @@ class MainActivity :
             }
         }
 
-        var shouldBePlaying by remember { mutableStateOf(false) }
-        val lifecycleOwner = LocalLifecycleOwner.current
+        //var shouldBePlaying by remember { mutableStateOf(false) }
+        //val lifecycleOwner = LocalLifecycleOwner.current
         val isLandscape = isLandscape
-        val playerThumbnailSize by rememberPreference(
+//        val playerThumbnailSize by rememberPreference(
+//            playerThumbnailSizeKey,
+//            PlayerThumbnailSize.Biggest
+//        )
+        val playerThumbnailSize = preferences.getEnum(
             playerThumbnailSizeKey,
             PlayerThumbnailSize.Biggest
         )
 
         //MedleyMode for online player
-        val playbackDuration by rememberPreference(playbackDurationKey, 0f)
-        var playbackSpeed by rememberPreference(playbackSpeedKey, 1f)
+//        val playbackDuration by rememberPreference(playbackDurationKey, 0f)
+//        var playbackSpeed by rememberPreference(playbackSpeedKey, 1f)
+        val playbackDuration =  preferences.getFloat(playbackDurationKey, 0f)
+        val playbackSpeed =  preferences.getFloat(playbackSpeedKey, 1f)
 
-        val isInvincibilityEnabled by rememberPreference(isInvincibilityEnabledKey, false)
-        val isKeepScreenOnEnabled by rememberPreference(isKeepScreenOnEnabledKey, false)
+//        val isInvincibilityEnabled by rememberPreference(isInvincibilityEnabledKey, false)
+//        val isKeepScreenOnEnabled by rememberPreference(isKeepScreenOnEnabledKey, false)
+
+        val isInvincibilityEnabled = preferences.getBoolean(isInvincibilityEnabledKey, false)
+        val isKeepScreenOnEnabled = preferences.getBoolean(isKeepScreenOnEnabledKey, false)
+
 
 
         LaunchedEffect(onlinePlayerState.value) {
@@ -1934,7 +1999,7 @@ class MainActivity :
                         onlinePlayerView.setCustomPlayerUi(customUiController.rootView)
 
                         //youTubePlayer.loadOrCueVideo(lifecycleOwner.lifecycle, mediaItem.mediaId, lastYTVideoSeconds)
-                        Timber.d("OnlinePlayerCore: onReady shouldBePlaying: $shouldBePlaying")
+                        //Timber.d("OnlinePlayerCore: onReady shouldBePlaying: $shouldBePlaying")
                         if (localMediaItem != null) {
                             if (!load)
                                 youTubePlayer.cueVideo(localMediaItem.mediaId, currentSecond.value)
@@ -2047,18 +2112,16 @@ class MainActivity :
                     if (isInvincibilityEnabled)
                         enableBackgroundPlayback(true)
                     else
-                        lifecycleOwner.lifecycle.addObserver(this)
+                        lifecycle.addObserver(this)
 
-                    //Timber.d("OnlinePlayerCore: onlinePlayerView.keepScreenOn ${onlinePlayerView.keepScreenOn} enableKeepScreenOn $enableKeepScreenOn")
                     onlinePlayerView.keepScreenOn = isKeepScreenOnEnabled
 
                     if (!onlinePlayerIsInitialized.value)
                         initialize(listener, iFramePlayerOptions)
 
                     onlinePlayerIsInitialized.value = true
-                    Timber.d("OnlinePlayerCore: initialize")
-                }
 
+                }
 
             },
             update = { view ->
@@ -2066,8 +2129,8 @@ class MainActivity :
 //            (it.parent as? DialogWindowProvider)
 //                ?.window?.clearFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
 
-                view.enableBackgroundPlayback(isInvincibleServiceEnabled())
-                view.keepScreenOn = isKeepScreenOnEnabled()
+                view.enableBackgroundPlayback(isInvincibilityEnabled)
+                view.keepScreenOn = isKeepScreenOnEnabled
 
                 when(actAsMini) {
                     true -> {
@@ -2094,53 +2157,6 @@ class MainActivity :
                 }
 
             }
-        )
-    }
-
-    // Val onlineCore outside activity
-    val onlineCore: @Composable () -> Unit = {
-        OnlinePlayerCore(
-            load = getResumePlaybackOnStart() || lastMediaItemWasLocal(),
-            playFromSecond = currentSecond.value,
-            onPlayerReady = { onlinePlayer.value = it },
-            onSecondChange = {
-                coroutineScope.launch(Dispatchers.IO + SupervisorJob()) {
-                    currentSecond.value = it
-                }
-            },
-            onDurationChange = {
-                currentDuration.value = it
-                updateOnlineNotification()
-
-                val mediaItem = binder?.player?.currentMediaItem
-                if (mediaItem != null)
-                    updateDiscordPresenceWithOnlinePlayer(
-                        discordPresenceManager,
-                        mediaItem,
-                        onlinePlayerState,
-                        currentDuration.value,
-                        currentSecond.value
-                    )
-            },
-            onPlayerStateChange = {
-                Timber.d("MainActivity.onPlayerStateChange $it")
-                onlinePlayerState.value = it
-                onlinePlayerPlayingState.value =
-                    it == PlayerConstants.PlayerState.PLAYING
-
-                val mediaItem = binder?.player?.currentMediaItem
-                if (mediaItem != null)
-                    updateDiscordPresenceWithOnlinePlayer(
-                        discordPresenceManager,
-                        mediaItem,
-                        onlinePlayerState,
-                        currentDuration.value,
-                        currentSecond.value
-                    )
-            },
-            onTap = {
-                //showControls = !showControls
-            },
         )
     }
 

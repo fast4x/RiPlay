@@ -326,7 +326,7 @@ class AndroidAutoService : MediaBrowserServiceCompat(), ServiceConnection {
                 .setContentText("RiPlay must be started before AA, click here to start RiPlay now.")
                 .setContentIntent(contentIntent)
                 .setSilent(false)
-                .setAutoCancel(true)
+                .setAutoCancel(false)
                 .build()
 
         }

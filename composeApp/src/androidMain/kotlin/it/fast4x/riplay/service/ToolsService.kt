@@ -26,7 +26,6 @@ import it.fast4x.riplay.UNIFIED_NOTIFICATION_CHANNEL
 import it.fast4x.riplay.R
 import it.fast4x.riplay.appContext
 import it.fast4x.riplay.utils.isAtLeastAndroid11
-import it.fast4x.riplay.utils.isAtLeastAndroid15
 import it.fast4x.riplay.utils.isAtLeastAndroid6
 import it.fast4x.riplay.utils.isAtLeastAndroid8
 
@@ -53,15 +52,12 @@ class ToolsService : Service() {
 
     override fun onCreate() {
         super.onCreate()
-        // Android 15 and up kill inactive service in the background, so we need to keep it alive with wake lock
-        if (isAtLeastAndroid15) {
-            // PARTIAL_WAKELOCK
-            val powerManager: PowerManager = getSystemService(POWER_SERVICE) as PowerManager
-            wakeLock = powerManager.newWakeLock(
-                PowerManager.PARTIAL_WAKE_LOCK,
-                "RIPLAY:wakelock"
-            )
-        }
+        // PARTIAL_WAKELOCK
+        val powerManager: PowerManager = getSystemService(POWER_SERVICE) as PowerManager
+        wakeLock = powerManager.newWakeLock(
+            PowerManager.PARTIAL_WAKE_LOCK,
+            "RIPLAY:wakelock"
+        )
 
         println("ToolsService onCreate")
     }
@@ -88,22 +84,20 @@ class ToolsService : Service() {
 
     @SuppressLint("WakelockTimeout")
     override fun onBind(intent: Intent?): IBinder {
-        if (isAtLeastAndroid15) {
             if (wakeLock != null && !wakeLock!!.isHeld) {
                 wakeLock!!.acquire()
             }
-        }
+
         println("ToolsService onBind")
         return mBinder
     }
 
     override fun onDestroy() {
-        if (isAtLeastAndroid15) {
             // PARTIAL_WAKELOCK
             if (wakeLock != null && wakeLock!!.isHeld) {
                 wakeLock!!.release()
             }
-        }
+
         println("ToolsService onDestroy")
         super.onDestroy()
     }
@@ -153,7 +147,7 @@ class ToolsService : Service() {
                 .setShowWhen(false)
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .setCategory(NotificationCompat.CATEGORY_SERVICE)
-                .setOngoing(false)
+                .setOngoing(true)
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
                 .setContentText("Tips will be displayed here, for now can disable notification permission in app settings")
                 .setContentIntent(contentIntent)
