@@ -157,12 +157,10 @@ import it.fast4x.riplay.extensions.preferences.queueTypeKey
 import it.fast4x.riplay.extensions.preferences.recommendationsNumberKey
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.extensions.preferences.resumePlaybackOnStartKey
-import it.fast4x.riplay.extensions.preferences.resumePlaybackWhenDeviceConnectedKey
 import it.fast4x.riplay.extensions.preferences.shakeEventEnabledKey
 import it.fast4x.riplay.extensions.preferences.showButtonPlayerAddToPlaylistKey
 import it.fast4x.riplay.extensions.preferences.showButtonPlayerArrowKey
 import it.fast4x.riplay.extensions.preferences.showButtonPlayerDiscoverKey
-//import it.fast4x.riplay.extensions.preferences.showButtonPlayerDownloadKey
 import it.fast4x.riplay.extensions.preferences.showButtonPlayerLoopKey
 import it.fast4x.riplay.extensions.preferences.showButtonPlayerLyricsKey
 import it.fast4x.riplay.extensions.preferences.showButtonPlayerMenuKey
@@ -223,12 +221,6 @@ fun DefaultUiSettings() {
     closebackgroundPlayer = false
     var closeWithBackButton by rememberPreference(closeWithBackButtonKey, true)
     closeWithBackButton = true
-    var resumePlaybackWhenDeviceConnected by rememberPreference(
-        resumePlaybackWhenDeviceConnectedKey,
-        false
-    )
-    resumePlaybackWhenDeviceConnected = false
-
     var skipSilence by rememberPreference(skipSilenceKey, false)
     skipSilence = false
     var skipMediaOnError by rememberPreference(skipMediaOnErrorKey, false)

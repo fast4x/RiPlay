@@ -35,10 +35,8 @@ import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
-import android.webkit.WebView
 import android.window.OnBackInvokedDispatcher
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
@@ -47,7 +45,6 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.ActivityResultCallback
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContract
-import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.LinearEasing
@@ -94,7 +91,6 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.LocalView
@@ -114,11 +110,7 @@ import androidx.core.os.LocaleListCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.repeatOnLifecycle
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.common.util.Log
@@ -247,10 +239,9 @@ import it.fast4x.riplay.extensions.preferences.proxyModeKey
 import it.fast4x.riplay.extensions.preferences.proxyPortKey
 import it.fast4x.riplay.extensions.preferences.putEnum
 import it.fast4x.riplay.extensions.preferences.queueLoopTypeKey
-import it.fast4x.riplay.extensions.preferences.rememberObservedPreference
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.extensions.preferences.restartActivityKey
-import it.fast4x.riplay.extensions.preferences.resumePlaybackWhenDeviceConnectedKey
+import it.fast4x.riplay.extensions.preferences.resumeOrPausePlaybackWhenDeviceKey
 import it.fast4x.riplay.extensions.preferences.shakeEventEnabledKey
 import it.fast4x.riplay.extensions.preferences.showSearchTabKey
 import it.fast4x.riplay.extensions.preferences.showTotalTimeQueueKey
@@ -284,7 +275,6 @@ import it.fast4x.riplay.ui.screens.player.online.MediaSessionCallback
 import it.fast4x.riplay.ui.screens.player.online.OnlineMiniPlayer
 import it.fast4x.riplay.ui.screens.player.online.OnlinePlayer
 import it.fast4x.riplay.ui.screens.player.online.components.core.ExternalOnlineCore
-import it.fast4x.riplay.ui.screens.player.online.components.core.OnlinePlayerCore
 import it.fast4x.riplay.ui.screens.player.online.components.customui.CustomDefaultPlayerUiController
 import it.fast4x.riplay.ui.screens.settings.isLoggedIn
 import it.fast4x.riplay.ui.styling.Appearance
@@ -575,7 +565,7 @@ class MainActivity :
 
         initializeBassBoost()
 
-        resumePlaybackWhenDeviceConnected()
+        resumeOrPausePlaybackWhenDevice()
 
         initializeAudioVolumeObserver()
 
@@ -1233,7 +1223,7 @@ class MainActivity :
 
                             volumeNormalizationKey, loudnessBaseGainKey, volumeBoostLevelKey -> initializeNormalizeVolume()
                             bassboostLevelKey, bassboostEnabledKey -> initializeBassBoost()
-                            resumePlaybackWhenDeviceConnectedKey -> resumePlaybackWhenDeviceConnected()
+                            resumeOrPausePlaybackWhenDeviceKey -> resumeOrPausePlaybackWhenDevice()
                             isPauseOnVolumeZeroEnabledKey -> initializeAudioVolumeObserver()
                             isEnabledFullscreenKey -> enableFullscreenMode()
                             notificationPlayerFirstIconKey, notificationPlayerSecondIconKey -> updateUnifiedMediasessionData()
@@ -2571,10 +2561,10 @@ class MainActivity :
         }
     }
 
-    private fun resumePlaybackWhenDeviceConnected() {
+    private fun resumeOrPausePlaybackWhenDevice() {
         if (!isAtLeastAndroid6) return
 
-        if (preferences.getBoolean(resumePlaybackWhenDeviceConnectedKey, false)) {
+        if (preferences.getBoolean(resumeOrPausePlaybackWhenDeviceKey, false)) {
             if (audioManager == null) {
                 audioManager = getSystemService(AUDIO_SERVICE) as AudioManager?
             }
@@ -2594,7 +2584,7 @@ class MainActivity :
 
                 override fun onAudioDevicesAdded(addedDevices: Array<AudioDeviceInfo>) {
                     Timber.d("MainActivity onAudioDevicesAdded addedDevices ${addedDevices.map { it.type }}")
-                    if (!onlinePlayerPlayingState.value && addedDevices.any(::canPlayMusic)) {
+                    if (addedDevices.any(::canPlayMusic)) {
                         Timber.d("MainActivity onAudioDevicesAdded device known ${addedDevices.map { it.productName }}")
                         onlinePlayer.value?.play()
                     }
@@ -2602,7 +2592,7 @@ class MainActivity :
 
                 override fun onAudioDevicesRemoved(removedDevices: Array<AudioDeviceInfo>) {
                     Timber.d("MainActivity onAudioDevicesRemoved removedDevices ${removedDevices.map { it.type }}")
-                    if (onlinePlayerPlayingState.value && removedDevices.any(::canPlayMusic)) {
+                    if (removedDevices.any(::canPlayMusic)) {
                         Timber.d("MainActivity onAudioDevicesRemoved device known ${removedDevices.map { it.productName }}")
                         onlinePlayer.value?.pause()
                     }

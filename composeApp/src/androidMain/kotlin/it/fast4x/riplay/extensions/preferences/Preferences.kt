@@ -65,7 +65,6 @@ const val reorderInQueueEnabledKey = "reorderInQueueEnabled"
 const val skipSilenceKey = "skipSilence"
 const val skipMediaOnErrorKey = "skipMediaOnError"
 const val volumeNormalizationKey = "volumeNormalization"
-const val resumePlaybackWhenDeviceConnectedKey = "resumePlaybackWhenDeviceConnected"
 const val persistentQueueKey = "persistentQueue"
 const val resumePlaybackOnStartKey = "resumePlaybackOnStart"
 const val closebackgroundPlayerKey = "closebackgroundPlayer"
@@ -376,6 +375,8 @@ const val lastMediaItemWasLocalKey = "lastMediaItemWasLocal"
 
 const val notifyTipsKey = "notifyTips"
 const val notifyAndroidAutoTipsKey = "notifyAandroidAutoTips"
+
+const val resumeOrPausePlaybackWhenDeviceKey = "resumeOrPausePlaybackWhenDevice"
 
 
 inline fun <reified T : Enum<T>> SharedPreferences.getEnum(

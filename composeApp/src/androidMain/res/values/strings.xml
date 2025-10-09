@@ -955,4 +955,6 @@
     <string name="share_with_external_app">Share with external app</string>
     <string name="play_now">Play now</string>
     <string name="shuffle_play">Shuffle play</string>
+    <string name="resume_or_pause_playback">Resume or Pause playback</string>
+    <string name="play_or_pause_when_device_is_connected_or_disconnected">Play when a wired or bluetooth device is connected and pause if disconnected</string>
 </resources>

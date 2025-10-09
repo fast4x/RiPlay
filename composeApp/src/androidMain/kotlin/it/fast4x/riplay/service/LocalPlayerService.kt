@@ -139,7 +139,6 @@ import it.fast4x.riplay.extensions.preferences.playbackVolumeKey
 import it.fast4x.riplay.extensions.preferences.preferences
 import it.fast4x.riplay.extensions.preferences.queueLoopTypeKey
 import it.fast4x.riplay.extensions.preferences.resumePlaybackOnStartKey
-import it.fast4x.riplay.extensions.preferences.resumePlaybackWhenDeviceConnectedKey
 import it.fast4x.riplay.utils.setGlobalVolume
 import it.fast4x.riplay.utils.setLikeState
 import it.fast4x.riplay.extensions.preferences.showLikeButtonBackgroundPlayerKey
@@ -179,6 +178,7 @@ import it.fast4x.riplay.extensions.preferences.bassboostLevelKey
 import it.fast4x.riplay.extensions.preferences.filterContentTypeKey
 import it.fast4x.riplay.extensions.preferences.isInvincibilityEnabledKey
 import it.fast4x.riplay.extensions.preferences.lastMediaItemWasLocalKey
+import it.fast4x.riplay.extensions.preferences.resumeOrPausePlaybackWhenDeviceKey
 import it.fast4x.riplay.utils.loadMasterQueue
 import it.fast4x.riplay.utils.principalCache
 import it.fast4x.riplay.utils.saveMasterQueue
@@ -480,7 +480,7 @@ class LocalPlayerService : MediaLibraryService(),
             }
         }
 
-        resumePlaybackWhenDeviceConnected()
+        resumeOrPausePlaybackWhenDevice()
 
         processBassBoost()
 
@@ -661,7 +661,7 @@ class LocalPlayerService : MediaLibraryService(),
 
             volumeNormalizationKey, loudnessBaseGainKey, volumeBoostLevelKey -> processNormalizeVolume()
 
-            resumePlaybackWhenDeviceConnectedKey -> resumePlaybackWhenDeviceConnected()
+            resumeOrPausePlaybackWhenDeviceKey -> resumeOrPausePlaybackWhenDevice()
 
             skipSilenceKey -> if (sharedPreferences != null) {
                 player.skipSilenceEnabled = sharedPreferences.getBoolean(key, false)
@@ -978,10 +978,10 @@ class LocalPlayerService : MediaLibraryService(),
 
 
     @SuppressLint("NewApi")
-    private fun resumePlaybackWhenDeviceConnected() {
+    private fun resumeOrPausePlaybackWhenDevice() {
         if (!isAtLeastAndroid6) return
 
-        if (preferences.getBoolean(resumePlaybackWhenDeviceConnectedKey, false)) {
+        if (preferences.getBoolean(resumeOrPausePlaybackWhenDeviceKey, false)) {
             if (audioManager == null) {
                 audioManager = getSystemService(AUDIO_SERVICE) as AudioManager?
             }
@@ -1001,7 +1001,7 @@ class LocalPlayerService : MediaLibraryService(),
 
                 override fun onAudioDevicesAdded(addedDevices: Array<AudioDeviceInfo>) {
                     Timber.d("LocalPlayerService onAudioDevicesAdded addedDevices ${addedDevices.map { it.type }}")
-                    if (!player.isPlaying && addedDevices.any(::canPlayMusic)) {
+                    if (addedDevices.any(::canPlayMusic)) {
                         Timber.d("LocalPlayerService onAudioDevicesAdded device known ${addedDevices.map { it.productName }}")
                         player.play()
                     }
@@ -1009,7 +1009,7 @@ class LocalPlayerService : MediaLibraryService(),
 
                 override fun onAudioDevicesRemoved(removedDevices: Array<AudioDeviceInfo>) {
                     Timber.d("LocalPlayerService onAudioDevicesRemoved removedDevices ${removedDevices.map { it.type }}")
-                    if (player.isPlaying && removedDevices.any(::canPlayMusic)) {
+                    if (removedDevices.any(::canPlayMusic)) {
                         Timber.d("LocalPlayerService onAudioDevicesRemoved device known ${removedDevices.map { it.productName }}")
                         player.pause()
                     }

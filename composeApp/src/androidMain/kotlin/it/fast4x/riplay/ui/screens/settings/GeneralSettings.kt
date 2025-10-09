@@ -105,7 +105,6 @@ import it.fast4x.riplay.extensions.preferences.playlistindicatorKey
 import it.fast4x.riplay.utils.rememberEqualizerLauncher
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.extensions.preferences.resumePlaybackOnStartKey
-import it.fast4x.riplay.extensions.preferences.resumePlaybackWhenDeviceConnectedKey
 import it.fast4x.riplay.ui.styling.semiBold
 import it.fast4x.riplay.extensions.preferences.shakeEventEnabledKey
 import it.fast4x.riplay.extensions.preferences.skipMediaOnErrorKey
@@ -142,12 +141,11 @@ import java.net.Proxy
 import androidx.core.net.toUri
 import androidx.core.text.isDigitsOnly
 import it.fast4x.riplay.enums.ContentType
-import it.fast4x.riplay.enums.StreamingPlayerType
 import it.fast4x.riplay.extensions.preferences.filterContentTypeKey
 import it.fast4x.riplay.extensions.preferences.notifyAndroidAutoTipsKey
+import it.fast4x.riplay.extensions.preferences.resumeOrPausePlaybackWhenDeviceKey
 import it.fast4x.riplay.ui.components.themed.settingsItem
 import it.fast4x.riplay.ui.components.themed.settingsSearchBarItem
-import it.fast4x.riplay.extensions.preferences.streamingPlayerTypeKey
 import it.fast4x.riplay.utils.LazyListContainer
 import it.fast4x.riplay.utils.loadMasterQueue
 
@@ -171,8 +169,8 @@ fun GeneralSettings(
     var resumePlaybackOnStart by rememberPreference(resumePlaybackOnStartKey, false)
     var closebackgroundPlayer by rememberPreference(closebackgroundPlayerKey, false)
     var closeWithBackButton by rememberPreference(closeWithBackButtonKey, true)
-    var resumePlaybackWhenDeviceConnected by rememberPreference(
-        resumePlaybackWhenDeviceConnectedKey,
+    var resumeOrPausePlaybackWhenDevice by rememberPreference(
+        resumeOrPausePlaybackWhenDeviceKey,
         false
     )
 
@@ -958,18 +956,18 @@ fun GeneralSettings(
                             }
                         )
 
-                    if (search.input.isBlank() || stringResource(R.string.resume_playback).contains(
+                    if (search.input.isBlank() || stringResource(R.string.resume_or_pause_playback).contains(
                             search.input,
                             true
                         )
                     ) {
                         if (isAtLeastAndroid6) {
                             SwitchSettingEntry(
-                                title = stringResource(R.string.resume_playback),
-                                text = stringResource(R.string.when_device_is_connected),
-                                isChecked = resumePlaybackWhenDeviceConnected,
+                                title = stringResource(R.string.resume_or_pause_playback),
+                                text = stringResource(R.string.play_or_pause_when_device_is_connected_or_disconnected),
+                                isChecked = resumeOrPausePlaybackWhenDevice,
                                 onCheckedChange = {
-                                    resumePlaybackWhenDeviceConnected = it
+                                    resumeOrPausePlaybackWhenDevice = it
                                     restartService = true
                                 }
                             )
