@@ -26,6 +26,7 @@ import it.fast4x.riplay.extensions.preferences.getEnum
 import it.fast4x.riplay.extensions.preferences.handleAudioFocusEnabledKey
 import it.fast4x.riplay.extensions.preferences.isEnabledFullscreenKey
 import it.fast4x.riplay.extensions.preferences.isInvincibilityEnabledKey
+import it.fast4x.riplay.extensions.preferences.isKeepScreenOnEnabledKey
 import it.fast4x.riplay.extensions.preferences.keepPlayerMinimizedKey
 import it.fast4x.riplay.extensions.preferences.lastMediaItemWasLocalKey
 import it.fast4x.riplay.extensions.preferences.lastVideoIdKey
@@ -102,6 +103,8 @@ fun isInvincibleServiceEnabled() = appContext().preferences.getBoolean(isInvinci
 fun isSkipMediaOnErrorEnabled() = appContext().preferences.getBoolean(skipMediaOnErrorKey, false)
 fun isNotifyTipsEnabled() = appContext().preferences.getBoolean(notifyTipsKey, false)
 fun isNotifyAndroidAutoTipsEnabled() = appContext().preferences.getBoolean(notifyAndroidAutoTipsKey, false)
+fun isKeepScreenOnEnabled() = appContext().preferences.getBoolean(isKeepScreenOnEnabledKey, false)
+
 
 
 

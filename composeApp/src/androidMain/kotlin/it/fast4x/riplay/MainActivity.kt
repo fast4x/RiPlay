@@ -34,7 +34,11 @@ import android.os.StrictMode
 import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import android.view.WindowManager
+import android.webkit.WebView
 import android.window.OnBackInvokedDispatcher
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
@@ -43,6 +47,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.ActivityResultCallback
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContract
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.LinearEasing
@@ -89,6 +94,7 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.LocalView
@@ -97,6 +103,7 @@ import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.coerceIn
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.app.NotificationChannelCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
@@ -107,7 +114,11 @@ import androidx.core.os.LocaleListCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.common.util.Log
@@ -127,6 +138,9 @@ import com.kieronquinn.monetcompat.core.MonetCompat
 import com.kieronquinn.monetcompat.interfaces.MonetColorsChangedListener
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.PlayerConstants
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
+import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.AbstractYouTubePlayerListener
+import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.options.IFramePlayerOptions
+import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
 import com.valentinilk.shimmer.LocalShimmerTheme
 import com.valentinilk.shimmer.defaultShimmerTheme
 import de.raphaelebner.roomdatabasebackup.core.RoomBackup
@@ -152,6 +166,7 @@ import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.enums.NotificationButtons
 import it.fast4x.riplay.enums.PipModule
 import it.fast4x.riplay.enums.PlayerBackgroundColors
+import it.fast4x.riplay.enums.PlayerThumbnailSize
 import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.enums.QueueLoopType
 import it.fast4x.riplay.enums.ThumbnailRoundness
@@ -160,6 +175,7 @@ import it.fast4x.riplay.extensions.audiovolume.OnAudioVolumeChangedListener
 import it.fast4x.riplay.extensions.discord.DiscordPresenceManager
 import it.fast4x.riplay.extensions.discord.updateDiscordPresenceWithOnlinePlayer
 import it.fast4x.riplay.extensions.encryptedpreferences.encryptedPreferences
+import it.fast4x.riplay.extensions.history.updateOnlineHistory
 import it.fast4x.riplay.extensions.nsd.discoverNsdServices
 import it.fast4x.riplay.extensions.pip.PipModuleContainer
 import it.fast4x.riplay.extensions.pip.PipModuleCover
@@ -206,10 +222,12 @@ import it.fast4x.riplay.extensions.preferences.fontTypeKey
 import it.fast4x.riplay.extensions.preferences.getEnum
 import it.fast4x.riplay.extensions.preferences.isDiscordPresenceEnabledKey
 import it.fast4x.riplay.extensions.preferences.isEnabledFullscreenKey
+import it.fast4x.riplay.extensions.preferences.isInvincibilityEnabledKey
 import it.fast4x.riplay.extensions.preferences.isKeepScreenOnEnabledKey
 import it.fast4x.riplay.extensions.preferences.isPauseOnVolumeZeroEnabledKey
 import it.fast4x.riplay.extensions.preferences.isProxyEnabledKey
 import it.fast4x.riplay.extensions.preferences.languageAppKey
+import it.fast4x.riplay.extensions.preferences.lastVideoIdKey
 import it.fast4x.riplay.extensions.preferences.loadedDataKey
 import it.fast4x.riplay.extensions.preferences.loudnessBaseGainKey
 import it.fast4x.riplay.extensions.preferences.miniPlayerTypeKey
@@ -219,13 +237,17 @@ import it.fast4x.riplay.extensions.preferences.notificationPlayerFirstIconKey
 import it.fast4x.riplay.extensions.preferences.notificationPlayerSecondIconKey
 import it.fast4x.riplay.extensions.preferences.parentalControlEnabledKey
 import it.fast4x.riplay.extensions.preferences.pipModuleKey
+import it.fast4x.riplay.extensions.preferences.playbackDurationKey
+import it.fast4x.riplay.extensions.preferences.playbackSpeedKey
 import it.fast4x.riplay.extensions.preferences.playerBackgroundColorsKey
+import it.fast4x.riplay.extensions.preferences.playerThumbnailSizeKey
 import it.fast4x.riplay.extensions.preferences.preferences
 import it.fast4x.riplay.extensions.preferences.proxyHostnameKey
 import it.fast4x.riplay.extensions.preferences.proxyModeKey
 import it.fast4x.riplay.extensions.preferences.proxyPortKey
 import it.fast4x.riplay.extensions.preferences.putEnum
 import it.fast4x.riplay.extensions.preferences.queueLoopTypeKey
+import it.fast4x.riplay.extensions.preferences.rememberObservedPreference
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.extensions.preferences.restartActivityKey
 import it.fast4x.riplay.extensions.preferences.resumePlaybackWhenDeviceConnectedKey
@@ -261,7 +283,7 @@ import it.fast4x.riplay.ui.screens.player.local.rememberLocalPlayerSheetState
 import it.fast4x.riplay.ui.screens.player.online.MediaSessionCallback
 import it.fast4x.riplay.ui.screens.player.online.OnlineMiniPlayer
 import it.fast4x.riplay.ui.screens.player.online.OnlinePlayer
-import it.fast4x.riplay.ui.screens.player.online.components.core.OnlinePlayerCore
+import it.fast4x.riplay.ui.screens.player.online.components.customui.CustomDefaultPlayerUiController
 import it.fast4x.riplay.ui.screens.settings.isLoggedIn
 import it.fast4x.riplay.ui.styling.Appearance
 import it.fast4x.riplay.ui.styling.Dimensions
@@ -272,10 +294,12 @@ import it.fast4x.riplay.ui.styling.customColorPalette
 import it.fast4x.riplay.ui.styling.dynamicColorPaletteOf
 import it.fast4x.riplay.ui.styling.typographyOf
 import it.fast4x.riplay.utils.BitmapProvider
+import it.fast4x.riplay.utils.DisposableListener
 import it.fast4x.riplay.utils.LocalMonetCompat
 import it.fast4x.riplay.utils.OkHttpRequest
 import it.fast4x.riplay.utils.asMediaItem
 import it.fast4x.riplay.utils.capitalized
+import it.fast4x.riplay.utils.clearWebViewData
 import it.fast4x.riplay.utils.forcePlay
 import it.fast4x.riplay.utils.getSystemlanguage
 import it.fast4x.riplay.utils.invokeOnReady
@@ -283,6 +307,7 @@ import it.fast4x.riplay.utils.isAtLeastAndroid11
 import it.fast4x.riplay.utils.isAtLeastAndroid12
 import it.fast4x.riplay.utils.isAtLeastAndroid6
 import it.fast4x.riplay.utils.isAtLeastAndroid8
+import it.fast4x.riplay.utils.isLandscape
 import it.fast4x.riplay.utils.isValidHttpUrl
 import it.fast4x.riplay.utils.isValidIP
 import it.fast4x.riplay.utils.mediaItemToggleLike
@@ -300,10 +325,12 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
@@ -323,9 +350,10 @@ import java.util.UUID
 import java.util.concurrent.TimeUnit
 import kotlin.math.roundToInt
 import kotlin.math.sqrt
+import kotlin.time.Duration.Companion.seconds
 
 
-const val UNIFIED_NOTIFICATION_CHANNEL = "Riplay Unified Notification Channel"
+const val UNIFIED_NOTIFICATION_CHANNEL = "RiPlay Notifications"
 const val NOTIFICATION_ID = 1
 
 @UnstableApi
@@ -398,15 +426,11 @@ class MainActivity :
     // Needed up to android 11
     var notificationActionReceiverUpAndroid11: NotificationActionReceiverUpAndroid11? = null
 
-    //var currentPlaybackPosition: MutableState<Long> = mutableLongStateOf(0)
-    //var currentPlaybackDuration: MutableState<Long> = mutableLongStateOf(0)
     var currentSecond: MutableState<Float> = mutableFloatStateOf(0f)
     var currentDuration: MutableState<Float> = mutableFloatStateOf(0f)
 
     var toolsService by mutableStateOf<ToolsService.LocalBinder?>(null)
     var androidAutoService by mutableStateOf<AndroidAutoService.LocalBinder?>(null)
-
-    //var mediaItemIsLocal: MutableState<Boolean> = mutableStateOf(false)
 
     private var volumeNormalizationJob: Job? = null
     private var loudnessEnhancer: LoudnessEnhancer? = null
@@ -416,6 +440,14 @@ class MainActivity :
     private val handler = Handler(Looper.getMainLooper())
     private lateinit var audioVolumeObserver: AudioVolumeObserver
     private var discordPresenceManager: DiscordPresenceManager? = null
+
+    private var onlinePlayerState = mutableStateOf(PlayerConstants.PlayerState.UNSTARTED)
+
+    private lateinit var onlinePlayerView: YouTubePlayerView
+
+    private var lastError = mutableStateOf<PlayerConstants.PlayerError?>(null)
+    private var onlinePlayerIsInitialized = mutableStateOf(false)
+
 
 
     override fun onStart() {
@@ -497,6 +529,12 @@ class MainActivity :
 
         localMonet.invokeOnReady {
             Timber.d("MainActivity.onCreate Inside localMonet.invokeOnReady")
+
+            // Load online player now
+            onlinePlayerView = LayoutInflater.from(this)
+                .inflate(R.layout.youtube_player, null, false)
+                as YouTubePlayerView
+
             startApp()
         }
 
@@ -542,6 +580,7 @@ class MainActivity :
         initializeDiscordPresence()
 
         //initializeWorker()
+
 
     }
 
@@ -823,8 +862,6 @@ class MainActivity :
             val coroutineScope = rememberCoroutineScope()
             val isSystemInDarkTheme = isSystemInDarkTheme()
             val navController = rememberNavController()
-            //var mediaItemIsLocal = rememberSaveable { mutableStateOf(false) }
-            var switchToAudioPlayer by rememberSaveable { mutableStateOf(false) }
             var animatedGradient by rememberPreference(
                 animatedGradientKey,
                 AnimatedGradient.Linear
@@ -1335,59 +1372,7 @@ class MainActivity :
                     return activityResultRegistry.register(key, contract, callback)
                 }
 
-                //var currentSecond by remember { mutableFloatStateOf(0f) }
-                val onlinePlayerState =
-                    remember { mutableStateOf(PlayerConstants.PlayerState.UNSTARTED) }
-                //var showControls by remember { mutableStateOf(true) }
-                //var currentDuration by remember { mutableFloatStateOf(0f) }
-                //actually not used
                 var onlinePositionAndDuration by remember { mutableStateOf(0L to 0L) }
-
-                val onlineCore: @Composable () -> Unit = {
-                    OnlinePlayerCore(
-                        load = getResumePlaybackOnStart() || lastMediaItemWasLocal(),
-                        playFromSecond = currentSecond.value,
-                        onPlayerReady = { onlinePlayer.value = it },
-                        onSecondChange = {
-                            coroutineScope.launch(Dispatchers.IO + SupervisorJob()) {
-                                currentSecond.value = it
-                            }
-                        },
-                        onDurationChange = {
-                            currentDuration.value = it
-                            updateOnlineNotification()
-
-                            val mediaItem = binder?.player?.currentMediaItem
-                            if (mediaItem != null)
-                                updateDiscordPresenceWithOnlinePlayer(
-                                    discordPresenceManager,
-                                    mediaItem,
-                                    onlinePlayerState,
-                                    currentDuration.value,
-                                    currentSecond.value
-                                )
-                        },
-                        onPlayerStateChange = {
-                            Timber.d("MainActivity.onPlayerStateChange $it")
-                            onlinePlayerState.value = it
-                            onlinePlayerPlayingState.value =
-                                it == PlayerConstants.PlayerState.PLAYING
-
-                            val mediaItem = binder?.player?.currentMediaItem
-                            if (mediaItem != null)
-                                updateDiscordPresenceWithOnlinePlayer(
-                                    discordPresenceManager,
-                                    mediaItem,
-                                    onlinePlayerState,
-                                    currentDuration.value,
-                                    currentSecond.value
-                                )
-                        },
-                        onTap = {
-                            //showControls = !showControls
-                        },
-                    )
-                }
 
                 val pip = isInPip(
                     onChange = {
@@ -1399,7 +1384,7 @@ class MainActivity :
                 )
 
                 CrossfadeContainer(
-                    state = pip //pipState.value
+                    state = pip
                 ) { isCurrentInPip ->
                     Timber.d("MainActivity pipState ${pipState.value} CrossfadeContainer isCurrentInPip $isCurrentInPip ")
                     val pipModule by rememberPreference(pipModuleKey, PipModule.Cover)
@@ -1555,18 +1540,16 @@ class MainActivity :
                                     OnlinePlayer(
                                         navController = navController,
                                         playFromSecond = currentSecond.value,
-                                        onlineCore = onlineCore,
+                                        onlineCore = { OnlineCore() },
                                         player = onlinePlayer,
                                         playerState = onlinePlayerState,
                                         currentDuration = currentDuration.value,
                                         currentSecond = currentSecond.value,
-                                        //showControls = showControls,
                                         playerSheetState = localPlayerSheetState,
                                         onDismiss = {
                                             localPlayerSheetState.collapseSoft()
                                         },
                                     )
-
                                 }
 
                                 //Needed to update time in notification
@@ -1611,10 +1594,6 @@ class MainActivity :
                                 ) {
                                     menuState.content()
                                 }
-//                                    BottomSheetMenu(
-//                                        state = menuState,
-//                                        modifier = Modifier.fillMaxSize()
-//                                    )
 
                             }
                         }
@@ -1787,6 +1766,328 @@ class MainActivity :
 
         }
 
+    }
+
+    @Composable
+    fun OnlineCore(){
+        Timber.d("OnlinePlayerCore: called")
+        val binder = LocalPlayerServiceBinder.current
+
+        var localMediaItem = remember { binder?.player?.currentMediaItem }
+        if (localMediaItem?.isLocal == true) return
+
+
+        val queueLoopType by rememberObservedPreference(queueLoopTypeKey, QueueLoopType.Default)
+
+        val lastVideoId = rememberPreference(lastVideoIdKey, "")
+
+        binder?.player?.DisposableListener {
+            object : Player.Listener {
+                override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
+                    mediaItem?.let {
+                        if (mediaItem.isLocal) return
+
+                        localMediaItem = it
+                        lastVideoId.value = it.mediaId
+                        onlinePlayer.value?.loadVideo(it.mediaId, 0f)
+                        updateOnlineHistory(it)
+
+                        Timber.d("OnlinePlayerCore: onMediaItemTransition loaded ${it.mediaId}")
+                    }
+                }
+
+            }
+        }
+
+        var shouldBePlaying by remember { mutableStateOf(false) }
+        val lifecycleOwner = LocalLifecycleOwner.current
+        val isLandscape = isLandscape
+        val playerThumbnailSize by rememberPreference(
+            playerThumbnailSizeKey,
+            PlayerThumbnailSize.Biggest
+        )
+
+        //MedleyMode for online player
+        val playbackDuration by rememberObservedPreference(playbackDurationKey, 0f)
+
+        LaunchedEffect(onlinePlayerState.value) {
+            if (onlinePlayerState.value == PlayerConstants.PlayerState.ENDED) {
+                when (queueLoopType) {
+                    QueueLoopType.RepeatOne -> {
+                        onlinePlayer.value?.seekTo(0f)
+                        Timber.d("OnlinePlayerCore Repeat: RepeatOne fired")
+                    }
+                    QueueLoopType.Default -> {
+                        val hasNext = binder?.player?.hasNextMediaItem()
+                        Timber.d("OnlinePlayerCore Repeat: Default fired")
+                        if (hasNext == true) {
+                            binder.player.playNext()
+                            Timber.d("OnlinePlayerCore Repeat: Default fired next")
+                        }
+                    }
+                    QueueLoopType.RepeatAll -> {
+                        val hasNext = binder?.player?.hasNextMediaItem()
+                        Timber.d("OnlinePlayerCore Repeat: RepeatAll fired")
+                        if (hasNext == false) {
+                            binder.player.seekTo(0, 0)
+                            onlinePlayer.value?.play()
+                            Timber.d("OnlinePlayerCore Repeat: RepeatAll fired first")
+                        } else {
+                            binder?.player?.playNext()
+                            Timber.d("OnlinePlayerCore Repeat: RepeatAll fired next")
+                        }
+                    }
+                }
+
+            }
+
+        }
+
+        LaunchedEffect(playbackDuration) {
+            if (playbackDuration > 0f)
+                while (isActive) {
+                    delay((1.seconds * playbackDuration.roundToInt()) + 2.seconds)
+                    withContext(Dispatchers.Main) {
+                        Timber.d("MedleyMode: Pre fired next")
+                        if (onlinePlayerState.value == PlayerConstants.PlayerState.PLAYING) {
+                            onlinePlayer.value?.pause()
+                            onlinePlayer.value?.seekTo(0f)
+                            binder?.player?.playNext()
+                            Timber.d("MedleyMode: next fired")
+                        }
+                    }
+                }
+        }
+
+        //Playback speed for online player
+        var playbackSpeed by rememberObservedPreference(playbackSpeedKey, 1f)
+        LaunchedEffect(playbackSpeed) {
+            val plabackRate = when {
+                (playbackSpeed.toDouble() in 0.0..0.25)     -> PlayerConstants.PlaybackRate.RATE_0_25
+                (playbackSpeed.toDouble() in 0.26..0.5)     -> PlayerConstants.PlaybackRate.RATE_0_5
+                (playbackSpeed.toDouble() in 0.51..0.75)    -> PlayerConstants.PlaybackRate.RATE_0_75
+                (playbackSpeed.toDouble() in 0.76..1.0)     -> PlayerConstants.PlaybackRate.RATE_1
+                (playbackSpeed.toDouble() in 1.01..1.25)    -> PlayerConstants.PlaybackRate.RATE_1_25
+                (playbackSpeed.toDouble() in 1.26..1.5)     -> PlayerConstants.PlaybackRate.RATE_1_5
+                (playbackSpeed.toDouble() in 1.51..1.75)    -> PlayerConstants.PlaybackRate.RATE_1_75
+                (playbackSpeed.toDouble() > 1.76) -> PlayerConstants.PlaybackRate.RATE_2
+                else -> PlayerConstants.PlaybackRate.RATE_1
+            }
+            onlinePlayer.value?.setPlaybackRate(plabackRate)
+        }
+
+        val load by remember { mutableStateOf(getResumePlaybackOnStart() || lastMediaItemWasLocal()) }
+        val actAsMini by remember { mutableStateOf(false) }
+
+        Timber.d("OnlinePlayerCore: before create androidview")
+
+        AndroidView(
+            //modifier = Modifier.windowInsetsPadding(WindowInsets.safeDrawing),
+            factory = {
+
+                val iFramePlayerOptions = IFramePlayerOptions.Builder(appContext())
+                    .controls(0) // show/hide controls
+                    .listType("playlist")
+                    .origin(context().resources.getString(R.string.env_fqqhBZd0cf))
+                    .build()
+
+                val listener = object : AbstractYouTubePlayerListener() {
+
+                    override fun onReady(youTubePlayer: YouTubePlayer) {
+                        super.onReady(youTubePlayer)
+                        onlinePlayer.value = youTubePlayer
+
+//                        val customPlayerUiController =
+//                            CustomBasePlayerUiControllerAsListener(
+//                                it,
+//                                customPLayerUi,
+//                                youTubePlayer,
+//                                onlinePlayerView
+//                            )
+//                        youTubePlayer.addListener(customPlayerUiController)
+
+                        // Used to show default player ui with defaultPlayerUiController as custom view
+                        val customUiController =
+                            CustomDefaultPlayerUiController(
+                                this@MainActivity,
+                                onlinePlayerView,
+                                youTubePlayer,
+                                onTap = {}
+                            )
+                        customUiController.showUi(false) // disable all default controls and buttons
+                        customUiController.showMenuButton(false)
+                        customUiController.showVideoTitle(false)
+                        customUiController.showPlayPauseButton(false)
+                        customUiController.showDuration(false)
+                        customUiController.showCurrentTime(false)
+                        customUiController.showSeekBar(false)
+                        customUiController.showBufferingProgress(false)
+                        customUiController.showYouTubeButton(false)
+                        customUiController.showFullscreenButton(false)
+                        onlinePlayerView.setCustomPlayerUi(customUiController.rootView)
+
+                        //youTubePlayer.loadOrCueVideo(lifecycleOwner.lifecycle, mediaItem.mediaId, lastYTVideoSeconds)
+                        Timber.d("OnlinePlayerCore: onReady shouldBePlaying: $shouldBePlaying")
+                        if (localMediaItem != null) {
+                            if (!load)
+                                youTubePlayer.cueVideo(localMediaItem.mediaId, currentSecond.value)
+                            else
+                                youTubePlayer.loadVideo(localMediaItem.mediaId, currentSecond.value)
+                        }
+
+                    }
+
+                    override fun onCurrentSecond(youTubePlayer: YouTubePlayer, second: Float) {
+                        super.onCurrentSecond(youTubePlayer, second)
+                        currentSecond.value = second
+                        //onSecondChange(second)
+                    }
+
+                    override fun onVideoDuration(youTubePlayer: YouTubePlayer, duration: Float) {
+                        super.onVideoDuration(youTubePlayer, duration)
+                        currentDuration.value = duration
+                        //onDurationChange(duration)
+                    }
+
+                    override fun onStateChange(
+                        youTubePlayer: YouTubePlayer,
+                        state: PlayerConstants.PlayerState
+                    ) {
+                        super.onStateChange(youTubePlayer, state)
+
+//                    val fadeDisabled = getPlaybackFadeAudioDuration() == DurationInMilliseconds.Disabled
+//                    val duration = getPlaybackFadeAudioDuration().milliSeconds
+//                    if (!fadeDisabled)
+//                        startFadeAnimator(
+//                            player = player,
+//                            duration = duration,
+//                            fadeIn = true
+//                        )
+
+                        //playerState = state
+
+                        ///////
+                        Timber.d("MainActivity.onPlayerStateChange $it")
+                        onlinePlayerState.value = state
+                        onlinePlayerPlayingState.value =
+                            state == PlayerConstants.PlayerState.PLAYING
+
+                        val mediaItem = binder?.player?.currentMediaItem
+                        if (mediaItem != null)
+                            updateDiscordPresenceWithOnlinePlayer(
+                                discordPresenceManager,
+                                mediaItem,
+                                onlinePlayerState,
+                                currentDuration.value,
+                                currentSecond.value
+                            )
+                        ///////
+
+                    }
+
+                    override fun onError(
+                        youTubePlayer: YouTubePlayer,
+                        error: PlayerConstants.PlayerError
+                    ) {
+                        super.onError(youTubePlayer, error)
+
+                        localMediaItem?.isLocal?.let { if (it) return }
+
+                        youTubePlayer.pause()
+                        clearWebViewData()
+
+                        Timber.e("OnlinePlayerCore: onError $error")
+                        val errorString = when (error) {
+                            PlayerConstants.PlayerError.VIDEO_NOT_PLAYABLE_IN_EMBEDDED_PLAYER -> "Content not playable, recovery in progress, try to click play but if the error persists try to log in"
+                            PlayerConstants.PlayerError.VIDEO_NOT_FOUND -> "Content not found, perhaps no longer available"
+                            else -> null
+                        }
+
+                        if (errorString != null && lastError.value != error) {
+                            SmartMessage(
+                                errorString,
+                                PopupType.Error,
+                                //durationLong = true,
+                                context = context()
+                            )
+                            if (localMediaItem != null)
+                                youTubePlayer.cueVideo(localMediaItem.mediaId, 0f)
+
+                        }
+
+                        lastError.value = error
+
+                        if (!isSkipMediaOnErrorEnabled()) return
+                        val prev = binder?.player?.currentMediaItem ?: return
+
+                        binder.player.playNext()
+
+                        SmartMessage(
+                            message = context().getString(
+                                R.string.skip_media_on_error_message,
+                                prev.mediaMetadata.title
+                            ),
+                            context = context(),
+                        )
+
+                    }
+
+                }
+
+                onlinePlayerView.apply {
+                    enableAutomaticInitialization = false
+
+                    if (isInvincibleServiceEnabled())
+                        enableBackgroundPlayback(true)
+                    else
+                        lifecycleOwner.lifecycle.addObserver(this)
+
+                    //Timber.d("OnlinePlayerCore: onlinePlayerView.keepScreenOn ${onlinePlayerView.keepScreenOn} enableKeepScreenOn $enableKeepScreenOn")
+                    onlinePlayerView.keepScreenOn = isKeepScreenOnEnabled()
+
+                    if (!onlinePlayerIsInitialized.value)
+                        initialize(listener, iFramePlayerOptions)
+
+                    onlinePlayerIsInitialized.value = true
+                    Timber.d("OnlinePlayerCore: initialize")
+                }
+
+
+            },
+            update = { view ->
+
+//            (it.parent as? DialogWindowProvider)
+//                ?.window?.clearFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+
+                view.enableBackgroundPlayback(isInvincibleServiceEnabled())
+                view.keepScreenOn = isKeepScreenOnEnabled()
+
+                when(actAsMini) {
+                    true -> {
+                        view.layoutParams = ViewGroup.LayoutParams(
+                            100,
+                            100
+                        )
+                    }
+                    false -> {
+                        view.layoutParams = if (!isLandscape) {
+                            ViewGroup.LayoutParams(
+                                ViewGroup.LayoutParams.MATCH_PARENT,
+                                if (playerThumbnailSize == PlayerThumbnailSize.Expanded)
+                                    ViewGroup.LayoutParams.WRAP_CONTENT
+                                else playerThumbnailSize.height
+                            )
+                        } else {
+                            ViewGroup.LayoutParams(
+                                ViewGroup.LayoutParams.MATCH_PARENT,
+                                ViewGroup.LayoutParams.WRAP_CONTENT
+                            )
+                        }
+                    }
+                }
+
+            }
+        )
     }
 
     fun updateSelectedQueue() {
