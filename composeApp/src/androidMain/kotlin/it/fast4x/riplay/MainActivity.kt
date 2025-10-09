@@ -283,6 +283,7 @@ import it.fast4x.riplay.ui.screens.player.local.rememberLocalPlayerSheetState
 import it.fast4x.riplay.ui.screens.player.online.MediaSessionCallback
 import it.fast4x.riplay.ui.screens.player.online.OnlineMiniPlayer
 import it.fast4x.riplay.ui.screens.player.online.OnlinePlayer
+import it.fast4x.riplay.ui.screens.player.online.components.core.OnlinePlayerCore
 import it.fast4x.riplay.ui.screens.player.online.components.customui.CustomDefaultPlayerUiController
 import it.fast4x.riplay.ui.screens.settings.isLoggedIn
 import it.fast4x.riplay.ui.styling.Appearance
@@ -1768,6 +1769,54 @@ class MainActivity :
 
     }
 
+    // Val onlineCore outside activity
+    val onlineCore: @Composable () -> Unit = {
+        OnlinePlayerCore(
+            load = getResumePlaybackOnStart() || lastMediaItemWasLocal(),
+            playFromSecond = currentSecond.value,
+            onPlayerReady = { onlinePlayer.value = it },
+            onSecondChange = {
+                coroutineScope.launch(Dispatchers.IO + SupervisorJob()) {
+                    currentSecond.value = it
+                }
+            },
+            onDurationChange = {
+                currentDuration.value = it
+                updateOnlineNotification()
+
+                val mediaItem = binder?.player?.currentMediaItem
+                if (mediaItem != null)
+                    updateDiscordPresenceWithOnlinePlayer(
+                        discordPresenceManager,
+                        mediaItem,
+                        onlinePlayerState,
+                        currentDuration.value,
+                        currentSecond.value
+                    )
+            },
+            onPlayerStateChange = {
+                Timber.d("MainActivity.onPlayerStateChange $it")
+                onlinePlayerState.value = it
+                onlinePlayerPlayingState.value =
+                    it == PlayerConstants.PlayerState.PLAYING
+
+                val mediaItem = binder?.player?.currentMediaItem
+                if (mediaItem != null)
+                    updateDiscordPresenceWithOnlinePlayer(
+                        discordPresenceManager,
+                        mediaItem,
+                        onlinePlayerState,
+                        currentDuration.value,
+                        currentSecond.value
+                    )
+            },
+            onTap = {
+                //showControls = !showControls
+            },
+        )
+    }
+
+    // Fun OnlineCore inside activity
     @Composable
     fun OnlineCore(){
         Timber.d("OnlinePlayerCore: called")
