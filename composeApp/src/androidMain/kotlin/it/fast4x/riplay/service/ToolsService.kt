@@ -12,6 +12,7 @@ import android.content.pm.ServiceInfo
 import android.os.Binder
 import android.os.Build
 import android.os.IBinder
+import android.os.PowerManager
 import android.os.SystemClock
 import androidx.annotation.OptIn
 import androidx.annotation.RequiresApi
@@ -25,6 +26,7 @@ import it.fast4x.riplay.UNIFIED_NOTIFICATION_CHANNEL
 import it.fast4x.riplay.R
 import it.fast4x.riplay.appContext
 import it.fast4x.riplay.utils.isAtLeastAndroid11
+import it.fast4x.riplay.utils.isAtLeastAndroid15
 import it.fast4x.riplay.utils.isAtLeastAndroid6
 import it.fast4x.riplay.utils.isAtLeastAndroid8
 
@@ -36,7 +38,7 @@ class ToolsService : Service() {
 
     private var mNotificationManager: NotificationManager? = null
     // Maybe not needed
-    //private var wakeLock: PowerManager.WakeLock? = null
+    private var wakeLock: PowerManager.WakeLock? = null
 
     /**
      * Returns the instance of the service
@@ -51,15 +53,15 @@ class ToolsService : Service() {
 
     override fun onCreate() {
         super.onCreate()
-        // Android 15 kill inactive service in the background, so we need to keep it alive with wake lock
-//        if (isAtLeastAndroid15) {
-//            // PARTIAL_WAKELOCK
-//            val powerManager: PowerManager = getSystemService(POWER_SERVICE) as PowerManager
-//            wakeLock = powerManager.newWakeLock(
-//                PowerManager.PARTIAL_WAKE_LOCK,
-//                "RIPLAY:wakelock"
-//            )
-//        }
+        // Android 15 and up kill inactive service in the background, so we need to keep it alive with wake lock
+        if (isAtLeastAndroid15) {
+            // PARTIAL_WAKELOCK
+            val powerManager: PowerManager = getSystemService(POWER_SERVICE) as PowerManager
+            wakeLock = powerManager.newWakeLock(
+                PowerManager.PARTIAL_WAKE_LOCK,
+                "RIPLAY:wakelock"
+            )
+        }
 
         println("ToolsService onCreate")
     }
@@ -69,6 +71,7 @@ class ToolsService : Service() {
         mNotificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager?
         createNotificationChannel()
         //startForeground(NOTIFICATION_ID, this.notification)
+
         ServiceCompat.startForeground(
             this,
             NOTIFICATION_ID,
@@ -85,22 +88,22 @@ class ToolsService : Service() {
 
     @SuppressLint("WakelockTimeout")
     override fun onBind(intent: Intent?): IBinder {
-//        if (isAtLeastAndroid15) {
-//            if (wakeLock != null && !wakeLock!!.isHeld) {
-//                wakeLock!!.acquire()
-//            }
-//        }
+        if (isAtLeastAndroid15) {
+            if (wakeLock != null && !wakeLock!!.isHeld) {
+                wakeLock!!.acquire()
+            }
+        }
         println("ToolsService onBind")
         return mBinder
     }
 
     override fun onDestroy() {
-//        if (isAtLeastAndroid15) {
-//            // PARTIAL_WAKELOCK
-//            if (wakeLock != null && wakeLock!!.isHeld) {
-//                wakeLock!!.release()
-//            }
-//        }
+        if (isAtLeastAndroid15) {
+            // PARTIAL_WAKELOCK
+            if (wakeLock != null && wakeLock!!.isHeld) {
+                wakeLock!!.release()
+            }
+        }
         println("ToolsService onDestroy")
         super.onDestroy()
     }
@@ -148,14 +151,14 @@ class ToolsService : Service() {
                 .setSmallIcon(R.drawable.app_icon)
                 .setContentTitle("RiPlay Tips")
                 .setShowWhen(false)
-                .setPriority(NotificationCompat.PRIORITY_LOW)
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .setCategory(NotificationCompat.CATEGORY_SERVICE)
                 .setOngoing(false)
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
                 .setContentText("Tips will be displayed here, for now can disable notification permission in app settings")
                 .setContentIntent(contentIntent)
                 .setSilent(true)
-                .setAutoCancel(true)
+                //.setAutoCancel(true)
                 .build()
 
         }

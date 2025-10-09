@@ -30,6 +30,8 @@ import androidx.core.app.ServiceCompat
 import androidx.core.net.toUri
 import androidx.media.MediaBrowserServiceCompat
 import androidx.media.session.MediaButtonReceiver
+import androidx.media.utils.MediaConstants.BROWSER_ROOT_HINTS_KEY_MEDIA_ART_SIZE_PIXELS
+import androidx.media.utils.MediaConstants.BROWSER_SERVICE_EXTRAS_KEY_SEARCH_SUPPORTED
 import androidx.media3.common.util.UnstableApi
 import it.fast4x.environment.Environment
 import it.fast4x.environment.EnvironmentExt
@@ -216,18 +218,8 @@ class AndroidAutoService : MediaBrowserServiceCompat(), ServiceConnection {
         Timber.d("AndroidAutoService onBind process intent ${intent?.action}")
 
         // start when client is connected
-        if (isNotifyAndroidAutoTipsEnabled())
-            ServiceCompat.startForeground(
-                this,
-                NOTIFICATION_ID,
-                notification,
-                if (isAtLeastAndroid11) {
-                    ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK
-                } else {
-                    0
-                }
-            )
-            //startNotification()
+//        if (isNotifyAndroidAutoTipsEnabled())
+//            startNotification()
 
         return mBinder
     }
@@ -281,7 +273,17 @@ class AndroidAutoService : MediaBrowserServiceCompat(), ServiceConnection {
     @RequiresApi(Build.VERSION_CODES.O)
     private fun startNotification(){
         createNotificationChannel()
-        startForeground(NOTIFICATION_ID, this.notification)
+        //startForeground(NOTIFICATION_ID, this.notification)
+        ServiceCompat.startForeground(
+            this,
+            NOTIFICATION_ID,
+            notification,
+            if (isAtLeastAndroid11) {
+                ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK
+            } else {
+                0
+            }
+        )
     }
 
     fun createNotificationChannel() {
@@ -347,7 +349,7 @@ class AndroidAutoService : MediaBrowserServiceCompat(), ServiceConnection {
             Bundle().apply {
                 putBoolean(MEDIA_SEARCH_SUPPORTED, true)
                 putBoolean(CONTENT_STYLE_SUPPORTED, true)
-                putInt(CONTENT_STYLE_BROWSABLE_HINT, CONTENT_STYLE_LIST)
+                putInt(CONTENT_STYLE_BROWSABLE_HINT, CONTENT_STYLE_GRID)
                 putInt(CONTENT_STYLE_PLAYABLE_HINT, CONTENT_STYLE_LIST)
             }
         )
@@ -1041,6 +1043,9 @@ class AndroidAutoService : MediaBrowserServiceCompat(), ServiceConnection {
     override fun onServiceConnected(p0: ComponentName?, p1: IBinder?) {
 
         Timber.d("AndroidAutoService onServiceConnected isAppRunning ${isAppRunning()}")
+
+        if (isNotifyAndroidAutoTipsEnabled())
+            startNotification()
 
 //        if(!isAppRunning()) {
 //            startService(intent<AndroidAutoService>())

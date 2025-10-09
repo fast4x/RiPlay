@@ -1808,7 +1808,12 @@ class MainActivity :
         )
 
         //MedleyMode for online player
-        val playbackDuration by rememberObservedPreference(playbackDurationKey, 0f)
+        val playbackDuration by rememberPreference(playbackDurationKey, 0f)
+        var playbackSpeed by rememberPreference(playbackSpeedKey, 1f)
+
+        val isInvincibilityEnabled by rememberPreference(isInvincibilityEnabledKey, false)
+        val isKeepScreenOnEnabled by rememberPreference(isKeepScreenOnEnabledKey, false)
+
 
         LaunchedEffect(onlinePlayerState.value) {
             if (onlinePlayerState.value == PlayerConstants.PlayerState.ENDED) {
@@ -1859,8 +1864,7 @@ class MainActivity :
                 }
         }
 
-        //Playback speed for online player
-        var playbackSpeed by rememberObservedPreference(playbackSpeedKey, 1f)
+
         LaunchedEffect(playbackSpeed) {
             val plabackRate = when {
                 (playbackSpeed.toDouble() in 0.0..0.25)     -> PlayerConstants.PlaybackRate.RATE_0_25
@@ -2037,13 +2041,13 @@ class MainActivity :
                 onlinePlayerView.apply {
                     enableAutomaticInitialization = false
 
-                    if (isInvincibleServiceEnabled())
+                    if (isInvincibilityEnabled)
                         enableBackgroundPlayback(true)
                     else
                         lifecycleOwner.lifecycle.addObserver(this)
 
                     //Timber.d("OnlinePlayerCore: onlinePlayerView.keepScreenOn ${onlinePlayerView.keepScreenOn} enableKeepScreenOn $enableKeepScreenOn")
-                    onlinePlayerView.keepScreenOn = isKeepScreenOnEnabled()
+                    onlinePlayerView.keepScreenOn = isKeepScreenOnEnabled
 
                     if (!onlinePlayerIsInitialized.value)
                         initialize(listener, iFramePlayerOptions)
