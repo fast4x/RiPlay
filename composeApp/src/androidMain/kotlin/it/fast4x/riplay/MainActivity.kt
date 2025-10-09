@@ -1769,52 +1769,6 @@ class MainActivity :
 
     }
 
-    // Val onlineCore outside activity
-    val onlineCore: @Composable () -> Unit = {
-        OnlinePlayerCore(
-            load = getResumePlaybackOnStart() || lastMediaItemWasLocal(),
-            playFromSecond = currentSecond.value,
-            onPlayerReady = { onlinePlayer.value = it },
-            onSecondChange = {
-                coroutineScope.launch(Dispatchers.IO + SupervisorJob()) {
-                    currentSecond.value = it
-                }
-            },
-            onDurationChange = {
-                currentDuration.value = it
-                updateOnlineNotification()
-
-                val mediaItem = binder?.player?.currentMediaItem
-                if (mediaItem != null)
-                    updateDiscordPresenceWithOnlinePlayer(
-                        discordPresenceManager,
-                        mediaItem,
-                        onlinePlayerState,
-                        currentDuration.value,
-                        currentSecond.value
-                    )
-            },
-            onPlayerStateChange = {
-                Timber.d("MainActivity.onPlayerStateChange $it")
-                onlinePlayerState.value = it
-                onlinePlayerPlayingState.value =
-                    it == PlayerConstants.PlayerState.PLAYING
-
-                val mediaItem = binder?.player?.currentMediaItem
-                if (mediaItem != null)
-                    updateDiscordPresenceWithOnlinePlayer(
-                        discordPresenceManager,
-                        mediaItem,
-                        onlinePlayerState,
-                        currentDuration.value,
-                        currentSecond.value
-                    )
-            },
-            onTap = {
-                //showControls = !showControls
-            },
-        )
-    }
 
     // Fun OnlineCore inside activity
     @Composable
@@ -2140,6 +2094,53 @@ class MainActivity :
                 }
 
             }
+        )
+    }
+
+    // Val onlineCore outside activity
+    val onlineCore: @Composable () -> Unit = {
+        OnlinePlayerCore(
+            load = getResumePlaybackOnStart() || lastMediaItemWasLocal(),
+            playFromSecond = currentSecond.value,
+            onPlayerReady = { onlinePlayer.value = it },
+            onSecondChange = {
+                coroutineScope.launch(Dispatchers.IO + SupervisorJob()) {
+                    currentSecond.value = it
+                }
+            },
+            onDurationChange = {
+                currentDuration.value = it
+                updateOnlineNotification()
+
+                val mediaItem = binder?.player?.currentMediaItem
+                if (mediaItem != null)
+                    updateDiscordPresenceWithOnlinePlayer(
+                        discordPresenceManager,
+                        mediaItem,
+                        onlinePlayerState,
+                        currentDuration.value,
+                        currentSecond.value
+                    )
+            },
+            onPlayerStateChange = {
+                Timber.d("MainActivity.onPlayerStateChange $it")
+                onlinePlayerState.value = it
+                onlinePlayerPlayingState.value =
+                    it == PlayerConstants.PlayerState.PLAYING
+
+                val mediaItem = binder?.player?.currentMediaItem
+                if (mediaItem != null)
+                    updateDiscordPresenceWithOnlinePlayer(
+                        discordPresenceManager,
+                        mediaItem,
+                        onlinePlayerState,
+                        currentDuration.value,
+                        currentSecond.value
+                    )
+            },
+            onTap = {
+                //showControls = !showControls
+            },
         )
     }
 
