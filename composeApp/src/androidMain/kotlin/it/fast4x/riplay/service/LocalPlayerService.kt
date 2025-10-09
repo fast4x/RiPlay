@@ -467,7 +467,6 @@ class LocalPlayerService : MediaLibraryService(),
         // Ensure that song is updated
         currentSong.debounce(1000).collect(coroutineScope) { song ->
             Timber.d("LocalPlayerService onCreate currentSong $song")
-            println("LocalPlayerService onCreate currentSong $song")
 
             updateDefaultNotification()
             withContext(Dispatchers.Main) {
@@ -530,10 +529,10 @@ class LocalPlayerService : MediaLibraryService(),
     }
 
     override fun onUpdateNotification(session: MediaSession, startInForegroundRequired: Boolean) {
-        println("LocalPlayerService onUpdateNotification called startInForegroundRequired ${startInForegroundRequired}")
+        Timber.d("LocalPlayerService onUpdateNotification called startInForegroundRequired ${startInForegroundRequired}")
         // Foreground keep alive
         if (!(!player.isPlaying && preferences.getBoolean(isInvincibilityEnabledKey, true))) {
-            println("LocalPlayerService onUpdateNotification PASSED WITH startInForegroundRequired ${startInForegroundRequired}")
+            Timber.d("LocalPlayerService onUpdateNotification PASSED WITH startInForegroundRequired ${startInForegroundRequired}")
             super.onUpdateNotification(session, startInForegroundRequired)
         }
     }
@@ -557,7 +556,7 @@ class LocalPlayerService : MediaLibraryService(),
         eventTime: AnalyticsListener.EventTime,
         playbackStats: PlaybackStats
     ) {
-        println("LocalPlayerService onPlaybackStatsReady called ")
+        Timber.d("LocalPlayerService onPlaybackStatsReady called ")
         // if pause listen history is enabled, don't register statistic event
         if (preferences.getBoolean(pauseListenHistoryKey, false)) return
 
@@ -705,7 +704,6 @@ class LocalPlayerService : MediaLibraryService(),
 
     override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
         Timber.d("LocalPlayerService onMediaItemTransition mediaItem $mediaItem reason $reason")
-        println("LocalPlayerService onMediaItemTransition mediaItem $mediaItem reason $reason")
 
         if (player.isPlaying && reason == MEDIA_ITEM_TRANSITION_REASON_SEEK) {
             player.prepare()
@@ -784,7 +782,6 @@ class LocalPlayerService : MediaLibraryService(),
         super.onPlayerError(error)
 
         Timber.e("LocalPlayerService onPlayerError error code ${error.errorCode} message ${error.message} cause ${error.cause?.cause}")
-        println("LocalPlayerService onPlayerError error code ${error.errorCode} message ${error.message} cause ${error.cause?.cause}")
 
 //        val playbackHttpExeptionList = listOf(
 //            PlaybackException.ERROR_CODE_IO_BAD_HTTP_STATUS,
@@ -896,7 +893,6 @@ class LocalPlayerService : MediaLibraryService(),
             val bassboostLevel =
                 (preferences.getFloat(bassboostLevelKey, 0.5f) * 1000f).toInt().toShort()
             Timber.d("LocalPlayerService processBassBoost bassboostLevel $bassboostLevel")
-            println("LocalPlayerService processBassBoost bassboostLevel $bassboostLevel")
             bassBoost?.enabled = false
             bassBoost?.setStrength(bassboostLevel)
             bassBoost?.enabled = true
@@ -911,7 +907,6 @@ class LocalPlayerService : MediaLibraryService(),
     private fun processReverb() {
         val presetType = preferences.getEnum(audioReverbPresetKey, PresetsReverb.NONE)
         Timber.d("LocalPlayerService processReverb presetType $presetType")
-        println("LocalPlayerService processReverb presetType $presetType")
         if (presetType == PresetsReverb.NONE) {
             runCatching {
                 reverbPreset?.enabled = false
@@ -948,7 +943,6 @@ class LocalPlayerService : MediaLibraryService(),
             }
         }.onFailure {
             Timber.e("LocalPlayerService processNormalizeVolume load loudnessEnhancer ${it.stackTraceToString()}")
-            println("LocalPlayerService processNormalizeVolume load loudnessEnhancer ${it.stackTraceToString()}")
             return
         }
 
@@ -976,7 +970,6 @@ class LocalPlayerService : MediaLibraryService(),
                         loudnessEnhancer?.enabled = true
                     } catch (e: Exception) {
                         Timber.e("LocalPlayerService processNormalizeVolume apply targetGain ${e.stackTraceToString()}")
-                        println("LocalPlayerService processNormalizeVolume apply targetGain ${e.stackTraceToString()}")
                     }
                 }
             }

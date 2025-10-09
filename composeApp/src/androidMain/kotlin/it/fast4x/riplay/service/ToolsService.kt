@@ -66,18 +66,18 @@ class ToolsService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         mNotificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager?
         createNotificationChannel()
-        //startForeground(NOTIFICATION_ID, this.notification)
+        startForeground(NOTIFICATION_ID, this.notification)
 
-        ServiceCompat.startForeground(
-            this,
-            NOTIFICATION_ID,
-            notification,
-            if (isAtLeastAndroid11) {
-                ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK
-            } else {
-                0
-            }
-        )
+//        ServiceCompat.startForeground(
+//            this,
+//            NOTIFICATION_ID,
+//            notification,
+//            if (isAtLeastAndroid11) {
+//                ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK
+//            } else {
+//                0
+//            }
+//        )
         println("ToolsService onStartCommand")
         return START_STICKY //START_NOT_STICKY
     }
