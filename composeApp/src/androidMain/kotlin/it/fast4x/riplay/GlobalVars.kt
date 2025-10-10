@@ -43,8 +43,15 @@ import it.fast4x.riplay.extensions.preferences.preferences
 import it.fast4x.riplay.extensions.preferences.queueLoopTypeKey
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.extensions.preferences.resumePlaybackOnStartKey
+import it.fast4x.riplay.extensions.preferences.showFavoritesPlaylistsAAKey
+import it.fast4x.riplay.extensions.preferences.showGridAAKey
+import it.fast4x.riplay.extensions.preferences.showInLibraryAAKey
+import it.fast4x.riplay.extensions.preferences.showMonthlyPlaylistsAAKey
+import it.fast4x.riplay.extensions.preferences.showOnDeviceAAKey
 import it.fast4x.riplay.extensions.preferences.showSearchTabKey
 import it.fast4x.riplay.extensions.preferences.showStatsInNavbarKey
+import it.fast4x.riplay.extensions.preferences.showShuffleSongsAAKey
+import it.fast4x.riplay.extensions.preferences.showTopPlaylistAAKey
 import it.fast4x.riplay.extensions.preferences.skipMediaOnErrorKey
 import it.fast4x.riplay.extensions.preferences.viewTypeKey
 import it.fast4x.riplay.extensions.preferences.ytAccountNameKey
@@ -102,8 +109,17 @@ fun lastMediaItemWasLocal() = appContext().preferences.getBoolean(lastMediaItemW
 fun isInvincibleServiceEnabled() = appContext().preferences.getBoolean(isInvincibilityEnabledKey, false)
 fun isSkipMediaOnErrorEnabled() = appContext().preferences.getBoolean(skipMediaOnErrorKey, false)
 fun isNotifyTipsEnabled() = appContext().preferences.getBoolean(notifyTipsKey, false)
-fun isNotifyAndroidAutoTipsEnabled() = appContext().preferences.getBoolean(notifyAndroidAutoTipsKey, false)
+fun isNotifyAndroidAutoTipsEnabled() = appContext().preferences.getBoolean(notifyAndroidAutoTipsKey, true)
 fun isKeepScreenOnEnabled() = appContext().preferences.getBoolean(isKeepScreenOnEnabledKey, false)
+
+fun shuffleSongsAAEnabled() = appContext().preferences.getBoolean(showShuffleSongsAAKey, true)
+fun showMonthlyPlaylistsAA() = appContext().preferences.getBoolean(showMonthlyPlaylistsAAKey, true)
+fun showOnDeviceAA() = appContext().preferences.getBoolean(showOnDeviceAAKey, true)
+fun showInLibraryAA() = appContext().preferences.getBoolean(showInLibraryAAKey, true)
+fun showFavoritesPlaylistsAA() = appContext().preferences.getBoolean(showFavoritesPlaylistsAAKey, true)
+fun showTopPlaylistAA() = appContext().preferences.getBoolean(showTopPlaylistAAKey, true)
+fun showGridAA() = appContext().preferences.getBoolean(showGridAAKey, true)
+
 
 
 

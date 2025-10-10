@@ -378,6 +378,17 @@ const val notifyAndroidAutoTipsKey = "notifyAandroidAutoTips"
 
 const val resumeOrPausePlaybackWhenDeviceKey = "resumeOrPausePlaybackWhenDevice"
 
+const val showShuffleSongsAAKey = "shuffleSongsAAEnabled"
+const val showMonthlyPlaylistsAAKey = "showMonthlyPlaylistsAA"
+const val showInLibraryAAKey = "showInLibraryAA"
+const val showOnDeviceAAKey = "showOnDeviceAA"
+const val showFavoritesPlaylistsAAKey = "showFavoritesPlaylistsAA"
+const val showTopPlaylistAAKey = "showTopPlaylistsAA"
+const val showGridAAKey = "showGridAA"
+
+
+
+
 
 inline fun <reified T : Enum<T>> SharedPreferences.getEnum(
     key: String,

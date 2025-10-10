@@ -500,6 +500,13 @@ fun HomePlaylists(
                                 when (playlistType) {
                                     PlaylistsType.YTPlaylist -> it.playlist.isYoutubePlaylist
                                     PlaylistsType.PodcastPlaylist -> it.playlist.isPodcast
+                                    PlaylistsType.Playlist -> {
+                                        when {
+                                            !showPinnedPlaylists -> !it.playlist.isPinned
+                                            !showMonthlyPlaylists -> !it.playlist.isMonthly
+                                            else -> true
+                                        }
+                                    }
                                     else -> it.playlist.name.startsWith(listPrefix, true)
                                 }
 //                            if (playlistType == PlaylistsType.YTPlaylist) {

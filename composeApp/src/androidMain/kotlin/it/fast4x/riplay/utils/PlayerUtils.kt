@@ -56,10 +56,6 @@ fun Player.restoreGlobalVolume() {
     volume = GlobalVolume
 }
 
-fun Player.saveGlobalVolume() {
-    GlobalVolume = volume
-}
-
 fun Player.setGlobalVolume(v: Float) {
     GlobalVolume = v
 }
@@ -123,21 +119,6 @@ fun Player.shuffleQueue() {
     addMediaItems(mediaItems.shuffled())
 }
 
-@SuppressLint("Range")
-@UnstableApi
-fun Player.playAtMedia(mediaItems: List<MediaItem>, mediaId: String) {
-    Log.d("mediaItem-playAtMedia","${mediaItems.size}")
-    if (mediaItems.isEmpty()) return
-    val itemIndex = findMediaItemIndexById(mediaId)
-
-    Log.d("mediaItem-playAtMedia",itemIndex.toString())
-    setMediaItems(mediaItems, itemIndex, C.TIME_UNSET)
-    prepare()
-    restoreGlobalVolume()
-    playWhenReady = true
-
-}
-
 fun Player.forcePlay(mediaItem: MediaItem, replace: Boolean = false) {
     if (!replace)
         setMediaItem(mediaItem.cleaned, true)
@@ -147,20 +128,6 @@ fun Player.forcePlay(mediaItem: MediaItem, replace: Boolean = false) {
     prepare()
     restoreGlobalVolume()
     playWhenReady = true
-}
-
-fun Player.playOnline(mediaItem: MediaItem, replace: Boolean = false) {
-    if (!replace)
-        setMediaItem(mediaItem.cleaned, true)
-    else
-        replaceMediaItem(currentMediaItemIndex, mediaItem.cleaned)
-
-    pause()
-}
-
-fun Player.playOnlineAtIndex(mediaItemIndex: Int) {
-    seekTo(mediaItemIndex, C.TIME_UNSET)
-    pause()
 }
 
 fun Player.playAtIndex(mediaItemIndex: Int) {
@@ -185,27 +152,36 @@ fun Player.forcePlayFromBeginning(mediaItems: List<MediaItem>) =
     forcePlayAtIndex(mediaItems, 0)
 
 fun Player.forceSeekToPrevious() {
-    if (hasPreviousMediaItem() || currentPosition > maxSeekToPreviousPosition) {
-        seekToPrevious()
-    } else if (mediaItemCount > 0) {
-        seekTo(mediaItemCount - 1, C.TIME_UNSET)
+    when {
+        currentPosition > maxSeekToPreviousPosition -> seekToPrevious()
+        hasPreviousMediaItem() -> seekToPreviousMediaItem()
+        mediaItemCount > 0 -> seekTo(mediaItemCount - 1, C.TIME_UNSET)
+        else -> {}
     }
+    // todo maybe not needed
+//    if (hasPreviousMediaItem() || currentPosition > maxSeekToPreviousPosition) {
+//        seekToPrevious()
+//    } else if (mediaItemCount > 0) {
+//        seekTo(mediaItemCount - 1, C.TIME_UNSET)
+//    }
 }
 
 fun Player.forceSeekToNext() =
     if (hasNextMediaItem()) seekToNext() else seekTo(0, C.TIME_UNSET)
 
 fun Player.playNext() {
-    seekToNextMediaItem()
-    //seekToNext()
+    //seekToNextMediaItem() // native
+    //seekToNext() // native
+    forceSeekToNext()
     prepare()
     restoreGlobalVolume()
     playWhenReady = true
 }
 
 fun Player.playPrevious() {
-    seekToPreviousMediaItem()
-    //seekToPrevious()
+    //seekToPreviousMediaItem() // native
+    //seekToPrevious() // native
+    forceSeekToPrevious()
     prepare()
     restoreGlobalVolume()
     playWhenReady = true

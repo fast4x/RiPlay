@@ -142,7 +142,6 @@ import androidx.core.net.toUri
 import androidx.core.text.isDigitsOnly
 import it.fast4x.riplay.enums.ContentType
 import it.fast4x.riplay.extensions.preferences.filterContentTypeKey
-import it.fast4x.riplay.extensions.preferences.notifyAndroidAutoTipsKey
 import it.fast4x.riplay.extensions.preferences.resumeOrPausePlaybackWhenDeviceKey
 import it.fast4x.riplay.ui.components.themed.settingsItem
 import it.fast4x.riplay.ui.components.themed.settingsSearchBarItem
@@ -263,8 +262,6 @@ fun GeneralSettings(
     var proxyMode by rememberPreference(proxyModeKey, Proxy.Type.HTTP)
     var customDnsOverHttpsServer by rememberPreference(customDnsOverHttpsServerKey, "")
     //var streamingPlayerType by rememberPreference(streamingPlayerTypeKey, StreamingPlayerType.Advanced)
-
-    var notifyAAisEnabled by rememberPreference(notifyAndroidAutoTipsKey, false)
 
 
     Column(
@@ -1410,29 +1407,7 @@ fun GeneralSettings(
                         )
                 }
 
-                settingsItem(
-                    isHeader = true
-                ) {
-                    SettingsGroupSpacer()
-                    SettingsEntryGroupText("Notifications")
-                }
 
-                settingsItem{
-                    if (search.input.isBlank() || "Android Auto".contains(
-                            search.input,
-                            true
-                        )
-                    ) {
-                        SwitchSettingEntry(
-                            title = "Android Auto",
-                            text = "Enable notifications for Android Auto",
-                            isChecked = notifyAAisEnabled,
-                            onCheckedChange = {
-                                notifyAAisEnabled = it
-                            }
-                        )
-                    }
-                }
 
 //            SettingsGroupSpacer(
 //                modifier = Modifier.height(Dimensions.bottomSpacer)

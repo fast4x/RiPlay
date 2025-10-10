@@ -23,6 +23,7 @@ import android.support.v4.media.session.PlaybackStateCompat
 import androidx.annotation.DrawableRes
 import androidx.annotation.OptIn
 import androidx.annotation.RequiresApi
+import androidx.compose.ui.util.fastFilter
 import androidx.core.app.NotificationChannelCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
@@ -62,6 +63,13 @@ import it.fast4x.riplay.models.PlaylistPreview
 import it.fast4x.riplay.models.Song
 import it.fast4x.riplay.models.SongAlbumMap
 import it.fast4x.riplay.models.SongArtistMap
+import it.fast4x.riplay.showFavoritesPlaylistsAA
+import it.fast4x.riplay.showGridAA
+import it.fast4x.riplay.showInLibraryAA
+import it.fast4x.riplay.showMonthlyPlaylistsAA
+import it.fast4x.riplay.showOnDeviceAA
+import it.fast4x.riplay.showTopPlaylistAA
+import it.fast4x.riplay.shuffleSongsAAEnabled
 import it.fast4x.riplay.utils.BitmapProvider
 import it.fast4x.riplay.utils.getTitleMonthlyPlaylistFromContext
 import it.fast4x.riplay.utils.intent
@@ -348,7 +356,7 @@ class AndroidAutoService : MediaBrowserServiceCompat(), ServiceConnection {
             Bundle().apply {
                 putBoolean(MEDIA_SEARCH_SUPPORTED, true)
                 putBoolean(CONTENT_STYLE_SUPPORTED, true)
-                putInt(CONTENT_STYLE_BROWSABLE_HINT, CONTENT_STYLE_GRID)
+                putInt(CONTENT_STYLE_BROWSABLE_HINT, if (showGridAA()) CONTENT_STYLE_GRID else CONTENT_STYLE_LIST)
                 putInt(CONTENT_STYLE_PLAYABLE_HINT, CONTENT_STYLE_LIST)
             }
         )
@@ -386,7 +394,7 @@ class AndroidAutoService : MediaBrowserServiceCompat(), ServiceConnection {
                         .map { it.song.asBrowserMediaItem }
                         .toMutableList()
                         .apply {
-                            if (isNotEmpty()) add(0, shuffleBrowserMediaItem)
+                            if (shuffleSongsAAEnabled() && isNotEmpty()) add(0, shuffleBrowserMediaItem)
                         }
 
                     MediaId.PLAYLISTS -> {
@@ -394,16 +402,21 @@ class AndroidAutoService : MediaBrowserServiceCompat(), ServiceConnection {
                             Database
                                 .playlistPreviewsByNameAsc()
                                 .first()
+                                .fastFilter {
+                                    if (showMonthlyPlaylistsAA()) true
+                                    else !it.playlist.name.startsWith(MONTHLY_PREFIX)
+                                }
                                 .map { it.asBrowserMediaItem }
                                 .sortedBy { it.description.title.toString() }
                                 .map { it.asCleanMediaItem }
                                 .toMutableList()
                                 .apply {
-                                    add(0, favoritesBrowserMediaItem)
-                                    //add(1, offlineBrowserMediaItem)
-                                    //add(2, downloadedBrowserMediaItem)
-                                    add(1, topBrowserMediaItem)
-                                    add(2, ondeviceBrowserMediaItem)
+                                    if (showFavoritesPlaylistsAA())
+                                        add(0, favoritesBrowserMediaItem)
+                                    if (showTopPlaylistAA())
+                                        add(1, topBrowserMediaItem)
+                                    if (showOnDeviceAA())
+                                        add(2, ondeviceBrowserMediaItem)
                                 }
                         } else {
                             Database.playlistWithSongs(id.toLong())
@@ -424,8 +437,10 @@ class AndroidAutoService : MediaBrowserServiceCompat(), ServiceConnection {
                                 .map { it.asBrowserMediaItem(MediaId.ARTISTS_FAVORITES) }
                                 .toMutableList()
                                 .apply {
-                                    add(0, artistsInLibraryBrowserMediaItem)
-                                    add(1, artistsOnDeviceBrowserMediaItem)
+                                    if (showInLibraryAA())
+                                        add(0, artistsInLibraryBrowserMediaItem)
+                                    if (showOnDeviceAA())
+                                        add(1, artistsOnDeviceBrowserMediaItem)
                                 }
                         } else {
 //                            Database.artistSongsByname(id)
@@ -580,8 +595,10 @@ class AndroidAutoService : MediaBrowserServiceCompat(), ServiceConnection {
                                 .map { it.asBrowserMediaItem(MediaId.ALBUMS_FAVORITES) }
                                 .toMutableList()
                                 .apply {
-                                    add(0, albumsInLibraryBrowserMediaItem)
-                                    add(1, albumsOnDeviceBrowserMediaItem)
+                                    if (showInLibraryAA())
+                                        add(0, albumsInLibraryBrowserMediaItem)
+                                    if (showOnDeviceAA())
+                                        add(1, albumsOnDeviceBrowserMediaItem)
                                 }
                         } else {
                             Timber.d("AndroidAutoService onLoadChildren inside albums SONGS id $id")
@@ -825,7 +842,7 @@ class AndroidAutoService : MediaBrowserServiceCompat(), ServiceConnection {
                 //.setTitle(playlist.name.substringAfter(PINNED_PREFIX))
                 .setTitle(if (playlist.name.startsWith(PINNED_PREFIX)) playlist.name.replace(PINNED_PREFIX,"0:",true) else
                     if (playlist.name.startsWith(MONTHLY_PREFIX)) playlist.name.replace(
-                        MONTHLY_PREFIX,"1:",true) else playlist.name)
+                        MONTHLY_PREFIX,"1:",true) else playlist.name.removePrefix())
                 .setSubtitle("$songCount ${(this@AndroidAutoService as Context).resources.getString(R.string.songs)}")
                 .setIconUri(uriFor(if (playlist.name.startsWith(PINNED_PREFIX)) R.drawable.pin else
                     if (playlist.name.startsWith(MONTHLY_PREFIX)) R.drawable.stat_month else R.drawable.playlist))

@@ -38,6 +38,7 @@ import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.BasicTextField
@@ -208,7 +209,7 @@ fun Queue(
     val thumbnailSizePx = thumbnailSizeDp.px
 
     var mediaItemIndex by remember {
-        mutableStateOf(if (binderPlayer.mediaItemCount == 0) -1 else binderPlayer.currentMediaItemIndex)
+        mutableIntStateOf(if (binderPlayer.mediaItemCount == 0) -1 else binderPlayer.currentMediaItemIndex)
     }
 
     var windows by remember {
@@ -225,13 +226,16 @@ fun Queue(
     binderPlayer.DisposableListener {
         object : Player.Listener {
             override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
-                mediaItemIndex = binderPlayer.currentMediaItemIndex
+                //mediaItemIndex = binderPlayer.currentMediaItemIndex
+                mediaItemIndex =
+                    if (binder.player.mediaItemCount == 0) -1 else binder.player.currentMediaItemIndex
             }
 
             override fun onTimelineChanged(timeline: Timeline, reason: Int) {
                 windows = timeline.windows
-                mediaItemIndex = binderPlayer.currentMediaItemIndex
-            }
+                //mediaItemIndex = binderPlayer.currentMediaItemIndex
+                mediaItemIndex =
+                    if (binder.player.mediaItemCount == 0) -1 else binder.player.currentMediaItemIndex            }
 
             override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) {
                 shouldBePlaying = binder.player.shouldBePlaying
@@ -253,10 +257,6 @@ fun Queue(
     val musicBarsTransition = updateTransition(targetState = mediaItemIndex, label = "")
 
     var isReorderDisabled by rememberPreference(reorderInQueueEnabledKey, defaultValue = true)
-
-    var downloadState by remember {
-        mutableStateOf(Download.STATE_STOPPED)
-    }
 
     var listMediaItems = remember {
         mutableListOf<MediaItem>()
@@ -467,10 +467,12 @@ fun Queue(
             lazyListState = lazyListState,
             //scrollThresholdPadding = WindowInsets.systemBars.asPaddingValues(),
         ) { from, to ->
-            if (to.key != binder.player.currentMediaItem?.mediaId) {
+            // based on uid as key
+            if (to.key != binder.player.currentWindow?.uid.hashCode()) {
+                val key = binder.player.currentWindow?.mediaItem?.mediaId
                 windowsInQueue = windowsInQueue.toMutableList().apply {
-                    val fromIndex = indexOfFirst { it.mediaItem.mediaId == from.key }
-                    val toIndex = indexOfFirst { it.mediaItem.mediaId == to.key }
+                    val fromIndex = indexOfFirst { it.mediaItem.mediaId == key }
+                    val toIndex = indexOfFirst { it.mediaItem.mediaId == key }
 
                     val currentDragInfo = dragInfo
                     dragInfo = if (currentDragInfo == null)
@@ -482,6 +484,24 @@ fun Queue(
                 }
 
             } else dragInfo = null
+
+            // todo maybe not needed
+            // based on mediaId as key
+//            if (to.key != binder.player.currentMediaItem?.mediaId) {
+//                windowsInQueue = windowsInQueue.toMutableList().apply {
+//                    val fromIndex = indexOfFirst { it.mediaItem.mediaId == from.key }
+//                    val toIndex = indexOfFirst { it.mediaItem.mediaId == to.key }
+//
+//                    val currentDragInfo = dragInfo
+//                    dragInfo = if (currentDragInfo == null)
+//                        fromIndex to toIndex
+//                    else currentDragInfo.first to toIndex
+//
+//                    move(fromIndex, toIndex)
+//                    println("reorderableLazyListState dragInfo from ${fromIndex} to ${toIndex}")
+//                }
+//
+//            } else dragInfo = null
         }
 
         LaunchedEffect(reorderableLazyListState.isAnyItemDragging) {
@@ -711,8 +731,10 @@ fun Queue(
 
 
         items(
-            items = windowsInQueue.distinctBy { it.mediaItem.mediaId },
-            key = { it.mediaItem.mediaId }
+            items = windowsInQueue,
+            key =  { window -> window.uid.hashCode() }
+//            items = windowsInQueue.distinctBy { it.mediaItem.mediaId },
+//            key = { it.mediaItem.mediaId }
         ) { window ->
             ReorderableItem(
                 reorderableLazyListState,

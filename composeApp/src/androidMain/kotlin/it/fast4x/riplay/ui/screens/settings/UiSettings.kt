@@ -202,7 +202,15 @@ import it.fast4x.riplay.ui.components.themed.settingsItem
 import it.fast4x.riplay.ui.components.themed.settingsSearchBarItem
 import it.fast4x.riplay.extensions.preferences.customColorKey
 import it.fast4x.riplay.extensions.preferences.isEnabledFullscreenKey
+import it.fast4x.riplay.extensions.preferences.notifyAndroidAutoTipsKey
 import it.fast4x.riplay.extensions.preferences.showDislikedPlaylistKey
+import it.fast4x.riplay.extensions.preferences.showFavoritesPlaylistsAAKey
+import it.fast4x.riplay.extensions.preferences.showGridAAKey
+import it.fast4x.riplay.extensions.preferences.showInLibraryAAKey
+import it.fast4x.riplay.extensions.preferences.showMonthlyPlaylistsAAKey
+import it.fast4x.riplay.extensions.preferences.showOnDeviceAAKey
+import it.fast4x.riplay.extensions.preferences.showShuffleSongsAAKey
+import it.fast4x.riplay.extensions.preferences.showTopPlaylistAAKey
 import it.fast4x.riplay.extensions.preferences.usePlaceholderInImageLoaderKey
 import it.fast4x.riplay.utils.LazyListContainer
 
@@ -722,6 +730,20 @@ fun UiSettings(
     var usePlaceholder by rememberPreference(usePlaceholderInImageLoaderKey, true)
 
     var isEnabledFullscreen by rememberPreference(isEnabledFullscreenKey, false)
+
+    var notifyAAisEnabled by rememberPreference(notifyAndroidAutoTipsKey, true)
+    var showShuffleSongsAA by rememberPreference(showShuffleSongsAAKey, true)
+    var showMonthlyPlaylistsAA by rememberPreference(showMonthlyPlaylistsAAKey, true)
+    var showInLibraryAA by rememberPreference(showInLibraryAAKey, true)
+    var showOnDeviceAA by rememberPreference(showOnDeviceAAKey, true)
+    var showFavoritesPlaylistsAA by rememberPreference(showFavoritesPlaylistsAAKey, true)
+    var showTopPlaylistAA by rememberPreference(showTopPlaylistAAKey, true)
+    var showGridAA by rememberPreference(showGridAAKey, true)
+
+
+
+
+
 
     Column(
         modifier = Modifier
@@ -1587,17 +1609,17 @@ fun UiSettings(
             }
 
             settingsItem {
-                if (search.input.isBlank() || "${stringResource(R.string.show)} ${stringResource(R.string.piped_playlists)}".contains(
-                        search.input,
-                        true
-                    )
-                )
-                    SwitchSettingEntry(
-                        title = "${stringResource(R.string.show)} ${stringResource(R.string.piped_playlists)}",
-                        text = "",
-                        isChecked = showPipedPlaylists,
-                        onCheckedChange = { showPipedPlaylists = it }
-                    )
+//                if (search.input.isBlank() || "${stringResource(R.string.show)} ${stringResource(R.string.piped_playlists)}".contains(
+//                        search.input,
+//                        true
+//                    )
+//                )
+//                    SwitchSettingEntry(
+//                        title = "${stringResource(R.string.show)} ${stringResource(R.string.piped_playlists)}",
+//                        text = "",
+//                        isChecked = showPipedPlaylists,
+//                        onCheckedChange = { showPipedPlaylists = it }
+//                    )
 
                 if (search.input.isBlank() || "${stringResource(R.string.show)} ${stringResource(R.string.pinned_playlists)}".contains(
                         search.input,
@@ -1729,6 +1751,140 @@ fun UiSettings(
                         }
                     )
 
+
+            }
+
+            settingsItem(
+                isHeader = true
+            ) {
+                SettingsGroupSpacer()
+                SettingsEntryGroupText("Android Auto")
+            }
+
+            settingsItem {
+                if (search.input.isBlank() || "Notifications".contains(
+                        search.input,
+                        true
+                    )
+                ) {
+                    SwitchSettingEntry(
+                        title = "Notifications",
+                        text = "Enable notifications for Android Auto",
+                        isChecked = notifyAAisEnabled,
+                        onCheckedChange = {
+                            notifyAAisEnabled = it
+                        }
+                    )
+                }
+            }
+
+            settingsItem(
+                isHeader = true
+            ) {
+                SettingsGroupSpacer()
+                SettingsEntryGroupText("Android Auto Layout")
+            }
+
+            settingsItem{
+                if (search.input.isBlank() || "Show list as grid".contains(
+                        search.input,
+                        true
+                    )
+                ) {
+                    SwitchSettingEntry(
+                        title = "Show list as grid",
+                        text = "",
+                        isChecked = showGridAA,
+                        onCheckedChange = {
+                            showGridAA = it
+                        }
+                    )
+                }
+
+                if (search.input.isBlank() || "Show shuffle in songs".contains(
+                        search.input,
+                        true
+                    )
+                ) {
+                    SwitchSettingEntry(
+                        title = "Show shuffle in songs",
+                        text = "",
+                        isChecked = showShuffleSongsAA,
+                        onCheckedChange = {
+                            showShuffleSongsAA = it
+                        }
+                    )
+                }
+
+                if (search.input.isBlank() || "Show monthly playlists".contains(
+                        search.input,
+                        true
+                    )
+                )
+                    SwitchSettingEntry(
+                        title = "Show monthly playlists",
+                        text = "Show monthly playlists in playlists screen",
+                        isChecked = showMonthlyPlaylistsAA,
+                        onCheckedChange = { showMonthlyPlaylistsAA = it }
+                    )
+
+                if (search.input.isBlank() || "Show In Library".contains(
+                        search.input,
+                        true
+                    )
+                )
+                    SwitchSettingEntry(
+                        title = "Show In Library",
+                        text = "Show In Library in artists and albums screen",
+                        isChecked = showInLibraryAA,
+                        onCheckedChange = { showInLibraryAA = it }
+                    )
+
+                if (search.input.isBlank() || "Show On Device".contains(
+                        search.input,
+                        true
+                    )
+                )
+                    SwitchSettingEntry(
+                        title = "Show On Device",
+                        text = "Show On Device in artists and albums screen",
+                        isChecked = showOnDeviceAA,
+                        onCheckedChange = { showOnDeviceAA = it }
+                    )
+
+                if (search.input.isBlank() || "Show Top Playlist".contains(
+                        search.input,
+                        true
+                    )
+                )
+                    SwitchSettingEntry(
+                        title = "Show Top Playlist",
+                        text = "Show Top Playlist in playlists screen",
+                        isChecked = showTopPlaylistAA,
+                        onCheckedChange = { showTopPlaylistAA = it }
+                    )
+
+                if (search.input.isBlank() || "Show Favorites Playlists".contains(
+                        search.input,
+                        true
+                    )
+                )
+                    SwitchSettingEntry(
+                        title = "Show Favorites Playlists",
+                        text = "Show Favorites Playlists in playlists screen",
+                        isChecked = showFavoritesPlaylistsAA,
+                        onCheckedChange = { showFavoritesPlaylistsAA = it }
+                    )
+            }
+
+            settingsItem(
+                isHeader = true
+            ) {
+                SettingsGroupSpacer()
+                SettingsEntryGroupText("Reset")
+            }
+
+            settingsItem {
                 var resetToDefault by remember { mutableStateOf(false) }
                 val context = LocalContext.current
                 ButtonBarSettingEntry(
@@ -1745,7 +1901,6 @@ fun UiSettings(
                     SmartMessage(stringResource(R.string.done), context = context)
                 }
             }
-
 
 //        SettingsGroupSpacer(
 //            modifier = Modifier.height(Dimensions.bottomSpacer)

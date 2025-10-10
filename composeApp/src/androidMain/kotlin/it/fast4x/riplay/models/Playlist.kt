@@ -4,6 +4,8 @@ import androidx.compose.runtime.Immutable
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import it.fast4x.riplay.MONTHLY_PREFIX
+import it.fast4x.riplay.PINNED_PREFIX
 import it.fast4x.riplay.YTM_PLAYLIST_SHARE_BASEURL
 import it.fast4x.riplay.YT_PLAYLIST_SHARE_BASEURL
 
@@ -25,4 +27,10 @@ data class Playlist(
         get() = browseId?.let { "$YT_PLAYLIST_SHARE_BASEURL${it.removePrefix("MPSP")}" }
     val shareYTMUrlAsPodcast: String?
         get() =  browseId?.let { "$YTM_PLAYLIST_SHARE_BASEURL${it.removePrefix("MPSP")}" }
+
+    val isPinned: Boolean
+        get() = name.startsWith(PINNED_PREFIX)
+    val isMonthly: Boolean
+        get() = name.startsWith(MONTHLY_PREFIX)
+
 }
