@@ -88,19 +88,19 @@ class AndroidAutoService : MediaBrowserServiceCompat(), ServiceConnection {
 
     var _internalLocalPlayerBinder: LocalPlayerService.Binder? = null
         set(value) {
-            localPlayerBinder = value
+            internalLocalPlayerBinder = value
         }
 
     var _internalMediaSession: MediaSessionCompat? = null
         set(value) {
-            mediaSession = value
+            internalMediaSession = value
         }
 
     companion object {
 
-        var mediaSession: MediaSessionCompat? = null
-        var localPlayerBinder: LocalPlayerService.Binder? = null
-        var bitmapProvider: BitmapProvider? = null
+        var internalMediaSession: MediaSessionCompat? = null
+        var internalLocalPlayerBinder: LocalPlayerService.Binder? = null
+        var internalBitmapProvider: BitmapProvider? = null
         var isPlaying: Boolean = false
         var lastSongs: List<Song> = emptyList()
         var searchedSongs: List<Song> = emptyList()
@@ -126,9 +126,9 @@ class AndroidAutoService : MediaBrowserServiceCompat(), ServiceConnection {
 
         private fun updateMediaSessionData() {
             Timber.d("AndroidAutoService updateMediaSessionPlaybackState")
-            val mediaItem = localPlayerBinder?.player?.currentMediaItem ?: return
-            bitmapProvider?.load(mediaItem.mediaMetadata.artworkUri) {}
-            mediaSession?.setMetadata(
+            val mediaItem = internalLocalPlayerBinder?.player?.currentMediaItem ?: return
+            internalBitmapProvider?.load(mediaItem.mediaMetadata.artworkUri) {}
+            internalMediaSession?.setMetadata(
                 MediaMetadataCompat.Builder()
                     .putString(
                         MediaMetadataCompat.METADATA_KEY_MEDIA_ID,
@@ -136,7 +136,7 @@ class AndroidAutoService : MediaBrowserServiceCompat(), ServiceConnection {
                     )
                     .putBitmap(
                         MediaMetadataCompat.METADATA_KEY_ALBUM_ART,
-                        bitmapProvider?.bitmap
+                        internalBitmapProvider?.bitmap
                     )
                     .putString(
                         MediaMetadataCompat.METADATA_KEY_TITLE,
@@ -158,7 +158,7 @@ class AndroidAutoService : MediaBrowserServiceCompat(), ServiceConnection {
         }
 
         private fun updatePlaybackState() {
-            mediaSession?.setPlaybackState(
+            internalMediaSession?.setPlaybackState(
                 stateBuilder
                     .setState(
                         if (isPlaying) PlaybackStateCompat.STATE_PLAYING else PlaybackStateCompat.STATE_PAUSED,
@@ -216,7 +216,7 @@ class AndroidAutoService : MediaBrowserServiceCompat(), ServiceConnection {
         super.onCreate()
 
         runCatching {
-            bitmapProvider = BitmapProvider(
+            internalBitmapProvider = BitmapProvider(
                 bitmapSize = (512 * resources.displayMetrics.density).roundToInt(),
                 colorProvider = { isSystemInDarkMode ->
                     if (isSystemInDarkMode) Color.BLACK else Color.WHITE
@@ -234,7 +234,7 @@ class AndroidAutoService : MediaBrowserServiceCompat(), ServiceConnection {
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         Timber.d("AndroidAutoService onStartCommand")
-        MediaButtonReceiver.handleIntent(mediaSession, intent)
+        MediaButtonReceiver.handleIntent(internalMediaSession, intent)
 
         isRunning = true
         return START_STICKY // If the service is killed, it will be automatically restarted
@@ -307,7 +307,7 @@ class AndroidAutoService : MediaBrowserServiceCompat(), ServiceConnection {
         clientUid: Int,
         rootHints: Bundle?
     ): BrowserRoot? {
-        Timber.d("AndroidAutoService onGetRoot $clientPackageName but app is running ? ${isAppRunning()} mediaSession $mediaSession but service is running ? $isRunning")
+        Timber.d("AndroidAutoService onGetRoot $clientPackageName but app is running ? ${isAppRunning()} mediaSession $internalMediaSession but service is running ? $isRunning")
         bindService(intent<AndroidAutoService>(), this, Context.BIND_AUTO_CREATE)
         bindService(intent<LocalPlayerService>(), this, Context.BIND_AUTO_CREATE)
 
@@ -977,8 +977,8 @@ class AndroidAutoService : MediaBrowserServiceCompat(), ServiceConnection {
         Timber.d("AndroidAutoService onServiceConnected isAppRunning ${isAppRunning()}")
 
         if (service is LocalBinder) {
-            if (mediaSession?.sessionToken != null) {
-                sessionToken = mediaSession?.sessionToken
+            if (internalMediaSession?.sessionToken != null) {
+                sessionToken = internalMediaSession?.sessionToken
             }
 
             updateMediaSessionData()
