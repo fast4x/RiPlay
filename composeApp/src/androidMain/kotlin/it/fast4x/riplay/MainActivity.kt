@@ -2103,7 +2103,7 @@ class MainActivity :
                     else
                         lifecycle.addObserver(this)
 
-                    onlinePlayerView.keepScreenOn = isKeepScreenOnEnabled
+                    keepScreenOn = isKeepScreenOnEnabled
 
                     if (!onlinePlayerIsInitialized.value)
                         initialize(listener, iFramePlayerOptions)
