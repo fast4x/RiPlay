@@ -196,7 +196,7 @@
             android:foregroundServiceType="mediaPlayback"
             tools:ignore="ExportedService">
             <intent-filter>
-                <action android:name=".service.EndlessService" />
+                <action android:name=".service.ToolsService" />
             </intent-filter>
         </service>
 
