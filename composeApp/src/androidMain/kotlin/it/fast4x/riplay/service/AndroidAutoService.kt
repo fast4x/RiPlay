@@ -7,7 +7,6 @@ import android.content.ContentResolver
 import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
-import android.content.pm.ServiceInfo
 import android.graphics.Color
 import android.net.Uri
 import android.os.Binder
@@ -27,7 +26,6 @@ import androidx.compose.ui.util.fastFilter
 import androidx.core.app.NotificationChannelCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
-import androidx.core.app.ServiceCompat
 import androidx.core.net.toUri
 import androidx.media.MediaBrowserServiceCompat
 import androidx.media.session.MediaButtonReceiver
@@ -81,7 +79,6 @@ import it.fast4x.riplay.utils.asSong
 import it.fast4x.riplay.utils.isAtLeastAndroid12
 import kotlin.math.roundToInt
 import it.fast4x.riplay.utils.asMediaItem
-import it.fast4x.riplay.utils.isAtLeastAndroid11
 import it.fast4x.riplay.utils.isAtLeastAndroid6
 import it.fast4x.riplay.utils.isAtLeastAndroid8
 
@@ -89,18 +86,12 @@ import it.fast4x.riplay.utils.isAtLeastAndroid8
 @UnstableApi
 class AndroidAutoService : MediaBrowserServiceCompat(), ServiceConnection {
 
-    //private var mNotificationManager: NotificationManager? = null
-
-    var tmpLocalPlayerBinder: LocalPlayerService.Binder? = null
+    var _internalLocalPlayerBinder: LocalPlayerService.Binder? = null
         set(value) {
             localPlayerBinder = value
         }
-//    var tmpOnlinePlayer: MutableState<YouTubePlayer?> = mutableStateOf(null)
-//        set(value) {
-//            onlinePlayer = value
-//        }
 
-    var tmpMediaSessionCompat: MediaSessionCompat? = null
+    var _internalMediaSession: MediaSessionCompat? = null
         set(value) {
             mediaSession = value
         }
@@ -109,7 +100,6 @@ class AndroidAutoService : MediaBrowserServiceCompat(), ServiceConnection {
 
         var mediaSession: MediaSessionCompat? = null
         var localPlayerBinder: LocalPlayerService.Binder? = null
-        //var onlinePlayer: MutableState<YouTubePlayer?> = mutableStateOf(null)
         var bitmapProvider: BitmapProvider? = null
         var isPlaying: Boolean = false
         var lastSongs: List<Song> = emptyList()
@@ -199,17 +189,13 @@ class AndroidAutoService : MediaBrowserServiceCompat(), ServiceConnection {
 
         var mediaSession: MediaSessionCompat? = null
             set(value) {
-                this@AndroidAutoService.tmpMediaSessionCompat = value
+                this@AndroidAutoService._internalMediaSession = value
             }
 
         var localPlayerBinder: LocalPlayerService.Binder? = null
             set(value) {
-                this@AndroidAutoService.tmpLocalPlayerBinder = value
+                this@AndroidAutoService._internalLocalPlayerBinder = value
             }
-//        var onlinePlayer: MutableState<YouTubePlayer?> = mutableStateOf(null)
-//            set(value) {
-//                this@AndroidAutoService.tmpOnlinePlayer = value
-//            }
 
     }
 
@@ -223,29 +209,11 @@ class AndroidAutoService : MediaBrowserServiceCompat(), ServiceConnection {
         }
         Timber.d("AndroidAutoService onBind process intent ${intent?.action}")
 
-        // start when client is connected
-//        if (isNotifyAndroidAutoTipsEnabled())
-//            startNotification()
-
         return mBinder
     }
 
     override fun onCreate() {
         super.onCreate()
-        // not necessary because mediasession is passed by mainactivity
-//        val sessionActivityPendingIntent =
-//            packageManager?.getLaunchIntentForPackage(packageName)?.let { sessionIntent ->
-//                PendingIntent.getActivity(this, 0, sessionIntent, PendingIntent.FLAG_IMMUTABLE)
-//            }
-//
-//        mediaSession = MediaSessionCompat(this, "AndroidAutoService")
-//        mediaSession?.setFlags(MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS or MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS)
-//        mediaSession?.setRatingType(RatingCompat.RATING_NONE)
-//        mediaSession?.setSessionActivity(sessionActivityPendingIntent)
-////        if (mediaSession?.sessionToken != null)
-////            setSessionToken(mediaSession?.sessionToken)
-//        mediaSession?.isActive = true
-
 
         runCatching {
             bitmapProvider = BitmapProvider(
@@ -267,10 +235,6 @@ class AndroidAutoService : MediaBrowserServiceCompat(), ServiceConnection {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         Timber.d("AndroidAutoService onStartCommand")
         MediaButtonReceiver.handleIntent(mediaSession, intent)
-        //mNotificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager?
-        //NotificationManagerCompat.from(this@AndroidAutoService).notify(NOTIFICATION_ID, notification)
-
-        //startNotification() not start when service start
 
         isRunning = true
         return START_STICKY // If the service is killed, it will be automatically restarted
@@ -345,14 +309,10 @@ class AndroidAutoService : MediaBrowserServiceCompat(), ServiceConnection {
     ): BrowserRoot? {
         Timber.d("AndroidAutoService onGetRoot $clientPackageName but app is running ? ${isAppRunning()} mediaSession $mediaSession but service is running ? $isRunning")
         bindService(intent<AndroidAutoService>(), this, Context.BIND_AUTO_CREATE)
-
-//        if(!isAppRunning())
-//            return BrowserRoot(MediaId.FAULT, Bundle().apply { putInt(CONTENT_STYLE_BROWSABLE_HINT, CONTENT_STYLE_LIST) })
+        bindService(intent<LocalPlayerService>(), this, Context.BIND_AUTO_CREATE)
 
         return BrowserRoot(
-            //if(isAppRunning()) MediaId.root else MediaId.fault,
             MediaId.ROOT,
-            //bundleOf("android.media.browse.CONTENT_STYLE_BROWSABLE_HINT" to 1)
             Bundle().apply {
                 putBoolean(MEDIA_SEARCH_SUPPORTED, true)
                 putBoolean(CONTENT_STYLE_SUPPORTED, true)
@@ -443,11 +403,6 @@ class AndroidAutoService : MediaBrowserServiceCompat(), ServiceConnection {
                                         add(1, artistsOnDeviceBrowserMediaItem)
                                 }
                         } else {
-//                            Database.artistSongsByname(id)
-//                                .first()
-//                                .also { lastSongs = it }
-//                                .map { it.asBrowserMediaItem }
-//                                .toMutableList()
                             val artist = Database.artist(id).first()
                             var songs = Database.artistAllSongs(id).first()
                             if (songs.isEmpty()) {
@@ -527,11 +482,6 @@ class AndroidAutoService : MediaBrowserServiceCompat(), ServiceConnection {
                                 .toMutableList()
                         } else {
                             Timber.d("AndroidAutoService onLoadChildren inside artist single in library id $id")
-//                            Database.artistSongsByname(id)
-//                                .first()
-//                                .also { lastSongs = it }
-//                                .map { it.asBrowserMediaItem }
-//                                .toMutableList()
                             val artist = Database.artist(id).first()
                             var songs = Database.artistAllSongs(id).first()
                             if (songs.isEmpty()) {
@@ -602,11 +552,6 @@ class AndroidAutoService : MediaBrowserServiceCompat(), ServiceConnection {
                                 }
                         } else {
                             Timber.d("AndroidAutoService onLoadChildren inside albums SONGS id $id")
-//                            Database.albumSongs(id)
-//                                .first()
-//                                .also { lastSongs = it }
-//                                .map { it.asBrowserMediaItem }
-//                                .toMutableList()
                             val album = Database.album(id).first()
                             var songs = Database.albumSongs(id).first()
                             if (songs.isEmpty()) {
@@ -688,11 +633,6 @@ class AndroidAutoService : MediaBrowserServiceCompat(), ServiceConnection {
                                 .toMutableList()
                         } else {
                             Timber.d("AndroidAutoService onLoadChildren inside albums SONGS id $id")
-//                            Database.albumSongs(id)
-//                                .first()
-//                                .also { lastSongs = it }
-//                                .map { it.asBrowserMediaItem }
-//                                .toMutableList()
                             val album = Database.album(id).first()
                             var songs = Database.albumSongs(id).first()
                             if (songs.isEmpty()) {
@@ -772,8 +712,6 @@ class AndroidAutoService : MediaBrowserServiceCompat(), ServiceConnection {
                         .map { it.asBrowserMediaItem }
                         .toMutableList()
 
-
-
                     // End Browsable and playable items
 
                     else -> mutableListOf()
@@ -850,17 +788,6 @@ class AndroidAutoService : MediaBrowserServiceCompat(), ServiceConnection {
             MediaItem.FLAG_BROWSABLE
         )
 
-//    private val Album.asBrowserMediaItem
-//        inline get() = MediaItem(
-//            MediaDescriptionCompat.Builder()
-//                .setMediaId(MediaId.forAlbumFavorites(id))
-//                .setTitle(title?.removePrefix())
-//                .setSubtitle(authorsText)
-//                .setIconUri(thumbnailUrl?.toUri())
-//                .build(),
-//            MediaItem.FLAG_BROWSABLE
-//        )
-
     private fun Album.asBrowserMediaItem(type: String) =
         MediaItem(
             MediaDescriptionCompat.Builder()
@@ -878,17 +805,6 @@ class AndroidAutoService : MediaBrowserServiceCompat(), ServiceConnection {
                 .build(),
             MediaItem.FLAG_BROWSABLE
         )
-
-//    private val Artist.asBrowserMediaItem
-//        inline get() = MediaItem(
-//            MediaDescriptionCompat.Builder()
-//                .setMediaId(MediaId.forArtistFavorites(name ?: ""))
-//                .setTitle(name?.removePrefix())
-//                //.setSubtitle()
-//                .setIconUri(thumbnailUrl?.toUri())
-//                .build(),
-//            MediaItem.FLAG_BROWSABLE
-//        )
 
     private fun Artist.asBrowserMediaItem(type: String) =
         MediaItem(
@@ -1056,139 +972,25 @@ class AndroidAutoService : MediaBrowserServiceCompat(), ServiceConnection {
 
 
     @RequiresApi(Build.VERSION_CODES.O)
-    override fun onServiceConnected(p0: ComponentName?, p1: IBinder?) {
+    override fun onServiceConnected(className: ComponentName?, service: IBinder?) {
 
         Timber.d("AndroidAutoService onServiceConnected isAppRunning ${isAppRunning()}")
 
-        if (isNotifyAndroidAutoTipsEnabled())
-            startNotification()
-
-//        if(!isAppRunning()) {
-//            startService(intent<AndroidAutoService>())
-//            startNotification()
-//            Timber.d("AndroidAutoService onServiceConnected started AndroidAutoService")
-//        }
-
-
-
-//        val intent = Intent(this, MainActivity::class.java)
-//        intent.action = Intent.ACTION_MAIN
-//        intent.addCategory(Intent.CATEGORY_LAUNCHER)
-//        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-//
-//        runCatching {
-//            startActivity(intent)
-//            Timber.d("AndroidAutoService onServiceConnected started MainActivity with intent")
-//        }.onFailure {
-//            Timber.d("AndroidAutoService onServiceConnected failed to start MainActivity with intent ${it.stackTraceToString()}")
-//        }
-
-        val service = p1
         if (service is LocalBinder) {
             if (mediaSession?.sessionToken != null) {
                 sessionToken = mediaSession?.sessionToken
             }
 
-//            localPlayerBinder?.let{
-//                mediaSession?.setCallback(
-//                    MediaSessionCallback(
-//                        it,
-//                        {
-//                            Timber.d("AndroidAutoservice MediaSessionCallback onPlayClick")
-//                            onlinePlayer.value?.play()
-//                            isPlaying = true
-//                            updateMediaSessionData()
-//                        },
-//                        {
-//                            Timber.d("AndroidAutoservice MediaSessionCallback onPauseClick")
-//                            onlinePlayer.value?.pause()
-//                            isPlaying = false
-//                            updateMediaSessionData()
-//                        },
-//                        { second ->
-//                            val newPosition = (second / 1000).toFloat()
-//                            Timber.d("AndroidAutoservice MediaSessionCallback onSeekPosTo ${newPosition}")
-//                            onlinePlayer.value?.seekTo(newPosition)
-//                            updateMediaSessionData()
-//                        },
-//                        {
-//                            updateMediaSessionData()
-//                        },
-//                        {
-//                            updateMediaSessionData()
-//                        }
-//                    )
-//                )
-//            }
-
-
             updateMediaSessionData()
         }
+
+        if (isNotifyAndroidAutoTipsEnabled())
+            startNotification()
+
         Timber.d("AndroidAutoService onServiceConnected")
     }
 
     override fun onServiceDisconnected(name: ComponentName) = Unit
-
-    //Used also as media button receiver
-//    private inner class SessionCallback() :
-//        MediaSessionCompat.Callback() {
-//
-//            override fun onStop() {
-//                super.onStop()
-//                onlinePlayer.value?.pause()
-//                isPlaying = false
-//                updateMediaSessionData()
-//                Timber.d("AndroidAutoService MediaSessionCompat.Callback onStop")
-//            }
-//            override fun onPlay() {
-//                super.onPlay()
-//                onlinePlayer.value?.play()
-//                isPlaying = true
-//                updateMediaSessionData()
-//                Timber.d("AndroidAutoService MediaSessionCompat.Callback onPlay")
-//            }
-//            override fun onPause() {
-//                super.onPause()
-//                onlinePlayer.value?.pause()
-//                isPlaying = false
-//                updateMediaSessionData()
-//                Timber.d("AndroidAutoService MediaSessionCompat.Callback onPause")
-//            }
-//            override fun onSkipToNext() {
-//                super.onSkipToNext()
-//                localPlayerBinder?.player?.playNext()
-//                updateMediaSessionData()
-//            }
-//
-//            override fun onSkipToPrevious() {
-//                super.onSkipToPrevious()
-//                localPlayerBinder?.player?.playPrevious()
-//                updateMediaSessionData()
-//            }
-//
-//            @OptIn(UnstableApi::class)
-//            override fun onPlayFromMediaId(mediaId: String?, extras: Bundle?) {
-//                Timber.d("AndroidAutoService onPlayFromMediaId mediaId ${mediaId} called")
-//                val data = mediaId?.split('/') ?: return
-//                val id = data.getOrNull(1)
-//                //var index = 0
-//
-//                Timber.d("AndroidAutoService onPlayFromMediaId mediaId ${mediaId} data $data elaborated")
-//
-//                coroutineScope.launch {
-//                    val mediaItem = Database.song(id).first()?.asMediaItem ?: return@launch
-//                    withContext(Dispatchers.Main) {
-//                        fastPlay(
-//                            mediaItem,
-//                            localPlayerBinder
-//                        )
-//                        isPlaying = true
-//                        updateMediaSessionData()
-//                    }
-//                }
-//            }
-//        }
-
 
     object MediaId {
         const val FAULT = "fault"

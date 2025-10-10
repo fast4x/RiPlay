@@ -372,7 +372,6 @@ class MainActivity :
                 this@MainActivity.androidAutoService = service.serviceInstance.LocalBinder()
                 service.mediaSession = unifiedMediaSession
                 service.localPlayerBinder = binder
-                //service.onlinePlayer = onlinePlayer
             }
         }
 
