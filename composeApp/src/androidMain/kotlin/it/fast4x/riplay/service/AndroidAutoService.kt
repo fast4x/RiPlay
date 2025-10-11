@@ -19,6 +19,7 @@ import android.support.v4.media.MediaDescriptionCompat
 import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
+import android.view.LayoutInflater
 import androidx.annotation.DrawableRes
 import androidx.annotation.OptIn
 import androidx.annotation.RequiresApi
@@ -30,6 +31,10 @@ import androidx.core.net.toUri
 import androidx.media.MediaBrowserServiceCompat
 import androidx.media.session.MediaButtonReceiver
 import androidx.media3.common.util.UnstableApi
+import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
+import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.AbstractYouTubePlayerListener
+import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.options.IFramePlayerOptions
+import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
 import it.fast4x.environment.Environment
 import it.fast4x.environment.EnvironmentExt
 import it.fast4x.environment.models.BrowseEndpoint
@@ -45,6 +50,7 @@ import it.fast4x.riplay.UNIFIED_NOTIFICATION_CHANNEL
 import it.fast4x.riplay.PINNED_PREFIX
 import it.fast4x.riplay.R
 import it.fast4x.riplay.appContext
+import it.fast4x.riplay.context
 import it.fast4x.riplay.enums.AlbumSortBy
 import it.fast4x.riplay.enums.ArtistSortBy
 import it.fast4x.riplay.removePrefix
@@ -104,6 +110,8 @@ class AndroidAutoService : MediaBrowserServiceCompat(), ServiceConnection {
         var isPlaying: Boolean = false
         var lastSongs: List<Song> = emptyList()
         var searchedSongs: List<Song> = emptyList()
+
+        //private lateinit var onlinePlayerView: YouTubePlayerView
 
 
 
@@ -225,6 +233,10 @@ class AndroidAutoService : MediaBrowserServiceCompat(), ServiceConnection {
         }.onFailure {
             Timber.e("Failed init bitmap provider in PlayerService ${it.stackTraceToString()}")
         }
+
+//        onlinePlayerView = LayoutInflater.from(appContext())
+//            .inflate(R.layout.youtube_player, null, false)
+//                as YouTubePlayerView
 
         Timber.d("AndroidAutoService onCreate")
 
@@ -980,6 +992,34 @@ class AndroidAutoService : MediaBrowserServiceCompat(), ServiceConnection {
             if (internalMediaSession?.sessionToken != null) {
                 sessionToken = internalMediaSession?.sessionToken
             }
+
+//            onlinePlayerView.apply {
+//                enableAutomaticInitialization = false
+//
+//
+//                enableBackgroundPlayback(true)
+//
+//                keepScreenOn = false
+//
+//                val iFramePlayerOptions = IFramePlayerOptions.Builder(appContext())
+//                    .controls(0) // show/hide controls
+//                    .listType("playlist")
+//                    .origin(resources.getString(R.string.env_fqqhBZd0cf))
+//                    .build()
+//
+//                val listener = object : AbstractYouTubePlayerListener() {
+//
+//                    override fun onReady(youTubePlayer: YouTubePlayer) {
+//                        super.onReady(youTubePlayer)
+//                        Timber.d("AndroidAutoService onServiceConnected onlinePlayerView onReady")
+//                        youTubePlayer.loadVideo("JEJNFu9bbqo", 0f)
+//                    }
+//                }
+//                //if (!onlinePlayerIsInitialized.value)
+//                    initialize(listener, iFramePlayerOptions)
+//
+//                //onlinePlayerIsInitialized.value = true
+//            }
 
             updateMediaSessionData()
         }
