@@ -59,6 +59,7 @@ import it.fast4x.riplay.isSkipMediaOnErrorEnabled
 import it.fast4x.riplay.service.isLocal
 import it.fast4x.riplay.ui.components.themed.SmartMessage
 import it.fast4x.riplay.utils.clearWebViewData
+import it.fast4x.riplay.utils.isVideo
 import it.fast4x.riplay.utils.playNext
 import it.fast4x.riplay.utils.startFadeAnimator
 import kotlinx.coroutines.Dispatchers
@@ -73,6 +74,7 @@ import kotlin.time.Duration.Companion.seconds
 @Composable
 fun ExternalOnlineCore(
     onlinePlayerView: YouTubePlayerView,
+    player: MutableState<YouTubePlayer?>,
     onlinePlayerIsInitialized: MutableState<Boolean> = mutableStateOf(false),
     actAsMini: Boolean = false,
     load: Boolean = false,
@@ -87,10 +89,8 @@ fun ExternalOnlineCore(
     Timber.d("OnlinePlayerCore: called")
     val binder = LocalPlayerServiceBinder.current
 
-    var localMediaItem = remember { binder?.player?.currentMediaItem }
+    var localMediaItem by remember { mutableStateOf( binder?.player?.currentMediaItem ) }
     if (localMediaItem?.isLocal == true) return
-
-    val player = remember { mutableStateOf<YouTubePlayer?>(null) }
 
     val queueLoopType by rememberObservedPreference(queueLoopTypeKey, QueueLoopType.Default)
     var playerState by remember { mutableStateOf(PlayerConstants.PlayerState.UNSTARTED) }
@@ -102,12 +102,13 @@ fun ExternalOnlineCore(
         object : Player.Listener {
             override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
                 mediaItem?.let {
-                    if (mediaItem.isLocal) return
+                    if (it.isLocal) return
 
                     localMediaItem = it
                     lastVideoId.value = it.mediaId
                     player.value?.loadVideo(it.mediaId, 0f)
                     updateOnlineHistory(it)
+                    Timber.d("OnlinePlayerCore: onMediaItemTransition ${it.mediaId}")
                 }
             }
 
@@ -116,8 +117,6 @@ fun ExternalOnlineCore(
 
     val context = LocalContext.current
 
-//    val inflatedView = remember { LayoutInflater.from(context).inflate(R.layout.youtube_player, null, false) }
-//    val onlinePlayerView = remember { inflatedView as YouTubePlayerView }
     var shouldBePlaying by remember { mutableStateOf(false) }
     val lifecycleOwner = LocalLifecycleOwner.current
     val enableBackgroundPlayback by rememberPreference(isInvincibilityEnabledKey, true)
@@ -200,24 +199,21 @@ fun ExternalOnlineCore(
         player.value?.setPlaybackRate(plabackRate)
     }
 
-    Timber.d("OnlinePlayerCore: before create androidview")
+    val iFramePlayerOptions = remember {
+        IFramePlayerOptions.Builder(appContext())
+            .controls(0) // show/hide controls
+            .listType("playlist")
+            .origin(context().resources.getString(R.string.env_fqqhBZd0cf))
+            .build()
+    }
 
-    AndroidView(
-        //modifier = Modifier.windowInsetsPadding(WindowInsets.safeDrawing),
-        factory = {
+    val listener = remember {
+        object : AbstractYouTubePlayerListener() {
 
-            val iFramePlayerOptions = IFramePlayerOptions.Builder(appContext())
-                .controls(0) // show/hide controls
-                .listType("playlist")
-                .origin(context().resources.getString(R.string.env_fqqhBZd0cf))
-                .build()
-
-            val listener = object : AbstractYouTubePlayerListener() {
-
-                override fun onReady(youTubePlayer: YouTubePlayer) {
-                    super.onReady(youTubePlayer)
-                    player.value = youTubePlayer
-                    onPlayerReady(youTubePlayer)
+            override fun onReady(youTubePlayer: YouTubePlayer) {
+                super.onReady(youTubePlayer)
+                //player.value = youTubePlayer
+                onPlayerReady(youTubePlayer)
 
 //                        val customPlayerUiController =
 //                            CustomBasePlayerUiControllerAsListener(
@@ -228,52 +224,52 @@ fun ExternalOnlineCore(
 //                            )
 //                        youTubePlayer.addListener(customPlayerUiController)
 
-                    // Used to show default player ui with defaultPlayerUiController as custom view
-                    val customUiController =
-                        CustomDefaultPlayerUiController(
-                            context,
-                            onlinePlayerView,
-                            youTubePlayer,
-                            onTap = onTap
-                        )
-                    customUiController.showUi(false) // disable all default controls and buttons
-                    customUiController.showMenuButton(false)
-                    customUiController.showVideoTitle(false)
-                    customUiController.showPlayPauseButton(false)
-                    customUiController.showDuration(false)
-                    customUiController.showCurrentTime(false)
-                    customUiController.showSeekBar(false)
-                    customUiController.showBufferingProgress(false)
-                    customUiController.showYouTubeButton(false)
-                    customUiController.showFullscreenButton(false)
-                    onlinePlayerView.setCustomPlayerUi(customUiController.rootView)
+                // Used to show default player ui with defaultPlayerUiController as custom view
+                val customUiController =
+                    CustomDefaultPlayerUiController(
+                        context,
+                        onlinePlayerView,
+                        youTubePlayer,
+                        onTap = onTap
+                    )
+                customUiController.showUi(false) // disable all default controls and buttons
+                customUiController.showMenuButton(false)
+                customUiController.showVideoTitle(false)
+                customUiController.showPlayPauseButton(false)
+                customUiController.showDuration(false)
+                customUiController.showCurrentTime(false)
+                customUiController.showSeekBar(false)
+                customUiController.showBufferingProgress(false)
+                customUiController.showYouTubeButton(false)
+                customUiController.showFullscreenButton(false)
+                onlinePlayerView.setCustomPlayerUi(customUiController.rootView)
 
-                    //youTubePlayer.loadOrCueVideo(lifecycleOwner.lifecycle, mediaItem.mediaId, lastYTVideoSeconds)
-                    Timber.d("OnlinePlayerCore: onReady shouldBePlaying: $shouldBePlaying")
-                    if (localMediaItem != null) {
-                        if (!load)
-                            youTubePlayer.cueVideo(localMediaItem!!.mediaId, playFromSecond)
-                        else
-                            youTubePlayer.loadVideo(localMediaItem!!.mediaId, playFromSecond)
-                    }
-
+                //youTubePlayer.loadOrCueVideo(lifecycleOwner.lifecycle, mediaItem.mediaId, lastYTVideoSeconds)
+                Timber.d("OnlinePlayerCore: onReady shouldBePlaying: $shouldBePlaying")
+                if (localMediaItem != null) {
+                    if (!load)
+                        youTubePlayer.cueVideo(localMediaItem!!.mediaId, playFromSecond)
+                    else
+                        youTubePlayer.loadVideo(localMediaItem!!.mediaId, playFromSecond)
                 }
 
-                override fun onCurrentSecond(youTubePlayer: YouTubePlayer, second: Float) {
-                    super.onCurrentSecond(youTubePlayer, second)
-                    onSecondChange(second)
-                }
+            }
 
-                override fun onVideoDuration(youTubePlayer: YouTubePlayer, duration: Float) {
-                    super.onVideoDuration(youTubePlayer, duration)
-                    onDurationChange(duration)
-                }
+            override fun onCurrentSecond(youTubePlayer: YouTubePlayer, second: Float) {
+                super.onCurrentSecond(youTubePlayer, second)
+                onSecondChange(second)
+            }
 
-                override fun onStateChange(
-                    youTubePlayer: YouTubePlayer,
-                    state: PlayerConstants.PlayerState
-                ) {
-                    super.onStateChange(youTubePlayer, state)
+            override fun onVideoDuration(youTubePlayer: YouTubePlayer, duration: Float) {
+                super.onVideoDuration(youTubePlayer, duration)
+                onDurationChange(duration)
+            }
+
+            override fun onStateChange(
+                youTubePlayer: YouTubePlayer,
+                state: PlayerConstants.PlayerState
+            ) {
+                super.onStateChange(youTubePlayer, state)
 
 //                    val fadeDisabled = getPlaybackFadeAudioDuration() == DurationInMilliseconds.Disabled
 //                    val duration = getPlaybackFadeAudioDuration().milliSeconds
@@ -284,134 +280,129 @@ fun ExternalOnlineCore(
 //                            fadeIn = true
 //                        )
 
-                    playerState = state
-                    onPlayerStateChange(state)
+                playerState = state
+                onPlayerStateChange(state)
+            }
+
+            override fun onError(
+                youTubePlayer: YouTubePlayer,
+                error: PlayerConstants.PlayerError
+            ) {
+                super.onError(youTubePlayer, error)
+
+                localMediaItem?.isLocal?.let { if (it) return }
+
+                youTubePlayer.pause()
+                clearWebViewData()
+
+                Timber.e("OnlinePlayerCore: onError $error")
+                val errorString = when (error) {
+                    PlayerConstants.PlayerError.VIDEO_NOT_PLAYABLE_IN_EMBEDDED_PLAYER -> "Content not playable, recovery in progress, try to click play but if the error persists try to log in"
+                    PlayerConstants.PlayerError.VIDEO_NOT_FOUND -> "Content not found, perhaps no longer available"
+                    else -> null
                 }
 
-                override fun onError(
-                    youTubePlayer: YouTubePlayer,
-                    error: PlayerConstants.PlayerError
-                ) {
-                    super.onError(youTubePlayer, error)
-
-                    localMediaItem?.isLocal?.let { if (it) return }
-
-                    youTubePlayer.pause()
-                    clearWebViewData()
-
-                    Timber.e("OnlinePlayerCore: onError $error")
-                    val errorString = when (error) {
-                        PlayerConstants.PlayerError.VIDEO_NOT_PLAYABLE_IN_EMBEDDED_PLAYER -> "Content not playable, recovery in progress, try to click play but if the error persists try to log in"
-                        PlayerConstants.PlayerError.VIDEO_NOT_FOUND -> "Content not found, perhaps no longer available"
-                        else -> null
-                    }
-
-                    if (errorString != null && lastError.value != error) {
-                        SmartMessage(
-                            errorString,
-                            PopupType.Error,
-                            //durationLong = true,
-                            context = context()
-                        )
-                        if (localMediaItem != null)
-                            youTubePlayer.cueVideo(localMediaItem.mediaId, 0f)
-
-                    }
-
-                    lastError.value = error
-
-                    if (!isSkipMediaOnErrorEnabled()) return
-                    val prev = binder?.player?.currentMediaItem ?: return
-
-                    binder.player.playNext()
-
+                if (errorString != null && lastError.value != error) {
                     SmartMessage(
-                        message = context().getString(
-                            R.string.skip_media_on_error_message,
-                            prev.mediaMetadata.title
-                        ),
-                        context = context(),
+                        errorString,
+                        PopupType.Error,
+                        //durationLong = true,
+                        context = context()
                     )
+                    localMediaItem?.let { youTubePlayer.cueVideo(it.mediaId, 0f) }
 
                 }
 
+                lastError.value = error
+
+                if (!isSkipMediaOnErrorEnabled()) return
+                val prev = binder?.player?.currentMediaItem ?: return
+
+                binder.player.playNext()
+
+                SmartMessage(
+                    message = context().getString(
+                        R.string.skip_media_on_error_message,
+                        prev.mediaMetadata.title
+                    ),
+                    context = context(),
+                )
+
             }
 
-            //inflatedView.keepScreenOn = enableKeepScreenOn
-            onlinePlayerView.apply {
-                enableAutomaticInitialization = false
+        }
+    }
 
-                if (enableBackgroundPlayback)
-                    enableBackgroundPlayback(true)
-                else
-                    lifecycleOwner.lifecycle.addObserver(this)
+    val onlinePlayerViewInitalized = remember {
+        onlinePlayerView.apply {
+            enableAutomaticInitialization = false
 
-                onlinePlayerView.keepScreenOn = enableKeepScreenOn
+            if (enableBackgroundPlayback)
+                enableBackgroundPlayback(true)
+            else
+                lifecycleOwner.lifecycle.addObserver(this)
 
-                if (!onlinePlayerIsInitialized.value)
-                    initialize(listener, iFramePlayerOptions)
+            onlinePlayerView.keepScreenOn = enableKeepScreenOn
 
-                //initialized, not initialize again
-                onlinePlayerIsInitialized.value = true
+            if (!onlinePlayerIsInitialized.value)
+                initialize(listener, iFramePlayerOptions)
 
-                Timber.d("OnlinePlayerCore: initialize")
-            }
+            //initialized, not initialize again
+            onlinePlayerIsInitialized.value = true
 
+            Timber.d("OnlinePlayerCore: initialize")
+        }
+    }
 
-        },
-        update = {
+    // if not video, android view not required
+    if (localMediaItem?.isVideo == true) {
+        AndroidView(
+            //modifier = Modifier.windowInsetsPadding(WindowInsets.safeDrawing),
+            factory = {
+
+                onlinePlayerViewInitalized
+
+            },
+            update = {
 
 //            (it.parent as? DialogWindowProvider)
 //                ?.window?.clearFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
 
-            it.enableBackgroundPlayback(enableBackgroundPlayback)
-            //inflatedView.keepScreenOn = enableKeepScreenOn
-            it.keepScreenOn = enableKeepScreenOn
+                it.enableBackgroundPlayback(enableBackgroundPlayback)
+                //inflatedView.keepScreenOn = enableKeepScreenOn
+                it.keepScreenOn = enableKeepScreenOn
 
-            when(actAsMini) {
-                true -> {
-                    it.layoutParams = ViewGroup.LayoutParams(
-                        100,
-                        100
-                    )
-                }
-                false -> {
-                    it.layoutParams = if (!isLandscape) {
-                        ViewGroup.LayoutParams(
-                            ViewGroup.LayoutParams.MATCH_PARENT,
-                            if (playerThumbnailSize == PlayerThumbnailSize.Expanded)
-                                ViewGroup.LayoutParams.WRAP_CONTENT
-                            else playerThumbnailSize.height
-                        )
-                    } else {
-                        ViewGroup.LayoutParams(
-                            ViewGroup.LayoutParams.MATCH_PARENT,
-                            ViewGroup.LayoutParams.WRAP_CONTENT
+                when (actAsMini) {
+                    true -> {
+                        it.layoutParams = ViewGroup.LayoutParams(
+                            100,
+                            100
                         )
                     }
-                }
-            }
 
-        }
-    )
-
-    fun callPause(
-        onPause: () -> Unit
-    ) {
-        val fadeDisabled = getPlaybackFadeAudioDuration() == DurationInMilliseconds.Disabled
-        val duration = getPlaybackFadeAudioDuration().milliSeconds
-        if (playerState == PlayerConstants.PlayerState.PLAYING) {
-            if (fadeDisabled) {
-                player.value?.pause()
-                onPause()
-            } else {
-                //fadeOut
-                startFadeAnimator(player, duration, false) {
-                    player.value?.pause()
-                    onPause()
+                    false -> {
+                        it.layoutParams = if (!isLandscape) {
+                            ViewGroup.LayoutParams(
+                                ViewGroup.LayoutParams.MATCH_PARENT,
+                                if (playerThumbnailSize == PlayerThumbnailSize.Expanded)
+                                    ViewGroup.LayoutParams.WRAP_CONTENT
+                                else playerThumbnailSize.height
+                            )
+                        } else {
+                            ViewGroup.LayoutParams(
+                                ViewGroup.LayoutParams.MATCH_PARENT,
+                                ViewGroup.LayoutParams.WRAP_CONTENT
+                            )
+                        }
+                    }
                 }
+
             }
-        }
+        )
+    } else {
+        LocalView.current.keepScreenOn = enableKeepScreenOn
+        onlinePlayerViewInitalized.keepScreenOn = enableKeepScreenOn
     }
+
 
 }

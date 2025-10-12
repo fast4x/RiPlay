@@ -718,7 +718,9 @@ class MainActivity :
 
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
-        Timber.d("MainActivity.onConfigurationChanged")
+        //if (newConfig.orientation in intArrayOf(Configuration.ORIENTATION_LANDSCAPE, Configuration.ORIENTATION_PORTRAIT))
+        //    onlinePlayerIsInitialized.value = false // this reinitialize the online player when screen rotate but maybe not needed
+        Timber.d("MainActivity.onConfigurationChanged newConfig.orientation ${newConfig.orientation} onlinePlayerIsInitialized ${onlinePlayerIsInitialized.value}")
     }
 
 
@@ -1369,6 +1371,7 @@ class MainActivity :
                 val externalOnlineCore: @Composable () -> Unit = {
                     ExternalOnlineCore(
                         onlinePlayerView = onlinePlayerView,
+                        player = onlinePlayer,
                         onlinePlayerIsInitialized = onlinePlayerIsInitialized,
                         load = getResumePlaybackOnStart() || lastMediaItemWasLocal(),
                         playFromSecond = currentSecond.value,
