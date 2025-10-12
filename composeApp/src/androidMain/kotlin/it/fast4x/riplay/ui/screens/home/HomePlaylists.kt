@@ -64,7 +64,6 @@ import it.fast4x.riplay.ui.components.themed.HeaderInfo
 import it.fast4x.riplay.ui.components.themed.MultiFloatingActionsContainer
 import it.fast4x.riplay.ui.items.PlaylistItem
 import it.fast4x.riplay.ui.styling.Dimensions
-import it.fast4x.riplay.utils.CheckMonthlyPlaylist
 import it.fast4x.riplay.utils.asMediaItem
 import it.fast4x.riplay.extensions.preferences.disableScrollingTextKey
 import it.fast4x.riplay.extensions.preferences.enableCreateMonthlyPlaylistsKey
@@ -102,6 +101,7 @@ import it.fast4x.riplay.models.SongEntity
 import it.fast4x.riplay.models.defaultQueue
 import it.fast4x.riplay.ui.components.LocalMenuState
 import it.fast4x.riplay.ui.components.themed.PlaylistsItemMenu
+import it.fast4x.riplay.utils.CheckAndCreateMonthlyPlaylist
 import it.fast4x.riplay.utils.LazyListContainer
 import it.fast4x.riplay.utils.addNext
 import it.fast4x.riplay.utils.forcePlayFromBeginning
@@ -334,7 +334,7 @@ fun HomePlaylists(
     // START - Monthly playlist
     val enableCreateMonthlyPlaylists by rememberPreference(enableCreateMonthlyPlaylistsKey, true)
     if (enableCreateMonthlyPlaylists)
-        CheckMonthlyPlaylist()
+        CheckAndCreateMonthlyPlaylist()
     // END - Monthly playlist
 
     PullToRefreshBox(

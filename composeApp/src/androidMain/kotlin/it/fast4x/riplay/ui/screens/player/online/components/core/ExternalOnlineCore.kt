@@ -108,8 +108,6 @@ fun ExternalOnlineCore(
                     lastVideoId.value = it.mediaId
                     player.value?.loadVideo(it.mediaId, 0f)
                     updateOnlineHistory(it)
-
-                    Timber.d("OnlinePlayerCore: onMediaItemTransition loaded ${it.mediaId}")
                 }
             }
 

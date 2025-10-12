@@ -19,7 +19,6 @@ import android.support.v4.media.MediaDescriptionCompat
 import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
-import android.view.LayoutInflater
 import androidx.annotation.DrawableRes
 import androidx.annotation.OptIn
 import androidx.annotation.RequiresApi
@@ -31,10 +30,6 @@ import androidx.core.net.toUri
 import androidx.media.MediaBrowserServiceCompat
 import androidx.media.session.MediaButtonReceiver
 import androidx.media3.common.util.UnstableApi
-import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
-import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.AbstractYouTubePlayerListener
-import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.options.IFramePlayerOptions
-import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
 import it.fast4x.environment.Environment
 import it.fast4x.environment.EnvironmentExt
 import it.fast4x.environment.models.BrowseEndpoint
@@ -50,7 +45,6 @@ import it.fast4x.riplay.UNIFIED_NOTIFICATION_CHANNEL
 import it.fast4x.riplay.PINNED_PREFIX
 import it.fast4x.riplay.R
 import it.fast4x.riplay.appContext
-import it.fast4x.riplay.context
 import it.fast4x.riplay.enums.AlbumSortBy
 import it.fast4x.riplay.enums.ArtistSortBy
 import it.fast4x.riplay.removePrefix
@@ -75,7 +69,7 @@ import it.fast4x.riplay.showOnDeviceAA
 import it.fast4x.riplay.showTopPlaylistAA
 import it.fast4x.riplay.shuffleSongsAAEnabled
 import it.fast4x.riplay.utils.BitmapProvider
-import it.fast4x.riplay.utils.getTitleMonthlyPlaylistFromContext
+import it.fast4x.riplay.utils.getTitleMonthlyPlaylist
 import it.fast4x.riplay.utils.intent
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
@@ -841,7 +835,7 @@ class AndroidAutoService : MediaBrowserServiceCompat(), ServiceConnection {
             MediaDescriptionCompat.Builder()
                 .setMediaId(mediaId)
                 .setTitle(if (description.title.toString().startsWith("0:")) description.title.toString().substringAfter("0:") else
-                    if (description.title.toString().startsWith("1:")) getTitleMonthlyPlaylistFromContext(description.title.toString().substringAfter("1:"), this@AndroidAutoService) else description.title.toString())
+                    if (description.title.toString().startsWith("1:")) getTitleMonthlyPlaylist(description.title.toString().substringAfter("1:"), this@AndroidAutoService) else description.title.toString())
                 .setIconUri(uriFor(if (description.title.toString().startsWith("0:")) R.drawable.pin else
                     if (description.title.toString().startsWith("1:")) R.drawable.stat_month else R.drawable.playlist))
                 .build(),
