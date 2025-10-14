@@ -133,9 +133,9 @@ class MediaSessionCallback (
 
             withContext(Dispatchers.Main) {
                 Timber.d("MediaSessionCallback onPlayFromMediaId mediaId ${mediaId} mediaItems ${mediaItems.size} ready to play")
+                onPauseClick() // Try to pause all before play with new mediaItems
                 binder.stopRadio()
                 binder.player.forcePlayAtIndex(mediaItems, index)
-                //fastPlay(mediaItem = mediaItemSelected, binder = binder, mediaItems = mediaItems)
             }
         }
 
