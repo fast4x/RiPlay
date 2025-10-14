@@ -603,14 +603,17 @@ class LocalPlayerService : MediaLibraryService(),
 
     override fun onTimelineChanged(timeline: Timeline, reason: Int) {
         Timber.d("LocalPlayerService onTimelineChanged timeline $timeline reason $reason")
-        if (isPersistentQueueEnabled())
-            player.saveMasterQueue()
+        player.saveMasterQueue()
     }
 
     override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) {
         Timber.d("LocalPlayerService onPlayWhenReadyChanged playWhenReady $playWhenReady reason $reason")
-        if (isPersistentQueueEnabled())
-            player.saveMasterQueue()
+        player.saveMasterQueue()
+    }
+
+    override fun onTrimMemory(level: Int) {
+        Timber.d("LocalPlayerService onTrimMemory level $level")
+        player.saveMasterQueue()
     }
 
     override fun onTaskRemoved(rootIntent: Intent?) {
