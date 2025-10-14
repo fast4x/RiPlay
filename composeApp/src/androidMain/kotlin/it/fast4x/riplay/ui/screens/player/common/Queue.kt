@@ -985,7 +985,9 @@ fun Queue(
                             )
                         else
                             OnlineMiniPlayer(
-                                showPlayer = { showPlayer() },
+                                showPlayer = {
+                                    onDismiss(queueLoopType)
+                                },
                                 hidePlayer = { hidePlayer() },
                                 navController = navController,
                                 player = player,
