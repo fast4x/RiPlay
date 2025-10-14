@@ -108,16 +108,20 @@ fun AppNavigation(
         }
     }
 
+
     @Composable
-    fun modalBottomSheetPage(content: @Composable () -> Unit) {
-        var showSheet by rememberSaveable { mutableStateOf(true) }
+    fun modalBottomSheetPage(
+        showSheet: Boolean? = true,
+        content: @Composable () -> Unit
+    ) {
+
         val thumbnailRoundness by rememberPreference(
             thumbnailRoundnessKey,
             ThumbnailRoundness.Heavy
         )
 
         CustomModalBottomSheet(
-            showSheet = showSheet,
+            showSheet = showSheet == true,
             onDismissRequest = {
                 if (navController.currentBackStackEntry?.lifecycle?.currentState == Lifecycle.State.RESUMED)
                     navController.popBackStack()
@@ -222,7 +226,8 @@ fun AppNavigation(
         }
 
         composable(route = NavRoutes.queue.name) {
-            modalBottomSheetPage {
+            val showModalBottomSheetPage = rememberSaveable { mutableStateOf(true) }
+            modalBottomSheetPage(showSheet = showModalBottomSheetPage.value) {
                 Queue(
                     navController = navController,
                     showPlayer = {},
@@ -231,7 +236,10 @@ fun AppNavigation(
                     playerState = playerState,
                     currentDuration = 0f,
                     currentSecond = 0f,
-                    onDismiss = {}, // todo fix close queue opened from navigation
+                    onDismiss = {
+                        showModalBottomSheetPage.value = false
+                        navController.popBackStack()
+                    },
                     onDiscoverClick = {}
                 )
             }
