@@ -370,8 +370,8 @@ class MainActivity :
             }
             if (service is AndroidAutoService.LocalBinder) {
                 this@MainActivity.androidAutoService = service.serviceInstance.LocalBinder()
-                service.mediaSession = unifiedMediaSession
-                service.localPlayerBinder = binder
+                service.mediaSessionInjected = unifiedMediaSession
+                service.localPlayerBinderInjected = binder
             }
         }
 
