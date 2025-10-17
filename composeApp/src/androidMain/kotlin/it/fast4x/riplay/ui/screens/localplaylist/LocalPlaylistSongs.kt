@@ -88,9 +88,9 @@ import it.fast4x.environment.EnvironmentExt
 import it.fast4x.environment.models.bodies.NextBody
 import it.fast4x.environment.requests.relatedSongs
 import it.fast4x.environment.utils.completed
-import it.fast4x.riplay.Database
-import it.fast4x.riplay.Database.Companion.songAlbumInfo
-import it.fast4x.riplay.Database.Companion.songArtistInfo
+import it.fast4x.riplay.data.Database
+import it.fast4x.riplay.data.Database.Companion.songAlbumInfo
+import it.fast4x.riplay.data.Database.Companion.songArtistInfo
 import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.LocalSelectedQueue
 import it.fast4x.riplay.R

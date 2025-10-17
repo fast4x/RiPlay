@@ -69,7 +69,7 @@ import it.fast4x.environment.Environment
 import it.fast4x.environment.EnvironmentExt
 import it.fast4x.environment.models.NavigationEndpoint
 import it.fast4x.environment.requests.AlbumPage
-import it.fast4x.riplay.Database
+import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.EXPLICIT_PREFIX
 import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.LocalSelectedQueue

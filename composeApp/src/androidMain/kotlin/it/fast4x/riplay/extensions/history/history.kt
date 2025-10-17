@@ -4,7 +4,7 @@ import androidx.media3.common.MediaItem
 import it.fast4x.environment.EnvironmentExt
 import it.fast4x.environment.models.Context
 import it.fast4x.environment.models.PlayerResponse
-import it.fast4x.riplay.Database
+import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.utils.context
 import it.fast4x.riplay.extensions.preferences.pauseListenHistoryKey
 import it.fast4x.riplay.extensions.preferences.preferences

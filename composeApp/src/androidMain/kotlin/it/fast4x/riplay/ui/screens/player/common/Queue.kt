@@ -88,7 +88,7 @@ import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import com.github.doyaaaaaken.kotlincsv.dsl.csvWriter
 import com.valentinilk.shimmer.shimmer
-import it.fast4x.riplay.Database
+import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.LOCAL_KEY_PREFIX
 import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.R

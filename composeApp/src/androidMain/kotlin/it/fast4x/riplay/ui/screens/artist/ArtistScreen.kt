@@ -36,7 +36,7 @@ import it.fast4x.environment.EnvironmentExt
 import it.fast4x.environment.YTM_ARTIST_SHARE_BASEURL
 import it.fast4x.environment.requests.ArtistPage
 import it.fast4x.environment.requests.ArtistSection
-import it.fast4x.riplay.Database
+import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.R
 import it.fast4x.riplay.cleanPrefix

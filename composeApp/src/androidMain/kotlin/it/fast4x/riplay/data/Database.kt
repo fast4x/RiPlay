@@ -1,4 +1,4 @@
-package it.fast4x.riplay
+package it.fast4x.riplay.data
 
 import android.content.ContentValues
 import android.database.SQLException
@@ -33,6 +33,10 @@ import androidx.sqlite.db.SimpleSQLiteQuery
 import androidx.sqlite.db.SupportSQLiteDatabase
 import androidx.sqlite.db.SupportSQLiteQuery
 import it.fast4x.environment.Environment
+import it.fast4x.riplay.EXPLICIT_PREFIX
+import it.fast4x.riplay.MONTHLY_PREFIX
+import it.fast4x.riplay.PINNED_PREFIX
+import it.fast4x.riplay.PIPED_PREFIX
 import it.fast4x.riplay.enums.AlbumSortBy
 import it.fast4x.riplay.enums.ArtistSortBy
 import it.fast4x.riplay.enums.BuiltInPlaylist
@@ -884,7 +888,7 @@ interface Database {
         WHERE Song.likedAt IS NOT NULL 
         ORDER BY 
             CASE
-                WHEN Song.title LIKE "$EXPLICIT_PREFIX%" THEN SUBSTR(Song.title, LENGTH('$EXPLICIT_PREFIX') + 1)
+                WHEN Song.title LIKE "${EXPLICIT_PREFIX}%" THEN SUBSTR(Song.title, LENGTH('${EXPLICIT_PREFIX}') + 1)
                 ELSE Song.title
             END
         COLLATE NOCASE
@@ -1017,7 +1021,7 @@ interface Database {
         WHERE Format.contentLength IS NOT NULL 
         ORDER BY 
             CASE
-                WHEN Song.title LIKE "$EXPLICIT_PREFIX%" THEN SUBSTR(Song.title, LENGTH('$EXPLICIT_PREFIX') + 1)
+                WHEN Song.title LIKE "${EXPLICIT_PREFIX}%" THEN SUBSTR(Song.title, LENGTH('${EXPLICIT_PREFIX}') + 1)
                 ELSE Song.title
             END
         COLLATE NOCASE
@@ -1165,7 +1169,7 @@ interface Database {
         WHERE Song.totalPlayTimeMs >= :showHidden 
         ORDER BY 
             CASE
-                WHEN Song.title LIKE "$EXPLICIT_PREFIX%" THEN SUBSTR(Song.title, LENGTH('$EXPLICIT_PREFIX') + 1)
+                WHEN Song.title LIKE "${EXPLICIT_PREFIX}%" THEN SUBSTR(Song.title, LENGTH('${EXPLICIT_PREFIX}') + 1)
                 ELSE Song.title
             END
         COLLATE NOCASE
@@ -1184,7 +1188,7 @@ interface Database {
         WHERE Song.id in (:filterList)
         ORDER BY 
             CASE
-                WHEN Song.title LIKE "$EXPLICIT_PREFIX%" THEN SUBSTR(Song.title, LENGTH('$EXPLICIT_PREFIX') + 1)
+                WHEN Song.title LIKE "${EXPLICIT_PREFIX}%" THEN SUBSTR(Song.title, LENGTH('${EXPLICIT_PREFIX}') + 1)
                 ELSE Song.title
             END
         COLLATE NOCASE
@@ -2264,7 +2268,7 @@ interface Database {
         WHERE SP.playlistId = :id 
         ORDER BY 
             CASE
-                WHEN S.title LIKE "$EXPLICIT_PREFIX%" THEN SUBSTR(S.title, LENGTH('$EXPLICIT_PREFIX') + 1)
+                WHEN S.title LIKE "${EXPLICIT_PREFIX}%" THEN SUBSTR(S.title, LENGTH('${EXPLICIT_PREFIX}') + 1)
                 ELSE S.title
             END
         COLLATE NOCASE

@@ -148,6 +148,7 @@ import it.fast4x.environment.utils.LocalePreferenceItem
 import it.fast4x.environment.utils.LocalePreferences
 import it.fast4x.environment.utils.ProxyPreferenceItem
 import it.fast4x.environment.utils.ProxyPreferences
+import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.enums.AnimatedGradient
 import it.fast4x.riplay.enums.CheckUpdateState
 import it.fast4x.riplay.enums.ColorPaletteMode
@@ -258,6 +259,7 @@ import it.fast4x.riplay.extensions.preferences.ytVisitorDataKey
 import it.fast4x.riplay.extensions.rescuecenter.RescueScreen
 import it.fast4x.riplay.data.models.Queues
 import it.fast4x.riplay.data.models.defaultQueue
+import it.fast4x.riplay.navigation.AppNavigation
 import it.fast4x.riplay.service.AndroidAutoService
 import it.fast4x.riplay.service.LocalPlayerService
 import it.fast4x.riplay.service.ToolsService
@@ -1537,8 +1539,6 @@ class MainActivity :
                                     }
                                 )
                             } else {
-
-
 
 
                                 AppNavigation(

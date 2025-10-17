@@ -73,7 +73,7 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
-import it.fast4x.riplay.Database
+import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.LocalSelectedQueue
 import it.fast4x.riplay.R
@@ -148,6 +148,7 @@ import kotlinx.coroutines.isActive
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.data.models.Album
 import it.fast4x.riplay.data.models.Artist
+import it.fast4x.riplay.data.models.Format
 import it.fast4x.riplay.data.models.SongAlbumMap
 import it.fast4x.riplay.data.models.SongArtistMap
 import it.fast4x.riplay.data.models.defaultQueue
@@ -1178,7 +1179,7 @@ fun Context.musicFilesAsFlow(
                                     )
                                     Database.insert(
                                         song.toSong(),
-                                        it.fast4x.riplay.data.models.Format(
+                                        Format(
                                             songId = song.id,
                                             itag = 0,
                                             mimeType = mimeType,

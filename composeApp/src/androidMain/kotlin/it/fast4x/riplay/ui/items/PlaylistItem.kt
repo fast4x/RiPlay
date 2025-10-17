@@ -35,7 +35,7 @@ import androidx.compose.ui.unit.times
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import it.fast4x.environment.Environment
-import it.fast4x.riplay.Database
+import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.R
 import it.fast4x.riplay.data.models.PlaylistPreview
 import it.fast4x.riplay.ui.components.themed.TextPlaceholder

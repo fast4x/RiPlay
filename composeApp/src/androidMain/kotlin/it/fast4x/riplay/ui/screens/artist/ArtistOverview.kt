@@ -66,7 +66,7 @@ import it.fast4x.environment.models.BrowseEndpoint
 import it.fast4x.environment.requests.ArtistPage
 import it.fast4x.environment.requests.ArtistSection
 import it.fast4x.environment.utils.completed
-import it.fast4x.riplay.Database
+import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.LocalPlayerAwareWindowInsets
 import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.LocalSelectedQueue

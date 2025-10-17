@@ -53,7 +53,7 @@ import it.fast4x.environment.requests.artistPage
 import it.fast4x.environment.requests.nextPage
 import it.fast4x.environment.requests.searchPage
 import it.fast4x.environment.utils.from
-import it.fast4x.riplay.Database
+import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.LocalSelectedQueue
 import it.fast4x.riplay.MODIFIED_PREFIX

@@ -30,7 +30,6 @@ import com.zionhuang.innertube.pages.LibraryPage
 import io.ktor.client.plugins.ClientRequestException
 import io.ktor.http.HttpStatusCode
 import it.fast4x.environment.Environment
-import it.fast4x.environment.EnvironmentExt
 import it.fast4x.environment.EnvironmentExt.addToPlaylist
 import it.fast4x.environment.EnvironmentExt.likeVideoOrSong
 import it.fast4x.environment.EnvironmentExt.removelikeVideoOrSong
@@ -42,8 +41,8 @@ import it.fast4x.environment.requests.song
 import it.fast4x.environment.utils.from
 import it.fast4x.kugou.KuGou
 import it.fast4x.lrclib.LrcLib
-import it.fast4x.riplay.Database
-import it.fast4x.riplay.Database.Companion.getLikedAt
+import it.fast4x.riplay.data.Database
+import it.fast4x.riplay.data.Database.Companion.getLikedAt
 import it.fast4x.riplay.EXPLICIT_PREFIX
 import it.fast4x.riplay.R
 import it.fast4x.riplay.cleanPrefix
@@ -864,7 +863,7 @@ suspend fun getAlbumVersionFromVideo(song: Song,playlistId : Long, position : In
                     album?.copy(thumbnailUrl = matchedSong.thumbnail?.url)?.let { update(it) }
 
                     if (isSyncEnabled() && playlist?.isYoutubePlaylist == true && playlist.isEditable){
-                        EnvironmentExt.addToPlaylist(playlist.browseId ?: "", matchedSong.asMediaItem.mediaId)
+                        addToPlaylist(playlist.browseId ?: "", matchedSong.asMediaItem.mediaId)
                     }
                 }
                 if ((artistsNames != null) && (artistsIds != null)) {

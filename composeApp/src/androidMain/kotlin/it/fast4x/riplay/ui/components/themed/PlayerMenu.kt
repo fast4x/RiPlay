@@ -17,7 +17,7 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import it.fast4x.environment.models.NavigationEndpoint
-import it.fast4x.riplay.Database
+import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.R
 import it.fast4x.riplay.utils.context
 import it.fast4x.riplay.enums.MenuStyle

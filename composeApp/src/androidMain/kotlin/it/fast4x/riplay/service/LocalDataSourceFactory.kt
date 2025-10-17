@@ -6,7 +6,7 @@ import androidx.media3.common.PlaybackException
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.DataSource
 import androidx.media3.datasource.ResolvingDataSource
-import it.fast4x.riplay.Database
+import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.utils.asSong
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking

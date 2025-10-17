@@ -6,6 +6,7 @@ import coil.ImageLoaderFactory
 import coil.disk.DiskCache
 import coil.memory.MemoryCache
 import coil.request.CachePolicy
+import it.fast4x.riplay.data.DatabaseInitializer
 import it.fast4x.riplay.enums.CoilDiskCacheMaxSize
 import it.fast4x.riplay.utils.CaptureCrash
 import it.fast4x.riplay.utils.FileLoggingTree

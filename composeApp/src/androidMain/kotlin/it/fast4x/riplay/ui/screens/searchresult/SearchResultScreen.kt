@@ -36,7 +36,7 @@ import it.fast4x.environment.models.bodies.SearchBody
 import it.fast4x.environment.requests.albumPage
 import it.fast4x.environment.requests.searchPage
 import it.fast4x.environment.utils.from
-import it.fast4x.riplay.Database
+import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.LocalSelectedQueue
 import it.fast4x.riplay.R

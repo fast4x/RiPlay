@@ -53,7 +53,7 @@ import it.fast4x.compose.persist.persist
 import it.fast4x.compose.persist.persistList
 import it.fast4x.environment.Environment
 import it.fast4x.environment.requests.discoverPage
-import it.fast4x.riplay.Database
+import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.LocalPlayerAwareWindowInsets
 import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.NavigationBarPosition

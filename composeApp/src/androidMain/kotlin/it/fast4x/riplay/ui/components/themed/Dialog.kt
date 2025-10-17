@@ -90,8 +90,8 @@ import it.fast4x.environment.EnvironmentExt
 import it.fast4x.environment.models.bodies.SearchBody
 import it.fast4x.environment.requests.searchPage
 import it.fast4x.environment.utils.from
-import it.fast4x.riplay.Database
-import it.fast4x.riplay.Database.Companion.update
+import it.fast4x.riplay.data.Database
+import it.fast4x.riplay.data.Database.Companion.update
 import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.ColorPaletteMode

@@ -49,7 +49,7 @@ import it.fast4x.environment.models.bodies.SearchBody
 import it.fast4x.environment.requests.searchPage
 import it.fast4x.environment.utils.completed
 import it.fast4x.environment.utils.from
-import it.fast4x.riplay.Database
+import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.MODIFIED_PREFIX
 import it.fast4x.riplay.MONTHLY_PREFIX
 import it.fast4x.riplay.MainActivity

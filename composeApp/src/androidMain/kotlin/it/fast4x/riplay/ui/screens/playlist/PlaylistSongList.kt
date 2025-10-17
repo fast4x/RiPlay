@@ -77,8 +77,8 @@ import it.fast4x.environment.EnvironmentExt
 import it.fast4x.environment.models.NavigationEndpoint
 import it.fast4x.environment.requests.PlaylistPage
 import it.fast4x.environment.utils.completed
-import it.fast4x.riplay.Database
-import it.fast4x.riplay.Database.Companion.like
+import it.fast4x.riplay.data.Database
+import it.fast4x.riplay.data.Database.Companion.like
 import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.LocalSelectedQueue
 import it.fast4x.riplay.R

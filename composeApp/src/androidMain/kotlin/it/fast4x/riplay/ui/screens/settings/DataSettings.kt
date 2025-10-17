@@ -35,7 +35,7 @@ import androidx.media3.common.util.UnstableApi
 import coil.Coil
 import coil.annotation.ExperimentalCoilApi
 import de.raphaelebner.roomdatabasebackup.core.RoomBackup
-import it.fast4x.riplay.Database
+import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.LocalBackupHandler
 import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.R

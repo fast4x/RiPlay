@@ -9,10 +9,10 @@ import androidx.media3.common.util.UnstableApi
 import it.fast4x.environment.Environment
 import it.fast4x.environment.EnvironmentExt
 import it.fast4x.environment.utils.completed
-import it.fast4x.riplay.Database
-import it.fast4x.riplay.Database.Companion.getAlbumsList
-import it.fast4x.riplay.Database.Companion.getArtistsList
-import it.fast4x.riplay.Database.Companion.update
+import it.fast4x.riplay.data.Database
+import it.fast4x.riplay.data.Database.Companion.getAlbumsList
+import it.fast4x.riplay.data.Database.Companion.getArtistsList
+import it.fast4x.riplay.data.Database.Companion.update
 import it.fast4x.riplay.R
 import it.fast4x.riplay.YTP_PREFIX
 import it.fast4x.riplay.extensions.preferences.autosyncKey
