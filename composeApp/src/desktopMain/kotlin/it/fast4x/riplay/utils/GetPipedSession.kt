@@ -1,7 +1,7 @@
 package it.fast4x.riplay.utils
 
 import io.ktor.http.Url
-import it.fast4x.riplay.data.models.PipedSession
+//import it.fast4x.riplay.data.models.PipedSession
 
 /*
 fun getPipedSession(): PipedSession {
@@ -34,9 +34,12 @@ fun getPipedSession(): PipedSession {
 }
 */
 
+/*
 fun getPipedSession() = PipedSession(
     instanceName = "",
     apiBaseUrl = Url(""),
     token = "",
     username = ""
 )
+
+ */
