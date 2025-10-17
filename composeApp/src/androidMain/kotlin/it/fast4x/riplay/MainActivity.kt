@@ -1756,6 +1756,8 @@ class MainActivity :
             LaunchedEffect(intentUriData) {
                 val uri = intentUriData ?: return@LaunchedEffect
 
+                Timber.d("MainActivity LaunchedEffect intentUriData $uri path ${uri.pathSegments.firstOrNull()} host ${uri.host}")
+
                 SmartMessage(
                     message = "${"RiPlay "}${getString(R.string.opening_url)}",
                     durationLong = true,
@@ -1795,6 +1797,12 @@ class MainActivity :
                         else -> when {
                             path == "watch" -> uri.getQueryParameter("v")
                             uri.host == "youtu.be" -> path
+                            path != "watch" && uri.host == null -> {
+                                path.let { query ->
+                                    navController.navigate(route = "${NavRoutes.searchResults.name}/$query")
+                                }
+                                null
+                            }
                             else -> null
                         }?.let { videoId ->
                             Environment.song(videoId)?.getOrNull()?.let { song ->

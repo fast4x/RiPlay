@@ -733,8 +733,6 @@ fun Queue(
         items(
             items = windowsInQueue,
             key =  { window -> window.uid.hashCode() }
-//            items = windowsInQueue.distinctBy { it.mediaItem.mediaId },
-//            key = { it.mediaItem.mediaId }
         ) { window ->
             ReorderableItem(
                 reorderableLazyListState,

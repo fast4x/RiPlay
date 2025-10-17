@@ -441,9 +441,9 @@ fun LocalPlayer(
     var mediaItems by remember {
         mutableStateOf(binder.player.currentTimeline.mediaItems)
     }
-    var mediaItemIndex by remember {
-        mutableIntStateOf(if (binder.player.mediaItemCount == 0) -1 else binder.player.currentMediaItemIndex)
-    }
+//    var mediaItemIndex by remember {
+//        mutableIntStateOf(if (binder.player.mediaItemCount == 0) -1 else binder.player.currentMediaItemIndex)
+//    }
 
     var playerError by remember {
         mutableStateOf<PlaybackException?>(binder.player.playerError)
@@ -505,7 +505,7 @@ fun LocalPlayer(
             }
             override fun onTimelineChanged(timeline: Timeline, reason: Int) {
                 mediaItems = timeline.mediaItems
-                mediaItemIndex = binder.player.currentMediaItemIndex
+                //mediaItemIndex = binder.player.currentMediaItemIndex
             }
             override fun onPlayerError(playbackException: PlaybackException) {
                 playerError = playbackException
@@ -2445,100 +2445,6 @@ fun LocalPlayer(
                                                      }
                                                  }
                                              }
-                                         /*
-                                         Box(
-                                             modifier = Modifier
-                                                 .zIndex(
-                                                     if (it == pagerState.currentPage) 1f
-                                                     else if (it == (pagerState.currentPage + 1) || it == (pagerState.currentPage - 1)) 0.85f
-                                                     else if (it == (pagerState.currentPage + 2) || it == (pagerState.currentPage - 2)) 0.78f
-                                                     else if (it == (pagerState.currentPage + 3) || it == (pagerState.currentPage - 3)) 0.73f
-                                                     else if (it == (pagerState.currentPage + 4) || it == (pagerState.currentPage - 4)) 0.68f
-                                                     else if (it == (pagerState.currentPage + 5) || it == (pagerState.currentPage - 5)) 0.63f
-                                                     else 0.57f
-                                                 )
-                                         ) {
-                                             AsyncImage(
-                                                 model = ImageRequest.Builder(LocalContext.current)
-                                                     .data(
-                                                         binder.player.getMediaItemAt(it).mediaMetadata.artworkUri.toString()
-                                                             .resize(1200, 1200)
-                                                     )
-                                                     .build(),
-                                                 contentDescription = "",
-                                                 contentScale = ContentScale.Fit,
-                                                 modifier = Modifier
-                                                     .padding(all = playerThumbnailSize.size.dp)
-                                                     .graphicsLayer {
-                                                         val pageOffSet =
-                                                             ((pagerState.currentPage - it) + pagerState.currentPageOffsetFraction).absoluteValue
-                                                         alpha = lerp(
-                                                             start = 0.9f,
-                                                             stop = 1f,
-                                                             fraction = 1f - pageOffSet.coerceIn(0f,1f)
-                                                         )
-                                                         scaleY = lerp(
-                                                             start = 0.9f,
-                                                             stop = 1f,
-                                                             fraction = 1f - pageOffSet.coerceIn(0f,5f)
-                                                         )
-                                                         scaleX = lerp(
-                                                             start = 0.9f,
-                                                             stop = 1f,
-                                                             fraction = 1f - pageOffSet.coerceIn(0f,5f)
-                                                         )
-                                                     }
-                                                     .conditional(thumbnailType == ThumbnailType.Modern) {
-                                                         padding(
-                                                             all = 10.dp
-                                                         )
-                                                     }
-                                                     .conditional(thumbnailType == ThumbnailType.Modern) {
-                                                         doubleShadowDrop(
-                                                             thumbnailRoundness.shape(),
-                                                             4.dp,
-                                                             8.dp
-                                                         )
-                                                     }
-                                                     .clip(thumbnailRoundness.shape())
-                                                     .combinedClickable(
-                                                         interactionSource = remember { MutableInteractionSource() },
-                                                         indication = null,
-                                                         onClick = {
-                                                             if (it == pagerState.settledPage && thumbnailTapEnabled) {
-                                                                 if (isShowingVisualizer) isShowingVisualizer =
-                                                                     false
-                                                                 isShowingLyrics = !isShowingLyrics
-                                                             }
-                                                             if (it != pagerState.settledPage) {
-                                                                 binder.player.forcePlayAtIndex(
-                                                                     mediaItems,
-                                                                     it
-                                                                 )
-                                                             }
-                                                         },
-                                                         onLongClick = {
-                                                             if (it == pagerState.settledPage)
-                                                                 showThumbnailOffsetDialog = true
-                                                         }
-                                                     )
-
-                                             )
-                                             if (isDragged && it == binder.player.currentMediaItemIndex) {
-                                                 Box(modifier = Modifier
-                                                     .align(Alignment.Center)
-                                                     .matchParentSize()
-                                                 ) {
-                                                     NowPlayingSongIndicator(
-                                                         binder.player.getMediaItemAt(
-                                                             binder.player.currentMediaItemIndex
-                                                         ).mediaId,
-                                                         binder.player,
-                                                         Dimensions.thumbnails.album
-                                                     )
-                                                 }
-                                             }
-                                         }*/
                                      }
                                  }
                             }
@@ -3049,11 +2955,11 @@ fun LocalPlayer(
                                          .conditional(fadingedge) {
                                              verticalfadingEdge2(fade = (if (expandedplayer) thumbnailFadeEx else thumbnailFade)*0.05f,showTopActionsBar,topPadding,expandedplayer)
                                          }
-                                 ){ it ->
+                                 ){ index ->
 
                                      val coverPainter = rememberAsyncImagePainter(
                                          model = ImageRequest.Builder(LocalContext.current)
-                                             .data(binder.player.getMediaItemAt(it).mediaMetadata.artworkUri.thumbnail(1200))
+                                             .data(binder.player.getMediaItemAt(index).mediaMetadata.artworkUri.thumbnail(1200))
                                              .build()
                                      )
 
@@ -3064,7 +2970,7 @@ fun LocalPlayer(
                                          {
                                              graphicsLayer {
                                                  val pageOffSet =
-                                                     ((pagerState.currentPage - it) + pagerState.currentPageOffsetFraction).absoluteValue
+                                                     ((pagerState.currentPage - index) + pagerState.currentPageOffsetFraction).absoluteValue
                                                  alpha = lerp(
                                                      start = 0.9f,
                                                      stop = 1f,
@@ -3099,17 +3005,17 @@ fun LocalPlayer(
                                              interactionSource = remember { MutableInteractionSource() },
                                              indication = null,
                                              onClick = {
-                                                 if (it == pagerState.settledPage && thumbnailTapEnabled) {
+                                                 if (index == pagerState.settledPage && thumbnailTapEnabled) {
                                                      if (isShowingVisualizer) isShowingVisualizer =
                                                          false
                                                      isShowingLyrics = !isShowingLyrics
                                                  }
-                                                 if (it != pagerState.settledPage) {
-                                                     binder.player.playAtIndex(it)
+                                                 if (index != pagerState.settledPage) {
+                                                     binder.player.playAtIndex(index)
                                                  }
                                              },
                                              onLongClick = {
-                                                 if (it == pagerState.settledPage && (expandedplayer || fadingedge))
+                                                 if (index == pagerState.settledPage && (expandedplayer || fadingedge))
                                                      showThumbnailOffsetDialog = true
                                              }
                                          )
@@ -3120,16 +3026,16 @@ fun LocalPlayer(
                                              isSongPlaying = player.isPlaying,
                                              modifier = coverModifier
                                                  .zIndex(
-                                                     if (it == pagerState.currentPage) 1f
-                                                     else if (it == (pagerState.currentPage + 1) || it == (pagerState.currentPage - 1)) 0.85f
-                                                     else if (it == (pagerState.currentPage + 2) || it == (pagerState.currentPage - 2)) 0.78f
-                                                     else if (it == (pagerState.currentPage + 3) || it == (pagerState.currentPage - 3)) 0.73f
-                                                     else if (it == (pagerState.currentPage + 4) || it == (pagerState.currentPage - 4)) 0.68f
-                                                     else if (it == (pagerState.currentPage + 5) || it == (pagerState.currentPage - 5)) 0.63f
+                                                     if (index == pagerState.currentPage) 1f
+                                                     else if (index == (pagerState.currentPage + 1) || index == (pagerState.currentPage - 1)) 0.85f
+                                                     else if (index == (pagerState.currentPage + 2) || index == (pagerState.currentPage - 2)) 0.78f
+                                                     else if (index == (pagerState.currentPage + 3) || index == (pagerState.currentPage - 3)) 0.73f
+                                                     else if (index == (pagerState.currentPage + 4) || index == (pagerState.currentPage - 4)) 0.68f
+                                                     else if (index == (pagerState.currentPage + 5) || index == (pagerState.currentPage - 5)) 0.63f
                                                      else 0.57f
                                                  ),
                                              state = pagerState,
-                                             it = it,
+                                             it = index,
                                              imageCoverSize = imageCoverSize,
                                              type = coverThumbnailAnimation
                                          )
@@ -3137,12 +3043,12 @@ fun LocalPlayer(
                                          Box(
                                              modifier = Modifier
                                                  .zIndex(
-                                                     if (it == pagerState.currentPage) 1f
-                                                     else if (it == (pagerState.currentPage + 1) || it == (pagerState.currentPage - 1)) 0.85f
-                                                     else if (it == (pagerState.currentPage + 2) || it == (pagerState.currentPage - 2)) 0.78f
-                                                     else if (it == (pagerState.currentPage + 3) || it == (pagerState.currentPage - 3)) 0.73f
-                                                     else if (it == (pagerState.currentPage + 4) || it == (pagerState.currentPage - 4)) 0.68f
-                                                     else if (it == (pagerState.currentPage + 5) || it == (pagerState.currentPage - 5)) 0.63f
+                                                     if (index == pagerState.currentPage) 1f
+                                                     else if (index == (pagerState.currentPage + 1) || index == (pagerState.currentPage - 1)) 0.85f
+                                                     else if (index == (pagerState.currentPage + 2) || index == (pagerState.currentPage - 2)) 0.78f
+                                                     else if (index == (pagerState.currentPage + 3) || index == (pagerState.currentPage - 3)) 0.73f
+                                                     else if (index == (pagerState.currentPage + 4) || index == (pagerState.currentPage - 4)) 0.68f
+                                                     else if (index == (pagerState.currentPage + 5) || index == (pagerState.currentPage - 5)) 0.63f
                                                      else 0.57f
                                                  )
                                          ) {
@@ -3152,7 +3058,7 @@ fun LocalPlayer(
                                                  contentScale = ContentScale.Fit,
                                                  modifier = coverModifier
                                              )
-                                             if (isDragged && expandedplayer && it == binder.player.currentMediaItemIndex) {
+                                             if (isDragged && expandedplayer && index == binder.player.currentMediaItemIndex) {
                                                  Box(modifier = Modifier
                                                      .align(Alignment.Center)
                                                      .matchParentSize()

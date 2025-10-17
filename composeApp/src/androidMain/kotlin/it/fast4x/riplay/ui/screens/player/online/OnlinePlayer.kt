@@ -1165,10 +1165,10 @@ fun OnlinePlayer(
                             if (!disablePlayerHorizontalSwipe && playerType == PlayerType.Essential) {
                                 if (deltaX > 5) {
                                     binder.player.playPrevious()
-                                    //Log.d("mediaItem","Swipe to LEFT")
+                                    Timber.d("OnlinePlayer Swipe to LEFT 1 deltaX $deltaX")
                                 } else if (deltaX < -5) {
                                     binder.player.playNext()
-                                    //Log.d("mediaItem","Swipe to RIGHT")
+                                    Timber.d("OnlinePlayer Swipe to RIGHT 1 deltaX $deltaX")
                                 }
 
                             }
@@ -2587,8 +2587,10 @@ fun OnlinePlayer(
                                                     if (!disablePlayerHorizontalSwipe && playerType == PlayerType.Essential) {
                                                         if (deltaX > 5) {
                                                             binder.player.playPrevious()
+                                                            Timber.d("OnlinePlayer Swipe to LEFT 2 deltaX $deltaX")
                                                         } else if (deltaX < -5) {
                                                             binder.player.playNext()
+                                                            Timber.d("OnlinePlayer Swipe to RIGHT 2 deltaX $deltaX")
                                                         }
 
                                                     }
@@ -2636,8 +2638,10 @@ fun OnlinePlayer(
                                                         if (!disablePlayerHorizontalSwipe) {
                                                             if (deltaX > 5) {
                                                                 binder.player.playPrevious()
+                                                                Timber.d("OnlinePlayer Swipe to LEFT 3 deltaX $deltaX")
                                                             } else if (deltaX < -5) {
                                                                 binder.player.playNext()
+                                                                Timber.d("OnlinePlayer Swipe to RIGHT 3 deltaX $deltaX")
                                                             }
 
                                                         }
@@ -2872,8 +2876,10 @@ fun OnlinePlayer(
                                                             if (!disablePlayerHorizontalSwipe && playerType == PlayerType.Essential) {
                                                                 if (deltaX > 5) {
                                                                     binder.player.playPrevious()
+                                                                    Timber.d("OnlinePlayer Swipe to LEFT 4 deltaX $deltaX")
                                                                 } else if (deltaX < -5) {
                                                                     binder.player.playNext()
+                                                                    Timber.d("OnlinePlayer Swipe to RIGHT 4 deltaX $deltaX")
                                                                 }
 
                                                             }
@@ -3483,12 +3489,12 @@ fun OnlinePlayer(
                                                     expandedplayer
                                                 )
                                             }
-                                    ) { it ->
+                                    ) { index ->
 
                                         val coverPainter = rememberAsyncImagePainter(
                                             model = ImageRequest.Builder(LocalContext.current)
                                                 .data(
-                                                    binder.player.getMediaItemAt(it).mediaMetadata.artworkUri.thumbnail(
+                                                    binder.player.getMediaItemAt(index).mediaMetadata.artworkUri.thumbnail(
                                                         1200
                                                     )
                                                 )
@@ -3502,7 +3508,7 @@ fun OnlinePlayer(
                                             {
                                                 graphicsLayer {
                                                     val pageOffSet =
-                                                        ((pagerState.currentPage - it) + pagerState.currentPageOffsetFraction).absoluteValue
+                                                        ((pagerState.currentPage - index) + pagerState.currentPageOffsetFraction).absoluteValue
                                                     alpha = lerp(
                                                         start = 0.9f,
                                                         stop = 1f,
@@ -3528,7 +3534,7 @@ fun OnlinePlayer(
                                             .conditional(thumbnailType == ThumbnailType.Modern) {
                                                 doubleShadowDrop(
                                                     if (showCoverThumbnailAnimation && !binder.player.getMediaItemAt(
-                                                            it
+                                                            index
                                                         ).isVideo
                                                     ) CircleShape else thumbnailRoundness.shape(),
                                                     4.dp,
@@ -3540,38 +3546,38 @@ fun OnlinePlayer(
                                                 interactionSource = remember { MutableInteractionSource() },
                                                 indication = null,
                                                 onClick = {
-                                                    if (it == pagerState.settledPage && thumbnailTapEnabled) {
+                                                    if (index == pagerState.settledPage && thumbnailTapEnabled) {
                                                         if (isShowingVisualizer) isShowingVisualizer =
                                                             false
                                                         isShowingLyrics = !isShowingLyrics
                                                     }
-                                                    if (it != pagerState.settledPage) {
-                                                        binder.player.playAtIndex(it)
+                                                    if (index != pagerState.settledPage) {
+                                                        binder.player.playAtIndex(index)
                                                     }
                                                 },
                                                 onLongClick = {
-                                                    if (it == pagerState.settledPage && (expandedplayer || fadingedge))
+                                                    if (index == pagerState.settledPage && (expandedplayer || fadingedge))
                                                         showThumbnailOffsetDialog = true
                                                 }
                                             )
 
-                                        if (!binder.player.getMediaItemAt(it).isVideo ) {
+                                        if (!binder.player.getMediaItemAt(index).isVideo ) {
                                             if (showCoverThumbnailAnimation)
                                                 RotateThumbnailCoverAnimationModern(
                                                     painter = coverPainter,
                                                     isSongPlaying = binderPlayer.isPlaying || shouldBePlaying,
                                                     modifier = coverModifier
                                                         .zIndex(
-                                                            if (it == pagerState.currentPage) 1f
-                                                            else if (it == (pagerState.currentPage + 1) || it == (pagerState.currentPage - 1)) 0.85f
-                                                            else if (it == (pagerState.currentPage + 2) || it == (pagerState.currentPage - 2)) 0.78f
-                                                            else if (it == (pagerState.currentPage + 3) || it == (pagerState.currentPage - 3)) 0.73f
-                                                            else if (it == (pagerState.currentPage + 4) || it == (pagerState.currentPage - 4)) 0.68f
-                                                            else if (it == (pagerState.currentPage + 5) || it == (pagerState.currentPage - 5)) 0.63f
+                                                            if (index == pagerState.currentPage) 1f
+                                                            else if (index == (pagerState.currentPage + 1) || index == (pagerState.currentPage - 1)) 0.85f
+                                                            else if (index == (pagerState.currentPage + 2) || index == (pagerState.currentPage - 2)) 0.78f
+                                                            else if (index == (pagerState.currentPage + 3) || index == (pagerState.currentPage - 3)) 0.73f
+                                                            else if (index == (pagerState.currentPage + 4) || index == (pagerState.currentPage - 4)) 0.68f
+                                                            else if (index == (pagerState.currentPage + 5) || index == (pagerState.currentPage - 5)) 0.63f
                                                             else 0.57f
                                                         ),
                                                     state = pagerState,
-                                                    it = it,
+                                                    it = index,
                                                     imageCoverSize = imageCoverSize,
                                                     type = coverThumbnailAnimation
                                                 )
@@ -3579,18 +3585,18 @@ fun OnlinePlayer(
                                                 Box(
                                                     modifier = Modifier
                                                         .zIndex(
-                                                            if (it == pagerState.currentPage) 1f
-                                                            else if (it == (pagerState.currentPage + 1) || it == (pagerState.currentPage - 1)) 0.85f
-                                                            else if (it == (pagerState.currentPage + 2) || it == (pagerState.currentPage - 2)) 0.78f
-                                                            else if (it == (pagerState.currentPage + 3) || it == (pagerState.currentPage - 3)) 0.73f
-                                                            else if (it == (pagerState.currentPage + 4) || it == (pagerState.currentPage - 4)) 0.68f
-                                                            else if (it == (pagerState.currentPage + 5) || it == (pagerState.currentPage - 5)) 0.63f
+                                                            if (index == pagerState.currentPage) 1f
+                                                            else if (index == (pagerState.currentPage + 1) || index == (pagerState.currentPage - 1)) 0.85f
+                                                            else if (index == (pagerState.currentPage + 2) || index == (pagerState.currentPage - 2)) 0.78f
+                                                            else if (index == (pagerState.currentPage + 3) || index == (pagerState.currentPage - 3)) 0.73f
+                                                            else if (index == (pagerState.currentPage + 4) || index == (pagerState.currentPage - 4)) 0.68f
+                                                            else if (index == (pagerState.currentPage + 5) || index == (pagerState.currentPage - 5)) 0.63f
                                                             else 0.57f
                                                         )
                                                 ) {
 
                                                     val isVideo =
-                                                        remember { binder.player.getMediaItemAt(it).isVideo }
+                                                        remember { binder.player.getMediaItemAt(index).isVideo }
                                                     if (!isVideo)
                                                         Image(
                                                             painter = coverPainter,
@@ -3599,7 +3605,7 @@ fun OnlinePlayer(
                                                             modifier = coverModifier
                                                         )
 
-                                                    if (isDragged && expandedplayer && it == binder.player.currentMediaItemIndex) {
+                                                    if (isDragged && expandedplayer && index == binder.player.currentMediaItemIndex) {
                                                         Box(
                                                             modifier = Modifier
                                                                 .align(Alignment.Center)
@@ -3671,8 +3677,10 @@ fun OnlinePlayer(
                                             if (!disablePlayerHorizontalSwipe) {
                                                 if (deltaX > 5) {
                                                     binder.player.playPrevious()
+                                                    Timber.d("OnlinePlayer Swipe to LEFT 5 deltaX $deltaX")
                                                 } else if (deltaX < -5) {
                                                     binder.player.playNext()
+                                                    Timber.d("OnlinePlayer Swipe to RIGHT 5 deltaX $deltaX")
                                                 }
 
                                             }

@@ -125,16 +125,19 @@ fun Player.forcePlay(mediaItem: MediaItem, replace: Boolean = false) {
     else
         replaceMediaItem(currentMediaItemIndex, mediaItem.cleaned)
 
-    prepare()
     restoreGlobalVolume()
     playWhenReady = true
+    prepare()
 }
 
 fun Player.playAtIndex(mediaItemIndex: Int) {
-    seekTo(mediaItemIndex, C.TIME_UNSET)
-    prepare()
+    //seekTo(mediaItemIndex, C.TIME_UNSET)
+    seekToDefaultPosition(mediaItemIndex)
+
     restoreGlobalVolume()
     playWhenReady = true
+    prepare()
+
 }
 
 @SuppressLint("Range")
@@ -143,9 +146,10 @@ fun Player.forcePlayAtIndex(mediaItems: List<MediaItem>, mediaItemIndex: Int) {
     if (mediaItems.isEmpty()) return
 
     setMediaItems(mediaItems.map { it.cleaned }, mediaItemIndex, C.TIME_UNSET)
-    prepare()
+
     restoreGlobalVolume()
     playWhenReady = true
+    prepare()
 }
 @UnstableApi
 fun Player.forcePlayFromBeginning(mediaItems: List<MediaItem>) =
@@ -176,19 +180,21 @@ fun Player.forceSeekToNext() {
 fun Player.playNext() {
     //seekToNextMediaItem() // native
     //seekToNext() // native
-    forceSeekToNext()
-    prepare()
     restoreGlobalVolume()
-    playWhenReady = true
+    forceSeekToNext()
+    //prepare()
+
+    //playWhenReady = true
 }
 
 fun Player.playPrevious() {
     //seekToPreviousMediaItem() // native
     //seekToPrevious() // native
-    forceSeekToPrevious()
-    prepare()
     restoreGlobalVolume()
-    playWhenReady = true
+    forceSeekToPrevious()
+    //prepare()
+
+    //playWhenReady = true
 }
 
 @UnstableApi
@@ -247,12 +253,12 @@ fun Player.enqueue(mediaItem: MediaItem, context: Context? = null, queue: Queues
     mediaItem.mediaMetadata.extras?.putLong("idQueue", queue.id)
     println("mediaItem-enqueue extras: ${mediaItem.mediaMetadata.extras}")
 
-    //addMediaItem(mediaItemCount, mediaItem.cleaned)
-    if (playbackState == Player.STATE_IDLE || playbackState == Player.STATE_ENDED) {
-        forcePlay(mediaItem)
-    } else {
-        addMediaItem(mediaItemCount, mediaItem.cleaned)
-    }
+    addMediaItem(mediaItemCount, mediaItem.cleaned)
+//    if (playbackState == Player.STATE_IDLE || playbackState == Player.STATE_ENDED) {
+//        forcePlay(mediaItem)
+//    } else {
+//        addMediaItem(mediaItemCount, mediaItem.cleaned)
+//    }
     SmartMessage(context().resources.getString(R.string.done), context = context())
 
 }
@@ -274,13 +280,14 @@ fun Player.enqueue(
 //            println("mediaItems-enqueue extras: ${mediaItem.mediaMetadata.extras}")
 //        }
 //    }
-    //addMediaItems(mediaItemCount, filteredMediaItems.map { it.cleaned })
 
-    if (playbackState == Player.STATE_IDLE || playbackState == Player.STATE_ENDED) {
-        forcePlayFromBeginning(filteredMediaItems.map { it.cleaned })
-    } else {
-        addMediaItems(mediaItemCount, filteredMediaItems.map { it.cleaned })
-    }
+    addMediaItems(mediaItemCount, filteredMediaItems.map { it.cleaned })
+
+//    if (playbackState == Player.STATE_IDLE || playbackState == Player.STATE_ENDED) {
+//        forcePlayFromBeginning(filteredMediaItems.map { it.cleaned })
+//    } else {
+//        addMediaItems(mediaItemCount, filteredMediaItems.map { it.cleaned })
+//    }
     SmartMessage(context().resources.getString(R.string.done), context = context())
 }
 

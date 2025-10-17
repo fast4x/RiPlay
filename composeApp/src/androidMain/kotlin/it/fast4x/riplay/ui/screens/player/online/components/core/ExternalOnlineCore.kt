@@ -13,6 +13,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -98,9 +99,17 @@ fun ExternalOnlineCore(
     var lastError = remember { mutableStateOf<PlayerConstants.PlayerError?>(null) }
     val lastVideoId = rememberPreference(lastVideoIdKey, "")
 
+    var currentQueueIndex = remember { mutableIntStateOf(binder?.player?.currentMediaItemIndex ?: -1) }
+
+
     binder?.player?.DisposableListener {
         object : Player.Listener {
             override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
+
+                if (reason != Player.TIMELINE_CHANGE_REASON_SOURCE_UPDATE)
+                    currentQueueIndex.intValue = binder.player.currentMediaItemIndex
+
+
                 mediaItem?.let {
                     if (it.isLocal) {
                         player.value?.pause()

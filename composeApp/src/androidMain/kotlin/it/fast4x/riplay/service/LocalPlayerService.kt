@@ -29,7 +29,9 @@ import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
 import androidx.annotation.OptIn
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.core.app.NotificationCompat
@@ -259,6 +261,9 @@ class LocalPlayerService : MediaLibraryService(),
     private lateinit var notificationActionReceiver: NotificationActionReceiver
     private var discordPresenceManager: DiscordPresenceManager? = null
 
+    private var currentQueueIndex: MutableState<Int> = mutableIntStateOf(-1)
+
+
     @kotlin.OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
     override fun onCreate() {
         super.onCreate()
@@ -466,7 +471,7 @@ class LocalPlayerService : MediaLibraryService(),
 
         // Ensure that song is updated
         currentSong.debounce(1000).collect(coroutineScope) { song ->
-            Timber.d("LocalPlayerService onCreate currentSong $song")
+            Timber.d("LocalPlayerService onCreate update currentSong $song")
 
             updateDefaultNotification()
             withContext(Dispatchers.Main) {
@@ -529,7 +534,7 @@ class LocalPlayerService : MediaLibraryService(),
     }
 
     override fun onUpdateNotification(session: MediaSession, startInForegroundRequired: Boolean) {
-        Timber.d("LocalPlayerService onUpdateNotification called startInForegroundRequired ${startInForegroundRequired}")
+        //Timber.d("LocalPlayerService onUpdateNotification called startInForegroundRequired ${startInForegroundRequired}")
         // Foreground keep alive
         if (!(!player.isPlaying && preferences.getBoolean(isInvincibilityEnabledKey, true))) {
             Timber.d("LocalPlayerService onUpdateNotification PASSED WITH startInForegroundRequired ${startInForegroundRequired}")
@@ -556,7 +561,7 @@ class LocalPlayerService : MediaLibraryService(),
         eventTime: AnalyticsListener.EventTime,
         playbackStats: PlaybackStats
     ) {
-        Timber.d("LocalPlayerService onPlaybackStatsReady called ")
+        //Timber.d("LocalPlayerService onPlaybackStatsReady called ")
         // if pause listen history is enabled, don't register statistic event
         if (preferences.getBoolean(pauseListenHistoryKey, false)) return
 
@@ -603,6 +608,13 @@ class LocalPlayerService : MediaLibraryService(),
 
     override fun onTimelineChanged(timeline: Timeline, reason: Int) {
         Timber.d("LocalPlayerService onTimelineChanged timeline $timeline reason $reason")
+
+        if (reason == Player.TIMELINE_CHANGE_REASON_SOURCE_UPDATE) {
+            // detect change source caused by android auto
+            onMediaItemTransition(player.currentMediaItem, reason)
+            return
+        }
+
         if (reason != Player.TIMELINE_CHANGE_REASON_PLAYLIST_CHANGED) return
         player.saveMasterQueue()
     }
@@ -613,7 +625,7 @@ class LocalPlayerService : MediaLibraryService(),
     }
 
     override fun onTrimMemory(level: Int) {
-        Timber.d("LocalPlayerService onTrimMemory level $level")
+        //Timber.d("LocalPlayerService onTrimMemory level $level")
         player.saveMasterQueue()
     }
 
@@ -707,7 +719,21 @@ class LocalPlayerService : MediaLibraryService(),
     }
 
     override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
-        Timber.d("LocalPlayerService onMediaItemTransition mediaItem $mediaItem reason $reason")
+
+        val mediaItemToPlay = mutableStateOf(mediaItem)
+
+        if (reason != Player.TIMELINE_CHANGE_REASON_SOURCE_UPDATE)
+            currentQueueIndex.value = player.currentMediaItemIndex
+        else {
+            binder.player.seekToDefaultPosition(currentQueueIndex.value)
+            mediaItemToPlay.value = player.getMediaItemAt(currentQueueIndex.value)
+            Timber.d("LocalPlayerService: onMediaItemTransition ${mediaItemToPlay.value?.mediaId} reason $reason currentQueueIndex ${currentQueueIndex} RECOVERED SOURCE UPDATE")
+        }
+
+
+
+
+        Timber.d("LocalPlayerService onMediaItemTransition mediaItem ${mediaItemToPlay.value} reason $reason LAST currentQueueIndex $currentQueueIndex")
 
         // todo is required this line?
 //        if (player.isPlaying && reason == MEDIA_ITEM_TRANSITION_REASON_SEEK) {
@@ -715,7 +741,7 @@ class LocalPlayerService : MediaLibraryService(),
 //            player.play()
 //        }
 
-        currentMediaItem.update { mediaItem }
+        currentMediaItem.update { mediaItemToPlay.value }
 
         // todo is required this line?
 //        if (mediaItem?.isLocal == true)
