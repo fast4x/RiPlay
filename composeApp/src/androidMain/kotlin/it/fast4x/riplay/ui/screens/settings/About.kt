@@ -23,8 +23,8 @@ import it.fast4x.riplay.ui.components.themed.HeaderWithIcon
 import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.utils.getVersionName
 import it.fast4x.riplay.ui.styling.secondary
-import it.fast4x.riplay.colorPalette
-import it.fast4x.riplay.typography
+import it.fast4x.riplay.utils.colorPalette
+import it.fast4x.riplay.utils.typography
 
 
 @ExperimentalAnimationApi

@@ -19,7 +19,7 @@ import androidx.navigation.NavController
 import it.fast4x.environment.models.NavigationEndpoint
 import it.fast4x.riplay.Database
 import it.fast4x.riplay.R
-import it.fast4x.riplay.context
+import it.fast4x.riplay.utils.context
 import it.fast4x.riplay.enums.MenuStyle
 import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.models.SongPlaylistMap

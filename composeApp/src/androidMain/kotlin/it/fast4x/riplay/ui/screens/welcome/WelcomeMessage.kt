@@ -10,7 +10,7 @@ import androidx.compose.ui.unit.dp
 import it.fast4x.riplay.R
 import it.fast4x.riplay.ui.components.themed.TitleMiniSection
 import it.fast4x.riplay.ui.screens.settings.isLoggedIn
-import it.fast4x.riplay.ytAccountName
+import it.fast4x.riplay.utils.ytAccountName
 import java.text.SimpleDateFormat
 import java.util.Calendar
 

@@ -37,9 +37,9 @@ import it.fast4x.riplay.enums.UiType
 import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.ui.components.themed.Button
 import it.fast4x.riplay.ui.components.themed.TextIconButton
-import it.fast4x.riplay.colorPalette
-import it.fast4x.riplay.showSearchIconInNav
-import it.fast4x.riplay.showStatsIconInNav
+import it.fast4x.riplay.utils.colorPalette
+import it.fast4x.riplay.utils.showSearchIconInNav
+import it.fast4x.riplay.utils.showStatsIconInNav
 
 // Shown when "Navigation bar position" is set to "top" or "bottom"
 class HorizontalNavigationBar(

@@ -12,8 +12,8 @@ import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import it.fast4x.riplay.enums.ColorPaletteMode
-import it.fast4x.riplay.colorPalette
-import it.fast4x.riplay.getColorTheme
+import it.fast4x.riplay.utils.colorPalette
+import it.fast4x.riplay.utils.getColorTheme
 
 @Composable
 internal fun HeaderIcon(

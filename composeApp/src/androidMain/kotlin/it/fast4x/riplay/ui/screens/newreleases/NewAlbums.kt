@@ -39,7 +39,7 @@ import it.fast4x.riplay.extensions.preferences.disableScrollingTextKey
 import it.fast4x.riplay.extensions.preferences.navigationBarPositionKey
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.extensions.preferences.showSearchTabKey
-import it.fast4x.riplay.colorPalette
+import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.utils.LazyListContainer
 
 @ExperimentalTextApi

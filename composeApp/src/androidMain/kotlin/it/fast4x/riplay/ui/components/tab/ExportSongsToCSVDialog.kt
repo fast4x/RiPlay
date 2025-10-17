@@ -16,7 +16,7 @@ import com.github.doyaaaaaken.kotlincsv.dsl.csvWriter
 import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.ui.components.themed.SmartMessage
-import it.fast4x.riplay.appContext
+import it.fast4x.riplay.utils.appContext
 import it.fast4x.riplay.ui.components.themed.IDialog
 import it.fast4x.riplay.ui.components.tab.toolbar.Descriptive
 import it.fast4x.riplay.ui.components.tab.toolbar.MenuIcon

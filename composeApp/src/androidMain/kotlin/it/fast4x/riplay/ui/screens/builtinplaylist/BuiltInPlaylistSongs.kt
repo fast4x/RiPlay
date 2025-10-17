@@ -136,10 +136,10 @@ import it.fast4x.riplay.extensions.preferences.songSortByKey
 import it.fast4x.riplay.extensions.preferences.songSortOrderKey
 import it.fast4x.riplay.utils.thumbnail
 import it.fast4x.riplay.extensions.preferences.thumbnailRoundnessKey
-import it.fast4x.riplay.colorPalette
+import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.models.defaultQueue
-import it.fast4x.riplay.thumbnailShape
-import it.fast4x.riplay.typography
+import it.fast4x.riplay.utils.thumbnailShape
+import it.fast4x.riplay.utils.typography
 import it.fast4x.riplay.utils.LazyListContainer
 import it.fast4x.riplay.utils.forcePlay
 import java.text.SimpleDateFormat

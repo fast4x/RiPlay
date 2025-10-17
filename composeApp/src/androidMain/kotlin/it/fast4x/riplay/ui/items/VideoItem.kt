@@ -27,9 +27,9 @@ import it.fast4x.riplay.utils.applyIf
 import it.fast4x.riplay.ui.styling.medium
 import it.fast4x.riplay.ui.styling.secondary
 import it.fast4x.riplay.ui.styling.semiBold
-import it.fast4x.riplay.colorPalette
-import it.fast4x.riplay.thumbnailShape
-import it.fast4x.riplay.typography
+import it.fast4x.riplay.utils.colorPalette
+import it.fast4x.riplay.utils.thumbnailShape
+import it.fast4x.riplay.utils.typography
 
 @Composable
 fun VideoItem(

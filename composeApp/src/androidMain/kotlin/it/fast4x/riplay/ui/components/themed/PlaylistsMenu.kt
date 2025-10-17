@@ -41,13 +41,13 @@ import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.ui.styling.semiBold
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
-import it.fast4x.riplay.appContext
-import it.fast4x.riplay.colorPalette
+import it.fast4x.riplay.utils.appContext
+import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.ui.components.tab.toolbar.Button
 import it.fast4x.riplay.ui.components.tab.toolbar.Descriptive
 import it.fast4x.riplay.ui.components.tab.toolbar.Menu
 import it.fast4x.riplay.ui.components.tab.toolbar.MenuIcon
-import it.fast4x.riplay.typography
+import it.fast4x.riplay.utils.typography
 
 class PlaylistsMenu private constructor(
     private val navController: NavController,

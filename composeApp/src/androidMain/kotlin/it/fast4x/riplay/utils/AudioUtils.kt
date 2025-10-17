@@ -15,7 +15,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.core.animation.doOnEnd
 import androidx.media3.common.util.UnstableApi
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
-import it.fast4x.riplay.context
 import it.fast4x.riplay.service.LocalPlayerService
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay

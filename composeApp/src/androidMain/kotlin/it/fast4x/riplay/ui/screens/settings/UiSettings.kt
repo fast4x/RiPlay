@@ -196,7 +196,7 @@ import it.fast4x.riplay.extensions.preferences.useSystemFontKey
 import it.fast4x.riplay.extensions.preferences.useVolumeKeysToChangeSongKey
 import it.fast4x.riplay.extensions.preferences.visualizerEnabledKey
 import it.fast4x.riplay.extensions.preferences.volumeNormalizationKey
-import it.fast4x.riplay.colorPalette
+import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.ui.components.themed.Search
 import it.fast4x.riplay.ui.components.themed.settingsItem
 import it.fast4x.riplay.ui.components.themed.settingsSearchBarItem

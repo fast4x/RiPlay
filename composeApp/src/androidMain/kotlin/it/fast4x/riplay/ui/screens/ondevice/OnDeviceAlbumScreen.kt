@@ -43,7 +43,7 @@ import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import it.fast4x.compose.persist.persist
 import it.fast4x.riplay.Database
-import it.fast4x.riplay.colorPalette
+import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.enums.PlayerPosition
 import it.fast4x.riplay.enums.TransitionEffect

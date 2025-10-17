@@ -15,7 +15,7 @@ import it.fast4x.riplay.service.MediaSessionConstants.CommandToggleLike
 import it.fast4x.riplay.service.MediaSessionConstants.CommandToggleRepeatMode
 import it.fast4x.riplay.service.MediaSessionConstants.CommandToggleShuffle
 import it.fast4x.riplay.service.LocalPlayerService
-import it.fast4x.riplay.appContext
+import it.fast4x.riplay.utils.appContext
 
 enum class NotificationButtons {
     Favorites,

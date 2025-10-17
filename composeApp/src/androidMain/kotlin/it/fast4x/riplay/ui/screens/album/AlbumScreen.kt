@@ -58,7 +58,7 @@ import it.fast4x.environment.requests.AlbumPage
 import it.fast4x.riplay.Database
 import it.fast4x.riplay.MODIFIED_PREFIX
 import it.fast4x.riplay.R
-import it.fast4x.riplay.colorPalette
+import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.enums.PlayerPosition
 import it.fast4x.riplay.enums.ThumbnailRoundness

@@ -34,8 +34,8 @@ import coil.compose.rememberAsyncImagePainter
 import com.google.gson.annotations.SerializedName
 import it.fast4x.riplay.R
 import it.fast4x.riplay.ui.styling.favoritesIcon
-import it.fast4x.riplay.colorPalette
-import it.fast4x.riplay.typography
+import it.fast4x.riplay.utils.colorPalette
+import it.fast4x.riplay.utils.typography
 
 data class Developer(
     val id: Int,

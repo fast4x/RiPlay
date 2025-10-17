@@ -12,9 +12,6 @@ import androidx.compose.foundation.layout.absoluteOffset
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableIntState
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
@@ -23,14 +20,13 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.NavRoutes
-import it.fast4x.riplay.ui.components.themed.SmartMessage
 import it.fast4x.riplay.ui.styling.favoritesIcon
 import it.fast4x.riplay.ui.components.themed.Button
-import it.fast4x.riplay.colorPalette
-import it.fast4x.riplay.getAudioQualityFormat
-import it.fast4x.riplay.isDebugModeEnabled
-import it.fast4x.riplay.isParentalControlEnabled
-import it.fast4x.riplay.typography
+import it.fast4x.riplay.utils.colorPalette
+import it.fast4x.riplay.utils.getAudioQualityFormat
+import it.fast4x.riplay.utils.isDebugModeEnabled
+import it.fast4x.riplay.utils.isParentalControlEnabled
+import it.fast4x.riplay.utils.typography
 import it.fast4x.riplay.utils.isAtLeastAndroid7
 import org.dailyislam.android.utilities.getNetworkType
 

@@ -51,8 +51,8 @@ import it.fast4x.riplay.extensions.preferences.playlistSortByKey
 import it.fast4x.riplay.extensions.preferences.playlistSortOrderKey
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.extensions.preferences.showSearchTabKey
-import it.fast4x.riplay.colorPalette
-import it.fast4x.riplay.thumbnailShape
+import it.fast4x.riplay.utils.colorPalette
+import it.fast4x.riplay.utils.thumbnailShape
 
 @SuppressLint("SuspiciousIndentation")
 @ExperimentalAnimationApi

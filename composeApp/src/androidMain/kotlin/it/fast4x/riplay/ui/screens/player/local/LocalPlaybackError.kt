@@ -31,7 +31,7 @@ import it.fast4x.riplay.ui.styling.PureBlackColorPalette
 import it.fast4x.riplay.ui.styling.center
 import it.fast4x.riplay.ui.styling.color
 import it.fast4x.riplay.ui.styling.medium
-import it.fast4x.riplay.typography
+import it.fast4x.riplay.utils.typography
 
 @OptIn(UnstableApi::class)
 @Composable

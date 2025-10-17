@@ -47,10 +47,9 @@ import androidx.compose.ui.unit.dp
 import androidx.media3.common.MediaItem
 import it.fast4x.riplay.Database
 import it.fast4x.riplay.R
-import it.fast4x.riplay.colorPalette
-import it.fast4x.riplay.context
+import it.fast4x.riplay.utils.colorPalette
+import it.fast4x.riplay.utils.context
 import it.fast4x.riplay.enums.PopupType
-import it.fast4x.riplay.enums.ShareType
 import it.fast4x.riplay.enums.ThumbnailRoundness
 import it.fast4x.riplay.enums.LinkType
 import it.fast4x.riplay.extensions.listapps.listApps
@@ -59,8 +58,8 @@ import it.fast4x.riplay.models.Album
 import it.fast4x.riplay.models.Artist
 import it.fast4x.riplay.models.ExternalApp
 import it.fast4x.riplay.models.Playlist
-import it.fast4x.riplay.thumbnailShape
-import it.fast4x.riplay.typography
+import it.fast4x.riplay.utils.thumbnailShape
+import it.fast4x.riplay.utils.typography
 import it.fast4x.riplay.ui.components.CustomModalBottomSheet
 import it.fast4x.riplay.ui.components.themed.DefaultDialog
 import it.fast4x.riplay.ui.components.themed.MenuEntry

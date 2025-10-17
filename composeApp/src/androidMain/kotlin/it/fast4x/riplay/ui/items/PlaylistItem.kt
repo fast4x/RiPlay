@@ -56,9 +56,9 @@ import it.fast4x.riplay.utils.thumbnail
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
-import it.fast4x.riplay.colorPalette
-import it.fast4x.riplay.thumbnailShape
-import it.fast4x.riplay.typography
+import it.fast4x.riplay.utils.colorPalette
+import it.fast4x.riplay.utils.thumbnailShape
+import it.fast4x.riplay.utils.typography
 import timber.log.Timber
 
 @Composable

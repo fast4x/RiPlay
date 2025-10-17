@@ -13,7 +13,7 @@ import it.fast4x.riplay.ui.components.LocalMenuState
 import it.fast4x.riplay.ui.components.MenuState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
-import it.fast4x.riplay.appContext
+import it.fast4x.riplay.utils.appContext
 import it.fast4x.riplay.ui.components.tab.toolbar.Descriptive
 import it.fast4x.riplay.ui.components.tab.toolbar.MenuIcon
 

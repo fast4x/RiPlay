@@ -60,7 +60,7 @@ import it.fast4x.riplay.LocalPlayerAwareWindowInsets
 import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.LocalSelectedQueue
 import it.fast4x.riplay.R
-import it.fast4x.riplay.appContext
+import it.fast4x.riplay.utils.appContext
 import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.enums.NavigationBarPosition
 import it.fast4x.riplay.ui.components.LocalMenuState
@@ -78,7 +78,7 @@ import it.fast4x.riplay.utils.languageDestination
 import it.fast4x.riplay.extensions.preferences.parentalControlEnabledKey
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import me.bush.translator.Translator
-import it.fast4x.riplay.colorPalette
+import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.enums.MaxSongs
 import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.models.Song
@@ -102,7 +102,6 @@ import it.fast4x.riplay.utils.forcePlayFromBeginning
 import it.fast4x.riplay.utils.formatAsDuration
 import it.fast4x.riplay.utils.isExplicit
 import org.dailyislam.android.utilities.isNetworkConnected
-import it.fast4x.riplay.utils.isNowPlaying
 import it.fast4x.riplay.extensions.preferences.maxSongsInQueueKey
 import it.fast4x.riplay.utils.LazyListContainer
 import it.fast4x.riplay.utils.forcePlay

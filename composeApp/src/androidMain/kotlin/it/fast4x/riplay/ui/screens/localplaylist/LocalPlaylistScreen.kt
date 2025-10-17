@@ -45,7 +45,7 @@ import it.fast4x.riplay.enums.UiType
 import it.fast4x.riplay.extensions.preferences.playerPositionKey
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.extensions.preferences.transitionEffectKey
-import it.fast4x.riplay.colorPalette
+import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.ui.components.navigation.header.AppHeader
 
 @OptIn(KotlinCsvExperimental::class)

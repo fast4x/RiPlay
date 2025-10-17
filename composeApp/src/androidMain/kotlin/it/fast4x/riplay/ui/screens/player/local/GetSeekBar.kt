@@ -55,7 +55,7 @@ import it.fast4x.riplay.ui.components.SeekBarWaved
 import it.fast4x.riplay.ui.styling.collapsedPlayerProgressBar
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import it.fast4x.riplay.colorPalette
+import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.extensions.preferences.colorPaletteModeKey
 import it.fast4x.riplay.extensions.preferences.pauseBetweenSongsKey
 import it.fast4x.riplay.extensions.preferences.playerTimelineTypeKey
@@ -65,7 +65,7 @@ import it.fast4x.riplay.extensions.preferences.seekWithTapKey
 import it.fast4x.riplay.extensions.preferences.showRemainingSongTimeKey
 import it.fast4x.riplay.extensions.preferences.textoutlineKey
 import it.fast4x.riplay.extensions.preferences.transparentbarKey
-import it.fast4x.riplay.typography
+import it.fast4x.riplay.utils.typography
 import it.fast4x.riplay.utils.formatAsDuration
 import it.fast4x.riplay.utils.isCompositionLaunched
 import it.fast4x.riplay.utils.positionAndDurationState

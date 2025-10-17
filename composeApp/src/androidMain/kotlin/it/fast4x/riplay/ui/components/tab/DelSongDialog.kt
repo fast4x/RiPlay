@@ -14,7 +14,7 @@ import it.fast4x.riplay.service.LocalPlayerService
 import it.fast4x.riplay.ui.components.LocalMenuState
 import it.fast4x.riplay.ui.components.MenuState
 import it.fast4x.riplay.ui.components.themed.SmartMessage
-import it.fast4x.riplay.appContext
+import it.fast4x.riplay.utils.appContext
 import it.fast4x.riplay.ui.components.themed.DeleteDialog
 import java.util.Optional
 

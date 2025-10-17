@@ -28,8 +28,8 @@ import it.fast4x.riplay.utils.isLandscape
 import it.fast4x.riplay.extensions.preferences.playerThumbnailSizeKey
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.utils.thumbnail
-import it.fast4x.riplay.colorPalette
-import it.fast4x.riplay.thumbnailShape
+import it.fast4x.riplay.utils.colorPalette
+import it.fast4x.riplay.utils.thumbnailShape
 
 
 @Composable

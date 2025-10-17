@@ -23,7 +23,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.sp
-import it.fast4x.riplay.colorPalette
+import it.fast4x.riplay.utils.colorPalette
 import kotlin.math.PI
 import kotlin.math.atan2
 import kotlin.math.cos

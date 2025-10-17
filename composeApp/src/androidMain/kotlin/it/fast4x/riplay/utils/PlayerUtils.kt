@@ -24,17 +24,14 @@ import androidx.media3.common.Player.REPEAT_MODE_ALL
 import androidx.media3.common.Player.REPEAT_MODE_OFF
 import androidx.media3.common.Player.REPEAT_MODE_ONE
 import androidx.media3.common.Timeline
-import androidx.media3.common.util.Log
 import androidx.media3.common.util.UnstableApi
 import it.fast4x.riplay.Database
 import it.fast4x.riplay.R
-import it.fast4x.riplay.context
 import it.fast4x.riplay.enums.DurationInMinutes
 import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.extensions.preferences.excludeSongsWithDurationLimitKey
 import it.fast4x.riplay.extensions.preferences.getEnum
 import it.fast4x.riplay.extensions.preferences.preferences
-import it.fast4x.riplay.isPersistentQueueEnabled
 import it.fast4x.riplay.models.QueuedMediaItem
 import it.fast4x.riplay.models.Queues
 import it.fast4x.riplay.models.defaultQueueId

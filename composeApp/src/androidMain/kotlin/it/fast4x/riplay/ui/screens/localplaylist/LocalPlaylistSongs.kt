@@ -164,8 +164,8 @@ import it.fast4x.riplay.MONTHLY_PREFIX
 import it.fast4x.riplay.PINNED_PREFIX
 import it.fast4x.riplay.PIPED_PREFIX
 import it.fast4x.riplay.YTP_PREFIX
-import it.fast4x.riplay.appContext
-import it.fast4x.riplay.colorPalette
+import it.fast4x.riplay.utils.appContext
+import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.enums.PlaylistSongsTypeFilter
 import it.fast4x.riplay.extensions.fastshare.FastShare
 import it.fast4x.riplay.ui.components.themed.NowPlayingSongIndicator

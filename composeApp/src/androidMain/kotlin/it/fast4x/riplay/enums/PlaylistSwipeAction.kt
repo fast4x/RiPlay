@@ -1,9 +1,7 @@
 package it.fast4x.riplay.enums
 
-import androidx.annotation.OptIn
-import androidx.media3.common.util.UnstableApi
 import it.fast4x.riplay.R
-import it.fast4x.riplay.appContext
+import it.fast4x.riplay.utils.appContext
 
 enum class PlaylistSwipeAction {
     NoAction,

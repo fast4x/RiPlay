@@ -12,7 +12,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import it.fast4x.riplay.R
-import it.fast4x.riplay.colorPalette
+import it.fast4x.riplay.utils.colorPalette
 
 @Composable
 fun Loader(

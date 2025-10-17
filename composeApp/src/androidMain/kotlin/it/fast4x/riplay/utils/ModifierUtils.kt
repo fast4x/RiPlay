@@ -44,7 +44,6 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.util.UnstableApi
-import it.fast4x.riplay.colorPalette
 import it.fast4x.riplay.extensions.preferences.disablePlayerHorizontalSwipeKey
 import it.fast4x.riplay.extensions.preferences.rememberObservedPreference
 import it.fast4x.riplay.ui.styling.shimmer

@@ -150,7 +150,7 @@ import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.R
 import it.fast4x.riplay.appRunningInBackground
 import it.fast4x.riplay.cleanPrefix
-import it.fast4x.riplay.colorPalette
+import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.enums.AnimatedGradient
 import it.fast4x.riplay.enums.BackgroundProgress
 import it.fast4x.riplay.enums.CarouselSize
@@ -171,8 +171,8 @@ import it.fast4x.riplay.enums.ThumbnailType
 import it.fast4x.riplay.models.Info
 import it.fast4x.riplay.models.Song
 import it.fast4x.riplay.models.ui.toUiMedia
-import it.fast4x.riplay.thumbnailShape
-import it.fast4x.riplay.typography
+import it.fast4x.riplay.utils.thumbnailShape
+import it.fast4x.riplay.utils.typography
 import it.fast4x.riplay.ui.components.CustomModalBottomSheet
 import it.fast4x.riplay.ui.components.LocalMenuState
 import it.fast4x.riplay.ui.components.themed.BlurParamsDialog
@@ -312,7 +312,7 @@ import androidx.compose.ui.unit.LayoutDirection
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.PlayerConstants
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
 import it.fast4x.riplay.LocalSelectedQueue
-import it.fast4x.riplay.appContext
+import it.fast4x.riplay.utils.appContext
 import it.fast4x.riplay.extensions.preferences.showPlayerActionsBarKey
 import it.fast4x.riplay.models.defaultQueue
 import it.fast4x.riplay.ui.components.themed.AddToPlaylistPlayerMenu

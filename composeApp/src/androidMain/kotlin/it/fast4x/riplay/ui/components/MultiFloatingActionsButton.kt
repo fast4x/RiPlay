@@ -58,7 +58,7 @@ import it.fast4x.riplay.ui.styling.favoritesIcon
 import it.fast4x.riplay.extensions.preferences.multiFloatActionIconOffsetXkey
 import it.fast4x.riplay.extensions.preferences.multiFloatActionIconOffsetYkey
 import it.fast4x.riplay.extensions.preferences.rememberPreference
-import it.fast4x.riplay.colorPalette
+import it.fast4x.riplay.utils.colorPalette
 
 enum class MultiFabState {
     Collapsed, Expanded

@@ -2,7 +2,7 @@ package it.fast4x.riplay.ui.components.tab.toolbar
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
-import it.fast4x.riplay.colorPalette
+import it.fast4x.riplay.utils.colorPalette
 
 /**
  * The [DynamicColor] is a UI component designed to

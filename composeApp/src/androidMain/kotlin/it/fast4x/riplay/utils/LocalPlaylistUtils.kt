@@ -26,7 +26,6 @@ import it.fast4x.riplay.ui.components.themed.MenuEntry
 import it.fast4x.riplay.ui.components.themed.SmartMessage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.runBlocking
-import it.fast4x.riplay.appContext
 import it.fast4x.riplay.extensions.preferences.menuStyleKey
 import it.fast4x.riplay.extensions.preferences.playlistSongSortByKey
 import it.fast4x.riplay.extensions.preferences.rememberPreference
@@ -40,7 +39,6 @@ import it.fast4x.riplay.ui.components.tab.toolbar.Descriptive
 import it.fast4x.riplay.ui.components.tab.toolbar.DualIcon
 import it.fast4x.riplay.ui.components.tab.toolbar.DynamicColor
 import it.fast4x.riplay.ui.components.tab.toolbar.MenuIcon
-import it.fast4x.riplay.typography
 import it.fast4x.riplay.ui.styling.semiBold
 
 

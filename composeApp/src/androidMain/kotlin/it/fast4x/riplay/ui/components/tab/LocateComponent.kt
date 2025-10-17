@@ -16,7 +16,7 @@ import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.service.LocalPlayerService
 import it.fast4x.riplay.ui.components.themed.SmartMessage
 import kotlinx.coroutines.runBlocking
-import it.fast4x.riplay.appContext
+import it.fast4x.riplay.utils.appContext
 import it.fast4x.riplay.ui.components.tab.toolbar.Descriptive
 import it.fast4x.riplay.ui.components.tab.toolbar.DynamicColor
 import it.fast4x.riplay.ui.components.tab.toolbar.MenuIcon

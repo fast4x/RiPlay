@@ -22,7 +22,7 @@ import io.ktor.client.statement.bodyAsText
 import io.ktor.http.Headers
 import io.ktor.http.HttpHeaders
 import it.fast4x.environment.Environment
-import it.fast4x.riplay.context
+import it.fast4x.riplay.utils.context
 import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.extensions.preferences.discordPersonalAccessTokenKey
 import it.fast4x.riplay.extensions.preferences.isDiscordPresenceEnabledKey

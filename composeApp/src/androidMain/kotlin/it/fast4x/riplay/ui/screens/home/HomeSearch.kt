@@ -31,8 +31,8 @@ import it.fast4x.riplay.ui.items.PlaylistItem
 import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.ui.styling.favoritesIcon
 import it.fast4x.riplay.ui.styling.px
-import it.fast4x.riplay.colorPalette
-import it.fast4x.riplay.thumbnailShape
+import it.fast4x.riplay.utils.colorPalette
+import it.fast4x.riplay.utils.thumbnailShape
 
 @ExperimentalAnimationApi
 @ExperimentalFoundationApi

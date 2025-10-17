@@ -15,7 +15,6 @@ import io.github.oikvpqya.compose.fastscroller.ThumbStyle
 import io.github.oikvpqya.compose.fastscroller.TrackStyle
 import io.github.oikvpqya.compose.fastscroller.VerticalScrollbar
 import io.github.oikvpqya.compose.fastscroller.rememberScrollbarAdapter
-import it.fast4x.riplay.colorPalette
 
 
 @Composable

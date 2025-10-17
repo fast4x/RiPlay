@@ -2,7 +2,7 @@ package it.fast4x.riplay.ui.components.tab.toolbar
 
 import androidx.annotation.StringRes
 import it.fast4x.riplay.ui.components.themed.SmartMessage
-import it.fast4x.riplay.appContext
+import it.fast4x.riplay.utils.appContext
 
 interface Descriptive: Clickable {
 

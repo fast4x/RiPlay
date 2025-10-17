@@ -77,11 +77,11 @@ import it.fast4x.riplay.utils.enqueue
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.extensions.preferences.showFloatingIconKey
 import kotlinx.coroutines.flow.map
-import it.fast4x.riplay.colorPalette
+import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.enums.FilterBy
 import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.enums.ViewType
-import it.fast4x.riplay.getViewType
+import it.fast4x.riplay.utils.getViewType
 import it.fast4x.riplay.models.defaultQueue
 import it.fast4x.riplay.ui.components.themed.Search
 import it.fast4x.riplay.ui.components.navigation.header.TabToolBar
@@ -91,7 +91,7 @@ import it.fast4x.riplay.ui.components.tab.TabHeader
 import it.fast4x.riplay.ui.components.tab.toolbar.Randomizer
 import it.fast4x.riplay.ui.components.tab.toolbar.SongsShuffle
 import it.fast4x.riplay.extensions.preferences.Preference.HOME_ALBUM_ITEM_SIZE
-import it.fast4x.riplay.thumbnailShape
+import it.fast4x.riplay.utils.thumbnailShape
 import it.fast4x.riplay.ui.components.PullToRefreshBox
 import it.fast4x.riplay.ui.components.themed.FilterMenu
 import it.fast4x.riplay.ui.components.themed.HeaderIconButton

@@ -145,13 +145,13 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.isActive
-import it.fast4x.riplay.colorPalette
+import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.models.Album
 import it.fast4x.riplay.models.Artist
 import it.fast4x.riplay.models.SongAlbumMap
 import it.fast4x.riplay.models.SongArtistMap
 import it.fast4x.riplay.models.defaultQueue
-import it.fast4x.riplay.typography
+import it.fast4x.riplay.utils.typography
 import it.fast4x.riplay.utils.LazyListContainer
 import timber.log.Timber
 import kotlin.random.Random

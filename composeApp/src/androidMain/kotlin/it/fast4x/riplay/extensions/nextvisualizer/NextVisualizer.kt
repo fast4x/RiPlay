@@ -81,12 +81,12 @@ import it.fast4x.riplay.utils.resize
 import it.fast4x.riplay.ui.styling.semiBold
 import it.fast4x.riplay.extensions.preferences.visualizerEnabledKey
 import kotlinx.coroutines.launch
-import it.fast4x.riplay.colorPalette
+import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.enums.ThumbnailRoundness
 import it.fast4x.riplay.extensions.preferences.rememberObservedPreference
 import it.fast4x.riplay.extensions.preferences.thumbnailRoundnessKey
 import it.fast4x.riplay.service.isLocal
-import it.fast4x.riplay.typography
+import it.fast4x.riplay.utils.typography
 import it.fast4x.riplay.ui.components.DelayedControls
 import timber.log.Timber
 

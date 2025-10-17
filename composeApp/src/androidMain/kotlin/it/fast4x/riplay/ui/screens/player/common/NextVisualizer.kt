@@ -37,7 +37,7 @@ import it.fast4x.riplay.utils.isCompositionLaunched
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.ui.styling.semiBold
 import it.fast4x.riplay.extensions.preferences.visualizerEnabledKey
-import it.fast4x.riplay.typography
+import it.fast4x.riplay.utils.typography
 
 @UnstableApi
 @Composable

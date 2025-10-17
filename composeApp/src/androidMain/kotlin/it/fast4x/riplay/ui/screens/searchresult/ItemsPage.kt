@@ -33,9 +33,9 @@ import it.fast4x.riplay.ui.styling.center
 import it.fast4x.riplay.ui.styling.secondary
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import it.fast4x.riplay.colorPalette
+import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.enums.ContentType
-import it.fast4x.riplay.typography
+import it.fast4x.riplay.utils.typography
 import it.fast4x.riplay.utils.LazyListContainer
 
 @ExperimentalAnimationApi

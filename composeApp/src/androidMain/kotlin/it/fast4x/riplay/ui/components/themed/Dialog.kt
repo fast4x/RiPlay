@@ -129,8 +129,8 @@ import it.fast4x.riplay.extensions.preferences.showCoverThumbnailAnimationKey
 import it.fast4x.riplay.extensions.preferences.thumbnailFadeKey
 import it.fast4x.riplay.extensions.preferences.thumbnailRoundnessKey
 import it.fast4x.riplay.extensions.preferences.thumbnailSpacingKey
-import it.fast4x.riplay.colorPalette
-import it.fast4x.riplay.isBassBoostEnabled
+import it.fast4x.riplay.utils.colorPalette
+import it.fast4x.riplay.utils.isBassBoostEnabled
 import it.fast4x.riplay.models.Album
 import it.fast4x.riplay.models.Playlist
 import it.fast4x.riplay.models.Queues
@@ -139,7 +139,7 @@ import it.fast4x.riplay.models.SongAlbumMap
 import it.fast4x.riplay.models.SongArtistMap
 import it.fast4x.riplay.models.SongPlaylistMap
 import it.fast4x.riplay.models.defaultQueue
-import it.fast4x.riplay.typography
+import it.fast4x.riplay.utils.typography
 import it.fast4x.riplay.ui.items.SongItem
 import it.fast4x.riplay.ui.screens.settings.isSyncEnabled
 import it.fast4x.riplay.ui.styling.Dimensions

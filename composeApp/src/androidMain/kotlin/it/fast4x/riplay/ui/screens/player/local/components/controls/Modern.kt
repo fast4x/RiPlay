@@ -50,9 +50,9 @@ import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import it.fast4x.riplay.Database
 import it.fast4x.riplay.R
-import it.fast4x.riplay.appContext
+import it.fast4x.riplay.utils.appContext
 import it.fast4x.riplay.cleanPrefix
-import it.fast4x.riplay.colorPalette
+import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.enums.ColorPaletteMode
 import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.enums.PlayerBackgroundColors
@@ -63,7 +63,7 @@ import it.fast4x.riplay.models.Info
 import it.fast4x.riplay.models.Song
 import it.fast4x.riplay.models.ui.UiMedia
 import it.fast4x.riplay.service.LocalPlayerService
-import it.fast4x.riplay.typography
+import it.fast4x.riplay.utils.typography
 import it.fast4x.riplay.ui.components.themed.CustomElevatedButton
 import it.fast4x.riplay.ui.components.themed.IconButton
 import it.fast4x.riplay.ui.components.themed.SelectorArtistsDialog

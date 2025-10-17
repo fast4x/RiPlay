@@ -66,10 +66,10 @@ import it.fast4x.riplay.extensions.preferences.disableScrollingTextKey
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.extensions.preferences.showFloatingIconKey
 import kotlinx.coroutines.flow.map
-import it.fast4x.riplay.colorPalette
+import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.enums.FilterBy
 import it.fast4x.riplay.enums.ViewType
-import it.fast4x.riplay.getViewType
+import it.fast4x.riplay.utils.getViewType
 import it.fast4x.riplay.ui.components.LocalMenuState
 import it.fast4x.riplay.ui.components.PullToRefreshBox
 import it.fast4x.riplay.ui.components.themed.Search

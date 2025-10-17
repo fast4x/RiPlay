@@ -14,7 +14,6 @@ import com.pierfrancescosoffritti.androidyoutubeplayer.chromecast.chromecastsend
 import com.pierfrancescosoffritti.androidyoutubeplayer.chromecast.chromecastsender.utils.PlayServicesUtils.checkGooglePlayServicesAvailability
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
 import it.fast4x.riplay.R
-import it.fast4x.riplay.appContext
 import it.fast4x.riplay.extensions.chromecast.notifications.NotificationManager
 import it.fast4x.riplay.extensions.chromecast.notifications.PlaybackControllerBroadcastReceiver
 import it.fast4x.riplay.extensions.chromecast.utils.MediaRouteButtonUtils

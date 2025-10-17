@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -49,7 +48,7 @@ import it.fast4x.riplay.MONTHLY_PREFIX
 import it.fast4x.riplay.PINNED_PREFIX
 import it.fast4x.riplay.R
 import it.fast4x.riplay.YTP_PREFIX
-import it.fast4x.riplay.appContext
+import it.fast4x.riplay.utils.appContext
 import it.fast4x.riplay.enums.NavigationBarPosition
 import it.fast4x.riplay.enums.PlaylistSortBy
 import it.fast4x.riplay.enums.PlaylistsType
@@ -76,9 +75,9 @@ import it.fast4x.riplay.extensions.preferences.showMonthlyPlaylistsKey
 import it.fast4x.riplay.extensions.preferences.showPinnedPlaylistsKey
 import it.fast4x.riplay.extensions.preferences.showPipedPlaylistsKey
 import kotlinx.coroutines.flow.map
-import it.fast4x.riplay.colorPalette
+import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.enums.ViewType
-import it.fast4x.riplay.getViewType
+import it.fast4x.riplay.utils.getViewType
 import it.fast4x.riplay.models.SongAlbumMap
 import it.fast4x.riplay.models.SongArtistMap
 import it.fast4x.riplay.ui.components.PullToRefreshBox
@@ -97,7 +96,6 @@ import it.fast4x.riplay.utils.importYTMPrivatePlaylists
 import it.fast4x.riplay.extensions.preferences.Preference.HOME_LIBRARY_ITEM_SIZE
 import it.fast4x.riplay.utils.autoSyncToolbutton
 import it.fast4x.riplay.extensions.preferences.autosyncKey
-import it.fast4x.riplay.models.SongEntity
 import it.fast4x.riplay.models.defaultQueue
 import it.fast4x.riplay.ui.components.LocalMenuState
 import it.fast4x.riplay.ui.components.themed.PlaylistsItemMenu

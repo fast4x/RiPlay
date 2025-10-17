@@ -41,9 +41,9 @@ import it.fast4x.riplay.ui.styling.bold
 import it.fast4x.riplay.utils.applyIf
 import it.fast4x.riplay.ui.styling.medium
 import it.fast4x.riplay.ui.styling.semiBold
-import it.fast4x.riplay.colorPalette
+import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.enums.NavRoutes
-import it.fast4x.riplay.typography
+import it.fast4x.riplay.utils.typography
 import kotlin.random.Random
 
 @Composable

@@ -76,8 +76,8 @@ import it.fast4x.riplay.extensions.preferences.showvisthumbnailKey
 import it.fast4x.riplay.utils.thumbnail
 import it.fast4x.riplay.extensions.preferences.thumbnailTypeKey
 import it.fast4x.riplay.extensions.preferences.thumbnailpauseKey
-import it.fast4x.riplay.colorPalette
-import it.fast4x.riplay.thumbnailShape
+import it.fast4x.riplay.utils.colorPalette
+import it.fast4x.riplay.utils.thumbnailShape
 import timber.log.Timber
 import java.net.UnknownHostException
 import java.nio.channels.UnresolvedAddressException

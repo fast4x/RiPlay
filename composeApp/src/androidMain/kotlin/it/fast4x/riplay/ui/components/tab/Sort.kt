@@ -33,7 +33,7 @@ import it.fast4x.riplay.ui.components.tab.toolbar.Menu
 import it.fast4x.riplay.ui.components.tab.toolbar.MenuIcon
 import it.fast4x.riplay.enums.Drawable
 import it.fast4x.riplay.enums.MenuTitle
-import it.fast4x.riplay.typography
+import it.fast4x.riplay.utils.typography
 import org.intellij.lang.annotations.MagicConstant
 import kotlin.enums.EnumEntries
 

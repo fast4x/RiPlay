@@ -11,7 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import it.fast4x.riplay.ui.styling.shimmer
-import it.fast4x.riplay.colorPalette
+import it.fast4x.riplay.utils.colorPalette
 import kotlin.random.Random
 
 @Composable

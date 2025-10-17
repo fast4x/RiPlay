@@ -13,7 +13,7 @@ import androidx.media3.exoplayer.ExoPlayer
 import it.fast4x.riplay.ui.components.MusicAnimation
 import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.ui.styling.onOverlay
-import it.fast4x.riplay.colorPalette
+import it.fast4x.riplay.utils.colorPalette
 
 @OptIn(UnstableApi::class)
 @Composable

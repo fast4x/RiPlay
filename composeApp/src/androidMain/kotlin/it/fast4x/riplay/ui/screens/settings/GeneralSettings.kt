@@ -110,13 +110,13 @@ import it.fast4x.riplay.extensions.preferences.shakeEventEnabledKey
 import it.fast4x.riplay.extensions.preferences.skipMediaOnErrorKey
 import it.fast4x.riplay.extensions.preferences.skipSilenceKey
 import it.fast4x.riplay.extensions.preferences.volumeNormalizationKey
-import it.fast4x.riplay.colorPalette
+import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.enums.DnsOverHttpsType
 import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.enums.PresetsReverb
 import it.fast4x.riplay.enums.ValidationType
 import it.fast4x.riplay.ui.components.themed.Search
-import it.fast4x.riplay.typography
+import it.fast4x.riplay.utils.typography
 import it.fast4x.riplay.extensions.preferences.audioReverbPresetKey
 //import it.fast4x.riplay.utils.autoDownloadSongKey
 //import it.fast4x.riplay.utils.autoDownloadSongWhenAlbumBookmarkedKey

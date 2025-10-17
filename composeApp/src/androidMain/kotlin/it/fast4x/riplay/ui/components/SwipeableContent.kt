@@ -32,7 +32,7 @@ import androidx.media3.common.util.UnstableApi
 import it.fast4x.environment.Environment
 import it.fast4x.riplay.Database
 import it.fast4x.riplay.R
-import it.fast4x.riplay.appContext
+import it.fast4x.riplay.utils.appContext
 import it.fast4x.riplay.cleanPrefix
 import it.fast4x.riplay.enums.AlbumSwipeAction
 import it.fast4x.riplay.enums.PlaylistSwipeAction
@@ -48,7 +48,7 @@ import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.extensions.preferences.queueSwipeLeftActionKey
 import it.fast4x.riplay.extensions.preferences.queueSwipeRightActionKey
 import kotlinx.coroutines.flow.distinctUntilChanged
-import it.fast4x.riplay.colorPalette
+import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.models.Queues
 import it.fast4x.riplay.ui.components.themed.QueuesDialog
@@ -58,7 +58,6 @@ import org.dailyislam.android.utilities.isNetworkConnected
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import timber.log.Timber
 
 @Composable
 fun SwipeableContent(

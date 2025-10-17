@@ -16,7 +16,7 @@ import androidx.compose.ui.unit.dp
 import it.fast4x.riplay.enums.ColorPaletteMode
 import it.fast4x.riplay.extensions.preferences.colorPaletteModeKey
 import it.fast4x.riplay.extensions.preferences.rememberPreference
-import it.fast4x.riplay.colorPalette
+import it.fast4x.riplay.utils.colorPalette
 
 @Composable
 fun <E> ButtonsRow(

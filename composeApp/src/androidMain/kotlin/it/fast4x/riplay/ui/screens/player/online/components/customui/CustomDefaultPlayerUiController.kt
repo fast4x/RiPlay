@@ -22,7 +22,6 @@ import com.pierfrancescosoffritti.androidyoutubeplayer.core.customui.menu.YouTub
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.customui.utils.FadeViewHelper
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.customui.views.YouTubePlayerSeekBar
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.customui.views.YouTubePlayerSeekBarListener
-import it.fast4x.riplay.appContext
 
 class CustomDefaultPlayerUiController(
     context: Context,

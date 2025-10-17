@@ -7,9 +7,6 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarColors
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
@@ -18,8 +15,8 @@ import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.ui.styling.favoritesIcon
 import it.fast4x.riplay.ui.components.themed.Button
-import it.fast4x.riplay.colorPalette
-import it.fast4x.riplay.isEnabledFullscreen
+import it.fast4x.riplay.utils.colorPalette
+import it.fast4x.riplay.utils.isEnabledFullscreen
 
 class AppHeader(
     val navController: NavController

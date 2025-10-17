@@ -1,7 +1,7 @@
 package it.fast4x.riplay.enums
 
 import it.fast4x.riplay.R
-import it.fast4x.riplay.appContext
+import it.fast4x.riplay.utils.appContext
 
 enum class StreamingPlayerType {
     //TODO: add Auto type

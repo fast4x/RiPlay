@@ -38,7 +38,6 @@ import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.BasicTextField
@@ -86,7 +85,6 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.common.Timeline
 import androidx.media3.common.util.UnstableApi
-import androidx.media3.exoplayer.offline.Download
 import androidx.navigation.NavController
 import com.github.doyaaaaaken.kotlincsv.dsl.csvWriter
 import com.valentinilk.shimmer.shimmer
@@ -95,7 +93,7 @@ import it.fast4x.riplay.LOCAL_KEY_PREFIX
 import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.R
 import it.fast4x.riplay.cleanPrefix
-import it.fast4x.riplay.colorPalette
+import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.enums.QueueLoopType
@@ -103,8 +101,8 @@ import it.fast4x.riplay.enums.QueueType
 import it.fast4x.riplay.enums.ThumbnailRoundness
 import it.fast4x.riplay.models.SongPlaylistMap
 import it.fast4x.riplay.service.isLocal
-import it.fast4x.riplay.thumbnailShape
-import it.fast4x.riplay.typography
+import it.fast4x.riplay.utils.thumbnailShape
+import it.fast4x.riplay.utils.typography
 import it.fast4x.riplay.ui.components.LocalMenuState
 import it.fast4x.riplay.ui.components.SwipeableQueueItem
 import it.fast4x.riplay.ui.components.themed.ConfirmationDialog
@@ -167,7 +165,6 @@ import it.fast4x.riplay.ui.screens.player.online.OnlineMiniPlayer
 import it.fast4x.riplay.utils.getScreenDimensions
 import it.fast4x.riplay.utils.move
 import kotlinx.coroutines.withContext
-import timber.log.Timber
 
 @ExperimentalMaterial3Api
 @ExperimentalTextApi

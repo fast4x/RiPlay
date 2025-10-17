@@ -21,11 +21,11 @@ import it.fast4x.riplay.extensions.pip.isPipSupported
 import it.fast4x.riplay.extensions.pip.rememberPipHandler
 import it.fast4x.riplay.extensions.preferences.enablePictureInPictureKey
 import it.fast4x.riplay.extensions.preferences.rememberPreference
-import it.fast4x.riplay.colorPalette
-import it.fast4x.riplay.thumbnailShape
+import it.fast4x.riplay.utils.colorPalette
+import it.fast4x.riplay.utils.thumbnailShape
 import it.fast4x.riplay.ui.components.themed.DropdownMenu
 import it.fast4x.riplay.ui.screens.settings.isLoggedIn
-import it.fast4x.riplay.ytAccountThumbnail
+import it.fast4x.riplay.utils.ytAccountThumbnail
 
 @Composable
 private fun HamburgerMenu(

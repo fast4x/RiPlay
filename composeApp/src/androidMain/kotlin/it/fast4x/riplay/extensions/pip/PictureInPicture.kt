@@ -38,8 +38,8 @@ import it.fast4x.riplay.utils.isAtLeastAndroid12
 import it.fast4x.riplay.utils.isAtLeastAndroid7
 import it.fast4x.riplay.utils.isAtLeastAndroid8
 import it.fast4x.riplay.extensions.preferences.rememberPreference
-import it.fast4x.riplay.appContext
-import it.fast4x.riplay.isPipModeAutoEnabled
+import it.fast4x.riplay.utils.appContext
+import it.fast4x.riplay.utils.isPipModeAutoEnabled
 
 
 private fun logError(throwable: Throwable) = Log.e("PipHandler", "An error occurred", throwable)

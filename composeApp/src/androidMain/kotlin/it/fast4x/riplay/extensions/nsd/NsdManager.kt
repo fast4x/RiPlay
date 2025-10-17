@@ -3,7 +3,7 @@ package it.fast4x.riplay.extensions.nsd
 import android.content.Context
 import android.net.nsd.NsdManager
 import android.net.nsd.NsdServiceInfo
-import it.fast4x.riplay.appContext
+import it.fast4x.riplay.utils.appContext
 import timber.log.Timber
 import java.net.Socket
 import java.net.UnknownHostException

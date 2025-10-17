@@ -57,8 +57,8 @@ import it.fast4x.riplay.extensions.preferences.playlistSortOrderKey
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.ui.styling.semiBold
 import kotlinx.coroutines.Dispatchers
-import it.fast4x.riplay.colorPalette
-import it.fast4x.riplay.typography
+import it.fast4x.riplay.utils.colorPalette
+import it.fast4x.riplay.utils.typography
 import org.dailyislam.android.utilities.isNetworkConnected
 
 @ExperimentalTextApi

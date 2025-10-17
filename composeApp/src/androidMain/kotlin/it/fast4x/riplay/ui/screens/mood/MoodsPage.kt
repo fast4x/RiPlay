@@ -47,8 +47,8 @@ import it.fast4x.riplay.ui.screens.home.MoodGridItemColored
 import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.ui.styling.center
 import it.fast4x.riplay.ui.styling.secondary
-import it.fast4x.riplay.colorPalette
-import it.fast4x.riplay.typography
+import it.fast4x.riplay.utils.colorPalette
+import it.fast4x.riplay.utils.typography
 import it.fast4x.riplay.utils.LazyListContainer
 
 @ExperimentalFoundationApi

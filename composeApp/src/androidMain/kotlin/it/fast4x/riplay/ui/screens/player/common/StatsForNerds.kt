@@ -57,8 +57,8 @@ import it.fast4x.riplay.extensions.preferences.statsfornerdsKey
 import it.fast4x.riplay.extensions.preferences.transparentBackgroundPlayerActionBarKey
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.distinctUntilChanged
-import it.fast4x.riplay.colorPalette
-import it.fast4x.riplay.typography
+import it.fast4x.riplay.utils.colorPalette
+import it.fast4x.riplay.utils.typography
 import it.fast4x.riplay.ui.components.themed.IconButton
 
 @SuppressLint("LongLogTag")

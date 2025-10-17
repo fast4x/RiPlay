@@ -18,7 +18,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import it.fast4x.riplay.colorPalette
+import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.ui.components.navigation.nav.AbstractNavigationBar
 import it.fast4x.riplay.ui.components.navigation.nav.HorizontalNavigationBar
 import it.fast4x.riplay.ui.components.navigation.nav.VerticalNavigationBar

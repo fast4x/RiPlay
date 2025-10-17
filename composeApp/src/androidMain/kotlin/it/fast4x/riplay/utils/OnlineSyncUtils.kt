@@ -15,10 +15,8 @@ import it.fast4x.riplay.Database.Companion.getArtistsList
 import it.fast4x.riplay.Database.Companion.update
 import it.fast4x.riplay.R
 import it.fast4x.riplay.YTP_PREFIX
-import it.fast4x.riplay.appContext
 import it.fast4x.riplay.extensions.preferences.autosyncKey
 import it.fast4x.riplay.extensions.preferences.rememberPreference
-import it.fast4x.riplay.isAutoSyncEnabled
 import it.fast4x.riplay.models.Album
 import it.fast4x.riplay.models.Artist
 import it.fast4x.riplay.models.Playlist

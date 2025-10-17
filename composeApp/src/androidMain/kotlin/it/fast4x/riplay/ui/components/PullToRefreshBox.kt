@@ -9,7 +9,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import it.fast4x.riplay.ui.styling.favoritesIcon
-import it.fast4x.riplay.colorPalette
+import it.fast4x.riplay.utils.colorPalette
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable

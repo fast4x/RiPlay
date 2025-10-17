@@ -14,7 +14,6 @@ import androidx.media3.datasource.cache.CacheSpan
 import androidx.media3.datasource.cache.LeastRecentlyUsedCacheEvictor
 import androidx.media3.datasource.cache.NoOpCacheEvictor
 import androidx.media3.datasource.cache.SimpleCache
-import it.fast4x.riplay.appContext
 import it.fast4x.riplay.enums.ExoPlayerCacheLocation
 import it.fast4x.riplay.enums.ExoPlayerDiskCacheMaxSize
 import it.fast4x.riplay.extensions.preferences.exoPlayerCacheLocationKey

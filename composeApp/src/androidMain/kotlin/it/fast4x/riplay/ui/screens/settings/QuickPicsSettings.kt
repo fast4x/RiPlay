@@ -41,7 +41,7 @@ import it.fast4x.riplay.extensions.preferences.showRelatedAlbumsKey
 import it.fast4x.riplay.extensions.preferences.showSimilarArtistsKey
 import it.fast4x.riplay.extensions.preferences.showTipsKey
 import kotlinx.coroutines.flow.distinctUntilChanged
-import it.fast4x.riplay.colorPalette
+import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.ui.components.themed.settingsItem
 import it.fast4x.riplay.utils.LazyListContainer
 

@@ -26,7 +26,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.ui.Alignment
 import it.fast4x.riplay.LocalPlayerAwareWindowInsets
 import it.fast4x.riplay.R
-import it.fast4x.riplay.context
+import it.fast4x.riplay.utils.context
 import it.fast4x.riplay.ui.components.themed.Title
 import okhttp3.OkHttpClient
 import okhttp3.Request

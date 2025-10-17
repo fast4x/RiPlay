@@ -59,7 +59,7 @@ import it.fast4x.riplay.MONTHLY_PREFIX
 import it.fast4x.riplay.PINNED_PREFIX
 import it.fast4x.riplay.PIPED_PREFIX
 import it.fast4x.riplay.R
-import it.fast4x.riplay.appContext
+import it.fast4x.riplay.utils.appContext
 import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.enums.PlaylistSortBy
 import it.fast4x.riplay.enums.SortOrder
@@ -87,13 +87,13 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import it.fast4x.riplay.colorPalette
+import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.extensions.fastshare.FastShare
 import it.fast4x.riplay.models.Queues
 import it.fast4x.riplay.models.Song
 import it.fast4x.riplay.models.defaultQueue
-import it.fast4x.riplay.typography
+import it.fast4x.riplay.utils.typography
 import it.fast4x.riplay.ui.screens.settings.isSyncEnabled
 import it.fast4x.riplay.utils.addSongToYtPlaylist
 import it.fast4x.riplay.utils.addToYtLikedSong

@@ -20,7 +20,6 @@ import android.graphics.Color
 import android.media.AudioDeviceCallback
 import android.media.AudioDeviceInfo
 import android.media.AudioManager
-import android.media.MediaDescription
 import android.media.audiofx.AudioEffect
 import android.media.audiofx.BassBoost
 import android.media.audiofx.LoudnessEnhancer
@@ -46,8 +45,6 @@ import androidx.media3.common.MediaMetadata
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.PlaybackParameters
 import androidx.media3.common.Player
-import androidx.media3.common.Player.EVENT_POSITION_DISCONTINUITY
-import androidx.media3.common.Player.EVENT_TIMELINE_CHANGED
 import androidx.media3.common.Timeline
 import androidx.media3.common.audio.SonicAudioProcessor
 import androidx.media3.common.util.UnstableApi
@@ -167,12 +164,12 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import it.fast4x.riplay.appContext
+import it.fast4x.riplay.utils.appContext
 import it.fast4x.riplay.enums.ContentType
 import it.fast4x.riplay.enums.PresetsReverb
 import it.fast4x.riplay.extensions.discord.DiscordPresenceManager
 import it.fast4x.riplay.extensions.discord.updateDiscordPresenceWithOfflinePlayer
-import it.fast4x.riplay.isHandleAudioFocusEnabled
+import it.fast4x.riplay.utils.isHandleAudioFocusEnabled
 import it.fast4x.riplay.extensions.preferences.audioReverbPresetKey
 import it.fast4x.riplay.extensions.preferences.bassboostEnabledKey
 import it.fast4x.riplay.extensions.preferences.bassboostLevelKey
@@ -184,11 +181,10 @@ import it.fast4x.riplay.utils.loadMasterQueue
 import it.fast4x.riplay.utils.principalCache
 import it.fast4x.riplay.utils.saveMasterQueue
 import it.fast4x.riplay.extensions.preferences.volumeBoostLevelKey
-import it.fast4x.riplay.getPlaybackFadeAudioDuration
-import it.fast4x.riplay.isPersistentQueueEnabled
+import it.fast4x.riplay.utils.getPlaybackFadeAudioDuration
+import it.fast4x.riplay.utils.isPersistentQueueEnabled
 import it.fast4x.riplay.utils.BitmapProvider
 import it.fast4x.riplay.utils.SleepTimerListener
-import it.fast4x.riplay.utils.getQueueWindows
 import it.fast4x.riplay.utils.isOfficialContent
 import it.fast4x.riplay.utils.isUserGeneratedContent
 import kotlinx.coroutines.SupervisorJob

@@ -47,7 +47,7 @@ import androidx.core.graphics.toRect
 import it.fast4x.riplay.R
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
-import it.fast4x.riplay.colorPalette
+import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.enums.ValidationType
 import it.fast4x.riplay.ui.screens.settings.TextDialogSettingEntry
 import android.graphics.Color as AndroidColor

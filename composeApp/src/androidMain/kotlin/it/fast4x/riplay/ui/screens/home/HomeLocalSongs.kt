@@ -88,8 +88,8 @@ import it.fast4x.riplay.EXPLICIT_PREFIX
 import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.LocalSelectedQueue
 import it.fast4x.riplay.R
-import it.fast4x.riplay.appContext
-import it.fast4x.riplay.colorPalette
+import it.fast4x.riplay.utils.appContext
+import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.enums.BuiltInPlaylist
 import it.fast4x.riplay.enums.DurationInMinutes
 import it.fast4x.riplay.enums.MaxSongs
@@ -112,8 +112,8 @@ import it.fast4x.riplay.models.SongEntity
 import it.fast4x.riplay.models.SongPlaylistMap
 import it.fast4x.riplay.models.defaultQueue
 import it.fast4x.riplay.service.LOCAL_KEY_PREFIX
-import it.fast4x.riplay.thumbnailShape
-import it.fast4x.riplay.typography
+import it.fast4x.riplay.utils.thumbnailShape
+import it.fast4x.riplay.utils.typography
 import it.fast4x.riplay.ui.components.LocalMenuState
 import it.fast4x.riplay.ui.components.SwipeablePlaylistItem
 import it.fast4x.riplay.ui.components.themed.ConfirmationDialog

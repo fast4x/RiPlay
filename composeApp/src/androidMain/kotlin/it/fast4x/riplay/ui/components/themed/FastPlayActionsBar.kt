@@ -9,8 +9,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import it.fast4x.riplay.R
-import it.fast4x.riplay.colorPalette
-import it.fast4x.riplay.context
+import it.fast4x.riplay.utils.colorPalette
+import it.fast4x.riplay.utils.context
 
 @Composable
 fun FastPlayActionsBar(

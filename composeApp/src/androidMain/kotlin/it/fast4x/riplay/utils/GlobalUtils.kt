@@ -1,8 +1,10 @@
-package it.fast4x.riplay
+package it.fast4x.riplay.utils
 
 import android.content.Context
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ReadOnlyComposable
+import it.fast4x.riplay.Dependencies
+import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.enums.AudioQualityFormat
 import it.fast4x.riplay.enums.ColorPaletteMode
 import it.fast4x.riplay.enums.DnsOverHttpsType
