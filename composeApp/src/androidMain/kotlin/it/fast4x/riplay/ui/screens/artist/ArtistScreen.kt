@@ -42,7 +42,7 @@ import it.fast4x.riplay.R
 import it.fast4x.riplay.cleanPrefix
 import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.enums.ThumbnailRoundness
-import it.fast4x.riplay.models.Artist
+import it.fast4x.riplay.data.models.Artist
 import it.fast4x.riplay.ui.components.themed.Header
 import it.fast4x.riplay.ui.components.themed.HeaderIconButton
 import it.fast4x.riplay.ui.components.themed.HeaderPlaceholder

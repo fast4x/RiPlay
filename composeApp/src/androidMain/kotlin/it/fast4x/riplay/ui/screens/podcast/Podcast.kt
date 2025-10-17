@@ -76,8 +76,8 @@ import it.fast4x.riplay.enums.NavigationBarPosition
 import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.enums.ThumbnailRoundness
 import it.fast4x.riplay.enums.UiType
-import it.fast4x.riplay.models.Playlist
-import it.fast4x.riplay.models.SongPlaylistMap
+import it.fast4x.riplay.data.models.Playlist
+import it.fast4x.riplay.data.models.SongPlaylistMap
 import it.fast4x.riplay.ui.components.LocalMenuState
 import it.fast4x.riplay.ui.components.ShimmerHost
 import it.fast4x.riplay.ui.components.SwipeablePlaylistItem
@@ -121,7 +121,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.extensions.fastshare.FastShare
-import it.fast4x.riplay.models.defaultQueue
+import it.fast4x.riplay.data.models.defaultQueue
 import it.fast4x.riplay.utils.typography
 import it.fast4x.riplay.ui.screens.settings.isSyncEnabled
 import it.fast4x.riplay.utils.LazyListContainer

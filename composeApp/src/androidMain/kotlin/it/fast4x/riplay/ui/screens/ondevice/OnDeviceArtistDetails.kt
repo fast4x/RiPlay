@@ -67,8 +67,8 @@ import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.enums.NavigationBarPosition
 import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.enums.ThumbnailRoundness
-import it.fast4x.riplay.models.Song
-import it.fast4x.riplay.models.defaultQueue
+import it.fast4x.riplay.data.models.Song
+import it.fast4x.riplay.data.models.defaultQueue
 import it.fast4x.riplay.utils.thumbnailShape
 import it.fast4x.riplay.utils.typography
 import it.fast4x.riplay.ui.components.CustomModalBottomSheet

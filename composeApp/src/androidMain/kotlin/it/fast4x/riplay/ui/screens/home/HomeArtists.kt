@@ -50,8 +50,8 @@ import it.fast4x.riplay.enums.ArtistSortBy
 import it.fast4x.riplay.enums.ArtistsType
 import it.fast4x.riplay.enums.NavigationBarPosition
 import it.fast4x.riplay.enums.UiType
-import it.fast4x.riplay.models.Artist
-import it.fast4x.riplay.models.Song
+import it.fast4x.riplay.data.models.Artist
+import it.fast4x.riplay.data.models.Song
 import it.fast4x.riplay.ui.components.ButtonsRow
 import it.fast4x.riplay.ui.components.themed.FloatingActionsContainerWithScrollToTop
 import it.fast4x.riplay.ui.components.themed.HeaderInfo

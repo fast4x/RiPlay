@@ -1,4 +1,4 @@
-package it.fast4x.riplay.models
+package it.fast4x.riplay.data.models
 
 import androidx.compose.runtime.Immutable
 import androidx.room.ColumnInfo
@@ -7,7 +7,7 @@ import androidx.room.ForeignKey
 
 @Immutable
 @Entity(
-    primaryKeys = ["songId", "artistId"],
+    primaryKeys = ["songId", "playlistId"],
     foreignKeys = [
         ForeignKey(
             entity = Song::class,
@@ -16,14 +16,23 @@ import androidx.room.ForeignKey
             onDelete = ForeignKey.CASCADE
         ),
         ForeignKey(
-            entity = Artist::class,
+            entity = Playlist::class,
             parentColumns = ["id"],
-            childColumns = ["artistId"],
+            childColumns = ["playlistId"],
             onDelete = ForeignKey.CASCADE
         )
     ]
 )
-data class SongArtistMap(
+data class SongPlaylistMap(
     @ColumnInfo(index = true) val songId: String,
-    @ColumnInfo(index = true) val artistId: String
-)
+    @ColumnInfo(index = true) val playlistId: Long,
+    val position: Int,
+    val setVideoId: String? = null,
+    val dateAdded: Long? = null
+){
+    fun default(): SongPlaylistMap {
+        return copy(
+            dateAdded = System.currentTimeMillis()
+        )
+    }
+}

@@ -55,9 +55,9 @@ import it.fast4x.riplay.enums.AlbumSortBy
 import it.fast4x.riplay.enums.AlbumsType
 import it.fast4x.riplay.enums.NavigationBarPosition
 import it.fast4x.riplay.enums.UiType
-import it.fast4x.riplay.models.Album
-import it.fast4x.riplay.models.Song
-import it.fast4x.riplay.models.SongPlaylistMap
+import it.fast4x.riplay.data.models.Album
+import it.fast4x.riplay.data.models.Song
+import it.fast4x.riplay.data.models.SongPlaylistMap
 import it.fast4x.riplay.ui.components.ButtonsRow
 import it.fast4x.riplay.ui.components.LocalMenuState
 import it.fast4x.riplay.ui.components.themed.AlbumsItemMenu
@@ -82,7 +82,7 @@ import it.fast4x.riplay.enums.FilterBy
 import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.enums.ViewType
 import it.fast4x.riplay.utils.getViewType
-import it.fast4x.riplay.models.defaultQueue
+import it.fast4x.riplay.data.models.defaultQueue
 import it.fast4x.riplay.ui.components.themed.Search
 import it.fast4x.riplay.ui.components.navigation.header.TabToolBar
 import it.fast4x.riplay.ui.components.tab.ItemSize

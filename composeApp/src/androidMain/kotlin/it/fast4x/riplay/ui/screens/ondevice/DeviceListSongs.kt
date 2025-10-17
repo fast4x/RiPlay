@@ -85,10 +85,10 @@ import it.fast4x.riplay.enums.OnDeviceSongSortBy
 import it.fast4x.riplay.enums.SortOrder
 import it.fast4x.riplay.enums.ThumbnailRoundness
 import it.fast4x.riplay.enums.UiType
-import it.fast4x.riplay.models.Folder
-import it.fast4x.riplay.models.OnDeviceSong
-import it.fast4x.riplay.models.SongEntity
-import it.fast4x.riplay.models.SongPlaylistMap
+import it.fast4x.riplay.data.models.Folder
+import it.fast4x.riplay.data.models.OnDeviceSong
+import it.fast4x.riplay.data.models.SongEntity
+import it.fast4x.riplay.data.models.SongPlaylistMap
 import it.fast4x.riplay.service.LOCAL_KEY_PREFIX
 import it.fast4x.riplay.ui.components.LocalMenuState
 import it.fast4x.riplay.ui.components.themed.FloatingActionsContainerWithScrollToTop
@@ -146,11 +146,11 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.isActive
 import it.fast4x.riplay.utils.colorPalette
-import it.fast4x.riplay.models.Album
-import it.fast4x.riplay.models.Artist
-import it.fast4x.riplay.models.SongAlbumMap
-import it.fast4x.riplay.models.SongArtistMap
-import it.fast4x.riplay.models.defaultQueue
+import it.fast4x.riplay.data.models.Album
+import it.fast4x.riplay.data.models.Artist
+import it.fast4x.riplay.data.models.SongAlbumMap
+import it.fast4x.riplay.data.models.SongArtistMap
+import it.fast4x.riplay.data.models.defaultQueue
 import it.fast4x.riplay.utils.typography
 import it.fast4x.riplay.utils.LazyListContainer
 import timber.log.Timber
@@ -1178,7 +1178,7 @@ fun Context.musicFilesAsFlow(
                                     )
                                     Database.insert(
                                         song.toSong(),
-                                        it.fast4x.riplay.models.Format(
+                                        it.fast4x.riplay.data.models.Format(
                                             songId = song.id,
                                             itag = 0,
                                             mimeType = mimeType,

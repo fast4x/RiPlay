@@ -26,7 +26,7 @@ import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.CheckUpdateState
 import it.fast4x.riplay.enums.HomeScreenTabs
 import it.fast4x.riplay.enums.NavRoutes
-import it.fast4x.riplay.models.toUiMood
+import it.fast4x.riplay.data.models.toUiMood
 import it.fast4x.riplay.ui.components.themed.ConfirmationDialog
 import it.fast4x.riplay.ui.components.themed.SmartMessage
 import it.fast4x.riplay.utils.CheckAvailableNewVersion

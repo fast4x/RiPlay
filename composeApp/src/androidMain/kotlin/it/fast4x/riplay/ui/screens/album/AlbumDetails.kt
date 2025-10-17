@@ -79,11 +79,11 @@ import it.fast4x.riplay.utils.appContext
 import it.fast4x.riplay.cleanPrefix
 import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.enums.UiType
-import it.fast4x.riplay.models.Album
-import it.fast4x.riplay.models.Info
-import it.fast4x.riplay.models.Playlist
-import it.fast4x.riplay.models.Song
-import it.fast4x.riplay.models.SongPlaylistMap
+import it.fast4x.riplay.data.models.Album
+import it.fast4x.riplay.data.models.Info
+import it.fast4x.riplay.data.models.Playlist
+import it.fast4x.riplay.data.models.Song
+import it.fast4x.riplay.data.models.SongPlaylistMap
 import it.fast4x.riplay.ui.components.LocalMenuState
 import it.fast4x.riplay.ui.components.ShimmerHost
 import it.fast4x.riplay.ui.components.SwipeablePlaylistItem
@@ -137,8 +137,8 @@ import me.bush.translator.Translator
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.extensions.fastshare.FastShare
-import it.fast4x.riplay.models.SongAlbumMap
-import it.fast4x.riplay.models.defaultQueue
+import it.fast4x.riplay.data.models.SongAlbumMap
+import it.fast4x.riplay.data.models.defaultQueue
 import it.fast4x.riplay.utils.typography
 import it.fast4x.riplay.ui.components.PullToRefreshBox
 import it.fast4x.riplay.ui.components.themed.FastPlayActionsBar

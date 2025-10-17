@@ -17,7 +17,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.util.UnstableApi
 import it.fast4x.riplay.R
-import it.fast4x.riplay.models.Folder
+import it.fast4x.riplay.data.models.Folder
 import it.fast4x.riplay.utils.applyIf
 import it.fast4x.riplay.ui.styling.semiBold
 import it.fast4x.riplay.utils.colorPalette

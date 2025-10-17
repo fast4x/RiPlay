@@ -168,9 +168,9 @@ import it.fast4x.riplay.enums.SwipeAnimationNoThumbnail
 import it.fast4x.riplay.enums.ThumbnailCoverType
 import it.fast4x.riplay.enums.ThumbnailRoundness
 import it.fast4x.riplay.enums.ThumbnailType
-import it.fast4x.riplay.models.Info
-import it.fast4x.riplay.models.Song
-import it.fast4x.riplay.models.ui.toUiMedia
+import it.fast4x.riplay.data.models.Info
+import it.fast4x.riplay.data.models.Song
+import it.fast4x.riplay.data.models.toUiMedia
 import it.fast4x.riplay.utils.thumbnailShape
 import it.fast4x.riplay.utils.typography
 import it.fast4x.riplay.ui.components.CustomModalBottomSheet
@@ -314,7 +314,7 @@ import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
 import it.fast4x.riplay.LocalSelectedQueue
 import it.fast4x.riplay.utils.appContext
 import it.fast4x.riplay.extensions.preferences.showPlayerActionsBarKey
-import it.fast4x.riplay.models.defaultQueue
+import it.fast4x.riplay.data.models.defaultQueue
 import it.fast4x.riplay.ui.components.themed.AddToPlaylistPlayerMenu
 import it.fast4x.riplay.ui.screens.player.common.Lyrics
 import it.fast4x.riplay.ui.screens.player.common.NextVisualizer

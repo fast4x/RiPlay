@@ -66,7 +66,7 @@ import it.fast4x.riplay.cleanString
 import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.enums.NavigationBarPosition
 import it.fast4x.riplay.enums.ThumbnailRoundness
-import it.fast4x.riplay.models.SearchQuery
+import it.fast4x.riplay.data.models.SearchQuery
 import it.fast4x.riplay.ui.components.LocalMenuState
 import it.fast4x.riplay.ui.components.themed.FloatingActionsContainerWithScrollToTop
 import it.fast4x.riplay.ui.components.themed.Header

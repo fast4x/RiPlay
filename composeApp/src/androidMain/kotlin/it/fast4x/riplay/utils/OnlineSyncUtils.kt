@@ -17,10 +17,10 @@ import it.fast4x.riplay.R
 import it.fast4x.riplay.YTP_PREFIX
 import it.fast4x.riplay.extensions.preferences.autosyncKey
 import it.fast4x.riplay.extensions.preferences.rememberPreference
-import it.fast4x.riplay.models.Album
-import it.fast4x.riplay.models.Artist
-import it.fast4x.riplay.models.Playlist
-import it.fast4x.riplay.models.SongPlaylistMap
+import it.fast4x.riplay.data.models.Album
+import it.fast4x.riplay.data.models.Artist
+import it.fast4x.riplay.data.models.Playlist
+import it.fast4x.riplay.data.models.SongPlaylistMap
 import it.fast4x.riplay.ui.components.tab.toolbar.Descriptive
 import it.fast4x.riplay.ui.components.tab.toolbar.DynamicColor
 import it.fast4x.riplay.ui.components.tab.toolbar.MenuIcon

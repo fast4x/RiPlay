@@ -60,10 +60,10 @@ import it.fast4x.riplay.enums.NavigationBarPosition
 import it.fast4x.riplay.enums.StatisticsCategory
 import it.fast4x.riplay.enums.StatisticsType
 import it.fast4x.riplay.enums.ThumbnailRoundness
-import it.fast4x.riplay.models.Album
-import it.fast4x.riplay.models.Artist
-import it.fast4x.riplay.models.PlaylistPreview
-import it.fast4x.riplay.models.Song
+import it.fast4x.riplay.data.models.Album
+import it.fast4x.riplay.data.models.Artist
+import it.fast4x.riplay.data.models.PlaylistPreview
+import it.fast4x.riplay.data.models.Song
 import it.fast4x.riplay.ui.components.ButtonsRow
 import it.fast4x.riplay.ui.components.LocalMenuState
 import it.fast4x.riplay.ui.components.themed.HeaderWithIcon

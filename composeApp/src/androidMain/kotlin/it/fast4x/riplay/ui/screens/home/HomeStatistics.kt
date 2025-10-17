@@ -38,8 +38,8 @@ import it.fast4x.riplay.enums.PlaylistSortBy
 import it.fast4x.riplay.enums.SortOrder
 import it.fast4x.riplay.enums.StatisticsType
 import it.fast4x.riplay.enums.UiType
-import it.fast4x.riplay.models.Playlist
-import it.fast4x.riplay.models.PlaylistPreview
+import it.fast4x.riplay.data.models.Playlist
+import it.fast4x.riplay.data.models.PlaylistPreview
 import it.fast4x.riplay.ui.components.themed.FloatingActionsContainerWithScrollToTop
 import it.fast4x.riplay.ui.components.themed.HeaderWithIcon
 import it.fast4x.riplay.ui.components.themed.InputTextDialog

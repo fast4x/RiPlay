@@ -48,7 +48,7 @@ import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.enums.PlayerPosition
 import it.fast4x.riplay.enums.TransitionEffect
 import it.fast4x.riplay.enums.UiType
-import it.fast4x.riplay.models.Album
+import it.fast4x.riplay.data.models.Album
 import it.fast4x.riplay.ui.components.navigation.header.AppHeader
 import it.fast4x.riplay.extensions.preferences.disableScrollingTextKey
 import it.fast4x.riplay.extensions.preferences.playerPositionKey

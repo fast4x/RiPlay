@@ -110,7 +110,7 @@ import it.fast4x.riplay.enums.LyricsOutline
 import it.fast4x.riplay.enums.PlayerBackgroundColors
 import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.enums.Romanization
-import it.fast4x.riplay.models.Lyrics
+import it.fast4x.riplay.data.models.Lyrics
 import it.fast4x.riplay.ui.components.LocalMenuState
 import it.fast4x.riplay.ui.components.themed.DefaultDialog
 import it.fast4x.riplay.ui.components.themed.IconButton

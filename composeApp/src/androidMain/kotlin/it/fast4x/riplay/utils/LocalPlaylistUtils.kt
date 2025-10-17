@@ -18,8 +18,8 @@ import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.MenuStyle
 import it.fast4x.riplay.enums.PlaylistSongSortBy
 import it.fast4x.riplay.enums.SortOrder
-import it.fast4x.riplay.models.PlaylistPreview
-import it.fast4x.riplay.models.Song
+import it.fast4x.riplay.data.models.PlaylistPreview
+import it.fast4x.riplay.data.models.Song
 import it.fast4x.riplay.ui.components.LocalMenuState
 import it.fast4x.riplay.ui.components.MenuState
 import it.fast4x.riplay.ui.components.themed.MenuEntry

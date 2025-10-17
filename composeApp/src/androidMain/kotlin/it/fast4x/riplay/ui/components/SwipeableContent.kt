@@ -50,7 +50,7 @@ import it.fast4x.riplay.extensions.preferences.queueSwipeRightActionKey
 import kotlinx.coroutines.flow.distinctUntilChanged
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.enums.PopupType
-import it.fast4x.riplay.models.Queues
+import it.fast4x.riplay.data.models.Queues
 import it.fast4x.riplay.ui.components.themed.QueuesDialog
 import it.fast4x.riplay.ui.screens.settings.isSyncEnabled
 import it.fast4x.riplay.utils.addToYtLikedSong

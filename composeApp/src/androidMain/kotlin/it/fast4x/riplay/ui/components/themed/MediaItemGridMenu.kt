@@ -63,10 +63,10 @@ import it.fast4x.riplay.utils.appContext
 import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.enums.PlaylistSortBy
 import it.fast4x.riplay.enums.SortOrder
-import it.fast4x.riplay.models.Artist
-import it.fast4x.riplay.models.Info
-import it.fast4x.riplay.models.Playlist
-import it.fast4x.riplay.models.SongPlaylistMap
+import it.fast4x.riplay.data.models.Artist
+import it.fast4x.riplay.data.models.Info
+import it.fast4x.riplay.data.models.Playlist
+import it.fast4x.riplay.data.models.SongPlaylistMap
 import it.fast4x.riplay.service.isLocal
 import it.fast4x.riplay.ui.items.SongItem
 import it.fast4x.riplay.ui.styling.Dimensions
@@ -90,9 +90,9 @@ import kotlinx.coroutines.withContext
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.extensions.fastshare.FastShare
-import it.fast4x.riplay.models.Queues
-import it.fast4x.riplay.models.Song
-import it.fast4x.riplay.models.defaultQueue
+import it.fast4x.riplay.data.models.Queues
+import it.fast4x.riplay.data.models.Song
+import it.fast4x.riplay.data.models.defaultQueue
 import it.fast4x.riplay.utils.typography
 import it.fast4x.riplay.ui.screens.settings.isSyncEnabled
 import it.fast4x.riplay.utils.addSongToYtPlaylist

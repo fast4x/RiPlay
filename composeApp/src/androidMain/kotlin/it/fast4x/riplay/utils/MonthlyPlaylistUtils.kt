@@ -12,9 +12,9 @@ import androidx.compose.runtime.remember
 import it.fast4x.riplay.Database
 import it.fast4x.riplay.MONTHLY_PREFIX
 import it.fast4x.riplay.R
-import it.fast4x.riplay.models.Playlist
-import it.fast4x.riplay.models.PlaylistWithSongs
-import it.fast4x.riplay.models.SongPlaylistMap
+import it.fast4x.riplay.data.models.Playlist
+import it.fast4x.riplay.data.models.PlaylistWithSongs
+import it.fast4x.riplay.data.models.SongPlaylistMap
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import timber.log.Timber

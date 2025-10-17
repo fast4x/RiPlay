@@ -74,7 +74,7 @@ import it.fast4x.riplay.enums.MiniPlayerType
 import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.service.LocalPlayerService
-import it.fast4x.riplay.models.Song
+import it.fast4x.riplay.data.models.Song
 import it.fast4x.riplay.utils.thumbnailShape
 import it.fast4x.riplay.utils.typography
 import it.fast4x.riplay.ui.components.themed.IconButton

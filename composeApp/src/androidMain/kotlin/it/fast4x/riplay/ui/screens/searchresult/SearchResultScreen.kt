@@ -43,11 +43,11 @@ import it.fast4x.riplay.R
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.enums.ContentType
 import it.fast4x.riplay.enums.NavRoutes
-import it.fast4x.riplay.models.Album
-import it.fast4x.riplay.models.Artist
-import it.fast4x.riplay.models.Playlist
-import it.fast4x.riplay.models.SongAlbumMap
-import it.fast4x.riplay.models.defaultQueue
+import it.fast4x.riplay.data.models.Album
+import it.fast4x.riplay.data.models.Artist
+import it.fast4x.riplay.data.models.Playlist
+import it.fast4x.riplay.data.models.SongAlbumMap
+import it.fast4x.riplay.data.models.defaultQueue
 import it.fast4x.riplay.ui.components.LocalMenuState
 import it.fast4x.riplay.ui.components.ScreenContainer
 import it.fast4x.riplay.ui.components.SwipeableAlbumItem

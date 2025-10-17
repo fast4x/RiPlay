@@ -63,9 +63,9 @@ import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.enums.ArtistItem
 import it.fast4x.riplay.enums.MaxSongs
 import it.fast4x.riplay.enums.PopupType
-import it.fast4x.riplay.models.Song
-import it.fast4x.riplay.models.Album
-import it.fast4x.riplay.models.defaultQueue
+import it.fast4x.riplay.data.models.Song
+import it.fast4x.riplay.data.models.Album
+import it.fast4x.riplay.data.models.defaultQueue
 import it.fast4x.riplay.ui.components.SwipeablePlaylistItem
 import it.fast4x.riplay.ui.components.themed.AddToPlaylistArtistSongs
 import it.fast4x.riplay.ui.components.themed.NonQueuedMediaItemMenu

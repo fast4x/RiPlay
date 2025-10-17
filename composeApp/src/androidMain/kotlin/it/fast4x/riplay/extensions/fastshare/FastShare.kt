@@ -54,10 +54,10 @@ import it.fast4x.riplay.enums.ThumbnailRoundness
 import it.fast4x.riplay.enums.LinkType
 import it.fast4x.riplay.extensions.listapps.listApps
 import it.fast4x.riplay.extensions.listapps.toExternalApp
-import it.fast4x.riplay.models.Album
-import it.fast4x.riplay.models.Artist
-import it.fast4x.riplay.models.ExternalApp
-import it.fast4x.riplay.models.Playlist
+import it.fast4x.riplay.data.models.Album
+import it.fast4x.riplay.data.models.Artist
+import it.fast4x.riplay.data.models.ExternalApp
+import it.fast4x.riplay.data.models.Playlist
 import it.fast4x.riplay.utils.thumbnailShape
 import it.fast4x.riplay.utils.typography
 import it.fast4x.riplay.ui.components.CustomModalBottomSheet

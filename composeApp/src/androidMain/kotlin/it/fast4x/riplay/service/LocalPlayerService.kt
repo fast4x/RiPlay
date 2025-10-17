@@ -96,8 +96,8 @@ import it.fast4x.riplay.enums.QueueLoopType
 import it.fast4x.riplay.enums.WallpaperType
 import it.fast4x.riplay.extensions.audiovolume.AudioVolumeObserver
 import it.fast4x.riplay.extensions.audiovolume.OnAudioVolumeChangedListener
-import it.fast4x.riplay.models.Event
-import it.fast4x.riplay.models.Song
+import it.fast4x.riplay.data.models.Event
+import it.fast4x.riplay.data.models.Song
 import it.fast4x.riplay.ui.components.themed.SmartMessage
 import it.fast4x.riplay.ui.widgets.PlayerHorizontalWidget
 import it.fast4x.riplay.ui.widgets.PlayerVerticalWidget

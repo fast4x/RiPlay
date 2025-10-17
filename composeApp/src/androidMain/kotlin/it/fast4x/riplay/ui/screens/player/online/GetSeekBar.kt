@@ -44,7 +44,7 @@ import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.PlayerConstan
 import it.fast4x.riplay.enums.ColorPaletteMode
 import it.fast4x.riplay.enums.PauseBetweenSongs
 import it.fast4x.riplay.enums.PlayerTimelineType
-import it.fast4x.riplay.models.ui.UiMedia
+import it.fast4x.riplay.data.models.UiMedia
 import it.fast4x.riplay.ui.components.ProgressPercentage
 import it.fast4x.riplay.ui.components.SeekBar
 import it.fast4x.riplay.ui.components.SeekBarAudioWaves

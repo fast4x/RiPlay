@@ -64,10 +64,10 @@ import it.fast4x.riplay.enums.ThumbnailRoundness
 import it.fast4x.riplay.extensions.preferences.artistScreenTabIndexKey
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.extensions.preferences.thumbnailRoundnessKey
-import it.fast4x.riplay.models.Album
-import it.fast4x.riplay.models.Artist
-import it.fast4x.riplay.models.SongAlbumMap
-import it.fast4x.riplay.models.defaultQueue
+import it.fast4x.riplay.data.models.Album
+import it.fast4x.riplay.data.models.Artist
+import it.fast4x.riplay.data.models.SongAlbumMap
+import it.fast4x.riplay.data.models.defaultQueue
 import it.fast4x.riplay.service.LocalPlayerService
 import it.fast4x.riplay.ui.components.LocalMenuState
 import it.fast4x.riplay.ui.components.SwipeablePlaylistItem

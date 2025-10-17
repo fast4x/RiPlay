@@ -34,10 +34,10 @@ import it.fast4x.riplay.MODIFIED_PREFIX
 import it.fast4x.riplay.R
 import it.fast4x.riplay.cleanPrefix
 import it.fast4x.riplay.enums.MaxTopPlaylistItems
-import it.fast4x.riplay.models.Album
-import it.fast4x.riplay.models.Song
-import it.fast4x.riplay.models.SongAlbumMap
-import it.fast4x.riplay.models.SongArtistMap
+import it.fast4x.riplay.data.models.Album
+import it.fast4x.riplay.data.models.Song
+import it.fast4x.riplay.data.models.SongAlbumMap
+import it.fast4x.riplay.data.models.SongArtistMap
 import it.fast4x.riplay.service.MediaSessionConstants.ID_FAVORITES
 import it.fast4x.riplay.service.MediaSessionConstants.ID_ONDEVICE
 import it.fast4x.riplay.service.MediaSessionConstants.ID_TOP

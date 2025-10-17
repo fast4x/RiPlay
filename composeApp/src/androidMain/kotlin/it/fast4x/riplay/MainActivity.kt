@@ -256,8 +256,8 @@ import it.fast4x.riplay.extensions.preferences.ytCookieKey
 import it.fast4x.riplay.extensions.preferences.ytDataSyncIdKey
 import it.fast4x.riplay.extensions.preferences.ytVisitorDataKey
 import it.fast4x.riplay.extensions.rescuecenter.RescueScreen
-import it.fast4x.riplay.models.Queues
-import it.fast4x.riplay.models.defaultQueue
+import it.fast4x.riplay.data.models.Queues
+import it.fast4x.riplay.data.models.defaultQueue
 import it.fast4x.riplay.service.AndroidAutoService
 import it.fast4x.riplay.service.LocalPlayerService
 import it.fast4x.riplay.service.ToolsService

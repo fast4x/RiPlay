@@ -47,12 +47,12 @@ import it.fast4x.riplay.PINNED_PREFIX
 import it.fast4x.riplay.PIPED_PREFIX
 import it.fast4x.riplay.R
 import it.fast4x.riplay.cleanPrefix
+import it.fast4x.riplay.data.models.Playlist
 import it.fast4x.riplay.enums.MenuStyle
 import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.enums.PlaylistSortBy
 import it.fast4x.riplay.enums.SortOrder
-import it.fast4x.riplay.models.Playlist
-import it.fast4x.riplay.models.PlaylistPreview
+import it.fast4x.riplay.data.models.PlaylistPreview
 import it.fast4x.riplay.ui.items.PlaylistItem
 import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.ui.styling.px

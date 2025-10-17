@@ -71,9 +71,9 @@ import it.fast4x.riplay.enums.PlayerControlsType
 import it.fast4x.riplay.enums.PlayerPlayButtonType
 import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.enums.QueueLoopType
-import it.fast4x.riplay.models.Info
-import it.fast4x.riplay.models.Song
-import it.fast4x.riplay.models.ui.UiMedia
+import it.fast4x.riplay.data.models.Info
+import it.fast4x.riplay.data.models.Song
+import it.fast4x.riplay.data.models.UiMedia
 import it.fast4x.riplay.utils.typography
 import it.fast4x.riplay.ui.components.themed.IconButton
 import it.fast4x.riplay.ui.components.themed.SelectorArtistsDialog

@@ -4,10 +4,10 @@ import android.content.Context
 import android.util.Log
 import it.fast4x.riplay.enums.OnDeviceFolderSortBy
 import it.fast4x.riplay.enums.SortOrder
-import it.fast4x.riplay.models.Folder
-import it.fast4x.riplay.models.OnDeviceBlacklistPath
-import it.fast4x.riplay.models.OnDeviceSong
-import it.fast4x.riplay.models.SongEntity
+import it.fast4x.riplay.data.models.Folder
+import it.fast4x.riplay.data.models.OnDeviceBlacklistPath
+import it.fast4x.riplay.data.models.OnDeviceSong
+import it.fast4x.riplay.data.models.SongEntity
 import java.io.File
 
 class OnDeviceOrganize {

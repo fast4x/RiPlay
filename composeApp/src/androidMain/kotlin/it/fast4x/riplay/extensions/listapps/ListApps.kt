@@ -5,9 +5,8 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
-import android.graphics.drawable.Drawable
 import android.os.Build
-import it.fast4x.riplay.models.ExternalApp
+import it.fast4x.riplay.data.models.ExternalApp
 
 fun listApps(
     context: Context,

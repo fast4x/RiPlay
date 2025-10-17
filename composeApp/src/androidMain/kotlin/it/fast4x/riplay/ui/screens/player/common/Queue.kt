@@ -99,7 +99,7 @@ import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.enums.QueueLoopType
 import it.fast4x.riplay.enums.QueueType
 import it.fast4x.riplay.enums.ThumbnailRoundness
-import it.fast4x.riplay.models.SongPlaylistMap
+import it.fast4x.riplay.data.models.SongPlaylistMap
 import it.fast4x.riplay.service.isLocal
 import it.fast4x.riplay.utils.thumbnailShape
 import it.fast4x.riplay.utils.typography
@@ -152,9 +152,9 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.PlayerConstants
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
-import it.fast4x.riplay.models.Queues
-import it.fast4x.riplay.models.defaultQueue
-import it.fast4x.riplay.models.defaultQueueId
+import it.fast4x.riplay.data.models.Queues
+import it.fast4x.riplay.data.models.defaultQueue
+import it.fast4x.riplay.data.models.defaultQueueId
 import it.fast4x.riplay.ui.components.themed.EditQueueDialog
 import it.fast4x.riplay.ui.components.themed.QueueItemMenu
 import it.fast4x.riplay.ui.components.themed.Title

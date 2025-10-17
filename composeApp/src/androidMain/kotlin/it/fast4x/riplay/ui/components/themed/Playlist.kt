@@ -29,8 +29,8 @@ import it.fast4x.riplay.PIPED_PREFIX
 import it.fast4x.riplay.R
 import it.fast4x.riplay.cleanPrefix
 import it.fast4x.riplay.utils.colorPalette
-import it.fast4x.riplay.models.PlaylistPreview
-import it.fast4x.riplay.models.Song
+import it.fast4x.riplay.data.models.PlaylistPreview
+import it.fast4x.riplay.data.models.Song
 import it.fast4x.riplay.ui.items.PlaylistItem
 import it.fast4x.riplay.utils.thumbnail
 import kotlin.text.startsWith

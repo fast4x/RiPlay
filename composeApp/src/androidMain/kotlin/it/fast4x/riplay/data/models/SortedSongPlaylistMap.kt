@@ -1,4 +1,4 @@
-package it.fast4x.riplay.models
+package it.fast4x.riplay.data.models
 
 import androidx.compose.runtime.Immutable
 import androidx.room.ColumnInfo

@@ -22,7 +22,7 @@ import it.fast4x.riplay.R
 import it.fast4x.riplay.utils.context
 import it.fast4x.riplay.enums.MenuStyle
 import it.fast4x.riplay.enums.PopupType
-import it.fast4x.riplay.models.SongPlaylistMap
+import it.fast4x.riplay.data.models.SongPlaylistMap
 import it.fast4x.riplay.service.LocalPlayerService
 import it.fast4x.riplay.ui.screens.settings.isSyncEnabled
 import it.fast4x.riplay.utils.addSongToYtPlaylist

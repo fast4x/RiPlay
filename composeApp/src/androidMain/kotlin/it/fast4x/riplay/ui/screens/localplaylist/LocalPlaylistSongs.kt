@@ -103,10 +103,9 @@ import it.fast4x.riplay.enums.RecommendationsNumber
 import it.fast4x.riplay.enums.SortOrder
 import it.fast4x.riplay.enums.ThumbnailRoundness
 import it.fast4x.riplay.enums.UiType
-import it.fast4x.riplay.models.Playlist
-import it.fast4x.riplay.models.PlaylistPreview
-import it.fast4x.riplay.models.Song
-import it.fast4x.riplay.models.SongPlaylistMap
+import it.fast4x.riplay.data.models.PlaylistPreview
+import it.fast4x.riplay.data.models.Song
+import it.fast4x.riplay.data.models.SongPlaylistMap
 import it.fast4x.riplay.service.isLocal
 import it.fast4x.riplay.ui.components.LocalMenuState
 import it.fast4x.riplay.ui.components.SwipeableQueueItem
@@ -164,6 +163,7 @@ import it.fast4x.riplay.MONTHLY_PREFIX
 import it.fast4x.riplay.PINNED_PREFIX
 import it.fast4x.riplay.PIPED_PREFIX
 import it.fast4x.riplay.YTP_PREFIX
+import it.fast4x.riplay.data.models.Playlist
 import it.fast4x.riplay.utils.appContext
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.enums.PlaylistSongsTypeFilter
@@ -175,8 +175,8 @@ import it.fast4x.riplay.utils.deleteFileIfExists
 import it.fast4x.riplay.extensions.preferences.disableScrollingTextKey
 import it.fast4x.riplay.utils.saveImageToInternalStorage
 import kotlinx.coroutines.CoroutineScope
-import it.fast4x.riplay.models.SongEntity
-import it.fast4x.riplay.models.defaultQueue
+import it.fast4x.riplay.data.models.SongEntity
+import it.fast4x.riplay.data.models.defaultQueue
 import it.fast4x.riplay.service.LOCAL_KEY_PREFIX
 import it.fast4x.riplay.ui.components.PullToRefreshBox
 import it.fast4x.riplay.ui.components.themed.FilterMenu

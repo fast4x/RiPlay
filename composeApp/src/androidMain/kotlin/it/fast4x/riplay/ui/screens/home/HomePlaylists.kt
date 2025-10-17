@@ -53,10 +53,10 @@ import it.fast4x.riplay.enums.NavigationBarPosition
 import it.fast4x.riplay.enums.PlaylistSortBy
 import it.fast4x.riplay.enums.PlaylistsType
 import it.fast4x.riplay.enums.UiType
-import it.fast4x.riplay.models.Playlist
-import it.fast4x.riplay.models.PlaylistPreview
-import it.fast4x.riplay.models.Song
-import it.fast4x.riplay.models.SongPlaylistMap
+import it.fast4x.riplay.data.models.Playlist
+import it.fast4x.riplay.data.models.PlaylistPreview
+import it.fast4x.riplay.data.models.Song
+import it.fast4x.riplay.data.models.SongPlaylistMap
 import it.fast4x.riplay.ui.components.ButtonsRow
 import it.fast4x.riplay.ui.components.themed.FloatingActionsContainerWithScrollToTop
 import it.fast4x.riplay.ui.components.themed.HeaderInfo
@@ -78,8 +78,8 @@ import kotlinx.coroutines.flow.map
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.enums.ViewType
 import it.fast4x.riplay.utils.getViewType
-import it.fast4x.riplay.models.SongAlbumMap
-import it.fast4x.riplay.models.SongArtistMap
+import it.fast4x.riplay.data.models.SongAlbumMap
+import it.fast4x.riplay.data.models.SongArtistMap
 import it.fast4x.riplay.ui.components.PullToRefreshBox
 import it.fast4x.riplay.ui.components.themed.IDialog
 import it.fast4x.riplay.ui.components.themed.Search
@@ -96,7 +96,7 @@ import it.fast4x.riplay.utils.importYTMPrivatePlaylists
 import it.fast4x.riplay.extensions.preferences.Preference.HOME_LIBRARY_ITEM_SIZE
 import it.fast4x.riplay.utils.autoSyncToolbutton
 import it.fast4x.riplay.extensions.preferences.autosyncKey
-import it.fast4x.riplay.models.defaultQueue
+import it.fast4x.riplay.data.models.defaultQueue
 import it.fast4x.riplay.ui.components.LocalMenuState
 import it.fast4x.riplay.ui.components.themed.PlaylistsItemMenu
 import it.fast4x.riplay.utils.CheckAndCreateMonthlyPlaylist

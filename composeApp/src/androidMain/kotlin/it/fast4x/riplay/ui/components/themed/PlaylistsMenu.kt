@@ -24,14 +24,14 @@ import it.fast4x.riplay.Database
 import it.fast4x.riplay.MONTHLY_PREFIX
 import it.fast4x.riplay.PINNED_PREFIX
 import it.fast4x.riplay.R
+import it.fast4x.riplay.data.models.Playlist
 import it.fast4x.riplay.enums.MenuStyle
 import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.enums.PlaylistSortBy
 import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.enums.SortOrder
-import it.fast4x.riplay.models.Playlist
-import it.fast4x.riplay.models.PlaylistPreview
-import it.fast4x.riplay.models.SongPlaylistMap
+import it.fast4x.riplay.data.models.PlaylistPreview
+import it.fast4x.riplay.data.models.SongPlaylistMap
 import it.fast4x.riplay.ui.components.LocalMenuState
 import it.fast4x.riplay.ui.components.MenuState
 import it.fast4x.riplay.extensions.preferences.menuStyleKey
@@ -184,7 +184,7 @@ class PlaylistsMenu private constructor(
 
             override fun onSet( newValue: String ) {
                 Database.asyncTransaction {
-                    val playlistId = insert( Playlist(name = newValue) )
+                    val playlistId = insert(Playlist(name = newValue) )
                     onAdd(
                         PlaylistPreview(
                             Playlist(playlistId, newValue),

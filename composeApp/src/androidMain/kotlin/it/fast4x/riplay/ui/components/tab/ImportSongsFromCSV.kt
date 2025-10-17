@@ -11,11 +11,11 @@ import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
 import it.fast4x.riplay.Database
 import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.PopupType
-import it.fast4x.riplay.models.Song
+import it.fast4x.riplay.data.models.Song
 import it.fast4x.riplay.ui.components.themed.SmartMessage
 import it.fast4x.riplay.utils.appContext
-import it.fast4x.riplay.models.Album
-import it.fast4x.riplay.models.Artist
+import it.fast4x.riplay.data.models.Album
+import it.fast4x.riplay.data.models.Artist
 import it.fast4x.riplay.ui.components.tab.toolbar.Descriptive
 import it.fast4x.riplay.ui.components.tab.toolbar.MenuIcon
 import it.fast4x.riplay.utils.formatAsDuration

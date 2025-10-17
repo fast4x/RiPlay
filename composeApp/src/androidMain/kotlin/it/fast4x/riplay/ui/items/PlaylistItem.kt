@@ -37,7 +37,7 @@ import coil.request.ImageRequest
 import it.fast4x.environment.Environment
 import it.fast4x.riplay.Database
 import it.fast4x.riplay.R
-import it.fast4x.riplay.models.PlaylistPreview
+import it.fast4x.riplay.data.models.PlaylistPreview
 import it.fast4x.riplay.ui.components.themed.TextPlaceholder
 import it.fast4x.riplay.PINNED_PREFIX
 import it.fast4x.riplay.PIPED_PREFIX

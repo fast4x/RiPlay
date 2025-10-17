@@ -13,7 +13,7 @@ import androidx.core.content.edit
 import it.fast4x.environment.Environment
 import it.fast4x.environment.requests.HomePage
 import it.fast4x.riplay.extensions.link.LinkDevices
-import it.fast4x.riplay.models.Song
+import it.fast4x.riplay.data.models.Song
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.channelFlow

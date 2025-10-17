@@ -27,7 +27,7 @@ import coil.compose.AsyncImage
 import it.fast4x.environment.Environment
 import it.fast4x.riplay.R
 import it.fast4x.riplay.cleanPrefix
-import it.fast4x.riplay.models.Artist
+import it.fast4x.riplay.data.models.Artist
 import it.fast4x.riplay.ui.components.themed.TextPlaceholder
 import it.fast4x.riplay.ui.styling.shimmer
 import it.fast4x.riplay.utils.applyIf

@@ -1,8 +1,6 @@
-package it.fast4x.riplay.models
+package it.fast4x.riplay.data.models
 
 import androidx.compose.runtime.Immutable
-import androidx.media3.common.MediaItem
-import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 

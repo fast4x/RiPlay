@@ -1,7 +1,6 @@
-package it.fast4x.riplay.models
+package it.fast4x.riplay.data.models
 
 import android.content.ComponentName
-import android.graphics.drawable.Drawable
 import androidx.compose.runtime.Immutable
 import androidx.room.ColumnInfo
 import androidx.room.Entity

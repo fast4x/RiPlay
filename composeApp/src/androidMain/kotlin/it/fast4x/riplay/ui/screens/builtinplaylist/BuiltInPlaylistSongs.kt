@@ -90,8 +90,8 @@ import it.fast4x.riplay.enums.RecommendationsNumber
 import it.fast4x.riplay.enums.SongSortBy
 import it.fast4x.riplay.enums.SortOrder
 import it.fast4x.riplay.enums.ThumbnailRoundness
-import it.fast4x.riplay.models.Song
-import it.fast4x.riplay.models.SongPlaylistMap
+import it.fast4x.riplay.data.models.Song
+import it.fast4x.riplay.data.models.SongPlaylistMap
 import it.fast4x.riplay.ui.components.LocalMenuState
 import it.fast4x.riplay.ui.components.themed.ConfirmationDialog
 import it.fast4x.riplay.ui.components.themed.FloatingActionsContainerWithScrollToTop
@@ -137,7 +137,7 @@ import it.fast4x.riplay.extensions.preferences.songSortOrderKey
 import it.fast4x.riplay.utils.thumbnail
 import it.fast4x.riplay.extensions.preferences.thumbnailRoundnessKey
 import it.fast4x.riplay.utils.colorPalette
-import it.fast4x.riplay.models.defaultQueue
+import it.fast4x.riplay.data.models.defaultQueue
 import it.fast4x.riplay.utils.thumbnailShape
 import it.fast4x.riplay.utils.typography
 import it.fast4x.riplay.utils.LazyListContainer

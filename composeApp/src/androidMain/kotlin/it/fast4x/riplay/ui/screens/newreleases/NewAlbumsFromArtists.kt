@@ -36,7 +36,7 @@ import it.fast4x.riplay.Database
 import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.enums.NavigationBarPosition
-import it.fast4x.riplay.models.Artist
+import it.fast4x.riplay.data.models.Artist
 import it.fast4x.riplay.ui.components.themed.HeaderWithIcon
 import it.fast4x.riplay.ui.items.AlbumItem
 import it.fast4x.riplay.ui.styling.Dimensions

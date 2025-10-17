@@ -1,4 +1,4 @@
-package it.fast4x.riplay.models
+package it.fast4x.riplay.data.models
 
 class Folder(
     val name: String,

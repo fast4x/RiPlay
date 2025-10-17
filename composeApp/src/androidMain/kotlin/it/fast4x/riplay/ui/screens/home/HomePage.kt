@@ -75,9 +75,9 @@ import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.enums.NavigationBarPosition
 import it.fast4x.riplay.enums.PlayEventsType
 import it.fast4x.riplay.enums.UiType
-import it.fast4x.riplay.models.Artist
-import it.fast4x.riplay.models.PlaylistPreview
-import it.fast4x.riplay.models.Song
+import it.fast4x.riplay.data.models.Artist
+import it.fast4x.riplay.data.models.PlaylistPreview
+import it.fast4x.riplay.data.models.Song
 import it.fast4x.riplay.ui.components.LocalMenuState
 import it.fast4x.riplay.ui.components.PullToRefreshBox
 import it.fast4x.riplay.ui.components.themed.HeaderWithIcon

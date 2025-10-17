@@ -3,9 +3,8 @@ package it.fast4x.riplay.ui.screens.player.online
 import android.os.Bundle
 import android.support.v4.media.session.MediaSessionCompat
 import androidx.annotation.OptIn
-import androidx.media3.common.MediaItem
 import androidx.media3.common.util.UnstableApi
-import it.fast4x.riplay.models.Song
+import it.fast4x.riplay.data.models.Song
 import it.fast4x.riplay.service.AndroidAutoService
 import it.fast4x.riplay.service.LocalPlayerService
 import it.fast4x.riplay.utils.asMediaItem
