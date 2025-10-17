@@ -313,6 +313,7 @@ import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.PlayerConstan
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
 import it.fast4x.riplay.LocalSelectedQueue
 import it.fast4x.riplay.appContext
+import it.fast4x.riplay.extensions.preferences.showPlayerActionsBarKey
 import it.fast4x.riplay.models.defaultQueue
 import it.fast4x.riplay.ui.components.themed.AddToPlaylistPlayerMenu
 import it.fast4x.riplay.ui.screens.player.common.Lyrics
@@ -983,6 +984,7 @@ fun LocalPlayer(
 
     val transparentBackgroundActionBarPlayer by rememberPreference(transparentBackgroundPlayerActionBarKey, false)
     val showTopActionsBar by rememberPreference(showTopActionsBarKey, true)
+    val showPlayerActionsBar by rememberPreference(showPlayerActionsBarKey, true)
 
     var containerModifier = Modifier
         //.padding(bottom = bottomDp)
@@ -2524,7 +2526,9 @@ fun LocalPlayer(
                             onDismiss = {}
                         )
                     }
-                    actionsBarContent()
+
+                    if (showPlayerActionsBar)
+                        actionsBarContent()
                 }
             }
          }
@@ -3306,7 +3310,9 @@ fun LocalPlayer(
                         )
                     }
                 }
-                actionsBarContent()
+
+                    if (showPlayerActionsBar)
+                        actionsBarContent()
               }
             }
            }

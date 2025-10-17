@@ -164,6 +164,7 @@ import it.fast4x.riplay.extensions.preferences.colorPaletteModeKey
 import it.fast4x.riplay.extensions.preferences.colorPaletteNameKey
 import it.fast4x.riplay.extensions.preferences.playerThumbnailSizeLKey
 import it.fast4x.riplay.extensions.preferences.seekWithTapKey
+import it.fast4x.riplay.extensions.preferences.showPlayerActionsBarKey
 import it.fast4x.riplay.ui.styling.semiBold
 import it.fast4x.riplay.extensions.preferences.swipeAnimationsNoThumbnailKey
 import it.fast4x.riplay.extensions.preferences.thumbnailFadeExKey
@@ -478,6 +479,8 @@ fun AppearanceSettings(
     )
 
     var showTopActionsBar by rememberPreference(showTopActionsBarKey, true)
+    var showPlayerActionsBar by rememberPreference(showPlayerActionsBarKey, true)
+
     var playerControlsType by rememberPreference(playerControlsTypeKey, PlayerControlsType.Essential)
     var playerInfoType by rememberPreference(playerInfoTypeKey, PlayerInfoType.Essential)
     var transparentBackgroundActionBarPlayer by rememberPreference(
@@ -2225,77 +2228,94 @@ fun AppearanceSettings(
                 }
 
                 settingsItem {
-                    if (search.input.isBlank() || stringResource(R.string.action_bar_transparent_background).contains(
+                    if (search.input.isBlank() || stringResource(R.string.player_action_bar).contains(
                             search.input,
                             true
                         )
                     )
                         SwitchSettingEntry(
-                            title = stringResource(R.string.action_bar_transparent_background),
+                            title = stringResource(R.string.player_action_bar),
                             text = "",
-                            isChecked = transparentBackgroundActionBarPlayer,
-                            onCheckedChange = { transparentBackgroundActionBarPlayer = it }
+                            isChecked = showPlayerActionsBar,
+                            onCheckedChange = { showPlayerActionsBar = it }
                         )
+                }
 
-                    if (search.input.isBlank() || stringResource(R.string.actionspacedevenly).contains(
-                            search.input,
-                            true
-                        )
-                    )
-                        SwitchSettingEntry(
-                            title = stringResource(R.string.actionspacedevenly),
-                            text = "",
-                            isChecked = actionspacedevenly,
-                            onCheckedChange = { actionspacedevenly = it }
-                        )
 
-                    if (search.input.isBlank() || stringResource(R.string.tapqueue).contains(
-                            search.input,
-                            true
-                        )
-                    )
-                        SwitchSettingEntry(
-                            title = stringResource(R.string.tapqueue),
-                            text = "",
-                            isChecked = tapqueue,
-                            onCheckedChange = { tapqueue = it }
-                        )
+                settingsItem {
+                    AnimatedVisibility(visible = showPlayerActionsBar) {
+                        Column(modifier = Modifier.padding(start = 25.dp)) {
+                            if (search.input.isBlank() || stringResource(R.string.action_bar_transparent_background).contains(
+                                    search.input,
+                                    true
+                                )
+                            )
+                                SwitchSettingEntry(
+                                    title = stringResource(R.string.action_bar_transparent_background),
+                                    text = "",
+                                    isChecked = transparentBackgroundActionBarPlayer,
+                                    onCheckedChange = { transparentBackgroundActionBarPlayer = it }
+                                )
 
-                    if (search.input.isBlank() || stringResource(R.string.swipe_up_to_open_the_queue).contains(
-                            search.input,
-                            true
-                        )
-                    )
-                        SwitchSettingEntry(
-                            title = stringResource(R.string.swipe_up_to_open_the_queue),
-                            text = "",
-                            isChecked = swipeUpQueue,
-                            onCheckedChange = { swipeUpQueue = it }
-                        )
+                            if (search.input.isBlank() || stringResource(R.string.actionspacedevenly).contains(
+                                    search.input,
+                                    true
+                                )
+                            )
+                                SwitchSettingEntry(
+                                    title = stringResource(R.string.actionspacedevenly),
+                                    text = "",
+                                    isChecked = actionspacedevenly,
+                                    onCheckedChange = { actionspacedevenly = it }
+                                )
 
-                    if (search.input.isBlank() || stringResource(R.string.action_bar_show_video_button).contains(
-                            search.input,
-                            true
-                        )
-                    )
-                        SwitchSettingEntry(
-                            title = stringResource(R.string.action_bar_show_video_button),
-                            text = "",
-                            isChecked = showButtonPlayerVideo,
-                            onCheckedChange = { showButtonPlayerVideo = it }
-                        )
+                            if (search.input.isBlank() || stringResource(R.string.tapqueue).contains(
+                                    search.input,
+                                    true
+                                )
+                            )
+                                SwitchSettingEntry(
+                                    title = stringResource(R.string.tapqueue),
+                                    text = "",
+                                    isChecked = tapqueue,
+                                    onCheckedChange = { tapqueue = it }
+                                )
 
-                    if (search.input.isBlank() || stringResource(R.string.action_bar_show_discover_button).contains(
-                            search.input,
-                            true
-                        )
-                    )
-                        SwitchSettingEntry(
-                            title = stringResource(R.string.action_bar_show_discover_button),
-                            text = "",
-                            isChecked = showButtonPlayerDiscover,
-                            onCheckedChange = { showButtonPlayerDiscover = it }
-                        )
+                            if (search.input.isBlank() || stringResource(R.string.swipe_up_to_open_the_queue).contains(
+                                    search.input,
+                                    true
+                                )
+                            )
+                                SwitchSettingEntry(
+                                    title = stringResource(R.string.swipe_up_to_open_the_queue),
+                                    text = "",
+                                    isChecked = swipeUpQueue,
+                                    onCheckedChange = { swipeUpQueue = it }
+                                )
+
+                            if (search.input.isBlank() || stringResource(R.string.action_bar_show_video_button).contains(
+                                    search.input,
+                                    true
+                                )
+                            )
+                                SwitchSettingEntry(
+                                    title = stringResource(R.string.action_bar_show_video_button),
+                                    text = "",
+                                    isChecked = showButtonPlayerVideo,
+                                    onCheckedChange = { showButtonPlayerVideo = it }
+                                )
+
+                            if (search.input.isBlank() || stringResource(R.string.action_bar_show_discover_button).contains(
+                                    search.input,
+                                    true
+                                )
+                            )
+                                SwitchSettingEntry(
+                                    title = stringResource(R.string.action_bar_show_discover_button),
+                                    text = "",
+                                    isChecked = showButtonPlayerDiscover,
+                                    onCheckedChange = { showButtonPlayerDiscover = it }
+                                )
 
 //        if (search.input.isBlank() || stringResource(R.string.action_bar_show_download_button).contains(
 //                search.input,
@@ -2309,129 +2329,130 @@ fun AppearanceSettings(
 //                onCheckedChange = { showButtonPlayerDownload = it }
 //            )
 
-                    if (search.input.isBlank() || stringResource(R.string.action_bar_show_add_to_playlist_button).contains(
-                            search.input,
-                            true
-                        )
-                    )
-                        SwitchSettingEntry(
-                            title = stringResource(R.string.action_bar_show_add_to_playlist_button),
-                            text = "",
-                            isChecked = showButtonPlayerAddToPlaylist,
-                            onCheckedChange = { showButtonPlayerAddToPlaylist = it }
-                        )
-
-                    if (search.input.isBlank() || stringResource(R.string.action_bar_show_loop_button).contains(
-                            search.input,
-                            true
-                        )
-                    )
-                        SwitchSettingEntry(
-                            title = stringResource(R.string.action_bar_show_loop_button),
-                            text = "",
-                            isChecked = showButtonPlayerLoop,
-                            onCheckedChange = { showButtonPlayerLoop = it }
-                        )
-
-                    if (search.input.isBlank() || stringResource(R.string.action_bar_show_shuffle_button).contains(
-                            search.input,
-                            true
-                        )
-                    )
-                        SwitchSettingEntry(
-                            title = stringResource(R.string.action_bar_show_shuffle_button),
-                            text = "",
-                            isChecked = showButtonPlayerShuffle,
-                            onCheckedChange = { showButtonPlayerShuffle = it }
-                        )
-
-                    if (search.input.isBlank() || stringResource(R.string.action_bar_show_lyrics_button).contains(
-                            search.input,
-                            true
-                        )
-                    )
-                        SwitchSettingEntry(
-                            title = stringResource(R.string.action_bar_show_lyrics_button),
-                            text = "",
-                            isChecked = showButtonPlayerLyrics,
-                            onCheckedChange = { showButtonPlayerLyrics = it }
-                        )
-                    if (!isLandscape || !showthumbnail) {
-                        if (!showlyricsthumbnail) {
-                            if (search.input.isBlank() || stringResource(R.string.expandedplayer).contains(
+                            if (search.input.isBlank() || stringResource(R.string.action_bar_show_add_to_playlist_button).contains(
                                     search.input,
                                     true
                                 )
                             )
                                 SwitchSettingEntry(
-                                    title = stringResource(R.string.expandedplayer),
+                                    title = stringResource(R.string.action_bar_show_add_to_playlist_button),
                                     text = "",
-                                    isChecked = expandedplayertoggle,
-                                    onCheckedChange = { expandedplayertoggle = it }
+                                    isChecked = showButtonPlayerAddToPlaylist,
+                                    onCheckedChange = { showButtonPlayerAddToPlaylist = it }
+                                )
+
+                            if (search.input.isBlank() || stringResource(R.string.action_bar_show_loop_button).contains(
+                                    search.input,
+                                    true
+                                )
+                            )
+                                SwitchSettingEntry(
+                                    title = stringResource(R.string.action_bar_show_loop_button),
+                                    text = "",
+                                    isChecked = showButtonPlayerLoop,
+                                    onCheckedChange = { showButtonPlayerLoop = it }
+                                )
+
+                            if (search.input.isBlank() || stringResource(R.string.action_bar_show_shuffle_button).contains(
+                                    search.input,
+                                    true
+                                )
+                            )
+                                SwitchSettingEntry(
+                                    title = stringResource(R.string.action_bar_show_shuffle_button),
+                                    text = "",
+                                    isChecked = showButtonPlayerShuffle,
+                                    onCheckedChange = { showButtonPlayerShuffle = it }
+                                )
+
+                            if (search.input.isBlank() || stringResource(R.string.action_bar_show_lyrics_button).contains(
+                                    search.input,
+                                    true
+                                )
+                            )
+                                SwitchSettingEntry(
+                                    title = stringResource(R.string.action_bar_show_lyrics_button),
+                                    text = "",
+                                    isChecked = showButtonPlayerLyrics,
+                                    onCheckedChange = { showButtonPlayerLyrics = it }
+                                )
+                            if (!isLandscape || !showthumbnail) {
+                                if (!showlyricsthumbnail) {
+                                    if (search.input.isBlank() || stringResource(R.string.expandedplayer).contains(
+                                            search.input,
+                                            true
+                                        )
+                                    )
+                                        SwitchSettingEntry(
+                                            title = stringResource(R.string.expandedplayer),
+                                            text = "",
+                                            isChecked = expandedplayertoggle,
+                                            onCheckedChange = { expandedplayertoggle = it }
+                                        )
+                                }
+                            }
+
+                            if (search.input.isBlank() || stringResource(R.string.action_bar_show_sleep_timer_button).contains(
+                                    search.input,
+                                    true
+                                )
+                            )
+                                SwitchSettingEntry(
+                                    title = stringResource(R.string.action_bar_show_sleep_timer_button),
+                                    text = "",
+                                    isChecked = showButtonPlayerSleepTimer,
+                                    onCheckedChange = { showButtonPlayerSleepTimer = it }
+                                )
+
+                            if (search.input.isBlank() || stringResource(R.string.show_equalizer).contains(
+                                    search.input,
+                                    true
+                                )
+                            )
+                                SwitchSettingEntry(
+                                    title = stringResource(R.string.show_equalizer),
+                                    text = "",
+                                    isChecked = showButtonPlayerSystemEqualizer,
+                                    onCheckedChange = { showButtonPlayerSystemEqualizer = it }
+                                )
+
+                            if (search.input.isBlank() || stringResource(R.string.action_bar_show_arrow_button_to_open_queue).contains(
+                                    search.input,
+                                    true
+                                )
+                            )
+                                SwitchSettingEntry(
+                                    title = stringResource(R.string.action_bar_show_arrow_button_to_open_queue),
+                                    text = "",
+                                    isChecked = showButtonPlayerArrow,
+                                    onCheckedChange = { showButtonPlayerArrow = it }
+                                )
+
+                            if (search.input.isBlank() || stringResource(R.string.action_bar_show_start_radio_button).contains(
+                                    search.input,
+                                    true
+                                )
+                            )
+                                SwitchSettingEntry(
+                                    title = stringResource(R.string.action_bar_show_start_radio_button),
+                                    text = "",
+                                    isChecked = showButtonPlayerStartradio,
+                                    onCheckedChange = { showButtonPlayerStartradio = it }
+                                )
+
+                            if (search.input.isBlank() || stringResource(R.string.action_bar_show_menu_button).contains(
+                                    search.input,
+                                    true
+                                )
+                            )
+                                SwitchSettingEntry(
+                                    title = stringResource(R.string.action_bar_show_menu_button),
+                                    text = "",
+                                    isChecked = showButtonPlayerMenu,
+                                    onCheckedChange = { showButtonPlayerMenu = it }
                                 )
                         }
                     }
-
-                    if (search.input.isBlank() || stringResource(R.string.action_bar_show_sleep_timer_button).contains(
-                            search.input,
-                            true
-                        )
-                    )
-                        SwitchSettingEntry(
-                            title = stringResource(R.string.action_bar_show_sleep_timer_button),
-                            text = "",
-                            isChecked = showButtonPlayerSleepTimer,
-                            onCheckedChange = { showButtonPlayerSleepTimer = it }
-                        )
-
-                    if (search.input.isBlank() || stringResource(R.string.show_equalizer).contains(
-                            search.input,
-                            true
-                        )
-                    )
-                        SwitchSettingEntry(
-                            title = stringResource(R.string.show_equalizer),
-                            text = "",
-                            isChecked = showButtonPlayerSystemEqualizer,
-                            onCheckedChange = { showButtonPlayerSystemEqualizer = it }
-                        )
-
-                    if (search.input.isBlank() || stringResource(R.string.action_bar_show_arrow_button_to_open_queue).contains(
-                            search.input,
-                            true
-                        )
-                    )
-                        SwitchSettingEntry(
-                            title = stringResource(R.string.action_bar_show_arrow_button_to_open_queue),
-                            text = "",
-                            isChecked = showButtonPlayerArrow,
-                            onCheckedChange = { showButtonPlayerArrow = it }
-                        )
-
-                    if (search.input.isBlank() || stringResource(R.string.action_bar_show_start_radio_button).contains(
-                            search.input,
-                            true
-                        )
-                    )
-                        SwitchSettingEntry(
-                            title = stringResource(R.string.action_bar_show_start_radio_button),
-                            text = "",
-                            isChecked = showButtonPlayerStartradio,
-                            onCheckedChange = { showButtonPlayerStartradio = it }
-                        )
-
-                    if (search.input.isBlank() || stringResource(R.string.action_bar_show_menu_button).contains(
-                            search.input,
-                            true
-                        )
-                    )
-                        SwitchSettingEntry(
-                            title = stringResource(R.string.action_bar_show_menu_button),
-                            text = "",
-                            isChecked = showButtonPlayerMenu,
-                            onCheckedChange = { showButtonPlayerMenu = it }
-                        )
-
                 }
 
                 if (!showlyricsthumbnail) {

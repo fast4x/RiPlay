@@ -386,6 +386,7 @@ const val showFavoritesPlaylistsAAKey = "showFavoritesPlaylistsAA"
 const val showTopPlaylistAAKey = "showTopPlaylistsAA"
 const val showGridAAKey = "showGridAA"
 
+const val showPlayerActionsBarKey = "showPlayerActionsBar"
 
 
 

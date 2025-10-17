@@ -322,6 +322,7 @@ import it.fast4x.riplay.extensions.preferences.showButtonPlayerSystemEqualizerKe
 import it.fast4x.riplay.extensions.preferences.showButtonPlayerVideoKey
 import it.fast4x.riplay.extensions.preferences.showCoverThumbnailAnimationKey
 import it.fast4x.riplay.extensions.preferences.showNextSongsInPlayerKey
+import it.fast4x.riplay.extensions.preferences.showPlayerActionsBarKey
 import it.fast4x.riplay.extensions.preferences.showTopActionsBarKey
 import it.fast4x.riplay.extensions.preferences.showTotalTimeQueueKey
 import it.fast4x.riplay.extensions.preferences.showalbumcoverKey
@@ -1060,6 +1061,7 @@ fun OnlinePlayer(
         false
     )
     val showTopActionsBar by rememberObservedPreference(showTopActionsBarKey, true)
+    val showPlayerActionsBar by rememberObservedPreference(showPlayerActionsBarKey, true)
 
     var containerModifier = Modifier
         //.padding(bottom = bottomDp)
@@ -2973,7 +2975,9 @@ fun OnlinePlayer(
                                     onDismiss = {}
                                 )
                             }
-                            actionsBarContent()
+
+                            if (showPlayerActionsBar)
+                                actionsBarContent()
                         }
                     }
 
@@ -3986,7 +3990,8 @@ fun OnlinePlayer(
                             }
                         }
 
-                        actionsBarContent()
+                        if (showPlayerActionsBar)
+                            actionsBarContent()
                     }
                 }
             }
