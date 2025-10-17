@@ -102,7 +102,10 @@ fun ExternalOnlineCore(
         object : Player.Listener {
             override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
                 mediaItem?.let {
-                    if (it.isLocal) return
+                    if (it.isLocal) {
+                        player.value?.pause()
+                        return
+                    }
 
                     localMediaItem = it
                     lastVideoId.value = it.mediaId

@@ -21,6 +21,7 @@ import android.hardware.SensorManager
 import android.media.AudioDeviceCallback
 import android.media.AudioDeviceInfo
 import android.media.AudioManager
+import android.media.MediaDescription
 import android.media.audiofx.BassBoost
 import android.media.audiofx.LoudnessEnhancer
 import android.net.Uri
@@ -31,6 +32,7 @@ import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
 import android.os.StrictMode
+import android.support.v4.media.MediaDescriptionCompat
 import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
@@ -113,6 +115,7 @@ import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
+import androidx.media3.common.Timeline
 import androidx.media3.common.util.Log
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.compose.rememberNavController
@@ -1720,6 +1723,14 @@ class MainActivity :
 
                             }
 
+                            if (reason == Player.MEDIA_ITEM_TRANSITION_REASON_AUTO || reason == Player.MEDIA_ITEM_TRANSITION_REASON_SEEK)
+                                updateMediaSessionQueue(player.currentTimeline)
+
+                        }
+
+                        override fun onTimelineChanged(timeline: Timeline, reason: Int) {
+                            if (reason != Player.TIMELINE_CHANGE_REASON_PLAYLIST_CHANGED) return
+                            updateMediaSessionQueue(timeline)
                         }
 
                         override fun onRepeatModeChanged(repeatMode: Int) {
@@ -1835,7 +1846,8 @@ class MainActivity :
             object : Player.Listener {
                 override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
                     mediaItem?.let {
-                        if (mediaItem.isLocal) return
+                        onlinePlayer.value?.pause()
+                        binder.player.pause()
 
                         localMediaItem = it
                         lastVideoId.value = it.mediaId
@@ -1874,7 +1886,7 @@ class MainActivity :
         val isKeepScreenOnEnabled = preferences.getBoolean(isKeepScreenOnEnabledKey, false)
 
 
-
+        //  todo Maybe this is the cause for firing consecutive times playnext
         LaunchedEffect(onlinePlayerState.value) {
             if (onlinePlayerState.value == PlayerConstants.PlayerState.ENDED) {
                 when (queueLoopType) {
@@ -1907,6 +1919,7 @@ class MainActivity :
             }
 
         }
+
 
         LaunchedEffect(playbackDuration) {
             if (playbackDuration > 0f)
@@ -2184,8 +2197,10 @@ class MainActivity :
                     binder = it,
                     onPlayClick = {
                         Timber.d("MainActivity MediaSessionCallback onPlayClick")
-                        it.player.play()
-                        onlinePlayer.value?.play()
+                        if (currentMediaItem?.isLocal == true)
+                            it.player.play()
+                        else
+                            onlinePlayer.value?.play()
                     },
                     onPauseClick = {
                         Timber.d("MainActivity MediaSessionCallback onPauseClick")
@@ -2204,6 +2219,9 @@ class MainActivity :
                     },
                     onPlayPrevious = {
                         it.player.playPrevious()
+                    },
+                    onPlayQueueItem = { id ->
+                        it.player.seekToDefaultPosition(id.toInt())
                     },
                     onCustomClick = { customAction ->
                         Timber.d("MainActivity MediaSessionCallback onCustomClick $customAction")
@@ -2330,6 +2348,39 @@ class MainActivity :
 
 
 
+    }
+
+    private fun updateMediaSessionQueue(timeline: Timeline) {
+        if (binder == null) return
+
+        val currentMediaItemIndex = binder!!.player.currentMediaItemIndex
+        val lastIndex = timeline.windowCount - 1
+        var startIndex = currentMediaItemIndex - 7
+        var endIndex = currentMediaItemIndex + 7
+
+        if (startIndex < 0) endIndex -= startIndex
+
+        if (endIndex > lastIndex) {
+            startIndex -= (endIndex - lastIndex)
+            endIndex = lastIndex
+        }
+
+        startIndex = startIndex.coerceAtLeast(0)
+
+        unifiedMediaSession?.setQueue(
+            List(endIndex - startIndex + 1) { index ->
+                val mediaItem = timeline.getWindow(index + startIndex, Timeline.Window()).mediaItem
+                MediaSessionCompat.QueueItem(
+                    MediaDescriptionCompat.Builder()
+                        .setMediaId(mediaItem.mediaId)
+                        .setTitle(mediaItem.mediaMetadata.title)
+                        .setSubtitle(mediaItem.mediaMetadata.artist)
+                        .setIconUri(mediaItem.mediaMetadata.artworkUri)
+                        .build(),
+                    (index + startIndex).toLong()
+                )
+            }
+        )
     }
 
     private fun initializeBitmapProvider() {

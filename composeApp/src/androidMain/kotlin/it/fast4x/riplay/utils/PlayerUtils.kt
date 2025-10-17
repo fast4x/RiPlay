@@ -247,13 +247,14 @@ fun Player.enqueue(mediaItem: MediaItem, context: Context? = null, queue: Queues
     mediaItem.mediaMetadata.extras?.putLong("idQueue", queue.id)
     println("mediaItem-enqueue extras: ${mediaItem.mediaMetadata.extras}")
 
-    addMediaItem(mediaItemCount, mediaItem.cleaned)
+    //addMediaItem(mediaItemCount, mediaItem.cleaned)
+    if (playbackState == Player.STATE_IDLE || playbackState == Player.STATE_ENDED) {
+        forcePlay(mediaItem)
+    } else {
+        addMediaItem(mediaItemCount, mediaItem.cleaned)
+    }
     SmartMessage(context().resources.getString(R.string.done), context = context())
-//    if (playbackState == Player.STATE_IDLE || playbackState == Player.STATE_ENDED) {
-//        forcePlay(mediaItem)
-//    } else {
-//        addMediaItem(mediaItemCount, mediaItem.cleaned)
-//    }
+
 }
 
 
@@ -273,15 +274,14 @@ fun Player.enqueue(
 //            println("mediaItems-enqueue extras: ${mediaItem.mediaMetadata.extras}")
 //        }
 //    }
-    addMediaItems(mediaItemCount, filteredMediaItems.map { it.cleaned })
+    //addMediaItems(mediaItemCount, filteredMediaItems.map { it.cleaned })
+
+    if (playbackState == Player.STATE_IDLE || playbackState == Player.STATE_ENDED) {
+        forcePlayFromBeginning(filteredMediaItems.map { it.cleaned })
+    } else {
+        addMediaItems(mediaItemCount, filteredMediaItems.map { it.cleaned })
+    }
     SmartMessage(context().resources.getString(R.string.done), context = context())
-//    if (playbackState == Player.STATE_IDLE || playbackState == Player.STATE_ENDED) {
-//        //forcePlayFromBeginning(mediaItems)
-//        forcePlayFromBeginning(filteredMediaItems)
-//    } else {
-//        //addMediaItems(mediaItemCount, mediaItems)
-//        addMediaItems(mediaItemCount, filteredMediaItems.map { it.cleaned })
-//    }
 }
 
 fun Player.canAddedToQueue(mediaItem: MediaItem, queue: Queues): Boolean {

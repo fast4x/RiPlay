@@ -10,6 +10,8 @@ import it.fast4x.riplay.service.AndroidAutoService
 import it.fast4x.riplay.service.LocalPlayerService
 import it.fast4x.riplay.utils.asMediaItem
 import it.fast4x.riplay.utils.forcePlayAtIndex
+import it.fast4x.riplay.utils.playNext
+import it.fast4x.riplay.utils.playPrevious
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -25,6 +27,7 @@ class MediaSessionCallback (
     val onSeekToPos: (Long) -> Unit,
     val onPlayNext: () -> Unit,
     val onPlayPrevious: () -> Unit,
+    val onPlayQueueItem: (Long) -> Unit,
     val onCustomClick: (String) -> Unit,
 ) : MediaSessionCompat.Callback() {
 
@@ -38,16 +41,34 @@ class MediaSessionCallback (
     }
     override fun onSkipToPrevious() {
         Timber.d("MediaSessionCallback onSkipToPrevious()")
-        onPlayPrevious()
+        //onPlayPrevious()
+        binder.player.playPrevious()
     }
     override fun onSkipToNext() {
         Timber.d("MediaSessionCallback onSkipToNext()")
-        onPlayNext()
+        //onPlayNext()
+        binder.player.playNext()
     }
 
     override fun onSeekTo(pos: Long) {
         Timber.d("MediaSessionCallback onSeekTo() $pos")
         onSeekToPos(pos)
+    }
+
+    override fun onSkipToQueueItem(id: Long) {
+        Timber.d("MediaSessionCallback onSkipToQueueItem() $id")
+        //onPlayQueueItem(id)
+        binder.player.seekToDefaultPosition(id.toInt())
+    }
+
+    override fun onPlayFromSearch(query: String?, extras: Bundle?) {
+        if (query.isNullOrBlank()) return
+        binder.playFromSearch(query)
+    }
+
+    override fun onCustomAction(action: String, extras: Bundle?) {
+        Timber.d("MediaSessionCallback onCustomAction() action $action")
+        onCustomClick(action)
     }
 
     @OptIn(UnstableApi::class)
@@ -142,8 +163,4 @@ class MediaSessionCallback (
 
     }
 
-    override fun onCustomAction(action: String, extras: Bundle?) {
-        Timber.d("MediaSessionCallback onCustomAction() action $action")
-        onCustomClick(action)
-    }
 }

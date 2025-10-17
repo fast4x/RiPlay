@@ -101,7 +101,7 @@ class AndroidAutoService : MediaBrowserServiceCompat(), ServiceConnection {
         var internalMediaSession: MediaSessionCompat? = null
         var internalLocalPlayerBinder: LocalPlayerService.Binder? = null
         var internalBitmapProvider: BitmapProvider? = null
-        var isPlaying: Boolean = false
+        //var isPlaying: Boolean = false
         var lastSongs: List<Song> = emptyList()
         var searchedSongs: List<Song> = emptyList()
 
@@ -109,67 +109,67 @@ class AndroidAutoService : MediaBrowserServiceCompat(), ServiceConnection {
 
 
 
-        val actions =
-            PlaybackStateCompat.ACTION_PLAY or
-                    PlaybackStateCompat.ACTION_PAUSE or
-                    PlaybackStateCompat.ACTION_PLAY_PAUSE or
-                    PlaybackStateCompat.ACTION_STOP or
-                    PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS or
-                    PlaybackStateCompat.ACTION_SKIP_TO_NEXT or
-                    PlaybackStateCompat.ACTION_SEEK_TO
-        val stateBuilder =
-            PlaybackStateCompat.Builder().setActions(actions.let {
-                if (isAtLeastAndroid12) it or PlaybackStateCompat.ACTION_SET_PLAYBACK_SPEED else it
-            })
-        var playbackDuration = 0L
-        var playbackPosition = 0L
+//        val actions =
+//            PlaybackStateCompat.ACTION_PLAY or
+//                    PlaybackStateCompat.ACTION_PAUSE or
+//                    PlaybackStateCompat.ACTION_PLAY_PAUSE or
+//                    PlaybackStateCompat.ACTION_STOP or
+//                    PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS or
+//                    PlaybackStateCompat.ACTION_SKIP_TO_NEXT or
+//                    PlaybackStateCompat.ACTION_SEEK_TO
+//        val stateBuilder =
+//            PlaybackStateCompat.Builder().setActions(actions.let {
+//                if (isAtLeastAndroid12) it or PlaybackStateCompat.ACTION_SET_PLAYBACK_SPEED else it
+//            })
+//        var playbackDuration = 0L
+//        var playbackPosition = 0L
 
 
 
-        private fun updateMediaSessionData() {
-            Timber.d("AndroidAutoService updateMediaSessionPlaybackState")
-            val mediaItem = internalLocalPlayerBinder?.player?.currentMediaItem ?: return
-            internalBitmapProvider?.load(mediaItem.mediaMetadata.artworkUri) {}
-            internalMediaSession?.setMetadata(
-                MediaMetadataCompat.Builder()
-                    .putString(
-                        MediaMetadataCompat.METADATA_KEY_MEDIA_ID,
-                        mediaItem.mediaId
-                    )
-                    .putBitmap(
-                        MediaMetadataCompat.METADATA_KEY_ALBUM_ART,
-                        internalBitmapProvider?.bitmap
-                    )
-                    .putString(
-                        MediaMetadataCompat.METADATA_KEY_TITLE,
-                        mediaItem.mediaMetadata.title.toString()
-                    )
-                    .putString(
-                        MediaMetadataCompat.METADATA_KEY_ARTIST,
-                        mediaItem.mediaMetadata.artist.toString()
-                    )
-                    .putString(
-                        MediaMetadataCompat.METADATA_KEY_ALBUM,
-                        mediaItem.mediaMetadata.albumTitle.toString()
-                    )
-                    .putLong(MediaMetadataCompat.METADATA_KEY_DURATION, playbackDuration)
-                    .build()
-            )
+//        private fun updateMediaSessionData() {
+//            Timber.d("AndroidAutoService updateMediaSessionPlaybackState")
+//            val mediaItem = internalLocalPlayerBinder?.player?.currentMediaItem ?: return
+//            internalBitmapProvider?.load(mediaItem.mediaMetadata.artworkUri) {}
+//            internalMediaSession?.setMetadata(
+//                MediaMetadataCompat.Builder()
+//                    .putString(
+//                        MediaMetadataCompat.METADATA_KEY_MEDIA_ID,
+//                        mediaItem.mediaId
+//                    )
+//                    .putBitmap(
+//                        MediaMetadataCompat.METADATA_KEY_ALBUM_ART,
+//                        internalBitmapProvider?.bitmap
+//                    )
+//                    .putString(
+//                        MediaMetadataCompat.METADATA_KEY_TITLE,
+//                        mediaItem.mediaMetadata.title.toString()
+//                    )
+//                    .putString(
+//                        MediaMetadataCompat.METADATA_KEY_ARTIST,
+//                        mediaItem.mediaMetadata.artist.toString()
+//                    )
+//                    .putString(
+//                        MediaMetadataCompat.METADATA_KEY_ALBUM,
+//                        mediaItem.mediaMetadata.albumTitle.toString()
+//                    )
+//                    .putLong(MediaMetadataCompat.METADATA_KEY_DURATION, playbackDuration)
+//                    .build()
+//            )
+//
+//            //updatePlaybackState()
+//        }
 
-            updatePlaybackState()
-        }
-
-        private fun updatePlaybackState() {
-            internalMediaSession?.setPlaybackState(
-                stateBuilder
-                    .setState(
-                        if (isPlaying) PlaybackStateCompat.STATE_PLAYING else PlaybackStateCompat.STATE_PAUSED,
-                        playbackPosition,
-                        1f
-                    )
-                    .build()
-            )
-        }
+//        private fun updatePlaybackState() {
+//            internalMediaSession?.setPlaybackState(
+//                stateBuilder
+//                    .setState(
+//                        if (isPlaying) PlaybackStateCompat.STATE_PLAYING else PlaybackStateCompat.STATE_PAUSED,
+//                        playbackPosition,
+//                        1f
+//                    )
+//                    .build()
+//            )
+//        }
 
 
         private const val NOTIFICATION_ID = 20 // The id of the notification
@@ -1015,7 +1015,7 @@ class AndroidAutoService : MediaBrowserServiceCompat(), ServiceConnection {
 //                //onlinePlayerIsInitialized.value = true
 //            }
 
-            updateMediaSessionData()
+            //updateMediaSessionData()
         }
 
         if (isNotifyAndroidAutoTipsEnabled())

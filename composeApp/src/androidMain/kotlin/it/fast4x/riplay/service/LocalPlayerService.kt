@@ -20,6 +20,7 @@ import android.graphics.Color
 import android.media.AudioDeviceCallback
 import android.media.AudioDeviceInfo
 import android.media.AudioManager
+import android.media.MediaDescription
 import android.media.audiofx.AudioEffect
 import android.media.audiofx.BassBoost
 import android.media.audiofx.LoudnessEnhancer
@@ -45,8 +46,6 @@ import androidx.media3.common.PlaybackParameters
 import androidx.media3.common.Player
 import androidx.media3.common.Player.EVENT_POSITION_DISCONTINUITY
 import androidx.media3.common.Player.EVENT_TIMELINE_CHANGED
-import androidx.media3.common.Player.MEDIA_ITEM_TRANSITION_REASON_SEEK
-import androidx.media3.common.Player.STATE_IDLE
 import androidx.media3.common.Timeline
 import androidx.media3.common.audio.SonicAudioProcessor
 import androidx.media3.common.util.UnstableApi
@@ -187,6 +186,7 @@ import it.fast4x.riplay.getPlaybackFadeAudioDuration
 import it.fast4x.riplay.isPersistentQueueEnabled
 import it.fast4x.riplay.utils.BitmapProvider
 import it.fast4x.riplay.utils.SleepTimerListener
+import it.fast4x.riplay.utils.getQueueWindows
 import it.fast4x.riplay.utils.isOfficialContent
 import it.fast4x.riplay.utils.isUserGeneratedContent
 import kotlinx.coroutines.SupervisorJob
@@ -603,6 +603,7 @@ class LocalPlayerService : MediaLibraryService(),
 
     override fun onTimelineChanged(timeline: Timeline, reason: Int) {
         Timber.d("LocalPlayerService onTimelineChanged timeline $timeline reason $reason")
+        if (reason != Player.TIMELINE_CHANGE_REASON_PLAYLIST_CHANGED) return
         player.saveMasterQueue()
     }
 
@@ -708,20 +709,22 @@ class LocalPlayerService : MediaLibraryService(),
     override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
         Timber.d("LocalPlayerService onMediaItemTransition mediaItem $mediaItem reason $reason")
 
-        if (player.isPlaying && reason == MEDIA_ITEM_TRANSITION_REASON_SEEK) {
-            player.prepare()
-            player.play()
-        }
+        // todo is required this line?
+//        if (player.isPlaying && reason == MEDIA_ITEM_TRANSITION_REASON_SEEK) {
+//            player.prepare()
+//            player.play()
+//        }
 
         currentMediaItem.update { mediaItem }
 
-        if (mediaItem?.isLocal == true)
-            recoverPlaybackError()
+        // todo is required this line?
+//        if (mediaItem?.isLocal == true)
+//            recoverPlaybackError()
 
         processNormalizeVolume()
 
-        if (preferences.getEnum(queueLoopTypeKey, QueueLoopType.Default).type == Player.REPEAT_MODE_OFF)
-            loadFromRadio(reason)
+        //if (preferences.getEnum(queueLoopTypeKey, QueueLoopType.Default).type == Player.REPEAT_MODE_OFF)
+        autoLoadFromRadio(reason)
 
         with(bitmapProvider) {
             var newUriForLoad = binder.player.currentMediaItem?.mediaMetadata?.artworkUri
@@ -818,24 +821,35 @@ class LocalPlayerService : MediaLibraryService(),
     }
 
     override fun onEvents(player: Player, events: Player.Events) {
-        if (events.containsAny(Player.EVENT_PLAYBACK_STATE_CHANGED, Player.EVENT_PLAY_WHEN_READY_CHANGED)) {
-            val isBufferingOrReady = player.playbackState == Player.STATE_BUFFERING || player.playbackState == Player.STATE_READY
-            if (isBufferingOrReady && player.playWhenReady) {
-                sendOpenEqualizerIntent()
-            } else {
-                sendCloseEqualizerIntent()
+
+        if (
+            !events.containsAny(
+                Player.EVENT_PLAYBACK_STATE_CHANGED,
+                Player.EVENT_PLAY_WHEN_READY_CHANGED,
+                Player.EVENT_IS_PLAYING_CHANGED,
+                Player.EVENT_POSITION_DISCONTINUITY,
+                Player.EVENT_IS_LOADING_CHANGED,
+                Player.EVENT_MEDIA_METADATA_CHANGED
+            )
+        ) return
+
+        //if (events.containsAny(Player.EVENT_PLAYBACK_STATE_CHANGED, Player.EVENT_PLAY_WHEN_READY_CHANGED)) {
+        val isBufferingOrReady = player.playbackState == Player.STATE_BUFFERING || player.playbackState == Player.STATE_READY
+        if (isBufferingOrReady && player.playWhenReady) {
+            sendOpenEqualizerIntent()
+        } else {
+            sendCloseEqualizerIntent()
 //                if (!player.playWhenReady) {
 //                    waitingForNetwork.value = false
 //                }
-            }
         }
+        //}
 
-        if (events.containsAny(EVENT_TIMELINE_CHANGED, EVENT_POSITION_DISCONTINUITY)) {
-            currentMediaItem.value = player.currentMediaItem
-        }
+        // todo is needed?
+//        if (events.containsAny(EVENT_TIMELINE_CHANGED, EVENT_POSITION_DISCONTINUITY)) {
+//            currentMediaItem.value = player.currentMediaItem
+//        }
     }
-
-
 
     private fun recoverPlaybackError() {
         if (player.playerError != null) {
@@ -843,16 +857,14 @@ class LocalPlayerService : MediaLibraryService(),
         }
     }
 
-    private fun loadFromRadio(reason: Int) {
+    private fun autoLoadFromRadio(reason: Int) {
         if (!preferences.getBoolean(autoLoadSongsInQueueKey, true)) return
 
-        val isDiscoverEnabled = applicationContext.preferences.getBoolean(discoverKey, false)
-        val filterContentType = applicationContext.preferences.getEnum(filterContentTypeKey,
+        val isDiscoverEnabled = preferences.getBoolean(discoverKey, false)
+        val filterContentType = preferences.getEnum(filterContentTypeKey,
             ContentType.All)
-        if (reason != Player.MEDIA_ITEM_TRANSITION_REASON_REPEAT &&
-            player.mediaItemCount - player.currentMediaItemIndex <= if (
-                isDiscoverEnabled) 10 else 3
-        ) {
+        if ( //reason != Player.MEDIA_ITEM_TRANSITION_REASON_REPEAT && //todo is required this line?
+            (player.mediaItemCount - player.currentMediaItemIndex) <= if (isDiscoverEnabled) 10 else 6) {
             if (radio == null) {
                 binder.setupRadio(
                     NavigationEndpoint.Endpoint.Watch(
@@ -862,17 +874,17 @@ class LocalPlayerService : MediaLibraryService(),
             } else {
                 radio?.let { radio ->
                     coroutineScope.launch(Dispatchers.Main) {
-                        if (player.playbackState != STATE_IDLE)
-                            player.addMediaItems(
-                                radio.process()
-                                    .filter { song ->
-                                        when (filterContentType) {
-                                            ContentType.All -> true
-                                            ContentType.Official -> song.isOfficialContent
-                                            ContentType.UserGenerated -> song.isUserGeneratedContent
-                                        }
+                        //if (player.playbackState != STATE_IDLE) //todo is required this line?
+                        player.addMediaItems(
+                            radio.process()
+                                .filter { song ->
+                                    when (filterContentType) {
+                                        ContentType.All -> true
+                                        ContentType.Official -> song.isOfficialContent
+                                        ContentType.UserGenerated -> song.isUserGeneratedContent
                                     }
-                            )
+                                }
+                        )
                     }
 
                 }
