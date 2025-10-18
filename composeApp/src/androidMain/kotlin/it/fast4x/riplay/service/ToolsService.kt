@@ -103,7 +103,7 @@ class ToolsService : Service() {
         val restartServiceIntent = Intent(applicationContext, ToolsService::class.java).also {
             it.setPackage(packageName)
         }
-        val restartServicePendingIntent: PendingIntent = PendingIntent.getService(this, 1, restartServiceIntent, PendingIntent.FLAG_ONE_SHOT)
+        val restartServicePendingIntent: PendingIntent = PendingIntent.getService(this, 1, restartServiceIntent, PendingIntent.FLAG_IMMUTABLE)
         val alarmService: AlarmManager = applicationContext.getSystemService(Context.ALARM_SERVICE) as AlarmManager
         alarmService.set(AlarmManager.ELAPSED_REALTIME, SystemClock.elapsedRealtime() + 1000, restartServicePendingIntent)
         println("ToolsService onTaskRemoved schedule restart service")
