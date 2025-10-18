@@ -165,6 +165,7 @@ import it.fast4x.riplay.ui.screens.player.online.OnlineMiniPlayer
 import it.fast4x.riplay.utils.getScreenDimensions
 import it.fast4x.riplay.utils.move
 import kotlinx.coroutines.withContext
+import timber.log.Timber
 
 @ExperimentalMaterial3Api
 @ExperimentalTextApi
@@ -795,12 +796,14 @@ fun Queue(
                             updateWindowsList = !updateWindowsList
                         },
                         onRemoveFromQueue = {
-                            binderPlayer.removeMediaItem(currentItem.firstPeriodIndex)
+                            binder.player.removeMediaItem(currentItem.firstPeriodIndex)
+                            //Timber.d("QueueItem: index ${currentItem.firstPeriodIndex}")
                             SmartMessage(
                                 "${context.resources.getString(R.string.deleted)} ${currentItem.mediaItem.mediaMetadata.title}",
                                 type = PopupType.Warning,
                                 context = context
                             )
+                            updateWindowsList = !updateWindowsList
                         },
                         onEnqueue = {
                             binder.player.enqueue(
