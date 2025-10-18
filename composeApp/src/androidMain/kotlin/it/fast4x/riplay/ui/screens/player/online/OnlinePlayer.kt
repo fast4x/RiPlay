@@ -276,6 +276,7 @@ import it.fast4x.riplay.extensions.preferences.expandedplayerKey
 import it.fast4x.riplay.extensions.preferences.expandedplayertoggleKey
 import it.fast4x.riplay.extensions.preferences.extraspaceKey
 import it.fast4x.riplay.extensions.preferences.fadingedgeKey
+import it.fast4x.riplay.extensions.preferences.jumpPreviousKey
 import it.fast4x.riplay.utils.formatAsDuration
 import it.fast4x.riplay.utils.formatAsTime
 import it.fast4x.riplay.utils.getBitmapFromUrl
@@ -736,6 +737,8 @@ fun OnlinePlayer(
     val configuration = LocalConfiguration.current
     val screenWidth = configuration.screenWidthDp.dp
     val screenHeight = configuration.screenHeightDp.dp
+
+    var jumpPrevious by rememberPreference(jumpPreviousKey,"3")
 
     if (isShowingSleepTimerDialog) {
         if (sleepTimerMillisLeft != null) {
@@ -1506,7 +1509,13 @@ fun OnlinePlayer(
             },
             onSeekTo = { player.value?.seekTo(it) },
             onNext = { binder.player.playNext() },
-            onPrevious = { binder.player.playPrevious() },
+            onPrevious = {
+                if (jumpPrevious == "") jumpPrevious = "0"
+                if(!binder.player.hasPreviousMediaItem() || (jumpPrevious != "0" && currentSecond > jumpPrevious.toFloat())){
+                    player.value?.seekTo(0f)
+                }
+                else binder.player.playPrevious()
+            },
             playerState = playerState.value,
         )
     }
@@ -2963,7 +2972,13 @@ fun OnlinePlayer(
                                     },
                                     onSeekTo = { player.value?.seekTo(it) },
                                     onNext = { binder.player.playNext() },
-                                    onPrevious = { binder.player.playPrevious() },
+                                    onPrevious = {
+                                        if (jumpPrevious == "") jumpPrevious = "0"
+                                        if(!binder.player.hasPreviousMediaItem() || (jumpPrevious != "0" && currentSecond > jumpPrevious.toFloat())){
+                                            player.value?.seekTo(0f)
+                                        }
+                                        else binder.player.playPrevious()
+                                    },
                                     playerState = playerState.value,
                                 )
 
@@ -3261,7 +3276,13 @@ fun OnlinePlayer(
                                             },
                                             onSeekTo = { player.value?.seekTo(it) },
                                             onNext = { binder.player.playNext() },
-                                            onPrevious = { binder.player.playPrevious() },
+                                            onPrevious = {
+                                                if (jumpPrevious == "") jumpPrevious = "0"
+                                                if(!binder.player.hasPreviousMediaItem() || (jumpPrevious != "0" && currentSecond > jumpPrevious.toFloat())){
+                                                    player.value?.seekTo(0f)
+                                                }
+                                                else binder.player.playPrevious()
+                                            },
                                             playerState = playerState.value,
                                         )
                                     }
@@ -3973,7 +3994,13 @@ fun OnlinePlayer(
                                     },
                                     onSeekTo = { player.value?.seekTo(it) },
                                     onNext = { binder.player.playNext() },
-                                    onPrevious = { binder.player.playPrevious() },
+                                    onPrevious = {
+                                        if (jumpPrevious == "") jumpPrevious = "0"
+                                        if(!binder.player.hasPreviousMediaItem() || (jumpPrevious != "0" && currentSecond > jumpPrevious.toFloat())){
+                                            player.value?.seekTo(0f)
+                                        }
+                                        else binder.player.playPrevious()
+                                    },
                                     playerState = playerState.value,
                                 )
 
