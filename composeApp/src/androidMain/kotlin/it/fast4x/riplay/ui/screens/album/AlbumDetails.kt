@@ -148,6 +148,7 @@ import it.fast4x.riplay.ui.screens.settings.isSyncEnabled
 import it.fast4x.riplay.utils.LazyListContainer
 import it.fast4x.riplay.utils.addToYtLikedSongs
 import it.fast4x.riplay.utils.addToYtPlaylist
+import it.fast4x.riplay.utils.context
 import org.dailyislam.android.utilities.isNetworkConnected
 import it.fast4x.riplay.utils.mediaItemSetLiked
 import kotlinx.coroutines.delay
@@ -1349,17 +1350,19 @@ fun AlbumDetails(
                                             onClick = {
                                                 if (!selectItems) {
                                                     if (song.likedAt != -1L) {
+                                                        val mediaItems = songs.filter { it.likedAt != -1L }
+                                                            .map(Song::asMediaItem)
+                                                        val mediaItemIndex = mediaItems.indexOfFirst {
+                                                            it.mediaId == song.id
+                                                        }
                                                         binder?.stopRadio()
                                                         binder?.player?.forcePlayAtIndex(
-                                                            songs.filter { it.likedAt != -1L }
-                                                                .map(Song::asMediaItem),
-                                                            songs.filter { it.likedAt != -1L }
-                                                                .map(Song::asMediaItem)
-                                                                .indexOf(song.asMediaItem)
+                                                            mediaItems,
+                                                            mediaItemIndex
                                                         )
                                                     } else {
                                                         SmartMessage(
-                                                            context.resources.getString(R.string.disliked_this_song),
+                                                            context().resources.getString(R.string.disliked_this_song),
                                                             type = PopupType.Error,
                                                             context = context
                                                         )
