@@ -570,9 +570,11 @@ fun HomePlaylists(
                                                                 Database.playlistSongs(preview.playlist.id).distinctUntilChanged()
                                                                     .map { it?.map( Song::asMediaItem) }
                                                                     .onEach {
-                                                                        if (it != null)
-                                                                            binder?.player?.forcePlayFromBeginning(it.shuffled())
-                                                                            //fastPlay(binder = binder, mediaItems = it, withShuffle = true)
+                                                                        withContext(Dispatchers.Main) {
+                                                                            if (it != null)
+                                                                                binder?.player?.forcePlayFromBeginning(it.shuffled())
+                                                                        }
+
                                                                     }
                                                                     .collect()
                                                             }
