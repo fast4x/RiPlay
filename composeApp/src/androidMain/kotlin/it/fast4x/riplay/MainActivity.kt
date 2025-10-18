@@ -1689,10 +1689,13 @@ class MainActivity :
                             if (mediaItem == null) {
                                 maybeExitPip()
                                 localPlayerSheetState.collapseSoft()
+                                return
                             }
 
-                            mediaItem?.let {
-                                //currentPlaybackPosition.value = 0L
+                            if (lastMediaItemWasLocal() && !mediaItem.isLocal)
+                                onlinePlayer.value?.loadVideo(mediaItem.mediaId, 0f)
+
+                            mediaItem.let {
                                 currentSecond.value = 0F
 
                                 //Timber.d("MainActivity Player.Listener onMediaItemTransition mediaItemAsSong ${binder!!.currentMediaItemAsSong}")

@@ -265,7 +265,7 @@ class LocalPlayerService : MediaLibraryService(),
         super.onCreate()
 
         // reset lastMediaItemstate
-        preferences.edit(commit = true) { putBoolean(lastMediaItemWasLocalKey, false) }
+        //preferences.edit(commit = true) { putBoolean(lastMediaItemWasLocalKey, false) }
 
         // DEFAULT NOTIFICATION PROVIDER MODDED
         setMediaNotificationProvider(CustomMediaNotificationProvider(this)
@@ -726,7 +726,15 @@ class LocalPlayerService : MediaLibraryService(),
             Timber.d("LocalPlayerService: onMediaItemTransition ${mediaItemToPlay.value?.mediaId} reason $reason currentQueueIndex ${currentQueueIndex} RECOVERED SOURCE UPDATE")
         }
 
-
+        if (currentMediaItem.value?.isLocal == true) {
+            preferences.edit(commit = true) {
+                putBoolean(
+                    lastMediaItemWasLocalKey,
+                    true
+                )
+            }
+            Timber.d("LocalPlayerService: set lastMediaItemWasLocalKey to true")
+        }
 
 
         Timber.d("LocalPlayerService onMediaItemTransition mediaItem ${mediaItemToPlay.value} reason $reason LAST currentQueueIndex $currentQueueIndex")
@@ -781,8 +789,6 @@ class LocalPlayerService : MediaLibraryService(),
     @UnstableApi
     override fun onIsPlayingChanged(isPlaying: Boolean) {
         Timber.d("LocalPlayerService onIsPlayingChanged isPlaying $isPlaying")
-
-        preferences.edit(commit = true) { putBoolean(lastMediaItemWasLocalKey, currentMediaItem.value?.isLocal == true) }
 
         val fadeDisabled = getPlaybackFadeAudioDuration() == DurationInMilliseconds.Disabled
         val duration = getPlaybackFadeAudioDuration().milliSeconds

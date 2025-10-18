@@ -13,6 +13,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.core.content.edit
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
@@ -34,11 +35,13 @@ import it.fast4x.riplay.ui.screens.player.online.components.customui.CustomDefau
 import it.fast4x.riplay.utils.DisposableListener
 import it.fast4x.riplay.extensions.preferences.isInvincibilityEnabledKey
 import it.fast4x.riplay.extensions.preferences.isKeepScreenOnEnabledKey
+import it.fast4x.riplay.extensions.preferences.lastMediaItemWasLocalKey
 import it.fast4x.riplay.extensions.preferences.lastVideoIdKey
 import it.fast4x.riplay.extensions.preferences.playbackDurationKey
 import it.fast4x.riplay.extensions.preferences.playbackSpeedKey
 import it.fast4x.riplay.utils.isLandscape
 import it.fast4x.riplay.extensions.preferences.playerThumbnailSizeKey
+import it.fast4x.riplay.extensions.preferences.preferences
 import it.fast4x.riplay.extensions.preferences.queueLoopTypeKey
 import it.fast4x.riplay.extensions.preferences.rememberObservedPreference
 import it.fast4x.riplay.extensions.preferences.rememberPreference
@@ -100,6 +103,12 @@ fun ExternalOnlineCore(
                         player.value?.pause()
                         return
                     }
+
+                    // reset last media item was local
+                    context().preferences.edit(commit = true) { putBoolean(lastMediaItemWasLocalKey,
+                        false
+                    ) }
+                    Timber.d("ExternalOnlineCore: set lastMediaItemWasLocalKey to false")
 
                     localMediaItem = it
                     lastVideoId.value = it.mediaId
