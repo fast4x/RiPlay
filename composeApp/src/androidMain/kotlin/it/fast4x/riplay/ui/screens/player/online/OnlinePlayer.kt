@@ -1144,15 +1144,16 @@ fun OnlinePlayer(
                     interactionSource = remember { MutableInteractionSource() },
                     indication = null,
                     onClick = {
-                        if (thumbnailTapEnabled && !showthumbnail) {
+                        //if (thumbnailTapEnabled && !showthumbnail) {
+                        if (thumbnailTapEnabled) {
                             if (isShowingVisualizer) isShowingVisualizer = false
                             isShowingLyrics = !isShowingLyrics
                         }
                     },
-                    onDoubleClick = {
-                        if (!showlyricsthumbnail && !showvisthumbnail)
-                            showthumbnail = !showthumbnail
-                    },
+//                    onDoubleClick = {
+//                        if (!showlyricsthumbnail && !showvisthumbnail)
+//                            showthumbnail = !showthumbnail
+//                    },
                     onLongClick = {
                         if (showthumbnail || (isShowingLyrics && !isShowingVisualizer) || !noblur)
                             showBlurPlayerDialog = true
@@ -2524,10 +2525,10 @@ fun OnlinePlayer(
                                                 isShowingLyrics = !isShowingLyrics
                                             }
                                         },
-                                        onDoubleClick = {
-                                            if (!showlyricsthumbnail && !showvisthumbnail)
-                                                showthumbnail = !showthumbnail
-                                        },
+//                                        onDoubleClick = {
+//                                            if (!showlyricsthumbnail && !showvisthumbnail)
+//                                                showthumbnail = !showthumbnail
+//                                        },
                                         onLongClick = {
                                             if (showthumbnail || (isShowingLyrics && !isShowingVisualizer) || !noblur)
                                                 showBlurPlayerDialog = true
@@ -2595,7 +2596,7 @@ fun OnlinePlayer(
                                                 onDragStart = {
                                                 },
                                                 onDragEnd = {
-                                                    if (!disablePlayerHorizontalSwipe && playerType == PlayerType.Essential) {
+                                                    if (!disablePlayerHorizontalSwipe) {
                                                         if (deltaX > 5) {
                                                             binder.player.playPrevious()
                                                             Timber.d("OnlinePlayer Swipe to LEFT 2 deltaX $deltaX")
@@ -2884,7 +2885,7 @@ fun OnlinePlayer(
                                                         onDragStart = {
                                                         },
                                                         onDragEnd = {
-                                                            if (!disablePlayerHorizontalSwipe && playerType == PlayerType.Essential) {
+                                                            if (!disablePlayerHorizontalSwipe) {
                                                                 if (deltaX > 5) {
                                                                     binder.player.playPrevious()
                                                                     Timber.d("OnlinePlayer Swipe to LEFT 4 deltaX $deltaX")
