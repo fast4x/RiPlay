@@ -2900,9 +2900,13 @@ class MainActivity :
         super.onDestroy()
 
         Timber.d("MainActivity.onDestroy")
-
-
         preferences.edit(commit = true) { putBoolean(appIsRunningKey, false) }
+
+        toolsService?.serviceInstance?.stopSelf()
+
+        onlinePlayer.value?.pause()
+        unifiedMediaSession = null
+        NotificationManagerCompat.from(this@MainActivity).cancelAll()
 
         if (preferences.getBoolean(isDiscordPresenceEnabledKey, false)) {
             Timber.d("[DiscordPresence] onStop: call the manager (close discord presence)")
