@@ -52,6 +52,7 @@ import it.fast4x.riplay.extensions.preferences.disableScrollingTextKey
 import it.fast4x.riplay.extensions.preferences.parentalControlEnabledKey
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.extensions.preferences.thumbnailRoundnessKey
+import it.fast4x.riplay.ui.components.PageContainer
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.combine
@@ -60,6 +61,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.ui.components.ScreenContainer
+import it.fast4x.riplay.ui.screens.playlist.PlaylistSongList
 import kotlinx.coroutines.flow.firstOrNull
 
 @ExperimentalMaterialApi
@@ -74,18 +76,32 @@ fun ArtistScreen(
     browseId: String,
     miniPlayer: @Composable () -> Unit = {},
 ) {
-    val saveableStateHolder = rememberSaveableStateHolder()
+    val disableScrollingText by rememberPreference(disableScrollingTextKey, false)
 
-    //var tabIndex by rememberPreference(artistScreenTabIndexKey, defaultValue = 0)
-
-    val binder = LocalPlayerServiceBinder.current
-
-    var tabIndex by rememberSaveable {
-        mutableStateOf(0)
+    PageContainer(
+        modifier = Modifier,
+        navController = navController,
+        miniPlayer = miniPlayer,
+    ) {
+        ArtistOverview(
+            navController = navController,
+            browseId = browseId,
+            disableScrollingText = disableScrollingText
+        )
     }
 
-    //PersistMapCleanup(tagPrefix = "artist/$browseId/")
+//    val saveableStateHolder = rememberSaveableStateHolder()
+//
+//    //var tabIndex by rememberPreference(artistScreenTabIndexKey, defaultValue = 0)
+//
+//    val binder = LocalPlayerServiceBinder.current
+//
+//    var tabIndex by rememberSaveable {
+//        mutableStateOf(0)
+//    }
 
+    //PersistMapCleanup(tagPrefix = "artist/$browseId/")
+/*
     var artist by persist<Artist?>("artist/$browseId/artist")
 
     var artistPage by persist<ArtistPage?>("artist/$browseId/artistPage")
@@ -147,7 +163,8 @@ fun ArtistScreen(
                 }
             }
     }
-
+*/
+    /*
     val listMediaItems = remember { mutableListOf<MediaItem>() }
 
     var artistItemsSection by remember { mutableStateOf<ArtistSection?>(null) }
@@ -228,6 +245,9 @@ fun ArtistScreen(
                     }
                 }
 
+     */
+
+    /*
     ScreenContainer(
         navController,
         tabIndex,
@@ -273,6 +293,6 @@ fun ArtistScreen(
                         }
                     }
                 }
-            }
-
+    }
+    */
 }

@@ -338,7 +338,6 @@ fun AppNavigation(
             PlaylistScreen(
                 navController = navController,
                 browseId = id,
-                params = null,
                 miniPlayer = miniPlayer,
             )
         }

@@ -45,6 +45,7 @@ import it.fast4x.riplay.enums.UiType
 import it.fast4x.riplay.extensions.preferences.playerPositionKey
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.extensions.preferences.transitionEffectKey
+import it.fast4x.riplay.ui.components.PageContainer
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.ui.components.navigation.header.AppHeader
 
@@ -62,112 +63,17 @@ fun LocalPlaylistScreen(
     modifier: Modifier = Modifier,
     miniPlayer: @Composable () -> Unit = {}
 ) {
-    val transitionEffect by rememberPreference(transitionEffectKey, TransitionEffect.Scale)
-    val playerPosition by rememberPreference(playerPositionKey, PlayerPosition.Bottom)
-    val saveableStateHolder = rememberSaveableStateHolder()
-    PersistMapCleanup(tagPrefix = "localPlaylist/$playlistId/")
 
-            androidx.compose.material3.Scaffold(
-                modifier = modifier,
-                containerColor = colorPalette().background0,
-                topBar = {
-                    if( UiType.RiPlay.isCurrent() )
-                        AppHeader( navController ).Draw()
-                }
-            ) {
-                //**
-                Box(
-                    modifier = Modifier
-                        .padding(it)
-                        .fillMaxSize()
-                ) {
+    PageContainer(
+        modifier = modifier,
+        navController = navController,
+        miniPlayer = miniPlayer,
+    ) {
+        LocalPlaylistSongs(
+            navController = navController,
+            playlistId = playlistId,
+            onDelete = {}
+        )
+    }
 
-                    Row(
-                        modifier = modifier
-                            .background(colorPalette().background0)
-                            .fillMaxSize()
-                    ) {
-                        val topPadding = if ( UiType.ViMusic.isCurrent() ) 30.dp else 0.dp
-
-                        AnimatedContent(
-                            targetState = 0,
-                            transitionSpec = {
-                                when (transitionEffect) {
-                                    TransitionEffect.None -> EnterTransition.None togetherWith ExitTransition.None
-                                    TransitionEffect.Expand -> expandIn(
-                                        animationSpec = tween(
-                                            350,
-                                            easing = LinearOutSlowInEasing
-                                        ), expandFrom = Alignment.BottomStart
-                                    ).togetherWith(
-                                        shrinkOut(
-                                            animationSpec = tween(
-                                                350,
-                                                easing = FastOutSlowInEasing
-                                            ), shrinkTowards = Alignment.CenterStart
-                                        )
-                                    )
-
-                                    TransitionEffect.Fade -> fadeIn(animationSpec = tween(350)).togetherWith(
-                                        fadeOut(animationSpec = tween(350))
-                                    )
-
-                                    TransitionEffect.Scale -> scaleIn(animationSpec = tween(350)).togetherWith(
-                                        scaleOut(animationSpec = tween(350))
-                                    )
-
-                                    TransitionEffect.SlideHorizontal, TransitionEffect.SlideVertical -> {
-                                        val slideDirection = when (targetState > initialState) {
-                                            true -> {
-                                                if (transitionEffect == TransitionEffect.SlideHorizontal)
-                                                    AnimatedContentTransitionScope.SlideDirection.Left
-                                                else AnimatedContentTransitionScope.SlideDirection.Up
-                                            }
-
-                                            false -> {
-                                                if (transitionEffect == TransitionEffect.SlideHorizontal)
-                                                    AnimatedContentTransitionScope.SlideDirection.Right
-                                                else AnimatedContentTransitionScope.SlideDirection.Down
-                                            }
-                                        }
-
-                                        val animationSpec = spring(
-                                            dampingRatio = 0.9f,
-                                            stiffness = Spring.StiffnessLow,
-                                            visibilityThreshold = IntOffset.VisibilityThreshold
-                                        )
-
-                                        slideIntoContainer(slideDirection, animationSpec) togetherWith
-                                                slideOutOfContainer(slideDirection, animationSpec)
-                                    }
-                                }
-                            },
-                            label = "",
-                            modifier = Modifier
-                                //.fillMaxWidth()
-                                .fillMaxHeight()
-                                .padding(top = topPadding)
-                        ) { currentTabIndex ->
-                            saveableStateHolder.SaveableStateProvider(currentTabIndex) {
-                                when (currentTabIndex) {
-                                    0 -> LocalPlaylistSongs(
-                                        navController = navController,
-                                        playlistId = playlistId,
-                                        onDelete = {} //pop
-                                    )
-                                }
-                            }
-                        }
-                    }
-                    //**
-                    Box(
-                        modifier = Modifier
-                            .padding(vertical = 5.dp)
-                            .align(if (playerPosition == PlayerPosition.Top) Alignment.TopCenter
-                            else Alignment.BottomCenter)
-                    ) {
-                        miniPlayer.invoke()
-                    }
-                }
-            }
 }

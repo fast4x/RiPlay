@@ -126,6 +126,7 @@ import it.fast4x.riplay.utils.forcePlay
 import it.fast4x.riplay.utils.forcePlayFromBeginning
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -141,12 +142,10 @@ import kotlin.random.Random
 fun ArtistOverview(
     navController: NavController,
     browseId: String?,
-    artistPage: ArtistPage?,
-    onItemsPageClick: (ArtistSection) -> Unit,
     disableScrollingText: Boolean
 ) {
 
-    if (browseId == null || artistPage == null) return
+    if (browseId == null) return
 
     val binder = LocalPlayerServiceBinder.current
     val windowInsets = LocalPlayerAwareWindowInsets.current
@@ -165,31 +164,11 @@ fun ArtistOverview(
 
     val thumbnailRoundness by rememberPreference(thumbnailRoundnessKey, ThumbnailRoundness.Heavy)
 
-    val sectionTextModifier = Modifier
-        .padding(horizontal = 16.dp)
-        .padding(top = 24.dp, bottom = 8.dp)
-
-    var downloadState by remember {
-        mutableStateOf(Download.STATE_STOPPED)
-    }
 
     val context = LocalContext.current
 
-    var showConfirmDeleteDownloadDialog by remember {
-        mutableStateOf(false)
-    }
-
-    var showConfirmDownloadAllDialog by remember {
-        mutableStateOf(false)
-    }
-
-    var translateEnabled by remember {
-        mutableStateOf(false)
-    }
-
-    val listMediaItems = remember { mutableListOf<MediaItem>() }
-
     var artist by persist<Artist?>("artist/$browseId/artist")
+    var artistPage by persist<ArtistPage?>("artist/$browseId/artistPage")
 
     var itemsBrowseId by remember { mutableStateOf("") }
     var itemsParams by remember { mutableStateOf("") }
@@ -197,6 +176,8 @@ fun ArtistOverview(
     var showArtistItems by rememberSaveable { mutableStateOf(false) }
     var songsBrowseId by remember { mutableStateOf("") }
     var songsParams by remember { mutableStateOf("") }
+
+    var showArtistSongsInLibrary by rememberSaveable { mutableStateOf(false) }
 
     val hapticFeedback = LocalHapticFeedback.current
     val parentalControlEnabled by rememberPreference(parentalControlEnabledKey, false)
@@ -207,7 +188,29 @@ fun ArtistOverview(
     var showFastShare by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
-        Database.artist(browseId).collect { artist = it }
+        Database.artist(browseId).distinctUntilChanged().collect { currentArtist ->
+            artist = currentArtist
+
+            if (artistPage == null) {
+                CoroutineScope(Dispatchers.IO).launch {
+                    EnvironmentExt.getArtistPage(browseId = browseId)
+                        .onSuccess { currentArtistPage ->
+                            artistPage = currentArtistPage
+
+                            Database.upsert(
+                                Artist(
+                                    id = browseId,
+                                    name = currentArtistPage.artist.info?.name,
+                                    thumbnailUrl = currentArtistPage.artist.thumbnail?.url,
+                                    timestamp = System.currentTimeMillis(),
+                                    bookmarkedAt = currentArtist?.bookmarkedAt,
+                                    isYoutubeArtist = currentArtist?.isYoutubeArtist == true
+                                )
+                            )
+                        }
+                }
+            }
+        }
     }
 
     FastShare(
@@ -243,7 +246,7 @@ fun ArtistOverview(
                     if (!isLandscape)
                         Box {
                             AsyncImage(
-                                model = artistPage.artist.thumbnail?.url?.resize(
+                                model = artistPage?.artist?.thumbnail?.url?.resize(
                                     1200,
                                     1200
                                 ),
@@ -275,7 +278,7 @@ fun ArtistOverview(
                         }
 
                     AutoResizeText(
-                        text = artistPage.artist.info?.name ?: "",
+                        text = artistPage?.artist?.info?.name ?: "",
                         style = typography().l.semiBold,
                         fontSizeRange = FontSizeRange(32.sp, 38.sp),
                         fontWeight = typography().l.semiBold.fontWeight,
@@ -328,7 +331,7 @@ fun ArtistOverview(
                         modifier = Modifier.fillMaxWidth(.5f).align(Alignment.BottomCenter).padding(bottom = 50.dp),
                         onPlayNowClick = {
                             CoroutineScope(Dispatchers.IO).launch {
-                                artistPage.sections.firstOrNull{sec -> sec.items.firstOrNull() is Environment.SongItem}.let {
+                                artistPage?.sections?.firstOrNull{sec -> sec.items.firstOrNull() is Environment.SongItem}.let {
                                     songsBrowseId = it?.moreEndpoint?.browseId.toString()
                                     songsParams = it?.moreEndpoint?.params.toString()
                                 }
@@ -352,7 +355,7 @@ fun ArtistOverview(
                         },
                         onShufflePlayClick = {
                             CoroutineScope(Dispatchers.IO).launch {
-                                artistPage.sections.firstOrNull{sec -> sec.items.firstOrNull() is Environment.SongItem}.let {
+                                artistPage?.sections?.firstOrNull{sec -> sec.items.firstOrNull() is Environment.SongItem}.let {
                                     songsBrowseId = it?.moreEndpoint?.browseId.toString()
                                     songsParams = it?.moreEndpoint?.params.toString()
                                 }
@@ -378,7 +381,7 @@ fun ArtistOverview(
 
                 }
 
-                artistPage.subscribers?.let {
+                artistPage?.subscribers?.let {
                     Row(
                         horizontalArrangement = Arrangement.Center,
                         verticalAlignment = Alignment.CenterVertically,
@@ -422,7 +425,7 @@ fun ArtistOverview(
                                 if (isSyncEnabled())
                                     CoroutineScope(Dispatchers.IO).launch {
                                         if (bookmarkedAt == null)
-                                            artistPage.artist.channelId.let {
+                                            artistPage?.artist?.channelId.let {
                                                 if (it != null) {
                                                     EnvironmentExt.unsubscribeChannel(it)
                                                     if (artist != null) {
@@ -431,7 +434,7 @@ fun ArtistOverview(
                                                 }
                                             }
                                         else
-                                            artistPage.artist.channelId.let {
+                                            artistPage?.artist?.channelId.let {
                                                 if (it != null) {
                                                     EnvironmentExt.subscribeChannel(it)
                                                     if (artist != null) {
@@ -525,7 +528,7 @@ fun ArtistOverview(
 //                        )
 //                    }
 
-                    artistPage.shuffleEndpoint?.let { endpoint ->
+                    artistPage?.shuffleEndpoint?.let { endpoint ->
                         HeaderIconButton(
                             icon = R.drawable.shuffle,
                             enabled = true,
@@ -548,7 +551,7 @@ fun ArtistOverview(
                         )
                     }
 
-                    artistPage.radioEndpoint?.let { endpoint ->
+                    artistPage?.radioEndpoint?.let { endpoint ->
                         HeaderIconButton(
                             icon = R.drawable.radio,
                             enabled = true,
@@ -575,7 +578,7 @@ fun ArtistOverview(
             }
 
             item {
-                artistPage.description?.let { description ->
+                artistPage?.description?.let { description ->
                     val attributionsIndex = description.lastIndexOf("\n\nFrom Wikipedia")
 
                     Title(
@@ -652,7 +655,17 @@ fun ArtistOverview(
                 }
             }
 
-            artistPage.sections.forEach() { it ->
+            item {
+                Title(
+                    title = stringResource(R.string.library),
+                    onClick = {
+                        showArtistSongsInLibrary = true
+                    },
+                )
+            }
+
+
+            artistPage?.sections?.forEach() { it ->
                 //println("ArtistOverviewModern title: ${it.title} browseId: ${it.moreEndpoint?.browseId} params: ${it.moreEndpoint?.params}")
                 item {
                     if (it.items.firstOrNull() is Environment.SongItem) {
@@ -746,7 +759,7 @@ fun ArtistOverview(
                                                 onClick = {
                                                     binder?.stopRadio()
                                                     CoroutineScope(Dispatchers.IO).launch {
-                                                        artistPage.sections.firstOrNull{sec -> sec.items.firstOrNull() is Environment.SongItem}.let {
+                                                        artistPage?.sections?.firstOrNull{sec -> sec.items.firstOrNull() is Environment.SongItem}.let {
                                                             songsBrowseId = it?.moreEndpoint?.browseId.toString()
                                                             songsParams = it?.moreEndpoint?.params.toString()
                                                         }
@@ -926,6 +939,30 @@ fun ArtistOverview(
             )
         }
 
+        CustomModalBottomSheet(
+            showSheet = showArtistSongsInLibrary,
+            onDismissRequest = { showArtistSongsInLibrary = false },
+            containerColor = colorPalette().background2,
+            contentColor = colorPalette().background2,
+            modifier = Modifier
+                .fillMaxWidth(),
+            sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+            dragHandle = {
+                Surface(
+                    modifier = Modifier.padding(vertical = 0.dp),
+                    color = colorPalette().background0,
+                    shape = thumbnailShape()
+                ) {}
+            },
+            shape = thumbnailRoundness.shape()
+        ) {
+            ArtistLocalSongs(
+                navController = navController,
+                browseId = browseId,
+                artistName = cleanPrefix(artist?.name ?: ""),
+                onDismiss = { showArtistSongsInLibrary = false }
+            )
+        }
 
     }
 

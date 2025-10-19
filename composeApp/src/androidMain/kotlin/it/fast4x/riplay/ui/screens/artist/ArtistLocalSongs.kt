@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -23,7 +24,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.ExperimentalTextApi
+import androidx.compose.ui.unit.dp
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.offline.Download
 import androidx.navigation.NavController
@@ -52,6 +55,8 @@ import it.fast4x.riplay.utils.forcePlayAtIndex
 import it.fast4x.riplay.utils.forcePlayFromBeginning
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.extensions.preferences.showFloatingIconKey
+import it.fast4x.riplay.ui.components.themed.Title
+import it.fast4x.riplay.ui.components.themed.TitleSection
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.utils.LazyListContainer
 
@@ -65,10 +70,12 @@ import it.fast4x.riplay.utils.LazyListContainer
 fun ArtistLocalSongs(
     navController: NavController,
     browseId: String,
-    headerContent: @Composable (textButton: (@Composable () -> Unit)?) -> Unit,
-    thumbnailContent: @Composable () -> Unit,
-    onSearchClick: () -> Unit,
-    onSettingsClick: () -> Unit
+    artistName: String,
+    onDismiss: () -> Unit
+//    headerContent: @Composable (textButton: (@Composable () -> Unit)?) -> Unit,
+//    thumbnailContent: @Composable () -> Unit,
+//    onSearchClick: () -> Unit,
+//    onSettingsClick: () -> Unit
 ) {
     val binder = LocalPlayerServiceBinder.current
     val menuState = LocalMenuState.current
@@ -119,7 +126,10 @@ fun ArtistLocalSongs(
         mutableStateOf(false)
     }
 
-    LayoutWithAdaptiveThumbnail(thumbnailContent = thumbnailContent) {
+    val sectionTextModifier = Modifier
+        .padding(horizontal = 16.dp)
+        .padding(top = 24.dp, bottom = 8.dp)
+    //LayoutWithAdaptiveThumbnail(thumbnailContent = thumbnailContent) {
         Box(
             modifier = Modifier
                 .background(colorPalette().background0)
@@ -143,63 +153,78 @@ fun ArtistLocalSongs(
                         .background(colorPalette().background0)
                         .fillMaxSize()
                 ) {
-                    item(
-                        key = "header",
-                        contentType = 0
-                    ) {
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            headerContent {
+//                    item(
+//                        key = "header",
+//                        contentType = 0
+//                    ) {
+//                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+//                            headerContent {
+//
+//                                HeaderIconButton(
+//                                    icon = R.drawable.enqueue,
+//                                    enabled = !songs.isNullOrEmpty(),
+//                                    color = if (!songs.isNullOrEmpty()) colorPalette().text else colorPalette().textDisabled,
+//                                    onClick = { },
+//                                    modifier = Modifier
+//                                        .combinedClickable(
+//                                            onClick = {
+//                                                binder?.player?.enqueue(
+//                                                    songs!!.map(Song::asMediaItem),
+//                                                    context
+//                                                )
+//                                            },
+//                                            onLongClick = {
+//                                                SmartMessage(
+//                                                    context.resources.getString(R.string.info_enqueue_songs),
+//                                                    context = context
+//                                                )
+//                                            }
+//                                        )
+//                                )
+//                                HeaderIconButton(
+//                                    icon = R.drawable.shuffle,
+//                                    enabled = !songs.isNullOrEmpty(),
+//                                    color = if (!songs.isNullOrEmpty()) colorPalette().text else colorPalette().textDisabled,
+//                                    onClick = {},
+//                                    modifier = Modifier
+//                                        .combinedClickable(
+//                                            onClick = {
+//                                                songs?.let { songs ->
+//                                                    if (songs.isNotEmpty()) {
+//                                                        binder?.stopRadio()
+//                                                        binder?.player?.forcePlayFromBeginning(
+//                                                            songs.shuffled().map(Song::asMediaItem)
+//                                                        )
+//                                                    }
+//                                                }
+//                                            },
+//                                            onLongClick = {
+//                                                SmartMessage(
+//                                                    context.resources.getString(R.string.info_shuffle),
+//                                                    context = context
+//                                                )
+//                                            }
+//                                        )
+//                                )
+//                            }
+//
+//                            thumbnailContent()
+//                        }
+//                    }
 
-                                HeaderIconButton(
-                                    icon = R.drawable.enqueue,
-                                    enabled = !songs.isNullOrEmpty(),
-                                    color = if (!songs.isNullOrEmpty()) colorPalette().text else colorPalette().textDisabled,
-                                    onClick = { },
-                                    modifier = Modifier
-                                        .combinedClickable(
-                                            onClick = {
-                                                binder?.player?.enqueue(
-                                                    songs!!.map(Song::asMediaItem),
-                                                    context
-                                                )
-                                            },
-                                            onLongClick = {
-                                                SmartMessage(
-                                                    context.resources.getString(R.string.info_enqueue_songs),
-                                                    context = context
-                                                )
-                                            }
-                                        )
-                                )
-                                HeaderIconButton(
-                                    icon = R.drawable.shuffle,
-                                    enabled = !songs.isNullOrEmpty(),
-                                    color = if (!songs.isNullOrEmpty()) colorPalette().text else colorPalette().textDisabled,
-                                    onClick = {},
-                                    modifier = Modifier
-                                        .combinedClickable(
-                                            onClick = {
-                                                songs?.let { songs ->
-                                                    if (songs.isNotEmpty()) {
-                                                        binder?.stopRadio()
-                                                        binder?.player?.forcePlayFromBeginning(
-                                                            songs.shuffled().map(Song::asMediaItem)
-                                                        )
-                                                    }
-                                                }
-                                            },
-                                            onLongClick = {
-                                                SmartMessage(
-                                                    context.resources.getString(R.string.info_shuffle),
-                                                    context = context
-                                                )
-                                            }
-                                        )
-                                )
-                            }
-
-                            thumbnailContent()
-                        }
+                    item {
+                        Title(
+                            title = artistName,
+                            modifier = sectionTextModifier,
+                            icon = R.drawable.chevron_down,
+                            onClick = onDismiss
+                        )
+                        TitleSection(
+                            title = stringResource(R.string.library),
+                            modifier = Modifier
+                                .padding(bottom = 16.dp)
+                                .padding(horizontal = 16.dp)
+                        )
                     }
 
                     songs?.let { songs ->
@@ -246,46 +271,7 @@ fun ArtistLocalSongs(
                 }
             }
 
-            val showFloatingIcon by rememberPreference(showFloatingIconKey, false)
-            if( UiType.ViMusic.isCurrent() && showFloatingIcon )
-                MultiFloatingActionsContainer(
-                    iconId = R.drawable.shuffle,
-                    onClick = {
-                        songs?.let { songs ->
-                            if (songs.isNotEmpty()) {
-                                binder?.stopRadio()
-                                binder?.player?.forcePlayFromBeginning(
-                                    songs.shuffled().map(Song::asMediaItem)
-                                )
-                            }
-                        }
-                    },
-                    onClickSettings = onSettingsClick,
-                    onClickSearch = onSearchClick
-                )
-
-                /*
-                FloatingActionsContainerWithScrollToTop(
-                    lazyListState = lazyListState,
-                    iconId = R.drawable.shuffle,
-                    onClick = {
-                        songs?.let { songs ->
-                            if (songs.isNotEmpty()) {
-                                binder?.stopRadio()
-                                binder?.player?.forcePlayFromBeginning(
-                                    songs.shuffled().map(Song::asMediaItem)
-                                )
-                            }
-                        }
-                    }
-                )
-
-                 */
-
-
-
-
 
         }
-    }
+    //}
 }

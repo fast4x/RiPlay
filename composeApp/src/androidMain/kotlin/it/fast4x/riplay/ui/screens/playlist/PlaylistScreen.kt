@@ -6,12 +6,15 @@ import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.ui.ExperimentalComposeUiApi
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import it.fast4x.riplay.R
+import it.fast4x.riplay.ui.components.PageContainer
 import it.fast4x.riplay.ui.components.ScreenContainer
+import it.fast4x.riplay.ui.screens.localplaylist.LocalPlaylistSongs
 
 @ExperimentalMaterialApi
 @ExperimentalTextApi
@@ -23,27 +26,18 @@ import it.fast4x.riplay.ui.components.ScreenContainer
 fun PlaylistScreen(
     navController: NavController,
     browseId: String,
-    params: String?,
-    maxDepth: Int? = null,
     miniPlayer: @Composable () -> Unit = {},
 ) {
-    val saveableStateHolder = rememberSaveableStateHolder()
-    //PersistMapCleanup(tagPrefix = "playlist/$browseId")
 
-    ScreenContainer(
-        navController,
+    PageContainer(
+        modifier = Modifier,
+        navController = navController,
         miniPlayer = miniPlayer,
-        navBarContent = { item ->
-            item(0, stringResource(R.string.songs), R.drawable.musical_notes)
-        }
-    ) { currentTabIndex ->
-        saveableStateHolder.SaveableStateProvider(key = currentTabIndex) {
-            when (currentTabIndex) {
-                0 -> PlaylistSongList(
-                    navController = navController,
-                    browseId = browseId,
-                )
-            }
-        }
+    ) {
+        PlaylistSongList(
+            navController = navController,
+            browseId = browseId,
+        )
     }
+
 }
