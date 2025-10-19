@@ -302,6 +302,7 @@ import it.fast4x.riplay.utils.forcePlay
 import it.fast4x.riplay.utils.getDnsOverHttpsType
 import it.fast4x.riplay.utils.getKeepPlayerMinimized
 import it.fast4x.riplay.utils.getResumePlaybackOnStart
+import it.fast4x.riplay.utils.getScreenOrientation
 import it.fast4x.riplay.utils.getSystemlanguage
 import it.fast4x.riplay.utils.invokeOnReady
 import it.fast4x.riplay.utils.isAtLeastAndroid11
@@ -1614,6 +1615,12 @@ class MainActivity :
                                     if (onlinePlayerState.value == PlayerConstants.PlayerState.PLAYING
                                         || onlinePlayerState.value == PlayerConstants.PlayerState.PAUSED )
                                         updateOnlineNotification()
+
+                                    //simulate mediaitem transition in landscape mode
+                                    if (onlinePlayerState.value == PlayerConstants.PlayerState.ENDED
+                                        && getScreenOrientation(this@MainActivity) == Configuration.ORIENTATION_LANDSCAPE )
+                                            binder?.player?.playNext()
+
                                     Timber.d("MainActivity LaunchedEffect initializeMediasession onlinePlayerState ${onlinePlayerState.value}")
                                 }
 

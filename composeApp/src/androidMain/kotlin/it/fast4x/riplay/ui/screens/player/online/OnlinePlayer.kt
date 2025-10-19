@@ -687,14 +687,9 @@ fun OnlinePlayer(
     var likedAt by remember {
         mutableStateOf<Long?>(null)
     }
-    var songIsAudioOnly by remember {
-        mutableStateOf<Boolean>(true)
-    }
 
     LaunchedEffect(mediaItem.mediaId) {
         Database.likedAt(mediaItem.mediaId).distinctUntilChanged().collect { likedAt = it }
-        Database.song(mediaItem.mediaId).distinctUntilChanged()
-            .collect { songIsAudioOnly = it?.isVideo == false }
         updateBrush = true
     }
 

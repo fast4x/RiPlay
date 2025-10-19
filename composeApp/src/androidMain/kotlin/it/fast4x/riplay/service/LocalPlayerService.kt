@@ -605,12 +605,6 @@ class LocalPlayerService : MediaLibraryService(),
     override fun onTimelineChanged(timeline: Timeline, reason: Int) {
         Timber.d("LocalPlayerService onTimelineChanged timeline $timeline reason $reason")
 
-        if (reason == Player.TIMELINE_CHANGE_REASON_SOURCE_UPDATE) {
-            // detect change source caused by android auto
-            onMediaItemTransition(player.currentMediaItem, reason)
-            return
-        }
-
         if (reason != Player.TIMELINE_CHANGE_REASON_PLAYLIST_CHANGED) return
         player.saveMasterQueue()
     }
@@ -717,14 +711,6 @@ class LocalPlayerService : MediaLibraryService(),
     override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
 
         val mediaItemToPlay = mutableStateOf(mediaItem)
-
-        if (reason != Player.TIMELINE_CHANGE_REASON_SOURCE_UPDATE)
-            currentQueueIndex.value = player.currentMediaItemIndex
-        else {
-            binder.player.seekToDefaultPosition(currentQueueIndex.value)
-            mediaItemToPlay.value = player.getMediaItemAt(currentQueueIndex.value)
-            Timber.d("LocalPlayerService: onMediaItemTransition ${mediaItemToPlay.value?.mediaId} reason $reason currentQueueIndex ${currentQueueIndex} RECOVERED SOURCE UPDATE")
-        }
 
         if (currentMediaItem.value?.isLocal == true) {
             preferences.edit(commit = true) {
