@@ -2592,6 +2592,12 @@ interface Database {
     @Transaction
     @Query("DELETE FROM Format WHERE songId = :songId")
     fun deleteFormat(songId: String)
+    @Transaction
+    @Query("DELETE FROM SongAlbumMap WHERE albumId = :albumId")
+    fun deleteAlbumMap(albumId: String)
+    @Transaction
+    @Query("DELETE FROM SongArtistMap WHERE artistId = :artistId")
+    fun deleteArtistMap(artistId: String)
 
     @Transaction
     @Query("SELECT Song.*, contentLength FROM Song JOIN Format ON id = songId WHERE contentLength IS NOT NULL AND totalPlayTimeMs > 0 ORDER BY Song.ROWID DESC")

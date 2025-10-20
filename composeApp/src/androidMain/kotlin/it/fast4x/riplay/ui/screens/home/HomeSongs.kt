@@ -137,7 +137,6 @@ import it.fast4x.riplay.ui.components.themed.SortMenu
 import it.fast4x.riplay.ui.components.themed.TitleSection
 import it.fast4x.riplay.ui.items.FolderItem
 import it.fast4x.riplay.ui.items.SongItem
-import it.fast4x.riplay.ui.screens.ondevice.musicFilesAsFlow
 import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.ui.styling.favoritesIcon
 import it.fast4x.riplay.ui.styling.onOverlay
@@ -194,6 +193,8 @@ import it.fast4x.riplay.utils.asSong
 import it.fast4x.riplay.utils.formatAsDuration
 import org.dailyislam.android.utilities.isNetworkConnected
 import it.fast4x.riplay.extensions.preferences.showDislikedPlaylistKey
+import it.fast4x.riplay.utils.musicFilesAsFlow
+import it.fast4x.riplay.utils.removeObsoleteOndeviceMusic
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -220,7 +221,7 @@ fun HomeSongs(
     val parentalControlEnabled by rememberPreference(parentalControlEnabledKey, false)
 
     var items by persistList<SongEntity>("home/songs")
-    var itemsAll by persistList<SongEntity>("")
+    //var itemsAll by persistList<SongEntity>("")
 
     //var songsWithAlbum by persistList<SongWithAlbum>("home/songsWithAlbum")
 
@@ -247,9 +248,9 @@ fun HomeSongs(
         mutableStateOf(0)
     }
 
-    LaunchedEffect(Unit) {
-        Database.listAllSongsAsFlow().collect { itemsAll = it }
-    }
+//    LaunchedEffect(Unit) {
+//        Database.listAllSongsAsFlow().collect { itemsAll = it }
+//    }
 
     var includeLocalSongs by rememberPreference(includeLocalSongsKey, true)
     var autoShuffle by rememberPreference(autoShuffleKey, false)
@@ -376,10 +377,6 @@ fun HomeSongs(
     var buttonsList = listOf(BuiltInPlaylist.All to stringResource(R.string.all))
     if (showFavoritesPlaylist) buttonsList +=
         BuiltInPlaylist.Favorites to stringResource(R.string.favorites)
-//    if (showCachedPlaylist) buttonsList +=
-//        BuiltInPlaylist.Offline to stringResource(R.string.cached)
-//    if (showDownloadedPlaylist) buttonsList +=
-//        BuiltInPlaylist.Downloaded to stringResource(R.string.downloaded)
     if (showMyTopPlaylist) buttonsList +=
         BuiltInPlaylist.Top to String.format(stringResource(R.string.my_playlist_top),maxTopPlaylistItems.number)
     if (showOnDevicePlaylist) buttonsList +=
@@ -482,9 +479,13 @@ fun HomeSongs(
         BuiltInPlaylist.OnDevice -> {
             items = emptyList()
             LaunchedEffect(sortByOnDevice, sortOrderOnDevice) {
-                if (hasPermission)
+                if (hasPermission) {
+
+                    removeObsoleteOndeviceMusic(context)
+
                     context.musicFilesAsFlow(sortByOnDevice, sortOrderOnDevice, context)
                         .collect { songsDevice = it.distinctBy { song -> song.id } }
+                }
             }
         }
     }
@@ -723,7 +724,7 @@ fun HomeSongs(
             .fillMaxHeight()
             //.fillMaxWidth(if (navigationBarPosition == NavigationBarPosition.Left) 1f else Dimensions.contentWidthRightBar)
             .fillMaxWidth(
-                if( NavigationBarPosition.Right.isCurrent() )
+                if (NavigationBarPosition.Right.isCurrent())
                     Dimensions.contentWidthRightBar
                 else
                     1f
@@ -1090,7 +1091,11 @@ fun HomeSongs(
                                                     .map(SongEntity::asMediaItem)
                                             )
                                         } else {
-                                            SmartMessage(context.resources.getString(R.string.disliked_this_collection),type = PopupType.Error, context = context)
+                                            SmartMessage(
+                                                context.resources.getString(R.string.disliked_this_collection),
+                                                type = PopupType.Error,
+                                                context = context
+                                            )
                                         }
                                     },
                                     onLongClick = {
@@ -1914,12 +1919,19 @@ fun HomeSongs(
                                             val itemsLimited = items.slice(itemsRange)
                                             binder?.stopRadio()
                                             binder?.player?.forcePlayAtIndex(
-                                                itemsLimited.filter { it.song.likedAt != -1L }.map(SongEntity::asMediaItem),
-                                                itemsLimited.filter { it.song.likedAt != -1L }.map(SongEntity::asMediaItem).indexOf(song.asMediaItem)
+                                                itemsLimited.filter { it.song.likedAt != -1L }
+                                                    .map(SongEntity::asMediaItem),
+                                                itemsLimited.filter { it.song.likedAt != -1L }
+                                                    .map(SongEntity::asMediaItem)
+                                                    .indexOf(song.asMediaItem)
                                             )
                                         } else {
                                             CoroutineScope(Dispatchers.Main).launch {
-                                                SmartMessage(context.resources.getString(R.string.disliked_this_song),type = PopupType.Error, context = context)
+                                                SmartMessage(
+                                                    context.resources.getString(R.string.disliked_this_song),
+                                                    type = PopupType.Error,
+                                                    context = context
+                                                )
                                             }
                                         }
                                     }
@@ -1940,7 +1952,9 @@ fun HomeSongs(
         }
 
         VerticalScrollbar(
-            modifier = Modifier.align(Alignment.TopEnd).fillMaxHeight(),
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .fillMaxHeight(),
             adapter = rememberScrollbarAdapter(scrollState = lazyListState),
             style = it.fast4x.riplay.utils.defaultScrollbarStyle(),
             enablePressToScroll = true,

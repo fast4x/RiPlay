@@ -135,7 +135,6 @@ import it.fast4x.riplay.ui.components.themed.SortMenu
 import it.fast4x.riplay.ui.components.themed.TitleSection
 import it.fast4x.riplay.ui.items.FolderItem
 import it.fast4x.riplay.ui.items.SongItem
-import it.fast4x.riplay.ui.screens.ondevice.musicFilesAsFlow
 import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.ui.styling.favoritesIcon
 import it.fast4x.riplay.ui.styling.onOverlay
@@ -191,6 +190,7 @@ import it.fast4x.riplay.utils.asSong
 import it.fast4x.riplay.utils.formatAsDuration
 import org.dailyislam.android.utilities.isNetworkConnected
 import it.fast4x.riplay.extensions.preferences.showDislikedPlaylistKey
+import it.fast4x.riplay.utils.musicFilesAsFlow
 
 
 @OptIn(ExperimentalMaterial3Api::class)
