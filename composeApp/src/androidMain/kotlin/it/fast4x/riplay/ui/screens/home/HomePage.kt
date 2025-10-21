@@ -293,9 +293,6 @@ fun HomePage(
             if (isLoggedIn())
                 homePageResult = EnvironmentExt.getHomePage()
 
-
-            saveFileToInternalStorage(context, "getRelated.log", EnvironmentExt.getRelatedSongs("HZnNt9nnEhw")?.getOrNull().toString())
-
         }.onFailure {
             //Timber.e("Failed loadData in QuickPicsModern ${it.stackTraceToString()}")
             println("Failed loadData in QuickPicsModern ${it.stackTraceToString()}")
