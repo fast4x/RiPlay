@@ -52,6 +52,7 @@ data class OnDeviceSong (
         return SongEntity(
             Song(
                 id = id,
+                mediaId = mediaId,
                 title = title,
                 artistsText = artistsText,
                 durationText = durationText,

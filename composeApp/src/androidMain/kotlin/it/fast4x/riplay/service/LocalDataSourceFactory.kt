@@ -16,7 +16,7 @@ import timber.log.Timber
 
 
 @OptIn(UnstableApi::class)
-internal fun LocalPlayerService.createLocalDataSourceFactory(scope: CoroutineScope): DataSource.Factory {
+internal fun LocalPlayerService.createLocalDataSourceFactory(): DataSource.Factory {
     return ResolvingDataSource.Factory(createLocalCacheDataSource()) { dataSpec ->
 
         Timber.d("createLocalDataSourceFactory dataSpec: uri ${dataSpec.uri} isLocalUri ${dataSpec.isLocalUri} isLocal: ${dataSpec.isLocal}")

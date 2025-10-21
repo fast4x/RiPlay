@@ -849,6 +849,11 @@ interface Database {
     @RewriteQueriesToDropUnusedColumns
     fun songsOnDevice(): Flow<List<Song>>
 
+    @Transaction
+    @Query("SELECT * FROM Song WHERE mediaId = :mediaId")
+    @RewriteQueriesToDropUnusedColumns
+    fun songOnDevice(mediaId: String): Flow<Song?>
+
     @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Transaction
     @Query("SELECT * FROM Song WHERE id LIKE '$LOCAL_KEY_PREFIX%'")

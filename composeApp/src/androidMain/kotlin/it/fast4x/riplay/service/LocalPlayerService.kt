@@ -310,7 +310,8 @@ class LocalPlayerService : MediaLibraryService(),
 
 
         player = ExoPlayer.Builder(this)
-            .setMediaSourceFactory(createMediaSourceFactory())
+            // todo MediaSourceFactory not needed for local content
+            //.setMediaSourceFactory(createMediaSourceFactory())
             .setRenderersFactory(createRendersFactory())
             .setHandleAudioBecomingNoisy(true)
             .setWakeMode(C.WAKE_MODE_LOCAL)
@@ -799,7 +800,7 @@ class LocalPlayerService : MediaLibraryService(),
 
         currentMediaItem.value?.isLocal?.let { if (!it) return }
 
-        super.onPlayerError(error)
+        //super.onPlayerError(error)
 
         Timber.e("LocalPlayerService onPlayerError error code ${error.errorCode} message ${error.message} cause ${error.cause?.cause}")
 
@@ -1090,7 +1091,7 @@ class LocalPlayerService : MediaLibraryService(),
     }.setExtensionRendererMode(EXTENSION_RENDERER_MODE_PREFER) // prefer extension renderers to opus format
 
     private fun createMediaSourceFactory() = DefaultMediaSourceFactory(
-            createLocalDataSourceFactory( coroutineScope ),
+            createLocalDataSourceFactory(),
         DefaultExtractorsFactory()
     )
 

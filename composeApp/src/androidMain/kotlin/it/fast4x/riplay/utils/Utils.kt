@@ -307,6 +307,7 @@ val Song.asMediaItem: MediaItem
                         "isPodcast" to (isPodcast == 1),
                         "isDisliked" to (likedAt?.toInt() == -1),
                         "isLiked" to ((likedAt?.toInt() ?: 0) > 0),
+                        "mediaId" to mediaId
                     )
                 )
                 .build()

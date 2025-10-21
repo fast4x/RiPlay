@@ -77,8 +77,10 @@ import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.utils.isNowPlaying
 import it.fast4x.riplay.ui.styling.secondary
 import it.fast4x.riplay.ui.styling.semiBold
+import it.fast4x.riplay.utils.forcePlay
 import it.fast4x.riplay.utils.shimmerEffect
 import it.fast4x.riplay.utils.thumbnail
+import timber.log.Timber
 
 
 @UnstableApi
@@ -89,10 +91,6 @@ fun SongItem(
     thumbnailSizeDp: Dp,
     modifier: Modifier = Modifier,
     thumbnailContent: (@Composable BoxScope.() -> Unit)? = null,
-    //disableScrollingText: Boolean,
-    //isNowPlaying: Boolean = false,
-    //isLocal: Boolean = false,
-    //forceRecompose: Boolean = false
 ) {
     SongItem(
         thumbnailUrl = song.thumbnail?.size(thumbnailSizePx),
@@ -100,10 +98,6 @@ fun SongItem(
         modifier = modifier,
         mediaItem = song.asMediaItem,
         onThumbnailContent = thumbnailContent,
-        //disableScrollingText = disableScrollingText,
-        //isNowPlaying = isNowPlaying,
-        //isLocal = isLocal,
-        //forceRecompose = forceRecompose
     )
 }
 
@@ -146,10 +140,6 @@ fun SongItem(
     modifier: Modifier = Modifier,
     onThumbnailContent: (@Composable BoxScope.() -> Unit)? = null,
     trailingContent: (@Composable () -> Unit)? = null,
-    //disableScrollingText: Boolean,
-    //isNowPlaying: Boolean = false,
-    //isLocal: Boolean = false,
-    //forceRecompose: Boolean = false
 ) {
     SongItem(
         thumbnailUrl = song.thumbnailUrl?.thumbnail(thumbnailSizePx),
@@ -158,10 +148,6 @@ fun SongItem(
         trailingContent = trailingContent,
         modifier = modifier,
         mediaItem = song.asMediaItem,
-        //disableScrollingText = disableScrollingText,
-        //isNowPlaying = isNowPlaying,
-        //isLocal = isLocal,
-        //forceRecompose = forceRecompose
     )
 }
 
@@ -175,10 +161,6 @@ fun SongItem(
     trailingContent: (@Composable () -> Unit)? = null,
     isRecommended: Boolean = false,
     mediaItem: MediaItem,
-    //disableScrollingText: Boolean,
-    //isNowPlaying: Boolean = false,
-    //isLocal: Boolean = false,
-    //forceRecompose: Boolean = false
 ) {
     val binder = LocalPlayerServiceBinder.current
 
@@ -204,11 +186,8 @@ fun SongItem(
         modifier = modifier,
         trailingContent = trailingContent,
         isRecommended = isRecommended,
-        //isLocal = mediaItem.isLocal,
         mediaItem = mediaItem,
-        //disableScrollingText = disableScrollingText,
-        //isNowPlaying = isNowPlaying,
-        //forceRecompose = forceRecompose
+
     )
 }
 
@@ -223,14 +202,10 @@ fun SongItem(
     modifier: Modifier = Modifier,
     trailingContent: @Composable (() -> Unit)? = null,
     isRecommended: Boolean = false,
-    //isLocal: Boolean,
     mediaItem: MediaItem,
-    //disableScrollingText: Boolean,
-    //isNowPlaying: Boolean = false,
-    isLocalSong: Boolean = false,
-    //forceRecompose: Boolean = false
 ) {
 
+    val mediaId = mediaItem.mediaMetadata.extras?.getString("mediaId") // is online id used to identify source from local songs
     val title = mediaItem.mediaMetadata.title.toString()
     val authors = mediaItem.mediaMetadata.artist.toString()
     val duration = mediaItem.mediaMetadata.extras?.getString("durationText")
@@ -258,7 +233,7 @@ fun SongItem(
         modifier = modifier
             .padding(end = 8.dp)
             .clip(RoundedCornerShape(10.dp))
-            .applyIf(isNowPlaying == true){
+            .applyIf(isNowPlaying == true) {
                 background(colorPalette.favoritesOverlay)
             }
 
@@ -442,24 +417,24 @@ fun SongItem(
                             .size(18.dp)
                     )
 
-                    if ( mediaItem.isExplicit )
-                        IconButton(
-                            icon = R.drawable.explicit,
-                            color = colorPalette().text,
-                            enabled = true,
-                            onClick = {},
-                            modifier = Modifier
-                                .size(18.dp)
-                        )
-                    BasicText(
-                        text = cleanPrefix(title),
-                        style = typography().xs.semiBold,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
+                if ( mediaItem.isExplicit )
+                    IconButton(
+                        icon = R.drawable.explicit,
+                        color = colorPalette().text,
+                        enabled = true,
+                        onClick = {},
                         modifier = Modifier
-                            .applyIf(!disableScrollingText) { basicMarquee(iterations = Int.MAX_VALUE) }
-                            .weight(1f)
+                            .size(18.dp)
                     )
+                BasicText(
+                    text = cleanPrefix(title),
+                    style = typography().xs.semiBold,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier
+                        .applyIf(!disableScrollingText) { basicMarquee(iterations = Int.MAX_VALUE) }
+                        .weight(1f)
+                )
                 if (playlistindicator && (songPlaylist.value > 0)) {
                     IconButton(
                         icon = R.drawable.add_in_playlist,
@@ -506,6 +481,8 @@ fun SongItem(
                     maxLines = 1,
                     overflow = TextOverflow.Clip,
                     modifier = Modifier
+                        //.weight(1f)
+                        .fillMaxWidth(.6f)
                         .weight(1f)
                         .applyIf(!disableScrollingText) { basicMarquee(iterations = Int.MAX_VALUE) }
                 )
@@ -523,11 +500,23 @@ fun SongItem(
 
                 Spacer(modifier = Modifier.padding(horizontal = 4.dp))
 
-                if (mediaItem.isLocal)
+                var localSong by remember {
+                    mutableStateOf<Song?>(null)
+                }
+                LaunchedEffect(mediaItem.mediaId) {
+                    if (!mediaItem.isLocal)
+                        Database.songOnDevice(mediaItem.mediaId).collect { localSong = it }
+                }
+
+                //Timber.d("localMediaId: ${localSong?.mediaId}")
+
+                if (mediaItem.isLocal || localSong?.mediaId != null)
                     IconButton(
-                        onClick = {},
+                        onClick = {
+                            localSong?.let { binder?.player?.forcePlay(it.asMediaItem, true) }
+                        },
                         icon = R.drawable.folder,
-                        color = colorPalette().text,
+                        color = if(mediaItem.isLocal) colorPalette().text else colorPalette().accent,
                         modifier = Modifier
                             .size(20.dp)
                     )
@@ -570,11 +559,12 @@ fun SongItemPlaceholder( thumbnailSizeDp: Dp ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy( 12.dp ),
-        modifier = Modifier.fillMaxWidth()
-                           .padding(
-                               vertical = 8.dp,
-                               horizontal = 16.dp
-                           )
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(
+                vertical = 8.dp,
+                horizontal = 16.dp
+            )
     ) {
         Box(
             Modifier.size( thumbnailSizeDp )

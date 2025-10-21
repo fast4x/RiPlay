@@ -64,7 +64,9 @@ import it.fast4x.environment.models.bodies.NextBody
 import it.fast4x.environment.requests.HomePage
 import it.fast4x.environment.requests.chartsPageComplete
 import it.fast4x.environment.requests.discoverPage
+import it.fast4x.environment.requests.getRelatedSongs
 import it.fast4x.environment.requests.relatedPage
+import it.fast4x.environment.requests.relatedSongs
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.EXPLICIT_PREFIX
 import it.fast4x.riplay.LocalPlayerAwareWindowInsets
@@ -135,6 +137,8 @@ import it.fast4x.riplay.ui.screens.settings.isLoggedIn
 import it.fast4x.riplay.utils.asVideoMediaItem
 import it.fast4x.riplay.extensions.preferences.quickPicsHomePageKey
 import it.fast4x.riplay.utils.forcePlay
+import it.fast4x.riplay.utils.saveFileToInternalStorage
+import timber.log.Timber
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.days
 
@@ -289,6 +293,9 @@ fun HomePage(
             if (isLoggedIn())
                 homePageResult = EnvironmentExt.getHomePage()
 
+
+            saveFileToInternalStorage(context, "getRelated.log", EnvironmentExt.getRelatedSongs("HZnNt9nnEhw")?.getOrNull().toString())
+
         }.onFailure {
             //Timber.e("Failed loadData in QuickPicsModern ${it.stackTraceToString()}")
             println("Failed loadData in QuickPicsModern ${it.stackTraceToString()}")
@@ -349,13 +356,13 @@ fun HomePage(
 
     val showSearchTab by rememberPreference(showSearchTabKey, false)
 
-    val cachedSongs = remember {
-        try {
-            binder?.cache?.keys?.toMutableList()
-        } catch (e: Exception) {
-            null
-        }
-    }
+//    val cachedSongs = remember {
+//        try {
+//            binder?.cache?.keys?.toMutableList()
+//        } catch (e: Exception) {
+//            null
+//        }
+//    }
 
 
     val hapticFeedback = LocalHapticFeedback.current
@@ -612,17 +619,12 @@ fun HomePage(
 
                         if (relatedInit != null) {
                             items(
-                                items = relatedInit?.songs?.distinctBy { it.key }?.filter {
-                                    if (cachedSongs != null) {
-                                        cachedSongs.indexOf(it.asMediaItem.mediaId) < 0
-                                    } else true
-                                }
+                                items = relatedInit?.songs?.distinctBy { it.key }
                                     ?.dropLast(if (trending == null) 0 else 1)
                                     ?: emptyList(),
                                 key = Environment.SongItem::key
                             ) { song ->
-                                //val isLocal by remember { derivedStateOf { song.asMediaItem.isLocal } }
-                                //var forceRecompose by remember { mutableStateOf(false) }
+                                Timber.d("HomePage RELATED Environment.SongItem duration ${song.durationText}")
                                 SongItem(
                                     song = song,
                                     thumbnailSizePx = songThumbnailSizePx,
@@ -664,9 +666,7 @@ fun HomePage(
                                                 )
                                             }
                                         ),
-                                    //disableScrollingText = disableScrollingText,
-                                    //isNowPlaying = binder?.player?.isNowPlaying(song.key) ?: false,
-                                    //forceRecompose = forceRecompose
+
                                 )
                             }
                         }

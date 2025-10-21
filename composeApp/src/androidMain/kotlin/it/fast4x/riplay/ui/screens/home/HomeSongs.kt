@@ -1497,7 +1497,8 @@ fun HomeSongs(
                                             onClick = {
                                                 currentFolderPath = currentFolderPath.removeSuffix("/").substringBeforeLast("/") + "/"
                                             }
-                                        ),
+                                        )
+                                        .animateItem(),
                                     disableScrollingText = disableScrollingText
                                 )
                             }
@@ -1532,7 +1533,8 @@ fun HomeSongs(
                                             onClick = {
                                                 currentFolderPath += folder.name + "/"
                                             }
-                                        ),
+                                        )
+                                        .animateItem(),
                                     disableScrollingText = disableScrollingText
                                 )
                             }
@@ -1560,7 +1562,7 @@ fun HomeSongs(
                                 binder?.player?.addNext(song.asMediaItem, queue = selectedQueue ?: defaultQueue())
                             }
                         ) {
-                            //var forceRecompose by remember { mutableStateOf(false) }
+                            Timber.d("SongItem title ${song.song.title} id ${song.song.id} mediaId ${song.song.mediaId}")
 
                             SongItem(
                                 song = song.song,
@@ -1658,10 +1660,7 @@ fun HomeSongs(
                                         }
                                     )
                                     .animateItem(),
-                                //disableScrollingText = disableScrollingText,
-                                //isNowPlaying = binder?.player?.isNowPlaying(song.song.id) ?: false,
-                                //isLocal = isLocal,
-                                //forceRecompose = forceRecompose
+
                             )
                         }
                     }

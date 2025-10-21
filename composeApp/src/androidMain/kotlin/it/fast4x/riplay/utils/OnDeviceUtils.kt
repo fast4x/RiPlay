@@ -253,9 +253,9 @@ fun Context.musicFilesAsFlow(
                             if (cursor.getInt(isMusicIdx) == 0) continue
                             val id = cursor.getLong(idIdx)
                             val name = cursor.getString(nameIdx).substringBeforeLast(".")
-                            var mediaId = name.substringAfterLast('[',"").substringBeforeLast(']',"")
-                            if (mediaId.contains(" ")) mediaId = ""
-                            Timber.i(" DeviceListSongs name $name mediaId $mediaId")
+                            val mediaId = name.substringAfterLast('[',"")
+                                .substringBeforeLast(']',"").takeIf { !it.contains(" ") }
+                            Timber.i("DeviceListSongs name $name mediaId $mediaId")
 
 
                             val trackName = cursor.getString(titleIdx)
