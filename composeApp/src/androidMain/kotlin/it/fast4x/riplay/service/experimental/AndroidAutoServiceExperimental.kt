@@ -54,7 +54,7 @@ import it.fast4x.riplay.MODIFIED_PREFIX
 import it.fast4x.riplay.MONTHLY_PREFIX
 import it.fast4x.riplay.MainActivity
 import it.fast4x.riplay.MainActivity.Action
-import it.fast4x.riplay.UNIFIED_NOTIFICATION_CHANNEL
+import it.fast4x.riplay.ONLINEPLAYER_NOTIFICATION_CHANNEL
 import it.fast4x.riplay.PINNED_PREFIX
 import it.fast4x.riplay.R
 import it.fast4x.riplay.utils.appContext
@@ -244,7 +244,7 @@ class AndroidAutoServiceExperimental : MediaBrowserServiceCompat(), ServiceConne
             NOTIFICATION_ID.toString(),
             NotificationManagerCompat.IMPORTANCE_DEFAULT
         )
-            .setName(UNIFIED_NOTIFICATION_CHANNEL)
+            .setName(ONLINEPLAYER_NOTIFICATION_CHANNEL)
             .setShowBadge(false)
             .build()
 
@@ -265,7 +265,7 @@ class AndroidAutoServiceExperimental : MediaBrowserServiceCompat(), ServiceConne
 
 
             return if (isAtLeastAndroid8) {
-                NotificationCompat.Builder(appContext(), UNIFIED_NOTIFICATION_CHANNEL)
+                NotificationCompat.Builder(appContext(), ONLINEPLAYER_NOTIFICATION_CHANNEL)
             } else {
                 NotificationCompat.Builder(appContext())
             }
@@ -1343,7 +1343,7 @@ class AndroidAutoServiceExperimental : MediaBrowserServiceCompat(), ServiceConne
 
 
         val notification = if (isAtLeastAndroid8) {
-            NotificationCompat.Builder(this, UNIFIED_NOTIFICATION_CHANNEL)
+            NotificationCompat.Builder(this, ONLINEPLAYER_NOTIFICATION_CHANNEL)
         } else {
             NotificationCompat.Builder(this)
         }

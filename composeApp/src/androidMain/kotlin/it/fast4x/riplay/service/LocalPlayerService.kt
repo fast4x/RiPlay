@@ -1879,10 +1879,10 @@ class LocalPlayerService : MediaLibraryService(),
 
     companion object {
         const val NotificationId = 1001
-        const val NotificationChannelId = "default_channel_id"
+        const val NotificationChannelId = "Local Player Notification"
 
         const val SleepTimerNotificationId = 1002
-        const val SleepTimerNotificationChannelId = "sleep_timer_channel_id"
+        const val SleepTimerNotificationChannelId = "Sleep Timer Notification"
 
         const val ChunkLength = 512 * 1024L
 

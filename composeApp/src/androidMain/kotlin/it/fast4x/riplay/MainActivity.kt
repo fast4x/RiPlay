@@ -359,7 +359,7 @@ import kotlin.math.sqrt
 import kotlin.time.Duration.Companion.seconds
 
 
-const val UNIFIED_NOTIFICATION_CHANNEL = "RiPlay Notifications"
+const val ONLINEPLAYER_NOTIFICATION_CHANNEL = "Online Player Notification"
 const val NOTIFICATION_ID = 1
 
 @UnstableApi
@@ -2424,10 +2424,10 @@ class MainActivity :
 
     fun createNotificationChannel() {
         val channel = NotificationChannelCompat.Builder(
-            UNIFIED_NOTIFICATION_CHANNEL,
+            ONLINEPLAYER_NOTIFICATION_CHANNEL,
             NotificationManagerCompat.IMPORTANCE_HIGH
         )
-            .setName(UNIFIED_NOTIFICATION_CHANNEL)
+            .setName(ONLINEPLAYER_NOTIFICATION_CHANNEL)
             .setShowBadge(false)
             .build()
 
@@ -2505,7 +2505,7 @@ class MainActivity :
 
 
         val notification = if (isAtLeastAndroid8) {
-            NotificationCompat.Builder(this, UNIFIED_NOTIFICATION_CHANNEL)
+            NotificationCompat.Builder(this, ONLINEPLAYER_NOTIFICATION_CHANNEL)
         } else {
             NotificationCompat.Builder(this)
         }

@@ -39,7 +39,6 @@ import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.MODIFIED_PREFIX
 import it.fast4x.riplay.MONTHLY_PREFIX
 import it.fast4x.riplay.MainActivity
-import it.fast4x.riplay.UNIFIED_NOTIFICATION_CHANNEL
 import it.fast4x.riplay.PINNED_PREFIX
 import it.fast4x.riplay.R
 import it.fast4x.riplay.utils.appContext
@@ -170,7 +169,7 @@ class AndroidAutoService : MediaBrowserServiceCompat(), ServiceConnection {
 
 
         private const val NOTIFICATION_ID = 20 // The id of the notification
-        //private const val CHANNEL_ID = "AAServiceChannel" // The id of the channel
+        private const val CHANNEL_ID = "Android Auto Notification" // The id of the channel
 
     }
 
@@ -262,10 +261,10 @@ class AndroidAutoService : MediaBrowserServiceCompat(), ServiceConnection {
 
     fun createNotificationChannel() {
         val channel = NotificationChannelCompat.Builder(
-            NOTIFICATION_ID.toString(),
+            CHANNEL_ID,
             NotificationManagerCompat.IMPORTANCE_DEFAULT
         )
-            .setName(UNIFIED_NOTIFICATION_CHANNEL)
+            .setName(CHANNEL_ID)
             .setShowBadge(false)
             .build()
 
@@ -286,7 +285,7 @@ class AndroidAutoService : MediaBrowserServiceCompat(), ServiceConnection {
 
 
             return if (isAtLeastAndroid8) {
-                NotificationCompat.Builder(appContext(), UNIFIED_NOTIFICATION_CHANNEL)
+                NotificationCompat.Builder(appContext(), CHANNEL_ID)
             } else {
                 NotificationCompat.Builder(appContext())
             }

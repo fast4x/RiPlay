@@ -20,7 +20,6 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.media3.common.util.UnstableApi
 import it.fast4x.riplay.MainActivity
-import it.fast4x.riplay.UNIFIED_NOTIFICATION_CHANNEL
 import it.fast4x.riplay.R
 import it.fast4x.riplay.utils.appContext
 import it.fast4x.riplay.utils.isAtLeastAndroid6
@@ -111,10 +110,10 @@ class ToolsService : Service() {
 
     fun createNotificationChannel() {
         val channel = NotificationChannelCompat.Builder(
-            NOTIFICATION_ID.toString(),
+            CHANNEL_ID,
             NotificationManagerCompat.IMPORTANCE_DEFAULT
         )
-            .setName(UNIFIED_NOTIFICATION_CHANNEL)
+            .setName(CHANNEL_ID)
             .setShowBadge(false)
             .build()
 
@@ -135,7 +134,7 @@ class ToolsService : Service() {
 
 
             return if (isAtLeastAndroid8) {
-                NotificationCompat.Builder(appContext(), UNIFIED_NOTIFICATION_CHANNEL)
+                NotificationCompat.Builder(appContext(), CHANNEL_ID)
             } else {
                 NotificationCompat.Builder(appContext())
             }
@@ -156,6 +155,6 @@ class ToolsService : Service() {
 
     companion object {
         private const val NOTIFICATION_ID = 10 // The id of the notification
-        //private const val CHANNEL_ID = "ToolsServiceChannel" // The id of the channel
+        private const val CHANNEL_ID = "Tips Notification" // The id of the channel
     }
 }
