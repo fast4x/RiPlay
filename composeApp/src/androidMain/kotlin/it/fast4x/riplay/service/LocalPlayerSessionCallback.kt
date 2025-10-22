@@ -258,13 +258,6 @@ class LocalPlayerSessionCallback (
                                     drawableUri(R.drawable.heart),
                                     MediaMetadata.MEDIA_TYPE_PLAYLIST
                                 ),
-//                                browsableMediaItem(
-//                                    "${LocalPlayerService.PLAYLIST}/${ID_CACHED}",
-//                                    context.getString(R.string.cached),
-//                                    cachedSongCount.toString(),
-//                                    drawableUri(R.drawable.download),
-//                                    MediaMetadata.MEDIA_TYPE_PLAYLIST
-//                                ),
                                 browsableMediaItem(
                                     "${LocalPlayerService.PLAYLIST}/$ID_TOP",
                                     context.getString(R.string.playlist_top),
@@ -415,21 +408,6 @@ class LocalPlayerSessionCallback (
                                             list.map { it.song }
                                         }
 
-//                                    ID_CACHED -> database.sortOfflineSongsByPlayTime().map { list ->
-//                                        list.filter { song ->
-//                                            try {
-//                                                binder.cache.isCached(
-//                                                    song.song.id,
-//                                                    0L,
-//                                                    song.contentLength ?: 0L
-//                                                )
-//                                            } catch (e: Exception) {
-//                                                false
-//                                            }
-//                                        }.reversed()
-//                                            .map { it.song }
-//                                    }
-
                                     ID_TOP -> database.trending(
                                         context.preferences.getEnum(
                                             MaxTopPlaylistItemsKey,
@@ -440,18 +418,6 @@ class LocalPlayerSessionCallback (
                                     ID_ONDEVICE -> database.songsEntityOnDevice().map { list ->
                                             list.map { it.song }
                                         }
-
-//                                    ID_DOWNLOADED -> {
-//                                        val downloads = downloadHelper.downloads.value
-//                                        database.listAllSongs(1)
-//                                            .flowOn(Dispatchers.IO)
-//                                            .map { list ->
-//                                                list.map { it.song }
-//                                                    .filter {
-//                                                        downloads[it.id]?.state == Download.STATE_COMPLETED
-//                                                    }
-//                                            }
-//                                    }
 
                                     else -> database.sortSongsPlaylistByPosition(playlistId.toLong())
                                         .map { list ->
@@ -557,15 +523,6 @@ class LocalPlayerSessionCallback (
                     val playlistId = path.getOrNull(1) ?: return@future defaultResult
                     val songs = when (playlistId) {
                         ID_FAVORITES -> database.sortFavoriteSongsByRowId().map { it.reversed() }
-//                        ID_CACHED -> database.sortOfflineSongsByPlayTime().map {
-//                            it.filter { song ->
-//                                try {
-//                                    binder.cache.isCached(song.song.id, 0L, song.contentLength ?: 0L)
-//                                } catch (e: Exception) {
-//                                    false
-//                                }
-//                            }.reversed()
-//                        }
 
                         ID_TOP -> database.trendingSongEntity(
                             context.preferences.getEnum(
@@ -575,21 +532,6 @@ class LocalPlayerSessionCallback (
                         )
 
                         ID_ONDEVICE -> database.songsEntityOnDevice()
-//                        ID_DOWNLOADED -> {
-//                            val downloads = downloadHelper.downloads.value
-//                            database.listAllSongs(-1)
-//                                .flowOn(Dispatchers.IO)
-//                                .map { songs ->
-//                                    songs.filter {
-//                                        downloads[it.song.id]?.state == Download.STATE_COMPLETED
-//                                    }
-//                                }
-//                                .map { songs ->
-//                                    songs.map { it to downloads[it.song.id] }
-//                                        .sortedBy { it.second?.updateTimeMs ?: 0L }
-//                                        .map { it.first }
-//                                }
-//                        }
 
                         else -> database.sortSongsPlaylistByPosition(playlistId.toLong())
                             .map { list ->
@@ -708,29 +650,13 @@ class LocalPlayerSessionCallback (
             )
             .build()
 
-    private fun getCountCachedSongs() = database.sortOfflineSongsByPlayTime().map {
-        it.filter { song ->
-            try {
-                binder.cache.isCached(song.song.id, 0L, song.contentLength ?: 0L)
-            } catch (e: Exception) {
-                false
-            }
-        }.size
-    }
 
-//    private fun getCountDownloadedSongs() = downloadHelper.downloads.map {
-//        it.filter {
-//            it.value.state == Download.STATE_COMPLETED
-//        }.size
-//    }
 }
 
 
 
 object MediaSessionConstants {
     const val ID_FAVORITES = "FAVORITES"
-    //const val ID_CACHED = "CACHED"
-    //const val ID_DOWNLOADED = "DOWNLOADED"
     const val ID_TOP = "TOP"
     const val ID_ONDEVICE = "ONDEVICE"
     const val ACTION_TOGGLE_DOWNLOAD = "TOGGLE_DOWNLOAD"
@@ -739,7 +665,6 @@ object MediaSessionConstants {
     const val ACTION_TOGGLE_REPEAT_MODE = "TOGGLE_REPEAT_MODE"
     const val ACTION_START_RADIO = "START_RADIO"
     const val ACTION_SEARCH = "ACTION_SEARCH"
-    //val CommandToggleDownload = SessionCommand(ACTION_TOGGLE_DOWNLOAD, Bundle.EMPTY)
     val CommandToggleLike = SessionCommand(ACTION_TOGGLE_LIKE, Bundle.EMPTY)
     val CommandToggleShuffle = SessionCommand(ACTION_TOGGLE_SHUFFLE, Bundle.EMPTY)
     val CommandToggleRepeatMode = SessionCommand(ACTION_TOGGLE_REPEAT_MODE, Bundle.EMPTY)
