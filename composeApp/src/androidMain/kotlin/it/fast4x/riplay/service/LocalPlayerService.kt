@@ -311,7 +311,7 @@ class LocalPlayerService : MediaLibraryService(),
 
         player = ExoPlayer.Builder(this)
             // todo MediaSourceFactory not needed for local content
-            //.setMediaSourceFactory(createMediaSourceFactory())
+            .setMediaSourceFactory(createMediaSourceFactory())
             .setRenderersFactory(createRendersFactory())
             .setHandleAudioBecomingNoisy(true)
             .setWakeMode(C.WAKE_MODE_LOCAL)

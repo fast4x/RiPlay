@@ -57,3 +57,45 @@ internal fun LocalPlayerService.createLocalDataSourceFactory(): DataSource.Facto
 }
 
 
+@OptIn(UnstableApi::class)
+internal fun PlayerService.createLocalDataSourceFactory(): DataSource.Factory {
+    return ResolvingDataSource.Factory(createLocalCacheDataSource()) { dataSpec ->
+
+        Timber.d("createLocalDataSourceFactory dataSpec: uri ${dataSpec.uri} isLocalUri ${dataSpec.isLocalUri} isLocal: ${dataSpec.isLocal}")
+
+        // Get current song from player, is same as current dataSpec
+        val mediaItem = runBlocking {
+            withContext(Dispatchers.Main) {
+                player.currentMediaItem
+            }
+        }
+        // Ensure that the song is in database
+        Database.asyncTransaction {
+            if (mediaItem != null) {
+                insert(mediaItem.asSong)
+            }
+        }
+
+        when {
+            dataSpec.isLocal && dataSpec.isLocalUri -> {
+                Timber.d("createLocalDataSourceFactory dataSpec.isLocalUri: YES")
+                return@Factory dataSpec
+            }
+            dataSpec.isLocal && !dataSpec.isLocalUri-> {
+                Timber.d("createLocalDataSourceFactory dataSpec.isLocalUri: NO")
+                val uri = "${LOCAL_AUDIO_URI_PATH}${dataSpec.key?.removePrefix(LOCAL_KEY_PREFIX)}".toUri()
+                return@Factory dataSpec.withUri(uri)
+            }
+            else -> {
+                throw PlaybackException(
+                    "File not exists or not on device",
+                    Throwable(),
+                    PlaybackException.ERROR_CODE_IO_FILE_NOT_FOUND
+                )
+            }
+        }
+
+    }
+}
+
+
