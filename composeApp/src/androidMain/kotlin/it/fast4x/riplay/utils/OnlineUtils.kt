@@ -69,6 +69,7 @@ import it.fast4x.riplay.data.models.Artist
 import it.fast4x.riplay.data.models.SongAlbumMap
 import it.fast4x.riplay.data.models.defaultQueue
 import it.fast4x.riplay.service.LocalPlayerService
+import it.fast4x.riplay.service.PlayerService
 import it.fast4x.riplay.ui.components.LocalMenuState
 import it.fast4x.riplay.ui.components.SwipeablePlaylistItem
 import it.fast4x.riplay.ui.components.themed.Loader
@@ -106,7 +107,7 @@ data class OnlineRadio (
     private var parameters: String? = null,
     private val isDiscoverEnabled: Boolean = false,
     private val context: Context,
-    private val binder: LocalPlayerService.Binder? = null,
+    private val binder: PlayerService.Binder? = null,
     private val coroutineScope: CoroutineScope
 ) {
     private var nextContinuation: String? = null

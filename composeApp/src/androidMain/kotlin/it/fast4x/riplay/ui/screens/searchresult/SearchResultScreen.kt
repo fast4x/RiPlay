@@ -201,8 +201,8 @@ fun SearchResultScreen(
                 miniPlayer,
                 navBarContent = { item ->
                     item(0, stringResource(R.string.songs), R.drawable.musical_notes)
-                    item(1, stringResource(R.string.albums), R.drawable.album)
-                    item(2, stringResource(R.string.artists), R.drawable.artist)
+                    item(1, stringResource(R.string.albums), R.drawable.music_album)
+                    item(2, stringResource(R.string.artists), R.drawable.music_artist)
                     item(3, stringResource(R.string.videos), R.drawable.video)
                     item(4, stringResource(R.string.playlists), R.drawable.playlist)
                     item(5, stringResource(R.string.featured), R.drawable.featured_playlist)

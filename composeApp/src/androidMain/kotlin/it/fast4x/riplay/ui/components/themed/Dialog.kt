@@ -1299,7 +1299,7 @@ fun BlurParamsDialog(
                         onClick = {
                             imageCoverSize = defaultImageCoverSize
                         },
-                        icon = R.drawable.album,
+                        icon = R.drawable.music_album,
                         color = colorPalette().favoritesIcon,
                         modifier = Modifier
                             .size(24.dp)

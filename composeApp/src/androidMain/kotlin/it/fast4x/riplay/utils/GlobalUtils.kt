@@ -76,7 +76,7 @@ fun showSearchIconInNav() = rememberPreference( showSearchTabKey, false ).value
 fun showStatsIconInNav() = rememberPreference( showStatsInNavbarKey, false ).value
 
 @Composable
-fun binder() = LocalPlayerServiceBinder.current?.service
+fun binder() = LocalPlayerServiceBinder.current
 
 fun appContext(): Context = Dependencies.application.applicationContext
 fun context(): Context = Dependencies.application
@@ -91,7 +91,6 @@ fun getPauseListenHistory() = appContext().preferences.getBoolean(pauseListenHis
 fun getMinTimeForEvent() = appContext().preferences.getEnum(exoPlayerMinTimeForEventKey, MinTimeForEvent.`20s`)
 fun getLastYTVideoId() = appContext().preferences.getString(lastVideoIdKey, "")
 fun getLastYTVideoSeconds() = appContext().preferences.getFloat(lastVideoSecondsKey, 0f)
-fun getResumePlaybackOnStart() = appContext().preferences.getBoolean(resumePlaybackOnStartKey, false)
 fun getPlayerTimelineType() = appContext().preferences.getEnum(playerTimelineTypeKey, PlayerTimelineType.Default)
 fun getPlaybackFadeAudioDuration() = appContext().preferences.getEnum(playbackFadeAudioDurationKey, DurationInMilliseconds.Disabled)
 fun getKeepPlayerMinimized() = appContext().preferences.getBoolean(keepPlayerMinimizedKey, false)
@@ -113,6 +112,7 @@ fun isSkipMediaOnErrorEnabled() = appContext().preferences.getBoolean(skipMediaO
 fun isNotifyTipsEnabled() = appContext().preferences.getBoolean(notifyTipsKey, false)
 fun isNotifyAndroidAutoTipsEnabled() = appContext().preferences.getBoolean(notifyAndroidAutoTipsKey, true)
 fun isKeepScreenOnEnabled() = appContext().preferences.getBoolean(isKeepScreenOnEnabledKey, false)
+fun isResumePlaybackOnStart() = appContext().preferences.getBoolean(resumePlaybackOnStartKey, false)
 
 fun shuffleSongsAAEnabled() = appContext().preferences.getBoolean(showShuffleSongsAAKey, true)
 fun showMonthlyPlaylistsAA() = appContext().preferences.getBoolean(showMonthlyPlaylistsAAKey, true)

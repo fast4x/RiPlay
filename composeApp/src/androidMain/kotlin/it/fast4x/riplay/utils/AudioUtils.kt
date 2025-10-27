@@ -16,6 +16,7 @@ import androidx.core.animation.doOnEnd
 import androidx.media3.common.util.UnstableApi
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
 import it.fast4x.riplay.service.LocalPlayerService
+import it.fast4x.riplay.service.PlayerService
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
@@ -95,7 +96,7 @@ fun setDeviceVolume(context: Context, volume: Float) {
 
 @Composable
 @OptIn(UnstableApi::class)
-fun MedleyMode(binder: LocalPlayerService.Binder?, seconds: Int) {
+fun MedleyMode(binder: PlayerService.Binder?, seconds: Int) {
     if (seconds == 0) return
     if (binder != null) {
         val coroutineScope = rememberCoroutineScope()

@@ -12,7 +12,7 @@ enum class PlaylistSongSortBy(
     @DrawableRes val iconId: Int
 ): MenuTitle, Drawable {
 
-    Album( R.string.sort_album, R.drawable.album ),
+    Album( R.string.sort_album, R.drawable.music_album ),
 
     AlbumYear( R.string.sort_album_year, R.drawable.calendar ),
 

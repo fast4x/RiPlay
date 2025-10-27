@@ -421,6 +421,8 @@ fun OnlinePlayer(
     binder?.player ?: return
     if (binder.player.currentTimeline.windowCount == 0) return
 
+    //val player = binder.onlinePlayer
+
     var nullableMediaItem by remember {
         mutableStateOf(binder.player.currentMediaItem, neverEqualPolicy())
     }

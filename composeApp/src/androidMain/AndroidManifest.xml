@@ -180,17 +180,23 @@
         </receiver>
 
         <service
-            android:name=".service.LocalPlayerService"
-            android:exported="true"
+            android:name=".service.PlayerService"
+            android:exported="false"
             android:foregroundServiceType="mediaPlayback"
+            android:enabled="true"
+            android:stopWithTask="false">
+        </service>
+
+        <service android:name=".service.PlayerMediaBrowserService"
+            android:exported="true"
+            android:enabled="false"
             tools:ignore="ExportedService">
             <intent-filter>
-                <action android:name="androidx.media3.session.MediaLibraryService" />
-               <!-- <action android:name="android.media.browse.MediaBrowserService" />
-                <action android:name="android.intent.action.MEDIA_BUTTON" /> -->
+                <action android:name="android.media.browse.MediaBrowserService" />
             </intent-filter>
         </service>
 
+        <!--
         <service
             android:enabled="true"
             android:name=".service.ToolsService"
@@ -216,6 +222,7 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </service>
+        -->
 
         <receiver android:name="androidx.media3.session.MediaButtonReceiver"
             android:exported="true">
@@ -235,7 +242,7 @@
         </service>
 
         <receiver
-            android:name=".service.LocalPlayerService$NotificationDismissReceiver"
+            android:name=".service.PlayerService$NotificationDismissReceiver"
             android:exported="false" />
 
         <meta-data android:name="com.google.android.gms.car.application"

@@ -31,7 +31,7 @@ fun MoodsPageScreen(
             ScreenContainer(
                 navController,
                 navBarContent = { item ->
-                    item(0, stringResource(R.string.moods_and_genres), R.drawable.album)
+                    item(0, stringResource(R.string.moods_and_genres), R.drawable.music_album)
                 }
             ) { currentTabIndex ->
                 saveableStateHolder.SaveableStateProvider(key = currentTabIndex) {

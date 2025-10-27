@@ -1055,7 +1055,7 @@ fun MediaItemGridMenu (
                     onGoToAlbum?.let { onGoToAlbum ->
                         albumInfo?.let { (albumId) ->
                             GridMenuItem(
-                                icon = R.drawable.album,
+                                icon = R.drawable.music_album,
                                 title = R.string.go_to_album,
                                 colorIcon = colorPalette.text,
                                 colorText = colorPalette.text,
@@ -1071,7 +1071,7 @@ fun MediaItemGridMenu (
                     onGoToArtist?.let { onGoToArtist ->
                         artistsInfo?.forEach { (authorId, authorName) ->
                             GridMenuItem(
-                                icon = R.drawable.artists,
+                                icon = R.drawable.music_artist,
                                 title = R.string.more_of,
                                 titleString = authorName ?: "",
                                 colorIcon = colorPalette.text,

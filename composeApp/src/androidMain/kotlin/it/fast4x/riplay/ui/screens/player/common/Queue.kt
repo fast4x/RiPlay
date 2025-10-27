@@ -198,6 +198,7 @@ fun Queue(
     binder?.player ?: return
 
     val binderPlayer = binder.player
+    //val player = binder.onlinePlayer
 
     var queueLoopType by rememberPreference(queueLoopTypeKey, defaultValue = QueueLoopType.Default)
 

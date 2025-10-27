@@ -95,13 +95,14 @@ fun HomeScreen(
         onTabChanged,
         miniPlayer,
         navBarContent = { Item ->
-            Item(0, if (!isLoggedIn())
-                stringResource(R.string.quick_picks) else stringResource(R.string.home),
-                if (!isLoggedIn()) R.drawable.sparkles else R.drawable.internet)
-            Item(1, stringResource(R.string.songs), R.drawable.disc)
-            Item(2, stringResource(R.string.artists), R.drawable.artists)
-            Item(3, stringResource(R.string.albums), R.drawable.album)
-            Item(4, stringResource(R.string.playlists), R.drawable.playlist)
+//            Item(0, if (!isLoggedIn())
+//                stringResource(R.string.quick_picks) else stringResource(R.string.home),
+//                if (!isLoggedIn()) R.drawable.sparkles else R.drawable.internet)
+            Item(0, stringResource(R.string.home), R.drawable.home)
+            Item(1, stringResource(R.string.songs), R.drawable.musical_notes)
+            Item(2, stringResource(R.string.artists), R.drawable.music_artist)
+            Item(3, stringResource(R.string.albums), R.drawable.music_album)
+            Item(4, stringResource(R.string.library), R.drawable.music_library)
         }
     ) { currentTabIndex ->
         saveableStateHolder.SaveableStateProvider(key = currentTabIndex) {

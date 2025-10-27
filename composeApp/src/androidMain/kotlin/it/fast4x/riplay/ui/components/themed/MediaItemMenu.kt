@@ -1822,7 +1822,7 @@ fun MediaItemMenu(
                 if (!isLocal) onGoToAlbum?.let { onGoToAlbum ->
                     albumInfo?.let { (albumId) ->
                         MenuEntry(
-                            icon = R.drawable.album,
+                            icon = R.drawable.music_album,
                             text = stringResource(R.string.go_to_album),
                             onClick = {
                                 onDismiss()
@@ -1835,7 +1835,7 @@ fun MediaItemMenu(
                 if (!isLocal) onGoToArtist?.let { onGoToArtist ->
                     artistsInfo?.forEach { (authorId, authorName) ->
                         MenuEntry(
-                            icon = R.drawable.artists,
+                            icon = R.drawable.music_artist,
                             text = stringResource(R.string.more_of) + " $authorName",
                             onClick = {
                                 onDismiss()

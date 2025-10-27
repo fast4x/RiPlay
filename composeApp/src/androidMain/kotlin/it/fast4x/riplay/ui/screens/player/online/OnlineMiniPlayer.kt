@@ -111,6 +111,7 @@ import it.fast4x.riplay.extensions.preferences.miniPlayerTypeKey
 import it.fast4x.riplay.utils.playNext
 import it.fast4x.riplay.utils.playPrevious
 import it.fast4x.riplay.extensions.preferences.rememberPreference
+import it.fast4x.riplay.service.PlayerService
 import it.fast4x.riplay.ui.styling.semiBold
 import it.fast4x.riplay.utils.setDisLikeState
 import it.fast4x.riplay.utils.thumbnail
@@ -144,6 +145,8 @@ fun OnlineMiniPlayer(
 
     binder?.player ?: return
     if (binder.player.currentTimeline.windowCount == 0) return
+
+    //val player = binder.onlinePlayer
 
     var nullableMediaItem by remember {
         mutableStateOf(binder.player.currentMediaItem, neverEqualPolicy())
@@ -331,7 +334,7 @@ fun OnlineMiniPlayer(
                                     binder.player.clearMediaItems()
                                     hidePlayer()
                                     runCatching {
-                                        context.stopService(context.intent<LocalPlayerService>())
+                                        context.stopService(context.intent<PlayerService>())
                                     }
                                     hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
                                 } else

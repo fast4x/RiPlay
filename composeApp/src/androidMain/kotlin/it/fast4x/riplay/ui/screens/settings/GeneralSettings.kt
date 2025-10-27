@@ -1,7 +1,9 @@
 package it.fast4x.riplay.ui.screens.settings
 
 import android.content.ActivityNotFoundException
+import android.content.ComponentName
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Build
 import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -21,6 +23,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.TextField
 import androidx.compose.material.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.SnapshotMutationPolicy
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -143,6 +146,8 @@ import androidx.core.text.isDigitsOnly
 import it.fast4x.riplay.enums.ContentType
 import it.fast4x.riplay.extensions.preferences.filterContentTypeKey
 import it.fast4x.riplay.extensions.preferences.resumeOrPausePlaybackWhenDeviceKey
+import it.fast4x.riplay.service.PlayerMediaBrowserService
+import it.fast4x.riplay.service.PlayerService
 import it.fast4x.riplay.ui.components.themed.settingsItem
 import it.fast4x.riplay.ui.components.themed.settingsSearchBarItem
 import it.fast4x.riplay.utils.LazyListContainer
@@ -251,17 +256,38 @@ fun GeneralSettings(
     var enablePictureInPictureAuto by rememberPreference(enablePictureInPictureAutoKey, false)
     var pipModule by rememberPreference(pipModuleKey, PipModule.Cover)
     var jumpPrevious by rememberPreference(jumpPreviousKey,"3")
-    //var notificationType by rememberPreference(notificationTypeKey, NotificationType.Default)
-//    var autoDownloadSong by rememberPreference(autoDownloadSongKey, false)
-//    var autoDownloadSongWhenLiked by rememberPreference(autoDownloadSongWhenLikedKey, false)
-//    var autoDownloadSongWhenAlbumBookmarked by rememberPreference(autoDownloadSongWhenAlbumBookmarkedKey, false)
 
     var isProxyEnabled by rememberPreference(isProxyEnabledKey, false)
     var proxyHost by rememberPreference(proxyHostnameKey, "")
     var proxyPort by rememberPreference(proxyPortKey, 1080)
     var proxyMode by rememberPreference(proxyModeKey, Proxy.Type.HTTP)
     var customDnsOverHttpsServer by rememberPreference(customDnsOverHttpsServerKey, "")
-    //var streamingPlayerType by rememberPreference(streamingPlayerTypeKey, StreamingPlayerType.Advanced)
+    val context = LocalContext.current
+
+    var isAndroidAutoEnabled by remember {
+        val component = ComponentName(context, PlayerMediaBrowserService::class.java)
+        val disabledFlag = PackageManager.COMPONENT_ENABLED_STATE_DISABLED
+        val enabledFlag = PackageManager.COMPONENT_ENABLED_STATE_ENABLED
+
+        mutableStateOf(
+            value = context.packageManager.getComponentEnabledSetting(component) == enabledFlag,
+            policy = object : SnapshotMutationPolicy<Boolean> {
+                override fun equivalent(a: Boolean, b: Boolean): Boolean {
+                    context.packageManager.setComponentEnabledSetting(
+                        component,
+                        if (b) enabledFlag else disabledFlag,
+                        PackageManager.DONT_KILL_APP
+                    )
+                    return a == b
+                }
+            }
+        )
+    }
+
+    var isInvincibilityEnabled by rememberPreference(
+        isInvincibilityEnabledKey,
+        true
+    )
 
 
     Column(
@@ -563,10 +589,7 @@ fun GeneralSettings(
                             }
                         )
                     }
-                    var isInvincibilityEnabled by rememberPreference(
-                        isInvincibilityEnabledKey,
-                        true
-                    )
+
 
                     if (search.input.isBlank() || stringResource(R.string.invincible_service).contains(
                             search.input,
@@ -579,6 +602,23 @@ fun GeneralSettings(
                             isChecked = isInvincibilityEnabled,
                             onCheckedChange = {
                                 isInvincibilityEnabled = it
+                                restartService = true
+                            }
+                        )
+                        RestartPlayerService(restartService, onRestart = { restartService = false })
+                    }
+
+                    if (search.input.isBlank() || stringResource(R.string.android_auto_1).contains(
+                            search.input,
+                            true
+                        )
+                    ) {
+                        SwitchSettingEntry(
+                            title = stringResource(R.string.android_auto_1),
+                            text = stringResource(R.string.enable_android_auto_support),
+                            isChecked = isAndroidAutoEnabled,
+                            onCheckedChange = {
+                                isAndroidAutoEnabled = it
                                 restartService = true
                             }
                         )

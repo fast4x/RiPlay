@@ -25,6 +25,7 @@ import it.fast4x.riplay.extensions.preferences.playerControlsTypeKey
 import it.fast4x.riplay.extensions.preferences.playerPlayButtonTypeKey
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.service.LocalPlayerService
+import it.fast4x.riplay.service.PlayerService
 import it.fast4x.riplay.ui.components.themed.PlaybackParamsDialog
 import it.fast4x.riplay.ui.screens.player.local.components.controls.ControlsEssential
 import it.fast4x.riplay.ui.screens.player.local.components.controls.ControlsModern
@@ -34,7 +35,7 @@ import kotlin.math.roundToInt
 @OptIn(UnstableApi::class)
 @Composable
 fun GetControls(
-    binder: LocalPlayerService.Binder,
+    binder: PlayerService.Binder,
     position: Long,
     shouldBePlaying: Boolean,
     likedAt: Long?,

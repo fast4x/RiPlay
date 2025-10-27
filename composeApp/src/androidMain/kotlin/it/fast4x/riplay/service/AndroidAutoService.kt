@@ -82,7 +82,7 @@ import it.fast4x.riplay.utils.isAtLeastAndroid8
 @UnstableApi
 class AndroidAutoService : MediaBrowserServiceCompat(), ServiceConnection {
 
-    var _internalLocalPlayerBinder: LocalPlayerService.Binder? = null
+    var _internalLocalPlayerBinder: PlayerService.Binder? = null
         set(value) {
             internalLocalPlayerBinder = value
         }
@@ -95,7 +95,7 @@ class AndroidAutoService : MediaBrowserServiceCompat(), ServiceConnection {
     companion object {
 
         var internalMediaSession: MediaSessionCompat? = null
-        var internalLocalPlayerBinder: LocalPlayerService.Binder? = null
+        var internalLocalPlayerBinder: PlayerService.Binder? = null
         var internalBitmapProvider: BitmapProvider? = null
         //var isPlaying: Boolean = false
         var lastSongs: List<Song> = emptyList()
@@ -190,7 +190,7 @@ class AndroidAutoService : MediaBrowserServiceCompat(), ServiceConnection {
                 this@AndroidAutoService._internalMediaSession = value
             }
 
-        var localPlayerBinderInjected: LocalPlayerService.Binder? = null
+        var localPlayerBinderInjected: PlayerService.Binder? = null
             set(value) {
                 this@AndroidAutoService._internalLocalPlayerBinder = value
             }
@@ -311,7 +311,7 @@ class AndroidAutoService : MediaBrowserServiceCompat(), ServiceConnection {
     ): BrowserRoot? {
         Timber.d("AndroidAutoService onGetRoot $clientPackageName but app is running ? ${isAppRunning()} mediaSession $internalMediaSession but service is running ? $isRunning")
         bindService(intent<AndroidAutoService>(), this, Context.BIND_AUTO_CREATE)
-        bindService(intent<LocalPlayerService>(), this, Context.BIND_AUTO_CREATE)
+        bindService(intent<PlayerService>(), this, Context.BIND_AUTO_CREATE)
 
         return BrowserRoot(
             MediaId.ROOT,

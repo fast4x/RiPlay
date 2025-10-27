@@ -31,6 +31,7 @@ import it.fast4x.riplay.service.LocalPlayerService
 import it.fast4x.riplay.service.isLocal
 import it.fast4x.riplay.ui.components.themed.SmartMessage
 import it.fast4x.riplay.extensions.encryptedpreferences.encryptedPreferences
+import it.fast4x.riplay.service.PlayerService
 import it.fast4x.riplay.utils.isAtLeastAndroid8
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -460,7 +461,7 @@ class DiscordPresenceManager(
 @androidx.annotation.OptIn(UnstableApi::class)
 fun updateDiscordPresenceWithOfflinePlayer(
     discordPresenceManager: DiscordPresenceManager?,
-    binder: LocalPlayerService.Binder
+    binder: PlayerService.Binder
 ) {
     if (binder.player.currentMediaItem?.isLocal == false) return
 

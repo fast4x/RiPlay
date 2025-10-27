@@ -13,6 +13,7 @@ import it.fast4x.riplay.extensions.preferences.getEnum
 import it.fast4x.riplay.extensions.preferences.maxSongsInQueueKey
 import it.fast4x.riplay.extensions.preferences.preferences
 import it.fast4x.riplay.service.LocalPlayerService
+import it.fast4x.riplay.service.PlayerService
 import it.fast4x.riplay.ui.components.themed.SmartMessage
 import it.fast4x.riplay.utils.forcePlayFromBeginning
 import kotlinx.coroutines.CoroutineScope
@@ -23,7 +24,7 @@ import kotlin.coroutines.cancellation.CancellationException
 
 @UnstableApi
 class SongsShuffle private constructor(
-    private val binder: LocalPlayerService.Binder?,
+    private val binder: PlayerService.Binder?,
     private val songs: () -> Flow<List<MediaItem>>
 ): MenuIcon, Descriptive {
 
@@ -52,7 +53,7 @@ class SongsShuffle private constructor(
 }
 
 @UnstableApi
-fun playShuffledSongs( mediaItems: List<MediaItem>, context: Context, binder: LocalPlayerService.Binder? ) {
+fun playShuffledSongs( mediaItems: List<MediaItem>, context: Context, binder: PlayerService.Binder? ) {
 
     if ( binder == null ) return
 

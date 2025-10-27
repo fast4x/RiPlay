@@ -460,7 +460,6 @@ fun Player.getQueueWindows(): List<Timeline.Window> {
 }
 
 fun Player.saveMasterQueue() {
-    println("SaveMasterQueue onCreate savePersistentQueue is enabled, called")
     if (!isPersistentQueueEnabled()) return
 
     CoroutineScope(Dispatchers.Main).launch {

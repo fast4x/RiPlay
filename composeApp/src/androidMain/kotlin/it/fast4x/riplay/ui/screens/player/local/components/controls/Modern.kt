@@ -62,7 +62,7 @@ import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.data.models.Info
 import it.fast4x.riplay.data.models.Song
 import it.fast4x.riplay.data.models.UiMedia
-import it.fast4x.riplay.service.LocalPlayerService
+import it.fast4x.riplay.service.PlayerService
 import it.fast4x.riplay.utils.typography
 import it.fast4x.riplay.ui.components.themed.CustomElevatedButton
 import it.fast4x.riplay.ui.components.themed.IconButton
@@ -103,7 +103,7 @@ import kotlinx.coroutines.launch
 @ExperimentalFoundationApi
 @Composable
 fun InfoAlbumAndArtistModern(
-    binder: LocalPlayerService.Binder,
+    binder: PlayerService.Binder,
     navController: NavController,
     albumId: String?,
     media: UiMedia,
@@ -142,7 +142,7 @@ fun InfoAlbumAndArtistModern(
 
             if (playerInfoShowIcon) {
                 IconButton(
-                    icon = if (albumId == null && !media.isLocal) R.drawable.internet else R.drawable.album,
+                    icon = if (albumId == null && !media.isLocal) R.drawable.internet else R.drawable.music_album,
                     color = if (albumId == null) colorPalette().textDisabled else colorPalette().text,
                     enabled = albumId != null,
                     onClick = {
@@ -335,7 +335,7 @@ fun InfoAlbumAndArtistModern(
 
         if (playerInfoShowIcon) {
             IconButton(
-                icon = if (artistIds?.isEmpty() == true && !media.isLocal) R.drawable.internet else R.drawable.artists,
+                icon = if (artistIds?.isEmpty() == true && !media.isLocal) R.drawable.internet else R.drawable.music_artist,
                 color = if (artistIds?.isEmpty() == true) colorPalette().textDisabled else colorPalette().text,
                 onClick = {
                     if (artistIds?.isNotEmpty() == true && artistIds.size > 1)
@@ -423,7 +423,7 @@ fun InfoAlbumAndArtistModern(
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ControlsModern(
-    binder: LocalPlayerService.Binder,
+    binder: PlayerService.Binder,
     position: Long,
     playbackSpeed: Float,
     shouldBePlaying: Boolean,

@@ -165,7 +165,7 @@ fun SortMenu (
         }
         onAlbum?.let {
             MenuEntry(
-                icon = R.drawable.album,
+                icon = R.drawable.music_album,
                 text = stringResource(R.string.sort_album),
                 onClick = {
                     onDismiss()

@@ -95,7 +95,7 @@ fun WidgetActiveVerticalContent(context: Context) {
 
 
         Image(
-            provider = ImageProvider(PlayerVerticalWidget.widgetBitmap),
+            provider = ImageProvider(PlayerVerticalWidget.widgetBitmap!!),
             contentDescription = "cover",
             modifier = GlanceModifier.padding(horizontal = 5.dp)
                 .clickable (
@@ -129,7 +129,7 @@ fun WidgetActiveHorizontalContent(context: Context) {
     ) {
 
             Image(
-                provider = ImageProvider(widgetBitmap),
+                provider = ImageProvider(widgetBitmap!!),
                 contentDescription = "cover",
                 modifier = GlanceModifier.padding(start = 5.dp, end = 20.dp)
                     .width(120.dp).height(120.dp)

@@ -1,13 +1,12 @@
-package it.fast4x.riplay.ui.screens.player.online
+package it.fast4x.riplay.service
 
+import android.content.Intent
 import android.os.Bundle
 import android.support.v4.media.session.MediaSessionCompat
+import android.view.KeyEvent
 import androidx.annotation.OptIn
 import androidx.media3.common.util.UnstableApi
 import it.fast4x.riplay.data.models.Song
-import it.fast4x.riplay.service.AndroidAutoService
-import it.fast4x.riplay.service.LocalPlayerService
-import it.fast4x.riplay.service.PlayerService
 import it.fast4x.riplay.utils.asMediaItem
 import it.fast4x.riplay.utils.forcePlayAtIndex
 import it.fast4x.riplay.utils.playNext
@@ -20,7 +19,7 @@ import timber.log.Timber
 import kotlin.collections.emptyList
 
 @UnstableApi
-class MediaSessionCallback (
+class PlayerMediaSessionCallback (
     val binder: PlayerService.Binder,
     val onPlayClick: () -> Unit,
     val onPauseClick: () -> Unit,
@@ -39,6 +38,11 @@ class MediaSessionCallback (
         Timber.d("MediaSessionCallback onPause()")
         onPauseClick()
     }
+
+    override fun onStop() {
+        Timber.d("MediaSessionCallback onStop()")
+        onPause()
+    }
     override fun onSkipToPrevious() {
         Timber.d("MediaSessionCallback onSkipToPrevious()")
         //onPlayPrevious()
@@ -49,28 +53,28 @@ class MediaSessionCallback (
         //onPlayNext()
         binder.player.playNext()
     }
-
     override fun onSeekTo(pos: Long) {
         Timber.d("MediaSessionCallback onSeekTo() $pos")
         onSeekToPos(pos)
     }
 
+    override fun onRewind() {
+        Timber.d("MediaSessionCallback onRewind()")
+        binder.player.seekToDefaultPosition()
+    }
     override fun onSkipToQueueItem(id: Long) {
         Timber.d("MediaSessionCallback onSkipToQueueItem() $id")
         //onPlayQueueItem(id)
         binder.player.seekToDefaultPosition(id.toInt())
     }
-
-    override fun onPlayFromSearch(query: String?, extras: Bundle?) {
-        if (query.isNullOrBlank()) return
-        binder.playFromSearch(query)
-    }
-
     override fun onCustomAction(action: String, extras: Bundle?) {
         Timber.d("MediaSessionCallback onCustomAction() action $action")
         onCustomClick(action)
     }
-
+    override fun onPlayFromSearch(query: String?, extras: Bundle?) {
+        if (query.isNullOrBlank()) return
+        binder.playFromSearch(query)
+    }
     @OptIn(UnstableApi::class)
     override fun onPlayFromMediaId(mediaId: String?, extras: Bundle?) {
         Timber.d("MediaSessionCallback onPlayFromMediaId mediaId ${mediaId} called")
@@ -83,43 +87,43 @@ class MediaSessionCallback (
         CoroutineScope(Dispatchers.IO).launch {
             val mediaItems = when (data.getOrNull(0)) {
 
-                AndroidAutoService.MediaId.SONGS ->  data
+                PlayerMediaBrowserService.MediaId.SONGS ->  data
                     .getOrNull(1)
                     ?.let { songId ->
-                        index = AndroidAutoService.lastSongs.indexOfFirst { it.id == songId }
+                        index = PlayerMediaBrowserService.lastSongs.indexOfFirst { it.id == songId }
 
                         if (index < 0) return@launch // index not found
 
-                        //mediaItemSelected = AndroidAutoService.lastSongs[index].asMediaItem
-                        AndroidAutoService.lastSongs
+                        //mediaItemSelected = PlayerMediaBrowserService.lastSongs[index].asMediaItem
+                        PlayerMediaBrowserService.lastSongs
                     }
                     .also { Timber.d("MediaSessionCallback onPlayFromMediaId processing songs, mediaId ${mediaId} index $index songs ${it?.size}") }
 
-                AndroidAutoService.MediaId.SEARCHED -> data
+                PlayerMediaBrowserService.MediaId.SEARCHED -> data
                     .getOrNull(1)
                     ?.let { songId ->
-                        index = AndroidAutoService.searchedSongs.indexOfFirst { it.id == songId }
+                        index = PlayerMediaBrowserService.searchedSongs.indexOfFirst { it.id == songId }
 
                         if (index < 0) return@launch // index not found
 
-                        //mediaItemSelected = AndroidAutoService.searchedSongs[index].asMediaItem
-                        AndroidAutoService.searchedSongs
+                        //mediaItemSelected = PlayerMediaBrowserService.searchedSongs[index].asMediaItem
+                        PlayerMediaBrowserService.searchedSongs
 
                     }
 
                 // Maybe it needed in the future
                 /*
-                AndroidAutoService.MediaId.shuffle -> lastSongs.shuffled()
+                PlayerMediaBrowserService.MediaId.shuffle -> lastSongs.shuffled()
 
-                AndroidAutoService.MediaId.favorites -> Database
+                PlayerMediaBrowserService.MediaId.favorites -> Database
                     .favorites()
                     .first()
 
-                AndroidAutoService.MediaId.ondevice -> Database
+                PlayerMediaBrowserService.MediaId.ondevice -> Database
                     .songsOnDevice()
                     .first()
 
-                AndroidAutoService.MediaId.top -> {
+                PlayerMediaBrowserService.MediaId.top -> {
                     val maxTopSongs = context().preferences.getEnum(MaxTopPlaylistItemsKey,
                         MaxTopPlaylistItems.`10`).number.toInt()
 
@@ -127,19 +131,19 @@ class MediaSessionCallback (
                         .first()
                 }
 
-                AndroidAutoService.MediaId.playlists -> data
+                PlayerMediaBrowserService.MediaId.playlists -> data
                     .getOrNull(1)
                     ?.toLongOrNull()
                     ?.let(Database::playlistWithSongs)
                     ?.first()
                     ?.songs
 
-                AndroidAutoService.MediaId.albums -> data
+                PlayerMediaBrowserService.MediaId.albums -> data
                     .getOrNull(1)
                     ?.let(Database::albumSongs)
                     ?.first()
 
-                AndroidAutoService.MediaId.artists -> {
+                PlayerMediaBrowserService.MediaId.artists -> {
                     data
                         .getOrNull(1)
                         ?.let(Database::artistSongsByname)
@@ -161,6 +165,47 @@ class MediaSessionCallback (
 
         // END PROCESSING
 
+    }
+
+    override fun onMediaButtonEvent(mediaButtonEvent: Intent?): Boolean {
+        mediaButtonEvent?.let {
+            if (it.action == Intent.ACTION_MEDIA_BUTTON) {
+                if (it.extras?.getBoolean(Intent.EXTRA_KEY_EVENT) == true) {
+                    val keyEvent = it.extras?.getParcelable<KeyEvent>(Intent.EXTRA_KEY_EVENT)
+                    when(keyEvent?.keyCode) {
+                        KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE -> {
+                            if (binder.player.isPlaying || binder.onlinePlayerPlayingState)
+                                onPause()
+                            else onPlay()
+
+                            return true
+                        }
+                        KeyEvent.KEYCODE_MEDIA_NEXT -> {
+                            onSkipToNext()
+                            return true
+                        }
+                        KeyEvent.KEYCODE_MEDIA_PREVIOUS -> {
+                            onSkipToPrevious()
+                            return true
+                        }
+                        KeyEvent.KEYCODE_MEDIA_STOP -> {
+                            onStop()
+                            return true
+                        }
+                        KeyEvent.KEYCODE_MEDIA_PLAY -> {
+                            onPlay()
+                            return true
+                        }
+                        KeyEvent.KEYCODE_MEDIA_PAUSE -> {
+                            onPause()
+                            return true
+                        }
+                    }
+                }
+            }
+        }
+        //return super.onMediaButtonEvent(mediaButtonEvent)
+        return false
     }
 
 }

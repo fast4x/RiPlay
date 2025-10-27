@@ -65,6 +65,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.enums.PopupType
+import it.fast4x.riplay.service.PlayerService
 import it.fast4x.riplay.utils.typography
 import it.fast4x.riplay.ui.components.themed.SmartMessage
 import it.fast4x.riplay.utils.capitalized
@@ -183,7 +184,7 @@ fun DataSettings() {
                             inputStream.copyTo(outputStream)
                         }
                     }
-                context.stopService(context.intent<LocalPlayerService>())
+                context.stopService(context.intent<PlayerService>())
 
                 exitAfterRestore = true
             }

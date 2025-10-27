@@ -247,7 +247,7 @@ fun HomeArtists(
             Column( Modifier.fillMaxSize() ) {
                 // Sticky tab's title
                 TabHeader( R.string.artists ) {
-                    HeaderInfo(itemsOnDisplay.size.toString(), R.drawable.artists)
+                    HeaderInfo(itemsOnDisplay.size.toString(), R.drawable.music_artist)
                 }
 
                 // Sticky tab's tool bar

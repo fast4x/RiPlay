@@ -103,6 +103,7 @@ import it.fast4x.riplay.utils.playNext
 import it.fast4x.riplay.utils.playPrevious
 import it.fast4x.riplay.utils.positionAndDurationState
 import it.fast4x.riplay.extensions.preferences.rememberPreference
+import it.fast4x.riplay.service.PlayerService
 import it.fast4x.riplay.ui.styling.semiBold
 import it.fast4x.riplay.utils.setDisLikeState
 import it.fast4x.riplay.utils.shouldBePlaying
@@ -325,7 +326,7 @@ fun LocalMiniPlayer(
                                     binder.player.clearMediaItems()
                                     hidePlayer()
                                     runCatching {
-                                        context.stopService(context.intent<LocalPlayerService>())
+                                        context.stopService(context.intent<PlayerService>())
                                     }
                                     hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
                                 } else

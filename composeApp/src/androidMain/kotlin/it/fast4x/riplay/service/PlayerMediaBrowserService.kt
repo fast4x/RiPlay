@@ -13,10 +13,10 @@ import android.support.v4.media.session.MediaSessionCompat
 import androidx.annotation.DrawableRes
 import androidx.annotation.OptIn
 import androidx.compose.ui.util.fastFilter
+import androidx.core.content.edit
 import androidx.core.net.toUri
 import androidx.media.MediaBrowserServiceCompat
 import androidx.media3.common.util.UnstableApi
-import androidx.media3.datasource.cache.Cache
 import it.fast4x.environment.Environment
 import it.fast4x.environment.EnvironmentExt
 import it.fast4x.environment.models.BrowseEndpoint
@@ -39,24 +39,32 @@ import it.fast4x.riplay.data.models.SongArtistMap
 import it.fast4x.riplay.enums.AlbumSortBy
 import it.fast4x.riplay.enums.ArtistSortBy
 import it.fast4x.riplay.enums.MaxTopPlaylistItems
+import it.fast4x.riplay.enums.NotificationButtons
+import it.fast4x.riplay.enums.QueueLoopType
 import it.fast4x.riplay.enums.SortOrder
 import it.fast4x.riplay.extensions.preferences.MaxTopPlaylistItemsKey
 import it.fast4x.riplay.extensions.preferences.getEnum
 import it.fast4x.riplay.extensions.preferences.preferences
+import it.fast4x.riplay.extensions.preferences.putEnum
+import it.fast4x.riplay.extensions.preferences.queueLoopTypeKey
 import it.fast4x.riplay.removePrefix
 import it.fast4x.riplay.utils.asMediaItem
 import it.fast4x.riplay.utils.asSong
 import it.fast4x.riplay.utils.forcePlayAtIndex
 import it.fast4x.riplay.utils.getTitleMonthlyPlaylist
 import it.fast4x.riplay.utils.intent
+import it.fast4x.riplay.utils.mediaItemToggleLike
 import it.fast4x.riplay.utils.playNext
 import it.fast4x.riplay.utils.playPrevious
+import it.fast4x.riplay.utils.seamlessQueue
+import it.fast4x.riplay.utils.setQueueLoopState
 import it.fast4x.riplay.utils.showFavoritesPlaylistsAA
 import it.fast4x.riplay.utils.showGridAA
 import it.fast4x.riplay.utils.showInLibraryAA
 import it.fast4x.riplay.utils.showMonthlyPlaylistsAA
 import it.fast4x.riplay.utils.showOnDeviceAA
 import it.fast4x.riplay.utils.showTopPlaylistAA
+import it.fast4x.riplay.utils.shuffleQueue
 import it.fast4x.riplay.utils.shuffleSongsAAEnabled
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -72,8 +80,11 @@ import kotlin.also
 @UnstableApi
 class PlayerMediaBrowserService : MediaBrowserServiceCompat(), ServiceConnection {
     private val coroutineScope = CoroutineScope(Dispatchers.IO)
-    private var lastSongs = emptyList<Song>()
-    private var searchedSongs = emptyList<Song>()
+
+    companion object {
+        var lastSongs = emptyList<Song>()
+        var searchedSongs = emptyList<Song>()
+    }
 
     private var bound = false
 
@@ -90,7 +101,10 @@ class PlayerMediaBrowserService : MediaBrowserServiceCompat(), ServiceConnection
         if (service is PlayerService.Binder) {
             bound = true
             sessionToken = service.mediaSession.sessionToken
-            service.mediaSession.setCallback(SessionCallback(service))
+            service.mediaSession.setCallback(
+                //SessionCallback(service)
+                sessionCallback(service)
+            )
         }
     }
 
@@ -669,7 +683,7 @@ class PlayerMediaBrowserService : MediaBrowserServiceCompat(), ServiceConnection
             MediaDescriptionCompat.Builder()
                 .setMediaId(MediaId.PLAYLISTS)
                 .setTitle((this as Context).resources.getString(R.string.playlists))
-                .setIconUri(uriFor(R.drawable.playlist))
+                .setIconUri(uriFor(R.drawable.music_library))
                 .build(),
             MediaItem.FLAG_BROWSABLE
         )
@@ -679,7 +693,7 @@ class PlayerMediaBrowserService : MediaBrowserServiceCompat(), ServiceConnection
             MediaDescriptionCompat.Builder()
                 .setMediaId(MediaId.ALBUMS_FAVORITES)
                 .setTitle((this as Context).resources.getString(R.string.albums))
-                .setIconUri(uriFor(R.drawable.album))
+                .setIconUri(uriFor(R.drawable.music_album))
                 .build(),
             MediaItem.FLAG_BROWSABLE
         )
@@ -689,7 +703,7 @@ class PlayerMediaBrowserService : MediaBrowserServiceCompat(), ServiceConnection
             MediaDescriptionCompat.Builder()
                 .setMediaId(MediaId.ALBUMS_IN_LIBRARY)
                 .setTitle((this as Context).resources.getString(R.string.library))
-                .setIconUri(uriFor(R.drawable.album))
+                .setIconUri(uriFor(R.drawable.music_album))
                 .build(),
             MediaItem.FLAG_BROWSABLE
         )
@@ -699,7 +713,7 @@ class PlayerMediaBrowserService : MediaBrowserServiceCompat(), ServiceConnection
             MediaDescriptionCompat.Builder()
                 .setMediaId(MediaId.ALBUMS_ON_DEVICE)
                 .setTitle((this as Context).resources.getString(R.string.on_device))
-                .setIconUri(uriFor(R.drawable.album))
+                .setIconUri(uriFor(R.drawable.music_album))
                 .build(),
             MediaItem.FLAG_BROWSABLE
         )
@@ -709,7 +723,7 @@ class PlayerMediaBrowserService : MediaBrowserServiceCompat(), ServiceConnection
             MediaDescriptionCompat.Builder()
                 .setMediaId(MediaId.ARTISTS_FAVORITES)
                 .setTitle((this as Context).resources.getString(R.string.artists))
-                .setIconUri(uriFor(R.drawable.artists))
+                .setIconUri(uriFor(R.drawable.music_artist))
                 .build(),
             MediaItem.FLAG_BROWSABLE
         )
@@ -719,7 +733,7 @@ class PlayerMediaBrowserService : MediaBrowserServiceCompat(), ServiceConnection
             MediaDescriptionCompat.Builder()
                 .setMediaId(MediaId.ARTISTS_IN_LIBRARY)
                 .setTitle((this as Context).resources.getString(R.string.library))
-                .setIconUri(uriFor(R.drawable.artists))
+                .setIconUri(uriFor(R.drawable.music_artist))
                 .build(),
             MediaItem.FLAG_BROWSABLE
         )
@@ -729,7 +743,7 @@ class PlayerMediaBrowserService : MediaBrowserServiceCompat(), ServiceConnection
             MediaDescriptionCompat.Builder()
                 .setMediaId(MediaId.ARTISTS_ONDEVICE)
                 .setTitle((this as Context).resources.getString(R.string.on_device))
-                .setIconUri(uriFor(R.drawable.artists))
+                .setIconUri(uriFor(R.drawable.music_artist))
                 .build(),
             MediaItem.FLAG_BROWSABLE
         )
@@ -776,6 +790,73 @@ class PlayerMediaBrowserService : MediaBrowserServiceCompat(), ServiceConnection
             MediaItem.FLAG_BROWSABLE
         )
 
+    private fun sessionCallback(  binder: PlayerService.Binder ) =
+        PlayerMediaSessionCallback(
+            binder,
+            onPlayClick = {
+                Timber.d("PlayerMediaBorwserService MediaSessionCallback onPlayClick")
+                if (binder.player.currentMediaItem?.isLocal == true)
+                    binder.player.play()
+                else
+                    binder.onlinePlayer?.play()
+            },
+            onPauseClick = {
+                Timber.d("PlayerMediaBorwserService MediaSessionCallback onPauseClick")
+                binder.player.pause()
+                binder.onlinePlayer?.pause()
+            },
+            onSeekToPos = { second ->
+                Timber.d("PlayerMediaBorwserService MediaSessionCallback onSeekToPos")
+                val newPosition = (second / 1000).toFloat()
+                binder.onlinePlayer?.seekTo(newPosition)
+                //currentPlaybackPosition.value = second
+                //currentSecond.value = second.toFloat()
+            },
+            onPlayNext = {
+                Timber.d("PlayerMediaBorwserService MediaSessionCallback onPlayNext")
+                binder.player.playNext()
+            },
+            onPlayPrevious = {
+                Timber.d("PlayerMediaBorwserService MediaSessionCallback onPlayPrevious")
+                binder.player.playPrevious()
+            },
+            onPlayQueueItem = { id ->
+                binder.player.seekToDefaultPosition(id.toInt())
+            },
+            onCustomClick = { customAction ->
+                Timber.d("PlayerMediaBorwserService MediaSessionCallback onCustomClick")
+                val currentMediaItem = binder.player.currentMediaItem
+                val queueLoopType = preferences.getEnum(queueLoopTypeKey, defaultValue = QueueLoopType.Default)
+                when (customAction) {
+                    NotificationButtons.Favorites.action -> {
+                        if (currentMediaItem != null)
+                            mediaItemToggleLike(currentMediaItem)
+                    }
+                    NotificationButtons.Repeat.action -> {
+                        preferences.edit(commit = true) { putEnum(queueLoopTypeKey, setQueueLoopState(queueLoopType)) }
+                    }
+                    NotificationButtons.Shuffle.action -> {
+                        binder.player.shuffleQueue()
+                    }
+                    NotificationButtons.Radio.action -> {
+                        if (currentMediaItem != null) {
+                            binder.stopRadio()
+                            binder.player.seamlessQueue(currentMediaItem)
+                            binder.onlinePlayer?.play()
+                            binder.setupRadio(
+                                NavigationEndpoint.Endpoint.Watch(videoId = currentMediaItem.mediaId)
+                            )
+                        }
+                    }
+                    NotificationButtons.Search.action -> {
+                        binder.actionSearch()
+                    }
+                }
+                //binder.updateUnifiedNotification()
+            }
+        )
+
+    /*
     private inner class SessionCallback @OptIn(UnstableApi::class) constructor(
         private val binder: PlayerService.Binder,
     ) :
@@ -913,6 +994,7 @@ class PlayerMediaBrowserService : MediaBrowserServiceCompat(), ServiceConnection
 
         }
     }
+     */
 
     object MediaId {
         const val FAULT = "fault"

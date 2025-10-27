@@ -7,14 +7,13 @@ import androidx.media3.common.Player.REPEAT_MODE_OFF
 import androidx.media3.common.Player.REPEAT_MODE_ONE
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.SessionCommand
-import it.fast4x.riplay.MainActivity
 import it.fast4x.riplay.R
 import it.fast4x.riplay.service.MediaSessionConstants.CommandSearch
 import it.fast4x.riplay.service.MediaSessionConstants.CommandStartRadio
 import it.fast4x.riplay.service.MediaSessionConstants.CommandToggleLike
 import it.fast4x.riplay.service.MediaSessionConstants.CommandToggleRepeatMode
 import it.fast4x.riplay.service.MediaSessionConstants.CommandToggleShuffle
-import it.fast4x.riplay.service.LocalPlayerService
+import it.fast4x.riplay.service.PlayerService
 import it.fast4x.riplay.utils.appContext
 
 enum class NotificationButtons {
@@ -36,22 +35,12 @@ enum class NotificationButtons {
     val pendingIntent: PendingIntent
     @OptIn(UnstableApi::class)
     get() = when (this) {
-        Favorites -> LocalPlayerService.Action.like.pendingIntent
-        Repeat -> LocalPlayerService.Action.repeat.pendingIntent
-        Shuffle -> LocalPlayerService.Action.shuffle.pendingIntent
-        Radio -> LocalPlayerService.Action.playradio.pendingIntent
-        Search -> LocalPlayerService.Action.search.pendingIntent
+        Favorites -> PlayerService.Action.like.pendingIntent
+        Repeat -> PlayerService.Action.repeat.pendingIntent
+        Shuffle -> PlayerService.Action.shuffle.pendingIntent
+        Radio -> PlayerService.Action.playradio.pendingIntent
+        Search -> PlayerService.Action.search.pendingIntent
     }
-
-    val pendingIntentOnline: PendingIntent
-        @OptIn(UnstableApi::class)
-        get() = when (this) {
-            Favorites -> MainActivity.Action.like.pendingIntent
-            Repeat -> MainActivity.Action.repeat.pendingIntent
-            Shuffle -> MainActivity.Action.shuffle.pendingIntent
-            Radio -> MainActivity.Action.playradio.pendingIntent
-            Search -> MainActivity.Action.search.pendingIntent
-        }
 
     val action: String
         get() = when (this) {

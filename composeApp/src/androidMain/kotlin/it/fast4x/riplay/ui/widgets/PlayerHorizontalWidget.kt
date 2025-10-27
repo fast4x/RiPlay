@@ -17,6 +17,7 @@ import androidx.glance.state.PreferencesGlanceStateDefinition
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import it.fast4x.riplay.cleanPrefix
+import androidx.core.graphics.createBitmap
 
 class PlayerHorizontalWidgetReceiver : GlanceAppWidgetReceiver() {
     override val glanceAppWidget: GlanceAppWidget = PlayerHorizontalWidget()
@@ -27,7 +28,7 @@ class PlayerHorizontalWidget: GlanceAppWidget() {
         val songTitleKey = stringPreferencesKey("songTitleKey")
         val songArtistKey = stringPreferencesKey("songArtistKey")
         val isPlayingKey = booleanPreferencesKey("isPlayingKey")
-        var widgetBitmap = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888)
+        var widgetBitmap: Bitmap? = createBitmap(1, 1)
         lateinit var widgetPlayer: ExoPlayer
     }
 
@@ -48,7 +49,7 @@ class PlayerHorizontalWidget: GlanceAppWidget() {
         songTitle: String,
         songArtist: String,
         isPlaying: Boolean,
-        bitmap: Bitmap,
+        bitmap: Bitmap?,
         player: ExoPlayer
     ) {
 

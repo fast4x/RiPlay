@@ -195,16 +195,16 @@ import kotlin.system.exitProcess
 import android.os.Binder as AndroidBinder
 
 
-const val LOCAL_KEY_PREFIX = "local:"
-const val LOCAL_AUDIO_URI_PATH = "content://media/external/audio/media/"
-
-@get:OptIn(UnstableApi::class)
-val DataSpec.isLocal get() = key?.startsWith(LOCAL_KEY_PREFIX) == true
-@get:OptIn(UnstableApi::class)
-val DataSpec.isLocalUri get() = uri.toString().startsWith("content://")
-
-val MediaItem.isLocal get() = mediaId.startsWith(LOCAL_KEY_PREFIX)
-val Song.isLocal get() = id.startsWith(LOCAL_KEY_PREFIX)
+//const val LOCAL_KEY_PREFIX = "local:"
+//const val LOCAL_AUDIO_URI_PATH = "content://media/external/audio/media/"
+//
+//@get:OptIn(UnstableApi::class)
+//val DataSpec.isLocal get() = key?.startsWith(LOCAL_KEY_PREFIX) == true
+//@get:OptIn(UnstableApi::class)
+//val DataSpec.isLocalUri get() = uri.toString().startsWith("content://")
+//
+//val MediaItem.isLocal get() = mediaId.startsWith(LOCAL_KEY_PREFIX)
+//val Song.isLocal get() = id.startsWith(LOCAL_KEY_PREFIX)
 
 @UnstableApi
 class LocalPlayerService : MediaLibraryService(),
@@ -545,11 +545,11 @@ class LocalPlayerService : MediaLibraryService(),
         newPosition: Player.PositionInfo,
         reason: Int
     ) {
-        if (reason == Player.DISCONTINUITY_REASON_SEEK || reason == Player.DISCONTINUITY_REASON_SKIP)
-            updateDiscordPresenceWithOfflinePlayer(
-                discordPresenceManager,
-                binder
-            )
+//        if (reason == Player.DISCONTINUITY_REASON_SEEK || reason == Player.DISCONTINUITY_REASON_SKIP)
+//            updateDiscordPresenceWithOfflinePlayer(
+//                discordPresenceManager,
+//                binder
+//            )
 
         super.onPositionDiscontinuity(oldPosition, newPosition, reason)
     }
@@ -755,10 +755,10 @@ class LocalPlayerService : MediaLibraryService(),
             })
         }
 
-        updateDiscordPresenceWithOfflinePlayer(
-            discordPresenceManager,
-            binder
-        )
+//        updateDiscordPresenceWithOfflinePlayer(
+//            discordPresenceManager,
+//            binder
+//        )
 
     }
 
@@ -787,10 +787,10 @@ class LocalPlayerService : MediaLibraryService(),
             )
 
 
-        updateDiscordPresenceWithOfflinePlayer(
-            discordPresenceManager,
-            binder
-        )
+//        updateDiscordPresenceWithOfflinePlayer(
+//            discordPresenceManager,
+//            binder
+//        )
 
 
         super.onIsPlayingChanged(isPlaying)
@@ -1715,43 +1715,43 @@ class LocalPlayerService : MediaLibraryService(),
             val isDiscoverEnabled = applicationContext.preferences.getBoolean(discoverKey, false)
             val filterContentType = applicationContext.preferences.getEnum(filterContentTypeKey,
                 ContentType.All)
-            OnlineRadio(
-                endpoint?.videoId,
-                endpoint?.playlistId,
-                endpoint?.playlistSetVideoId,
-                endpoint?.params,
-                isDiscoverEnabled,
-                applicationContext,
-                binder,
-                coroutineScope
-            ).let {
-                isLoadingRadio = true
-                radioJob = coroutineScope.launch(Dispatchers.Main) {
-
-                    val songs =
-                        (if (filterArtist.isEmpty()) it.process()
-                    else it.process().filter { song -> song.mediaMetadata.artist == filterArtist })
-                            .filter { song ->
-                                when (filterContentType) {
-                                    ContentType.All -> true
-                                    ContentType.Official -> song.isOfficialContent
-                                    ContentType.UserGenerated -> song.isUserGeneratedContent
-                                }
-                            }
-
-                    songs.forEach {
-                        Database.asyncTransaction { insert(it) }
-                    }
-
-                    if (justAdd) {
-                        player.addMediaItems(songs.drop(1))
-                    } else {
-                        player.forcePlayFromBeginning(songs)
-                    }
-                    radio = it
-                    isLoadingRadio = false
-                }
-            }
+//            OnlineRadio(
+//                endpoint?.videoId,
+//                endpoint?.playlistId,
+//                endpoint?.playlistSetVideoId,
+//                endpoint?.params,
+//                isDiscoverEnabled,
+//                applicationContext,
+//                binder,
+//                coroutineScope
+//            ).let {
+//                isLoadingRadio = true
+//                radioJob = coroutineScope.launch(Dispatchers.Main) {
+//
+//                    val songs =
+//                        (if (filterArtist.isEmpty()) it.process()
+//                    else it.process().filter { song -> song.mediaMetadata.artist == filterArtist })
+//                            .filter { song ->
+//                                when (filterContentType) {
+//                                    ContentType.All -> true
+//                                    ContentType.Official -> song.isOfficialContent
+//                                    ContentType.UserGenerated -> song.isUserGeneratedContent
+//                                }
+//                            }
+//
+//                    songs.forEach {
+//                        Database.asyncTransaction { insert(it) }
+//                    }
+//
+//                    if (justAdd) {
+//                        player.addMediaItems(songs.drop(1))
+//                    } else {
+//                        player.forcePlayFromBeginning(songs)
+//                    }
+//                    radio = it
+//                    isLoadingRadio = false
+//                }
+//            }
         }
 
         fun stopRadio() {

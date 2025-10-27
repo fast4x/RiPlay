@@ -1,5 +1,6 @@
 package it.fast4x.riplay.ui.screens.player.online.components.core
 
+import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.OptIn
 import androidx.compose.runtime.Composable
@@ -62,23 +63,24 @@ import kotlin.time.Duration.Companion.seconds
 @OptIn(UnstableApi::class)
 @Composable
 fun ExternalOnlineCore(
-    onlinePlayerView: YouTubePlayerView,
-    player: MutableState<YouTubePlayer?>,
-    onlinePlayerIsInitialized: MutableState<Boolean> = mutableStateOf(false),
+    onlinePlayerView: YouTubePlayerView? = null,
+    //player: MutableState<YouTubePlayer?>,
+    //onlinePlayerIsInitialized: MutableState<Boolean> = mutableStateOf(false),
     actAsMini: Boolean = false,
-    load: Boolean = false,
-    playFromSecond: Float = 0f,
-    onPlayerReady: (YouTubePlayer?) -> Unit,
-    onSecondChange: (Float) -> Unit,
-    onDurationChange: (Float) -> Unit,
-    onPlayerStateChange: (PlayerConstants.PlayerState) -> Unit,
-    onTap: () -> Unit,
+//    load: Boolean = false,
+//    playFromSecond: Float = 0f,
+//    onPlayerReady: (YouTubePlayer?) -> Unit,
+//    onSecondChange: (Float) -> Unit,
+//    onDurationChange: (Float) -> Unit,
+//    onPlayerStateChange: (PlayerConstants.PlayerState) -> Unit,
+//    onTap: () -> Unit,
 ) {
 
     Timber.d("OnlinePlayerCore: called")
     val binder = LocalPlayerServiceBinder.current
+    //val onlinePlayerView = binder?.onlinePlayerView
 
-    var localMediaItem by remember { mutableStateOf( binder?.player?.currentMediaItem ) }
+    val localMediaItem = binder?.player?.currentMediaItem
     if (localMediaItem?.isLocal == true) return
 
     val queueLoopType by rememberObservedPreference(queueLoopTypeKey, QueueLoopType.Default)
@@ -89,7 +91,7 @@ fun ExternalOnlineCore(
 
     var currentQueueIndex = remember { mutableIntStateOf(binder?.player?.currentMediaItemIndex ?: -1) }
 
-
+/*
     binder?.player?.DisposableListener {
         object : Player.Listener {
             override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
@@ -112,7 +114,7 @@ fun ExternalOnlineCore(
 
                     localMediaItem = it
                     lastVideoId.value = it.mediaId
-                    player.value?.loadVideo(it.mediaId, 0f)
+                    //player.value?.loadVideo(it.mediaId, 0f)
                     updateOnlineHistory(it)
                     Timber.d("OnlinePlayerCore: onMediaItemTransition ${it.mediaId}")
                 }
@@ -120,7 +122,7 @@ fun ExternalOnlineCore(
 
         }
     }
-
+*/
     val context = LocalContext.current
 
     var shouldBePlaying by remember { mutableStateOf(false) }
@@ -134,6 +136,7 @@ fun ExternalOnlineCore(
         PlayerThumbnailSize.Biggest
     )
 
+    /*
     //MedleyMode for online player
     val playbackDuration by rememberObservedPreference(playbackDurationKey, 0f)
 
@@ -252,12 +255,12 @@ fun ExternalOnlineCore(
 
                 //youTubePlayer.loadOrCueVideo(lifecycleOwner.lifecycle, mediaItem.mediaId, lastYTVideoSeconds)
                 Timber.d("OnlinePlayerCore: onReady shouldBePlaying: $shouldBePlaying")
-                if (localMediaItem != null) {
-                    if (!load)
-                        youTubePlayer.cueVideo(localMediaItem!!.mediaId, playFromSecond)
-                    else
-                        youTubePlayer.loadVideo(localMediaItem!!.mediaId, playFromSecond)
-                }
+//                if (localMediaItem != null) {
+//                    if (!load)
+//                        youTubePlayer.cueVideo(localMediaItem!!.mediaId, playFromSecond)
+//                    else
+//                        youTubePlayer.loadVideo(localMediaItem!!.mediaId, playFromSecond)
+//                }
 
             }
 
@@ -339,6 +342,7 @@ fun ExternalOnlineCore(
         }
     }
 
+
     val onlinePlayerViewInitalized = remember {
         onlinePlayerView.apply {
             enableAutomaticInitialization = false
@@ -359,6 +363,7 @@ fun ExternalOnlineCore(
             Timber.d("OnlinePlayerCore: initialize")
         }
     }
+    */
 
     // if not video, android view not required
     if (localMediaItem?.isVideo == true) {
@@ -366,15 +371,14 @@ fun ExternalOnlineCore(
             //modifier = Modifier.windowInsetsPadding(WindowInsets.safeDrawing),
             factory = {
 
-                onlinePlayerViewInitalized
+                onlinePlayerView as View
 
             },
             update = {
-
 //            (it.parent as? DialogWindowProvider)
 //                ?.window?.clearFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
 
-                it.enableBackgroundPlayback(enableBackgroundPlayback)
+                //it.enableBackgroundPlayback(enableBackgroundPlayback)
                 //inflatedView.keepScreenOn = enableKeepScreenOn
                 it.keepScreenOn = enableKeepScreenOn
 
@@ -407,7 +411,7 @@ fun ExternalOnlineCore(
         )
     } else {
         LocalView.current.keepScreenOn = enableKeepScreenOn
-        onlinePlayerViewInitalized.keepScreenOn = enableKeepScreenOn
+        onlinePlayerView?.keepScreenOn = enableKeepScreenOn
     }
 
 

@@ -5,44 +5,42 @@ import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
+import android.app.Service
 import android.content.BroadcastReceiver
+import android.content.ComponentCallbacks2
 import android.content.Context
 import android.content.Intent
+import android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK
+import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.content.IntentFilter
 import android.content.SharedPreferences
 import android.content.pm.ServiceInfo
-import android.content.res.Configuration
 import android.database.SQLException
 import android.graphics.Bitmap
-import android.graphics.Color
 import android.media.AudioDeviceCallback
 import android.media.AudioDeviceInfo
 import android.media.AudioManager
 import android.media.audiofx.AudioEffect
 import android.media.audiofx.LoudnessEnhancer
-import android.media.session.PlaybackState
-import android.net.Uri
 import android.os.Build
-import android.os.Bundle
-import android.os.Handler
 import android.support.v4.media.MediaDescriptionCompat
 import android.support.v4.media.MediaMetadataCompat
-import android.support.v4.media.RatingCompat
 import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
-import android.text.format.DateUtils
-import android.view.KeyEvent
+import android.view.LayoutInflater
 import androidx.annotation.OptIn
+import androidx.annotation.RequiresApi
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
 import androidx.core.app.ServiceCompat
 import androidx.core.content.ContextCompat
-import androidx.core.content.ContextCompat.startForegroundService
+import androidx.core.content.edit
 import androidx.core.content.getSystemService
-import androidx.core.net.toUri
-import androidx.core.text.isDigitsOnly
 import androidx.media.VolumeProviderCompat
 import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
@@ -51,65 +49,44 @@ import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.common.Timeline
 import androidx.media3.common.audio.SonicAudioProcessor
-import androidx.media3.common.util.Log
 import androidx.media3.common.util.UnstableApi
-import androidx.media3.database.StandaloneDatabaseProvider
 import androidx.media3.datasource.DataSpec
 import androidx.media3.datasource.DefaultDataSource
-import androidx.media3.datasource.ResolvingDataSource
 import androidx.media3.datasource.cache.Cache
 import androidx.media3.datasource.cache.CacheDataSource
-import androidx.media3.datasource.cache.CacheDataSource.FLAG_IGNORE_CACHE_ON_ERROR
-import androidx.media3.datasource.cache.LeastRecentlyUsedCacheEvictor
-import androidx.media3.datasource.cache.NoOpCacheEvictor
 import androidx.media3.datasource.cache.SimpleCache
 import androidx.media3.datasource.okhttp.OkHttpDataSource
 import androidx.media3.exoplayer.DefaultRenderersFactory
 import androidx.media3.exoplayer.DefaultRenderersFactory.EXTENSION_RENDERER_MODE_PREFER
 import androidx.media3.exoplayer.ExoPlayer
-import androidx.media3.exoplayer.RenderersFactory
 import androidx.media3.exoplayer.analytics.AnalyticsListener
 import androidx.media3.exoplayer.analytics.PlaybackStats
 import androidx.media3.exoplayer.analytics.PlaybackStatsListener
-import androidx.media3.exoplayer.audio.AudioRendererEventListener
 import androidx.media3.exoplayer.audio.AudioSink
 import androidx.media3.exoplayer.audio.DefaultAudioOffloadSupportProvider
 import androidx.media3.exoplayer.audio.DefaultAudioSink
 import androidx.media3.exoplayer.audio.DefaultAudioSink.DefaultAudioProcessorChain
-import androidx.media3.exoplayer.audio.MediaCodecAudioRenderer
 import androidx.media3.exoplayer.audio.SilenceSkippingAudioProcessor
-import androidx.media3.exoplayer.mediacodec.MediaCodecSelector
-import androidx.media3.exoplayer.offline.Download
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
+import androidx.media3.exoplayer.source.ShuffleOrder.DefaultShuffleOrder
 import androidx.media3.extractor.DefaultExtractorsFactory
-import androidx.media3.extractor.ExtractorsFactory
-import androidx.media3.extractor.mkv.MatroskaExtractor
-import androidx.media3.extractor.mp4.FragmentedMp4Extractor
-import androidx.media3.extractor.mp4.Mp4Extractor
-import androidx.media3.extractor.text.DefaultSubtitleParserFactory
+import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.PlayerConstants
+import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
+import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.AbstractYouTubePlayerListener
+import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.options.IFramePlayerOptions
+import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
 import it.fast4x.environment.Environment
 import it.fast4x.environment.models.NavigationEndpoint
-import it.fast4x.environment.models.bodies.PlayerBody
 import it.fast4x.environment.models.bodies.SearchBody
 import it.fast4x.environment.requests.searchPage
-import it.fast4x.environment.utils.ProxyPreferences
 import it.fast4x.environment.utils.from
 import it.fast4x.riplay.MainActivity
 import it.fast4x.riplay.enums.DurationInMilliseconds
 import it.fast4x.riplay.data.models.Event
-import it.fast4x.riplay.data.models.Format
-import it.fast4x.riplay.data.models.PersistentQueue
-import it.fast4x.riplay.data.models.PersistentSong
-import it.fast4x.riplay.data.models.QueuedMediaItem
 import it.fast4x.riplay.data.models.Song
-import it.fast4x.riplay.data.models.SongEntity
-import it.fast4x.riplay.data.models.asMediaItem
 import it.fast4x.riplay.ui.components.themed.SmartMessage
-import it.fast4x.riplay.utils.activityPendingIntent
 import it.fast4x.riplay.utils.asSong
 import it.fast4x.riplay.utils.broadCastPendingIntent
-import it.fast4x.riplay.utils.findNextMediaItemById
-import it.fast4x.riplay.utils.forcePlayFromBeginning
 import it.fast4x.riplay.utils.forceSeekToNext
 import it.fast4x.riplay.utils.forceSeekToPrevious
 import it.fast4x.riplay.utils.intent
@@ -119,8 +96,6 @@ import it.fast4x.riplay.utils.isAtLeastAndroid13
 import it.fast4x.riplay.utils.isAtLeastAndroid6
 import it.fast4x.riplay.utils.isAtLeastAndroid8
 import it.fast4x.riplay.utils.isAtLeastAndroid81
-import it.fast4x.riplay.utils.mediaItems
-import it.fast4x.riplay.utils.shouldBePlaying
 import it.fast4x.riplay.utils.startFadeAnimator
 import it.fast4x.riplay.utils.thumbnail
 import it.fast4x.riplay.utils.timer
@@ -129,6 +104,8 @@ import it.fast4x.riplay.cleanPrefix
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.enums.ContentType
 import it.fast4x.riplay.enums.MinTimeForEvent
+import it.fast4x.riplay.enums.NotificationButtons
+import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.enums.QueueLoopType
 import it.fast4x.riplay.extensions.audiovolume.AudioVolumeObserver
 import it.fast4x.riplay.extensions.audiovolume.OnAudioVolumeChangedListener
@@ -142,162 +119,107 @@ import it.fast4x.riplay.extensions.preferences.isPauseOnVolumeZeroEnabledKey
 import it.fast4x.riplay.extensions.preferences.isShowingThumbnailInLockscreenKey
 import it.fast4x.riplay.extensions.preferences.loudnessBaseGainKey
 import it.fast4x.riplay.extensions.preferences.minimumSilenceDurationKey
+import it.fast4x.riplay.extensions.preferences.notificationPlayerFirstIconKey
+import it.fast4x.riplay.extensions.preferences.notificationPlayerSecondIconKey
 import it.fast4x.riplay.extensions.preferences.pauseListenHistoryKey
-import it.fast4x.riplay.extensions.preferences.persistentQueueKey
 import it.fast4x.riplay.extensions.preferences.playbackFadeAudioDurationKey
 import it.fast4x.riplay.extensions.preferences.preferences
+import it.fast4x.riplay.extensions.preferences.putEnum
 import it.fast4x.riplay.extensions.preferences.queueLoopTypeKey
 import it.fast4x.riplay.extensions.preferences.resumeOrPausePlaybackWhenDeviceKey
-import it.fast4x.riplay.extensions.preferences.showLikeButtonBackgroundPlayerKey
+import it.fast4x.riplay.extensions.preferences.skipMediaOnErrorKey
 import it.fast4x.riplay.extensions.preferences.skipSilenceKey
 import it.fast4x.riplay.extensions.preferences.useVolumeKeysToChangeSongKey
 import it.fast4x.riplay.extensions.preferences.volumeNormalizationKey
+import it.fast4x.riplay.ui.screens.player.online.components.customui.CustomDefaultPlayerUiController
 import it.fast4x.riplay.ui.widgets.PlayerHorizontalWidget
 import it.fast4x.riplay.ui.widgets.PlayerVerticalWidget
 import it.fast4x.riplay.utils.BitmapProvider
 import it.fast4x.riplay.utils.OnlineRadio
 import it.fast4x.riplay.utils.SleepTimerListener
 import it.fast4x.riplay.utils.TimerJob
+import it.fast4x.riplay.utils.appContext
+import it.fast4x.riplay.utils.asMediaItem
+import it.fast4x.riplay.utils.clearWebViewData
+import it.fast4x.riplay.utils.collect
+import it.fast4x.riplay.utils.context
+import it.fast4x.riplay.utils.forcePlayFromBeginning
+import it.fast4x.riplay.utils.isAtLeastAndroid11
 import it.fast4x.riplay.utils.isHandleAudioFocusEnabled
 import it.fast4x.riplay.utils.isOfficialContent
+import it.fast4x.riplay.utils.isPersistentQueueEnabled
+import it.fast4x.riplay.utils.isResumePlaybackOnStart
+import it.fast4x.riplay.utils.isSkipMediaOnErrorEnabled
 import it.fast4x.riplay.utils.isUserGeneratedContent
 import it.fast4x.riplay.utils.loadMasterQueue
+import it.fast4x.riplay.utils.mediaItemToggleLike
+import it.fast4x.riplay.utils.playNext
+import it.fast4x.riplay.utils.playPrevious
+import it.fast4x.riplay.utils.principalCache
 import it.fast4x.riplay.utils.saveMasterQueue
+import it.fast4x.riplay.utils.seamlessQueue
+import it.fast4x.riplay.utils.setLikeState
+import it.fast4x.riplay.utils.setQueueLoopState
+import it.fast4x.riplay.utils.shuffleQueue
+import it.fast4x.riplay.utils.toggleRepeatMode
+import it.fast4x.riplay.utils.toggleShuffleMode
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.cancellable
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.flatMapMerge
-import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.flow.zip
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.plus
-import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 import timber.log.Timber
-import java.io.ObjectInputStream
-import java.io.ObjectOutputStream
-import java.net.ConnectException
-import java.net.InetSocketAddress
-import java.net.Proxy
-import java.net.SocketTimeoutException
-import java.net.UnknownHostException
-import java.time.Duration
+import kotlin.collections.map
 import kotlin.math.roundToInt
 import kotlin.system.exitProcess
 import kotlin.time.Duration.Companion.seconds
 import android.os.Binder as AndroidBinder
 
-//
-//const val LOCAL_KEY_PREFIX = "local:"
-//
-//@get:OptIn(UnstableApi::class)
-//val DataSpec.isLocal get() = key?.startsWith(LOCAL_KEY_PREFIX) == true
-//
-//val MediaItem.isLocal get() = mediaId.startsWith(LOCAL_KEY_PREFIX)
-//val Song.isLocal get() = id.startsWith(LOCAL_KEY_PREFIX)
+const val LOCAL_KEY_PREFIX = "local:"
+const val LOCAL_AUDIO_URI_PATH = "content://media/external/audio/media/"
+
+@get:OptIn(UnstableApi::class)
+val DataSpec.isLocal get() = key?.startsWith(LOCAL_KEY_PREFIX) == true
+@get:OptIn(UnstableApi::class)
+val DataSpec.isLocalUri get() = uri.toString().startsWith("content://")
+
+val MediaItem.isLocal get() = mediaId.startsWith(LOCAL_KEY_PREFIX)
+val Song.isLocal get() = id.startsWith(LOCAL_KEY_PREFIX)
 
 @UnstableApi
 @Suppress("DEPRECATION")
-class PlayerService : InvincibleService(),
+class PlayerService : Service(),
     Player.Listener,
     PlaybackStatsListener.Callback,
     SharedPreferences.OnSharedPreferenceChangeListener,
     OnAudioVolumeChangedListener {
-    private val coroutineScope = CoroutineScope(Dispatchers.IO) + Job()
-    private lateinit var mediaSession: MediaSessionCompat
-    private lateinit var cache: SimpleCache
+    private val coroutineScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+    private lateinit var unifiedMediaSession: MediaSessionCompat
+    val cache: SimpleCache by lazy {
+        principalCache.getInstance(this)
+    }
     lateinit var player: ExoPlayer
-    private lateinit var downloadCache: SimpleCache
     private lateinit var audioVolumeObserver: AudioVolumeObserver
     //private lateinit var connectivityManager: ConnectivityManager
-
-    private val actions = PlaybackStateCompat.ACTION_PLAY or
-            PlaybackStateCompat.ACTION_PAUSE or
-            PlaybackStateCompat.ACTION_PLAY_PAUSE or
-            PlaybackStateCompat.ACTION_STOP or
-            PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS or
-            PlaybackStateCompat.ACTION_SKIP_TO_NEXT or
-            PlaybackStateCompat.ACTION_SKIP_TO_QUEUE_ITEM or
-            PlaybackStateCompat.ACTION_SEEK_TO or
-            PlaybackStateCompat.ACTION_REWIND or
-            PlaybackStateCompat.ACTION_PLAY_FROM_SEARCH
-
-
-    @ExperimentalCoroutinesApi
-    @FlowPreview
-    private val stateBuilderWithoutCustomAction
-        get() = PlaybackStateCompat.Builder().setActions(actions.let {
-            if (isAtLeastAndroid12) it or PlaybackState.ACTION_SET_PLAYBACK_SPEED else it
-        })
-
-    @ExperimentalCoroutinesApi
-    @FlowPreview
-    private val stateBuilder
-        get() = PlaybackStateCompat.Builder().setActions(actions.let {
-            if (isAtLeastAndroid12) it or PlaybackState.ACTION_SET_PLAYBACK_SPEED else it
-        })
-            .addCustomAction(
-                "SHUFFLE",
-                "Shuffle",
-                if (shuffleModeEnabled) R.drawable.shuffle_filled else R.drawable.shuffle
-            )
-            .addCustomAction(
-                "LIKE",
-                "Like",
-                if (isLikedState.value) R.drawable.heart else R.drawable.heart_outline
-            )
-            .addCustomAction(
-                "PLAYRADIO",
-                "Play radio",
-                R.drawable.radio
-            )
-
-    @ExperimentalCoroutinesApi
-    @FlowPreview
-    private val stateBuilderWithDownloadOnly
-        get() = PlaybackStateCompat.Builder().setActions(actions.let {
-            if (isAtLeastAndroid12) it or PlaybackState.ACTION_SET_PLAYBACK_SPEED else it
-        }).addCustomAction(
-                "PLAYRADIO",
-                "Play radio",
-                R.drawable.radio
-            )
-
-    @ExperimentalCoroutinesApi
-    @FlowPreview
-    private val stateBuilderWithLikeOnly
-        get() = PlaybackStateCompat.Builder().setActions(actions.let {
-            if (isAtLeastAndroid12) it or PlaybackState.ACTION_SET_PLAYBACK_SPEED else it
-        }).addCustomAction(
-            "LIKE",
-            "Like",
-            if (isLikedState.value) R.drawable.heart else R.drawable.heart_outline
-        )
-            .addCustomAction(
-                "PLAYRADIO",
-                "Play radio",
-                R.drawable.radio
-            )
-
-    private val playbackStateMutex = Mutex()
 
     private val metadataBuilder = MediaMetadataCompat.Builder()
 
@@ -307,14 +229,14 @@ class PlayerService : InvincibleService(),
 
     private var radio: OnlineRadio? = null
 
-    private lateinit var bitmapProvider: BitmapProvider
+    var bitmapProvider: BitmapProvider? = null
 
     private var volumeNormalizationJob: Job? = null
 
-    private var isPersistentQueueEnabled = false
+    //private var isPersistentQueueEnabled = false
     private var isclosebackgroundPlayerEnabled = false
     private var isShowingThumbnailInLockscreen = true
-    override var isInvincibilityEnabled = false
+    //override var isInvincibilityEnabled = false
 
     private var audioManager: AudioManager? = null
     private var audioDeviceCallback: AudioDeviceCallback? = null
@@ -325,53 +247,49 @@ class PlayerService : InvincibleService(),
 
     private var isNotificationStarted = false
 
-    //private var exoPlayerAlternateCacheLocation = ""
+    var notificationActionReceiverUpAndroid11: NotificationActionReceiverUpAndroid11? = null
 
-    override val notificationId: Int
-        get() = NotificationId
-
-    private lateinit var notificationActionReceiver: NotificationActionReceiver
-    //private lateinit var audioQualityFormat: AudioQualityFormat
     private val playerVerticalWidget = PlayerVerticalWidget()
     private val playerHorizontalWidget = PlayerHorizontalWidget()
 
-    /*
-    private val media = MutableStateFlow<MediaItem?>(null)
+    var currentMediaItemState = MutableStateFlow<MediaItem?>(null)
+
     @kotlin.OptIn(ExperimentalCoroutinesApi::class)
-    private val currentMedia = media.flatMapLatest { mediaItem ->
+    private val currentSong = currentMediaItemState.flatMapLatest { mediaItem ->
         Database.song(mediaItem?.mediaId)
     }.stateIn(coroutineScope, SharingStarted.Lazily, null)
 
-    @kotlin.OptIn(ExperimentalCoroutinesApi::class)
-    private var currentMediaLiked = media.flatMapLatest { mediaItem ->
-       if (mediaItem?.mediaId?.let { Database.songliked(it) } == 0) flowOf(false) else flowOf(true)
-    }.stateIn(coroutineScope, SharingStarted.Lazily, false)
+    lateinit var sleepTimerListener: SleepTimerListener
 
-    @kotlin.OptIn(ExperimentalCoroutinesApi::class)
-    private var currentMediaDownloaded = media.flatMapLatest { mediaItem ->
-        val downloads = DownloadUtil.downloads.value
-        flowOf(downloads[mediaItem?.mediaId]?.state == Download.STATE_COMPLETED)
-    }.stateIn(coroutineScope, SharingStarted.Lazily, false)
+    /**
+     * Online configuration
+     */
+    var currentSecond: MutableState<Float> = mutableFloatStateOf(0f)
+    var currentDuration: MutableState<Float> = mutableFloatStateOf(0f)
+    var internalOnlinePlayerView: MutableState<YouTubePlayerView> = mutableStateOf(
+        LayoutInflater.from(appContext())
+            .inflate(R.layout.youtube_player, null, false)
+                as YouTubePlayerView
+    )
+    var internalOnlinePlayer: MutableState<YouTubePlayer?> = mutableStateOf(null)
+    var internalOnlinePlayerState by mutableStateOf(PlayerConstants.PlayerState.UNSTARTED)
+    var load = true
+    var playFromSecond = 0f
+    var lastError: PlayerConstants.PlayerError? = null
+    var isPlayingNow by mutableStateOf(false)
+    var localMediaItem: MediaItem? = null
+    /**
+     * end online configuration
      */
 
-    private val mediaItemState = MutableStateFlow<MediaItem?>(null)
-
-    @ExperimentalCoroutinesApi
-    @FlowPreview
-    private val isLikedState = mediaItemState
-        .flatMapMerge { item ->
-            item?.mediaId?.let { Database.likedAt(it).distinctUntilChanged() } ?: flowOf(null)
+    private fun playerPositionMonitor(player: ExoPlayer) = flow {
+        while (player.isPlaying && player.currentMediaItem?.isLocal == true) {
+            emit(player.currentPosition)
+            delay(1000)
         }
-        .map { it != null }
-        .stateIn(coroutineScope, SharingStarted.Eagerly, false)
+    }.flowOn(Dispatchers.Main)
 
-    private var showLikeButton = true
-    private var shuffleModeEnabled = false
-
-    lateinit var sleepTimerListener: SleepTimerListener
-    
     override fun onBind(intent: Intent?): AndroidBinder {
-        super.onBind(intent)
         return binder
     }
 
@@ -383,32 +301,23 @@ class PlayerService : InvincibleService(),
     override fun onCreate() {
         super.onCreate()
 
-        runCatching {
-            bitmapProvider = BitmapProvider(
-                bitmapSize = (512 * resources.displayMetrics.density).roundToInt(),
-                colorProvider = { isSystemInDarkMode ->
-                    if (isSystemInDarkMode) Color.BLACK else Color.WHITE
-                }
-            )
-        }.onFailure {
-            Timber.e("Failed init bitmap provider in PlayerService ${it.stackTraceToString()}")
-        }
-
+        /**
+         * Online initialization
+         */
         createNotificationChannel()
 
         preferences.registerOnSharedPreferenceChangeListener(this)
 
         val preferences = preferences
-        isPersistentQueueEnabled = preferences.getBoolean(persistentQueueKey, false)
-        isInvincibilityEnabled = preferences.getBoolean(isInvincibilityEnabledKey, false)
+        //isPersistentQueueEnabled = preferences.getBoolean(persistentQueueKey, false)
+        //isInvincibilityEnabled = preferences.getBoolean(isInvincibilityEnabledKey, false)
         isShowingThumbnailInLockscreen =
             preferences.getBoolean(isShowingThumbnailInLockscreenKey, false)
 
         //audioQualityFormat = preferences.getEnum(audioQualityFormatKey, AudioQualityFormat.High)
-        showLikeButton = preferences.getBoolean(showLikeButtonBackgroundPlayerKey, true)
+        //showLikeButton = preferences.getBoolean(showLikeButtonBackgroundPlayerKey, true)
 
         player = ExoPlayer.Builder(this)
-            // todo MediaSourceFactory not needed for local content
             .setMediaSourceFactory(createMediaSourceFactory())
             .setRenderersFactory(createRendersFactory())
             .setHandleAudioBecomingNoisy(true)
@@ -443,104 +352,64 @@ class PlayerService : InvincibleService(),
         player.repeatMode = preferences.getEnum(queueLoopTypeKey, QueueLoopType.Default).type
 
         player.skipSilenceEnabled = preferences.getBoolean(skipSilenceKey, false)
-        player.addListener(this)
-        player.addAnalyticsListener(PlaybackStatsListener(false, this))
-
-        // Build a PendingIntent that can be used to launch the UI.
-        val sessionActivityPendingIntent =
-            packageManager?.getLaunchIntentForPackage(packageName)?.let { sessionIntent ->
-                PendingIntent.getActivity(this, 0, sessionIntent, PendingIntent.FLAG_IMMUTABLE)
-            }
-
-        mediaSession = MediaSessionCompat(baseContext, "PlayerService")
-        mediaSession.setFlags(MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS or MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS)
-        mediaSession.setRatingType(RatingCompat.RATING_NONE)
-        mediaSession.setSessionActivity(sessionActivityPendingIntent)
-        mediaSession.setCallback(SessionCallback(player))
-
-        if (preferences.getBoolean(useVolumeKeysToChangeSongKey, false))
-            mediaSession.setPlaybackToRemote(getVolumeProvider())
+        player.pauseAtEndOfMediaItems = false
 
         audioVolumeObserver = AudioVolumeObserver(this)
         audioVolumeObserver.register(AudioManager.STREAM_MUSIC, this)
 
         //connectivityManager = getSystemService()!!
 
-//        if (showLikeButton && showDownloadButton)
-//            mediaSession.setPlaybackState(stateBuilder.build())
-//        if (showLikeButton && !showDownloadButton)
-//            mediaSession.setPlaybackState(stateBuilderWithLikeOnly.build())
-//        if (showDownloadButton && !showLikeButton)
-//            mediaSession.setPlaybackState(stateBuilderWithDownloadOnly.build())
-//        if (!showLikeButton && !showDownloadButton)
-//            mediaSession.setPlaybackState(stateBuilderWithoutCustomAction.build())
-
-        mediaSession.isActive = true
-
-        updatePlaybackState()
-
-
         coroutineScope.launch {
-            var first = true
-            mediaItemState.zip(isLikedState) { mediaItem, _ ->
-                if (first) {
-                    first = false
-                    return@zip
-                }
-                if (mediaItem == null) return@zip
-                withContext(Dispatchers.Main) {
-                    updatePlaybackState()
-                    handler.post {
-                        runCatching {
-                            applicationContext.getSystemService<NotificationManager>()
-                                ?.notify(NotificationId, notification())
-                        }.onFailure {
-                            Timber.e("Failed likedState in PlayerService ${it.stackTraceToString()}")
-                        }
+            withContext(Dispatchers.Main) {
+                if (localMediaItem?.isLocal == true)
+                    playerPositionMonitor(player).collect {
+                        updateUnifiedNotification()
                     }
-                }
-            }.collect()
+            }
         }
 
-        notificationActionReceiver = NotificationActionReceiver(player)
+        if (isPersistentQueueEnabled()) {
+            player.loadMasterQueue()
+            resumePlaybackOnStart()
 
-
-        val filter = IntentFilter().apply {
-            addAction(Action.play.value)
-            addAction(Action.pause.value)
-            addAction(Action.next.value)
-            addAction(Action.previous.value)
-            addAction(Action.like.value)
-            addAction(Action.download.value)
-            addAction(Action.playradio.value)
-            addAction(Action.shuffle.value)
-        }
-
-        ContextCompat.registerReceiver(
-            this,
-            notificationActionReceiver,
-            filter,
-            ContextCompat.RECEIVER_NOT_EXPORTED
-        )
-
-        player.loadMasterQueue()
-
-        if (isPersistentQueueEnabled) {
-            // Save persistent queue periodically
             coroutineScope.launch {
                 while (isActive) {
-                    delay(30.seconds)
-                    withContext(Dispatchers.Main) {
-                        player.saveMasterQueue()
-                        //maybeSaveToDiskPlayerQueue()
-                    }
+                    delay(
+                        30.seconds
+                        //5.minutes
+                    )
+                    player.saveMasterQueue()
                 }
             }
         }
 
+        currentSong.debounce(1000).collect(coroutineScope) { song ->
+            Timber.d("PlayerService onCreate update currentSong $song mediaItemState ${currentMediaItemState.value}")
+            withContext(Dispatchers.Main) {
+                updateUnifiedNotification()
+                updateWidgets()
+            }
+        }
+
+        initializeNotificationActionReceiverUpAndroid11()
+        initializeUnifiedMediaSession()
+        initializeBitmapProvider()
+        initializeOnlinePlayer()
+
+        startForeground()
+
+        updateDiscordPresence()
         maybeResumePlaybackWhenDeviceConnected()
 
-        //workaround for android 12+
+        currentMediaItemState.value =  player.currentMediaItem
+    }
+
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        startForeground()
+        return START_NOT_STICKY
+    }
+
+    private fun startForeground() {
         runCatching {
             notification()?.let {
                 ServiceCompat.startForeground(
@@ -557,10 +426,250 @@ class PlayerService : InvincibleService(),
         }.onFailure {
             Timber.e("PlayerService oncreate startForeground ${it.stackTraceToString()}")
         }
+    }
+
+    private fun resumePlaybackOnStart() {
+        if(!isPersistentQueueEnabled() && !isResumePlaybackOnStart()) return
+
+        when (player.currentMediaItem?.isLocal) {
+            true -> { if (!player.isPlaying) player.play() }
+            else -> {}
+        }
+
+    }
+
+    override fun onRepeatModeChanged(repeatMode: Int) {
+        updateUnifiedNotification()
+    }
+
+    private fun initializeBitmapProvider() {
+        runCatching {
+            bitmapProvider = BitmapProvider(
+                bitmapSize = (512 * resources.displayMetrics.density).roundToInt(),
+                colorProvider = { isSystemInDarkMode ->
+                    if (isSystemInDarkMode) android.graphics.Color.BLACK else android.graphics.Color.WHITE
+                }
+            )
+        }.onFailure {
+            Timber.e("Failed init bitmap provider in MainActivity ${it.stackTraceToString()}")
+        }
+    }
+
+    private fun initializeUnifiedMediaSession() {
+
+        unifiedMediaSession = MediaSessionCompat(this, "PlayerService")
+
+        val repeatMode = preferences.getEnum(queueLoopTypeKey, QueueLoopType.Default).type
+
+        unifiedMediaSession.setFlags(
+            MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS or
+                    MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS
+        )
+        unifiedMediaSession.setRepeatMode(repeatMode)
+
+        if (preferences.getBoolean(useVolumeKeysToChangeSongKey, false))
+            unifiedMediaSession.setPlaybackToRemote(getVolumeProvider())
+
+        unifiedMediaSession.isActive = true
+
+    }
+
+    private fun initializeOnlinePlayer() {
+
+        internalOnlinePlayerView.value.apply {
+            enableAutomaticInitialization = false
 
 
-        updateDiscordPresence()
+            enableBackgroundPlayback(true)
 
+            keepScreenOn = false
+
+            val iFramePlayerOptions = IFramePlayerOptions.Builder(appContext())
+                .controls(0) // show/hide controls
+                .listType("playlist")
+                .origin(resources.getString(R.string.env_fqqhBZd0cf))
+                .build()
+
+            val listener = object : AbstractYouTubePlayerListener() {
+
+                override fun onReady(youTubePlayer: YouTubePlayer) {
+                    super.onReady(youTubePlayer)
+                    internalOnlinePlayer.value = youTubePlayer
+
+                    val customUiController =
+                        CustomDefaultPlayerUiController(
+                            context,
+                            internalOnlinePlayerView.value,
+                            youTubePlayer,
+                            onTap = {}
+                        )
+                    customUiController.showUi(false) // disable all default controls and buttons
+                    customUiController.showMenuButton(false)
+                    customUiController.showVideoTitle(false)
+                    customUiController.showPlayPauseButton(false)
+                    customUiController.showDuration(false)
+                    customUiController.showCurrentTime(false)
+                    customUiController.showSeekBar(false)
+                    customUiController.showBufferingProgress(false)
+                    customUiController.showYouTubeButton(false)
+                    customUiController.showFullscreenButton(false)
+                    internalOnlinePlayerView.value.setCustomPlayerUi(customUiController.rootView)
+
+                    Timber.d("PlayerService onlinePlayer onReady localmediaItem $localMediaItem queue index ${binder.player.currentMediaItemIndex}")
+
+                    localMediaItem?.let{
+                        if (!isPersistentQueueEnabled() && !isResumePlaybackOnStart())
+                            youTubePlayer.cueVideo(it.mediaId, playFromSecond)
+                        else
+                            youTubePlayer.loadVideo(it.mediaId, playFromSecond)
+                    }
+                }
+
+                override fun onCurrentSecond(youTubePlayer: YouTubePlayer, second: Float) {
+                    super.onCurrentSecond(youTubePlayer, second)
+                    currentSecond.value = second
+                    //Timber.d("PlayerService onlinePlayerView: onCurrentSecond $second")
+                }
+
+                override fun onVideoDuration(youTubePlayer: YouTubePlayer, duration: Float) {
+                    super.onVideoDuration(youTubePlayer, duration)
+                    currentDuration.value = duration
+                    updateUnifiedNotification()
+                }
+
+                override fun onStateChange(
+                    youTubePlayer: YouTubePlayer,
+                    state: PlayerConstants.PlayerState
+                ) {
+                    //super.onStateChange(youTubePlayer, state)
+                    Timber.d("PlayerService onlinePlayerView: onStateChange $state")
+
+                    if (state == PlayerConstants.PlayerState.ENDED) {
+                        val queueLoopType = preferences.getEnum(queueLoopTypeKey, defaultValue = QueueLoopType.Default)
+                        // TODO Implement repeat mode in queue
+                        when (queueLoopType) {
+                            QueueLoopType.RepeatOne -> {
+                                internalOnlinePlayer.value?.seekTo(0f)
+                                Timber.d("PlayerService onlinePlayerView: onStateChange Repeat: RepeatOne fired")
+                            }
+                            QueueLoopType.Default -> {
+                                val hasNext = binder.player.hasNextMediaItem()
+                                Timber.d("PlayerService onlinePlayerView: onStateChange Repeat: Default fired")
+                                if (hasNext) {
+                                    binder.player.playNext()
+                                    Timber.d("PlayerService onlinePlayerView: onStateChange Repeat: Default fired next")
+                                }
+                            }
+                            QueueLoopType.RepeatAll -> {
+                                val hasNext = binder.player.hasNextMediaItem()
+                                Timber.d("PlayerService onlinePlayerView: onStateChange Repeat: RepeatAll fired")
+                                if (!hasNext) {
+                                    binder.player.seekTo(0, 0)
+                                    internalOnlinePlayer.value?.play()
+                                    Timber.d("PlayerService onlinePlayerView: onStateChange Repeat: RepeatAll fired first")
+                                } else {
+                                    binder.player.playNext()
+                                    Timber.d("PlayerService onlinePlayerView: onStateChange Repeat: RepeatAll fired next")
+                                }
+                            }
+                        }
+
+                    }
+
+//                    val fadeDisabled = getPlaybackFadeAudioDuration() == DurationInMilliseconds.Disabled
+//                    val duration = getPlaybackFadeAudioDuration().milliSeconds
+//                    if (!fadeDisabled)
+//                        startFadeAnimator(
+//                            player = player,
+//                            duration = duration,
+//                            fadeIn = true
+//                        )
+
+                    internalOnlinePlayerState = state
+                    isPlayingNow = state == PlayerConstants.PlayerState.PLAYING
+                    updateUnifiedNotification()
+                }
+
+                override fun onError(
+                    youTubePlayer: YouTubePlayer,
+                    error: PlayerConstants.PlayerError
+                ) {
+                    super.onError(youTubePlayer, error)
+
+                    if (isPersistentQueueEnabled())
+                        player.saveMasterQueue()
+
+                    localMediaItem?.isLocal?.let { if (it) return }
+
+                    youTubePlayer.pause()
+                    clearWebViewData()
+
+                    Timber.e("PlayerService: onError $error")
+                    val errorString = when (error) {
+                        PlayerConstants.PlayerError.VIDEO_NOT_PLAYABLE_IN_EMBEDDED_PLAYER -> "Content not playable, recovery in progress, try to click play but if the error persists try to log in"
+                        PlayerConstants.PlayerError.VIDEO_NOT_FOUND -> "Content not found, perhaps no longer available"
+                        else -> null
+                    }
+
+                    if (errorString != null && lastError != error) {
+                        SmartMessage(
+                            errorString,
+                            PopupType.Error,
+                            //durationLong = true,
+                            context = context()
+                        )
+                        localMediaItem?.let { youTubePlayer.cueVideo(it.mediaId, 0f) }
+
+                    }
+
+                    lastError = error
+
+                    if (!isSkipMediaOnErrorEnabled()) return
+                    val prev = binder.player.currentMediaItem ?: return
+
+                    binder.player.playNext()
+
+                    SmartMessage(
+                        message = context().getString(
+                            R.string.skip_media_on_error_message,
+                            prev.mediaMetadata.title
+                        ),
+                        context = context(),
+                    )
+
+                }
+
+            }
+
+            initialize(listener, iFramePlayerOptions)
+
+        }
+
+    }
+
+    private fun initializeNotificationActionReceiverUpAndroid11() {
+        if (!isAtLeastAndroid11) return
+
+        notificationActionReceiverUpAndroid11 = NotificationActionReceiverUpAndroid11()
+
+        val filter = IntentFilter().apply {
+            addAction(Action.play.value)
+            addAction(Action.pause.value)
+            addAction(Action.next.value)
+            addAction(Action.previous.value)
+            addAction(Action.like.value)
+            addAction(Action.playradio.value)
+            addAction(Action.shuffle.value)
+            addAction(Action.search.value)
+            addAction(Action.repeat.value)
+        }
+
+        ContextCompat.registerReceiver(
+            this@PlayerService,
+            notificationActionReceiverUpAndroid11,
+            filter,
+            ContextCompat.RECEIVER_NOT_EXPORTED
+        )
     }
 
     private fun updateDiscordPresence() {
@@ -627,10 +736,22 @@ class PlayerService : InvincibleService(),
         }
     }
 
+    override fun onShuffleModeEnabledChanged(shuffleModeEnabled: Boolean) {
+        if (shuffleModeEnabled) {
+            val shuffledIndices = IntArray(player.mediaItemCount) { it }
+            shuffledIndices.shuffle()
+            shuffledIndices[shuffledIndices.indexOf(player.currentMediaItemIndex)] = shuffledIndices[0]
+            shuffledIndices[0] = player.currentMediaItemIndex
+            player.shuffleOrder = DefaultShuffleOrder(shuffledIndices, System.currentTimeMillis())
+        }
+        updateUnifiedNotification()
+    }
+
     override fun onTaskRemoved(rootIntent: Intent?) {
 
         isclosebackgroundPlayerEnabled = preferences.getBoolean(closebackgroundPlayerKey, false)
         if (isclosebackgroundPlayerEnabled) {
+            internalOnlinePlayer.value?.pause()
             broadCastPendingIntent<NotificationDismissReceiver>().send()
             this.stopService(this.intent<PlayerService>())
             //stopSelf()
@@ -650,12 +771,11 @@ class PlayerService : InvincibleService(),
             player.stop()
             player.release()
 
-            unregisterReceiver(notificationActionReceiver)
+            unregisterReceiver(notificationActionReceiverUpAndroid11)
 
-            mediaSession.isActive = false
-            mediaSession.release()
+            unifiedMediaSession.isActive = false
+            unifiedMediaSession.release()
             cache.release()
-            //downloadCache.release()
             loudnessEnhancer?.release()
             audioVolumeObserver.unregister()
 
@@ -666,9 +786,15 @@ class PlayerService : InvincibleService(),
         super.onDestroy()
     }
 
-    override fun shouldBeInvincible(): Boolean {
-        return !player.shouldBePlaying
-    }
+//    override fun shouldBeInvincible(): Boolean {
+//
+//        return !player.shouldBePlaying ||
+//                ( internalOnlinePlayerState !in
+//                        listOf(
+//                            PlayerConstants.PlayerState.ENDED, PlayerConstants.PlayerState.VIDEO_CUED
+//                        )
+//                )
+//    }
 
     private var pausedByZeroVolume = false
     override fun onAudioVolumeChanged(currentVolume: Int, maxVolume: Int) {
@@ -695,20 +821,20 @@ class PlayerService : InvincibleService(),
     }
 
 
-    @ExperimentalCoroutinesApi
-    @FlowPreview
-    override fun onConfigurationChanged(newConfig: Configuration) {
-        handler.post {
-            runCatching {
-                if (bitmapProvider.setDefaultBitmap() && player.currentMediaItem != null) {
-                    notificationManager?.notify(NotificationId, notification())
-                }
-            }.onFailure {
-                Timber.e("Failed onConfigurationChanged in PlayerService ${it.stackTraceToString()}")
-            }
-        }
-        super.onConfigurationChanged(newConfig)
-    }
+//    @ExperimentalCoroutinesApi
+//    @FlowPreview
+//    override fun onConfigurationChanged(newConfig: Configuration) {
+//        handler.post {
+//            runCatching {
+//                if (bitmapProvider.setDefaultBitmap() && player.currentMediaItem != null) {
+//                    notificationManager?.notify(NotificationId, notification())
+//                }
+//            }.onFailure {
+//                Timber.e("Failed onConfigurationChanged in PlayerService ${it.stackTraceToString()}")
+//            }
+//        }
+//        super.onConfigurationChanged(newConfig)
+//    }
 
     @UnstableApi
     override fun onPlaybackStatsReady(
@@ -751,33 +877,37 @@ class PlayerService : InvincibleService(),
         }
     }
 
+    @kotlin.OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
     @UnstableApi
     override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
 
-        mediaItemState.update { mediaItem }
+        startForeground()
 
-        maybeRecoverPlaybackError()
-        maybeNormalizeVolume()
-        maybeProcessRadio()
+        if (mediaItem == null) return
 
-        if (mediaItem == null) {
-            runCatching {
-                bitmapProvider.listener?.invoke(null)
-            }.onFailure {
-                Timber.e("Failed onMediaItemTransition bitmapProvider.invoke in PlayerService ${it.stackTraceToString()}")
+        Timber.d("PlayerService onMediaItemTransition mediaItem ${mediaItem.mediaId} reason $reason")
+
+        mediaItem.let {
+            currentMediaItemState.value = it
+            localMediaItem = it
+
+            if (!it.isLocal){
+                currentSecond.value = 0F
+                internalOnlinePlayer.value?.loadVideo(it.mediaId, 0f)
             }
-        } else if (mediaItem.mediaMetadata.artworkUri == bitmapProvider.lastUri) {
-            runCatching {
-                bitmapProvider.listener?.invoke(bitmapProvider.lastBitmap)
-            }.onFailure {
-                Timber.e("Failed onMediaItemTransition bitmapProvider.invoke lastbitmap in PlayerService ${it.stackTraceToString()}")
-            }
+
+            bitmapProvider?.load(it.mediaMetadata.artworkUri) {}
         }
 
         if (reason == Player.MEDIA_ITEM_TRANSITION_REASON_AUTO || reason == Player.MEDIA_ITEM_TRANSITION_REASON_SEEK) {
             updateMediaSessionQueue(player.currentTimeline)
         }
 
+        maybeRecoverPlaybackError()
+        maybeNormalizeVolume()
+        maybeProcessRadio()
+
+        updateUnifiedNotification()
         updateWidgets()
         updateDiscordPresence()
 
@@ -788,6 +918,28 @@ class PlayerService : InvincibleService(),
             updateMediaSessionQueue(timeline)
         }
     }
+
+    override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) {
+        Timber.d("PlayerService onPlayWhenReadyChanged playWhenReady $playWhenReady reason $reason")
+    }
+
+    override fun onTrimMemory(level: Int) {
+        val isLowMemory = level == ComponentCallbacks2.TRIM_MEMORY_RUNNING_CRITICAL
+        Timber.d("PlayerService onTrimMemory level $level isLowMemory $isLowMemory")
+        if (isLowMemory)
+            player.saveMasterQueue()
+    }
+
+    fun updateUnifiedNotification() {
+        coroutineScope.launch {
+            withContext(Dispatchers.Main){
+                updateUnifiedMediasession()
+                val notifyInstance = notification()
+                notifyInstance?.let { NotificationManagerCompat.from(this@PlayerService).notify(NotificationId, it) }
+            }
+        }
+    }
+
 
     private fun updateMediaSessionQueue(timeline: Timeline) {
         val builder = MediaDescriptionCompat.Builder()
@@ -808,7 +960,7 @@ class PlayerService : InvincibleService(),
 
         startIndex = startIndex.coerceAtLeast(0)
 
-        mediaSession.setQueue(
+        unifiedMediaSession.setQueue(
             List(endIndex - startIndex + 1) { index ->
                 val mediaItem = timeline.getWindow(index + startIndex, Timeline.Window()).mediaItem
                 MediaSessionCompat.QueueItem(
@@ -830,6 +982,8 @@ class PlayerService : InvincibleService(),
     }
 
     private fun maybeRecoverPlaybackError() {
+        if (localMediaItem?.isLocal == false) return
+
         if (player.playerError != null) {
             player.prepare()
         }
@@ -837,15 +991,15 @@ class PlayerService : InvincibleService(),
 
     private fun maybeProcessRadio() {
         // Old feature add songs only if radio is started by user and when last song in player is played
-        radio?.let { radio ->
-            if (player.mediaItemCount - player.currentMediaItemIndex == 1) {
-                coroutineScope.launch(Dispatchers.Main) {
-                    player.addMediaItems(radio.process())
-                }
-            }
-        }
+//        radio?.let { radio ->
+//            if (player.mediaItemCount - player.currentMediaItemIndex == 1) {
+//                coroutineScope.launch(Dispatchers.Main) {
+//                    player.addMediaItems(radio.process())
+//                }
+//            }
+//        }
 
-        /* // New feature auto start radio in queue
+        // New feature auto start radio in queue
         if (radio == null) {
             binder.setupRadio(
                 NavigationEndpoint.Endpoint.Watch(
@@ -861,193 +1015,9 @@ class PlayerService : InvincibleService(),
                 }
             }
         }
-        */
-    }
-
-    @ExperimentalCoroutinesApi
-    @FlowPreview
-    @UnstableApi
-    private fun maybeRestoreFromDiskPlayerQueue() {
-        if (!isPersistentQueueEnabled) return
-        //Log.d("mediaItem", "QueuePersistentEnabled Restore Initial")
-
-        runCatching {
-            filesDir.resolve("persistentQueue.data").inputStream().use { fis ->
-                ObjectInputStream(fis).use { oos ->
-                    oos.readObject() as PersistentQueue
-                }
-            }
-        }.onSuccess { queue ->
-            //Log.d("mediaItem", "QueuePersistentEnabled Restored queue $queue")
-            //Log.d("mediaItem", "QueuePersistentEnabled Restored ${queue.songMediaItems.size}")
-            runBlocking(Dispatchers.Main) {
-                player.setMediaItems(
-                    queue.songMediaItems.map { song ->
-                        song.asMediaItem.buildUpon()
-                            .setUri(song.asMediaItem.mediaId)
-                            .setCustomCacheKey(song.asMediaItem.mediaId)
-                            .build().apply {
-                                mediaMetadata.extras?.putBoolean("isFromPersistentQueue", true)
-                            }
-                    },
-                    queue.mediaItemIndex,
-                    queue.position
-                )
-
-                player.prepare()
-
-                isNotificationStarted = true
-                runCatching {
-                    startForegroundService(this@PlayerService, intent<PlayerService>())
-                }.onFailure {
-                    Timber.e("maybeRestoreFromDiskPlayerQueue PlayerService startForegroundService ${it.stackTraceToString()}")
-                }
-                runCatching {
-                    //startForeground(NotificationId, notification())
-                    notification()?.let {
-                        ServiceCompat.startForeground(
-                            this@PlayerService,
-                            NotificationId,
-                            it,
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                                ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK
-                            } else {
-                                0
-                            }
-                        )
-                    }
-                }.onFailure {
-                    Timber.e("maybeRestoreFromDiskPlayerQueue PlayerService startForeground ${it.stackTraceToString()}")
-                }
-            }
-
-        }.onFailure {
-            //it.printStackTrace()
-            Timber.e(it.stackTraceToString())
-        }
-
-        //Log.d("mediaItem", "QueuePersistentEnabled Restored ${player.currentTimeline.mediaItems.size}")
 
     }
 
-    private fun maybeSaveToDiskPlayerQueue() {
-
-        if (!isPersistentQueueEnabled) return
-        //Log.d("mediaItem", "QueuePersistentEnabled Save ${player.currentTimeline.mediaItems.size}")
-
-        val persistentQueue = PersistentQueue(
-            title = "title",
-            songMediaItems = player.currentTimeline.mediaItems.map {
-                PersistentSong(
-                    id = it.mediaId,
-                    title = it.mediaMetadata.title.toString(),
-                    durationText = it.mediaMetadata.extras?.getString("durationText").toString(),
-                    thumbnailUrl = it.mediaMetadata.artworkUri.toString()
-                )
-            },
-            mediaItemIndex = player.currentMediaItemIndex,
-            position = player.currentPosition
-        )
-
-        runCatching {
-            filesDir.resolve("persistentQueue.data").outputStream().use { fos ->
-                ObjectOutputStream(fos).use { oos ->
-                    oos.writeObject(persistentQueue)
-                }
-            }
-        }.onFailure {
-            //it.printStackTrace()
-            Timber.e(it.stackTraceToString())
-
-        }.onSuccess {
-            Log.d("mediaItem", "QueuePersistentEnabled Saved $persistentQueue")
-        }
-
-    }
-
-//    private fun maybeSavePlayerQueue() {
-//        if (!isPersistentQueueEnabled) return
-//        /*
-//        if (player.playbackState == Player.STATE_IDLE) {
-//            Log.d("mediaItem", "QueuePersistentEnabled playbackstate idle return")
-//            return
-//        }
-//         */
-//        //Log.d("mediaItem", "QueuePersistentEnabled Save ${player.currentTimeline.mediaItems.size}")
-//        //Log.d("mediaItem", "QueuePersistentEnabled Save initial")
-//
-//        val mediaItems = player.currentTimeline.mediaItems
-//        val mediaItemIndex = player.currentMediaItemIndex
-//        val mediaItemPosition = player.currentPosition
-//
-//        mediaItems.mapIndexed { index, mediaItem ->
-//            QueuedMediaItem(
-//                mediaItem = mediaItem,
-//                position = if (index == mediaItemIndex) mediaItemPosition else null
-//            )
-//        }.let { queuedMediaItems ->
-//            query {
-//                Database.clearQueue()
-//                Database.insert(queuedMediaItems)
-//            }
-//        }
-//    }
-
-//    @ExperimentalCoroutinesApi
-//    @FlowPreview
-//    @UnstableApi
-//    private fun maybeRestorePlayerQueue() {
-//        if (!isPersistentQueueEnabled) return
-//
-//        Database.asyncTransaction {
-//            val queuedSong = Database.queue()
-//
-//            if (queuedSong.isEmpty()) return@query
-//
-//            val index = queuedSong.indexOfFirst { it.position != null }.coerceAtLeast(0)
-//
-//            runBlocking(Dispatchers.Main) {
-//                player.setMediaItems(
-//                    queuedSong.map { mediaItem ->
-//                        mediaItem.mediaItem.buildUpon()
-//                            .setUri(mediaItem.mediaItem.mediaId)
-//                            .setCustomCacheKey(mediaItem.mediaItem.mediaId)
-//                            .build().apply {
-//                                mediaMetadata.extras?.putBoolean("isFromPersistentQueue", true)
-//                            }
-//                    },
-//                    index,
-//                    queuedSong[index].position ?: C.TIME_UNSET
-//                )
-//                player.prepare()
-//
-//                isNotificationStarted = true
-//                runCatching {
-//                    startForegroundService(this@PlayerService, intent<PlayerService>())
-//                }.onFailure {
-//                    Timber.e("maybeRestorePlayerQueue startForegroundService ${it.stackTraceToString()}")
-//                }
-//                runCatching {
-//                    //startForeground(NotificationId, notification())
-//                    notification()?.let {
-//                        ServiceCompat.startForeground(
-//                            this@PlayerService,
-//                            NotificationId,
-//                            it,
-//                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-//                                ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK
-//                            } else {
-//                                0
-//                            }
-//                        )
-//                    }
-//                }.onFailure {
-//                    Timber.e("maybeRestorePlayerQueue startForeground ${it.stackTraceToString()}")
-//                }
-//            }
-//        }
-//
-//    }
 
     @UnstableApi
     private fun maybeNormalizeVolume() {
@@ -1109,7 +1079,7 @@ class PlayerService : InvincibleService(),
 
     private fun maybeShowSongCoverInLockScreen() {
         val bitmap =
-            if (isAtLeastAndroid13 || isShowingThumbnailInLockscreen) bitmapProvider.bitmap else null
+            if (isAtLeastAndroid13 || isShowingThumbnailInLockscreen) bitmapProvider?.bitmap else null
 
         val uri = player.mediaMetadata.artworkUri?.toString()?.thumbnail(512)
         metadataBuilder.putBitmap(MediaMetadataCompat.METADATA_KEY_ART, bitmap)
@@ -1124,7 +1094,7 @@ class PlayerService : InvincibleService(),
             )
         }
 
-        mediaSession.setMetadata(metadataBuilder.build())
+        unifiedMediaSession.setMetadata(metadataBuilder.build())
     }
 
     @SuppressLint("NewApi")
@@ -1155,7 +1125,7 @@ class PlayerService : InvincibleService(),
                 override fun onAudioDevicesRemoved(removedDevices: Array<AudioDeviceInfo>) = Unit
             }
 
-            audioManager?.registerAudioDeviceCallback(audioDeviceCallback, handler)
+            //audioManager?.registerAudioDeviceCallback(audioDeviceCallback, handler)
 
         } else {
             audioManager?.unregisterAudioDeviceCallback(audioDeviceCallback)
@@ -1185,76 +1155,225 @@ class PlayerService : InvincibleService(),
         )
     }
 
-    @ExperimentalCoroutinesApi
-    @FlowPreview
-    private fun updatePlaybackState() = coroutineScope.launch {
-        playbackStateMutex.withLock {
-            withContext(Dispatchers.Main) {
-                shuffleModeEnabled = player.shuffleModeEnabled
-
-//                if (showLikeButton && showDownloadButton)
-//                    mediaSession.setPlaybackState(
-//                        stateBuilder
-//                            .setState(player.androidPlaybackState, player.currentPosition, 1f)
-//                            .setBufferedPosition(player.bufferedPosition)
-//                            .build()
-//                    )
-//                if (showLikeButton && !showDownloadButton)
-//                    mediaSession.setPlaybackState(
-//                        stateBuilderWithLikeOnly
-//                            .setState(player.androidPlaybackState, player.currentPosition, 1f)
-//                            .setBufferedPosition(player.bufferedPosition)
-//                            .build()
-//                    )
-//                if (showDownloadButton && !showLikeButton)
-//                    mediaSession.setPlaybackState(
-//                        stateBuilderWithDownloadOnly
-//                            .setState(player.androidPlaybackState, player.currentPosition, 1f)
-//                            .setBufferedPosition(player.bufferedPosition)
-//                            .build()
-//                    )
-                //if (!showDownloadButton && !showLikeButton)
-                    mediaSession.setPlaybackState(
-                        stateBuilderWithoutCustomAction
-                            .setState(player.androidPlaybackState, player.currentPosition, 1f)
-                            .setBufferedPosition(player.bufferedPosition)
-                            .build()
-                    )
-            }
+    private fun updateUnifiedMediasession() {
+        Timber.d("PlayerService updateUnifiedMediasessionData")
+        val currentMediaItem = binder.player.currentMediaItem
+        val queueLoopType = preferences.getEnum(queueLoopTypeKey, defaultValue = QueueLoopType.Default)
+        binder.let {
+            unifiedMediaSession.setCallback(
+                PlayerMediaSessionCallback(
+                    binder = it,
+                    onPlayClick = {
+                        Timber.d("PlayerService MediaSessionCallback onPlayClick")
+                        if (player.currentMediaItem?.isLocal == true)
+                            it.player.play()
+                        else
+                            internalOnlinePlayer.value?.play()
+                    },
+                    onPauseClick = {
+                        Timber.d("PlayerService MediaSessionCallback onPauseClick")
+                        it.player.pause()
+                        internalOnlinePlayer.value?.pause()
+                    },
+                    onSeekToPos = { second ->
+                        val newPosition = (second / 1000).toFloat()
+                        Timber.d("PlayerService MediaSessionCallback onSeekPosTo ${newPosition}")
+                        internalOnlinePlayer.value?.seekTo(newPosition)
+                        currentSecond.value = second.toFloat()
+                    },
+                    onPlayNext = {
+                        it.player.playNext()
+                    },
+                    onPlayPrevious = {
+                        it.player.playPrevious()
+                    },
+                    onPlayQueueItem = { id ->
+                        it.player.seekToDefaultPosition(id.toInt())
+                    },
+                    onCustomClick = { customAction ->
+                        Timber.d("PlayerService MediaSessionCallback onCustomClick $customAction")
+                        when (customAction) {
+                            NotificationButtons.Favorites.action -> {
+                                it.toggleLike()
+                            }
+                            NotificationButtons.Repeat.action -> {
+                                preferences.edit(commit = true) { putEnum(queueLoopTypeKey, setQueueLoopState(queueLoopType)) }
+                            }
+                            NotificationButtons.Shuffle.action -> {
+                                //it.player.shuffleQueue()
+                                it.toggleShuffle() // toggle shuffle mode
+                            }
+                            NotificationButtons.Radio.action -> {
+                                if (currentMediaItem != null) {
+                                    it.stopRadio()
+                                    it.player.seamlessQueue(currentMediaItem)
+                                    internalOnlinePlayer.value?.play()
+                                    it.setupRadio(
+                                        NavigationEndpoint.Endpoint.Watch(videoId = currentMediaItem.mediaId)
+                                    )
+                                }
+                            }
+                            NotificationButtons.Search.action -> {
+                                it.actionSearch()
+                            }
+                        }
+                        updateUnifiedNotification()
+                    }
+                )
+            )
         }
 
+        unifiedMediaSession.setMetadata(
+            MediaMetadataCompat.Builder()
+                .putString(
+                    MediaMetadataCompat.METADATA_KEY_MEDIA_ID,
+                    currentMediaItem?.mediaId
+                )
+                .putBitmap(
+                    MediaMetadataCompat.METADATA_KEY_ALBUM_ART,
+                    bitmapProvider?.bitmap
+                )
+                .putString(
+                    MediaMetadataCompat.METADATA_KEY_TITLE,
+                    currentMediaItem?.mediaMetadata?.title.toString()
+                )
+                .putString(
+                    MediaMetadataCompat.METADATA_KEY_ARTIST,
+                    currentMediaItem?.mediaMetadata?.artist.toString()
+                )
+                .putString(
+                    MediaMetadataCompat.METADATA_KEY_ALBUM,
+                    currentMediaItem?.mediaMetadata?.albumTitle.toString()
+                )
+                .putLong(MediaMetadataCompat.METADATA_KEY_DURATION, if (currentMediaItem?.isLocal == false) (currentDuration.value * 1000).toLong() else player.duration)
+                .build()
+        )
 
+        val actions =
+            PlaybackStateCompat.ACTION_PLAY or
+                    PlaybackStateCompat.ACTION_PAUSE or
+                    PlaybackStateCompat.ACTION_PLAY_PAUSE or
+                    PlaybackStateCompat.ACTION_STOP or
+                    PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS or
+                    PlaybackStateCompat.ACTION_SKIP_TO_NEXT or
+                    PlaybackStateCompat.ACTION_SEEK_TO
+
+        // todo Improve custom actions in online player notification
+        val notificationPlayerFirstIcon = preferences.getEnum(notificationPlayerFirstIconKey, NotificationButtons.Repeat)
+        val notificationPlayerSecondIcon = preferences.getEnum(notificationPlayerSecondIconKey, NotificationButtons.Favorites)
+
+        val firstCustomAction = NotificationButtons.entries
+            .filter { it == notificationPlayerFirstIcon }
+            .map {
+                PlaybackStateCompat.CustomAction.Builder(
+                    it.action,
+                    it.name,
+                    it.getStateIcon(
+                        it,
+                        currentSong.value?.likedAt,
+                        player.repeatMode,
+                        player.shuffleModeEnabled
+                    ),
+                ).build()
+            }.first()
+
+
+        val secondCustomAction = NotificationButtons.entries
+            .filter { it == notificationPlayerSecondIcon }
+            .map {
+                PlaybackStateCompat.CustomAction.Builder(
+                    it.action,
+                    it.name,
+                    it.getStateIcon(
+                        it,
+                        currentSong.value?.likedAt,
+                        player.repeatMode,
+                        player.shuffleModeEnabled
+                    ),
+                ).build()
+            }.first()
+
+
+        unifiedMediaSession.setPlaybackState(
+            PlaybackStateCompat.Builder().setActions(actions.let {
+                if (isAtLeastAndroid12) it or PlaybackStateCompat.ACTION_SET_PLAYBACK_SPEED else it
+            })
+                .apply {
+                    addCustomAction(firstCustomAction)
+                    addCustomAction(secondCustomAction)
+                    setState(
+                        if (internalOnlinePlayerState == PlayerConstants.PlayerState.PLAYING || player.isPlaying)
+                            PlaybackStateCompat.STATE_PLAYING else PlaybackStateCompat.STATE_PAUSED,
+                        if(player.currentMediaItem?.isLocal == false) (currentSecond.value * 1000).toLong() else player.currentPosition,
+                        1f
+                    )
+                }
+                .build()
+        )
+        Timber.d("PlayerService updateUnifiedMediasessionData onlineplayer playing ${internalOnlinePlayerState == PlayerConstants.PlayerState.PLAYING} localplayer playing ${player?.isPlaying}")
+    }
+
+    inner class NotificationActionReceiverUpAndroid11() : BroadcastReceiver() {
+
+        @ExperimentalCoroutinesApi
+        @FlowPreview
+        override fun onReceive(context: Context, intent: Intent) {
+            Timber.d("MainActivity onReceive intent.action: ${intent.action}")
+            val currentMediaItem = binder.player.currentMediaItem
+            val queueLoopType = preferences.getEnum(queueLoopTypeKey, defaultValue = QueueLoopType.Default)
+            binder.let {
+                when (intent.action) {
+                    Action.pause.value -> {
+                        player.pause()
+                        internalOnlinePlayer.value?.pause()
+                    }
+                    Action.play.value -> {
+                        if (player.currentMediaItem?.isLocal == true)
+                            it.player.play()
+                        else
+                            internalOnlinePlayer.value?.play()
+                    }
+                    Action.next.value -> it.player.playNext()
+                    Action.previous.value -> it.player.playPrevious()
+                    Action.like.value -> {
+                        it.toggleLike()
+                    }
+                    Action.repeat.value -> {
+                        preferences.edit(commit = true) { putEnum(queueLoopTypeKey, setQueueLoopState(queueLoopType)) }
+                    }
+                   Action.shuffle.value -> {
+                        //it.player.shuffleQueue()
+                       it.toggleShuffle() // toggle shuffle mode
+                    }
+                    Action.playradio.value -> {
+                        if (currentMediaItem != null) {
+                            it.stopRadio()
+                            it.player.seamlessQueue(currentMediaItem)
+                            internalOnlinePlayer.value?.play()
+                            it.setupRadio(
+                                NavigationEndpoint.Endpoint.Watch(videoId = currentMediaItem.mediaId)
+                            )
+                        }
+                    }
+                    Action.search.value -> {
+                        it.actionSearch()
+                    }
+
+                }
+            }
+            updateUnifiedNotification()
+        }
 
     }
 
-    private val Player.androidPlaybackState
-        get() = when (playbackState) {
-            Player.STATE_BUFFERING -> if (playWhenReady) PlaybackStateCompat.STATE_BUFFERING else PlaybackStateCompat.STATE_PAUSED
-            Player.STATE_READY -> if (playWhenReady) PlaybackStateCompat.STATE_PLAYING else PlaybackStateCompat.STATE_PAUSED
-            Player.STATE_ENDED -> PlaybackStateCompat.STATE_STOPPED
-            Player.STATE_IDLE -> PlaybackStateCompat.STATE_NONE
-            else -> PlaybackStateCompat.STATE_NONE
-        }
 
     // legacy behavior may cause inconsistencies, but not available on sdk 24 or lower
+    @RequiresApi(Build.VERSION_CODES.O)
     @ExperimentalCoroutinesApi
     @FlowPreview
     @Suppress("DEPRECATION")
     override fun onEvents(player: Player, events: Player.Events) {
-        if (player.duration != C.TIME_UNSET) mediaSession.setMetadata(
-            metadataBuilder
-                .putText(
-                    MediaMetadataCompat.METADATA_KEY_TITLE,
-                    cleanPrefix(player.mediaMetadata.title.toString())
-                )
-                .putText(MediaMetadataCompat.METADATA_KEY_ARTIST, player.mediaMetadata.artist)
-                .putText(MediaMetadataCompat.METADATA_KEY_ALBUM, player.mediaMetadata.albumTitle)
-                .putLong(MediaMetadataCompat.METADATA_KEY_DURATION, player.duration)
-                .build()
-        )
-
-
-        if (events.containsAny(
+        if (!events.containsAny(
                 Player.EVENT_PLAYBACK_STATE_CHANGED,
                 Player.EVENT_PLAY_WHEN_READY_CHANGED,
                 Player.EVENT_IS_PLAYING_CHANGED,
@@ -1263,76 +1382,101 @@ class PlayerService : InvincibleService(),
                 Player.EVENT_MEDIA_METADATA_CHANGED
                 //Player.EVENT_PLAYBACK_SUPPRESSION_REASON_CHANGED
             )
-        ) {
-            val notification = notification()
+        ) return
 
-            if (notification == null) {
+        val notification = notification()
+
+        if (notification == null) {
+            isNotificationStarted = false
+            //makeInvincible(false)
+            runCatching {
+                stopForeground(false)
+            }.onFailure {
+                Timber.e("PlayerService Failed stopForeground onEvents ${it.stackTraceToString()}")
+            }
+            sendCloseEqualizerIntent()
+            notificationManager?.cancel(NotificationId)
+            return
+        }
+
+        if ((player.isPlaying || isPlayingNow) && !isNotificationStarted) {
+            isNotificationStarted = true
+            runCatching {
+                startForegroundService( intent<PlayerService>())
+            }.onFailure {
+                Timber.e("PlayerServiceFailed startForegroundService onEvents ${it.stackTraceToString()}")
+            }
+            startForeground()
+//                runCatching {
+//                    notification()?.let {
+//                        ServiceCompat.startForeground(
+//                            this@PlayerService,
+//                            NotificationId,
+//                            it,
+//                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+//                                ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK
+//                            } else {
+//                                0
+//                            }
+//                        )
+//                    }
+//                }.onFailure {
+//                    Timber.e("PlayerService Failed startForeground onEvents ${it.stackTraceToString()}")
+//                }
+            //makeInvincible(false)
+            sendOpenEqualizerIntent()
+        } else {
+            if (player.isPlaying || isPlayingNow) {
                 isNotificationStarted = false
-                makeInvincible(false)
                 runCatching {
                     stopForeground(false)
                 }.onFailure {
-                    Timber.e("Failed stopForeground in PlayerService onEvents ${it.stackTraceToString()}")
+                    Timber.e("PlayerService Failed stopForeground onEvents ${it.stackTraceToString()}")
                 }
+                //makeInvincible(true)
                 sendCloseEqualizerIntent()
-                notificationManager?.cancel(NotificationId)
-                return
             }
-
-            if (player.shouldBePlaying && !isNotificationStarted) {
-                isNotificationStarted = true
-                runCatching {
-                    startForegroundService(this@PlayerService, intent<PlayerService>())
-                }.onFailure {
-                    Timber.e("Failed startForegroundService in PlayerService onEvents ${it.stackTraceToString()}")
-                }
-                runCatching {
-                    //startForeground(NotificationId, notification)
-                    notification()?.let {
-                        ServiceCompat.startForeground(
-                            this@PlayerService,
-                            NotificationId,
-                            it,
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                                ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK
-                            } else {
-                                0
-                            }
-                        )
-                    }
-                }.onFailure {
-                    Timber.e("Failed startForeground in PlayerService onEvents ${it.stackTraceToString()}")
-                }
-                makeInvincible(false)
-                sendOpenEqualizerIntent()
-            } else {
-                if (!player.shouldBePlaying) {
-                    isNotificationStarted = false
-                    runCatching {
-                        stopForeground(false)
-                    }.onFailure {
-                        Timber.e("Failed stopForeground 1 in PlayerService onEvents ${it.stackTraceToString()}")
-                    }
-                    makeInvincible(true)
-                    sendCloseEqualizerIntent()
-                }
-                runCatching {
-                    notificationManager?.notify(NotificationId, notification)
-                }.onFailure {
-                    Timber.e("Failed onEvents in PlayerService notificationManager.notify ${it.stackTraceToString()}")
-                }
+            runCatching {
+                notificationManager?.notify(NotificationId, notification)
+            }.onFailure {
+                Timber.e("PlayerServiceFailed onEvents notificationManager.notify ${it.stackTraceToString()}")
             }
         }
-        //updateNotification()
-        updatePlaybackState()
+        //}
+        //updateUnifiedNotification()
     }
 
     override fun onPlayerError(error: PlaybackException) {
-        super.onPlayerError(error)
+
         Timber.e("PlayerService onPlayerError ${error.stackTraceToString()}")
-        //this.stopService(this.intent<MyDownloadService>())
-        //this.stopService(this.intent<PlayerService>())
-        //Log.d("mediaItem","onPlayerError ${error.errorCodeName}")
+        currentMediaItemState.value?.isLocal?.let { if (!it) return }
+
+        if (!preferences.getBoolean(skipMediaOnErrorKey, false) || !player.hasNextMediaItem())
+            return
+
+        val prev = player.currentMediaItem ?: return
+
+        player.playNext()
+
+        showSmartMessage(
+            message = getString(
+                R.string.skip_media_on_error_message,
+                prev.mediaMetadata.title
+            )
+        )
+    }
+
+    private fun showSmartMessage(message: String) {
+        coroutineScope.launch(Dispatchers.Main) {
+            withContext(Dispatchers.Main) {
+                SmartMessage(
+                    message,
+                    type = PopupType.Info,
+                    durationLong = true,
+                    context = this@PlayerService
+                )
+            }
+        }
     }
 
     override fun onPlayerErrorChanged(error: PlaybackException?) {
@@ -1343,29 +1487,28 @@ class PlayerService : InvincibleService(),
         //Log.d("mediaItem","onPlayerErrorChanged ${error?.errorCodeName}")
     }
 
-    override fun onPlaybackSuppressionReasonChanged(playbackSuppressionReason: Int) {
-        super.onPlaybackSuppressionReasonChanged(playbackSuppressionReason)
-        //Timber.e("PlayerService onPlaybackSuppressionReasonChanged $playbackSuppressionReason")
-        //Log.d("mediaItem","onPlaybackSuppressionReasonChanged $playbackSuppressionReason")
-    }
+//    override fun onPlaybackSuppressionReasonChanged(playbackSuppressionReason: Int) {
+//        super.onPlaybackSuppressionReasonChanged(playbackSuppressionReason)
+//        //Timber.e("PlayerService onPlaybackSuppressionReasonChanged $playbackSuppressionReason")
+//        //Log.d("mediaItem","onPlaybackSuppressionReasonChanged $playbackSuppressionReason")
+//    }
 
     @UnstableApi
     override fun onIsPlayingChanged(isPlaying: Boolean) {
+        isPlayingNow = isPlaying
         val fadeDisabled = preferences.getEnum(playbackFadeAudioDurationKey, DurationInMilliseconds.Disabled) == DurationInMilliseconds.Disabled
         val duration = preferences.getEnum(playbackFadeAudioDurationKey, DurationInMilliseconds.Disabled).milliSeconds
-        if (isPlaying && !fadeDisabled)
+        if (isPlayingNow && !fadeDisabled)
             startFadeAnimator(
                 player = binder.player,
                 duration = duration,
                 fadeIn = true
             )
 
-        //val totalPlayTimeMs = player.totalBufferedDuration.toString()
-        //Log.d("mediaEvent","isPlaying "+isPlaying.toString() + " buffered duration "+totalPlayTimeMs)
-        //Log.d("mediaItem","onIsPlayingChanged isPlaying $isPlaying audioSession ${player.audioSessionId}")
-
         updateWidgets()
 
+        if (currentMediaItemState.value?.isLocal == true)
+            updateUnifiedNotification()
 
         super.onIsPlayingChanged(isPlaying)
     }
@@ -1374,18 +1517,18 @@ class PlayerService : InvincibleService(),
     @UnstableApi
     override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences?, key: String?) {
         when (key) {
-            persistentQueueKey -> if (sharedPreferences != null) {
-                isPersistentQueueEnabled =
-                    sharedPreferences.getBoolean(key, isPersistentQueueEnabled)
-            }
+//            persistentQueueKey -> if (sharedPreferences != null) {
+//                isPersistentQueueEnabled =
+//                    sharedPreferences.getBoolean(key, isPersistentQueueEnabled)
+//            }
 
             volumeNormalizationKey, loudnessBaseGainKey -> maybeNormalizeVolume()
 
             resumeOrPausePlaybackWhenDeviceKey -> maybeResumePlaybackWhenDeviceConnected()
 
             isInvincibilityEnabledKey -> if (sharedPreferences != null) {
-                isInvincibilityEnabled =
-                    sharedPreferences.getBoolean(key, isInvincibilityEnabled)
+//                isInvincibilityEnabled =
+//                    sharedPreferences.getBoolean(key, isInvincibilityEnabled)
             }
 
             skipSilenceKey -> if (sharedPreferences != null) {
@@ -1407,114 +1550,117 @@ class PlayerService : InvincibleService(),
         }
     }
 
-    @ExperimentalCoroutinesApi
-    @FlowPreview
-    override fun notification(): Notification? {
-        if (player.currentMediaItem == null) return null
 
-        val playIntent = Action.play.pendingIntent
-        val pauseIntent = Action.pause.pendingIntent
-        val nextIntent = Action.next.pendingIntent
-        val prevIntent = Action.previous.pendingIntent
-        val likeIntent = Action.like.pendingIntent
-        val downloadIntent = Action.download.pendingIntent
-        val playradioIntent = Action.playradio.pendingIntent
-        val shuffleIntent = Action.shuffle.pendingIntent
+    fun notification(): Notification? {
 
-        val mediaMetadata = player.mediaMetadata
+        val currentMediaItem = binder.player.currentMediaItem
 
-        shuffleModeEnabled = player.shuffleModeEnabled
+        bitmapProvider?.load(currentMediaItem?.mediaMetadata?.artworkUri) {}
 
-        val builder = if (isAtLeastAndroid8) {
-            NotificationCompat.Builder(applicationContext, NotificationChannelId)
+        createNotificationChannel()
+
+        val forwardAction = NotificationCompat.Action.Builder(
+            R.drawable.play_skip_forward,
+            "next",
+            Action.next.pendingIntent
+        ).build()
+
+        val playPauseAction = NotificationCompat.Action.Builder(
+            if (isPlayingNow || player.isPlaying) R.drawable.pause else R.drawable.play,
+            if (isPlayingNow || player.isPlaying) "pause" else "play",
+            if (isPlayingNow || player.isPlaying) Action.pause.pendingIntent
+            else Action.play.pendingIntent,
+        ).build()
+
+        val previousAction = NotificationCompat.Action.Builder(
+            R.drawable.play_skip_back,
+            "prev",
+            Action.previous.pendingIntent
+        ).build()
+
+
+        val notificationPlayerFirstIcon = preferences.getEnum(notificationPlayerFirstIconKey, NotificationButtons.Repeat)
+        val notificationPlayerSecondIcon = preferences.getEnum(notificationPlayerSecondIconKey, NotificationButtons.Favorites)
+
+        val firstCustomAction = NotificationButtons.entries
+            .filter { it == notificationPlayerFirstIcon }
+            .map {
+                NotificationCompat.Action.Builder(
+                    it.getStateIcon(
+                        it,
+                        currentSong.value?.likedAt,
+                        player.repeatMode,
+                        player.shuffleModeEnabled
+                    ),
+                    it.name,
+                    it.pendingIntent,
+                ).build()
+            }.first()
+
+
+        val secondCustomAction = NotificationButtons.entries
+            .filter { it == notificationPlayerSecondIcon }
+            .map {
+                NotificationCompat.Action.Builder(
+                    it.getStateIcon(
+                        it,
+                        currentSong.value?.likedAt,
+                        player.repeatMode,
+                        player.shuffleModeEnabled
+                    ),
+                    it.name,
+                    it.pendingIntent,
+                ).build()
+            }.first()
+
+
+        val notification = if (isAtLeastAndroid8) {
+            NotificationCompat.Builder(this, NotificationChannelId)
         } else {
-            NotificationCompat.Builder(applicationContext)
+            NotificationCompat.Builder(this)
         }
-            .setContentTitle(cleanPrefix(player.mediaMetadata.title.toString()))
-            .setContentText(
-                if (mediaMetadata.albumTitle != null || mediaMetadata.artist != "")
-                    "${mediaMetadata.artist} | ${mediaMetadata.albumTitle}"
-                else mediaMetadata.artist
-            )
-            .setSubText(
-                if (mediaMetadata.albumTitle != null || mediaMetadata.artist != "")
-                    "${mediaMetadata.artist} | ${mediaMetadata.albumTitle}"
-                else mediaMetadata.artist
-            )
-            //.setSubText(player.playerError?.message)
-            .setLargeIcon(bitmapProvider.bitmap)
-            .setAutoCancel(false)
-            .setOnlyAlertOnce(true)
+            .setContentTitle(currentMediaItem?.mediaMetadata?.title)
+            .setContentText(currentMediaItem?.mediaMetadata?.artist)
+            //.setSubText(currentMediaItem?.mediaMetadata?.artist)
+            .setContentInfo(currentMediaItem?.mediaMetadata?.albumTitle)
+            .setSmallIcon(R.drawable.app_icon)
+            .setLargeIcon(bitmapProvider?.bitmap)
             .setShowWhen(false)
-            .setSmallIcon(player.playerError?.let { R.drawable.alert_circle }
-                ?: R.drawable.app_icon)
-            .setOngoing(false)
-            .setContentIntent(activityPendingIntent<MainActivity>(
-                flags = PendingIntent.FLAG_UPDATE_CURRENT
-            ) {
-                putExtra("expandPlayerBottomSheet", true)
-            })
-            .setDeleteIntent(broadCastPendingIntent<NotificationDismissReceiver>())
-            .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
-            .setCategory(NotificationCompat.CATEGORY_TRANSPORT)
+            .setSilent(true)
+            .setAutoCancel(false)
+            .setOngoing(true)
+            .addAction(firstCustomAction)
+            .addAction(previousAction)
+            .addAction(playPauseAction)
+            .addAction(forwardAction)
+            .addAction(secondCustomAction)
             .setStyle(
                 androidx.media.app.NotificationCompat.MediaStyle()
-                    .setShowActionsInCompactView(0, 1, 2)
-                    .setMediaSession(mediaSession.sessionToken)
+                    .setShowActionsInCompactView(1, 2, 3)
+                    .setMediaSession(unifiedMediaSession.sessionToken)
+
             )
-            .addAction(R.drawable.play_skip_back, "Skip back", prevIntent)
-            .addAction(
-                if (player.shouldBePlaying) R.drawable.pause else R.drawable.play,
-                if (player.shouldBePlaying) "Pause" else "Play",
-                if (player.shouldBePlaying) pauseIntent else playIntent
+            .setContentIntent(
+                PendingIntent.getActivity(
+                    this,
+                    0,
+                    Intent(this, MainActivity::class.java)
+                        .putExtra("expandPlayerBottomSheet", true),
+                    PendingIntent.FLAG_IMMUTABLE
+                )
             )
-            .addAction(R.drawable.play_skip_forward, "Skip forward", nextIntent)
+            .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+            .setCategory(NotificationCompat.CATEGORY_TRANSPORT)
+            .build()
 
-            //Prior Android 11
-            builder
-                .addAction(
-                    if (shuffleModeEnabled) R.drawable.shuffle_filled else R.drawable.shuffle,
-                    "Shuffle", shuffleIntent
-                )
-                .addAction(
-                    if (isLikedState.value) R.drawable.heart else R.drawable.heart_outline,
-                    //if (currentMediaLiked.value) R.drawable.heart else R.drawable.heart_outline,
-                    "Like",
-                    likeIntent
-                )
-                .addAction(
-                    R.drawable.radio,
-                    "Play radio",
-                    playradioIntent
-                )
+        return notification
 
-        runCatching {
-            bitmapProvider.load(mediaMetadata.artworkUri) { bitmap ->
-                maybeShowSongCoverInLockScreen()
-                handler.post {
-                    runCatching {
-                        notificationManager?.notify(
-                            NotificationId,
-                            builder.setLargeIcon(bitmap).build()
-                        )
-                    }.onFailure {
-                        Timber.e("Failed notification() bitmapProvider.invoke in PlayerService ${it.stackTraceToString()}")
-                    }
-                }
-            }
-        }.onFailure {
-            Timber.e("Failed notification() load in bitmapProvider in PlayerService ${it.stackTraceToString()}")
-        }
-
-
-        return builder.build()
     }
 
-
     private fun createNotificationChannel() {
-        notificationManager = getSystemService()
-
         if (!isAtLeastAndroid8) return
+
+        notificationManager = applicationContext.getSystemService<NotificationManager>()
 
         notificationManager?.run {
             if (getNotificationChannel(NotificationChannelId) == null) {
@@ -1547,24 +1693,6 @@ class PlayerService : InvincibleService(),
         }
     }
 
-    private fun okHttpClient(): OkHttpClient {
-        ProxyPreferences.preference?.let {
-            return OkHttpClient.Builder()
-                .proxy(
-                    Proxy(
-                        it.proxyMode,
-                        InetSocketAddress(it.proxyHost, it.proxyPort)
-                    )
-                )
-                .connectTimeout(Duration.ofSeconds(16))
-                .readTimeout(Duration.ofSeconds(8))
-                .build()
-        }
-        return OkHttpClient.Builder()
-            .connectTimeout(Duration.ofSeconds(16))
-            .readTimeout(Duration.ofSeconds(8))
-            .build()
-    }
 
 
     private fun createMediaSourceFactory() = DefaultMediaSourceFactory(
@@ -1635,7 +1763,7 @@ class PlayerService : InvincibleService(),
                 songTitle = songTitle,
                 songArtist = songArtist,
                 isPlaying = isPlaying,
-                bitmap = bitmapProvider.bitmap,
+                bitmap = bitmapProvider?.bitmap,
                 player = player
             )
             playerHorizontalWidget.updateInfo(
@@ -1643,25 +1771,43 @@ class PlayerService : InvincibleService(),
                 songTitle = songTitle,
                 songArtist = songArtist,
                 isPlaying = isPlaying,
-                bitmap = bitmapProvider.bitmap,
+                bitmap = bitmapProvider?.bitmap,
                 player = player
             )
         }
     }
 
 
-    inner class Binder : AndroidBinder() {
+    open inner class Binder : AndroidBinder() {
         val player: ExoPlayer
             get() = this@PlayerService.player
+
+        val onlinePlayer: YouTubePlayer?
+            get() = this@PlayerService.internalOnlinePlayer.value
+
+        val onlinePlayerPlayingState: Boolean
+            get() = this@PlayerService.internalOnlinePlayerState == PlayerConstants.PlayerState.PLAYING
+
+        val onlinePlayerState: PlayerConstants.PlayerState
+            get() = this@PlayerService.internalOnlinePlayerState
+
+        val onlinePlayerCurrentDuration: Float
+            get() = this@PlayerService.currentDuration.value
+
+        val onlinePlayerCurrentSecond: Float
+            get() = this@PlayerService.currentSecond.value
+
+        val onlinePlayerView: YouTubePlayerView?
+            get() = this@PlayerService.internalOnlinePlayerView.value
 
         val cache: Cache
             get() = this@PlayerService.cache
 
-        val downloadCache: Cache
-            get() = this@PlayerService.downloadCache
-
         val mediaSession
-            get() = this@PlayerService.mediaSession
+            get() = this@PlayerService.unifiedMediaSession
+
+        val currentMediaItemAsSong: Song?
+            get() = this@PlayerService.player.currentMediaItem?.asSong
 
         val sleepTimerMillisLeft: StateFlow<Long?>?
             get() = timerJob?.millisLeft
@@ -1671,16 +1817,12 @@ class PlayerService : InvincibleService(),
         var isLoadingRadio by mutableStateOf(false)
             private set
 
-        //var mediaItems = mutableListOf<MediaItem>()
-
         fun setBitmapListener(listener: ((Bitmap?) -> Unit)?) {
-            bitmapProvider.listener = listener
+            bitmapProvider?.listener = listener
         }
 
         fun startSleepTimer(delayMillis: Long) {
             timerJob?.cancel()
-
-
 
             timerJob = coroutineScope.timer(delayMillis) {
                 val notification = NotificationCompat
@@ -1721,44 +1863,44 @@ class PlayerService : InvincibleService(),
             val isDiscoverEnabled = applicationContext.preferences.getBoolean(discoverKey, false)
             val filterContentType = applicationContext.preferences.getEnum(filterContentTypeKey,
                 ContentType.All)
-            //todo refactor
-//            OnlineRadio(
-//                endpoint?.videoId,
-//                endpoint?.playlistId,
-//                endpoint?.playlistSetVideoId,
-//                endpoint?.params,
-//                isDiscoverEnabled,
-//                applicationContext,
-//                binder,
-//                coroutineScope
-//            ).let {
-//                isLoadingRadio = true
-//                radioJob = coroutineScope.launch(Dispatchers.Main) {
-//
-//                    val songs =
-//                        (if (filterArtist.isEmpty()) it.process()
-//                        else it.process().filter { song -> song.mediaMetadata.artist == filterArtist })
-//                            .filter { song ->
-//                                when (filterContentType) {
-//                                    ContentType.All -> true
-//                                    ContentType.Official -> song.isOfficialContent
-//                                    ContentType.UserGenerated -> song.isUserGeneratedContent
-//                                }
-//                            }
-//
-//                    songs.forEach {
-//                        Database.asyncTransaction { insert(it) }
-//                    }
-//
-//                    if (justAdd) {
-//                        player.addMediaItems(songs.drop(1))
-//                    } else {
-//                        player.forcePlayFromBeginning(songs)
-//                    }
-//                    radio = it
-//                    isLoadingRadio = false
-//                }
-//            }
+
+            OnlineRadio(
+                endpoint?.videoId,
+                endpoint?.playlistId,
+                endpoint?.playlistSetVideoId,
+                endpoint?.params,
+                isDiscoverEnabled,
+                applicationContext,
+                binder,
+                coroutineScope
+            ).let {
+                isLoadingRadio = true
+                radioJob = coroutineScope.launch(Dispatchers.Main) {
+
+                    val songs =
+                        (if (filterArtist.isEmpty()) it.process()
+                        else it.process().filter { song -> song.mediaMetadata.artist == filterArtist })
+                            .filter { song ->
+                                when (filterContentType) {
+                                    ContentType.All -> true
+                                    ContentType.Official -> song.isOfficialContent
+                                    ContentType.UserGenerated -> song.isUserGeneratedContent
+                                }
+                            }
+
+                    songs.forEach {
+                        Database.asyncTransaction { insert(it) }
+                    }
+
+                    if (justAdd) {
+                        player.addMediaItems(songs.drop(1))
+                    } else {
+                        player.forcePlayFromBeginning(songs)
+                    }
+                    radio = it
+                    isLoadingRadio = false
+                }
+            }
         }
 
         fun stopRadio() {
@@ -1784,48 +1926,44 @@ class PlayerService : InvincibleService(),
          */
         fun restartForegroundOrStop() {
             player.pause()
-            isInvincibilityEnabled = false
             stopSelf()
         }
 
-        @ExperimentalCoroutinesApi
-        @FlowPreview
-        fun toggleLike() = mediaItemState.value?.let { mediaItem ->
-            //mediaItemToggleLike(mediaItem)
+        @kotlin.OptIn(FlowPreview::class)
+        fun toggleLike() {
+            Timber.d("PlayerService toggleLike currentSong ${currentSong.value}")
             Database.asyncTransaction {
-                Database.like(
-                    mediaItem.mediaId,
-                    if (isLikedState.value) null else System.currentTimeMillis()
-                )
+                currentSong.value?.let {
+                    Timber.d("PlayerService toggleLike currentSong inside ${it.title}")
+                    like(
+                        it.id,
+                        setLikeState(it.likedAt)
+                    )
+                }.also {
+                    currentSong.debounce(1000).collect(coroutineScope) { updateUnifiedNotification() }
+                }
             }
-            updatePlaybackState()
+
         }
 
+        fun toggleRepeat() {
+            player.toggleRepeatMode()
+        }
+
+//        fun toggleShuffle() {
+//            player.toggleShuffleMode()
+//        }
 
         @kotlin.OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
         fun toggleShuffle() {
             player.shuffleModeEnabled = !player.shuffleModeEnabled
-            updatePlaybackState()
+
         }
 
-        fun refreshPlayer() {
-            coroutineScope.launch {
-                withContext(Dispatchers.Main) {
-                    if (player.isPlaying) {
-                        player.pause()
-                        player.play()
-                    } else {
-                        player.play()
-                        player.pause()
-                    }
-                }
-            }
-        }
 
         fun callPause(onPause: () -> Unit) {
             val fadeDisabled = preferences.getEnum(playbackFadeAudioDurationKey, DurationInMilliseconds.Disabled) == DurationInMilliseconds.Disabled
             val duration = preferences.getEnum(playbackFadeAudioDurationKey, DurationInMilliseconds.Disabled).milliSeconds
-            //println("mediaItem callPause fadeDisabled $fadeDisabled duration $duration")
             if (player.isPlaying) {
                 if (fadeDisabled) {
                     player.pause()
@@ -1840,142 +1978,153 @@ class PlayerService : InvincibleService(),
             }
         }
 
-
-    }
-
-    private inner class SessionCallback(private val player: Player) :
-        MediaSessionCompat.Callback() {
-        override fun onPlay() = player.play()
-        //override fun onPause() = player.pause()
-        override fun onPause() = binder.callPause({})
-        override fun onSkipToPrevious() = runCatching(player::forceSeekToPrevious).let { }
-        override fun onSkipToNext() = runCatching(player::forceSeekToNext).let { }
-        override fun onSeekTo(pos: Long) = player.seekTo(pos)
-        //override fun onStop() = player.pause()
-        override fun onStop() = binder.callPause({} )
-        override fun onRewind() = runCatching {player.seekToDefaultPosition()}.let { }
-        override fun onSkipToQueueItem(id: Long) =
-            runCatching { player.seekToDefaultPosition(id.toInt()) }.let { }
-
-
-        @ExperimentalCoroutinesApi
-        @FlowPreview
-        override fun onCustomAction(action: String, extras: Bundle?) {
-            super.onCustomAction(action, extras)
-            //println("mediaItem $action")
-            if (action == "LIKE") {
-                binder.toggleLike()
-                refreshPlayer()
-            }
-            if (action == "SHUFFLE") {
-                binder.toggleShuffle()
-                refreshPlayer()
-            }
-            if (action == "PLAYRADIO") {
-                    binder.stopRadio()
-                    binder.playRadio(NavigationEndpoint.Endpoint.Watch(videoId = binder.player.currentMediaItem?.mediaId))
-            }
-            updatePlaybackState()
-        }
-
-        override fun onPlayFromSearch(query: String?, extras: Bundle?) {
-            if (query.isNullOrBlank()) return
-            binder.playFromSearch(query)
-        }
-
-
-        override fun onMediaButtonEvent(mediaButtonEvent: Intent?): Boolean {
-            mediaButtonEvent?.let {
-                if (it.action == Intent.ACTION_MEDIA_BUTTON) {
-                    if (it.extras?.getBoolean(Intent.EXTRA_KEY_EVENT) == true) {
-                        val keyEvent = it.extras?.getParcelable<KeyEvent>(Intent.EXTRA_KEY_EVENT)
-                        when(keyEvent?.keyCode) {
-                            KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE -> {
-                                if (player.isPlaying)
-                                    onPause()
-                                else onPlay()
-
-                                return true
-                            }
-                            KeyEvent.KEYCODE_MEDIA_NEXT -> {
-                                onSkipToNext()
-                                return true
-                            }
-                            KeyEvent.KEYCODE_MEDIA_PREVIOUS -> {
-                                onSkipToPrevious()
-                                return true
-                            }
-                            KeyEvent.KEYCODE_MEDIA_STOP -> {
-                                onStop()
-                                return true
-                            }
-                            KeyEvent.KEYCODE_MEDIA_PLAY -> {
-                                onPlay()
-                                return true
-                            }
-                            KeyEvent.KEYCODE_MEDIA_PAUSE -> {
-                                onPause()
-                                return true
-                            }
-                        }
-                    }
-                }
-            }
-            //return super.onMediaButtonEvent(mediaButtonEvent)
-            return false
-        }
-
-
-    }
-
-
-    private fun refreshPlayer() {
-        coroutineScope.launch {
-            withContext(Dispatchers.Main) {
-                if (player.isPlaying) {
-                    player.pause()
-                    player.play()
-                } else {
-                    player.play()
-                    player.pause()
-                }
-            }
-        }
-    }
-
-    inner class NotificationActionReceiver(private val player: Player) : BroadcastReceiver() {
-
-
-        @ExperimentalCoroutinesApi
-        @FlowPreview
-        // Prior Android 11
-        override fun onReceive(context: Context, intent: Intent) {
-            when (intent.action) {
-                //Action.pause.value -> player.pause()
-                Action.pause.value -> binder.callPause({ player.pause() } )
-                Action.play.value -> player.play()
-                Action.next.value -> player.forceSeekToNext()
-                Action.previous.value -> player.forceSeekToPrevious()
-                Action.like.value -> {
-                    binder.toggleLike()
-                    refreshPlayer()
-                }
-
-                Action.playradio.value -> {
-                        binder.stopRadio()
-                        binder.playRadio(NavigationEndpoint.Endpoint.Watch(videoId = binder.player.currentMediaItem?.mediaId))
-                }
-
-                Action.shuffle.value -> {
-                    binder.toggleShuffle()
-                    refreshPlayer()
-                }
-            }
-
-            updatePlaybackState()
+        fun actionSearch() {
+            startActivity(Intent(applicationContext, MainActivity::class.java)
+                .setAction(MainActivity.action_search)
+                .setFlags(FLAG_ACTIVITY_NEW_TASK + FLAG_ACTIVITY_CLEAR_TASK))
         }
 
     }
+
+//    private inner class SessionCallback(private val player: Player) :
+//        MediaSessionCompat.Callback() {
+//        override fun onPlay() = player.play()
+//        //override fun onPause() = player.pause()
+//        override fun onPause() = binder.callPause({})
+//        override fun onSkipToPrevious() = runCatching(player::forceSeekToPrevious).let { }
+//        override fun onSkipToNext() = runCatching(player::forceSeekToNext).let { }
+//        override fun onSeekTo(pos: Long) = player.seekTo(pos)
+//        //override fun onStop() = player.pause()
+//        override fun onStop() = binder.callPause({} )
+//        override fun onRewind() = runCatching {player.seekToDefaultPosition()}.let { }
+//        override fun onSkipToQueueItem(id: Long) =
+//            runCatching { player.seekToDefaultPosition(id.toInt()) }.let { }
+//
+//
+//        @ExperimentalCoroutinesApi
+//        @FlowPreview
+//        override fun onCustomAction(action: String, extras: Bundle?) {
+//            super.onCustomAction(action, extras)
+//            //println("mediaItem $action")
+//            if (action == "LIKE") {
+//                binder.toggleLike()
+//                refreshPlayer()
+//            }
+//            if (action == "SHUFFLE") {
+//                binder.toggleShuffle()
+//                refreshPlayer()
+//            }
+//            if (action == "PLAYRADIO") {
+//                    binder.stopRadio()
+//                    binder.playRadio(NavigationEndpoint.Endpoint.Watch(videoId = binder.player.currentMediaItem?.mediaId))
+//            }
+//            updateUnifiedMediasessionData()
+//        }
+//
+//        override fun onPlayFromSearch(query: String?, extras: Bundle?) {
+//            if (query.isNullOrBlank()) return
+//            binder.playFromSearch(query)
+//        }
+//
+//
+//        override fun onMediaButtonEvent(mediaButtonEvent: Intent?): Boolean {
+//            mediaButtonEvent?.let {
+//                if (it.action == Intent.ACTION_MEDIA_BUTTON) {
+//                    if (it.extras?.getBoolean(Intent.EXTRA_KEY_EVENT) == true) {
+//                        val keyEvent = it.extras?.getParcelable<KeyEvent>(Intent.EXTRA_KEY_EVENT)
+//                        when(keyEvent?.keyCode) {
+//                            KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE -> {
+//                                if (player.isPlaying)
+//                                    onPause()
+//                                else onPlay()
+//
+//                                return true
+//                            }
+//                            KeyEvent.KEYCODE_MEDIA_NEXT -> {
+//                                onSkipToNext()
+//                                return true
+//                            }
+//                            KeyEvent.KEYCODE_MEDIA_PREVIOUS -> {
+//                                onSkipToPrevious()
+//                                return true
+//                            }
+//                            KeyEvent.KEYCODE_MEDIA_STOP -> {
+//                                onStop()
+//                                return true
+//                            }
+//                            KeyEvent.KEYCODE_MEDIA_PLAY -> {
+//                                onPlay()
+//                                return true
+//                            }
+//                            KeyEvent.KEYCODE_MEDIA_PAUSE -> {
+//                                onPause()
+//                                return true
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+//            //return super.onMediaButtonEvent(mediaButtonEvent)
+//            return false
+//        }
+//
+//
+//    }
+
+
+//    private fun refreshPlayer() {
+//        coroutineScope.launch {
+//            withContext(Dispatchers.Main) {
+//                if (player.isPlaying) {
+//                    player.pause()
+//                    player.play()
+//                } else {
+//                    player.play()
+//                    player.pause()
+//                }
+//            }
+//        }
+//    }
+
+//    inner class NotificationActionReceiver(private val player: Player) : BroadcastReceiver() {
+//
+//
+//        @ExperimentalCoroutinesApi
+//        @FlowPreview
+//        // Prior Android 11
+//        override fun onReceive(context: Context, intent: Intent) {
+//            when (intent.action) {
+//                //Action.pause.value -> player.pause()
+//                Action.pause.value -> binder.callPause({ player.pause() } )
+//                Action.play.value -> player.play()
+//                Action.next.value -> player.forceSeekToNext()
+//                Action.previous.value -> player.forceSeekToPrevious()
+//                Action.like.value -> {
+//                    binder.toggleLike()
+//                }
+//
+//                Action.playradio.value -> {
+//                        binder.stopRadio()
+//                        binder.playRadio(NavigationEndpoint.Endpoint.Watch(videoId = binder.player.currentMediaItem?.mediaId))
+//                }
+//
+//                Action.shuffle.value -> {
+//                    binder.toggleShuffle()
+//                }
+//
+//                Action.search.value -> {
+//                    binder.actionSearch()
+//                }
+//
+//                Action.repeat.value -> {
+//                    binder.toggleRepeat()
+//                }
+//            }
+//
+//            //updateUnifiedNotification()
+//        }
+//
+//    }
 
 
     class NotificationDismissReceiver : BroadcastReceiver() {
@@ -1990,13 +2139,12 @@ class PlayerService : InvincibleService(),
 
 
     @JvmInline
-    private value class Action(val value: String) {
-        context(Context)
+    value class Action(val value: String) {
         val pendingIntent: PendingIntent
             get() = PendingIntent.getBroadcast(
-                this@Context,
+                appContext(),
                 100,
-                Intent(value).setPackage(packageName),
+                Intent(value).setPackage(appContext().packageName),
                 PendingIntent.FLAG_UPDATE_CURRENT.or(if (isAtLeastAndroid6) PendingIntent.FLAG_IMMUTABLE else 0)
             )
 
@@ -2007,18 +2155,19 @@ class PlayerService : InvincibleService(),
             val next = Action("it.fast4x.riplay.next")
             val previous = Action("it.fast4x.riplay.previous")
             val like = Action("it.fast4x.riplay.like")
-            val download = Action("it.fast4x.riplay.download")
             val playradio = Action("it.fast4x.riplay.playradio")
             val shuffle = Action("it.fast4x.riplay.shuffle")
+            val search = Action("it.fast4x.riplay.search")
+            val repeat = Action("it.fast4x.riplay.repeat")
         }
     }
 
     private companion object {
         const val NotificationId = 1001
-        const val NotificationChannelId = "default_channel_id"
+        const val NotificationChannelId = "Player Notification"
 
         const val SleepTimerNotificationId = 1002
-        const val SleepTimerNotificationChannelId = "sleep_timer_channel_id"
+        const val SleepTimerNotificationChannelId = "Sleep Timer Notification"
 
 
     }

@@ -43,7 +43,7 @@ fun NewreleasesScreen(
                 onTabChanged = { tabIndex = it },
                 miniPlayer,
                 navBarContent = { item ->
-                    item(0, stringResource(R.string.new_albums), R.drawable.album)
+                    item(0, stringResource(R.string.new_albums), R.drawable.music_album)
                 }
             ) { currentTabIndex ->
                 saveableStateHolder.SaveableStateProvider(key = currentTabIndex) {

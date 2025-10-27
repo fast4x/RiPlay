@@ -32,6 +32,7 @@ import org.dailyislam.android.utilities.isNetworkConnected
 import it.fast4x.riplay.extensions.preferences.menuStyleKey
 import it.fast4x.riplay.utils.rememberEqualizerLauncher
 import it.fast4x.riplay.extensions.preferences.rememberPreference
+import it.fast4x.riplay.service.PlayerService
 import it.fast4x.riplay.utils.removeYTSongFromPlaylist
 import it.fast4x.riplay.utils.seamlessPlay
 import kotlinx.coroutines.CoroutineScope
@@ -45,7 +46,7 @@ import timber.log.Timber
 @Composable
 fun PlayerMenu(
     navController: NavController,
-    binder: LocalPlayerService.Binder,
+    binder: PlayerService.Binder,
     mediaItem: MediaItem,
     onDismiss: () -> Unit,
     onClosePlayer: () -> Unit,
@@ -186,7 +187,7 @@ fun PlayerMenu(
 @Composable
 fun MiniPlayerMenu(
     navController: NavController,
-    binder: LocalPlayerService.Binder,
+    binder: PlayerService.Binder,
     mediaItem: MediaItem,
     onDismiss: () -> Unit,
     onClosePlayer: () -> Unit,
@@ -264,7 +265,7 @@ fun MiniPlayerMenu(
 @Composable
 fun AddToPlaylistPlayerMenu(
     navController: NavController,
-    binder: LocalPlayerService.Binder,
+    binder: PlayerService.Binder,
     mediaItem: MediaItem,
     onDismiss: () -> Unit,
     onClosePlayer: () -> Unit,

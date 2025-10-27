@@ -53,7 +53,6 @@ import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.MODIFIED_PREFIX
 import it.fast4x.riplay.MONTHLY_PREFIX
 import it.fast4x.riplay.MainActivity
-import it.fast4x.riplay.MainActivity.Action
 import it.fast4x.riplay.ONLINEPLAYER_NOTIFICATION_CHANNEL
 import it.fast4x.riplay.PINNED_PREFIX
 import it.fast4x.riplay.R
@@ -1273,6 +1272,9 @@ class AndroidAutoServiceExperimental : MediaBrowserServiceCompat(), ServiceConne
 
     @UnstableApi
     fun updateOnlineNotification() {
+
+        /*
+
         val currentMediaItem = internalLocalPlayerBinder?.player?.currentMediaItem
         Timber.d("AndroidAutoService updateOnlineNotification currentMediaItem ${currentMediaItem?.mediaId}")
         if (currentMediaItem?.isLocal == true) return
@@ -1400,6 +1402,8 @@ class AndroidAutoServiceExperimental : MediaBrowserServiceCompat(), ServiceConne
 //        }
 
         NotificationManagerCompat.from(this@AndroidAutoServiceExperimental).notify(NOTIFICATION_ID, notification)
+
+         */
     }
 
 

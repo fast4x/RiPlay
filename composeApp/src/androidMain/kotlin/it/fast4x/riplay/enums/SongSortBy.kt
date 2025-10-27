@@ -28,7 +28,7 @@ enum class SongSortBy(
 
     Duration( R.string.sort_duration, R.drawable.time ),
 
-    AlbumName( R.string.sort_album, R.drawable.album );
+    AlbumName( R.string.sort_album, R.drawable.music_album );
 
     override val titleId: Int
         get() = this.textId

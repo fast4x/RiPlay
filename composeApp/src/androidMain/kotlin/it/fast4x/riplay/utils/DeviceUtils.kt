@@ -1,7 +1,9 @@
 package it.fast4x.riplay.utils
 
+import android.app.ActivityManager
 import android.os.Build
-
+import androidx.annotation.RequiresApi
+import androidx.core.content.ContextCompat.getSystemService
 
 
 fun getDeviceInfo() : DeviceInfo? {
@@ -64,3 +66,12 @@ data class DeviceInfo(
     val deviceType: String? = null,
     val deviceTags: String? = null
 )
+
+
+@RequiresApi(Build.VERSION_CODES.M)
+private fun getAvailableMemory(): ActivityManager.MemoryInfo {
+    val activityManager = context().getSystemService(ActivityManager::class.java) as ActivityManager
+    return ActivityManager.MemoryInfo().also { memoryInfo ->
+        activityManager.getMemoryInfo(memoryInfo)
+    }
+}
