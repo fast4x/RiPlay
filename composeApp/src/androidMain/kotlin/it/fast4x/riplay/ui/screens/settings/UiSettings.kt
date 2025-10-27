@@ -731,18 +731,14 @@ fun UiSettings(
 
     var isEnabledFullscreen by rememberPreference(isEnabledFullscreenKey, false)
 
-    var notifyAAisEnabled by rememberPreference(notifyAndroidAutoTipsKey, true)
-    var showShuffleSongsAA by rememberPreference(showShuffleSongsAAKey, true)
-    var showMonthlyPlaylistsAA by rememberPreference(showMonthlyPlaylistsAAKey, true)
-    var showInLibraryAA by rememberPreference(showInLibraryAAKey, true)
-    var showOnDeviceAA by rememberPreference(showOnDeviceAAKey, true)
-    var showFavoritesPlaylistsAA by rememberPreference(showFavoritesPlaylistsAAKey, true)
-    var showTopPlaylistAA by rememberPreference(showTopPlaylistAAKey, true)
-    var showGridAA by rememberPreference(showGridAAKey, true)
-
-
-
-
+//    var notifyAAisEnabled by rememberPreference(notifyAndroidAutoTipsKey, true)
+//    var showShuffleSongsAA by rememberPreference(showShuffleSongsAAKey, true)
+//    var showMonthlyPlaylistsAA by rememberPreference(showMonthlyPlaylistsAAKey, true)
+//    var showInLibraryAA by rememberPreference(showInLibraryAAKey, true)
+//    var showOnDeviceAA by rememberPreference(showOnDeviceAAKey, true)
+//    var showFavoritesPlaylistsAA by rememberPreference(showFavoritesPlaylistsAAKey, true)
+//    var showTopPlaylistAA by rememberPreference(showTopPlaylistAAKey, true)
+//    var showGridAA by rememberPreference(showGridAAKey, true)
 
 
     Column(
@@ -1761,121 +1757,121 @@ fun UiSettings(
                 SettingsEntryGroupText("Android Auto")
             }
 
-            settingsItem {
-                if (search.input.isBlank() || "Notifications".contains(
-                        search.input,
-                        true
-                    )
-                ) {
-                    SwitchSettingEntry(
-                        title = "Notifications",
-                        text = "Enable notifications for Android Auto",
-                        isChecked = notifyAAisEnabled,
-                        onCheckedChange = {
-                            notifyAAisEnabled = it
-                        }
-                    )
-                }
-            }
+//            settingsItem {
+//                if (search.input.isBlank() || "Notifications".contains(
+//                        search.input,
+//                        true
+//                    )
+//                ) {
+//                    SwitchSettingEntry(
+//                        title = "Notifications",
+//                        text = "Enable notifications for Android Auto",
+//                        isChecked = notifyAAisEnabled,
+//                        onCheckedChange = {
+//                            notifyAAisEnabled = it
+//                        }
+//                    )
+//                }
+//            }
 
-            settingsItem(
-                isHeader = true
-            ) {
-                SettingsGroupSpacer()
-                SettingsEntryGroupText("Android Auto Layout")
-            }
-
-            settingsItem{
-                if (search.input.isBlank() || "Show list as grid".contains(
-                        search.input,
-                        true
-                    )
-                ) {
-                    SwitchSettingEntry(
-                        title = "Show list as grid",
-                        text = "",
-                        isChecked = showGridAA,
-                        onCheckedChange = {
-                            showGridAA = it
-                        }
-                    )
-                }
-
-                if (search.input.isBlank() || "Show shuffle in songs".contains(
-                        search.input,
-                        true
-                    )
-                ) {
-                    SwitchSettingEntry(
-                        title = "Show shuffle in songs",
-                        text = "",
-                        isChecked = showShuffleSongsAA,
-                        onCheckedChange = {
-                            showShuffleSongsAA = it
-                        }
-                    )
-                }
-
-                if (search.input.isBlank() || "Show monthly playlists".contains(
-                        search.input,
-                        true
-                    )
-                )
-                    SwitchSettingEntry(
-                        title = "Show monthly playlists",
-                        text = "Show monthly playlists in playlists screen",
-                        isChecked = showMonthlyPlaylistsAA,
-                        onCheckedChange = { showMonthlyPlaylistsAA = it }
-                    )
-
-                if (search.input.isBlank() || "Show In Library".contains(
-                        search.input,
-                        true
-                    )
-                )
-                    SwitchSettingEntry(
-                        title = "Show In Library",
-                        text = "Show In Library in artists and albums screen",
-                        isChecked = showInLibraryAA,
-                        onCheckedChange = { showInLibraryAA = it }
-                    )
-
-                if (search.input.isBlank() || "Show On Device".contains(
-                        search.input,
-                        true
-                    )
-                )
-                    SwitchSettingEntry(
-                        title = "Show On Device",
-                        text = "Show On Device in artists and albums screen",
-                        isChecked = showOnDeviceAA,
-                        onCheckedChange = { showOnDeviceAA = it }
-                    )
-
-                if (search.input.isBlank() || "Show Top Playlist".contains(
-                        search.input,
-                        true
-                    )
-                )
-                    SwitchSettingEntry(
-                        title = "Show Top Playlist",
-                        text = "Show Top Playlist in playlists screen",
-                        isChecked = showTopPlaylistAA,
-                        onCheckedChange = { showTopPlaylistAA = it }
-                    )
-
-                if (search.input.isBlank() || "Show Favorites Playlists".contains(
-                        search.input,
-                        true
-                    )
-                )
-                    SwitchSettingEntry(
-                        title = "Show Favorites Playlists",
-                        text = "Show Favorites Playlists in playlists screen",
-                        isChecked = showFavoritesPlaylistsAA,
-                        onCheckedChange = { showFavoritesPlaylistsAA = it }
-                    )
-            }
+//            settingsItem(
+//                isHeader = true
+//            ) {
+//                SettingsGroupSpacer()
+//                SettingsEntryGroupText("Android Auto Layout")
+//            }
+//
+//            settingsItem{
+//                if (search.input.isBlank() || "Show list as grid".contains(
+//                        search.input,
+//                        true
+//                    )
+//                ) {
+//                    SwitchSettingEntry(
+//                        title = "Show list as grid",
+//                        text = "",
+//                        isChecked = showGridAA,
+//                        onCheckedChange = {
+//                            showGridAA = it
+//                        }
+//                    )
+//                }
+//
+//                if (search.input.isBlank() || "Show shuffle in songs".contains(
+//                        search.input,
+//                        true
+//                    )
+//                ) {
+//                    SwitchSettingEntry(
+//                        title = "Show shuffle in songs",
+//                        text = "",
+//                        isChecked = showShuffleSongsAA,
+//                        onCheckedChange = {
+//                            showShuffleSongsAA = it
+//                        }
+//                    )
+//                }
+//
+//                if (search.input.isBlank() || "Show monthly playlists".contains(
+//                        search.input,
+//                        true
+//                    )
+//                )
+//                    SwitchSettingEntry(
+//                        title = "Show monthly playlists",
+//                        text = "Show monthly playlists in playlists screen",
+//                        isChecked = showMonthlyPlaylistsAA,
+//                        onCheckedChange = { showMonthlyPlaylistsAA = it }
+//                    )
+//
+//                if (search.input.isBlank() || "Show In Library".contains(
+//                        search.input,
+//                        true
+//                    )
+//                )
+//                    SwitchSettingEntry(
+//                        title = "Show In Library",
+//                        text = "Show In Library in artists and albums screen",
+//                        isChecked = showInLibraryAA,
+//                        onCheckedChange = { showInLibraryAA = it }
+//                    )
+//
+//                if (search.input.isBlank() || "Show On Device".contains(
+//                        search.input,
+//                        true
+//                    )
+//                )
+//                    SwitchSettingEntry(
+//                        title = "Show On Device",
+//                        text = "Show On Device in artists and albums screen",
+//                        isChecked = showOnDeviceAA,
+//                        onCheckedChange = { showOnDeviceAA = it }
+//                    )
+//
+//                if (search.input.isBlank() || "Show Top Playlist".contains(
+//                        search.input,
+//                        true
+//                    )
+//                )
+//                    SwitchSettingEntry(
+//                        title = "Show Top Playlist",
+//                        text = "Show Top Playlist in playlists screen",
+//                        isChecked = showTopPlaylistAA,
+//                        onCheckedChange = { showTopPlaylistAA = it }
+//                    )
+//
+//                if (search.input.isBlank() || "Show Favorites Playlists".contains(
+//                        search.input,
+//                        true
+//                    )
+//                )
+//                    SwitchSettingEntry(
+//                        title = "Show Favorites Playlists",
+//                        text = "Show Favorites Playlists in playlists screen",
+//                        isChecked = showFavoritesPlaylistsAA,
+//                        onCheckedChange = { showFavoritesPlaylistsAA = it }
+//                    )
+//            }
 
             settingsItem(
                 isHeader = true

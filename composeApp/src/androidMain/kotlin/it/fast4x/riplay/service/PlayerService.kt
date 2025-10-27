@@ -17,11 +17,17 @@ import android.content.SharedPreferences
 import android.content.pm.ServiceInfo
 import android.database.SQLException
 import android.graphics.Bitmap
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
+import android.hardware.SensorManager
 import android.media.AudioDeviceCallback
 import android.media.AudioDeviceInfo
 import android.media.AudioManager
 import android.media.audiofx.AudioEffect
+import android.media.audiofx.BassBoost
 import android.media.audiofx.LoudnessEnhancer
+import android.media.audiofx.PresetReverb
 import android.os.Build
 import android.support.v4.media.MediaDescriptionCompat
 import android.support.v4.media.MediaMetadataCompat
@@ -43,6 +49,7 @@ import androidx.core.content.edit
 import androidx.core.content.getSystemService
 import androidx.media.VolumeProviderCompat
 import androidx.media3.common.AudioAttributes
+import androidx.media3.common.AuxEffectInfo
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackException
@@ -106,15 +113,18 @@ import it.fast4x.riplay.enums.ContentType
 import it.fast4x.riplay.enums.MinTimeForEvent
 import it.fast4x.riplay.enums.NotificationButtons
 import it.fast4x.riplay.enums.PopupType
+import it.fast4x.riplay.enums.PresetsReverb
 import it.fast4x.riplay.enums.QueueLoopType
 import it.fast4x.riplay.extensions.audiovolume.AudioVolumeObserver
 import it.fast4x.riplay.extensions.audiovolume.OnAudioVolumeChangedListener
+import it.fast4x.riplay.extensions.preferences.audioReverbPresetKey
+import it.fast4x.riplay.extensions.preferences.bassboostEnabledKey
+import it.fast4x.riplay.extensions.preferences.bassboostLevelKey
 import it.fast4x.riplay.extensions.preferences.closebackgroundPlayerKey
 import it.fast4x.riplay.extensions.preferences.discoverKey
 import it.fast4x.riplay.extensions.preferences.exoPlayerMinTimeForEventKey
 import it.fast4x.riplay.extensions.preferences.filterContentTypeKey
 import it.fast4x.riplay.extensions.preferences.getEnum
-import it.fast4x.riplay.extensions.preferences.isInvincibilityEnabledKey
 import it.fast4x.riplay.extensions.preferences.isPauseOnVolumeZeroEnabledKey
 import it.fast4x.riplay.extensions.preferences.isShowingThumbnailInLockscreenKey
 import it.fast4x.riplay.extensions.preferences.loudnessBaseGainKey
@@ -127,9 +137,11 @@ import it.fast4x.riplay.extensions.preferences.preferences
 import it.fast4x.riplay.extensions.preferences.putEnum
 import it.fast4x.riplay.extensions.preferences.queueLoopTypeKey
 import it.fast4x.riplay.extensions.preferences.resumeOrPausePlaybackWhenDeviceKey
+import it.fast4x.riplay.extensions.preferences.shakeEventEnabledKey
 import it.fast4x.riplay.extensions.preferences.skipMediaOnErrorKey
 import it.fast4x.riplay.extensions.preferences.skipSilenceKey
 import it.fast4x.riplay.extensions.preferences.useVolumeKeysToChangeSongKey
+import it.fast4x.riplay.extensions.preferences.volumeBoostLevelKey
 import it.fast4x.riplay.extensions.preferences.volumeNormalizationKey
 import it.fast4x.riplay.ui.screens.player.online.components.customui.CustomDefaultPlayerUiController
 import it.fast4x.riplay.ui.widgets.PlayerHorizontalWidget
@@ -139,20 +151,19 @@ import it.fast4x.riplay.utils.OnlineRadio
 import it.fast4x.riplay.utils.SleepTimerListener
 import it.fast4x.riplay.utils.TimerJob
 import it.fast4x.riplay.utils.appContext
-import it.fast4x.riplay.utils.asMediaItem
 import it.fast4x.riplay.utils.clearWebViewData
 import it.fast4x.riplay.utils.collect
 import it.fast4x.riplay.utils.context
 import it.fast4x.riplay.utils.forcePlayFromBeginning
 import it.fast4x.riplay.utils.isAtLeastAndroid11
 import it.fast4x.riplay.utils.isHandleAudioFocusEnabled
+import it.fast4x.riplay.utils.isKeepScreenOnEnabled
 import it.fast4x.riplay.utils.isOfficialContent
 import it.fast4x.riplay.utils.isPersistentQueueEnabled
 import it.fast4x.riplay.utils.isResumePlaybackOnStart
 import it.fast4x.riplay.utils.isSkipMediaOnErrorEnabled
 import it.fast4x.riplay.utils.isUserGeneratedContent
 import it.fast4x.riplay.utils.loadMasterQueue
-import it.fast4x.riplay.utils.mediaItemToggleLike
 import it.fast4x.riplay.utils.playNext
 import it.fast4x.riplay.utils.playPrevious
 import it.fast4x.riplay.utils.principalCache
@@ -160,9 +171,7 @@ import it.fast4x.riplay.utils.saveMasterQueue
 import it.fast4x.riplay.utils.seamlessQueue
 import it.fast4x.riplay.utils.setLikeState
 import it.fast4x.riplay.utils.setQueueLoopState
-import it.fast4x.riplay.utils.shuffleQueue
 import it.fast4x.riplay.utils.toggleRepeatMode
-import it.fast4x.riplay.utils.toggleShuffleMode
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -181,15 +190,15 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.plus
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 import timber.log.Timber
+import java.util.Objects
 import kotlin.collections.map
 import kotlin.math.roundToInt
+import kotlin.math.sqrt
 import kotlin.system.exitProcess
 import kotlin.time.Duration.Companion.seconds
 import android.os.Binder as AndroidBinder
@@ -288,6 +297,16 @@ class PlayerService : Service(),
             delay(1000)
         }
     }.flowOn(Dispatchers.Main)
+
+    private var bassBoost: BassBoost? = null
+    private var reverbPreset: PresetReverb? = null
+
+    private var sensorManager: SensorManager? = null
+    private var acceleration = 0f
+    private var currentAcceleration = 0f
+    private var lastAcceleration = 0f
+    private var shakeCounter = 0
+
 
     override fun onBind(intent: Intent?): AndroidBinder {
         return binder
@@ -398,10 +417,14 @@ class PlayerService : Service(),
 
         startForeground()
 
-        updateDiscordPresence()
-        maybeResumePlaybackWhenDeviceConnected()
+        initializeResumeOrPausePlaybackWhenDevice()
+        initializeBassBoost()
+        initializeReverb()
+        initializeSensorListener()
 
-        currentMediaItemState.value =  player.currentMediaItem
+        initializeVariables()
+
+        //updateDiscordPresence()
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -414,7 +437,7 @@ class PlayerService : Service(),
             notification()?.let {
                 ServiceCompat.startForeground(
                     this@PlayerService,
-                    NotificationId,
+                    NOTIFICATION_ID,
                     it,
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
                         ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK
@@ -426,6 +449,60 @@ class PlayerService : Service(),
         }.onFailure {
             Timber.e("PlayerService oncreate startForeground ${it.stackTraceToString()}")
         }
+    }
+
+    private fun initializeVariables() {
+        // todo add here all val that requires first initialize and add references in shared preferences, so is not nededed restart service when change it
+        currentMediaItemState.value =  player.currentMediaItem
+        isclosebackgroundPlayerEnabled = preferences.getBoolean(closebackgroundPlayerKey, false)
+    }
+
+    private fun initializeSensorListener() {
+        if (preferences.getBoolean(shakeEventEnabledKey, false)) {
+            sensorManager = getSystemService(SENSOR_SERVICE) as SensorManager
+            Objects.requireNonNull(sensorManager)
+                ?.registerListener(
+                    sensorListener,
+                    sensorManager!!
+                        .getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
+                    SensorManager.SENSOR_DELAY_NORMAL
+                )
+        }
+    }
+
+    private val sensorListener: SensorEventListener = object : SensorEventListener {
+        override fun onSensorChanged(event: SensorEvent) {
+
+            if (preferences.getBoolean(shakeEventEnabledKey, false)) {
+                // Fetching x,y,z values
+                val x = event.values[0]
+                val y = event.values[1]
+                val z = event.values[2]
+                lastAcceleration = currentAcceleration
+
+                // Getting current accelerations
+                // with the help of fetched x,y,z values
+                currentAcceleration = sqrt((x * x + y * y + z * z).toDouble()).toFloat()
+                val delta: Float = currentAcceleration - lastAcceleration
+                acceleration = acceleration * 0.9f + delta
+
+                // Display a Toast message if
+                // acceleration value is over 12
+                if (acceleration > 12) {
+                    shakeCounter++
+                    //Toast.makeText(applicationContext, "Shake event detected", Toast.LENGTH_SHORT).show()
+                }
+                if (shakeCounter >= 1) {
+                    //Toast.makeText(applicationContext, "Shaked $shakeCounter times", Toast.LENGTH_SHORT).show()
+                    shakeCounter = 0
+                    player?.playNext()
+                }
+
+            }
+
+        }
+
+        override fun onAccuracyChanged(sensor: Sensor, accuracy: Int) {}
     }
 
     private fun resumePlaybackOnStart() {
@@ -451,7 +528,7 @@ class PlayerService : Service(),
                 }
             )
         }.onFailure {
-            Timber.e("Failed init bitmap provider in MainActivity ${it.stackTraceToString()}")
+            Timber.e("PlayerService Failed init bitmap provider in MainActivity ${it.stackTraceToString()}")
         }
     }
 
@@ -482,7 +559,7 @@ class PlayerService : Service(),
 
             enableBackgroundPlayback(true)
 
-            keepScreenOn = false
+            keepScreenOn = isKeepScreenOnEnabled()
 
             val iFramePlayerOptions = IFramePlayerOptions.Builder(appContext())
                 .controls(0) // show/hide controls
@@ -749,15 +826,16 @@ class PlayerService : Service(),
 
     override fun onTaskRemoved(rootIntent: Intent?) {
 
-        isclosebackgroundPlayerEnabled = preferences.getBoolean(closebackgroundPlayerKey, false)
         if (isclosebackgroundPlayerEnabled) {
+            player.pause()
             internalOnlinePlayer.value?.pause()
             broadCastPendingIntent<NotificationDismissReceiver>().send()
             this.stopService(this.intent<PlayerService>())
             //stopSelf()
             onDestroy()
-        }
-        super.onTaskRemoved(rootIntent)
+            super.onTaskRemoved(rootIntent)
+        } else
+            startForeground()
     }
 
     @UnstableApi
@@ -799,11 +877,19 @@ class PlayerService : Service(),
     private var pausedByZeroVolume = false
     override fun onAudioVolumeChanged(currentVolume: Int, maxVolume: Int) {
         if (preferences.getBoolean(isPauseOnVolumeZeroEnabledKey, false)) {
-            if (player.isPlaying && currentVolume < 1) {
-                binder.callPause {}
+            if ((player.isPlaying || internalOnlinePlayerState == PlayerConstants.PlayerState.PLAYING) && currentVolume < 1) {
+                if (player.currentMediaItem?.isLocal == true) {
+                    binder.callPause {}
+                } else {
+                    internalOnlinePlayer.value?.pause()
+                }
                 pausedByZeroVolume = true
             } else if (pausedByZeroVolume && currentVolume >= 1) {
-                binder.player.play()
+                if (player.currentMediaItem?.isLocal == true) {
+                    binder.player.play()
+                } else {
+                    internalOnlinePlayer.value?.play()
+                }
                 pausedByZeroVolume = false
             }
         }
@@ -935,7 +1021,7 @@ class PlayerService : Service(),
             withContext(Dispatchers.Main){
                 updateUnifiedMediasession()
                 val notifyInstance = notification()
-                notifyInstance?.let { NotificationManagerCompat.from(this@PlayerService).notify(NotificationId, it) }
+                notifyInstance?.let { NotificationManagerCompat.from(this@PlayerService).notify(NOTIFICATION_ID, it) }
             }
         }
     }
@@ -1098,7 +1184,7 @@ class PlayerService : Service(),
     }
 
     @SuppressLint("NewApi")
-    private fun maybeResumePlaybackWhenDeviceConnected() {
+    private fun initializeResumeOrPausePlaybackWhenDevice() {
         if (!isAtLeastAndroid6) return
 
         if (preferences.getBoolean(resumeOrPausePlaybackWhenDeviceKey, false)) {
@@ -1113,16 +1199,31 @@ class PlayerService : Service(),
                     return audioDeviceInfo.type == AudioDeviceInfo.TYPE_BLUETOOTH_A2DP ||
                             audioDeviceInfo.type == AudioDeviceInfo.TYPE_WIRED_HEADSET ||
                             audioDeviceInfo.type == AudioDeviceInfo.TYPE_WIRED_HEADPHONES ||
-                            audioDeviceInfo.type == AudioDeviceInfo.TYPE_USB_HEADSET
+                            audioDeviceInfo.type == AudioDeviceInfo.TYPE_USB_HEADSET ||
+                            audioDeviceInfo.type == AudioDeviceInfo.TYPE_USB_DEVICE ||
+                            audioDeviceInfo.type == AudioDeviceInfo.TYPE_USB_ACCESSORY ||
+                            audioDeviceInfo.type == AudioDeviceInfo.TYPE_REMOTE_SUBMIX
                 }
 
                 override fun onAudioDevicesAdded(addedDevices: Array<AudioDeviceInfo>) {
-                    if (!player.isPlaying && addedDevices.any(::canPlayMusic)) {
-                        player.play()
+                    Timber.d("PlayerService onAudioDevicesAdded addedDevices ${addedDevices.map { it.type }}")
+                    if (addedDevices.any(::canPlayMusic)) {
+                        Timber.d("PlayerService onAudioDevicesAdded device known ${addedDevices.map { it.productName }}")
+                        if (player.currentMediaItem?.isLocal == true)
+                            player.play()
+                        else
+                            internalOnlinePlayer.value?.play()
                     }
                 }
 
-                override fun onAudioDevicesRemoved(removedDevices: Array<AudioDeviceInfo>) = Unit
+                override fun onAudioDevicesRemoved(removedDevices: Array<AudioDeviceInfo>) {
+                    Timber.d("PlayerService onAudioDevicesRemoved removedDevices ${removedDevices.map { it.type }}")
+                    if (removedDevices.any(::canPlayMusic)) {
+                        Timber.d("PlayerService onAudioDevicesRemoved device known ${removedDevices.map { it.productName }}")
+                        player.pause()
+                        internalOnlinePlayer.value?.pause()
+                    }
+                }
             }
 
             //audioManager?.registerAudioDeviceCallback(audioDeviceCallback, handler)
@@ -1395,7 +1496,7 @@ class PlayerService : Service(),
                 Timber.e("PlayerService Failed stopForeground onEvents ${it.stackTraceToString()}")
             }
             sendCloseEqualizerIntent()
-            notificationManager?.cancel(NotificationId)
+            notificationManager?.cancel(NOTIFICATION_ID)
             return
         }
 
@@ -1437,7 +1538,7 @@ class PlayerService : Service(),
                 sendCloseEqualizerIntent()
             }
             runCatching {
-                notificationManager?.notify(NotificationId, notification)
+                notificationManager?.notify(NOTIFICATION_ID, notification)
             }.onFailure {
                 Timber.e("PlayerServiceFailed onEvents notificationManager.notify ${it.stackTraceToString()}")
             }
@@ -1522,14 +1623,14 @@ class PlayerService : Service(),
 //                    sharedPreferences.getBoolean(key, isPersistentQueueEnabled)
 //            }
 
-            volumeNormalizationKey, loudnessBaseGainKey -> maybeNormalizeVolume()
+            volumeNormalizationKey, loudnessBaseGainKey, volumeBoostLevelKey -> maybeNormalizeVolume()
 
-            resumeOrPausePlaybackWhenDeviceKey -> maybeResumePlaybackWhenDeviceConnected()
+            resumeOrPausePlaybackWhenDeviceKey -> initializeResumeOrPausePlaybackWhenDevice()
 
-            isInvincibilityEnabledKey -> if (sharedPreferences != null) {
+//            isInvincibilityEnabledKey -> if (sharedPreferences != null) {
 //                isInvincibilityEnabled =
 //                    sharedPreferences.getBoolean(key, isInvincibilityEnabled)
-            }
+//            }
 
             skipSilenceKey -> if (sharedPreferences != null) {
                 player.skipSilenceEnabled = sharedPreferences.getBoolean(key, false)
@@ -1547,6 +1648,67 @@ class PlayerService : Service(),
                     sharedPreferences?.getEnum(queueLoopTypeKey, QueueLoopType.Default)?.type
                         ?: QueueLoopType.Default.type
             }
+
+            bassboostLevelKey, bassboostEnabledKey -> initializeBassBoost()
+            audioReverbPresetKey -> initializeReverb()
+            resumeOrPausePlaybackWhenDeviceKey -> initializeResumeOrPausePlaybackWhenDevice()
+            closebackgroundPlayerKey -> {
+                if (sharedPreferences != null) {
+                    isclosebackgroundPlayerEnabled = sharedPreferences.getBoolean(key, false)
+                }
+            }
+
+        }
+    }
+
+
+    private fun initializeBassBoost() {
+        if (!preferences.getBoolean(bassboostEnabledKey, false)) {
+            runCatching {
+                bassBoost?.enabled = false
+                bassBoost?.release()
+            }
+            bassBoost = null
+            maybeNormalizeVolume()
+            return
+        }
+
+        runCatching {
+            if (bassBoost == null) bassBoost = BassBoost(0, 0)
+            val bassboostLevel =
+                (preferences.getFloat(bassboostLevelKey, 0.5f) * 1000f).toInt().toShort()
+            Timber.d("PlayerService processBassBoost bassboostLevel $bassboostLevel")
+            bassBoost?.enabled = false
+            bassBoost?.setStrength(bassboostLevel)
+            bassBoost?.enabled = true
+        }.onFailure {
+            SmartMessage(
+                "Can't enable bass boost",
+                context = this@PlayerService
+            )
+        }
+    }
+
+    private fun initializeReverb() {
+        val presetType = preferences.getEnum(audioReverbPresetKey, PresetsReverb.NONE)
+        Timber.d("PlayerService processReverb presetType $presetType")
+        if (presetType == PresetsReverb.NONE) {
+            runCatching {
+                reverbPreset?.enabled = false
+                player.clearAuxEffectInfo()
+                reverbPreset?.release()
+            }
+            reverbPreset = null
+            return
+        }
+
+        runCatching {
+            if (reverbPreset == null) reverbPreset = PresetReverb(1, player.audioSessionId)
+
+            reverbPreset?.enabled = false
+            reverbPreset?.preset = presetType.preset
+            reverbPreset?.enabled = true
+            reverbPreset?.id?.let { player.setAuxEffectInfo(AuxEffectInfo(it, 1f)) }
         }
     }
 
@@ -1615,7 +1777,7 @@ class PlayerService : Service(),
 
 
         val notification = if (isAtLeastAndroid8) {
-            NotificationCompat.Builder(this, NotificationChannelId)
+            NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
         } else {
             NotificationCompat.Builder(this)
         }
@@ -1663,11 +1825,11 @@ class PlayerService : Service(),
         notificationManager = applicationContext.getSystemService<NotificationManager>()
 
         notificationManager?.run {
-            if (getNotificationChannel(NotificationChannelId) == null) {
+            if (getNotificationChannel(NOTIFICATION_CHANNEL_ID) == null) {
                 createNotificationChannel(
                     NotificationChannel(
-                        NotificationChannelId,
-                        "Now playing",
+                        NOTIFICATION_CHANNEL_ID,
+                        NOTIFICATION_CHANNEL_ID,
                         NotificationManager.IMPORTANCE_LOW
                     ).apply {
                         setSound(null, null)
@@ -1677,11 +1839,11 @@ class PlayerService : Service(),
                 )
             }
 
-            if (getNotificationChannel(SleepTimerNotificationChannelId) == null) {
+            if (getNotificationChannel(SLEEPTIMER_NOTIFICATION_CHANNEL_ID) == null) {
                 createNotificationChannel(
                     NotificationChannel(
-                        SleepTimerNotificationChannelId,
-                        "Sleep timer",
+                        SLEEPTIMER_NOTIFICATION_CHANNEL_ID,
+                        SLEEPTIMER_NOTIFICATION_CHANNEL_ID,
                         NotificationManager.IMPORTANCE_LOW
                     ).apply {
                         setSound(null, null)
@@ -1826,7 +1988,7 @@ class PlayerService : Service(),
 
             timerJob = coroutineScope.timer(delayMillis) {
                 val notification = NotificationCompat
-                    .Builder(this@PlayerService, SleepTimerNotificationChannelId)
+                    .Builder(this@PlayerService, SLEEPTIMER_NOTIFICATION_CHANNEL_ID)
                     .setContentTitle(getString(R.string.sleep_timer_ended))
                     .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                     .setAutoCancel(true)
@@ -1835,7 +1997,7 @@ class PlayerService : Service(),
                     .setSmallIcon(R.drawable.app_icon)
                     .build()
 
-                notificationManager?.notify(SleepTimerNotificationId, notification)
+                notificationManager?.notify(SLEEPTIMER_NOTIFICATION_ID, notification)
 
                 stopSelf()
                 exitProcess(0)
@@ -1986,146 +2148,6 @@ class PlayerService : Service(),
 
     }
 
-//    private inner class SessionCallback(private val player: Player) :
-//        MediaSessionCompat.Callback() {
-//        override fun onPlay() = player.play()
-//        //override fun onPause() = player.pause()
-//        override fun onPause() = binder.callPause({})
-//        override fun onSkipToPrevious() = runCatching(player::forceSeekToPrevious).let { }
-//        override fun onSkipToNext() = runCatching(player::forceSeekToNext).let { }
-//        override fun onSeekTo(pos: Long) = player.seekTo(pos)
-//        //override fun onStop() = player.pause()
-//        override fun onStop() = binder.callPause({} )
-//        override fun onRewind() = runCatching {player.seekToDefaultPosition()}.let { }
-//        override fun onSkipToQueueItem(id: Long) =
-//            runCatching { player.seekToDefaultPosition(id.toInt()) }.let { }
-//
-//
-//        @ExperimentalCoroutinesApi
-//        @FlowPreview
-//        override fun onCustomAction(action: String, extras: Bundle?) {
-//            super.onCustomAction(action, extras)
-//            //println("mediaItem $action")
-//            if (action == "LIKE") {
-//                binder.toggleLike()
-//                refreshPlayer()
-//            }
-//            if (action == "SHUFFLE") {
-//                binder.toggleShuffle()
-//                refreshPlayer()
-//            }
-//            if (action == "PLAYRADIO") {
-//                    binder.stopRadio()
-//                    binder.playRadio(NavigationEndpoint.Endpoint.Watch(videoId = binder.player.currentMediaItem?.mediaId))
-//            }
-//            updateUnifiedMediasessionData()
-//        }
-//
-//        override fun onPlayFromSearch(query: String?, extras: Bundle?) {
-//            if (query.isNullOrBlank()) return
-//            binder.playFromSearch(query)
-//        }
-//
-//
-//        override fun onMediaButtonEvent(mediaButtonEvent: Intent?): Boolean {
-//            mediaButtonEvent?.let {
-//                if (it.action == Intent.ACTION_MEDIA_BUTTON) {
-//                    if (it.extras?.getBoolean(Intent.EXTRA_KEY_EVENT) == true) {
-//                        val keyEvent = it.extras?.getParcelable<KeyEvent>(Intent.EXTRA_KEY_EVENT)
-//                        when(keyEvent?.keyCode) {
-//                            KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE -> {
-//                                if (player.isPlaying)
-//                                    onPause()
-//                                else onPlay()
-//
-//                                return true
-//                            }
-//                            KeyEvent.KEYCODE_MEDIA_NEXT -> {
-//                                onSkipToNext()
-//                                return true
-//                            }
-//                            KeyEvent.KEYCODE_MEDIA_PREVIOUS -> {
-//                                onSkipToPrevious()
-//                                return true
-//                            }
-//                            KeyEvent.KEYCODE_MEDIA_STOP -> {
-//                                onStop()
-//                                return true
-//                            }
-//                            KeyEvent.KEYCODE_MEDIA_PLAY -> {
-//                                onPlay()
-//                                return true
-//                            }
-//                            KeyEvent.KEYCODE_MEDIA_PAUSE -> {
-//                                onPause()
-//                                return true
-//                            }
-//                        }
-//                    }
-//                }
-//            }
-//            //return super.onMediaButtonEvent(mediaButtonEvent)
-//            return false
-//        }
-//
-//
-//    }
-
-
-//    private fun refreshPlayer() {
-//        coroutineScope.launch {
-//            withContext(Dispatchers.Main) {
-//                if (player.isPlaying) {
-//                    player.pause()
-//                    player.play()
-//                } else {
-//                    player.play()
-//                    player.pause()
-//                }
-//            }
-//        }
-//    }
-
-//    inner class NotificationActionReceiver(private val player: Player) : BroadcastReceiver() {
-//
-//
-//        @ExperimentalCoroutinesApi
-//        @FlowPreview
-//        // Prior Android 11
-//        override fun onReceive(context: Context, intent: Intent) {
-//            when (intent.action) {
-//                //Action.pause.value -> player.pause()
-//                Action.pause.value -> binder.callPause({ player.pause() } )
-//                Action.play.value -> player.play()
-//                Action.next.value -> player.forceSeekToNext()
-//                Action.previous.value -> player.forceSeekToPrevious()
-//                Action.like.value -> {
-//                    binder.toggleLike()
-//                }
-//
-//                Action.playradio.value -> {
-//                        binder.stopRadio()
-//                        binder.playRadio(NavigationEndpoint.Endpoint.Watch(videoId = binder.player.currentMediaItem?.mediaId))
-//                }
-//
-//                Action.shuffle.value -> {
-//                    binder.toggleShuffle()
-//                }
-//
-//                Action.search.value -> {
-//                    binder.actionSearch()
-//                }
-//
-//                Action.repeat.value -> {
-//                    binder.toggleRepeat()
-//                }
-//            }
-//
-//            //updateUnifiedNotification()
-//        }
-//
-//    }
-
 
     class NotificationDismissReceiver : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
@@ -2163,11 +2185,11 @@ class PlayerService : Service(),
     }
 
     private companion object {
-        const val NotificationId = 1001
-        const val NotificationChannelId = "Player Notification"
+        const val NOTIFICATION_ID = 1001
+        val NOTIFICATION_CHANNEL_ID = context().resources.getString(R.string.player_notification_channel_id)  //"Player Notification"
 
-        const val SleepTimerNotificationId = 1002
-        const val SleepTimerNotificationChannelId = "Sleep Timer Notification"
+        const val SLEEPTIMER_NOTIFICATION_ID = 1002
+        val SLEEPTIMER_NOTIFICATION_CHANNEL_ID = context().resources.getString(R.string.sleep_timer_notification_channel_id) //"Sleep Timer Notification"
 
 
     }

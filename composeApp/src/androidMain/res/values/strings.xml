@@ -957,4 +957,6 @@
     <string name="shuffle_play">Shuffle play</string>
     <string name="resume_or_pause_playback">Resume or Pause playback</string>
     <string name="play_or_pause_when_device_is_connected_or_disconnected">Play when a wired or bluetooth device is connected and pause if disconnected</string>
+    <string name="player_notification_channel_id">Player Notification</string>
+    <string name="sleep_timer_notification_channel_id">Sleep Timer Notification</string>
 </resources>
