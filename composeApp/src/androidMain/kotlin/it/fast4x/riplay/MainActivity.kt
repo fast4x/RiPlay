@@ -253,6 +253,7 @@ import it.fast4x.riplay.extensions.preferences.ytVisitorDataKey
 import it.fast4x.riplay.extensions.rescuecenter.RescueScreen
 import it.fast4x.riplay.data.models.Queues
 import it.fast4x.riplay.data.models.defaultQueue
+import it.fast4x.riplay.extensions.preferences.closebackgroundPlayerKey
 import it.fast4x.riplay.navigation.AppNavigation
 import it.fast4x.riplay.service.PlayerService
 import it.fast4x.riplay.service.ToolsService
@@ -287,6 +288,7 @@ import it.fast4x.riplay.utils.LocalMonetCompat
 import it.fast4x.riplay.utils.OkHttpRequest
 import it.fast4x.riplay.utils.appContext
 import it.fast4x.riplay.utils.asMediaItem
+import it.fast4x.riplay.utils.broadCastPendingIntent
 import it.fast4x.riplay.utils.capitalized
 import it.fast4x.riplay.utils.clearWebViewData
 import it.fast4x.riplay.utils.context
@@ -451,11 +453,9 @@ class MainActivity :
 //    private var lastError = mutableStateOf<PlayerConstants.PlayerError?>(null)
 //    private var onlinePlayerIsInitialized = mutableStateOf(false)
 
-
+    private var isclosebackgroundPlayerEnabled = false
 
     override fun onStart() {
-        super.onStart()
-
         runCatching {
             val intent = Intent(this, PlayerService::class.java)
             bindService(intent, serviceConnection, BIND_AUTO_CREATE)
@@ -463,7 +463,6 @@ class MainActivity :
                 startForegroundService(intent)
             else
                 startService(intent)
-
 
         }.onFailure {
             Timber.e("MainActivity.onStart bindService ${it.stackTraceToString()}")
@@ -487,6 +486,7 @@ class MainActivity :
             Timber.e("MainActivity.onStart startService AndroidAutoService ${it.stackTraceToString()}")
         }
         */
+        super.onStart()
     }
 
     @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
@@ -569,6 +569,8 @@ class MainActivity :
                 linkDevices.value = it
             }
         )
+
+        isclosebackgroundPlayerEnabled = preferences.getBoolean(closebackgroundPlayerKey, false)
 
         //initializeBitmapProvider()
 
@@ -1249,6 +1251,11 @@ class MainActivity :
                             isEnabledFullscreenKey -> enableFullscreenMode()
                             //notificationPlayerFirstIconKey, notificationPlayerSecondIconKey -> updateUnifiedMediasessionData()
                             //queueLoopTypeKey -> updateOnlineNotification()
+                            closebackgroundPlayerKey -> isclosebackgroundPlayerEnabled =
+                                sharedPreferences.getBoolean(
+                                    closebackgroundPlayerKey,
+                                    false
+                                )
                         }
                     }
 
@@ -2949,11 +2956,18 @@ class MainActivity :
     }
 
     override fun onStop() {
+        Timber.d("MainActivity.onStop")
         runCatching {
             unbindService(serviceConnection)
         }.onFailure {
             Timber.e("MainActivity.onStop unbindService ${it.stackTraceToString()}")
         }
+
+        if (!isclosebackgroundPlayerEnabled)
+            onStart() // some device require white listed
+            //broadCastPendingIntent<PlayerService.ServiceRestartReceiver>()
+
+
         super.onStop()
     }
 

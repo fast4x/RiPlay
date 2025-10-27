@@ -266,6 +266,8 @@ class PlayerService : Service(),
 
     var notificationActionReceiverUpAndroid11: NotificationActionReceiverUpAndroid11? = null
 
+    var serviceRestartReceiver: ServiceRestartReceiver? = null
+
     private val playerVerticalWidget = PlayerVerticalWidget()
     private val playerHorizontalWidget = PlayerHorizontalWidget()
 
@@ -435,6 +437,7 @@ class PlayerService : Service(),
         initializeSensorListener()
 
         initializeVariables()
+        //initializeServiceRestartReceiver() not used for now
 
         initializeDiscordPresence()
     }
@@ -461,6 +464,21 @@ class PlayerService : Service(),
         }.onFailure {
             Timber.e("PlayerService oncreate startForeground ${it.stackTraceToString()}")
         }
+    }
+
+    private fun initializeServiceRestartReceiver() {
+        serviceRestartReceiver = ServiceRestartReceiver()
+
+        val filter = IntentFilter().apply {
+            addAction("restart")
+        }
+
+        ContextCompat.registerReceiver(
+            this@PlayerService,
+            serviceRestartReceiver,
+            filter,
+            ContextCompat.RECEIVER_NOT_EXPORTED
+        )
     }
 
     private fun initializeVariables() {
@@ -863,7 +881,7 @@ class PlayerService : Service(),
     }
 
     override fun onTaskRemoved(rootIntent: Intent?) {
-
+        Timber.d("PlayerService onTaskRemoved")
         if (isclosebackgroundPlayerEnabled) {
             player.pause()
             internalOnlinePlayer.value?.pause()
@@ -888,6 +906,7 @@ class PlayerService : Service(),
             player.release()
 
             unregisterReceiver(notificationActionReceiverUpAndroid11)
+            //unregisterReceiver(serviceRestartReceiver)
 
             unifiedMediaSession.isActive = false
             unifiedMediaSession.release()
@@ -2182,7 +2201,22 @@ class PlayerService : Service(),
             runCatching {
                 context.stopService(context.intent<PlayerService>())
             }.onFailure {
-                Timber.e("Failed NotificationDismissReceiver stopService in PlayerService (PlayerService) ${it.stackTraceToString()}")
+                Timber.e("Failed NotificationDismissReceiver stopService in PlayerService ${it.stackTraceToString()}")
+            }
+        }
+    }
+
+    class ServiceRestartReceiver : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            Timber.d("PlayerService ServiceRestartReceiver onReceive")
+            runCatching {
+                val intent = context.intent<PlayerService>()
+                if (isAtLeastAndroid8)
+                    context.startForegroundService(intent)
+                else
+                    context.startService(intent)
+            }.onFailure {
+                Timber.e("Failed ServiceRestartReceiver stopService in PlayerService ${it.stackTraceToString()}")
             }
         }
     }
