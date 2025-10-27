@@ -117,14 +117,19 @@ import it.fast4x.riplay.enums.PresetsReverb
 import it.fast4x.riplay.enums.QueueLoopType
 import it.fast4x.riplay.extensions.audiovolume.AudioVolumeObserver
 import it.fast4x.riplay.extensions.audiovolume.OnAudioVolumeChangedListener
+import it.fast4x.riplay.extensions.discord.DiscordPresenceManager
+import it.fast4x.riplay.extensions.discord.updateDiscordPresenceWithOfflinePlayer
+import it.fast4x.riplay.extensions.discord.updateDiscordPresenceWithOnlinePlayer
 import it.fast4x.riplay.extensions.preferences.audioReverbPresetKey
 import it.fast4x.riplay.extensions.preferences.bassboostEnabledKey
 import it.fast4x.riplay.extensions.preferences.bassboostLevelKey
 import it.fast4x.riplay.extensions.preferences.closebackgroundPlayerKey
+import it.fast4x.riplay.extensions.preferences.discordPersonalAccessTokenKey
 import it.fast4x.riplay.extensions.preferences.discoverKey
 import it.fast4x.riplay.extensions.preferences.exoPlayerMinTimeForEventKey
 import it.fast4x.riplay.extensions.preferences.filterContentTypeKey
 import it.fast4x.riplay.extensions.preferences.getEnum
+import it.fast4x.riplay.extensions.preferences.isDiscordPresenceEnabledKey
 import it.fast4x.riplay.extensions.preferences.isPauseOnVolumeZeroEnabledKey
 import it.fast4x.riplay.extensions.preferences.isShowingThumbnailInLockscreenKey
 import it.fast4x.riplay.extensions.preferences.loudnessBaseGainKey
@@ -132,11 +137,13 @@ import it.fast4x.riplay.extensions.preferences.minimumSilenceDurationKey
 import it.fast4x.riplay.extensions.preferences.notificationPlayerFirstIconKey
 import it.fast4x.riplay.extensions.preferences.notificationPlayerSecondIconKey
 import it.fast4x.riplay.extensions.preferences.pauseListenHistoryKey
+import it.fast4x.riplay.extensions.preferences.persistentQueueKey
 import it.fast4x.riplay.extensions.preferences.playbackFadeAudioDurationKey
 import it.fast4x.riplay.extensions.preferences.preferences
 import it.fast4x.riplay.extensions.preferences.putEnum
 import it.fast4x.riplay.extensions.preferences.queueLoopTypeKey
 import it.fast4x.riplay.extensions.preferences.resumeOrPausePlaybackWhenDeviceKey
+import it.fast4x.riplay.extensions.preferences.resumePlaybackOnStartKey
 import it.fast4x.riplay.extensions.preferences.shakeEventEnabledKey
 import it.fast4x.riplay.extensions.preferences.skipMediaOnErrorKey
 import it.fast4x.riplay.extensions.preferences.skipSilenceKey
@@ -242,7 +249,8 @@ class PlayerService : Service(),
 
     private var volumeNormalizationJob: Job? = null
 
-    //private var isPersistentQueueEnabled = false
+    private var isPersistentQueueEnabled = false
+    private var isResumePlaybackOnStart = false
     private var isclosebackgroundPlayerEnabled = false
     private var isShowingThumbnailInLockscreen = true
     //override var isInvincibilityEnabled = false
@@ -307,6 +315,10 @@ class PlayerService : Service(),
     private var lastAcceleration = 0f
     private var shakeCounter = 0
 
+    private var discordPresenceManager: DiscordPresenceManager? = null
+
+
+
 
     override fun onBind(intent: Intent?): AndroidBinder {
         return binder
@@ -328,13 +340,11 @@ class PlayerService : Service(),
         preferences.registerOnSharedPreferenceChangeListener(this)
 
         val preferences = preferences
-        //isPersistentQueueEnabled = preferences.getBoolean(persistentQueueKey, false)
-        //isInvincibilityEnabled = preferences.getBoolean(isInvincibilityEnabledKey, false)
+        isPersistentQueueEnabled = preferences.getBoolean(persistentQueueKey, true)
         isShowingThumbnailInLockscreen =
             preferences.getBoolean(isShowingThumbnailInLockscreenKey, false)
 
         //audioQualityFormat = preferences.getEnum(audioQualityFormatKey, AudioQualityFormat.High)
-        //showLikeButton = preferences.getBoolean(showLikeButtonBackgroundPlayerKey, true)
 
         player = ExoPlayer.Builder(this)
             .setMediaSourceFactory(createMediaSourceFactory())
@@ -387,7 +397,7 @@ class PlayerService : Service(),
             }
         }
 
-        if (isPersistentQueueEnabled()) {
+        if (isPersistentQueueEnabled) {
             player.loadMasterQueue()
             resumePlaybackOnStart()
 
@@ -407,6 +417,7 @@ class PlayerService : Service(),
             withContext(Dispatchers.Main) {
                 updateUnifiedNotification()
                 updateWidgets()
+
             }
         }
 
@@ -424,7 +435,7 @@ class PlayerService : Service(),
 
         initializeVariables()
 
-        //updateDiscordPresence()
+        initializeDiscordPresence()
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -455,6 +466,20 @@ class PlayerService : Service(),
         // todo add here all val that requires first initialize and add references in shared preferences, so is not nededed restart service when change it
         currentMediaItemState.value =  player.currentMediaItem
         isclosebackgroundPlayerEnabled = preferences.getBoolean(closebackgroundPlayerKey, false)
+    }
+
+    private fun initializeDiscordPresence() {
+        if (!isAtLeastAndroid81) return
+
+        if (preferences.getBoolean(isDiscordPresenceEnabledKey, false)) {
+            val token = preferences.getString(discordPersonalAccessTokenKey, "")
+            if (token?.isNotEmpty() == true) {
+                discordPresenceManager = DiscordPresenceManager(
+                    context = this,
+                    getToken = { token },
+                )
+            }
+        }
     }
 
     private fun initializeSensorListener() {
@@ -506,7 +531,7 @@ class PlayerService : Service(),
     }
 
     private fun resumePlaybackOnStart() {
-        if(!isPersistentQueueEnabled() && !isResumePlaybackOnStart()) return
+        if(!isPersistentQueueEnabled && !isResumePlaybackOnStart) return
 
         when (player.currentMediaItem?.isLocal) {
             true -> { if (!player.isPlaying) player.play() }
@@ -595,7 +620,7 @@ class PlayerService : Service(),
                     Timber.d("PlayerService onlinePlayer onReady localmediaItem $localMediaItem queue index ${binder.player.currentMediaItemIndex}")
 
                     localMediaItem?.let{
-                        if (!isPersistentQueueEnabled() && !isResumePlaybackOnStart())
+                        if (!isPersistentQueueEnabled && !isResumePlaybackOnStart)
                             youTubePlayer.cueVideo(it.mediaId, playFromSecond)
                         else
                             youTubePlayer.loadVideo(it.mediaId, playFromSecond)
@@ -612,6 +637,8 @@ class PlayerService : Service(),
                     super.onVideoDuration(youTubePlayer, duration)
                     currentDuration.value = duration
                     updateUnifiedNotification()
+                    updateDiscordPresence()
+
                 }
 
                 override fun onStateChange(
@@ -665,6 +692,7 @@ class PlayerService : Service(),
                     internalOnlinePlayerState = state
                     isPlayingNow = state == PlayerConstants.PlayerState.PLAYING
                     updateUnifiedNotification()
+                    updateDiscordPresence()
                 }
 
                 override fun onError(
@@ -673,7 +701,7 @@ class PlayerService : Service(),
                 ) {
                     super.onError(youTubePlayer, error)
 
-                    if (isPersistentQueueEnabled())
+                    if (isPersistentQueueEnabled)
                         player.saveMasterQueue()
 
                     localMediaItem?.isLocal?.let { if (it) return }
@@ -751,21 +779,25 @@ class PlayerService : Service(),
 
     private fun updateDiscordPresence() {
         if (!isAtLeastAndroid81) return
-//        val discordPersonalAccessToken = preferences.getString(discordPersonalAccessTokenKey, "")
-//        val isDiscordPresenceEnabled = preferences.getBoolean(isDiscordPresenceEnabledKey, false)
-//        runCatching {
-//            if (!discordPersonalAccessToken.isNullOrEmpty() && isDiscordPresenceEnabled) {
-//                player.currentMediaItem?.let {
-//                    sendDiscordPresence(
-//                        discordPersonalAccessToken,
-//                        it,
-//                        player.duration
-//                    )
-//                }
-//            }
-//        }.onFailure {
-//            Timber.e("PlayerService Failed sendDiscordPresence in PlayerService ${it.stackTraceToString()}")
-//        }
+
+        localMediaItem?.let{
+            if (it.isLocal) {
+                updateDiscordPresenceWithOnlinePlayer(
+                    discordPresenceManager,
+                    it,
+                    mutableStateOf(internalOnlinePlayerState),
+                    currentDuration.value,
+                    currentSecond.value
+                )
+            } else {
+                updateDiscordPresenceWithOfflinePlayer(
+                    discordPresenceManager,
+                    binder
+                )
+            }
+        }
+
+
     }
 
     private fun getVolumeProvider(): VolumeProviderCompat {
@@ -856,6 +888,8 @@ class PlayerService : Service(),
             cache.release()
             loudnessEnhancer?.release()
             audioVolumeObserver.unregister()
+
+            discordPresenceManager?.onStop()
 
             coroutineScope.cancel()
         }.onFailure {
@@ -1583,16 +1617,8 @@ class PlayerService : Service(),
     override fun onPlayerErrorChanged(error: PlaybackException?) {
         super.onPlayerErrorChanged(error)
         Timber.e("PlayerService onPlayerErrorChanged ${error?.stackTraceToString()}")
-        //this.stopService(this.intent<MyDownloadService>())
-        //this.stopService(this.intent<PlayerService>())
-        //Log.d("mediaItem","onPlayerErrorChanged ${error?.errorCodeName}")
     }
 
-//    override fun onPlaybackSuppressionReasonChanged(playbackSuppressionReason: Int) {
-//        super.onPlaybackSuppressionReasonChanged(playbackSuppressionReason)
-//        //Timber.e("PlayerService onPlaybackSuppressionReasonChanged $playbackSuppressionReason")
-//        //Log.d("mediaItem","onPlaybackSuppressionReasonChanged $playbackSuppressionReason")
-//    }
 
     @UnstableApi
     override fun onIsPlayingChanged(isPlaying: Boolean) {
@@ -1606,10 +1632,11 @@ class PlayerService : Service(),
                 fadeIn = true
             )
 
-        updateWidgets()
-
         if (currentMediaItemState.value?.isLocal == true)
             updateUnifiedNotification()
+
+        updateWidgets()
+        updateDiscordPresence()
 
         super.onIsPlayingChanged(isPlaying)
     }
@@ -1618,45 +1645,40 @@ class PlayerService : Service(),
     @UnstableApi
     override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences?, key: String?) {
         when (key) {
-//            persistentQueueKey -> if (sharedPreferences != null) {
-//                isPersistentQueueEnabled =
-//                    sharedPreferences.getBoolean(key, isPersistentQueueEnabled)
-//            }
-
-            volumeNormalizationKey, loudnessBaseGainKey, volumeBoostLevelKey -> maybeNormalizeVolume()
-
-            resumeOrPausePlaybackWhenDeviceKey -> initializeResumeOrPausePlaybackWhenDevice()
-
-//            isInvincibilityEnabledKey -> if (sharedPreferences != null) {
-//                isInvincibilityEnabled =
-//                    sharedPreferences.getBoolean(key, isInvincibilityEnabled)
-//            }
+            persistentQueueKey -> if (sharedPreferences != null) {
+                isPersistentQueueEnabled =
+                    sharedPreferences.getBoolean(key, true)
+            }
+            resumePlaybackOnStartKey  -> {
+                if (sharedPreferences != null) {
+                    isResumePlaybackOnStart =
+                        sharedPreferences.getBoolean(key, false)
+                }
+            }
 
             skipSilenceKey -> if (sharedPreferences != null) {
                 player.skipSilenceEnabled = sharedPreferences.getBoolean(key, false)
             }
-
+            queueLoopTypeKey -> {
+                player.repeatMode =
+                    sharedPreferences?.getEnum(queueLoopTypeKey, QueueLoopType.Default)?.type
+                        ?: QueueLoopType.Default.type
+            }
+            closebackgroundPlayerKey -> {
+                if (sharedPreferences != null) {
+                    isclosebackgroundPlayerEnabled = sharedPreferences.getBoolean(key, false)
+                }
+            }
             isShowingThumbnailInLockscreenKey -> {
                 if (sharedPreferences != null) {
                     isShowingThumbnailInLockscreen = sharedPreferences.getBoolean(key, true)
                 }
                 maybeShowSongCoverInLockScreen()
             }
-
-            queueLoopTypeKey -> {
-                player.repeatMode =
-                    sharedPreferences?.getEnum(queueLoopTypeKey, QueueLoopType.Default)?.type
-                        ?: QueueLoopType.Default.type
-            }
-
+            resumeOrPausePlaybackWhenDeviceKey -> initializeResumeOrPausePlaybackWhenDevice()
             bassboostLevelKey, bassboostEnabledKey -> initializeBassBoost()
             audioReverbPresetKey -> initializeReverb()
-            resumeOrPausePlaybackWhenDeviceKey -> initializeResumeOrPausePlaybackWhenDevice()
-            closebackgroundPlayerKey -> {
-                if (sharedPreferences != null) {
-                    isclosebackgroundPlayerEnabled = sharedPreferences.getBoolean(key, false)
-                }
-            }
+            volumeNormalizationKey, loudnessBaseGainKey, volumeBoostLevelKey -> maybeNormalizeVolume()
 
         }
     }

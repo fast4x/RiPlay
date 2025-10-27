@@ -172,6 +172,7 @@ import it.fast4x.riplay.extensions.preferences.thumbnailFadeKey
 import it.fast4x.riplay.extensions.preferences.thumbnailSpacingKey
 import it.fast4x.riplay.extensions.preferences.topPaddingKey
 import it.fast4x.riplay.utils.LazyListContainer
+import it.fast4x.riplay.utils.isAtLeastAndroid13
 import java.text.SimpleDateFormat
 import java.util.Date
 
@@ -368,10 +369,10 @@ fun AppearanceSettings(
     navController: NavController,
 ) {
 
-//    var isShowingThumbnailInLockscreen by rememberPreference(
-//        isShowingThumbnailInLockscreenKey,
-//        true
-//    )
+    var isShowingThumbnailInLockscreen by rememberPreference(
+        isShowingThumbnailInLockscreenKey,
+        true
+    )
 
     var showthumbnail by rememberPreference(showthumbnailKey, true)
     var transparentbar by rememberPreference(transparentbarKey, true)
@@ -2612,23 +2613,23 @@ fun AppearanceSettings(
                     }
 
 
-//        if (search.input.isBlank() || stringResource(R.string.show_song_cover).contains(
-//                search.input,
-//                true
-//            )
-//        )
-//            if (!isAtLeastAndroid13) {
-//                SettingsGroupSpacer()
-//
-//                SettingsEntryGroupText(title = stringResource(R.string.lockscreen))
-//
-//                SwitchSettingEntry(
-//                    title = stringResource(R.string.show_song_cover),
-//                    text = stringResource(R.string.use_song_cover_on_lockscreen),
-//                    isChecked = isShowingThumbnailInLockscreen,
-//                    onCheckedChange = { isShowingThumbnailInLockscreen = it }
-//                )
-//            }
+        if (search.input.isBlank() || stringResource(R.string.show_song_cover).contains(
+                search.input,
+                true
+            )
+        )
+            if (!isAtLeastAndroid13) {
+                SettingsGroupSpacer()
+
+                SettingsEntryGroupText(title = stringResource(R.string.lockscreen))
+
+                SwitchSettingEntry(
+                    title = stringResource(R.string.show_song_cover),
+                    text = stringResource(R.string.use_song_cover_on_lockscreen),
+                    isChecked = isShowingThumbnailInLockscreen,
+                    onCheckedChange = { isShowingThumbnailInLockscreen = it }
+                )
+            }
 
                 }
 

@@ -1149,7 +1149,7 @@ fun GeneralSettings(
                             onCheckedChange = {
                                 persistentQueue = it
                                 if(it) binder?.player?.loadMasterQueue() // try to load last known queue now
-                                restartService = true
+                                //restartService = true
                             }
                         )
                         RestartPlayerService(restartService, onRestart = { restartService = false })

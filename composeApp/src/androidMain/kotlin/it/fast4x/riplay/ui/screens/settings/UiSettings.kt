@@ -221,16 +221,16 @@ fun DefaultUiSettings() {
         MinTimeForEvent.`20s`
     )
     minTimeForEvent = MinTimeForEvent.`20s`
-    var persistentQueue by rememberPreference(persistentQueueKey, true)
-    persistentQueue = true
+//    var persistentQueue by rememberPreference(persistentQueueKey, true)
+//    persistentQueue = true
     var resumePlaybackOnStart by rememberPreference(resumePlaybackOnStartKey, false)
     resumePlaybackOnStart = false
     var closebackgroundPlayer by rememberPreference(closebackgroundPlayerKey, false)
     closebackgroundPlayer = false
     var closeWithBackButton by rememberPreference(closeWithBackButtonKey, true)
     closeWithBackButton = true
-    var skipSilence by rememberPreference(skipSilenceKey, false)
-    skipSilence = false
+//    var skipSilence by rememberPreference(skipSilenceKey, false)
+//    skipSilence = false
     var skipMediaOnError by rememberPreference(skipMediaOnErrorKey, false)
     skipMediaOnError = false
     var volumeNormalization by rememberPreference(volumeNormalizationKey, false)
