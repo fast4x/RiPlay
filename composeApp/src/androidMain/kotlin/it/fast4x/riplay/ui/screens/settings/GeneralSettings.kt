@@ -1164,7 +1164,7 @@ fun GeneralSettings(
                                     isChecked = resumePlaybackOnStart,
                                     onCheckedChange = {
                                         resumePlaybackOnStart = it
-                                        restartService = true
+                                        //restartService = true
                                     }
                                 )
                                 RestartPlayerService(

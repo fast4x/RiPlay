@@ -339,8 +339,9 @@ class PlayerService : Service(),
 
         preferences.registerOnSharedPreferenceChangeListener(this)
 
-        val preferences = preferences
+        //val preferences = preferences
         isPersistentQueueEnabled = preferences.getBoolean(persistentQueueKey, true)
+        isResumePlaybackOnStart = preferences.getBoolean(resumePlaybackOnStartKey, false)
         isShowingThumbnailInLockscreen =
             preferences.getBoolean(isShowingThumbnailInLockscreenKey, false)
 
@@ -617,13 +618,18 @@ class PlayerService : Service(),
                     customUiController.showFullscreenButton(false)
                     internalOnlinePlayerView.value.setCustomPlayerUi(customUiController.rootView)
 
-                    Timber.d("PlayerService onlinePlayer onReady localmediaItem $localMediaItem queue index ${binder.player.currentMediaItemIndex}")
-
+                    Timber.d("PlayerService onlinePlayer onReady localmediaItem ${localMediaItem?.mediaId} queue index ${binder.player.currentMediaItemIndex}")
+                    Timber.d("PlayerService onlinePlayer onReady isPersistentQueueEnabled $isPersistentQueueEnabled isResumePlaybackOnStart $isResumePlaybackOnStart")
                     localMediaItem?.let{
-                        if (!isPersistentQueueEnabled && !isResumePlaybackOnStart)
-                            youTubePlayer.cueVideo(it.mediaId, playFromSecond)
-                        else
-                            youTubePlayer.loadVideo(it.mediaId, playFromSecond)
+                        if (isPersistentQueueEnabled) {
+                            if (isResumePlaybackOnStart) {
+                                youTubePlayer.loadVideo(it.mediaId, playFromSecond)
+                                Timber.d("PlayerService onlinePlayer onReady loadVideo ${it.mediaId}")
+                            } else {
+                                youTubePlayer.cueVideo(it.mediaId, playFromSecond)
+                                Timber.d("PlayerService onlinePlayer onReady cueVideo ${it.mediaId}")
+                            }
+                        }
                     }
                 }
 
