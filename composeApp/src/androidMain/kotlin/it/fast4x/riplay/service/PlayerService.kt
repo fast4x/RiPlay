@@ -41,6 +41,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshots.toInt
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.app.ServiceCompat
@@ -138,6 +139,7 @@ import it.fast4x.riplay.extensions.preferences.notificationPlayerFirstIconKey
 import it.fast4x.riplay.extensions.preferences.notificationPlayerSecondIconKey
 import it.fast4x.riplay.extensions.preferences.pauseListenHistoryKey
 import it.fast4x.riplay.extensions.preferences.persistentQueueKey
+import it.fast4x.riplay.extensions.preferences.playbackDurationKey
 import it.fast4x.riplay.extensions.preferences.playbackFadeAudioDurationKey
 import it.fast4x.riplay.extensions.preferences.preferences
 import it.fast4x.riplay.extensions.preferences.putEnum
@@ -166,8 +168,6 @@ import it.fast4x.riplay.utils.isAtLeastAndroid11
 import it.fast4x.riplay.utils.isHandleAudioFocusEnabled
 import it.fast4x.riplay.utils.isKeepScreenOnEnabled
 import it.fast4x.riplay.utils.isOfficialContent
-import it.fast4x.riplay.utils.isPersistentQueueEnabled
-import it.fast4x.riplay.utils.isResumePlaybackOnStart
 import it.fast4x.riplay.utils.isSkipMediaOnErrorEnabled
 import it.fast4x.riplay.utils.isUserGeneratedContent
 import it.fast4x.riplay.utils.loadMasterQueue
@@ -253,7 +253,7 @@ class PlayerService : Service(),
     private var isResumePlaybackOnStart = false
     private var isclosebackgroundPlayerEnabled = false
     private var isShowingThumbnailInLockscreen = true
-    //override var isInvincibilityEnabled = false
+    private var medleyDuration by mutableFloatStateOf(0f)
 
     private var audioManager: AudioManager? = null
     private var audioDeviceCallback: AudioDeviceCallback? = null
@@ -346,6 +346,7 @@ class PlayerService : Service(),
         isResumePlaybackOnStart = preferences.getBoolean(resumePlaybackOnStartKey, false)
         isShowingThumbnailInLockscreen =
             preferences.getBoolean(isShowingThumbnailInLockscreenKey, false)
+        medleyDuration = preferences.getFloat(playbackDurationKey, 0f)
 
         //audioQualityFormat = preferences.getEnum(audioQualityFormatKey, AudioQualityFormat.High)
 
@@ -435,7 +436,8 @@ class PlayerService : Service(),
         initializeBassBoost()
         initializeReverb()
         initializeSensorListener()
-
+        initializeSongCoverInLockScreen()
+        initializeMedleyMode()
         initializeVariables()
         //initializeServiceRestartReceiver() not used for now
 
@@ -485,6 +487,21 @@ class PlayerService : Service(),
         // todo add here all val that requires first initialize and add references in shared preferences, so is not nededed restart service when change it
         currentMediaItemState.value =  player.currentMediaItem
         isclosebackgroundPlayerEnabled = preferences.getBoolean(closebackgroundPlayerKey, false)
+    }
+
+    private fun initializeMedleyMode() {
+        coroutineScope.launch {
+            while (medleyDuration > 0) {
+                withContext(Dispatchers.Main) {
+                    Timber.d("PlayerService initializeMedleyMode medleyDuration $medleyDuration player.isPlaying ${player.isPlaying} internalOnlinePlayerState ${internalOnlinePlayerState == PlayerConstants.PlayerState.PLAYING}")
+                    val seconds = if (localMediaItem?.isLocal == true) player.currentPosition.div(1000).toInt() else currentSecond.value.toInt()
+                    if (medleyDuration.toInt() <= seconds) {
+                        //delay(1.seconds * (medleyDuration.toInt() + 2))
+                        player.playNext()
+                    }
+                }
+            }
+        }
     }
 
     private fun initializeDiscordPresence() {
@@ -717,6 +734,7 @@ class PlayerService : Service(),
                     isPlayingNow = state == PlayerConstants.PlayerState.PLAYING
                     updateUnifiedNotification()
                     updateDiscordPresence()
+
                 }
 
                 override fun onError(
@@ -1222,7 +1240,7 @@ class PlayerService : Service(),
         }
     }
 
-    private fun maybeShowSongCoverInLockScreen() {
+    private fun initializeSongCoverInLockScreen() {
         val bitmap =
             if (isAtLeastAndroid13 || isShowingThumbnailInLockscreen) bitmapProvider?.bitmap else null
 
@@ -1669,36 +1687,32 @@ class PlayerService : Service(),
 
     @UnstableApi
     override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences?, key: String?) {
+        sharedPreferences ?: return
+
         when (key) {
-            persistentQueueKey -> if (sharedPreferences != null) {
-                isPersistentQueueEnabled =
-                    sharedPreferences.getBoolean(key, true)
+            persistentQueueKey -> {
+                isPersistentQueueEnabled = sharedPreferences.getBoolean(key, true)
             }
             resumePlaybackOnStartKey  -> {
-                if (sharedPreferences != null) {
-                    isResumePlaybackOnStart =
-                        sharedPreferences.getBoolean(key, false)
-                }
+                    isResumePlaybackOnStart = sharedPreferences.getBoolean(key, false)
             }
-
-            skipSilenceKey -> if (sharedPreferences != null) {
+            skipSilenceKey -> {
                 player.skipSilenceEnabled = sharedPreferences.getBoolean(key, false)
             }
             queueLoopTypeKey -> {
                 player.repeatMode =
-                    sharedPreferences?.getEnum(queueLoopTypeKey, QueueLoopType.Default)?.type
-                        ?: QueueLoopType.Default.type
+                    sharedPreferences.getEnum(queueLoopTypeKey, QueueLoopType.Default).type
             }
             closebackgroundPlayerKey -> {
-                if (sharedPreferences != null) {
                     isclosebackgroundPlayerEnabled = sharedPreferences.getBoolean(key, false)
-                }
             }
             isShowingThumbnailInLockscreenKey -> {
-                if (sharedPreferences != null) {
-                    isShowingThumbnailInLockscreen = sharedPreferences.getBoolean(key, true)
-                }
-                maybeShowSongCoverInLockScreen()
+                isShowingThumbnailInLockscreen = sharedPreferences.getBoolean(key, true)
+                initializeSongCoverInLockScreen()
+            }
+            playbackDurationKey -> {
+                medleyDuration = sharedPreferences.getFloat(playbackDurationKey, 0f)
+                initializeMedleyMode()
             }
             resumeOrPausePlaybackWhenDeviceKey -> initializeResumeOrPausePlaybackWhenDevice()
             bassboostLevelKey, bassboostEnabledKey -> initializeBassBoost()

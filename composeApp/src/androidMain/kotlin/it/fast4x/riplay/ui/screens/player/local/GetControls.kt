@@ -64,8 +64,8 @@ fun GetControls(
             playerBackgroundColors == PlayerBackgroundColors.CoverColorGradient
 
     var playbackSpeed by rememberPreference(playbackSpeedKey, 1f)
-    var playbackDuration by rememberPreference(playbackDurationKey, 0f)
-    var setPlaybackDuration by remember { mutableStateOf(false) }
+//    var playbackDuration by rememberPreference(playbackDurationKey, 0f)
+//    var setPlaybackDuration by remember { mutableStateOf(false) }
 
     var showSpeedPlayerDialog by rememberSaveable {
         mutableStateOf(false)
@@ -77,18 +77,18 @@ fun GetControls(
             speedValue = { playbackSpeed = it },
             pitchValue = {},
             durationValue = {
-                playbackDuration = it
-                setPlaybackDuration = true
+//                playbackDuration = it
+//                setPlaybackDuration = true
             },
             scaleValue = onBlurScaleChange
         )
     }
 
 
-    MedleyMode(
-        binder = binder,
-        seconds = if (playbackDuration < 1f) 0 else playbackDuration.roundToInt()
-    )
+//    MedleyMode(
+//        binder = binder,
+//        seconds = if (playbackDuration < 1f) 0 else playbackDuration.roundToInt()
+//    )
 
     Row(
         verticalAlignment = Alignment.CenterVertically,

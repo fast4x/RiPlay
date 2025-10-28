@@ -237,8 +237,6 @@ import it.fast4x.riplay.extensions.preferences.notificationPlayerFirstIconKey
 import it.fast4x.riplay.extensions.preferences.notificationPlayerSecondIconKey
 import it.fast4x.riplay.extensions.preferences.parentalControlEnabledKey
 import it.fast4x.riplay.extensions.preferences.pipModuleKey
-import it.fast4x.riplay.extensions.preferences.playbackDurationKey
-import it.fast4x.riplay.extensions.preferences.playbackSpeedKey
 import it.fast4x.riplay.extensions.preferences.playerBackgroundColorsKey
 import it.fast4x.riplay.extensions.preferences.preferences
 import it.fast4x.riplay.extensions.preferences.proxyHostnameKey
