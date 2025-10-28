@@ -388,7 +388,7 @@ const val showGridAAKey = "showGridAA"
 
 const val showPlayerActionsBarKey = "showPlayerActionsBar"
 
-
+const val showAutostartPermissionDialogKey = "showAutostartPermissionDialog"
 
 
 inline fun <reified T : Enum<T>> SharedPreferences.getEnum(

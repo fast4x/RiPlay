@@ -3,7 +3,9 @@ package it.fast4x.riplay.utils
 import android.app.ActivityManager
 import android.os.Build
 import androidx.annotation.RequiresApi
-import androidx.core.content.ContextCompat.getSystemService
+
+
+
 
 
 fun getDeviceInfo() : DeviceInfo? {

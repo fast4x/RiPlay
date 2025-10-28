@@ -1,5 +1,6 @@
 package it.fast4x.riplay
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.ActivityManager
@@ -11,6 +12,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.content.ServiceConnection
 import android.content.SharedPreferences
+import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.graphics.Bitmap
 import android.graphics.drawable.BitmapDrawable
@@ -31,6 +33,7 @@ import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
 import android.os.StrictMode
+import android.provider.Settings
 import android.support.v4.media.MediaDescriptionCompat
 import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaSessionCompat
@@ -46,6 +49,8 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.ActivityResultCallback
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContract
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.LinearEasing
@@ -254,6 +259,7 @@ import it.fast4x.riplay.extensions.rescuecenter.RescueScreen
 import it.fast4x.riplay.data.models.Queues
 import it.fast4x.riplay.data.models.defaultQueue
 import it.fast4x.riplay.extensions.preferences.closebackgroundPlayerKey
+import it.fast4x.riplay.extensions.preferences.showAutostartPermissionDialogKey
 import it.fast4x.riplay.navigation.AppNavigation
 import it.fast4x.riplay.service.PlayerService
 import it.fast4x.riplay.service.ToolsService
@@ -299,6 +305,7 @@ import it.fast4x.riplay.utils.getSystemlanguage
 import it.fast4x.riplay.utils.invokeOnReady
 import it.fast4x.riplay.utils.isAtLeastAndroid11
 import it.fast4x.riplay.utils.isAtLeastAndroid12
+import it.fast4x.riplay.utils.isAtLeastAndroid13
 import it.fast4x.riplay.utils.isAtLeastAndroid6
 import it.fast4x.riplay.utils.isAtLeastAndroid8
 import it.fast4x.riplay.utils.isEnabledFullscreen
@@ -455,6 +462,127 @@ class MainActivity :
 
     private var isclosebackgroundPlayerEnabled = false
 
+    private var showAutostartPermissionDialog = false
+
+
+    private val permissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        val allGranted = permissions.entries.all { it.value }
+        if (allGranted) {
+            Timber.d("MainActivity all permissions are granted.")
+            // After standard permissions check autostart permission
+            checkAndRequestAutostartPermission()
+        } else {
+            Timber.w("MainActivity Some permissions are not granted.")
+            permissions.entries.forEach { (permission, isGranted) ->
+                if (!isGranted) {
+                    Timber.w("MainActivity Permission Not GRANTED: $permission")
+                }
+            }
+        }
+    }
+
+
+    private fun checkAndRequestStandardPermissions() {
+        val permissionsToRequest = mutableListOf<String>()
+
+        if (isAtLeastAndroid13) {
+            permissionsToRequest.add(Manifest.permission.POST_NOTIFICATIONS)
+            permissionsToRequest.add(Manifest.permission.READ_MEDIA_AUDIO)
+            //In the future for local video
+            //permissionsToRequest.add(Manifest.permission.READ_MEDIA_VIDEO)
+        } else {
+            permissionsToRequest.add(Manifest.permission.READ_EXTERNAL_STORAGE)
+        }
+
+        val permissionsNotGranted = permissionsToRequest.filter {
+            ContextCompat.checkSelfPermission(this, it) != PackageManager.PERMISSION_GRANTED
+        }
+
+        if (permissionsNotGranted.isNotEmpty()) {
+            permissionLauncher.launch(permissionsNotGranted.toTypedArray())
+        } else {
+            Timber.d("MainActivity Standard permissions already granted.")
+            if (showAutostartPermissionDialog)
+                checkAndRequestAutostartPermission()
+        }
+    }
+
+    private fun checkAndRequestAutostartPermission() {
+        val manufacturer = Build.MANUFACTURER.lowercase()
+
+        // List of vendors with known restrictions on autostart
+        val manufacturersWithAutostart = setOf("xiaomi", "huawei", "oppo", "vivo", "oneplus", "samsung", "asus")
+
+        if (manufacturer in manufacturersWithAutostart) {
+            Timber.d("MainActivity Found vendor with autostart restrictions: $manufacturer")
+            showAutostartDialog()
+        } else {
+            Timber.d("MainActivity Vendor known already granted.")
+        }
+    }
+
+    private fun showAutostartDialog() {
+        AlertDialog.Builder(this)
+            .setTitle("Enable AutoStart")
+            .setMessage("To ensure that the app is working properly in the background (e.g. for notifications or music playback), you must enable autostart. Do you want to open the settings to activate it?")
+            .setPositiveButton("Open Settings Now") { _, _ ->
+                openAutostartSettings()
+            }
+            .setNegativeButton("Later", null)
+            .setCancelable(false)
+            .show()
+
+        // Hide autostart permission dialog after showing the dialog
+        preferences.edit(commit = true) {
+            putBoolean(showAutostartPermissionDialogKey, false)
+        }
+    }
+
+    private fun openAutostartSettings() {
+        try {
+            val intent = when (Build.MANUFACTURER.lowercase()) {
+                "xiaomi" -> Intent().apply {
+                    component = android.content.ComponentName("com.miui.securitycenter", "com.miui.permcenter.autostart.AutoStartManagementActivity")
+                }
+                "huawei" -> Intent().apply {
+                    component = android.content.ComponentName("com.huawei.systemmanager", "com.huawei.systemmanager.appcontrol.activity.StartupAppControlActivity")
+                }
+                "oppo" -> Intent().apply {
+                    component = android.content.ComponentName("com.coloros.safecenter", "com.coloros.safecenter.permission.startup.StartupAppListActivity")
+                }
+                "vivo" -> Intent().apply {
+                    component = android.content.ComponentName("com.iqoo.secure", "com.iqoo.secure.ui.phoneoptimize.AddWhiteListActivity")
+                }
+                "oneplus" -> Intent().apply {
+                    component = android.content.ComponentName("com.oneplus.security", "com.oneplus.security.chainlaunch.view.ChainLaunchAppListActivity")
+                }
+                "samsung" -> { // Samsung is more complicated, often going into battery settings
+                    Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                        data = Uri.fromParts("package", packageName, null)
+                    }
+                }
+                else -> {
+                    // Generic fallback, open app settings
+                    Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                        data = Uri.fromParts("package", packageName, null)
+                    }
+                }
+            }
+            startActivity(intent)
+            SmartMessage( "Search for 'Autostart' or 'Allow Startup' and activate it for this app.", context = this)
+        } catch (e: Exception) {
+            Timber.e("MainActivity Unable to open autostart settings. $e")
+            // Ultimate fallback: O, open app settings
+            val fallbackIntent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                data = Uri.fromParts("package", packageName, null)
+            }
+            startActivity(fallbackIntent)
+            SmartMessage( "Open the app settings and look for battery or autostart options.", context= this)
+        }
+    }
+
     override fun onStart() {
         runCatching {
             val intent = Intent(this, PlayerService::class.java)
@@ -572,6 +700,8 @@ class MainActivity :
 
         isclosebackgroundPlayerEnabled = preferences.getBoolean(closebackgroundPlayerKey, false)
 
+        showAutostartPermissionDialog = preferences.getBoolean(showAutostartPermissionDialogKey, true)
+
         //initializeBitmapProvider()
 
         //initializeNotificationActionReceiverUpAndroid11()
@@ -592,6 +722,7 @@ class MainActivity :
 
         //initializeWorker()
 
+        checkAndRequestStandardPermissions()
 
     }
 
