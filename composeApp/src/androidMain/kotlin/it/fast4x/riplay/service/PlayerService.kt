@@ -41,7 +41,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshots.toInt
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.app.ServiceCompat
@@ -54,6 +53,7 @@ import androidx.media3.common.AuxEffectInfo
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackException
+import androidx.media3.common.PlaybackParameters
 import androidx.media3.common.Player
 import androidx.media3.common.Timeline
 import androidx.media3.common.audio.SonicAudioProcessor
@@ -141,6 +141,8 @@ import it.fast4x.riplay.extensions.preferences.pauseListenHistoryKey
 import it.fast4x.riplay.extensions.preferences.persistentQueueKey
 import it.fast4x.riplay.extensions.preferences.playbackDurationKey
 import it.fast4x.riplay.extensions.preferences.playbackFadeAudioDurationKey
+import it.fast4x.riplay.extensions.preferences.playbackPitchKey
+import it.fast4x.riplay.extensions.preferences.playbackSpeedKey
 import it.fast4x.riplay.extensions.preferences.preferences
 import it.fast4x.riplay.extensions.preferences.putEnum
 import it.fast4x.riplay.extensions.preferences.queueLoopTypeKey
@@ -439,6 +441,7 @@ class PlayerService : Service(),
         initializeSongCoverInLockScreen()
         initializeMedleyMode()
         initializeVariables()
+        initializePlaybackParameters()
         //initializeServiceRestartReceiver() not used for now
 
         initializeDiscordPresence()
@@ -487,6 +490,33 @@ class PlayerService : Service(),
         // todo add here all val that requires first initialize and add references in shared preferences, so is not nededed restart service when change it
         currentMediaItemState.value =  player.currentMediaItem
         isclosebackgroundPlayerEnabled = preferences.getBoolean(closebackgroundPlayerKey, false)
+    }
+
+    private fun initializePlaybackParameters() {
+        when (localMediaItem?.isLocal) {
+            false -> {
+                val playbackSpeed = preferences.getFloat(playbackSpeedKey, 1f)
+                val onlinePlabackRate = when {
+                    (playbackSpeed.toDouble() in 0.0..0.25)     -> PlayerConstants.PlaybackRate.RATE_0_25
+                    (playbackSpeed.toDouble() in 0.26..0.5)     -> PlayerConstants.PlaybackRate.RATE_0_5
+                    (playbackSpeed.toDouble() in 0.51..0.75)    -> PlayerConstants.PlaybackRate.RATE_0_75
+                    (playbackSpeed.toDouble() in 0.76..1.0)     -> PlayerConstants.PlaybackRate.RATE_1
+                    (playbackSpeed.toDouble() in 1.01..1.25)    -> PlayerConstants.PlaybackRate.RATE_1_25
+                    (playbackSpeed.toDouble() in 1.26..1.5)     -> PlayerConstants.PlaybackRate.RATE_1_5
+                    (playbackSpeed.toDouble() in 1.51..1.75)    -> PlayerConstants.PlaybackRate.RATE_1_75
+                    (playbackSpeed.toDouble() > 1.76) -> PlayerConstants.PlaybackRate.RATE_2
+                    else -> PlayerConstants.PlaybackRate.RATE_1
+                }
+                internalOnlinePlayer.value?.setPlaybackRate(onlinePlabackRate)
+            }
+            else -> {
+                player.playbackParameters = PlaybackParameters(
+                    preferences.getFloat(playbackSpeedKey, 1f),
+                    preferences.getFloat(playbackPitchKey, 1f)
+                )
+            }
+        }
+
     }
 
     private fun initializeMedleyMode() {
@@ -1067,7 +1097,7 @@ class PlayerService : Service(),
         }
 
         maybeRecoverPlaybackError()
-        maybeNormalizeVolume()
+        initializeNormalizeVolume()
         maybeProcessRadio()
 
         updateUnifiedNotification()
@@ -1183,7 +1213,7 @@ class PlayerService : Service(),
 
 
     @UnstableApi
-    private fun maybeNormalizeVolume() {
+    private fun initializeNormalizeVolume() {
         if (!preferences.getBoolean(volumeNormalizationKey, false)) {
             loudnessEnhancer?.enabled = false
             loudnessEnhancer?.release()
@@ -1717,7 +1747,8 @@ class PlayerService : Service(),
             resumeOrPausePlaybackWhenDeviceKey -> initializeResumeOrPausePlaybackWhenDevice()
             bassboostLevelKey, bassboostEnabledKey -> initializeBassBoost()
             audioReverbPresetKey -> initializeReverb()
-            volumeNormalizationKey, loudnessBaseGainKey, volumeBoostLevelKey -> maybeNormalizeVolume()
+            volumeNormalizationKey, loudnessBaseGainKey, volumeBoostLevelKey -> initializeNormalizeVolume()
+            playbackPitchKey, playbackSpeedKey -> initializePlaybackParameters()
 
         }
     }
@@ -1730,7 +1761,7 @@ class PlayerService : Service(),
                 bassBoost?.release()
             }
             bassBoost = null
-            maybeNormalizeVolume()
+            initializeNormalizeVolume()
             return
         }
 
