@@ -23,7 +23,7 @@ import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTube
 import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.R
 import it.fast4x.riplay.utils.appContext
-import it.fast4x.riplay.utils.context
+import it.fast4x.riplay.utils.globalContext
 import it.fast4x.riplay.enums.DurationInMilliseconds
 import it.fast4x.riplay.enums.PlayerThumbnailSize
 import it.fast4x.riplay.enums.PopupType
@@ -196,7 +196,7 @@ fun OnlinePlayerCore(
             val iFramePlayerOptions = IFramePlayerOptions.Builder(appContext())
                 .controls(0) // show/hide controls
                 .listType("playlist")
-                .origin(context().resources.getString(R.string.env_fqqhBZd0cf))
+                .origin(globalContext().resources.getString(R.string.env_fqqhBZd0cf))
                 .build()
 
             val listener = object : AbstractYouTubePlayerListener() {
@@ -298,7 +298,7 @@ fun OnlinePlayerCore(
                             errorString,
                             PopupType.Error,
                             //durationLong = true,
-                            context = context()
+                            context = globalContext()
                         )
                         if (localMediaItem != null)
                             youTubePlayer.cueVideo(localMediaItem.mediaId, 0f)
@@ -313,11 +313,11 @@ fun OnlinePlayerCore(
                     binder.player.playNext()
 
                     SmartMessage(
-                        message = context().getString(
+                        message = globalContext().getString(
                             R.string.skip_media_on_error_message,
                             prev.mediaMetadata.title
                         ),
-                        context = context(),
+                        context = globalContext(),
                     )
 
                 }

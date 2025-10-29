@@ -19,11 +19,10 @@ import androidx.navigation.NavController
 import it.fast4x.environment.models.NavigationEndpoint
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.R
-import it.fast4x.riplay.utils.context
+import it.fast4x.riplay.utils.globalContext
 import it.fast4x.riplay.enums.MenuStyle
 import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.data.models.SongPlaylistMap
-import it.fast4x.riplay.service.LocalPlayerService
 import it.fast4x.riplay.ui.screens.settings.isSyncEnabled
 import it.fast4x.riplay.utils.addSongToYtPlaylist
 import it.fast4x.riplay.utils.addToYtLikedSong
@@ -154,8 +153,8 @@ fun PlayerMenu(
             onHideFromDatabase = { isHiding = true },
             onDismiss = onDismiss,
             onAddToPreferites = {
-                if (!isNetworkConnected(context()) && isSyncEnabled()){
-                    SmartMessage(context().resources.getString(R.string.no_connection), context = context(), type = PopupType.Error)
+                if (!isNetworkConnected(globalContext()) && isSyncEnabled()){
+                    SmartMessage(globalContext().resources.getString(R.string.no_connection), context = globalContext(), type = PopupType.Error)
                 } else if (!isSyncEnabled()){
                     Database.asyncTransaction {
                         like(
@@ -208,8 +207,8 @@ fun MiniPlayerMenu(
                 onClosePlayer()
             },
             onAddToPreferites = {
-                if (!isNetworkConnected(context()) && isSyncEnabled()){
-                    SmartMessage(context().resources.getString(R.string.no_connection), context = context(), type = PopupType.Error)
+                if (!isNetworkConnected(globalContext()) && isSyncEnabled()){
+                    SmartMessage(globalContext().resources.getString(R.string.no_connection), context = globalContext(), type = PopupType.Error)
                 } else if (!isSyncEnabled()){
                     Database.asyncTransaction {
                         like(
@@ -235,8 +234,8 @@ fun MiniPlayerMenu(
                 onClosePlayer()
             },
             onAddToPreferites = {
-                if (!isNetworkConnected(context()) && isSyncEnabled()){
-                    SmartMessage(context().resources.getString(R.string.no_connection), context = context(), type = PopupType.Error)
+                if (!isNetworkConnected(globalContext()) && isSyncEnabled()){
+                    SmartMessage(globalContext().resources.getString(R.string.no_connection), context = globalContext(), type = PopupType.Error)
                 } else if (!isSyncEnabled()){
                     Database.asyncTransaction {
                         like(

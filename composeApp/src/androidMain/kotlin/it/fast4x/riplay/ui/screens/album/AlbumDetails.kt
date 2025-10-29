@@ -148,7 +148,7 @@ import it.fast4x.riplay.ui.screens.settings.isSyncEnabled
 import it.fast4x.riplay.utils.LazyListContainer
 import it.fast4x.riplay.utils.addToYtLikedSongs
 import it.fast4x.riplay.utils.addToYtPlaylist
-import it.fast4x.riplay.utils.context
+import it.fast4x.riplay.utils.globalContext
 import org.dailyislam.android.utilities.isNetworkConnected
 import it.fast4x.riplay.utils.mediaItemSetLiked
 import kotlinx.coroutines.delay
@@ -1362,7 +1362,7 @@ fun AlbumDetails(
                                                         )
                                                     } else {
                                                         SmartMessage(
-                                                            context().resources.getString(R.string.disliked_this_song),
+                                                            globalContext().resources.getString(R.string.disliked_this_song),
                                                             type = PopupType.Error,
                                                             context = context
                                                         )

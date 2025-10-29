@@ -164,7 +164,7 @@ import it.fast4x.riplay.utils.TimerJob
 import it.fast4x.riplay.utils.appContext
 import it.fast4x.riplay.utils.clearWebViewData
 import it.fast4x.riplay.utils.collect
-import it.fast4x.riplay.utils.context
+import it.fast4x.riplay.utils.globalContext
 import it.fast4x.riplay.utils.forcePlayFromBeginning
 import it.fast4x.riplay.utils.isAtLeastAndroid11
 import it.fast4x.riplay.utils.isHandleAudioFocusEnabled
@@ -793,7 +793,7 @@ class PlayerService : Service(),
                             errorString,
                             PopupType.Error,
                             //durationLong = true,
-                            context = context()
+                            context = this@PlayerService
                         )
                         localMediaItem?.let { youTubePlayer.cueVideo(it.mediaId, 0f) }
 
@@ -807,11 +807,11 @@ class PlayerService : Service(),
                     binder.player.playNext()
 
                     SmartMessage(
-                        message = context().getString(
+                        message = this@PlayerService.getString(
                             R.string.skip_media_on_error_message,
                             prev.mediaMetadata.title
                         ),
-                        context = context(),
+                        context = this@PlayerService,
                     )
 
                 }
@@ -2293,10 +2293,10 @@ class PlayerService : Service(),
 
     private companion object {
         const val NOTIFICATION_ID = 1001
-        val NOTIFICATION_CHANNEL_ID = context().resources.getString(R.string.player_notification_channel_id)  //"Player Notification"
+        val NOTIFICATION_CHANNEL_ID = globalContext().resources.getString(R.string.player_notification_channel_id)  //"Player Notification"
 
         const val SLEEPTIMER_NOTIFICATION_ID = 1002
-        val SLEEPTIMER_NOTIFICATION_CHANNEL_ID = context().resources.getString(R.string.sleep_timer_notification_channel_id) //"Sleep Timer Notification"
+        val SLEEPTIMER_NOTIFICATION_CHANNEL_ID = globalContext().resources.getString(R.string.sleep_timer_notification_channel_id) //"Sleep Timer Notification"
 
 
     }

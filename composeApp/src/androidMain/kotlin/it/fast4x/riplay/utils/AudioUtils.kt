@@ -15,7 +15,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.core.animation.doOnEnd
 import androidx.media3.common.util.UnstableApi
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
-import it.fast4x.riplay.service.LocalPlayerService
 import it.fast4x.riplay.service.PlayerService
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -156,7 +155,7 @@ fun startFadeAnimator(
         return
     }
 
-    val volumeDevice = (getDeviceVolume(context()) * 100).roundToInt()
+    val volumeDevice = (getDeviceVolume(globalContext()) * 100).roundToInt()
     val startValue = if (fadeIn) 0 else volumeDevice
     val endValue = if (fadeIn) volumeDevice else 0
     val animator = ValueAnimator.ofInt(startValue, endValue)

@@ -72,7 +72,7 @@ data class DeviceInfo(
 
 @RequiresApi(Build.VERSION_CODES.M)
 private fun getAvailableMemory(): ActivityManager.MemoryInfo {
-    val activityManager = context().getSystemService(ActivityManager::class.java) as ActivityManager
+    val activityManager = globalContext().getSystemService(ActivityManager::class.java) as ActivityManager
     return ActivityManager.MemoryInfo().also { memoryInfo ->
         activityManager.getMemoryInfo(memoryInfo)
     }

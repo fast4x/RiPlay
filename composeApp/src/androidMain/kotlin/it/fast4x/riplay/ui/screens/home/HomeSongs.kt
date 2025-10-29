@@ -47,6 +47,7 @@ import androidx.compose.material.CheckboxDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
@@ -76,6 +77,7 @@ import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.media3.common.MediaItem
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
@@ -112,6 +114,7 @@ import it.fast4x.riplay.data.models.Song
 import it.fast4x.riplay.data.models.SongEntity
 import it.fast4x.riplay.data.models.SongPlaylistMap
 import it.fast4x.riplay.data.models.defaultQueue
+import it.fast4x.riplay.extensions.ondevice.OnDeviceViewModel
 import it.fast4x.riplay.service.LOCAL_KEY_PREFIX
 import it.fast4x.riplay.utils.thumbnailShape
 import it.fast4x.riplay.utils.typography
@@ -193,8 +196,6 @@ import it.fast4x.riplay.utils.asSong
 import it.fast4x.riplay.utils.formatAsDuration
 import org.dailyislam.android.utilities.isNetworkConnected
 import it.fast4x.riplay.extensions.preferences.showDislikedPlaylistKey
-import it.fast4x.riplay.utils.musicFilesAsFlow
-import it.fast4x.riplay.utils.removeObsoleteOndeviceMusic
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -299,9 +300,13 @@ fun HomeSongs(
 
     val defaultFolder by rememberPreference(defaultFolderKey, "/")
 
-    var songsDevice by remember(sortBy, sortOrder) {
-        mutableStateOf<List<OnDeviceSong>>(emptyList())
-    }
+    val onDeviceViewModel: OnDeviceViewModel = viewModel()
+    val songsDevice by onDeviceViewModel.audioFiles.collectAsState()
+//    var songsDevice by remember(sortBy, sortOrder) {
+//        mutableStateOf<List<OnDeviceSong>>(emptyList())
+//    }
+
+
     var songs: List<SongEntity> = emptyList()
     var folders: List<Folder> = emptyList()
 
@@ -480,11 +485,14 @@ fun HomeSongs(
             items = emptyList()
             LaunchedEffect(sortByOnDevice, sortOrderOnDevice) {
                 if (hasPermission) {
+                    //Timber.d("HomeSongs sortOrderOnDevice $sortOrderOnDevice")
+                    onDeviceViewModel.sortBy = sortByOnDevice
+                    onDeviceViewModel.sortOrder = sortOrderOnDevice
 
-                    removeObsoleteOndeviceMusic(context)
-
-                    context.musicFilesAsFlow(sortByOnDevice, sortOrderOnDevice, context)
-                        .collect { songsDevice = it.distinctBy { song -> song.id } }
+// todo replaced by viewmodel logic
+                    //removeObsoleteOndeviceMusic(context)
+//                    context.musicFilesAsFlow(sortByOnDevice, sortOrderOnDevice, context)
+//                        .collect { songsDevice = it.distinctBy { song -> song.id } }
                 }
             }
         }
@@ -1562,7 +1570,7 @@ fun HomeSongs(
                                 binder?.player?.addNext(song.asMediaItem, queue = selectedQueue ?: defaultQueue())
                             }
                         ) {
-                            Timber.d("SongItem title ${song.song.title} id ${song.song.id} mediaId ${song.song.mediaId}")
+                            //Timber.d("SongItem title ${song.song.title} id ${song.song.id} mediaId ${song.song.mediaId}")
 
                             SongItem(
                                 song = song.song,

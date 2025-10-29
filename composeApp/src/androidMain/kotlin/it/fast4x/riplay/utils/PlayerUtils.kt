@@ -207,7 +207,7 @@ fun Player.addNext(mediaItem: MediaItem, context: Context? = null, queue: Queues
     println("mediaItem-addNext extras: ${mediaItem.mediaMetadata.extras}")
 
     addMediaItem(currentMediaItemIndex + 1, mediaItem.cleaned)
-    SmartMessage(context().resources.getString(R.string.done), context = context())
+    SmartMessage(globalContext().resources.getString(R.string.done), context = globalContext())
 //    if (playbackState == Player.STATE_IDLE || playbackState == Player.STATE_ENDED) {
 //        forcePlay(mediaItem)
 //    } else {
@@ -231,7 +231,7 @@ fun Player.addNext(mediaItems: List<MediaItem>, context: Context? = null, queue:
     }
 
     addMediaItems(currentMediaItemIndex + 1, filteredMediaItems.map { it.cleaned })
-    SmartMessage(context().resources.getString(R.string.done), context = context())
+    SmartMessage(globalContext().resources.getString(R.string.done), context = globalContext())
 //    if (playbackState == Player.STATE_IDLE || playbackState == Player.STATE_ENDED) {
 //        setMediaItems(filteredMediaItems.map { it.cleaned })
 //        play()
@@ -256,7 +256,7 @@ fun Player.enqueue(mediaItem: MediaItem, context: Context? = null, queue: Queues
 //    } else {
 //        addMediaItem(mediaItemCount, mediaItem.cleaned)
 //    }
-    SmartMessage(context().resources.getString(R.string.done), context = context())
+    SmartMessage(globalContext().resources.getString(R.string.done), context = globalContext())
 
 }
 
@@ -285,20 +285,20 @@ fun Player.enqueue(
 //    } else {
 //        addMediaItems(mediaItemCount, filteredMediaItems.map { it.cleaned })
 //    }
-    SmartMessage(context().resources.getString(R.string.done), context = context())
+    SmartMessage(globalContext().resources.getString(R.string.done), context = globalContext())
 }
 
 fun Player.canAddedToQueue(mediaItem: MediaItem, queue: Queues): Boolean {
     if (mediaItem.isVideo && !queue.acceptVideo) {
-        SmartMessage("Queue not accept video", type = PopupType.Warning, context = context())
+        SmartMessage("Queue not accept video", type = PopupType.Warning, context = globalContext())
         return false
     }
     if (!mediaItem.isVideo && !queue.acceptSong) {
-        SmartMessage("Queue not accept song", type = PopupType.Warning, context = context())
+        SmartMessage("Queue not accept song", type = PopupType.Warning, context = globalContext())
         return false
     }
     if (mediaItem.isPodcast && !queue.acceptPodcast) {
-        SmartMessage("Queue not accept podcast", type = PopupType.Warning, context = context())
+        SmartMessage("Queue not accept podcast", type = PopupType.Warning, context = globalContext())
         return false
     }
 

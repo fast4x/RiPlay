@@ -959,4 +959,9 @@
     <string name="play_or_pause_when_device_is_connected_or_disconnected">Play when a wired or bluetooth device is connected and pause if disconnected</string>
     <string name="player_notification_channel_id">Player Notification</string>
     <string name="sleep_timer_notification_channel_id">Sleep Timer Notification</string>
+    <string name="voice_you_can_talk_now">You can talk now...</string>
+    <string name="voice_you_said">You said: %1$s</string>
+    <string name="voice_microphone_permission_granted">Microphone permission granted</string>
+    <string name="voice_microphone_permission_denied">Microphone permission denied</string>
+    <string name="voice_missing_microphone_permissions_please_grant">Missing microphone permissions, please grant it in the app settings</string>
 </resources>

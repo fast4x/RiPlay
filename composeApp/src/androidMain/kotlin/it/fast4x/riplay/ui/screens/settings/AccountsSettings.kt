@@ -38,7 +38,7 @@ import it.fast4x.environment.utils.parseCookieString
 import it.fast4x.riplay.R
 import it.fast4x.riplay.utils.appContext
 import it.fast4x.riplay.utils.colorPalette
-import it.fast4x.riplay.utils.context
+import it.fast4x.riplay.utils.globalContext
 import it.fast4x.riplay.enums.NavigationBarPosition
 import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.enums.ThumbnailRoundness
@@ -402,7 +402,7 @@ fun AccountsSettings() {
                             loginDiscord = false
                             discordPersonalAccessToken = token
                             discordAccountName = username
-                            SmartMessage(context().resources.getString(R.string.discord_connected_to_discord_account) + " $username", type = PopupType.Info, context = context)
+                            SmartMessage(globalContext().resources.getString(R.string.discord_connected_to_discord_account) + " $username", type = PopupType.Info, context = context)
                         }
                     )
                 }

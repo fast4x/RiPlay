@@ -48,7 +48,7 @@ import androidx.media3.common.MediaItem
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.R
 import it.fast4x.riplay.utils.colorPalette
-import it.fast4x.riplay.utils.context
+import it.fast4x.riplay.utils.globalContext
 import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.enums.ThumbnailRoundness
 import it.fast4x.riplay.enums.LinkType
@@ -240,7 +240,7 @@ fun FastShare(
                                 modifier = Modifier
                                     .fillMaxWidth(0.9f)
                                     .clickable {
-                                        copyTextToClipboard(urlToShare, context())
+                                        copyTextToClipboard(urlToShare, globalContext())
                                     }
                             )
                             Image(
@@ -250,7 +250,7 @@ fun FastShare(
                                 modifier = Modifier
                                     .size(24.dp)
                                     .clickable {
-                                        copyTextToClipboard(urlToShare, context())
+                                        copyTextToClipboard(urlToShare, globalContext())
                                     }
                             )
                         }
@@ -349,7 +349,7 @@ fun FastShare(
                                 modifier = Modifier
                                     .fillMaxWidth(0.9f)
                                     .clickable {
-                                        classicShare(urlToShare, context())
+                                        classicShare(urlToShare, globalContext())
                                     }
                             )
                             Image(
@@ -359,7 +359,7 @@ fun FastShare(
                                 modifier = Modifier
                                     .size(24.dp)
                                     .clickable {
-                                        classicShare(urlToShare, context())
+                                        classicShare(urlToShare, globalContext())
                                     }
                             )
                         }
@@ -448,7 +448,7 @@ fun FastShare(
                                     .fillMaxWidth()
                                     .padding(all = 10.dp)
                                     .clickable {
-                                        directShare(urlToShare, app.componentName, context())
+                                        directShare(urlToShare, app.componentName, globalContext())
                                     }
 
                             ) {
@@ -548,7 +548,7 @@ fun AppSelector(
     onSelected: (ExternalApp) -> Unit,
     onDismiss: () -> Unit
 ) {
-    val apps = remember { listApps(context()).sortedBy { it.appName } }
+    val apps = remember { listApps(globalContext()).sortedBy { it.appName } }
     DefaultDialog(
         onDismiss = onDismiss,
         modifier = Modifier

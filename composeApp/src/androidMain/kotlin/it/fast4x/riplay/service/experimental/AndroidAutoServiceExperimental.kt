@@ -57,7 +57,6 @@ import it.fast4x.riplay.ONLINEPLAYER_NOTIFICATION_CHANNEL
 import it.fast4x.riplay.PINNED_PREFIX
 import it.fast4x.riplay.R
 import it.fast4x.riplay.utils.appContext
-import it.fast4x.riplay.utils.context
 import it.fast4x.riplay.enums.AlbumSortBy
 import it.fast4x.riplay.enums.ArtistSortBy
 import it.fast4x.riplay.removePrefix
@@ -1126,7 +1125,7 @@ class AndroidAutoServiceExperimental : MediaBrowserServiceCompat(), ServiceConne
                             errorString,
                             PopupType.Error,
                             //durationLong = true,
-                            context = context()
+                            context = this@AndroidAutoServiceExperimental
                         )
                         localMediaItem?.let { youTubePlayer.cueVideo(it.mediaId, 0f) }
 
@@ -1140,11 +1139,11 @@ class AndroidAutoServiceExperimental : MediaBrowserServiceCompat(), ServiceConne
                     internalLocalPlayerBinder!!.player.playNext()
 
                     SmartMessage(
-                        message = context().getString(
+                        message = this@AndroidAutoServiceExperimental.getString(
                             R.string.skip_media_on_error_message,
                             prev.mediaMetadata.title
                         ),
-                        context = context(),
+                        context = this@AndroidAutoServiceExperimental,
                     )
 
                 }

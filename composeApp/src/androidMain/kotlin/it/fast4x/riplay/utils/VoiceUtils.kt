@@ -10,7 +10,6 @@ import android.speech.RecognitionListener
 import android.speech.RecognizerIntent
 import android.speech.SpeechRecognizer
 import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -20,10 +19,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import it.fast4x.riplay.R
 import it.fast4x.riplay.ui.components.themed.SmartMessage
 import java.util.Locale
 
@@ -44,7 +45,7 @@ fun StartVoiceInput(
         object : RecognitionListener {
             override fun onReadyForSpeech(params: Bundle?) {
                 onListening(true)
-                SmartMessage("Puoi parlare ora...", context = context)
+                SmartMessage(context.getString(R.string.voice_you_can_talk_now), context = context)
             }
             override fun onBeginningOfSpeech() {}
             override fun onRmsChanged(rmsdB: Float) {}
@@ -56,7 +57,7 @@ fun StartVoiceInput(
             override fun onError(error: Int) {
                 onListening(false)
                 onRecognitionError()
-                SmartMessage("Ops, forse non hai detto niente", context = context)
+                //SmartMessage("Oops, maybe you didn't say anything", context = context)
                 speechRecognizer.stopListening()
             }
             override fun onResults(results: Bundle?) {
@@ -64,7 +65,7 @@ fun StartVoiceInput(
                 val matches = results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
                 if (!matches.isNullOrEmpty()) {
                     onTextRecognized(matches[0])
-                    SmartMessage("Hai detto: ${matches[0]}", context = context)
+                    SmartMessage(context.getString(R.string.voice_you_said, matches[0]), context = context)
                     speechRecognizer.stopListening()
                 }
             }
@@ -76,7 +77,7 @@ fun StartVoiceInput(
     DisposableEffect(speechRecognizer) {
         speechRecognizer.setRecognitionListener(recognitionListener)
         onDispose {
-            speechRecognizer.destroy() // Pulizia quando il Composable esce dallo schermo
+            speechRecognizer.destroy()
         }
     }
 
@@ -102,22 +103,17 @@ fun StartVoiceInputListener(
     speechRecognizer: SpeechRecognizer,
     onRecognitionError: () -> Unit
 ) {
-    // Launcher per richiedere il permesso del microfono
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
     ) { isGranted ->
         if (isGranted) {
-            // Il permesso è stato concesso, puoi iniziare ad ascoltare
-            // Qui potresti chiamare una funzione per avviare il riconoscimento
-            SmartMessage( "Permesso microfono concesso", context = context)
+            SmartMessage(context.getString(R.string.voice_microphone_permission_granted), context = context)
         } else {
-            // Permesso negato
-            SmartMessage( "Permesso microfono negato", context = context)
+            SmartMessage(context.getString(R.string.voice_microphone_permission_denied), context = context)
             onRecognitionError()
         }
     }
 
-    // Check for permission
     if (ContextCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {
         val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
             putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
@@ -125,11 +121,10 @@ fun StartVoiceInputListener(
         }
         speechRecognizer.startListening(intent)
     } else {
-        // No permission granted, request it
         SideEffect {
             permissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
         }
-        SmartMessage("Permessi microfono mancanti, concedi per favore", context = context)
+        SmartMessage(stringResource(R.string.voice_missing_microphone_permissions_please_grant), context = context)
     }
 }
 
@@ -146,10 +141,10 @@ fun startExternalVoiceInput(): String {
             val results = data?.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS)
             if (!results.isNullOrEmpty()) {
                 textState = results[0]
-                SmartMessage("Hai detto: $textState", context = context)
+                SmartMessage("You said: $textState", context = context)
             }
         } else {
-            SmartMessage("Riconoscimento vocale fallito", context = context)
+            SmartMessage("Voice recognition failed", context = context)
         }
     }
 
@@ -162,7 +157,7 @@ fun startExternalVoiceInput(): String {
     try {
         speechRecognizerLauncher.launch(intent)
     } catch (e: Exception) {
-        SmartMessage( "Il tuo dispositivo non supporta l'input vocale", context = context)
+        SmartMessage( "Your device does not support voice input", context = context)
     }
 
     return textState

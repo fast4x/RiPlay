@@ -5,7 +5,7 @@ import it.fast4x.environment.EnvironmentExt
 import it.fast4x.environment.models.Context
 import it.fast4x.environment.models.PlayerResponse
 import it.fast4x.riplay.data.Database
-import it.fast4x.riplay.utils.context
+import it.fast4x.riplay.utils.globalContext
 import it.fast4x.riplay.extensions.preferences.pauseListenHistoryKey
 import it.fast4x.riplay.extensions.preferences.preferences
 import it.fast4x.riplay.data.models.Format
@@ -43,7 +43,7 @@ suspend fun getOnlineMetadata(
 
 
 fun updateOnlineHistory(mediaItem: MediaItem) {
-    if (context().preferences.getBoolean(pauseListenHistoryKey, false)) return
+    if (globalContext().preferences.getBoolean(pauseListenHistoryKey, false)) return
 
     Timber.d("UpdateOnlineHistory called with mediaItem $mediaItem")
 

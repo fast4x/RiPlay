@@ -112,7 +112,7 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import it.fast4x.riplay.utils.colorPalette
-import it.fast4x.riplay.utils.context
+import it.fast4x.riplay.utils.globalContext
 import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.extensions.fastshare.FastShare
 import it.fast4x.riplay.data.models.Queues
@@ -155,8 +155,8 @@ fun InHistoryMediaItemMenu(
         onHideFromDatabase = onHideFromDatabase,
         onDeleteFromDatabase = onDeleteFromDatabase,
         onAddToPreferites = {
-            if (!isNetworkConnected(context()) && isSyncEnabled()){
-                SmartMessage(context().resources.getString(R.string.no_connection), context = context(), type = PopupType.Error)
+            if (!isNetworkConnected(globalContext()) && isSyncEnabled()){
+                SmartMessage(globalContext().resources.getString(R.string.no_connection), context = globalContext(), type = PopupType.Error)
             } else if (!isSyncEnabled()){
                 Database.asyncTransaction {
                     like(
@@ -232,7 +232,7 @@ fun InPlaylistMediaItemMenu(
             }
         },
         onAddToPreferites = {
-            if (!isNetworkConnected(context()) && isSyncEnabled()){
+            if (!isNetworkConnected(globalContext()) && isSyncEnabled()){
                 SmartMessage(context.resources.getString(R.string.no_connection), context = context, type = PopupType.Error)
             } else if (!isSyncEnabled()){
                 Database.asyncTransaction {
@@ -341,8 +341,8 @@ fun NonQueuedMediaItemMenuLibrary(
             onHideFromDatabase = { isHiding = true },
             onRemoveFromQuickPicks = onRemoveFromQuickPicks,
             onAddToPreferites = {
-                if (!isNetworkConnected(context()) && isSyncEnabled()){
-                    SmartMessage(context().resources.getString(R.string.no_connection), context = context(), type = PopupType.Error)
+                if (!isNetworkConnected(globalContext()) && isSyncEnabled()){
+                    SmartMessage(globalContext().resources.getString(R.string.no_connection), context = globalContext(), type = PopupType.Error)
                 } else if (!isSyncEnabled()){
                     Database.asyncTransaction {
                         like(
@@ -383,8 +383,8 @@ fun NonQueuedMediaItemMenuLibrary(
             onHideFromDatabase = { isHiding = true },
             onRemoveFromQuickPicks = onRemoveFromQuickPicks,
             onAddToPreferites = {
-                if (!isNetworkConnected(context()) && isSyncEnabled()){
-                    SmartMessage(context().resources.getString(R.string.no_connection), context = context(), type = PopupType.Error)
+                if (!isNetworkConnected(globalContext()) && isSyncEnabled()){
+                    SmartMessage(globalContext().resources.getString(R.string.no_connection), context = globalContext(), type = PopupType.Error)
                 } else if (!isSyncEnabled()){
                     Database.asyncTransaction {
                         like(
@@ -549,7 +549,7 @@ fun QueuedMediaItemMenu(
                 navController.navigate(route = "${NavRoutes.localPlaylist.name}/$it")
             },
             onAddToPreferites = {
-                if (!isNetworkConnected(context()) && isSyncEnabled()){
+                if (!isNetworkConnected(globalContext()) && isSyncEnabled()){
                     SmartMessage(context.resources.getString(R.string.no_connection), context = context, type = PopupType.Error)
                 } else if (!isSyncEnabled()){
                     Database.asyncTransaction {
@@ -593,7 +593,7 @@ fun QueuedMediaItemMenu(
                 navController.navigate(route = "${NavRoutes.playlist.name}/$it")
             },
             onAddToPreferites = {
-                if (!isNetworkConnected(context()) && isSyncEnabled()){
+                if (!isNetworkConnected(globalContext()) && isSyncEnabled()){
                     SmartMessage(context.resources.getString(R.string.no_connection), context = context, type = PopupType.Error)
                 } else if (!isSyncEnabled()){
                     Database.asyncTransaction {

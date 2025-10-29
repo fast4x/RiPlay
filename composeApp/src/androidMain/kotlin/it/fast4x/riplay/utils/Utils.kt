@@ -702,14 +702,14 @@ inline val isAtLeastAndroid15
     get() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM
 
 fun isTVDevice(): Boolean {
-        val uiModeManager = context().getSystemService(Context.UI_MODE_SERVICE) as UiModeManager
+        val uiModeManager = globalContext().getSystemService(Context.UI_MODE_SERVICE) as UiModeManager
         val isTv = uiModeManager.currentModeType == Configuration.UI_MODE_TYPE_TELEVISION
         Timber.d("isTVDevice: $isTv")
         return isTv
     }
 
 fun isWatchDevice(): Boolean {
-        val uiModeManager = context().getSystemService(Context.UI_MODE_SERVICE) as UiModeManager
+        val uiModeManager = globalContext().getSystemService(Context.UI_MODE_SERVICE) as UiModeManager
         val isWatch = uiModeManager.currentModeType == Configuration.UI_MODE_TYPE_WATCH
         Timber.d("isWatchDevice: $isWatch")
         return isWatch

@@ -22,12 +22,11 @@ import io.ktor.client.statement.bodyAsText
 import io.ktor.http.Headers
 import io.ktor.http.HttpHeaders
 import it.fast4x.environment.Environment
-import it.fast4x.riplay.utils.context
+import it.fast4x.riplay.utils.globalContext
 import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.extensions.preferences.discordPersonalAccessTokenKey
 import it.fast4x.riplay.extensions.preferences.isDiscordPresenceEnabledKey
 import it.fast4x.riplay.extensions.preferences.preferences
-import it.fast4x.riplay.service.LocalPlayerService
 import it.fast4x.riplay.service.isLocal
 import it.fast4x.riplay.ui.components.themed.SmartMessage
 import it.fast4x.riplay.extensions.encryptedpreferences.encryptedPreferences
@@ -465,12 +464,12 @@ fun updateDiscordPresenceWithOfflinePlayer(
 ) {
     if (binder.player.currentMediaItem?.isLocal == false) return
 
-    val isDiscordPresenceEnabled = context().preferences.getBoolean(isDiscordPresenceEnabledKey, false)
+    val isDiscordPresenceEnabled = globalContext().preferences.getBoolean(isDiscordPresenceEnabledKey, false)
     if (!isDiscordPresenceEnabled || !isAtLeastAndroid8) return
 
     val player = binder.player
 
-    val discordPersonalAccessToken = context().encryptedPreferences.getString(
+    val discordPersonalAccessToken = globalContext().encryptedPreferences.getString(
         discordPersonalAccessTokenKey, ""
     )
 
@@ -503,10 +502,10 @@ fun updateDiscordPresenceWithOnlinePlayer(
 ) {
     if (mediaItem.isLocal) return
 
-    val isDiscordPresenceEnabled = context().preferences.getBoolean(isDiscordPresenceEnabledKey, false)
+    val isDiscordPresenceEnabled = globalContext().preferences.getBoolean(isDiscordPresenceEnabledKey, false)
     if (!isDiscordPresenceEnabled || !isAtLeastAndroid8) return
 
-    val discordPersonalAccessToken = context().encryptedPreferences.getString(
+    val discordPersonalAccessToken = globalContext().encryptedPreferences.getString(
         discordPersonalAccessTokenKey, ""
     )
     val isPlaying = playerState.value == PlayerConstants.PlayerState.PLAYING

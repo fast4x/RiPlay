@@ -26,7 +26,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.ui.Alignment
 import it.fast4x.riplay.LocalPlayerAwareWindowInsets
 import it.fast4x.riplay.R
-import it.fast4x.riplay.utils.context
+import it.fast4x.riplay.utils.globalContext
 import it.fast4x.riplay.ui.components.themed.Title
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -100,7 +100,7 @@ fun DiscordLoginAndGetToken(
         modifier = Modifier.fillMaxSize().windowInsetsPadding(LocalPlayerAwareWindowInsets.current)
     ) {
         Title(
-            context().resources.getString(R.string.discord_connect),
+            globalContext().resources.getString(R.string.discord_connect),
             icon = R.drawable.chevron_down,
             onClick = { navController.navigateUp() }
         )

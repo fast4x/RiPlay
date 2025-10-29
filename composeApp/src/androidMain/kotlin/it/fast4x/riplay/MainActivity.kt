@@ -4,12 +4,8 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.ActivityManager
-import android.app.PendingIntent
-import android.content.BroadcastReceiver
 import android.content.ComponentName
-import android.content.Context
 import android.content.Intent
-import android.content.IntentFilter
 import android.content.ServiceConnection
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
@@ -20,26 +16,12 @@ import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
-import android.media.AudioDeviceCallback
-import android.media.AudioDeviceInfo
-import android.media.AudioManager
-import android.media.audiofx.BassBoost
-import android.media.audiofx.LoudnessEnhancer
 import android.net.Uri
 import android.net.nsd.NsdServiceInfo
 import android.os.Build
 import android.os.Bundle
-import android.os.Handler
 import android.os.IBinder
-import android.os.Looper
-import android.os.StrictMode
 import android.provider.Settings
-import android.support.v4.media.MediaDescriptionCompat
-import android.support.v4.media.MediaMetadataCompat
-import android.support.v4.media.session.MediaSessionCompat
-import android.support.v4.media.session.PlaybackStateCompat
-import android.view.LayoutInflater
-import android.view.ViewGroup
 import android.view.WindowManager
 import android.window.OnBackInvokedDispatcher
 import androidx.activity.ComponentActivity
@@ -105,10 +87,6 @@ import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.coerceIn
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.viewinterop.AndroidView
-import androidx.core.app.NotificationChannelCompat
-import androidx.core.app.NotificationCompat
-import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.edit
 import androidx.core.net.toUri
@@ -119,7 +97,6 @@ import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
-import androidx.media3.common.Timeline
 import androidx.media3.common.util.Log
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.compose.rememberNavController
@@ -137,15 +114,12 @@ import com.kieronquinn.monetcompat.core.MonetCompat
 import com.kieronquinn.monetcompat.interfaces.MonetColorsChangedListener
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.PlayerConstants
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
-import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.AbstractYouTubePlayerListener
-import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.options.IFramePlayerOptions
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
 import com.valentinilk.shimmer.LocalShimmerTheme
 import com.valentinilk.shimmer.defaultShimmerTheme
 import de.raphaelebner.roomdatabasebackup.core.RoomBackup
 import dev.kdrag0n.monet.theme.ColorScheme
 import it.fast4x.environment.Environment
-import it.fast4x.environment.models.NavigationEndpoint
 import it.fast4x.environment.models.bodies.BrowseBody
 import it.fast4x.environment.requests.playlistPage
 import it.fast4x.environment.requests.song
@@ -163,19 +137,10 @@ import it.fast4x.riplay.enums.FontType
 import it.fast4x.riplay.enums.HomeScreenTabs
 import it.fast4x.riplay.enums.Languages
 import it.fast4x.riplay.enums.NavRoutes
-import it.fast4x.riplay.enums.NotificationButtons
 import it.fast4x.riplay.enums.PipModule
 import it.fast4x.riplay.enums.PlayerBackgroundColors
-import it.fast4x.riplay.enums.PlayerThumbnailSize
 import it.fast4x.riplay.enums.PopupType
-import it.fast4x.riplay.enums.QueueLoopType
 import it.fast4x.riplay.enums.ThumbnailRoundness
-import it.fast4x.riplay.extensions.audiovolume.AudioVolumeObserver
-import it.fast4x.riplay.extensions.audiovolume.OnAudioVolumeChangedListener
-import it.fast4x.riplay.extensions.discord.DiscordPresenceManager
-import it.fast4x.riplay.extensions.discord.updateDiscordPresenceWithOnlinePlayer
-import it.fast4x.riplay.extensions.encryptedpreferences.encryptedPreferences
-import it.fast4x.riplay.extensions.history.updateOnlineHistory
 import it.fast4x.riplay.extensions.nsd.discoverNsdServices
 import it.fast4x.riplay.extensions.pip.PipModuleContainer
 import it.fast4x.riplay.extensions.pip.PipModuleCover
@@ -187,8 +152,6 @@ import it.fast4x.riplay.extensions.preferences.animatedGradientKey
 import it.fast4x.riplay.extensions.preferences.appIsRunningKey
 import it.fast4x.riplay.extensions.preferences.applyFontPaddingKey
 import it.fast4x.riplay.extensions.preferences.backgroundProgressKey
-import it.fast4x.riplay.extensions.preferences.bassboostEnabledKey
-import it.fast4x.riplay.extensions.preferences.bassboostLevelKey
 import it.fast4x.riplay.extensions.preferences.checkUpdateStateKey
 import it.fast4x.riplay.extensions.preferences.closeWithBackButtonKey
 import it.fast4x.riplay.extensions.preferences.colorPaletteModeKey
@@ -217,24 +180,16 @@ import it.fast4x.riplay.extensions.preferences.customThemeLight_textDisabledKey
 import it.fast4x.riplay.extensions.preferences.customThemeLight_textSecondaryKey
 import it.fast4x.riplay.extensions.preferences.disableClosingPlayerSwipingDownKey
 import it.fast4x.riplay.extensions.preferences.disablePlayerHorizontalSwipeKey
-import it.fast4x.riplay.extensions.preferences.discordPersonalAccessTokenKey
 import it.fast4x.riplay.extensions.preferences.fontTypeKey
 import it.fast4x.riplay.extensions.preferences.getEnum
-import it.fast4x.riplay.extensions.preferences.isDiscordPresenceEnabledKey
 import it.fast4x.riplay.extensions.preferences.isEnabledFullscreenKey
-import it.fast4x.riplay.extensions.preferences.isInvincibilityEnabledKey
 import it.fast4x.riplay.extensions.preferences.isKeepScreenOnEnabledKey
-import it.fast4x.riplay.extensions.preferences.isPauseOnVolumeZeroEnabledKey
 import it.fast4x.riplay.extensions.preferences.isProxyEnabledKey
 import it.fast4x.riplay.extensions.preferences.languageAppKey
-import it.fast4x.riplay.extensions.preferences.lastVideoIdKey
 import it.fast4x.riplay.extensions.preferences.loadedDataKey
-import it.fast4x.riplay.extensions.preferences.loudnessBaseGainKey
 import it.fast4x.riplay.extensions.preferences.miniPlayerTypeKey
 import it.fast4x.riplay.extensions.preferences.navigationBarPositionKey
 import it.fast4x.riplay.extensions.preferences.navigationBarTypeKey
-import it.fast4x.riplay.extensions.preferences.notificationPlayerFirstIconKey
-import it.fast4x.riplay.extensions.preferences.notificationPlayerSecondIconKey
 import it.fast4x.riplay.extensions.preferences.parentalControlEnabledKey
 import it.fast4x.riplay.extensions.preferences.pipModuleKey
 import it.fast4x.riplay.extensions.preferences.playerBackgroundColorsKey
@@ -256,11 +211,11 @@ import it.fast4x.riplay.extensions.preferences.ytVisitorDataKey
 import it.fast4x.riplay.extensions.rescuecenter.RescueScreen
 import it.fast4x.riplay.data.models.Queues
 import it.fast4x.riplay.data.models.defaultQueue
+import it.fast4x.riplay.extensions.ondevice.OnDeviceLoader
 import it.fast4x.riplay.extensions.preferences.closebackgroundPlayerKey
 import it.fast4x.riplay.extensions.preferences.showAutostartPermissionDialogKey
 import it.fast4x.riplay.navigation.AppNavigation
 import it.fast4x.riplay.service.PlayerService
-import it.fast4x.riplay.service.ToolsService
 import it.fast4x.riplay.service.ToolsWorker
 import it.fast4x.riplay.service.isLocal
 import it.fast4x.riplay.ui.components.BottomSheet
@@ -275,7 +230,6 @@ import it.fast4x.riplay.ui.screens.player.local.LocalPlayer
 import it.fast4x.riplay.ui.screens.player.local.rememberLocalPlayerSheetState
 import it.fast4x.riplay.ui.screens.player.online.OnlineMiniPlayer
 import it.fast4x.riplay.ui.screens.player.online.OnlinePlayer
-import it.fast4x.riplay.ui.screens.player.online.components.core.ExternalOnlineCore
 import it.fast4x.riplay.ui.screens.player.online.components.core.OnlinePlayerView
 import it.fast4x.riplay.ui.screens.settings.isLoggedIn
 import it.fast4x.riplay.ui.styling.Appearance
@@ -287,54 +241,32 @@ import it.fast4x.riplay.ui.styling.customColorPalette
 import it.fast4x.riplay.ui.styling.dynamicColorPaletteOf
 import it.fast4x.riplay.ui.styling.typographyOf
 import it.fast4x.riplay.utils.BitmapProvider
-import it.fast4x.riplay.utils.DisposableListener
 import it.fast4x.riplay.utils.LocalMonetCompat
 import it.fast4x.riplay.utils.OkHttpRequest
-import it.fast4x.riplay.utils.appContext
 import it.fast4x.riplay.utils.asMediaItem
-import it.fast4x.riplay.utils.broadCastPendingIntent
 import it.fast4x.riplay.utils.capitalized
-import it.fast4x.riplay.utils.clearWebViewData
-import it.fast4x.riplay.utils.context
+import it.fast4x.riplay.utils.globalContext
 import it.fast4x.riplay.utils.forcePlay
 import it.fast4x.riplay.utils.getDnsOverHttpsType
 import it.fast4x.riplay.utils.getKeepPlayerMinimized
 import it.fast4x.riplay.utils.getSystemlanguage
 import it.fast4x.riplay.utils.invokeOnReady
-import it.fast4x.riplay.utils.isAtLeastAndroid11
-import it.fast4x.riplay.utils.isAtLeastAndroid12
 import it.fast4x.riplay.utils.isAtLeastAndroid13
 import it.fast4x.riplay.utils.isAtLeastAndroid6
 import it.fast4x.riplay.utils.isAtLeastAndroid8
 import it.fast4x.riplay.utils.isEnabledFullscreen
-import it.fast4x.riplay.utils.isLandscape
 import it.fast4x.riplay.utils.isPipModeAutoEnabled
-import it.fast4x.riplay.utils.isSkipMediaOnErrorEnabled
 import it.fast4x.riplay.utils.isValidHttpUrl
 import it.fast4x.riplay.utils.isValidIP
-import it.fast4x.riplay.utils.isVideo
-import it.fast4x.riplay.utils.lastMediaItemWasLocal
-import it.fast4x.riplay.utils.mediaItemToggleLike
 import it.fast4x.riplay.utils.playNext
-import it.fast4x.riplay.utils.playPrevious
 import it.fast4x.riplay.utils.resize
-import it.fast4x.riplay.utils.seamlessQueue
 import it.fast4x.riplay.utils.setDefaultPalette
-import it.fast4x.riplay.utils.setQueueLoopState
-import it.fast4x.riplay.utils.shuffleQueue
 import it.fast4x.riplay.utils.thumbnail
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.cancellable
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
@@ -352,9 +284,7 @@ import java.util.Locale
 import java.util.Objects
 import java.util.UUID
 import java.util.concurrent.TimeUnit
-import kotlin.math.roundToInt
 import kotlin.math.sqrt
-import kotlin.time.Duration.Companion.seconds
 
 
 const val ONLINEPLAYER_NOTIFICATION_CHANNEL = "Online Player Notification"
@@ -1017,7 +947,7 @@ class MainActivity :
             val locale = Locale.getDefault()
             val languageTag = locale.toLanguageTag().replace("-Hant", "")
             val languageApp =
-                context().preferences.getEnum(languageAppKey, getSystemlanguage())
+                globalContext().preferences.getEnum(languageAppKey, getSystemlanguage())
             LocalePreferences.preference =
                 LocalePreferenceItem(
                     hl = languageApp.code.takeIf { it != Languages.System.code }
@@ -2005,6 +1935,8 @@ class MainActivity :
                 intentUriData = null
             }
 
+            // Load and update on device songs
+            OnDeviceLoader()
         }
 
     }

@@ -10,7 +10,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import it.fast4x.riplay.R
 import it.fast4x.riplay.utils.colorPalette
-import it.fast4x.riplay.utils.context
+import it.fast4x.riplay.utils.globalContext
 
 @Composable
 fun FastPlayActionsBar(
@@ -36,8 +36,8 @@ fun FastPlayActionsBar(
                         onClick = onPlayNowClick,
                         onLongClick = {
                             SmartMessage(
-                                context().resources.getString(R.string.play_now),
-                                context = context()
+                                globalContext().resources.getString(R.string.play_now),
+                                context = globalContext()
                             )
                         }
                     ),
@@ -54,8 +54,8 @@ fun FastPlayActionsBar(
                         onClick = onShufflePlayClick,
                         onLongClick = {
                             SmartMessage(
-                                context().resources.getString(R.string.shuffle_play),
-                                context = context()
+                                globalContext().resources.getString(R.string.shuffle_play),
+                                context = globalContext()
                             )
                         }
                     ),
@@ -72,8 +72,8 @@ fun FastPlayActionsBar(
                         onClick = onSmartRecommendationClick,
                         onLongClick = {
                             SmartMessage(
-                                context().resources.getString(R.string.info_smart_recommendation),
-                                context = context()
+                                globalContext().resources.getString(R.string.info_smart_recommendation),
+                                context = globalContext()
                             )
                         }
                     ),

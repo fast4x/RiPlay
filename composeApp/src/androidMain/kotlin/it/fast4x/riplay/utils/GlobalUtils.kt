@@ -79,7 +79,7 @@ fun showStatsIconInNav() = rememberPreference( showStatsInNavbarKey, false ).val
 fun binder() = LocalPlayerServiceBinder.current
 
 fun appContext(): Context = Dependencies.application.applicationContext
-fun context(): Context = Dependencies.application
+fun globalContext(): Context = Dependencies.application
 
 fun getColorTheme() = appContext().preferences.getEnum(colorPaletteModeKey, ColorPaletteMode.Dark)
 fun getAudioQualityFormat() = appContext().preferences.getEnum(audioQualityFormatKey, AudioQualityFormat.Auto)
