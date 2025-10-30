@@ -216,7 +216,7 @@ class OnDeviceViewModel(application: Application) : AndroidViewModel(application
                                     thumbnailUrl = albumUri.toString(),
                                     relativePath = relativePath
                                 )
-                                Database.insert(
+                                Database.upsert(
                                     song.toSong(),
                                     Format(
                                         songId = song.id,
@@ -228,7 +228,7 @@ class OnDeviceViewModel(application: Application) : AndroidViewModel(application
                                     )
                                 )
 
-                                Database.insert(
+                                Database.upsert(
                                     Album(
                                         id = "$LOCAL_KEY_PREFIX${albumId}",
                                         title = album,
@@ -245,7 +245,7 @@ class OnDeviceViewModel(application: Application) : AndroidViewModel(application
                                     )
                                 )
 
-                                Database.insert(
+                                Database.upsert(
                                     Artist(
                                         id = "$LOCAL_KEY_PREFIX${artist}",
                                         name = artist,
@@ -261,6 +261,7 @@ class OnDeviceViewModel(application: Application) : AndroidViewModel(application
                                 audioFiles.add(
                                     song
                                 )
+                                Timber.d("OnDeviceViewModel updated and added song ${song.title} and songId ${song.id}")
                             }.onFailure {
                                 Timber.e("OnDeviceViewModel addSong error ${it.stackTraceToString()}")
                             }

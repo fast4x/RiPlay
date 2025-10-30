@@ -938,8 +938,14 @@ class PlayerService : Service(),
             //stopSelf()
             onDestroy()
             super.onTaskRemoved(rootIntent)
-        } else
+        } else {
+            if (isAtLeastAndroid8)
+                startForegroundService(intent<PlayerService>())
+            else
+                startService(intent<PlayerService>())
+
             startForeground()
+        }
     }
 
     @UnstableApi
@@ -1665,6 +1671,7 @@ class PlayerService : Service(),
         val prev = player.currentMediaItem ?: return
 
         player.playNext()
+        player.prepare()
 
         showSmartMessage(
             message = getString(
@@ -1688,8 +1695,9 @@ class PlayerService : Service(),
     }
 
     override fun onPlayerErrorChanged(error: PlaybackException?) {
-        super.onPlayerErrorChanged(error)
+        //super.onPlayerErrorChanged(error)
         Timber.e("PlayerService onPlayerErrorChanged ${error?.stackTraceToString()}")
+        onPlayerError(error ?: return)
     }
 
 

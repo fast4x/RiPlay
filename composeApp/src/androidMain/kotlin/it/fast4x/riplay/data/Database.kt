@@ -2869,6 +2869,15 @@ interface Database {
     fun upsert(album: Album, songAlbumMaps: List<SongAlbumMap>)
 
     @Upsert
+    fun upsert(song: Song, format: Format)
+
+    @Upsert
+    fun upsert(album: Album, songAlbumMap: SongAlbumMap)
+
+    @Upsert
+    fun upsert(artist: Artist, songArtistMap: SongArtistMap)
+
+    @Upsert
     fun upsert(songAlbumMap: SongAlbumMap)
 
     @Upsert
