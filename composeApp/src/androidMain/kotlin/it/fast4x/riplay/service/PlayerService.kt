@@ -938,14 +938,15 @@ class PlayerService : Service(),
             //stopSelf()
             onDestroy()
             super.onTaskRemoved(rootIntent)
-        } else {
-            if (isAtLeastAndroid8)
-                startForegroundService(intent<PlayerService>())
-            else
-                startService(intent<PlayerService>())
-
-            startForeground()
         }
+//        else {
+//            if (isAtLeastAndroid8)
+//                startForegroundService(intent<PlayerService>())
+//            else
+//                startService(intent<PlayerService>())
+//
+//            startForeground()
+//        }
     }
 
     @UnstableApi
@@ -1659,27 +1660,27 @@ class PlayerService : Service(),
         //}
         //updateUnifiedNotification()
     }
-
-    override fun onPlayerError(error: PlaybackException) {
-
-        Timber.e("PlayerService onPlayerError ${error.stackTraceToString()}")
-        currentMediaItemState.value?.isLocal?.let { if (!it) return }
-
-        if (!preferences.getBoolean(skipMediaOnErrorKey, false) || !player.hasNextMediaItem())
-            return
-
-        val prev = player.currentMediaItem ?: return
-
-        player.playNext()
-        player.prepare()
-
-        showSmartMessage(
-            message = getString(
-                R.string.skip_media_on_error_message,
-                prev.mediaMetadata.title
-            )
-        )
-    }
+//
+//    override fun onPlayerError(error: PlaybackException) {
+//
+//        Timber.e("PlayerService onPlayerError ${error.stackTraceToString()}")
+//        currentMediaItemState.value?.isLocal?.let { if (!it) return }
+//
+//        if (!preferences.getBoolean(skipMediaOnErrorKey, false) || !player.hasNextMediaItem())
+//            return
+//
+//        val prev = player.currentMediaItem ?: return
+//
+//        player.playNext()
+//        player.prepare()
+//
+//        showSmartMessage(
+//            message = getString(
+//                R.string.skip_media_on_error_message,
+//                prev.mediaMetadata.title
+//            )
+//        )
+//    }
 
     private fun showSmartMessage(message: String) {
         coroutineScope.launch(Dispatchers.Main) {
@@ -1694,11 +1695,6 @@ class PlayerService : Service(),
         }
     }
 
-    override fun onPlayerErrorChanged(error: PlaybackException?) {
-        //super.onPlayerErrorChanged(error)
-        Timber.e("PlayerService onPlayerErrorChanged ${error?.stackTraceToString()}")
-        onPlayerError(error ?: return)
-    }
 
 
     @UnstableApi

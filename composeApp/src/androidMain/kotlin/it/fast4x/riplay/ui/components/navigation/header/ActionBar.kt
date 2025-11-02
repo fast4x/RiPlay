@@ -15,15 +15,19 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import it.fast4x.riplay.LocalAudioTagger
 import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.NavRoutes
+import it.fast4x.riplay.extensions.audiotag.AudioTagger
 import it.fast4x.riplay.extensions.pip.isPipSupported
 import it.fast4x.riplay.extensions.pip.rememberPipHandler
 import it.fast4x.riplay.extensions.preferences.enablePictureInPictureKey
 import it.fast4x.riplay.extensions.preferences.rememberPreference
+import it.fast4x.riplay.ui.components.LocalMenuState
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.utils.thumbnailShape
 import it.fast4x.riplay.ui.components.themed.DropdownMenu
+import it.fast4x.riplay.ui.components.themed.Menu
 import it.fast4x.riplay.ui.screens.settings.isLoggedIn
 import it.fast4x.riplay.utils.ytAccountThumbnail
 
@@ -81,6 +85,18 @@ fun ActionBar(
     navController: NavController,
 ) {
     var expanded by remember { mutableStateOf(false) }
+
+    // todo add audio tagger
+//    val audioTagger = LocalAudioTagger.current
+//    val menuState = LocalMenuState.current
+//
+//    HeaderIcon( R.drawable.mic) {
+//        menuState.display {
+//            Menu {
+//                AudioTagger(audioTagger)
+//            }
+//        }
+//    }
 
     // Search Icon
     HeaderIcon( R.drawable.search) { navController.navigate(NavRoutes.search.name) }

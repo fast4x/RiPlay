@@ -45,6 +45,9 @@ import androidx.core.graphics.drawable.toBitmap
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.isGranted
+import com.google.accompanist.permissions.rememberPermissionState
 import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.R
 import it.fast4x.riplay.extensions.nextvisualizer.painters.Painter
@@ -90,71 +93,86 @@ import it.fast4x.riplay.utils.typography
 import it.fast4x.riplay.ui.components.DelayedControls
 import timber.log.Timber
 
-@OptIn(UnstableApi::class)
+@UnstableApi
+@ExperimentalPermissionsApi
 @Composable
 fun NextVisualizer() {
+
+    val permission = rememberPermissionState(
+        Manifest.permission.RECORD_AUDIO,
+        onPermissionResult = { isGranted ->
+            if (!isGranted) return@rememberPermissionState
+        }
+    )
+    LaunchedEffect(key1 = true) {
+        if (!permission.status.isGranted) {
+            permission.launchPermissionRequest()
+        }
+    }
+
+
 
     val context = LocalContext.current
     val visualizerEnabled by rememberPreference(visualizerEnabledKey, false)
 
-    if (visualizerEnabled) {
+    if (visualizerEnabled && permission.status.isGranted) {
 
-        val permission = Manifest.permission.RECORD_AUDIO
+//        val permission = Manifest.permission.RECORD_AUDIO
+//
+//        var relaunchPermission by remember {
+//            mutableStateOf(false)
+//        }
+//
+//        var hasPermission by remember(isCompositionLaunched()) {
+//            mutableStateOf(context.applicationContext.hasPermission(permission))
+//        }
+//
+//        val launcher = rememberLauncherForActivityResult(
+//            contract = ActivityResultContracts.RequestPermission(),
+//            onResult = { hasPermission = it }
+//        )
 
-        var relaunchPermission by remember {
-            mutableStateOf(false)
-        }
+        //if (!hasPermission) {
 
-        var hasPermission by remember(isCompositionLaunched()) {
-            mutableStateOf(context.applicationContext.hasPermission(permission))
-        }
+//            LaunchedEffect(Unit, relaunchPermission) { launcher.launch(permission) }
+//
+//            Column(
+//                modifier = Modifier.fillMaxSize(),
+//                verticalArrangement = Arrangement.spacedBy(
+//                    2.dp,
+//                    Alignment.CenterVertically
+//                ),
+//                horizontalAlignment = Alignment.CenterHorizontally
+//            ) {
+//                BasicText(
+//                    text = stringResource(R.string.require_mic_permission),
+//                    modifier = Modifier.fillMaxWidth(0.75f),
+//                    style = typography().xs.semiBold
+//                )
+//                /*
+//                Spacer(modifier = Modifier.height(12.dp))
+//                SecondaryTextButton(
+//                    text = stringResource(R.string.grant_permission),
+//                    onClick = {
+//                        relaunchPermission = !relaunchPermission
+//                    }
+//                )
+//                 */
+//                Spacer(modifier = Modifier.height(20.dp))
+//                SecondaryTextButton(
+//                    text = stringResource(R.string.open_permission_settings),
+//                    onClick = {
+//                        context.startActivity(
+//                            Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+//                                setData(Uri.fromParts("package", context.packageName, null))
+//                            }
+//                        )
+//                    }
+//                )
+//
+//            }
 
-        val launcher = rememberLauncherForActivityResult(
-            contract = ActivityResultContracts.RequestPermission(),
-            onResult = { hasPermission = it }
-        )
-
-        if (!hasPermission) {
-
-            LaunchedEffect(Unit, relaunchPermission) { launcher.launch(permission) }
-
-            Column(
-                modifier = Modifier.fillMaxSize(),
-                verticalArrangement = Arrangement.spacedBy(
-                    2.dp,
-                    Alignment.CenterVertically
-                ),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                BasicText(
-                    text = stringResource(R.string.require_mic_permission),
-                    modifier = Modifier.fillMaxWidth(0.75f),
-                    style = typography().xs.semiBold
-                )
-                /*
-                Spacer(modifier = Modifier.height(12.dp))
-                SecondaryTextButton(
-                    text = stringResource(R.string.grant_permission),
-                    onClick = {
-                        relaunchPermission = !relaunchPermission
-                    }
-                )
-                 */
-                Spacer(modifier = Modifier.height(20.dp))
-                SecondaryTextButton(
-                    text = stringResource(R.string.open_permission_settings),
-                    onClick = {
-                        context.startActivity(
-                            Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
-                                setData(Uri.fromParts("package", context.packageName, null))
-                            }
-                        )
-                    }
-                )
-
-            }
-
-        } else {
+        //} else {
 
             val binder = LocalPlayerServiceBinder.current
             val visualizerView = VisualizerView(context)
@@ -271,7 +289,7 @@ fun NextVisualizer() {
                 }
 
             }
-        }
+        //}
     }
 }
 

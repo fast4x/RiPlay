@@ -32,6 +32,7 @@ import androidx.activity.result.ActivityResultCallback
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContract
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.animation.ExperimentalAnimationApi
@@ -211,6 +212,7 @@ import it.fast4x.riplay.extensions.preferences.ytVisitorDataKey
 import it.fast4x.riplay.extensions.rescuecenter.RescueScreen
 import it.fast4x.riplay.data.models.Queues
 import it.fast4x.riplay.data.models.defaultQueue
+import it.fast4x.riplay.extensions.audiotag.AudioTagViewModel
 import it.fast4x.riplay.extensions.ondevice.OnDeviceLoader
 import it.fast4x.riplay.extensions.preferences.closebackgroundPlayerKey
 import it.fast4x.riplay.extensions.preferences.showAutostartPermissionDialogKey
@@ -409,6 +411,10 @@ class MainActivity :
                 }
             }
         }
+    }
+
+    private val audioTaggerViewModel: AudioTagViewModel by viewModels {
+        AudioTagViewModel()
     }
 
 
@@ -1569,6 +1575,7 @@ class MainActivity :
                             LocalOnlinePositionAndDuration provides onlinePositionAndDuration,
                             LocalSelectedQueue provides selectedQueue.value,
                             LocalBackupHandler provides backupHandler,
+                            LocalAudioTagger provides audioTaggerViewModel
                             //LocalInternetAvailable provides isInternetAvailable
                         ) {
 
@@ -3127,4 +3134,6 @@ val LocalLinkDevices =
 val LocalSelectedQueue = staticCompositionLocalOf<Queues?> { error("No selected queue provided") }
 
 val LocalBackupHandler = staticCompositionLocalOf<RoomBackup> { error("No backup handler provided") }
+
+val LocalAudioTagger = staticCompositionLocalOf<AudioTagViewModel> { error("No audio tagger provided") }
 

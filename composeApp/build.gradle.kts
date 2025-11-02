@@ -1,3 +1,4 @@
+import org.gradle.kotlin.dsl.implementation
 import org.gradle.kotlin.dsl.withType
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
@@ -72,6 +73,7 @@ kotlin {
             implementation(libs.androidx.webkit)
             implementation(libs.room.backup)
             implementation(libs.workmanager)
+            implementation(libs.accompanist)
         }
         commonMain.dependencies {
             implementation(compose.runtime)
@@ -82,6 +84,10 @@ kotlin {
             implementation(compose.components.uiToolingPreview)
 
             implementation(projects.environment)
+            implementation(projects.kugou)
+            implementation(projects.lrclib)
+            implementation(projects.audiotaginfo)
+
 
             implementation(libs.room)
             implementation(libs.room.runtime)

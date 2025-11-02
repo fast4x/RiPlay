@@ -29,6 +29,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.util.UnstableApi
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import it.fast4x.riplay.R
 import it.fast4x.riplay.extensions.nextvisualizer.NextVisualizer
 import it.fast4x.riplay.ui.components.themed.SecondaryTextButton
@@ -39,12 +40,13 @@ import it.fast4x.riplay.ui.styling.semiBold
 import it.fast4x.riplay.extensions.preferences.visualizerEnabledKey
 import it.fast4x.riplay.utils.typography
 
+@ExperimentalPermissionsApi
 @UnstableApi
 @Composable
 fun NextVisualizer(
     isDisplayed: Boolean
 ) {
-
+/*
     val context = LocalContext.current
     val visualizerEnabled by rememberPreference(visualizerEnabledKey, false)
 
@@ -103,16 +105,24 @@ fun NextVisualizer(
             }
 
         } else {
-        AnimatedVisibility(
-            visible = isDisplayed,
-            enter = fadeIn(tween(500)),
-            exit = fadeOut(tween(500)),
-        ) {
-            NextVisualizer()
-        }
-
+            AnimatedVisibility(
+                visible = isDisplayed,
+                enter = fadeIn(tween(500)),
+                exit = fadeOut(tween(500)),
+            ) {
+                NextVisualizer()
+            }
     }
 
 }
+*/
+
+    AnimatedVisibility(
+        visible = isDisplayed,
+        enter = fadeIn(tween(500)),
+        exit = fadeOut(tween(500)),
+    ) {
+        NextVisualizer()
+    }
 
 }

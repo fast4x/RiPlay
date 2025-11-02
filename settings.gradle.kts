@@ -39,6 +39,8 @@ include(":kugou")
 project(":kugou").projectDir = file("extensions/kugou")
 include(":lrclib")
 project(":lrclib").projectDir = file("extensions/lrclib")
+include(":audiotaginfo")
+project(":audiotaginfo").projectDir = file("extensions/audiotaginfo")
 
 
 
