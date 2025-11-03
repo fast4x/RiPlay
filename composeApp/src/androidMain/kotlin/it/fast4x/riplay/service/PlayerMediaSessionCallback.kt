@@ -6,6 +6,7 @@ import android.support.v4.media.session.MediaSessionCompat
 import android.view.KeyEvent
 import androidx.annotation.OptIn
 import androidx.media3.common.util.UnstableApi
+import androidx.media3.session.SessionCommand
 import it.fast4x.riplay.data.models.Song
 import it.fast4x.riplay.utils.asMediaItem
 import it.fast4x.riplay.utils.forcePlayAtIndex
@@ -208,4 +209,17 @@ class PlayerMediaSessionCallback (
         return false
     }
 
+}
+
+object MediaSessionConstants {
+    const val ACTION_TOGGLE_LIKE = "TOGGLE_LIKE"
+    const val ACTION_TOGGLE_SHUFFLE = "TOGGLE_SHUFFLE"
+    const val ACTION_TOGGLE_REPEAT_MODE = "TOGGLE_REPEAT_MODE"
+    const val ACTION_START_RADIO = "START_RADIO"
+    const val ACTION_SEARCH = "ACTION_SEARCH"
+    val CommandToggleLike = SessionCommand(ACTION_TOGGLE_LIKE, Bundle.EMPTY)
+    val CommandToggleShuffle = SessionCommand(ACTION_TOGGLE_SHUFFLE, Bundle.EMPTY)
+    val CommandToggleRepeatMode = SessionCommand(ACTION_TOGGLE_REPEAT_MODE, Bundle.EMPTY)
+    val CommandStartRadio = SessionCommand(ACTION_START_RADIO, Bundle.EMPTY)
+    val CommandSearch = SessionCommand(ACTION_SEARCH, Bundle.EMPTY)
 }

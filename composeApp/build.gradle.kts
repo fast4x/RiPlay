@@ -143,7 +143,7 @@ android {
         applicationId = "it.fast4x.riplay"
         minSdk = 21
         targetSdk = 36
-        versionCode = 39
+        versionCode = 40
         versionName = "0.0.$versionCode-alpha"
 
         multiDexEnabled = true
@@ -383,6 +383,15 @@ android {
             propertyOrEmpty("Ayp_CHROMECAST_APPLICATION_ID")
         )
         //INIT CHROMECAST RECEIVER
+
+        //INIT AudioTagInfo Api
+        resValue(
+            "string",
+            "AudioTagInfo_API_KEY",
+            propertyOrEmpty("AudioTagInfo_API_KEY")
+        )
+        //INIT AudioTagInfo Api
+
     }
 
     splits {

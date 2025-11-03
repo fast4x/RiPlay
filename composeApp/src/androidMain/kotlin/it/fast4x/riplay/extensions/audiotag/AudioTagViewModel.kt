@@ -4,8 +4,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import it.fast4x.audiotaginfo.AudioTagInfo
+import it.fast4x.riplay.R
 import it.fast4x.riplay.extensions.audiotag.AudioRecorder
 import it.fast4x.riplay.extensions.audiotag.models.UiState
+import it.fast4x.riplay.utils.globalContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -29,7 +31,7 @@ class AudioTagViewModel(
     val uiState: StateFlow<UiState> = _uiState.asStateFlow()
 
     private val audioRecorder = AudioRecorder()
-    private val apiKey = "ffb71eba7797972ef813261c7b4d1ca0" // todo hide this api key
+    private val apiKey = globalContext().resources.getString(R.string.AudioTagInfo_API_KEY)
 
     fun info() {
         viewModelScope.launch {
