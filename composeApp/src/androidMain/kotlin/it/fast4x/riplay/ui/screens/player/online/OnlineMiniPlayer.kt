@@ -81,7 +81,6 @@ import it.fast4x.riplay.utils.getMinTimeForEvent
 import it.fast4x.riplay.utils.getPauseListenHistory
 import it.fast4x.riplay.data.models.Event
 import it.fast4x.riplay.data.models.Info
-import it.fast4x.riplay.service.LocalPlayerService
 import it.fast4x.riplay.data.models.Song
 import it.fast4x.riplay.utils.thumbnailShape
 import it.fast4x.riplay.utils.typography

@@ -42,7 +42,6 @@ import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.CacheType
 import it.fast4x.riplay.enums.CoilDiskCacheMaxSize
 import it.fast4x.riplay.enums.NavigationBarPosition
-import it.fast4x.riplay.service.LocalPlayerService
 import it.fast4x.riplay.ui.components.themed.CacheSpaceIndicator
 import it.fast4x.riplay.ui.components.themed.ConfirmationDialog
 import it.fast4x.riplay.ui.components.themed.DefaultDialog

@@ -13,7 +13,6 @@ import androidx.media3.common.util.UnstableApi
 import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.PopupType
-import it.fast4x.riplay.service.LocalPlayerService
 import it.fast4x.riplay.service.PlayerService
 import it.fast4x.riplay.ui.components.themed.SmartMessage
 import kotlinx.coroutines.runBlocking

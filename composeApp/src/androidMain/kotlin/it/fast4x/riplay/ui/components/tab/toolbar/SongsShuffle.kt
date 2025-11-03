@@ -12,7 +12,6 @@ import it.fast4x.riplay.enums.MaxSongs
 import it.fast4x.riplay.extensions.preferences.getEnum
 import it.fast4x.riplay.extensions.preferences.maxSongsInQueueKey
 import it.fast4x.riplay.extensions.preferences.preferences
-import it.fast4x.riplay.service.LocalPlayerService
 import it.fast4x.riplay.service.PlayerService
 import it.fast4x.riplay.ui.components.themed.SmartMessage
 import it.fast4x.riplay.utils.forcePlayFromBeginning
