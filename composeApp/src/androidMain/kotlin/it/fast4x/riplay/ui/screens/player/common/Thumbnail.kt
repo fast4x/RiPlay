@@ -44,6 +44,7 @@ import androidx.media3.common.util.UnstableApi
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
 import coil.size.Size
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.R
@@ -82,6 +83,7 @@ import timber.log.Timber
 import java.net.UnknownHostException
 import java.nio.channels.UnresolvedAddressException
 
+@ExperimentalPermissionsApi
 @ExperimentalAnimationApi
 @UnstableApi
 @Composable

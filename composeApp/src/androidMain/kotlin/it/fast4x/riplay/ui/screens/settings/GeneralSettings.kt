@@ -144,6 +144,7 @@ import java.net.Proxy
 import androidx.core.net.toUri
 import androidx.core.text.isDigitsOnly
 import it.fast4x.riplay.enums.ContentType
+import it.fast4x.riplay.extensions.preferences.excludeSongIfIsVideoKey
 import it.fast4x.riplay.extensions.preferences.filterContentTypeKey
 import it.fast4x.riplay.extensions.preferences.resumeOrPausePlaybackWhenDeviceKey
 import it.fast4x.riplay.extensions.preferences.showFavoritesPlaylistsAAKey
@@ -236,6 +237,7 @@ fun GeneralSettings(
     var resetCustomDarkThemeDialog by rememberSaveable { mutableStateOf(false) }
     var playbackFadeAudioDuration by rememberPreference(playbackFadeAudioDurationKey, DurationInMilliseconds.Disabled)
     var excludeSongWithDurationLimit by rememberPreference(excludeSongsWithDurationLimitKey, DurationInMinutes.Disabled)
+    var excludeSongsIfAreVideos by rememberPreference(excludeSongIfIsVideoKey, false)
     var playlistindicator by rememberPreference(playlistindicatorKey, false)
     var nowPlayingIndicator by rememberPreference(nowPlayingIndicatorKey, MusicAnimationType.Bubbles)
     var discoverIsEnabled by rememberPreference(discoverKey, false)
@@ -886,6 +888,23 @@ fun GeneralSettings(
                             }
                         )
                         SettingsDescription(text = stringResource(R.string.exclude_songs_with_duration_limit_description))
+                    }
+
+                    if (search.input.isBlank() || stringResource(R.string.exclude_song_if_is_video).contains(
+                            search.input,
+                            true
+                        )
+                    ) {
+                        SwitchSettingEntry(
+                            title = stringResource(R.string.exclude_song_if_is_video),
+                            text = "",
+                            isChecked = excludeSongsIfAreVideos,
+                            onCheckedChange = {
+                                excludeSongsIfAreVideos = it
+                                restartService = true
+                            }
+                        )
+                        RestartPlayerService(restartService, onRestart = { restartService = false })
                     }
 
                     if (search.input.isBlank() || stringResource(R.string.pause_between_songs).contains(

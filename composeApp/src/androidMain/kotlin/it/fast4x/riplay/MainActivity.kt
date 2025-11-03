@@ -109,6 +109,7 @@ import androidx.work.PeriodicWorkRequest
 import androidx.work.WorkManager
 import coil.imageLoader
 import coil.request.ImageRequest
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.kieronquinn.monetcompat.app.MonetCompatActivity
 import com.kieronquinn.monetcompat.core.MonetActivityAccessException
 import com.kieronquinn.monetcompat.core.MonetCompat
@@ -556,6 +557,7 @@ class MainActivity :
     @ExperimentalTextApi
     @UnstableApi
     @ExperimentalComposeUiApi
+    @ExperimentalPermissionsApi
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -837,6 +839,7 @@ class MainActivity :
         ExperimentalFoundationApi::class, ExperimentalAnimationApi::class,
         ExperimentalMaterial3Api::class, FlowPreview::class
     )
+    @ExperimentalPermissionsApi
     fun startApp() {
 
         // Used in QuickPics for load data from remote instead of last saved in SharedPreferences

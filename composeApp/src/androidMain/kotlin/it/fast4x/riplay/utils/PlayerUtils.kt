@@ -35,6 +35,7 @@ import it.fast4x.riplay.extensions.preferences.preferences
 import it.fast4x.riplay.data.models.QueuedMediaItem
 import it.fast4x.riplay.data.models.Queues
 import it.fast4x.riplay.data.models.defaultQueueId
+import it.fast4x.riplay.extensions.preferences.excludeSongIfIsVideoKey
 import it.fast4x.riplay.ui.components.themed.SmartMessage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -83,15 +84,6 @@ val Player.shouldBePlaying: Boolean
 
 fun Player.removeMediaItems(range: IntRange) = removeMediaItems(range.first, range.last + 1)
 
-//fun Player.seamlessPlay(mediaItem: MediaItem) {
-//    if (mediaItem.mediaId == currentMediaItem?.mediaId) {
-//        if (currentMediaItemIndex > 0) removeMediaItems(0, currentMediaItemIndex)
-//        if (currentMediaItemIndex < mediaItemCount - 1) removeMediaItems(currentMediaItemIndex + 1, mediaItemCount)
-//    } else {
-//        forcePlay(mediaItem)
-//    }
-//}
-
 fun Player.seamlessPlay(mediaItem: MediaItem) {
     if (mediaItem.mediaId == currentMediaItem?.mediaId) {
         if (currentMediaItemIndex > 0) removeMediaItems(0 until currentMediaItemIndex)
@@ -117,6 +109,8 @@ fun Player.shuffleQueue() {
 }
 
 fun Player.forcePlay(mediaItem: MediaItem, replace: Boolean = false) {
+    if (excludeMediaItem(mediaItem, globalContext())) return
+
     if (!replace)
         setMediaItem(mediaItem.cleaned, true)
     else
@@ -128,7 +122,8 @@ fun Player.forcePlay(mediaItem: MediaItem, replace: Boolean = false) {
 }
 
 fun Player.playAtIndex(mediaItemIndex: Int) {
-    //seekTo(mediaItemIndex, C.TIME_UNSET)
+    if (excludeMediaItem(getMediaItemAt(mediaItemIndex), globalContext())) return
+
     seekToDefaultPosition(mediaItemIndex)
 
     restoreGlobalVolume()
@@ -140,7 +135,7 @@ fun Player.playAtIndex(mediaItemIndex: Int) {
 @SuppressLint("Range")
 @UnstableApi
 fun Player.forcePlayAtIndex(mediaItems: List<MediaItem>, mediaItemIndex: Int) {
-    if (mediaItems.isEmpty()) return
+    if (excludeMediaItems(mediaItems, globalContext()).isEmpty()) return
 
     setMediaItems(mediaItems.map { it.cleaned }, mediaItemIndex, C.TIME_UNSET)
 
@@ -154,44 +149,20 @@ fun Player.forcePlayFromBeginning(mediaItems: List<MediaItem>) =
 
 fun Player.forceSeekToPrevious() {
     seekToPrevious()
-    //if (hasPreviousMediaItem()) seekToPrevious() else seekTo(0, C.TIME_UNSET)
-//    when {
-//        currentPosition > maxSeekToPreviousPosition -> seekToPrevious()
-//        hasPreviousMediaItem() -> seekToPreviousMediaItem()
-//        mediaItemCount > 0 -> seekTo(mediaItemCount - 1, C.TIME_UNSET)
-//        else -> {}
-//    }
-    // todo maybe not needed
-//    if (hasPreviousMediaItem() || currentPosition > maxSeekToPreviousPosition) {
-//        seekToPrevious()
-//    } else if (mediaItemCount > 0) {
-//        seekTo(mediaItemCount - 1, C.TIME_UNSET)
-//    }
 }
 
 fun Player.forceSeekToNext() {
     seekToNext()
-    //if (hasNextMediaItem()) seekToNext() else seekTo(0, C.TIME_UNSET)
 }
 
 fun Player.playNext() {
-    //seekToNextMediaItem() // native
-    //seekToNext() // native
     restoreGlobalVolume()
     forceSeekToNext()
-    //prepare()
-
-    //playWhenReady = true
 }
 
 fun Player.playPrevious() {
-    //seekToPreviousMediaItem() // native
-    //seekToPrevious() // native
     restoreGlobalVolume()
     forceSeekToPrevious()
-    //prepare()
-
-    //playWhenReady = true
 }
 
 @UnstableApi
@@ -208,11 +179,6 @@ fun Player.addNext(mediaItem: MediaItem, context: Context? = null, queue: Queues
 
     addMediaItem(currentMediaItemIndex + 1, mediaItem.cleaned)
     SmartMessage(globalContext().resources.getString(R.string.done), context = globalContext())
-//    if (playbackState == Player.STATE_IDLE || playbackState == Player.STATE_ENDED) {
-//        forcePlay(mediaItem)
-//    } else {
-//        addMediaItem(currentMediaItemIndex + 1, mediaItem.cleaned)
-//    }
 }
 
 @UnstableApi
@@ -232,13 +198,6 @@ fun Player.addNext(mediaItems: List<MediaItem>, context: Context? = null, queue:
 
     addMediaItems(currentMediaItemIndex + 1, filteredMediaItems.map { it.cleaned })
     SmartMessage(globalContext().resources.getString(R.string.done), context = globalContext())
-//    if (playbackState == Player.STATE_IDLE || playbackState == Player.STATE_ENDED) {
-//        setMediaItems(filteredMediaItems.map { it.cleaned })
-//        play()
-//    } else {
-//        addMediaItems(currentMediaItemIndex + 1, filteredMediaItems.map { it.cleaned })
-//    }
-
 }
 
 
@@ -251,11 +210,6 @@ fun Player.enqueue(mediaItem: MediaItem, context: Context? = null, queue: Queues
     println("mediaItem-enqueue extras: ${mediaItem.mediaMetadata.extras}")
 
     addMediaItem(mediaItemCount, mediaItem.cleaned)
-//    if (playbackState == Player.STATE_IDLE || playbackState == Player.STATE_ENDED) {
-//        forcePlay(mediaItem)
-//    } else {
-//        addMediaItem(mediaItemCount, mediaItem.cleaned)
-//    }
     SmartMessage(globalContext().resources.getString(R.string.done), context = globalContext())
 
 }
@@ -270,21 +224,7 @@ fun Player.enqueue(
     val filteredMediaItems = if (context != null) excludeMediaItems(mediaItems, context)
     else mediaItems
 
-    //TODO add support for multiple queues with multiple mediaItems
-//    filteredMediaItems.forEach { mediaItem ->
-//        if (canAddedToQueue(mediaItem, queue)) {
-//            mediaItem.mediaMetadata.extras?.putLong("idQueue", queue.id)
-//            println("mediaItems-enqueue extras: ${mediaItem.mediaMetadata.extras}")
-//        }
-//    }
-
     addMediaItems(mediaItemCount, filteredMediaItems.map { it.cleaned })
-
-//    if (playbackState == Player.STATE_IDLE || playbackState == Player.STATE_ENDED) {
-//        forcePlayFromBeginning(filteredMediaItems.map { it.cleaned })
-//    } else {
-//        addMediaItems(mediaItemCount, filteredMediaItems.map { it.cleaned })
-//    }
     SmartMessage(globalContext().resources.getString(R.string.done), context = globalContext())
 }
 
@@ -304,17 +244,6 @@ fun Player.canAddedToQueue(mediaItem: MediaItem, queue: Queues): Boolean {
 
     return true
 }
-
-/*
-fun Player.findNextMediaItemById(mediaId: String): MediaItem? {
-    for (i in currentMediaItemIndex until mediaItemCount) {
-        if (getMediaItemAt(i).mediaId == mediaId) {
-            return getMediaItemAt(i)
-        }
-    }
-    return null
-}
-*/
 
 fun Player.findNextMediaItemById(mediaId: String): MediaItem? = runCatching {
     for (i in currentMediaItemIndex until mediaItemCount) {
@@ -336,6 +265,17 @@ fun Player.excludeMediaItems(mediaItems: List<MediaItem>, context: Context): Lis
     var filteredMediaItems = mediaItems
     runCatching {
         val preferences = context.preferences
+        val excludeIfIsVideo = preferences.getBoolean(excludeSongIfIsVideoKey, false)
+        if (excludeIfIsVideo) {
+            filteredMediaItems = mediaItems.filter { !it.isVideo }
+        }
+        val excludedVideos = mediaItems.size - filteredMediaItems.size
+
+        if (excludedVideos > 0)
+            CoroutineScope(Dispatchers.Main).launch {
+                SmartMessage(context.resources.getString(R.string.message_excluded_videos).format(excludedVideos), context = context)
+            }
+
         val excludeSongWithDurationLimit =
             preferences.getEnum(excludeSongsWithDurationLimitKey, DurationInMinutes.Disabled)
 
@@ -361,6 +301,14 @@ fun Player.excludeMediaItems(mediaItems: List<MediaItem>, context: Context): Lis
 fun Player.excludeMediaItem(mediaItem: MediaItem, context: Context): Boolean {
     runCatching {
         val preferences = context.preferences
+        val excludeIfIsVideo = preferences.getBoolean(excludeSongIfIsVideoKey, false)
+        if (excludeIfIsVideo && mediaItem.isVideo) {
+            CoroutineScope(Dispatchers.Main).launch {
+                SmartMessage(context.resources.getString(R.string.message_excluded_videos).format(1), context = context)
+            }
+            return true
+        }
+
         val excludeSongWithDurationLimit =
             preferences.getEnum(excludeSongsWithDurationLimitKey, DurationInMinutes.Disabled)
         if (excludeSongWithDurationLimit != DurationInMinutes.Disabled) {
@@ -376,7 +324,6 @@ fun Player.excludeMediaItem(mediaItem: MediaItem, context: Context): Boolean {
             return excludedSong
         }
     }.onFailure {
-        //it.printStackTrace()
         Timber.e(it.message)
         return false
     }

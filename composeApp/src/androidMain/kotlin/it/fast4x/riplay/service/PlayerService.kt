@@ -125,6 +125,7 @@ import it.fast4x.riplay.extensions.preferences.audioReverbPresetKey
 import it.fast4x.riplay.extensions.preferences.bassboostEnabledKey
 import it.fast4x.riplay.extensions.preferences.bassboostLevelKey
 import it.fast4x.riplay.extensions.preferences.closebackgroundPlayerKey
+import it.fast4x.riplay.extensions.preferences.currentQueuePositionKey
 import it.fast4x.riplay.extensions.preferences.discordPersonalAccessTokenKey
 import it.fast4x.riplay.extensions.preferences.discoverKey
 import it.fast4x.riplay.extensions.preferences.exoPlayerMinTimeForEventKey
@@ -321,7 +322,7 @@ class PlayerService : Service(),
 
     private var discordPresenceManager: DiscordPresenceManager? = null
 
-
+    private var currentQueuePosition: Int = 0
 
 
     override fun onBind(intent: Intent?): AndroidBinder {
@@ -404,16 +405,13 @@ class PlayerService : Service(),
         }
 
         if (isPersistentQueueEnabled) {
-            player.loadMasterQueue()
+            loadMasterQueueWithPosition()
             resumePlaybackOnStart()
 
             coroutineScope.launch {
                 while (isActive) {
-                    delay(
-                        30.seconds
-                        //5.minutes
-                    )
-                    player.saveMasterQueue()
+                    delay(30.seconds)
+                    saveMasterQueueWithPosition()
                 }
             }
         }
@@ -527,7 +525,7 @@ class PlayerService : Service(),
                     val seconds = if (localMediaItem?.isLocal == true) player.currentPosition.div(1000).toInt() else currentSecond.value.toInt()
                     if (medleyDuration.toInt() <= seconds) {
                         //delay(1.seconds * (medleyDuration.toInt() + 2))
-                        player.playNext()
+                        handleSkipToNext()
                     }
                 }
             }
@@ -586,7 +584,7 @@ class PlayerService : Service(),
                 if (shakeCounter >= 1) {
                     //Toast.makeText(applicationContext, "Shaked $shakeCounter times", Toast.LENGTH_SHORT).show()
                     shakeCounter = 0
-                    player.playNext()
+                    handleSkipToNext()
                 }
 
             }
@@ -719,6 +717,7 @@ class PlayerService : Service(),
                     //super.onStateChange(youTubePlayer, state)
                     Timber.d("PlayerService onlinePlayerView: onStateChange $state")
 
+
                     if (state == PlayerConstants.PlayerState.ENDED) {
                         val queueLoopType = preferences.getEnum(queueLoopTypeKey, defaultValue = QueueLoopType.Default)
                         // TODO Implement repeat mode in queue
@@ -804,7 +803,8 @@ class PlayerService : Service(),
                     if (!isSkipMediaOnErrorEnabled()) return
                     val prev = binder.player.currentMediaItem ?: return
 
-                    binder.player.playNext()
+                    //binder.player.playNext()
+                    handleSkipToNext()
 
                     SmartMessage(
                         message = this@PlayerService.getString(
@@ -1087,6 +1087,8 @@ class PlayerService : Service(),
 
         Timber.d("PlayerService onMediaItemTransition mediaItem ${mediaItem.mediaId} reason $reason")
 
+        currentQueuePosition = player.currentMediaItemIndex
+
         mediaItem.let {
             currentMediaItemState.value = it
             localMediaItem = it
@@ -1111,6 +1113,69 @@ class PlayerService : Service(),
         updateWidgets()
         updateDiscordPresence()
 
+        player.saveMasterQueue()
+
+    }
+
+
+    fun handleSkipToNext() {
+        try {
+            val hasNext = player.hasNextMediaItem()
+            Timber.d("PlayerService handleSkipToNext hasNext: $hasNext, currentPosition: $currentQueuePosition")
+
+            if (hasNext) {
+                val previousPosition = currentQueuePosition
+
+                player.seekToNext()
+
+                currentQueuePosition = player.currentMediaItemIndex
+
+                if (currentQueuePosition <= previousPosition) {
+                    Timber.w("PlayerService handleSkipToNext: posizione non avanzata correttamente, tentativo forzato")
+                    player.forceSeekToNext()
+                    currentQueuePosition = player.currentMediaItemIndex
+                }
+
+                player.saveMasterQueue()
+            } else {
+                Timber.d("PlayerService handleSkipToNext: coda finita")
+            }
+        } catch (e: Exception) {
+            Timber.e("PlayerService handleSkipToNext: errore durante l'avanzamento ${e.stackTraceToString()}")
+            maybeRecoverPlaybackError()
+        }
+    }
+
+
+    private fun saveMasterQueueWithPosition() {
+        try {
+            player.saveMasterQueue()
+
+            preferences.edit {
+                putInt(currentQueuePositionKey, currentQueuePosition)
+            }
+
+            Timber.d("PlayerService saveMasterQueueWithPosition: salvata coda e posizione $currentQueuePosition")
+        } catch (e: Exception) {
+            Timber.e("PlayerService saveMasterQueueWithPosition: errore durante il salvataggio ${e.stackTraceToString()}")
+        }
+    }
+
+
+    private fun loadMasterQueueWithPosition() {
+        try {
+            player.loadMasterQueue()
+
+            val savedPosition = preferences.getInt(currentQueuePositionKey, 0)
+            if (savedPosition < player.mediaItemCount) {
+                player.seekToDefaultPosition(savedPosition)
+                currentQueuePosition = savedPosition
+            }
+
+            Timber.d("PlayerService loadMasterQueueWithPosition: caricata coda e posizione $currentQueuePosition")
+        } catch (e: Exception) {
+            Timber.e("PlayerService loadMasterQueueWithPosition: errore durante il caricamento ${e.stackTraceToString()}")
+        }
     }
 
     override fun onTimelineChanged(timeline: Timeline, reason: Int) {
@@ -1182,10 +1247,26 @@ class PlayerService : Service(),
     }
 
     private fun maybeRecoverPlaybackError() {
-        if (localMediaItem?.isLocal == false) return
+        try {
+            if (localMediaItem?.isLocal == true) {
+                if (player.playerError != null) {
+                    Timber.w("PlayerService maybeRecoverPlaybackError: errore del player rilevato, tentativo di recupero")
+                    player.prepare()
 
-        if (player.playerError != null) {
-            player.prepare()
+                    if (player.isPlaying) {
+                        player.play()
+                    }
+                }
+            } else {
+                if (lastError != null) {
+                    Timber.w("PlayerService maybeRecoverPlaybackError: errore del player online rilevato, tentativo di recupero")
+                    localMediaItem?.let {
+                        internalOnlinePlayer.value?.cueVideo(it.mediaId, 0f)
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            Timber.e("PlayerService maybeRecoverPlaybackError: errore durante il recupero ${e.stackTraceToString()}")
         }
     }
 
@@ -1397,7 +1478,8 @@ class PlayerService : Service(),
                         currentSecond.value = second.toFloat()
                     },
                     onPlayNext = {
-                        it.player.playNext()
+                        //it.player.playNext()
+                        handleSkipToNext()
                     },
                     onPlayPrevious = {
                         it.player.playPrevious()
@@ -1548,7 +1630,7 @@ class PlayerService : Service(),
                         else
                             internalOnlinePlayer.value?.play()
                     }
-                    Action.next.value -> it.player.playNext()
+                    Action.next.value -> handleSkipToNext() //it.player.playNext()
                     Action.previous.value -> it.player.playPrevious()
                     Action.like.value -> {
                         it.toggleLike()

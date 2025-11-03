@@ -390,6 +390,11 @@ const val showPlayerActionsBarKey = "showPlayerActionsBar"
 
 const val showAutostartPermissionDialogKey = "showAutostartPermissionDialog"
 
+const val currentQueuePositionKey = "currentQueuePosition"
+
+const val excludeSongIfIsVideoKey = "excludeSongIfIsVideo"
+
+
 
 inline fun <reified T : Enum<T>> SharedPreferences.getEnum(
     key: String,

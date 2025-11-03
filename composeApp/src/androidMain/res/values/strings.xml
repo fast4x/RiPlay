@@ -964,4 +964,6 @@
     <string name="voice_microphone_permission_granted">Microphone permission granted</string>
     <string name="voice_microphone_permission_denied">Microphone permission denied</string>
     <string name="voice_missing_microphone_permissions_please_grant">Missing microphone permissions, please grant it in the app settings</string>
+    <string name="message_excluded_videos">Excluded %s videos</string>
+    <string name="exclude_song_if_is_video">Exclude video playback</string>
 </resources>

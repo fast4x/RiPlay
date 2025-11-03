@@ -39,6 +39,7 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.PlayerConstants
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
 import it.fast4x.riplay.cleanString
@@ -87,6 +88,7 @@ import it.fast4x.riplay.extensions.preferences.transitionEffectKey
     ExperimentalMaterialApi::class, ExperimentalTextApi::class, ExperimentalComposeUiApi::class,
     ExperimentalMaterial3Api::class
 )
+@ExperimentalPermissionsApi
 @Composable
 fun AppNavigation(
     navController: NavHostController,
