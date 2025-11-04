@@ -467,11 +467,11 @@ fun Queue(
             //scrollThresholdPadding = WindowInsets.systemBars.asPaddingValues(),
         ) { from, to ->
             // based on uid as key
-            if (to.key != binder.player.currentWindow?.uid.hashCode()) {
-                val key = binder.player.currentWindow?.mediaItem?.mediaId
+            if (to.key != binder.player.currentWindow?.uid.toString()) {
+
                 windowsInQueue = windowsInQueue.toMutableList().apply {
-                    val fromIndex = indexOfFirst { it.mediaItem.mediaId == key }
-                    val toIndex = indexOfFirst { it.mediaItem.mediaId == key }
+                    val fromIndex = indexOfFirst { it.uid.toString() == from.key }
+                    val toIndex = indexOfFirst { it.uid.toString() == to.key }
 
                     val currentDragInfo = dragInfo
                     dragInfo = if (currentDragInfo == null)
@@ -731,11 +731,11 @@ fun Queue(
 
         items(
             items = windowsInQueue,
-            key =  { window -> window.uid.hashCode() }
+            key =  { window -> window.uid.toString() }
         ) { window ->
             ReorderableItem(
                 reorderableLazyListState,
-                key = window.mediaItem.mediaId
+                key = window.uid.toString()
             ) { isDragging ->
 
                 val interactionSource = remember { MutableInteractionSource() }
