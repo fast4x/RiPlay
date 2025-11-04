@@ -22,11 +22,13 @@ import io.ktor.http.Headers
 import io.ktor.http.HttpHeaders
 import io.ktor.serialization.kotlinx.json.json
 import io.ktor.utils.io.streams.asInput
+import it.fast4x.audiotaginfo.models.GetResultResponse
 import it.fast4x.audiotaginfo.models.IdentifyResponse
 import it.fast4x.audiotaginfo.models.InfoResponse
 import it.fast4x.audiotaginfo.utils.ProxyPreferences
 import it.fast4x.audiotaginfo.utils.getProxy
 import it.fast4x.audiotaginfo.utils.runCatchingCancellable
+import kotlinx.coroutines.delay
 import kotlinx.io.asSource
 import kotlinx.io.buffered
 import kotlinx.serialization.ExperimentalSerializationApi
@@ -113,7 +115,13 @@ object AudioTagInfo {
 
             println("AudioTagInfo identifyAudioFile response: ${response.bodyAsText()}")
 
-            response.body<IdentifyResponse>()
+            val responseIdentify = response.body<IdentifyResponse>()
+            if (responseIdentify.success == true && responseIdentify.token != null) {
+               getResult(apiKey, responseIdentify.token)?.getOrNull() as? GetResultResponse
+            } else {
+                println("AudioTagInfo identifyAudioFile error: ${responseIdentify.error}")
+            }
+
         }
 
     suspend fun info(apiKey: String) =
@@ -127,6 +135,35 @@ object AudioTagInfo {
             println("AudioTagInfo info response: ${response.bodyAsText()}")
 
             response.body<InfoResponse>()
+        }
+
+    suspend fun getResult(apiKey: String, token: String) =
+        runCatchingCancellable {
+
+            var numRequests = 1
+
+            while (numRequests < 100) {
+                delay(800)
+                val response = client.submitFormWithBinaryData(
+                    formData = formData {
+                        append("apikey", apiKey)
+                        append("action", "get_result")
+                        append("token", token)
+                    }
+                )
+                println("AudioTagInfo getResult Numrequests $numRequests response: ${response.bodyAsText()}")
+
+                val result = response.body<GetResultResponse>()
+                println("AudioTagInfo getResult GetResultResponse jobStatus: ${result.jobStatus}")
+                if (result.jobStatus != "wait") {
+                    println("AudioTagInfo getResult response: $")
+                    return@runCatchingCancellable result
+                } else {
+                    numRequests++
+                }
+            }
+
+
         }
 
 

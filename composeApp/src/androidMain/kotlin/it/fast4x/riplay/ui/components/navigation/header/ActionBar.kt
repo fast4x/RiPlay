@@ -87,16 +87,16 @@ fun ActionBar(
     var expanded by remember { mutableStateOf(false) }
 
     // todo add audio tagger
-//    val audioTagger = LocalAudioTagger.current
-//    val menuState = LocalMenuState.current
-//
-//    HeaderIcon( R.drawable.mic) {
-//        menuState.display {
-//            Menu {
-//                AudioTagger(audioTagger)
-//            }
-//        }
-//    }
+    val audioTagger = LocalAudioTagger.current
+    val menuState = LocalMenuState.current
+
+    HeaderIcon( R.drawable.mic) {
+        menuState.display {
+            Menu {
+                AudioTagger(audioTagger, navController)
+            }
+        }
+    }
 
     // Search Icon
     HeaderIcon( R.drawable.search) { navController.navigate(NavRoutes.search.name) }

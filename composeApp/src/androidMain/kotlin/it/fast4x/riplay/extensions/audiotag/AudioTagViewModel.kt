@@ -4,10 +4,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import it.fast4x.audiotaginfo.AudioTagInfo
+import it.fast4x.audiotaginfo.models.GetResultResponse
 import it.fast4x.riplay.R
 import it.fast4x.riplay.extensions.audiotag.AudioRecorder
 import it.fast4x.riplay.extensions.audiotag.models.UiState
 import it.fast4x.riplay.utils.globalContext
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -60,12 +62,15 @@ class AudioTagViewModel(
 
                 result?.fold(
                     onSuccess = { response ->
-                        response.token ?.let {
-                            _uiState.value = UiState.Response(it)
-                            Timber.d("AudioTag Token: $it")
-                        } ?: run {
-                            _uiState.value = UiState.Error("Song not found.")
-                        }
+                        Timber.d("AudioTag Success: $response")
+                        val resultResponse = response as GetResultResponse
+
+                        val success = resultResponse.success && resultResponse.jobStatus == "found"
+                        Timber.d("AudioTag Success $success inside response: $resultResponse")
+                        if (success)
+                            _uiState.value = UiState.Success(resultResponse.data?.first()?.tracks)
+                        else
+                            _uiState.value = UiState.Response(resultResponse.jobStatus)
                     },
                     onFailure = { error ->
                         _uiState.value = UiState.Error(error.message ?: "An unknown error occurred.")

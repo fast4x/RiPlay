@@ -1,6 +1,7 @@
 package it.fast4x.riplay.extensions.audiotag
 
 import android.Manifest
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -10,6 +11,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -25,16 +27,22 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
-import it.fast4x.audiotaginfo.models.SongInfo
+import it.fast4x.audiotaginfo.models.Track
+import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.extensions.audiotag.models.AudioTagInfoErrors
 import it.fast4x.riplay.extensions.audiotag.models.UiState
+import it.fast4x.riplay.ui.components.themed.DialogTextButton
+import it.fast4x.riplay.utils.colorPalette
+import it.fast4x.riplay.utils.typography
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
-fun AudioTagger(viewModel: AudioTagViewModel) {
+fun AudioTagger(viewModel: AudioTagViewModel, navController: NavController) {
     val uiState = viewModel.uiState.collectAsState().value
     val recordAudioPermission = rememberPermissionState(Manifest.permission.RECORD_AUDIO)
 
@@ -54,82 +62,134 @@ fun AudioTagger(viewModel: AudioTagViewModel) {
         when (val state = uiState) {
             is UiState.Idle -> {
                 if (recordAudioPermission.status.isGranted) {
-                    Text("Tap to identify a song", fontSize = 20.sp, modifier = Modifier.padding(bottom = 16.dp))
-                    Button(onClick = { viewModel.identifySong() }) {
-                        Text("Start Listening")
-                    }
+                    Text("Tap to identify a song", fontSize = 20.sp,
+                        modifier = Modifier.padding(bottom = 16.dp),
+                        color = colorPalette().text,
+                        textAlign = TextAlign.Center
+                    )
+                    DialogTextButton(
+                        text = "Start Listening",
+                        onClick = { viewModel.identifySong() },
+                        primary = true
+                    )
+//                    Button(onClick = { viewModel.identifySong() }) {
+//                        Text("Start Listening")
+//                    }
                 } else {
                     Text("Microphone permission is required.", color = Color.Red, textAlign = TextAlign.Center)
                     Spacer(modifier = Modifier.height(8.dp))
-                    Button(onClick = { recordAudioPermission.launchPermissionRequest() }) {
-                        Text("Grant Permission")
-                    }
+                    DialogTextButton(
+                        text = "Grant Permission",
+                        onClick = { recordAudioPermission.launchPermissionRequest() },
+                        primary = true
+                    )
+//                    Button(onClick = { recordAudioPermission.launchPermissionRequest() }) {
+//                        Text("Grant Permission")
+//                    }
                 }
             }
             is UiState.Recording -> {
-                Text("Listening...", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                Text("Listening...", style = typography().xl, color = colorPalette().text)
                 Spacer(modifier = Modifier.height(16.dp))
                 CircularProgressIndicator()
             }
             is UiState.Loading -> {
-                Text("Identifying song...", fontSize = 20.sp)
+                Text("Identifying...", style = typography().xl, color = colorPalette().text)
                 Spacer(modifier = Modifier.height(16.dp))
                 CircularProgressIndicator()
             }
             is UiState.Success -> {
-                SongInfoCard(songInfo = state.audioTagSongInfo)
+                SongInfoCard(state.tracks, navController)
                 Spacer(modifier = Modifier.height(24.dp))
-                Button(onClick = { viewModel.identifySong() }) {
-                    Text("Identify Another Song")
-                }
+                DialogTextButton(
+                    text = "Identify another song",
+                    onClick = { viewModel.identifySong() },
+                    primary = true
+                )
+//                Button(
+//                    onClick = { viewModel.identifySong() },
+//                    colors = ButtonColors(containerColor = colorPalette().background1)) {
+//                    Text("Identify Another Song")
+//                }
             }
             is UiState.Error -> {
-                Text("Error", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = Color.Red)
+                Text("Error", style = typography().xl, color = colorPalette().red)
                 Text(AudioTagInfoErrors.getAudioTagInfoError(state.message).textName, fontSize = 16.sp, textAlign = TextAlign.Center, modifier = Modifier.padding(top = 8.dp), color = Color.White)
                 Spacer(modifier = Modifier.height(24.dp))
-                Button(onClick = { viewModel.identifySong() }) {
-                    Text("Try Again")
-                }
+                DialogTextButton(
+                    text = "Try again",
+                    onClick = { viewModel.identifySong() },
+                    primary = true
+                )
+//                Button(onClick = { viewModel.identifySong() }) {
+//                    Text("Try Again")
+//                }
             }
             is UiState.Response -> {
-                Text("Response", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                Text("Info", style = typography().xl, color = colorPalette().text)
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(state.message, fontSize = 16.sp, textAlign = TextAlign.Center, color = Color.White)
+                Spacer(modifier = Modifier.height(24.dp))
+                DialogTextButton(
+                    text = "Identify another song",
+                    onClick = { viewModel.identifySong() },
+                    primary = true
+                )
+//                Button(onClick = { viewModel.identifySong() }) {
+//                    Text("Try Again")
+//                }
             }
         }
     }
 }
 
 @Composable
-fun SongInfoCard(songInfo: SongInfo?) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
-    ) {
-        Column(
-            modifier = Modifier.padding(24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+fun SongInfoCard(tracks: List<Track>?, navController: NavController) {
+    tracks?.forEach { track ->
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { navController.navigate("${NavRoutes.searchResults.name}/${track.title} ${track.artist}") },
+            shape = RoundedCornerShape(16.dp),
+            colors = CardDefaults.cardColors(containerColor = colorPalette().background1),
         ) {
-            Text(
-                text = songInfo?.title ?: "Unknown Title",
-                fontSize = 22.sp,
-                fontWeight = FontWeight.Bold,
-                textAlign = TextAlign.Center
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = songInfo?.artist ?: "Unknown Artist",
-                fontSize = 18.sp,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            songInfo?.album?.let {
-                Spacer(modifier = Modifier.height(4.dp))
+            Column(
+                modifier = Modifier
+                    .padding(12.dp)
+                    .fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
                 Text(
-                    text = it,
-                    fontSize = 16.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    text = track.title,
+                    fontSize = typography().l.fontSize,
+                    fontWeight = typography().xl.fontWeight,
+                    textAlign = TextAlign.Center,
+                    color = colorPalette().text
                 )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = track.artist,
+                    fontSize = typography().l.fontSize,
+                    color = colorPalette().text
+                )
+                track.album.let {
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = it,
+                        fontSize = typography().m.fontSize,
+                        color = colorPalette().text
+                    )
+                }
+                track.year.let {
+                    if (it != 0) {
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = it.toString(),
+                            fontSize = typography().m.fontSize,
+                            color = colorPalette().text
+                        )
+                    }
+                }
             }
         }
     }
