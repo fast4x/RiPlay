@@ -33,6 +33,8 @@ class AudioTagViewModel(
     private val audioRecorder = AudioRecorder()
     private val apiKey = globalContext().resources.getString(R.string.AudioTagInfo_API_KEY)
 
+
+
     fun info() {
         viewModelScope.launch {
             val response = AudioTagInfo.info(apiKey)
@@ -45,10 +47,13 @@ class AudioTagViewModel(
 
         viewModelScope.launch {
             _uiState.value = UiState.Recording
-            val audioData = audioRecorder.startRecording()
+            val audioData = audioRecorder.startRecording(AudioRecorder.OutputFormat.WAV)
+            Timber.d("AudioTag identifySong AudioData: $audioData")
+
 
             if (audioData != null) {
                 _uiState.value = UiState.Loading
+
                 val result = AudioTagInfo.identifyAudioFile(apiKey, audioData)
 
                 Timber.d("AudioTag Result: $result")

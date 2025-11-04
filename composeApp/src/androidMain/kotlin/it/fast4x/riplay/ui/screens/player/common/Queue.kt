@@ -484,23 +484,6 @@ fun Queue(
 
             } else dragInfo = null
 
-            // todo maybe not needed
-            // based on mediaId as key
-//            if (to.key != binder.player.currentMediaItem?.mediaId) {
-//                windowsInQueue = windowsInQueue.toMutableList().apply {
-//                    val fromIndex = indexOfFirst { it.mediaItem.mediaId == from.key }
-//                    val toIndex = indexOfFirst { it.mediaItem.mediaId == to.key }
-//
-//                    val currentDragInfo = dragInfo
-//                    dragInfo = if (currentDragInfo == null)
-//                        fromIndex to toIndex
-//                    else currentDragInfo.first to toIndex
-//
-//                    move(fromIndex, toIndex)
-//                    println("reorderableLazyListState dragInfo from ${fromIndex} to ${toIndex}")
-//                }
-//
-//            } else dragInfo = null
         }
 
         LaunchedEffect(reorderableLazyListState.isAnyItemDragging) {
