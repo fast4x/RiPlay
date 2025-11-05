@@ -14,7 +14,13 @@ import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.animation.shrinkOut
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
@@ -25,11 +31,14 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
@@ -43,6 +52,7 @@ import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.PlayerConstants
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
 import it.fast4x.riplay.LocalAudioTagger
+import it.fast4x.riplay.R
 import it.fast4x.riplay.cleanString
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.enums.BuiltInPlaylist
@@ -53,7 +63,6 @@ import it.fast4x.riplay.enums.ThumbnailRoundness
 import it.fast4x.riplay.enums.TransitionEffect
 import it.fast4x.riplay.data.models.Mood
 import it.fast4x.riplay.data.models.SearchQuery
-import it.fast4x.riplay.extensions.audiotag.AudioTagger
 import it.fast4x.riplay.ui.components.CustomModalBottomSheet
 import it.fast4x.riplay.ui.screens.album.AlbumScreen
 import it.fast4x.riplay.ui.screens.artist.ArtistScreen
@@ -78,12 +87,17 @@ import it.fast4x.riplay.ui.screens.statistics.StatisticsScreen
 import it.fast4x.riplay.ui.screens.welcome.WelcomeScreen
 import it.fast4x.riplay.utils.ShowVideoOrSongInfo
 import it.fast4x.riplay.extensions.preferences.clearPreference
+import it.fast4x.riplay.extensions.preferences.enableMusicIdentifierKey
 import it.fast4x.riplay.extensions.preferences.homeScreenTabIndexKey
 import it.fast4x.riplay.extensions.preferences.pauseSearchHistoryKey
 import it.fast4x.riplay.extensions.preferences.preferences
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.extensions.preferences.thumbnailRoundnessKey
 import it.fast4x.riplay.extensions.preferences.transitionEffectKey
+import it.fast4x.riplay.ui.components.themed.DefaultDialog
+import it.fast4x.riplay.ui.components.themed.TitleSection
+import it.fast4x.riplay.utils.MusicIdentifier
+import it.fast4x.riplay.utils.colorPalette
 
 @androidx.annotation.OptIn(UnstableApi::class)
 @OptIn(ExperimentalFoundationApi::class, ExperimentalAnimationApi::class,
@@ -388,12 +402,9 @@ fun AppNavigation(
         }
 
         composable(route = NavRoutes.musicIdentifier.name) {
-            val audioTagger = LocalAudioTagger.current
             modalBottomSheetPage {
-                AudioTagger(audioTagger, navController)
+                MusicIdentifier(navController)
             }
-
-
         }
 
         /*

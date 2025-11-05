@@ -91,7 +91,14 @@ fun HomeScreen(
     )
 
     if (tabIndex == -2) navController.navigate(NavRoutes.search.name)
-    if (tabIndex == -3 && isEnabledMusicIdentifier) navController.navigate(NavRoutes.musicIdentifier.name)
+    if (tabIndex == -3) {
+        if (isEnabledMusicIdentifier)
+            navController.navigate(NavRoutes.musicIdentifier.name)
+        else {
+            navController.navigate(NavRoutes.home.name)
+            SmartMessage("Music Identifier is disabled", context = LocalContext.current)
+        }
+    }
 
     //if (!enableQuickPicksPage && tabIndex==0) tabIndex = 1
 

@@ -15,10 +15,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
-import it.fast4x.riplay.LocalAudioTagger
 import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.NavRoutes
-import it.fast4x.riplay.extensions.audiotag.AudioTagger
 import it.fast4x.riplay.extensions.pip.isPipSupported
 import it.fast4x.riplay.extensions.pip.rememberPipHandler
 import it.fast4x.riplay.extensions.preferences.enableMusicIdentifierKey
@@ -30,6 +28,7 @@ import it.fast4x.riplay.utils.thumbnailShape
 import it.fast4x.riplay.ui.components.themed.DropdownMenu
 import it.fast4x.riplay.ui.components.themed.Menu
 import it.fast4x.riplay.ui.screens.settings.isLoggedIn
+import it.fast4x.riplay.utils.MusicIdentifier
 import it.fast4x.riplay.utils.ytAccountThumbnail
 
 @Composable
@@ -92,13 +91,12 @@ fun ActionBar(
         true
     )
     if (isEnabledMusicIdentifier) {
-        val audioTagger = LocalAudioTagger.current
         val menuState = LocalGlobalSheetState.current
 
         HeaderIcon(R.drawable.soundwave) {
             menuState.display {
                 Menu {
-                    AudioTagger(audioTagger, navController)
+                    MusicIdentifier(navController)
                 }
             }
         }

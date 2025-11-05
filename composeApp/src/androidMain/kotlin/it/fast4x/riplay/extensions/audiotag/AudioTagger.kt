@@ -1,6 +1,7 @@
 package it.fast4x.riplay.extensions.audiotag
 
 import android.Manifest
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -9,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
@@ -23,6 +25,8 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -33,6 +37,7 @@ import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import it.fast4x.audiotaginfo.models.Track
+import it.fast4x.riplay.R
 import it.fast4x.riplay.cleanString
 import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.extensions.audiotag.models.AudioTagInfoErrors
@@ -60,6 +65,12 @@ fun AudioTagger(viewModel: AudioTagViewModel, navController: NavController) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
+        Image(
+            painter = painterResource(R.drawable.app_icon),
+            contentDescription = "RiPlay Logo",
+            modifier = Modifier.padding(bottom = 32.dp).size(70.dp),
+            colorFilter = ColorFilter.tint(colorPalette().accent)
+        )
         when (val state = uiState) {
             is UiState.Idle -> {
                 if (recordAudioPermission.status.isGranted) {
