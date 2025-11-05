@@ -6,20 +6,16 @@ import androidx.lifecycle.viewModelScope
 import it.fast4x.audiotaginfo.AudioTagInfo
 import it.fast4x.audiotaginfo.models.GetResultResponse
 import it.fast4x.riplay.R
-import it.fast4x.riplay.extensions.audiotag.AudioRecorder
 import it.fast4x.riplay.extensions.audiotag.models.UiState
 import it.fast4x.riplay.utils.globalContext
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import timber.log.Timber
-import java.io.File
 
-class AudioTagViewModel(
-    //private val repository: AudioTagRepository
-) : ViewModel(), ViewModelProvider.Factory {
+
+class AudioTagViewModel() : ViewModel(), ViewModelProvider.Factory {
 
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(AudioTagViewModel::class.java)) {

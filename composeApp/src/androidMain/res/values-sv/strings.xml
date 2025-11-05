@@ -204,7 +204,6 @@
     <string name="play_next">Spela nästa</string>
     <string name="toggle_lyrics">Visa låttext</string>
     <string name="by_tapping_on_the_thumbnail">Genom att trycka på miniatyrbilden</string>
-    <string name="require_mic_permission">Visualizer effekt kräver åtkomst till mikrofonen, vänligen bevilja.</string>
     <string name="vt_fancy">Luxuös</string>
     <string name="vt_circular">Cirkulär</string>
     <string name="vt_disabled">Inaktiverad</string>

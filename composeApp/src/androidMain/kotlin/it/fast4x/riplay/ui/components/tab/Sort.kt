@@ -21,8 +21,8 @@ import androidx.compose.ui.unit.dp
 import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.MenuStyle
 import it.fast4x.riplay.enums.SortOrder
-import it.fast4x.riplay.ui.components.LocalMenuState
-import it.fast4x.riplay.ui.components.MenuState
+import it.fast4x.riplay.ui.components.LocalGlobalSheetState
+import it.fast4x.riplay.ui.components.GlobalSheetState
 import it.fast4x.riplay.ui.components.themed.MenuEntry
 import it.fast4x.riplay.extensions.preferences.menuStyleKey
 import it.fast4x.riplay.extensions.preferences.rememberPreference
@@ -41,7 +41,7 @@ open class Sort<T: Enum<T>> protected constructor(
     protected val sortOrderState: MutableState<SortOrder>,
     protected val sortByEntries: EnumEntries<T>,
     protected val sortByState: MutableState<T>,
-    override val menuState: MenuState,
+    override val globalSheetState: GlobalSheetState,
     override val styleState: MutableState<MenuStyle>
 ): MenuIcon, Clickable, Menu {
 
@@ -56,7 +56,7 @@ open class Sort<T: Enum<T>> protected constructor(
                 rememberPreference( sortOrderKey, SortOrder.Descending ),
                 sortByEnums,
                 sortByState,
-                LocalMenuState.current,
+                LocalGlobalSheetState.current,
                 rememberPreference( menuStyleKey, MenuStyle.List )
             )
     }
@@ -147,7 +147,7 @@ open class Sort<T: Enum<T>> protected constructor(
     @Composable
     override fun MenuComponent() {
         Menu(
-            menuState::hide,
+            globalSheetState::hide,
             sortByEntries,
         ) { sortBy = it }
     }
@@ -155,7 +155,7 @@ open class Sort<T: Enum<T>> protected constructor(
     /** Flip oder. */
     override fun onShortClick() { sortOrder = !sortOrder }
 
-    override fun onLongClick() = menuState.display { MenuComponent() }
+    override fun onLongClick() = globalSheetState.display { MenuComponent() }
 
     @Composable
     override fun ToolBarButton() {

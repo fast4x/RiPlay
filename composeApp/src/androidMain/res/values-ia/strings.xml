@@ -204,7 +204,6 @@
     <string name="play_next">Reproducer le sequente</string>
     <string name="toggle_lyrics">Commutar parolas de canto</string>
     <string name="by_tapping_on_the_thumbnail">Toccante le mimiatura</string>
-    <string name="require_mic_permission">Visualizer effect require mic permission, grant please.</string>
     <string name="vt_fancy">Fancy</string>
     <string name="vt_circular">Circular</string>
     <string name="vt_disabled">Disactivate</string>

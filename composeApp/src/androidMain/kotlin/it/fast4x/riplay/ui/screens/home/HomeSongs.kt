@@ -109,7 +109,6 @@ import it.fast4x.riplay.enums.TopPlaylistPeriod
 import it.fast4x.riplay.enums.UiType
 import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.data.models.Folder
-import it.fast4x.riplay.data.models.OnDeviceSong
 import it.fast4x.riplay.data.models.Song
 import it.fast4x.riplay.data.models.SongEntity
 import it.fast4x.riplay.data.models.SongPlaylistMap
@@ -119,7 +118,7 @@ import it.fast4x.riplay.service.LOCAL_KEY_PREFIX
 import it.fast4x.riplay.utils.thumbnailShape
 import it.fast4x.riplay.utils.typography
 import it.fast4x.riplay.ui.components.ButtonsRow
-import it.fast4x.riplay.ui.components.LocalMenuState
+import it.fast4x.riplay.ui.components.LocalGlobalSheetState
 import it.fast4x.riplay.ui.components.SwipeablePlaylistItem
 import it.fast4x.riplay.ui.components.themed.ConfirmationDialog
 import it.fast4x.riplay.ui.components.themed.FloatingActionsContainerWithScrollToTop
@@ -212,7 +211,7 @@ fun HomeSongs(
     onSettingsClick: () -> Unit
 ) {
     val binder = LocalPlayerServiceBinder.current
-    val menuState = LocalMenuState.current
+    val menuState = LocalGlobalSheetState.current
     val selectedQueue = LocalSelectedQueue.current
     val thumbnailSizeDp = Dimensions.thumbnails.song
     val thumbnailSizePx = thumbnailSizeDp.px

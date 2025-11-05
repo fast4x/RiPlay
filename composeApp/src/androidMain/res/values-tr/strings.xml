@@ -204,7 +204,6 @@
     <string name="play_next">Bundan sonra oynat</string>
     <string name="toggle_lyrics">Şarkı sözlerini aç/kapat</string>
     <string name="by_tapping_on_the_thumbnail">Albüm kapağına dokunarak</string>
-    <string name="require_mic_permission">Görselleştirici efekti mikrofon izni gerektirir, lütfen izin ver.</string>
     <string name="vt_fancy">Havalı</string>
     <string name="vt_circular">Dairesel</string>
     <string name="vt_disabled">Devre dışı</string>

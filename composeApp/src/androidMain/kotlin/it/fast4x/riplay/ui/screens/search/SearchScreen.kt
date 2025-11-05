@@ -38,6 +38,8 @@ import androidx.navigation.NavController
 import it.fast4x.compose.persist.PersistMapCleanup
 import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.UiType
+import it.fast4x.riplay.extensions.preferences.enableVoiceInputKey
+import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.ui.components.themed.IconButton
 import it.fast4x.riplay.ui.styling.favoritesIcon
 import it.fast4x.riplay.ui.styling.secondary
@@ -80,6 +82,8 @@ fun SearchScreen(
     }
 
     PersistMapCleanup(tagPrefix = "search/")
+
+    val isEnabledVoiceInput by rememberPreference(enableVoiceInputKey, true)
 
     var startVoiceInput by remember { mutableStateOf(false) }
 
@@ -156,15 +160,17 @@ fun SearchScreen(
                     //.width(80.dp)
             ) {
 
-                IconButton(
-                    onClick = { startVoiceInput = true },
-                    icon = R.drawable.mic,
-                    color = colorPalette().favoritesIcon,
-                    modifier = Modifier
-                        .size(24.dp)
-                )
+                if (isEnabledVoiceInput) {
+                    IconButton(
+                        onClick = { startVoiceInput = true },
+                        icon = R.drawable.mic,
+                        color = colorPalette().favoritesIcon,
+                        modifier = Modifier
+                            .size(24.dp)
+                    )
 
-                Spacer(modifier = Modifier.width(10.dp))
+                    Spacer(modifier = Modifier.width(10.dp))
+                }
 
                 IconButton(
                     onClick = { onTextFieldValueChanged(TextFieldValue("")) },

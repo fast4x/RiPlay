@@ -204,7 +204,6 @@
     <string name="play_next">Reproducir a continuación</string>
     <string name="toggle_lyrics">Mostrar letra</string>
     <string name="by_tapping_on_the_thumbnail">Al tocar en la miniatura</string>
-    <string name="require_mic_permission">Es necesario el permiso del micrófono para el efecto del visualizador, debes concederlo.</string>
     <string name="vt_fancy">Elegante</string>
     <string name="vt_circular">Circular</string>
     <string name="vt_disabled">Deshabilitado</string>

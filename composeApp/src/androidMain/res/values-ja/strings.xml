@@ -204,7 +204,6 @@
     <string name="play_next">次に再生</string>
     <string name="toggle_lyrics">歌詞の切り替え</string>
     <string name="by_tapping_on_the_thumbnail">サムネイルをタップすると</string>
-    <string name="require_mic_permission">ビジュアライザーの効果にはマイクの許可が必要です。許可してください。</string>
     <string name="vt_fancy">ファンシー</string>
     <string name="vt_circular">円形</string>
     <string name="vt_disabled">無効</string>

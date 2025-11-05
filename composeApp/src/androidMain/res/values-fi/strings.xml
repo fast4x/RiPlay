@@ -204,7 +204,6 @@
     <string name="play_next">Soita seuraavaksi</string>
     <string name="toggle_lyrics">Näytä sanoitukset</string>
     <string name="by_tapping_on_the_thumbnail">Pienoiskuvaa napauttamalla</string>
-    <string name="require_mic_permission">Visualisointiefekti vaatii mikrofonin käyttöoikeuden, myönnä lupa.</string>
     <string name="vt_fancy">Kiva</string>
     <string name="vt_circular">Pyöreä</string>
     <string name="vt_disabled">Pois</string>

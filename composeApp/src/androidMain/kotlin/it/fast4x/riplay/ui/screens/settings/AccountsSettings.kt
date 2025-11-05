@@ -36,6 +36,7 @@ import coil.compose.AsyncImage
 import it.fast4x.environment.Environment
 import it.fast4x.environment.utils.parseCookieString
 import it.fast4x.riplay.R
+import it.fast4x.riplay.enums.MusicIdentifierProvider
 import it.fast4x.riplay.utils.appContext
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.utils.globalContext
@@ -69,6 +70,8 @@ import it.fast4x.riplay.extensions.preferences.ytDataSyncIdKey
 import it.fast4x.riplay.extensions.preferences.ytVisitorDataKey
 import it.fast4x.riplay.ui.components.themed.AccountInfoDialog
 import it.fast4x.riplay.extensions.encryptedpreferences.rememberEncryptedPreference
+import it.fast4x.riplay.extensions.preferences.enableMusicIdentifierKey
+import it.fast4x.riplay.extensions.preferences.musicIdentifierProviderKey
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -90,6 +93,13 @@ fun AccountsSettings() {
     var restartActivity by rememberPreference(restartActivityKey, false)
     var restartService by rememberSaveable { mutableStateOf(false) }
     var showUserInfoDialog by rememberSaveable { mutableStateOf(false) }
+
+    var isEnabledMusicIdentifier by rememberPreference(
+        enableMusicIdentifierKey,
+        true
+    )
+    var musicIdentifierProvider by rememberPreference(musicIdentifierProviderKey,
+        MusicIdentifierProvider.AudioTagInfo)
 
     Column(
         modifier = Modifier
@@ -271,18 +281,7 @@ fun AccountsSettings() {
 
                     }
 
-
-//                SwitchSettingEntry(
-//                    title = stringResource(R.string.use_ytm_login_only_for_browse),
-//                    text = stringResource(R.string.info_use_ytm_login_only_for_browse),
-//                    isChecked = useYtLoginOnlyForBrowse,
-//                    onCheckedChange = {
-//                        useYtLoginOnlyForBrowse = it
-//                    }
-//                )
-
                 SwitchSettingEntry(
-                    //isEnabled = false,
                     title = "Sync data with YTM account",
                     text = "Playlists, albums, artists, history, like, etc.",
                     isChecked = isYouTubeSyncEnabled,
@@ -411,7 +410,32 @@ fun AccountsSettings() {
 
     /****** DISCORD ******/
 
+        SettingsGroupSpacer()
+        SettingsEntryGroupText(title = "MUSIC IDENTIFIER")
 
+        SwitchSettingEntry(
+            title = "Enable Music Identifier",
+            text = "",
+            isChecked = isEnabledMusicIdentifier,
+            onCheckedChange = {
+                isEnabledMusicIdentifier = it
+            }
+        )
+
+        AnimatedVisibility(visible = isEnabledMusicIdentifier) {
+            Column(
+                modifier = Modifier.padding(start = 25.dp)
+            ) {
+                EnumValueSelectorSettingsEntry(
+                    title = stringResource(R.string.music_identifier_provider),
+                    titleSecondary = musicIdentifierProvider.info,
+                    selectedValue = musicIdentifierProvider,
+                    onValueSelected = { musicIdentifierProvider = it },
+                    valueText = { it.title },
+                    offline = false
+                )
+            }
+        }
 
     }
 

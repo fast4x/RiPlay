@@ -97,7 +97,7 @@ import it.fast4x.riplay.extensions.preferences.Preference.HOME_LIBRARY_ITEM_SIZE
 import it.fast4x.riplay.utils.autoSyncToolbutton
 import it.fast4x.riplay.extensions.preferences.autosyncKey
 import it.fast4x.riplay.data.models.defaultQueue
-import it.fast4x.riplay.ui.components.LocalMenuState
+import it.fast4x.riplay.ui.components.LocalGlobalSheetState
 import it.fast4x.riplay.ui.components.themed.PlaylistsItemMenu
 import it.fast4x.riplay.utils.CheckAndCreateMonthlyPlaylist
 import it.fast4x.riplay.utils.LazyListContainer
@@ -133,7 +133,7 @@ fun HomePlaylists(
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
     val lazyGridState = rememberLazyGridState()
-    val menuState = LocalMenuState.current
+    val menuState = LocalGlobalSheetState.current
     val navController = rememberNavController()
     val binder = LocalPlayerServiceBinder.current
     val selectedQueue = LocalSelectedQueue.current

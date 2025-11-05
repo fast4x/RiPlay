@@ -174,7 +174,7 @@ import it.fast4x.riplay.data.models.toUiMedia
 import it.fast4x.riplay.utils.thumbnailShape
 import it.fast4x.riplay.utils.typography
 import it.fast4x.riplay.ui.components.CustomModalBottomSheet
-import it.fast4x.riplay.ui.components.LocalMenuState
+import it.fast4x.riplay.ui.components.LocalGlobalSheetState
 import it.fast4x.riplay.ui.components.themed.BlurParamsDialog
 import it.fast4x.riplay.ui.components.themed.CircularSlider
 import it.fast4x.riplay.ui.components.themed.ConfirmationDialog
@@ -350,7 +350,7 @@ fun LocalPlayer(
     playerState: MutableState<PlayerConstants.PlayerState>,
     onDismiss: () -> Unit,
 ) {
-    val menuState = LocalMenuState.current
+    val menuState = LocalGlobalSheetState.current
     val selectedQueue = LocalSelectedQueue.current
     val effectRotationEnabled by rememberPreference(effectRotationKey, true)
 

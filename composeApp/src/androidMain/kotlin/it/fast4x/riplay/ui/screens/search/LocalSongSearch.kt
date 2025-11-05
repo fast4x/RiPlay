@@ -45,7 +45,7 @@ import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.enums.NavigationBarPosition
 import it.fast4x.riplay.enums.ThumbnailRoundness
 import it.fast4x.riplay.data.models.Song
-import it.fast4x.riplay.ui.components.LocalMenuState
+import it.fast4x.riplay.ui.components.LocalGlobalSheetState
 import it.fast4x.riplay.ui.components.themed.FloatingActionsContainerWithScrollToTop
 import it.fast4x.riplay.ui.components.themed.Header
 import it.fast4x.riplay.ui.components.themed.InHistoryMediaItemMenu
@@ -81,7 +81,7 @@ fun LocalSongSearch(
     onAction4: () -> Unit,
 ) {
     val binder = LocalPlayerServiceBinder.current
-    val menuState = LocalMenuState.current
+    val menuState = LocalGlobalSheetState.current
 
     var items by persistList<Song>("search/local/songs")
 

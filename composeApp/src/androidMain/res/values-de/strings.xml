@@ -204,7 +204,6 @@
     <string name="play_next">Als nächstes wiedergeben</string>
     <string name="toggle_lyrics">Songtext umschalten</string>
     <string name="by_tapping_on_the_thumbnail">Durch Tippen auf das Thumbnail</string>
-    <string name="require_mic_permission">Visualizer benötigt Mikrofonberechtigung, gewähre bitte die Berechtigung.</string>
     <string name="vt_fancy">Raffiniert</string>
     <string name="vt_circular">Kreisförmig</string>
     <string name="vt_disabled">Aus</string>

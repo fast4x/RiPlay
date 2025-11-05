@@ -33,6 +33,7 @@ import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import it.fast4x.audiotaginfo.models.Track
+import it.fast4x.riplay.cleanString
 import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.extensions.audiotag.models.AudioTagInfoErrors
 import it.fast4x.riplay.extensions.audiotag.models.UiState
@@ -72,9 +73,6 @@ fun AudioTagger(viewModel: AudioTagViewModel, navController: NavController) {
                         onClick = { viewModel.identifySong() },
                         primary = true
                     )
-//                    Button(onClick = { viewModel.identifySong() }) {
-//                        Text("Start Listening")
-//                    }
                 } else {
                     Text("Microphone permission is required.", color = Color.Red, textAlign = TextAlign.Center)
                     Spacer(modifier = Modifier.height(8.dp))
@@ -83,9 +81,6 @@ fun AudioTagger(viewModel: AudioTagViewModel, navController: NavController) {
                         onClick = { recordAudioPermission.launchPermissionRequest() },
                         primary = true
                     )
-//                    Button(onClick = { recordAudioPermission.launchPermissionRequest() }) {
-//                        Text("Grant Permission")
-//                    }
                 }
             }
             is UiState.Recording -> {
@@ -106,11 +101,6 @@ fun AudioTagger(viewModel: AudioTagViewModel, navController: NavController) {
                     onClick = { viewModel.identifySong() },
                     primary = true
                 )
-//                Button(
-//                    onClick = { viewModel.identifySong() },
-//                    colors = ButtonColors(containerColor = colorPalette().background1)) {
-//                    Text("Identify Another Song")
-//                }
             }
             is UiState.Error -> {
                 Text("Error", style = typography().xl, color = colorPalette().red)
@@ -121,9 +111,6 @@ fun AudioTagger(viewModel: AudioTagViewModel, navController: NavController) {
                     onClick = { viewModel.identifySong() },
                     primary = true
                 )
-//                Button(onClick = { viewModel.identifySong() }) {
-//                    Text("Try Again")
-//                }
             }
             is UiState.Response -> {
                 Text("Info", style = typography().xl, color = colorPalette().text)
@@ -135,9 +122,6 @@ fun AudioTagger(viewModel: AudioTagViewModel, navController: NavController) {
                     onClick = { viewModel.identifySong() },
                     primary = true
                 )
-//                Button(onClick = { viewModel.identifySong() }) {
-//                    Text("Try Again")
-//                }
             }
         }
     }
@@ -149,7 +133,7 @@ fun SongInfoCard(tracks: List<Track>?, navController: NavController) {
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .clickable { navController.navigate("${NavRoutes.searchResults.name}/${track.title} ${track.artist}") },
+                .clickable { navController.navigate("${NavRoutes.searchResults.name}/${cleanString(track.title)} ${cleanString(track.artist)}") },
             shape = RoundedCornerShape(16.dp),
             colors = CardDefaults.cardColors(containerColor = colorPalette().background1),
         ) {

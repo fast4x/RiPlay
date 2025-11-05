@@ -204,7 +204,6 @@
     <string name="play_next">अगला चलाएं</string>
     <string name="toggle_lyrics">गाने के बोल चालू करें</string>
     <string name="by_tapping_on_the_thumbnail">थंबनेल पर टैप करके</string>
-    <string name="require_mic_permission">विज़ुअलाइज़र प्रभाव के लिए माइक अनुमति की आवश्यकता है, कृपया प्रदान करें।</string>
     <string name="vt_fancy">आलीशान</string>
     <string name="vt_circular">परिपत्र</string>
     <string name="vt_disabled">अक्षम</string>

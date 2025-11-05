@@ -47,7 +47,7 @@ import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.NavigationBarPosition
 import it.fast4x.riplay.enums.ThumbnailRoundness
 import it.fast4x.riplay.data.models.DateAgo
-import it.fast4x.riplay.ui.components.LocalMenuState
+import it.fast4x.riplay.ui.components.LocalGlobalSheetState
 import it.fast4x.riplay.ui.components.themed.HeaderWithIcon
 import it.fast4x.riplay.ui.components.themed.NonQueuedMediaItemMenuLibrary
 import it.fast4x.riplay.ui.components.themed.NowPlayingSongIndicator
@@ -88,7 +88,7 @@ fun HistoryList(
 ) {
     val context = LocalContext.current
     val binder = LocalPlayerServiceBinder.current
-    val menuState = LocalMenuState.current
+    val menuState = LocalGlobalSheetState.current
 
     val thumbnailSizeDp = Dimensions.thumbnails.song
     val thumbnailSizePx = thumbnailSizeDp.px

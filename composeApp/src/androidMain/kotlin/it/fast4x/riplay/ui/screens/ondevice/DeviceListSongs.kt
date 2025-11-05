@@ -2,12 +2,9 @@ package it.fast4x.riplay.ui.screens.ondevice
 
 import android.Manifest
 import android.annotation.SuppressLint
-import android.content.ContentUris
-import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
-import android.provider.MediaStore
 import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -89,8 +86,7 @@ import it.fast4x.riplay.data.models.Folder
 import it.fast4x.riplay.data.models.OnDeviceSong
 import it.fast4x.riplay.data.models.SongEntity
 import it.fast4x.riplay.data.models.SongPlaylistMap
-import it.fast4x.riplay.service.LOCAL_KEY_PREFIX
-import it.fast4x.riplay.ui.components.LocalMenuState
+import it.fast4x.riplay.ui.components.LocalGlobalSheetState
 import it.fast4x.riplay.ui.components.themed.FloatingActionsContainerWithScrollToTop
 import it.fast4x.riplay.ui.components.themed.FolderItemMenu
 import it.fast4x.riplay.ui.components.themed.HeaderIconButton
@@ -109,7 +105,6 @@ import it.fast4x.riplay.ui.items.SongItem
 import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.ui.styling.favoritesIcon
 import it.fast4x.riplay.ui.styling.px
-import it.fast4x.riplay.utils.OnDeviceBlacklist
 import it.fast4x.riplay.utils.OnDeviceOrganize
 import it.fast4x.riplay.utils.addNext
 import it.fast4x.riplay.utils.asMediaItem
@@ -121,8 +116,6 @@ import it.fast4x.riplay.utils.forcePlayAtIndex
 import it.fast4x.riplay.utils.forcePlayFromBeginning
 import it.fast4x.riplay.utils.formatAsTime
 import it.fast4x.riplay.utils.hasPermission
-import it.fast4x.riplay.utils.isAtLeastAndroid10
-import it.fast4x.riplay.utils.isAtLeastAndroid11
 import it.fast4x.riplay.utils.isCompositionLaunched
 import it.fast4x.riplay.extensions.preferences.onDeviceFolderSortByKey
 import it.fast4x.riplay.extensions.preferences.onDeviceSongSortByKey
@@ -134,32 +127,12 @@ import it.fast4x.riplay.extensions.preferences.showSearchTabKey
 import it.fast4x.riplay.extensions.preferences.songSortOrderKey
 import it.fast4x.riplay.utils.thumbnail
 import it.fast4x.riplay.extensions.preferences.thumbnailRoundnessKey
-import kotlinx.coroutines.CoroutineName
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.currentCoroutineContext
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.isActive
 import it.fast4x.riplay.utils.colorPalette
-import it.fast4x.riplay.data.models.Album
-import it.fast4x.riplay.data.models.Artist
-import it.fast4x.riplay.data.models.Format
-import it.fast4x.riplay.data.models.SongAlbumMap
-import it.fast4x.riplay.data.models.SongArtistMap
 import it.fast4x.riplay.data.models.defaultQueue
 import it.fast4x.riplay.utils.typography
 import it.fast4x.riplay.utils.LazyListContainer
 import it.fast4x.riplay.utils.musicFilesAsFlow
-import kotlinx.coroutines.launch
-import timber.log.Timber
 import kotlin.random.Random
-import kotlin.time.Duration.Companion.milliseconds
-import kotlin.time.Duration.Companion.seconds
 
 @ExperimentalTextApi
 @SuppressLint("SuspiciousIndentation")
@@ -235,7 +208,7 @@ fun DeviceListSongs(
 
         val backButtonFolder = Folder(stringResource(R.string.back))
         val binder = LocalPlayerServiceBinder.current
-        val menuState = LocalMenuState.current
+        val menuState = LocalGlobalSheetState.current
         val showFolders by rememberPreference(showFoldersOnDeviceKey, true)
 
         var sortBy by rememberPreference(onDeviceSongSortByKey, OnDeviceSongSortBy.DateAdded)

@@ -224,7 +224,7 @@ import it.fast4x.riplay.service.isLocal
 import it.fast4x.riplay.ui.components.BottomSheet
 import it.fast4x.riplay.ui.components.BottomSheetState
 import it.fast4x.riplay.ui.components.CustomModalBottomSheet
-import it.fast4x.riplay.ui.components.LocalMenuState
+import it.fast4x.riplay.ui.components.LocalGlobalSheetState
 import it.fast4x.riplay.ui.components.rememberBottomSheetState
 import it.fast4x.riplay.ui.components.themed.CrossfadeContainer
 import it.fast4x.riplay.ui.components.themed.SmartMessage
@@ -243,7 +243,6 @@ import it.fast4x.riplay.ui.styling.colorPaletteOf
 import it.fast4x.riplay.ui.styling.customColorPalette
 import it.fast4x.riplay.ui.styling.dynamicColorPaletteOf
 import it.fast4x.riplay.ui.styling.typographyOf
-import it.fast4x.riplay.utils.BitmapProvider
 import it.fast4x.riplay.utils.LocalMonetCompat
 import it.fast4x.riplay.utils.OkHttpRequest
 import it.fast4x.riplay.utils.asMediaItem
@@ -1337,7 +1336,8 @@ class MainActivity :
                         action_songs,
                         action_albums,
                         action_library,
-                        action_search
+                        action_search,
+                        action_musicidentifier
                     )
                 ) {
                     openTabFromShortcut =
@@ -1346,6 +1346,7 @@ class MainActivity :
                             action_albums -> HomeScreenTabs.Albums.index
                             action_library -> HomeScreenTabs.Playlists.index
                             action_search -> -2
+                            action_musicidentifier -> -3
                             else -> -1
                         }
                     intent.action = null
@@ -1568,7 +1569,7 @@ class MainActivity :
                                         onlinePlayer()
                                 }
 
-                                val menuState = LocalMenuState.current
+                                val menuState = LocalGlobalSheetState.current
                                 CustomModalBottomSheet(
                                     showSheet = menuState.isDisplayed,
                                     onDismissRequest = menuState::hide,
@@ -1905,6 +1906,7 @@ class MainActivity :
         const val action_albums = "it.fast4x.riplay.action.albums"
         const val action_library = "it.fast4x.riplay.action.library"
         const val action_rescuecenter = "it.fast4x.riplay.action.rescuecenter"
+        const val action_musicidentifier = "it.fast4x.riplay.action.musicidentifier"
     }
 
 

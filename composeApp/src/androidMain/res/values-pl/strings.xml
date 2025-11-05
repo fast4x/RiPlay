@@ -204,7 +204,6 @@
     <string name="play_next">Odtwórz jako następne</string>
     <string name="toggle_lyrics">Przełączaj napisy</string>
     <string name="by_tapping_on_the_thumbnail">Dotykając miniatury</string>
-    <string name="require_mic_permission">Efekty wizualizatora wymagają uprawnienia do mikrofonu, włącz je w ustawieniach.</string>
     <string name="vt_fancy">Wymyślny</string>
     <string name="vt_circular">Okrągły</string>
     <string name="vt_disabled">Wyłączony</string>

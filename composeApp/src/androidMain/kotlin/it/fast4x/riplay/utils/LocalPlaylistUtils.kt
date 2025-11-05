@@ -20,8 +20,8 @@ import it.fast4x.riplay.enums.PlaylistSongSortBy
 import it.fast4x.riplay.enums.SortOrder
 import it.fast4x.riplay.data.models.PlaylistPreview
 import it.fast4x.riplay.data.models.Song
-import it.fast4x.riplay.ui.components.LocalMenuState
-import it.fast4x.riplay.ui.components.MenuState
+import it.fast4x.riplay.ui.components.LocalGlobalSheetState
+import it.fast4x.riplay.ui.components.GlobalSheetState
 import it.fast4x.riplay.ui.components.themed.MenuEntry
 import it.fast4x.riplay.ui.components.themed.SmartMessage
 import kotlinx.coroutines.CoroutineScope
@@ -123,9 +123,9 @@ class PositionLock private constructor(
 class PlaylistSongsSort private constructor(
     sortOrderState: MutableState<SortOrder>,
     sortByState: MutableState<PlaylistSongSortBy>,
-    menuState: MenuState,
+    globalSheetState: GlobalSheetState,
     styleState: MutableState<MenuStyle>
-): Sort<PlaylistSongSortBy>( sortOrderState, PlaylistSongSortBy.entries, sortByState, menuState, styleState) {
+): Sort<PlaylistSongSortBy>( sortOrderState, PlaylistSongSortBy.entries, sortByState, globalSheetState, styleState) {
 
     companion object {
         @JvmStatic
@@ -133,7 +133,7 @@ class PlaylistSongsSort private constructor(
         fun init() = PlaylistSongsSort(
             rememberPreference(songSortOrderKey, SortOrder.Descending),
             rememberPreference(playlistSongSortByKey, PlaylistSongSortBy.Title),
-            LocalMenuState.current,
+            LocalGlobalSheetState.current,
             rememberPreference(menuStyleKey, MenuStyle.List)
         )
     }
@@ -157,7 +157,7 @@ class PlaylistSongsSort private constructor(
                 text = sortTitle( it ),
                 onClick = {
                     // Don't pass menuState::hide, it won't work
-                    menuState.hide()
+                    globalSheetState.hide()
                     sortByState.value = it
                 }
             )
@@ -184,9 +184,9 @@ class PlaylistSongsSort private constructor(
 @Composable
 fun DeletePlaylist(
     activeState: MutableState<Boolean> = rememberSaveable { mutableStateOf( false ) },
-    menuState: MenuState = LocalMenuState.current,
+    globalSheetState: GlobalSheetState = LocalGlobalSheetState.current,
     onEvent: DeleteDialog.() -> Unit
-): DeleteDialog = object : DeleteDialog( activeState, menuState ) {
+): DeleteDialog = object : DeleteDialog( activeState, globalSheetState ) {
 
     override val dialogTitle: String
         @Composable
@@ -202,7 +202,7 @@ fun Reposition(
     songs: () -> List<Song>
 ): MenuIcon = object: ConfirmDialog, MenuIcon, Descriptive {
 
-    val menuState: MenuState = LocalMenuState.current
+    val globalSheetState: GlobalSheetState = LocalGlobalSheetState.current
     override val messageId: Int = R.string.renumber_songs_positions
     override val iconId: Int = R.drawable.position
     override val dialogTitle: String
@@ -228,12 +228,12 @@ fun Reposition(
         }
 
         onDismiss()
-        menuState.hide()
+        globalSheetState.hide()
     }
 }
 
 class RenameDialog private constructor(
-    private val menuState: MenuState,
+    private val globalSheetState: GlobalSheetState,
     private val playlistNameState: MutableState<String>,
     private val activeState: MutableState<Boolean>,
     private val coroutineScope: CoroutineScope,
@@ -249,7 +249,7 @@ class RenameDialog private constructor(
             playlistNameState: MutableState<String>,
             playlistPreview: () -> PlaylistPreview?
         ) = RenameDialog(
-            LocalMenuState.current,
+            LocalGlobalSheetState.current,
             playlistNameState,
             rememberSaveable { mutableStateOf( false ) },
             coroutineScope,
@@ -293,6 +293,6 @@ class RenameDialog private constructor(
         }
 
         onDismiss()
-        menuState.hide()
+        globalSheetState.hide()
     }
 }

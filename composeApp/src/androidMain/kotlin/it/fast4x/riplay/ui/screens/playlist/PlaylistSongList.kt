@@ -92,7 +92,7 @@ import it.fast4x.riplay.enums.UiType
 import it.fast4x.riplay.data.models.Playlist
 import it.fast4x.riplay.data.models.SongPlaylistMap
 import it.fast4x.riplay.service.isLocal
-import it.fast4x.riplay.ui.components.LocalMenuState
+import it.fast4x.riplay.ui.components.LocalGlobalSheetState
 import it.fast4x.riplay.ui.components.ShimmerHost
 import it.fast4x.riplay.ui.components.SwipeablePlaylistItem
 import it.fast4x.riplay.ui.components.themed.AutoResizeText
@@ -171,7 +171,7 @@ fun PlaylistSongList(
 ) {
     val binder = LocalPlayerServiceBinder.current
     val context = LocalContext.current
-    val menuState = LocalMenuState.current
+    val menuState = LocalGlobalSheetState.current
     val selectedQueue = LocalSelectedQueue.current
 
     var playlistPage by persist<PlaylistPage?>("playlist/$browseId/playlistPage")

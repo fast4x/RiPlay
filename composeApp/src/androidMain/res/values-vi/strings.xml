@@ -204,7 +204,6 @@
     <string name="play_next">Phát bài tiếp theo</string>
     <string name="toggle_lyrics">Toggle lyrics</string>
     <string name="by_tapping_on_the_thumbnail">By tapping on the thumbnail</string>
-    <string name="require_mic_permission">Visualizer effect require mic permission, grant please.</string>
     <string name="vt_fancy">Fancy</string>
     <string name="vt_circular">Circular</string>
     <string name="vt_disabled">Disabled</string>

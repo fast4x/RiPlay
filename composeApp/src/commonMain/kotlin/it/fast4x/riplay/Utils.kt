@@ -46,6 +46,14 @@ fun String.removePrefix(): String {
 fun cleanString(text: String): String {
     var cleanText = text.replace("/", "", true)
     cleanText = cleanText.replace("#", "", true)
+    cleanText = cleanText.replace("?", "", true)
+    cleanText = cleanText.replace(":", "", true)
+    cleanText = cleanText.replace(";", "", true)
+    cleanText = cleanText.replace("'", "", true)
+    cleanText = cleanText.replace("\"", "", true)
+    cleanText = cleanText.replace("!", "", true)
+    cleanText = cleanText.replace("(", "", true)
+    cleanText = cleanText.replace(")", "", true)
     return cleanText
 }
 

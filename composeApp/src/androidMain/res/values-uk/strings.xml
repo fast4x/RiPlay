@@ -204,7 +204,6 @@
     <string name="play_next">Грати далі</string>
     <string name="toggle_lyrics">Перемикання текстів пісень</string>
     <string name="by_tapping_on_the_thumbnail">Натиснувши на мініатюру</string>
-    <string name="require_mic_permission">Ефект візуалізатора вимагає дозволу на мікрофон, надайте його, будь ласка.</string>
     <string name="vt_fancy">Красива</string>
     <string name="vt_circular">Закруглений</string>
     <string name="vt_disabled">Відключено</string>

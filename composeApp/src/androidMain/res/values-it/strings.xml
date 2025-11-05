@@ -204,7 +204,6 @@
     <string name="play_next">Successivo</string>
     <string name="toggle_lyrics">Abilita lyrics al tocco</string>
     <string name="by_tapping_on_the_thumbnail">Toccando l\'anteprima</string>
-    <string name="require_mic_permission">L\'effetto Visualizer richiede i permessi del microfono, concedili per favore.</string>
     <string name="vt_fancy">Fantasia</string>
     <string name="vt_circular">Circolare</string>
     <string name="vt_disabled">Disabilitato</string>

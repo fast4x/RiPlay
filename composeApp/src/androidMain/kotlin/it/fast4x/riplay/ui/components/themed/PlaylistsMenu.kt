@@ -32,8 +32,8 @@ import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.enums.SortOrder
 import it.fast4x.riplay.data.models.PlaylistPreview
 import it.fast4x.riplay.data.models.SongPlaylistMap
-import it.fast4x.riplay.ui.components.LocalMenuState
-import it.fast4x.riplay.ui.components.MenuState
+import it.fast4x.riplay.ui.components.LocalGlobalSheetState
+import it.fast4x.riplay.ui.components.GlobalSheetState
 import it.fast4x.riplay.extensions.preferences.menuStyleKey
 import it.fast4x.riplay.extensions.preferences.playlistSortByKey
 import it.fast4x.riplay.extensions.preferences.playlistSortOrderKey
@@ -54,7 +54,7 @@ class PlaylistsMenu private constructor(
     private val mediaItems: (PlaylistPreview) -> List<MediaItem>,
     private val onFailure: (Throwable, PlaylistPreview) -> Unit,
     private val finalAction: (PlaylistPreview) -> Unit,
-    override val menuState: MenuState,
+    override val globalSheetState: GlobalSheetState,
     override val styleState: MutableState<MenuStyle>
 ): MenuIcon, Descriptive, Menu {
 
@@ -71,7 +71,7 @@ class PlaylistsMenu private constructor(
             mediaItems,
             onFailure,
             finalAction,
-            LocalMenuState.current,
+            LocalGlobalSheetState.current,
             rememberPreference( menuStyleKey, MenuStyle.List )
         )
     }
@@ -129,14 +129,14 @@ class PlaylistsMenu private constructor(
             secondaryText = "$songsCount ${stringResource( R.string.songs )}",
             onClick = {
                 onAdd( playlistPreview )
-                menuState.hide()
+                globalSheetState.hide()
             },
             trailingContent = {
                 IconButton(
                     icon = R.drawable.open,
                     color = colorPalette().text,
                     onClick = {
-                        menuState.hide()
+                        globalSheetState.hide()
                         navController.navigate(route = "${NavRoutes.localPlaylist.name}/${playlistPreview.playlist.id}")
                     },
                     modifier = Modifier.size( 24.dp )
@@ -146,7 +146,7 @@ class PlaylistsMenu private constructor(
     }
 
     override fun onShortClick() {
-        menuState.hide()
+        globalSheetState.hide()
         super.onShortClick()
     }
 
@@ -193,7 +193,7 @@ class PlaylistsMenu private constructor(
                     )
                 }
                 onDismiss()
-                menuState.hide()
+                globalSheetState.hide()
             }
 
             @Composable

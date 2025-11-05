@@ -204,7 +204,6 @@
     <string name="play_next">Αναπαραγωγή επόμενου</string>
     <string name="toggle_lyrics">Εναλλαγή στίχων</string>
     <string name="by_tapping_on_the_thumbnail">Πατώντας τη μικρογραφία</string>
-    <string name="require_mic_permission">Οι απεικονίσεις απαιτούν πρόσβασή στο μικρόφωνο.</string>
     <string name="vt_fancy">Φανταχτερό</string>
     <string name="vt_circular">Κυκλικό</string>
     <string name="vt_disabled">Ανενεργό</string>

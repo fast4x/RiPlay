@@ -204,7 +204,6 @@
     <string name="play_next">播放下一首</string>
     <string name="toggle_lyrics">切换歌词</string>
     <string name="by_tapping_on_the_thumbnail">在缩略图上点击</string>
-    <string name="require_mic_permission">请授予麦克风权限以启用可视化效果。</string>
     <string name="vt_fancy">Fancy</string>
     <string name="vt_circular">循环</string>
     <string name="vt_disabled">停用</string>

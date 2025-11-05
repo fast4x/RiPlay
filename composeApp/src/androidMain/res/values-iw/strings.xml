@@ -204,7 +204,6 @@
     <string name="play_next">נגן הבא בתור</string>
     <string name="toggle_lyrics">החלף מילים</string>
     <string name="by_tapping_on_the_thumbnail">על ידי הקשה על התמונה הממוזערת</string>
-    <string name="require_mic_permission">Visualizer effect require mic permission, grant please.</string>
     <string name="vt_fancy">מפואר</string>
     <string name="vt_circular">מעגלי</string>
     <string name="vt_disabled">מושבת</string>

@@ -31,6 +31,7 @@ import it.fast4x.riplay.ui.components.themed.ConfirmationDialog
 import it.fast4x.riplay.ui.components.themed.SmartMessage
 import it.fast4x.riplay.utils.CheckAvailableNewVersion
 import it.fast4x.riplay.extensions.preferences.checkUpdateStateKey
+import it.fast4x.riplay.extensions.preferences.enableMusicIdentifierKey
 import it.fast4x.riplay.extensions.preferences.getEnum
 import it.fast4x.riplay.extensions.preferences.homeScreenTabIndexKey
 import it.fast4x.riplay.extensions.preferences.indexNavigationTabKey
@@ -41,7 +42,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import it.fast4x.riplay.ui.components.ScreenContainer
-import it.fast4x.riplay.ui.screens.settings.isLoggedIn
 import kotlin.system.exitProcess
 
 
@@ -85,7 +85,13 @@ fun HomeScreen(
 
     var (tabIndex, onTabChanged) = rememberPreference(homeScreenTabIndexKey, initialtabIndex)
 
+    val isEnabledMusicIdentifier by rememberPreference(
+        enableMusicIdentifierKey,
+        true
+    )
+
     if (tabIndex == -2) navController.navigate(NavRoutes.search.name)
+    if (tabIndex == -3 && isEnabledMusicIdentifier) navController.navigate(NavRoutes.musicIdentifier.name)
 
     //if (!enableQuickPicksPage && tabIndex==0) tabIndex = 1
 

@@ -59,7 +59,7 @@ import it.fast4x.riplay.data.models.Album
 import it.fast4x.riplay.data.models.Song
 import it.fast4x.riplay.data.models.SongPlaylistMap
 import it.fast4x.riplay.ui.components.ButtonsRow
-import it.fast4x.riplay.ui.components.LocalMenuState
+import it.fast4x.riplay.ui.components.LocalGlobalSheetState
 import it.fast4x.riplay.ui.components.themed.AlbumsItemMenu
 import it.fast4x.riplay.ui.components.themed.FloatingActionsContainerWithScrollToTop
 import it.fast4x.riplay.ui.components.themed.HeaderInfo
@@ -125,7 +125,7 @@ fun HomeAlbums(
     onSettingsClick: () -> Unit
 ) {
     // Essentials
-    val menuState = LocalMenuState.current
+    val menuState = LocalGlobalSheetState.current
     //val context = LocalContext.current
     val binder = LocalPlayerServiceBinder.current
     val selectedQueue = LocalSelectedQueue.current

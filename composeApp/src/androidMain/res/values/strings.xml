@@ -204,7 +204,7 @@
     <string name="play_next">Play next</string>
     <string name="toggle_lyrics">Toggle lyrics</string>
     <string name="by_tapping_on_the_thumbnail">By tapping on the thumbnail</string>
-    <string name="require_mic_permission">Visualizer effect require mic permission, grant please.</string>
+    <string name="require_mic_permission">Require mic permission</string>
     <string name="vt_fancy">Fancy</string>
     <string name="vt_circular">Circular</string>
     <string name="vt_disabled">Disabled</string>
@@ -966,4 +966,7 @@
     <string name="voice_missing_microphone_permissions_please_grant">Missing microphone permissions, please grant it in the app settings</string>
     <string name="message_excluded_videos">Excluded %s videos</string>
     <string name="exclude_song_if_is_video">Exclude video playback</string>
+    <string name="enable_voice_input">Enable voice input</string>
+    <string name="music_identifier_provider">Music identifier provider</string>
+    <string name="music_identify">Identify</string>
 </resources>

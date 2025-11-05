@@ -204,7 +204,6 @@
     <string name="play_next">Пусти следећу</string>
     <string name="toggle_lyrics">Прикажи стихове</string>
     <string name="by_tapping_on_the_thumbnail">Додиром на сличицу</string>
-    <string name="require_mic_permission">За ефекат визуелизатора је потребна дозвола микрофона, молим вас одобрите.</string>
     <string name="vt_fancy">Фенси</string>
     <string name="vt_circular">Кружно</string>
     <string name="vt_disabled">Онемогућено</string>

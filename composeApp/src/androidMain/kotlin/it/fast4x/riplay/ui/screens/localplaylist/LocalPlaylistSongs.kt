@@ -107,7 +107,7 @@ import it.fast4x.riplay.data.models.PlaylistPreview
 import it.fast4x.riplay.data.models.Song
 import it.fast4x.riplay.data.models.SongPlaylistMap
 import it.fast4x.riplay.service.isLocal
-import it.fast4x.riplay.ui.components.LocalMenuState
+import it.fast4x.riplay.ui.components.LocalGlobalSheetState
 import it.fast4x.riplay.ui.components.SwipeableQueueItem
 import it.fast4x.riplay.ui.components.themed.ConfirmationDialog
 import it.fast4x.riplay.ui.components.themed.FloatingActionsContainerWithScrollToTop
@@ -220,7 +220,7 @@ fun LocalPlaylistSongs(
     val context = LocalContext.current
     val (colorPalette, typography, thumbnailShape) = LocalAppearance.current
     val binder = LocalPlayerServiceBinder.current
-    val menuState = LocalMenuState.current
+    val menuState = LocalGlobalSheetState.current
     val selectedQueue = LocalSelectedQueue.current
     val uiType by rememberPreference(UiTypeKey, UiType.RiPlay)
 

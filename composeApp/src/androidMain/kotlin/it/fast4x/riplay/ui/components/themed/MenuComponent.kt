@@ -9,8 +9,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.media3.common.MediaItem
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.R
-import it.fast4x.riplay.ui.components.LocalMenuState
-import it.fast4x.riplay.ui.components.MenuState
+import it.fast4x.riplay.ui.components.LocalGlobalSheetState
+import it.fast4x.riplay.ui.components.GlobalSheetState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import it.fast4x.riplay.utils.appContext
@@ -18,7 +18,7 @@ import it.fast4x.riplay.ui.components.tab.toolbar.Descriptive
 import it.fast4x.riplay.ui.components.tab.toolbar.MenuIcon
 
 class ItemSelector private constructor(
-    private val menuState: MenuState,
+    private val globalSheetState: GlobalSheetState,
     private val activeState: MutableState<Boolean>
 ): MenuIcon, Descriptive {
 
@@ -26,7 +26,7 @@ class ItemSelector private constructor(
         @JvmStatic
         @Composable
         fun init() = ItemSelector(
-            LocalMenuState.current,
+            LocalGlobalSheetState.current,
             // Should be reset after changing tab
             remember { mutableStateOf( false ) }
         )
@@ -45,7 +45,7 @@ class ItemSelector private constructor(
 
     override fun onShortClick() {
         isActive = !isActive
-        menuState.hide()
+        globalSheetState.hide()
     }
 }
 
@@ -55,7 +55,7 @@ fun PlayNext(
     onClick: () -> Unit
 ): MenuIcon = object: MenuIcon, Descriptive {
 
-    val menuState: MenuState = LocalMenuState.current
+    val globalSheetState: GlobalSheetState = LocalGlobalSheetState.current
     override val iconId: Int = R.drawable.play_skip_forward
     override val messageId: Int = R.string.play_next
     override val menuIconTitle: String
@@ -64,7 +64,7 @@ fun PlayNext(
 
     override fun onShortClick() {
         onClick()
-        menuState.hide()
+        globalSheetState.hide()
     }
 }
 
@@ -74,7 +74,7 @@ fun Enqueue(
     onClick: () -> Unit
 ): MenuIcon = object : MenuIcon, Descriptive {
 
-    val menuState: MenuState = LocalMenuState.current
+    val globalSheetState: GlobalSheetState = LocalGlobalSheetState.current
     override val iconId: Int = R.drawable.enqueue
     override val messageId: Int = R.string.enqueue
     override val menuIconTitle: String
@@ -83,7 +83,7 @@ fun Enqueue(
 
     override fun onShortClick() {
         onClick()
-        menuState.hide()
+        globalSheetState.hide()
     }
 }
 
@@ -93,7 +93,7 @@ fun LikeSongs(
     mediaItems: () -> List<MediaItem>
 ): MenuIcon = object: MenuIcon, Descriptive {
 
-    val menuState: MenuState = LocalMenuState.current
+    val globalSheetState: GlobalSheetState = LocalGlobalSheetState.current
     override val iconId: Int = R.drawable.heart
     override val messageId: Int = R.string.add_to_favorites
     override val menuIconTitle: String
@@ -113,7 +113,7 @@ fun LikeSongs(
                 )
             }
         }
-        menuState.hide()
+        globalSheetState.hide()
     }
 }
 
@@ -123,7 +123,7 @@ fun Synchronize(
     onClick: () -> Unit
 ): MenuIcon = object: MenuIcon, Descriptive {
 
-    val menuState: MenuState = LocalMenuState.current
+    val globalSheetState: GlobalSheetState = LocalGlobalSheetState.current
     override val iconId: Int = R.drawable.sync
     override val messageId: Int = R.string.sync
     override val menuIconTitle: String
@@ -132,7 +132,7 @@ fun Synchronize(
 
     override fun onShortClick() {
         onClick()
-        menuState.hide()
+        globalSheetState.hide()
         SmartMessage(
             appContext().resources.getString( R.string.done ),
             context = appContext()
@@ -146,7 +146,7 @@ fun ListenOnYouTube(
     onClick: () -> Unit
 ): MenuIcon = object : MenuIcon, Descriptive {
 
-    val menuState: MenuState = LocalMenuState.current
+    val globalSheetState: GlobalSheetState = LocalGlobalSheetState.current
     override val iconId: Int = R.drawable.play
     override val messageId: Int = R.string.listen_on_youtube
     override val menuIconTitle: String
@@ -155,7 +155,7 @@ fun ListenOnYouTube(
 
     override fun onShortClick() {
         onClick()
-        menuState.hide()
+        globalSheetState.hide()
     }
 }
 
@@ -165,7 +165,7 @@ fun ThumbnailPicker(
     onClick: () -> Unit
 ): MenuIcon = object : MenuIcon, Descriptive {
 
-    val menuState: MenuState = LocalMenuState.current
+    val globalSheetState: GlobalSheetState = LocalGlobalSheetState.current
     override val iconId: Int = R.drawable.image
     override val messageId: Int = R.string.edit_thumbnail
     override val menuIconTitle: String
@@ -174,7 +174,7 @@ fun ThumbnailPicker(
 
     override fun onShortClick() {
         onClick()
-        menuState.hide()
+        globalSheetState.hide()
     }
 }
 
@@ -184,7 +184,7 @@ fun ResetThumbnail(
     onClick: () -> Unit
 ): MenuIcon = object : MenuIcon, Descriptive {
 
-    val menuState: MenuState = LocalMenuState.current
+    val globalSheetState: GlobalSheetState = LocalGlobalSheetState.current
     override val iconId: Int = R.drawable.image
     override val messageId: Int = R.string.reset_thumbnail
     override val menuIconTitle: String
@@ -193,6 +193,6 @@ fun ResetThumbnail(
 
     override fun onShortClick() {
         onClick()
-        menuState.hide()
+        globalSheetState.hide()
     }
 }

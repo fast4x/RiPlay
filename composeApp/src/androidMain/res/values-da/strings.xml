@@ -204,7 +204,6 @@
     <string name="play_next">Afspil næste</string>
     <string name="toggle_lyrics">Slå sangtekster til/fra</string>
     <string name="by_tapping_on_the_thumbnail">Ved at trykke på miniaturebilledet</string>
-    <string name="require_mic_permission">Visualiseringseffekten kræver mikrofonadgang; tillad venligst.</string>
     <string name="vt_fancy">Dekorativ</string>
     <string name="vt_circular">Cirkulær</string>
     <string name="vt_disabled">Deaktiveret</string>

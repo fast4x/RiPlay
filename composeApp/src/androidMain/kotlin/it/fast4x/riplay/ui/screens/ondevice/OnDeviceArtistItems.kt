@@ -48,7 +48,7 @@ import it.fast4x.riplay.LocalSelectedQueue
 import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.enums.NavigationBarPosition
-import it.fast4x.riplay.ui.components.LocalMenuState
+import it.fast4x.riplay.ui.components.LocalGlobalSheetState
 import it.fast4x.riplay.ui.components.themed.HeaderIconButton
 import it.fast4x.riplay.ui.components.themed.SmartMessage
 import it.fast4x.riplay.ui.components.themed.Title
@@ -104,7 +104,7 @@ fun OnDeviceArtistItems(
     }
 
     val binder = LocalPlayerServiceBinder.current
-    val menuState = LocalMenuState.current
+    val menuState = LocalGlobalSheetState.current
     val selectedQueue = LocalSelectedQueue.current
 
     val songThumbnailSizeDp = Dimensions.thumbnails.song

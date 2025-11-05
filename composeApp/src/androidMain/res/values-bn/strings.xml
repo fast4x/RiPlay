@@ -204,7 +204,6 @@
     <string name="play_next">পরেরটা বাজান</string>
     <string name="toggle_lyrics">লিরিক টগোল করুন</string>
     <string name="by_tapping_on_the_thumbnail">থাম্বনেইলে চাপ দেয়ার মাধ্যমে</string>
-    <string name="require_mic_permission">ভিজুয়ালাইজার ইফেক্টের জন্য মাইকের পার্মিশন দরকার, দয়াকরে দিন।</string>
     <string name="vt_fancy">অভিনব</string>
     <string name="vt_circular">বৃত্তাকার</string>
     <string name="vt_disabled">নিষ্ক্রিয়</string>

@@ -6,7 +6,6 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -21,7 +20,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -35,26 +33,18 @@ import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.NavigationBarPosition
-import it.fast4x.riplay.enums.UiType
 import it.fast4x.riplay.data.models.Song
-import it.fast4x.riplay.ui.components.LocalMenuState
+import it.fast4x.riplay.ui.components.LocalGlobalSheetState
 import it.fast4x.riplay.ui.components.ShimmerHost
-import it.fast4x.riplay.ui.components.themed.HeaderIconButton
-import it.fast4x.riplay.ui.components.themed.LayoutWithAdaptiveThumbnail
-import it.fast4x.riplay.ui.components.themed.MultiFloatingActionsContainer
 import it.fast4x.riplay.ui.components.themed.NonQueuedMediaItemMenu
-import it.fast4x.riplay.ui.components.themed.SmartMessage
 import it.fast4x.riplay.ui.items.SongItem
 import it.fast4x.riplay.ui.items.SongItemPlaceholder
 import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.ui.styling.px
 import it.fast4x.riplay.utils.asMediaItem
 import it.fast4x.riplay.extensions.preferences.disableScrollingTextKey
-import it.fast4x.riplay.utils.enqueue
 import it.fast4x.riplay.utils.forcePlayAtIndex
-import it.fast4x.riplay.utils.forcePlayFromBeginning
 import it.fast4x.riplay.extensions.preferences.rememberPreference
-import it.fast4x.riplay.extensions.preferences.showFloatingIconKey
 import it.fast4x.riplay.ui.components.themed.Title
 import it.fast4x.riplay.ui.components.themed.TitleSection
 import it.fast4x.riplay.utils.colorPalette
@@ -78,7 +68,7 @@ fun ArtistLocalSongs(
 //    onSettingsClick: () -> Unit
 ) {
     val binder = LocalPlayerServiceBinder.current
-    val menuState = LocalMenuState.current
+    val menuState = LocalGlobalSheetState.current
     var songs by persist<List<Song>?>("artist/$browseId/localSongs")
 
     var downloadState by remember {

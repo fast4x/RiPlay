@@ -336,19 +336,24 @@ fun SettingsEntry(
 
             }
 
-        }
+            if (titleSecondary != null) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                ) {
+                    BasicText(
+                        text = titleSecondary,
+                        style = typography().xxs.secondary,
+                        maxLines = 2,
+                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                        //modifier = Modifier
+                        //    .padding(vertical = 8.dp, horizontal = 24.dp)
+                    )
+                }
+            }
 
-
-
-        if (titleSecondary != null) {
-            BasicText(
-                text = titleSecondary,
-                style = typography().xxs.secondary,
-                maxLines = 2,
-                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
-                //modifier = Modifier
-                //    .padding(vertical = 8.dp, horizontal = 24.dp)
-            )
         }
     }
 }

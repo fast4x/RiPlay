@@ -205,7 +205,6 @@
     <string name="play_next">Играть следующим</string>
     <string name="toggle_lyrics">Переключить текст</string>
     <string name="by_tapping_on_the_thumbnail">Нажав на миниатюру</string>
-    <string name="require_mic_permission">Эффект визуализации требует разрешения микрофона, пожалуйста, дайте его.</string>
     <string name="vt_fancy">Стильный</string>
     <string name="vt_circular">Круглый</string>
     <string name="vt_disabled">Отключено</string>

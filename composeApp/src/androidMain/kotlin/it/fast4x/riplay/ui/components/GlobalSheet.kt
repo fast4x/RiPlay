@@ -11,38 +11,15 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.Stable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
-import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 
-val LocalMenuState = staticCompositionLocalOf { MenuState() }
 
-@Stable
-class MenuState {
-    var isDisplayed by mutableStateOf(false)
-        private set
-
-    var content by mutableStateOf<@Composable () -> Unit>({})
-        private set
-
-    fun display(content: @Composable () -> Unit) {
-        this.content = content
-        isDisplayed = true
-    }
-
-    fun hide() {
-        isDisplayed = false
-    }
-}
 
 @Composable
-fun BottomSheetMenu(
-    state: MenuState,
+fun GlobalSheet(
+    state: GlobalSheetState,
     modifier: Modifier = Modifier
 ) {
     AnimatedVisibility(

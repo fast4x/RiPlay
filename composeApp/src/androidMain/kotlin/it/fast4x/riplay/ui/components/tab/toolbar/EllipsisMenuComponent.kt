@@ -13,15 +13,15 @@ import androidx.compose.ui.layout.onPlaced
 import androidx.compose.ui.unit.dp
 import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.MenuStyle
-import it.fast4x.riplay.ui.components.LocalMenuState
-import it.fast4x.riplay.ui.components.MenuState
+import it.fast4x.riplay.ui.components.LocalGlobalSheetState
+import it.fast4x.riplay.ui.components.GlobalSheetState
 import it.fast4x.riplay.ui.components.themed.Menu
 import it.fast4x.riplay.extensions.preferences.menuStyleKey
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 
 class EllipsisMenuComponent private constructor(
     private val buttons: () -> List<Button>,
-    override val menuState: MenuState,
+    override val globalSheetState: GlobalSheetState,
     override val styleState: MutableState<MenuStyle>
 ) : Menu {
 
@@ -30,7 +30,7 @@ class EllipsisMenuComponent private constructor(
         @Composable
         fun init( items: () -> List<Button> ) = EllipsisMenuComponent(
             items,
-            LocalMenuState.current,
+            LocalGlobalSheetState.current,
             rememberPreference( menuStyleKey, MenuStyle.List )
         )
     }

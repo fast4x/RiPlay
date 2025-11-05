@@ -21,9 +21,10 @@ import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.extensions.audiotag.AudioTagger
 import it.fast4x.riplay.extensions.pip.isPipSupported
 import it.fast4x.riplay.extensions.pip.rememberPipHandler
+import it.fast4x.riplay.extensions.preferences.enableMusicIdentifierKey
 import it.fast4x.riplay.extensions.preferences.enablePictureInPictureKey
 import it.fast4x.riplay.extensions.preferences.rememberPreference
-import it.fast4x.riplay.ui.components.LocalMenuState
+import it.fast4x.riplay.ui.components.LocalGlobalSheetState
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.utils.thumbnailShape
 import it.fast4x.riplay.ui.components.themed.DropdownMenu
@@ -86,14 +87,19 @@ fun ActionBar(
 ) {
     var expanded by remember { mutableStateOf(false) }
 
-    // todo add audio tagger
-    val audioTagger = LocalAudioTagger.current
-    val menuState = LocalMenuState.current
+    val isEnabledMusicIdentifier by rememberPreference(
+        enableMusicIdentifierKey,
+        true
+    )
+    if (isEnabledMusicIdentifier) {
+        val audioTagger = LocalAudioTagger.current
+        val menuState = LocalGlobalSheetState.current
 
-    HeaderIcon( R.drawable.mic) {
-        menuState.display {
-            Menu {
-                AudioTagger(audioTagger, navController)
+        HeaderIcon(R.drawable.soundwave) {
+            menuState.display {
+                Menu {
+                    AudioTagger(audioTagger, navController)
+                }
             }
         }
     }
@@ -106,9 +112,10 @@ fun ActionBar(
             AsyncImage(
                 model = ytAccountThumbnail(),
                 contentDescription = null,
-                modifier = Modifier.height(40.dp)
+                modifier = Modifier
+                    .height(40.dp)
                     .padding(end = 10.dp)
-                    .clip( thumbnailShape() )
+                    .clip(thumbnailShape())
                     .clickable { expanded = !expanded }
             )
         else HeaderIcon( R.drawable.internet, size = 30.dp ) { expanded = !expanded }

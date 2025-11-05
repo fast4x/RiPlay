@@ -215,7 +215,7 @@ import it.fast4x.riplay.utils.thumbnailShape
 import it.fast4x.riplay.utils.typography
 import it.fast4x.riplay.ui.components.BottomSheetState
 import it.fast4x.riplay.ui.components.CustomModalBottomSheet
-import it.fast4x.riplay.ui.components.LocalMenuState
+import it.fast4x.riplay.ui.components.LocalGlobalSheetState
 import it.fast4x.riplay.ui.components.themed.AddToPlaylistPlayerMenu
 import it.fast4x.riplay.ui.components.themed.BlurParamsDialog
 import it.fast4x.riplay.ui.components.themed.CircularSlider
@@ -402,7 +402,7 @@ fun OnlinePlayer(
         onBack = onDismiss
     )
 
-    val menuState = LocalMenuState.current
+    val menuState = LocalGlobalSheetState.current
 
     val effectRotationEnabled by rememberObservedPreference(effectRotationKey, true)
 

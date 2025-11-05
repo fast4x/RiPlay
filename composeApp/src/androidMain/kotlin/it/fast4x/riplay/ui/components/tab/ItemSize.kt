@@ -4,8 +4,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.ui.res.stringResource
 import it.fast4x.riplay.R
-import it.fast4x.riplay.ui.components.LocalMenuState
-import it.fast4x.riplay.ui.components.MenuState
+import it.fast4x.riplay.ui.components.LocalGlobalSheetState
+import it.fast4x.riplay.ui.components.GlobalSheetState
 import it.fast4x.riplay.ui.components.themed.Menu
 import it.fast4x.riplay.ui.components.themed.MenuEntry
 import it.fast4x.riplay.ui.components.tab.toolbar.Descriptive
@@ -14,7 +14,7 @@ import it.fast4x.riplay.enums.HomeItemSize
 import it.fast4x.riplay.extensions.preferences.Preference
 
 class ItemSize private constructor(
-    val menuState: MenuState,
+    val globalSheetState: GlobalSheetState,
     private val sizeState: MutableState<HomeItemSize>
 ): MenuIcon, Descriptive {
 
@@ -23,7 +23,7 @@ class ItemSize private constructor(
         @Composable
         fun init(key: Preference.Key<HomeItemSize>): ItemSize =
             ItemSize(
-                LocalMenuState.current,
+                LocalGlobalSheetState.current,
                 Preference.remember(key)
             )
     }
@@ -47,13 +47,13 @@ class ItemSize private constructor(
             stringResource( size.textId ),
             onClick = {
                 sizeState.value = size
-                menuState::hide
+                globalSheetState::hide
             }
         )
     }
 
     override fun onShortClick() {
-        menuState.display {
+        globalSheetState.display {
             Menu {
                 HomeItemSize.entries.forEach { Entry(it) }
             }

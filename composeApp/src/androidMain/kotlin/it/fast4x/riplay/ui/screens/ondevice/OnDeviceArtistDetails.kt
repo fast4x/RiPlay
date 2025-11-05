@@ -72,7 +72,7 @@ import it.fast4x.riplay.data.models.defaultQueue
 import it.fast4x.riplay.utils.thumbnailShape
 import it.fast4x.riplay.utils.typography
 import it.fast4x.riplay.ui.components.CustomModalBottomSheet
-import it.fast4x.riplay.ui.components.LocalMenuState
+import it.fast4x.riplay.ui.components.LocalGlobalSheetState
 import it.fast4x.riplay.ui.components.SwipeablePlaylistItem
 import it.fast4x.riplay.ui.components.themed.AutoResizeText
 import it.fast4x.riplay.ui.components.themed.FontSizeRange
@@ -153,7 +153,7 @@ fun OnDeviceArtistDetails(
 
     val hapticFeedback = LocalHapticFeedback.current
     val parentalControlEnabled by rememberPreference(parentalControlEnabledKey, false)
-    val menuState = LocalMenuState.current
+    val menuState = LocalGlobalSheetState.current
 
     var scrollToNowPlaying by remember {
         mutableStateOf(false)

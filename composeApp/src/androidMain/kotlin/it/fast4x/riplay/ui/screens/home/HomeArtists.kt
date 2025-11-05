@@ -70,7 +70,7 @@ import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.enums.FilterBy
 import it.fast4x.riplay.enums.ViewType
 import it.fast4x.riplay.utils.getViewType
-import it.fast4x.riplay.ui.components.LocalMenuState
+import it.fast4x.riplay.ui.components.LocalGlobalSheetState
 import it.fast4x.riplay.ui.components.PullToRefreshBox
 import it.fast4x.riplay.ui.components.themed.Search
 import it.fast4x.riplay.ui.components.navigation.header.TabToolBar
@@ -154,7 +154,7 @@ fun HomeArtists(
 
     var filterBy by rememberPreference(filterByKey, FilterBy.All)
     val (colorPalette, typography) = LocalAppearance.current
-    val menuState = LocalMenuState.current
+    val menuState = LocalGlobalSheetState.current
     val coroutineScope = rememberCoroutineScope()
 
     if (!isSyncEnabled()) {

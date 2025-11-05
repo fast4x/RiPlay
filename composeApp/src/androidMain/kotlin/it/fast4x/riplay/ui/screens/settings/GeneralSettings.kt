@@ -144,6 +144,7 @@ import java.net.Proxy
 import androidx.core.net.toUri
 import androidx.core.text.isDigitsOnly
 import it.fast4x.riplay.enums.ContentType
+import it.fast4x.riplay.extensions.preferences.enableVoiceInputKey
 import it.fast4x.riplay.extensions.preferences.excludeSongIfIsVideoKey
 import it.fast4x.riplay.extensions.preferences.filterContentTypeKey
 import it.fast4x.riplay.extensions.preferences.resumeOrPausePlaybackWhenDeviceKey
@@ -301,10 +302,10 @@ fun GeneralSettings(
     var showTopPlaylistAA by rememberPreference(showTopPlaylistAAKey, true)
     var showGridAA by rememberPreference(showGridAAKey, true)
 
-//    var isInvincibilityEnabled by rememberPreference(
-//        isInvincibilityEnabledKey,
-//        true
-//    )
+    var isEnabledVoiceInput by rememberPreference(
+        enableVoiceInputKey,
+        true
+    )
 
 
     Column(
@@ -608,22 +609,20 @@ fun GeneralSettings(
                     }
 
 
-//                    if (search.input.isBlank() || stringResource(R.string.invincible_service).contains(
-//                            search.input,
-//                            true
-//                        )
-//                    ) {
-//                        SwitchSettingEntry(
-//                            title = stringResource(R.string.invincible_service),
-//                            text = stringResource(R.string.turning_off_battery_optimizations_is_not_enough),
-//                            isChecked = isInvincibilityEnabled,
-//                            onCheckedChange = {
-//                                isInvincibilityEnabled = it
-//                                restartService = true
-//                            }
-//                        )
-//                        RestartPlayerService(restartService, onRestart = { restartService = false })
-//                    }
+                    if (search.input.isBlank() || stringResource(R.string.enable_voice_input).contains(
+                            search.input,
+                            true
+                        )
+                    ) {
+                        SwitchSettingEntry(
+                            title = stringResource(R.string.enable_voice_input),
+                            text = stringResource(R.string.require_mic_permission),
+                            isChecked = isEnabledVoiceInput,
+                            onCheckedChange = {
+                                isEnabledVoiceInput = it
+                            }
+                        )
+                    }
 
                 }
 

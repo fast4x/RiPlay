@@ -65,7 +65,7 @@ import it.fast4x.riplay.data.models.Artist
 import it.fast4x.riplay.data.models.PlaylistPreview
 import it.fast4x.riplay.data.models.Song
 import it.fast4x.riplay.ui.components.ButtonsRow
-import it.fast4x.riplay.ui.components.LocalMenuState
+import it.fast4x.riplay.ui.components.LocalGlobalSheetState
 import it.fast4x.riplay.ui.components.themed.HeaderWithIcon
 import it.fast4x.riplay.ui.components.themed.NonQueuedMediaItemMenu
 import it.fast4x.riplay.ui.items.AlbumItem
@@ -114,7 +114,7 @@ fun StatisticsPage(
     statisticsType: StatisticsType
 ) {
     val binder = LocalPlayerServiceBinder.current
-    val menuState = LocalMenuState.current
+    val menuState = LocalGlobalSheetState.current
     val windowInsets = LocalPlayerAwareWindowInsets.current
 
     val albumThumbnailSizeDp = 108.dp

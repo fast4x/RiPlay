@@ -204,7 +204,6 @@
     <string name="play_next">Přehrát další</string>
     <string name="toggle_lyrics">Zobrazit písňový text</string>
     <string name="by_tapping_on_the_thumbnail">Klepnutím na miniaturu</string>
-    <string name="require_mic_permission">Vizualizační efekt vyžaduje povolení mikrofonu, udělte ho, prosím.</string>
     <string name="vt_fancy">Fantaskní</string>
     <string name="vt_circular">Kruhový</string>
     <string name="vt_disabled">Zakázaný</string>

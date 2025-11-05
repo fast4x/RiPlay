@@ -10,15 +10,15 @@ import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.R
 import it.fast4x.riplay.service.PlayerService
-import it.fast4x.riplay.ui.components.LocalMenuState
-import it.fast4x.riplay.ui.components.MenuState
+import it.fast4x.riplay.ui.components.LocalGlobalSheetState
+import it.fast4x.riplay.ui.components.GlobalSheetState
 
 @UnstableApi
 class DeleteHiddenSongsDialog private constructor(
     private val binder: PlayerService.Binder?,
     activeState: MutableState<Boolean>,
-    menuState: MenuState
-): DelSongDialog(binder, activeState, menuState) {
+    globalSheetState: GlobalSheetState
+): DelSongDialog(binder, activeState, globalSheetState) {
 
     companion object {
         @JvmStatic
@@ -26,7 +26,7 @@ class DeleteHiddenSongsDialog private constructor(
         fun init() = DeleteHiddenSongsDialog(
             LocalPlayerServiceBinder.current,
             rememberSaveable { mutableStateOf( false ) },
-            LocalMenuState.current
+            LocalGlobalSheetState.current
         )
     }
 
@@ -39,7 +39,7 @@ class DeleteHiddenSongsDialog private constructor(
     override fun onConfirm() {
 
             Database.asyncTransaction {
-                menuState.hide()
+                globalSheetState.hide()
                 deleteHiddenSongs()
                 cleanSongArtistMap()
                 cleanSongAlbumMap()

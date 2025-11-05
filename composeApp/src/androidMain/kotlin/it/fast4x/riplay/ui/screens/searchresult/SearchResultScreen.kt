@@ -48,7 +48,7 @@ import it.fast4x.riplay.data.models.Artist
 import it.fast4x.riplay.data.models.Playlist
 import it.fast4x.riplay.data.models.SongAlbumMap
 import it.fast4x.riplay.data.models.defaultQueue
-import it.fast4x.riplay.ui.components.LocalMenuState
+import it.fast4x.riplay.ui.components.LocalGlobalSheetState
 import it.fast4x.riplay.ui.components.ScreenContainer
 import it.fast4x.riplay.ui.components.SwipeableAlbumItem
 import it.fast4x.riplay.ui.components.SwipeablePlaylistItem
@@ -113,7 +113,7 @@ fun SearchResultScreen(
     val parentalControlEnabled by rememberPreference(parentalControlEnabledKey, false)
 
     val disableScrollingText by rememberPreference(disableScrollingTextKey, false)
-    val menuState = LocalMenuState.current
+    val menuState = LocalGlobalSheetState.current
     var filterContentType by remember { mutableStateOf(ContentType.All) }
 
                 val headerContent: @Composable (textButton: (@Composable () -> Unit)?) -> Unit = {
@@ -213,7 +213,7 @@ fun SearchResultScreen(
                     when ( currentTabIndex ) {
                         0 -> {
                             val localBinder = LocalPlayerServiceBinder.current
-                            val menuState = LocalMenuState.current
+                            val menuState = LocalGlobalSheetState.current
                             val thumbnailSizeDp = Dimensions.thumbnails.song
                             val thumbnailSizePx = thumbnailSizeDp.px
 
@@ -579,7 +579,7 @@ fun SearchResultScreen(
 
                         3 -> {
                             val localBinder = LocalPlayerServiceBinder.current
-                            val menuState = LocalMenuState.current
+                            val menuState = LocalGlobalSheetState.current
                             val thumbnailHeightDp = 72.dp
                             val thumbnailWidthDp = 128.dp
 

@@ -42,6 +42,7 @@ import androidx.navigation.navArgument
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.PlayerConstants
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
+import it.fast4x.riplay.LocalAudioTagger
 import it.fast4x.riplay.cleanString
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.enums.BuiltInPlaylist
@@ -52,6 +53,7 @@ import it.fast4x.riplay.enums.ThumbnailRoundness
 import it.fast4x.riplay.enums.TransitionEffect
 import it.fast4x.riplay.data.models.Mood
 import it.fast4x.riplay.data.models.SearchQuery
+import it.fast4x.riplay.extensions.audiotag.AudioTagger
 import it.fast4x.riplay.ui.components.CustomModalBottomSheet
 import it.fast4x.riplay.ui.screens.album.AlbumScreen
 import it.fast4x.riplay.ui.screens.artist.ArtistScreen
@@ -383,6 +385,15 @@ fun AppNavigation(
                 miniPlayer = miniPlayer,
 
                 )
+        }
+
+        composable(route = NavRoutes.musicIdentifier.name) {
+            val audioTagger = LocalAudioTagger.current
+            modalBottomSheetPage {
+                AudioTagger(audioTagger, navController)
+            }
+
+
         }
 
         /*

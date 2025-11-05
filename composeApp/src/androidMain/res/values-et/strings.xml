@@ -204,7 +204,6 @@
     <string name="play_next">Esita järgmisena</string>
     <string name="toggle_lyrics">Näita laulusõnu</string>
     <string name="by_tapping_on_the_thumbnail">Toksates pisipildil</string>
-    <string name="require_mic_permission">Visualiseerija vajab mikrofonile ligipääsu, palun andke luba.</string>
     <string name="vt_fancy">Uhke</string>
     <string name="vt_circular">Ümar</string>
     <string name="vt_disabled">Keelatud</string>

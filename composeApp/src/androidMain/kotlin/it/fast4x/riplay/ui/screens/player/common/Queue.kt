@@ -103,7 +103,7 @@ import it.fast4x.riplay.data.models.SongPlaylistMap
 import it.fast4x.riplay.service.isLocal
 import it.fast4x.riplay.utils.thumbnailShape
 import it.fast4x.riplay.utils.typography
-import it.fast4x.riplay.ui.components.LocalMenuState
+import it.fast4x.riplay.ui.components.LocalGlobalSheetState
 import it.fast4x.riplay.ui.components.SwipeableQueueItem
 import it.fast4x.riplay.ui.components.themed.ConfirmationDialog
 import it.fast4x.riplay.ui.components.themed.HeaderIconButton
@@ -165,7 +165,6 @@ import it.fast4x.riplay.ui.screens.player.online.OnlineMiniPlayer
 import it.fast4x.riplay.utils.getScreenDimensions
 import it.fast4x.riplay.utils.move
 import kotlinx.coroutines.withContext
-import timber.log.Timber
 
 @ExperimentalMaterial3Api
 @ExperimentalTextApi
@@ -202,7 +201,7 @@ fun Queue(
 
     var queueLoopType by rememberPreference(queueLoopTypeKey, defaultValue = QueueLoopType.Default)
 
-    val menuState = LocalMenuState.current
+    val menuState = LocalGlobalSheetState.current
 
     val thumbnailSizeDp = Dimensions.thumbnails.song
     val thumbnailSizePx = thumbnailSizeDp.px

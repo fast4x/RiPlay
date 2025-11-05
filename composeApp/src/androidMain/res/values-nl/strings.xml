@@ -204,7 +204,6 @@
     <string name="play_next">Volgende afspelen</string>
     <string name="toggle_lyrics">Toggle songteksten</string>
     <string name="by_tapping_on_the_thumbnail">Door op de miniatuur te tikken</string>
-    <string name="require_mic_permission">Visualizer-effect vereist micromicrotoestemming alstublieft. Gelieve te verlenen.</string>
     <string name="vt_fancy">Fraai</string>
     <string name="vt_circular">Circular</string>
     <string name="vt_disabled">Uitgeschakeld</string>

@@ -11,8 +11,8 @@ import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.R
 import it.fast4x.riplay.data.models.SongEntity
 import it.fast4x.riplay.service.PlayerService
-import it.fast4x.riplay.ui.components.LocalMenuState
-import it.fast4x.riplay.ui.components.MenuState
+import it.fast4x.riplay.ui.components.LocalGlobalSheetState
+import it.fast4x.riplay.ui.components.GlobalSheetState
 import it.fast4x.riplay.ui.components.themed.SmartMessage
 import it.fast4x.riplay.utils.appContext
 import it.fast4x.riplay.ui.components.themed.DeleteDialog
@@ -22,8 +22,8 @@ import java.util.Optional
 open class DelSongDialog protected constructor(
     private val binder: PlayerService.Binder?,
     activeState: MutableState<Boolean>,
-    menuState: MenuState,
-): DeleteDialog( activeState, menuState ) {
+    globalSheetState: GlobalSheetState,
+): DeleteDialog( activeState, globalSheetState ) {
 
     companion object {
         @JvmStatic
@@ -31,7 +31,7 @@ open class DelSongDialog protected constructor(
         fun init() = DelSongDialog(
             LocalPlayerServiceBinder.current,
             rememberSaveable { mutableStateOf( false ) },
-            LocalMenuState.current
+            LocalGlobalSheetState.current
         )
     }
 
@@ -53,7 +53,7 @@ open class DelSongDialog protected constructor(
         song.ifPresent {
             println("Deleting song ${it.song.title}")
             Database.asyncTransaction {
-                menuState.hide()
+                globalSheetState.hide()
                 binder?.cache?.removeResource(it.song.id)
                 deleteSongFromPlaylists(it.song.id)
                 deleteFormat(it.song.id)

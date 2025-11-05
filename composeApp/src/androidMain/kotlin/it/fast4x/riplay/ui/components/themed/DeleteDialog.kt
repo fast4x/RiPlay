@@ -4,14 +4,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.ui.res.stringResource
 import it.fast4x.riplay.R
-import it.fast4x.riplay.ui.components.MenuState
+import it.fast4x.riplay.ui.components.GlobalSheetState
 import it.fast4x.riplay.ui.components.tab.toolbar.ConfirmDialog
 import it.fast4x.riplay.ui.components.tab.toolbar.Descriptive
 import it.fast4x.riplay.ui.components.tab.toolbar.MenuIcon
 
 abstract class DeleteDialog protected constructor(
     protected val activeState: MutableState<Boolean>,
-    protected val menuState: MenuState
+    protected val globalSheetState: GlobalSheetState
 ): ConfirmDialog, MenuIcon, Descriptive {
 
     override val iconId: Int = R.drawable.trash
@@ -30,6 +30,6 @@ abstract class DeleteDialog protected constructor(
 
     override fun onDismiss() {
         super.onDismiss()
-        menuState.hide()
+        globalSheetState.hide()
     }
 }

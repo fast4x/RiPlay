@@ -204,7 +204,6 @@
     <string name="play_next">Reproduzir o seguinte</string>
     <string name="toggle_lyrics">Ativar/desativar letra</string>
     <string name="by_tapping_on_the_thumbnail">Ao tocar na miniatura</string>
-    <string name="require_mic_permission">O efeito de visualizador requer permissão do microfone, autoriza-o por favor.</string>
     <string name="vt_fancy">Chique</string>
     <string name="vt_circular">Circular</string>
     <string name="vt_disabled">Desativado</string>

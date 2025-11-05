@@ -10,6 +10,16 @@
             android:targetPackage="it.fast4x.riplay"
             android:action="it.fast4x.riplay.action.search" />
     </shortcut>
+    <shortcut
+        android:shortcutId="musicidentifier"
+        android:enabled="true"
+        android:icon="@drawable/soundwave"
+        android:shortcutShortLabel="@string/music_identify">
+        <intent
+            android:targetClass="it.fast4x.riplay.MainActivity"
+            android:targetPackage="it.fast4x.riplay"
+            android:action="it.fast4x.riplay.action.musicidentifier" />
+    </shortcut>
     <!--
     <shortcut
         android:shortcutId="songs"
@@ -21,7 +31,7 @@
             android:targetPackage="it.fast4x.riplay"
             android:action="it.fast4x.riplay.action.songs" />
     </shortcut>
-    -->
+
     <shortcut
         android:shortcutId="albums"
         android:enabled="true"
@@ -32,6 +42,7 @@
             android:targetPackage="it.fast4x.riplay"
             android:action="it.fast4x.riplay.action.albums" />
     </shortcut>
+    -->
     <shortcut
         android:shortcutId="library"
         android:enabled="true"

@@ -53,7 +53,7 @@ import it.fast4x.riplay.data.models.Song
 import it.fast4x.riplay.service.isLocal
 import it.fast4x.riplay.utils.thumbnailShape
 import it.fast4x.riplay.utils.typography
-import it.fast4x.riplay.ui.components.LocalMenuState
+import it.fast4x.riplay.ui.components.LocalGlobalSheetState
 import it.fast4x.riplay.ui.components.themed.AddToPlaylistPlayerMenu
 import it.fast4x.riplay.ui.components.themed.HeaderIconButton
 import it.fast4x.riplay.ui.components.themed.IconButton
@@ -80,7 +80,6 @@ import it.fast4x.riplay.ui.styling.semiBold
 import it.fast4x.riplay.utils.forcePlay
 import it.fast4x.riplay.utils.shimmerEffect
 import it.fast4x.riplay.utils.thumbnail
-import timber.log.Timber
 
 
 @UnstableApi
@@ -304,7 +303,7 @@ fun SongItem(
 
         ItemInfoContainer {
             trailingContent?.let {
-                val menuState = LocalMenuState.current
+                val menuState = LocalGlobalSheetState.current
                 val navController = rememberNavController()
                 val binder = LocalPlayerServiceBinder.current
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -403,7 +402,7 @@ fun SongItem(
                     it()
                 }
             } ?: Row(verticalAlignment = Alignment.CenterVertically) {
-                val menuState = LocalMenuState.current
+                val menuState = LocalGlobalSheetState.current
                 val navController = rememberNavController()
                 val binder = LocalPlayerServiceBinder.current
 

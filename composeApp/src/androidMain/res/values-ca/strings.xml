@@ -204,7 +204,6 @@
     <string name="play_next">Reprodueix següent</string>
     <string name="toggle_lyrics">Canvia lletra</string>
     <string name="by_tapping_on_the_thumbnail">Tocant la miniatura</string>
-    <string name="require_mic_permission">L\'efecte visualitzador requereix permís de micròfon, si us plau.</string>
     <string name="vt_fancy">Luxós</string>
     <string name="vt_circular">Circular</string>
     <string name="vt_disabled">Inhabilitat</string>

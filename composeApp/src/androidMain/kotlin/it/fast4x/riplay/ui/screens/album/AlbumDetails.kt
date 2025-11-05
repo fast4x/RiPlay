@@ -84,7 +84,7 @@ import it.fast4x.riplay.data.models.Info
 import it.fast4x.riplay.data.models.Playlist
 import it.fast4x.riplay.data.models.Song
 import it.fast4x.riplay.data.models.SongPlaylistMap
-import it.fast4x.riplay.ui.components.LocalMenuState
+import it.fast4x.riplay.ui.components.LocalGlobalSheetState
 import it.fast4x.riplay.ui.components.ShimmerHost
 import it.fast4x.riplay.ui.components.SwipeablePlaylistItem
 import it.fast4x.riplay.ui.components.themed.AlbumsItemMenu
@@ -174,7 +174,7 @@ fun AlbumDetails(
     if (albumPage == null) return
 
     val binder = LocalPlayerServiceBinder.current
-    val menuState = LocalMenuState.current
+    val menuState = LocalGlobalSheetState.current
     val context = LocalContext.current
     val selectedQueue = LocalSelectedQueue.current
     var songs by persistList<Song>("album/$browseId/songs")

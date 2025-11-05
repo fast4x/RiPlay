@@ -204,7 +204,6 @@
     <string name="play_next">다음 재생</string>
     <string name="toggle_lyrics">가사 토글</string>
     <string name="by_tapping_on_the_thumbnail">썸네일을 클릭함으로써</string>
-    <string name="require_mic_permission">시각적 효과는 마이크 권한이 필요합니다, 승인해주세요.</string>
     <string name="vt_fancy">빙글빙글</string>
     <string name="vt_circular">원형</string>
     <string name="vt_disabled">비활성화</string>

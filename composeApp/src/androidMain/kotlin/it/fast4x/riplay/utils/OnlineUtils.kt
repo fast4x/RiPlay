@@ -69,7 +69,7 @@ import it.fast4x.riplay.data.models.Artist
 import it.fast4x.riplay.data.models.SongAlbumMap
 import it.fast4x.riplay.data.models.defaultQueue
 import it.fast4x.riplay.service.PlayerService
-import it.fast4x.riplay.ui.components.LocalMenuState
+import it.fast4x.riplay.ui.components.LocalGlobalSheetState
 import it.fast4x.riplay.ui.components.SwipeablePlaylistItem
 import it.fast4x.riplay.ui.components.themed.Loader
 import it.fast4x.riplay.ui.components.themed.Menu
@@ -206,7 +206,7 @@ fun SearchOnlineEntity (
     disableScrollingText: Boolean
 ) {
     val binder = LocalPlayerServiceBinder.current
-    val menuState = LocalMenuState.current
+    val menuState = LocalGlobalSheetState.current
     val hapticFeedback = LocalHapticFeedback.current
     val selectedQueue = LocalSelectedQueue.current
     val thumbnailHeightDp = 72.dp

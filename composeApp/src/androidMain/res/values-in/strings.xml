@@ -204,7 +204,6 @@
     <string name="play_next">Putar selanjutnya</string>
     <string name="toggle_lyrics">Gestur Lirik</string>
     <string name="by_tapping_on_the_thumbnail">Tampilkan lirik lagu dengan mengetuk thumbnail lagu</string>
-    <string name="require_mic_permission">Efek visualizer membutuhkan izin mikrofon, mohon izinkan.</string>
     <string name="vt_fancy">3D Melingkar</string>
     <string name="vt_circular">Lingkaran</string>
     <string name="vt_disabled">Tidak ada</string>

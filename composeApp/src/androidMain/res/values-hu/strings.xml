@@ -204,7 +204,6 @@
     <string name="play_next">Lejátszás következőnek</string>
     <string name="toggle_lyrics">Dalszöveg váltása</string>
     <string name="by_tapping_on_the_thumbnail">A borítókép megérintésével</string>
-    <string name="require_mic_permission">A vizualizáló effektushoz mikrofonengedély szükséges, kérjük, add meg.</string>
     <string name="vt_fancy">Díszes</string>
     <string name="vt_circular">Kör alakú</string>
     <string name="vt_disabled">Letiltva</string>

@@ -14,8 +14,8 @@ import it.fast4x.riplay.extensions.preferences.autoShuffleKey
 import it.fast4x.riplay.extensions.preferences.menuStyleKey
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.extensions.preferences.topPlaylistPeriodKey
-import it.fast4x.riplay.ui.components.LocalMenuState
-import it.fast4x.riplay.ui.components.MenuState
+import it.fast4x.riplay.ui.components.LocalGlobalSheetState
+import it.fast4x.riplay.ui.components.GlobalSheetState
 import it.fast4x.riplay.ui.components.themed.PeriodMenu
 import it.fast4x.riplay.ui.components.tab.toolbar.Descriptive
 import it.fast4x.riplay.ui.components.tab.toolbar.DualIcon
@@ -68,7 +68,7 @@ fun randomSort(): MenuIcon = object: MenuIcon, DynamicColor, Descriptive {
 
 class PeriodSelector private constructor(
     private val periodState: MutableState<TopPlaylistPeriod>,
-    override val menuState: MenuState,
+    override val globalSheetState: GlobalSheetState,
     override val styleState: MutableState<MenuStyle>
 ):  MenuIcon, Descriptive, Menu {
 
@@ -77,7 +77,7 @@ class PeriodSelector private constructor(
         @Composable
         fun init() = PeriodSelector(
             rememberPreference(topPlaylistPeriodKey, TopPlaylistPeriod.PastWeek),
-            LocalMenuState.current,
+            LocalGlobalSheetState.current,
             rememberPreference(menuStyleKey, MenuStyle.List)
         )
     }
@@ -96,7 +96,7 @@ class PeriodSelector private constructor(
 
     fun onDismiss( period: TopPlaylistPeriod ) {
         this.period = period
-        menuState.hide()
+        globalSheetState.hide()
     }
 
     @Composable

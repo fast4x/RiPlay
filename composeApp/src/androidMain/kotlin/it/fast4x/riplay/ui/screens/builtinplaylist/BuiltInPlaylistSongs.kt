@@ -92,7 +92,7 @@ import it.fast4x.riplay.enums.SortOrder
 import it.fast4x.riplay.enums.ThumbnailRoundness
 import it.fast4x.riplay.data.models.Song
 import it.fast4x.riplay.data.models.SongPlaylistMap
-import it.fast4x.riplay.ui.components.LocalMenuState
+import it.fast4x.riplay.ui.components.LocalGlobalSheetState
 import it.fast4x.riplay.ui.components.themed.ConfirmationDialog
 import it.fast4x.riplay.ui.components.themed.FloatingActionsContainerWithScrollToTop
 import it.fast4x.riplay.ui.components.themed.HeaderIconButton
@@ -160,7 +160,7 @@ fun BuiltInPlaylistSongs(
 ) {
     val context = LocalContext.current
     val binder = LocalPlayerServiceBinder.current
-    val menuState = LocalMenuState.current
+    val menuState = LocalGlobalSheetState.current
     val selectedQueue = LocalSelectedQueue.current
 
     var songs by persistList<Song>("${builtInPlaylist.name}/songs")
