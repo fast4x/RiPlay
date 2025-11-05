@@ -245,7 +245,10 @@ fun GeneralSettings(
     var isPauseOnVolumeZeroEnabled by rememberPreference(isPauseOnVolumeZeroEnabledKey, false)
 
 
-    val launchEqualizer by rememberEqualizerLauncher(audioSessionId = { binder?.player?.audioSessionId })
+    val launchEqualizer by rememberEqualizerLauncher(audioSessionId = {
+        //binder?.player?.audioSessionId
+        0
+    })
 
     var minimumSilenceDuration by rememberPreference(minimumSilenceDurationKey, 2_000_000L)
 
@@ -622,131 +625,6 @@ fun GeneralSettings(
                                 isEnabledVoiceInput = it
                             }
                         )
-                    }
-
-                }
-
-                settingsItem(
-                    isHeader = true
-                ) {
-                    SettingsGroupSpacer()
-                    SettingsEntryGroupText(title = stringResource(R.string.android_auto))
-                }
-
-                settingsItem {
-                    if (search.input.isBlank() || stringResource(R.string.android_auto_1).contains(
-                            search.input,
-                            true
-                        )
-                    ) {
-                        SwitchSettingEntry(
-                            title = stringResource(R.string.android_auto_1),
-                            text = stringResource(R.string.enable_android_auto_support),
-                            isChecked = isAndroidAutoEnabled,
-                            onCheckedChange = {
-                                isAndroidAutoEnabled = it
-                                restartService = true
-                            }
-                        )
-                        RestartPlayerService(restartService, onRestart = { restartService = false })
-                    }
-                    AnimatedVisibility(visible = isAndroidAutoEnabled) {
-                        Column(
-                            modifier = Modifier.padding(start = 25.dp)
-                        ) {
-
-                                if (search.input.isBlank() || "Show list as grid".contains(
-                                        search.input,
-                                        true
-                                    )
-                                ) {
-                                    SwitchSettingEntry(
-                                        title = "Show list as grid",
-                                        text = "",
-                                        isChecked = showGridAA,
-                                        onCheckedChange = {
-                                            showGridAA = it
-                                        }
-                                    )
-                                }
-
-                                if (search.input.isBlank() || "Show shuffle in songs".contains(
-                                        search.input,
-                                        true
-                                    )
-                                ) {
-                                    SwitchSettingEntry(
-                                        title = "Show shuffle in songs",
-                                        text = "",
-                                        isChecked = showShuffleSongsAA,
-                                        onCheckedChange = {
-                                            showShuffleSongsAA = it
-                                        }
-                                    )
-                                }
-
-                                if (search.input.isBlank() || "Show monthly playlists".contains(
-                                        search.input,
-                                        true
-                                    )
-                                )
-                                    SwitchSettingEntry(
-                                        title = "Show monthly playlists",
-                                        text = "Show monthly playlists in playlists screen",
-                                        isChecked = showMonthlyPlaylistsAA,
-                                        onCheckedChange = { showMonthlyPlaylistsAA = it }
-                                    )
-
-                                if (search.input.isBlank() || "Show In Library".contains(
-                                        search.input,
-                                        true
-                                    )
-                                )
-                                    SwitchSettingEntry(
-                                        title = "Show In Library",
-                                        text = "Show In Library in artists and albums screen",
-                                        isChecked = showInLibraryAA,
-                                        onCheckedChange = { showInLibraryAA = it }
-                                    )
-
-                                if (search.input.isBlank() || "Show On Device".contains(
-                                        search.input,
-                                        true
-                                    )
-                                )
-                                    SwitchSettingEntry(
-                                        title = "Show On Device",
-                                        text = "Show On Device in artists and albums screen",
-                                        isChecked = showOnDeviceAA,
-                                        onCheckedChange = { showOnDeviceAA = it }
-                                    )
-
-                                if (search.input.isBlank() || "Show Top Playlist".contains(
-                                        search.input,
-                                        true
-                                    )
-                                )
-                                    SwitchSettingEntry(
-                                        title = "Show Top Playlist",
-                                        text = "Show Top Playlist in playlists screen",
-                                        isChecked = showTopPlaylistAA,
-                                        onCheckedChange = { showTopPlaylistAA = it }
-                                    )
-
-                                if (search.input.isBlank() || "Show Favorites Playlists".contains(
-                                        search.input,
-                                        true
-                                    )
-                                )
-                                    SwitchSettingEntry(
-                                        title = "Show Favorites Playlists",
-                                        text = "Show Favorites Playlists in playlists screen",
-                                        isChecked = showFavoritesPlaylistsAA,
-                                        onCheckedChange = { showFavoritesPlaylistsAA = it }
-                                    )
-
-
-                        }
                     }
 
                 }
@@ -1588,7 +1466,130 @@ fun GeneralSettings(
                         )
                 }
 
+                settingsItem(
+                    isHeader = true
+                ) {
+                    SettingsGroupSpacer()
+                    SettingsEntryGroupText(title = stringResource(R.string.android_auto))
+                }
 
+                settingsItem {
+                    if (search.input.isBlank() || stringResource(R.string.android_auto_1).contains(
+                            search.input,
+                            true
+                        )
+                    ) {
+                        SwitchSettingEntry(
+                            title = stringResource(R.string.android_auto_1),
+                            text = stringResource(R.string.enable_android_auto_support),
+                            isChecked = isAndroidAutoEnabled,
+                            onCheckedChange = {
+                                isAndroidAutoEnabled = it
+                                restartService = true
+                            }
+                        )
+                        RestartPlayerService(restartService, onRestart = { restartService = false })
+                    }
+                    AnimatedVisibility(visible = isAndroidAutoEnabled) {
+                        Column(
+                            modifier = Modifier.padding(start = 25.dp)
+                        ) {
+
+                            if (search.input.isBlank() || "Show list as grid".contains(
+                                    search.input,
+                                    true
+                                )
+                            ) {
+                                SwitchSettingEntry(
+                                    title = "Show list as grid",
+                                    text = "",
+                                    isChecked = showGridAA,
+                                    onCheckedChange = {
+                                        showGridAA = it
+                                    }
+                                )
+                            }
+
+                            if (search.input.isBlank() || "Show shuffle in songs".contains(
+                                    search.input,
+                                    true
+                                )
+                            ) {
+                                SwitchSettingEntry(
+                                    title = "Show shuffle in songs",
+                                    text = "",
+                                    isChecked = showShuffleSongsAA,
+                                    onCheckedChange = {
+                                        showShuffleSongsAA = it
+                                    }
+                                )
+                            }
+
+                            if (search.input.isBlank() || "Show monthly playlists".contains(
+                                    search.input,
+                                    true
+                                )
+                            )
+                                SwitchSettingEntry(
+                                    title = "Show monthly playlists",
+                                    text = "Show monthly playlists in playlists screen",
+                                    isChecked = showMonthlyPlaylistsAA,
+                                    onCheckedChange = { showMonthlyPlaylistsAA = it }
+                                )
+
+                            if (search.input.isBlank() || "Show In Library".contains(
+                                    search.input,
+                                    true
+                                )
+                            )
+                                SwitchSettingEntry(
+                                    title = "Show In Library",
+                                    text = "Show In Library in artists and albums screen",
+                                    isChecked = showInLibraryAA,
+                                    onCheckedChange = { showInLibraryAA = it }
+                                )
+
+                            if (search.input.isBlank() || "Show On Device".contains(
+                                    search.input,
+                                    true
+                                )
+                            )
+                                SwitchSettingEntry(
+                                    title = "Show On Device",
+                                    text = "Show On Device in artists and albums screen",
+                                    isChecked = showOnDeviceAA,
+                                    onCheckedChange = { showOnDeviceAA = it }
+                                )
+
+                            if (search.input.isBlank() || "Show Top Playlist".contains(
+                                    search.input,
+                                    true
+                                )
+                            )
+                                SwitchSettingEntry(
+                                    title = "Show Top Playlist",
+                                    text = "Show Top Playlist in playlists screen",
+                                    isChecked = showTopPlaylistAA,
+                                    onCheckedChange = { showTopPlaylistAA = it }
+                                )
+
+                            if (search.input.isBlank() || "Show Favorites Playlists".contains(
+                                    search.input,
+                                    true
+                                )
+                            )
+                                SwitchSettingEntry(
+                                    title = "Show Favorites Playlists",
+                                    text = "Show Favorites Playlists in playlists screen",
+                                    isChecked = showFavoritesPlaylistsAA,
+                                    onCheckedChange = { showFavoritesPlaylistsAA = it }
+                                )
+
+
+                        }
+                    }
+
+                }
 
 //            SettingsGroupSpacer(
 //                modifier = Modifier.height(Dimensions.bottomSpacer)

@@ -1313,7 +1313,7 @@ class PlayerService : Service(),
 
         runCatching {
             if (loudnessEnhancer == null) {
-                loudnessEnhancer = LoudnessEnhancer(player.audioSessionId)
+                loudnessEnhancer = LoudnessEnhancer(0)
             }
         }.onFailure {
             Timber.e("PlayerService maybeNormalizeVolume load loudnessEnhancer ${it.stackTraceToString()}")
@@ -1433,7 +1433,10 @@ class PlayerService : Service(),
     private fun sendOpenEqualizerIntent() {
         sendBroadcast(
             Intent(AudioEffect.ACTION_OPEN_AUDIO_EFFECT_CONTROL_SESSION).apply {
-                putExtra(AudioEffect.EXTRA_AUDIO_SESSION, player.audioSessionId)
+                putExtra(AudioEffect.EXTRA_AUDIO_SESSION,
+                    //player.audioSessionId
+                    0
+                )
                 putExtra(AudioEffect.EXTRA_PACKAGE_NAME, packageName)
                 putExtra(AudioEffect.EXTRA_CONTENT_TYPE, AudioEffect.CONTENT_TYPE_MUSIC)
             }
@@ -1445,7 +1448,10 @@ class PlayerService : Service(),
     private fun sendCloseEqualizerIntent() {
         sendBroadcast(
             Intent(AudioEffect.ACTION_CLOSE_AUDIO_EFFECT_CONTROL_SESSION).apply {
-                putExtra(AudioEffect.EXTRA_AUDIO_SESSION, player.audioSessionId)
+                putExtra(AudioEffect.EXTRA_AUDIO_SESSION,
+                    //player.audioSessionId
+                    0
+                )
                 putExtra(AudioEffect.EXTRA_PACKAGE_NAME, packageName)
             }
         )
@@ -1881,7 +1887,10 @@ class PlayerService : Service(),
         }
 
         runCatching {
-            if (reverbPreset == null) reverbPreset = PresetReverb(1, player.audioSessionId)
+            if (reverbPreset == null) reverbPreset = PresetReverb(1,
+                //player.audioSessionId
+                0
+            )
 
             reverbPreset?.enabled = false
             reverbPreset?.preset = presetType.preset

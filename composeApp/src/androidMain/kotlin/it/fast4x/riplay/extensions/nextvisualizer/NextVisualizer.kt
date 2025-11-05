@@ -177,9 +177,13 @@ fun NextVisualizer() {
             val binder = LocalPlayerServiceBinder.current
             val visualizerView = VisualizerView(context)
             val audioSessionId = remember {
+                0
+                /*
                 if (binder?.player?.currentMediaItem?.isLocal == true)
                     binder.player.audioSessionId
                 else 0
+
+                 */
             }
             val helper = VisualizerHelper(audioSessionId)
 

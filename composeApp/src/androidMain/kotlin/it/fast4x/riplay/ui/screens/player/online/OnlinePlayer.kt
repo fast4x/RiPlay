@@ -2242,7 +2242,8 @@ fun OnlinePlayer(
                                                 Intent(AudioEffect.ACTION_DISPLAY_AUDIO_EFFECT_CONTROL_PANEL).apply {
                                                     putExtra(
                                                         AudioEffect.EXTRA_AUDIO_SESSION,
-                                                        binder.player.audioSessionId
+                                                        //binder.player.audioSessionId
+                                                        0
                                                     )
                                                     putExtra(
                                                         AudioEffect.EXTRA_PACKAGE_NAME,

@@ -62,7 +62,10 @@ fun PlayerMenu(
 
     //val context = LocalContext.current
 
-    val launchEqualizer by rememberEqualizerLauncher(audioSessionId = { binder.player.audioSessionId })
+    val launchEqualizer by rememberEqualizerLauncher(audioSessionId = {
+        //binder.player.audioSessionId
+        0
+    })
 
     val activityResultLauncher =
         rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { }
