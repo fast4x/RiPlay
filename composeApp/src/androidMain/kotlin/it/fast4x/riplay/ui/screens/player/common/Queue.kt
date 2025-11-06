@@ -33,6 +33,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.requiredHeight
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.width
@@ -79,6 +80,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import androidx.media3.common.MediaItem
@@ -162,6 +164,7 @@ import it.fast4x.riplay.ui.components.themed.Title2Actions
 import it.fast4x.riplay.ui.items.QueueItem
 import it.fast4x.riplay.ui.screens.player.local.LocalMiniPlayer
 import it.fast4x.riplay.ui.screens.player.online.OnlineMiniPlayer
+import it.fast4x.riplay.ui.styling.secondary
 import it.fast4x.riplay.utils.getScreenDimensions
 import it.fast4x.riplay.utils.move
 import kotlinx.coroutines.withContext
@@ -412,31 +415,23 @@ fun Queue(
     )
     var showQueues by rememberSaveable { mutableStateOf(false) }
     val maxHeightQueuesList by remember { derivedStateOf { getScreenDimensions().height.dp.div(8) } }
-    println("maxHeightQueuesList: $maxHeightQueuesList")
+    //println("maxHeightQueuesList: $maxHeightQueuesList")
     val heightQueues = animateDpAsState(if (showQueues) maxHeightQueuesList else 20.dp)
 
-    var filterCharSequence: CharSequence
-    filterCharSequence = filter.toString()
-    if (!filter.isNullOrBlank())
-        windowsFiltered = windowsFiltered
-            .filter {
-                it.mediaItem.mediaMetadata.title?.contains(filterCharSequence, true) ?: false ||
-                        it.mediaItem.mediaMetadata.artist?.contains(
-                            filterCharSequence,
-                            true
-                        ) ?: false ||
-                        it.mediaItem.mediaMetadata.albumTitle?.contains(
-                            filterCharSequence,
-                            true
-                        ) ?: false ||
-                        it.mediaItem.mediaMetadata.albumArtist?.contains(
-                            filterCharSequence,
-                            true
-                        ) ?: false
-            }
+
+
     var windowsInQueue by remember { mutableStateOf(windows) }
     var updateWindowsList by remember { mutableStateOf(false) }
-    LaunchedEffect(selectedQueue, updateWindowsList) {
+    LaunchedEffect(selectedQueue, updateWindowsList, filter) {
+        val filterCharSequence = filter.toString()
+        if (!filter.isNullOrBlank())
+            windowsFiltered = windows
+                .filter {
+                    it.mediaItem.mediaMetadata.title?.contains(filterCharSequence, true) ?: false
+                            || it.mediaItem.mediaMetadata.artist?.contains(filterCharSequence,true) ?: false
+                            //|| it.mediaItem.mediaMetadata.albumTitle?.contains(filterCharSequence,true) ?: false
+                            //|| it.mediaItem.mediaMetadata.albumArtist?.contains(filterCharSequence,true) ?: false
+                }
         val win = if (searching) windowsFiltered else windows
         windowsInQueue = if (selectedQueue == defaultQueue()) win else win.filter {
                 it.mediaItem.mediaMetadata.extras
@@ -499,10 +494,6 @@ fun Queue(
 
     LazyColumn(
         state = lazyListState,
-//        contentPadding = windowInsets
-//            .only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top)
-//            .asPaddingValues(),
-//        horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
 
 
@@ -665,27 +656,29 @@ fun Queue(
                                                 .size(16.dp)
                                         )
                                     }
-    //                                Box(
-    //                                    contentAlignment = Alignment.CenterStart,
-    //                                    modifier = Modifier
-    //                                        .weight(1f)
-    //                                        .padding(horizontal = 30.dp)
-    //                                ) {
-    //                                    AnimatedVisibility(
-    //                                        visible = filter?.isEmpty() ?: true,
-    //                                        enter = fadeIn(tween(100)),
-    //                                        exit = fadeOut(tween(100)),
-    //                                    ) {
-    //                                        BasicText(
-    //                                            text = stringResource(R.string.search),
-    //                                            maxLines = 1,
-    //                                            overflow = TextOverflow.Ellipsis,
-    //                                            style = typography().xs.semiBold.secondary.copy(color = colorPalette().textDisabled)
-    //                                        )
-    //                                    }
-    //
-    //                                    innerTextField()
-    //                                }
+                                    Box(
+                                        contentAlignment = Alignment.CenterStart,
+                                        modifier = Modifier
+                                            .weight(1f)
+                                            .padding(horizontal = 30.dp)
+                                    ) {
+                                        androidx.compose.animation.AnimatedVisibility(
+                                            visible = filter?.isEmpty() ?: true,
+                                            enter = fadeIn(tween(100)),
+                                            exit = fadeOut(tween(100)),
+                                        ) {
+                                            BasicText(
+                                                text = stringResource(R.string.search),
+                                                maxLines = 1,
+                                                overflow = TextOverflow.Ellipsis,
+                                                style = typography().xs.semiBold.secondary.copy(
+                                                    color = colorPalette().textDisabled
+                                                )
+                                            )
+                                        }
+
+                                        innerTextField()
+                                    }
                                 },
                                 modifier = Modifier
                                     .height(30.dp)
@@ -706,8 +699,10 @@ fun Queue(
                                     }
                             )
                         }
-
                     }
+
+
+
             }
 
 
@@ -1001,7 +996,7 @@ fun Queue(
                 ) {
 
                     BasicText(
-                        text = "${binder.player.mediaItemCount} ",
+                        text = "${windowsInQueue.size} ",
                         style = typography().xxs.medium,
                     )
                     Image(

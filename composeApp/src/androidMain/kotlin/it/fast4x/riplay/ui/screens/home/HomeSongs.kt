@@ -221,15 +221,6 @@ fun HomeSongs(
     val parentalControlEnabled by rememberPreference(parentalControlEnabledKey, false)
 
     var items by persistList<SongEntity>("home/songs")
-    //var itemsAll by persistList<SongEntity>("")
-
-    //var songsWithAlbum by persistList<SongWithAlbum>("home/songsWithAlbum")
-
-    /*
-    var filterDownloaded by remember {
-        mutableStateOf(false)
-    }
-     */
 
     var filter: String? by rememberSaveable { mutableStateOf(null) }
     var builtInPlaylist by rememberPreference(
