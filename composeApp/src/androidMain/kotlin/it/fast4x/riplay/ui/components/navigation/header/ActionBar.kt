@@ -23,6 +23,7 @@ import it.fast4x.riplay.extensions.preferences.enableMusicIdentifierKey
 import it.fast4x.riplay.extensions.preferences.enablePictureInPictureKey
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.ui.components.LocalGlobalSheetState
+import it.fast4x.riplay.ui.components.SheetBody
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.utils.thumbnailShape
 import it.fast4x.riplay.ui.components.themed.DropdownMenu
@@ -94,7 +95,7 @@ fun ActionBar(
         val sheet = LocalGlobalSheetState.current
         HeaderIcon(R.drawable.soundwave) {
             sheet.display {
-                Menu {
+                SheetBody {
                     MusicIdentifier(navController)
                 }
             }
