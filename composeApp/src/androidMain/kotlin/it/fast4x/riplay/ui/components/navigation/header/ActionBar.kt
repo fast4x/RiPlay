@@ -15,7 +15,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
-import it.fast4x.riplay.LocalAudioTagger
 import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.extensions.pip.isPipSupported
@@ -92,15 +91,13 @@ fun ActionBar(
         true
     )
     if (isEnabledMusicIdentifier) {
-        val menuState = LocalGlobalSheetState.current
-        val audioTagger = LocalAudioTagger.current
+        val sheet = LocalGlobalSheetState.current
         HeaderIcon(R.drawable.soundwave) {
-            audioTagger.info()
-//            menuState.display {
-//                Menu {
-//                    MusicIdentifier(navController)
-//                }
-//            }
+            sheet.display {
+                Menu {
+                    MusicIdentifier(navController)
+                }
+            }
         }
     }
 
