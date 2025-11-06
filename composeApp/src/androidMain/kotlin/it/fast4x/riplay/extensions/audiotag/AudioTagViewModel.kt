@@ -1,7 +1,5 @@
 package it.fast4x.riplay.extensions.audiotag
 
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -9,15 +7,18 @@ import it.fast4x.audiotaginfo.AudioTagInfo
 import it.fast4x.audiotaginfo.models.GetResultResponse
 import it.fast4x.audiotaginfo.models.StatResponse
 import it.fast4x.riplay.R
+import it.fast4x.riplay.extensions.audioPlayer
 import it.fast4x.riplay.extensions.audiotag.models.UiState
 import it.fast4x.riplay.extensions.preferences.musicIdentifierApiKey
 import it.fast4x.riplay.extensions.preferences.preferences
 import it.fast4x.riplay.utils.globalContext
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import timber.log.Timber
+import java.io.File
 
 
 class AudioTagViewModel() : ViewModel(), ViewModelProvider.Factory {
@@ -58,6 +59,24 @@ class AudioTagViewModel() : ViewModel(), ViewModelProvider.Factory {
         }
     }
 
+    fun tryAudioRecorder() {
+        viewModelScope.launch {
+            _uiState.value = UiState.Recording
+            val audioData = audioRecorder.startRecording(AudioRecorder.OutputFormat.WAV)
+            Timber.d("AudioTag tryAudioRecorder AudioData: $audioData")
+            if (audioData != null) {
+                val audioFile = File.createTempFile("audio", ".wav")
+                audioFile.writeBytes(audioData)
+                audioFile.deleteOnExit()
+                _uiState.value = UiState.Playing
+                audioPlayer(audioFile.absolutePath)
+                delay(15000)
+                _uiState.value = UiState.Idle
+            }
+
+
+        }
+    }
 
     fun identifySong() {
         if (_uiState.value is UiState.Recording) return
@@ -66,7 +85,6 @@ class AudioTagViewModel() : ViewModel(), ViewModelProvider.Factory {
             _uiState.value = UiState.Recording
             val audioData = audioRecorder.startRecording(AudioRecorder.OutputFormat.WAV)
             Timber.d("AudioTag identifySong AudioData: $audioData")
-
 
             if (audioData != null) {
                 _uiState.value = UiState.Loading
@@ -101,4 +119,7 @@ class AudioTagViewModel() : ViewModel(), ViewModelProvider.Factory {
         super.onCleared()
         audioRecorder.stopRecording()
     }
+
+
+
 }

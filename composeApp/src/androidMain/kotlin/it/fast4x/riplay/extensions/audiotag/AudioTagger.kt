@@ -12,12 +12,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -27,12 +25,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
@@ -71,7 +67,7 @@ fun AudioTagger(viewModel: AudioTagViewModel, navController: NavController) {
             modifier = Modifier.padding(bottom = 32.dp).size(70.dp),
             colorFilter = ColorFilter.tint(colorPalette().accent)
         )
-        when (val state = uiState) {
+        when (uiState) {
             is UiState.Idle -> {
                 if (recordAudioPermission.status.isGranted) {
                     Text("Tap to identify a song", fontSize = 20.sp,
@@ -83,6 +79,10 @@ fun AudioTagger(viewModel: AudioTagViewModel, navController: NavController) {
                         text = "Start Listening",
                         onClick = { viewModel.identifySong() },
                         primary = true
+                    )
+                    DialogTextButton(
+                        text = "Try & Play",
+                        onClick = { viewModel.tryAudioRecorder() },
                     )
                 } else {
                     Text("Microphone permission is required.", color = Color.Red, textAlign = TextAlign.Center)
@@ -104,8 +104,13 @@ fun AudioTagger(viewModel: AudioTagViewModel, navController: NavController) {
                 Spacer(modifier = Modifier.height(16.dp))
                 CircularProgressIndicator()
             }
+            is UiState.Playing -> {
+                Text("Playing...", style = typography().xl, color = colorPalette().text)
+                Spacer(modifier = Modifier.height(16.dp))
+                LinearProgressIndicator()
+            }
             is UiState.Success -> {
-                SongInfoCard(state.tracks, navController)
+                SongInfoCard(uiState.tracks, navController)
                 Spacer(modifier = Modifier.height(24.dp))
                 DialogTextButton(
                     text = "Identify another song",
@@ -115,7 +120,7 @@ fun AudioTagger(viewModel: AudioTagViewModel, navController: NavController) {
             }
             is UiState.Error -> {
                 Text("Error", style = typography().xl, color = colorPalette().red)
-                Text(AudioTagInfoErrors.getAudioTagInfoError(state.message).textName, fontSize = 16.sp, textAlign = TextAlign.Center, modifier = Modifier.padding(top = 8.dp), color = Color.White)
+                Text(AudioTagInfoErrors.getAudioTagInfoError(uiState.message).textName, fontSize = 16.sp, textAlign = TextAlign.Center, modifier = Modifier.padding(top = 8.dp), color = Color.White)
                 Spacer(modifier = Modifier.height(24.dp))
                 DialogTextButton(
                     text = "Try again",
@@ -126,7 +131,7 @@ fun AudioTagger(viewModel: AudioTagViewModel, navController: NavController) {
             is UiState.Response -> {
                 Text("Info", style = typography().xl, color = colorPalette().text)
                 Spacer(modifier = Modifier.height(16.dp))
-                Text(state.message, fontSize = 16.sp, textAlign = TextAlign.Center, color = Color.White)
+                Text(uiState.message, fontSize = 16.sp, textAlign = TextAlign.Center, color = Color.White)
                 Spacer(modifier = Modifier.height(24.dp))
                 DialogTextButton(
                     text = "Identify another song",
