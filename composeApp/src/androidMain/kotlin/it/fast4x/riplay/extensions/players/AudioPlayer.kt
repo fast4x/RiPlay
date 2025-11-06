@@ -1,4 +1,4 @@
-package it.fast4x.riplay.extensions
+package it.fast4x.riplay.extensions.players
 
 import androidx.media3.common.MediaItem
 import androidx.media3.exoplayer.ExoPlayer

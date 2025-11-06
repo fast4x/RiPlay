@@ -7,10 +7,11 @@ import it.fast4x.audiotaginfo.AudioTagInfo
 import it.fast4x.audiotaginfo.models.GetResultResponse
 import it.fast4x.audiotaginfo.models.StatResponse
 import it.fast4x.riplay.R
-import it.fast4x.riplay.extensions.audioPlayer
+import it.fast4x.riplay.extensions.players.audioPlayer
 import it.fast4x.riplay.extensions.audiotag.models.UiState
 import it.fast4x.riplay.extensions.preferences.musicIdentifierApiKey
 import it.fast4x.riplay.extensions.preferences.preferences
+import it.fast4x.riplay.extensions.recorders.AudioRecorder
 import it.fast4x.riplay.utils.globalContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -73,8 +74,6 @@ class AudioTagViewModel() : ViewModel(), ViewModelProvider.Factory {
                 delay(15000)
                 _uiState.value = UiState.Idle
             }
-
-
         }
     }
 
