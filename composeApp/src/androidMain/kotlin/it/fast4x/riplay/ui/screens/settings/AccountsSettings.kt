@@ -43,6 +43,7 @@ import it.fast4x.riplay.utils.globalContext
 import it.fast4x.riplay.enums.NavigationBarPosition
 import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.enums.ThumbnailRoundness
+import it.fast4x.riplay.enums.ValidationType
 import it.fast4x.riplay.extensions.discord.DiscordLoginAndGetToken
 import it.fast4x.riplay.extensions.preferences.discordAccountNameKey
 import it.fast4x.riplay.extensions.youtubelogin.YouTubeLogin
@@ -71,7 +72,9 @@ import it.fast4x.riplay.extensions.preferences.ytVisitorDataKey
 import it.fast4x.riplay.ui.components.themed.AccountInfoDialog
 import it.fast4x.riplay.extensions.encryptedpreferences.rememberEncryptedPreference
 import it.fast4x.riplay.extensions.preferences.enableMusicIdentifierKey
+import it.fast4x.riplay.extensions.preferences.musicIdentifierApiKey
 import it.fast4x.riplay.extensions.preferences.musicIdentifierProviderKey
+import it.fast4x.riplay.utils.RestartActivity
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -90,8 +93,6 @@ fun AccountsSettings() {
         ThumbnailRoundness.Heavy
     )
 
-    var restartActivity by rememberPreference(restartActivityKey, false)
-    var restartService by rememberSaveable { mutableStateOf(false) }
     var showUserInfoDialog by rememberSaveable { mutableStateOf(false) }
 
     var isEnabledMusicIdentifier by rememberPreference(
@@ -100,6 +101,9 @@ fun AccountsSettings() {
     )
     var musicIdentifierProvider by rememberPreference(musicIdentifierProviderKey,
         MusicIdentifierProvider.AudioTagInfo)
+
+    var musicIdentifierApi by rememberPreference(musicIdentifierApiKey, "")
+
 
     Column(
         modifier = Modifier
@@ -210,7 +214,6 @@ fun AccountsSettings() {
                                         cookieManager.removeAllCookies(null)
                                         cookieManager.flush()
                                         WebStorage.getInstance().deleteAllData()
-                                        restartService = true
                                     } else
                                         loginYouTube = true
                                 }
@@ -287,7 +290,6 @@ fun AccountsSettings() {
                     isChecked = isYouTubeSyncEnabled,
                     onCheckedChange = {
                         isYouTubeSyncEnabled = it
-                        restartActivity = true
                     }
                 )
 
@@ -434,6 +436,19 @@ fun AccountsSettings() {
                     valueText = { it.title },
                     offline = false
                 )
+
+                AnimatedVisibility(visible = musicIdentifierProvider == MusicIdentifierProvider.AudioTagInfo) {
+                    TextDialogSettingEntry(
+                        title = "Api key",
+                        text = musicIdentifierApi.ifEmpty { "If empty, system api key will be used" },
+                        currentText = musicIdentifierApi,
+                        onTextSave = {
+                            musicIdentifierApi = it
+                        },
+                        validationType = ValidationType.None
+                    )
+
+                }
             }
         }
 

@@ -121,9 +121,6 @@ import it.fast4x.riplay.enums.ValidationType
 import it.fast4x.riplay.ui.components.themed.Search
 import it.fast4x.riplay.utils.typography
 import it.fast4x.riplay.extensions.preferences.audioReverbPresetKey
-//import it.fast4x.riplay.utils.autoDownloadSongKey
-//import it.fast4x.riplay.utils.autoDownloadSongWhenAlbumBookmarkedKey
-//import it.fast4x.riplay.utils.autoDownloadSongWhenLikedKey
 import it.fast4x.riplay.extensions.preferences.bassboostEnabledKey
 import it.fast4x.riplay.extensions.preferences.bassboostLevelKey
 import it.fast4x.riplay.extensions.preferences.customDnsOverHttpsServerKey
@@ -133,7 +130,6 @@ import it.fast4x.riplay.utils.getSystemlanguage
 import it.fast4x.riplay.extensions.preferences.handleAudioFocusEnabledKey
 import it.fast4x.riplay.extensions.preferences.isConnectionMeteredEnabledKey
 import it.fast4x.riplay.utils.isIgnoringBatteryOptimizations
-import it.fast4x.riplay.extensions.preferences.isInvincibilityEnabledKey
 import it.fast4x.riplay.extensions.preferences.isKeepScreenOnEnabledKey
 import it.fast4x.riplay.extensions.preferences.isProxyEnabledKey
 import it.fast4x.riplay.extensions.preferences.proxyHostnameKey
@@ -156,7 +152,6 @@ import it.fast4x.riplay.extensions.preferences.showOnDeviceAAKey
 import it.fast4x.riplay.extensions.preferences.showShuffleSongsAAKey
 import it.fast4x.riplay.extensions.preferences.showTopPlaylistAAKey
 import it.fast4x.riplay.service.PlayerMediaBrowserService
-import it.fast4x.riplay.service.PlayerService
 import it.fast4x.riplay.ui.components.themed.settingsItem
 import it.fast4x.riplay.ui.components.themed.settingsSearchBarItem
 import it.fast4x.riplay.utils.LazyListContainer

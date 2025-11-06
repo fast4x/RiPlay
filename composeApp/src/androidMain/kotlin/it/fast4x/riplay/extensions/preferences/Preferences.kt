@@ -397,6 +397,7 @@ const val excludeSongIfIsVideoKey = "excludeSongIfIsVideo"
 const val enableVoiceInputKey = "enableVoiceInput"
 const val enableMusicIdentifierKey = "enableMusicIdentifier"
 const val musicIdentifierProviderKey = "musicIdentifierProvider"
+const val musicIdentifierApiKey = "musicIdentifierApiKey"
 
 
 inline fun <reified T : Enum<T>> SharedPreferences.getEnum(

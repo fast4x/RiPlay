@@ -507,7 +507,9 @@ fun TextDialogSettingEntry(
                 onTextSave(it)
                 //context.toast("Preference Saved")
             },
-            validationType = validationType
+            validationType = validationType,
+            setValueRequireNotNull = validationType != ValidationType.None
+
         )
         /*
         TextFieldDialog(hintText = title ,

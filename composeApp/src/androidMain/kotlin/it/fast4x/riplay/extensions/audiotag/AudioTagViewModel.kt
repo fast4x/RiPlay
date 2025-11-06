@@ -7,6 +7,8 @@ import it.fast4x.audiotaginfo.AudioTagInfo
 import it.fast4x.audiotaginfo.models.GetResultResponse
 import it.fast4x.riplay.R
 import it.fast4x.riplay.extensions.audiotag.models.UiState
+import it.fast4x.riplay.extensions.preferences.musicIdentifierApiKey
+import it.fast4x.riplay.extensions.preferences.preferences
 import it.fast4x.riplay.utils.globalContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -29,14 +31,15 @@ class AudioTagViewModel() : ViewModel(), ViewModelProvider.Factory {
     val uiState: StateFlow<UiState> = _uiState.asStateFlow()
 
     private val audioRecorder = AudioRecorder()
-    private val apiKey = globalContext().resources.getString(R.string.AudioTagInfo_API_KEY)
+    private val userApiKey = globalContext().preferences.getString(musicIdentifierApiKey, "")
+    private val apiKey = if (!userApiKey.isNullOrEmpty()) userApiKey else globalContext().resources.getString(R.string.AudioTagInfo_API_KEY)
 
 
 
     fun info() {
         viewModelScope.launch {
             val response = AudioTagInfo.info(apiKey)
-            Timber.d("AudioTag Info: $response")
+            Timber.d("AudioTag apiKey $apiKey Info: $response")
         }
     }
 
