@@ -8,9 +8,15 @@ enum class MusicIdentifierProvider {
             AudioTagInfo -> "AudioTag"
         }
 
+    val subtitle: String
+        get() = when(this) {
+            AudioTagInfo -> "Get your api key"
+        }
+
+
     val website: String
         get() = when(this) {
-            AudioTagInfo -> "https://audiotag.info"
+            AudioTagInfo -> "https://audiotag.info/apisection"
         }
 
     val info: String

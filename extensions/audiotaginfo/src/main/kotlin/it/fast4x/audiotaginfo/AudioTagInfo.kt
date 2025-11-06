@@ -25,6 +25,7 @@ import io.ktor.utils.io.streams.asInput
 import it.fast4x.audiotaginfo.models.GetResultResponse
 import it.fast4x.audiotaginfo.models.IdentifyResponse
 import it.fast4x.audiotaginfo.models.InfoResponse
+import it.fast4x.audiotaginfo.models.StatResponse
 import it.fast4x.audiotaginfo.utils.ProxyPreferences
 import it.fast4x.audiotaginfo.utils.getProxy
 import it.fast4x.audiotaginfo.utils.runCatchingCancellable
@@ -166,6 +167,18 @@ object AudioTagInfo {
 
         }
 
+    suspend fun stat(apiKey: String) =
+        runCatchingCancellable {
+            val response = client.submitFormWithBinaryData(
+                formData = formData {
+                    append("apikey", apiKey)
+                    append("action", "stat")
+                }
+            )
+            println("AudioTagInfo stat response: ${response.bodyAsText()}")
+
+            response.body<StatResponse>()
+        }
 
 
 }

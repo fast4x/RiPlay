@@ -492,7 +492,9 @@ fun TextDialogSettingEntry(
     onTextSave: (String) -> Unit,
     modifier: Modifier = Modifier,
     isEnabled: Boolean = true,
-    validationType: ValidationType = ValidationType.None
+    validationType: ValidationType = ValidationType.None,
+    offline: Boolean = true,
+    online: Boolean = true
 ) {
     var showDialog by remember { mutableStateOf(false) }
     //val context = LocalContext.current
@@ -529,7 +531,9 @@ fun TextDialogSettingEntry(
         isEnabled = isEnabled,
         onClick = { showDialog = true },
         trailingContent = { },
-        modifier = modifier
+        modifier = modifier,
+        online = online,
+        offline = offline
     )
 }
 

@@ -1,10 +1,13 @@
 package it.fast4x.riplay.extensions.audiotag
 
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import it.fast4x.audiotaginfo.AudioTagInfo
 import it.fast4x.audiotaginfo.models.GetResultResponse
+import it.fast4x.audiotaginfo.models.StatResponse
 import it.fast4x.riplay.R
 import it.fast4x.riplay.extensions.audiotag.models.UiState
 import it.fast4x.riplay.extensions.preferences.musicIdentifierApiKey
@@ -34,6 +37,10 @@ class AudioTagViewModel() : ViewModel(), ViewModelProvider.Factory {
     private val userApiKey = globalContext().preferences.getString(musicIdentifierApiKey, "")
     private val apiKey = if (!userApiKey.isNullOrEmpty()) userApiKey else globalContext().resources.getString(R.string.AudioTagInfo_API_KEY)
 
+    private val _statsState = MutableStateFlow<StatResponse?>(null)
+    val statsState: StateFlow<StatResponse?> = _statsState.asStateFlow()
+
+
 
 
     fun info() {
@@ -42,6 +49,15 @@ class AudioTagViewModel() : ViewModel(), ViewModelProvider.Factory {
             Timber.d("AudioTag apiKey $apiKey Info: $response")
         }
     }
+
+    fun stat() {
+        viewModelScope.launch {
+            val response = AudioTagInfo.stat(apiKey)?.getOrNull()
+            _statsState.value = response
+            Timber.d("AudioTag apiKey $apiKey Stat: $response")
+        }
+    }
+
 
     fun identifySong() {
         if (_uiState.value is UiState.Recording) return

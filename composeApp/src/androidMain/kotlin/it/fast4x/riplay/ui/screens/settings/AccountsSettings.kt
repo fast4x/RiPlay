@@ -7,18 +7,22 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Surface
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -28,6 +32,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.util.UnstableApi
@@ -35,6 +40,7 @@ import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
 import it.fast4x.environment.Environment
 import it.fast4x.environment.utils.parseCookieString
+import it.fast4x.riplay.LocalAudioTagger
 import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.MusicIdentifierProvider
 import it.fast4x.riplay.utils.appContext
@@ -74,7 +80,10 @@ import it.fast4x.riplay.extensions.encryptedpreferences.rememberEncryptedPrefere
 import it.fast4x.riplay.extensions.preferences.enableMusicIdentifierKey
 import it.fast4x.riplay.extensions.preferences.musicIdentifierApiKey
 import it.fast4x.riplay.extensions.preferences.musicIdentifierProviderKey
+import it.fast4x.riplay.ui.styling.bold
+import it.fast4x.riplay.ui.styling.semiBold
 import it.fast4x.riplay.utils.RestartActivity
+import it.fast4x.riplay.utils.typography
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -103,6 +112,8 @@ fun AccountsSettings() {
         MusicIdentifierProvider.AudioTagInfo)
 
     var musicIdentifierApi by rememberPreference(musicIdentifierApiKey, "")
+
+    val uriHandler = LocalUriHandler.current
 
 
     Column(
@@ -421,7 +432,8 @@ fun AccountsSettings() {
             isChecked = isEnabledMusicIdentifier,
             onCheckedChange = {
                 isEnabledMusicIdentifier = it
-            }
+            },
+            offline = false
         )
 
         AnimatedVisibility(visible = isEnabledMusicIdentifier) {
@@ -436,17 +448,58 @@ fun AccountsSettings() {
                     valueText = { it.title },
                     offline = false
                 )
+                SettingsEntry(
+                    online = false,
+                    offline = false,
+                    title = musicIdentifierProvider.subtitle,
+                    text = musicIdentifierProvider.website,
+                    onClick = {
+                        uriHandler.openUri(musicIdentifierProvider.website)
+                    }
+                )
+
 
                 AnimatedVisibility(visible = musicIdentifierProvider == MusicIdentifierProvider.AudioTagInfo) {
-                    TextDialogSettingEntry(
-                        title = "Api key",
-                        text = musicIdentifierApi.ifEmpty { "If empty, system api key will be used" },
-                        currentText = musicIdentifierApi,
-                        onTextSave = {
-                            musicIdentifierApi = it
-                        },
-                        validationType = ValidationType.None
-                    )
+                    Column (
+                        modifier = Modifier.padding(start = 25.dp)
+                    ) {
+                        TextDialogSettingEntry(
+                            title = "Api key",
+                            text = musicIdentifierApi.ifEmpty { "If empty, system api key will be used" },
+                            currentText = musicIdentifierApi,
+                            onTextSave = {
+                                musicIdentifierApi = it
+                            },
+                            validationType = ValidationType.None,
+                            offline = false,
+                            online = false
+                        )
+
+                        val localAudioTagger = LocalAudioTagger.current
+                        val stat = remember { localAudioTagger.stat() }
+                        val statState by localAudioTagger.statsState.collectAsState()
+                        if (statState?.success == true) {
+
+                            BasicText(
+                                text = "Api expiration: ${statState?.expirationDate?.substring(0,10)}",
+                                style = typography().xxs.semiBold.copy(color = colorPalette().text),
+                            )
+                            Spacer(modifier = Modifier.height(10.dp))
+                            BasicText(
+                                text = "Queries count: ${statState?.queriesCount}",
+                                style = typography().xxs.semiBold.copy(color = colorPalette().textSecondary),
+                            )
+                            Spacer(modifier = Modifier.height(10.dp))
+                            BasicText(
+                                text = "Free identification seconds remaining: ${statState?.identificationFreeSecRemainder}",
+                                style = typography().xxs.semiBold.copy(color = colorPalette().textSecondary),
+                            )
+                            Spacer(
+                                modifier = Modifier
+                                    .height(Dimensions.bottomSpacer)
+                            )
+                        }
+                    }
 
                 }
             }
