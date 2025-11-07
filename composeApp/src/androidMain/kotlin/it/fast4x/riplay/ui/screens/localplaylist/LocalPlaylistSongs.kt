@@ -2237,7 +2237,7 @@ fun LocalPlaylistSongs(
                                                 type = PopupType.Error
                                             )
                                         } else if (playlistPreview?.playlist?.isEditable == true) {
-                                            if (isSyncEnabled() && playlistPreview?.playlist?.isYoutubePlaylist == true && playlistPreview?.playlist?.isEditable == true) {
+                                            if (isSyncEnabled() && playlistPreview?.playlist?.isYoutubePlaylist == true) {
                                                 Database.asyncTransaction {
                                                     CoroutineScope(Dispatchers.IO).launch {
                                                         if (removeYTSongFromPlaylist(
