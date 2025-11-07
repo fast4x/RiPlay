@@ -109,8 +109,8 @@ import it.fast4x.riplay.utils.colorPalette
 fun AppNavigation(
     navController: NavHostController,
     miniPlayer: @Composable () -> Unit = {},
-    player: MutableState<YouTubePlayer?>,
-    playerState: MutableState<PlayerConstants.PlayerState>,
+    //player: MutableState<YouTubePlayer?>,
+    //playerState: MutableState<PlayerConstants.PlayerState>,
     openTabFromShortcut: Int
 ) {
     val transitionEffect by rememberPreference(transitionEffectKey, TransitionEffect.Scale)

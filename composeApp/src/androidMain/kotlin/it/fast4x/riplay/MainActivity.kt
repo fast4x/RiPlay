@@ -306,7 +306,7 @@ class MainActivity :
         override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
             if (service is PlayerService.Binder) {
                 this@MainActivity.binder = service
-                this@MainActivity.onlinePlayer.value = service.onlinePlayer
+                //this@MainActivity.onlinePlayer.value = service.onlinePlayer
                 this@MainActivity.onlinePlayerPlayingState = service.onlinePlayerPlayingState
                 this@MainActivity.currentDuration.value = service.onlinePlayerCurrentDuration
                 this@MainActivity.currentSecond.value = service.onlinePlayerCurrentSecond
@@ -358,7 +358,7 @@ class MainActivity :
 
     var selectedQueue: MutableState<Queues> = mutableStateOf(defaultQueue())
 
-    var onlinePlayer: MutableState<YouTubePlayer?> = mutableStateOf(null)
+    //var onlinePlayer: MutableState<YouTubePlayer?> = mutableStateOf(null)
 
     var currentSecond: MutableState<Float> = mutableFloatStateOf(0f)
     var currentDuration: MutableState<Float> = mutableFloatStateOf(0f)
@@ -367,7 +367,7 @@ class MainActivity :
 
     //var toolsService by mutableStateOf<ToolsService.LocalBinder?>(null)
 
-    private var onlinePlayerState = mutableStateOf(PlayerConstants.PlayerState.UNSTARTED)
+    //private var onlinePlayerState = mutableStateOf(PlayerConstants.PlayerState.UNSTARTED)
 
     private var onlinePlayerView: YouTubePlayerView? = null
 
@@ -1364,9 +1364,9 @@ class MainActivity :
                 }
 
                 // get value from PlayerService
-                onlinePlayer.value = binder?.onlinePlayer
+                //onlinePlayer.value = binder?.onlinePlayer
                 onlinePlayerPlayingState = binder?.onlinePlayerPlayingState == true
-                onlinePlayerState.value = binder?.onlinePlayerState ?: PlayerConstants.PlayerState.UNSTARTED
+                //onlinePlayerState.value = binder?.onlinePlayerState ?: PlayerConstants.PlayerState.UNSTARTED
                 currentDuration.value = binder?.onlinePlayerCurrentDuration ?: 0F
                 currentSecond.value = binder?.onlinePlayerCurrentSecond ?: 0F
                 onlinePlayerView = binder?.onlinePlayerView
@@ -1506,8 +1506,8 @@ class MainActivity :
                                             )
                                         }
                                     },
-                                    player = onlinePlayer,
-                                    playerState = onlinePlayerState,
+                                    //player = onlinePlayer,
+                                    //playerState = onlinePlayerState,
                                     openTabFromShortcut = openTabFromShortcut
                                 )
 
