@@ -209,22 +209,23 @@ fun AlbumDetails(
         runBlocking(Dispatchers.IO) {
             withContext(Dispatchers.IO) {
                 Database.asyncTransaction {
-                    val albumSongsStateList = mutableListOf<AlbumSongsState>()
-                    songs.forEach { song ->
-                        CoroutineScope(Dispatchers.IO).launch {
-                            Database.songUsedInPlaylistsAsFlow(song.id)
-                                .collect { songPlaylist = it }
-                        }
-                        if (songPlaylist > 0) songExists = true
-                        playlistsList = Database.playlistsUsedForSong(song.id)
-                        likedAt = song.likedAt
-                        playTime = song.totalPlayTimeMs
-                        binder?.cache?.removeResource(song.id)
-                        val songState =
-                            AlbumSongsState(song, likedAt, playTime, songExists, playlistsList)
-                        albumSongsStateList.add(songState)
-                        Database.delete(song)
-                    }
+                    //todo maybe not needed
+//                    val albumSongsStateList = mutableListOf<AlbumSongsState>()
+//                    songs.forEach { song ->
+//                        CoroutineScope(Dispatchers.IO).launch {
+//                            Database.songUsedInPlaylistsAsFlow(song.id)
+//                                .collect { songPlaylist = it }
+//                        }
+//                        if (songPlaylist > 0) songExists = true
+//                        playlistsList = Database.playlistsUsedForSong(song.id)
+//                        likedAt = song.likedAt
+//                        playTime = song.totalPlayTimeMs
+//                        binder?.cache?.removeResource(song.id)
+//                        val songState =
+//                            AlbumSongsState(song, likedAt, playTime, songExists, playlistsList)
+//                        albumSongsStateList.add(songState)
+//                        Database.delete(song)
+//                    }
 
                     Database.upsert(
                         Album(
@@ -252,6 +253,8 @@ fun AlbumDetails(
                             } ?: emptyList()
                     )
 
+                    //todo maybe not needed
+                    /*
                     albumSongsStateList.forEach { albumSongsState ->
                         if ((albumSongsState.songExists || albumSongsState.likedAt != null || albumSongsState.playtime != null)
                             && songExist(albumSongsState.song.id) == 0
@@ -277,6 +280,7 @@ fun AlbumDetails(
                             albumSongsState.playtime ?: 0
                         )
                     }
+                    */
                 }
             }
         }

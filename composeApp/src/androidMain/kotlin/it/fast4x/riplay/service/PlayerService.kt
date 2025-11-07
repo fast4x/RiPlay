@@ -55,6 +55,7 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.PlaybackParameters
 import androidx.media3.common.Player
+import androidx.media3.common.Player.STATE_IDLE
 import androidx.media3.common.Timeline
 import androidx.media3.common.audio.SonicAudioProcessor
 import androidx.media3.common.util.UnstableApi
@@ -122,6 +123,7 @@ import it.fast4x.riplay.extensions.discord.DiscordPresenceManager
 import it.fast4x.riplay.extensions.discord.updateDiscordPresenceWithOfflinePlayer
 import it.fast4x.riplay.extensions.discord.updateDiscordPresenceWithOnlinePlayer
 import it.fast4x.riplay.extensions.preferences.audioReverbPresetKey
+import it.fast4x.riplay.extensions.preferences.autoLoadSongsInQueueKey
 import it.fast4x.riplay.extensions.preferences.bassboostEnabledKey
 import it.fast4x.riplay.extensions.preferences.bassboostLevelKey
 import it.fast4x.riplay.extensions.preferences.closebackgroundPlayerKey
@@ -1107,7 +1109,7 @@ class PlayerService : Service(),
 
         maybeRecoverPlaybackError()
         initializeNormalizeVolume()
-        maybeProcessRadio()
+        maybeProcessRadio(reason)
 
         updateUnifiedNotification()
         updateWidgets()
@@ -1270,29 +1272,29 @@ class PlayerService : Service(),
         }
     }
 
-    private fun maybeProcessRadio() {
-        // Old feature add songs only if radio is started by user and when last song in player is played
-//        radio?.let { radio ->
-//            if (player.mediaItemCount - player.currentMediaItemIndex == 1) {
-//                coroutineScope.launch(Dispatchers.Main) {
-//                    player.addMediaItems(radio.process())
-//                }
-//            }
-//        }
+    private fun maybeProcessRadio(reason: Int) {
+        if (!preferences.getBoolean(autoLoadSongsInQueueKey, true)) return
 
         // New feature auto start radio in queue
-        if (radio == null) {
-            binder.setupRadio(
-                NavigationEndpoint.Endpoint.Watch(
-                    videoId = player.currentMediaItem?.mediaId
+        val isDiscoverEnabled = applicationContext.preferences.getBoolean(discoverKey, false)
+        if (reason != Player.MEDIA_ITEM_TRANSITION_REASON_REPEAT &&
+            player.mediaItemCount - player.currentMediaItemIndex <= if (
+                isDiscoverEnabled) 10 else 3
+        ) {
+            if (radio == null) {
+                binder.setupRadio(
+                    NavigationEndpoint.Endpoint.Watch(
+                        videoId = player.currentMediaItem?.mediaId
+                    )
                 )
-            )
-        } else {
-            radio?.let { radio ->
-                if (player.mediaItemCount - player.currentMediaItemIndex <= 3) {
+            } else {
+                radio?.let { radio ->
+                    //if (player.mediaItemCount - player.currentMediaItemIndex <= 3) {
                     coroutineScope.launch(Dispatchers.Main) {
-                        player.addMediaItems(radio.process())
+                        if (player.playbackState != STATE_IDLE)
+                            player.addMediaItems(radio.process())
                     }
+                    //}
                 }
             }
         }
