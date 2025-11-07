@@ -361,6 +361,8 @@ class MainActivity :
 
     var currentSecond: MutableState<Float> = mutableFloatStateOf(0f)
     var currentDuration: MutableState<Float> = mutableFloatStateOf(0f)
+    var onlinePositionAndDuration: MutableState<Pair<Long, Long>> = mutableStateOf(0L to 0L)
+
 
     //var toolsService by mutableStateOf<ToolsService.LocalBinder?>(null)
 
@@ -1367,7 +1369,7 @@ class MainActivity :
                 currentDuration.value = binder?.onlinePlayerCurrentDuration ?: 0F
                 currentSecond.value = binder?.onlinePlayerCurrentSecond ?: 0F
                 onlinePlayerView = binder?.onlinePlayerView
-                var onlinePositionAndDuration by remember { mutableStateOf(currentSecond.value.toLong() to currentDuration.value.toLong()) }
+                onlinePositionAndDuration.value = currentSecond.value.toLong() to currentDuration.value.toLong()
 
                 val pip = isInPip(
                     onChange = {
@@ -1422,7 +1424,7 @@ class MainActivity :
                             LocalMonetCompat provides localMonet,
                             LocalLinkDevices provides linkDevices.value,
                             LocalOnlinePlayerPlayingState provides onlinePlayerPlayingState,
-                            LocalOnlinePositionAndDuration provides onlinePositionAndDuration,
+                            LocalOnlinePositionAndDuration provides onlinePositionAndDuration.value,
                             LocalSelectedQueue provides selectedQueue.value,
                             LocalBackupHandler provides backupHandler,
                             LocalAudioTagger provides audioTaggerViewModel
@@ -1498,8 +1500,8 @@ class MainActivity :
                                                 navController = navController,
                                                 player = onlinePlayer,
                                                 playerState = onlinePlayerState,
-                                                currentDuration = currentDuration.value,
-                                                currentSecond = currentSecond.value,
+                                                //currentDuration = currentDuration.value,
+                                                //currentSecond = currentSecond.value,
                                             )
                                         }
                                     },

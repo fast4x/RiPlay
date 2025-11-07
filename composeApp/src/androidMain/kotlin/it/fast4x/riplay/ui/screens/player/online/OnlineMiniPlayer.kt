@@ -67,6 +67,7 @@ import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.PlayerConstants
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
+import it.fast4x.riplay.LocalOnlinePositionAndDuration
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.R
@@ -133,8 +134,8 @@ fun OnlineMiniPlayer(
     navController: NavController? = null,
     player: MutableState<YouTubePlayer?>,
     playerState: MutableState<PlayerConstants.PlayerState>,
-    currentDuration: Float,
-    currentSecond: Float
+    //currentDuration: Float,
+    //currentSecond: Float
 ) {
 
     val context = LocalContext.current
@@ -212,7 +213,8 @@ fun OnlineMiniPlayer(
         }
     }
 
-    var positionAndDuration by remember { mutableStateOf(0f to 0f) }
+    //var positionAndDuration by remember { mutableStateOf(0f to 0f) }
+    val positionAndDuration = LocalOnlinePositionAndDuration.current
 
 
     val dismissState = rememberSwipeToDismissBoxState(
@@ -576,16 +578,15 @@ fun OnlineMiniPlayer(
 
         }
 
-        LaunchedEffect(currentSecond, currentDuration) {
-            positionAndDuration = currentSecond to currentDuration
+        LaunchedEffect(positionAndDuration) {
 
-            updateStatisticsEverySeconds = (currentDuration / steps).toInt()
+            updateStatisticsEverySeconds = (positionAndDuration.second / steps).toInt()
 
             if (getPauseListenHistory()) return@LaunchedEffect
 
-            if (currentSecond.toInt() == updateStatisticsEverySeconds * stepToUpdateStats) {
+            if (positionAndDuration.first.toInt() == updateStatisticsEverySeconds * stepToUpdateStats) {
                 stepToUpdateStats++
-                val totalPlayTimeMs = (currentSecond * 1000).toLong()
+                val totalPlayTimeMs = (positionAndDuration.first * 1000).toLong()
                 Database.asyncTransaction {
                     incrementTotalPlayTimeMs(mediaItem.mediaId, totalPlayTimeMs)
                 }

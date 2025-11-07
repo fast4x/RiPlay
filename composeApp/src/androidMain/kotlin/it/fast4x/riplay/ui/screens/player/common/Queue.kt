@@ -968,8 +968,8 @@ fun Queue(
                                 navController = navController,
                                 player = player,
                                 playerState = playerState,
-                                currentDuration = currentDuration,
-                                currentSecond = currentSecond,
+                                //currentDuration = currentDuration,
+                                //currentSecond = currentSecond,
                             )
                     }
 
