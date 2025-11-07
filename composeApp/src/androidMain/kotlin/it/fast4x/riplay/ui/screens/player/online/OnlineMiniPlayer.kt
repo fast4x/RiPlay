@@ -132,8 +132,8 @@ fun OnlineMiniPlayer(
     showPlayer: () -> Unit,
     hidePlayer: () -> Unit,
     navController: NavController? = null,
-    player: MutableState<YouTubePlayer?>,
-    playerState: MutableState<PlayerConstants.PlayerState>,
+    //player: MutableState<YouTubePlayer?>,
+    //playerState: MutableState<PlayerConstants.PlayerState>,
     //currentDuration: Float,
     //currentSecond: Float
 ) {
@@ -146,7 +146,7 @@ fun OnlineMiniPlayer(
     binder?.player ?: return
     if (binder.player.currentTimeline.windowCount == 0) return
 
-    //val player = binder.onlinePlayer
+    val playerState = binder.onlinePlayerState
 
     var nullableMediaItem by remember {
         mutableStateOf(binder.player.currentMediaItem, neverEqualPolicy())
@@ -331,7 +331,8 @@ fun OnlineMiniPlayer(
                             if (dragAmount < 0) showPlayer()
                             else if (dragAmount > 20) {
                                 if (!disableClosingPlayerSwipingDown) {
-                                    player.value?.pause()
+                                    //player.value?.pause()
+                                    binder.onlinePlayer?.pause()
                                     binder.player.clearMediaItems()
                                     hidePlayer()
                                     runCatching {
@@ -449,15 +450,17 @@ fun OnlineMiniPlayer(
                            .size(24.dp)
                    )
 
-                if (playerState.value != PlayerConstants.PlayerState.BUFFERING) {
+                if (playerState != PlayerConstants.PlayerState.BUFFERING) {
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(playPauseRoundness))
                             .clickable {
                                 if (shouldBePlaying) {
-                                    player.value?.pause()
+                                    //player.value?.pause()
+                                    binder.onlinePlayer?.pause()
                                 } else {
-                                    player.value?.play()
+                                    //player.value?.play()
+                                    binder.onlinePlayer?.play()
                                 }
                                 if (effectRotationEnabled) isRotated = !isRotated
                             }
@@ -537,8 +540,8 @@ fun OnlineMiniPlayer(
 
         /********** NEW PLAYER */
 
-        LaunchedEffect(playerState.value) {
-            shouldBePlaying = playerState.value == PlayerConstants.PlayerState.PLAYING
+        LaunchedEffect(playerState) {
+            shouldBePlaying = playerState == PlayerConstants.PlayerState.PLAYING
 
 //            if (playerState.value == PlayerConstants.PlayerState.ENDED) {
 //                // TODO Implement repeat mode in queue

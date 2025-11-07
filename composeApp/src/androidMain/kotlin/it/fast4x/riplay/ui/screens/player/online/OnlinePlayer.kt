@@ -171,6 +171,7 @@ import it.fast4x.environment.Environment
 import it.fast4x.environment.models.NavigationEndpoint
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.LocalLinkDevices
+import it.fast4x.riplay.LocalOnlinePositionAndDuration
 import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.LocalSelectedQueue
 import it.fast4x.riplay.R
@@ -388,10 +389,10 @@ fun OnlinePlayer(
     navController: NavController,
     playFromSecond: Float = 0f,
     onlineCore: @Composable () -> Unit,
-    player: MutableState<YouTubePlayer?>,
-    playerState: MutableState<PlayerConstants.PlayerState>,
-    currentDuration: Float,
-    currentSecond: Float,
+    //player: MutableState<YouTubePlayer?>,
+    //playerState: MutableState<PlayerConstants.PlayerState>,
+    //currentDuration: Float,
+    //currentSecond: Float,
     //showControls: Boolean,
     playerSheetState: BottomSheetState,
     onDismiss: () -> Unit,
@@ -422,7 +423,7 @@ fun OnlinePlayer(
     binder?.player ?: return
     if (binder.player.currentTimeline.windowCount == 0) return
 
-    //val player = binder.onlinePlayer
+    val playerState = binder.onlinePlayerState
 
     var nullableMediaItem by remember {
         mutableStateOf(binder.player.currentMediaItem, neverEqualPolicy())
@@ -604,7 +605,8 @@ fun OnlinePlayer(
         ?: flowOf(null))
         .collectAsState(initial = null)
 
-    var positionAndDuration by remember { mutableStateOf(0f to 0f) }
+    //var positionAndDuration by remember { mutableStateOf(0f to 0f) }
+    val positionAndDuration = LocalOnlinePositionAndDuration.current
     var timeRemaining by remember { mutableIntStateOf(0) }
 
 
@@ -1387,7 +1389,7 @@ fun OnlinePlayer(
     val isLandscape = isLandscape
 
     LaunchedEffect(mediaItem) {
-        positionAndDuration = 0f to 0f
+        //positionAndDuration = 0f to 0f
 
         // Ensure that the song is in database
         CoroutineScope(Dispatchers.IO).launch {
@@ -1408,18 +1410,18 @@ fun OnlinePlayer(
 
     }
 
-    LaunchedEffect(currentSecond, currentDuration) {
+    LaunchedEffect(positionAndDuration) {
 
-        positionAndDuration = currentSecond to currentDuration
+        //positionAndDuration = currentSecond to currentDuration
         timeRemaining = positionAndDuration.second.toInt() - positionAndDuration.first.toInt()
 
-        updateStatisticsEverySeconds = (currentDuration / steps).toInt()
+        updateStatisticsEverySeconds = (positionAndDuration.second / steps).toInt()
 
         if (getPauseListenHistory()) return@LaunchedEffect
 
-        if (currentSecond.toInt() == updateStatisticsEverySeconds * stepToUpdateStats) {
+        if (positionAndDuration.first.toInt() == updateStatisticsEverySeconds * stepToUpdateStats) {
             stepToUpdateStats++
-            val totalPlayTimeMs = (currentSecond * 1000).toLong()
+            val totalPlayTimeMs = (positionAndDuration.first * 1000).toLong()
             Database.asyncTransaction {
                 incrementTotalPlayTimeMs(mediaItem.mediaId, totalPlayTimeMs)
             }
@@ -1446,9 +1448,9 @@ fun OnlinePlayer(
 
     }
 
-    LaunchedEffect(playerState.value) {
+    LaunchedEffect(playerState) {
 
-        shouldBePlaying = playerState.value == PlayerConstants.PlayerState.PLAYING
+        shouldBePlaying = playerState == PlayerConstants.PlayerState.PLAYING
 
         linkServiceClientSend(
             if (shouldBePlaying) mediaItem.mediaId.toCommandPlay() else LINKWEB_COMMAND_PAUSE.toCommand(),
@@ -1487,35 +1489,35 @@ fun OnlinePlayer(
             isExplicit = mediaItem.isExplicit,
             mediaItem = mediaItem,
             onPlay = {
-                player.value?.play()
-                //println("LinkClient OnLinePlayer Controls play")
+                binder.onlinePlayer?.play()
+
                 linkServiceClientSend(
-                    mediaItem.mediaId.toCommandPlayAt(currentSecond.toInt()),
+                    mediaItem.mediaId.toCommandPlayAt(positionAndDuration.first.toInt()),
                     castToLinkDevice,
                     linkDevicesSelected
                 )
 
             },
             onPause = {
-                player.value?.pause()
+                binder.onlinePlayer?.pause()
 
-                        linkServiceClientSend(
-                            LINKWEB_COMMAND_PAUSE.toCommand(),
-                            castToLinkDevice,
-                            linkDevicesSelected
-                        )
+                linkServiceClientSend(
+                    LINKWEB_COMMAND_PAUSE.toCommand(),
+                    castToLinkDevice,
+                    linkDevicesSelected
+                )
 
             },
-            onSeekTo = { player.value?.seekTo(it) },
+            onSeekTo = { binder.onlinePlayer?.seekTo(it) },
             onNext = { binder.player.playNext() },
             onPrevious = {
                 if (jumpPrevious == "") jumpPrevious = "0"
-                if(!binder.player.hasPreviousMediaItem() || (jumpPrevious != "0" && currentSecond > jumpPrevious.toFloat())){
-                    player.value?.seekTo(0f)
+                if(!binder.player.hasPreviousMediaItem() || (jumpPrevious != "0" && positionAndDuration.first > jumpPrevious.toFloat())){
+                    binder.onlinePlayer?.seekTo(0f)
                 }
                 else binder.player.playPrevious()
             },
-            playerState = playerState.value,
+            playerState = playerState,
         )
     }
 
@@ -1592,7 +1594,8 @@ fun OnlinePlayer(
                                             linkDevicesSavedProvider.value.saveDevices(linkDevicesSelected)
 
                                             //println("LinkClient OnLinePlayer Controls cast selected -${device.toLinkDevice()}- devices after ${linkDevicesSelected}")
-                                            player.value?.pause()
+                                            //player.value?.pause()
+                                            binder.onlinePlayer?.pause()
                                         },
                                         modifier = Modifier
                                             .size(32.dp),
@@ -2050,8 +2053,9 @@ fun OnlinePlayer(
                                 enabled = true,
                                 onClick = {
                                     castToLinkDevice = !castToLinkDevice
-                                    player.value?.pause()
-                                    if (castToLinkDevice) player.value?.mute() else player.value?.unMute()
+                                    //player.value?.pause()
+                                    binder.onlinePlayer?.pause()
+                                    if (castToLinkDevice) binder.onlinePlayer?.mute() else binder.onlinePlayer?.unMute()
                                     if (!castToLinkDevice) linkServiceClientSend(
                                         LINKWEB_COMMAND_PAUSE.toCommand(),
                                         true,
@@ -2947,18 +2951,20 @@ fun OnlinePlayer(
                                     modifier = Modifier
                                         .padding(vertical = 8.dp),
                                     onPlay = {
-                                        player.value?.play()
+                                        //player.value?.play()
+                                        binder.onlinePlayer?.play()
                                         //println("LinkClient OnLinePlayer Controls play")
                                         linkServiceClientSend(
                                             binderPlayer.getMediaItemAt(index).mediaId.toCommandPlayAt(
-                                                currentSecond.toInt()
+                                                positionAndDuration.first.toInt()
                                             ),
                                             castToLinkDevice,
                                             linkDevicesSelected
                                         )
                                     },
                                     onPause = {
-                                        player.value?.pause()
+                                        //player.value?.pause()
+                                        binder.onlinePlayer?.pause()
                                         //println("LinkClient OnLinePlayer Controls pause 2")
                                         //CoroutineScope(Dispatchers.IO).launch {
                                         //if (linkClient != null)
@@ -2970,16 +2976,16 @@ fun OnlinePlayer(
                                         //linkClient?.send("pause|")
                                         //}
                                     },
-                                    onSeekTo = { player.value?.seekTo(it) },
+                                    onSeekTo = { binder.onlinePlayer?.seekTo(it) },
                                     onNext = { binder.player.playNext() },
                                     onPrevious = {
                                         if (jumpPrevious == "") jumpPrevious = "0"
-                                        if(!binder.player.hasPreviousMediaItem() || (jumpPrevious != "0" && currentSecond > jumpPrevious.toFloat())){
-                                            player.value?.seekTo(0f)
+                                        if(!binder.player.hasPreviousMediaItem() || (jumpPrevious != "0" && positionAndDuration.first > jumpPrevious.toFloat())){
+                                            binder.onlinePlayer?.seekTo(0f)
                                         }
                                         else binder.player.playPrevious()
                                     },
-                                    playerState = playerState.value,
+                                    playerState = playerState,
                                 )
 
                             }
@@ -3255,17 +3261,19 @@ fun OnlinePlayer(
                                                 .padding(vertical = 4.dp)
                                                 .fillMaxWidth(),
                                             onPlay = {
-                                                player.value?.play()
+                                                //player.value?.play()
+                                                binder.onlinePlayer?.play()
                                                 //println("LinkClient OnLinePlayer Controls pause 3")
                                                 linkServiceClientSend(
-                                                    binderPlayer.getMediaItemAt(it).mediaId.toCommandPlayAt(currentSecond.toInt()),
+                                                    binderPlayer.getMediaItemAt(it).mediaId.toCommandPlayAt(positionAndDuration.first.toInt()),
                                                     castToLinkDevice,
                                                     linkDevicesSelected
                                                 )
 
                                             },
                                             onPause = {
-                                                player.value?.pause()
+                                                //player.value?.pause()
+                                                binder.onlinePlayer?.pause()
                                                 //println("LinkClient OnLinePlayer Controls pause 4")
                                                 linkServiceClientSend(
                                                     LINKWEB_COMMAND_PAUSE.toCommand(),
@@ -3274,16 +3282,16 @@ fun OnlinePlayer(
                                                 )
 
                                             },
-                                            onSeekTo = { player.value?.seekTo(it) },
+                                            onSeekTo = { binder.onlinePlayer?.seekTo(it) },
                                             onNext = { binder.player.playNext() },
                                             onPrevious = {
                                                 if (jumpPrevious == "") jumpPrevious = "0"
-                                                if(!binder.player.hasPreviousMediaItem() || (jumpPrevious != "0" && currentSecond > jumpPrevious.toFloat())){
-                                                    player.value?.seekTo(0f)
+                                                if(!binder.player.hasPreviousMediaItem() || (jumpPrevious != "0" && positionAndDuration.first > jumpPrevious.toFloat())){
+                                                    binder.onlinePlayer?.seekTo(0f)
                                                 }
                                                 else binder.player.playPrevious()
                                             },
-                                            playerState = playerState.value,
+                                            playerState = playerState,
                                         )
                                     }
                                 }
@@ -3970,17 +3978,20 @@ fun OnlinePlayer(
                                         .padding(vertical = 4.dp)
                                         .fillMaxWidth(),
                                     onPlay = {
-                                        player.value?.play()
+                                        //player.value?.play()
+                                        binder.onlinePlayer?.play()
                                         //println("LinkClient OnLinePlayer Controls play")
                                         linkServiceClientSend(
-                                            binderPlayer.getMediaItemAt(index).mediaId.toCommandPlayAt(currentSecond.toInt()),
+                                            binderPlayer.getMediaItemAt(index).mediaId.toCommandPlayAt(positionAndDuration.first.toInt()),
                                             castToLinkDevice,
                                             linkDevicesSelected
                                         )
 
                                     },
                                     onPause = {
-                                        player.value?.pause()
+                                        //player.value?.pause()
+                                        binder.onlinePlayer?.pause()
+
                                         //println("LinkClient OnLinePlayer Controls pause 5")
                                         //CoroutineScope(Dispatchers.IO).launch {
                                             //if (linkClient != null)
@@ -3992,16 +4003,16 @@ fun OnlinePlayer(
                                                 //linkClient?.send("pause|")
                                         //}
                                     },
-                                    onSeekTo = { player.value?.seekTo(it) },
+                                    onSeekTo = { binder.onlinePlayer?.seekTo(it) },
                                     onNext = { binder.player.playNext() },
                                     onPrevious = {
                                         if (jumpPrevious == "") jumpPrevious = "0"
-                                        if(!binder.player.hasPreviousMediaItem() || (jumpPrevious != "0" && currentSecond > jumpPrevious.toFloat())){
-                                            player.value?.seekTo(0f)
+                                        if(!binder.player.hasPreviousMediaItem() || (jumpPrevious != "0" && positionAndDuration.first > jumpPrevious.toFloat())){
+                                            binder.onlinePlayer?.seekTo(0f)
                                         }
                                         else binder.player.playPrevious()
                                     },
-                                    playerState = playerState.value,
+                                    playerState = playerState,
                                 )
 
                             }
@@ -4046,10 +4057,10 @@ fun OnlinePlayer(
                 navController = navController,
                 showPlayer = {},
                 hidePlayer = {},
-                player = player,
-                playerState = playerState,
-                currentDuration = currentDuration,
-                currentSecond = currentSecond,
+                //player = binder.onlinePlayer,
+                //playerState = playerState,
+                //currentDuration = currentDuration,
+                //currentSecond = currentSecond,
                 onDismiss = {
                     queueLoopType = it
                     showQueue = false

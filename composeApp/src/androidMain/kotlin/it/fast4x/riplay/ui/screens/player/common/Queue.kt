@@ -180,10 +180,10 @@ fun Queue(
     navController: NavController,
     showPlayer: () -> Unit? = {},
     hidePlayer: () -> Unit? = {},
-    player: MutableState<YouTubePlayer?>,
-    playerState: MutableState<PlayerConstants.PlayerState>,
-    currentDuration: Float,
-    currentSecond: Float,
+    //player: MutableState<YouTubePlayer?>,
+    //playerState: MutableState<PlayerConstants.PlayerState>,
+    //currentDuration: Float,
+    //currentSecond: Float,
     onDismiss: (QueueLoopType) -> Unit,
     onDiscoverClick: (Boolean) -> Unit,
 ) {
@@ -200,7 +200,7 @@ fun Queue(
     binder?.player ?: return
 
     val binderPlayer = binder.player
-    //val player = binder.onlinePlayer
+
 
     var queueLoopType by rememberPreference(queueLoopTypeKey, defaultValue = QueueLoopType.Default)
 
@@ -966,8 +966,8 @@ fun Queue(
                                 },
                                 hidePlayer = { hidePlayer() },
                                 navController = navController,
-                                player = player,
-                                playerState = playerState,
+                                //player = player,
+                                //playerState = playerState,
                                 //currentDuration = currentDuration,
                                 //currentSecond = currentSecond,
                             )

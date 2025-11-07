@@ -225,6 +225,7 @@ import it.fast4x.riplay.ui.components.BottomSheet
 import it.fast4x.riplay.ui.components.BottomSheetState
 import it.fast4x.riplay.ui.components.CustomModalBottomSheet
 import it.fast4x.riplay.ui.components.LocalGlobalSheetState
+import it.fast4x.riplay.ui.components.SheetBody
 import it.fast4x.riplay.ui.components.rememberBottomSheetState
 import it.fast4x.riplay.ui.components.themed.CrossfadeContainer
 import it.fast4x.riplay.ui.components.themed.SmartMessage
@@ -1498,8 +1499,8 @@ class MainActivity :
                                                 showPlayer = { localPlayerSheetState.expandSoft() },
                                                 hidePlayer = { localPlayerSheetState.collapseSoft() },
                                                 navController = navController,
-                                                player = onlinePlayer,
-                                                playerState = onlinePlayerState,
+                                                //player = onlinePlayer,
+                                                //playerState = onlinePlayerState,
                                                 //currentDuration = currentDuration.value,
                                                 //currentSecond = currentSecond.value,
                                             )
@@ -1521,8 +1522,8 @@ class MainActivity :
                                 val localPlayer: @Composable () -> Unit = {
                                     LocalPlayer(
                                         navController = navController,
-                                        playerOnline = onlinePlayer,
-                                        playerState = onlinePlayerState,
+                                        //playerOnline = onlinePlayer,
+                                        //playerState = onlinePlayerState,
                                         onDismiss = {
                                             localPlayerSheetState.collapseSoft()
                                         }
@@ -1544,10 +1545,10 @@ class MainActivity :
                                                 )
                                             }
                                         },
-                                        player = onlinePlayer,
-                                        playerState = onlinePlayerState,
-                                        currentDuration = currentDuration.value,
-                                        currentSecond = currentSecond.value,
+                                        //player = onlinePlayer,
+                                        //playerState = onlinePlayerState,
+                                        //currentDuration = currentDuration.value,
+                                        //currentSecond = currentSecond.value,
                                         playerSheetState = localPlayerSheetState,
                                         onDismiss = {
                                             localPlayerSheetState.collapseSoft()
@@ -1590,6 +1591,7 @@ class MainActivity :
                                 ) {
                                     menuState.content()
                                 }
+
 
                             }
                         }

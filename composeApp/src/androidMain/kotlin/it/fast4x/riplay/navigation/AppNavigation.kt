@@ -251,10 +251,10 @@ fun AppNavigation(
                     navController = navController,
                     showPlayer = {},
                     hidePlayer = {},
-                    player = player,
-                    playerState = playerState,
-                    currentDuration = 0f,
-                    currentSecond = 0f,
+                    //player = player,
+                    //playerState = playerState,
+                    //currentDuration = 0f,
+                    //currentSecond = 0f,
                     onDismiss = {
                         showModalBottomSheetPage.value = false
                         navController.popBackStack()
@@ -268,8 +268,8 @@ fun AppNavigation(
             modalBottomSheetPage {
                 LocalPlayer(
                     navController = navController,
-                    playerOnline = player,
-                    playerState = playerState,
+                    //playerOnline = player,
+                    //playerState = playerState,
                     onDismiss = {}
                 )
             }

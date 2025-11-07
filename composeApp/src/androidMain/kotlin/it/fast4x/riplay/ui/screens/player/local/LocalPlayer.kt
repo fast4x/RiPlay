@@ -346,8 +346,8 @@ import kotlin.math.sqrt
 @Composable
 fun LocalPlayer(
     navController: NavController,
-    playerOnline: MutableState<YouTubePlayer?>,
-    playerState: MutableState<PlayerConstants.PlayerState>,
+    //playerOnline: MutableState<YouTubePlayer?>,
+    //playerState: MutableState<PlayerConstants.PlayerState>,
     onDismiss: () -> Unit,
 ) {
     val menuState = LocalGlobalSheetState.current
@@ -3342,10 +3342,10 @@ fun LocalPlayer(
                 navController = navController,
                 showPlayer = {},
                 hidePlayer = {},
-                player = playerOnline,
-                playerState = playerState,
-                currentDuration = 0f,
-                currentSecond = 0f,
+                //player = playerOnline,
+                //playerState = playerState,
+                //currentDuration = 0f,
+                //currentSecond = 0f,
                 onDismiss = {
                     queueLoopType = it
                     showQueue = false
