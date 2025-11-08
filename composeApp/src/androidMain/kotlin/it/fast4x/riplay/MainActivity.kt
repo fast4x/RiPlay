@@ -1384,7 +1384,7 @@ class MainActivity :
                 CrossfadeContainer(
                     state = pip
                 ) { isCurrentInPip ->
-                    Timber.d("MainActivity pipState ${pipState.value} CrossfadeContainer isCurrentInPip $isCurrentInPip ")
+                    //Timber.d("MainActivity pipState ${pipState.value} CrossfadeContainer isCurrentInPip $isCurrentInPip ")
                     val pipModule by rememberPreference(pipModuleKey, PipModule.Cover)
                     if (isCurrentInPip) {
                         Box(
