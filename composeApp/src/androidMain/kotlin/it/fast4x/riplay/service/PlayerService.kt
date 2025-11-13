@@ -112,6 +112,8 @@ import it.fast4x.riplay.R
 import it.fast4x.riplay.cleanPrefix
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.enums.ContentType
+import it.fast4x.riplay.enums.DurationInMinutes
+import it.fast4x.riplay.enums.DurationInSeconds
 import it.fast4x.riplay.enums.MinTimeForEvent
 import it.fast4x.riplay.enums.NotificationButtons
 import it.fast4x.riplay.enums.PopupType
@@ -126,6 +128,7 @@ import it.fast4x.riplay.extensions.preferences.audioReverbPresetKey
 import it.fast4x.riplay.extensions.preferences.autoLoadSongsInQueueKey
 import it.fast4x.riplay.extensions.preferences.bassboostEnabledKey
 import it.fast4x.riplay.extensions.preferences.bassboostLevelKey
+import it.fast4x.riplay.extensions.preferences.closeBackgroundPlayerAfterMinutesKey
 import it.fast4x.riplay.extensions.preferences.closebackgroundPlayerKey
 import it.fast4x.riplay.extensions.preferences.currentQueuePositionKey
 import it.fast4x.riplay.extensions.preferences.discordPersonalAccessTokenKey
@@ -256,7 +259,9 @@ class PlayerService : Service(),
 
     private var isPersistentQueueEnabled = false
     private var isResumePlaybackOnStart = false
-    private var isclosebackgroundPlayerEnabled = false
+    //private var isclosebackgroundPlayerEnabled = false
+    private var closeServiceAfterMinutes by mutableStateOf(DurationInMinutes.Disabled)
+
     private var isShowingThumbnailInLockscreen = true
     private var medleyDuration by mutableFloatStateOf(0f)
 
@@ -489,7 +494,8 @@ class PlayerService : Service(),
     private fun initializeVariables() {
         // todo add here all val that requires first initialize and add references in shared preferences, so is not nededed restart service when change it
         currentMediaItemState.value =  player.currentMediaItem
-        isclosebackgroundPlayerEnabled = preferences.getBoolean(closebackgroundPlayerKey, false)
+        //isclosebackgroundPlayerEnabled = preferences.getBoolean(closebackgroundPlayerKey, false)
+        closeServiceAfterMinutes = preferences.getEnum(closeBackgroundPlayerAfterMinutesKey, DurationInMinutes.Disabled)
     }
 
     private fun initializePlaybackParameters() {
@@ -931,38 +937,38 @@ class PlayerService : Service(),
     }
 
     override fun onTaskRemoved(rootIntent: Intent?) {
-        Timber.d("PlayerService onTaskRemoved")
-        if (isclosebackgroundPlayerEnabled) {
-            player.pause()
-            internalOnlinePlayer.value?.pause()
-            broadCastPendingIntent<NotificationDismissReceiver>().send()
-            this.stopService(this.intent<PlayerService>())
-            //stopSelf()
-            onDestroy()
-            super.onTaskRemoved(rootIntent)
+        Timber.d("PlayerService onTaskRemoved closeServiceAfterMinutes $closeServiceAfterMinutes")
+        if (closeServiceAfterMinutes != DurationInMinutes.Disabled) {
+            binder.startSleepTimer(closeServiceAfterMinutes.minutesInMilliSeconds)
         }
-//        else {
-//            if (isAtLeastAndroid8)
-//                startForegroundService(intent<PlayerService>())
-//            else
-//                startService(intent<PlayerService>())
-//
-//            startForeground()
+//        if (isclosebackgroundPlayerEnabled) {
+//            player.pause()
+//            internalOnlinePlayer.value?.pause()
+//            broadCastPendingIntent<NotificationDismissReceiver>().send()
+//            this.stopService(this.intent<PlayerService>())
+//            //stopSelf()
+//            onDestroy()
+//            super.onTaskRemoved(rootIntent)
 //        }
     }
 
     @UnstableApi
     override fun onDestroy() {
+        Timber.d("PlayerService onDestroy")
         runCatching {
             player.saveMasterQueue()
 
             preferences.unregisterOnSharedPreferenceChangeListener(this)
 
-            player.removeListener(this)
-            player.stop()
-            player.release()
+            coroutineScope.launch {
+                withContext(Dispatchers.Main){
+                    player.removeListener(this@PlayerService)
+                    player.stop()
+                    player.release()
+                }
+            }
 
-            unregisterReceiver(notificationActionReceiverUpAndroid11)
+            //unregisterReceiver(notificationActionReceiverUpAndroid11)
             //unregisterReceiver(serviceRestartReceiver)
 
             unifiedMediaSession.isActive = false
@@ -1827,8 +1833,13 @@ class PlayerService : Service(),
                 player.repeatMode =
                     sharedPreferences.getEnum(queueLoopTypeKey, QueueLoopType.Default).type
             }
-            closebackgroundPlayerKey -> {
-                    isclosebackgroundPlayerEnabled = sharedPreferences.getBoolean(key, false)
+//            closebackgroundPlayerKey -> {
+//                    isclosebackgroundPlayerEnabled = sharedPreferences.getBoolean(key, false)
+//            }
+            closeBackgroundPlayerAfterMinutesKey -> {
+                closeServiceAfterMinutes =
+                    sharedPreferences.getEnum(closeBackgroundPlayerAfterMinutesKey,
+                        DurationInMinutes.Disabled)
             }
             isShowingThumbnailInLockscreenKey -> {
                 isShowingThumbnailInLockscreen = sharedPreferences.getBoolean(key, true)
@@ -2175,7 +2186,10 @@ class PlayerService : Service(),
         fun startSleepTimer(delayMillis: Long) {
             timerJob?.cancel()
 
+            Timber.d("PlayerService startSleepTimer delayMillis $delayMillis")
+
             timerJob = coroutineScope.timer(delayMillis) {
+                Timber.d("PlayerService startSleepTimer stop delay close service")
                 val notification = NotificationCompat
                     .Builder(this@PlayerService, SLEEPTIMER_NOTIFICATION_CHANNEL_ID)
                     .setContentTitle(getString(R.string.sleep_timer_ended))
@@ -2189,6 +2203,7 @@ class PlayerService : Service(),
                 notificationManager?.notify(SLEEPTIMER_NOTIFICATION_ID, notification)
 
                 stopSelf()
+                onDestroy()
                 exitProcess(0)
             }
         }

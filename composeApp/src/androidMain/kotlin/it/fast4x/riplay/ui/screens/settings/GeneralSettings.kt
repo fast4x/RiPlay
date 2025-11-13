@@ -140,6 +140,7 @@ import java.net.Proxy
 import androidx.core.net.toUri
 import androidx.core.text.isDigitsOnly
 import it.fast4x.riplay.enums.ContentType
+import it.fast4x.riplay.extensions.preferences.closeBackgroundPlayerAfterMinutesKey
 import it.fast4x.riplay.extensions.preferences.enableVoiceInputKey
 import it.fast4x.riplay.extensions.preferences.excludeSongIfIsVideoKey
 import it.fast4x.riplay.extensions.preferences.filterContentTypeKey
@@ -176,6 +177,10 @@ fun GeneralSettings(
     var persistentQueue by rememberPreference(persistentQueueKey, true)
     var resumePlaybackOnStart by rememberPreference(resumePlaybackOnStartKey, false)
     var closebackgroundPlayer by rememberPreference(closebackgroundPlayerKey, false)
+    var closeBackgroundPlayerAfterMinutes by rememberPreference(
+        closeBackgroundPlayerAfterMinutesKey,
+        DurationInMinutes.Disabled
+    )
     var closeWithBackButton by rememberPreference(closeWithBackButtonKey, true)
     var resumeOrPausePlaybackWhenDevice by rememberPreference(
         resumeOrPausePlaybackWhenDeviceKey,
@@ -748,6 +753,7 @@ fun GeneralSettings(
                             valueText = {
                                 when (it) {
                                     DurationInMinutes.Disabled -> stringResource(R.string.vt_disabled)
+                                    DurationInMinutes.`1` -> "1m"
                                     DurationInMinutes.`3` -> "3m"
                                     DurationInMinutes.`5` -> "5m"
                                     DurationInMinutes.`10` -> "10m"
@@ -756,6 +762,10 @@ fun GeneralSettings(
                                     DurationInMinutes.`25` -> "25m"
                                     DurationInMinutes.`30` -> "30m"
                                     DurationInMinutes.`60` -> "60m"
+                                    DurationInMinutes.`90` -> "90m"
+                                    DurationInMinutes.`120` -> "120m"
+                                    DurationInMinutes.`150` -> "150m"
+                                    DurationInMinutes.`180` -> "180m"
                                 }
                             }
                         )
@@ -1089,14 +1099,39 @@ fun GeneralSettings(
                             true
                         )
                     ) {
-                        SwitchSettingEntry(
-                            online = false,
-                            title = stringResource(R.string.close_background_player),
+//                        SwitchSettingEntry(
+//                            title = stringResource(R.string.close_background_player),
+//                            text = stringResource(R.string.when_app_swipe_out_from_task_manager),
+//                            isChecked = closebackgroundPlayer,
+//                            onCheckedChange = {
+//                                closebackgroundPlayer = it
+//                                //restartService = true // not required
+//                            }
+//                        )
+
+                        EnumValueSelectorSettingsEntry(
+                            title = "Auto terminate player activity after closing app",
                             text = stringResource(R.string.when_app_swipe_out_from_task_manager),
-                            isChecked = closebackgroundPlayer,
-                            onCheckedChange = {
-                                closebackgroundPlayer = it
-                                //restartService = true // not required
+                            selectedValue = closeBackgroundPlayerAfterMinutes,
+                            onValueSelected = { closeBackgroundPlayerAfterMinutes = it },
+                            valueText = {
+                                when (it) {
+                                    DurationInMinutes.Disabled -> stringResource(R.string.vt_disabled)
+                                    DurationInMinutes.`1` -> "1m"
+                                    DurationInMinutes.`3` -> "3m"
+                                    DurationInMinutes.`5` -> "5m"
+                                    DurationInMinutes.`10` -> "10m"
+                                    DurationInMinutes.`15` -> "15m"
+                                    DurationInMinutes.`20` -> "20m"
+                                    DurationInMinutes.`25` -> "25m"
+                                    DurationInMinutes.`30` -> "30m"
+                                    DurationInMinutes.`60` -> "60m"
+                                    DurationInMinutes.`90` -> "90m"
+                                    DurationInMinutes.`120` -> "120m"
+                                    DurationInMinutes.`150` -> "150m"
+                                    DurationInMinutes.`180` -> "180m"
+
+                                }
                             }
                         )
                         RestartPlayerService(restartService, onRestart = { restartService = false })

@@ -190,7 +190,7 @@
 
         <service android:name=".service.PlayerMediaBrowserService"
             android:exported="true"
-            android:enabled="false"
+            android:enabled="true"
             tools:ignore="ExportedService">
             <intent-filter>
                 <action android:name="android.media.browse.MediaBrowserService" />
@@ -206,21 +206,6 @@
             tools:ignore="ExportedService">
             <intent-filter>
                 <action android:name=".service.ToolsService" />
-            </intent-filter>
-        </service>
-
-
-        <service android:name=".service.AndroidAutoService"
-            android:exported="true"
-            android:foregroundServiceType="mediaPlayback"
-            tools:ignore="ExportedService">
-            <intent-filter>
-                <action android:name="android.media.browse.MediaBrowserService" />
-                <action android:name="android.intent.action.MEDIA_BUTTON" />
-            </intent-filter>
-            <intent-filter>
-                <action android:name="android.media.action.MEDIA_PLAY_FROM_SEARCH" />
-                <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </service>
         -->
