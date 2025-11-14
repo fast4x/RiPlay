@@ -955,6 +955,14 @@ class PlayerService : Service(),
     @UnstableApi
     override fun onDestroy() {
         Timber.d("PlayerService onDestroy")
+
+        try {
+            unregisterReceiver(notificationActionReceiverUpAndroid11)
+        } catch (e: Exception) {
+            Timber.e("PlayerService onDestroy unregisterReceiver ${e.stackTraceToString()}")
+        }
+
+
         runCatching {
             player.saveMasterQueue()
 
@@ -968,7 +976,7 @@ class PlayerService : Service(),
                 }
             }
 
-            //unregisterReceiver(notificationActionReceiverUpAndroid11)
+
             //unregisterReceiver(serviceRestartReceiver)
 
             unifiedMediaSession.isActive = false
