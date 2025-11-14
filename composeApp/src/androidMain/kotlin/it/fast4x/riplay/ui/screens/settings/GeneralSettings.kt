@@ -1110,7 +1110,7 @@ fun GeneralSettings(
 //                        )
 
                         EnumValueSelectorSettingsEntry(
-                            title = "Auto terminate player activity after closing app",
+                            title = "Auto terminate player",
                             text = stringResource(R.string.when_app_swipe_out_from_task_manager),
                             selectedValue = closeBackgroundPlayerAfterMinutes,
                             onValueSelected = { closeBackgroundPlayerAfterMinutes = it },
