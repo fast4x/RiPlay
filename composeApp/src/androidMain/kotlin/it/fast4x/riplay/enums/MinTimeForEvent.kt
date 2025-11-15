@@ -17,4 +17,8 @@ enum class MinTimeForEvent {
             `40s` -> 40
             `60s` -> 60
         } * 1000L
+
+    val seconds: Long
+        get() = ms / 1000L
+
 }

@@ -124,6 +124,7 @@ import it.fast4x.riplay.extensions.audiovolume.OnAudioVolumeChangedListener
 import it.fast4x.riplay.extensions.discord.DiscordPresenceManager
 import it.fast4x.riplay.extensions.discord.updateDiscordPresenceWithOfflinePlayer
 import it.fast4x.riplay.extensions.discord.updateDiscordPresenceWithOnlinePlayer
+import it.fast4x.riplay.extensions.history.updateOnlineHistory
 import it.fast4x.riplay.extensions.preferences.audioReverbPresetKey
 import it.fast4x.riplay.extensions.preferences.autoLoadSongsInQueueKey
 import it.fast4x.riplay.extensions.preferences.bassboostEnabledKey
@@ -168,6 +169,7 @@ import it.fast4x.riplay.utils.OnlineRadio
 import it.fast4x.riplay.utils.SleepTimerListener
 import it.fast4x.riplay.utils.TimerJob
 import it.fast4x.riplay.utils.appContext
+import it.fast4x.riplay.utils.asMediaItem
 import it.fast4x.riplay.utils.clearWebViewData
 import it.fast4x.riplay.utils.collect
 import it.fast4x.riplay.utils.globalContext
@@ -331,6 +333,11 @@ class PlayerService : Service(),
 
     private var currentQueuePosition: Int = 0
 
+    private var minTimeForEvent: MinTimeForEvent = MinTimeForEvent.`20s`
+
+    private var lastMediaIdInHistory: String = ""
+
+
 
     override fun onBind(intent: Intent?): AndroidBinder {
         return binder
@@ -404,10 +411,11 @@ class PlayerService : Service(),
 
         coroutineScope.launch {
             withContext(Dispatchers.Main) {
-                if (localMediaItem?.isLocal == true)
+                if (localMediaItem?.isLocal == true) {
                     playerPositionMonitor(player).collect {
                         updateUnifiedNotification()
                     }
+                }
             }
         }
 
@@ -419,6 +427,14 @@ class PlayerService : Service(),
                 while (isActive) {
                     delay(30.seconds)
                     saveMasterQueueWithPosition()
+
+                    if (currentSecond.value >= minTimeForEvent.seconds && lastMediaIdInHistory != currentSong.value?.id) {
+                        currentSong.value?.let {
+                            updateOnlineHistory(it.asMediaItem)
+                            lastMediaIdInHistory = it.id
+                        }
+                    }
+
                 }
             }
         }
@@ -1856,6 +1872,10 @@ class PlayerService : Service(),
             playbackDurationKey -> {
                 medleyDuration = sharedPreferences.getFloat(playbackDurationKey, 0f)
                 initializeMedleyMode()
+            }
+            exoPlayerMinTimeForEventKey -> {
+                minTimeForEvent = sharedPreferences.getEnum(exoPlayerMinTimeForEventKey,
+                    MinTimeForEvent.`20s`)
             }
             resumeOrPausePlaybackWhenDeviceKey -> initializeResumeOrPausePlaybackWhenDevice()
             bassboostLevelKey, bassboostEnabledKey -> initializeBassBoost()
