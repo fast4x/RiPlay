@@ -4,7 +4,6 @@
 <div align="center">
   <img src="./assets/design/latest/app_icon.svg" width="120" height="120" />      
   <h2><b>RiPlay</b></h2>
-  <p><i>A customizable multiplatform music player that puts you in control</i></p>
 
 <a href="https://github.com/fast4x/RiPlay/releases"><img src="https://img.shields.io/github/downloads/fast4x/RiPlay/total?label=Total%20Downloads&color=blue"></a>
 <a href="https://github.com/fast4x/RiPlay/releases/latest"><img src="https://img.shields.io/github/downloads/fast4x/RiPlay/latest/total?label=Latest%20Release&color=green"></a>
@@ -22,7 +21,7 @@ RiPlay is a powerful, open-source music player designed for music lovers who wan
 
 **RiPlay respects your privacy and operates transparently:**
 - 🛡️ **No data collection** - Your data stays on your device
-- 🚫 **No online content download or caching** - For online content, it uses the YouTube Player library as a wrapper around the official [IFrame Player API](https://developers.google.com/youtube/iframe_api_reference), which runs inside a WebView
+- 🚫 **No online content download or caching** - For online content, it uses the YouTube Player library as a wrapper around the official [IFrame Player API](https://developers.google.com/youtube/iframe_api_reference) which runs inside a WebView
 
 ## ✨ Key Features
 
@@ -32,21 +31,27 @@ RiPlay is a powerful, open-source music player designed for music lovers who wan
 - **Listening statistics**: Track your music habits and discover insights
 - **Lyrics support**: Fetch, display, edit, and translate synchronized lyrics
 
-### 🎨 Customization
-- **Themes**: Personalize your interface with customizable themes
-- **Audio control**: Fine-tune volume, playback speed, pitch, normalization, skip silence, and bassboost
+### ⏰ Smart Features
+- **Music Recognize**: Recognizes music and retrieves title and artist
+- **Sleep timer**: Fall asleep to your favorite music with customizable timing
 - **Visualizer**: Enjoy stunning audio visualizations with multiple effect types
     - *Note: This feature requires microphone permission when enabled from settings*
-
-### 🌐 Multilingual Support
-Available in 50+ languages including English, Italian, German, Russian, French, Spanish, Czech, Turkish, Romanian and more. Contributions for additional languages are welcome!
-
-### ⏰ Smart Features
-- **Sleep timer**: Fall asleep to your favorite music with customizable timing
-- **Update checking**: Stay current with optional automatic update checks
+- **Fast Share**: Support **Link**, **Share with...** and **Share with external app in direct mode**. Share with all external installed apps on your device.
+- **Cast (No Chromecast)**: (Experimental) Watch and listen to music on another android device including android tv.
+    - *Require **RiPlay Link** install from [Github](https://github.com/fast4x/RiPLayLink)*
 - **Android Auto support**: Enjoy your offline music in the car
 - **Android TV support**: (Experimental) Bring your music to the big screen
 - **Widget support**: (Experimental) Control your music from your home screen
+- **Update checking**: Stay current with optional automatic update checks
+
+### 🎨 Customization
+- **Themes**: Personalize your interface with customizable themes
+- **Audio control**: Fine-tune volume, playback speed, pitch, normalization, skip silence, and bassboost
+    - *Note: More control with **RiEqualizer**, install from [Github](https://github.com/fast4x/RiPLayLink)*
+
+
+### 🌐 Multilingual Support
+Available in 50+ languages including English, Italian, German, Russian, French, Spanish, Czech, Turkish, Romanian and more. Contributions for additional languages are welcome!
 
 ## 🌍 Languages Available
 
@@ -143,7 +148,7 @@ RiPlay is available in 50+ languages thanks to our amazing community of translat
 Contributions are welcome! If you're passionate about improving RiPlay:
 
 **Code Contributions**
-- **Pull requests are welcome** **if you agree to distribute your code under the GPL3.0 license**
+- **Pull requests are welcome** <ins>if you agree to distribute your code under the GPL3.0 license</ins>
 - **Develop new features** or **fix bugs** by forking the repository and submitting a pull request
 
 **Translation Contributions**
