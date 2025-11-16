@@ -62,4 +62,43 @@ body:
         <!-- PASTE LOGS HERE -->
         ```
 
-        
+  - type: input
+    id: app_version
+    attributes:
+      label: App Version
+      description: The version of the app you are using.
+      placeholder: e.g., 0.1.42
+    validations:
+      required: true        
+
+  - type: dropdown
+    id: android_version
+    attributes:
+      label: Android Version
+      description: The version of Android on your device.
+      options:
+        - "14 (Upside Down Cake)"
+        - "13 (Tiramisu)"
+        - "12L"
+        - "12 (Snow Cone)"
+        - "11 (Red Velvet Cake)"
+        - "10 (Q)"
+        - "Other (please specify in Additional Context)"
+    validations:
+      required: true
+
+  - type: input
+    id: device_model
+    attributes:
+      label: Device Model
+      description: The model of your device.
+      placeholder: e.g., Samsung Galaxy S21
+    validations:
+      required: true
+
+  - type: textarea
+    id: additional_context
+    attributes:
+      label: 💡 Additional Context
+      description: Add any other context about the problem here.
+      placeholder: Any other information that might help us understand the issue.      
