@@ -1,29 +1,52 @@
----
 name: ✨ Feature Request
-about: Suggest an idea for this app.
+description: Suggest an idea for this app.
 title: "[FEATURE]: "
 labels: ["enhancement"]
 assignees: ""
----
 
-<!-- Thank you for taking the time to suggest a new feature! -->
-<!-- Please fill out the fields below. -->
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for taking the time to suggest a new feature! Please fill out the fields below.
 
-## 🚀 Feature Description
-<!-- A clear and concise description of the feature you'd like. -->
+  - type: textarea
+    id: feature_description
+    attributes:
+      label: 🚀 Feature Description
+      description: A clear and concise description of the feature you'd like.
+      placeholder: e.g., A dark mode toggle in the settings menu.
+    validations:
+      required: true
 
-## 💭 Problem/Motivation
-<!-- What problem are you trying to solve with this feature? -->
-<!-- Why would this feature be useful to you or other users? -->
-<!-- Example: "I'm always frustrated when I have to..." -->
+  - type: textarea
+    id: problem_motivation
+    attributes:
+      label: 💭 Problem/Motivation
+      description: What problem are you trying to solve with this feature? Why would this feature be useful to you or other users?
+      placeholder: e.g., "I'm always frustrated when I have to manually switch between my downloaded and online playlists. A unified queue would solve this."
+    validations:
+      required: true
 
-## 💡 Proposed Solution
-<!-- Describe how you would like this feature to be implemented. -->
-<!-- You can include sketches, mockups, or examples of other apps that already do this. -->
+  - type: textarea
+    id: proposed_solution
+    attributes:
+      label: 💡 Proposed Solution
+      description: Describe how you would like this feature to be implemented. You can include sketches, mockups, or examples of other apps that already do this.
+      placeholder: e.g., Add a new "Unified Queue" option in the navigation drawer that combines songs from both local and online sources.
+    validations:
+      required: true
 
-## 🔄 Alternatives Considered
-<!-- Have you considered any alternative solutions or features? -->
-<!-- Describe why your proposed solution is the best one. -->
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: 🔄 Alternatives Considered
+      description: Have you considered any alternative solutions or features? Describe why your proposed solution is the best one.
+      placeholder: e.g., I considered using a third-party app to manage playlists, but having it integrated into the app would provide a much smoother experience.
 
-## 📋 Additional Context
-<!-- Add any other information, screenshots, or examples that can help us understand the request. -->
+  - type: textarea
+    id: additional_context
+    attributes:
+      label: 📋 Additional Context
+      description: Add any other information, screenshots, or examples that can help us understand the request.
+      placeholder: Any other information that might help us understand the request.
