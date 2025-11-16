@@ -8,7 +8,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        Thank you for taking the time to file a bug report! Please fill out the fields below as much as you can.
+        Thank you for taking time to file a bug report! Please fill out the fields below as much as you can.
 
   - type: textarea
     id: bug_description
