@@ -17,3 +17,27 @@ body:
       placeholder: e.g., The play/pause button doesn't respond when the screen is off.
     validations:
       required: true    
+
+  - type: textarea
+    id: steps_to_reproduce
+    attributes:
+      label: 🔄 Steps to Reproduce the Bug
+      description: Describe the steps to reproduce the behavior.
+      placeholder: |
+        1. Go to '...'
+        2. Click on '....'
+        3. Scroll down to '....'
+        4. See the error
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected_behavior
+    attributes:
+      label: 🤔 Expected Behavior
+      description: Describe what you expected to see or happen.
+      placeholder: e.g., The song should pause/resume normally.
+    validations:
+      required: true
+
+      
