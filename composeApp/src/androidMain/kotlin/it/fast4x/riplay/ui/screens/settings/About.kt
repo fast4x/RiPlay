@@ -99,14 +99,6 @@ fun About() {
             }
         )
 
-//        SettingsEntry(
-//            title = stringResource(R.string.social_discord),
-//            text = stringResource(R.string.social_discord_info),
-//            onClick = {
-//                uriHandler.openUri("https://discord.gg/h7eS2PcGeW")
-//            }
-//        )
-
         SettingsGroupSpacer()
 
         SettingsEntryGroupText(title = "Official Project Page")
@@ -125,25 +117,24 @@ fun About() {
 
         SettingsGroupSpacer()
 
-        //todo enable issues
-//        SettingsEntryGroupText(title = stringResource(R.string.troubleshooting))
-//
-//        SettingsEntry(
-//            title = stringResource(R.string.report_an_issue),
-//            text = stringResource(R.string.you_will_be_redirected_to_github),
-//            onClick = {
-//                uriHandler.openUri("https://github.com/fast4x/RiPlay/issues/new?assignees=&labels=bug&template=bug_report.yaml")
-//            }
-//        )
-//
-//
-//        SettingsEntry(
-//            title = stringResource(R.string.request_a_feature_or_suggest_an_idea),
-//            text = stringResource(R.string.you_will_be_redirected_to_github),
-//            onClick = {
-//                uriHandler.openUri("https://github.com/fast4x/RiPlay/issues/new?assignees=&labels=feature_request&template=feature_request.yaml")
-//            }
-//        )
+        SettingsEntryGroupText(title = stringResource(R.string.troubleshooting))
+
+        SettingsEntry(
+            title = stringResource(R.string.report_an_issue),
+            text = stringResource(R.string.you_will_be_redirected_to_github),
+            onClick = {
+                uriHandler.openUri("https://github.com/fast4x/RiPlay/issues/new?assignees=&labels=bug&template=bug_report.yaml")
+            }
+        )
+
+
+        SettingsEntry(
+            title = stringResource(R.string.request_a_feature_or_suggest_an_idea),
+            text = stringResource(R.string.you_will_be_redirected_to_github),
+            onClick = {
+                uriHandler.openUri("https://github.com/fast4x/RiPlay/issues/new?assignees=&labels=enhancement&template=feature_request.yaml")
+            }
+        )
 
 //        SettingsGroupSpacer()
 //

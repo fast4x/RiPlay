@@ -36,11 +36,12 @@ RiPlay is a powerful, open-source music player designed for music lovers who wan
 - **Sleep timer**: Fall asleep to your favorite music with customizable timing
 - **Visualizer**: Enjoy stunning audio visualizations with multiple effect types
     - *Note: This feature requires microphone permission when enabled from settings*
-- **Fast Share**: Support **Link**, **Share with...** and **Share with external app in direct mode**. Share with all external installed apps on your device.
+- **Fast Share**: Support **Link**, **Share with...** and **Share with external app** in direct mode. Share with all external installed apps on your device.
+    - *Note: With Direct Mode, you can add inside RiPlay external apps installed on device and share directly with one click*
 - **Cast (No Chromecast)**: (Experimental) Watch and listen to music on another android device including android tv.
     - *Require **RiPlay Link** install from [Github](https://github.com/fast4x/RiPLayLink)*
-- **Android Auto support**: Enjoy your offline music in the car
-- **Android TV support**: (Experimental) Bring your music to the big screen
+- **Android Auto support**: Can add and remove content such as: Shuffle, Monthly Playlists, Library, On Device, Top Playlists, Favorite Playlists,
+- **Android TV support**: (Experimental) Install RiPlay to the big screen
 - **Widget support**: (Experimental) Control your music from your home screen
 - **Update checking**: Stay current with optional automatic update checks
 
