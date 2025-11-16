@@ -308,21 +308,14 @@ class MainActivity :
                 this@MainActivity.binder = service
                 //this@MainActivity.onlinePlayer.value = service.onlinePlayer
                 this@MainActivity.onlinePlayerPlayingState = service.onlinePlayerPlayingState
-                this@MainActivity.currentDuration.value = service.onlinePlayerCurrentDuration
-                this@MainActivity.currentSecond.value = service.onlinePlayerCurrentSecond
+//                this@MainActivity.currentDuration.value = service.onlinePlayerCurrentDuration
+//                this@MainActivity.currentSecond.value = service.onlinePlayerCurrentSecond
                 this@MainActivity.onlinePlayerView = service.onlinePlayerView
             }
 
 //            if (service is ToolsService.LocalBinder) {
 //                this@MainActivity.toolsService = service.serviceInstance.LocalBinder()
 //            }
-            /*
-            if (service is AndroidAutoService.LocalBinder) {
-                this@MainActivity.androidAutoService = service.serviceInstance.LocalBinder()
-                service.mediaSessionInjected = unifiedMediaSession
-                service.localPlayerBinderInjected = binder
-            }
-             */
         }
 
         override fun onServiceDisconnected(name: ComponentName?) {
@@ -360,14 +353,11 @@ class MainActivity :
 
     //var onlinePlayer: MutableState<YouTubePlayer?> = mutableStateOf(null)
 
-    var currentSecond: MutableState<Float> = mutableFloatStateOf(0f)
-    var currentDuration: MutableState<Float> = mutableFloatStateOf(0f)
-    //var onlinePositionAndDuration: MutableState<Pair<Long, Long>> = mutableStateOf(0L to 0L)
+    //var currentSecond: MutableState<Float> = mutableFloatStateOf(0f)
+    //var currentDuration: MutableState<Float> = mutableFloatStateOf(0f)
 
 
     //var toolsService by mutableStateOf<ToolsService.LocalBinder?>(null)
-
-    //private var onlinePlayerState = mutableStateOf(PlayerConstants.PlayerState.UNSTARTED)
 
     private var onlinePlayerView: YouTubePlayerView? = null
 
@@ -1367,8 +1357,8 @@ class MainActivity :
 
                 onlinePlayerPlayingState = binder?.onlinePlayerPlayingState == true
 
-                currentDuration.value = binder?.onlinePlayerCurrentDuration ?: 0F
-                currentSecond.value = binder?.onlinePlayerCurrentSecond ?: 0F
+//                currentDuration.value = binder?.onlinePlayerCurrentDuration ?: 0F
+//                currentSecond.value = binder?.onlinePlayerCurrentSecond ?: 0F
                 onlinePlayerView = binder?.onlinePlayerView
                 //onlinePositionAndDuration.value = currentSecond.value.toLong() to currentDuration.value.toLong()
 
@@ -1536,7 +1526,7 @@ class MainActivity :
                                 val onlinePlayer: @Composable () -> Unit = {
                                     OnlinePlayer(
                                         navController = navController,
-                                        playFromSecond = currentSecond.value,
+                                        //playFromSecond = currentSecond.value,
                                         onlineCore = {
                                             binder?.player?.currentMediaItem?.let{
                                                 OnlinePlayerView(
@@ -1633,7 +1623,7 @@ class MainActivity :
                             }
 
                             mediaItem.let {
-                                currentSecond.value = 0F
+                                //currentSecond.value = 0F
 
                                 if (reason == Player.MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED) {
                                     if (it.mediaMetadata.extras?.getBoolean("isFromPersistentQueue") != true) {
@@ -1947,8 +1937,6 @@ val LocalPlayerSheetState =
 
 val LocalOnlinePlayerPlayingState =
     staticCompositionLocalOf<Boolean> { error("No player sheet state provided") }
-
-//val LocalOnlinePositionAndDuration = staticCompositionLocalOf<Pair<Long, Long>> { error("No player sheet state provided") }
 
 val LocalLinkDevices =
     staticCompositionLocalOf<List<NsdServiceInfo>> { error("No link devices provided") }
