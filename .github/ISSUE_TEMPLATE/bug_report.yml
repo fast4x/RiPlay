@@ -40,4 +40,26 @@ body:
     validations:
       required: true
 
-      
+  - type: textarea
+    id: actual_behavior
+    attributes:
+      label: ❌ Actual Behavior
+      description: Describe what happened instead. Include exact error messages.
+      placeholder: e.g., The button is unresponsive, and I see the following error in the logs:...
+    validations:
+      required: true
+
+  - type: textarea
+    id: screenshots_and_logs
+    attributes:
+      label: 📸 Screenshots and Logs
+      description: |
+        If applicable, add screenshots by dragging and dropping them into the issue.
+        For logs, please follow the guide in the FAQ: "How do I get log files in case of a crash?" and paste them below.
+      placeholder: |
+        Paste your logs here, enclosed in triple backticks (```).
+        ```
+        <!-- PASTE LOGS HERE -->
+        ```
+
+        
