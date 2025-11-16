@@ -143,7 +143,7 @@ RiPlay is available in 50+ languages thanks to our amazing community of translat
 Contributions are welcome! If you're passionate about improving RiPlay:
 
 **Code Contributions**
-- **Pull requests are welcome** if you agree to distribute your code under the GPL3.0 license
+- **Pull requests are welcome** **if you agree to distribute your code under the GPL3.0 license**
 - **Develop new features** or **fix bugs** by forking the repository and submitting a pull request
 
 **Translation Contributions**
