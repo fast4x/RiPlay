@@ -362,7 +362,7 @@ class MainActivity :
 
     var currentSecond: MutableState<Float> = mutableFloatStateOf(0f)
     var currentDuration: MutableState<Float> = mutableFloatStateOf(0f)
-    var onlinePositionAndDuration: MutableState<Pair<Long, Long>> = mutableStateOf(0L to 0L)
+    //var onlinePositionAndDuration: MutableState<Pair<Long, Long>> = mutableStateOf(0L to 0L)
 
 
     //var toolsService by mutableStateOf<ToolsService.LocalBinder?>(null)
@@ -1364,13 +1364,13 @@ class MainActivity :
                 }
 
                 // get value from PlayerService
-                //onlinePlayer.value = binder?.onlinePlayer
+
                 onlinePlayerPlayingState = binder?.onlinePlayerPlayingState == true
-                //onlinePlayerState.value = binder?.onlinePlayerState ?: PlayerConstants.PlayerState.UNSTARTED
+
                 currentDuration.value = binder?.onlinePlayerCurrentDuration ?: 0F
                 currentSecond.value = binder?.onlinePlayerCurrentSecond ?: 0F
                 onlinePlayerView = binder?.onlinePlayerView
-                onlinePositionAndDuration.value = currentSecond.value.toLong() to currentDuration.value.toLong()
+                //onlinePositionAndDuration.value = currentSecond.value.toLong() to currentDuration.value.toLong()
 
                 val pip = isInPip(
                     onChange = {
@@ -1425,7 +1425,7 @@ class MainActivity :
                             LocalMonetCompat provides localMonet,
                             LocalLinkDevices provides linkDevices.value,
                             LocalOnlinePlayerPlayingState provides onlinePlayerPlayingState,
-                            LocalOnlinePositionAndDuration provides onlinePositionAndDuration.value,
+                            //LocalOnlinePositionAndDuration provides onlinePositionAndDuration.value,
                             LocalSelectedQueue provides selectedQueue.value,
                             LocalBackupHandler provides backupHandler,
                             LocalAudioTagger provides audioTaggerViewModel
@@ -1948,7 +1948,7 @@ val LocalPlayerSheetState =
 val LocalOnlinePlayerPlayingState =
     staticCompositionLocalOf<Boolean> { error("No player sheet state provided") }
 
-val LocalOnlinePositionAndDuration = staticCompositionLocalOf<Pair<Long, Long>> { error("No player sheet state provided") }
+//val LocalOnlinePositionAndDuration = staticCompositionLocalOf<Pair<Long, Long>> { error("No player sheet state provided") }
 
 val LocalLinkDevices =
     staticCompositionLocalOf<List<NsdServiceInfo>> { error("No link devices provided") }

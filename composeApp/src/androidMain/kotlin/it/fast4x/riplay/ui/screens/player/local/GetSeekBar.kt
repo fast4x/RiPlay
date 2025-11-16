@@ -38,6 +38,8 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.media3.common.C
 import androidx.media3.common.util.UnstableApi
 import it.fast4x.riplay.LocalPlayerServiceBinder
@@ -68,8 +70,9 @@ import it.fast4x.riplay.extensions.preferences.transparentbarKey
 import it.fast4x.riplay.utils.typography
 import it.fast4x.riplay.utils.formatAsDuration
 import it.fast4x.riplay.utils.isCompositionLaunched
-import it.fast4x.riplay.utils.positionAndDurationState
 import it.fast4x.riplay.ui.styling.semiBold
+import it.fast4x.riplay.utils.PlayerViewModel
+import it.fast4x.riplay.utils.PlayerViewModelFactory
 import org.jetbrains.compose.resources.painterResource
 import riplay.composeapp.generated.resources.Res
 import riplay.composeapp.generated.resources.play
@@ -371,10 +374,14 @@ fun GetSeekBar(
 
 
         if (duration != C.TIME_UNSET) {
-            val positionAndDuration = binder.player.positionAndDurationState()
-            var timeRemaining by remember { mutableIntStateOf(0) }
-            timeRemaining =
-                positionAndDuration.value.second.toInt() - positionAndDuration.value.first.toInt()
+            val factory = remember(binder) {
+                PlayerViewModelFactory(binder)
+            }
+            val playerViewModel: PlayerViewModel = viewModel(factory = factory)
+            val positionAndDuration by playerViewModel.positionAndDuration.collectAsStateWithLifecycle()
+
+            var timeRemaining by remember { mutableIntStateOf( 0 ) }
+            timeRemaining = positionAndDuration.second.toInt() - positionAndDuration.first.toInt()
             var paused by remember { mutableStateOf(false) }
 
             if (pauseBetweenSongs != PauseBetweenSongs.`0`)

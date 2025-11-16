@@ -45,6 +45,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.media3.common.MediaItem
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.offline.Download
@@ -78,7 +80,6 @@ import it.fast4x.riplay.utils.formatAsDuration
 import it.fast4x.riplay.utils.mediaItemToggleLike
 import it.fast4x.riplay.extensions.preferences.playlistSortByKey
 import it.fast4x.riplay.extensions.preferences.playlistSortOrderKey
-import it.fast4x.riplay.utils.positionAndDurationState
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.ui.styling.semiBold
 import it.fast4x.riplay.utils.thumbnail
@@ -95,6 +96,8 @@ import it.fast4x.riplay.data.models.Song
 import it.fast4x.riplay.data.models.defaultQueue
 import it.fast4x.riplay.utils.typography
 import it.fast4x.riplay.ui.screens.settings.isSyncEnabled
+import it.fast4x.riplay.utils.PlayerViewModel
+import it.fast4x.riplay.utils.PlayerViewModelFactory
 import it.fast4x.riplay.utils.addSongToYtPlaylist
 import it.fast4x.riplay.utils.addToYtLikedSong
 import it.fast4x.riplay.utils.forcePlay
@@ -518,15 +521,13 @@ fun MediaItemGridMenu (
         ?: flowOf(null))
         .collectAsState(initial = null)
 
-    val positionAndDuration = binder?.player?.positionAndDurationState()
-
-    var timeRemaining by remember { mutableIntStateOf(0) }
-
-    if (positionAndDuration != null) {
-        timeRemaining = positionAndDuration.value.second.toInt() - positionAndDuration.value.first.toInt()
+    val factory = remember(binder) {
+        PlayerViewModelFactory(binder)
     }
+    val playerViewModel: PlayerViewModel = viewModel(factory = factory)
+    val positionAndDuration by playerViewModel.positionAndDuration.collectAsStateWithLifecycle()
 
-    //val timeToStop = System.currentTimeMillis()
+    var timeRemaining by remember { mutableIntStateOf(positionAndDuration.second.toInt() - positionAndDuration.first.toInt()) }
 
     if (isShowingSleepTimerDialog) {
         if (sleepTimerMillisLeft != null) {

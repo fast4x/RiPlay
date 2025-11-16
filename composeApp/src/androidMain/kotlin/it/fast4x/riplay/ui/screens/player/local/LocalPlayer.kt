@@ -243,7 +243,6 @@ import it.fast4x.riplay.extensions.preferences.playerThumbnailSizeKey
 import it.fast4x.riplay.extensions.preferences.playerThumbnailSizeLKey
 import it.fast4x.riplay.extensions.preferences.playerTypeKey
 import it.fast4x.riplay.extensions.preferences.playlistindicatorKey
-import it.fast4x.riplay.utils.positionAndDurationState
 import it.fast4x.riplay.extensions.preferences.queueDurationExpandedKey
 import it.fast4x.riplay.extensions.preferences.queueLoopTypeKey
 import it.fast4x.riplay.extensions.preferences.queueTypeKey
@@ -334,7 +333,10 @@ import it.fast4x.riplay.utils.unlikeYtVideoOrSong
 import kotlinx.coroutines.CoroutineScope
 import org.dailyislam.android.utilities.isNetworkConnected
 import kotlin.math.sqrt
-
+import it.fast4x.riplay.utils.PlayerViewModel
+import it.fast4x.riplay.utils.PlayerViewModelFactory
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 
 @ExperimentalPermissionsApi
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeUiApi::class)
@@ -539,9 +541,16 @@ fun LocalPlayer(
         ?: flowOf(null))
         .collectAsState(initial = null)
 
-    val positionAndDuration by binder.player.positionAndDurationState()
+    val factory = remember(binder) {
+        PlayerViewModelFactory(binder)
+    }
+    val playerViewModel: PlayerViewModel = viewModel(factory = factory)
+    val positionAndDuration by playerViewModel.positionAndDuration.collectAsStateWithLifecycle()
+
     var timeRemaining by remember { mutableIntStateOf(0) }
-    timeRemaining = positionAndDuration.second.toInt() - positionAndDuration.first.toInt()
+    LaunchedEffect(positionAndDuration) {
+        timeRemaining = positionAndDuration.second.toInt() - positionAndDuration.first.toInt()
+    }
 
     if (sleepTimerMillisLeft != null)
         if (sleepTimerMillisLeft!! < timeRemaining.toLong() && !delayedSleepTimer)  {

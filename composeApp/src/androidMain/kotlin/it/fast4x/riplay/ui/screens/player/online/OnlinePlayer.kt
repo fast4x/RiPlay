@@ -81,7 +81,6 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -138,6 +137,8 @@ import androidx.compose.ui.unit.times
 import androidx.compose.ui.util.lerp
 import androidx.compose.ui.zIndex
 import androidx.core.graphics.ColorUtils.colorToHSL
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
@@ -162,7 +163,6 @@ import com.mikepenz.hypnoticcanvas.shaders.OilFlow
 import com.mikepenz.hypnoticcanvas.shaders.PurpleLiquid
 import com.mikepenz.hypnoticcanvas.shaders.Stage
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.PlayerConstants
-import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
 import dev.chrisbanes.haze.HazeDefaults
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.haze
@@ -171,7 +171,6 @@ import it.fast4x.environment.Environment
 import it.fast4x.environment.models.NavigationEndpoint
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.LocalLinkDevices
-import it.fast4x.riplay.LocalOnlinePositionAndDuration
 import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.LocalSelectedQueue
 import it.fast4x.riplay.R
@@ -355,6 +354,8 @@ import it.fast4x.riplay.extensions.preferences.transparentBackgroundPlayerAction
 import it.fast4x.riplay.utils.unlikeYtVideoOrSong
 import it.fast4x.riplay.extensions.preferences.visualizerEnabledKey
 import it.fast4x.riplay.ui.components.DelayedControls
+import it.fast4x.riplay.utils.PlayerViewModel
+import it.fast4x.riplay.utils.PlayerViewModelFactory
 import it.fast4x.riplay.utils.detectGestures
 import it.fast4x.riplay.utils.hide
 import kotlinx.coroutines.CoroutineScope
@@ -605,8 +606,11 @@ fun OnlinePlayer(
         ?: flowOf(null))
         .collectAsState(initial = null)
 
-    //var positionAndDuration by remember { mutableStateOf(0f to 0f) }
-    val positionAndDuration = LocalOnlinePositionAndDuration.current
+    val factory = remember(binder) {
+        PlayerViewModelFactory(binder)
+    }
+    val playerViewModel: PlayerViewModel = viewModel(factory = factory)
+    val positionAndDuration by playerViewModel.positionAndDuration.collectAsStateWithLifecycle()
     var timeRemaining by remember { mutableIntStateOf(0) }
 
 

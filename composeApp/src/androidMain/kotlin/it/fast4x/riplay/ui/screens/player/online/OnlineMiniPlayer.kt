@@ -35,6 +35,7 @@ import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -60,14 +61,14 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.PlayerConstants
-import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
-import it.fast4x.riplay.LocalOnlinePositionAndDuration
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.R
@@ -113,6 +114,8 @@ import it.fast4x.riplay.utils.playPrevious
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.service.PlayerService
 import it.fast4x.riplay.ui.styling.semiBold
+import it.fast4x.riplay.utils.PlayerViewModel
+import it.fast4x.riplay.utils.PlayerViewModelFactory
 import it.fast4x.riplay.utils.setDisLikeState
 import it.fast4x.riplay.utils.thumbnail
 import it.fast4x.riplay.utils.unlikeYtVideoOrSong
@@ -213,8 +216,11 @@ fun OnlineMiniPlayer(
         }
     }
 
-    //var positionAndDuration by remember { mutableStateOf(0f to 0f) }
-    val positionAndDuration = LocalOnlinePositionAndDuration.current
+    val factory = remember(binder) {
+        PlayerViewModelFactory(binder)
+    }
+    val playerViewModel: PlayerViewModel = viewModel(factory = factory)
+    val positionAndDuration by playerViewModel.positionAndDuration.collectAsStateWithLifecycle()
 
 
     val dismissState = rememberSwipeToDismissBoxState(

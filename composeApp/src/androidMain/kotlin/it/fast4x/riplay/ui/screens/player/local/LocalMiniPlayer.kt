@@ -100,7 +100,6 @@ import it.fast4x.riplay.utils.mediaItemToggleLike
 import it.fast4x.riplay.extensions.preferences.miniPlayerTypeKey
 import it.fast4x.riplay.utils.playNext
 import it.fast4x.riplay.utils.playPrevious
-import it.fast4x.riplay.utils.positionAndDurationState
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.service.PlayerService
 import it.fast4x.riplay.ui.styling.semiBold
@@ -113,6 +112,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import kotlin.math.absoluteValue
+import it.fast4x.riplay.utils.PlayerViewModel
+import it.fast4x.riplay.utils.PlayerViewModelFactory
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 
 @androidx.annotation.OptIn(UnstableApi::class)
 @OptIn(ExperimentalFoundationApi::class,
@@ -220,7 +223,11 @@ fun LocalMiniPlayer(
         }
     }
 
-    val positionAndDuration by binder.player.positionAndDurationState()
+    val factory = remember(binder) {
+        PlayerViewModelFactory(binder)
+    }
+    val playerViewModel: PlayerViewModel = viewModel(factory = factory)
+    val positionAndDuration by playerViewModel.positionAndDuration.collectAsStateWithLifecycle()
 
 
     val dismissState = rememberSwipeToDismissBoxState(

@@ -17,6 +17,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewModelScope
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
@@ -25,6 +28,8 @@ import androidx.media3.common.Player.REPEAT_MODE_OFF
 import androidx.media3.common.Player.REPEAT_MODE_ONE
 import androidx.media3.common.Timeline
 import androidx.media3.common.util.UnstableApi
+import androidx.media3.exoplayer.ExoPlayer
+import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.DurationInMinutes
@@ -36,10 +41,19 @@ import it.fast4x.riplay.data.models.QueuedMediaItem
 import it.fast4x.riplay.data.models.Queues
 import it.fast4x.riplay.data.models.defaultQueueId
 import it.fast4x.riplay.extensions.preferences.excludeSongIfIsVideoKey
+import it.fast4x.riplay.service.PlayerService
+import it.fast4x.riplay.service.isLocal
 import it.fast4x.riplay.ui.components.themed.SmartMessage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -488,6 +502,7 @@ inline fun Player.DisposableListener(crossinline listenerProvider: () -> Player.
     }
 }
 
+/*
 @Composable
 fun Player.positionAndDurationState(): State<Pair<Long, Long>> {
     val state = remember {
@@ -540,6 +555,105 @@ fun Player.positionAndDurationState(): State<Pair<Long, Long>> {
     }
 
     return state
+}
+*/
+
+@OptIn(UnstableApi::class)
+fun Player.positionAndDurationStateFlow(
+    scope: CoroutineScope,
+    binder: PlayerService.Binder?
+): StateFlow<Pair<Long, Long>> {
+
+    // Definiamo il valore iniziale
+    val initialValue = if (currentMediaItem?.isLocal == true) {
+        currentPosition to duration
+    } else {
+        (binder?.onlinePlayerCurrentSecond?.toLong() ?: 0L) to
+                (binder?.onlinePlayerCurrentDuration?.toLong() ?: 0L)
+    }
+
+    return callbackFlow {
+        var isSeeking = false
+
+        val listener = object : Player.Listener {
+            override fun onPlaybackStateChanged(playbackState: Int) {
+                if (playbackState == Player.STATE_READY) {
+                    isSeeking = false
+                }
+            }
+
+            override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
+                val newValue = if (mediaItem?.isLocal == true) {
+                    currentPosition to duration
+                } else {
+                    (binder?.onlinePlayerCurrentSecond?.toLong() ?: 0L) to
+                            (binder?.onlinePlayerCurrentDuration?.toLong() ?: 0L)
+                }
+                trySend(newValue)
+            }
+
+            override fun onPositionDiscontinuity(
+                oldPosition: Player.PositionInfo,
+                newPosition: Player.PositionInfo,
+                reason: Int
+            ) {
+                if (reason == Player.DISCONTINUITY_REASON_SEEK && currentMediaItem?.isLocal == true) {
+                    isSeeking = true
+                    trySend(currentPosition to duration)
+                }
+            }
+        }
+
+        addListener(listener)
+
+        // Job per il polling continuo della posizione
+        val pollJob = launch {
+            while (isActive) {
+                delay(500) // Aggiorna ogni 500ms
+                if (!isSeeking) {
+                    val newValue = if (currentMediaItem?.isLocal == true) {
+                        currentPosition to duration
+                    } else {
+                        (binder?.onlinePlayerCurrentSecond?.toLong() ?: 0L) to
+                                (binder?.onlinePlayerCurrentDuration?.toLong() ?: 0L)
+                    }
+                    trySend(newValue)
+                }
+            }
+        }
+
+        // `awaitClose` garantisce la pulizia delle risorse quando il flow non è più raccolto
+        awaitClose {
+            removeListener(listener)
+            pollJob.cancel()
+        }
+    }.stateIn(
+        scope = scope,
+        started = SharingStarted.WhileSubscribed(5000), // Mantiene attivo il flow per 5s dopo l'ultimo collectore
+        initialValue = initialValue
+    )
+}
+
+@UnstableApi
+class PlayerViewModel (
+    private val binder: PlayerService.Binder?
+) : ViewModel() {
+    val positionAndDuration: StateFlow<Pair<Long, Long>> =
+        binder?.player?.positionAndDurationStateFlow(viewModelScope, binder)
+            ?: flowOf(0L to 0L).stateIn(viewModelScope, SharingStarted.Eagerly, 0L to 0L)
+}
+
+@UnstableApi
+class PlayerViewModelFactory(
+    private val binder: PlayerService.Binder?
+) : ViewModelProvider.Factory {
+    @Suppress("UNCHECKED_CAST")
+    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+        if (modelClass.isAssignableFrom(PlayerViewModel::class.java)) {
+            return PlayerViewModel(binder) as T
+        }
+        throw IllegalArgumentException("Unknown ViewModel class")
+    }
 }
 
 @Composable
