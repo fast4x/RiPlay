@@ -26,7 +26,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.media3.common.util.UnstableApi
 import it.fast4x.riplay.R
-import it.fast4x.riplay.colorPalette
 import it.fast4x.riplay.enums.NavigationBarPosition
 import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.extensions.preferences.defaultFolderKey
@@ -39,6 +38,7 @@ import it.fast4x.riplay.ui.components.themed.HeaderWithIcon
 import it.fast4x.riplay.ui.components.themed.InputTextDialog
 import it.fast4x.riplay.ui.components.themed.SmartMessage
 import it.fast4x.riplay.ui.styling.Dimensions
+import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.utils.isAtLeastAndroid10
 import java.io.File
 import java.io.FileInputStream
