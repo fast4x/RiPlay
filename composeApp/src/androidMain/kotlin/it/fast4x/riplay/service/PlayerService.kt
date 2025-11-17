@@ -52,7 +52,6 @@ import androidx.media3.common.AudioAttributes
 import androidx.media3.common.AuxEffectInfo
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
-import androidx.media3.common.PlaybackException
 import androidx.media3.common.PlaybackParameters
 import androidx.media3.common.Player
 import androidx.media3.common.Player.STATE_IDLE
@@ -95,7 +94,6 @@ import it.fast4x.riplay.data.models.Event
 import it.fast4x.riplay.data.models.Song
 import it.fast4x.riplay.ui.components.themed.SmartMessage
 import it.fast4x.riplay.utils.asSong
-import it.fast4x.riplay.utils.broadCastPendingIntent
 import it.fast4x.riplay.utils.forceSeekToNext
 import it.fast4x.riplay.utils.forceSeekToPrevious
 import it.fast4x.riplay.utils.intent
@@ -113,7 +111,6 @@ import it.fast4x.riplay.cleanPrefix
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.enums.ContentType
 import it.fast4x.riplay.enums.DurationInMinutes
-import it.fast4x.riplay.enums.DurationInSeconds
 import it.fast4x.riplay.enums.MinTimeForEvent
 import it.fast4x.riplay.enums.NotificationButtons
 import it.fast4x.riplay.enums.PopupType
@@ -130,7 +127,6 @@ import it.fast4x.riplay.extensions.preferences.autoLoadSongsInQueueKey
 import it.fast4x.riplay.extensions.preferences.bassboostEnabledKey
 import it.fast4x.riplay.extensions.preferences.bassboostLevelKey
 import it.fast4x.riplay.extensions.preferences.closeBackgroundPlayerAfterMinutesKey
-import it.fast4x.riplay.extensions.preferences.closebackgroundPlayerKey
 import it.fast4x.riplay.extensions.preferences.currentQueuePositionKey
 import it.fast4x.riplay.extensions.preferences.discordPersonalAccessTokenKey
 import it.fast4x.riplay.extensions.preferences.discoverKey
@@ -156,7 +152,6 @@ import it.fast4x.riplay.extensions.preferences.queueLoopTypeKey
 import it.fast4x.riplay.extensions.preferences.resumeOrPausePlaybackWhenDeviceKey
 import it.fast4x.riplay.extensions.preferences.resumePlaybackOnStartKey
 import it.fast4x.riplay.extensions.preferences.shakeEventEnabledKey
-import it.fast4x.riplay.extensions.preferences.skipMediaOnErrorKey
 import it.fast4x.riplay.extensions.preferences.skipSilenceKey
 import it.fast4x.riplay.extensions.preferences.useVolumeKeysToChangeSongKey
 import it.fast4x.riplay.extensions.preferences.volumeBoostLevelKey
@@ -258,6 +253,7 @@ class PlayerService : Service(),
     var bitmapProvider: BitmapProvider? = null
 
     private var volumeNormalizationJob: Job? = null
+    private var positionObserverJob: Job? = null
 
     private var isPersistentQueueEnabled = false
     private var isResumePlaybackOnStart = false
@@ -402,7 +398,7 @@ class PlayerService : Service(),
         player.repeatMode = preferences.getEnum(queueLoopTypeKey, QueueLoopType.Default).type
 
         player.skipSilenceEnabled = preferences.getBoolean(skipSilenceKey, false)
-        player.pauseAtEndOfMediaItems = false
+        //player.pauseAtEndOfMediaItems = true
 
         audioVolumeObserver = AudioVolumeObserver(this)
         audioVolumeObserver.register(AudioManager.STREAM_MUSIC, this)
@@ -455,6 +451,7 @@ class PlayerService : Service(),
 
         startForeground()
 
+        initializePositionObserver()
         initializeResumeOrPausePlaybackWhenDevice()
         initializeBassBoost()
         initializeReverb()
@@ -741,7 +738,7 @@ class PlayerService : Service(),
                     //super.onStateChange(youTubePlayer, state)
                     Timber.d("PlayerService onlinePlayerView: onStateChange $state")
 
-
+                    /*
                     if (state == PlayerConstants.PlayerState.ENDED) {
                         val queueLoopType = preferences.getEnum(queueLoopTypeKey, defaultValue = QueueLoopType.Default)
                         // TODO Implement repeat mode in queue
@@ -773,6 +770,7 @@ class PlayerService : Service(),
                         }
 
                     }
+                    */
 
 //                    val fadeDisabled = getPlaybackFadeAudioDuration() == DurationInMilliseconds.Disabled
 //                    val duration = getPlaybackFadeAudioDuration().milliSeconds
@@ -1163,17 +1161,17 @@ class PlayerService : Service(),
                 currentQueuePosition = player.currentMediaItemIndex
 
                 if (currentQueuePosition <= previousPosition) {
-                    Timber.w("PlayerService handleSkipToNext: posizione non avanzata correttamente, tentativo forzato")
+                    Timber.w("PlayerService handleSkipToNext: index not increased force to next")
                     player.forceSeekToNext()
                     currentQueuePosition = player.currentMediaItemIndex
                 }
 
                 player.saveMasterQueue()
             } else {
-                Timber.d("PlayerService handleSkipToNext: coda finita")
+                Timber.d("PlayerService handleSkipToNext: queue ended")
             }
         } catch (e: Exception) {
-            Timber.e("PlayerService handleSkipToNext: errore durante l'avanzamento ${e.stackTraceToString()}")
+            Timber.e("PlayerService handleSkipToNext: skip to next in error ${e.stackTraceToString()}")
             maybeRecoverPlaybackError()
         }
     }
@@ -1187,9 +1185,9 @@ class PlayerService : Service(),
                 putInt(currentQueuePositionKey, currentQueuePosition)
             }
 
-            Timber.d("PlayerService saveMasterQueueWithPosition: salvata coda e posizione $currentQueuePosition")
+            Timber.d("PlayerService saveMasterQueueWithPosition: position and queue saved $currentQueuePosition")
         } catch (e: Exception) {
-            Timber.e("PlayerService saveMasterQueueWithPosition: errore durante il salvataggio ${e.stackTraceToString()}")
+            Timber.e("PlayerService saveMasterQueueWithPosition: error ${e.stackTraceToString()}")
         }
     }
 
@@ -1204,9 +1202,9 @@ class PlayerService : Service(),
                 currentQueuePosition = savedPosition
             }
 
-            Timber.d("PlayerService loadMasterQueueWithPosition: caricata coda e posizione $currentQueuePosition")
+            Timber.d("PlayerService loadMasterQueueWithPosition: queue and position loaded $currentQueuePosition")
         } catch (e: Exception) {
-            Timber.e("PlayerService loadMasterQueueWithPosition: errore durante il caricamento ${e.stackTraceToString()}")
+            Timber.e("PlayerService loadMasterQueueWithPosition: error ${e.stackTraceToString()}")
         }
     }
 
@@ -2167,6 +2165,70 @@ class PlayerService : Service(),
         }
     }
 
+    private fun initializePositionObserver() {
+        positionObserverJob?.cancel()
+        positionObserverJob = coroutineScope.launch {
+
+            var lastProcessedIndex: Int? = null
+
+            while (isActive) {
+
+                withContext(Dispatchers.Main) {
+
+                    //Timber.d("PlayerService initializePositionObserver player.playbackState ${player.playbackState} internalOnlinePlayerState ${internalOnlinePlayerState}")
+
+                    if (player.currentMediaItem?.isLocal == false)
+                        player.pauseAtEndOfMediaItems = true else player.pauseAtEndOfMediaItems = false
+
+
+                    if ((player.playbackState == Player.STATE_ENDED || internalOnlinePlayerState == PlayerConstants.PlayerState.ENDED)
+                        && lastProcessedIndex != player.currentMediaItemIndex
+                    ) {
+
+                        Timber.d("PlayerService initializePositionObserver player.playbackState ${player.playbackState} internalOnlinePlayerState ${internalOnlinePlayerState}")
+
+                        val queueLoopType = preferences.getEnum(
+                            queueLoopTypeKey,
+                            defaultValue = QueueLoopType.Default
+                        )
+                        // TODO Implement repeat mode in queue
+                        when (queueLoopType) {
+                            QueueLoopType.RepeatOne -> {
+                                internalOnlinePlayer.value?.seekTo(0f)
+                                Timber.d("PlayerService initializePositionObserver Repeat: RepeatOne fired")
+                            }
+
+                            QueueLoopType.Default -> {
+                                val hasNext = binder.player.hasNextMediaItem()
+                                Timber.d("PlayerService initializePositionObserver Repeat: Default fired")
+                                if (hasNext) {
+                                    lastProcessedIndex = player.currentMediaItemIndex
+                                    handleSkipToNext()
+                                    Timber.d("PlayerService initializePositionObserver Repeat: Default fired next")
+                                }
+                            }
+
+                            QueueLoopType.RepeatAll -> {
+                                val hasNext = binder.player.hasNextMediaItem()
+                                Timber.d("PlayerService initializePositionObserver Repeat: RepeatAll fired")
+                                if (!hasNext) {
+                                    binder.player.seekTo(0, 0)
+                                    internalOnlinePlayer.value?.play()
+                                    Timber.d("PlayerService initializePositionObserver Repeat: RepeatAll fired first")
+                                } else {
+                                    lastProcessedIndex = player.currentMediaItemIndex
+                                    handleSkipToNext()
+                                    Timber.d("PlayerService initializePositionObserver Repeat: RepeatAll fired next")
+                                }
+                            }
+                        }
+                    }
+
+                    delay(200)
+                }
+            }
+        }
+    }
 
     open inner class Binder : AndroidBinder() {
         val player: ExoPlayer
