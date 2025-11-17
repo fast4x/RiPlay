@@ -162,7 +162,6 @@ RiPlay wouldn't be possible without the amazing work of these projects and contr
 
 - **[RiMusic](https://github.com/fast4x/RiMusic)** me as project mantainer and all its contributors
 - **[ViMusic](https://github.com/vfsfitvnm/ViMusic)** for the foundation
-- **@jaimtres** for the current RiPlay logo design
 - **[Android Youtube Player](https://github.com/PierfrancescoSoffritti/android-youtube-player)** for the stable and customizable YouTube Player library as a wrapper around the official [IFrame Player API](https://developers.google.com/youtube/iframe_api_reference), which runs inside a WebView
 - **[Ionicons](https://github.com/ionic-team/ionicons)** for premium hand-crafted icons
 - **[FlatIcon.com](https://www.flaticon.com/)** for free icons and stickers
