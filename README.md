@@ -40,6 +40,7 @@ RiPlay is a powerful, open-source music player designed for music lovers who wan
     - *Note: With Direct Mode, you can add inside RiPlay external apps installed on device and share directly with one click*
 - **Cast (No Chromecast)**: (Experimental) Watch and listen to music on another android device including android tv.
     - *Require **RiPlay Link** install from [Github](https://github.com/fast4x/RiPLayLink)*
+- **Self Closing**: Schedule the app to close after a certain time
 - **Android Auto support**: Can add and remove content such as: Shuffle, Monthly Playlists, Library, On Device, Top Playlists, Favorite Playlists,
 - **Android TV support**: (Experimental) Install RiPlay to the big screen
 - **Widget support**: (Experimental) Control your music from your home screen

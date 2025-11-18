@@ -140,7 +140,8 @@ import java.net.Proxy
 import androidx.core.net.toUri
 import androidx.core.text.isDigitsOnly
 import it.fast4x.riplay.enums.ContentType
-import it.fast4x.riplay.extensions.preferences.closeBackgroundPlayerAfterMinutesKey
+import it.fast4x.riplay.extensions.preferences.closePlayerServiceAfterMinutesKey
+import it.fast4x.riplay.extensions.preferences.closePlayerServiceWhenPausedAfterMinutesKey
 import it.fast4x.riplay.extensions.preferences.enableVoiceInputKey
 import it.fast4x.riplay.extensions.preferences.excludeSongIfIsVideoKey
 import it.fast4x.riplay.extensions.preferences.filterContentTypeKey
@@ -178,9 +179,15 @@ fun GeneralSettings(
     var resumePlaybackOnStart by rememberPreference(resumePlaybackOnStartKey, false)
     var closebackgroundPlayer by rememberPreference(closebackgroundPlayerKey, false)
     var closeBackgroundPlayerAfterMinutes by rememberPreference(
-        closeBackgroundPlayerAfterMinutesKey,
+        closePlayerServiceAfterMinutesKey,
         DurationInMinutes.Disabled
     )
+
+    var closePlayerWhenPausedAfterMinutes by rememberPreference(
+        closePlayerServiceWhenPausedAfterMinutesKey,
+        DurationInMinutes.Disabled
+    )
+
     var closeWithBackButton by rememberPreference(closeWithBackButtonKey, true)
     var resumeOrPausePlaybackWhenDevice by rememberPreference(
         resumeOrPausePlaybackWhenDeviceKey,
@@ -627,6 +634,84 @@ fun GeneralSettings(
                         )
                     }
 
+                }
+
+                settingsItem(
+                    isHeader = true
+                ) {
+                    SettingsGroupSpacer()
+                    SettingsEntryGroupText("Self closing")
+                }
+
+                settingsItem {
+
+                    if (search.input.isBlank() || stringResource(R.string.close_background_player).contains(
+                            search.input,
+                            true
+                        )
+                    ) {
+//                        SwitchSettingEntry(
+//                            title = stringResource(R.string.close_background_player),
+//                            text = stringResource(R.string.when_app_swipe_out_from_task_manager),
+//                            isChecked = closebackgroundPlayer,
+//                            onCheckedChange = {
+//                                closebackgroundPlayer = it
+//                                //restartService = true // not required
+//                            }
+//                        )
+
+                            EnumValueSelectorSettingsEntry(
+                                title = stringResource(R.string.when_app_swipe_out_from_task_manager),
+                                selectedValue = closeBackgroundPlayerAfterMinutes,
+                                onValueSelected = { closeBackgroundPlayerAfterMinutes = it },
+                                valueText = {
+                                    when (it) {
+                                        DurationInMinutes.Disabled -> stringResource(R.string.vt_disabled)
+                                        DurationInMinutes.`1` -> "1m"
+                                        DurationInMinutes.`3` -> "3m"
+                                        DurationInMinutes.`5` -> "5m"
+                                        DurationInMinutes.`10` -> "10m"
+                                        DurationInMinutes.`15` -> "15m"
+                                        DurationInMinutes.`20` -> "20m"
+                                        DurationInMinutes.`25` -> "25m"
+                                        DurationInMinutes.`30` -> "30m"
+                                        DurationInMinutes.`60` -> "60m"
+                                        DurationInMinutes.`90` -> "90m"
+                                        DurationInMinutes.`120` -> "120m"
+                                        DurationInMinutes.`150` -> "150m"
+                                        DurationInMinutes.`180` -> "180m"
+
+                                    }
+                                }
+                            )
+
+                            EnumValueSelectorSettingsEntry(
+                                title = "When player is paused",
+                                selectedValue = closePlayerWhenPausedAfterMinutes,
+                                onValueSelected = { closePlayerWhenPausedAfterMinutes = it },
+                                valueText = {
+                                    when (it) {
+                                        DurationInMinutes.Disabled -> stringResource(R.string.vt_disabled)
+                                        DurationInMinutes.`1` -> "1m"
+                                        DurationInMinutes.`3` -> "3m"
+                                        DurationInMinutes.`5` -> "5m"
+                                        DurationInMinutes.`10` -> "10m"
+                                        DurationInMinutes.`15` -> "15m"
+                                        DurationInMinutes.`20` -> "20m"
+                                        DurationInMinutes.`25` -> "25m"
+                                        DurationInMinutes.`30` -> "30m"
+                                        DurationInMinutes.`60` -> "60m"
+                                        DurationInMinutes.`90` -> "90m"
+                                        DurationInMinutes.`120` -> "120m"
+                                        DurationInMinutes.`150` -> "150m"
+                                        DurationInMinutes.`180` -> "180m"
+
+                                    }
+                                }
+                            )
+
+
+                    }
                 }
 
                 settingsItem(
@@ -1092,49 +1177,6 @@ fun GeneralSettings(
                         )
                         //ImportantSettingsDescription(text = stringResource(R.string.restarting_rimusic_is_required))
                         RestartActivity(restartActivity, onRestart = { restartActivity = false })
-                    }
-
-                    if (search.input.isBlank() || stringResource(R.string.close_background_player).contains(
-                            search.input,
-                            true
-                        )
-                    ) {
-//                        SwitchSettingEntry(
-//                            title = stringResource(R.string.close_background_player),
-//                            text = stringResource(R.string.when_app_swipe_out_from_task_manager),
-//                            isChecked = closebackgroundPlayer,
-//                            onCheckedChange = {
-//                                closebackgroundPlayer = it
-//                                //restartService = true // not required
-//                            }
-//                        )
-
-                        EnumValueSelectorSettingsEntry(
-                            title = "Auto terminate player",
-                            text = stringResource(R.string.when_app_swipe_out_from_task_manager),
-                            selectedValue = closeBackgroundPlayerAfterMinutes,
-                            onValueSelected = { closeBackgroundPlayerAfterMinutes = it },
-                            valueText = {
-                                when (it) {
-                                    DurationInMinutes.Disabled -> stringResource(R.string.vt_disabled)
-                                    DurationInMinutes.`1` -> "1m"
-                                    DurationInMinutes.`3` -> "3m"
-                                    DurationInMinutes.`5` -> "5m"
-                                    DurationInMinutes.`10` -> "10m"
-                                    DurationInMinutes.`15` -> "15m"
-                                    DurationInMinutes.`20` -> "20m"
-                                    DurationInMinutes.`25` -> "25m"
-                                    DurationInMinutes.`30` -> "30m"
-                                    DurationInMinutes.`60` -> "60m"
-                                    DurationInMinutes.`90` -> "90m"
-                                    DurationInMinutes.`120` -> "120m"
-                                    DurationInMinutes.`150` -> "150m"
-                                    DurationInMinutes.`180` -> "180m"
-
-                                }
-                            }
-                        )
-                        RestartPlayerService(restartService, onRestart = { restartService = false })
                     }
 
                     if (search.input.isBlank() || stringResource(R.string.skip_media_on_error).contains(

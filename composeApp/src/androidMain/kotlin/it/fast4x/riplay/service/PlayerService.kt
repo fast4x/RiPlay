@@ -126,7 +126,8 @@ import it.fast4x.riplay.extensions.preferences.audioReverbPresetKey
 import it.fast4x.riplay.extensions.preferences.autoLoadSongsInQueueKey
 import it.fast4x.riplay.extensions.preferences.bassboostEnabledKey
 import it.fast4x.riplay.extensions.preferences.bassboostLevelKey
-import it.fast4x.riplay.extensions.preferences.closeBackgroundPlayerAfterMinutesKey
+import it.fast4x.riplay.extensions.preferences.closePlayerServiceAfterMinutesKey
+import it.fast4x.riplay.extensions.preferences.closePlayerServiceWhenPausedAfterMinutesKey
 import it.fast4x.riplay.extensions.preferences.currentQueuePositionKey
 import it.fast4x.riplay.extensions.preferences.discordPersonalAccessTokenKey
 import it.fast4x.riplay.extensions.preferences.discoverKey
@@ -176,7 +177,6 @@ import it.fast4x.riplay.utils.isOfficialContent
 import it.fast4x.riplay.utils.isSkipMediaOnErrorEnabled
 import it.fast4x.riplay.utils.isUserGeneratedContent
 import it.fast4x.riplay.utils.loadMasterQueue
-import it.fast4x.riplay.utils.playNext
 import it.fast4x.riplay.utils.playPrevious
 import it.fast4x.riplay.utils.principalCache
 import it.fast4x.riplay.utils.saveMasterQueue
@@ -259,6 +259,7 @@ class PlayerService : Service(),
     private var isResumePlaybackOnStart = false
     //private var isclosebackgroundPlayerEnabled = false
     private var closeServiceAfterMinutes by mutableStateOf(DurationInMinutes.Disabled)
+    private var closeServiceWhenPlayerPausedAfterMinutes by mutableStateOf(DurationInMinutes.Disabled)
 
     private var isShowingThumbnailInLockscreen = true
     private var medleyDuration by mutableFloatStateOf(0f)
@@ -305,6 +306,8 @@ class PlayerService : Service(),
     var lastError: PlayerConstants.PlayerError? = null
     var isPlayingNow by mutableStateOf(false)
     var localMediaItem: MediaItem? = null
+    var closingTimerStarted: Boolean? = false
+
     /**
      * end online configuration
      */
@@ -508,7 +511,9 @@ class PlayerService : Service(),
         // todo add here all val that requires first initialize and add references in shared preferences, so is not nededed restart service when change it
         currentMediaItemState.value =  player.currentMediaItem
         //isclosebackgroundPlayerEnabled = preferences.getBoolean(closebackgroundPlayerKey, false)
-        closeServiceAfterMinutes = preferences.getEnum(closeBackgroundPlayerAfterMinutesKey, DurationInMinutes.Disabled)
+        closeServiceAfterMinutes = preferences.getEnum(closePlayerServiceAfterMinutesKey, DurationInMinutes.Disabled)
+        closeServiceWhenPlayerPausedAfterMinutes = preferences.getEnum(
+            closePlayerServiceWhenPausedAfterMinutesKey, DurationInMinutes.Disabled)
     }
 
     private fun initializePlaybackParameters() {
@@ -735,8 +740,21 @@ class PlayerService : Service(),
                     youTubePlayer: YouTubePlayer,
                     state: PlayerConstants.PlayerState
                 ) {
-                    //super.onStateChange(youTubePlayer, state)
+
                     Timber.d("PlayerService onlinePlayerView: onStateChange $state")
+
+                    if (closeServiceWhenPlayerPausedAfterMinutes != DurationInMinutes.Disabled) {
+                        if (state != PlayerConstants.PlayerState.PLAYING && closingTimerStarted == false) {
+                            Timber.d("PlayerService closingTimer started")
+                            binder.startSleepTimer(closeServiceWhenPlayerPausedAfterMinutes.minutesInMilliSeconds)
+                            closingTimerStarted = true
+                        }
+                        if (state == PlayerConstants.PlayerState.PLAYING && closingTimerStarted == true) {
+                            Timber.d("PlayerService closingTimer cancelled")
+                            binder.cancelSleepTimer()
+                            closingTimerStarted = false
+                        }
+                    }
 
                     /*
                     if (state == PlayerConstants.PlayerState.ENDED) {
@@ -1817,6 +1835,20 @@ class PlayerService : Service(),
 
     @UnstableApi
     override fun onIsPlayingChanged(isPlaying: Boolean) {
+
+        if (closeServiceWhenPlayerPausedAfterMinutes != DurationInMinutes.Disabled) {
+            if (!isPlaying && closingTimerStarted == false) {
+                Timber.d("PlayerService closingTimer started")
+                binder.startSleepTimer(closeServiceWhenPlayerPausedAfterMinutes.minutesInMilliSeconds)
+                closingTimerStarted = true
+            }
+            if (isPlaying && closingTimerStarted == true) {
+                Timber.d("PlayerService closingTimer cancelled")
+                binder.cancelSleepTimer()
+                closingTimerStarted = false
+            }
+        }
+
         isPlayingNow = isPlaying
         val fadeDisabled = preferences.getEnum(playbackFadeAudioDurationKey, DurationInMilliseconds.Disabled) == DurationInMilliseconds.Disabled
         val duration = preferences.getEnum(playbackFadeAudioDurationKey, DurationInMilliseconds.Disabled).milliSeconds
@@ -1858,9 +1890,14 @@ class PlayerService : Service(),
 //            closebackgroundPlayerKey -> {
 //                    isclosebackgroundPlayerEnabled = sharedPreferences.getBoolean(key, false)
 //            }
-            closeBackgroundPlayerAfterMinutesKey -> {
+            closePlayerServiceAfterMinutesKey -> {
                 closeServiceAfterMinutes =
-                    sharedPreferences.getEnum(closeBackgroundPlayerAfterMinutesKey,
+                    sharedPreferences.getEnum(closePlayerServiceAfterMinutesKey,
+                        DurationInMinutes.Disabled)
+            }
+            closePlayerServiceWhenPausedAfterMinutesKey -> {
+                closeServiceWhenPlayerPausedAfterMinutes =
+                    sharedPreferences.getEnum(closePlayerServiceWhenPausedAfterMinutesKey,
                         DurationInMinutes.Disabled)
             }
             isShowingThumbnailInLockscreenKey -> {
@@ -2175,7 +2212,7 @@ class PlayerService : Service(),
 
                 withContext(Dispatchers.Main) {
 
-                    //Timber.d("PlayerService initializePositionObserver player.playbackState ${player.playbackState} internalOnlinePlayerState ${internalOnlinePlayerState}")
+                    //Timber.d("PlayerService initializePositionObserver BEFORE player.playbackState ${player.playbackState} internalOnlinePlayerState ${internalOnlinePlayerState} lastProcessedIndex $lastProcessedIndex player.currentMediaItemIndex ${player.currentMediaItemIndex}")
 
                     if (player.currentMediaItem?.isLocal == false)
                         player.pauseAtEndOfMediaItems = true else player.pauseAtEndOfMediaItems = false
@@ -2185,7 +2222,7 @@ class PlayerService : Service(),
                         && lastProcessedIndex != player.currentMediaItemIndex
                     ) {
 
-                        Timber.d("PlayerService initializePositionObserver player.playbackState ${player.playbackState} internalOnlinePlayerState ${internalOnlinePlayerState}")
+                        Timber.d("PlayerService initializePositionObserver INSIDE player.playbackState ${player.playbackState} internalOnlinePlayerState ${internalOnlinePlayerState} lastProcessedIndex $lastProcessedIndex player.currentMediaItemIndex ${player.currentMediaItemIndex}")
 
                         val queueLoopType = preferences.getEnum(
                             queueLoopTypeKey,
@@ -2222,6 +2259,7 @@ class PlayerService : Service(),
                                 }
                             }
                         }
+                        delay(500)
                     }
 
                     delay(200)
@@ -2282,7 +2320,7 @@ class PlayerService : Service(),
                 Timber.d("PlayerService startSleepTimer stop delay close service")
                 val notification = NotificationCompat
                     .Builder(this@PlayerService, SLEEPTIMER_NOTIFICATION_CHANNEL_ID)
-                    .setContentTitle(getString(R.string.sleep_timer_ended))
+                    .setContentTitle("Self closing timer ended")
                     .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                     .setAutoCancel(true)
                     .setOnlyAlertOnce(true)
@@ -2299,6 +2337,7 @@ class PlayerService : Service(),
         }
 
         fun cancelSleepTimer() {
+            Timber.d("PlayerService cancelSleepTimer")
             timerJob?.cancel()
             timerJob = null
         }

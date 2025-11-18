@@ -290,7 +290,9 @@ fun SettingsEntry(
             .fillMaxWidth()
             //.background(colorPalette().background0.copy(if (isEnabled) 0.5f else 0.2f))
     ) {
-        Box(modifier = Modifier.width(4.dp).height(30.dp)
+        Box(modifier = Modifier
+            .width(4.dp)
+            .height(30.dp)
             .background(colorPalette().textSecondary)
         )
 
@@ -329,10 +331,10 @@ fun SettingsEntry(
                 )
 
                 Spacer(modifier = Modifier.weight(1f))
-                SettingsContextIcons(
-                    online = online,
-                    offline = offline
-                )
+//                SettingsContextIcons(
+//                    online = online,
+//                    offline = offline
+//                )
 
             }
 
@@ -370,19 +372,21 @@ fun SettingsEntryGroup(
         modifier = Modifier.padding(all = 12.dp)
     ) {
         Box(
-            modifier = Modifier.width(4.dp).height(30.dp)
+            modifier = Modifier
+                .width(4.dp)
+                .height(30.dp)
                 .background(colorPalette().textSecondary)
         )
         Box(modifier = Modifier.fillMaxSize()) {
             Column {
                 content()
             }
-            SettingsContextIcons(
-                modifier = Modifier
-                    .align(Alignment.BottomEnd),
-                online = online,
-                offline = offline
-            )
+//            SettingsContextIcons(
+//                modifier = Modifier
+//                    .align(Alignment.BottomEnd),
+//                online = online,
+//                offline = offline
+//            )
         }
     }
 }
@@ -463,11 +467,13 @@ fun ImportantSettingsDescription(
 @Composable
 fun SettingsEntryGroupText(
     title: String,
+    color: Color = colorPalette().accent,
+    uppercase: Boolean = true,
     modifier: Modifier = Modifier,
 ) {
     BasicText(
-        text = title.uppercase(),
-        style = typography().xs.semiBold.copy(colorPalette().accent),
+        text = if (uppercase) title.uppercase() else title,
+        style = typography().xs.semiBold.copy(color),
         modifier = modifier
             .padding(start = 12.dp)
             //.padding(horizontal = 12.dp)
@@ -678,20 +684,27 @@ fun SettingsGroup(
     modifier: Modifier = Modifier,
     description: String? = null,
     important: Boolean = false,
+    color: Color = colorPalette().accent,
+    uppercase: Boolean = true,
     content: @Composable ColumnScope.() -> Unit
-) = Column(modifier = modifier) {
-    if (title != null) {
-        SettingsEntryGroupText(title = title)
+) {
+    Column {
+        if (title != null) {
+            SettingsEntryGroupText(title = title, color = color, uppercase = uppercase)
+        }
+        Column(modifier = modifier) {
+
+
+            description?.let { description ->
+                SettingsDescription(
+                    text = description,
+                    important = important
+                )
+            }
+
+            content()
+
+            SettingsGroupSpacer()
+        }
     }
-
-    description?.let { description ->
-        SettingsDescription(
-            text = description,
-            important = important
-        )
-    }
-
-    content()
-
-    SettingsGroupSpacer()
 }
