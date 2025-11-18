@@ -1,0 +1,12 @@
+name: Simple Test Form
+description: This is a test to see if forms work.
+title: "[TEST] "
+labels: ["test"]
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: What happened?
+      description: Just a test field.
+    validations:
+      required: true

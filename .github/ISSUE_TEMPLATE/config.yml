@@ -1,1 +1,9 @@
+# The title that appears above the templates
 blank_issues_enabled: false
+contact_links:
+  - name: 💬 Questions and Discussions
+    url: https://github.com/fast4x/RiPlay/discussions
+    about: For general questions, doubts, or discussions, please use the Discussions section.
+  - name: 📖 Project Wiki
+    url: https://github.com/fast4x/RiPlay/wiki
+    about: Search the FAQs and documentation before opening a new issue.
