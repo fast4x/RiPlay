@@ -174,5 +174,5 @@ RiPlay wouldn't be possible without the amazing work of these projects and contr
 ---
 
 <div align="center">
-  <p><i>Made with ❤️ by the RiPlay community</i></p>
+  <p><i>Made with &#x2665;&#xfe0f; by the RiPlay community</i></p>
 </div>
