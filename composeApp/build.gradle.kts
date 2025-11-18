@@ -144,9 +144,9 @@ android {
         minSdk = 21
         targetSdk = 36
         val versionMajor = 0
-        val versionMinor = 1
+        val versionMinor = 0
         versionCode = 43
-        val releaseSuffix = "-beta"
+        val releaseSuffix = "-alpha"
         versionName = "$versionMajor.$versionMinor.$versionCode$releaseSuffix"
 
         multiDexEnabled = true
