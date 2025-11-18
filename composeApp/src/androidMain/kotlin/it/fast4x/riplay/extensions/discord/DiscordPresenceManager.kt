@@ -179,14 +179,14 @@ class DiscordPresenceManager(
         if ( smallImage != null )
             smallImage
         else
-            getDiscordAssetUri( "https://raw.githubusercontent.com/fast4x/RiMusic/master/assets/design/latest/icon.png" )
+            getDiscordAssetUri( "https://raw.githubusercontent.com/fast4x/RiPlay/main/assets/design/latest/icon.png" )
                 ?.also { smallImage = it }
 
     private suspend fun getLargeImageFallback(): String? =
         if ( largeImage != null )
             largeImage
         else
-            getDiscordAssetUri( "https://raw.githubusercontent.com/fast4x/RiMusic/master/assets/design/latest/icon.png" )
+            getDiscordAssetUri( "https://raw.githubusercontent.com/fast4x/RiPlay/main/assets/design/latest/icon.png" )
                 ?.also { largeImage = it }
 
 

@@ -47,7 +47,7 @@ private fun initDevelopers( context: Context) {
         val json: JsonArray =
             GSON.fromJson(fileStream.bufferedReader(), JsonArray::class.java)
 
-//        val result = URL("https://raw.githubusercontent.com/fast4x/RiMusic/master/composeApp/src/androidMain/res/raw/contributors.json").readText()
+//        val result = URL("https://raw.githubusercontent.com/fast4x/RiPlay/main/composeApp/src/androidMain/res/raw/contributors.json").readText()
 //        val json = GSON.fromJson(result, JsonArray::class.java)
 
         developersList = json.map { GSON.fromJson(it, Developer::class.java) }
@@ -84,7 +84,7 @@ private fun initTranslators( context: Context) {
         val json: JsonArray =
             GSON.fromJson(fileStream.bufferedReader(), JsonArray::class.java)
 
-//        val result = URL("https://raw.githubusercontent.com/fast4x/RiMusic/master/composeApp/src/androidMain/res/raw/translators.json").readText()
+//        val result = URL("https://raw.githubusercontent.com/fast4x/RiPlay/main/composeApp/src/androidMain/res/raw/translators.json").readText()
 //        val json = GSON.fromJson(result, JsonArray::class.java)
 
         translatorsList = json.map { GSON.fromJson(it, Translator::class.java) }

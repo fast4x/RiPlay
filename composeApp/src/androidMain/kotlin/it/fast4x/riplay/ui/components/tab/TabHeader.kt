@@ -81,16 +81,16 @@ interface TabHeader {
 /**
  * Display tab's header depends on current theme
  * For instance:
- *  - RiMusic theme has header aligned to the left
+ *  - RiPlay theme has header aligned to the left
  *  - ViMusic theme has header aligned to the right
- *  and slightly bigger than RiMusic
+ *  and slightly bigger than RiPLay
  */
 @Composable
 fun TabHeader(
     titleId: Int,
     additionalContent: @Composable () -> Unit
 ) {
-    // Align left if RiMusic, right if ViMusic
+    // Align left if RiPlay, right if ViMusic
     val arrangement =
         if( UiType.ViMusic.isCurrent() )
             Arrangement.End

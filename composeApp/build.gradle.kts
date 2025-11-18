@@ -145,7 +145,7 @@ android {
         targetSdk = 36
         val versionMajor = 0
         val versionMinor = 1
-        versionCode = 42
+        versionCode = 43
         val releaseSuffix = "-beta"
         versionName = "$versionMajor.$versionMinor.$versionCode$releaseSuffix"
 

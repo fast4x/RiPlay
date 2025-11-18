@@ -84,7 +84,7 @@ fun WidgetContent()  {
     when (playerIsActive) {
         true -> WidgetActiveContent()
         false -> {
-            Text(text = "RiMusic Player is not active", modifier = GlanceModifier.padding(12.dp))
+            Text(text = "RiPlay Player is not active", modifier = GlanceModifier.padding(12.dp))
         }
     }
 

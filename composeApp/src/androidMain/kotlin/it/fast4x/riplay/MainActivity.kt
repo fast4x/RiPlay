@@ -816,7 +816,7 @@ class MainActivity :
                 ) == CheckUpdateState.Enabled
             ) {
                 val urlVersionCode =
-                    "https://raw.githubusercontent.com/fast4x/RiPlay/master/updatedVersion/updatedVersionCode.ver"
+                    "https://raw.githubusercontent.com/fast4x/RiPlay/main/updatedVersion/updatedVersionCode.ver"
                 request.GET(urlVersionCode, object : Callback {
                     override fun onResponse(call: Call, response: Response) {
                         val responseData = response.body?.string()

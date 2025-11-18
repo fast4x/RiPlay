@@ -163,7 +163,7 @@ class HorizontalNavigationBar(
                         RoundedCornerShape(bottomStart = 12.dp, bottomEnd = 12.dp)
 
                 // Settings button only visible when
-                // UI is not RiMusic and current location isn't home screen
+                // UI is not RiPlay and current location isn't home screen
                 if( UiType.ViMusic.isCurrent() && NavRoutes.home.isNotHere( navController ) )
                     BackButton().Draw()
 
@@ -185,17 +185,17 @@ class HorizontalNavigationBar(
                 }
 
                 // Search button only visible when
-                // UI is not RiMusic and must be explicitly turned on
+                // UI is not RiPlay and must be explicitly turned on
                 if( UiType.ViMusic.isCurrent() && showSearchIconInNav() )
                     SearchButton()
 
                 // Settings button only visible when
-                // UI is not RiMusic
+                // UI is not RiPlay
                 if( UiType.ViMusic.isCurrent() )
                     SettingsButton().Draw()
 
                 // Statistics button only visible when
-                // UI is not RiMusic and must be explicitly turned on
+                // UI is not RiPlay and must be explicitly turned on
                 if( UiType.ViMusic.isCurrent() && showStatsIconInNav() )
                     StatsButton()
             }

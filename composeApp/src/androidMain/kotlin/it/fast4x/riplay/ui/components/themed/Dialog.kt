@@ -1094,7 +1094,7 @@ fun NewVersionDialog (
                         .size(30.dp)
                         .clickable {
                             onDismiss()
-                            uriHandler.openUri("https://github.com/fast4x/RiMusic/releases/latest")
+                            uriHandler.openUri("https://github.com/fast4x/RiPlay/releases/latest")
                         }
                 )
             }
