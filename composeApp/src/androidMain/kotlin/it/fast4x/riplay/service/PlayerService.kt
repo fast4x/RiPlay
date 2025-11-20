@@ -204,15 +204,17 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 import timber.log.Timber
 import java.util.Objects
 import kotlin.collections.map
+import kotlin.coroutines.resumeWithException
 import kotlin.math.roundToInt
 import kotlin.math.sqrt
 import kotlin.system.exitProcess
-import kotlin.time.Duration.Companion.seconds
+import kotlin.time.Duration.Companion.minutes
 import android.os.Binder as AndroidBinder
 
 const val LOCAL_KEY_PREFIX = "local:"
@@ -419,12 +421,15 @@ class PlayerService : Service(),
         }
 
         if (isPersistentQueueEnabled) {
-            loadMasterQueueWithPosition()
-            resumePlaybackOnStart()
-
             coroutineScope.launch {
+
+                loadMasterQueueWithPosition()
+                withContext(Dispatchers.Main) {
+                    resumePlaybackOnStart()
+                }
+
                 while (isActive) {
-                    delay(30.seconds)
+                    delay(2.minutes)
                     saveMasterQueueWithPosition()
 
                     if (currentSecond.value >= minTimeForEvent.seconds && lastMediaIdInHistory != currentSong.value?.id) {
@@ -812,10 +817,9 @@ class PlayerService : Service(),
                 ) {
                     super.onError(youTubePlayer, error)
 
-                    if (isPersistentQueueEnabled)
-                        player.saveMasterQueue()
-
                     localMediaItem?.isLocal?.let { if (it) return }
+                    if (isPersistentQueueEnabled)
+                        saveMasterQueueWithPosition()
 
                     youTubePlayer.pause()
                     clearWebViewData()
@@ -996,7 +1000,7 @@ class PlayerService : Service(),
 
 
         runCatching {
-            player.saveMasterQueue()
+            saveMasterQueueWithPosition()
 
             preferences.unregisterOnSharedPreferenceChangeListener(this)
 
@@ -1019,10 +1023,14 @@ class PlayerService : Service(),
 
             discordPresenceManager?.onStop()
 
+            coroutineScope.launch { delay(1000) }
+
             coroutineScope.cancel()
+
         }.onFailure {
             Timber.e("Failed onDestroy in PlayerService ${it.stackTraceToString()}")
         }
+
         super.onDestroy()
     }
 
@@ -1161,7 +1169,7 @@ class PlayerService : Service(),
         updateWidgets()
         updateDiscordPresence()
 
-        player.saveMasterQueue()
+        saveMasterQueueWithPosition()
 
     }
 
@@ -1169,12 +1177,13 @@ class PlayerService : Service(),
     fun handleSkipToNext() {
         try {
             val hasNext = player.hasNextMediaItem()
-            Timber.d("PlayerService handleSkipToNext hasNext: $hasNext, currentPosition: $currentQueuePosition")
+            Timber.d("PlayerService handleSkipToNext hasNext before: $hasNext, previous osition: $currentQueuePosition")
 
             if (hasNext) {
+                Timber.d("PlayerService handleSkipToNext hasNext inside: Yes, previous position: $currentQueuePosition")
                 val previousPosition = currentQueuePosition
 
-                player.seekToNext()
+                player.forceSeekToNext()
 
                 currentQueuePosition = player.currentMediaItemIndex
 
@@ -1183,8 +1192,9 @@ class PlayerService : Service(),
                     player.forceSeekToNext()
                     currentQueuePosition = player.currentMediaItemIndex
                 }
+                Timber.d("PlayerService handleSkipToNext hasNext inside end: Yes, current position: $currentQueuePosition")
 
-                player.saveMasterQueue()
+                saveMasterQueueWithPosition()
             } else {
                 Timber.d("PlayerService handleSkipToNext: queue ended")
             }
@@ -1209,21 +1219,43 @@ class PlayerService : Service(),
         }
     }
 
-
-    private fun loadMasterQueueWithPosition() {
+    private suspend fun loadMasterQueueWithPosition() = suspendCancellableCoroutine { continuation ->
         try {
-            player.loadMasterQueue()
-
-            val savedPosition = preferences.getInt(currentQueuePositionKey, 0)
-            if (savedPosition < player.mediaItemCount) {
-                player.seekToDefaultPosition(savedPosition)
-                currentQueuePosition = savedPosition
+            val listener = object : Player.Listener {
+                override fun onTimelineChanged(timeline: Timeline, reason: Int) {
+                    if (reason == Player.TIMELINE_CHANGE_REASON_PLAYLIST_CHANGED) {
+                        Timber.d("PlayerService: Timeline changed, queue is now populated.")
+                        player.removeListener(this)
+                        restoreMasterQueuePosition()
+                        continuation.resume(Unit, onCancellation = {})
+                    }
+                }
             }
 
-            Timber.d("PlayerService loadMasterQueueWithPosition: queue and position loaded $currentQueuePosition")
+            player.addListener(listener)
+
+            player.loadMasterQueue()
+
+            continuation.invokeOnCancellation {
+                player.removeListener(listener)
+            }
+
         } catch (e: Exception) {
             Timber.e("PlayerService loadMasterQueueWithPosition: error ${e.stackTraceToString()}")
+            continuation.resumeWithException(e)
         }
+    }
+
+    private fun restoreMasterQueuePosition() {
+        val savedPosition = preferences.getInt(currentQueuePositionKey, 0)
+        val mediaItemCount = player.mediaItemCount
+
+        if (mediaItemCount > 0 && savedPosition < mediaItemCount) {
+            player.seekToDefaultPosition(savedPosition)
+            currentQueuePosition = savedPosition
+        }
+
+        Timber.d("PlayerService restoreMasterQueuePosition: restored savedPosition $savedPosition, mediaItemCount $mediaItemCount, currentQueuePosition $currentQueuePosition")
     }
 
     override fun onTimelineChanged(timeline: Timeline, reason: Int) {
@@ -1240,7 +1272,7 @@ class PlayerService : Service(),
         val isLowMemory = level == ComponentCallbacks2.TRIM_MEMORY_RUNNING_CRITICAL
         Timber.d("PlayerService onTrimMemory level $level isLowMemory $isLowMemory")
         if (isLowMemory)
-            player.saveMasterQueue()
+            saveMasterQueueWithPosition()
     }
 
     fun updateUnifiedNotification() {
