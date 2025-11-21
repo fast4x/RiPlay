@@ -1,5 +1,5 @@
 # RiPlay
-Multiplatform Music Player
+Android Music Player
 
 Work in progress...
 
