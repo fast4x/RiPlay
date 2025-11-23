@@ -50,8 +50,8 @@ import androidx.compose.ui.unit.dp
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import com.valentinilk.shimmer.shimmer
-import it.fast4x.compose.persist.PersistMapCleanup
-import it.fast4x.compose.persist.persist
+import it.fast4x.riplay.extensions.persist.PersistMapCleanup
+import it.fast4x.riplay.extensions.persist.persist
 import it.fast4x.environment.Environment
 import it.fast4x.environment.EnvironmentExt
 import it.fast4x.environment.requests.AlbumPage

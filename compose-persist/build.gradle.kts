@@ -5,15 +5,6 @@ plugins {
     alias(libs.plugins.kotlin.compose)
 }
 
-
-/*
-plugins {
-    alias(libs.plugins.android.application)
-    alias(libs.plugins.kotlin)
-    //alias(libs.plugins.kotlin.compose)
-}
- */
-
 android {
     namespace = "it.fast4x.compose.persist"
     compileSdk = 35
@@ -51,6 +42,8 @@ android {
         jvmTarget = "21"
     }
 }
+
+
 
 dependencies {
     implementation(libs.compose.foundation)

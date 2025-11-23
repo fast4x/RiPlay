@@ -30,7 +30,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.valentinilk.shimmer.shimmer
-import it.fast4x.compose.persist.persist
+import it.fast4x.riplay.extensions.persist.persist
 import it.fast4x.environment.Environment
 import it.fast4x.environment.models.bodies.BrowseBodyWithLocale
 import it.fast4x.environment.requests.BrowseResult

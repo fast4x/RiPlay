@@ -71,8 +71,8 @@ import androidx.media3.exoplayer.offline.Download
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.github.doyaaaaaken.kotlincsv.dsl.csvWriter
-import it.fast4x.compose.persist.persist
-import it.fast4x.compose.persist.persistList
+import it.fast4x.riplay.extensions.persist.persist
+import it.fast4x.riplay.extensions.persist.persistList
 import it.fast4x.environment.Environment
 import it.fast4x.environment.models.bodies.NextBody
 import it.fast4x.environment.requests.relatedSongs

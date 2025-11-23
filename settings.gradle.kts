@@ -29,7 +29,7 @@ dependencyResolutionManagement {
 rootProject.name = "RiPlay"
 
 include(":composeApp")
-include(":compose-persist")
+//include(":compose-persist")
 // Projects from extensions
 include(":environment")
 project(":environment").projectDir = file("extensions/environment")

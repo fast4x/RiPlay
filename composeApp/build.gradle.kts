@@ -13,7 +13,7 @@ plugins {
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.jetbrainsCompose)
     alias(libs.plugins.room)
-    alias(libs.plugins.hilt)
+    //alias(libs.plugins.hilt)
 }
 
 repositories {
@@ -74,6 +74,50 @@ kotlin {
             implementation(libs.room.backup)
             implementation(libs.workmanager)
             implementation(libs.accompanist)
+
+            implementation(libs.compose.activity)
+            implementation(libs.compose.foundation)
+            implementation(libs.compose.ui)
+            implementation(libs.compose.ui.util)
+            implementation(libs.compose.ripple)
+            implementation(libs.compose.shimmer)
+            implementation(libs.compose.coil)
+            implementation(libs.palette)
+            implementation(libs.media3.exoplayer)
+            implementation(libs.media3.datasource.okhttp)
+            implementation(libs.appcompat)
+            implementation(libs.appcompat.resources)
+            implementation(libs.support)
+            implementation(libs.media)
+            implementation(libs.material)
+            implementation(libs.material3)
+            implementation(libs.compose.ui.graphics.android)
+            implementation(libs.constraintlayout)
+            implementation(libs.compose.runtime.livedata)
+            implementation(libs.compose.animation)
+            implementation(libs.kotlin.csv)
+            implementation(libs.monetcompat)
+            implementation(libs.androidmaterial)
+            implementation(libs.timber)
+            implementation(libs.crypto)
+            implementation(libs.logging.interceptor)
+            implementation(libs.math3)
+            implementation(libs.toasty)
+            implementation(libs.haze)
+            implementation(libs.androidyoutubeplayer)
+            implementation(libs.androidyoutubeplayer.custom.ui)
+            implementation(libs.androidyoutubeplayer.chromecast.sender)
+            //"fullImplementation"(libs.androidyoutubeplayer.chromecast.sender)
+            //"accrescentImplementation"(libs.androidyoutubeplayer.chromecast.sender)
+            implementation(libs.androidx.mediarouter)
+            implementation(libs.glance.widgets)
+            implementation(libs.kizzy.rpc)
+            implementation(libs.gson)
+            implementation(libs.hypnoticcanvas)
+            implementation(libs.hypnoticcanvas.shaders)
+            implementation(libs.ktor.client.core)
+            implementation(libs.ktor.client.okhttp)
+            implementation(libs.multidex)
         }
         commonMain.dependencies {
             implementation(compose.runtime)
@@ -83,13 +127,13 @@ kotlin {
             implementation(compose.components.resources)
             implementation(compose.components.uiToolingPreview)
 
-            implementation(projects.environment)
-            implementation(projects.kugou)
-            implementation(projects.lrclib)
-            implementation(projects.audiotaginfo)
+            //implementation(project(":compose-persist"))
+            implementation(project(":environment"))
+            implementation(project(":kugou"))
+            implementation(project(":lrclib"))
+            implementation(project(":audiotaginfo"))
 
 
-            implementation(libs.room)
             implementation(libs.room.runtime)
             implementation(libs.room.sqlite.bundled)
 
@@ -108,6 +152,18 @@ kotlin {
             implementation(libs.fastscroller)
             implementation(libs.fastscroller.material3)
             implementation(libs.fastscroller.indicator)
+
+
+            implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.aar", "*.jar"))))
+
+
+
+
+//    implementation(libs.room)
+//    ksp(libs.room.compiler)
+
+//    implementation(libs.hilt)
+//    ksp(libs.hilt.compiler)
 
         }
     }
@@ -569,65 +625,10 @@ dependencies {
         add(it, libs.room.compiler)
     }
 
-}
-
-dependencies {
-    implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.aar", "*.jar"))))
-    implementation(projects.composePersist)
-    implementation(libs.compose.activity)
-    implementation(libs.compose.foundation)
-    implementation(libs.compose.ui)
-    implementation(libs.compose.ui.util)
-    implementation(libs.compose.ripple)
-    implementation(libs.compose.shimmer)
-    implementation(libs.compose.coil)
-    implementation(libs.palette)
-    implementation(libs.media3.exoplayer)
-    implementation(libs.media3.datasource.okhttp)
-    implementation(libs.appcompat)
-    implementation(libs.appcompat.resources)
-    implementation(libs.support)
-    implementation(libs.media)
-    implementation(libs.material)
-    implementation(libs.material3)
-    implementation(libs.compose.ui.graphics.android)
-    implementation(libs.constraintlayout)
-    implementation(libs.compose.runtime.livedata)
-    implementation(libs.compose.animation)
-    implementation(libs.kotlin.csv)
-    implementation(libs.monetcompat)
-    implementation(libs.androidmaterial)
-    implementation(libs.timber)
-    implementation(libs.crypto)
-    implementation(libs.logging.interceptor)
-    implementation(libs.math3)
-    implementation(libs.toasty)
-    implementation(libs.haze)
-    implementation(libs.androidyoutubeplayer)
-    implementation(libs.androidyoutubeplayer.custom.ui)
-    "fullImplementation"(libs.androidyoutubeplayer.chromecast.sender)
-    "accrescentImplementation"(libs.androidyoutubeplayer.chromecast.sender)
-    implementation(libs.androidx.mediarouter)
-    implementation(libs.glance.widgets)
-    implementation(libs.kizzy.rpc)
-    implementation(libs.gson)
-    implementation(libs.hypnoticcanvas)
-    implementation(libs.hypnoticcanvas.shaders)
-    implementation(libs.ktor.client.core)
-    implementation(libs.ktor.client.okhttp)
-    implementation(libs.multidex)
-
-
-    implementation(libs.room)
-    ksp(libs.room.compiler)
-
-    implementation(libs.hilt)
-    ksp(libs.hilt.compiler)
-
-    implementation(projects.environment)
-    implementation(projects.kugou)
-    implementation(projects.lrclib)
+    add("kspAndroid", libs.room.compiler)
+    add("ksp", libs.room.compiler)
 
     coreLibraryDesugaring(libs.desugaring)
-
 }
+
+

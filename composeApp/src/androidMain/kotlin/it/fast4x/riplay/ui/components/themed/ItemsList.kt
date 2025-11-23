@@ -16,9 +16,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import it.fast4x.compose.persist.persist
 import it.fast4x.environment.Environment
 import it.fast4x.environment.utils.plus
+import it.fast4x.riplay.extensions.persist.persist
 import it.fast4x.riplay.ui.components.ShimmerHost
 import it.fast4x.riplay.ui.styling.center
 import it.fast4x.riplay.ui.styling.secondary

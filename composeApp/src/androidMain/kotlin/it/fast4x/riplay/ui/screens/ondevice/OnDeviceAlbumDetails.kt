@@ -57,8 +57,8 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
-import it.fast4x.compose.persist.persist
-import it.fast4x.compose.persist.persistList
+import it.fast4x.riplay.extensions.persist.persist
+import it.fast4x.riplay.extensions.persist.persistList
 import it.fast4x.environment.models.NavigationEndpoint
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.EXPLICIT_PREFIX
