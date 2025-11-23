@@ -1,5 +1,15 @@
 
 [versions]
+
+android-compileSdk = "36"
+android-minSdk = "24"
+android-targetSdk = "36"
+
+releaseVersionMajor = "0"
+releaseVersionMinor = "0"
+releaseVersionCode = "45"
+releaseVersionSuffix = "-alpha"
+
 compose-plugin = "1.8.2"
 agp = "8.13.1"
 kotlin = "2.1.0"

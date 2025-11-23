@@ -107,8 +107,6 @@ kotlin {
             implementation(libs.androidyoutubeplayer)
             implementation(libs.androidyoutubeplayer.custom.ui)
             implementation(libs.androidyoutubeplayer.chromecast.sender)
-            //"fullImplementation"(libs.androidyoutubeplayer.chromecast.sender)
-            //"accrescentImplementation"(libs.androidyoutubeplayer.chromecast.sender)
             implementation(libs.androidx.mediarouter)
             implementation(libs.glance.widgets)
             implementation(libs.kizzy.rpc)
@@ -193,16 +191,16 @@ android {
         compose = true
     }
 
-    compileSdk = 36
+    compileSdk = libs.versions.android.compileSdk.get().toInt()
 
     defaultConfig {
         applicationId = "it.fast4x.riplay"
-        minSdk = 21
-        targetSdk = 36
-        val versionMajor = 0
-        val versionMinor = 0
-        versionCode = 43
-        val releaseSuffix = "-alpha"
+        minSdk = libs.versions.android.minSdk.get().toInt()
+        targetSdk = libs.versions.android.targetSdk.get().toInt()
+        val versionMajor = libs.versions.releaseVersionMajor.get().toInt()
+        val versionMinor = libs.versions.releaseVersionMinor.get().toInt()
+        versionCode = libs.versions.releaseVersionCode.get().toInt()
+        val releaseSuffix = libs.versions.releaseVersionSuffix.get()
         versionName = "$versionMajor.$versionMinor.$versionCode$releaseSuffix"
 
         multiDexEnabled = true
@@ -451,6 +449,12 @@ android {
         )
         //INIT AudioTagInfo Api
 
+    }
+
+    packaging {
+        resources {
+            excludes += "/META-INF/{AL2.0,LGPL2.1}"
+        }
     }
 
     splits {
