@@ -1330,7 +1330,7 @@ class PlayerService : Service(),
         try {
             if (localMediaItem?.isLocal == true) {
                 if (player.playerError != null) {
-                    Timber.w("PlayerService maybeRecoverPlaybackError: errore del player rilevato, tentativo di recupero")
+                    Timber.w("PlayerService maybeRecoverPlaybackError: try to recover player error")
                     player.prepare()
 
                     if (player.isPlaying) {
@@ -1339,14 +1339,15 @@ class PlayerService : Service(),
                 }
             } else {
                 if (lastError != null) {
-                    Timber.w("PlayerService maybeRecoverPlaybackError: errore del player online rilevato, tentativo di recupero")
+                    Timber.w("PlayerService maybeRecoverPlaybackError: try to recover player error")
                     localMediaItem?.let {
-                        internalOnlinePlayer.value?.cueVideo(it.mediaId, 0f)
+                        //internalOnlinePlayer.value?.cueVideo(it.mediaId, 0f)
+                        internalOnlinePlayer.value?.loadVideo(it.mediaId, 0f)
                     }
                 }
             }
         } catch (e: Exception) {
-            Timber.e("PlayerService maybeRecoverPlaybackError: errore durante il recupero ${e.stackTraceToString()}")
+            Timber.e("PlayerService maybeRecoverPlaybackError: recovery error ${e.stackTraceToString()}")
         }
     }
 

@@ -29,20 +29,6 @@ fun String.resize(
     return this
 }
 
-//fun String?.thumbnail(size: Int): String? {
-//    return when {
-//        this?.startsWith("https://lh3.googleusercontent.com") == true -> "$this-w$size-h$size"
-//        this?.startsWith("https://yt3.ggpht.com") == true -> "$this-w$size-h$size-s$size"
-//        else -> this
-//    }
-//}
-//fun String?.thumbnail(): String? {
-//    return this
-//}
-//fun Uri?.thumbnail(size: Int): Uri? {
-//    return toString().thumbnail(size)?.toUri()
-//}
-
 fun getHttpClient() = HttpClient() {
     install(UserAgent) {
         agent = "Mozilla/5.0 (Windows NT 10.0; rv:91.0) Gecko/20100101 Firefox/91.0"

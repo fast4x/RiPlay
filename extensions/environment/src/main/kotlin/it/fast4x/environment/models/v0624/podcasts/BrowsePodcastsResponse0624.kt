@@ -173,6 +173,8 @@ enum class IconType(val value: String) {
     @SerialName("ADD_TO_PLAYLIST") AddToPlaylist("ADD_TO_PLAYLIST"),
     @SerialName("ADD_TO_REMOTE_QUEUE") AddToRemoteQueue("ADD_TO_REMOTE_QUEUE"),
     @SerialName("CHECK") Check("CHECK"),
+    @SerialName("BOOKMARK_BORDER") BookmarkBorder("BOOKMARK_BORDER"),
+    @SerialName("BOOKMARK") Bookmark("BOOKMARK"),
     @SerialName("COLLAPSE") Collapse("COLLAPSE"),
     @SerialName("EXPAND") Expand("EXPAND"),
     @SerialName("LIBRARY_ADD") LibraryAdd("LIBRARY_ADD"),

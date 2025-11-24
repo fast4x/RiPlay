@@ -29,7 +29,7 @@ fun PodcastScreen(
     miniPlayer: @Composable () -> Unit = {},
 ) {
     val saveableStateHolder = rememberSaveableStateHolder()
-    PersistMapCleanup(tagPrefix = "podcast/$browseId")
+    //PersistMapCleanup(tagPrefix = "podcast/$browseId")
 
             ScreenContainer(
                 navController,
