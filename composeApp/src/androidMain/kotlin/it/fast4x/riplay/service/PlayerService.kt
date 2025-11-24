@@ -1276,6 +1276,8 @@ class PlayerService : Service(),
     }
 
     fun updateUnifiedNotification() {
+        if (player.mediaItemCount <= 0) return
+
         coroutineScope.launch {
             withContext(Dispatchers.Main){
                 updateUnifiedMediasession()
