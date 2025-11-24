@@ -68,16 +68,16 @@ import me.bush.translator.Language
 import me.bush.translator.Translator
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
-import rimusic.composeapp.generated.resources.Res
-import rimusic.composeapp.generated.resources.albums
-import rimusic.composeapp.generated.resources.artist_subscribers
-import rimusic.composeapp.generated.resources.dice
-import rimusic.composeapp.generated.resources.from_wikipedia_cca
-import rimusic.composeapp.generated.resources.information
-import rimusic.composeapp.generated.resources.playlists
-import rimusic.composeapp.generated.resources.singles
-import rimusic.composeapp.generated.resources.songs
-import rimusic.composeapp.generated.resources.translate
+import riplay.composeapp.generated.resources.Res
+import riplay.composeapp.generated.resources.albums
+import riplay.composeapp.generated.resources.artist_subscribers
+import riplay.composeapp.generated.resources.dice
+import riplay.composeapp.generated.resources.from_wikipedia_cca
+import riplay.composeapp.generated.resources.information
+import riplay.composeapp.generated.resources.playlists
+import riplay.composeapp.generated.resources.singles
+import riplay.composeapp.generated.resources.songs
+import riplay.composeapp.generated.resources.translate
 import kotlin.random.Random
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -93,7 +93,7 @@ fun ArtistScreen(
 ) {
     //val leftScrollState = rememberScrollState()
     //val rightScrollState = rememberScrollState()
-    val artistPage = remember { mutableStateOf<Environment.ArtistPage?>(null) }
+    val artistPage = remember { mutableStateOf<Environment.ArtistInfoPage?>(null) }
     LaunchedEffect(browseId) {
         Environment.artistPage(BrowseBody(browseId = browseId))
             ?.onSuccess {

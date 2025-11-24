@@ -1,4 +1,3 @@
-import org.gradle.kotlin.dsl.implementation
 import org.gradle.kotlin.dsl.withType
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
@@ -13,15 +12,118 @@ plugins {
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.jetbrainsCompose)
     alias(libs.plugins.room)
-    //alias(libs.plugins.hilt)
 }
 
+
+fun Project.propertyOrEmpty(name: String): String {
+    return (findProperty(name) as? String) ?: ""
+}
+val generatedSrcDir = layout.buildDirectory.dir("generated/kotlin/config").get()
+
+// Sostituisci il task esistente con questo
+val generateEnvironmentConfig by tasks.registering {
+    group = "build"
+    description = "Genera un file Kotlin con le configurazioni di ambiente."
+
+    // 1. Dichiara tutte le proprietà necessarie come "input" del task.
+    // Questo rende il task compatibile con la Configuration Cache.
+    val environmentPropertyNames = listOf(
+        "CrQ0JjAXgv", "hNpBzzAn7i", "lEi9YM74OL", "C0ZR993zmk", "w3TFBFL74Y", "mcchaHCWyK",
+        "L2u4JNdp7L", "sqDlfmV4Mt", "WpLlatkrVv", "1zNshDpFoh", "mPVWVuCxJz", "auDsjnylCZ",
+        "AW52cvJIJx", "0RGAyC1Zqu", "4Fdmu9Jkax", "kuSdQLhP8I", "QrgDKwvam1", "wLwNESpPtV",
+        "JJUQaehRFg", "i7WX2bHV6R", "XpiuASubrV", "lOlIIVw38L", "mtcR0FhFEl", "DTihHAFaBR",
+        "a4AcHS8CSg", "krdLqpYLxM", "ye6KGLZL7n", "ec09m20YH5", "LDRlbOvbF1", "EEqX0yizf2",
+        "i3BRhLrV1v", "MApdyHLMyJ", "hizI7yLjL4", "rLoZP7BF4c", "nza34sU88C", "dwbUvjWUl3",
+        "fqqhBZd0cf", "9sZKrkMg8p", "aQpNCVOe2i", "XNl2TKXLlB", "yNjbjspY8v", "eZueG672lt",
+        "WkUFhXtC3G", "z4Xe47r8Vs", "RiPlay_CHROMECAST_APPLICATION_ID", "Ayp_CHROMECAST_APPLICATION_ID",
+        "AudioTagInfo_API_KEY"
+    )
+    inputs.properties(environmentPropertyNames.associateWith { propertyOrEmpty(it) })
+
+    // 2. Definisci l'output del task
+    val outputFile = generatedSrcDir.file("it/fast4x/riplay/config/EnvironmentConfig.kt")
+    outputs.file(outputFile)
+
+    // 3. L'azione del task: usa gli input invece di chiamare la funzione dello script
+    doLast {
+        val file = outputFile.asFile
+        file.parentFile.mkdirs()
+
+        // Leggi i valori dagli input del task
+        val props = inputs.properties
+
+        file.writeText(
+            """
+            // GENERATED FILE - DO NOT MODIFY
+            package it.fast4x.riplay.config
+
+            object EnvironmentConfig {
+                const val env_CrQ0JjAXgv = "${props["CrQ0JjAXgv"]}"
+                const val env_hNpBzzAn7i = "${props["hNpBzzAn7i"]}"
+                const val env_lEi9YM74OL = "${props["lEi9YM74OL"]}"
+                const val env_C0ZR993zmk = "${props["C0ZR993zmk"]}"
+                const val env_w3TFBFL74Y = "${props["w3TFBFL74Y"]}"
+                const val env_mcchaHCWyK = "${props["mcchaHCWyK"]}"
+                const val env_L2u4JNdp7L = "${props["L2u4JNdp7L"]}"
+                const val env_sqDlfmV4Mt = "${props["sqDlfmV4Mt"]}"
+                const val env_WpLlatkrVv = "${props["WpLlatkrVv"]}"
+                const val env_1zNshDpFoh = "${props["1zNshDpFoh"]}"
+                const val env_mPVWVuCxJz = "${props["mPVWVuCxJz"]}"
+                const val env_auDsjnylCZ = "${props["auDsjnylCZ"]}"
+                const val env_AW52cvJIJx = "${props["AW52cvJIJx"]}"
+                const val env_0RGAyC1Zqu = "${props["0RGAyC1Zqu"]}"
+                const val env_4Fdmu9Jkax = "${props["4Fdmu9Jkax"]}"
+                const val env_kuSdQLhP8I = "${props["kuSdQLhP8I"]}"
+                const val env_QrgDKwvam1 = "${props["QrgDKwvam1"]}"
+                const val env_wLwNESpPtV = "${props["wLwNESpPtV"]}"
+                const val env_JJUQaehRFg = "${props["JJUQaehRFg"]}"
+                const val env_i7WX2bHV6R = "${props["i7WX2bHV6R"]}"
+                const val env_XpiuASubrV = "${props["XpiuASubrV"]}"
+                const val env_lOlIIVw38L = "${props["lOlIIVw38L"]}"
+                const val env_mtcR0FhFEl = "${props["mtcR0FhFEl"]}"
+                const val env_DTihHAFaBR = "${props["DTihHAFaBR"]}"
+                const val env_a4AcHS8CSg = "${props["a4AcHS8CSg"]}"
+                const val env_krdLqpYLxM = "${props["krdLqpYLxM"]}"
+                const val env_ye6KGLZL7n = "${props["ye6KGLZL7n"]}"
+                const val env_ec09m20YH5 = "${props["ec09m20YH5"]}"
+                const val env_LDRlbOvbF1 = "${props["LDRlbOvbF1"]}"
+                const val env_EEqX0yizf2 = "${props["EEqX0yizf2"]}"
+                const val env_i3BRhLrV1v = "${props["i3BRhLrV1v"]}"
+                const val env_MApdyHLMyJ = "${props["MApdyHLMyJ"]}"
+                const val env_hizI7yLjL4 = "${props["hizI7yLjL4"]}"
+                const val env_rLoZP7BF4c = "${props["rLoZP7BF4c"]}"
+                const val env_nza34sU88C = "${props["nza34sU88C"]}"
+                const val env_dwbUvjWUl3 = "${props["dwbUvjWUl3"]}"
+                const val env_fqqhBZd0cf = "${props["fqqhBZd0cf"]}"
+                const val env_9sZKrkMg8p = "${props["9sZKrkMg8p"]}"
+                const val env_aQpNCVOe2i = "${props["aQpNCVOe2i"]}"
+                const val env_XNl2TKXLlB = "${props["XNl2TKXLlB"]}"
+                const val env_yNjbjspY8v = "${props["yNjbjspY8v"]}"
+                const val env_eZueG672lt = "${props["eZueG672lt"]}"
+                const val env_WkUFhXtC3G = "${props["WkUFhXtC3G"]}"
+                const val env_z4Xe47r8Vs = "${props["z4Xe47r8Vs"]}"
+                
+                const val RiPlay_CHROMECAST_APPLICATION_ID = "${props["RiPlay_CHROMECAST_APPLICATION_ID"]}"
+                const val Ayp_CHROMECAST_APPLICATION_ID = "${props["Ayp_CHROMECAST_APPLICATION_ID"]}"
+                const val AudioTagInfo_API_KEY = "${props["AudioTagInfo_API_KEY"]}"
+            }
+            """.trimIndent()
+        )
+    }
+}
+
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
+    dependsOn(generateEnvironmentConfig)
+}
+
+/*
 repositories {
     google()
     mavenCentral()
     maven { url = uri("https://jitpack.io") }
     maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
 }
+ */
 
 kotlin {
     androidTarget {
@@ -40,6 +142,54 @@ kotlin {
         all {
             languageSettings {
                 optIn("org.jetbrains.compose.resources.ExperimentalResourceApi")
+            }
+        }
+
+        val commonMain by getting {
+            kotlin.srcDir(generatedSrcDir)
+
+            dependencies {
+                implementation(compose.runtime)
+                implementation(compose.foundation)
+                implementation(compose.material3)
+                implementation(compose.ui)
+                implementation(compose.components.resources)
+                implementation(compose.components.uiToolingPreview)
+
+                implementation(project(":environment"))
+                implementation(project(":kugou"))
+                implementation(project(":lrclib"))
+                implementation(project(":audiotaginfo"))
+
+                implementation(libs.room.ktx)
+                implementation(libs.room.runtime)
+                implementation(libs.room.sqlite.bundled)
+
+                implementation(libs.mediaplayer.kmp)
+
+                implementation(libs.navigation.kmp)
+
+                //coil3 mp
+                implementation(libs.coil.compose.core)
+                implementation(libs.coil.compose)
+                implementation(libs.coil.mp)
+
+                implementation(libs.translator)
+                implementation(libs.reorderable)
+
+                implementation(libs.fastscroller)
+                implementation(libs.fastscroller.material3)
+                implementation(libs.fastscroller.indicator)
+
+
+                implementation(
+                    fileTree(
+                        mapOf(
+                            "dir" to "libs",
+                            "include" to listOf("*.aar", "*.jar")
+                        )
+                    )
+                )
             }
         }
 
@@ -117,53 +267,7 @@ kotlin {
             implementation(libs.ktor.client.okhttp)
             implementation(libs.multidex)
         }
-        commonMain.dependencies {
-            implementation(compose.runtime)
-            implementation(compose.foundation)
-            implementation(compose.material3)
-            implementation(compose.ui)
-            implementation(compose.components.resources)
-            implementation(compose.components.uiToolingPreview)
 
-            //implementation(project(":compose-persist"))
-            implementation(project(":environment"))
-            implementation(project(":kugou"))
-            implementation(project(":lrclib"))
-            implementation(project(":audiotaginfo"))
-
-
-            implementation(libs.room.runtime)
-            implementation(libs.room.sqlite.bundled)
-
-            implementation(libs.mediaplayer.kmp)
-
-            implementation(libs.navigation.kmp)
-
-            //coil3 mp
-            implementation(libs.coil.compose.core)
-            implementation(libs.coil.compose)
-            implementation(libs.coil.mp)
-
-            implementation(libs.translator)
-            implementation(libs.reorderable)
-
-            implementation(libs.fastscroller)
-            implementation(libs.fastscroller.material3)
-            implementation(libs.fastscroller.indicator)
-
-
-            implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.aar", "*.jar"))))
-
-
-
-
-//    implementation(libs.room)
-//    ksp(libs.room.compiler)
-
-//    implementation(libs.hilt)
-//    ksp(libs.hilt.compiler)
-
-        }
     }
 }
 
@@ -458,22 +562,10 @@ android {
     }
 
     splits {
-        // Configures multiple APKs based on ABI.
         abi {
-
-            // Enables building multiple APKs per ABI.
             isEnable = false
-
-            // By default all ABIs are included, so use reset() and include to specify that you only
-            // want APKs for x86 and x86_64.
-
-            // Resets the list of ABIs for Gradle to create APKs for to none.
             reset()
-
-            // Specifies a list of ABIs for Gradle to create APKs for.
             include("x86", "x86_64", "armeabi-v7a", "arm64-v8a")
-
-            // Specifies that you don't want to also generate a universal APK that includes all ABIs.
             isUniversalApk = true
         }
     }
@@ -568,23 +660,12 @@ compose.desktop {
 
         mainClass = "MainKt"
 
-
-        //conveyor
         version = "0.0.1"
         group = "riplay"
-/*
 
         nativeDistributions {
-            vendor = "fast4x RiPlay"
-            description = "Desktop music player"
-        }
-        */
-
-        //jpackage
-        nativeDistributions {
-            //conveyor
             vendor = "RiPlay.DesktopApp"
-            description = "RiPlay Desktop Video Music Player"
+            description = "RiPlay Desktop Music Player"
 
             targetFormats(TargetFormat.Msi, TargetFormat.Deb, TargetFormat.Rpm)
             packageName = "RiPLay.DesktopApp"
@@ -621,7 +702,7 @@ dependencies {
 
     listOf(
         "kspAndroid",
-         "ksp",
+        "ksp",
         //"kspIosSimulatorArm64",
         //"kspIosX64",
         //"kspIosArm64"

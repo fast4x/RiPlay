@@ -56,7 +56,6 @@ mediaPlayerKMP = "2.1.0"
 navigationKMP = "2.9.0"
 vlcj = "4.11.0"
 kotlinxCoroutinesSwing = "1.10.2"
-hilt = "2.57.2"
 hypnoticcanvas = "0.4.1"
 okhttpDnsOverHttps = "5.1.0"
 reorderable = "3.0.0"
@@ -80,7 +79,7 @@ compose-activity = {group = "androidx.activity", name = "activity-compose", vers
 compose-animation = {group = "androidx.compose.animation", name = "animation", version.ref = "compose"}
 compose-runtime-livedata = { group = "androidx.compose.runtime", name = "runtime-livedata", version.ref = "compose"}
 compose-coil = {group = "io.coil-kt", name = "coil-compose", version.ref = "coil"}
-room = {group = "androidx.room", name = "room-ktx", version.ref = "room"}
+room-ktx = {group = "androidx.room", name = "room-ktx", version.ref = "room"}
 room-compiler = {group = "androidx.room", name = "room-compiler", version.ref = "room"}
 room-runtime = {group = "androidx.room", name = "room-runtime", version.ref = "room"}
 room-sqlite-bundled = { module= "androidx.sqlite:sqlite-bundled", version.ref = "sqlite" }
@@ -134,8 +133,6 @@ coil-compose-core = { module = "io.coil-kt.coil3:coil-compose-core", version.ref
 coil-network-okhttp = { module = "io.coil-kt.coil3:coil-network-okhttp", version.ref = "coil3" }
 coil-mp = { module = "io.coil-kt.coil3:coil", version.ref = "coil3" }
 kotlinx-coroutines-swing = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-swing", version.ref = "kotlinxCoroutinesSwing" }
-#hilt = { group = "com.google.dagger", name = "hilt-android", version.ref = "hilt" }
-#hilt-compiler = { group = "com.google.dagger", name = "hilt-android-compiler", version.ref = "hilt" }
 hypnoticcanvas = {group = "com.mikepenz.hypnoticcanvas", name = "hypnoticcanvas", version.ref = "hypnoticcanvas"}
 hypnoticcanvas-shaders = {group = "com.mikepenz.hypnoticcanvas", name = "hypnoticcanvas-shaders", version.ref = "hypnoticcanvas"}
 
@@ -162,6 +159,5 @@ jetbrainsCompose = { id = "org.jetbrains.compose", version.ref = "compose-plugin
 kotlin-ksp = { id = "com.google.devtools.ksp", version.ref = "kotlin-ksp" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin"}
 room = { id = "androidx.room", version.ref = "room" }
-#hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
 
 

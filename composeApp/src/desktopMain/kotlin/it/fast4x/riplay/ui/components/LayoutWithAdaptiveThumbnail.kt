@@ -16,8 +16,8 @@ import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import it.fast4x.riplay.enums.ThumbnailRoundness
 import org.jetbrains.compose.resources.painterResource
-import rimusic.composeapp.generated.resources.Res
-import rimusic.composeapp.generated.resources.loader
+import riplay.composeapp.generated.resources.Res
+import riplay.composeapp.generated.resources.loader
 
 @Composable
 inline fun LayoutWithAdaptiveThumbnail(

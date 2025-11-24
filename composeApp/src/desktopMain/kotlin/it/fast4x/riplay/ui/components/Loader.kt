@@ -11,8 +11,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.painterResource
-import rimusic.composeapp.generated.resources.Res
-import rimusic.composeapp.generated.resources.loader
+import riplay.composeapp.generated.resources.Res
+import riplay.composeapp.generated.resources.loader
 
 @Composable
 fun Loader(

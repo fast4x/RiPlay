@@ -47,13 +47,13 @@ import it.fast4x.riplay.ui.components.Title
 import it.fast4x.riplay.ui.components.Title2Actions
 import it.fast4x.riplay.utils.asSong
 import org.jetbrains.compose.resources.stringResource
-import rimusic.composeapp.generated.resources.Res
-import rimusic.composeapp.generated.resources.moods_and_genres
-import rimusic.composeapp.generated.resources.new_albums
-import rimusic.composeapp.generated.resources.play
-import rimusic.composeapp.generated.resources.playlists_you_might_like
-import rimusic.composeapp.generated.resources.related_albums
-import rimusic.composeapp.generated.resources.similar_artists
+import riplay.composeapp.generated.resources.Res
+import riplay.composeapp.generated.resources.moods_and_genres
+import riplay.composeapp.generated.resources.new_albums
+import riplay.composeapp.generated.resources.play
+import riplay.composeapp.generated.resources.playlists_you_might_like
+import riplay.composeapp.generated.resources.related_albums
+import riplay.composeapp.generated.resources.similar_artists
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -88,9 +88,11 @@ fun QuickPicsScreen(
         )
 
         discoverPageResult = Environment.discoverPage()
+
     }
     relatedPageResult?.getOrNull().also { related.value = it }
     discoverPageResult?.getOrNull().also { discover.value = it }
+    println("relatedPageResult ${related.value}")
 
     LazyHorizontalGrid(
         state = quickPicksLazyGridState,
@@ -118,7 +120,7 @@ fun QuickPicsScreen(
                                 onSongClick(song.asSong)
                             }
                         )
-                        .animateItemPlacement()
+                        .animateItem()
                         .width(itemInHorizontalGridWidth)
                 )
             }

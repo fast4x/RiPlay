@@ -10,13 +10,13 @@ import it.fast4x.riplay.data.DatabaseInitializer
 import it.fast4x.riplay.enums.CoilDiskCacheMaxSize
 import it.fast4x.riplay.utils.CaptureCrash
 import it.fast4x.riplay.utils.FileLoggingTree
-import it.fast4x.riplay.utils.InitializeEnvironment
 import it.fast4x.riplay.extensions.preferences.coilCustomDiskCacheKey
 import it.fast4x.riplay.extensions.preferences.coilDiskCacheMaxSizeKey
 import it.fast4x.riplay.extensions.preferences.getEnum
 import it.fast4x.riplay.extensions.preferences.logDebugEnabledKey
 import it.fast4x.riplay.extensions.preferences.preferences
 import it.fast4x.riplay.extensions.preferences.usePlaceholderInImageLoaderKey
+import it.fast4x.riplay.utils.initializeEnvironment
 import timber.log.Timber
 import java.io.File
 
@@ -98,6 +98,7 @@ object Dependencies {
     internal fun init(application: MainApplication) {
         this.application = application
         DatabaseInitializer()
-        InitializeEnvironment( this.application )
+        //InitializeEnvironment( this.application )
+        initializeEnvironment() // multiplatform initialization
     }
 }

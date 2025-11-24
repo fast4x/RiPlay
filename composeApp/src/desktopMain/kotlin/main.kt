@@ -7,9 +7,10 @@ import coil3.compose.setSingletonImageLoaderFactory
 import it.fast4x.riplay.getAsyncImageLoader
 import it.fast4x.riplay.ui.ThreeColumnsApp
 import it.fast4x.riplay.ui.theme.DesktopTheme
+import it.fast4x.riplay.utils.initializeEnvironment
 import org.jetbrains.compose.resources.painterResource
-import rimusic.composeapp.generated.resources.Res
-import rimusic.composeapp.generated.resources.app_icon
+import riplay.composeapp.generated.resources.Res
+import riplay.composeapp.generated.resources.app_icon
 
 
 @OptIn(ExperimentalCoilApi::class)
@@ -24,9 +25,10 @@ fun main() = application {
         state = WindowState(
             placement = WindowPlacement.Maximized,
         ),
-        title = "RiMusic MP",
+        title = "RiPlay Desktop Multiplatform",
     ) {
         //App(MusicDatabaseDesktop)
+        initializeEnvironment()
         DesktopTheme {
             ThreeColumnsApp()
         }

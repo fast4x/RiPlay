@@ -1,13 +1,17 @@
-package vlcj
+package it.fast4x.riplay.player.vlcj
 
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import okio.`-DeprecatedOkio`.buffer
 import player.PlayerController
 import player.frame.FrameRenderer
+import uk.co.caprica.vlcj.player.base.MediaPlayer
 import uk.co.caprica.vlcj.player.embedded.videosurface.callback.BufferFormat
 import uk.co.caprica.vlcj.player.embedded.videosurface.callback.BufferFormatCallback
 import uk.co.caprica.vlcj.player.embedded.videosurface.callback.RenderCallback
+import vlcj.VlcjController
 import java.nio.ByteBuffer
+import kotlin.getValue
 
 
 class VlcjFrameController constructor(
@@ -44,18 +48,42 @@ class VlcjFrameController constructor(
                 intArrayOf(sourceHeight)
             )
 
+            override fun newFormatSize(
+                bufferWidth: Int,
+                bufferHeight: Int,
+                displayWidth: Int,
+                displayHeight: Int
+            ) {
+                //TODO("Not yet implemented")
+            }
+
             override fun allocatedBuffers(buffers: Array<out ByteBuffer>?) = Unit
         }
     }
 
     private val renderCallback by lazy {
-        RenderCallback { _, nativeBuffers, bufferFormat ->
-            nativeBuffers?.firstOrNull()?.let { buffer ->
-                getPixels(buffer, bufferFormat.width, bufferFormat.height)?.let {
-                    _size.value = bufferFormat.width to bufferFormat.height
-                    _bytes.value = it
+        object : RenderCallback {
+
+            override fun lock(mediaPlayer: MediaPlayer?) = Unit
+
+            override fun display(
+                mediaPlayer: MediaPlayer?,
+                nativeBuffers: Array<out ByteBuffer?>?,
+                bufferFormat: BufferFormat?,
+                displayWidth: Int,
+                displayHeight: Int
+            ) {
+                nativeBuffers?.firstOrNull()?.let { buffer ->
+                    bufferFormat?.let { format ->
+                        getPixels(buffer, format.width, format.height)?.let { pixels ->
+                            _size.value = format.width to format.height
+                            _bytes.value = pixels
+                        }
+                    }
                 }
             }
+
+            override fun unlock(mediaPlayer: MediaPlayer?) = Unit
         }
     }
 

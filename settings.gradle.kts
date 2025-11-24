@@ -1,3 +1,5 @@
+import org.gradle.kotlin.dsl.maven
+
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
 pluginManagement {

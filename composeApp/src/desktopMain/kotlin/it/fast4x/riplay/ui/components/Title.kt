@@ -22,8 +22,8 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.DrawableResource
-import rimusic.composeapp.generated.resources.Res
-import rimusic.composeapp.generated.resources.arrow_forward
+import riplay.composeapp.generated.resources.Res
+import riplay.composeapp.generated.resources.arrow_forward
 
 @Composable
 fun Title(

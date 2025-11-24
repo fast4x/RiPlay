@@ -35,9 +35,9 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import it.fast4x.riplay.ui.screens.ArtistsScreen
 import org.jetbrains.compose.resources.painterResource
-import rimusic.composeapp.generated.resources.Res
-import rimusic.composeapp.generated.resources.app_icon
-import rimusic.composeapp.generated.resources.app_logo_text
+import riplay.composeapp.generated.resources.Res
+import riplay.composeapp.generated.resources.app_icon
+import riplay.composeapp.generated.resources.app_logo_text
 
 
 @Composable

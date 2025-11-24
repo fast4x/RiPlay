@@ -2,19 +2,19 @@ package it.fast4x.riplay.utils
 
 import androidx.compose.runtime.Composable
 import org.jetbrains.compose.resources.stringResource
-import rimusic.composeapp.generated.resources.Res
-import rimusic.composeapp.generated.resources.month_april_s
-import rimusic.composeapp.generated.resources.month_august_s
-import rimusic.composeapp.generated.resources.month_december_s
-import rimusic.composeapp.generated.resources.month_february_s
-import rimusic.composeapp.generated.resources.month_january_s
-import rimusic.composeapp.generated.resources.month_july_s
-import rimusic.composeapp.generated.resources.month_june_s
-import rimusic.composeapp.generated.resources.month_march_s
-import rimusic.composeapp.generated.resources.month_may_s
-import rimusic.composeapp.generated.resources.month_november_s
-import rimusic.composeapp.generated.resources.month_october_s
-import rimusic.composeapp.generated.resources.month_september_s
+import riplay.composeapp.generated.resources.Res
+import riplay.composeapp.generated.resources.month_april_s
+import riplay.composeapp.generated.resources.month_august_s
+import riplay.composeapp.generated.resources.month_december_s
+import riplay.composeapp.generated.resources.month_february_s
+import riplay.composeapp.generated.resources.month_january_s
+import riplay.composeapp.generated.resources.month_july_s
+import riplay.composeapp.generated.resources.month_june_s
+import riplay.composeapp.generated.resources.month_march_s
+import riplay.composeapp.generated.resources.month_may_s
+import riplay.composeapp.generated.resources.month_november_s
+import riplay.composeapp.generated.resources.month_october_s
+import riplay.composeapp.generated.resources.month_september_s
 
 @Composable
 fun getTitleMonthlyPlaylist(playlist: String): String {

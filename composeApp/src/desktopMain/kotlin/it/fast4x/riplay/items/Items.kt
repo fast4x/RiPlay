@@ -47,10 +47,10 @@ import it.fast4x.riplay.enums.ThumbnailRoundness
 import it.fast4x.riplay.utils.LoadImage
 import it.fast4x.riplay.utils.getTitleMonthlyPlaylist
 import org.jetbrains.compose.resources.painterResource
-import rimusic.composeapp.generated.resources.Res
-import rimusic.composeapp.generated.resources.pin
-import rimusic.composeapp.generated.resources.piped_logo
-import rimusic.composeapp.generated.resources.stat_month
+import riplay.composeapp.generated.resources.Res
+import riplay.composeapp.generated.resources.pin
+import riplay.composeapp.generated.resources.piped_logo
+import riplay.composeapp.generated.resources.stat_month
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable

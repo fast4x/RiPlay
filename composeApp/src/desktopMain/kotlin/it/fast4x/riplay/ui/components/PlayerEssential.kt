@@ -18,7 +18,7 @@ import database.entities.Song
 import it.fast4x.riplay.items.SongItem
 import it.fast4x.riplay.utils.LoadImage
 import player.frame.FramePlayer
-import vlcj.VlcjFrameController
+import it.fast4x.riplay.player.vlcj.VlcjFrameController
 
 @Composable
 fun MiniPlayer(

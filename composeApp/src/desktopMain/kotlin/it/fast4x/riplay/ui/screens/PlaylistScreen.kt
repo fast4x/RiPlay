@@ -67,12 +67,12 @@ import me.bush.translator.Language
 import me.bush.translator.Translator
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
-import rimusic.composeapp.generated.resources.Res
-import rimusic.composeapp.generated.resources.album_alternative_versions
-import rimusic.composeapp.generated.resources.from_wikipedia_cca
-import rimusic.composeapp.generated.resources.information
-import rimusic.composeapp.generated.resources.songs
-import rimusic.composeapp.generated.resources.translate
+import riplay.composeapp.generated.resources.Res
+import riplay.composeapp.generated.resources.album_alternative_versions
+import riplay.composeapp.generated.resources.from_wikipedia_cca
+import riplay.composeapp.generated.resources.information
+import riplay.composeapp.generated.resources.songs
+import riplay.composeapp.generated.resources.translate
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
