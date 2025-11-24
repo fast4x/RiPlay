@@ -104,7 +104,7 @@ import it.fast4x.riplay.extensions.preferences.blurDarkenFactorKey
 import it.fast4x.riplay.extensions.preferences.blurStrengthKey
 import it.fast4x.riplay.ui.styling.bold
 import it.fast4x.riplay.ui.styling.center
-import it.fast4x.riplay.cleanPrefix
+import it.fast4x.riplay.commonutils.cleanPrefix
 import it.fast4x.riplay.extensions.preferences.VinylSizeKey
 import it.fast4x.riplay.extensions.preferences.colorPaletteModeKey
 import it.fast4x.riplay.utils.drawCircle

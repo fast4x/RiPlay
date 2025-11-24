@@ -44,7 +44,7 @@ import database.entities.Song
 import it.fast4x.environment.Environment
 import it.fast4x.environment.models.bodies.BrowseBody
 import it.fast4x.environment.requests.playlistPage
-import it.fast4x.riplay.EXPLICIT_PREFIX
+import it.fast4x.riplay.commonutils.EXPLICIT_PREFIX
 import it.fast4x.riplay.items.AlbumItem
 import it.fast4x.riplay.items.SongItem
 import it.fast4x.riplay.styling.Dimensions.albumThumbnailSize

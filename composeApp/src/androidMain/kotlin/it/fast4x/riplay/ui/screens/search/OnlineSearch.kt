@@ -62,7 +62,7 @@ import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.LocalPlayerAwareWindowInsets
 import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.R
-import it.fast4x.riplay.cleanString
+import it.fast4x.riplay.commonutils.cleanString
 import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.enums.NavigationBarPosition
 import it.fast4x.riplay.enums.ThumbnailRoundness

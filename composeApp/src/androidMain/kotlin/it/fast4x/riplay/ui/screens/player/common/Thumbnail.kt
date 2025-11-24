@@ -74,7 +74,7 @@ import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.extensions.preferences.showCoverThumbnailAnimationKey
 import it.fast4x.riplay.extensions.preferences.showlyricsthumbnailKey
 import it.fast4x.riplay.extensions.preferences.showvisthumbnailKey
-import it.fast4x.riplay.utils.thumbnail
+import it.fast4x.riplay.commonutils.thumbnail
 import it.fast4x.riplay.extensions.preferences.thumbnailTypeKey
 import it.fast4x.riplay.extensions.preferences.thumbnailpauseKey
 import it.fast4x.riplay.utils.colorPalette
@@ -170,7 +170,7 @@ fun Thumbnail(
 
     val coverPainter = rememberAsyncImagePainter(
         model = ImageRequest.Builder(LocalContext.current)
-            .data(window.mediaItem.mediaMetadata.artworkUri.thumbnail(1200))
+            .data(window.mediaItem.mediaMetadata.artworkUri.toString().thumbnail(1200))
             .size(Size.ORIGINAL)
             .build(),
         onError = { artImageAvailable = false },

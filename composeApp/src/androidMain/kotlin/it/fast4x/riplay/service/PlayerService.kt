@@ -104,10 +104,10 @@ import it.fast4x.riplay.utils.isAtLeastAndroid6
 import it.fast4x.riplay.utils.isAtLeastAndroid8
 import it.fast4x.riplay.utils.isAtLeastAndroid81
 import it.fast4x.riplay.utils.startFadeAnimator
-import it.fast4x.riplay.utils.thumbnail
+import it.fast4x.riplay.commonutils.thumbnail
 import it.fast4x.riplay.utils.timer
 import it.fast4x.riplay.R
-import it.fast4x.riplay.cleanPrefix
+import it.fast4x.riplay.commonutils.cleanPrefix
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.enums.ContentType
 import it.fast4x.riplay.enums.DurationInMinutes
@@ -181,7 +181,7 @@ import it.fast4x.riplay.utils.playPrevious
 import it.fast4x.riplay.utils.principalCache
 import it.fast4x.riplay.utils.saveMasterQueue
 import it.fast4x.riplay.utils.seamlessQueue
-import it.fast4x.riplay.utils.setLikeState
+import it.fast4x.riplay.commonutils.setLikeState
 import it.fast4x.riplay.utils.setQueueLoopState
 import it.fast4x.riplay.utils.toggleRepeatMode
 import kotlinx.coroutines.CoroutineScope

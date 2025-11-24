@@ -4,10 +4,10 @@ import androidx.compose.runtime.Immutable
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import it.fast4x.riplay.MONTHLY_PREFIX
-import it.fast4x.riplay.PINNED_PREFIX
-import it.fast4x.riplay.YTM_PLAYLIST_SHARE_BASEURL
-import it.fast4x.riplay.YT_PLAYLIST_SHARE_BASEURL
+import it.fast4x.riplay.commonutils.MONTHLY_PREFIX
+import it.fast4x.riplay.commonutils.PINNED_PREFIX
+import it.fast4x.riplay.commonutils.YTM_PLAYLIST_SHARE_BASEURL
+import it.fast4x.riplay.commonutils.YT_PLAYLIST_SHARE_BASEURL
 
 @Immutable
 @Entity

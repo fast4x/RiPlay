@@ -34,8 +34,6 @@ import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -73,7 +71,7 @@ import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.R
 import it.fast4x.riplay.utils.appContext
-import it.fast4x.riplay.cleanPrefix
+import it.fast4x.riplay.commonutils.cleanPrefix
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.enums.BackgroundProgress
 import it.fast4x.riplay.enums.MiniPlayerType
@@ -116,8 +114,8 @@ import it.fast4x.riplay.service.PlayerService
 import it.fast4x.riplay.ui.styling.semiBold
 import it.fast4x.riplay.utils.PlayerViewModel
 import it.fast4x.riplay.utils.PlayerViewModelFactory
-import it.fast4x.riplay.utils.setDisLikeState
-import it.fast4x.riplay.utils.thumbnail
+import it.fast4x.riplay.commonutils.setDisLikeState
+import it.fast4x.riplay.commonutils.thumbnail
 import it.fast4x.riplay.utils.unlikeYtVideoOrSong
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -382,7 +380,7 @@ fun OnlineMiniPlayer(
                     .height(Dimensions.miniPlayerHeight)
             ) {
                 AsyncImage(
-                    model = mediaItem.mediaMetadata.artworkUri.thumbnail(Dimensions.thumbnails.song.px),
+                    model = mediaItem.mediaMetadata.artworkUri.toString().thumbnail(Dimensions.thumbnails.song.px),
                     contentDescription = null,
                     contentScale = ContentScale.Crop,
                     modifier = Modifier

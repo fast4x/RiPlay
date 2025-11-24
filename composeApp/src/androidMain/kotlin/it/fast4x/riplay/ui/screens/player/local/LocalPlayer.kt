@@ -68,7 +68,6 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -149,7 +148,7 @@ import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.R
 import it.fast4x.riplay.appRunningInBackground
-import it.fast4x.riplay.cleanPrefix
+import it.fast4x.riplay.commonutils.cleanPrefix
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.enums.AnimatedGradient
 import it.fast4x.riplay.enums.BackgroundProgress
@@ -219,7 +218,7 @@ import it.fast4x.riplay.extensions.preferences.disablePlayerHorizontalSwipeKey
 import it.fast4x.riplay.extensions.preferences.disableScrollingTextKey
 import it.fast4x.riplay.extensions.preferences.discoverKey
 import it.fast4x.riplay.utils.doubleShadowDrop
-import it.fast4x.riplay.utils.durationTextToMillis
+import it.fast4x.riplay.commonutils.durationTextToMillis
 import it.fast4x.riplay.extensions.preferences.effectRotationKey
 import it.fast4x.riplay.extensions.preferences.expandedplayerKey
 import it.fast4x.riplay.extensions.preferences.expandedplayertoggleKey
@@ -279,7 +278,7 @@ import it.fast4x.riplay.extensions.preferences.swipeAnimationsNoThumbnailKey
 import it.fast4x.riplay.extensions.preferences.swipeUpQueueKey
 import it.fast4x.riplay.extensions.preferences.tapqueueKey
 import it.fast4x.riplay.extensions.preferences.textoutlineKey
-import it.fast4x.riplay.utils.thumbnail
+import it.fast4x.riplay.commonutils.thumbnail
 import it.fast4x.riplay.extensions.preferences.thumbnailFadeExKey
 import it.fast4x.riplay.extensions.preferences.thumbnailFadeKey
 import it.fast4x.riplay.extensions.preferences.thumbnailRoundnessKey
@@ -309,8 +308,6 @@ import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.input.pointer.pointerInteropFilter
 import androidx.compose.ui.unit.LayoutDirection
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
-import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.PlayerConstants
-import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
 import it.fast4x.riplay.LocalSelectedQueue
 import it.fast4x.riplay.utils.appContext
 import it.fast4x.riplay.extensions.preferences.showPlayerActionsBarKey
@@ -328,7 +325,7 @@ import it.fast4x.riplay.utils.addToYtLikedSong
 import it.fast4x.riplay.utils.animatedGradient
 import it.fast4x.riplay.utils.getLikeState
 import it.fast4x.riplay.utils.mediaItemToggleLike
-import it.fast4x.riplay.utils.setDisLikeState
+import it.fast4x.riplay.commonutils.setDisLikeState
 import it.fast4x.riplay.utils.unlikeYtVideoOrSong
 import kotlinx.coroutines.CoroutineScope
 import org.dailyislam.android.utilities.isNetworkConnected
@@ -877,7 +874,7 @@ fun LocalPlayer(
             try {
                 val bitmap = getBitmapFromUrl(
                     context,
-                    binder.player.currentWindow?.mediaItem?.mediaMetadata?.artworkUri.thumbnail(1200).toString()
+                    binder.player.currentWindow?.mediaItem?.mediaMetadata?.artworkUri.toString().thumbnail(1200).toString()
                 )
 
                 dynamicColorPalette = dynamicColorPaletteOf(
@@ -948,7 +945,7 @@ fun LocalPlayer(
     val painter = rememberAsyncImagePainter(
         model = ImageRequest.Builder(LocalContext.current)
             .data(
-                mediaItem.mediaMetadata.artworkUri.thumbnail(1200))
+                mediaItem.mediaMetadata.artworkUri.toString().thumbnail(1200))
             .size(coil.size.Size.ORIGINAL)
             .transformations(
                 listOf(
@@ -1581,7 +1578,7 @@ fun LocalPlayer(
                                                     model = binder.player.getMediaItemAt(
                                                         index
                                                         //if (it + 1 <= mediaItems.size - 1) it + 1 else it
-                                                    ).mediaMetadata.artworkUri.thumbnail(1200),
+                                                    ).mediaMetadata.artworkUri.toString().thumbnail(1200),
                                                     contentDescription = null,
                                                     contentScale = ContentScale.Crop,
                                                     modifier = Modifier
@@ -2105,7 +2102,7 @@ fun LocalPlayer(
 
                      AsyncImage(
                          model = ImageRequest.Builder(LocalContext.current)
-                             .data(binder.player.getMediaItemAt(it).mediaMetadata.artworkUri.thumbnail(1200))
+                             .data(binder.player.getMediaItemAt(it).mediaMetadata.artworkUri.toString().thumbnail(1200))
                              .transformations(
                                  listOf(
                                      if (showthumbnail) {
@@ -2347,7 +2344,7 @@ fun LocalPlayer(
                                          val coverPainter = rememberAsyncImagePainter(
                                              model = ImageRequest.Builder(LocalContext.current)
                                                  .data(
-                                                     binder.player.getMediaItemAt(it).mediaMetadata.artworkUri.thumbnail(1200)
+                                                     binder.player.getMediaItemAt(it).mediaMetadata.artworkUri.toString().thumbnail(1200)
                                                  )
                                                  .build()
                                          )
@@ -2640,7 +2637,7 @@ fun LocalPlayer(
                         ) {
                             AsyncImage(
                               model = ImageRequest.Builder(LocalContext.current)
-                                .data(binder.player.getMediaItemAt(it).mediaMetadata.artworkUri.thumbnail(1200))
+                                .data(binder.player.getMediaItemAt(it).mediaMetadata.artworkUri.toString().thumbnail(1200))
                                 .transformations(
                                     listOf(
                                         if (showthumbnail) {
@@ -2974,7 +2971,7 @@ fun LocalPlayer(
 
                                      val coverPainter = rememberAsyncImagePainter(
                                          model = ImageRequest.Builder(LocalContext.current)
-                                             .data(binder.player.getMediaItemAt(index).mediaMetadata.artworkUri.thumbnail(1200))
+                                             .data(binder.player.getMediaItemAt(index).mediaMetadata.artworkUri.toString().thumbnail(1200))
                                              .build()
                                      )
 

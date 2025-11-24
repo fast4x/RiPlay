@@ -56,7 +56,7 @@ import it.fast4x.environment.Environment
 import it.fast4x.environment.EnvironmentExt
 import it.fast4x.environment.requests.AlbumPage
 import it.fast4x.riplay.data.Database
-import it.fast4x.riplay.MODIFIED_PREFIX
+import it.fast4x.riplay.commonutils.MODIFIED_PREFIX
 import it.fast4x.riplay.R
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.enums.NavRoutes

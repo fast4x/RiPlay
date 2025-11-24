@@ -13,8 +13,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import it.fast4x.riplay.data.Database
-import it.fast4x.riplay.PINNED_PREFIX
 import it.fast4x.riplay.R
+import it.fast4x.riplay.commonutils.PINNED_PREFIX
 import it.fast4x.riplay.enums.MenuStyle
 import it.fast4x.riplay.enums.PlaylistSongSortBy
 import it.fast4x.riplay.enums.SortOrder
@@ -59,13 +59,13 @@ fun pin(
     fun isPinned(): Boolean {
         return playlistPreview?.playlist
                               ?.name
-                              ?.startsWith( PINNED_PREFIX, true ) == true
+                              ?.startsWith(PINNED_PREFIX, true ) == true
     }
 
     override fun onShortClick() {
         Database.asyncTransaction {
             val playlistName = playlistPreview?.playlist?.name ?: return@asyncTransaction
-            if( playlistName.startsWith( PINNED_PREFIX ) )
+            if( playlistName.startsWith(PINNED_PREFIX) )
                 unPinPlaylist( playlistId )
             else
                 pinPlaylist( playlistId )

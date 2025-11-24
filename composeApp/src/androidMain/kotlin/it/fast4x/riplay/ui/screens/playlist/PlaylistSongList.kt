@@ -83,7 +83,7 @@ import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.LocalSelectedQueue
 import it.fast4x.riplay.R
 import it.fast4x.riplay.utils.appContext
-import it.fast4x.riplay.cleanPrefix
+import it.fast4x.riplay.commonutils.cleanPrefix
 import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.enums.NavigationBarPosition
 import it.fast4x.riplay.enums.PopupType
@@ -116,7 +116,7 @@ import it.fast4x.riplay.utils.addNext
 import it.fast4x.riplay.utils.asMediaItem
 import it.fast4x.riplay.utils.asSong
 import it.fast4x.riplay.extensions.preferences.disableScrollingTextKey
-import it.fast4x.riplay.utils.durationTextToMillis
+import it.fast4x.riplay.commonutils.durationTextToMillis
 import it.fast4x.riplay.utils.enqueue
 import it.fast4x.riplay.utils.fadingEdge
 import it.fast4x.riplay.utils.forcePlayAtIndex
@@ -151,7 +151,7 @@ import org.dailyislam.android.utilities.getHttpClient
 import org.dailyislam.android.utilities.isNetworkConnected
 import it.fast4x.riplay.utils.languageDestination
 import it.fast4x.riplay.utils.mediaItemSetLiked
-import it.fast4x.riplay.utils.setLikeState
+import it.fast4x.riplay.commonutils.setLikeState
 import kotlinx.coroutines.flow.filterNotNull
 import me.bush.translator.Language
 import me.bush.translator.Translator

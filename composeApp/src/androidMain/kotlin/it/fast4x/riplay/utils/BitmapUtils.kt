@@ -15,11 +15,13 @@ import coil.request.ErrorResult
 import coil.request.ImageRequest
 import coil.request.SuccessResult
 import com.google.common.util.concurrent.ListenableFuture
+import it.fast4x.riplay.commonutils.thumbnail
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.guava.future
 import timber.log.Timber
 import java.util.concurrent.ExecutionException
+import kotlin.toString
 
 suspend fun getBitmapFromUrl(context: Context, url: String): Bitmap {
     val loading = context.imageLoader
@@ -54,11 +56,11 @@ class BitmapLoader(
             val result = context.imageLoader.execute(
                 ImageRequest.Builder(context)
                     //.networkCachePolicy(CachePolicy.ENABLED)
-                    .data(uri.thumbnail(bitmapSize))
+                    .data(uri.toString().thumbnail(bitmapSize))
                     .size(bitmapSize)
                     .bitmapConfig(Bitmap.Config.ARGB_8888)
                     .allowHardware(false)
-                    .diskCacheKey(uri.thumbnail(bitmapSize).toString())
+                    .diskCacheKey(uri.toString().thumbnail(bitmapSize).toString())
                     .build()
             )
             if (result is ErrorResult) {
@@ -129,7 +131,7 @@ class BitmapProvider(
         lastEnqueued?.dispose()
         lastUri = uri
 
-        val url = uri.thumbnail(bitmapSize)
+        val url = uri.toString().thumbnail(bitmapSize)
         runCatching {
             lastEnqueued = appContext().imageLoader.enqueue(
                 ImageRequest.Builder(appContext())

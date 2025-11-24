@@ -4,13 +4,13 @@ import androidx.compose.runtime.Immutable
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import it.fast4x.riplay.LOCAL_KEY_PREFIX
-import it.fast4x.riplay.YTM_VIDEOORSONG_SHARE_BASEURL
-import it.fast4x.riplay.YT_VIDEOORSONG_SHARE_BASEURL
-import it.fast4x.riplay.cleanPrefix
-import it.fast4x.riplay.utils.durationTextToMillis
-import it.fast4x.riplay.utils.setDisLikeState
-import it.fast4x.riplay.utils.setLikeState
+import it.fast4x.riplay.commonutils.LOCAL_KEY_PREFIX
+import it.fast4x.riplay.commonutils.YTM_VIDEOORSONG_SHARE_BASEURL
+import it.fast4x.riplay.commonutils.YT_VIDEOORSONG_SHARE_BASEURL
+import it.fast4x.riplay.commonutils.cleanPrefix
+import it.fast4x.riplay.commonutils.durationTextToMillis
+import it.fast4x.riplay.commonutils.setDisLikeState
+import it.fast4x.riplay.commonutils.setLikeState
 import kotlinx.serialization.Serializable
 
 @Serializable

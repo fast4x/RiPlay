@@ -87,7 +87,7 @@ import io.github.oikvpqya.compose.fastscroller.VerticalScrollbar
 import io.github.oikvpqya.compose.fastscroller.rememberScrollbarAdapter
 import it.fast4x.riplay.extensions.persist.persistList
 import it.fast4x.riplay.data.Database
-import it.fast4x.riplay.EXPLICIT_PREFIX
+import it.fast4x.riplay.commonutils.EXPLICIT_PREFIX
 import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.LocalSelectedQueue
 import it.fast4x.riplay.R
@@ -154,7 +154,7 @@ import it.fast4x.riplay.ui.styling.center
 import it.fast4x.riplay.ui.styling.color
 import it.fast4x.riplay.extensions.preferences.defaultFolderKey
 import it.fast4x.riplay.extensions.preferences.disableScrollingTextKey
-import it.fast4x.riplay.utils.durationTextToMillis
+import it.fast4x.riplay.commonutils.durationTextToMillis
 import it.fast4x.riplay.utils.enqueue
 import it.fast4x.riplay.extensions.preferences.excludeSongsWithDurationLimitKey
 import it.fast4x.riplay.utils.forcePlayAtIndex

@@ -68,7 +68,6 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -114,8 +113,6 @@ import com.kieronquinn.monetcompat.app.MonetCompatActivity
 import com.kieronquinn.monetcompat.core.MonetActivityAccessException
 import com.kieronquinn.monetcompat.core.MonetCompat
 import com.kieronquinn.monetcompat.interfaces.MonetColorsChangedListener
-import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.PlayerConstants
-import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
 import com.valentinilk.shimmer.LocalShimmerTheme
 import com.valentinilk.shimmer.defaultShimmerTheme
@@ -225,7 +222,6 @@ import it.fast4x.riplay.ui.components.BottomSheet
 import it.fast4x.riplay.ui.components.BottomSheetState
 import it.fast4x.riplay.ui.components.CustomModalBottomSheet
 import it.fast4x.riplay.ui.components.LocalGlobalSheetState
-import it.fast4x.riplay.ui.components.SheetBody
 import it.fast4x.riplay.ui.components.rememberBottomSheetState
 import it.fast4x.riplay.ui.components.themed.CrossfadeContainer
 import it.fast4x.riplay.ui.components.themed.SmartMessage
@@ -264,7 +260,7 @@ import it.fast4x.riplay.utils.isValidIP
 import it.fast4x.riplay.utils.playNext
 import it.fast4x.riplay.utils.resize
 import it.fast4x.riplay.utils.setDefaultPalette
-import it.fast4x.riplay.utils.thumbnail
+import it.fast4x.riplay.commonutils.thumbnail
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
@@ -1106,7 +1102,7 @@ class MainActivity :
 
                                 if (colorPaletteName == ColorPaletteName.Dynamic) {
                                     val artworkUri =
-                                        (binder?.player?.currentMediaItem?.mediaMetadata?.artworkUri.thumbnail(
+                                        (binder?.player?.currentMediaItem?.mediaMetadata?.artworkUri.toString().thumbnail(
                                             1200
                                         )
                                             ?: "").toString()
@@ -1225,7 +1221,7 @@ class MainActivity :
                         getEnum(colorPaletteNameKey, ColorPaletteName.Dynamic)
                     if (colorPaletteName == ColorPaletteName.Dynamic) {
                         setDynamicPalette(
-                            (binder?.player?.currentMediaItem?.mediaMetadata?.artworkUri.thumbnail(
+                            (binder?.player?.currentMediaItem?.mediaMetadata?.artworkUri.toString().thumbnail(
                                 1200
                             )
                                 ?: "").toString()
@@ -1636,7 +1632,7 @@ class MainActivity :
                                 }
 
                                 setDynamicPalette(
-                                    it.mediaMetadata.artworkUri.thumbnail(
+                                    it.mediaMetadata.artworkUri.toString().thumbnail(
                                         1200
                                     ).toString()
                                 )

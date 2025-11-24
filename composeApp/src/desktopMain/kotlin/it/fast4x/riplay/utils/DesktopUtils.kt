@@ -1,7 +1,5 @@
 package it.fast4x.riplay.utils
 
-import coil3.Uri
-import coil3.toUri
 import database.entities.Song
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.UserAgent
@@ -31,19 +29,19 @@ fun String.resize(
     return this
 }
 
-fun String?.thumbnail(size: Int): String? {
-    return when {
-        this?.startsWith("https://lh3.googleusercontent.com") == true -> "$this-w$size-h$size"
-        this?.startsWith("https://yt3.ggpht.com") == true -> "$this-w$size-h$size-s$size"
-        else -> this
-    }
-}
-fun String?.thumbnail(): String? {
-    return this
-}
-fun Uri?.thumbnail(size: Int): Uri? {
-    return toString().thumbnail(size)?.toUri()
-}
+//fun String?.thumbnail(size: Int): String? {
+//    return when {
+//        this?.startsWith("https://lh3.googleusercontent.com") == true -> "$this-w$size-h$size"
+//        this?.startsWith("https://yt3.ggpht.com") == true -> "$this-w$size-h$size-s$size"
+//        else -> this
+//    }
+//}
+//fun String?.thumbnail(): String? {
+//    return this
+//}
+//fun Uri?.thumbnail(size: Int): Uri? {
+//    return toString().thumbnail(size)?.toUri()
+//}
 
 fun getHttpClient() = HttpClient() {
     install(UserAgent) {

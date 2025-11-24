@@ -55,10 +55,10 @@ import it.fast4x.environment.models.NavigationEndpoint
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.LocalSelectedQueue
-import it.fast4x.riplay.MODIFIED_PREFIX
-import it.fast4x.riplay.MONTHLY_PREFIX
-import it.fast4x.riplay.PINNED_PREFIX
-import it.fast4x.riplay.PIPED_PREFIX
+import it.fast4x.riplay.commonutils.MODIFIED_PREFIX
+import it.fast4x.riplay.commonutils.MONTHLY_PREFIX
+import it.fast4x.riplay.commonutils.PINNED_PREFIX
+import it.fast4x.riplay.commonutils.PIPED_PREFIX
 import it.fast4x.riplay.R
 import it.fast4x.riplay.utils.appContext
 import it.fast4x.riplay.enums.NavRoutes
@@ -81,7 +81,7 @@ import it.fast4x.riplay.extensions.preferences.playlistSortByKey
 import it.fast4x.riplay.extensions.preferences.playlistSortOrderKey
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.ui.styling.semiBold
-import it.fast4x.riplay.utils.thumbnail
+import it.fast4x.riplay.commonutils.thumbnail
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.flowOf
@@ -103,7 +103,7 @@ import it.fast4x.riplay.utils.addToYtLikedSong
 import it.fast4x.riplay.utils.forcePlay
 import org.dailyislam.android.utilities.isNetworkConnected
 import it.fast4x.riplay.utils.getLikeState
-import it.fast4x.riplay.utils.setDisLikeState
+import it.fast4x.riplay.commonutils.setDisLikeState
 import it.fast4x.riplay.utils.unlikeYtVideoOrSong
 
 @OptIn(UnstableApi::class)
@@ -428,8 +428,7 @@ fun MediaItemGridMenu (
         ) {
             SongItem(
                 mediaItem = mediaItem,
-                thumbnailUrl = mediaItem.mediaMetadata.artworkUri.thumbnail(thumbnailSizePx)
-                    ?.toString(),
+                thumbnailUrl = mediaItem.mediaMetadata.artworkUri.toString().thumbnail(thumbnailSizePx),
                 thumbnailSizeDp = thumbnailSizeDp,
                 modifier = Modifier
                     .weight(1f),

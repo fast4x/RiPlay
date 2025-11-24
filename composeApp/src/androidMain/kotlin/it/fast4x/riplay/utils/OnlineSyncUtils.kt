@@ -14,7 +14,7 @@ import it.fast4x.riplay.data.Database.Companion.getAlbumsList
 import it.fast4x.riplay.data.Database.Companion.getArtistsList
 import it.fast4x.riplay.data.Database.Companion.update
 import it.fast4x.riplay.R
-import it.fast4x.riplay.YTP_PREFIX
+import it.fast4x.riplay.commonutils.YTP_PREFIX
 import it.fast4x.riplay.extensions.preferences.autosyncKey
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.data.models.Album
@@ -72,7 +72,7 @@ suspend fun importYTMPrivatePlaylists(): Boolean {
                         )
                         Database.insert(localPlaylist.copy(browseId = playlistIdChecked))
                     } else {
-                        Database.updatePlaylistName(YTP_PREFIX+remotePlaylist.title, localPlaylist?.id ?: 0L)
+                        Database.updatePlaylistName(YTP_PREFIX +remotePlaylist.title, localPlaylist?.id ?: 0L)
                     }
 
                     val ytmLikedSongsPlaylist = Database.playlistWithBrowseId("LM")
@@ -86,7 +86,7 @@ suspend fun importYTMPrivatePlaylists(): Boolean {
                                 isEditable = true
                             )
                         )
-                    } else Database.updatePlaylistName(YTP_PREFIX+ytmLikedSongsPlaylist.name, ytmLikedSongsPlaylist.id)
+                    } else Database.updatePlaylistName(YTP_PREFIX +ytmLikedSongsPlaylist.name, ytmLikedSongsPlaylist.id)
 
                     Database.playlistWithSongsByBrowseId("LM").firstOrNull()?.let {
                         if (it.playlist.id != 0L && it.songs.isEmpty())

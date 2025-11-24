@@ -39,10 +39,10 @@ import coil3.compose.AsyncImage
 import database.entities.Album
 import database.entities.SongEntity
 import it.fast4x.environment.Environment
-import it.fast4x.riplay.MONTHLY_PREFIX
-import it.fast4x.riplay.PINNED_PREFIX
-import it.fast4x.riplay.PIPED_PREFIX
-import it.fast4x.riplay.cleanPrefix
+import it.fast4x.riplay.commonutils.MONTHLY_PREFIX
+import it.fast4x.riplay.commonutils.PINNED_PREFIX
+import it.fast4x.riplay.commonutils.PIPED_PREFIX
+import it.fast4x.riplay.commonutils.cleanPrefix
 import it.fast4x.riplay.enums.ThumbnailRoundness
 import it.fast4x.riplay.utils.LoadImage
 import it.fast4x.riplay.utils.getTitleMonthlyPlaylist

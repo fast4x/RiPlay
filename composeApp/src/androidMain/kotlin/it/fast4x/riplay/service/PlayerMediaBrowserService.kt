@@ -9,7 +9,6 @@ import android.os.Bundle
 import android.os.IBinder
 import android.support.v4.media.MediaBrowserCompat.MediaItem
 import android.support.v4.media.MediaDescriptionCompat
-import android.support.v4.media.session.MediaSessionCompat
 import androidx.annotation.DrawableRes
 import androidx.annotation.OptIn
 import androidx.compose.ui.util.fastFilter
@@ -25,9 +24,9 @@ import it.fast4x.environment.models.bodies.SearchBody
 import it.fast4x.environment.requests.searchPage
 import it.fast4x.environment.utils.completed
 import it.fast4x.environment.utils.from
-import it.fast4x.riplay.MODIFIED_PREFIX
-import it.fast4x.riplay.MONTHLY_PREFIX
-import it.fast4x.riplay.PINNED_PREFIX
+import it.fast4x.riplay.commonutils.MODIFIED_PREFIX
+import it.fast4x.riplay.commonutils.MONTHLY_PREFIX
+import it.fast4x.riplay.commonutils.PINNED_PREFIX
 import it.fast4x.riplay.R
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.data.models.Album
@@ -47,10 +46,9 @@ import it.fast4x.riplay.extensions.preferences.getEnum
 import it.fast4x.riplay.extensions.preferences.preferences
 import it.fast4x.riplay.extensions.preferences.putEnum
 import it.fast4x.riplay.extensions.preferences.queueLoopTypeKey
-import it.fast4x.riplay.removePrefix
+import it.fast4x.riplay.commonutils.removePrefix
 import it.fast4x.riplay.utils.asMediaItem
 import it.fast4x.riplay.utils.asSong
-import it.fast4x.riplay.utils.forcePlayAtIndex
 import it.fast4x.riplay.utils.getTitleMonthlyPlaylist
 import it.fast4x.riplay.utils.intent
 import it.fast4x.riplay.utils.mediaItemToggleLike
@@ -68,12 +66,8 @@ import it.fast4x.riplay.utils.shuffleQueue
 import it.fast4x.riplay.utils.shuffleSongsAAEnabled
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withContext
 import timber.log.Timber
 import kotlin.also
 

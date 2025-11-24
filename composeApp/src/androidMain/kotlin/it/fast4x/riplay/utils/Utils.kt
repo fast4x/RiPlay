@@ -7,7 +7,6 @@ import android.content.ContentUris
 import android.content.Context
 import android.content.pm.PackageManager
 import android.content.res.Configuration
-import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
 import android.text.format.DateUtils
@@ -43,9 +42,10 @@ import it.fast4x.kugou.KuGou
 import it.fast4x.lrclib.LrcLib
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.data.Database.Companion.getLikedAt
-import it.fast4x.riplay.EXPLICIT_PREFIX
 import it.fast4x.riplay.R
-import it.fast4x.riplay.cleanPrefix
+import it.fast4x.riplay.commonutils.EXPLICIT_PREFIX
+import it.fast4x.riplay.commonutils.cleanPrefix
+import it.fast4x.riplay.commonutils.durationTextToMillis
 import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.data.models.Album
 import it.fast4x.riplay.data.models.Artist
@@ -302,7 +302,7 @@ val Song.asMediaItem: MediaItem
                 .setExtras(
                     bundleOf(
                         "durationText" to durationText,
-                        EXPLICIT_BUNDLE_TAG to title.startsWith( EXPLICIT_PREFIX, true ),
+                        EXPLICIT_BUNDLE_TAG to title.startsWith(EXPLICIT_PREFIX, true ),
                         "isVideo" to (isAudioOnly != 1),
                         "isPodcast" to (isPodcast == 1),
                         "isDisliked" to (likedAt?.toInt() == -1),
@@ -333,7 +333,7 @@ val Song.asVideoMediaItem: MediaItem
                 .setExtras(
                     bundleOf(
                         "durationText" to durationText,
-                        EXPLICIT_BUNDLE_TAG to title.startsWith( EXPLICIT_PREFIX, true ),
+                        EXPLICIT_BUNDLE_TAG to title.startsWith(EXPLICIT_PREFIX, true ),
                         "isVideo" to (isAudioOnly != 1),
                     )
                 )
@@ -361,7 +361,7 @@ val SongEntity.asMediaItem: MediaItem
                 .setExtras(
                     bundleOf(
                         "durationText" to song.durationText,
-                        EXPLICIT_BUNDLE_TAG to song.title.startsWith( EXPLICIT_PREFIX, true ),
+                        EXPLICIT_BUNDLE_TAG to song.title.startsWith(EXPLICIT_PREFIX, true ),
                         "isVideo" to (song.isAudioOnly != 1),
                         "isPodcast" to (song.isPodcast == 1)
                     )
@@ -417,7 +417,7 @@ val MediaItem.isPodcast: Boolean
 
 val MediaItem.isExplicit: Boolean
     get() {
-        val isTitleContain = mediaMetadata.title?.startsWith( EXPLICIT_PREFIX, true )
+        val isTitleContain = mediaMetadata.title?.startsWith(EXPLICIT_PREFIX, true )
         val isBundleContain = mediaMetadata.extras?.getBoolean( EXPLICIT_BUNDLE_TAG )
 
         return isTitleContain == true || isBundleContain == true
@@ -449,19 +449,19 @@ fun String.resize(
     return this
 }
 
-fun String?.thumbnail(size: Int): String? {
-    return when {
-        this?.startsWith("https://lh3.googleusercontent.com") == true -> "$this-w$size-h$size"
-        this?.startsWith("https://yt3.ggpht.com") == true -> "$this-w$size-h$size-s$size"
-        else -> this
-    }
-}
-fun String?.thumbnail(): String? {
-    return this
-}
-fun Uri?.thumbnail(size: Int): Uri? {
-    return toString().thumbnail(size)?.toUri()
-}
+//fun String?.thumbnail(size: Int): String? {
+//    return when {
+//        this?.startsWith("https://lh3.googleusercontent.com") == true -> "$this-w$size-h$size"
+//        this?.startsWith("https://yt3.ggpht.com") == true -> "$this-w$size-h$size-s$size"
+//        else -> this
+//    }
+//}
+//fun String?.thumbnail(): String? {
+//    return this
+//}
+//fun Uri?.thumbnail(size: Int): Uri? {
+//    return toString().thumbnail(size)?.toUri()
+//}
 
 fun String?.asKey(): String? {
     var cleanText = this?.replace(" ", "_", true)
@@ -480,27 +480,27 @@ fun String.capitalized(): String =
     }
 
 fun formatAsDuration(millis: Long) = DateUtils.formatElapsedTime(millis / 1000).removePrefix("0")
-fun durationToMillis(duration: String): Long {
-    val parts = duration.split(":")
-    if (parts.size == 3){
-        val hours = parts[0].toLong()
-        val minutes = parts[1].toLong()
-        val seconds = parts[2].toLong()
-        return hours * 3600000 + minutes * 60000 + seconds * 1000
-    } else {
-        val minutes = parts[0].toLong()
-        val seconds = parts[1].toLong()
-        return minutes * 60000 + seconds * 1000
-    }
-}
-
-fun durationTextToMillis(duration: String): Long {
-    return try {
-        durationToMillis(duration)
-    } catch (e: Exception) {
-        0L
-    }
-}
+//fun durationToMillis(duration: String): Long {
+//    val parts = duration.split(":")
+//    if (parts.size == 3){
+//        val hours = parts[0].toLong()
+//        val minutes = parts[1].toLong()
+//        val seconds = parts[2].toLong()
+//        return hours * 3600000 + minutes * 60000 + seconds * 1000
+//    } else {
+//        val minutes = parts[0].toLong()
+//        val seconds = parts[1].toLong()
+//        return minutes * 60000 + seconds * 1000
+//    }
+//}
+//
+//fun durationTextToMillis(duration: String): Long {
+//    return try {
+//        durationToMillis(duration)
+//    } catch (e: Exception) {
+//        0L
+//    }
+//}
 
 
 fun formatAsTime(millis: Long): String {
@@ -812,7 +812,9 @@ suspend fun getAlbumVersionFromVideo(song: Song,playlistId : Long, position : In
                     && (if (tour) (requiredSongWords.any { it == "tour" }) else requiredSongWords.all { it != "tour" })
                     && (if (redux) (requiredSongWords.any { it == "redux" }) else requiredSongWords.all { it != "redux" })
                     && (if (song.asMediaItem.isExplicit) {requiredSong.asMediaItem.isExplicit} else {true})
-                    && (if (isExtPlaylist) {(durationTextToMillis(requiredSong.durationText ?: "") - durationTextToMillis(song.durationText ?: "")).absoluteValue <= 2000}
+                    && (if (isExtPlaylist) {(durationTextToMillis(
+                requiredSong.durationText ?: ""
+            ) - durationTextToMillis(song.durationText ?: "")).absoluteValue <= 2000}
             else {true})
 
             if (songMatched) return i
@@ -886,8 +888,8 @@ suspend fun getAlbumVersionFromVideo(song: Song,playlistId : Long, position : In
                 Database.updateSongArtist(matchedSong.asMediaItem.mediaId, artistNameString)
                 if (song.thumbnailUrl == "") Database.delete(song)
             }
-        } else if (song.id == ((cleanPrefix(song.title)+song.artistsText).filter {it.isLetterOrDigit()})){
-            songNotFound = song.copy(id = shuffle(song.artistsText+random4Digit+cleanPrefix(song.title)+"56Music").filter{it.isLetterOrDigit()})
+        } else if (song.id == ((cleanPrefix(song.title) +song.artistsText).filter {it.isLetterOrDigit()})){
+            songNotFound = song.copy(id = shuffle(song.artistsText+random4Digit+ cleanPrefix(song.title) +"56Music").filter{it.isLetterOrDigit()})
             Database.delete(song)
             Database.insert(songNotFound)
             Database.insert(

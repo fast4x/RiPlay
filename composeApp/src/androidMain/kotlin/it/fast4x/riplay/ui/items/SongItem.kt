@@ -46,7 +46,7 @@ import it.fast4x.environment.Environment
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.R
-import it.fast4x.riplay.cleanPrefix
+import it.fast4x.riplay.commonutils.cleanPrefix
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.enums.ColorPaletteName
 import it.fast4x.riplay.data.models.Song
@@ -79,7 +79,7 @@ import it.fast4x.riplay.ui.styling.secondary
 import it.fast4x.riplay.ui.styling.semiBold
 import it.fast4x.riplay.utils.forcePlay
 import it.fast4x.riplay.utils.shimmerEffect
-import it.fast4x.riplay.utils.thumbnail
+import it.fast4x.riplay.commonutils.thumbnail
 
 
 @UnstableApi
@@ -116,7 +116,7 @@ fun SongItem(
     //forceRecompose: Boolean = false
 ) {
     SongItem(
-        thumbnailUrl = song.mediaMetadata.artworkUri.thumbnail(thumbnailSizePx)?.toString(),
+        thumbnailUrl = song.mediaMetadata.artworkUri.toString().thumbnail(thumbnailSizePx)?.toString(),
         thumbnailSizeDp = thumbnailSizeDp,
         onThumbnailContent = onThumbnailContent,
         trailingContent = trailingContent,

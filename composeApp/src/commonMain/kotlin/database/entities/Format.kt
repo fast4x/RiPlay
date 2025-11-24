@@ -23,5 +23,6 @@ data class Format(
     val bitrate: Long? = null,
     val contentLength: Long? = null,
     val lastModified: Long? = null,
-    val loudnessDb: Float? = null
+    val loudnessDb: Float? = null,
+    val playbackUrl: String? = null,
 )

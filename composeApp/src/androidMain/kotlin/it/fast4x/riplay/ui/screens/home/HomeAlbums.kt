@@ -49,7 +49,7 @@ import it.fast4x.riplay.extensions.persist.persistList
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.LocalSelectedQueue
-import it.fast4x.riplay.MODIFIED_PREFIX
+import it.fast4x.riplay.commonutils.MODIFIED_PREFIX
 import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.AlbumSortBy
 import it.fast4x.riplay.enums.AlbumsType

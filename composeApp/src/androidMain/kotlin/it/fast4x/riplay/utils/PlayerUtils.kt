@@ -11,10 +11,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.OptIn
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.ViewModel
@@ -28,10 +25,9 @@ import androidx.media3.common.Player.REPEAT_MODE_OFF
 import androidx.media3.common.Player.REPEAT_MODE_ONE
 import androidx.media3.common.Timeline
 import androidx.media3.common.util.UnstableApi
-import androidx.media3.exoplayer.ExoPlayer
-import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.R
+import it.fast4x.riplay.commonutils.durationTextToMillis
 import it.fast4x.riplay.enums.DurationInMinutes
 import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.extensions.preferences.excludeSongsWithDurationLimitKey
@@ -51,13 +47,11 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.callbackFlow
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 import java.util.ArrayDeque
@@ -327,7 +321,7 @@ fun Player.excludeMediaItem(mediaItem: MediaItem, context: Context): Boolean {
             preferences.getEnum(excludeSongsWithDurationLimitKey, DurationInMinutes.Disabled)
         if (excludeSongWithDurationLimit != DurationInMinutes.Disabled) {
             val excludedSong = mediaItem.mediaMetadata.extras?.getString("durationText")?.let { it1 ->
-                    durationTextToMillis(it1)
+                durationTextToMillis(it1)
                 }!! <= excludeSongWithDurationLimit.minutesInMilliSeconds
 
             if (excludedSong)

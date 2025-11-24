@@ -34,7 +34,7 @@ import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import it.fast4x.audiotaginfo.models.Track
 import it.fast4x.riplay.R
-import it.fast4x.riplay.cleanString
+import it.fast4x.riplay.commonutils.cleanString
 import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.extensions.audiotag.models.AudioTagInfoErrors
 import it.fast4x.riplay.extensions.audiotag.models.UiState

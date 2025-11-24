@@ -3,8 +3,8 @@ package it.fast4x.riplay.data.models
 import androidx.compose.runtime.Immutable
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import it.fast4x.riplay.YTM_ARTIST_SHARE_BASEURL
-import it.fast4x.riplay.YT_ARTIST_SHARE_BASEURL
+import it.fast4x.riplay.commonutils.YTM_ARTIST_SHARE_BASEURL
+import it.fast4x.riplay.commonutils.YT_ARTIST_SHARE_BASEURL
 
 @Immutable
 @Entity

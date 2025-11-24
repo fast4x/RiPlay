@@ -44,10 +44,10 @@ import it.fast4x.environment.EnvironmentExt
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.LocalSelectedQueue
-import it.fast4x.riplay.MONTHLY_PREFIX
-import it.fast4x.riplay.PINNED_PREFIX
+import it.fast4x.riplay.commonutils.MONTHLY_PREFIX
+import it.fast4x.riplay.commonutils.PINNED_PREFIX
 import it.fast4x.riplay.R
-import it.fast4x.riplay.YTP_PREFIX
+import it.fast4x.riplay.commonutils.YTP_PREFIX
 import it.fast4x.riplay.utils.appContext
 import it.fast4x.riplay.enums.NavigationBarPosition
 import it.fast4x.riplay.enums.PlaylistSortBy

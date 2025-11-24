@@ -1,5 +1,6 @@
 package database
 
+import androidx.room.AutoMigration
 import androidx.room.ConstructedBy
 import androidx.room.Dao
 import androidx.room.Database
@@ -19,13 +20,14 @@ import database.entities.Event
 import database.entities.Format
 import database.entities.Lyrics
 import database.entities.Playlist
+import database.entities.Queues
 import database.entities.SearchQuery
 import database.entities.Song
 import database.entities.SongAlbumMap
 import database.entities.SongArtistMap
 import database.entities.SongEntity
 import database.entities.SongPlaylistMap
-import it.fast4x.riplay.LOCAL_KEY_PREFIX
+import it.fast4x.riplay.commonutils.LOCAL_KEY_PREFIX
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 
@@ -38,14 +40,18 @@ import kotlinx.coroutines.flow.Flow
         Lyrics::class,
         //QueuedMediaItem::class, //TODO: implement
         Playlist::class,
+        Queues::class,
         SearchQuery::class,
         Song::class,
         SongAlbumMap::class,
         SongArtistMap::class,
-        SongPlaylistMap::class
+        SongPlaylistMap::class,
     ],
-    version = 23,
-    exportSchema = true
+    version = 24,
+    exportSchema = true,
+    autoMigrations = [
+        AutoMigration(from = 23, to = 24)
+    ]
 )
 @ConstructedBy(MusicDatabaseConstructor::class)
 abstract class MusicDatabase : RoomDatabase() {

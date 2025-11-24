@@ -33,7 +33,7 @@ import it.fast4x.environment.Environment
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.R
 import it.fast4x.riplay.utils.appContext
-import it.fast4x.riplay.cleanPrefix
+import it.fast4x.riplay.commonutils.cleanPrefix
 import it.fast4x.riplay.enums.AlbumSwipeAction
 import it.fast4x.riplay.enums.PlaylistSwipeAction
 import it.fast4x.riplay.enums.QueueSwipeAction

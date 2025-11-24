@@ -17,7 +17,7 @@ import androidx.glance.state.GlanceStateDefinition
 import androidx.glance.state.PreferencesGlanceStateDefinition
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
-import it.fast4x.riplay.cleanPrefix
+import it.fast4x.riplay.commonutils.cleanPrefix
 import androidx.core.graphics.createBitmap
 
 class PlayerVerticalWidgetReceiver : GlanceAppWidgetReceiver() {

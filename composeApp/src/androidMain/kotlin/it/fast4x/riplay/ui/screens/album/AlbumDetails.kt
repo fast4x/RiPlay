@@ -70,13 +70,13 @@ import it.fast4x.environment.EnvironmentExt
 import it.fast4x.environment.models.NavigationEndpoint
 import it.fast4x.environment.requests.AlbumPage
 import it.fast4x.riplay.data.Database
-import it.fast4x.riplay.EXPLICIT_PREFIX
+import it.fast4x.riplay.commonutils.EXPLICIT_PREFIX
 import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.LocalSelectedQueue
-import it.fast4x.riplay.MODIFIED_PREFIX
+import it.fast4x.riplay.commonutils.MODIFIED_PREFIX
 import it.fast4x.riplay.R
 import it.fast4x.riplay.utils.appContext
-import it.fast4x.riplay.cleanPrefix
+import it.fast4x.riplay.commonutils.cleanPrefix
 import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.enums.UiType
 import it.fast4x.riplay.data.models.Album
@@ -112,7 +112,7 @@ import it.fast4x.riplay.ui.styling.center
 import it.fast4x.riplay.ui.styling.color
 import it.fast4x.riplay.utils.applyIf
 import it.fast4x.riplay.extensions.preferences.disableScrollingTextKey
-import it.fast4x.riplay.utils.durationTextToMillis
+import it.fast4x.riplay.commonutils.durationTextToMillis
 import it.fast4x.riplay.utils.enqueue
 import it.fast4x.riplay.utils.fadingEdge
 import it.fast4x.riplay.utils.forcePlayAtIndex

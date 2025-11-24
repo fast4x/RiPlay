@@ -176,7 +176,7 @@ import it.fast4x.riplay.LocalSelectedQueue
 import it.fast4x.riplay.R
 import it.fast4x.riplay.utils.appContext
 import it.fast4x.riplay.appRunningInBackground
-import it.fast4x.riplay.cleanPrefix
+import it.fast4x.riplay.commonutils.cleanPrefix
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.enums.AnimatedGradient
 import it.fast4x.riplay.enums.BackgroundProgress
@@ -271,7 +271,7 @@ import it.fast4x.riplay.extensions.preferences.disablePlayerHorizontalSwipeKey
 import it.fast4x.riplay.extensions.preferences.disableScrollingTextKey
 import it.fast4x.riplay.extensions.preferences.discoverKey
 import it.fast4x.riplay.utils.doubleShadowDrop
-import it.fast4x.riplay.utils.durationTextToMillis
+import it.fast4x.riplay.commonutils.durationTextToMillis
 import it.fast4x.riplay.extensions.preferences.effectRotationKey
 import it.fast4x.riplay.extensions.preferences.expandedplayerKey
 import it.fast4x.riplay.extensions.preferences.expandedplayertoggleKey
@@ -308,7 +308,7 @@ import it.fast4x.riplay.extensions.preferences.rememberObservedPreference
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.utils.seamlessPlay
 import it.fast4x.riplay.ui.styling.semiBold
-import it.fast4x.riplay.utils.setDisLikeState
+import it.fast4x.riplay.commonutils.setDisLikeState
 import it.fast4x.riplay.utils.setQueueLoopState
 import it.fast4x.riplay.extensions.preferences.showButtonPlayerAddToPlaylistKey
 import it.fast4x.riplay.extensions.preferences.showButtonPlayerArrowKey
@@ -339,7 +339,7 @@ import it.fast4x.riplay.extensions.preferences.swipeAnimationsNoThumbnailKey
 import it.fast4x.riplay.extensions.preferences.swipeUpQueueKey
 import it.fast4x.riplay.extensions.preferences.tapqueueKey
 import it.fast4x.riplay.extensions.preferences.textoutlineKey
-import it.fast4x.riplay.utils.thumbnail
+import it.fast4x.riplay.commonutils.thumbnail
 import it.fast4x.riplay.extensions.preferences.thumbnailFadeExKey
 import it.fast4x.riplay.extensions.preferences.thumbnailFadeKey
 import it.fast4x.riplay.extensions.preferences.thumbnailRoundnessKey
@@ -948,7 +948,7 @@ fun OnlinePlayer(
             try {
                 val bitmap = getBitmapFromUrl(
                     context,
-                    binder.player.currentWindow?.mediaItem?.mediaMetadata?.artworkUri.thumbnail(1200)
+                    binder.player.currentWindow?.mediaItem?.mediaMetadata?.artworkUri.toString().thumbnail(1200)
                         .toString()
                 )
 
@@ -1019,7 +1019,7 @@ fun OnlinePlayer(
     val painter = rememberAsyncImagePainter(
         model = ImageRequest.Builder(LocalContext.current)
             .data(
-                mediaItem.mediaMetadata.artworkUri.thumbnail(1200)
+                mediaItem.mediaMetadata.artworkUri.toString().thumbnail(1200)
             )
             .size(coil.size.Size.ORIGINAL)
             .transformations(
@@ -1920,7 +1920,7 @@ fun OnlinePlayer(
                                                         model = binder.player.getMediaItemAt(
                                                             index
                                                             //if (it + 1 <= mediaItems.size - 1) it + 1 else it
-                                                        ).mediaMetadata.artworkUri.thumbnail(1200),
+                                                        ).mediaMetadata.artworkUri.toString().thumbnail(1200),
                                                         contentDescription = null,
                                                         contentScale = ContentScale.Crop,
                                                         modifier = Modifier
@@ -2486,7 +2486,7 @@ fun OnlinePlayer(
                             AsyncImage(
                                 model = ImageRequest.Builder(LocalContext.current)
                                     .data(
-                                        binder.player.getMediaItemAt(it).mediaMetadata.artworkUri.thumbnail(
+                                        binder.player.getMediaItemAt(it).mediaMetadata.artworkUri.toString().thumbnail(
                                             1200
                                         )
                                     )
@@ -2748,7 +2748,7 @@ fun OnlinePlayer(
                                                 val coverPainter = rememberAsyncImagePainter(
                                                     model = ImageRequest.Builder(LocalContext.current)
                                                         .data(
-                                                            binder.player.getMediaItemAt(it).mediaMetadata.artworkUri.thumbnail(
+                                                            binder.player.getMediaItemAt(it).mediaMetadata.artworkUri.toString().thumbnail(
                                                                 1200
                                                             )
                                                         )
@@ -3112,7 +3112,7 @@ fun OnlinePlayer(
                             AsyncImage(
                                 model = ImageRequest.Builder(LocalContext.current)
                                     .data(
-                                        binder.player.getMediaItemAt(it).mediaMetadata.artworkUri.thumbnail(
+                                        binder.player.getMediaItemAt(it).mediaMetadata.artworkUri.toString().thumbnail(
                                             1200
                                         )
                                     )
@@ -3531,7 +3531,7 @@ fun OnlinePlayer(
                                         val coverPainter = rememberAsyncImagePainter(
                                             model = ImageRequest.Builder(LocalContext.current)
                                                 .data(
-                                                    binder.player.getMediaItemAt(index).mediaMetadata.artworkUri.thumbnail(
+                                                    binder.player.getMediaItemAt(index).mediaMetadata.artworkUri.toString().thumbnail(
                                                         1200
                                                     )
                                                 )
@@ -3667,7 +3667,7 @@ fun OnlinePlayer(
 
                                     val coverPainter = rememberAsyncImagePainter(
                                         model = ImageRequest.Builder(LocalContext.current)
-                                            .data(mediaItem.mediaMetadata.artworkUri.thumbnail(1200))
+                                            .data(mediaItem.mediaMetadata.artworkUri.toString().thumbnail(1200))
                                             .build()
                                    )
 

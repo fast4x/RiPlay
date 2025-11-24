@@ -16,7 +16,7 @@ import it.fast4x.riplay.extensions.preferences.getEnum
 import it.fast4x.riplay.extensions.preferences.logDebugEnabledKey
 import it.fast4x.riplay.extensions.preferences.preferences
 import it.fast4x.riplay.extensions.preferences.usePlaceholderInImageLoaderKey
-import it.fast4x.riplay.utils.initializeEnvironment
+import it.fast4x.riplay.commonutils.initializeEnvironment
 import timber.log.Timber
 import java.io.File
 

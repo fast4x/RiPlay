@@ -1,4 +1,4 @@
-package it.fast4x.riplay.utils
+package it.fast4x.riplay.commonutils
 
 import it.fast4x.environment.utils.EnvironmentPreferenceItem
 import it.fast4x.environment.utils.EnvironmentPreferences

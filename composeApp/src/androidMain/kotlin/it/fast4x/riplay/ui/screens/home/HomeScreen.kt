@@ -20,7 +20,7 @@ import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.lifecycle.Lifecycle
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
-import it.fast4x.riplay.LOCAL_KEY_PREFIX
+import it.fast4x.riplay.commonutils.LOCAL_KEY_PREFIX
 import it.fast4x.riplay.LocalPlayerSheetState
 import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.CheckUpdateState

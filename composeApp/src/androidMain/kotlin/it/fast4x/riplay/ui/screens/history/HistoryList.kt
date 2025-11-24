@@ -40,7 +40,7 @@ import it.fast4x.riplay.extensions.persist.persist
 import it.fast4x.environment.EnvironmentExt
 import it.fast4x.environment.requests.HistoryPage
 import it.fast4x.riplay.data.Database
-import it.fast4x.riplay.EXPLICIT_PREFIX
+import it.fast4x.riplay.commonutils.EXPLICIT_PREFIX
 import it.fast4x.riplay.LocalPlayerAwareWindowInsets
 import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.R

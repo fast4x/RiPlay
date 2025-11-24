@@ -1,4 +1,4 @@
-package it.fast4x.riplay
+package it.fast4x.riplay.commonutils
 
 import coil3.Uri
 import coil3.toUri
@@ -67,7 +67,29 @@ fun String?.thumbnail(size: Int): String? {
 fun String?.thumbnail(): String? {
     return this
 }
+
 fun Uri?.thumbnail(size: Int): Uri? {
     return toString().thumbnail(size)?.toUri()
 }
 
+fun durationToMillis(duration: String): Long {
+    val parts = duration.split(":")
+    if (parts.size == 3){
+        val hours = parts[0].toLong()
+        val minutes = parts[1].toLong()
+        val seconds = parts[2].toLong()
+        return hours * 3600000 + minutes * 60000 + seconds * 1000
+    } else {
+        val minutes = parts[0].toLong()
+        val seconds = parts[1].toLong()
+        return minutes * 60000 + seconds * 1000
+    }
+}
+
+fun durationTextToMillis(duration: String): Long {
+    return try {
+        durationToMillis(duration)
+    } catch (e: Exception) {
+        0L
+    }
+}

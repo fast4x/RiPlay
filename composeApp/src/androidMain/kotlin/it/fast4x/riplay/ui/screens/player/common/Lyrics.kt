@@ -98,7 +98,7 @@ import it.fast4x.lrclib.models.Track
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.R
-import it.fast4x.riplay.cleanPrefix
+import it.fast4x.riplay.commonutils.cleanPrefix
 import it.fast4x.riplay.enums.ColorPaletteMode
 import it.fast4x.riplay.enums.Languages
 import it.fast4x.riplay.enums.LyricsAlignment

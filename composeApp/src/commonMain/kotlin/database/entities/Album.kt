@@ -14,8 +14,15 @@ data class Album(
     val authorsText: String? = null,
     val shareUrl: String? = null,
     val timestamp: Long? = null,
-    val bookmarkedAt: Long? = null
+    val bookmarkedAt: Long? = null,
+    val isYoutubeAlbum: Boolean? = false,
 ) {
+    val shareYTUrl: String?
+        get() = shareUrl?.replace("music.","www.")
+
+    val shareYTMUrl: String?
+        get() = shareUrl?.replace("www.","music.")
+
     fun toggleBookmark(): Album {
         return copy(
             bookmarkedAt = if (bookmarkedAt == null) System.currentTimeMillis() else null

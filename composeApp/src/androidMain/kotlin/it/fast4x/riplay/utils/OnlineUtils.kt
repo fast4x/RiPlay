@@ -56,8 +56,8 @@ import it.fast4x.environment.utils.from
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.LocalSelectedQueue
-import it.fast4x.riplay.MODIFIED_PREFIX
 import it.fast4x.riplay.R
+import it.fast4x.riplay.commonutils.MODIFIED_PREFIX
 import it.fast4x.riplay.enums.ContentType
 import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.enums.ThumbnailRoundness

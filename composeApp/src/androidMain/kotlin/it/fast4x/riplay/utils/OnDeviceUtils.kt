@@ -6,6 +6,7 @@ import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
 import android.util.Log
+import it.fast4x.riplay.commonutils.durationToMillis
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.data.models.Album
 import it.fast4x.riplay.data.models.Artist
@@ -58,7 +59,11 @@ class OnDeviceOrganize {
                     if (sortOrder == SortOrder.Ascending)
                         songs.sortedBy { durationToMillis(it.song.durationText ?: "0:00") }
                     else
-                        songs.sortedByDescending { durationToMillis(it.song.durationText ?: "0:00") }
+                        songs.sortedByDescending {
+                            durationToMillis(
+                                it.song.durationText ?: "0:00"
+                            )
+                        }
                 }
             }
         }

@@ -60,7 +60,7 @@ import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.R
 import it.fast4x.riplay.utils.appContext
-import it.fast4x.riplay.cleanPrefix
+import it.fast4x.riplay.commonutils.cleanPrefix
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.enums.ButtonState
 import it.fast4x.riplay.enums.ColorPaletteMode
@@ -101,7 +101,7 @@ import it.fast4x.riplay.extensions.preferences.playerControlsTypeKey
 import it.fast4x.riplay.extensions.preferences.queueLoopTypeKey
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.ui.styling.semiBold
-import it.fast4x.riplay.utils.setDisLikeState
+import it.fast4x.riplay.commonutils.setDisLikeState
 import it.fast4x.riplay.utils.setQueueLoopState
 import it.fast4x.riplay.extensions.preferences.showthumbnailKey
 import it.fast4x.riplay.utils.copyTextToClipboard

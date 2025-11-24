@@ -33,10 +33,10 @@ import androidx.sqlite.db.SimpleSQLiteQuery
 import androidx.sqlite.db.SupportSQLiteDatabase
 import androidx.sqlite.db.SupportSQLiteQuery
 import it.fast4x.environment.Environment
-import it.fast4x.riplay.EXPLICIT_PREFIX
-import it.fast4x.riplay.MONTHLY_PREFIX
-import it.fast4x.riplay.PINNED_PREFIX
-import it.fast4x.riplay.PIPED_PREFIX
+import it.fast4x.riplay.commonutils.EXPLICIT_PREFIX
+import it.fast4x.riplay.commonutils.MONTHLY_PREFIX
+import it.fast4x.riplay.commonutils.PINNED_PREFIX
+import it.fast4x.riplay.commonutils.PIPED_PREFIX
 import it.fast4x.riplay.enums.AlbumSortBy
 import it.fast4x.riplay.enums.ArtistSortBy
 import it.fast4x.riplay.enums.BuiltInPlaylist
