@@ -20,13 +20,10 @@ fun Project.propertyOrEmpty(name: String): String {
 }
 val generatedSrcDir = layout.buildDirectory.dir("generated/kotlin/config").get()
 
-// Sostituisci il task esistente con questo
 val generateEnvironmentConfig by tasks.registering {
     group = "build"
     description = "Genera un file Kotlin con le configurazioni di ambiente."
 
-    // 1. Dichiara tutte le proprietà necessarie come "input" del task.
-    // Questo rende il task compatibile con la Configuration Cache.
     val environmentPropertyNames = listOf(
         "CrQ0JjAXgv", "hNpBzzAn7i", "lEi9YM74OL", "C0ZR993zmk", "w3TFBFL74Y", "mcchaHCWyK",
         "L2u4JNdp7L", "sqDlfmV4Mt", "WpLlatkrVv", "1zNshDpFoh", "mPVWVuCxJz", "auDsjnylCZ",
@@ -40,16 +37,13 @@ val generateEnvironmentConfig by tasks.registering {
     )
     inputs.properties(environmentPropertyNames.associateWith { propertyOrEmpty(it) })
 
-    // 2. Definisci l'output del task
     val outputFile = generatedSrcDir.file("it/fast4x/riplay/config/EnvironmentConfig.kt")
     outputs.file(outputFile)
 
-    // 3. L'azione del task: usa gli input invece di chiamare la funzione dello script
     doLast {
         val file = outputFile.asFile
         file.parentFile.mkdirs()
 
-        // Leggi i valori dagli input del task
         val props = inputs.properties
 
         file.writeText(
