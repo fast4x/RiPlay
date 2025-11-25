@@ -182,6 +182,7 @@ import it.fast4x.riplay.utils.principalCache
 import it.fast4x.riplay.utils.saveMasterQueue
 import it.fast4x.riplay.utils.seamlessQueue
 import it.fast4x.riplay.commonutils.setLikeState
+import it.fast4x.riplay.utils.getGlobalVolume
 import it.fast4x.riplay.utils.setQueueLoopState
 import it.fast4x.riplay.utils.toggleRepeatMode
 import kotlinx.coroutines.CoroutineScope
@@ -241,7 +242,7 @@ class PlayerService : Service(),
         principalCache.getInstance(this)
     }
     lateinit var player: ExoPlayer
-    private lateinit var audioVolumeObserver: AudioVolumeObserver
+    //private lateinit var audioVolumeObserver: AudioVolumeObserver
     //private lateinit var connectivityManager: ConnectivityManager
 
     private val metadataBuilder = MediaMetadataCompat.Builder()
@@ -405,8 +406,8 @@ class PlayerService : Service(),
         player.skipSilenceEnabled = preferences.getBoolean(skipSilenceKey, false)
         //player.pauseAtEndOfMediaItems = true
 
-        audioVolumeObserver = AudioVolumeObserver(this)
-        audioVolumeObserver.register(AudioManager.STREAM_MUSIC, this)
+        //audioVolumeObserver = AudioVolumeObserver(this)
+        //audioVolumeObserver.register(AudioManager.STREAM_MUSIC, this)
 
         //connectivityManager = getSystemService()!!
 
@@ -717,9 +718,11 @@ class PlayerService : Service(),
                     localMediaItem?.let{
                         if (isPersistentQueueEnabled) {
                             if (isResumePlaybackOnStart) {
+                                //youTubePlayer.setVolume(player.getGlobalVolume().toInt())
                                 youTubePlayer.loadVideo(it.mediaId, playFromSecond)
                                 Timber.d("PlayerService onlinePlayer onReady loadVideo ${it.mediaId}")
                             } else {
+                                //youTubePlayer.setVolume(player.getGlobalVolume().toInt())
                                 youTubePlayer.cueVideo(it.mediaId, playFromSecond)
                                 Timber.d("PlayerService onlinePlayer onReady cueVideo ${it.mediaId}")
                             }
@@ -838,6 +841,7 @@ class PlayerService : Service(),
                             //durationLong = true,
                             context = this@PlayerService
                         )
+                        //youTubePlayer.setVolume(player.getGlobalVolume().toInt())
                         localMediaItem?.let { youTubePlayer.cueVideo(it.mediaId, 0f) }
 
                     }
@@ -1019,7 +1023,7 @@ class PlayerService : Service(),
             unifiedMediaSession.release()
             cache.release()
             loudnessEnhancer?.release()
-            audioVolumeObserver.unregister()
+            //audioVolumeObserver.unregister()
 
             discordPresenceManager?.onStop()
 
@@ -1151,6 +1155,7 @@ class PlayerService : Service(),
 
             if (!it.isLocal){
                 currentSecond.value = 0F
+                //internalOnlinePlayer.value?.setVolume(player.getGlobalVolume().toInt())
                 internalOnlinePlayer.value?.loadVideo(it.mediaId, 0f)
             }
 
@@ -1344,6 +1349,7 @@ class PlayerService : Service(),
                     Timber.w("PlayerService maybeRecoverPlaybackError: try to recover player error")
                     localMediaItem?.let {
                         //internalOnlinePlayer.value?.cueVideo(it.mediaId, 0f)
+                        //internalOnlinePlayer.value?.setVolume(player.getGlobalVolume().toInt())
                         internalOnlinePlayer.value?.loadVideo(it.mediaId, 0f)
                     }
                 }
