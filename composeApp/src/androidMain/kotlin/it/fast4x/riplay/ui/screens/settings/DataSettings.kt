@@ -18,7 +18,10 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -31,12 +34,14 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.media3.common.util.UnstableApi
 import coil.Coil
 import coil.annotation.ExperimentalCoilApi
-import de.raphaelebner.roomdatabasebackup.core.RoomBackup
+import it.fast4x.riplay.LocalBackupManager
 import it.fast4x.riplay.data.Database
-import it.fast4x.riplay.LocalBackupHandler
 import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.CacheType
@@ -44,36 +49,24 @@ import it.fast4x.riplay.enums.CoilDiskCacheMaxSize
 import it.fast4x.riplay.enums.NavigationBarPosition
 import it.fast4x.riplay.ui.components.themed.CacheSpaceIndicator
 import it.fast4x.riplay.ui.components.themed.ConfirmationDialog
-import it.fast4x.riplay.ui.components.themed.DefaultDialog
 import it.fast4x.riplay.ui.components.themed.HeaderIconButton
 import it.fast4x.riplay.ui.components.themed.HeaderWithIcon
 import it.fast4x.riplay.ui.components.themed.InputNumericDialog
 import it.fast4x.riplay.ui.styling.Dimensions
-import it.fast4x.riplay.ui.styling.shimmer
 import it.fast4x.riplay.utils.RestartPlayerService
-import it.fast4x.riplay.ui.styling.bold
 import it.fast4x.riplay.extensions.preferences.coilCustomDiskCacheKey
 import it.fast4x.riplay.extensions.preferences.coilDiskCacheMaxSizeKey
-import it.fast4x.riplay.utils.intent
 import it.fast4x.riplay.extensions.preferences.pauseSearchHistoryKey
 import it.fast4x.riplay.extensions.preferences.rememberPreference
-import it.fast4x.riplay.ui.styling.semiBold
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.launch
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.enums.PopupType
-import it.fast4x.riplay.service.PlayerService
-import it.fast4x.riplay.utils.typography
+import it.fast4x.riplay.extensions.databasebackup.BackupUiState
+import it.fast4x.riplay.extensions.databasebackup.BackupViewModel
+import it.fast4x.riplay.extensions.databasebackup.DatabaseBackupManager
 import it.fast4x.riplay.ui.components.themed.SmartMessage
-import it.fast4x.riplay.utils.capitalized
-import timber.log.Timber
-import java.io.FileInputStream
-import java.io.FileOutputStream
 import java.text.SimpleDateFormat
 import java.util.Date
-import kotlin.system.exitProcess
 
 @SuppressLint("SuspiciousIndentation")
 @OptIn(ExperimentalCoilApi::class)
@@ -84,145 +77,60 @@ fun DataSettings() {
     val context = LocalContext.current
     val binder = LocalPlayerServiceBinder.current
 
-    val backupHandler = LocalBackupHandler.current
-    var resultMessage = remember { Triple(false,"",-1) }
+    /*
+    // single instance
+    val backupViewModel: BackupViewModel = viewModel(
+        factory = object : ViewModelProvider.Factory {
+            @Suppress("UNCHECKED_CAST")
+            override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                if (modelClass.isAssignableFrom(BackupViewModel::class.java)) {
+                    return BackupViewModel(DatabaseBackupManager(context, Database), context) as T
+                }
+                throw IllegalArgumentException("Unknown ViewModel class")
+            }
+        }
+    )
+    */
+
+    val backupViewModel = LocalBackupManager.current
+    val backupUiState by backupViewModel.uiState.collectAsState()
+
+    val backupLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.CreateDocument("application/octet-stream")
+    ) { uri ->
+        backupViewModel.performBackup(uri)
+    }
+
+    val restoreLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenDocument()
+    ) { uri ->
+        backupViewModel.performRestore(uri)
+    }
+
+    LaunchedEffect(backupUiState) {
+        when (val state = backupUiState) {
+            is BackupUiState.Success -> {
+                SmartMessage(state.message, context = context, durationLong = true, type = PopupType.Success)
+                backupViewModel.clearState()
+            }
+            is BackupUiState.Error -> {
+                SmartMessage(state.message, context = context, durationLong = true, type = PopupType.Error)
+                backupViewModel.clearState()
+            }
+            else -> {}
+        }
+    }
 
     var coilDiskCacheMaxSize by rememberPreference(
         coilDiskCacheMaxSizeKey,
         CoilDiskCacheMaxSize.`128MB`
     )
-//    var exoPlayerDiskCacheMaxSize by rememberPreference(
-//        exoPlayerDiskCacheMaxSizeKey,
-//        ExoPlayerDiskCacheMaxSize.`2GB`
-//    )
 
-//    var exoPlayerDiskDownloadCacheMaxSize by rememberPreference(
-//        exoPlayerDiskDownloadCacheMaxSizeKey,
-//        ExoPlayerDiskDownloadCacheMaxSize.`2GB`
-//    )
-//
-//    /*
-//    var exoPlayerAlternateCacheLocation by rememberPreference(
-//        exoPlayerAlternateCacheLocationKey,""
-//    )
-//     */
-//
-//    var exoPlayerCacheLocation by rememberPreference(
-//        exoPlayerCacheLocationKey, ExoPlayerCacheLocation.System
-//    )
-
-
-    /*
-    val dirRequest = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocumentTree()) { uri ->
-        uri?.let {
-            context.applicationContext.contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
-            context.applicationContext.contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
-            //Log.d("exoAltLocationCache",uri.path.toString())
-            exoPlayerAlternateCacheLocation = uri.path.toString()
-        }
-    }
-     */
-
-
-//    var showExoPlayerCustomCacheDialog by remember { mutableStateOf(false) }
-//    var exoPlayerCustomCache by rememberPreference(
-//        exoPlayerCustomCacheKey,32
-//    )
 
     var showCoilCustomDiskCacheDialog by remember { mutableStateOf(false) }
     var coilCustomDiskCache by rememberPreference(
         coilCustomDiskCacheKey,32
     )
-
-    var restoreFromOtherFileExtension by remember { mutableStateOf(false)}
-
-    //val release = Build.VERSION.RELEASE;
-    //val sdkVersion = Build.VERSION.SDK_INT;
-    //if (sdkVersion.toShort() < 29) exoPlayerAlternateCacheLocation=""
-    //Log.d("SystemInfo","Android SDK: " + sdkVersion + " (" + release +")")
-
-    val backupLauncher =
-        rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/vnd.sqlite3")) { uri ->
-            if (uri == null) return@rememberLauncherForActivityResult
-
-            /*
-                WAL [Database#checkpoint] shouldn't be running inside a `query` or `transaction` block
-                because it requires all commits to be finalized and written to
-                base file.
-             */
-            CoroutineScope( Dispatchers.IO ).launch {
-                Database.checkpoint()
-
-                context.applicationContext.contentResolver.openOutputStream(uri)
-                    ?.use { outputStream ->
-                        FileInputStream( Database.path() ).use { inputStream ->
-                            inputStream.copyTo(outputStream)
-                        }
-                    }
-            }
-        }
-
-    var exitAfterRestore by remember { mutableStateOf(false) }
-
-    val restoreLauncher =
-        rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
-            if (uri == null) return@rememberLauncherForActivityResult
-
-            /*
-                WAL [Database#checkpoint] shouldn't be running inside a `query` or `transaction` block
-                because it requires all commits to be finalized and written to
-                base file.
-             */
-            CoroutineScope( Dispatchers.IO ).launch {
-                Database.checkpoint()
-                Database.close()
-
-                context.applicationContext.contentResolver.openInputStream(uri)
-                    ?.use { inputStream ->
-                        FileOutputStream( Database.path() ).use { outputStream ->
-                            inputStream.copyTo(outputStream)
-                        }
-                    }
-                context.stopService(context.intent<PlayerService>())
-
-                exitAfterRestore = true
-            }
-        }
-
-    if (exitAfterRestore)
-        DefaultDialog(
-            onDismiss = {
-                exitAfterRestore = false
-                exitProcess(0)
-            },
-            content = {
-                BasicText(
-                    text = stringResource(R.string.restore_completed),
-                    style = typography().s.bold.copy(color = colorPalette().text),
-                )
-                Spacer(modifier = Modifier.height(20.dp))
-
-                BasicText(
-                    text = stringResource(R.string.click_to_close),
-                    style = typography().xs.semiBold.copy(color = colorPalette().textSecondary),
-                )
-                Spacer(modifier = Modifier.height(10.dp))
-                Image(
-                    painter = painterResource(R.drawable.server),
-                    contentDescription = null,
-                    colorFilter = ColorFilter.tint(colorPalette().shimmer),
-                    modifier = Modifier
-                        .size(40.dp)
-                        .clickable {
-                            exitAfterRestore = false
-                            exitProcess(0)
-                        }
-                )
-
-            }
-
-        )
-
     var isExporting by remember { mutableStateOf(false) }
     var isImporting by remember { mutableStateOf(false) }
 
@@ -231,40 +139,9 @@ fun DataSettings() {
             text = stringResource(R.string.export_the_database),
             onDismiss = { isExporting = false },
             onConfirm = {
-//                @SuppressLint("SimpleDateFormat")
-//                val dateFormat = SimpleDateFormat("yyyyMMddHHmmss")
-//                try {
-//                    backupLauncher.launch("riplay_${dateFormat.format(Date())}.db")
-//                } catch (e: ActivityNotFoundException) {
-//                    SmartMessage(context.resources.getString(R.string.info_not_find_app_create_doc), type = PopupType.Warning, context = context)
-//                }
                 @SuppressLint("SimpleDateFormat")
                 val dateFormat = SimpleDateFormat("yyyyMMddHHmmss")
-                backupHandler.database(Database.getInstance)
-                    .backupLocation(RoomBackup.BACKUP_FILE_LOCATION_CUSTOM_DIALOG)
-                    .customBackupFileName(
-                        "RiPlay_Backup_${
-                            dateFormat.format(
-                                Date()
-                            )
-                        }.db"
-                    )
-                    .apply {
-                        onCompleteListener { success, message, exitCode ->
-                            //resultMessage = Triple(success, message, exitCode)
-                            SmartMessage(
-                                message = if (success) context.resources.getString(R.string.done)
-                                else message.capitalized(),
-                                type = if(success) PopupType.Info else PopupType.Warning,
-                                context = context,
-                                durationLong = true
-                            )
-                            Timber.d("Data backup success: $success, message: $message, exitCode: $exitCode")
-                            println("Data backup success: $success, message: $message, exitCode: $exitCode")
-
-                        }
-                    }
-                    .backup()
+                backupLauncher.launch("riplay_${dateFormat.format(Date())}.db")
             }
         )
     }
@@ -273,49 +150,7 @@ fun DataSettings() {
             text = stringResource(R.string.import_the_database),
             onDismiss = { isImporting = false },
             onConfirm = {
-                when (restoreFromOtherFileExtension) {
-                    true -> {
-                        try {
-                            restoreLauncher.launch(
-                                arrayOf(
-                                    "application/vnd.sqlite3",
-                                    "application/x-sqlite3",
-                                    "application/octet-stream"
-                                )
-                            )
-                        } catch (e: ActivityNotFoundException) {
-                            SmartMessage(context.resources.getString(R.string.info_not_find_app_open_doc), type = PopupType.Warning, context = context)
-                        }
-                    }
-                    false -> {
-                        backupHandler.database(Database.getInstance)
-                            .backupLocation(RoomBackup.BACKUP_FILE_LOCATION_CUSTOM_DIALOG)
-                            .apply {
-                                onCompleteListener { success, message, exitCode ->
-                                    //resultMessage = Triple(success, message, exitCode)
-
-                                    //exitAfterRestore = true
-                                    SmartMessage(
-                                        message = if (success) context.resources.getString(R.string.restore_completed)
-                                        else message.capitalized(),
-                                        type = if(success) PopupType.Info else PopupType.Warning,
-                                        context = context,
-                                        durationLong = true
-                                    )
-
-                                    Timber.d("Data restore: success $success, message: $message, exitCode: $exitCode")
-                                    println("Data restore: success  $success, message: $message, exitCode: $exitCode")
-
-                                }
-                            }
-                            .restore()
-                    }
-                }
-
-
-
-
-
+                restoreLauncher.launch(arrayOf("application/octet-stream"))
             }
         )
     }
@@ -374,14 +209,7 @@ fun DataSettings() {
                     1f
             )
             .verticalScroll(rememberScrollState())
-            /*
-            .padding(
-                LocalPlayerAwareWindowInsets.current
-                    .only(WindowInsetsSides.Vertical + WindowInsetsSides.End)
-                    .asPaddingValues()
-            )
 
-             */
     ) {
         HeaderWithIcon(
             title = stringResource(R.string.tab_data),
@@ -466,138 +294,12 @@ fun DataSettings() {
             CacheSpaceIndicator(cacheType = CacheType.Images, horizontalPadding = 20.dp)
         }
 
-//        binder?.cache?.let { cache ->
-//            val diskCacheSize = remember(cache.cacheSpace, cleanCacheOfflineSongs) {
-//                    cache.cacheSpace
-//            }
-//
-//            //SettingsGroup {
-//                EnumValueSelectorSettingsEntry(
-//                    title = stringResource(R.string.song_cache_max_size),
-//                    titleSecondary = when (exoPlayerDiskCacheMaxSize) {
-//                        ExoPlayerDiskCacheMaxSize.Disabled -> ""
-//                        ExoPlayerDiskCacheMaxSize.Custom -> Formatter.formatShortFileSize(context, diskCacheSize) +
-//                                "/${Formatter.formatShortFileSize(context,
-//                                    exoPlayerCustomCache.toLong() * 1000 * 1000
-//                                )}" + " ${stringResource(R.string.used)}"
-//                        else -> Formatter.formatShortFileSize(context, diskCacheSize) +
-//                                " ${stringResource(R.string.used)}" +
-//                                when (val size = exoPlayerDiskCacheMaxSize) {
-//                                    ExoPlayerDiskCacheMaxSize.Unlimited -> ""
-//                                    ExoPlayerDiskCacheMaxSize.Custom -> "" // only needed because of UNLIMITED
-//                                    else -> " (${diskCacheSize * 100 / size.bytes}%)"
-//                                }
-//                    },
-//                    trailingContent = {
-//                        HeaderIconButton(
-//                            icon = R.drawable.trash,
-//                            enabled = true,
-//                            color = colorPalette().text,
-//                            onClick = { cleanCacheOfflineSongs = true }
-//                        )
-//                    },
-//                    selectedValue = exoPlayerDiskCacheMaxSize,
-//                    onValueSelected = {
-//                        exoPlayerDiskCacheMaxSize = it
-//                        if (exoPlayerDiskCacheMaxSize == ExoPlayerDiskCacheMaxSize.Custom)
-//                            showExoPlayerCustomCacheDialog = true
-//
-//                        restartService = true
-//                    },
-//                    valueText = {
-//                        when (it) {
-//                            ExoPlayerDiskCacheMaxSize.Disabled -> stringResource(R.string.turn_off)
-//                            ExoPlayerDiskCacheMaxSize.Unlimited -> stringResource(R.string.unlimited)
-//                            ExoPlayerDiskCacheMaxSize.Custom -> stringResource(R.string.custom)
-//                            ExoPlayerDiskCacheMaxSize.`32MB` -> "32MB"
-//                            ExoPlayerDiskCacheMaxSize.`512MB` -> "512MB"
-//                            ExoPlayerDiskCacheMaxSize.`1GB` -> "1GB"
-//                            ExoPlayerDiskCacheMaxSize.`2GB` -> "2GB"
-//                            ExoPlayerDiskCacheMaxSize.`4GB` -> "4GB"
-//                            ExoPlayerDiskCacheMaxSize.`8GB` -> "8GB"
-//
-//                        }
-//                    }
-//                )
-//                RestartPlayerService(restartService, onRestart = { restartService = false } )
-//
-//                if (showExoPlayerCustomCacheDialog) {
-//                    InputNumericDialog(
-//                        title = stringResource(R.string.set_custom_cache),
-//                        placeholder = stringResource(R.string.enter_value_in_mb),
-//                        value = exoPlayerCustomCache.toString(),
-//                        valueMin = "32",
-//                        valueMax = "10000",
-//                        onDismiss = { showExoPlayerCustomCacheDialog = false },
-//                        setValue = {
-//                            //Log.d("customCache", it)
-//                            exoPlayerCustomCache = it.toInt()
-//                            showExoPlayerCustomCacheDialog = false
-//                            restartService = true
-//                        }
-//                    )
-//                    RestartPlayerService(restartService, onRestart = { restartService = false } )
-//                }
-//
-//                CacheSpaceIndicator(cacheType = CacheType.CachedSongs, horizontalPadding = 20.dp)
-//            //}
-//        }
-
-//        EnumValueSelectorSettingsEntry(
-//            title = stringResource(R.string.set_cache_location),
-//            selectedValue = exoPlayerCacheLocation,
-//            onValueSelected = {
-//                exoPlayerCacheLocation = it
-//                restartService = true
-//            },
-//            valueText = {
-//                when (it) {
-//                    ExoPlayerCacheLocation.Private -> stringResource(R.string.cache_location_private)
-//                    ExoPlayerCacheLocation.System -> stringResource(R.string.cache_location_system)
-//                }
-//            }
-//        )
-//
-//        SettingsDescription(stringResource(R.string.info_private_cache_location_can_t_cleaned))
-//        RestartPlayerService(restartService, onRestart = { restartService = false } )
-//        //ImportantSettingsDescription(stringResource(R.string.restarting_rimusic_is_required))
-
         SettingsGroupSpacer()
-
-        //SettingsEntryGroupText(title = stringResource(R.string.folder_cache))
-
-        /*
-        SettingsDescription(
-            text = stringResource(R.string.custom_cache_from_android_10_may_not_be_available)
-        )
-
-
-        SettingsEntry(
-            title = stringResource(R.string.cache_location_folder),
-            text = if (exoPlayerAlternateCacheLocation == "") stringResource(R.string._default) else exoPlayerAlternateCacheLocation,
-            //isEnabled = if (sdkVersion.toShort() < 29) true else false,
-            onClick = {
-                dirRequest.launch(null)
-            }
-        )
-
-
-        ImportantSettingsDescription(text = stringResource(R.string.cache_reset_by_clicking_button))
-
-        SettingsEntry(
-            title = stringResource(R.string.reset_cache_location_folder),
-            text = "",
-            //isEnabled = if (sdkVersion.toShort() < 29) true else false,
-            onClick = {
-                exoPlayerAlternateCacheLocation = ""
-            }
-        )
-         */
-
 
         SettingsEntryGroupText(title = stringResource(R.string.title_backup_and_restore))
 
         SettingsEntry(
+            isEnabled = backupUiState is BackupUiState.Idle,
             title = stringResource(R.string.save_to_backup),
             text = stringResource(R.string.export_the_database),
             onClick = {
@@ -605,23 +307,31 @@ fun DataSettings() {
             }
         )
         SettingsDescription(text = stringResource(R.string.personal_preference))
+        if (backupUiState is BackupUiState.BackingUp || backupUiState is BackupUiState.Restoring) {
+            CircularProgressIndicator()
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = if (backupUiState is BackupUiState.BackingUp) "Backup in progress..." else "Restore in progress..."
+            )
+        }
 
         SettingsEntry(
+            isEnabled = backupUiState is BackupUiState.Idle,
             title = stringResource(R.string.restore_from_backup),
             text = stringResource(R.string.import_the_database),
             onClick = {
-                restoreFromOtherFileExtension = false
+                //restoreFromOtherFileExtension = false
                 isImporting = true
             }
         )
-        SettingsEntry(
-            title = stringResource(R.string.restore_from_other_backup),
-            text = stringResource(R.string.import_the_database_be_carefull),
-            onClick = {
-                restoreFromOtherFileExtension = true
-                isImporting = true
-            }
-        )
+//        SettingsEntry(
+//            title = stringResource(R.string.restore_from_other_backup),
+//            text = stringResource(R.string.import_the_database_be_carefull),
+//            onClick = {
+//                restoreFromOtherFileExtension = true
+//                isImporting = true
+//            }
+//        )
         ImportantSettingsDescription(text = stringResource(
             R.string.existing_data_will_be_overwritten,
             context.applicationInfo.nonLocalizedLabel

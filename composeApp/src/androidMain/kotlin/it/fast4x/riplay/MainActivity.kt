@@ -26,6 +26,7 @@ import android.view.WindowManager
 import android.window.OnBackInvokedDispatcher
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.ActivityResultCallback
@@ -94,6 +95,8 @@ import androidx.core.os.LocaleListCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
@@ -116,7 +119,6 @@ import com.kieronquinn.monetcompat.interfaces.MonetColorsChangedListener
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
 import com.valentinilk.shimmer.LocalShimmerTheme
 import com.valentinilk.shimmer.defaultShimmerTheme
-import de.raphaelebner.roomdatabasebackup.core.RoomBackup
 import dev.kdrag0n.monet.theme.ColorScheme
 import it.fast4x.environment.Environment
 import it.fast4x.environment.models.bodies.BrowseBody
@@ -261,6 +263,8 @@ import it.fast4x.riplay.utils.playNext
 import it.fast4x.riplay.utils.resize
 import it.fast4x.riplay.utils.setDefaultPalette
 import it.fast4x.riplay.commonutils.thumbnail
+import it.fast4x.riplay.extensions.databasebackup.BackupViewModel
+import it.fast4x.riplay.extensions.databasebackup.DatabaseBackupManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
@@ -296,7 +300,6 @@ class MainActivity :
 
     var client = OkHttpClient()
     var request = OkHttpRequest(client)
-    lateinit var backupHandler: RoomBackup
 
     private val serviceConnection = object : ServiceConnection {
         override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
@@ -347,12 +350,6 @@ class MainActivity :
 
     var selectedQueue: MutableState<Queues> = mutableStateOf(defaultQueue())
 
-    //var onlinePlayer: MutableState<YouTubePlayer?> = mutableStateOf(null)
-
-    //var currentSecond: MutableState<Float> = mutableFloatStateOf(0f)
-    //var currentDuration: MutableState<Float> = mutableFloatStateOf(0f)
-
-
     //var toolsService by mutableStateOf<ToolsService.LocalBinder?>(null)
 
     private var onlinePlayerView: YouTubePlayerView? = null
@@ -382,6 +379,10 @@ class MainActivity :
 
     private val audioTaggerViewModel: AudioTagViewModel by viewModels {
         AudioTagViewModel()
+    }
+
+    private val backupManagerViewModel: BackupViewModel by viewModels {
+        BackupViewModel(DatabaseBackupManager(this, Database), this)
     }
 
 
@@ -574,8 +575,6 @@ class MainActivity :
                     SensorManager.SENSOR_DELAY_NORMAL
                 )
         }
-
-        backupHandler = RoomBackup(this)
 
         checkIfAppIsRunningInBackground()
 
@@ -791,6 +790,17 @@ class MainActivity :
 
         setContent {
 
+            val backupLauncher = rememberLauncherForActivityResult(
+                contract = ActivityResultContracts.CreateDocument("application/octet-stream")
+            ) { uri ->
+                backupManagerViewModel.performBackup(uri)
+            }
+
+            val restoreLauncher = rememberLauncherForActivityResult(
+                contract = ActivityResultContracts.OpenDocument()
+            ) { uri ->
+                backupManagerViewModel.performRestore(uri)
+            }
 
 //            try {
 //                internetConnectivityObserver.unregister()
@@ -1411,10 +1421,9 @@ class MainActivity :
                             LocalMonetCompat provides localMonet,
                             LocalLinkDevices provides linkDevices.value,
                             LocalOnlinePlayerPlayingState provides onlinePlayerPlayingState,
-                            //LocalOnlinePositionAndDuration provides onlinePositionAndDuration.value,
                             LocalSelectedQueue provides selectedQueue.value,
-                            LocalBackupHandler provides backupHandler,
-                            LocalAudioTagger provides audioTaggerViewModel
+                            LocalAudioTagger provides audioTaggerViewModel,
+                            LocalBackupManager provides backupManagerViewModel,
                             //LocalInternetAvailable provides isInternetAvailable
                         ) {
 
@@ -1423,53 +1432,13 @@ class MainActivity :
                                     onBackup = {
                                         @SuppressLint("SimpleDateFormat")
                                         val dateFormat = SimpleDateFormat("yyyyMMddHHmmss")
-                                        backupHandler.database(Database.getInstance)
-                                            .backupLocation(RoomBackup.BACKUP_FILE_LOCATION_CUSTOM_DIALOG)
-                                            .customBackupFileName(
-                                                "RiPlay_RescueBackup_${
-                                                    dateFormat.format(
-                                                        Date()
-                                                    )
-                                                }.db"
-                                            )
-                                            .apply {
-                                                onCompleteListener { success, message, exitCode ->
-                                                    SmartMessage(
-                                                        message = if (success) context.resources.getString(R.string.done)
-                                                        else message.capitalized(),
-                                                        type = if(success) PopupType.Info else PopupType.Warning,
-                                                        context = context,
-                                                        durationLong = true
-                                                    )
-                                                    Timber.d("Rescue backup success: $success, message: $message, exitCode: $exitCode")
-
-                                                }
-                                            }
-                                            .backup()
-
+                                        backupLauncher.launch("riplay_${dateFormat.format(Date())}.db")
                                     },
                                     onRestore = {
-                                        backupHandler.database(Database.getInstance)
-                                            .backupLocation(RoomBackup.BACKUP_FILE_LOCATION_CUSTOM_DIALOG)
-                                            .apply {
-                                                onCompleteListener { success, message, exitCode ->
-                                                    SmartMessage(
-                                                        message = if (success) context.resources.getString(R.string.restore_completed)
-                                                        else message.capitalized(),
-                                                        type = if(success) PopupType.Info else PopupType.Warning,
-                                                        context = context,
-                                                        durationLong = true
-                                                    )
-                                                    Timber.d("Rescue restore: success $success, message: $message, exitCode: $exitCode")
-
-                                                }
-                                            }
-                                            .restore()
+                                        restoreLauncher.launch(arrayOf("application/octet-stream"))
                                     }
                                 )
                             } else {
-
-
                                 AppNavigation(
                                     navController = navController,
                                     miniPlayer = {
@@ -1939,7 +1908,9 @@ val LocalLinkDevices =
 
 val LocalSelectedQueue = staticCompositionLocalOf<Queues?> { error("No selected queue provided") }
 
-val LocalBackupHandler = staticCompositionLocalOf<RoomBackup> { error("No backup handler provided") }
-
 val LocalAudioTagger = staticCompositionLocalOf<AudioTagViewModel> { error("No audio tagger provided") }
+
+val LocalBackupManager = staticCompositionLocalOf<BackupViewModel> { error("No backup manager provided") }
+
+
 
