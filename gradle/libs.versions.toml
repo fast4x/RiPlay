@@ -138,7 +138,7 @@ hypnoticcanvas-shaders = {group = "com.mikepenz.hypnoticcanvas", name = "hypnoti
 
 androidx-webkit = { group = "androidx.webkit", name = "webkit", version = "1.14.0" }
 okhttp-dnsoverhttps = { group = "com.squareup.okhttp3", name = "okhttp-dnsoverhttps", version.ref = "okhttpDnsOverHttps" }
-room-backup = { group = "de.raphaelebner", name = "roomdatabasebackup", version = "1.1.0" }
+#room-backup = { group = "de.raphaelebner", name = "roomdatabasebackup", version = "1.1.0" }
 reorderable = { module = "sh.calvin.reorderable:reorderable", version.ref = "reorderable" }
 multidex = { group = "androidx.multidex", name = "multidex", version.ref = "multidex" }
 fastscroller = { group = "io.github.oikvpqya.compose.fastscroller", name = "fastscroller-core", version.ref = "fastscroller" }

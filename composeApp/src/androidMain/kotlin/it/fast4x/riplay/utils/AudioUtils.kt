@@ -144,6 +144,7 @@ fun startFadeAnimator(
 
 fun startFadeAnimator(
     player: MutableState<YouTubePlayer?>,
+    volumeDevice: Int,
     duration: Int,
     fadeIn: Boolean, /* fadeIn -> true  fadeOut -> false*/
     callback: Runnable? = null, /* Code to run when Animator Ends*/
@@ -155,7 +156,7 @@ fun startFadeAnimator(
         return
     }
 
-    val volumeDevice = (getDeviceVolume(globalContext()) * 100).roundToInt()
+    //val volumeDevice = (getDeviceVolume(globalContext()) * 100).roundToInt()
     val startValue = if (fadeIn) 0 else volumeDevice
     val endValue = if (fadeIn) volumeDevice else 0
     val animator = ValueAnimator.ofInt(startValue, endValue)

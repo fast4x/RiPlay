@@ -182,7 +182,6 @@ import it.fast4x.riplay.utils.principalCache
 import it.fast4x.riplay.utils.saveMasterQueue
 import it.fast4x.riplay.utils.seamlessQueue
 import it.fast4x.riplay.commonutils.setLikeState
-import it.fast4x.riplay.utils.getGlobalVolume
 import it.fast4x.riplay.utils.setQueueLoopState
 import it.fast4x.riplay.utils.toggleRepeatMode
 import kotlinx.coroutines.CoroutineScope
@@ -242,7 +241,7 @@ class PlayerService : Service(),
         principalCache.getInstance(this)
     }
     lateinit var player: ExoPlayer
-    //private lateinit var audioVolumeObserver: AudioVolumeObserver
+    private lateinit var audioVolumeObserver: AudioVolumeObserver
     //private lateinit var connectivityManager: ConnectivityManager
 
     private val metadataBuilder = MediaMetadataCompat.Builder()
@@ -406,8 +405,8 @@ class PlayerService : Service(),
         player.skipSilenceEnabled = preferences.getBoolean(skipSilenceKey, false)
         //player.pauseAtEndOfMediaItems = true
 
-        //audioVolumeObserver = AudioVolumeObserver(this)
-        //audioVolumeObserver.register(AudioManager.STREAM_MUSIC, this)
+        audioVolumeObserver = AudioVolumeObserver(this)
+        audioVolumeObserver.register(AudioManager.STREAM_MUSIC, this)
 
         //connectivityManager = getSystemService()!!
 
@@ -718,11 +717,11 @@ class PlayerService : Service(),
                     localMediaItem?.let{
                         if (isPersistentQueueEnabled) {
                             if (isResumePlaybackOnStart) {
-                                //youTubePlayer.setVolume(player.getGlobalVolume().toInt())
+                                youTubePlayer.setVolume(getSystemMediaVolume())
                                 youTubePlayer.loadVideo(it.mediaId, playFromSecond)
                                 Timber.d("PlayerService onlinePlayer onReady loadVideo ${it.mediaId}")
                             } else {
-                                //youTubePlayer.setVolume(player.getGlobalVolume().toInt())
+                                youTubePlayer.setVolume(getSystemMediaVolume())
                                 youTubePlayer.cueVideo(it.mediaId, playFromSecond)
                                 Timber.d("PlayerService onlinePlayer onReady cueVideo ${it.mediaId}")
                             }
@@ -751,6 +750,13 @@ class PlayerService : Service(),
 
                     Timber.d("PlayerService onlinePlayerView: onStateChange $state")
 
+                    when(state) {
+                        PlayerConstants.PlayerState.PLAYING, PlayerConstants.PlayerState.PAUSED -> {
+                            youTubePlayer.unMute()
+                        }
+                        else -> { youTubePlayer.mute() }
+                    }
+
                     if (closeServiceWhenPlayerPausedAfterMinutes != DurationInMinutes.Disabled) {
                         if (state != PlayerConstants.PlayerState.PLAYING && closingTimerStarted == false) {
                             Timber.d("PlayerService closingTimer started")
@@ -763,49 +769,6 @@ class PlayerService : Service(),
                             closingTimerStarted = false
                         }
                     }
-
-                    /*
-                    if (state == PlayerConstants.PlayerState.ENDED) {
-                        val queueLoopType = preferences.getEnum(queueLoopTypeKey, defaultValue = QueueLoopType.Default)
-                        // TODO Implement repeat mode in queue
-                        when (queueLoopType) {
-                            QueueLoopType.RepeatOne -> {
-                                internalOnlinePlayer.value?.seekTo(0f)
-                                Timber.d("PlayerService onlinePlayerView: onStateChange Repeat: RepeatOne fired")
-                            }
-                            QueueLoopType.Default -> {
-                                val hasNext = binder.player.hasNextMediaItem()
-                                Timber.d("PlayerService onlinePlayerView: onStateChange Repeat: Default fired")
-                                if (hasNext) {
-                                    binder.player.playNext()
-                                    Timber.d("PlayerService onlinePlayerView: onStateChange Repeat: Default fired next")
-                                }
-                            }
-                            QueueLoopType.RepeatAll -> {
-                                val hasNext = binder.player.hasNextMediaItem()
-                                Timber.d("PlayerService onlinePlayerView: onStateChange Repeat: RepeatAll fired")
-                                if (!hasNext) {
-                                    binder.player.seekTo(0, 0)
-                                    internalOnlinePlayer.value?.play()
-                                    Timber.d("PlayerService onlinePlayerView: onStateChange Repeat: RepeatAll fired first")
-                                } else {
-                                    binder.player.playNext()
-                                    Timber.d("PlayerService onlinePlayerView: onStateChange Repeat: RepeatAll fired next")
-                                }
-                            }
-                        }
-
-                    }
-                    */
-
-//                    val fadeDisabled = getPlaybackFadeAudioDuration() == DurationInMilliseconds.Disabled
-//                    val duration = getPlaybackFadeAudioDuration().milliSeconds
-//                    if (!fadeDisabled)
-//                        startFadeAnimator(
-//                            player = player,
-//                            duration = duration,
-//                            fadeIn = true
-//                        )
 
                     internalOnlinePlayerState = state
                     isPlayingNow = state == PlayerConstants.PlayerState.PLAYING
@@ -841,7 +804,7 @@ class PlayerService : Service(),
                             //durationLong = true,
                             context = this@PlayerService
                         )
-                        //youTubePlayer.setVolume(player.getGlobalVolume().toInt())
+                        youTubePlayer.setVolume(getSystemMediaVolume())
                         localMediaItem?.let { youTubePlayer.cueVideo(it.mediaId, 0f) }
 
                     }
@@ -1023,7 +986,7 @@ class PlayerService : Service(),
             unifiedMediaSession.release()
             cache.release()
             loudnessEnhancer?.release()
-            //audioVolumeObserver.unregister()
+            audioVolumeObserver.unregister()
 
             discordPresenceManager?.onStop()
 
@@ -1037,16 +1000,6 @@ class PlayerService : Service(),
 
         super.onDestroy()
     }
-
-//    override fun shouldBeInvincible(): Boolean {
-//
-//        return !player.shouldBePlaying ||
-//                ( internalOnlinePlayerState !in
-//                        listOf(
-//                            PlayerConstants.PlayerState.ENDED, PlayerConstants.PlayerState.VIDEO_CUED
-//                        )
-//                )
-//    }
 
     private var pausedByZeroVolume = false
     override fun onAudioVolumeChanged(currentVolume: Int, maxVolume: Int) {
@@ -1067,6 +1020,12 @@ class PlayerService : Service(),
                 pausedByZeroVolume = false
             }
         }
+
+        if (localMediaItem?.isLocal == false) {
+            val onlineVolume = (currentVolume * 100) / 15
+            Timber.d("PlayerService onAudioVolumeChanged currentVolume $currentVolume onlineVolume $onlineVolume")
+            internalOnlinePlayer.value?.setVolume(onlineVolume)
+        }
     }
 
     override fun onAudioVolumeDirectionChanged(direction: Int) {
@@ -1079,22 +1038,6 @@ class PlayerService : Service(),
 
          */
     }
-
-
-//    @ExperimentalCoroutinesApi
-//    @FlowPreview
-//    override fun onConfigurationChanged(newConfig: Configuration) {
-//        handler.post {
-//            runCatching {
-//                if (bitmapProvider.setDefaultBitmap() && player.currentMediaItem != null) {
-//                    notificationManager?.notify(NotificationId, notification())
-//                }
-//            }.onFailure {
-//                Timber.e("Failed onConfigurationChanged in PlayerService ${it.stackTraceToString()}")
-//            }
-//        }
-//        super.onConfigurationChanged(newConfig)
-//    }
 
     @UnstableApi
     override fun onPlaybackStatsReady(
@@ -1155,8 +1098,11 @@ class PlayerService : Service(),
 
             if (!it.isLocal){
                 currentSecond.value = 0F
-                //internalOnlinePlayer.value?.setVolume(player.getGlobalVolume().toInt())
-                internalOnlinePlayer.value?.loadVideo(it.mediaId, 0f)
+                Timber.d("PlayerService onMediaItemTransition system volume ${getSystemMediaVolume()}")
+                internalOnlinePlayer.value?.loadVideo(it.mediaId, 1f)
+                //startFadeAnimator(player = internalOnlinePlayer, volumeDevice = getSystemMediaVolume(), duration = 2, fadeIn = true) {}
+                internalOnlinePlayer.value?.setVolume(getSystemMediaVolume())
+
             }
 
             bitmapProvider?.load(it.mediaMetadata.artworkUri) {}
@@ -1349,7 +1295,7 @@ class PlayerService : Service(),
                     Timber.w("PlayerService maybeRecoverPlaybackError: try to recover player error")
                     localMediaItem?.let {
                         //internalOnlinePlayer.value?.cueVideo(it.mediaId, 0f)
-                        //internalOnlinePlayer.value?.setVolume(player.getGlobalVolume().toInt())
+                        internalOnlinePlayer.value?.setVolume(getSystemMediaVolume())
                         internalOnlinePlayer.value?.loadVideo(it.mediaId, 0f)
                     }
                 }
@@ -2308,6 +2254,14 @@ class PlayerService : Service(),
             }
         }
     }
+
+    private fun getSystemMediaVolume(): Int {
+        val audioManager = getSystemService(AUDIO_SERVICE) as? AudioManager
+        val volumeOnlinePlayer =  ((audioManager?.getStreamVolume(AudioManager.STREAM_MUSIC) ?: 5) * 100) / 15
+        return volumeOnlinePlayer
+    }
+
+
 
     open inner class Binder : AndroidBinder() {
         val player: ExoPlayer

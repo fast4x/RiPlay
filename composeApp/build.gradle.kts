@@ -215,7 +215,7 @@ kotlin {
             implementation(libs.kotlin.coroutines.guava)
             implementation(libs.kotlin.concurrent.futures)
             implementation(libs.androidx.webkit)
-            implementation(libs.room.backup)
+            //implementation(libs.room.backup)
             implementation(libs.workmanager)
             implementation(libs.accompanist)
 

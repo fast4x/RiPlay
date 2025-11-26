@@ -24,35 +24,28 @@ class AudioVolumeContentObserver internal constructor(
     audioStreamType: Int,
     listener: OnAudioVolumeChangedListener
 ) : ContentObserver(handler) {
-    private val mListener: OnAudioVolumeChangedListener?
-    private val mAudioManager: AudioManager?
-    private val mAudioStreamType: Int
+    private val mListener: OnAudioVolumeChangedListener = listener
+    private val mAudioManager: AudioManager = audioManager
+    private val mAudioStreamType: Int = audioStreamType
     private var mLastVolume: Float
 
     /** Depending on the handler this method may be executed on the UI thread  */
     override fun onChange(selfChange: Boolean, uri: Uri?) {
-        if (mAudioManager != null && mListener != null) {
-            val maxVolume = mAudioManager.getStreamMaxVolume(mAudioStreamType)
-            val currentVolume = mAudioManager.getStreamVolume(mAudioStreamType)
+        val maxVolume = mAudioManager.getStreamMaxVolume(mAudioStreamType)
+        val currentVolume = mAudioManager.getStreamVolume(mAudioStreamType)
 
-            if (currentVolume > mLastVolume)
-                mListener.onAudioVolumeDirectionChanged(1)
-            else
-                mListener.onAudioVolumeDirectionChanged(0)
+        if (currentVolume > mLastVolume)
+            mListener.onAudioVolumeDirectionChanged(1)
+        else
+            mListener.onAudioVolumeDirectionChanged(0)
 
-            if (currentVolume.toFloat() != mLastVolume) {
-                mLastVolume = currentVolume.toFloat()
-                mListener.onAudioVolumeChanged(currentVolume, maxVolume)
-            }
+        if (currentVolume.toFloat() != mLastVolume) {
+            mLastVolume = currentVolume.toFloat()
+            mListener.onAudioVolumeChanged(currentVolume, maxVolume)
         }
     }
 
-
-
     init {
-        mAudioManager = audioManager
-        mAudioStreamType = audioStreamType
-        mListener = listener
         mLastVolume = audioManager.getStreamVolume(mAudioStreamType).toFloat()
     }
 }
