@@ -355,7 +355,6 @@ fun AppNavigation(
             PodcastScreen(
                 navController = navController,
                 browseId = id,
-                params = null,
                 miniPlayer = miniPlayer,
             )
         }
