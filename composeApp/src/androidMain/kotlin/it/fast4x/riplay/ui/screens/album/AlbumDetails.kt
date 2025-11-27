@@ -143,6 +143,7 @@ import it.fast4x.riplay.utils.typography
 import it.fast4x.riplay.ui.components.PullToRefreshBox
 import it.fast4x.riplay.ui.components.themed.FastPlayActionsBar
 import it.fast4x.riplay.ui.components.themed.QueuesDialog
+import it.fast4x.riplay.ui.components.themed.RotatingLoaderScreen
 import it.fast4x.riplay.ui.components.themed.Title
 import it.fast4x.riplay.ui.screens.settings.isSyncEnabled
 import it.fast4x.riplay.utils.LazyListContainer
@@ -172,6 +173,8 @@ fun AlbumDetails(
 ) {
 
     if (albumPage == null) return
+
+    RotatingLoaderScreen()
 
     val binder = LocalPlayerServiceBinder.current
     val menuState = LocalGlobalSheetState.current

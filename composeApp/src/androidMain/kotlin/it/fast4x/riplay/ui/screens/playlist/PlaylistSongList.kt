@@ -152,6 +152,8 @@ import org.dailyislam.android.utilities.isNetworkConnected
 import it.fast4x.riplay.utils.languageDestination
 import it.fast4x.riplay.utils.mediaItemSetLiked
 import it.fast4x.riplay.commonutils.setLikeState
+import it.fast4x.riplay.ui.components.themed.Loader
+import it.fast4x.riplay.ui.components.themed.RotatingLoaderScreen
 import kotlinx.coroutines.flow.filterNotNull
 import me.bush.translator.Language
 import me.bush.translator.Translator
@@ -169,6 +171,9 @@ fun PlaylistSongList(
     navController: NavController,
     browseId: String,
 ) {
+
+    RotatingLoaderScreen()
+
     val binder = LocalPlayerServiceBinder.current
     val context = LocalContext.current
     val menuState = LocalGlobalSheetState.current
@@ -217,7 +222,7 @@ fun PlaylistSongList(
     }
 
     LaunchedEffect(Unit, browseId) {
-        EnvironmentExt.getPlaylist(browseId) //.completed()
+        EnvironmentExt.getPlaylist(browseId).completed()
             .onSuccess {
                 playlistPage = it
                 playlistSongs = it.songs

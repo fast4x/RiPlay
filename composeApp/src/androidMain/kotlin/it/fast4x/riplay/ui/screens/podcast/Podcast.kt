@@ -122,6 +122,7 @@ import kotlinx.coroutines.withContext
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.extensions.fastshare.FastShare
 import it.fast4x.riplay.data.models.defaultQueue
+import it.fast4x.riplay.ui.components.themed.RotatingLoaderScreen
 import it.fast4x.riplay.utils.typography
 import it.fast4x.riplay.ui.screens.settings.isSyncEnabled
 import it.fast4x.riplay.utils.LazyListContainer
@@ -143,6 +144,8 @@ fun Podcast(
     params: String?,
     maxDepth: Int?,
 ) {
+    RotatingLoaderScreen()
+
     val binder = LocalPlayerServiceBinder.current
     val context = LocalContext.current
     val menuState = LocalGlobalSheetState.current
