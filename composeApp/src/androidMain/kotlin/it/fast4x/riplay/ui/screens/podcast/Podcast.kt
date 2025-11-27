@@ -141,8 +141,6 @@ import timber.log.Timber
 fun Podcast(
     navController: NavController,
     browseId: String,
-    params: String?,
-    maxDepth: Int?,
 ) {
     RotatingLoaderScreen()
 

@@ -24,8 +24,6 @@ import it.fast4x.riplay.ui.components.ScreenContainer
 fun PodcastScreen(
     navController: NavController,
     browseId: String,
-    params: String?,
-    maxDepth: Int? = null,
     miniPlayer: @Composable () -> Unit = {},
 ) {
     val saveableStateHolder = rememberSaveableStateHolder()
@@ -43,8 +41,6 @@ fun PodcastScreen(
                         0 -> Podcast(
                             navController = navController,
                             browseId = browseId,
-                            params = params,
-                            maxDepth = maxDepth
                         )
                     }
                 }
