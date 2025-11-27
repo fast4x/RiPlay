@@ -676,7 +676,6 @@ class PlayerService : Service(),
         internalOnlinePlayerView.value.apply {
             enableAutomaticInitialization = false
 
-
             enableBackgroundPlayback(true)
 
             keepScreenOn = isKeepScreenOnEnabled()
@@ -1309,10 +1308,10 @@ class PlayerService : Service(),
         if (!preferences.getBoolean(autoLoadSongsInQueueKey, true)) return
 
         // New feature auto start radio in queue
-        val isDiscoverEnabled = applicationContext.preferences.getBoolean(discoverKey, false)
+        //val isDiscoverEnabled = applicationContext.preferences.getBoolean(discoverKey, false)
         if (reason != Player.MEDIA_ITEM_TRANSITION_REASON_REPEAT &&
-            player.mediaItemCount - player.currentMediaItemIndex <= if (
-                isDiscoverEnabled) 10 else 3
+            player.mediaItemCount - player.currentMediaItemIndex <= 10
+            //if (isDiscoverEnabled) 10 else 3
         ) {
             if (radio == null) {
                 binder.setupRadio(
