@@ -971,12 +971,12 @@ fun UiSettings(
                                 customColor = it.hashCode()
                             },
                             modifier = Modifier
-                                .padding(start = 25.dp)
+                                .padding(start = 12.dp)
                         )
                         ImportantSettingsDescription(
                             text = stringResource(R.string.restarting_riplay_is_required),
                             modifier = Modifier
-                                .padding(start = 25.dp)
+                                .padding(start = 12.dp)
                         )
                     }
                 }
@@ -1422,7 +1422,7 @@ fun UiSettings(
 
                     AnimatedVisibility(visible = isSwipeToActionEnabled) {
                         Column(
-                            modifier = Modifier.padding(start = 25.dp)
+                            modifier = Modifier.padding(start = 12.dp)
                         ) {
                             EnumValueSelectorSettingsEntry<QueueSwipeAction>(
                                 title = stringResource(R.string.queue_and_local_playlists_left_swipe),

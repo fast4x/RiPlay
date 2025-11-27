@@ -1418,7 +1418,7 @@ fun AppearanceSettings(
                                         SwipeAnimationNoThumbnail.Circle -> stringResource(R.string.vt_circular)
                                     }
                                 },
-                                modifier = Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) 25.dp else 0.dp)
+                                modifier = Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) 12.dp else 0.dp)
                             )
                     }
                     AnimatedVisibility(visible = showthumbnail) {
@@ -1434,7 +1434,7 @@ fun AppearanceSettings(
                                         text = "",
                                         isChecked = fadingedge,
                                         onCheckedChange = { fadingedge = it },
-                                        modifier = Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) 25.dp else 0.dp)
+                                        modifier = Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) 12.dp else 0.dp)
                                     )
                             }
 
@@ -1449,7 +1449,7 @@ fun AppearanceSettings(
                                         text = "",
                                         isChecked = carousel,
                                         onCheckedChange = { carousel = it },
-                                        modifier = Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) 25.dp else 0.dp)
+                                        modifier = Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) 12.dp else 0.dp)
                                     )
 
                                 if (search.input.isBlank() || stringResource(R.string.carouselsize).contains(
@@ -1470,7 +1470,7 @@ fun AppearanceSettings(
                                                 CarouselSize.Expanded -> stringResource(R.string.expanded)
                                             }
                                         },
-                                        modifier = Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) 25.dp else 0.dp)
+                                        modifier = Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) 12.dp else 0.dp)
                                     )
                             }
                             if (playerType == PlayerType.Essential) {
@@ -1485,7 +1485,7 @@ fun AppearanceSettings(
                                         text = "",
                                         isChecked = thumbnailpause,
                                         onCheckedChange = { thumbnailpause = it },
-                                        modifier = Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) 25.dp else 0.dp)
+                                        modifier = Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) 12.dp else 0.dp)
                                     )
 
                                 if (search.input.isBlank() || stringResource(R.string.show_lyrics_thumbnail).contains(
@@ -1498,7 +1498,7 @@ fun AppearanceSettings(
                                         text = "",
                                         isChecked = showlyricsthumbnail,
                                         onCheckedChange = { showlyricsthumbnail = it },
-                                        modifier = Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) 25.dp else 0.dp)
+                                        modifier = Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) 12.dp else 0.dp)
                                     )
                                 if (visualizerEnabled) {
                                     if (search.input.isBlank() || stringResource(R.string.showvisthumbnail).contains(
@@ -1511,7 +1511,7 @@ fun AppearanceSettings(
                                             text = "",
                                             isChecked = showvisthumbnail,
                                             onCheckedChange = { showvisthumbnail = it },
-                                            modifier = Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) 25.dp else 0.dp)
+                                            modifier = Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) 12.dp else 0.dp)
                                         )
                                 }
                             }
@@ -1526,7 +1526,7 @@ fun AppearanceSettings(
                                     text = "",
                                     isChecked = showCoverThumbnailAnimation,
                                     onCheckedChange = { showCoverThumbnailAnimation = it },
-                                    modifier = Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) 25.dp else 0.dp)
+                                    modifier = Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) 12.dp else 0.dp)
                                 )
                                 AnimatedVisibility(visible = showCoverThumbnailAnimation) {
                                     Column {
@@ -1535,7 +1535,7 @@ fun AppearanceSettings(
                                             selectedValue = coverThumbnailAnimation,
                                             onValueSelected = { coverThumbnailAnimation = it },
                                             valueText = { it.textName },
-                                            modifier = Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) 50.dp else 25.dp)
+                                            modifier = Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) 24.dp else 12.dp)
                                         )
                                     }
                                 }
@@ -1560,7 +1560,7 @@ fun AppearanceSettings(
                                                 PlayerThumbnailSize.Expanded -> stringResource(R.string.expanded)
                                             }
                                         },
-                                        modifier = Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) 25.dp else 0.dp)
+                                        modifier = Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) 12.dp else 0.dp)
                                     )
                             } else {
                                 if (search.input.isBlank() || stringResource(R.string.player_thumbnail_size).contains(
@@ -1581,7 +1581,7 @@ fun AppearanceSettings(
                                                 PlayerThumbnailSize.Expanded -> stringResource(R.string.expanded)
                                             }
                                         },
-                                        modifier = Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) 25.dp else 0.dp)
+                                        modifier = Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) 12.dp else 0.dp)
                                     )
                             }
                             if (search.input.isBlank() || stringResource(R.string.thumbnailtype).contains(
@@ -1601,7 +1601,7 @@ fun AppearanceSettings(
                                             ThumbnailType.Essential -> stringResource(R.string.pcontrols_essential)
                                         }
                                     },
-                                    modifier = Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) 25.dp else 0.dp)
+                                    modifier = Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) 12.dp else 0.dp)
                                 )
 
                             if (search.input.isBlank() || stringResource(R.string.thumbnail_roundness).contains(
@@ -1636,7 +1636,7 @@ fun AppearanceSettings(
                                             ThumbnailRoundness.Medium -> stringResource(R.string.medium)
                                         }
                                     },
-                                    modifier = Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) 25.dp else 0.dp)
+                                    modifier = Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) 12.dp else 0.dp)
                                 )
                         }
                     }
@@ -1704,7 +1704,7 @@ fun AppearanceSettings(
                                         isChecked = playerInfoShowIcons,
                                         onCheckedChange = { playerInfoShowIcons = it },
                                         modifier = Modifier
-                                            .padding(start = 25.dp)
+                                            .padding(start = 12.dp)
                                     )
                             }
                         }
@@ -1953,7 +1953,7 @@ fun AppearanceSettings(
                                         AnimatedGradient.Random -> stringResource(R.string.random)
                                     }
                                 },
-                                modifier = Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.AnimatedGradient) 25.dp else 0.dp)
+                                modifier = Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.AnimatedGradient) 12.dp else 0.dp)
                             )
                     }
 
@@ -1982,7 +1982,7 @@ fun AppearanceSettings(
                                 isChecked = albumCoverRotation,
                                 onCheckedChange = { albumCoverRotation = it },
                                 modifier = Modifier
-                                    .padding(start = 25.dp)
+                                    .padding(start = 12.dp)
                             )
 
                     if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor)
@@ -2061,7 +2061,7 @@ fun AppearanceSettings(
                                         it.name
                                     },
                                     modifier = Modifier
-                                        .padding(start = 25.dp)
+                                        .padding(start = 12.dp)
                                 )
 
 
@@ -2075,7 +2075,7 @@ fun AppearanceSettings(
                                     text = "",
                                     isChecked = showalbumcover,
                                     onCheckedChange = { showalbumcover = it },
-                                    modifier = Modifier.padding(start = 25.dp)
+                                    modifier = Modifier.padding(start = 12.dp)
                                 )
                         }
                     }
@@ -2245,7 +2245,7 @@ fun AppearanceSettings(
 
                 settingsItem {
                     AnimatedVisibility(visible = showPlayerActionsBar) {
-                        Column(modifier = Modifier.padding(start = 25.dp)) {
+                        Column(modifier = Modifier.padding(start = 12.dp)) {
                             if (search.input.isBlank() || stringResource(R.string.action_bar_transparent_background).contains(
                                     search.input,
                                     true
@@ -2659,7 +2659,7 @@ fun AppearanceSettings(
                                     valueText = {
                                         it.displayName
                                     },
-                                    modifier = Modifier.padding(start = 25.dp)
+                                    modifier = Modifier.padding(start = 12.dp)
                                 )
                                 RestartPlayerService(
                                     restartService,

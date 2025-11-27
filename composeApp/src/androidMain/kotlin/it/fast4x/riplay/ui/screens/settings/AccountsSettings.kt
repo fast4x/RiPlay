@@ -184,7 +184,7 @@ fun AccountsSettings() {
 
         AnimatedVisibility(visible = isYouTubeLoginEnabled) {
             Column(
-                modifier = Modifier.padding(start = 25.dp)
+                modifier = Modifier.padding(start = 12.dp)
             ) {
                 //if (isAtLeastAndroid7) {
 
@@ -344,7 +344,7 @@ fun AccountsSettings() {
 
         AnimatedVisibility(visible = isDiscordPresenceEnabled) {
             Column(
-                modifier = Modifier.padding(start = 25.dp)
+                modifier = Modifier.padding(start = 12.dp)
             ) {
                 ButtonBarSettingEntry(
                     isEnabled = true,
@@ -439,7 +439,7 @@ fun AccountsSettings() {
 
         AnimatedVisibility(visible = isEnabledMusicIdentifier) {
             Column(
-                modifier = Modifier.padding(start = 25.dp)
+                modifier = Modifier.padding(start = 12.dp)
             ) {
                 EnumValueSelectorSettingsEntry(
                     title = stringResource(R.string.music_identifier_provider),
@@ -462,7 +462,7 @@ fun AccountsSettings() {
 
                 AnimatedVisibility(visible = musicIdentifierProvider == MusicIdentifierProvider.AudioTagInfo) {
                     Column (
-                        modifier = Modifier.padding(start = 25.dp)
+                        modifier = Modifier.padding(start = 12.dp)
                     ) {
                         TextDialogSettingEntry(
                             title = "Api key",

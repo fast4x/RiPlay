@@ -217,7 +217,7 @@ fun PlaylistSongList(
     }
 
     LaunchedEffect(Unit, browseId) {
-        EnvironmentExt.getPlaylist(browseId).completed()
+        EnvironmentExt.getPlaylist(browseId) //.completed()
             .onSuccess {
                 playlistPage = it
                 playlistSongs = it.songs

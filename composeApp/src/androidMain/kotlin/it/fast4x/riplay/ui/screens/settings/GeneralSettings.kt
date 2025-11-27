@@ -1142,7 +1142,7 @@ fun GeneralSettings(
 
                         AnimatedVisibility(visible = persistentQueue) {
                             Column(
-                                modifier = Modifier.padding(start = 25.dp)
+                                modifier = Modifier.padding(start = 12.dp)
                             ) {
                                 SwitchSettingEntry(
                                     title = stringResource(R.string.resume_playback_on_start),
@@ -1224,7 +1224,7 @@ fun GeneralSettings(
 
 
                             Column(
-                                modifier = Modifier.padding(start = 25.dp)
+                                modifier = Modifier.padding(start = 12.dp)
                             ) {
                                 SliderSettingsEntry(
                                     title = stringResource(R.string.minimum_silence_length),
@@ -1277,7 +1277,7 @@ fun GeneralSettings(
 
 
                             Column(
-                                modifier = Modifier.padding(start = 25.dp)
+                                modifier = Modifier.padding(start = 12.dp)
                             ) {
                                 SliderSettingsEntry(
                                     title = stringResource(R.string.settings_loudness_base_gain),
@@ -1333,7 +1333,7 @@ fun GeneralSettings(
 
 
                             Column(
-                                modifier = Modifier.padding(start = 25.dp)
+                                modifier = Modifier.padding(start = 12.dp)
                             ) {
                                 SliderSettingsEntry(
                                     title = stringResource(R.string.settings_bass_boost_level),
@@ -1441,7 +1441,7 @@ fun GeneralSettings(
                         RestartActivity(restartActivity, onRestart = { restartActivity = false })
                         AnimatedVisibility(visible = enablePictureInPicture) {
                             Column(
-                                modifier = Modifier.padding(start = 25.dp)
+                                modifier = Modifier.padding(start = 12.dp)
                             ) {
 
                                 EnumValueSelectorSettingsEntry(
@@ -1487,7 +1487,7 @@ fun GeneralSettings(
 //            )
 //            AnimatedVisibility(visible = autoDownloadSong) {
 //                Column(
-//                    modifier = Modifier.padding(start = 25.dp)
+//                    modifier = Modifier.padding(start = 12.dp)
 //                ) {
 //                    SwitchSettingEntry(
 //                        title = stringResource(R.string.settings_enable_autodownload_song_when_liked),
@@ -1564,7 +1564,7 @@ fun GeneralSettings(
                     }
                     AnimatedVisibility(visible = isAndroidAutoEnabled) {
                         Column(
-                            modifier = Modifier.padding(start = 25.dp)
+                            modifier = Modifier.padding(start = 12.dp)
                         ) {
 
                             if (search.input.isBlank() || "Show list as grid".contains(
