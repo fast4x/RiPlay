@@ -42,6 +42,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.ExperimentalTextApi
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.util.UnstableApi
@@ -299,7 +300,7 @@ fun SettingsEntry(
         Column(
             verticalArrangement = Arrangement.spacedBy(8.dp),
             modifier = Modifier
-                //.weight(1f)
+                .weight(1f)
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -310,8 +311,10 @@ fun SettingsEntry(
                 BasicText(
                     text = title,
                     style = typography().xs.semiBold.copy(color = colorPalette().text),
+                    overflow = TextOverflow.Ellipsis,
                     modifier = Modifier
                         .padding(bottom = 4.dp)
+                        .weight(1f)
                 )
                 trailingContent?.invoke()
 
@@ -327,6 +330,7 @@ fun SettingsEntry(
                 BasicText(
                     text = text,
                     style = typography().xs.semiBold.copy(color = colorPalette().textSecondary),
+                    overflow = TextOverflow.Ellipsis,
                     modifier = Modifier.fillMaxWidth(.7f)
                 )
 
@@ -349,7 +353,7 @@ fun SettingsEntry(
                         text = titleSecondary,
                         style = typography().xxs.secondary,
                         maxLines = 2,
-                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                        overflow = TextOverflow.Ellipsis,
                         //modifier = Modifier
                         //    .padding(vertical = 8.dp, horizontal = 24.dp)
                     )
