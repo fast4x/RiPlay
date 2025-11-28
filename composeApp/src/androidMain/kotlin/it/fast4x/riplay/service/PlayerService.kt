@@ -2256,7 +2256,10 @@ class PlayerService : Service(),
 
     private fun getSystemMediaVolume(): Int {
         val audioManager = getSystemService(AUDIO_SERVICE) as? AudioManager
-        val volumeOnlinePlayer =  ((audioManager?.getStreamVolume(AudioManager.STREAM_MUSIC) ?: 5) * 100) / 15
+        val maxMediaVolume = audioManager?.getStreamMaxVolume(AudioManager.STREAM_MUSIC) ?: 0
+        val minVolume = maxMediaVolume.div(3)
+        val volumeOnlinePlayer =  (((audioManager?.getStreamVolume(AudioManager.STREAM_MUSIC) ?: minVolume) * 100) / maxMediaVolume)
+            .coerceIn(0, 100)
         return volumeOnlinePlayer
     }
 

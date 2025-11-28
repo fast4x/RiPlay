@@ -11,7 +11,9 @@ import androidx.annotation.OptIn
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.platform.LocalContext
 import androidx.core.animation.doOnEnd
 import androidx.media3.common.util.UnstableApi
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
@@ -172,4 +174,14 @@ fun startFadeAnimator(
         //player.restoreGlobalVolume()
     }
     animator.start()
+}
+
+@Composable
+fun rememberMaxMediaVolume(): Int {
+    val context = LocalContext.current
+
+    return remember(context) {
+        val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as? AudioManager
+        audioManager?.getStreamMaxVolume(AudioManager.STREAM_MUSIC) ?: 0
+    }
 }
