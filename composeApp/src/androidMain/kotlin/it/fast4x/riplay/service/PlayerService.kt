@@ -1021,7 +1021,7 @@ class PlayerService : Service(),
         }
 
         if (localMediaItem?.isLocal == false) {
-            val onlineVolume = (currentVolume * 100) / 15
+            val onlineVolume = getSystemMediaVolume()
             Timber.d("PlayerService onAudioVolumeChanged currentVolume $currentVolume onlineVolume $onlineVolume")
             internalOnlinePlayer.value?.setVolume(onlineVolume)
         }
@@ -2256,7 +2256,7 @@ class PlayerService : Service(),
 
     private fun getSystemMediaVolume(): Int {
         val audioManager = getSystemService(AUDIO_SERVICE) as? AudioManager
-        val maxMediaVolume = audioManager?.getStreamMaxVolume(AudioManager.STREAM_MUSIC) ?: 0
+        val maxMediaVolume = audioManager?.getStreamMaxVolume(AudioManager.STREAM_MUSIC) ?: 15
         val minVolume = maxMediaVolume.div(3)
         val volumeOnlinePlayer =  (((audioManager?.getStreamVolume(AudioManager.STREAM_MUSIC) ?: minVolume) * 100) / maxMediaVolume)
             .coerceIn(0, 100)
