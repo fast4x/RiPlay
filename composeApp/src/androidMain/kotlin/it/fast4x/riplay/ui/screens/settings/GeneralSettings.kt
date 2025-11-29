@@ -140,6 +140,7 @@ import java.net.Proxy
 import androidx.core.net.toUri
 import androidx.core.text.isDigitsOnly
 import it.fast4x.riplay.enums.ContentType
+import it.fast4x.riplay.extensions.preferences.checkVolumeLevelKey
 import it.fast4x.riplay.extensions.preferences.closePlayerServiceAfterMinutesKey
 import it.fast4x.riplay.extensions.preferences.closePlayerServiceWhenPausedAfterMinutesKey
 import it.fast4x.riplay.extensions.preferences.enableVoiceInputKey
@@ -316,6 +317,8 @@ fun GeneralSettings(
         enableVoiceInputKey,
         true
     )
+
+    var checkVolumeLevel by rememberPreference(checkVolumeLevelKey, true)
 
 
     Column(
@@ -722,6 +725,17 @@ fun GeneralSettings(
                 }
 
                 settingsItem {
+
+                    if (search.input.isBlank() || "Check volume level before playing".contains(search.input,true)) {
+                        SwitchSettingEntry(
+                            title = "Check volume level before playing",
+                            text = "Prevents automatic volume lowering in some devices. Disable if the volume becomes very low.",
+                            isChecked = checkVolumeLevel,
+                            onCheckedChange = {
+                                checkVolumeLevel = it
+                            }
+                        )
+                    }
 
 //        if (search.input.isBlank() || stringResource(R.string.streaming_player_type).contains(search.input,true)) {
 //            EnumValueSelectorSettingsEntry(

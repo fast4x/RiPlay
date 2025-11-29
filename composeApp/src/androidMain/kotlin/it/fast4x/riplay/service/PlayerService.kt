@@ -182,6 +182,7 @@ import it.fast4x.riplay.utils.principalCache
 import it.fast4x.riplay.utils.saveMasterQueue
 import it.fast4x.riplay.utils.seamlessQueue
 import it.fast4x.riplay.commonutils.setLikeState
+import it.fast4x.riplay.extensions.preferences.checkVolumeLevelKey
 import it.fast4x.riplay.utils.setQueueLoopState
 import it.fast4x.riplay.utils.toggleRepeatMode
 import kotlinx.coroutines.CoroutineScope
@@ -338,6 +339,7 @@ class PlayerService : Service(),
 
     private var lastMediaIdInHistory: String = ""
 
+    private var checkVolumeLevel: Boolean = true
 
 
     override fun onBind(intent: Intent?): AndroidBinder {
@@ -716,11 +718,15 @@ class PlayerService : Service(),
                     localMediaItem?.let{
                         if (isPersistentQueueEnabled) {
                             if (isResumePlaybackOnStart) {
-                                youTubePlayer.setVolume(getSystemMediaVolume())
+                                if (checkVolumeLevel)
+                                    youTubePlayer.setVolume(getSystemMediaVolume())
+
                                 youTubePlayer.loadVideo(it.mediaId, playFromSecond)
                                 Timber.d("PlayerService onlinePlayer onReady loadVideo ${it.mediaId}")
                             } else {
-                                youTubePlayer.setVolume(getSystemMediaVolume())
+                                if (checkVolumeLevel)
+                                    youTubePlayer.setVolume(getSystemMediaVolume())
+
                                 youTubePlayer.cueVideo(it.mediaId, playFromSecond)
                                 Timber.d("PlayerService onlinePlayer onReady cueVideo ${it.mediaId}")
                             }
@@ -803,7 +809,9 @@ class PlayerService : Service(),
                             //durationLong = true,
                             context = this@PlayerService
                         )
-                        youTubePlayer.setVolume(getSystemMediaVolume())
+                        if (checkVolumeLevel)
+                            youTubePlayer.setVolume(getSystemMediaVolume())
+
                         localMediaItem?.let { youTubePlayer.cueVideo(it.mediaId, 0f) }
 
                     }
@@ -1020,7 +1028,7 @@ class PlayerService : Service(),
             }
         }
 
-        if (localMediaItem?.isLocal == false) {
+        if (localMediaItem?.isLocal == false && checkVolumeLevel) {
             val onlineVolume = getSystemMediaVolume()
             Timber.d("PlayerService onAudioVolumeChanged currentVolume $currentVolume onlineVolume $onlineVolume")
             internalOnlinePlayer.value?.setVolume(onlineVolume)
@@ -1098,7 +1106,9 @@ class PlayerService : Service(),
             if (!it.isLocal){
                 currentSecond.value = 0F
                 Timber.d("PlayerService onMediaItemTransition system volume ${getSystemMediaVolume()}")
-                internalOnlinePlayer.value?.setVolume(getSystemMediaVolume())
+                if (checkVolumeLevel)
+                    internalOnlinePlayer.value?.setVolume(getSystemMediaVolume())
+
                 internalOnlinePlayer.value?.loadVideo(it.mediaId, 1f)
                 //startFadeAnimator(player = internalOnlinePlayer, volumeDevice = getSystemMediaVolume(), duration = 5, fadeIn = true) {}
 
@@ -1294,7 +1304,9 @@ class PlayerService : Service(),
                     Timber.w("PlayerService maybeRecoverPlaybackError: try to recover player error")
                     localMediaItem?.let {
                         //internalOnlinePlayer.value?.cueVideo(it.mediaId, 0f)
-                        internalOnlinePlayer.value?.setVolume(getSystemMediaVolume())
+                        if (checkVolumeLevel)
+                            internalOnlinePlayer.value?.setVolume(getSystemMediaVolume())
+
                         internalOnlinePlayer.value?.loadVideo(it.mediaId, 0f)
                     }
                 }
@@ -1897,6 +1909,9 @@ class PlayerService : Service(),
             exoPlayerMinTimeForEventKey -> {
                 minTimeForEvent = sharedPreferences.getEnum(exoPlayerMinTimeForEventKey,
                     MinTimeForEvent.`20s`)
+            }
+            checkVolumeLevelKey -> {
+                checkVolumeLevel = sharedPreferences.getBoolean(key, false)
             }
             resumeOrPausePlaybackWhenDeviceKey -> initializeResumeOrPausePlaybackWhenDevice()
             bassboostLevelKey, bassboostEnabledKey -> initializeBassBoost()

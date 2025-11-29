@@ -401,6 +401,8 @@ const val musicIdentifierApiKey = "musicIdentifierApiKey"
 
 const val closePlayerServiceAfterMinutesKey = "closeBackgroundPlayerAfterMinutes"
 const val closePlayerServiceWhenPausedAfterMinutesKey = "closePlayerServiceWhenPausedAfterMinutes"
+const val checkVolumeLevelKey = "checkVolumeLevel"
+
 
 
 inline fun <reified T : Enum<T>> SharedPreferences.getEnum(
