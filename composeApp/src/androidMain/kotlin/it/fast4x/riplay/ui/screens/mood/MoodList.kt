@@ -53,6 +53,7 @@ import it.fast4x.riplay.ui.styling.px
 import it.fast4x.riplay.ui.styling.center
 import it.fast4x.riplay.extensions.preferences.disableScrollingTextKey
 import it.fast4x.riplay.extensions.preferences.rememberPreference
+import it.fast4x.riplay.ui.components.themed.LoaderScreen
 import it.fast4x.riplay.ui.styling.secondary
 import it.fast4x.riplay.ui.styling.semiBold
 import it.fast4x.riplay.utils.colorPalette
@@ -72,6 +73,8 @@ fun MoodList(
 
     val browseId = mood.browseId ?: defaultBrowseId
     var moodPage by persist<Result<BrowseResult>>("playlist/$browseId${mood.params?.let { "/$it" } ?: ""}")
+
+    LoaderScreen(show = moodPage == null)
 
     LaunchedEffect(Unit) {
         moodPage = Environment.browse(BrowseBodyWithLocale(browseId = browseId, params = mood.params))

@@ -119,7 +119,7 @@ import it.fast4x.riplay.ui.styling.semiBold
 import it.fast4x.riplay.extensions.preferences.showFloatingIconKey
 import it.fast4x.riplay.extensions.preferences.thumbnailRoundnessKey
 import it.fast4x.riplay.ui.components.themed.FastPlayActionsBar
-import it.fast4x.riplay.ui.components.themed.RotatingLoaderScreen
+import it.fast4x.riplay.ui.components.themed.LoaderScreen
 import it.fast4x.riplay.utils.forcePlay
 import it.fast4x.riplay.utils.forcePlayFromBeginning
 import kotlinx.coroutines.CoroutineScope
@@ -144,8 +144,6 @@ fun ArtistOverview(
 ) {
 
     if (browseId == null) return
-
-    RotatingLoaderScreen()
 
     val binder = LocalPlayerServiceBinder.current
     val windowInsets = LocalPlayerAwareWindowInsets.current
@@ -186,6 +184,8 @@ fun ArtistOverview(
     var readMore by remember { mutableStateOf(false) }
 
     var showFastShare by remember { mutableStateOf(false) }
+
+    LoaderScreen(show = artistPage == null)
 
     LaunchedEffect(Unit) {
         Database.artist(browseId).distinctUntilChanged().collect { currentArtist ->

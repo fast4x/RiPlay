@@ -122,7 +122,7 @@ import kotlinx.coroutines.withContext
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.extensions.fastshare.FastShare
 import it.fast4x.riplay.data.models.defaultQueue
-import it.fast4x.riplay.ui.components.themed.RotatingLoaderScreen
+import it.fast4x.riplay.ui.components.themed.LoaderScreen
 import it.fast4x.riplay.utils.typography
 import it.fast4x.riplay.ui.screens.settings.isSyncEnabled
 import it.fast4x.riplay.utils.LazyListContainer
@@ -142,7 +142,6 @@ fun Podcast(
     navController: NavController,
     browseId: String,
 ) {
-    RotatingLoaderScreen()
 
     val binder = LocalPlayerServiceBinder.current
     val context = LocalContext.current
@@ -153,6 +152,8 @@ fun Podcast(
 
     var filter: String? by rememberSaveable { mutableStateOf(null) }
     val hapticFeedback = LocalHapticFeedback.current
+
+    LoaderScreen(show = podcastPage == null)
 
     LaunchedEffect(Unit, filter) {
         if (podcastPage != null) return@LaunchedEffect

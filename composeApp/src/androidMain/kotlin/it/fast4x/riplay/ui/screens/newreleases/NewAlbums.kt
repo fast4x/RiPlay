@@ -39,6 +39,7 @@ import it.fast4x.riplay.extensions.preferences.disableScrollingTextKey
 import it.fast4x.riplay.extensions.preferences.navigationBarPositionKey
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.extensions.preferences.showSearchTabKey
+import it.fast4x.riplay.ui.components.themed.LoaderScreen
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.utils.LazyListContainer
 
@@ -52,6 +53,9 @@ fun NewAlbums(
     navController: NavController
 ) {
     var discoverPage by persist<Result<Environment.DiscoverPage>>("home/discoveryAlbums")
+
+    LoaderScreen(show = discoverPage == null)
+
     LaunchedEffect(Unit) {
         discoverPage = Environment.discoverPage()
     }

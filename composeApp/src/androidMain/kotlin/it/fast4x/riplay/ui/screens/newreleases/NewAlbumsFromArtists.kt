@@ -47,6 +47,7 @@ import it.fast4x.riplay.extensions.preferences.navigationBarPositionKey
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.ui.styling.secondary
 import it.fast4x.riplay.extensions.preferences.showSearchTabKey
+import it.fast4x.riplay.ui.components.themed.LoaderScreen
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.utils.typography
 import it.fast4x.riplay.utils.LazyListContainer
@@ -61,6 +62,9 @@ fun NewAlbumsFromArtists(
     navController: NavController
 ) {
     var discoverPage by persist<Result<Environment.DiscoverPageAlbums>>("home/discoveryAlbums")
+
+    LoaderScreen(show = discoverPage == null)
+
     LaunchedEffect(Unit) {
         discoverPage = Environment.discoverPageNewAlbums()
     }

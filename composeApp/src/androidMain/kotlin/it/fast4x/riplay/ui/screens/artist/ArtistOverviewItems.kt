@@ -106,7 +106,7 @@ import it.fast4x.riplay.extensions.preferences.maxSongsInQueueKey
 import it.fast4x.riplay.utils.LazyListContainer
 import it.fast4x.riplay.utils.forcePlay
 import it.fast4x.riplay.commonutils.setLikeState
-import it.fast4x.riplay.ui.components.themed.RotatingLoaderScreen
+import it.fast4x.riplay.ui.components.themed.LoaderScreen
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.firstOrNull
@@ -129,7 +129,6 @@ fun ArtistOverviewItems(
     disableScrollingText: Boolean,
     onDismiss: () -> Unit
 ) {
-    RotatingLoaderScreen()
 
     val binder = LocalPlayerServiceBinder.current
     val menuState = LocalGlobalSheetState.current
@@ -194,6 +193,8 @@ fun ArtistOverviewItems(
     val maxSongsInQueue by rememberPreference(maxSongsInQueueKey, MaxSongs.`500`)
     var forceRecompose by remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
+
+    LoaderScreen(show = artistItemsPage == null)
 
     LaunchedEffect(Unit) {
         artistItemsPage = EnvironmentExt.getArtistItemsPage(

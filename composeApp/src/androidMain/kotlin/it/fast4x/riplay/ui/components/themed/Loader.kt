@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -27,8 +26,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import it.fast4x.riplay.R
-import it.fast4x.riplay.enums.ThumbnailCoverType
-import it.fast4x.riplay.ui.components.navigation.header.TabToolBar.Icon
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.utils.typography
 
@@ -50,7 +47,14 @@ fun Loader(
 }
 
 @Composable
+fun LoaderScreen(show: Boolean = true) {
+    if (!show) return
+    RotatingLoaderScreen()
+}
+
+@Composable
 fun RotatingLoaderScreen() {
+
     val infiniteTransition = rememberInfiniteTransition(label = "infinite_rotation")
 
     val rotationAngle by infiniteTransition.animateFloat(
