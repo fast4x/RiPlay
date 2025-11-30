@@ -195,6 +195,14 @@ kotlin {
             implementation(libs.material.icon.desktop)
             implementation(libs.vlcj)
 
+            val fxSuffix = "win"
+            implementation("org.openjfx:javafx-base:21.0.5:${fxSuffix}")
+            implementation("org.openjfx:javafx-graphics:21.0.5:${fxSuffix}")
+            implementation("org.openjfx:javafx-controls:21.0.5:${fxSuffix}")
+            implementation("org.openjfx:javafx-swing:21.0.5:${fxSuffix}")
+            implementation("org.openjfx:javafx-web:21.0.5:${fxSuffix}")
+            implementation("org.openjfx:javafx-media:21.0.5:${fxSuffix}")
+
             implementation(libs.coil.network.okhttp)
             runtimeOnly(libs.kotlinx.coroutines.swing)
 
