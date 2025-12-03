@@ -5,6 +5,8 @@
 
 -keep,allowobfuscation,allowshrinking class kotlin.coroutines.Continuation
 
+-keep class it.fast4x.riplay.service.** { *; }
+
 -if @kotlinx.serialization.Serializable class **
 -keepclassmembers class <1> {
     static <1>$Companion Companion;
