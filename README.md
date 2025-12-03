@@ -21,7 +21,8 @@ RiPlay is a powerful, open-source music player designed for music lovers who wan
 
 **RiPlay respects your privacy and operates transparently:**
 - 🛡️ **No data collection** - Your data stays on your device
-- 🚫 **No online content download or caching** - For online content, it uses the YouTube Player library as a wrapper around the official [IFrame Player API](https://developers.google.com/youtube/iframe_api_reference) which runs inside a WebView
+- 🚫 **No download or caching online content**
+- 🛡️ **For playing Online content** - it uses the YouTube Player library as a wrapper around the official [IFrame Player API](https://developers.google.com/youtube/iframe_api_reference) which runs inside a WebView
 
 ## ✨ Key Features
 
@@ -39,7 +40,7 @@ RiPlay is a powerful, open-source music player designed for music lovers who wan
 - **Fast Share**: Support **Link**, **Share with...** and **Share with external app** in direct mode. Share with all external installed apps on your device.
     - *Note: With Direct Mode, you can add inside RiPlay external apps installed on device and share directly with one click*
 - **Cast (No Chromecast)**: (Experimental) Watch and listen to music on another android device including android tv.
-    - *Require **RiPlay Link** install from [Github](https://github.com/fast4x/RiPLayLink)*
+    - *Require **RiLink** install from [Github](https://github.com/fast4x/RiLink)*
 - **Self Closing**: Schedule the app to close after a certain time
 - **Android Auto support**: Can add and remove content such as: Shuffle, Monthly Playlists, Library, On Device, Top Playlists, Favorite Playlists,
 - **Android TV support**: (Experimental) Install RiPlay to the big screen
