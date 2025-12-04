@@ -1236,10 +1236,11 @@ class PlayerService : Service(),
     }
 
     fun updateUnifiedNotification() {
-        if (player.mediaItemCount <= 0) return
+
 
         coroutineScope.launch {
             withContext(Dispatchers.Main){
+                if (player.mediaItemCount <= 0) return@withContext
                 updateUnifiedMediasession()
                 val notifyInstance = notification()
                 notifyInstance?.let { NotificationManagerCompat.from(this@PlayerService).notify(NOTIFICATION_ID, it) }

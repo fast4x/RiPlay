@@ -109,19 +109,21 @@ fun getTimestampFromDate(date: String): Long {
 
 @OptIn(UnstableApi::class)
 fun mediaItemToggleLike( mediaItem: MediaItem) {
-    Database.asyncTransaction {
-        if (songExist(mediaItem.mediaId) == 0)
-            insert(mediaItem)
-        if (getLikedAt(mediaItem.mediaId) in listOf(null, -1L))
-            like(
+    CoroutineScope(Dispatchers.IO).launch {
+        Database.asyncTransaction {
+            if (songExist(mediaItem.mediaId) == 0)
+                insert(mediaItem)
+            if (getLikedAt(mediaItem.mediaId) in listOf(null, -1L))
+                like(
+                    mediaItem.mediaId,
+                    System.currentTimeMillis()
+                )
+            else like(
                 mediaItem.mediaId,
-                System.currentTimeMillis()
+                null
             )
-        else like(
-            mediaItem.mediaId,
-            null
-        )
 
+        }
     }
 }
 
