@@ -35,6 +35,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -112,6 +113,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import timber.log.Timber
 
 @OptIn(ExperimentalMaterial3Api::class)
 @ExperimentalTextApi
@@ -186,15 +188,14 @@ fun ArtistOverviewItems(
     val hapticFeedback = LocalHapticFeedback.current
     val parentalControlEnabled by rememberPreference(parentalControlEnabledKey, false)
 
-    var artistItemsPage by persist<ArtistItemsPage?>("artist/${browseId}/artistPage")
+    var artistItemsPage by remember { mutableStateOf<ArtistItemsPage?>(null) }
+
 
     val thumbnailSizeDp = Dimensions.thumbnails.album //+ 24.dp
     val thumbnailSizePx = thumbnailSizeDp.px
     val maxSongsInQueue by rememberPreference(maxSongsInQueueKey, MaxSongs.`500`)
-    var forceRecompose by remember { mutableStateOf(false) }
-    val coroutineScope = rememberCoroutineScope()
 
-    LoaderScreen(show = artistItemsPage == null)
+    val coroutineScope = rememberCoroutineScope()
 
     LaunchedEffect(Unit) {
         artistItemsPage = EnvironmentExt.getArtistItemsPage(
@@ -435,7 +436,7 @@ fun ArtistOverviewItems(
                                                     navController = navController,
                                                     onDismiss = {
                                                         menuState.hide()
-                                                        forceRecompose = true
+
                                                     },
                                                     mediaItems = artistSongs,
                                                     onClosePlayer = {
@@ -530,7 +531,7 @@ fun ArtistOverviewItems(
                                                     navController = navController,
                                                     onDismiss = {
                                                         menuState.hide()
-                                                        forceRecompose = true
+
                                                     },
                                                     onInfo = {
                                                         navController.navigate("${NavRoutes.videoOrSongInfo.name}/${item.mediaId}")
