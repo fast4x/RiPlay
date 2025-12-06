@@ -2086,7 +2086,7 @@ fun OnlinePlayer(
 
                             if (showButtonPlayerDiscover)
                                 IconButton(
-                                    icon = R.drawable.star_brilliant,
+                                    icon = R.drawable.star,
                                     color = if (discoverIsEnabled) colorPalette().text else colorPalette().textDisabled,
                                     onClick = {},
                                     modifier = Modifier
