@@ -23,7 +23,7 @@
     <string name="enter_the_playlist_name">Name der Wiedergabeliste eingeben</string>
     <string name="playlists">Wiedergabelisten</string>
     <string name="favorites">Favoriten</string>
-    <string name="disliked">Disliked</string>
+    <string name="disliked">Gefällt mir nicht</string>
     <string name="quick_picks">Startseite</string>
     <string name="songs">Songs</string>
     <string name="other_versions">Alternative Versionen</string>
@@ -204,7 +204,7 @@
     <string name="play_next">Als nächstes wiedergeben</string>
     <string name="toggle_lyrics">Songtext umschalten</string>
     <string name="by_tapping_on_the_thumbnail">Durch Tippen auf das Thumbnail</string>
-    <string name="require_mic_permission">Require mic permission</string>
+    <string name="require_mic_permission">Mikrofon-Berechtigung erforderlich</string>
     <string name="vt_fancy">Raffiniert</string>
     <string name="vt_circular">Kreisförmig</string>
     <string name="vt_disabled">Aus</string>
@@ -227,7 +227,7 @@
     <string name="disable_song_switching_via_swipe">Titelwechsel per Wischen deaktivieren</string>
     <string name="interface_in_use">Schnittstelle in Verwendung</string>
     <string name="user_interface">Benutzeroberfläche</string>
-    <string name="ui_tab">UI</string>
+    <string name="ui_tab">Benutzeroberfläche</string>
     <string name="system_language">Systemsprache</string>
     <string name="biggest">Sehr groß</string>
     <string name="set_custom_cache">Eigene Cache-Größe festlegen</string>
@@ -545,7 +545,7 @@
     <string name="position_bottom">Unten</string>
     <string name="added_to_favorites">Zu Favoriten hinzugefügt</string>
     <string name="removed_from_favorites">Von Favoriten entfernt</string>
-    <string name="added_to_disliked">Added to disliked</string>
+    <string name="added_to_disliked">Zu „Nicht gefallen“ hinzugefügt</string>
     <string name="lang_filipino">Philippinisch (Filipino)</string>
     <string name="action_bar_transparent_background">Transparenter Hintergrund</string>
     <string name="pinfo_type">Kopfzeilen-Stil</string>
@@ -569,7 +569,7 @@
     <string name="info_prevent_play_songs_with_age_limitation">Verhindere die Wiedergabe von Liedern mit Altersbegrenzung</string>
     <string name="cache_location_private">Privat</string>
     <string name="cache_location_system">System</string>
-    <string name="info_cannot_rename_a_monthly_or_piped_playlist">Cannot rename a monthly, online, YTM Liked or piped playlist</string>
+    <string name="info_cannot_rename_a_monthly_or_piped_playlist">Umbenennen einer monatlichen oder Piped-Wiedergabeliste nicht möglich</string>
     <string name="debug">DEBUG</string>
     <string name="enable_log_debug">Fehlerprotokoll aktivieren</string>
     <string name="if_enabled_create_a_log_file_to_highlight_errors">Wenn aktiviert, erzeuge eine Protokolldatei für auftretende Fehler</string>
@@ -694,7 +694,7 @@
     <string name="info_pauses_player_when_volume_zero">Die Wiedergabe wird angehalten, wenn die Lautstärke 0 erreicht und bei einem Wert über 0 wieder gestartet</string>
     <string name="quality">Qualität</string>
     <string name="value_must_be_ip_address">Wert muss eine IP-Adresse sein</string>
-    <string name="value_must_be_hex">Value must be an hex code</string>
+    <string name="value_must_be_hex">Der Wert muss ein Hex-Code sein</string>
     <string name="swipe_up_to_open_the_queue">Zum Öffnen der Warteschlange nach oben wischen</string>
     <string name="pinfo_show_icons">Zeige Information mit Symbolen</string>
     <string name="format_ms">%1$s ms</string>
@@ -957,16 +957,16 @@
     <string name="shuffle_play">Shuffle play</string>
     <string name="resume_or_pause_playback">Resume or Pause playback</string>
     <string name="play_or_pause_when_device_is_connected_or_disconnected">Play when a wired or bluetooth device is connected and pause if disconnected</string>
-    <string name="player_notification_channel_id">Player Notification</string>
-    <string name="sleep_timer_notification_channel_id">Sleep Timer Notification</string>
-    <string name="voice_you_can_talk_now">You can talk now...</string>
-    <string name="voice_you_said">You said: %1$s</string>
-    <string name="voice_microphone_permission_granted">Microphone permission granted</string>
-    <string name="voice_microphone_permission_denied">Microphone permission denied</string>
-    <string name="voice_missing_microphone_permissions_please_grant">Missing microphone permissions, please grant it in the app settings</string>
-    <string name="message_excluded_videos">Excluded %s videos</string>
-    <string name="exclude_song_if_is_video">Exclude video playback</string>
-    <string name="enable_voice_input">Enable voice input</string>
-    <string name="music_identifier_provider">Music identifier provider</string>
-    <string name="music_identify">Identify</string>
+    <string name="player_notification_channel_id">Player-Benachrichtigung</string>
+    <string name="sleep_timer_notification_channel_id">Sleep-Timer-Benachrichtigung</string>
+    <string name="voice_you_can_talk_now">Du kannst jetzt sprechen...</string>
+    <string name="voice_you_said">Du sagst: %1$s</string>
+    <string name="voice_microphone_permission_granted">Mikrofon-Berechtigung erteilt</string>
+    <string name="voice_microphone_permission_denied">Mikrofonberechtigung verweigert</string>
+    <string name="voice_missing_microphone_permissions_please_grant">Fehlende Mikrofon-Berechtigungen, bitte erteilen Sie es in den App-Einstellungen</string>
+    <string name="message_excluded_videos">Ausgeschlossene %s Videos</string>
+    <string name="exclude_song_if_is_video">Video-Wiedergabe ausschließen</string>
+    <string name="enable_voice_input">Sprach-Eingabe aktivieren</string>
+    <string name="music_identifier_provider">Musik-Identifikator Anbieter</string>
+    <string name="music_identify">Identifiziere</string>
 </resources>
