@@ -845,6 +845,13 @@ interface Database {
     fun songsMostPlayedByYearMonthNoFlow(year: Long, month: Long, limit:Long = Long.MAX_VALUE): List<Song>
 
     @Transaction
+    @Query("SELECT ((SUM(playTime) / 60) / 1000) as totalPlayTime FROM Event WHERE " +
+            "CAST(strftime('%m',timestamp / 1000,'unixepoch') AS INTEGER) = :month AND CAST(strftime('%Y',timestamp / 1000,'unixepoch') as INTEGER) = :year " )
+    @RewriteQueriesToDropUnusedColumns
+    fun minutesListenedByYearMonth(year: Long, month: Long): Flow<Long>
+
+
+    @Transaction
     @Query("SELECT * FROM Song WHERE id LIKE '$LOCAL_KEY_PREFIX%'")
     @RewriteQueriesToDropUnusedColumns
     fun songsOnDevice(): Flow<List<Song>>

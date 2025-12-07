@@ -134,6 +134,8 @@ import it.fast4x.riplay.ui.items.VideoItem
 import it.fast4x.riplay.ui.screens.settings.isLoggedIn
 import it.fast4x.riplay.utils.asVideoMediaItem
 import it.fast4x.riplay.extensions.preferences.quickPicsHomePageKey
+import it.fast4x.riplay.utils.ListenerLevel
+import it.fast4x.riplay.utils.monthlyListenerLevel
 import it.fast4x.riplay.utils.forcePlay
 import timber.log.Timber
 import kotlin.time.Duration
@@ -473,6 +475,9 @@ fun HomePage(
                     )
 
                 WelcomeMessage()
+
+                ListenerLevel()
+
 
                 if (showTips) {
                     Title2Actions(

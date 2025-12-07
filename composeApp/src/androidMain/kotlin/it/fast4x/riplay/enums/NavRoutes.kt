@@ -28,7 +28,8 @@ enum class NavRoutes {
     onDeviceAlbum,
     onDeviceArtist,
     welcome,
-    musicIdentifier;
+    musicIdentifier,
+    rewind;
 
     companion object {
 

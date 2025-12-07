@@ -79,6 +79,8 @@ import it.fast4x.riplay.extensions.preferences.preferences
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.extensions.preferences.thumbnailRoundnessKey
 import it.fast4x.riplay.extensions.preferences.transitionEffectKey
+import it.fast4x.riplay.extensions.rewind.RewindScreen
+import it.fast4x.riplay.extensions.rewind.getRewindPages
 import it.fast4x.riplay.utils.MusicIdentifier
 
 @androidx.annotation.OptIn(UnstableApi::class)
@@ -201,6 +203,10 @@ fun AppNavigation(
         }
 
 
+
+        composable(route = NavRoutes.rewind.name) {
+            RewindScreen(pages = getRewindPages())
+        }
 
         composable(route = NavRoutes.home.name) {
             HomeScreen(
