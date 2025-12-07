@@ -589,7 +589,11 @@ fun HomePage(
                                             },
                                             onClick = {
 
-                                                val mediaItem = song.asVideoMediaItem
+                                                val mediaItem = if (song.isAudioOnly == 1)
+                                                    song.asMediaItem
+                                                else
+                                                    song.asVideoMediaItem
+
                                                 binder?.stopRadio()
                                                 binder?.player?.forcePlay(mediaItem)
                                                 //binder?.player?.playOnline(mediaItem)
@@ -651,7 +655,11 @@ fun HomePage(
                                             },
                                             onClick = {
                                                 println("HomePage Clicked on song")
-                                                val mediaItem = song.asVideoMediaItem
+                                                val mediaItem = if (song.isAudioOnly)
+                                                    song.asMediaItem
+                                                else
+                                                    song.asVideoMediaItem
+
                                                 binder?.stopRadio()
                                                 binder?.player?.forcePlay(mediaItem)
                                                 //fastPlay(mediaItem, binder)
