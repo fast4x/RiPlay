@@ -23,7 +23,7 @@
     <string name="enter_the_playlist_name">प्लेलिस्ट का नाम लिखें</string>
     <string name="playlists">प्लेलिस्ट</string>
     <string name="favorites">पसंदीदा</string>
-    <string name="disliked">Disliked</string>
+    <string name="disliked">नापसंद</string>
     <string name="quick_picks">त्वरित चयन</string>
     <string name="songs">गाने</string>
     <string name="other_versions">अन्य संस्करण</string>
@@ -59,11 +59,11 @@
     <string name="featured">प्रदर्शित</string>
     <string name="view_the_source_code">हमारा स्रोत कोड देखें</string>
     <string name="report_an_issue">समस्या रिपोर्ट करें</string>
-    <string name="you_will_be_redirected_to_github">आपको GitHub पर पुनः निर्देशित किया जाएगा</string>
+    <string name="you_will_be_redirected_to_github">गीटहब पर आपको पुनः निर्देशित किया जाएगा</string>
     <string name="request_a_feature_or_suggest_an_idea">किसी सुविधा का अनुरोध करें या कोई विचार सुझाएं</string>
     <string name="theme">थीम्स</string>
     <string name="theme_mode">थीम मोड</string>
-    <string name="thumbnail_roundness">थंबनेल गोलाई</string>
+    <string name="thumbnail_roundness">थंबनेल की गोलाई</string>
     <string name="use_system_font">सिस्टम फॉन्ट्स का उपयोग करें</string>
     <string name="use_font_by_the_system">सिस्टम द्वारा लागू फ़ॉन्ट का उपयोग करें</string>
     <string name="apply_font_padding">फ़ॉन्ट पैडिंग लागू करें</string>
@@ -89,11 +89,11 @@
     <string name="enable_unknown_sources">एंड्रॉइड ऑटो की डेवलपर सेटिंग्स में \"अज्ञात स्रोत\" को सक्षम करना याद रखें।</string>
     <string name="android_auto_1">एंड्रॉइड ऑटो</string>
     <string name="enable_android_auto_support">एंड्रॉइड ऑटो समर्थन सक्षम करें</string>
-    <string name="search_history">खोज इतिहास</string>
+    <string name="search_history">इतिहास खोजें</string>
     <string name="pause_search_history">खोज इतिहास रोकें</string>
     <string name="neither_save_new_searched_query">न तो नई खोजी गई क्वेरी सहेजें और न ही इतिहास दिखाएं</string>
     <string name="clear_search_history">स्पष्ट इतिहास की खोज</string>
-    <string name="history_is_empty">इतिहास खोखला है</string>
+    <string name="history_is_empty">इतिहास खाली है</string>
     <string name="service_lifetime">जीवनकाल सेवा</string>
     <string name="battery_optimizations_applied">यदि बैटरी अनुकूलन लागू किया जाता है, तो रुकने पर प्लेबैक अधिसूचना अचानक गायब हो सकती है।</string>
     <string name="is_android12">एंड्रॉइड 12 के बाद से, \"अजेय सेवा\" विकल्प को प्रभावी करने के लिए बैटरी अनुकूलन को अक्षम करना आवश्यक है।</string>
@@ -465,7 +465,7 @@
     <string name="show_actions_bar">Show actions bar</string>
     <string name="transition_effect">ट्रांजिशन ईफेक्ट्स</string>
     <string name="te_expand">बड़ा करके देखें</string>
-    <string name="te_fade">Fade</string>
+    <string name="te_fade">फीका</string>
     <string name="te_scale">स्केल</string>
     <string name="te_slide_vertical">Slide Vertical</string>
     <string name="te_slide_horizontal">Slide Horizontal</string>
@@ -490,7 +490,7 @@
     <string name="info_cannot_delete_a_monthly_playlist">Cannot delete a monthly playlist</string>
     <string name="info_reorder_is_possible_only_in_ascending_sort">Reorder is possible only in ascending sort</string>
     <string name="information">जानकारी</string>
-    <string name="info_lyrics_found_on_s">बोल मिल गये %s पर </string>
+    <string name="info_lyrics_found_on_s">% पर बोल मिले </string>
     <string name="info_lyrics_not_found_on_s_try_on_s">Lyrics not found on %s, try on %s</string>
     <string name="info_lyrics_not_found_on_s">Lyrics not found on %s</string>
     <string name="info_lyrics_tracks_found_on_s">Lyrics tracks found on %s</string>
@@ -507,7 +507,7 @@
     <string name="info_no_albums_yet">No albums yet</string>
     <string name="info_no_songs_yet">कोई गाना नहीं</string>
     <string name="theme_customized">Customized</string>
-    <string name="do_you_really_want_to_reset_the_custom_light_theme_colors">Do you really want to reset the custom light theme colors?</string>
+    <string name="do_you_really_want_to_reset_the_custom_light_theme_colors">क्या आप वास्तव में कस्टम लाइट थीम रंगों को रीसेट करना चाहते हैं?</string>
     <string name="do_you_really_want_to_reset_the_custom_dark_theme_colors">Do you really want to reset the custom dark theme colors</string>
     <string name="info_reset_custom_light_theme_colors">Reset custom light theme colors</string>
     <string name="info_reset_custom_dark_theme_colors">Reset custom dark theme colors</string>
@@ -553,7 +553,7 @@
     <string name="show_player_top_actions_bar">Show top actions bar</string>
     <string name="icon_like_button">Like button</string>
     <string name="icon_like_apple">Apple</string>
-    <string name="icon_like_breaked">Breaked</string>
+    <string name="icon_like_breaked">Broken</string>
     <string name="icon_like_gift">Gift</string>
     <string name="icon_like_shape">Shape</string>
     <string name="icon_like_striped">Striped</string>
@@ -575,7 +575,7 @@
     <string name="if_enabled_create_a_log_file_to_highlight_errors">If enabled, create a log file to highlight errors</string>
     <string name="copy_log_to_clipboard">Copy log to clipboard</string>
     <string name="piped_account">PIPED</string>
-    <string name="enable_piped_syncronization">Enable piped syncronization</string>
+    <string name="enable_piped_syncronization">Enable piped synchronization</string>
     <string name="piped_change_instance">Change instance</string>
     <string name="piped_username">Username</string>
     <string name="piped_password">Password</string>
@@ -717,7 +717,7 @@
     <string name="lang_galician">Galician</string>
     <string name="lang_norwegian">Norwegian</string>
     <string name="translate_to">Translate to %s</string>
-    <string name="translate_to_other_language">Traslate to other language</string>
+    <string name="translate_to_other_language">Translate to other language</string>
     <string name="action_bar_show_video_button">Show video button</string>
     <string name="social_telegram">Telegram</string>
     <string name="social_telegram_info">Join the group on Telegram</string>
@@ -936,12 +936,12 @@
     <string name="rescue_center">Rescue Center</string>
     <string name="midnightodyssey">Midnight Odyssey</string>
     <string name="circle">Circle</string>
-    <string name="enter_hex">Enter the 7-digit HEX code</string>
-    <string name="streaming_player_type_default">Default</string>
-    <string name="streaming_player_type_next">Next</string>
+    <string name="enter_hex">7 अंकों का हेक्स कोड दर्ज करें</string>
+    <string name="streaming_player_type_default">मूलभूत</string>
+    <string name="streaming_player_type_next">अगला</string>
     <string name="streaming_player_type">Streaming player type</string>
     <string name="streaming_player_type_advanced">Advanced</string>
-    <string name="title_music">Music</string>
+    <string name="title_music">संगीत</string>
     <string name="use_placeholder_in_imageloader">Use placeholder for image loader</string>
     <string name="use_placeholder_in_imageloader_info">Show image loader while loading images</string>
     <string name="seek_with_tap">Seek with tap</string>
@@ -949,11 +949,11 @@
     <string name="import_the_database_be_carefull">Import the database from other backup. Be careful, you may need to reinstall the app.</string>
     <string name="enable_fullscreen">Enable fullscreen mode</string>
     <string name="enable_fullscreen_info">Fullscreen hide system bars</string>
-    <string name="invalid_token">Invalid token</string>
-    <string name="unknown_title">Unknow title</string>
-    <string name="unknown_artist">Unknow artist</string>
+    <string name="invalid_token">अमान्य टोकन</string>
+    <string name="unknown_title">अज्ञात शीर्षक</string>
+    <string name="unknown_artist">अज्ञात कलाकार</string>
     <string name="share_with_external_app">Share with external app</string>
-    <string name="play_now">Play now</string>
+    <string name="play_now">अब चलाएं</string>
     <string name="shuffle_play">Shuffle play</string>
     <string name="resume_or_pause_playback">Resume or Pause playback</string>
     <string name="play_or_pause_when_device_is_connected_or_disconnected">Play when a wired or bluetooth device is connected and pause if disconnected</string>
@@ -968,5 +968,6 @@
     <string name="exclude_song_if_is_video">Exclude video playback</string>
     <string name="enable_voice_input">Enable voice input</string>
     <string name="music_identifier_provider">Music identifier provider</string>
-    <string name="music_identify">Identify</string>
+    <string name="music_identify">पहचान करें</string>
 </resources>
+
