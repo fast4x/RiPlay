@@ -850,6 +850,12 @@ interface Database {
     @RewriteQueriesToDropUnusedColumns
     fun minutesListenedByYearMonth(year: Long, month: Long): Flow<Long>
 
+    @Transaction
+    @Query("SELECT ((SUM(playTime) / 60) / 1000) as totalPlayTime FROM Event WHERE " +
+            "CAST(strftime('%Y',timestamp / 1000,'unixepoch') as INTEGER) = :year " )
+    @RewriteQueriesToDropUnusedColumns
+    fun minutesListenedByYear(year: Long): Flow<Long>
+
 
     @Transaction
     @Query("SELECT * FROM Song WHERE id LIKE '$LOCAL_KEY_PREFIX%'")
