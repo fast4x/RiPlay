@@ -1316,9 +1316,18 @@ fun Lyrics(
                                                 interactionSource = remember { MutableInteractionSource() },
                                                 indication = if (clickLyricsText) ripple(true) else null,
                                                 onClick = {
-                                                    if (clickLyricsText)
-                                                        binder?.player?.seekTo(sentence.first)
-                                                    else onDismiss()
+                                                    if (clickLyricsText) {
+                                                        Timber.d("Jump to lyric: position=${sentence.first}, text='${sentence.second}'")
+                                                        val positionMs = sentence.first
+                                                        if (binder?.player?.currentMediaItem?.isLocal == true) {
+                                                            Timber.d("Seeking local player to ${positionMs}ms")
+                                                            binder?.player?.seekTo(positionMs)
+                                                        } else {
+                                                            val positionSeconds = positionMs / 1000f
+                                                            Timber.d("Seeking online player to ${positionSeconds}s")
+                                                            binder?.onlinePlayer?.seekTo(positionSeconds)
+                                                        }
+                                                    } else onDismiss()
                                                 }
                                             )
                                     )
@@ -1366,9 +1375,18 @@ fun Lyrics(
                                                 interactionSource = remember { MutableInteractionSource() },
                                                 indication = if (clickLyricsText) ripple(true) else null,
                                                 onClick = {
-                                                    if (clickLyricsText)
-                                                        binder?.player?.seekTo(sentence.first)
-                                                    else onDismiss()
+                                                    if (clickLyricsText) {
+                                                        Timber.d("Jump to lyric: position=${sentence.first}, text='${sentence.second}'")
+                                                        val positionMs = sentence.first
+                                                        if (binder?.player?.currentMediaItem?.isLocal == true) {
+                                                            Timber.d("Seeking local player to ${positionMs}ms")
+                                                            binder?.player?.seekTo(positionMs)
+                                                        } else {
+                                                            val positionSeconds = positionMs / 1000f
+                                                            Timber.d("Seeking online player to ${positionSeconds}s")
+                                                            binder?.onlinePlayer?.seekTo(positionSeconds)
+                                                        }
+                                                    } else onDismiss()
                                                 }
                                             )
                                             .background(
@@ -1424,9 +1442,18 @@ fun Lyrics(
                                                 interactionSource = remember { MutableInteractionSource() },
                                                 indication = if (clickLyricsText) ripple(true) else null,
                                                 onClick = {
-                                                    if (clickLyricsText)
-                                                        binder?.player?.seekTo(sentence.first)
-                                                    else onDismiss()
+                                                    if (clickLyricsText) {
+                                                        Timber.d("Jump to lyric: position=${sentence.first}, text='${sentence.second}'")
+                                                        val positionMs = sentence.first
+                                                        if (binder?.player?.currentMediaItem?.isLocal == true) {
+                                                            Timber.d("Seeking local player to ${positionMs}ms")
+                                                            binder?.player?.seekTo(positionMs)
+                                                        } else {
+                                                            val positionSeconds = positionMs / 1000f
+                                                            Timber.d("Seeking online player to ${positionSeconds}s")
+                                                            binder?.onlinePlayer?.seekTo(positionSeconds)
+                                                        }
+                                                    } else onDismiss()
                                                 }
                                             )
                                     )
@@ -1461,8 +1488,17 @@ fun Lyrics(
                                      modifier = Modifier
                                          .padding(vertical = 4.dp, horizontal = 32.dp)
                                          .clickable {
-                                             if (enableClick)
-                                                 binder?.player?.seekTo(sentence.first)
+                                             if (enableClick) {
+                                                 val positionMs = sentence.first
+                                                 if (binder?.player?.currentMediaItem?.isLocal == true) {
+                                                     Timber.d("Seeking local player to ${positionMs}ms")
+                                                     binder?.player?.seekTo(positionMs)
+                                                 } else {
+                                                     val positionSeconds = positionMs / 1000f
+                                                     Timber.d("Seeking online player to ${positionSeconds}s")
+                                                     binder?.onlinePlayer?.seekTo(positionSeconds)
+                                                 }
+                                             }
                                          }
                                  )*/
 
@@ -1848,7 +1884,11 @@ fun Lyrics(
                                     if (binder?.player?.hasPreviousMediaItem() == false || (jumpPrevious != "0" && (binder?.player?.currentPosition
                                             ?: 0) > jumpPrevious.toInt() * 1000)
                                     ) {
-                                        binder?.player?.seekTo(0)
+                                        if (binder?.player?.currentMediaItem?.isLocal == true) {
+                                            binder?.player?.seekTo(0)
+                                        } else {
+                                            binder?.onlinePlayer?.seekTo(0f)
+                                        }
                                     } else binder?.player?.playPrevious()
                                     if (effectRotationEnabled) isRotated = !isRotated
                                 }
