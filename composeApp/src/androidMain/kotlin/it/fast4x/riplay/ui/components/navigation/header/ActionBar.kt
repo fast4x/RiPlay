@@ -12,6 +12,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
@@ -59,6 +60,13 @@ private fun HamburgerMenu(
             R.drawable.stats_chart,
             R.string.statistics
         ) { onItemClick( NavRoutes.statistics ) }
+    )
+    // Listener levels button
+    menu.add(
+        DropdownMenu.Item(
+            R.drawable.trophy,
+            R.string.listener_levels
+        ) { onItemClick( NavRoutes.listenerLevel ) }
     )
     // Picture in picture button
     if (isPipSupported && enablePictureInPicture)
