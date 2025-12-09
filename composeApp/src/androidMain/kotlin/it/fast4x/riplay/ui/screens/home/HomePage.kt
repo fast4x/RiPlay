@@ -78,7 +78,7 @@ import it.fast4x.riplay.enums.UiType
 import it.fast4x.riplay.data.models.Artist
 import it.fast4x.riplay.data.models.PlaylistPreview
 import it.fast4x.riplay.data.models.Song
-import it.fast4x.riplay.extensions.listenerlevel.AnnualLevelsList
+import it.fast4x.riplay.extensions.listenerlevel.ListenerLevelBadges
 import it.fast4x.riplay.ui.components.LocalGlobalSheetState
 import it.fast4x.riplay.ui.components.PullToRefreshBox
 import it.fast4x.riplay.ui.components.themed.HeaderWithIcon
@@ -135,8 +135,6 @@ import it.fast4x.riplay.ui.items.VideoItem
 import it.fast4x.riplay.ui.screens.settings.isLoggedIn
 import it.fast4x.riplay.utils.asVideoMediaItem
 import it.fast4x.riplay.extensions.preferences.quickPicsHomePageKey
-import it.fast4x.riplay.extensions.listenerlevel.MonthlyLevel
-import it.fast4x.riplay.extensions.listenerlevel.MonthlyLevelsList
 import it.fast4x.riplay.utils.forcePlay
 import timber.log.Timber
 import kotlin.time.Duration
@@ -477,8 +475,7 @@ fun HomePage(
 
                 WelcomeMessage()
 
-                MonthlyLevelsList()
-                AnnualLevelsList()
+                ListenerLevelBadges(navController)
 
 
                 if (showTips) {

@@ -44,50 +44,7 @@ enum class AnnualListenerLevel {
 
     val badge
         @Composable
-        get() = when (this) {
-            SonicWhisper -> MonthlyIconBadge(
-                icon = R.drawable.musical_note,
-                colors = listOf(
-                    Color(0xFFA0E0E0),
-                    Color(0xFF30B0B0)
-                )
-            )
-            TheSoundExplorer -> MonthlyIconBadge(
-                icon = R.drawable.headphones,
-                colors = listOf(
-                    Color(0xFFA2D5A1),
-                    Color(0xFF60CC4E)
-                )
-            )
-            TheDailyWanderer -> MonthlyIconBadge(
-                icon = R.drawable.music,
-                colors = listOf(
-                    Color(0xFFE0A17F),
-                    Color(0xFFD96334)
-                )
-            )
-            SoulNavigator -> MonthlyIconBadge(
-                icon = R.drawable.music_album,
-                colors = listOf(
-                    Color(0xFFD081DE),
-                    Color(0xFFA029B4)
-                )
-            )
-            TheSonicOracle -> MonthlyIconBadge(
-                icon = R.drawable.equalizer,
-                colors = listOf(
-                    Color(0xFF6497D5),
-                    Color(0xFF1689D9)
-                )
-            )
-            TheLegend -> MonthlyIconBadge(
-                icon = R.drawable.trophy,
-                colors = listOf(
-                    Color(0xFFFFD700),
-                    Color(0xFFFFA500)
-                )
-            )
-        }
+        get() = IconBadge(this)
 
     companion object {
         fun getLevelByMinutes(range: Int): AnnualListenerLevel {
@@ -150,53 +107,10 @@ enum class MonthlyListenerLevel {
 
     val badge
         @Composable
-        get() = when (this) {
-            SoundCheck -> MonthlyIconBadge(
-                icon = R.drawable.play,
-                colors = listOf(
-                    Color(0xFFABADAB),
-                    Color(0xFF606460)
-                )
-            )
-            TheMonthlyExplorer -> MonthlyIconBadge(
-                icon = R.drawable.headset,
-                colors = listOf(
-                    Color(0xFF92EE92),
-                    Color(0xFF2D6C2D)
-                )
-            )
-            TheDJofYourDay -> MonthlyIconBadge(
-                icon = R.drawable.disc,
-                colors = listOf(
-                    Color(0xFFEC5C61),
-                    Color(0xFFCB1126)
-                )
-            )
-            FrequencyDominator -> MonthlyIconBadge(
-                icon = R.drawable.equalizer,
-                colors = listOf(
-                    Color(0xFF7EA6EA),
-                    Color(0xFF0B67A2)
-                )
-            )
-            VibeMaster -> MonthlyIconBadge(
-                icon = R.drawable.volume_up,
-                colors = listOf(
-                    Color(0xFFDA92E7),
-                    Color(0xFFC841E0)
-                )
-            )
-            MonthlyIcon -> MonthlyIconBadge(
-                icon = R.drawable.star,
-                colors = listOf(
-                    Color(0xFFFFD700), // Gold
-                    Color(0xFFFFA500)  // Orange
-                )
-            )
-        }
+        get() = IconBadge(this)
+
 
     companion object {
-
         fun getLevelByMinutes(range: Int): MonthlyListenerLevel {
             return when (range) {
                 in 0..100 -> SoundCheck

@@ -49,6 +49,7 @@ import it.fast4x.riplay.enums.ThumbnailRoundness
 import it.fast4x.riplay.enums.TransitionEffect
 import it.fast4x.riplay.data.models.Mood
 import it.fast4x.riplay.data.models.SearchQuery
+import it.fast4x.riplay.extensions.listenerlevel.ListenerLevelCharts
 import it.fast4x.riplay.ui.components.CustomModalBottomSheet
 import it.fast4x.riplay.ui.screens.album.AlbumScreen
 import it.fast4x.riplay.ui.screens.artist.ArtistScreen
@@ -206,6 +207,12 @@ fun AppNavigation(
 
         composable(route = NavRoutes.rewind.name) {
             RewindScreen(pages = getRewindPages())
+        }
+
+        composable(route = NavRoutes.listenerLevel.name) {
+            modalBottomSheetPage {
+                ListenerLevelCharts()
+            }
         }
 
         composable(route = NavRoutes.home.name) {
