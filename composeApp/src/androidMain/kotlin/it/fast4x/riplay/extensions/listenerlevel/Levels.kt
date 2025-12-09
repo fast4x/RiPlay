@@ -80,6 +80,17 @@ enum class AnnualListenerLevel {
                 TheLegend -> TheLegend
             }
         }
+
+        fun getRangeLevel(level: AnnualListenerLevel): Pair<Int, Int> {
+            return when (level) {
+                SonicWhisper -> Pair(0, 1000)
+                TheSoundExplorer -> Pair(1001, 5000)
+                TheDailyWanderer -> Pair(5001, 20000)
+                SoulNavigator -> Pair(20001, 50000)
+                TheSonicOracle -> Pair(50001, 80000)
+                TheLegend -> Pair(80001, Int.MAX_VALUE)
+            }
+        }
     }
 
 

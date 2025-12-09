@@ -69,7 +69,7 @@ fun monthlyListenerLevel(): Triple<MonthlyListenerLevel, MonthlyListenerLevel, F
 }
 
 @Composable
-fun annualListenerLevel(): Triple<AnnualListenerLevel, AnnualListenerLevel, Int> {
+fun annualListenerLevel(): Triple<AnnualListenerLevel, AnnualListenerLevel, Float> {
     val ym by remember { mutableStateOf(getCalculatedMonths(0)) }
     val y by remember { mutableLongStateOf( ym?.substring(0,4)?.toLong() ?: 0) }
 
@@ -78,15 +78,37 @@ fun annualListenerLevel(): Triple<AnnualListenerLevel, AnnualListenerLevel, Int>
     }.collectAsState(initial = 0, context = Dispatchers.IO)
 
     Timber.d("annuallyListenerLevel minutes ${minutes.value}")
-    val level by remember { mutableStateOf(AnnualListenerLevel.getLevelByMinutes(minutes.value.toInt())) }
-    val nextLevel by remember { mutableStateOf(AnnualListenerLevel.getNextLevel(level)) }
-    val distanceFromNextLevel by remember { mutableIntStateOf(AnnualListenerLevel.getDistanceToNextLevel(minutes.value.toInt())) }
+    val level = AnnualListenerLevel.getLevelByMinutes(minutes.value.toInt())
+    val nextLevel = AnnualListenerLevel.getNextLevel(level)
+
+    val progress = minutes.value.toFloat() / AnnualListenerLevel.getRangeLevel(level).second.toFloat()
+    Timber.d("annualListenerLevel minutes ${minutes.value} level ${level.name} nextLevel ${nextLevel.name} progress $progress rangeLevel = ${AnnualListenerLevel.getRangeLevel(level)}")
 
     return Triple(
         level,
         nextLevel,
-        distanceFromNextLevel
+        progress
     )
+
+}
+
+@Composable
+fun LevelProgress(progress: Float) {
+    Row (
+        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Start
+    ) {
+        Text(
+            modifier = Modifier.padding(end = 10.dp),
+            text = "To next level",
+            style = typography().xxs
+        )
+        LinearProgressIndicator(
+            color = colorPalette().accent,
+            progress = { progress }
+        )
+    }
 
 }
 
@@ -95,7 +117,7 @@ fun MonthlyLevelBadge(
     modifier: Modifier = Modifier.fillMaxWidth(),
     level: MonthlyListenerLevel? = null,
     showTitle: Boolean = false,
-
+    showProgress: Boolean = false,
 ){
     val data = if (level == null) monthlyListenerLevel() else Triple(level, level, 0f)
     val mon = data.first
@@ -123,33 +145,22 @@ fun MonthlyLevelBadge(
                 style = typography().xxs
             )
 
-            Timber.d("MonthlyLevelBadge distanceFromNextLevel ${data.third}")
-
-            LinearProgressIndicator(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 10.dp),
-                color = colorPalette().accent,
-                trackColor = colorPalette().accent,
-                progress = { data.third }
-            )
+            if (showProgress)
+                LevelProgress(data.third)
 
         }
     }
 }
 
-@Composable
-fun MonthlyLevelProgress() {
-    val mont = monthlyListenerLevel()
-}
 
 @Composable
 fun AnnualLevelBadge(
     modifier: Modifier = Modifier.fillMaxWidth(),
     level: AnnualListenerLevel? = null,
     showTitle: Boolean = false,
+    showProgress: Boolean = false,
 ){
-    val data = if (level == null) annualListenerLevel() else Triple(level, level, 0)
+    val data = if (level == null) annualListenerLevel() else Triple(level, level, 0f)
     val ann = data.first
     Row(
         modifier = modifier,
@@ -174,6 +185,10 @@ fun AnnualLevelBadge(
                 text = ann.levelDescription,
                 style = typography().xxs
             )
+
+            if (showProgress)
+                LevelProgress(data.third)
+
         }
     }
 }
@@ -275,7 +290,7 @@ fun ListenerLevelCharts() {
 
         Row( verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.clickable{ showMonthlyChart = !showMonthlyChart}) {
-            MonthlyLevelBadge(modifier = Modifier.fillMaxWidth(.9f))
+            MonthlyLevelBadge(modifier = Modifier.fillMaxWidth(.9f), showProgress = true)
             Image(
                 painter = painterResource(if (showMonthlyChart) R.drawable.chevron_up else R.drawable.chevron_down),
                 contentDescription = "showMonthlyChart",
@@ -299,7 +314,7 @@ fun ListenerLevelCharts() {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.clickable{ showAnnualChart = !showAnnualChart}) {
-            AnnualLevelBadge(modifier = Modifier.fillMaxWidth(.9f))
+            AnnualLevelBadge(modifier = Modifier.fillMaxWidth(.9f), showProgress = true)
             Image(
                 painter = painterResource(if (showAnnualChart) R.drawable.chevron_up else R.drawable.chevron_down),
                 contentDescription = "showAnnualChart",
