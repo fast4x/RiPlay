@@ -21,8 +21,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -93,17 +91,19 @@ fun annualListenerLevel(): Triple<AnnualListenerLevel, AnnualListenerLevel, Floa
 }
 
 @Composable
-fun LevelProgress(progress: Float) {
+fun LevelProgress(progress: Float, showTitle: Boolean = true) {
     Row (
-        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+        modifier = Modifier.padding(vertical = 4.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Start
     ) {
-        Text(
-            modifier = Modifier.padding(end = 10.dp),
-            text = "To next level",
-            style = typography().xxs
-        )
+        if (showTitle)
+            Text(
+                modifier = Modifier.padding(end = 10.dp),
+                text = "To next level",
+                style = typography().xxs
+            )
+
         LinearProgressIndicator(
             color = colorPalette().accent,
             progress = { progress }
@@ -146,7 +146,7 @@ fun MonthlyLevelBadge(
             )
 
             if (showProgress)
-                LevelProgress(data.third)
+                LevelProgress(data.third,)
 
         }
     }
@@ -187,7 +187,7 @@ fun AnnualLevelBadge(
             )
 
             if (showProgress)
-                LevelProgress(data.third)
+                LevelProgress(data.third,)
 
         }
     }
