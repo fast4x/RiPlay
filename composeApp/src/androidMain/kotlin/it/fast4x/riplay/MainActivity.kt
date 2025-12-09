@@ -199,6 +199,7 @@ import it.fast4x.riplay.extensions.preferences.proxyHostnameKey
 import it.fast4x.riplay.extensions.preferences.proxyModeKey
 import it.fast4x.riplay.extensions.preferences.proxyPortKey
 import it.fast4x.riplay.extensions.preferences.rememberPreference
+import it.fast4x.riplay.extensions.preferences.rememberObservedPreference
 import it.fast4x.riplay.extensions.preferences.restartActivityKey
 import it.fast4x.riplay.extensions.preferences.shakeEventEnabledKey
 import it.fast4x.riplay.extensions.preferences.showSearchTabKey
@@ -810,7 +811,8 @@ class MainActivity :
 //            internetConnectivityObserver = InternetConnectivityObserver(this@MainActivity)
 //            val isInternetAvailable by internetConnectivityObserver.internetNetworkStatus.collectAsState(true)
 
-            val colorPaletteMode by rememberPreference(
+            // Observe preference so theme mode updates immediately when changed from Settings
+            val colorPaletteMode by rememberObservedPreference(
                 colorPaletteModeKey,
                 ColorPaletteMode.Dark
             )
@@ -921,7 +923,9 @@ class MainActivity :
             Environment.customDnsToUse = customDnsUrl
             Environment.dnsToUse = getDnsOverHttpsType().type
 
+            // Recreate appearance whenever theme mode or light/dark flag changes
             var appearance by rememberSaveable(
+                colorPaletteMode,
                 !lightTheme,
                 stateSaver = Appearance
             ) {
@@ -1034,7 +1038,8 @@ class MainActivity :
             }
 
 
-            DisposableEffect(binder, !lightTheme) {
+            // React to theme mode changes without requiring app restart (include palette mode key)
+            DisposableEffect(binder, colorPaletteMode, !lightTheme) {
 
                 val listener =
                     SharedPreferences.OnSharedPreferenceChangeListener { sharedPreferences, key ->
@@ -1104,10 +1109,19 @@ class MainActivity :
                                         ColorPaletteName.Dynamic
                                     )
 
+                                val newColorPaletteMode = sharedPreferences.getEnum(
+                                    colorPaletteModeKey,
+                                    ColorPaletteMode.Dark
+                                )
+                                val isNewPitchBlack = newColorPaletteMode == ColorPaletteMode.PitchBlack
+                                val isNewDark =
+                                    newColorPaletteMode == ColorPaletteMode.Dark || isNewPitchBlack || (newColorPaletteMode == ColorPaletteMode.System && isSystemInDarkTheme)
+                                val newLightTheme = !isNewDark
+
                                 var colorPalette = colorPaletteOf(
                                     colorPaletteName,
-                                    colorPaletteMode,
-                                    !lightTheme
+                                    newColorPaletteMode,
+                                    newLightTheme.not()
                                 )
 
                                 if (colorPaletteName == ColorPaletteName.Dynamic) {
@@ -1123,7 +1137,7 @@ class MainActivity :
 
                                             setSystemBarAppearance(colorPalette.isDark)
                                             appearance = appearance.copy(
-                                                colorPalette = if (!isPicthBlack) colorPalette else colorPalette.copy(
+                                                colorPalette = if (!isNewPitchBlack) colorPalette else colorPalette.copy(
                                                     background0 = Color.Black,
                                                     background1 = Color.Black,
                                                     background2 = Color.Black,
@@ -1144,7 +1158,7 @@ class MainActivity :
                                     if (colorPaletteName == ColorPaletteName.MaterialYou) {
                                         colorPalette = dynamicColorPaletteOf(
                                             Color(localMonet.getAccentColor(this@MainActivity)),
-                                            !lightTheme
+                                            newLightTheme.not()
                                         )
                                     }
 
@@ -1159,7 +1173,7 @@ class MainActivity :
                                         Timber.d("MainActivity.startApp SetContent DisposableEffect customColor PRE colorPalette: $colorPalette")
                                         colorPalette = dynamicColorPaletteOf(
                                             Color(customColor),
-                                            !lightTheme
+                                            newLightTheme.not()
                                         )
                                         Timber.d("MainActivity.startApp SetContent DisposableEffect customColor POST colorPalette: $colorPalette")
                                     }
@@ -1167,7 +1181,7 @@ class MainActivity :
                                     setSystemBarAppearance(colorPalette.isDark)
 
                                     appearance = appearance.copy(
-                                        colorPalette = if (!isPicthBlack) colorPalette else colorPalette.copy(
+                                        colorPalette = if (!isNewPitchBlack) colorPalette else colorPalette.copy(
                                             background0 = Color.Black,
                                             background1 = Color.Black,
                                             background2 = Color.Black,
@@ -1175,7 +1189,7 @@ class MainActivity :
                                             background4 = Color.Black,
                                             text = Color.White
                                         ),
-                                        typography = appearance.typography.copy(if (!isPicthBlack) colorPalette.text else Color.White),
+                                        typography = appearance.typography.copy(if (!isNewPitchBlack) colorPalette.text else Color.White),
                                     )
                                 }
                             }
