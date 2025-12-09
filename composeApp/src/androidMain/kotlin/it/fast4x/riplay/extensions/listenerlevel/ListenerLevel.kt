@@ -16,10 +16,13 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -42,7 +45,7 @@ import kotlinx.coroutines.Dispatchers
 import timber.log.Timber
 
 @Composable
-fun monthlyListenerLevel(): MonthlyListenerLevel {
+fun monthlyListenerLevel(): Triple<MonthlyListenerLevel, MonthlyListenerLevel, Float> {
     val ym by remember { mutableStateOf(getCalculatedMonths(0)) }
     val y by remember { mutableLongStateOf( ym?.substring(0,4)?.toLong() ?: 0) }
     val m by remember { mutableLongStateOf( ym?.substring(5,7)?.toLong() ?: 0) }
@@ -51,14 +54,22 @@ fun monthlyListenerLevel(): MonthlyListenerLevel {
         Database.minutesListenedByYearMonth(y, m)
     }.collectAsState(initial = 0, context = Dispatchers.IO)
 
-    Timber.d("monthlyListenerLevel minutes ${minutes.value}")
+    val level = MonthlyListenerLevel.getLevelByMinutes(minutes.value.toInt())
+    val nextLevel = MonthlyListenerLevel.getNextLevel(level)
 
-    return MonthlyListenerLevel.getLevelByMinutes(minutes.value.toInt())
+    val progress = minutes.value.toFloat() / MonthlyListenerLevel.getRangeLevel(level).second.toFloat()
+    Timber.d("monthlyListenerLevel minutes ${minutes.value} level ${level.name} nextLevel ${nextLevel.name} progress $progress rangeLevel = ${MonthlyListenerLevel.getRangeLevel(level)}")
+
+    return Triple(
+        level,
+        nextLevel,
+        progress
+    )
 
 }
 
 @Composable
-fun annualListenerLevel(): AnnualListenerLevel {
+fun annualListenerLevel(): Triple<AnnualListenerLevel, AnnualListenerLevel, Int> {
     val ym by remember { mutableStateOf(getCalculatedMonths(0)) }
     val y by remember { mutableLongStateOf( ym?.substring(0,4)?.toLong() ?: 0) }
 
@@ -67,23 +78,34 @@ fun annualListenerLevel(): AnnualListenerLevel {
     }.collectAsState(initial = 0, context = Dispatchers.IO)
 
     Timber.d("annuallyListenerLevel minutes ${minutes.value}")
+    val level by remember { mutableStateOf(AnnualListenerLevel.getLevelByMinutes(minutes.value.toInt())) }
+    val nextLevel by remember { mutableStateOf(AnnualListenerLevel.getNextLevel(level)) }
+    val distanceFromNextLevel by remember { mutableIntStateOf(AnnualListenerLevel.getDistanceToNextLevel(minutes.value.toInt())) }
 
-    return AnnualListenerLevel.getLevelByMinutes(minutes.value.toInt())
+    return Triple(
+        level,
+        nextLevel,
+        distanceFromNextLevel
+    )
 
 }
 
 @Composable
-fun MonthlyLevelBadge(level: MonthlyListenerLevel? = null, showTitle: Boolean = false,
-                      modifier: Modifier = Modifier.fillMaxWidth()
+fun MonthlyLevelBadge(
+    modifier: Modifier = Modifier.fillMaxWidth(),
+    level: MonthlyListenerLevel? = null,
+    showTitle: Boolean = false,
+
 ){
-    val mont = level ?: monthlyListenerLevel()
+    val data = if (level == null) monthlyListenerLevel() else Triple(level, level, 0f)
+    val mon = data.first
     Row(
         modifier = modifier,
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Center
     ) {
         Column(modifier = Modifier.padding(all = 12.dp))  {
-            mont.badge
+            mon.badge
         }
         Column {
             if (showTitle)
@@ -93,32 +115,42 @@ fun MonthlyLevelBadge(level: MonthlyListenerLevel? = null, showTitle: Boolean = 
                 )
 
             Text(
-                text = mont.levelName,
+                text = mon.levelName,
                 style = typography().m.bold
             )
             Text(
-                text = mont.levelDescription,
+                text = mon.levelDescription,
                 style = typography().xxs
             )
+
+            Timber.d("MonthlyLevelBadge distanceFromNextLevel ${data.third}")
+
+            LinearProgressIndicator(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 10.dp),
+                color = colorPalette().accent,
+                trackColor = colorPalette().accent,
+                progress = { data.third }
+            )
+
         }
     }
 }
 
 @Composable
-fun MonthlyLevelsList(){
-    MonthlyLevelBadge(MonthlyListenerLevel.SoundCheck)
-    MonthlyLevelBadge(MonthlyListenerLevel.TheMonthlyExplorer)
-    MonthlyLevelBadge(MonthlyListenerLevel.TheDJofYourDay)
-    MonthlyLevelBadge(MonthlyListenerLevel.FrequencyDominator)
-    MonthlyLevelBadge(MonthlyListenerLevel.VibeMaster)
-    MonthlyLevelBadge(MonthlyListenerLevel.MonthlyIcon)
+fun MonthlyLevelProgress() {
+    val mont = monthlyListenerLevel()
 }
 
 @Composable
-fun AnnualLevelBadge(level: AnnualListenerLevel? = null, showTitle: Boolean = false,
-                     modifier: Modifier = Modifier.fillMaxWidth()
+fun AnnualLevelBadge(
+    modifier: Modifier = Modifier.fillMaxWidth(),
+    level: AnnualListenerLevel? = null,
+    showTitle: Boolean = false,
 ){
-    val ann = level ?: annualListenerLevel()
+    val data = if (level == null) annualListenerLevel() else Triple(level, level, 0)
+    val ann = data.first
     Row(
         modifier = modifier,
         verticalAlignment = Alignment.CenterVertically,
@@ -146,25 +178,17 @@ fun AnnualLevelBadge(level: AnnualListenerLevel? = null, showTitle: Boolean = fa
     }
 }
 
-@Composable
-fun AnnualLevelsList(){
-    AnnualLevelBadge(AnnualListenerLevel.SonicWhisper)
-    AnnualLevelBadge(AnnualListenerLevel.TheSoundExplorer)
-    AnnualLevelBadge(AnnualListenerLevel.TheDailyWanderer)
-    AnnualLevelBadge(AnnualListenerLevel.SoulNavigator)
-    AnnualLevelBadge(AnnualListenerLevel.TheSonicOracle)
-    AnnualLevelBadge(AnnualListenerLevel.TheLegend)
-}
 
 @Composable
 fun MonthlyLevelChart(level: MonthlyListenerLevel? = null) {
-    val mont = level ?: monthlyListenerLevel()
+    val data = if (level == null) monthlyListenerLevel() else Triple(level, level, 0)
+    val mont = data.first
 
     MonthlyListenerLevel.entries.forEach { level ->
         val modifier = if (level == mont) Modifier.background(colorPalette().accent, shape = CircleShape) else Modifier
 
         Box(modifier = modifier) {
-            MonthlyLevelBadge(level, level == mont)
+            MonthlyLevelBadge(level = level, showTitle = level == mont)
         }
 
     }
@@ -172,13 +196,14 @@ fun MonthlyLevelChart(level: MonthlyListenerLevel? = null) {
 
 @Composable
 fun AnnualLevelChart(level: AnnualListenerLevel? = null) {
-    val ann = level ?: annualListenerLevel()
+    val data = if (level == null) annualListenerLevel() else Triple(level, level, 0)
+    val ann = data.first
 
     AnnualListenerLevel.entries.forEach { level ->
         val modifier = if (level == ann) Modifier.background(colorPalette().accent, shape = CircleShape) else Modifier
 
         Box(modifier = modifier) {
-            AnnualLevelBadge(level, level == ann)
+            AnnualLevelBadge(level = level, showTitle = level == ann)
         }
 
     }
@@ -192,31 +217,31 @@ fun ListenerLevelBadges(navController: NavController){
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable{
+            .clickable {
                 navController.navigate(NavRoutes.listenerLevel.name)
             },
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Center
     ) {
         Column(modifier = Modifier.padding(all = 12.dp), horizontalAlignment = Alignment.CenterHorizontally)  {
-            IconBadge(mont, 40, 3)
+            IconBadge(mont.first, 40, 3)
             Text(
                 text = "Your Monthly Level:",
                 style = typography().xxs
             )
             Text(
-                text = mont.levelName,
+                text = mont.first.levelName,
                 style = typography().xxs
             )
         }
         Column(modifier = Modifier.padding(all = 12.dp), horizontalAlignment = Alignment.CenterHorizontally)  {
-            IconBadge(ann, 40, 3)
+            IconBadge(ann.first, 40, 3)
             Text(
                 text = "Your Annual Level:",
                 style = typography().xxs
             )
             Text(
-                text = ann.levelName,
+                text = ann.first.levelName,
                 style = typography().xxs
             )
         }
@@ -254,7 +279,9 @@ fun ListenerLevelCharts() {
             Image(
                 painter = painterResource(if (showMonthlyChart) R.drawable.chevron_up else R.drawable.chevron_down),
                 contentDescription = "showMonthlyChart",
-                modifier = Modifier.padding(all = 10.dp).size(40.dp),
+                modifier = Modifier
+                    .padding(all = 10.dp)
+                    .size(40.dp),
                 colorFilter = ColorFilter.tint(colorPalette().accent),
             )
         }
@@ -276,7 +303,9 @@ fun ListenerLevelCharts() {
             Image(
                 painter = painterResource(if (showAnnualChart) R.drawable.chevron_up else R.drawable.chevron_down),
                 contentDescription = "showAnnualChart",
-                modifier = Modifier.padding(all = 10.dp).size(40.dp),
+                modifier = Modifier
+                    .padding(all = 10.dp)
+                    .size(40.dp),
                 colorFilter = ColorFilter.tint(colorPalette().accent),
             )
         }

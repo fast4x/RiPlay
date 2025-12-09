@@ -1,8 +1,6 @@
 package it.fast4x.riplay.extensions.listenerlevel
 
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.graphics.Color
-import it.fast4x.riplay.R
 
 enum class AnnualListenerLevel {
     SonicWhisper,
@@ -46,6 +44,7 @@ enum class AnnualListenerLevel {
         @Composable
         get() = IconBadge(this)
 
+
     companion object {
         fun getLevelByMinutes(range: Int): AnnualListenerLevel {
             return when (range) {
@@ -56,6 +55,29 @@ enum class AnnualListenerLevel {
                 in 50001..80000 -> TheSonicOracle
                 in 80001..Int.MAX_VALUE -> TheLegend
                 else -> SonicWhisper
+            }
+        }
+
+        fun getDistanceToNextLevel(range: Int): Int {
+            return when (range) {
+                in 0..1000 -> 1000 - range
+                in 1001..5000 -> 5000 - range
+                in 5001..20000 -> 20000 - range
+                in 20001..50000 -> 50000 - range
+                in 50001..80000 -> 80000 - range
+                in 80001..Int.MAX_VALUE -> 0
+                else -> 1000 - range
+            }
+        }
+
+        fun getNextLevel(level: AnnualListenerLevel): AnnualListenerLevel {
+            return when (level) {
+                SonicWhisper -> TheSoundExplorer
+                TheSoundExplorer -> TheDailyWanderer
+                TheDailyWanderer -> SoulNavigator
+                SoulNavigator -> TheSonicOracle
+                TheSonicOracle -> TheLegend
+                TheLegend -> TheLegend
             }
         }
     }
@@ -120,6 +142,28 @@ enum class MonthlyListenerLevel {
                 in 4001..6500 -> VibeMaster
                 in 6501 until Int.MAX_VALUE -> MonthlyIcon
                 else -> SoundCheck
+            }
+        }
+
+        fun getRangeLevel(level: MonthlyListenerLevel): Pair<Int, Int> {
+            return when (level) {
+                SoundCheck -> Pair(0,100)
+                TheMonthlyExplorer -> Pair(101,500)
+                TheDJofYourDay -> Pair(501,1500)
+                FrequencyDominator -> Pair(1501,4000)
+                VibeMaster -> Pair(4001,6500)
+                MonthlyIcon -> Pair(6501, Int.MAX_VALUE)
+            }
+        }
+
+        fun getNextLevel(level: MonthlyListenerLevel): MonthlyListenerLevel {
+            return when (level) {
+                SoundCheck -> TheMonthlyExplorer
+                TheMonthlyExplorer -> TheDJofYourDay
+                TheDJofYourDay -> FrequencyDominator
+                FrequencyDominator -> VibeMaster
+                VibeMaster -> MonthlyIcon
+                MonthlyIcon -> MonthlyIcon
             }
         }
     }
