@@ -32,6 +32,7 @@ import it.fast4x.riplay.extensions.preferences.enableQuickPicksPageKey
 import it.fast4x.riplay.extensions.preferences.playEventsTypeKey
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.extensions.preferences.showChartsKey
+import it.fast4x.riplay.extensions.preferences.showListenerLevelsKey
 import it.fast4x.riplay.extensions.preferences.showMonthlyPlaylistInQuickPicksKey
 import it.fast4x.riplay.extensions.preferences.showMoodsAndGenresKey
 import it.fast4x.riplay.extensions.preferences.showNewAlbumsArtistsKey
@@ -48,11 +49,12 @@ import it.fast4x.riplay.utils.LazyListContainer
 @ExperimentalAnimationApi
 @UnstableApi
 @Composable
-fun  QuickPicsSettings() {
+fun  HomeSettings() {
     var playEventType by rememberPreference(
         playEventsTypeKey,
         PlayEventsType.MostPlayed
     )
+    var showListenerLevels by rememberPreference(showListenerLevelsKey, true)
     var showTips by rememberPreference(showTipsKey, true)
     var showRelatedAlbums by rememberPreference(showRelatedAlbumsKey, true)
     var showSimilarArtists by rememberPreference(showSimilarArtistsKey, true)
@@ -109,10 +111,8 @@ fun  QuickPicsSettings() {
             ) {
                 settingsItem {
                     HeaderWithIcon(
-                        title = if (!isLoggedIn()) stringResource(R.string.quick_picks) else stringResource(
-                            R.string.home
-                        ),
-                        iconId = if (!isLoggedIn()) R.drawable.sparkles else R.drawable.internet,
+                        title = stringResource(R.string.home),
+                        iconId = if (!isLoggedIn()) R.drawable.sparkles else R.drawable.home,
                         enabled = false,
                         showIcon = true,
                         modifier = Modifier,
@@ -123,31 +123,31 @@ fun  QuickPicsSettings() {
                 settingsItem(
                     isHeader = true
                 ) {
-                    SettingsEntryGroupText(title = stringResource(R.string.quick_picks))
+                    SettingsEntryGroupText(title = stringResource(R.string.home))
                 }
 
                 settingsItem {
+//                    SwitchSettingEntry(
+//                        offline = false,
+//                        title = stringResource(R.string.enable_quick_picks_page),
+//                        text = "",
+//                        isChecked = enableQuickPicksPage,
+//                        onCheckedChange = {
+//                            enableQuickPicksPage = it
+//                        }
+//                    )
+
                     SwitchSettingEntry(
                         offline = false,
-                        title = stringResource(R.string.enable_quick_picks_page),
-                        text = "",
-                        isChecked = enableQuickPicksPage,
+                        title = "${stringResource(R.string.show)} ${stringResource(R.string.listener_levels)}",
+                        text = stringResource(R.string.disable_if_you_do_not_want_to_see) + " " + stringResource(
+                            R.string.listener_levels
+                        ),
+                        isChecked = showListenerLevels,
                         onCheckedChange = {
-                            enableQuickPicksPage = it
+                            showListenerLevels = it
                         }
                     )
-
-                    //SettingsGroupSpacer()
-                    /*
-                SwitchSettingEntry(
-                    title = stringResource(R.string.show_actions_bar),
-                    text = "",
-                    isChecked = showActionsBar,
-                    onCheckedChange = {
-                        showActionsBar = it
-                    }
-                )
-                 */
 
                     SwitchSettingEntry(
                         offline = false,

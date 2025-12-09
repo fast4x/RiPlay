@@ -135,6 +135,7 @@ import it.fast4x.riplay.ui.items.VideoItem
 import it.fast4x.riplay.ui.screens.settings.isLoggedIn
 import it.fast4x.riplay.utils.asVideoMediaItem
 import it.fast4x.riplay.extensions.preferences.quickPicsHomePageKey
+import it.fast4x.riplay.extensions.preferences.showListenerLevelsKey
 import it.fast4x.riplay.utils.forcePlay
 import timber.log.Timber
 import kotlin.time.Duration
@@ -224,7 +225,7 @@ fun HomePage(
     )
     val showTips by rememberPreference(showTipsKey, true)
     val showCharts by rememberPreference(showChartsKey, true)
-
+    val showListenerLevels by rememberPreference(showListenerLevelsKey, true)
     val refreshScope = rememberCoroutineScope()
     val now = System.currentTimeMillis()
     val last50Year: Duration = 18250.days
@@ -475,7 +476,8 @@ fun HomePage(
 
                 WelcomeMessage()
 
-                ListenerLevelBadges(navController)
+                if (showListenerLevels)
+                    ListenerLevelBadges(navController)
 
 
                 if (showTips) {
