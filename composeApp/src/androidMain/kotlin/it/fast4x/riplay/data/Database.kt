@@ -2720,9 +2720,9 @@ interface Database {
     @Transaction
     @Query("SELECT Song.*, ((SUM(Event.playTime) / 60) / 1000) as minutes FROM Event INNER JOIN Song ON Song.id = songId WHERE " +
             "CAST(strftime('%Y',Event.timestamp / 1000,'unixepoch') as INTEGER) = :year " +
-            "GROUP BY songId  ORDER BY SUM(Event.playTime) DESC LIMIT 1")
+            "GROUP BY songId  ORDER BY SUM(Event.playTime) DESC LIMIT :limit")
     @RewriteQueriesToDropUnusedColumns
-    fun songMostListenedByYear(year: Long): Flow<SongMostListened?>
+    fun songMostListenedByYear(year: Long, limit: Int = 1): Flow<List<SongMostListened?>>
 
     @Transaction
     @Query("SELECT Album.*, ((SUM(Event.playTime) / 60) / 1000) as minutes FROM Album " +
@@ -2730,9 +2730,9 @@ interface Database {
             "INNER JOIN Song ON Song.id = SongAlbumMap.songId " +
             "INNER JOIN Event ON Event.songId = Song.id " +
             "WHERE CAST(strftime('%Y',Event.timestamp / 1000,'unixepoch') as INTEGER) = :year " +
-            "GROUP BY Album.id ORDER BY SUM(Event.playTime) DESC LIMIT 1")
+            "GROUP BY Album.id ORDER BY SUM(Event.playTime) DESC LIMIT :limit")
     @RewriteQueriesToDropUnusedColumns
-    fun albumMostListenedByYear(year: Long): Flow<AlbumMostListened?>
+    fun albumMostListenedByYear(year: Long, limit: Int = 1): Flow<List<AlbumMostListened?>>
 
     @Transaction
     @Query("SELECT Playlist.*, ((SUM(Event.playTime) / 60) / 1000) as minutes, COUNT(DISTINCT SongPlaylistMap.songId) AS songs FROM Playlist " +
@@ -2740,13 +2740,13 @@ interface Database {
             "INNER JOIN Song ON Song.id = SongPlaylistMap.songId " +
             "INNER JOIN Event ON Event.songId = Song.id " +
             "WHERE CAST(strftime('%Y',Event.timestamp / 1000,'unixepoch') as INTEGER) = :year " +
-            "GROUP BY Playlist.id ORDER BY SUM(Event.playTime) DESC LIMIT 1")
+            "GROUP BY Playlist.id ORDER BY SUM(Event.playTime) DESC LIMIT :limit")
     @RewriteQueriesToDropUnusedColumns
-    fun playlistMostListenedByYear(year: Long): Flow<PlaylistMostListened?>
+    fun playlistMostListenedByYear(year: Long, limit: Int = 1): Flow<List<PlaylistMostListened?>>
 
     @Transaction
     @Query("SELECT Artist.*, ((SUM(Event.playTime) / 60) / 1000) as minutes FROM Artist " +
-            "INNER JOIN Song ON Song.artistsText = Artist.name " +
+            "INNER JOIN Song ON Artist.name LIKE '%' || Song.artistsText || '%'  " +
             "INNER JOIN Event ON Event.songId = Song.id " +
             "WHERE CAST(strftime('%Y',Event.timestamp / 1000,'unixepoch') as INTEGER) = :year " +
             "GROUP BY Artist.id ORDER BY SUM(Event.playTime) DESC LIMIT :limit")

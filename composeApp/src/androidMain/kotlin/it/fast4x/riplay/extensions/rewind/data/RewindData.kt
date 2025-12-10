@@ -185,20 +185,20 @@ fun buildRewindState(): RewindState {
     val y by remember { mutableLongStateOf( ym?.substring(0,4)?.toLong() ?: 0) }
     val m by remember { mutableLongStateOf( ym?.substring(5,7)?.toLong() ?: 0) }
     val songMostListened = remember {
-        Database.songMostListenedByYear(y)
+        Database.songMostListenedByYear(y, 2)
     }.collectAsState(initial = null, context = Dispatchers.IO)
 
     Timber.d("RewindData: songMostListened: $songMostListened")
 
     val albumMostListened = remember {
-        Database.albumMostListenedByYear(y)
+        Database.albumMostListenedByYear(y, 2)
     }.collectAsState(initial = null, context = Dispatchers.IO)
 
     Timber.d("RewindData: albumMostListened: $albumMostListened")
 
 
     val playlistMostListened = remember {
-        Database.playlistMostListenedByYear(y)
+        Database.playlistMostListenedByYear(y, 2)
     }.collectAsState(initial = null, context = Dispatchers.IO)
 
     Timber.d("RewindData: playlistMostListened: $playlistMostListened")
@@ -213,10 +213,10 @@ fun buildRewindState(): RewindState {
 
     return RewindState(
         song = RewindSlide.SongAchievement(
-            songTitle = songMostListened.value?.song?.title ?: "",
-            artistName = songMostListened.value?.song?.artistsText ?: "",
-            albumArtUri = (songMostListened.value?.song?.thumbnailUrl ?: "").toUri(),
-            level = when (songMostListened.value?.minutes) {
+            songTitle = songMostListened.value?.firstOrNull()?.song?.title ?: "",
+            artistName = songMostListened.value?.firstOrNull()?.song?.artistsText ?: "",
+            albumArtUri = (songMostListened.value?.firstOrNull()?.song?.thumbnailUrl ?: "").toUri(),
+            level = when (songMostListened.value?.firstOrNull()?.minutes) {
                 in 0L..200L  -> SongLevel.OBSESSION
                 in 201L..500L -> SongLevel.ANTHEM
                 in 501L..1000L -> SongLevel.SOUNDTRACK
@@ -228,10 +228,10 @@ fun buildRewindState(): RewindState {
             )
         ),
         album = RewindSlide.AlbumAchievement(
-            albumTitle = albumMostListened.value?.album?.title ?: "",
-            artistName = albumMostListened.value?.album?.authorsText ?: "",
-            albumArtUri = (albumMostListened.value?.album?.thumbnailUrl ?: "").toUri(),
-            level = when (albumMostListened.value?.minutes) {
+            albumTitle = albumMostListened.value?.firstOrNull()?.album?.title ?: "",
+            artistName = albumMostListened.value?.firstOrNull()?.album?.authorsText ?: "",
+            albumArtUri = (albumMostListened.value?.firstOrNull()?.album?.thumbnailUrl ?: "").toUri(),
+            level = when (albumMostListened.value?.firstOrNull()?.minutes) {
                 in 0L..1000L -> AlbumLevel.DEEP_DIVE
                 in 1001L..2500L -> AlbumLevel.ON_REPEAT
                 in 2501L..5000L -> AlbumLevel.RESIDENT
@@ -243,11 +243,11 @@ fun buildRewindState(): RewindState {
             )
         ),
         playlist = RewindSlide.PlaylistAchievement(
-            playlist = playlistMostListened.value?.playlist,
-            playlistName = playlistMostListened.value?.playlist?.name ?: "",
-            songCount = playlistMostListened.value?.songs ?: 0,
-            totalMinutes = playlistMostListened.value?.minutes ?: 0,
-            level = when (playlistMostListened.value?.minutes) {
+            playlist = playlistMostListened.value?.firstOrNull()?.playlist,
+            playlistName = playlistMostListened.value?.firstOrNull()?.playlist?.name ?: "",
+            songCount = playlistMostListened.value?.firstOrNull()?.songs ?: 0,
+            totalMinutes = playlistMostListened.value?.firstOrNull()?.minutes ?: 0,
+            level = when (playlistMostListened.value?.firstOrNull()?.minutes) {
                 in  0L..500L -> PlaylistLevel.CURATOR
                 in 501L..1500L -> PlaylistLevel.MASTERMIND
                 in 1501L..3000L -> PlaylistLevel.PHENOMENON
