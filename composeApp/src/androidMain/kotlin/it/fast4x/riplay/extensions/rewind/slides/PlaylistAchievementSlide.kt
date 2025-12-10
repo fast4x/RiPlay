@@ -5,11 +5,14 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -32,6 +35,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.mikepenz.hypnoticcanvas.shaderBackground
+import com.mikepenz.hypnoticcanvas.shaders.GradientFlow
+import com.mikepenz.hypnoticcanvas.shaders.Stripy
 import it.fast4x.riplay.R
 import it.fast4x.riplay.commonutils.cleanPrefix
 import it.fast4x.riplay.extensions.rewind.data.AnimatedContent
@@ -57,15 +63,16 @@ fun PlaylistAchievementSlide(slide: RewindSlide.PlaylistAchievement, isPageActiv
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(slide.backgroundBrush)
-            .padding(24.dp),
+            .shaderBackground(GradientFlow),
+//            .background(slide.backgroundBrush)
+//            .padding(vertical = 24.dp),
         contentAlignment = Alignment.Center
     ) {
         Text(
             text = slide.title,
             color = Color.White,
             fontSize = 24.sp,
-            modifier = Modifier.align(Alignment.TopCenter)
+            modifier = Modifier.align(Alignment.TopCenter).padding(WindowInsets.systemBars.asPaddingValues().calculateTopPadding())
         )
 
         Column(

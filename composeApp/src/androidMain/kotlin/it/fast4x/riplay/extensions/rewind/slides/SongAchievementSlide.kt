@@ -19,6 +19,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
+import com.mikepenz.hypnoticcanvas.shaderBackground
+import com.mikepenz.hypnoticcanvas.shaders.BlackCherryCosmos
+import com.mikepenz.hypnoticcanvas.shaders.BubbleRings
+import com.mikepenz.hypnoticcanvas.shaders.Heat
 import it.fast4x.riplay.commonutils.thumbnail
 import it.fast4x.riplay.extensions.rewind.data.AnimatedContent
 import it.fast4x.riplay.extensions.rewind.data.RewindSlide
@@ -41,8 +45,9 @@ fun SongAchievementSlide(slide: RewindSlide.SongAchievement, isPageActive: Boole
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(slide.backgroundBrush)
-            .padding(24.dp),
+            //.background(slide.backgroundBrush)
+            //.padding(24.dp)
+            .shaderBackground(Heat()),
         contentAlignment = Alignment.Center
     ) {
 
@@ -50,7 +55,7 @@ fun SongAchievementSlide(slide: RewindSlide.SongAchievement, isPageActive: Boole
             text = slide.title,
             color = Color.White,
             fontSize = 24.sp,
-            modifier = Modifier.align(Alignment.TopCenter)
+            modifier = Modifier.align(Alignment.TopCenter).padding(WindowInsets.systemBars.asPaddingValues().calculateTopPadding())
         )
 
         Column(

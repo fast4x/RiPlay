@@ -89,23 +89,23 @@ enum class SongLevel(val title: String, val goal: String, val description: Strin
     OBSESSION(
         title = "You have an Obsession",
         goal = "Listened to more than %s minutes",
-        description = "This song was the soundtrack to your year. An obsession you couldn't stop listening to.",
+        description = "This song was the soundtrack to your year. \n An obsession you couldn't stop listening to.",
     ),
     ANTHEM(
         title = "It's your Anthem",
         goal = "Listened to more than %s minutes",
-        description = "It's not just a song, it's your anthem. It defined your summer, your winter, your life.",
+        description = "It's not just a song, it's your anthem. \n It defined your summer, your winter, your life.",
 
     ),
     SOUNDTRACK(
         title = "It's your Soundtrack",
         goal = "Listened to more than %s minutes",
-        description = "This song isn't just an anthem, it's the soundtrack to your life. The rhythm that accompanies your days.",
+        description = "This song isn't just an anthem, it's the soundtrack to your life. \n The rhythm that accompanies your days.",
     ),
     ETERNAL_FLAME(
         title = "You are an Eternal Flame",
         goal = "Listened to more than %s minutes",
-        description = "You and this song are one and the same. An eternal flame burning in your musical heart. A legend.",
+        description = "You and this song are one and the same. \n An eternal flame burning in your musical heart. \n A legend.",
     ),
     UNDEFINED(
         title = "Ops",
@@ -119,22 +119,22 @@ enum class AlbumLevel(val title: String, val goal: String, val description: Stri
     DEEP_DIVE(
         title = "You love conducting a Deep Dive",
         goal = "Listened to for over %s minutes",
-        description = "You didn't stop at the singles. You dove deep into this masterpiece, note by note.",
+        description = "You didn't stop at the singles. \n You dove deep into this masterpiece, note by note.",
     ),
     ON_REPEAT(
         title = "You listen to it On Repeat",
         goal = "Listened to for over %s minutes",
-        description = "This album was on repeat for weeks. You know every word, every pause, every beat.",
+        description = "This album was on repeat for weeks. \n You know every word, every pause, every beat.",
     ),
     RESIDENT(
         title = "You are a Resident",
         goal = "Listened to for over %s minutes",
-        description = "You didn't just listen to this album, you lived in it. You're not just a listener, you're a resident.",
+        description = "You didn't just listen to this album, you lived in it. \n You're not just a listener, you're a resident.",
     ),
     SANCTUARY(
         title = "It's your Sanctuary",
         goal = "Listened to for over %s minutes",
-        description = "This album is more than music, it's your sanctuary. A sacred place to return to for peace and inspiration.",
+        description = "This album is more than music, it's your sanctuary. \n A sacred place to return to for peace and inspiration.",
     ),
     UNDEFINED(
         title = "Ops",
@@ -147,23 +147,23 @@ enum class AlbumLevel(val title: String, val goal: String, val description: Stri
 enum class PlaylistLevel(val title: String, val goal: String, val description: String) {
     CURATOR(
         title = "You are a Curator",
-        goal = "Created and listened to for over %s minutes",
-        description = "You're not just a listener, you're a curator. You created the perfect soundtrack for a moment.",
+        goal = "Listened to for over %s minutes",
+        description = "You're not just a listener, you're a curator. \n You created the perfect soundtrack for a moment.",
     ),
     MASTERMIND(
         title = "You are a Mastermind",
-        goal = "Created and listened to for over %s minutes",
-        description = "Your playlist is a work of art. Maybe you should consider a career as a DJ.",
+        goal = "Listened to for over %s minutes",
+        description = "Your playlist is a work of art. \n Maybe you should consider a career as a DJ.",
     ),
     PHENOMENON(
         title = "You are a Phenomenon",
-        goal = "Created and listened to for over %s minutes",
-        description = "This playlist isn't just a list of songs, it's a phenomenon. A cultural event in your world.",
+        goal = "Listened to for over %s minutes",
+        description = "This playlist isn't just a list of songs, it's a phenomenon. \n A cultural event in your world.",
     ),
     OPUS(
         title = "You created an Opus",
-        goal = "Created and listened to for over %s minutes",
-        description = "You didn't just create a playlist, you composed a masterpiece. This is your magnum opus, your legacy.",
+        goal = "Listened to for over %s minutes",
+        description = "You didn't just create a playlist, you composed a masterpiece.\n This is your magnum opus, your legacy.",
     ),
     UNDEFINED(
         title = "Ops",
@@ -177,22 +177,22 @@ enum class ArtistLevel(val title: String, val goal: String, val description: Str
     NEW_FAVORITE(
         title = "You discover New Favorite",
         goal = "Listened to for over %s minutes",
-        description = "You discovered a new favorite and can't stop listening. The beginning of a beautiful musical story.",
+        description = "You discovered a new favorite and can't stop listening. \n The beginning of a beautiful musical story.",
     ),
     A_LIST_FAN(
         title = "You are an A-List Fan",
         goal = "Listened to for over %s minutes",
-        description = "This artist made it to your A-List. Their music is a constant and loved presence in your routine.",
+        description = "This artist made it to your A-List. \n Their music is a constant and loved presence in your routine.",
     ),
     THE_ARCHIVIST(
         title = "You are The Archivist",
         goal = "Listened to for over %s minutes",
-        description = "You don't just stick to the hit singles. You've explored every corner of their discography, becoming a true expert.",
+        description = "You don't just stick to the hit singles. \n You've explored every corner of their discography, becoming a true expert.",
     ),
     THE_DEVOTEE(
         title = "You are The Devoted",
         goal = "Listened to for over %s minutes",
-        description = "This artist's music is more than just sound, it's a part of you. A deep and unbreakable bond.",
+        description = "This artist's music is more than just sound, it's a part of you. \n A deep and unbreakable bond.",
     ),
     UNDEFINED(
         title = "Ops",

@@ -33,6 +33,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
+import com.mikepenz.hypnoticcanvas.shaderBackground
+import com.mikepenz.hypnoticcanvas.shaders.Heat
+import com.mikepenz.hypnoticcanvas.shaders.Stage
 import it.fast4x.riplay.extensions.rewind.data.AnimatedContent
 import it.fast4x.riplay.extensions.rewind.data.RewindSlide
 import it.fast4x.riplay.ui.styling.Dimensions
@@ -56,8 +59,9 @@ fun AlbumAchievementSlide(slide: RewindSlide.AlbumAchievement, isPageActive: Boo
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(slide.backgroundBrush)
-            .padding(vertical = 24.dp),
+            .shaderBackground(Stage),
+//            .background(slide.backgroundBrush)
+//            .padding(vertical = 24.dp),
         contentAlignment = Alignment.Center
     ) {
 
@@ -65,7 +69,7 @@ fun AlbumAchievementSlide(slide: RewindSlide.AlbumAchievement, isPageActive: Boo
             text = slide.title,
             color = Color.White,
             fontSize = 24.sp,
-            modifier = Modifier.align(Alignment.TopCenter)
+            modifier = Modifier.align(Alignment.TopCenter).padding(WindowInsets.systemBars.asPaddingValues().calculateTopPadding())
         )
 
         Column(
