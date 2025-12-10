@@ -1,6 +1,5 @@
 package it.fast4x.riplay.extensions.rewind.slides
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -12,7 +11,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -30,23 +28,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
-import coil.compose.rememberAsyncImagePainter
-import coil.request.ImageRequest
-import it.fast4x.riplay.commonutils.thumbnail
 import it.fast4x.riplay.extensions.rewind.data.AnimatedContent
 import it.fast4x.riplay.extensions.rewind.data.RewindSlide
 import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.utils.fadingEdge
 import it.fast4x.riplay.utils.resize
 import kotlinx.coroutines.delay
-import timber.log.Timber
 
 @Composable
 fun AlbumAchievementSlide(slide: RewindSlide.AlbumAchievement, isPageActive: Boolean = false) {
@@ -64,9 +56,18 @@ fun AlbumAchievementSlide(slide: RewindSlide.AlbumAchievement, isPageActive: Boo
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(slide.backgroundBrush),
+            .background(slide.backgroundBrush)
+            .padding(vertical = 24.dp),
         contentAlignment = Alignment.Center
     ) {
+
+        Text(
+            text = slide.title,
+            color = Color.White,
+            fontSize = 24.sp,
+            modifier = Modifier.align(Alignment.TopCenter)
+        )
+
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
@@ -76,7 +77,7 @@ fun AlbumAchievementSlide(slide: RewindSlide.AlbumAchievement, isPageActive: Boo
 
             AnimatedContent(isVisible = isContentVisible, delay = 0) {
                 Text(
-                    text = "You dove deep into this album!",
+                    text = slide.level.title,
                     color = Color.White,
                     fontSize = 26.sp,
                     fontWeight = FontWeight.Bold,
@@ -141,7 +142,7 @@ fun AlbumAchievementSlide(slide: RewindSlide.AlbumAchievement, isPageActive: Boo
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Text(
-                            text = slide.level.goal,
+                            text = slide.level.goal.replace("%s", slide.minutesListened.toString(), true),
                             color = Color.White,
                             fontSize = 18.sp,
                             fontWeight = FontWeight.SemiBold

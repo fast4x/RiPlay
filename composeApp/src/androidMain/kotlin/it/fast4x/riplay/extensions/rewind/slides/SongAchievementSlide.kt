@@ -12,21 +12,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil.compose.AsyncImage
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
 import it.fast4x.riplay.commonutils.thumbnail
 import it.fast4x.riplay.extensions.rewind.data.AnimatedContent
 import it.fast4x.riplay.extensions.rewind.data.RewindSlide
 import kotlinx.coroutines.delay
-import timber.log.Timber
-import kotlin.toString
 
 @Composable
 fun SongAchievementSlide(slide: RewindSlide.SongAchievement, isPageActive: Boolean = false) {
@@ -49,6 +45,14 @@ fun SongAchievementSlide(slide: RewindSlide.SongAchievement, isPageActive: Boole
             .padding(24.dp),
         contentAlignment = Alignment.Center
     ) {
+
+        Text(
+            text = slide.title,
+            color = Color.White,
+            fontSize = 24.sp,
+            modifier = Modifier.align(Alignment.TopCenter)
+        )
+
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
@@ -56,9 +60,10 @@ fun SongAchievementSlide(slide: RewindSlide.SongAchievement, isPageActive: Boole
                 .verticalScroll(rememberScrollState())
         ) {
 
-            AnimatedContent(isVisible = isContentVisible, delay = 0) {
+
+            AnimatedContent(isVisible = isContentVisible, delay = 250) {
                 Text(
-                    text = "You have reached a new level with this song!",
+                    text = slide.level.title,
                     color = Color.White,
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Bold,
@@ -129,7 +134,7 @@ fun SongAchievementSlide(slide: RewindSlide.SongAchievement, isPageActive: Boole
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Text(
-                            text = slide.level.goal,
+                            text = slide.level.goal.replace("%s", slide.minutesListened.toString(), true),
                             color = Color.White,
                             fontSize = 18.sp,
                             fontWeight = FontWeight.SemiBold

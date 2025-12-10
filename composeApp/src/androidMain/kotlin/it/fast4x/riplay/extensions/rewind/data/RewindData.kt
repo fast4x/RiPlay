@@ -10,7 +10,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.core.net.toUri
-import it.fast4x.riplay.R
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.data.models.Playlist
 import it.fast4x.riplay.utils.getCalculatedMonths
@@ -19,13 +18,17 @@ import timber.log.Timber
 
 
 sealed class RewindSlide(val id: Int, val backgroundBrush: Brush) {
+    abstract val title: String
+
 
     data class IntroSlide(
+        override val title: String,
         val brush: Brush
     ) : RewindSlide(0, brush)
 
 
     data class TopArtist(
+        override val title: String,
         val artistName: String,
         val artistImageUri: Uri,
         val minutesListened: Long,
@@ -35,139 +38,166 @@ sealed class RewindSlide(val id: Int, val backgroundBrush: Brush) {
 
 
     data class SongAchievement(
+        override val title: String,
         val songTitle: String,
         val artistName: String,
         val albumArtUri: Uri,
         val level: SongLevel,
-        val brush: Brush
+        val brush: Brush,
+        val minutesListened: Long,
     ) : RewindSlide(2, brush)
 
 
     data class AlbumAchievement(
+        override val title: String,
         val albumTitle: String,
         val artistName: String,
         val albumArtUri: Uri,
         val level: AlbumLevel,
-        val brush: Brush
+        val brush: Brush,
+        val minutesListened: Long,
     ) : RewindSlide(3, brush)
 
 
     data class PlaylistAchievement(
+        override val title: String,
         val playlist: Playlist?,
         val playlistName: String,
         val songCount: Int,
         val totalMinutes: Long,
         val level: PlaylistLevel,
-        val brush: Brush
+        val brush: Brush,
     ) : RewindSlide(4, brush)
 
     data class ArtistAchievement(
+        override val title: String,
         val artistName: String,
         val artistImageUri: Uri,
         val minutesListened: Long,
         val level: ArtistLevel,
-        val brush: Brush
+        val brush: Brush,
     ) : RewindSlide(5, brush)
 
     data class OutroSlide(
+        override val title: String,
         val brush: Brush
     ) : RewindSlide(99, brush)
 }
 
 
-enum class SongLevel(val goal: String, val description: String) {
+enum class SongLevel(val title: String, val goal: String, val description: String) {
     OBSESSION(
-        goal = "Listened to more than 200 minutes",
+        title = "You have an Obsession",
+        goal = "Listened to more than %s minutes",
         description = "This song was the soundtrack to your year. An obsession you couldn't stop listening to.",
     ),
     ANTHEM(
-        goal = "Listened to more than 500 minutes",
+        title = "It's your Anthem",
+        goal = "Listened to more than %s minutes",
         description = "It's not just a song, it's your anthem. It defined your summer, your winter, your life.",
 
     ),
     SOUNDTRACK(
-        goal = "Listened to more than 1000 minutes",
+        title = "It's your Soundtrack",
+        goal = "Listened to more than %s minutes",
         description = "This song isn't just an anthem, it's the soundtrack to your life. The rhythm that accompanies your days.",
     ),
     ETERNAL_FLAME(
-        goal = "Listened to more than 3000 minutes",
+        title = "You are an Eternal Flame",
+        goal = "Listened to more than %s minutes",
         description = "You and this song are one and the same. An eternal flame burning in your musical heart. A legend.",
     ),
     UNDEFINED(
-        goal = "Undefined",
-        description = "Undefined",
+        title = "Ops",
+        goal = "It seems like you haven't listened to any songs",
+        description = "Nothing to see here",
     )
 }
 
 
-enum class AlbumLevel(val goal: String, val description: String) {
+enum class AlbumLevel(val title: String, val goal: String, val description: String) {
     DEEP_DIVE(
-        goal = "Listened to for over 1000 minutes",
+        title = "You love conducting a Deep Dive",
+        goal = "Listened to for over %s minutes",
         description = "You didn't stop at the singles. You dove deep into this masterpiece, note by note.",
     ),
     ON_REPEAT(
-        goal = "Listened to for over 2500 minutes",
+        title = "You listen to it On Repeat",
+        goal = "Listened to for over %s minutes",
         description = "This album was on repeat for weeks. You know every word, every pause, every beat.",
     ),
     RESIDENT(
-        goal = "Listened to for over 5000 minutes",
+        title = "You are a Resident",
+        goal = "Listened to for over %s minutes",
         description = "You didn't just listen to this album, you lived in it. You're not just a listener, you're a resident.",
     ),
     SANCTUARY(
-        goal = "Listened to for over 8000 minutes",
+        title = "It's your Sanctuary",
+        goal = "Listened to for over %s minutes",
         description = "This album is more than music, it's your sanctuary. A sacred place to return to for peace and inspiration.",
     ),
     UNDEFINED(
-        goal = "Undefined",
-        description = "Undefined",
+        title = "Ops",
+        goal = "It seems like you haven't listened to any albums",
+        description = "Nothing to see here",
     )
 }
 
 
-enum class PlaylistLevel(val goal: String, val description: String) {
+enum class PlaylistLevel(val title: String, val goal: String, val description: String) {
     CURATOR(
-        goal = "Created and listened to for over 500 minutes",
+        title = "You are a Curator",
+        goal = "Created and listened to for over %s minutes",
         description = "You're not just a listener, you're a curator. You created the perfect soundtrack for a moment.",
     ),
     MASTERMIND(
-        goal = "Created and listened to for over 1500 minutes",
+        title = "You are a Mastermind",
+        goal = "Created and listened to for over %s minutes",
         description = "Your playlist is a work of art. Maybe you should consider a career as a DJ.",
     ),
     PHENOMENON(
-        goal = "Created and listened to for over 3000 minutes",
+        title = "You are a Phenomenon",
+        goal = "Created and listened to for over %s minutes",
         description = "This playlist isn't just a list of songs, it's a phenomenon. A cultural event in your world.",
     ),
     OPUS(
-        goal = "Created and listened to for over 5000 minutes",
+        title = "You created an Opus",
+        goal = "Created and listened to for over %s minutes",
         description = "You didn't just create a playlist, you composed a masterpiece. This is your magnum opus, your legacy.",
     ),
     UNDEFINED(
-        goal = "Undefined",
-        description = "Undefined",
+        title = "Ops",
+        goal = "It seems like you haven't listened to any playlists",
+        description = "Nothing to see here",
     )
 }
 
 
-enum class ArtistLevel(val goal: String, val description: String) {
+enum class ArtistLevel(val title: String, val goal: String, val description: String) {
     NEW_FAVORITE(
-        goal = "Listened to for over 2,000 minutes",
+        title = "You discover New Favorite",
+        goal = "Listened to for over %s minutes",
         description = "You discovered a new favorite and can't stop listening. The beginning of a beautiful musical story.",
     ),
     A_LIST_FAN(
-        goal = "Listened to for over 5,000 minutes",
+        title = "You are an A-List Fan",
+        goal = "Listened to for over %s minutes",
         description = "This artist made it to your A-List. Their music is a constant and loved presence in your routine.",
     ),
     THE_ARCHIVIST(
-        goal = "Listened to for over 10,000 minutes",
+        title = "You are The Archivist",
+        goal = "Listened to for over %s minutes",
         description = "You don't just stick to the hit singles. You've explored every corner of their discography, becoming a true expert.",
     ),
     THE_DEVOTEE(
-        goal = "Listened to for over 20,000 minutes",
+        title = "You are The Devoted",
+        goal = "Listened to for over %s minutes",
         description = "This artist's music is more than just sound, it's a part of you. A deep and unbreakable bond.",
     ),
     UNDEFINED(
-        goal = "Undefined",
-        description = "Undefined",
+        title = "Ops",
+        goal = "It seems like you haven't listened to any artists",
+        description = "Nothing to see here",
     )
 }
 
@@ -213,6 +243,7 @@ fun buildRewindState(): RewindState {
 
     return RewindState(
         song = RewindSlide.SongAchievement(
+            title = "Your song",
             songTitle = songMostListened.value?.firstOrNull()?.song?.title ?: "",
             artistName = songMostListened.value?.firstOrNull()?.song?.artistsText ?: "",
             albumArtUri = (songMostListened.value?.firstOrNull()?.song?.thumbnailUrl ?: "").toUri(),
@@ -225,9 +256,11 @@ fun buildRewindState(): RewindState {
             },
             brush = Brush.verticalGradient(
                 colors = listOf(Color(0xFF1DB954), Color(0xFFBBA0A0))
-            )
+            ),
+            minutesListened = songMostListened.value?.firstOrNull()?.minutes ?: 0
         ),
         album = RewindSlide.AlbumAchievement(
+            title = "Your album",
             albumTitle = albumMostListened.value?.firstOrNull()?.album?.title ?: "",
             artistName = albumMostListened.value?.firstOrNull()?.album?.authorsText ?: "",
             albumArtUri = (albumMostListened.value?.firstOrNull()?.album?.thumbnailUrl ?: "").toUri(),
@@ -240,9 +273,11 @@ fun buildRewindState(): RewindState {
             },
             brush = Brush.verticalGradient(
                 colors = listOf(Color(0xFF2196F3), Color(0xFF3F51B5))
-            )
+            ),
+            minutesListened = albumMostListened.value?.firstOrNull()?.minutes ?: 0
         ),
         playlist = RewindSlide.PlaylistAchievement(
+            title = "Your playlist",
             playlist = playlistMostListened.value?.firstOrNull()?.playlist,
             playlistName = playlistMostListened.value?.firstOrNull()?.playlist?.name ?: "",
             songCount = playlistMostListened.value?.firstOrNull()?.songs ?: 0,
@@ -259,6 +294,7 @@ fun buildRewindState(): RewindState {
             )
         ),
         artist = RewindSlide.ArtistAchievement(
+            title = "Your artist",
             artistName = artistMostListened.value?.firstOrNull()?.artist?.name ?: "",
             artistImageUri = (artistMostListened.value?.firstOrNull()?.artist?.thumbnailUrl ?: "").toUri(),
             minutesListened = artistMostListened.value?.firstOrNull()?.minutes ?: 0,
@@ -285,6 +321,7 @@ fun getRewindSlides(): List<RewindSlide> {
 
     return listOf(
         RewindSlide.IntroSlide(
+            title = "Rewind",
             brush = Brush.verticalGradient(
                 colors = listOf(Color(0xFFE7D858), Color(0xFF733B81))
             )
@@ -304,6 +341,7 @@ fun getRewindSlides(): List<RewindSlide> {
 //            )
 //        ),
         RewindSlide.OutroSlide(
+            title = "Rewind",
             brush = Brush.verticalGradient(
                 colors = listOf(Color(0xFFE91E63), Color(0xFF9C27B0), Color(0xFF3F51B5))
             )

@@ -37,7 +37,6 @@ import it.fast4x.riplay.commonutils.cleanPrefix
 import it.fast4x.riplay.extensions.rewind.data.AnimatedContent
 import it.fast4x.riplay.extensions.rewind.data.RewindSlide
 import it.fast4x.riplay.ui.components.themed.Playlist
-import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.ui.styling.px
 import kotlinx.coroutines.delay
 
@@ -62,6 +61,13 @@ fun PlaylistAchievementSlide(slide: RewindSlide.PlaylistAchievement, isPageActiv
             .padding(24.dp),
         contentAlignment = Alignment.Center
     ) {
+        Text(
+            text = slide.title,
+            color = Color.White,
+            fontSize = 24.sp,
+            modifier = Modifier.align(Alignment.TopCenter)
+        )
+
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
@@ -71,7 +77,7 @@ fun PlaylistAchievementSlide(slide: RewindSlide.PlaylistAchievement, isPageActiv
 
             AnimatedContent(isVisible = isContentVisible, delay = 0) {
                 Text(
-                    text = "You are a true music lover!",
+                    text = slide.level.title,
                     color = Color.White,
                     fontSize = 26.sp,
                     fontWeight = FontWeight.Bold,
@@ -150,7 +156,7 @@ fun PlaylistAchievementSlide(slide: RewindSlide.PlaylistAchievement, isPageActiv
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Text(
-                            text = slide.level.goal,
+                            text = slide.level.goal.replace("%s", slide.totalMinutes.toString(), true),
                             color = Color.White,
                             fontSize = 18.sp,
                             fontWeight = FontWeight.SemiBold
