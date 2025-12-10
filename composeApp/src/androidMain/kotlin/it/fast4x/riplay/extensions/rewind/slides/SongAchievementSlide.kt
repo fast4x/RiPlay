@@ -1,22 +1,32 @@
 package it.fast4x.riplay.extensions.rewind.slides
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import it.fast4x.riplay.extensions.rewind.data.AnimatedItem
+import coil.compose.AsyncImage
+import coil.compose.rememberAsyncImagePainter
+import coil.request.ImageRequest
+import it.fast4x.riplay.commonutils.thumbnail
+import it.fast4x.riplay.extensions.rewind.data.AnimatedContent
 import it.fast4x.riplay.extensions.rewind.data.RewindSlide
 import kotlinx.coroutines.delay
+import timber.log.Timber
+import kotlin.toString
 
 @Composable
 fun SongAchievementSlide(slide: RewindSlide.SongAchievement, isPageActive: Boolean = false) {
@@ -43,11 +53,12 @@ fun SongAchievementSlide(slide: RewindSlide.SongAchievement, isPageActive: Boole
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
             modifier = Modifier.fillMaxWidth()
+                .verticalScroll(rememberScrollState())
         ) {
 
-            AnimatedItem(isVisible = isContentVisible, delay = 0) {
+            AnimatedContent(isVisible = isContentVisible, delay = 0) {
                 Text(
-                    text = "You have reached a new level!",
+                    text = "You have reached a new level with this song!",
                     color = Color.White,
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Bold,
@@ -58,26 +69,30 @@ fun SongAchievementSlide(slide: RewindSlide.SongAchievement, isPageActive: Boole
             Spacer(modifier = Modifier.height(16.dp))
 
 
-            AnimatedItem(isVisible = isContentVisible, delay = 500) {
+            AnimatedContent(isVisible = isContentVisible, delay = 500) {
                 Box(
                     modifier = Modifier
-                        .size(220.dp)
+                        .size(320.dp)
                         .clip(RoundedCornerShape(16.dp))
                 ) {
-
-                    Icon(
-                        painter = painterResource(id = slide.albumArtRes),
-                        contentDescription = slide.songTitle,
-                        modifier = Modifier.fillMaxSize(),
-                        tint = Color.Gray.copy(alpha = 0.4f)
+                    val coverPainter = rememberAsyncImagePainter(
+                        model = ImageRequest.Builder(LocalContext.current)
+                            .data(slide.albumArtUri.toString().thumbnail(1200))
+                            .build()
                     )
+                    Image(
+                        painter = coverPainter,
+                        contentDescription = null,
+                        modifier = Modifier.fillMaxSize(),
+                    )
+
                 }
             }
 
             Spacer(modifier = Modifier.height(24.dp))
 
 
-            AnimatedItem(isVisible = isContentVisible, delay = 1000) {
+            AnimatedContent(isVisible = isContentVisible, delay = 1000) {
                 Text(
                     text = slide.songTitle,
                     color = Color.White,
@@ -90,7 +105,7 @@ fun SongAchievementSlide(slide: RewindSlide.SongAchievement, isPageActive: Boole
             Spacer(modifier = Modifier.height(8.dp))
 
 
-            AnimatedItem(isVisible = isContentVisible, delay = 1500) {
+            AnimatedContent(isVisible = isContentVisible, delay = 1500) {
                 Text(
                     text = slide.artistName,
                     color = Color.White.copy(alpha = 0.8f),
@@ -102,7 +117,7 @@ fun SongAchievementSlide(slide: RewindSlide.SongAchievement, isPageActive: Boole
             Spacer(modifier = Modifier.height(32.dp))
 
 
-            AnimatedItem(isVisible = isContentVisible, delay = 2000) {
+            AnimatedContent(isVisible = isContentVisible, delay = 2000) {
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()

@@ -33,4 +33,11 @@ data class Playlist(
     val isMonthly: Boolean
         get() = name.startsWith(MONTHLY_PREFIX)
 
+    fun toPlaylistPreview(songs: Int): PlaylistPreview {
+        return PlaylistPreview(
+            playlist = this,
+            songCount = songs
+        )
+    }
+
 }

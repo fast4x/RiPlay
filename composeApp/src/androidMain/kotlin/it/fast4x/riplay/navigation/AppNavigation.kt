@@ -151,7 +151,7 @@ fun AppNavigation(
 
     NavHost(
         navController = navController,
-        startDestination = NavRoutes.rewind.name,
+        startDestination = NavRoutes.home.name,
         enterTransition = {
             when (transitionEffect) {
                 TransitionEffect.None -> EnterTransition.None
@@ -206,8 +206,9 @@ fun AppNavigation(
 
 
         composable(route = NavRoutes.rewind.name) {
-            //RewindScreen(pages = getRewindPages())
-            RewindScreen(pages = getRewindSlides())
+            modalBottomSheetPage {
+                RewindScreen(pages = getRewindSlides())
+            }
         }
 
         composable(route = NavRoutes.listenerLevel.name) {

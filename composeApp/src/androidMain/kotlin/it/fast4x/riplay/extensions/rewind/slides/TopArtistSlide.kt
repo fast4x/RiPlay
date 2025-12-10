@@ -14,12 +14,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import it.fast4x.riplay.extensions.rewind.data.AnimatedItem
+import coil.compose.AsyncImage
+import it.fast4x.riplay.extensions.rewind.data.AnimatedContent
 import it.fast4x.riplay.extensions.rewind.data.RewindSlide
 import kotlinx.coroutines.delay
 
@@ -50,7 +51,7 @@ fun TopArtistSlide(slide: RewindSlide.TopArtist, isPageActive: Boolean = false) 
             modifier = Modifier.fillMaxWidth()
         ) {
 
-            AnimatedItem(isVisible = isContentVisible, delay = 0) {
+            AnimatedContent(isVisible = isContentVisible, delay = 0) {
                 Text(
                     text = "Your top artist of the year",
                     color = Color.White,
@@ -63,27 +64,28 @@ fun TopArtistSlide(slide: RewindSlide.TopArtist, isPageActive: Boolean = false) 
             Spacer(modifier = Modifier.height(24.dp))
 
 
-            AnimatedItem(isVisible = isContentVisible, delay = 500) {
+            AnimatedContent(isVisible = isContentVisible, delay = 500) {
                 Box(
                     modifier = Modifier
                         .size(250.dp)
                         .clip(CircleShape)
                         .background(Color.White.copy(alpha = 0.1f), CircleShape)
                 ) {
-                    Icon(
-                        painter = painterResource(id = slide.artistImageRes),
+                    AsyncImage(
+                        model = slide.artistImageUri,
                         contentDescription = slide.artistName,
                         modifier = Modifier
                             .fillMaxSize()
                             .padding(32.dp),
-                        tint = Color.White.copy(alpha = 0.7f)
+                        colorFilter = ColorFilter.tint(Color.White.copy(alpha = 0.7f))
                     )
+
                 }
             }
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            AnimatedItem(isVisible = isContentVisible, delay = 1000) {
+            AnimatedContent(isVisible = isContentVisible, delay = 1000) {
                 Text(
                     text = slide.artistName,
                     color = Color.White,
@@ -94,7 +96,7 @@ fun TopArtistSlide(slide: RewindSlide.TopArtist, isPageActive: Boolean = false) 
             }
 
 
-            AnimatedItem(isVisible = isContentVisible, delay = 1500) {
+            AnimatedContent(isVisible = isContentVisible, delay = 1500) {
                 Text(
                     text = "${slide.minutesListened / 60} listening hours",
                     color = Color.White.copy(alpha = 0.9f),

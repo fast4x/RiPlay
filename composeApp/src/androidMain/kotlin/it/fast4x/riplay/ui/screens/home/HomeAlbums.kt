@@ -171,7 +171,7 @@ fun HomeAlbums(
             AlbumsType.Favorites -> Database.albums( sort.sortBy, sort.sortOrder ).collect { itemsToFilter = it }
             AlbumsType.Library -> Database.albumsInLibrary( sort.sortBy, sort.sortOrder ).collect { itemsToFilter = it }
             AlbumsType.OnDevice -> Database.albumsOnDevice( sort.sortBy, sort.sortOrder ).collect { itemsToFilter = it }
-            //AlbumsType.All -> Database.albumsWithSongsSaved( sort.sortBy, sort.sortOrder ).collect { items = it }
+            AlbumsType.All -> Database.albumsWithSongsSaved( sort.sortBy, sort.sortOrder ).collect { items = it }
 
         }
     }

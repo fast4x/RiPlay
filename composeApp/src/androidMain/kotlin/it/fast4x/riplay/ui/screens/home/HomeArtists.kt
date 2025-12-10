@@ -147,6 +147,9 @@ fun HomeArtists(
             ArtistsType.OnDevice -> {
                 Database.songsOnDeviceArtistsFiltered(itemsOnDisplay.map { it.id }).map{ it.map( Song::asMediaItem ) }
             }
+            ArtistsType.All -> {
+                Database.songsByArtistAsc().map { it.map { song -> song.asMediaItem } }
+            }
         }
     }
 
@@ -166,7 +169,7 @@ fun HomeArtists(
             ArtistsType.Favorites -> Database.artists( sort.sortBy, sort.sortOrder ).collect { itemsToFilter = it }
             ArtistsType.Library -> Database.artistsInLibrary( sort.sortBy, sort.sortOrder ).collect { itemsToFilter = it }
             ArtistsType.OnDevice -> Database.artistsOnDevice( sort.sortBy, sort.sortOrder ).collect { itemsToFilter = it }
-            //ArtistsType.All -> Database.artistsWithSongsSaved( sort.sortBy, sort.sortOrder ).collect { items = it }
+            ArtistsType.All -> Database.artistsWithSongsSaved( sort.sortBy, sort.sortOrder ).collect { items = it }
         }
     }
 

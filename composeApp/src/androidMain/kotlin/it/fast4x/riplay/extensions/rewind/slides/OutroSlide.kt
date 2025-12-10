@@ -15,7 +15,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import it.fast4x.riplay.R
-import it.fast4x.riplay.extensions.rewind.data.AnimatedItem
+import it.fast4x.riplay.extensions.rewind.data.AnimatedContent
 import it.fast4x.riplay.extensions.rewind.data.RewindSlide
 
 @Composable
@@ -54,7 +54,7 @@ fun OutroSlideComposable(slide: RewindSlide.OutroSlide, isPageActive: Boolean) {
             modifier = Modifier.fillMaxWidth()
         ) {
 
-            AnimatedItem(isVisible = isContentVisible, delay = 0) {
+            AnimatedContent(isVisible = isContentVisible, delay = 0) {
                 Icon(
                     painter = painterResource(id = R.drawable.heart),
                     contentDescription = "Heart",
@@ -68,7 +68,7 @@ fun OutroSlideComposable(slide: RewindSlide.OutroSlide, isPageActive: Boolean) {
             Spacer(modifier = Modifier.height(32.dp))
 
 
-            AnimatedItem(isVisible = isContentVisible, delay = 500) {
+            AnimatedContent(isVisible = isContentVisible, delay = 500) {
                 Text(
                     text = "Thank You",
                     color = Color.White,
@@ -81,7 +81,7 @@ fun OutroSlideComposable(slide: RewindSlide.OutroSlide, isPageActive: Boolean) {
             Spacer(modifier = Modifier.height(24.dp))
 
 
-            AnimatedItem(isVisible = isContentVisible, delay = 1000) {
+            AnimatedContent(isVisible = isContentVisible, delay = 1000) {
                 Text(
                     text = "The music you love is a piece of you. Sharing it is the best way to connect with others.",
                     color = Color.White.copy(alpha = 0.9f),
@@ -94,7 +94,7 @@ fun OutroSlideComposable(slide: RewindSlide.OutroSlide, isPageActive: Boolean) {
             Spacer(modifier = Modifier.height(32.dp))
 
 
-            AnimatedItem(isVisible = isContentVisible, delay = 1500) {
+            AnimatedContent(isVisible = isContentVisible, delay = 1500) {
                 Text(
                     text = "Keep listening, keep sharing, keep loving.",
                     color = Color.White,
@@ -107,7 +107,7 @@ fun OutroSlideComposable(slide: RewindSlide.OutroSlide, isPageActive: Boolean) {
             Spacer(modifier = Modifier.height(48.dp))
 
 
-            AnimatedItem(isVisible = isContentVisible, delay = 2000) {
+            AnimatedContent(isVisible = isContentVisible, delay = 2000) {
                 Text(
                     text = "RiPlay Rewind",
                     color = Color.White.copy(alpha = 0.7f),

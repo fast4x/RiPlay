@@ -5,16 +5,20 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -26,14 +30,22 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import it.fast4x.riplay.extensions.rewind.data.AnimatedItem
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
+import it.fast4x.riplay.commonutils.thumbnail
+import it.fast4x.riplay.extensions.rewind.data.AnimatedContent
 import it.fast4x.riplay.extensions.rewind.data.RewindSlide
+import it.fast4x.riplay.ui.styling.Dimensions
+import it.fast4x.riplay.utils.fadingEdge
+import it.fast4x.riplay.utils.resize
 import kotlinx.coroutines.delay
+import timber.log.Timber
 
 @Composable
 fun ArtistAchievementSlide(slide: RewindSlide.ArtistAchievement, isPageActive: Boolean) {
@@ -51,17 +63,17 @@ fun ArtistAchievementSlide(slide: RewindSlide.ArtistAchievement, isPageActive: B
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(slide.backgroundBrush)
-            .padding(24.dp),
+            .background(slide.backgroundBrush),
         contentAlignment = Alignment.Center
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
             modifier = Modifier.fillMaxWidth()
+                .verticalScroll(rememberScrollState())
         ) {
 
-            AnimatedItem(isVisible = isContentVisible, delay = 0) {
+            AnimatedContent(isVisible = isContentVisible, delay = 0) {
                 Text(
                     text = "Your devotion to an artist",
                     color = Color.White,
@@ -74,29 +86,32 @@ fun ArtistAchievementSlide(slide: RewindSlide.ArtistAchievement, isPageActive: B
             Spacer(modifier = Modifier.height(16.dp))
 
 
-            AnimatedItem(isVisible = isContentVisible, delay = 200) {
-                Box(
-                    modifier = Modifier
-                        .size(220.dp)
-                        .clip(CircleShape)
-                        .background(Color.White.copy(alpha = 0.1f), CircleShape)
-                ) {
-
-                    Icon(
-                        painter = painterResource(id = slide.artistImageRes),
-                        contentDescription = slide.artistName,
+            AnimatedContent(isVisible = isContentVisible, delay = 200, wide = true) {
+                Box{
+                    AsyncImage(
+                        model = slide.artistImageUri.toString().resize(
+                            1200,
+                            1200
+                        ),
+                        contentDescription = "loading...",
                         modifier = Modifier
-                            .fillMaxSize()
-                            .padding(32.dp),
-                        tint = Color.White.copy(alpha = 0.7f)
+                            .fillMaxWidth()
+                            .align(Alignment.Center)
+                            .fadingEdge(
+                                top = WindowInsets.systemBars
+                                    .asPaddingValues()
+                                    .calculateTopPadding() + Dimensions.fadeSpacingTop,
+                                bottom = Dimensions.fadeSpacingBottom
+                            )
                     )
+
                 }
             }
 
             Spacer(modifier = Modifier.height(24.dp))
 
 
-            AnimatedItem(isVisible = isContentVisible, delay = 500) {
+            AnimatedContent(isVisible = isContentVisible, delay = 500) {
                 Text(
                     text = slide.artistName,
                     color = Color.White,
@@ -108,7 +123,7 @@ fun ArtistAchievementSlide(slide: RewindSlide.ArtistAchievement, isPageActive: B
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            AnimatedItem(isVisible = isContentVisible, delay = 800) {
+            AnimatedContent(isVisible = isContentVisible, delay = 800) {
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()

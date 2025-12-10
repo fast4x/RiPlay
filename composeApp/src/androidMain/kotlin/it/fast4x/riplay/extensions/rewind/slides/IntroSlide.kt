@@ -15,8 +15,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import it.fast4x.riplay.R
-import it.fast4x.riplay.extensions.rewind.data.AnimatedItem
+import it.fast4x.riplay.extensions.rewind.data.AnimatedContent
 import it.fast4x.riplay.extensions.rewind.data.RewindSlide
+import it.fast4x.riplay.utils.colorPalette
 
 @Composable
 fun IntroSlide(slide: RewindSlide.IntroSlide, isPageActive: Boolean) {
@@ -55,9 +56,33 @@ fun IntroSlide(slide: RewindSlide.IntroSlide, isPageActive: Boolean) {
             modifier = Modifier.fillMaxWidth()
         ) {
 
-            AnimatedItem(isVisible = isContentVisible, delay = 0) {
+            AnimatedContent(isVisible = isContentVisible, delay = 0) {
+                Icon(
+                    painter = painterResource(id = R.drawable.app_icon),
+                    contentDescription = "RiPlay",
+                    tint = colorPalette().accent,
+                    modifier = Modifier
+                        .size(80.dp)
+                        .scale(scale)
+                )
+            }
+
+            AnimatedContent(isVisible = isContentVisible, delay = 200) {
                 Text(
-                    text = "RiPlay Rewind",
+                    text = "RiPlay",
+                    color = Color.White,
+                    fontSize = 40.sp,
+                    fontWeight = FontWeight.ExtraBold,
+                    textAlign = TextAlign.Center,
+                    lineHeight = 60.sp
+                )
+            }
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            AnimatedContent(isVisible = isContentVisible, delay = 400) {
+                Text(
+                    text = "Rewind",
                     color = Color.White,
                     fontSize = 56.sp,
                     fontWeight = FontWeight.ExtraBold,
@@ -66,10 +91,10 @@ fun IntroSlide(slide: RewindSlide.IntroSlide, isPageActive: Boolean) {
                 )
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            //Spacer(modifier = Modifier.height(16.dp))
 
 
-            AnimatedItem(isVisible = isContentVisible, delay = 500) {
+            AnimatedContent(isVisible = isContentVisible, delay = 500) {
                 Text(
                     text = "Your year in music",
                     color = Color.White.copy(alpha = 0.9f),
@@ -82,7 +107,7 @@ fun IntroSlide(slide: RewindSlide.IntroSlide, isPageActive: Boolean) {
             Spacer(modifier = Modifier.height(48.dp))
 
 
-            AnimatedItem(isVisible = isContentVisible, delay = 1000) {
+            AnimatedContent(isVisible = isContentVisible, delay = 1000) {
                 Text(
                     text = "Your listening, your discoveries and your obsessions. Get ready to relive your most unforgettable musical moments.",
                     color = Color.White.copy(alpha = 0.8f),
@@ -92,10 +117,22 @@ fun IntroSlide(slide: RewindSlide.IntroSlide, isPageActive: Boolean) {
                 )
             }
 
+            Spacer(modifier = Modifier.height(26.dp))
+
+            AnimatedContent(isVisible = isContentVisible, delay = 1200) {
+                Text(
+                    text = "Remember, your privacy is respected, all data used is yours, is only in your device and managed by you.",
+                    color = Color.White.copy(alpha = 0.9f),
+                    fontSize = 15.sp,
+                    textAlign = TextAlign.Center,
+                    lineHeight = 26.sp
+                )
+            }
+
             Spacer(modifier = Modifier.height(64.dp))
 
 
-            AnimatedItem(isVisible = isContentVisible, delay = 1500) {
+            AnimatedContent(isVisible = isContentVisible, delay = 1500) {
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {

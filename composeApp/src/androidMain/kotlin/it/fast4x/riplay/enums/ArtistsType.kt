@@ -7,8 +7,8 @@ import it.fast4x.riplay.R
 enum class ArtistsType {
     Favorites,
     Library,
-    OnDevice;
-    //All;
+    OnDevice,
+    All;
 
     val textName: String
         @Composable
@@ -16,7 +16,7 @@ enum class ArtistsType {
             Favorites -> stringResource(R.string.favorites)
             Library -> stringResource(R.string.library)
             OnDevice -> stringResource(R.string.on_device)
-            //All -> stringResource(R.string.all)
+            All -> stringResource(R.string.all)
         }
 
 }

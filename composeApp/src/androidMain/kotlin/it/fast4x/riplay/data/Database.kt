@@ -65,6 +65,10 @@ import it.fast4x.riplay.data.models.SongEntity
 import it.fast4x.riplay.data.models.SongPlaylistMap
 import it.fast4x.riplay.data.models.SongWithContentLength
 import it.fast4x.riplay.data.models.SortedSongPlaylistMap
+import it.fast4x.riplay.extensions.rewind.data.AlbumMostListened
+import it.fast4x.riplay.extensions.rewind.data.ArtistMostListened
+import it.fast4x.riplay.extensions.rewind.data.PlaylistMostListened
+import it.fast4x.riplay.extensions.rewind.data.SongMostListened
 import it.fast4x.riplay.service.LOCAL_KEY_PREFIX
 import it.fast4x.riplay.utils.appContext
 import it.fast4x.riplay.utils.isExplicit
@@ -2710,6 +2714,46 @@ interface Database {
         now: Long = System.currentTimeMillis(),
         period: Long
     ): Flow<List<SongEntity>>
+
+
+    //*****REWIND********
+    @Transaction
+    @Query("SELECT Song.*, ((SUM(Event.playTime) / 60) / 1000) as minutes FROM Event INNER JOIN Song ON Song.id = songId WHERE " +
+            "CAST(strftime('%Y',Event.timestamp / 1000,'unixepoch') as INTEGER) = :year " +
+            "GROUP BY songId  ORDER BY SUM(Event.playTime) DESC LIMIT 1")
+    @RewriteQueriesToDropUnusedColumns
+    fun songMostListenedByYear(year: Long): Flow<SongMostListened?>
+
+    @Transaction
+    @Query("SELECT Album.*, ((SUM(Event.playTime) / 60) / 1000) as minutes FROM Album " +
+            "INNER JOIN SongAlbumMap ON Album.id = SongAlbumMap.albumId " +
+            "INNER JOIN Song ON Song.id = SongAlbumMap.songId " +
+            "INNER JOIN Event ON Event.songId = Song.id " +
+            "WHERE CAST(strftime('%Y',Event.timestamp / 1000,'unixepoch') as INTEGER) = :year " +
+            "GROUP BY Album.id ORDER BY SUM(Event.playTime) DESC LIMIT 1")
+    @RewriteQueriesToDropUnusedColumns
+    fun albumMostListenedByYear(year: Long): Flow<AlbumMostListened?>
+
+    @Transaction
+    @Query("SELECT Playlist.*, ((SUM(Event.playTime) / 60) / 1000) as minutes, COUNT(DISTINCT SongPlaylistMap.songId) AS songs FROM Playlist " +
+            "INNER JOIN SongPlaylistMap ON Playlist.id = SongPlaylistMap.playlistId " +
+            "INNER JOIN Song ON Song.id = SongPlaylistMap.songId " +
+            "INNER JOIN Event ON Event.songId = Song.id " +
+            "WHERE CAST(strftime('%Y',Event.timestamp / 1000,'unixepoch') as INTEGER) = :year " +
+            "GROUP BY Playlist.id ORDER BY SUM(Event.playTime) DESC LIMIT 1")
+    @RewriteQueriesToDropUnusedColumns
+    fun playlistMostListenedByYear(year: Long): Flow<PlaylistMostListened?>
+
+    @Transaction
+    @Query("SELECT Artist.*, ((SUM(Event.playTime) / 60) / 1000) as minutes FROM Artist " +
+            "INNER JOIN Song ON Song.artistsText = Artist.name " +
+            "INNER JOIN Event ON Event.songId = Song.id " +
+            "WHERE CAST(strftime('%Y',Event.timestamp / 1000,'unixepoch') as INTEGER) = :year " +
+            "GROUP BY Artist.id ORDER BY SUM(Event.playTime) DESC LIMIT :limit")
+    @RewriteQueriesToDropUnusedColumns
+    fun artistMostListenedByYear(year: Long, limit: Int = 1): Flow<List<ArtistMostListened?>>
+    //*************
+
 
     @Transaction
     @Query("SELECT Song.* FROM Event JOIN Song ON Song.id = songId WHERE playTime > 0 and Song.id NOT LIKE '$LOCAL_KEY_PREFIX%' GROUP BY songId ORDER BY timestamp DESC LIMIT :limit")

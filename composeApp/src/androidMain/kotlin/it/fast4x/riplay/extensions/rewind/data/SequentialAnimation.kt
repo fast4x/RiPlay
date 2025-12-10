@@ -3,8 +3,11 @@ package it.fast4x.riplay.extensions.rewind.data
 import androidx.compose.animation.*
 import androidx.compose.animation.core.EaseOutQuart
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 
 @Composable
 fun SequentialAnimationContainer(
@@ -34,9 +37,10 @@ fun SequentialAnimationContainer(
 
 
 @Composable
-fun AnimatedItem(
+fun AnimatedContent(
     isVisible: Boolean,
     delay: Int,
+    wide: Boolean = false,
     content: @Composable AnimatedVisibilityScope.() -> Unit
 ) {
     AnimatedVisibility(
@@ -46,7 +50,10 @@ fun AnimatedItem(
         ) + slideInVertically(
             initialOffsetY = { it / 4 },
             animationSpec = tween(1000, delayMillis = delay, easing = EaseOutQuart)
-        ),
-        content = content
-    )
+        )
+    ) {
+        Box(modifier = if (wide) Modifier else Modifier.padding(horizontal = 12.dp)) {
+            content()
+        }
+    }
 }

@@ -79,11 +79,10 @@ fun Playlist(
                     model = thumbnails.first().thumbnail(thumbnailSizePx),
                     contentDescription = null,
                     contentScale = ContentScale.Crop,
-                    //modifier = it KOTLIN 2
                 )
             } else {
                 Box(
-                    modifier = Modifier // KOTLIN 2
+                    modifier = Modifier
                         .fillMaxSize()
                 ) {
                     listOf(

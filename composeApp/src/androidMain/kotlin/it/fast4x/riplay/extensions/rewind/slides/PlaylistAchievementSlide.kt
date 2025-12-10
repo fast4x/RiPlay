@@ -10,7 +10,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -31,8 +33,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import it.fast4x.riplay.R
-import it.fast4x.riplay.extensions.rewind.data.AnimatedItem
+import it.fast4x.riplay.commonutils.cleanPrefix
+import it.fast4x.riplay.extensions.rewind.data.AnimatedContent
 import it.fast4x.riplay.extensions.rewind.data.RewindSlide
+import it.fast4x.riplay.ui.components.themed.Playlist
+import it.fast4x.riplay.ui.styling.Dimensions
+import it.fast4x.riplay.ui.styling.px
 import kotlinx.coroutines.delay
 
 
@@ -60,11 +66,12 @@ fun PlaylistAchievementSlide(slide: RewindSlide.PlaylistAchievement, isPageActiv
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
             modifier = Modifier.fillMaxWidth()
+                .verticalScroll(rememberScrollState())
         ) {
 
-            AnimatedItem(isVisible = isContentVisible, delay = 0) {
+            AnimatedContent(isVisible = isContentVisible, delay = 0) {
                 Text(
-                    text = "You are a true music lover",
+                    text = "You are a true music lover!",
                     color = Color.White,
                     fontSize = 26.sp,
                     fontWeight = FontWeight.Bold,
@@ -75,29 +82,42 @@ fun PlaylistAchievementSlide(slide: RewindSlide.PlaylistAchievement, isPageActiv
             Spacer(modifier = Modifier.height(24.dp))
 
 
-            AnimatedItem(isVisible = isContentVisible, delay = 500) {
+            AnimatedContent(isVisible = isContentVisible, delay = 500) {
                 Box(
                     modifier = Modifier
-                        .size(180.dp)
+                        .size(340.dp)
                         .clip(RoundedCornerShape(24.dp))
                         .background(Color.White.copy(alpha = 0.1f), RoundedCornerShape(24.dp)),
                     contentAlignment = Alignment.Center
                 ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.playlist_played),
-                        contentDescription = "Playlist Icon",
-                        modifier = Modifier.size(80.dp),
-                        tint = Color.White.copy(alpha = 0.8f)
-                    )
+                    if (slide.playlist != null)
+                        Playlist(
+                            playlist = slide.playlist.toPlaylistPreview(slide.songCount),
+                            thumbnailSizeDp = 340.dp,
+                            thumbnailSizePx = 340.dp.px,
+                            alternative = true,
+                            showName = false,
+                            modifier = Modifier
+                                .padding(top = 14.dp),
+                            disableScrollingText = false,
+                            thumbnailUrl = null
+                        )
+                    else
+                        Icon(
+                            painter = painterResource(id = R.drawable.playlist),
+                            contentDescription = "Playlist Icon",
+                            modifier = Modifier.size(108.dp),
+                            tint = Color.White.copy(alpha = 0.8f)
+                        )
                 }
             }
 
             Spacer(modifier = Modifier.height(32.dp))
 
 
-            AnimatedItem(isVisible = isContentVisible, delay = 1000) {
+            AnimatedContent(isVisible = isContentVisible, delay = 1000) {
                 Text(
-                    text = slide.playlistName,
+                    text = cleanPrefix(slide.playlistName),
                     color = Color.White,
                     fontSize = 36.sp,
                     fontWeight = FontWeight.ExtraBold,
@@ -106,7 +126,7 @@ fun PlaylistAchievementSlide(slide: RewindSlide.PlaylistAchievement, isPageActiv
             }
 
 
-            AnimatedItem(isVisible = isContentVisible, delay = 1500) {
+            AnimatedContent(isVisible = isContentVisible, delay = 1500) {
                 Text(
                     text = "${slide.songCount} songs, ${slide.totalMinutes / 60} listening hours",
                     color = Color.White.copy(alpha = 0.9f),
@@ -118,7 +138,7 @@ fun PlaylistAchievementSlide(slide: RewindSlide.PlaylistAchievement, isPageActiv
             Spacer(modifier = Modifier.height(32.dp))
 
 
-            AnimatedItem(isVisible = isContentVisible, delay = 2000) {
+            AnimatedContent(isVisible = isContentVisible, delay = 2000) {
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
