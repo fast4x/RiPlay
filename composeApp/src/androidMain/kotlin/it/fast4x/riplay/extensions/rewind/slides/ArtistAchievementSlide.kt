@@ -85,13 +85,10 @@ fun ArtistAchievementSlide(slide: RewindSlide.ArtistAchievement, isPageActive: B
             AnimatedContent(isVisible = isContentVisible, delay = 200) {
                 Box{
                     AsyncImage(
-                        model = slide.artistImageUri.toString().resize(
-                            1200,
-                            1200
-                        ),
+                        model = slide.artistImageUri.toString().resize(1200,1200),
                         contentDescription = "loading...",
                         modifier = Modifier
-                            .fillMaxWidth()
+                            .fillMaxWidth(.7f)
                             .align(Alignment.Center)
                             .clip(RoundedCornerShape(16.dp))
                     )

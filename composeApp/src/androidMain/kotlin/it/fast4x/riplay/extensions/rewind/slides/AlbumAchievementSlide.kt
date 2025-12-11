@@ -89,7 +89,7 @@ fun AlbumAchievementSlide(slide: RewindSlide.AlbumAchievement, isPageActive: Boo
                         model = slide.albumArtUri.toString().resize(1200, 1200),
                         contentDescription = "loading...",
                         modifier = Modifier
-                            .fillMaxWidth()
+                            .fillMaxWidth(.7f)
                             .align(Alignment.Center)
                             .clip(RoundedCornerShape(16.dp))
                     )

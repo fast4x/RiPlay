@@ -1,5 +1,6 @@
 package it.fast4x.riplay.extensions.rewind.slides
 
+import androidx.annotation.OptIn
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -16,6 +17,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.media3.common.util.UnstableApi
+import coil.compose.AsyncImage
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
 import com.mikepenz.hypnoticcanvas.shaderBackground
@@ -28,8 +31,10 @@ import it.fast4x.riplay.extensions.rewind.data.RewindSlide
 import it.fast4x.riplay.extensions.rewind.utils.rewindPauseMedia
 import it.fast4x.riplay.extensions.rewind.utils.rewindPlayMedia
 import it.fast4x.riplay.utils.colorPalette
+import it.fast4x.riplay.utils.resize
 import kotlinx.coroutines.delay
 
+@OptIn(UnstableApi::class)
 @Composable
 fun SongAchievementSlide(slide: RewindSlide.SongAchievement, isPageActive: Boolean = false) {
 
@@ -114,23 +119,20 @@ fun SongAchievementSlide(slide: RewindSlide.SongAchievement, isPageActive: Boole
 
 
             AnimatedContent(isVisible = isContentVisible, delay = 1000) {
-                Box(
-                    modifier = Modifier
-                        .size(320.dp)
-                        .clip(RoundedCornerShape(16.dp))
-                ) {
-                    val coverPainter = rememberAsyncImagePainter(
-                        model = ImageRequest.Builder(LocalContext.current)
-                            .data(slide.albumArtUri.toString().thumbnail(1200))
-                            .build()
-                    )
-                    Image(
-                        painter = coverPainter,
-                        contentDescription = null,
-                        modifier = Modifier.fillMaxSize(),
+
+                Box{
+                    AsyncImage(
+                        model = slide.albumArtUri.toString().resize(1200, 1200),
+                        contentDescription = "loading...",
+                        modifier = Modifier
+                            .fillMaxWidth(.7f)
+                            .align(Alignment.Center)
+                            .clip(RoundedCornerShape(16.dp))
                     )
 
                 }
+
+
             }
 
             Spacer(modifier = Modifier.height(16.dp))

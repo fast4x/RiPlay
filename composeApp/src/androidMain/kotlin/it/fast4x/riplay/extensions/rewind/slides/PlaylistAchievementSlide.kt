@@ -100,33 +100,27 @@ fun PlaylistAchievementSlide(slide: RewindSlide.PlaylistAchievement, isPageActiv
 
 
             AnimatedContent(isVisible = isContentVisible, delay = 500) {
-                Box(
-                    modifier = Modifier
-                        .size(340.dp)
-                        .clip(RoundedCornerShape(24.dp))
-                        .background(Color.White.copy(alpha = 0.1f), RoundedCornerShape(24.dp)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    if (slide.playlist != null)
-                        Playlist(
-                            playlist = slide.playlist.toPlaylistPreview(slide.songCount),
-                            thumbnailSizeDp = 340.dp,
-                            thumbnailSizePx = 340.dp.px,
-                            alternative = true,
-                            showName = false,
-                            modifier = Modifier
-                                .padding(top = 14.dp),
-                            disableScrollingText = false,
-                            thumbnailUrl = null
-                        )
-                    else
-                        Icon(
-                            painter = painterResource(id = R.drawable.playlist),
-                            contentDescription = "Playlist Icon",
-                            modifier = Modifier.size(108.dp),
-                            tint = Color.White.copy(alpha = 0.8f)
-                        )
-                }
+
+                if (slide.playlist != null)
+                    Playlist(
+                        playlist = slide.playlist.toPlaylistPreview(slide.songCount),
+                        thumbnailSizeDp = 300.dp,
+                        thumbnailSizePx = 300.dp.px,
+                        alternative = true,
+                        showName = false,
+                        modifier = Modifier
+                            .padding(top = 14.dp),
+                        disableScrollingText = false,
+                        thumbnailUrl = null
+                    )
+                else
+                    Icon(
+                        painter = painterResource(id = R.drawable.playlist),
+                        contentDescription = "Playlist Icon",
+                        modifier = Modifier.size(108.dp),
+                        tint = Color.White.copy(alpha = 0.8f)
+                    )
+
             }
 
             Spacer(modifier = Modifier.height(16.dp))

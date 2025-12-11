@@ -7,11 +7,21 @@ import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.systemBars
+import androidx.compose.material3.Text
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.TransformOrigin
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
 
 enum class AnimationType {
     SLIDE_AND_FADE,
@@ -43,32 +53,22 @@ fun SequentialAnimationContainer(
             animationSpec = tween(500)
         )
     ) {
-        content()
+        Box() {
+            Box(modifier = Modifier.padding(end = 12.dp).align(Alignment.TopEnd).zIndex(2f)) {
+                Text(
+                    text = "RiPlay Rewind 2025",
+                    color = Color.White,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    textAlign = TextAlign.Start,
+                    lineHeight = 60.sp,
+                    modifier = Modifier.padding(WindowInsets.systemBars.asPaddingValues())
+                )
+            }
+            content()
+        }
     }
 }
-
-
-//@Composable
-//fun AnimatedContent(
-//    isVisible: Boolean,
-//    delay: Int,
-//    wide: Boolean = false,
-//    content: @Composable AnimatedVisibilityScope.() -> Unit
-//) {
-//    AnimatedVisibility(
-//        visible = isVisible,
-//        enter = fadeIn(
-//            animationSpec = tween(1000, delayMillis = delay, easing = EaseOutQuart)
-//        ) + slideInVertically(
-//            initialOffsetY = { it / 4 },
-//            animationSpec = tween(1000, delayMillis = delay, easing = EaseOutQuart)
-//        )
-//    ) {
-//        Box(modifier = if (wide) Modifier else Modifier.padding(horizontal = 12.dp)) {
-//            content()
-//        }
-//    }
-//}
 
 @Composable
 fun AnimatedContent(

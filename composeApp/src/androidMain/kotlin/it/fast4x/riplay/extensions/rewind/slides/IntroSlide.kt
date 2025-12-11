@@ -56,29 +56,34 @@ fun IntroSlide(slide: RewindSlide.IntroSlide, isPageActive: Boolean) {
             modifier = Modifier.fillMaxWidth()
         ) {
 
-            AnimatedContent(isVisible = isContentVisible, delay = 0) {
-                Icon(
-                    painter = painterResource(id = R.drawable.app_icon),
-                    contentDescription = "RiPlay",
-                    tint = colorPalette().accent,
-                    modifier = Modifier
-                        .size(80.dp)
-                        .scale(scale)
-                )
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center,
+            ) {
+                AnimatedContent(isVisible = isContentVisible, delay = 0) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.app_icon),
+                        contentDescription = "RiPlay",
+                        tint = colorPalette().accent,
+                        modifier = Modifier
+                            .size(40.dp)
+                            .scale(scale)
+                    )
+                }
+                AnimatedContent(isVisible = isContentVisible, delay = 200) {
+                    Text(
+                        text = "RiPlay",
+                        color = Color.White,
+                        fontSize = 40.sp,
+                        fontWeight = FontWeight.ExtraBold,
+                        textAlign = TextAlign.Center,
+                        lineHeight = 60.sp
+                    )
+                }
             }
 
-            AnimatedContent(isVisible = isContentVisible, delay = 200) {
-                Text(
-                    text = "RiPlay",
-                    color = Color.White,
-                    fontSize = 40.sp,
-                    fontWeight = FontWeight.ExtraBold,
-                    textAlign = TextAlign.Center,
-                    lineHeight = 60.sp
-                )
-            }
 
-            Spacer(modifier = Modifier.height(32.dp))
+
 
             AnimatedContent(isVisible = isContentVisible, delay = 400) {
                 Text(
