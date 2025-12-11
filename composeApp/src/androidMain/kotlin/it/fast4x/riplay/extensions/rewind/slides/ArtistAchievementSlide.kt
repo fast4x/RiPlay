@@ -36,8 +36,10 @@ import coil.compose.AsyncImage
 import com.mikepenz.hypnoticcanvas.shaderBackground
 import com.mikepenz.hypnoticcanvas.shaders.Stripy
 import it.fast4x.riplay.extensions.rewind.data.AnimatedContent
+import it.fast4x.riplay.extensions.rewind.data.AnimationType
 import it.fast4x.riplay.extensions.rewind.data.RewindSlide
 import it.fast4x.riplay.ui.styling.Dimensions
+import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.utils.fadingEdge
 import it.fast4x.riplay.utils.resize
 import kotlinx.coroutines.delay
@@ -59,17 +61,8 @@ fun ArtistAchievementSlide(slide: RewindSlide.ArtistAchievement, isPageActive: B
         modifier = Modifier
             .fillMaxSize()
             .shaderBackground(Stripy()),
-//            .background(slide.backgroundBrush)
-//            .padding(vertical = 24.dp),
         contentAlignment = Alignment.Center
     ) {
-
-        Text(
-            text = slide.title,
-            color = Color.White,
-            fontSize = 24.sp,
-            modifier = Modifier.align(Alignment.TopCenter).padding(WindowInsets.systemBars.asPaddingValues().calculateTopPadding())
-        )
 
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -78,20 +71,18 @@ fun ArtistAchievementSlide(slide: RewindSlide.ArtistAchievement, isPageActive: B
                 .verticalScroll(rememberScrollState())
         ) {
 
-            AnimatedContent(isVisible = isContentVisible, delay = 0) {
+            AnimatedContent(isVisible = isContentVisible, delay = 500, animationType = AnimationType.SPRING_SCALE_IN) {
                 Text(
-                    text = slide.level.title,
+                    text = slide.title,
                     color = Color.White,
-                    fontSize = 26.sp,
-                    fontWeight = FontWeight.Bold,
-                    textAlign = TextAlign.Center
+                    fontSize = 32.sp,
+                    fontWeight = FontWeight.ExtraBold,
                 )
             }
 
             Spacer(modifier = Modifier.height(16.dp))
 
-
-            AnimatedContent(isVisible = isContentVisible, delay = 200, wide = true) {
+            AnimatedContent(isVisible = isContentVisible, delay = 200) {
                 Box{
                     AsyncImage(
                         model = slide.artistImageUri.toString().resize(
@@ -102,18 +93,13 @@ fun ArtistAchievementSlide(slide: RewindSlide.ArtistAchievement, isPageActive: B
                         modifier = Modifier
                             .fillMaxWidth()
                             .align(Alignment.Center)
-                            .fadingEdge(
-                                top = WindowInsets.systemBars
-                                    .asPaddingValues()
-                                    .calculateTopPadding() + Dimensions.fadeSpacingTop,
-                                bottom = Dimensions.fadeSpacingBottom
-                            )
+                            .clip(RoundedCornerShape(16.dp))
                     )
 
                 }
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
 
             AnimatedContent(isVisible = isContentVisible, delay = 500) {
@@ -128,7 +114,7 @@ fun ArtistAchievementSlide(slide: RewindSlide.ArtistAchievement, isPageActive: B
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            AnimatedContent(isVisible = isContentVisible, delay = 800) {
+            AnimatedContent(isVisible = isContentVisible, delay = 800, animationType = AnimationType.SPRING_SCALE_IN) {
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -140,9 +126,16 @@ fun ArtistAchievementSlide(slide: RewindSlide.ArtistAchievement, isPageActive: B
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Text(
+                            text = slide.level.title,
+                            color = colorPalette().accent,
+                            fontSize = 32.sp,
+                            fontWeight = FontWeight.Bold,
+                            textAlign = TextAlign.Center
+                        )
+                        Text(
                             text = slide.level.goal.replace("%s", slide.minutesListened.toString(), true),
                             color = Color.White,
-                            fontSize = 18.sp,
+                            fontSize = 26.sp,
                             fontWeight = FontWeight.SemiBold
                         )
                         Spacer(modifier = Modifier.height(12.dp))

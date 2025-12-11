@@ -36,14 +36,19 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.mikepenz.hypnoticcanvas.shaderBackground
+import com.mikepenz.hypnoticcanvas.shaders.GlossyGradients
 import com.mikepenz.hypnoticcanvas.shaders.GradientFlow
+import com.mikepenz.hypnoticcanvas.shaders.MeshGradient
+import com.mikepenz.hypnoticcanvas.shaders.MesmerizingLens
 import com.mikepenz.hypnoticcanvas.shaders.Stripy
 import it.fast4x.riplay.R
 import it.fast4x.riplay.commonutils.cleanPrefix
 import it.fast4x.riplay.extensions.rewind.data.AnimatedContent
+import it.fast4x.riplay.extensions.rewind.data.AnimationType
 import it.fast4x.riplay.extensions.rewind.data.RewindSlide
 import it.fast4x.riplay.ui.components.themed.Playlist
 import it.fast4x.riplay.ui.styling.px
+import it.fast4x.riplay.utils.colorPalette
 import kotlinx.coroutines.delay
 
 
@@ -64,16 +69,16 @@ fun PlaylistAchievementSlide(slide: RewindSlide.PlaylistAchievement, isPageActiv
         modifier = Modifier
             .fillMaxSize()
             .shaderBackground(GradientFlow),
-//            .background(slide.backgroundBrush)
-//            .padding(vertical = 24.dp),
+//            .shaderBackground(
+//                MeshGradient(
+//                    arrayOf(Color(0xFFFF15E5), Color(0xFFFAAEF7), Color(0xFF6903F9)),
+//                    scale = 1f
+//                )
+//            ),
+            //.shaderBackground(MesmerizingLens),
+            //.shaderBackground(GlossyGradients),
         contentAlignment = Alignment.Center
     ) {
-        Text(
-            text = slide.title,
-            color = Color.White,
-            fontSize = 24.sp,
-            modifier = Modifier.align(Alignment.TopCenter).padding(WindowInsets.systemBars.asPaddingValues().calculateTopPadding())
-        )
 
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -82,17 +87,16 @@ fun PlaylistAchievementSlide(slide: RewindSlide.PlaylistAchievement, isPageActiv
                 .verticalScroll(rememberScrollState())
         ) {
 
-            AnimatedContent(isVisible = isContentVisible, delay = 0) {
+            AnimatedContent(isVisible = isContentVisible, delay = 500, animationType = AnimationType.SPRING_SCALE_IN) {
                 Text(
-                    text = slide.level.title,
+                    text = slide.title,
                     color = Color.White,
-                    fontSize = 26.sp,
-                    fontWeight = FontWeight.Bold,
-                    textAlign = TextAlign.Center
+                    fontSize = 32.sp,
+                    fontWeight = FontWeight.ExtraBold,
                 )
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
 
             AnimatedContent(isVisible = isContentVisible, delay = 500) {
@@ -125,7 +129,7 @@ fun PlaylistAchievementSlide(slide: RewindSlide.PlaylistAchievement, isPageActiv
                 }
             }
 
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
 
             AnimatedContent(isVisible = isContentVisible, delay = 1000) {
@@ -141,7 +145,7 @@ fun PlaylistAchievementSlide(slide: RewindSlide.PlaylistAchievement, isPageActiv
 
             AnimatedContent(isVisible = isContentVisible, delay = 1500) {
                 Text(
-                    text = "${slide.songCount} songs, ${slide.totalMinutes / 60} listening hours",
+                    text = "${slide.songCount} songs",
                     color = Color.White.copy(alpha = 0.9f),
                     fontSize = 18.sp,
                     textAlign = TextAlign.Center
@@ -151,7 +155,7 @@ fun PlaylistAchievementSlide(slide: RewindSlide.PlaylistAchievement, isPageActiv
             Spacer(modifier = Modifier.height(32.dp))
 
 
-            AnimatedContent(isVisible = isContentVisible, delay = 2000) {
+            AnimatedContent(isVisible = isContentVisible, delay = 2000, animationType = AnimationType.SPRING_SCALE_IN) {
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -163,9 +167,16 @@ fun PlaylistAchievementSlide(slide: RewindSlide.PlaylistAchievement, isPageActiv
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Text(
+                            text = slide.level.title,
+                            color = colorPalette().accent,
+                            fontSize = 32.sp,
+                            fontWeight = FontWeight.Bold,
+                            textAlign = TextAlign.Center
+                        )
+                        Text(
                             text = slide.level.goal.replace("%s", slide.totalMinutes.toString(), true),
                             color = Color.White,
-                            fontSize = 18.sp,
+                            fontSize = 26.sp,
                             fontWeight = FontWeight.SemiBold
                         )
                         Spacer(modifier = Modifier.height(12.dp))

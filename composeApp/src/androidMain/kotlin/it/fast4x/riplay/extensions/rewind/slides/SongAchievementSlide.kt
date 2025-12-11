@@ -1,7 +1,6 @@
 package it.fast4x.riplay.extensions.rewind.slides
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -20,12 +19,15 @@ import androidx.compose.ui.unit.sp
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
 import com.mikepenz.hypnoticcanvas.shaderBackground
-import com.mikepenz.hypnoticcanvas.shaders.BlackCherryCosmos
-import com.mikepenz.hypnoticcanvas.shaders.BubbleRings
 import com.mikepenz.hypnoticcanvas.shaders.Heat
+import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.commonutils.thumbnail
 import it.fast4x.riplay.extensions.rewind.data.AnimatedContent
+import it.fast4x.riplay.extensions.rewind.data.AnimationType
 import it.fast4x.riplay.extensions.rewind.data.RewindSlide
+import it.fast4x.riplay.extensions.rewind.utils.rewindPauseMedia
+import it.fast4x.riplay.extensions.rewind.utils.rewindPlayMedia
+import it.fast4x.riplay.utils.colorPalette
 import kotlinx.coroutines.delay
 
 @Composable
@@ -33,11 +35,18 @@ fun SongAchievementSlide(slide: RewindSlide.SongAchievement, isPageActive: Boole
 
     var isContentVisible by remember { mutableStateOf(false) }
 
+    val binder = LocalPlayerServiceBinder.current
+
     LaunchedEffect(isPageActive) {
         if (isPageActive) {
+
+            rewindPlayMedia(slide.song, binder)
+
             delay(100)
             isContentVisible = true
         } else {
+            rewindPauseMedia(binder)
+
             isContentVisible = false
         }
     }
@@ -45,41 +54,66 @@ fun SongAchievementSlide(slide: RewindSlide.SongAchievement, isPageActive: Boole
     Box(
         modifier = Modifier
             .fillMaxSize()
-            //.background(slide.backgroundBrush)
-            //.padding(24.dp)
             .shaderBackground(Heat()),
         contentAlignment = Alignment.Center
     ) {
-
-        Text(
-            text = slide.title,
-            color = Color.White,
-            fontSize = 24.sp,
-            modifier = Modifier.align(Alignment.TopCenter).padding(WindowInsets.systemBars.asPaddingValues().calculateTopPadding())
-        )
-
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
             modifier = Modifier.fillMaxWidth()
                 .verticalScroll(rememberScrollState())
         ) {
-
-
-            AnimatedContent(isVisible = isContentVisible, delay = 250) {
+            AnimatedContent(isVisible = isContentVisible, delay = 500, animationType = AnimationType.SPRING_SCALE_IN) {
                 Text(
-                    text = slide.level.title,
+                    text = slide.title,
                     color = Color.White,
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.Bold,
-                    textAlign = TextAlign.Center
+                    fontSize = 32.sp,
+                    fontWeight = FontWeight.ExtraBold,
                 )
             }
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            AnimatedContent(isVisible = isContentVisible, delay = 500, animationType = AnimationType.SPRING_SCALE_IN) {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(16.dp)),
+                    colors = CardDefaults.cardColors(containerColor = Color.Black.copy(alpha = 0.4f))
+                ) {
+                    Column(
+                        modifier = Modifier.padding(20.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = slide.level.title,
+                            color = colorPalette().accent,
+                            fontSize = 32.sp,
+                            fontWeight = FontWeight.Bold,
+                            textAlign = TextAlign.Center
+                        )
+                        Text(
+                            text = slide.level.goal.replace("%s", slide.minutesListened.toString(), true),
+                            color = Color.White,
+                            fontSize = 26.sp,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                        Spacer(modifier = Modifier.height(12.dp))
+                        Text(
+                            text = slide.level.description,
+                            color = Color.White,
+                            fontSize = 16.sp,
+                            textAlign = TextAlign.Center,
+                            lineHeight = 22.sp
+                        )
+                    }
+                }
+            }
 
-            AnimatedContent(isVisible = isContentVisible, delay = 500) {
+            Spacer(modifier = Modifier.height(16.dp))
+
+
+            AnimatedContent(isVisible = isContentVisible, delay = 1000) {
                 Box(
                     modifier = Modifier
                         .size(320.dp)
@@ -99,10 +133,10 @@ fun SongAchievementSlide(slide: RewindSlide.SongAchievement, isPageActive: Boole
                 }
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
 
-            AnimatedContent(isVisible = isContentVisible, delay = 1000) {
+            AnimatedContent(isVisible = isContentVisible, delay = 1500) {
                 Text(
                     text = slide.songTitle,
                     color = Color.White,
@@ -115,7 +149,7 @@ fun SongAchievementSlide(slide: RewindSlide.SongAchievement, isPageActive: Boole
             Spacer(modifier = Modifier.height(8.dp))
 
 
-            AnimatedContent(isVisible = isContentVisible, delay = 1500) {
+            AnimatedContent(isVisible = isContentVisible, delay = 2000) {
                 Text(
                     text = slide.artistName,
                     color = Color.White.copy(alpha = 0.8f),
@@ -124,37 +158,6 @@ fun SongAchievementSlide(slide: RewindSlide.SongAchievement, isPageActive: Boole
                 )
             }
 
-            Spacer(modifier = Modifier.height(32.dp))
-
-
-            AnimatedContent(isVisible = isContentVisible, delay = 2000) {
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(16.dp)),
-                    colors = CardDefaults.cardColors(containerColor = Color.Black.copy(alpha = 0.4f))
-                ) {
-                    Column(
-                        modifier = Modifier.padding(20.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Text(
-                            text = slide.level.goal.replace("%s", slide.minutesListened.toString(), true),
-                            color = Color.White,
-                            fontSize = 18.sp,
-                            fontWeight = FontWeight.SemiBold
-                        )
-                        Spacer(modifier = Modifier.height(12.dp))
-                        Text(
-                            text = slide.level.description,
-                            color = Color.White,
-                            fontSize = 16.sp,
-                            textAlign = TextAlign.Center,
-                            lineHeight = 22.sp
-                        )
-                    }
-                }
-            }
         }
     }
 }

@@ -96,11 +96,11 @@ fun IntroSlide(slide: RewindSlide.IntroSlide, isPageActive: Boolean) {
 
             AnimatedContent(isVisible = isContentVisible, delay = 500) {
                 Text(
-                    text = "Your year in music",
+                    text = "Your ${slide.year} in music",
                     color = Color.White.copy(alpha = 0.9f),
                     fontSize = 26.sp,
                     fontWeight = FontWeight.Medium,
-                    textAlign = TextAlign.Center
+                    textAlign = TextAlign.Center,
                 )
             }
 
