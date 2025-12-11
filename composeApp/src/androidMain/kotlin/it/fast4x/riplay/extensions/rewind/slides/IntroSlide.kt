@@ -96,8 +96,6 @@ fun IntroSlide(slide: RewindSlide.IntroSlide, isPageActive: Boolean) {
                 )
             }
 
-            //Spacer(modifier = Modifier.height(16.dp))
-
 
             AnimatedContent(isVisible = isContentVisible, delay = 500) {
                 Text(
