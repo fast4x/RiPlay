@@ -106,6 +106,14 @@ sealed class RewindSlide(val id: Int, val backgroundBrush: Brush) {
         val brush: Brush,
     ) : RewindSlide(8, brush)
 
+    data class Intermediate(
+        override val title: String,
+        override val year: Int,
+        val message: String,
+        val subMessage: String,
+        val brush: Brush
+    ) : RewindSlide(98, brush)
+
     data class OutroSlide(
         override val title: String,
         override val year: Int,
@@ -240,7 +248,17 @@ data class RewindState (
     val topAlbums: RewindSlide.TopAlbums,
     val topArtists: RewindSlide.TopArtists,
     val topPlaylists: RewindSlide.TopPlaylists,
-    val outro: RewindSlide.OutroSlide
+    val outro: RewindSlide.OutroSlide,
+    val intermediate1: RewindSlide.Intermediate,
+    val intermediate2: RewindSlide.Intermediate?,
+    val intermediate3: RewindSlide.Intermediate?,
+    val intermediate4: RewindSlide.Intermediate?,
+    val intermediate5: RewindSlide.Intermediate?,
+    val intermediate6: RewindSlide.Intermediate?,
+    val intermediate7: RewindSlide.Intermediate?,
+    val intermediate8: RewindSlide.Intermediate?,
+    val intermediate9: RewindSlide.Intermediate?,
+    val intermediate10: RewindSlide.Intermediate?,
 )
 
 @Composable
@@ -394,7 +412,25 @@ fun buildRewindState(): RewindState {
             brush = Brush.verticalGradient(
                 colors = listOf(Color(0xFFE91E63), Color(0xFF9C27B0), Color(0xFF3F51B5))
             )
-        )
+        ),
+        intermediate1 = RewindSlide.Intermediate(
+            title = "Rewind",
+            year = y.toInt(),
+            message = "One",
+            subMessage = "intermediate",
+            brush = Brush.verticalGradient(
+                colors = listOf(Color(0xFFE91E63), Color(0xFF9C27B0), Color(0xFF3F51B5))
+            )
+        ),
+        intermediate2 = null,
+        intermediate3 = null,
+        intermediate4 = null,
+        intermediate5 = null,
+        intermediate6 = null,
+        intermediate7 = null,
+        intermediate8 = null,
+        intermediate9 = null,
+        intermediate10 = null,
     )
 
 }
@@ -407,6 +443,7 @@ fun getRewindSlides(): List<RewindSlide> {
 
     return listOf(
         state.intro,
+        state.intermediate1,
         state.topSongs,
         state.topAlbums,
         state.topArtists,

@@ -23,6 +23,7 @@ import it.fast4x.riplay.extensions.rewind.data.RewindSlide
 import it.fast4x.riplay.extensions.rewind.data.SequentialAnimationContainer
 import it.fast4x.riplay.extensions.rewind.slides.AlbumAchievementSlide
 import it.fast4x.riplay.extensions.rewind.slides.ArtistAchievementSlide
+import it.fast4x.riplay.extensions.rewind.slides.IntermediateSlide
 import it.fast4x.riplay.extensions.rewind.slides.IntroSlide
 import it.fast4x.riplay.extensions.rewind.slides.OutroSlideComposable
 import it.fast4x.riplay.extensions.rewind.slides.PlaylistAchievementSlide
@@ -47,6 +48,7 @@ fun DynamicRewindSlide(slide: RewindSlide, isPageActive: Boolean) {
             is RewindSlide.PlaylistAchievement -> PlaylistAchievementSlide(slide, isPageActive)
             is RewindSlide.ArtistAchievement -> ArtistAchievementSlide(slide, isPageActive)
             is RewindSlide.OutroSlide -> OutroSlideComposable(slide, isPageActive)
+            is RewindSlide.Intermediate -> IntermediateSlide(slide, isPageActive)
         }
     }
 }
