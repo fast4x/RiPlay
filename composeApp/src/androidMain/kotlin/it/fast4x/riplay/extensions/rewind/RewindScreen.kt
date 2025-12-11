@@ -27,15 +27,21 @@ import it.fast4x.riplay.extensions.rewind.slides.IntroSlide
 import it.fast4x.riplay.extensions.rewind.slides.OutroSlideComposable
 import it.fast4x.riplay.extensions.rewind.slides.PlaylistAchievementSlide
 import it.fast4x.riplay.extensions.rewind.slides.SongAchievementSlide
-import it.fast4x.riplay.extensions.rewind.slides.TopArtistSlide
+import it.fast4x.riplay.extensions.rewind.slides.TopAlbumsSlide
+import it.fast4x.riplay.extensions.rewind.slides.TopArtistsSlide
+import it.fast4x.riplay.extensions.rewind.slides.TopPlaylistsSlide
+import it.fast4x.riplay.extensions.rewind.slides.TopSongsSlide
 
 
 @Composable
 fun DynamicRewindSlide(slide: RewindSlide, isPageActive: Boolean) {
-    SequentialAnimationContainer {
+    SequentialAnimationContainer(year = slide.year) {
         when (slide) {
             is RewindSlide.IntroSlide -> IntroSlide(slide, isPageActive)
-            is RewindSlide.TopArtist -> TopArtistSlide(slide, isPageActive)
+            is RewindSlide.TopSongs -> TopSongsSlide(slide, isPageActive)
+            is RewindSlide.TopAlbums -> TopAlbumsSlide(slide, isPageActive)
+            is RewindSlide.TopArtists -> TopArtistsSlide(slide, isPageActive)
+            is RewindSlide.TopPlaylists -> TopPlaylistsSlide(slide, isPageActive)
             is RewindSlide.SongAchievement -> SongAchievementSlide(slide, isPageActive)
             is RewindSlide.AlbumAchievement -> AlbumAchievementSlide(slide, isPageActive)
             is RewindSlide.PlaylistAchievement -> PlaylistAchievementSlide(slide, isPageActive)

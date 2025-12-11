@@ -34,6 +34,7 @@ enum class AnimationType {
 @Composable
 fun SequentialAnimationContainer(
     modifier: Modifier = Modifier,
+    year: Int,
     content: @Composable () -> Unit
 ) {
     var isVisible by remember { mutableStateOf(false) }
@@ -54,9 +55,9 @@ fun SequentialAnimationContainer(
         )
     ) {
         Box() {
-            Box(modifier = Modifier.padding(end = 12.dp).align(Alignment.TopEnd).zIndex(2f)) {
+            Box(modifier = Modifier.padding(horizontal = 12.dp).align(Alignment.BottomCenter).zIndex(2f)) {
                 Text(
-                    text = "RiPlay Rewind 2025",
+                    text = "Riplay Rewind",
                     color = Color.White,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.SemiBold,

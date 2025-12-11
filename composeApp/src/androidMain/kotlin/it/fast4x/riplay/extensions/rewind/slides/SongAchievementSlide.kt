@@ -28,6 +28,7 @@ import it.fast4x.riplay.commonutils.thumbnail
 import it.fast4x.riplay.extensions.rewind.data.AnimatedContent
 import it.fast4x.riplay.extensions.rewind.data.AnimationType
 import it.fast4x.riplay.extensions.rewind.data.RewindSlide
+import it.fast4x.riplay.extensions.rewind.data.slideTitleFontSize
 import it.fast4x.riplay.extensions.rewind.utils.rewindPauseMedia
 import it.fast4x.riplay.extensions.rewind.utils.rewindPlayMedia
 import it.fast4x.riplay.utils.colorPalette
@@ -72,7 +73,7 @@ fun SongAchievementSlide(slide: RewindSlide.SongAchievement, isPageActive: Boole
                 Text(
                     text = slide.title,
                     color = Color.White,
-                    fontSize = 32.sp,
+                    fontSize = slideTitleFontSize,
                     fontWeight = FontWeight.ExtraBold,
                 )
             }

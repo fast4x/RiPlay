@@ -9,6 +9,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.data.models.Playlist
@@ -18,29 +19,22 @@ import kotlinx.coroutines.Dispatchers
 import timber.log.Timber
 
 
+val slideTitleFontSize = 20.sp
+
 sealed class RewindSlide(val id: Int, val backgroundBrush: Brush) {
     abstract val title: String
+    abstract val year: Int
 
 
     data class IntroSlide(
         override val title: String,
+        override val year: Int,
         val brush: Brush,
-        val year: Int
     ) : RewindSlide(0, brush)
-
-
-    data class TopArtist(
-        override val title: String,
-        val artistName: String,
-        val artistImageUri: Uri,
-        val minutesListened: Long,
-        val artistGenre: String,
-        val brush: Brush
-    ) : RewindSlide(1, brush)
-
 
     data class SongAchievement(
         override val title: String,
+        override val year: Int,
         val songTitle: String,
         val artistName: String,
         val albumArtUri: Uri,
@@ -48,41 +42,73 @@ sealed class RewindSlide(val id: Int, val backgroundBrush: Brush) {
         val brush: Brush,
         val minutesListened: Long,
         val song: Song?
-    ) : RewindSlide(2, brush)
+    ) : RewindSlide(1, brush)
 
 
     data class AlbumAchievement(
         override val title: String,
+        override val year: Int,
         val albumTitle: String,
         val artistName: String,
         val albumArtUri: Uri,
         val level: AlbumLevel,
         val brush: Brush,
         val minutesListened: Long,
-    ) : RewindSlide(3, brush)
+    ) : RewindSlide(2, brush)
 
 
     data class PlaylistAchievement(
         override val title: String,
+        override val year: Int,
         val playlist: Playlist?,
         val playlistName: String,
         val songCount: Int,
         val totalMinutes: Long,
         val level: PlaylistLevel,
         val brush: Brush,
-    ) : RewindSlide(4, brush)
+    ) : RewindSlide(3, brush)
 
     data class ArtistAchievement(
         override val title: String,
+        override val year: Int,
         val artistName: String,
         val artistImageUri: Uri,
         val minutesListened: Long,
         val level: ArtistLevel,
         val brush: Brush,
+    ) : RewindSlide(4, brush)
+
+    data class TopSongs(
+        override val title: String,
+        override val year: Int,
+        val songs: List<SongMostListened?>,
+        val brush: Brush,
     ) : RewindSlide(5, brush)
+
+    data class TopAlbums(
+        override val title: String,
+        override val year: Int,
+        val albums: List<AlbumMostListened?>,
+        val brush: Brush,
+    ) : RewindSlide(6, brush)
+
+    data class TopArtists(
+        override val title: String,
+        override val year: Int,
+        val artists: List<ArtistMostListened?>,
+        val brush: Brush,
+    ) : RewindSlide(7, brush)
+
+    data class TopPlaylists(
+        override val title: String,
+        override val year: Int,
+        val playlists: List<PlaylistMostListened?>,
+        val brush: Brush,
+    ) : RewindSlide(8, brush)
 
     data class OutroSlide(
         override val title: String,
+        override val year: Int,
         val brush: Brush
     ) : RewindSlide(99, brush)
 }
@@ -210,7 +236,10 @@ data class RewindState (
     val album: RewindSlide.AlbumAchievement,
     val playlist: RewindSlide.PlaylistAchievement,
     val artist: RewindSlide.ArtistAchievement,
-    //val topArtist: RewindSlide.TopArtist
+    val topSongs: RewindSlide.TopSongs,
+    val topAlbums: RewindSlide.TopAlbums,
+    val topArtists: RewindSlide.TopArtists,
+    val topPlaylists: RewindSlide.TopPlaylists,
     val outro: RewindSlide.OutroSlide
 )
 
@@ -219,28 +248,29 @@ fun buildRewindState(): RewindState {
     val ym by remember { mutableStateOf(getCalculatedMonths(0)) }
     val y by remember { mutableLongStateOf( ym?.substring(0,4)?.toLong() ?: 0) }
     val m by remember { mutableLongStateOf( ym?.substring(5,7)?.toLong() ?: 0) }
+
     val songMostListened = remember {
-        Database.songMostListenedByYear(y, 2)
+        Database.songMostListenedByYear(y, 10)
     }.collectAsState(initial = null, context = Dispatchers.IO)
 
     Timber.d("RewindData: songMostListened: $songMostListened")
 
     val albumMostListened = remember {
-        Database.albumMostListenedByYear(y, 2)
+        Database.albumMostListenedByYear(y, 10)
     }.collectAsState(initial = null, context = Dispatchers.IO)
 
     Timber.d("RewindData: albumMostListened: $albumMostListened")
 
 
     val playlistMostListened = remember {
-        Database.playlistMostListenedByYear(y, 2)
+        Database.playlistMostListenedByYear(y, 10)
     }.collectAsState(initial = null, context = Dispatchers.IO)
 
     Timber.d("RewindData: playlistMostListened: $playlistMostListened")
 
 
     val artistMostListened = remember {
-        Database.artistMostListenedByYear(y, 2)
+        Database.artistMostListenedByYear(y, 10)
     }.collectAsState(initial = null, context = Dispatchers.IO)
 
     Timber.d("RewindData: artistMostListened: $artistMostListened")
@@ -249,13 +279,46 @@ fun buildRewindState(): RewindState {
     return RewindState(
         intro = RewindSlide.IntroSlide(
             title = "Rewind",
-            year = 2025,
+            year = y.toInt(),
             brush = Brush.verticalGradient(
                 colors = listOf(Color(0xFFE7D858), Color(0xFF733B81))
             )
         ),
+        topSongs = RewindSlide.TopSongs(
+            title = "Top Songs ${y.toInt()}",
+            year = y.toInt(),
+            songs = songMostListened.value ?: emptyList(),
+            brush = Brush.verticalGradient(
+                colors = listOf(Color(0xFF1DB954), Color(0xFFBBA0A0))
+            )
+        ),
+        topAlbums = RewindSlide.TopAlbums(
+            title = "Top Albums ${y.toInt()}",
+            year = y.toInt(),
+            albums = albumMostListened.value ?: emptyList(),
+            brush = Brush.verticalGradient(
+                colors = listOf(Color(0xFF2196F3), Color(0xFF3F51B5))
+            )
+        ),
+        topArtists = RewindSlide.TopArtists(
+            title = "Top Artists ${y.toInt()}",
+            year = y.toInt(),
+            artists = artistMostListened.value ?: emptyList(),
+            brush = Brush.verticalGradient(
+                colors = listOf(Color(0xFF5A6CD2), Color(0xFF1DB954))
+            )
+        ),
+        topPlaylists = RewindSlide.TopPlaylists(
+            title = "Top Playlists ${y.toInt()}",
+            year = y.toInt(),
+            playlists = playlistMostListened.value ?: emptyList(),
+            brush = Brush.verticalGradient(
+                colors = listOf(Color(0xFFFF9800), Color(0xFFFF5722))
+            )
+        ),
         song = RewindSlide.SongAchievement(
-            title = "Your favorite song",
+            title = "Your favorite song ${y.toInt()}",
+            year = y.toInt(),
             songTitle = songMostListened.value?.firstOrNull()?.song?.title ?: "",
             artistName = songMostListened.value?.firstOrNull()?.song?.artistsText ?: "",
             albumArtUri = (songMostListened.value?.firstOrNull()?.song?.thumbnailUrl ?: "").toUri(),
@@ -273,7 +336,8 @@ fun buildRewindState(): RewindState {
             song = songMostListened.value?.firstOrNull()?.song,
         ),
         album = RewindSlide.AlbumAchievement(
-            title = "Your favorite album",
+            title = "Your favorite album ${y.toInt()}",
+            year = y.toInt(),
             albumTitle = albumMostListened.value?.firstOrNull()?.album?.title ?: "",
             artistName = albumMostListened.value?.firstOrNull()?.album?.authorsText ?: "",
             albumArtUri = (albumMostListened.value?.firstOrNull()?.album?.thumbnailUrl ?: "").toUri(),
@@ -290,7 +354,8 @@ fun buildRewindState(): RewindState {
             minutesListened = albumMostListened.value?.firstOrNull()?.minutes ?: 0
         ),
         playlist = RewindSlide.PlaylistAchievement(
-            title = "Your favorite playlist",
+            title = "Your favorite playlist ${y.toInt()}",
+            year = y.toInt(),
             playlist = playlistMostListened.value?.firstOrNull()?.playlist,
             playlistName = playlistMostListened.value?.firstOrNull()?.playlist?.name ?: "",
             songCount = playlistMostListened.value?.firstOrNull()?.songs ?: 0,
@@ -307,7 +372,8 @@ fun buildRewindState(): RewindState {
             )
         ),
         artist = RewindSlide.ArtistAchievement(
-            title = "Your favorite artist",
+            title = "Your favorite artist ${y.toInt()}",
+            year = y.toInt(),
             artistName = artistMostListened.value?.firstOrNull()?.artist?.name ?: "",
             artistImageUri = (artistMostListened.value?.firstOrNull()?.artist?.thumbnailUrl ?: "").toUri(),
             minutesListened = artistMostListened.value?.firstOrNull()?.minutes ?: 0,
@@ -324,6 +390,7 @@ fun buildRewindState(): RewindState {
         ),
         outro = RewindSlide.OutroSlide(
             title = "Rewind",
+            year = y.toInt(),
             brush = Brush.verticalGradient(
                 colors = listOf(Color(0xFFE91E63), Color(0xFF9C27B0), Color(0xFF3F51B5))
             )
@@ -340,20 +407,14 @@ fun getRewindSlides(): List<RewindSlide> {
 
     return listOf(
         state.intro,
+        state.topSongs,
+        state.topAlbums,
+        state.topArtists,
+        state.topPlaylists,
         state.song,
         state.album,
         state.playlist,
         state.artist,
-
-//        RewindSlide.TopArtist(
-//            artistName = "The Weeknd",
-//            artistImageUri = R.drawable.artist,
-//            minutesListened = 1234,
-//            artistGenre = "R&B",
-//            brush = Brush.verticalGradient(
-//                colors = listOf(Color(0xFFE91E63), Color(0xFF1DB954))
-//            )
-//        ),
         state.outro
     )
 }

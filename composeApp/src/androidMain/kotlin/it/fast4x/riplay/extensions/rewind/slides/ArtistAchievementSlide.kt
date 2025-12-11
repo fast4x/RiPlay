@@ -38,6 +38,7 @@ import com.mikepenz.hypnoticcanvas.shaders.Stripy
 import it.fast4x.riplay.extensions.rewind.data.AnimatedContent
 import it.fast4x.riplay.extensions.rewind.data.AnimationType
 import it.fast4x.riplay.extensions.rewind.data.RewindSlide
+import it.fast4x.riplay.extensions.rewind.data.slideTitleFontSize
 import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.utils.fadingEdge
@@ -75,7 +76,7 @@ fun ArtistAchievementSlide(slide: RewindSlide.ArtistAchievement, isPageActive: B
                 Text(
                     text = slide.title,
                     color = Color.White,
-                    fontSize = 32.sp,
+                    fontSize = slideTitleFontSize,
                     fontWeight = FontWeight.ExtraBold,
                 )
             }

@@ -14,6 +14,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.mikepenz.hypnoticcanvas.shaderBackground
+import com.mikepenz.hypnoticcanvas.shaders.BubbleRings
 import it.fast4x.riplay.R
 import it.fast4x.riplay.extensions.rewind.data.AnimatedContent
 import it.fast4x.riplay.extensions.rewind.data.RewindSlide
@@ -44,8 +46,7 @@ fun OutroSlideComposable(slide: RewindSlide.OutroSlide, isPageActive: Boolean) {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(slide.backgroundBrush)
-            .padding(32.dp),
+            .shaderBackground(BubbleRings),
         contentAlignment = Alignment.Center
     ) {
         Column(
@@ -96,7 +97,7 @@ fun OutroSlideComposable(slide: RewindSlide.OutroSlide, isPageActive: Boolean) {
 
             AnimatedContent(isVisible = isContentVisible, delay = 1500) {
                 Text(
-                    text = "Keep listening, keep sharing, keep loving.",
+                    text = "Keep listening, keep sharing, keep loving, never hate anyone.",
                     color = Color.White,
                     fontSize = 22.sp,
                     fontWeight = FontWeight.SemiBold,
@@ -104,17 +105,17 @@ fun OutroSlideComposable(slide: RewindSlide.OutroSlide, isPageActive: Boolean) {
                 )
             }
 
-            Spacer(modifier = Modifier.height(48.dp))
-
-
-            AnimatedContent(isVisible = isContentVisible, delay = 2000) {
-                Text(
-                    text = "RiPlay Rewind",
-                    color = Color.White.copy(alpha = 0.7f),
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Medium
-                )
-            }
+//            Spacer(modifier = Modifier.height(48.dp))
+//
+//
+//            AnimatedContent(isVisible = isContentVisible, delay = 2000) {
+//                Text(
+//                    text = "RiPlay Rewind",
+//                    color = Color.White.copy(alpha = 0.7f),
+//                    fontSize = 18.sp,
+//                    fontWeight = FontWeight.Medium
+//                )
+//            }
         }
     }
 }

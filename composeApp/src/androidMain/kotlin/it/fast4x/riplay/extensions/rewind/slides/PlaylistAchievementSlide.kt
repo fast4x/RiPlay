@@ -46,6 +46,7 @@ import it.fast4x.riplay.commonutils.cleanPrefix
 import it.fast4x.riplay.extensions.rewind.data.AnimatedContent
 import it.fast4x.riplay.extensions.rewind.data.AnimationType
 import it.fast4x.riplay.extensions.rewind.data.RewindSlide
+import it.fast4x.riplay.extensions.rewind.data.slideTitleFontSize
 import it.fast4x.riplay.ui.components.themed.Playlist
 import it.fast4x.riplay.ui.styling.px
 import it.fast4x.riplay.utils.colorPalette
@@ -91,7 +92,7 @@ fun PlaylistAchievementSlide(slide: RewindSlide.PlaylistAchievement, isPageActiv
                 Text(
                     text = slide.title,
                     color = Color.White,
-                    fontSize = 32.sp,
+                    fontSize = slideTitleFontSize,
                     fontWeight = FontWeight.ExtraBold,
                 )
             }
