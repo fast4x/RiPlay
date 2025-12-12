@@ -39,7 +39,7 @@ import it.fast4x.riplay.extensions.visualbitmap.VisualBitmapCreator
 @Composable
 fun DynamicRewindSlide(slide: RewindSlide, isPageActive: Boolean) {
     SequentialAnimationContainer(year = slide.year) {
-        VisualBitmapCreator(modifier = Modifier.fillMaxSize()) {
+        //VisualBitmapCreator(modifier = Modifier.fillMaxSize()) {
             when (slide) {
                 is RewindSlide.IntroSlide -> IntroSlide(slide, isPageActive)
                 is RewindSlide.TopSongs -> TopSongsSlide(slide, isPageActive)
@@ -54,7 +54,7 @@ fun DynamicRewindSlide(slide: RewindSlide, isPageActive: Boolean) {
                 is RewindSlide.Intermediate -> IntermediateSlide(slide, isPageActive)
                 is RewindSlide.AnnualListener -> AnnualListenerSlide(slide, isPageActive)
             }
-        }
+        //}
     }
 }
 
