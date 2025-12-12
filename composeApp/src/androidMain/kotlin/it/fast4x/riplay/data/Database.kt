@@ -66,9 +66,13 @@ import it.fast4x.riplay.data.models.SongPlaylistMap
 import it.fast4x.riplay.data.models.SongWithContentLength
 import it.fast4x.riplay.data.models.SortedSongPlaylistMap
 import it.fast4x.riplay.extensions.rewind.data.AlbumMostListened
+import it.fast4x.riplay.extensions.rewind.data.AlbumsListenedCount
 import it.fast4x.riplay.extensions.rewind.data.ArtistMostListened
+import it.fast4x.riplay.extensions.rewind.data.ArtistsListenedCount
 import it.fast4x.riplay.extensions.rewind.data.PlaylistMostListened
+import it.fast4x.riplay.extensions.rewind.data.PlaylistsListenedCount
 import it.fast4x.riplay.extensions.rewind.data.SongMostListened
+import it.fast4x.riplay.extensions.rewind.data.SongsListenedCount
 import it.fast4x.riplay.service.LOCAL_KEY_PREFIX
 import it.fast4x.riplay.utils.appContext
 import it.fast4x.riplay.utils.isExplicit
@@ -2752,6 +2756,40 @@ interface Database {
             "GROUP BY Artist.id ORDER BY SUM(Event.playTime) DESC LIMIT :limit")
     @RewriteQueriesToDropUnusedColumns
     fun artistMostListenedByYear(year: Long, limit: Int = 1): Flow<List<ArtistMostListened?>>
+
+    @Transaction
+    @Query("SELECT COUNT(DISTINCT Song.id) AS songs, ((SUM(Event.playTime) / 60) / 1000) as minutes " +
+            "FROM Event INNER JOIN Song ON Song.id = Event.songId " +
+            "WHERE CAST(strftime('%Y',Event.timestamp / 1000,'unixepoch') as INTEGER) = :year ")
+    @RewriteQueriesToDropUnusedColumns
+    fun songsListenedCountByYear(year: Long): Flow<SongsListenedCount>
+
+    @Transaction
+    @Query("SELECT COUNT(DISTINCT Album.id) as albums, ((SUM(Event.playTime) / 60) / 1000) as minutes FROM Album " +
+            "INNER JOIN SongAlbumMap ON Album.id = SongAlbumMap.albumId " +
+            "INNER JOIN Song ON Song.id = SongAlbumMap.songId " +
+            "INNER JOIN Event ON Event.songId = Song.id " +
+            "WHERE CAST(strftime('%Y',Event.timestamp / 1000,'unixepoch') as INTEGER) = :year ")
+    @RewriteQueriesToDropUnusedColumns
+    fun albumsListenedCountByYear(year: Long): Flow<AlbumsListenedCount?>
+
+    @Transaction
+    @Query("SELECT COUNT(DISTINCT Artist.id) as artists, ((SUM(Event.playTime) / 60) / 1000) as minutes FROM Artist " +
+            "INNER JOIN Song ON Artist.name LIKE '%' || Song.artistsText || '%'  " +
+            "INNER JOIN Event ON Event.songId = Song.id " +
+            "WHERE CAST(strftime('%Y',Event.timestamp / 1000,'unixepoch') as INTEGER) = :year ")
+    @RewriteQueriesToDropUnusedColumns
+    fun artistsListenedCountByYear(year: Long): Flow<ArtistsListenedCount?>
+
+    @Transaction
+    @Query("SELECT COUNT(DISTINCT Playlist.id) as playlists, ((SUM(Event.playTime) / 60) / 1000) as minutes FROM Playlist " +
+            "INNER JOIN SongPlaylistMap ON Playlist.id = SongPlaylistMap.playlistId " +
+            "INNER JOIN Song ON Song.id = SongPlaylistMap.songId " +
+            "INNER JOIN Event ON Event.songId = Song.id " +
+            "WHERE CAST(strftime('%Y',Event.timestamp / 1000,'unixepoch') as INTEGER) = :year ")
+    @RewriteQueriesToDropUnusedColumns
+    fun playlistsListenedCountByYear(year: Long): Flow<PlaylistsListenedCount?>
+
     //*************
 
 

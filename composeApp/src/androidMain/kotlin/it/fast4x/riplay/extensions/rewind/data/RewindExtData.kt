@@ -31,3 +31,27 @@ data class ArtistMostListened(
     @Embedded val artist: Artist,
     val minutes: Long,
 )
+
+@Immutable
+data class SongsListenedCount(
+    val songs: Int,
+    val minutes: Long,
+)
+
+@Immutable
+data class AlbumsListenedCount(
+    val albums: Int,
+    val minutes: Long,
+)
+
+@Immutable
+data class ArtistsListenedCount(
+    val artists: Int,
+    val minutes: Long,
+)
+
+@Immutable
+data class PlaylistsListenedCount(
+    val playlists: Int,
+    val minutes: Long,
+)

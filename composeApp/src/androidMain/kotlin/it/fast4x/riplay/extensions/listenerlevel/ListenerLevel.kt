@@ -68,7 +68,7 @@ fun monthlyListenerLevel(): Triple<MonthlyListenerLevel, MonthlyListenerLevel, F
 
 @Composable
 fun annualListenerLevel(): Triple<AnnualListenerLevel, AnnualListenerLevel, Float> {
-    val ym by remember { mutableStateOf(getCalculatedMonths(0)) }
+    val ym by remember { mutableStateOf(getCalculatedMonths(1)) }
     val y by remember { mutableLongStateOf( ym?.substring(0,4)?.toLong() ?: 0) }
 
     val minutes = remember {

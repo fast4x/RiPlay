@@ -106,11 +106,19 @@ sealed class RewindSlide(val id: Int, val backgroundBrush: Brush) {
         val brush: Brush,
     ) : RewindSlide(8, brush)
 
+    data class AnnualListener(
+        override val title: String,
+        override val year: Int,
+        val brush: Brush
+    ) : RewindSlide(8, brush)
+
     data class Intermediate(
         override val title: String,
         override val year: Int,
         val message: String,
         val subMessage: String,
+        val message1: String,
+        val subMessage1: String,
         val brush: Brush
     ) : RewindSlide(98, brush)
 
@@ -249,14 +257,15 @@ data class RewindState (
     val topArtists: RewindSlide.TopArtists,
     val topPlaylists: RewindSlide.TopPlaylists,
     val outro: RewindSlide.OutroSlide,
+    val annualListener: RewindSlide.AnnualListener,
     val intermediate1: RewindSlide.Intermediate,
-    val intermediate2: RewindSlide.Intermediate?,
-    val intermediate3: RewindSlide.Intermediate?,
-    val intermediate4: RewindSlide.Intermediate?,
-    val intermediate5: RewindSlide.Intermediate?,
-    val intermediate6: RewindSlide.Intermediate?,
-    val intermediate7: RewindSlide.Intermediate?,
-    val intermediate8: RewindSlide.Intermediate?,
+    val intermediate2: RewindSlide.Intermediate,
+    val intermediate3: RewindSlide.Intermediate,
+    val intermediate4: RewindSlide.Intermediate,
+    val intermediate5: RewindSlide.Intermediate,
+    val intermediate6: RewindSlide.Intermediate,
+    val intermediate7: RewindSlide.Intermediate,
+    val intermediate8: RewindSlide.Intermediate,
     val intermediate9: RewindSlide.Intermediate?,
     val intermediate10: RewindSlide.Intermediate?,
 )
@@ -293,6 +302,21 @@ fun buildRewindState(): RewindState {
 
     Timber.d("RewindData: artistMostListened: $artistMostListened")
 
+    val songsListenedCount = remember {
+        Database.songsListenedCountByYear(y)
+    }.collectAsState(initial = null, context = Dispatchers.IO)
+
+    val albumsListenedCount = remember {
+        Database.albumsListenedCountByYear(y)
+    }.collectAsState(initial = null, context = Dispatchers.IO)
+
+    val artistsListenedCount = remember {
+        Database.artistsListenedCountByYear(y)
+    }.collectAsState(initial = null, context = Dispatchers.IO)
+
+    val playlistsListenedCount = remember {
+        Database.playlistsListenedCountByYear(y)
+    }.collectAsState(initial = null, context = Dispatchers.IO)
 
     return RewindState(
         intro = RewindSlide.IntroSlide(
@@ -413,22 +437,101 @@ fun buildRewindState(): RewindState {
                 colors = listOf(Color(0xFFE91E63), Color(0xFF9C27B0), Color(0xFF3F51B5))
             )
         ),
-        intermediate1 = RewindSlide.Intermediate(
-            title = "Rewind",
+        annualListener = RewindSlide.AnnualListener(
+            title = "Annual Listener Level ${y.toInt()}",
             year = y.toInt(),
-            message = "One",
-            subMessage = "intermediate",
             brush = Brush.verticalGradient(
                 colors = listOf(Color(0xFFE91E63), Color(0xFF9C27B0), Color(0xFF3F51B5))
             )
         ),
-        intermediate2 = null,
-        intermediate3 = null,
-        intermediate4 = null,
-        intermediate5 = null,
-        intermediate6 = null,
-        intermediate7 = null,
-        intermediate8 = null,
+        intermediate1 = RewindSlide.Intermediate(
+            title = "Songs listened to ${y.toInt()}",
+            year = y.toInt(),
+            message = "${songsListenedCount.value?.songs} songs",
+            subMessage = "",
+            message1 = "${songsListenedCount.value?.minutes} minutes",
+            subMessage1 = "",
+            brush = Brush.verticalGradient(
+                colors = listOf(Color(0xFFE91E63), Color(0xFF9C27B0), Color(0xFF3F51B5))
+            )
+        ),
+        intermediate2 = RewindSlide.Intermediate(
+            title = "Albums listened to ${y.toInt()}",
+            year = y.toInt(),
+            message = "${albumsListenedCount.value?.albums} albums",
+            subMessage = "",
+            message1 = "${albumsListenedCount.value?.minutes} minutes",
+            subMessage1 = "",
+            brush = Brush.verticalGradient(
+                colors = listOf(Color(0xFFE91E63), Color(0xFF9C27B0), Color(0xFF3F51B5))
+            )
+        ),
+        intermediate3 = RewindSlide.Intermediate(
+            title = "Artists listened to ${y.toInt()}",
+            year = y.toInt(),
+            message = "${artistsListenedCount.value?.artists} artists",
+            subMessage = "",
+            message1 = "${artistsListenedCount.value?.minutes} minutes",
+            subMessage1 = "",
+            brush = Brush.verticalGradient(
+                colors = listOf(Color(0xFFE91E63), Color(0xFF9C27B0), Color(0xFF3F51B5))
+            )
+        ),
+        intermediate4 = RewindSlide.Intermediate(
+            title = "Playlists listened to ${y.toInt()}",
+            year = y.toInt(),
+            message = "${playlistsListenedCount.value?.playlists} playlists",
+            subMessage = "",
+            message1 = "${playlistsListenedCount.value?.minutes} minutes",
+            subMessage1 = "",
+            brush = Brush.verticalGradient(
+                colors = listOf(Color(0xFFE91E63), Color(0xFF9C27B0), Color(0xFF3F51B5))
+            )
+        ),
+        intermediate5 = RewindSlide.Intermediate(
+            title = "Rewind ${y.toInt()}",
+            year = y.toInt(),
+            message = "Let's analyze",
+            subMessage = " your HISTORY",
+            message1 = "ready for",
+            subMessage1 = "your results",
+            brush = Brush.verticalGradient(
+                colors = listOf(Color(0xFFE91E63), Color(0xFF9C27B0), Color(0xFF3F51B5))
+            )
+        ),
+        intermediate6 = RewindSlide.Intermediate(
+            title = "Rewind ${y.toInt()}",
+            year = y.toInt(),
+            message = "Let's start",
+            subMessage = "your NUMBERS",
+            message1 = "ready for",
+            subMessage1 = "your music story",
+            brush = Brush.verticalGradient(
+                colors = listOf(Color(0xFFE91E63), Color(0xFF9C27B0), Color(0xFF3F51B5))
+            )
+        ),
+        intermediate7 = RewindSlide.Intermediate(
+            title = "Rewind ${y.toInt()}",
+            year = y.toInt(),
+            message = "Now",
+            subMessage = "your TOP",
+            message1 = "ready for",
+            subMessage1 = "your music preferences",
+            brush = Brush.verticalGradient(
+                colors = listOf(Color(0xFFE91E63), Color(0xFF9C27B0), Color(0xFF3F51B5))
+            )
+        ),
+        intermediate8 = RewindSlide.Intermediate(
+            title = "Rewind ${y.toInt()}",
+            year = y.toInt(),
+            message = "and Now",
+            subMessage = "your BADGE",
+            message1 = "ready to know",
+            subMessage1 = "your music level",
+            brush = Brush.verticalGradient(
+                colors = listOf(Color(0xFFE91E63), Color(0xFF9C27B0), Color(0xFF3F51B5))
+            )
+        ),
         intermediate9 = null,
         intermediate10 = null,
     )
@@ -443,15 +546,33 @@ fun getRewindSlides(): List<RewindSlide> {
 
     return listOf(
         state.intro,
+
+        //numbers
+        state.intermediate6,
         state.intermediate1,
+        state.intermediate2,
+        state.intermediate3,
+        state.intermediate4,
+
+        // top
+        state.intermediate7,
         state.topSongs,
         state.topAlbums,
         state.topArtists,
         state.topPlaylists,
+
+        // results
+        state.intermediate5,
         state.song,
         state.album,
         state.playlist,
         state.artist,
+
+        // annual badge
+        state.intermediate8,
+        state.annualListener,
+
+        // end
         state.outro
     )
 }

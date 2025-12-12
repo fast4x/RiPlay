@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import it.fast4x.riplay.extensions.rewind.data.RewindSlide
 import it.fast4x.riplay.extensions.rewind.data.SequentialAnimationContainer
 import it.fast4x.riplay.extensions.rewind.slides.AlbumAchievementSlide
+import it.fast4x.riplay.extensions.rewind.slides.AnnualListenerSlide
 import it.fast4x.riplay.extensions.rewind.slides.ArtistAchievementSlide
 import it.fast4x.riplay.extensions.rewind.slides.IntermediateSlide
 import it.fast4x.riplay.extensions.rewind.slides.IntroSlide
@@ -49,6 +50,7 @@ fun DynamicRewindSlide(slide: RewindSlide, isPageActive: Boolean) {
             is RewindSlide.ArtistAchievement -> ArtistAchievementSlide(slide, isPageActive)
             is RewindSlide.OutroSlide -> OutroSlideComposable(slide, isPageActive)
             is RewindSlide.Intermediate -> IntermediateSlide(slide, isPageActive)
+            is RewindSlide.AnnualListener -> AnnualListenerSlide(slide, isPageActive)
         }
     }
 }

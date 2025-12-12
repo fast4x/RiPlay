@@ -41,6 +41,7 @@ import androidx.compose.ui.unit.sp
 import com.mikepenz.hypnoticcanvas.shaderBackground
 import com.mikepenz.hypnoticcanvas.shaders.GradientFlow
 import it.fast4x.riplay.R
+import it.fast4x.riplay.extensions.listenerlevel.AnnualLevelChart
 import it.fast4x.riplay.extensions.rewind.data.AnimatedContent
 import it.fast4x.riplay.extensions.rewind.data.AnimationType
 import it.fast4x.riplay.extensions.rewind.data.RewindSlide
@@ -52,7 +53,7 @@ import kotlinx.coroutines.delay
 
 
 @Composable
-fun IntermediateSlide(slide: RewindSlide.Intermediate, isPageActive: Boolean = false) {
+fun AnnualListenerSlide(slide: RewindSlide.AnnualListener, isPageActive: Boolean = false) {
     var isContentVisible by remember { mutableStateOf(false) }
 
     LaunchedEffect(isPageActive) {
@@ -102,7 +103,7 @@ fun IntermediateSlide(slide: RewindSlide.Intermediate, isPageActive: Boolean = f
 
             AnimatedContent(isVisible = isContentVisible, delay = 500, animationType = AnimationType.SLIDE_FROM_UP) {
                 Text(
-                    text = slide.message,
+                    text = "Your Badge ${slide.year}",
                     color = Color.White,
                     fontSize = 40.sp,
                     fontWeight = FontWeight.Bold,
@@ -110,55 +111,11 @@ fun IntermediateSlide(slide: RewindSlide.Intermediate, isPageActive: Boolean = f
             }
 
             AnimatedContent(isVisible = isContentVisible, delay = 500, animationType = AnimationType.SLIDE_FROM_UP) {
-                Text(
-                    text = slide.subMessage,
-                    color = Color.White,
-                    fontSize = 30.sp,
-                    fontWeight = FontWeight.Bold,
-                )
-            }
-
-            AnimatedContent(isVisible = isContentVisible, delay = 500, animationType = AnimationType.SLIDE_FROM_UP) {
-                Text(
-                    text = slide.message1,
-                    color = Color.White,
-                    fontSize = 40.sp,
-                    fontWeight = FontWeight.Bold,
-                )
-            }
-
-            AnimatedContent(isVisible = isContentVisible, delay = 500, animationType = AnimationType.SLIDE_FROM_UP) {
-                Text(
-                    text = slide.subMessage1,
-                    color = Color.White,
-                    fontSize = 30.sp,
-                    fontWeight = FontWeight.Bold,
-                )
-            }
-
-            Spacer(modifier = Modifier.height(46.dp))
-
-            AnimatedContent(isVisible = isContentVisible, delay = 1500) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text(
-                        text = "Swipe to continue",
-                        color = Color.White.copy(alpha = 0.7f),
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Medium
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Icon(
-                        painter = painterResource(id = R.drawable.chevron_forward),
-                        contentDescription = "Swipe",
-                        tint = Color.White,
-                        modifier = Modifier
-                            .size(48.dp)
-                            .scale(scale)
-                    )
+                Column {
+                    AnnualLevelChart()
                 }
             }
+
 
         }
     }
