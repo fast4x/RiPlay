@@ -34,6 +34,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -45,6 +46,7 @@ import it.fast4x.riplay.extensions.rewind.data.AnimatedContent
 import it.fast4x.riplay.extensions.rewind.data.AnimationType
 import it.fast4x.riplay.extensions.rewind.data.RewindSlide
 import it.fast4x.riplay.extensions.rewind.data.slideTitleFontSize
+import it.fast4x.riplay.extensions.visualbitmap.VisualBitmapCreator
 import it.fast4x.riplay.ui.items.SongItem
 import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.ui.styling.px
@@ -53,113 +55,135 @@ import kotlinx.coroutines.delay
 
 @Composable
 fun IntermediateSlide(slide: RewindSlide.Intermediate, isPageActive: Boolean = false) {
-    var isContentVisible by remember { mutableStateOf(false) }
 
-    LaunchedEffect(isPageActive) {
-        if (isPageActive) {
-            delay(100)
-            isContentVisible = true
-        } else {
-            isContentVisible = false
+        var isContentVisible by remember { mutableStateOf(false) }
+
+        LaunchedEffect(isPageActive) {
+            if (isPageActive) {
+                delay(100)
+                isContentVisible = true
+            } else {
+                isContentVisible = false
+            }
         }
-    }
 
-    val infiniteTransition = rememberInfiniteTransition(label = "pulse")
-    val scale by infiniteTransition.animateFloat(
-        initialValue = 1f,
-        targetValue = 1.2f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(800, easing = EaseInOutCubic),
-            repeatMode = RepeatMode.Reverse
-        ), label = "scale"
-    )
+        val infiniteTransition = rememberInfiniteTransition(label = "pulse")
+        val scale by infiniteTransition.animateFloat(
+            initialValue = 1f,
+            targetValue = 1.2f,
+            animationSpec = infiniteRepeatable(
+                animation = tween(800, easing = EaseInOutCubic),
+                repeatMode = RepeatMode.Reverse
+            ), label = "scale"
+        )
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .shaderBackground(GradientFlow),
-        contentAlignment = Alignment.Center
-    ) {
-
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
+        Box(
             modifier = Modifier
-                .fillMaxWidth()
-                .verticalScroll(rememberScrollState())
+                .fillMaxSize()
+                .shaderBackground(GradientFlow),
+            contentAlignment = Alignment.Center
         ) {
 
-            AnimatedContent(isVisible = isContentVisible, delay = 500, animationType = AnimationType.SPRING_SCALE_IN) {
-                Text(
-                    text = slide.title,
-                    color = Color.White,
-                    fontSize = slideTitleFontSize,
-                    fontWeight = FontWeight.ExtraBold,
-                )
-            }
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .verticalScroll(rememberScrollState())
+            ) {
 
-            Spacer(modifier = Modifier.height(16.dp))
-
-            AnimatedContent(isVisible = isContentVisible, delay = 500, animationType = AnimationType.SLIDE_FROM_UP) {
-                Text(
-                    text = slide.message,
-                    color = Color.White,
-                    fontSize = 40.sp,
-                    fontWeight = FontWeight.Bold,
-                )
-            }
-
-            AnimatedContent(isVisible = isContentVisible, delay = 500, animationType = AnimationType.SLIDE_FROM_UP) {
-                Text(
-                    text = slide.subMessage,
-                    color = Color.White,
-                    fontSize = 30.sp,
-                    fontWeight = FontWeight.Bold,
-                )
-            }
-
-            AnimatedContent(isVisible = isContentVisible, delay = 500, animationType = AnimationType.SLIDE_FROM_UP) {
-                Text(
-                    text = slide.message1,
-                    color = Color.White,
-                    fontSize = 40.sp,
-                    fontWeight = FontWeight.Bold,
-                )
-            }
-
-            AnimatedContent(isVisible = isContentVisible, delay = 500, animationType = AnimationType.SLIDE_FROM_UP) {
-                Text(
-                    text = slide.subMessage1,
-                    color = Color.White,
-                    fontSize = 30.sp,
-                    fontWeight = FontWeight.Bold,
-                )
-            }
-
-            Spacer(modifier = Modifier.height(46.dp))
-
-            AnimatedContent(isVisible = isContentVisible, delay = 1500) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally
+                AnimatedContent(
+                    isVisible = isContentVisible,
+                    delay = 500,
+                    animationType = AnimationType.SPRING_SCALE_IN
                 ) {
                     Text(
-                        text = "Swipe to continue",
-                        color = Color.White.copy(alpha = 0.7f),
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Medium
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Icon(
-                        painter = painterResource(id = R.drawable.chevron_forward),
-                        contentDescription = "Swipe",
-                        tint = Color.White,
-                        modifier = Modifier
-                            .size(48.dp)
-                            .scale(scale)
+                        text = slide.title,
+                        color = Color.White,
+                        fontSize = slideTitleFontSize,
+                        fontWeight = FontWeight.ExtraBold,
                     )
                 }
-            }
 
+                Spacer(modifier = Modifier.height(16.dp))
+
+                AnimatedContent(
+                    isVisible = isContentVisible,
+                    delay = 500,
+                    animationType = AnimationType.SLIDE_FROM_UP
+                ) {
+                    Text(
+                        text = slide.message,
+                        color = Color.White,
+                        fontSize = 40.sp,
+                        fontWeight = FontWeight.Bold,
+                    )
+                }
+
+                AnimatedContent(
+                    isVisible = isContentVisible,
+                    delay = 500,
+                    animationType = AnimationType.SLIDE_FROM_UP
+                ) {
+                    Text(
+                        text = slide.subMessage,
+                        color = Color.White,
+                        fontSize = 30.sp,
+                        fontWeight = FontWeight.Bold,
+                    )
+                }
+
+                AnimatedContent(
+                    isVisible = isContentVisible,
+                    delay = 500,
+                    animationType = AnimationType.SLIDE_FROM_UP
+                ) {
+                    Text(
+                        text = slide.message1,
+                        color = Color.White,
+                        fontSize = 40.sp,
+                        fontWeight = FontWeight.Bold,
+                    )
+                }
+
+                AnimatedContent(
+                    isVisible = isContentVisible,
+                    delay = 500,
+                    animationType = AnimationType.SLIDE_FROM_UP
+                ) {
+                    Text(
+                        text = slide.subMessage1,
+                        color = Color.White,
+                        fontSize = 30.sp,
+                        fontWeight = FontWeight.Bold,
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(46.dp))
+
+                AnimatedContent(isVisible = isContentVisible, delay = 1500) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = "Swipe to continue",
+                            color = Color.White.copy(alpha = 0.7f),
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Medium
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Icon(
+                            painter = painterResource(id = R.drawable.chevron_forward),
+                            contentDescription = "Swipe",
+                            tint = Color.White,
+                            modifier = Modifier
+                                .size(48.dp)
+                                .scale(scale)
+                        )
+                    }
+                }
+
+            }
         }
-    }
+
 }

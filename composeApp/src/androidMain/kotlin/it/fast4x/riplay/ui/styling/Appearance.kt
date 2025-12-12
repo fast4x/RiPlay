@@ -38,4 +38,4 @@ data class Appearance(
     }
 }
 
-val LocalAppearance = staticCompositionLocalOf<Appearance> { TODO() }
+val LocalAppearance = staticCompositionLocalOf<Appearance> { error("No appearance provided") }

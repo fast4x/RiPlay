@@ -33,6 +33,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -48,6 +49,7 @@ import it.fast4x.riplay.extensions.rewind.data.AnimatedContent
 import it.fast4x.riplay.extensions.rewind.data.AnimationType
 import it.fast4x.riplay.extensions.rewind.data.RewindSlide
 import it.fast4x.riplay.extensions.rewind.data.slideTitleFontSize
+import it.fast4x.riplay.extensions.visualbitmap.VisualBitmapCreator
 import it.fast4x.riplay.ui.components.themed.NonQueuedMediaItemMenuLibrary
 import it.fast4x.riplay.ui.components.themed.NowPlayingSongIndicator
 import it.fast4x.riplay.ui.components.themed.Playlist
@@ -63,66 +65,73 @@ import kotlinx.coroutines.delay
 
 @Composable
 fun TopAlbumsSlide(slide: RewindSlide.TopAlbums, isPageActive: Boolean = false) {
-    var isContentVisible by remember { mutableStateOf(false) }
 
-    LaunchedEffect(isPageActive) {
-        if (isPageActive) {
-            delay(100)
-            isContentVisible = true
-        } else {
-            isContentVisible = false
+        var isContentVisible by remember { mutableStateOf(false) }
+
+        LaunchedEffect(isPageActive) {
+            if (isPageActive) {
+                delay(100)
+                isContentVisible = true
+            } else {
+                isContentVisible = false
+            }
         }
-    }
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .shaderBackground(MeshGradient(
-                colors = listOf(
-                    Color.Red.copy(alpha = 0.5f),
-                    Color.Green,
-                    Color.Magenta.copy(alpha = 0.5f)
-                ).toTypedArray()
-            )),
-        contentAlignment = Alignment.Center
-    ) {
-
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
+        Box(
             modifier = Modifier
-                .fillMaxWidth()
-                .verticalScroll(rememberScrollState())
+                .fillMaxSize()
+                .shaderBackground(
+                    MeshGradient(
+                        colors = listOf(
+                            Color.Red.copy(alpha = 0.5f),
+                            Color.Green,
+                            Color.Magenta.copy(alpha = 0.5f)
+                        ).toTypedArray()
+                    )
+                ),
+            contentAlignment = Alignment.Center
         ) {
 
-            AnimatedContent(isVisible = isContentVisible, delay = 500, animationType = AnimationType.SPRING_SCALE_IN) {
-                Text(
-                    text = slide.title,
-                    color = Color.White,
-                    fontSize = slideTitleFontSize,
-                    fontWeight = FontWeight.ExtraBold,
-                )
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            AnimatedContent(
-                isVisible = isContentVisible,
-                delay = 2000,
-                animationType = AnimationType.SPRING_SCALE_IN
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .verticalScroll(rememberScrollState())
             ) {
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(16.dp)),
-                    colors = CardDefaults.cardColors(containerColor = Color.Black.copy(alpha = 0.5f))
-                ) {
-                    Column(
-                        modifier = Modifier.padding(12.dp),
-                    ) {
 
-                        slide.albums.forEachIndexed { index, it ->
-                            if (it?.album == null) return@forEachIndexed
+                AnimatedContent(
+                    isVisible = isContentVisible,
+                    delay = 500,
+                    animationType = AnimationType.SPRING_SCALE_IN
+                ) {
+                    Text(
+                        text = slide.title,
+                        color = Color.White,
+                        fontSize = slideTitleFontSize,
+                        fontWeight = FontWeight.ExtraBold,
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                AnimatedContent(
+                    isVisible = isContentVisible,
+                    delay = 2000,
+                    animationType = AnimationType.SPRING_SCALE_IN
+                ) {
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(16.dp)),
+                        colors = CardDefaults.cardColors(containerColor = Color.Black.copy(alpha = 0.5f))
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(12.dp),
+                        ) {
+
+                            slide.albums.forEachIndexed { index, it ->
+                                if (it?.album == null) return@forEachIndexed
 
                                 Row(
                                     modifier = Modifier.fillMaxWidth(),
@@ -162,11 +171,12 @@ fun TopAlbumsSlide(slide: RewindSlide.TopAlbums, isPageActive: Boolean = false) 
                                 }
 
 
-                        }
+                            }
 
+                        }
                     }
                 }
             }
         }
-    }
+
 }
