@@ -484,16 +484,17 @@ fun HomePage(
                 if (showListenerLevels)
                     ListenerLevelBadges(navController)
 
-                Text(
-                    text = "Rewind",
-                    color = Color.White,
-                    fontSize = 56.sp,
-                    fontWeight = FontWeight.ExtraBold,
-                    textAlign = TextAlign.Center,
-                    lineHeight = 60.sp,
-                    modifier = Modifier
-                        .clickable{ navController.navigate(NavRoutes.rewind.name) }
-                )
+                // Not still yet completed, i'm working on it
+//                Text(
+//                    text = "Rewind",
+//                    color = Color.White,
+//                    fontSize = 56.sp,
+//                    fontWeight = FontWeight.ExtraBold,
+//                    textAlign = TextAlign.Center,
+//                    lineHeight = 60.sp,
+//                    modifier = Modifier
+//                        .clickable{ navController.navigate(NavRoutes.rewind.name) }
+//                )
 
 
                 if (showTips) {
