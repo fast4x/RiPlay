@@ -969,4 +969,5 @@
     <string name="enable_voice_input">Sprach-Eingabe aktivieren</string>
     <string name="music_identifier_provider">Musik-Identifikator Anbieter</string>
     <string name="music_identify">Identifiziere</string>
+    <string name="listener_levels">Listener Levels</string>
 </resources>
