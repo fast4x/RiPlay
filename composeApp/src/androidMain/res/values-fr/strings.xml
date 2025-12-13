@@ -11,7 +11,7 @@
     <string name="add_to_playlist">Ajouter à la playlist</string>
     <string name="go_to_album">Aller à l\'album</string>
     <string name="remove_from_queue">Supprimer de la file d\'attente</string>
-    <string name="remove_from_playlist">Supprimer de la playlist </string>
+    <string name="remove_from_playlist">Supprimer de la playlist</string>
     <string name="hide">Cacher</string>
     <string name="hide_from_quick_picks">Cacher de la \"Sélection Rapide\"</string>
     <string name="related_albums">Albums Associés</string>
@@ -972,4 +972,5 @@ Volume BAS : titre précédent</string>
     <string name="enable_voice_input">Activer la saisie vocale</string>
     <string name="music_identifier_provider">Fournisseur d\'identifiants musicaux</string>
     <string name="music_identify">Identifier</string>
+    <string name="listener_levels">Niveaux d\'écoute</string>
 </resources>

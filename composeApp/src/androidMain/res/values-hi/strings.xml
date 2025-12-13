@@ -969,4 +969,5 @@
     <string name="enable_voice_input">Enable voice input</string>
     <string name="music_identifier_provider">Music identifier provider</string>
     <string name="music_identify">पहचान करें</string>
+    <string name="listener_levels">Listener Levels</string>
 </resources>
