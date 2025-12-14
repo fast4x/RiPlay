@@ -72,7 +72,7 @@ private fun HamburgerMenu(
     menu.add(
         DropdownMenu.Item(
             R.drawable.stat_year,
-            R.string.listener_levels
+            R.string.rewinds,
         ) { onItemClick( NavRoutes.rewind ) }
     )
     // Picture in picture button
