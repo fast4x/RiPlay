@@ -14,21 +14,26 @@ import it.fast4x.riplay.data.Database
 import kotlinx.coroutines.Dispatchers
 import java.util.Calendar
 
-fun getFirstRewindYear(): Int {
+fun getRewindYear(): Int {
     val currentYear = Calendar.getInstance().get(Calendar.YEAR)
     val currentMonth = Calendar.getInstance().get(Calendar.MONTH)
-    //return if (currentMonth == 11) currentYear else 0
-    return 0
+    return when (currentMonth) {
+        0 -> currentYear - 1
+        11 -> currentYear
+        else -> 0
+    }
 }
 
 @Composable
 fun getRewindYears(limit: Int = 5): List<Int> {
-    val firstRewindYear = getFirstRewindYear()
     val yearsList = remember {
         Database.rewindYears(limit = limit)
     }.collectAsState(initial = null, context = Dispatchers.IO)
-
-    return yearsList.value?.filterNot { it == firstRewindYear } ?: emptyList()
+    val currentMonth = Calendar.getInstance().get(Calendar.MONTH)
+    return when (currentMonth) {
+        0,11 -> yearsList.value
+        else -> yearsList.value?.drop(if (yearsList.value?.size!! > 1) 1 else 0)
+    } ?: emptyList()
 }
 
 fun shadersList() = listOf(

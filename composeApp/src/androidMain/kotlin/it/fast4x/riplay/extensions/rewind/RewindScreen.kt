@@ -139,9 +139,10 @@ fun HomepageRewind(
     if (showIfEndOfYear && Calendar.getInstance().get(Calendar.MONTH) < 11) return
 
     getRewindYears().let { years ->
+        if (years.isEmpty()) return@let
 
         Title(
-            title = if (showIfEndOfYear) "Watch your rewind" else stringResource(R.string.rewinds),
+            title = if (showIfEndOfYear) stringResource(R.string.rw_watch_your_rewind) else stringResource(R.string.rewinds),
             onClick = { navController.navigate(NavRoutes.rewind.name) },
         )
 
@@ -156,8 +157,14 @@ fun HomepageRewind(
                     thumbnailSizeDp = playlistThumbnailSizeDp,
                     thumbnailContent = {
                         Box(
-                            modifier = Modifier.fillMaxSize()
-                                .shaderBackground(shadersList()[Random.nextInt(0, shadersList().size-1)])
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .shaderBackground(
+                                    shadersList()[Random.nextInt(
+                                        0,
+                                        shadersList().size - 1
+                                    )]
+                                )
                         ) {
                             Text(
                                 text = year.toString(),

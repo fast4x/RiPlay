@@ -971,4 +971,5 @@
     <string name="music_identify">Identify</string>
     <string name="listener_levels">Listener Levels</string>
     <string name="rewinds">Rewinds</string>
+    <string name="rw_watch_your_rewind">Watch your rewind</string>
 </resources>

@@ -3,9 +3,6 @@ package it.fast4x.riplay.extensions.rewind.data
 import android.net.Uri
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableLongStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -14,7 +11,7 @@ import androidx.core.net.toUri
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.data.models.Playlist
 import it.fast4x.riplay.data.models.Song
-import it.fast4x.riplay.extensions.rewind.utils.getFirstRewindYear
+import it.fast4x.riplay.extensions.rewind.utils.getRewindYear
 import kotlinx.coroutines.Dispatchers
 import timber.log.Timber
 
@@ -272,7 +269,7 @@ data class RewindState (
 
 @Composable
 fun buildRewindState(year: Int? = null): RewindState {
-    val y = year ?: getFirstRewindYear()
+    val y = year ?: getRewindYear()
 
     val songMostListened = remember {
         Database.songMostListenedByYear(y, 10)
