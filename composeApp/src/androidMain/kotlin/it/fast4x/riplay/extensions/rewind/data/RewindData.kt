@@ -6,8 +6,10 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
+import it.fast4x.riplay.R
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.data.models.Playlist
 import it.fast4x.riplay.data.models.Song
@@ -315,14 +317,14 @@ fun buildRewindState(year: Int? = null): RewindState {
 
     return RewindState(
         intro = RewindSlide.IntroSlide(
-            title = "Rewind",
+            title = stringResource(R.string.rw_rewind),
             year = y.toInt(),
             brush = Brush.verticalGradient(
                 colors = listOf(Color(0xFFE7D858), Color(0xFF733B81))
             )
         ),
         topSongs = RewindSlide.TopSongs(
-            title = "Top Songs ${y.toInt()}",
+            title = stringResource(R.string.rw_top_songs, y.toInt()),
             year = y.toInt(),
             songs = songMostListened.value ?: emptyList(),
             brush = Brush.verticalGradient(
@@ -330,7 +332,7 @@ fun buildRewindState(year: Int? = null): RewindState {
             )
         ),
         topAlbums = RewindSlide.TopAlbums(
-            title = "Top Albums ${y.toInt()}",
+            title = stringResource(R.string.rw_top_albums, y.toInt()),
             year = y.toInt(),
             albums = albumMostListened.value ?: emptyList(),
             brush = Brush.verticalGradient(
@@ -338,7 +340,7 @@ fun buildRewindState(year: Int? = null): RewindState {
             )
         ),
         topArtists = RewindSlide.TopArtists(
-            title = "Top Artists ${y.toInt()}",
+            title = stringResource(R.string.rw_top_artists, y.toInt()),
             year = y.toInt(),
             artists = artistMostListened.value ?: emptyList(),
             brush = Brush.verticalGradient(
@@ -346,7 +348,7 @@ fun buildRewindState(year: Int? = null): RewindState {
             )
         ),
         topPlaylists = RewindSlide.TopPlaylists(
-            title = "Top Playlists ${y.toInt()}",
+            title = stringResource(R.string.rw_top_playlists, y.toInt()),
             year = y.toInt(),
             playlists = playlistMostListened.value ?: emptyList(),
             brush = Brush.verticalGradient(
@@ -354,7 +356,7 @@ fun buildRewindState(year: Int? = null): RewindState {
             )
         ),
         song = RewindSlide.SongAchievement(
-            title = "Your favorite song ${y.toInt()}",
+            title = stringResource(R.string.rw_your_favorite_song, y.toInt()),
             year = y.toInt(),
             songTitle = songMostListened.value?.firstOrNull()?.song?.title ?: "",
             artistName = songMostListened.value?.firstOrNull()?.song?.artistsText ?: "",
@@ -373,7 +375,7 @@ fun buildRewindState(year: Int? = null): RewindState {
             song = songMostListened.value?.firstOrNull()?.song,
         ),
         album = RewindSlide.AlbumAchievement(
-            title = "Your favorite album ${y.toInt()}",
+            title = stringResource(R.string.rw_your_favorite_album, y.toInt()),
             year = y.toInt(),
             albumTitle = albumMostListened.value?.firstOrNull()?.album?.title ?: "",
             artistName = albumMostListened.value?.firstOrNull()?.album?.authorsText ?: "",
@@ -391,7 +393,7 @@ fun buildRewindState(year: Int? = null): RewindState {
             minutesListened = albumMostListened.value?.firstOrNull()?.minutes ?: 0
         ),
         playlist = RewindSlide.PlaylistAchievement(
-            title = "Your favorite playlist ${y.toInt()}",
+            title = stringResource(R.string.rw_your_favorite_playlist, y.toInt()),
             year = y.toInt(),
             playlist = playlistMostListened.value?.firstOrNull()?.playlist,
             playlistName = playlistMostListened.value?.firstOrNull()?.playlist?.name ?: "",
@@ -409,7 +411,7 @@ fun buildRewindState(year: Int? = null): RewindState {
             )
         ),
         artist = RewindSlide.ArtistAchievement(
-            title = "Your favorite artist ${y.toInt()}",
+            title = stringResource(R.string.rw_your_favorite_artist, y.toInt()),
             year = y.toInt(),
             artistName = artistMostListened.value?.firstOrNull()?.artist?.name ?: "",
             artistImageUri = (artistMostListened.value?.firstOrNull()?.artist?.thumbnailUrl ?: "").toUri(),
@@ -426,103 +428,103 @@ fun buildRewindState(year: Int? = null): RewindState {
             )
         ),
         outro = RewindSlide.OutroSlide(
-            title = "Rewind",
+            title = stringResource(R.string.rw_rewind),
             year = y.toInt(),
             brush = Brush.verticalGradient(
                 colors = listOf(Color(0xFFE91E63), Color(0xFF9C27B0), Color(0xFF3F51B5))
             )
         ),
         annualListener = RewindSlide.AnnualListener(
-            title = "Annual Listener Level ${y.toInt()}",
+            title = stringResource(R.string.rw_annual_listener_level, y.toInt()),
             year = y.toInt(),
             brush = Brush.verticalGradient(
                 colors = listOf(Color(0xFFE91E63), Color(0xFF9C27B0), Color(0xFF3F51B5))
             )
         ),
         intermediate1 = RewindSlide.Intermediate(
-            title = "Songs listened to ${y.toInt()}",
+            title = stringResource(R.string.rw_songs_listened_to, y.toInt()),
             year = y.toInt(),
-            message = "${songsListenedCount.value?.songs} songs",
+            message = stringResource(R.string.rw_songs, songsListenedCount.value?.songs.toString()),
             subMessage = "",
-            message1 = "${songsListenedCount.value?.minutes} minutes",
+            message1 = stringResource(R.string.rw_minutes, songsListenedCount.value?.minutes.toString()),
             subMessage1 = "",
             brush = Brush.verticalGradient(
                 colors = listOf(Color(0xFFE91E63), Color(0xFF9C27B0), Color(0xFF3F51B5))
             )
         ),
         intermediate2 = RewindSlide.Intermediate(
-            title = "Albums listened to ${y.toInt()}",
+            title = stringResource(R.string.rw_albums_listened_to, y.toInt()),
             year = y.toInt(),
-            message = "${albumsListenedCount.value?.albums} albums",
+            message = stringResource(R.string.rw_albums, albumsListenedCount.value?.albums.toString()),
             subMessage = "",
-            message1 = "${albumsListenedCount.value?.minutes} minutes",
+            message1 = stringResource(R.string.rw_minutes, albumsListenedCount.value?.minutes.toString()),
             subMessage1 = "",
             brush = Brush.verticalGradient(
                 colors = listOf(Color(0xFFE91E63), Color(0xFF9C27B0), Color(0xFF3F51B5))
             )
         ),
         intermediate3 = RewindSlide.Intermediate(
-            title = "Artists listened to ${y.toInt()}",
+            title = stringResource(R.string.rw_artists_listened_to, y.toInt()),
             year = y.toInt(),
-            message = "${artistsListenedCount.value?.artists} artists",
+            message = stringResource(R.string.rw_artists, artistsListenedCount.value?.artists.toString()),
             subMessage = "",
-            message1 = "${artistsListenedCount.value?.minutes} minutes",
+            message1 = stringResource(R.string.rw_minutes, artistsListenedCount.value?.minutes.toString()),
             subMessage1 = "",
             brush = Brush.verticalGradient(
                 colors = listOf(Color(0xFFE91E63), Color(0xFF9C27B0), Color(0xFF3F51B5))
             )
         ),
         intermediate4 = RewindSlide.Intermediate(
-            title = "Playlists listened to ${y.toInt()}",
+            title = stringResource(R.string.rw_playlists_listened_to, y.toInt()),
             year = y.toInt(),
-            message = "${playlistsListenedCount.value?.playlists} playlists",
+            message = stringResource(R.string.rw_playlists, playlistsListenedCount.value?.playlists.toString()),
             subMessage = "",
-            message1 = "${playlistsListenedCount.value?.minutes} minutes",
+            message1 = stringResource(R.string.rw_minutes, playlistsListenedCount.value?.minutes.toString()),
             subMessage1 = "",
             brush = Brush.verticalGradient(
                 colors = listOf(Color(0xFFE91E63), Color(0xFF9C27B0), Color(0xFF3F51B5))
             )
         ),
         intermediate5 = RewindSlide.Intermediate(
-            title = "Rewind ${y.toInt()}",
+            title = stringResource(R.string.rw_rewind_year, y.toInt()),
             year = y.toInt(),
-            message = "Let's analyze",
-            subMessage = " your HISTORY",
-            message1 = "ready for",
-            subMessage1 = "your results",
+            message = stringResource(R.string.rw_let_s_analyze),
+            subMessage = stringResource(R.string.rw_your_history),
+            message1 = stringResource(R.string.rw_ready_for),
+            subMessage1 = stringResource(R.string.rw_your_results),
             brush = Brush.verticalGradient(
                 colors = listOf(Color(0xFFE91E63), Color(0xFF9C27B0), Color(0xFF3F51B5))
             )
         ),
         intermediate6 = RewindSlide.Intermediate(
-            title = "Rewind ${y.toInt()}",
+            title = stringResource(R.string.rw_rewind_year, y.toInt()),
             year = y.toInt(),
-            message = "Let's start",
-            subMessage = "your NUMBERS",
-            message1 = "ready for",
-            subMessage1 = "your music story",
+            message = stringResource(R.string.rw_let_s_start),
+            subMessage = stringResource(R.string.rw_your_numbers),
+            message1 = stringResource(R.string.rw_ready_for),
+            subMessage1 = stringResource(R.string.rw_your_music_story),
             brush = Brush.verticalGradient(
                 colors = listOf(Color(0xFFE91E63), Color(0xFF9C27B0), Color(0xFF3F51B5))
             )
         ),
         intermediate7 = RewindSlide.Intermediate(
-            title = "Rewind ${y.toInt()}",
+            title = stringResource(R.string.rw_rewind_year, y.toInt()),
             year = y.toInt(),
-            message = "Now",
-            subMessage = "your TOP",
-            message1 = "ready for",
-            subMessage1 = "your music preferences",
+            message = stringResource(R.string.rw_now),
+            subMessage = stringResource(R.string.rw_your_top),
+            message1 = stringResource(R.string.rw_ready_for),
+            subMessage1 = stringResource(R.string.rw_your_music_preferences),
             brush = Brush.verticalGradient(
                 colors = listOf(Color(0xFFE91E63), Color(0xFF9C27B0), Color(0xFF3F51B5))
             )
         ),
         intermediate8 = RewindSlide.Intermediate(
-            title = "Rewind ${y.toInt()}",
+            title = stringResource(R.string.rw_rewind_year, y.toInt()),
             year = y.toInt(),
-            message = "and Now",
-            subMessage = "your BADGE",
-            message1 = "ready to know",
-            subMessage1 = "your music level",
+            message = stringResource(R.string.rw_and_now),
+            subMessage = stringResource(R.string.rw_your_badge),
+            message1 = stringResource(R.string.rw_ready_to_know),
+            subMessage1 = stringResource(R.string.rw_your_music_level),
             brush = Brush.verticalGradient(
                 colors = listOf(Color(0xFFE91E63), Color(0xFF9C27B0), Color(0xFF3F51B5))
             )
