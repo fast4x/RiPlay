@@ -7,6 +7,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -36,6 +37,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -91,6 +93,7 @@ import it.fast4x.riplay.ui.styling.semiBold
 import it.fast4x.riplay.extensions.preferences.showStatsListeningTimeKey
 import it.fast4x.riplay.extensions.preferences.statisticsCategoryKey
 import it.fast4x.riplay.commonutils.thumbnail
+import it.fast4x.riplay.enums.PlayerType
 import it.fast4x.riplay.extensions.preferences.thumbnailRoundnessKey
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -98,6 +101,8 @@ import kotlinx.coroutines.flow.map
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.utils.typography
 import it.fast4x.riplay.utils.LazyListContainer
+import it.fast4x.riplay.utils.playNext
+import it.fast4x.riplay.utils.playPrevious
 import timber.log.Timber
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.days
@@ -111,7 +116,9 @@ import kotlin.time.Duration.Companion.days
 @Composable
 fun StatisticsPage(
     navController: NavController,
-    statisticsType: StatisticsType
+    statisticsType: StatisticsType,
+    onSwipeToLeft: () -> Unit = {},
+    onSwipeToRight: () -> Unit = {}
 ) {
     val binder = LocalPlayerServiceBinder.current
     val menuState = LocalGlobalSheetState.current
@@ -237,7 +244,9 @@ fun StatisticsPage(
                 else Dimensions.contentWidthRightBar
             )
     ) {
-            val lazyGridState = rememberLazyGridState()
+        val lazyGridState = rememberLazyGridState()
+        var deltaX by remember { mutableStateOf(0f) }
+
         LazyListContainer(
             state = lazyGridState,
         ) {
@@ -249,6 +258,24 @@ fun StatisticsPage(
                 modifier = Modifier
                     .background(colorPalette().background0)
                     .fillMaxSize()
+                    .pointerInput(Unit) {
+                        detectHorizontalDragGestures(
+                            onHorizontalDrag = { change, dragAmount ->
+                                deltaX = dragAmount
+                            },
+                            onDragStart = {},
+                            onDragEnd = {
+
+                                if (deltaX > 5) {
+                                    onSwipeToLeft()
+                                } else if (deltaX < -5) {
+                                    onSwipeToRight()
+                                }
+
+                            }
+
+                        )
+                    }
             ) {
 
                 item(
@@ -333,7 +360,6 @@ fun StatisticsPage(
                     items(
                         count = songs.count(),
                     ) {
-                        //var forceRecompose by remember { mutableStateOf(false) }
                         SongItem(
                             song = songs.get(it).asMediaItem,
                             thumbnailSizeDp = thumbnailSizeDp,
