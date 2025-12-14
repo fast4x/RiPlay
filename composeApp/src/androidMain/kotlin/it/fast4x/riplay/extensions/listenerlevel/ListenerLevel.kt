@@ -29,6 +29,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import it.fast4x.riplay.LocalPlayerAwareWindowInsets
@@ -100,7 +101,7 @@ fun LevelProgress(progress: Float, showTitle: Boolean = true) {
         if (showTitle)
             Text(
                 modifier = Modifier.padding(end = 10.dp),
-                text = "To next level",
+                text = stringResource(R.string.ll_to_next_level),
                 style = typography().xxs
             )
 
@@ -132,7 +133,7 @@ fun MonthlyLevelBadge(
         Column {
             if (showTitle)
                 Text(
-                    text = "Your Monthly Level",
+                    text = stringResource(R.string.mll_your_monthly_level),
                     style = typography().xxs.bold
                 )
 
@@ -173,7 +174,7 @@ fun AnnualLevelBadge(
         Column {
             if (showTitle)
                 Text(
-                    text = "Your Annual Level",
+                    text = stringResource(R.string.ll_your_annual_level),
                     style = typography().xxs.bold
                 )
 
@@ -241,7 +242,7 @@ fun ListenerLevelBadges(navController: NavController){
         Column(modifier = Modifier.padding(all = 12.dp), horizontalAlignment = Alignment.CenterHorizontally)  {
             IconBadge(mont.first, 40, 3)
             Text(
-                text = "Your Monthly Level:",
+                text = stringResource(R.string.ll_your_monthly_level),
                 style = typography().xxs
             )
             Text(
@@ -252,7 +253,7 @@ fun ListenerLevelBadges(navController: NavController){
         Column(modifier = Modifier.padding(all = 12.dp), horizontalAlignment = Alignment.CenterHorizontally)  {
             IconBadge(ann.first, 40, 3)
             Text(
-                text = "Your Annual Level:",
+                text = stringResource(R.string.ll_your_annual_level),
                 style = typography().xxs
             )
             Text(
@@ -278,13 +279,13 @@ fun ListenerLevelCharts() {
         var showAnnualChart by remember { mutableStateOf(false) }
 
         Text(
-            text = "Listener Level Charts",
+            text = stringResource(R.string.ll_listener_level_charts),
             style = typography().xl,
             modifier = Modifier.padding(bottom = 30.dp)
         )
 
         Text(
-            text = "Your Monthly Level",
+            text = stringResource(R.string.ll_your_monthly_level),
             style = typography().l
         )
 

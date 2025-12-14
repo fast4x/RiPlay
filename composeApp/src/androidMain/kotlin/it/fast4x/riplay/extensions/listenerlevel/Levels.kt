@@ -1,6 +1,8 @@
 package it.fast4x.riplay.extensions.listenerlevel
 
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
+import it.fast4x.riplay.R
 
 enum class AnnualListenerLevel {
     SonicWhisper,
@@ -11,33 +13,25 @@ enum class AnnualListenerLevel {
     TheLegend;
 
     val levelName: String
+        @Composable
         get() = when (this) {
-            SonicWhisper -> "Sonic Whisper"
-            TheSoundExplorer -> "The Sound Explorer"
-            TheDailyWanderer -> "The Daily Wanderer"
-            SoulNavigator -> "Soul Navigator"
-            TheSonicOracle -> "The Sonic Oracle"
-            TheLegend -> "The Legend"
+            SonicWhisper -> stringResource(R.string.all_levelname_sonic_whisper)
+            TheSoundExplorer -> stringResource(R.string.all_levelname_the_sound_explorer)
+            TheDailyWanderer -> stringResource(R.string.all_levelname_the_daily_wanderer)
+            SoulNavigator -> stringResource(R.string.all_levelname_soul_navigator)
+            TheSonicOracle -> stringResource(R.string.all_levelname_the_sonic_oracle)
+            TheLegend -> stringResource(R.string.all_levelname_the_legend)
         }
 
     val levelDescription: String
+        @Composable
         get() = when (this) {
-            SonicWhisper -> "Music barely brushes against you, a small taste of a much bigger world. You're just starting your journey."
-            TheSoundExplorer -> "You're starting to explore, discovering new sounds and crafting your first soundtracks. Curiosity is your guide."
-            TheDailyWanderer -> "Music is your daily companion. Every day has its playlist, and every song a destination."
-            SoulNavigator -> "You don't just listen to music; you live it. The notes guide your deepest emotions and memories."
-            TheSonicOracle -> "You are a beacon in the world of music. Your listening is a ritual, a deep and constant connection with the art of sound."
-            TheLegend -> "You are not just a listener; you are an integral part of the sonic universe. Your name is whispered between the notes."
-        }
-
-    val levelApproximateHours: String
-        get() = when (this) {
-            SonicWhisper -> "Up to 17 total hours"
-            TheSoundExplorer -> "From 17 to 83 total hours"
-            TheDailyWanderer -> "From 83 to 333 total hours"
-            SoulNavigator -> "From 333 to 833 total hours"
-            TheSonicOracle -> "From 833 to 1,333 total hours"
-            TheLegend -> "Over 1,333 total hours"
+            SonicWhisper -> stringResource(R.string.all_leveldesc_music_barely_brushes_against_you_a_small_taste_of_a_much_bigger_world_you_re_just_starting_your_journey)
+            TheSoundExplorer -> stringResource(R.string.all_leveldesc_you_re_starting_to_explore_discovering_new_sounds_and_crafting_your_first_soundtracks_curiosity_is_your_guide)
+            TheDailyWanderer -> stringResource(R.string.all_leveldesc_music_is_your_daily_companion_every_day_has_its_playlist_and_every_song_a_destination)
+            SoulNavigator -> stringResource(R.string.all_leveldesc_you_don_t_just_listen_to_music_you_live_it_the_notes_guide_your_deepest_emotions_and_memories)
+            TheSonicOracle -> stringResource(R.string.all_leveldesc_you_are_a_beacon_in_the_world_of_music_your_listening_is_a_ritual_a_deep_and_constant_connection_with_the_art_of_sound)
+            TheLegend -> stringResource(R.string.all_leveldesc_you_are_not_just_a_listener_you_are_an_integral_part_of_the_sonic_universe_your_name_is_whispered_between_the_notes)
         }
 
     val badge
@@ -109,33 +103,25 @@ enum class MonthlyListenerLevel {
     MonthlyIcon;
 
     val levelName: String
+        @Composable
         get() = when (this) {
-            SoundCheck -> "Sound Check"
-            TheMonthlyExplorer -> "The Monthly Explorer"
-            TheDJofYourDay -> "The DJ of Your Day"
-            FrequencyDominator -> "Frequency Dominator"
-            VibeMaster -> "Vibe Master"
-            MonthlyIcon -> "Monthly Icon"
+            SoundCheck -> stringResource(R.string.mll_levelname_sound_check)
+            TheMonthlyExplorer -> stringResource(R.string.mll_levelname_the_monthly_explorer)
+            TheDJofYourDay -> stringResource(R.string.mll_levelname_the_dj_of_your_day)
+            FrequencyDominator -> stringResource(R.string.mll_levelname_frequency_dominator)
+            VibeMaster -> stringResource(R.string.mll_levelname_vibe_master)
+            MonthlyIcon -> stringResource(R.string.mll_levelname_monthly_icon)
         }
 
     val levelDescription: String
+        @Composable
         get() = when (this) {
-            SoundCheck -> "You've had a look, a small taste of what this month has to offer."
-            TheMonthlyExplorer -> "You're discovering new tracks and artists, building the soundtrack for right now."
-            TheDJofYourDay -> "Music has become the backbone of your days. Every moment has its own song."
-            FrequencyDominator -> "Your headphones are almost an extension of you. You're always tuned into the right frequency."
-            VibeMaster -> "You don't just listen to music; you control it. You are the master of this month's atmosphere."
-            MonthlyIcon -> "Your listening level is legendary. You're a sonic reference point for everyone around you."
-        }
-
-    val levelApproximateHours: String
-        get() = when (this) {
-            SoundCheck -> "Up to 1 hour and 40 mins"
-            TheMonthlyExplorer -> "From 1 hour and 40 mins to 8 hours"
-            TheDJofYourDay -> "From 8 to 25 hours"
-            FrequencyDominator -> "From 25 to 66 hours"
-            VibeMaster -> "From 66 to 108 hours"
-            MonthlyIcon -> "Over 108 hours"
+            SoundCheck -> stringResource(R.string.mll_leveldesc_you_ve_had_a_look_a_small_taste_of_what_this_month_has_to_offer)
+            TheMonthlyExplorer -> stringResource(R.string.mll_leveldesc_you_re_discovering_new_tracks_and_artists_building_the_soundtrack_for_right_now)
+            TheDJofYourDay -> stringResource(R.string.mll_leveldesc_music_has_become_the_backbone_of_your_days_every_moment_has_its_own_song)
+            FrequencyDominator -> stringResource(R.string.mll_leveldesc_your_headphones_are_almost_an_extension_of_you_you_re_always_tuned_into_the_right_frequency)
+            VibeMaster -> stringResource(R.string.mll_leveldesc_you_don_t_just_listen_to_music_you_control_it_you_are_the_master_of_this_month_s_atmosphere)
+            MonthlyIcon -> stringResource(R.string.mll_leveldesc_your_listening_level_is_legendary_you_re_a_sonic_reference_point_for_everyone_around_you)
         }
 
     val badge
