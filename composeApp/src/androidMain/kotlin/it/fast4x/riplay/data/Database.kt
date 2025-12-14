@@ -2726,7 +2726,7 @@ interface Database {
             "CAST(strftime('%Y',Event.timestamp / 1000,'unixepoch') as INTEGER) = :year " +
             "GROUP BY songId  ORDER BY SUM(Event.playTime) DESC LIMIT :limit")
     @RewriteQueriesToDropUnusedColumns
-    fun songMostListenedByYear(year: Long, limit: Int = 1): Flow<List<SongMostListened?>>
+    fun songMostListenedByYear(year: Int, limit: Int = 1): Flow<List<SongMostListened?>>
 
     @Transaction
     @Query("SELECT Album.*, ((SUM(Event.playTime) / 60) / 1000) as minutes FROM Album " +
@@ -2736,7 +2736,7 @@ interface Database {
             "WHERE CAST(strftime('%Y',Event.timestamp / 1000,'unixepoch') as INTEGER) = :year " +
             "GROUP BY Album.id ORDER BY SUM(Event.playTime) DESC LIMIT :limit")
     @RewriteQueriesToDropUnusedColumns
-    fun albumMostListenedByYear(year: Long, limit: Int = 1): Flow<List<AlbumMostListened?>>
+    fun albumMostListenedByYear(year: Int, limit: Int = 1): Flow<List<AlbumMostListened?>>
 
     @Transaction
     @Query("SELECT Playlist.*, ((SUM(Event.playTime) / 60) / 1000) as minutes, COUNT(DISTINCT SongPlaylistMap.songId) AS songs FROM Playlist " +
@@ -2746,7 +2746,7 @@ interface Database {
             "WHERE CAST(strftime('%Y',Event.timestamp / 1000,'unixepoch') as INTEGER) = :year " +
             "GROUP BY Playlist.id ORDER BY SUM(Event.playTime) DESC LIMIT :limit")
     @RewriteQueriesToDropUnusedColumns
-    fun playlistMostListenedByYear(year: Long, limit: Int = 1): Flow<List<PlaylistMostListened?>>
+    fun playlistMostListenedByYear(year: Int, limit: Int = 1): Flow<List<PlaylistMostListened?>>
 
     @Transaction
     @Query("SELECT Artist.*, ((SUM(Event.playTime) / 60) / 1000) as minutes FROM Artist " +
@@ -2755,14 +2755,14 @@ interface Database {
             "WHERE CAST(strftime('%Y',Event.timestamp / 1000,'unixepoch') as INTEGER) = :year " +
             "GROUP BY Artist.id ORDER BY SUM(Event.playTime) DESC LIMIT :limit")
     @RewriteQueriesToDropUnusedColumns
-    fun artistMostListenedByYear(year: Long, limit: Int = 1): Flow<List<ArtistMostListened?>>
+    fun artistMostListenedByYear(year: Int, limit: Int = 1): Flow<List<ArtistMostListened?>>
 
     @Transaction
     @Query("SELECT COUNT(DISTINCT Song.id) AS songs, ((SUM(Event.playTime) / 60) / 1000) as minutes " +
             "FROM Event INNER JOIN Song ON Song.id = Event.songId " +
             "WHERE CAST(strftime('%Y',Event.timestamp / 1000,'unixepoch') as INTEGER) = :year ")
     @RewriteQueriesToDropUnusedColumns
-    fun songsListenedCountByYear(year: Long): Flow<SongsListenedCount>
+    fun songsListenedCountByYear(year: Int): Flow<SongsListenedCount>
 
     @Transaction
     @Query("SELECT COUNT(DISTINCT Album.id) as albums, ((SUM(Event.playTime) / 60) / 1000) as minutes FROM Album " +
@@ -2771,7 +2771,7 @@ interface Database {
             "INNER JOIN Event ON Event.songId = Song.id " +
             "WHERE CAST(strftime('%Y',Event.timestamp / 1000,'unixepoch') as INTEGER) = :year ")
     @RewriteQueriesToDropUnusedColumns
-    fun albumsListenedCountByYear(year: Long): Flow<AlbumsListenedCount?>
+    fun albumsListenedCountByYear(year: Int): Flow<AlbumsListenedCount?>
 
     @Transaction
     @Query("SELECT COUNT(DISTINCT Artist.id) as artists, ((SUM(Event.playTime) / 60) / 1000) as minutes FROM Artist " +
@@ -2779,7 +2779,7 @@ interface Database {
             "INNER JOIN Event ON Event.songId = Song.id " +
             "WHERE CAST(strftime('%Y',Event.timestamp / 1000,'unixepoch') as INTEGER) = :year ")
     @RewriteQueriesToDropUnusedColumns
-    fun artistsListenedCountByYear(year: Long): Flow<ArtistsListenedCount?>
+    fun artistsListenedCountByYear(year: Int): Flow<ArtistsListenedCount?>
 
     @Transaction
     @Query("SELECT COUNT(DISTINCT Playlist.id) as playlists, ((SUM(Event.playTime) / 60) / 1000) as minutes FROM Playlist " +
@@ -2788,7 +2788,13 @@ interface Database {
             "INNER JOIN Event ON Event.songId = Song.id " +
             "WHERE CAST(strftime('%Y',Event.timestamp / 1000,'unixepoch') as INTEGER) = :year ")
     @RewriteQueriesToDropUnusedColumns
-    fun playlistsListenedCountByYear(year: Long): Flow<PlaylistsListenedCount?>
+    fun playlistsListenedCountByYear(year: Int): Flow<PlaylistsListenedCount?>
+
+    @Transaction
+    @Query("SELECT DISTINCT CAST(strftime('%Y',timestamp / 1000,'unixepoch') as INTEGER) as year FROM Event " +
+            "WHERE playTime IS NOT NULL ORDER BY timestamp DESC LIMIT :limit")
+    fun rewindYears(limit: Int = 5): Flow<List<Int>>
+
 
     //*************
 

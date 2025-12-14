@@ -14,7 +14,7 @@ import androidx.core.net.toUri
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.data.models.Playlist
 import it.fast4x.riplay.data.models.Song
-import it.fast4x.riplay.utils.getCalculatedMonths
+import it.fast4x.riplay.extensions.rewind.utils.getFirstRewindYear
 import kotlinx.coroutines.Dispatchers
 import timber.log.Timber
 
@@ -271,10 +271,8 @@ data class RewindState (
 )
 
 @Composable
-fun buildRewindState(): RewindState {
-    val ym by remember { mutableStateOf(getCalculatedMonths(0)) }
-    val y by remember { mutableLongStateOf( ym?.substring(0,4)?.toLong() ?: 0) }
-    val m by remember { mutableLongStateOf( ym?.substring(5,7)?.toLong() ?: 0) }
+fun buildRewindState(year: Int? = null): RewindState {
+    val y = year ?: getFirstRewindYear()
 
     val songMostListened = remember {
         Database.songMostListenedByYear(y, 10)
@@ -540,9 +538,9 @@ fun buildRewindState(): RewindState {
 
 
 @Composable
-fun getRewindSlides(): List<RewindSlide> {
+fun getRewindSlides(year: Int? = null): List<RewindSlide> {
 
-    val state = buildRewindState()
+    val state = buildRewindState(year)
 
     return listOf(
         state.intro,

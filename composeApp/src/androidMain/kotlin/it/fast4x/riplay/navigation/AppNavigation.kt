@@ -80,6 +80,7 @@ import it.fast4x.riplay.extensions.preferences.preferences
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.extensions.preferences.thumbnailRoundnessKey
 import it.fast4x.riplay.extensions.preferences.transitionEffectKey
+import it.fast4x.riplay.extensions.rewind.RewindListScreen
 import it.fast4x.riplay.extensions.rewind.RewindScreen
 import it.fast4x.riplay.extensions.rewind.data.getRewindSlides
 import it.fast4x.riplay.utils.MusicIdentifier
@@ -207,9 +208,25 @@ fun AppNavigation(
 
         composable(route = NavRoutes.rewind.name) {
             modalBottomSheetPage {
-                RewindScreen(pages = getRewindSlides())
+                RewindListScreen(navController)
             }
         }
+
+        composable(
+            route = "${NavRoutes.rewind.name}/{year}",
+            arguments = listOf(
+                navArgument(
+                    name = "year",
+                    builder = { type = NavType.StringType }
+                )
+            )
+        ) { navBackStackEntry ->
+            val year = navBackStackEntry.arguments?.getString("year") ?: ""
+            modalBottomSheetPage {
+                RewindScreen(year.toIntOrNull())
+            }
+        }
+
 
         composable(route = NavRoutes.listenerLevel.name) {
             modalBottomSheetPage {

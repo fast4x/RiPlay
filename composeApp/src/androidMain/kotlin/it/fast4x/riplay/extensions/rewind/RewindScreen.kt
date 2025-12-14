@@ -2,25 +2,42 @@ package it.fast4x.riplay.extensions.rewind
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.text.BasicText
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import com.mikepenz.hypnoticcanvas.shaderBackground
+import com.mikepenz.hypnoticcanvas.shaders.GradientFlow
+import it.fast4x.riplay.R
+import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.extensions.rewind.data.RewindSlide
 import it.fast4x.riplay.extensions.rewind.data.SequentialAnimationContainer
+import it.fast4x.riplay.extensions.rewind.data.getRewindSlides
 import it.fast4x.riplay.extensions.rewind.slides.AlbumAchievementSlide
 import it.fast4x.riplay.extensions.rewind.slides.AnnualListenerSlide
 import it.fast4x.riplay.extensions.rewind.slides.ArtistAchievementSlide
@@ -33,7 +50,15 @@ import it.fast4x.riplay.extensions.rewind.slides.TopAlbumsSlide
 import it.fast4x.riplay.extensions.rewind.slides.TopArtistsSlide
 import it.fast4x.riplay.extensions.rewind.slides.TopPlaylistsSlide
 import it.fast4x.riplay.extensions.rewind.slides.TopSongsSlide
-import it.fast4x.riplay.extensions.visualbitmap.VisualBitmapCreator
+import it.fast4x.riplay.extensions.rewind.utils.getRewindYears
+import it.fast4x.riplay.extensions.rewind.utils.shadersList
+import it.fast4x.riplay.ui.components.themed.Title
+import it.fast4x.riplay.ui.items.RewindItem
+import it.fast4x.riplay.ui.styling.semiBold
+import it.fast4x.riplay.utils.colorPalette
+import it.fast4x.riplay.utils.typography
+import java.util.Calendar
+import kotlin.random.Random
 
 
 @Composable
@@ -60,7 +85,10 @@ fun DynamicRewindSlide(slide: RewindSlide, isPageActive: Boolean) {
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun RewindScreen(pages: List<RewindSlide>) {
+fun RewindScreen(year: Int? = null) {
+
+    val pages = getRewindSlides(year)
+
     val pagerState = rememberPagerState(pageCount = { pages.size })
 
     Box(modifier = Modifier.fillMaxSize()) {
@@ -96,5 +124,66 @@ fun RewindScreen(pages: List<RewindSlide>) {
                 )
             }
         }
+    }
+}
+
+
+@Composable
+fun HomepageRewind(
+    showIfEndOfYear: Boolean = false,
+    navController: NavController,
+    playlistThumbnailSizeDp: Dp,
+    endPaddingValues: PaddingValues,
+    disableScrollingText: Boolean
+) {
+    if (showIfEndOfYear && Calendar.getInstance().get(Calendar.MONTH) < 11) return
+
+    getRewindYears().let { years ->
+
+        Title(
+            title = "Rewinds",
+            onClick = { navController.navigate(NavRoutes.rewind.name) },
+        )
+
+        LazyRow(contentPadding = endPaddingValues) {
+            items(
+                items = years,
+                key = { it }
+            ) { year ->
+                RewindItem(
+                    name = year.toString(),
+                    showName = false,
+                    thumbnailSizeDp = playlistThumbnailSizeDp,
+                    thumbnailContent = {
+                        Box(
+                            modifier = Modifier.fillMaxSize()
+                                .shaderBackground(shadersList()[Random.nextInt(0, shadersList().size-1)])
+                        ) {
+                            Text(
+                                text = year.toString(),
+                                color = colorPalette().text,
+                                fontSize = 40.sp,
+                                fontWeight = FontWeight.ExtraBold,
+                                textAlign = TextAlign.Center,
+                                lineHeight = 60.sp,
+                                modifier = Modifier.align(Alignment.Center)
+                            )
+                        }
+                    },
+                    modifier = Modifier
+                        .animateItem(
+                            fadeInSpec = null,
+                            fadeOutSpec = null
+                        )
+                        .fillMaxSize()
+                        .clickable(
+                            onClick = { navController.navigate(route = "${NavRoutes.rewind.name}/${year}") }
+                        ),
+                    disableScrollingText = disableScrollingText,
+                    alternative = true,
+                )
+            }
+        }
+
     }
 }

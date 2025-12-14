@@ -68,6 +68,13 @@ private fun HamburgerMenu(
             R.string.listener_levels
         ) { onItemClick( NavRoutes.listenerLevel ) }
     )
+    // Rewinds button
+    menu.add(
+        DropdownMenu.Item(
+            R.drawable.stat_year,
+            R.string.listener_levels
+        ) { onItemClick( NavRoutes.rewind ) }
+    )
     // Picture in picture button
     if (isPipSupported && enablePictureInPicture)
         menu.add(

@@ -57,7 +57,7 @@ fun SequentialAnimationContainer(
         Box() {
             Box(modifier = Modifier.padding(horizontal = 12.dp).align(Alignment.BottomCenter).zIndex(2f)) {
                 Text(
-                    text = "Riplay Rewind $year",
+                    text = "Riplay Rewind",
                     color = Color.White,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.SemiBold,

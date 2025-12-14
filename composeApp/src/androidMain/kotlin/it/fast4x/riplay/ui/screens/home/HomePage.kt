@@ -141,6 +141,8 @@ import it.fast4x.riplay.ui.screens.settings.isLoggedIn
 import it.fast4x.riplay.utils.asVideoMediaItem
 import it.fast4x.riplay.extensions.preferences.quickPicsHomePageKey
 import it.fast4x.riplay.extensions.preferences.showListenerLevelsKey
+import it.fast4x.riplay.extensions.rewind.HomepageRewind
+import it.fast4x.riplay.extensions.rewind.utils.getRewindYears
 import it.fast4x.riplay.utils.forcePlay
 import timber.log.Timber
 import kotlin.time.Duration
@@ -484,18 +486,13 @@ fun HomePage(
                 if (showListenerLevels)
                     ListenerLevelBadges(navController)
 
-                // Not still yet completed, i'm working on it
-//                Text(
-//                    text = "Rewind",
-//                    color = Color.White,
-//                    fontSize = 56.sp,
-//                    fontWeight = FontWeight.ExtraBold,
-//                    textAlign = TextAlign.Center,
-//                    lineHeight = 60.sp,
-//                    modifier = Modifier
-//                        .clickable{ navController.navigate(NavRoutes.rewind.name) }
-//                )
-
+                HomepageRewind(
+                    showIfEndOfYear = true,
+                    navController = navController,
+                    playlistThumbnailSizeDp = playlistThumbnailSizeDp,
+                    endPaddingValues = endPaddingValues,
+                    disableScrollingText = disableScrollingText
+                )
 
                 if (showTips) {
                     Title2Actions(
@@ -631,9 +628,7 @@ fun HomePage(
                                             fadeOutSpec = null
                                         )
                                         .width(itemInHorizontalGridWidth),
-                                    //disableScrollingText = disableScrollingText,
-                                    //isNowPlaying = binder?.player?.isNowPlaying(song.id) ?: false,
-                                    //forceRecompose = forceRecompose
+
                                 )
                             }
                         }
@@ -746,7 +741,6 @@ fun HomePage(
                         Title(
                             title = stringResource(R.string.new_albums),
                             onClick = { navController.navigate(NavRoutes.newAlbums.name) },
-                            //modifier = Modifier.fillMaxWidth(0.7f)
                         )
 
                         LazyRow(contentPadding = endPaddingValues) {
@@ -889,6 +883,13 @@ fun HomePage(
 
                         }
                     }
+
+                HomepageRewind(
+                    navController = navController,
+                    playlistThumbnailSizeDp = playlistThumbnailSizeDp,
+                    endPaddingValues = endPaddingValues,
+                    disableScrollingText = disableScrollingText
+                )
 
                 if (showMonthlyPlaylistInQuickPicks)
                     localMonthlyPlaylists.let { playlists ->
@@ -1105,12 +1106,16 @@ fun HomePage(
                     page.sections.forEach {
                         if (it.items.isEmpty() || it.items.firstOrNull()?.key == null) return@forEach
 
-                        TitleMiniSection(it.label ?: "", modifier = Modifier.padding(horizontal = 16.dp).padding(top = 14.dp, bottom = 4.dp))
+                        TitleMiniSection(it.label ?: "", modifier = Modifier
+                            .padding(horizontal = 16.dp)
+                            .padding(top = 14.dp, bottom = 4.dp))
                         
                         BasicText(
                             text = it.title,
                             style = typography().l.semiBold.color(colorPalette().text),
-                            modifier = Modifier.padding(horizontal = 16.dp).padding(vertical = 4.dp)
+                            modifier = Modifier
+                                .padding(horizontal = 16.dp)
+                                .padding(vertical = 4.dp)
                         )
                         LazyRow(contentPadding = endPaddingValues) {
                             items(it.items) { item ->
