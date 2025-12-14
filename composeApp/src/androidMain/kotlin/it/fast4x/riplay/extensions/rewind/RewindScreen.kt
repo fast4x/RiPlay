@@ -141,7 +141,7 @@ fun HomepageRewind(
     getRewindYears().let { years ->
 
         Title(
-            title = "Rewinds",
+            title = if (showIfEndOfYear) "Watch your rewind" else stringResource(R.string.rewinds),
             onClick = { navController.navigate(NavRoutes.rewind.name) },
         )
 
