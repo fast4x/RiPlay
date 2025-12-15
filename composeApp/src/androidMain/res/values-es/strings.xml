@@ -694,7 +694,7 @@
     <string name="info_pauses_player_when_volume_zero">Pausa el reproductor cuando el volumen alcanza 0 y se reanuda cuando el volumen es mayor que 0</string>
     <string name="quality">Calidad</string>
     <string name="value_must_be_ip_address">El valor debe ser una dirección IP</string>
-    <string name="value_must_be_hex">Value must be an hex code</string>
+    <string name="value_must_be_hex">El valor debe ser un código hex</string>
     <string name="swipe_up_to_open_the_queue">Deslizar hacia arriba para abrir la cola</string>
     <string name="pinfo_show_icons">Mostrar información con iconos</string>
     <string name="format_ms">%1$s ms</string>
@@ -799,7 +799,7 @@
     <string name="good_afternoon">Buenas tardes</string>
     <string name="good_evening">Buenas noches</string>
     <string name="good_night">Buenas noches</string>
-    <string name="colored_bar">Barra de color</string>
+    <string name="colored_bar">Barra coloreada</string>
     <string name="about_developers_designers">Desarrolladores / Diseñadores</string>
     <string name="set_custom_value">Valor personalizado</string>
     <string name="title_youtube_music">YOUTUBE MUSIC</string>
@@ -935,13 +935,13 @@
     <string name="also_delete_playback_data">Eliminar también los datos de reproducción</string>
     <string name="rescue_center">Centro de rescate</string>
     <string name="midnightodyssey">Midnight Odyssey</string>
-    <string name="circle">Circle</string>
+    <string name="circle">Círculo</string>
     <string name="enter_hex">Enter the 7-digit HEX code</string>
-    <string name="streaming_player_type_default">Default</string>
-    <string name="streaming_player_type_next">Next</string>
+    <string name="streaming_player_type_default">Predeterminado</string>
+    <string name="streaming_player_type_next">Siguiente</string>
     <string name="streaming_player_type">Streaming player type</string>
-    <string name="streaming_player_type_advanced">Advanced</string>
-    <string name="title_music">Music</string>
+    <string name="streaming_player_type_advanced">Avanzado</string>
+    <string name="title_music">Música</string>
     <string name="use_placeholder_in_imageloader">Use placeholder for image loader</string>
     <string name="use_placeholder_in_imageloader_info">Show image loader while loading images</string>
     <string name="seek_with_tap">Seek with tap</string>
@@ -953,7 +953,7 @@
     <string name="unknown_title">Unknow title</string>
     <string name="unknown_artist">Unknow artist</string>
     <string name="share_with_external_app">Share with external app</string>
-    <string name="play_now">Play now</string>
+    <string name="play_now">Reproducir ahora</string>
     <string name="shuffle_play">Shuffle play</string>
     <string name="resume_or_pause_playback">Resume or Pause playback</string>
     <string name="play_or_pause_when_device_is_connected_or_disconnected">Play when a wired or bluetooth device is connected and pause if disconnected</string>
