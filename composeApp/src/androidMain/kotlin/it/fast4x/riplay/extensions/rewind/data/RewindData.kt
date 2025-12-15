@@ -53,6 +53,7 @@ sealed class RewindSlide(val id: Int, val backgroundBrush: Brush) {
         val level: AlbumLevel,
         val brush: Brush,
         val minutesListened: Long,
+        val song: Song?,
     ) : RewindSlide(2, brush)
 
 
@@ -65,6 +66,7 @@ sealed class RewindSlide(val id: Int, val backgroundBrush: Brush) {
         val totalMinutes: Long,
         val level: PlaylistLevel,
         val brush: Brush,
+        val song: Song?,
     ) : RewindSlide(3, brush)
 
     data class ArtistAchievement(
@@ -75,6 +77,7 @@ sealed class RewindSlide(val id: Int, val backgroundBrush: Brush) {
         val minutesListened: Long,
         val level: ArtistLevel,
         val brush: Brush,
+        val song: Song?,
     ) : RewindSlide(4, brush)
 
     data class TopSongs(
@@ -283,6 +286,10 @@ fun buildRewindState(year: Int? = null): RewindState {
         Database.albumMostListenedByYear(y, 10)
     }.collectAsState(initial = null, context = Dispatchers.IO)
 
+    val albumSongs = remember {
+        Database.albumSongs(albumMostListened.value?.firstOrNull()?.album?.id.toString())
+    }.collectAsState(initial = null, context = Dispatchers.IO)
+
     Timber.d("RewindData: albumMostListened: $albumMostListened")
 
 
@@ -290,11 +297,19 @@ fun buildRewindState(year: Int? = null): RewindState {
         Database.playlistMostListenedByYear(y, 10)
     }.collectAsState(initial = null, context = Dispatchers.IO)
 
+    val playlistSongs = remember {
+        Database.playlistSongs(playlistMostListened.value?.first()?.playlist?.id ?: -1)
+    }.collectAsState(initial = null, context = Dispatchers.IO)
+
     Timber.d("RewindData: playlistMostListened: $playlistMostListened")
 
 
     val artistMostListened = remember {
         Database.artistMostListenedByYear(y, 10)
+    }.collectAsState(initial = null, context = Dispatchers.IO)
+
+    val artistSongs = remember {
+        Database.artistSongs(artistMostListened.value?.first()?.artist?.id.toString())
     }.collectAsState(initial = null, context = Dispatchers.IO)
 
     Timber.d("RewindData: artistMostListened: $artistMostListened")
@@ -390,7 +405,8 @@ fun buildRewindState(year: Int? = null): RewindState {
             brush = Brush.verticalGradient(
                 colors = listOf(Color(0xFF2196F3), Color(0xFF3F51B5))
             ),
-            minutesListened = albumMostListened.value?.firstOrNull()?.minutes ?: 0
+            minutesListened = albumMostListened.value?.firstOrNull()?.minutes ?: 0,
+            song = albumSongs.value?.firstOrNull()
         ),
         playlist = RewindSlide.PlaylistAchievement(
             title = stringResource(R.string.rw_your_favorite_playlist, y.toInt()),
@@ -408,7 +424,8 @@ fun buildRewindState(year: Int? = null): RewindState {
             },
             brush = Brush.verticalGradient(
                 colors = listOf(Color(0xFFFF9800), Color(0xFFFF5722))
-            )
+            ),
+            song = playlistSongs.value?.firstOrNull()
         ),
         artist = RewindSlide.ArtistAchievement(
             title = stringResource(R.string.rw_your_favorite_artist, y.toInt()),
@@ -425,7 +442,8 @@ fun buildRewindState(year: Int? = null): RewindState {
             },
             brush = Brush.verticalGradient(
                 colors = listOf(Color(0xFF5A6CD2), Color(0xFF1DB954))
-            )
+            ),
+            song = artistSongs.value?.firstOrNull()
         ),
         outro = RewindSlide.OutroSlide(
             title = stringResource(R.string.rw_rewind),

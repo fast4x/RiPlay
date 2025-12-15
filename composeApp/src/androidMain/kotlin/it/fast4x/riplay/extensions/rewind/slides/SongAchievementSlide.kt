@@ -47,14 +47,11 @@ fun SongAchievementSlide(slide: RewindSlide.SongAchievement, isPageActive: Boole
 
         LaunchedEffect(isPageActive) {
             if (isPageActive) {
-
                 rewindPlayMedia(slide.song, binder)
-
                 delay(100)
                 isContentVisible = true
             } else {
                 rewindPauseMedia(binder)
-
                 isContentVisible = false
             }
         }
