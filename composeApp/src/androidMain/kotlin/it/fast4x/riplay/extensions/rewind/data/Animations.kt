@@ -86,7 +86,7 @@ fun AnimatedContent(
 ) {
     AnimatedVisibility(
         visible = isVisible,
-        enter = AnimationEffect(animationType),
+        enter = animationEffect(animationType),
         exit = fadeOut(
             animationSpec = tween(500)
         )
@@ -98,7 +98,7 @@ fun AnimatedContent(
 }
 
 @Composable
-fun AnimationEffect(animationType: AnimationType) = when (animationType) {
+fun animationEffect(animationType: AnimationType) = when (animationType) {
     AnimationType.SLIDE_AND_FADE -> {
         slideInHorizontally(
             initialOffsetX = { it },
@@ -139,7 +139,7 @@ fun AnimationEffect(animationType: AnimationType) = when (animationType) {
     AnimationType.SPRING_SCALE_IN -> {
         scaleIn(
             animationSpec = spring(
-                dampingRatio = Spring.DampingRatioHighBouncy,
+                dampingRatio = Spring.DampingRatioMediumBouncy,
                 stiffness = Spring.StiffnessLow
             ),
             initialScale = 0.1f
