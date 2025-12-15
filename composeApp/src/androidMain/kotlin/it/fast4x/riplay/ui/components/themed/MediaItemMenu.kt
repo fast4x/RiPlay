@@ -6,9 +6,12 @@ import android.content.Intent
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -28,6 +31,9 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -44,17 +50,25 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.layout.onPlaced
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.ExperimentalTextApi
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
@@ -129,6 +143,9 @@ import org.dailyislam.android.utilities.isNetworkConnected
 import it.fast4x.riplay.utils.removeYTSongFromPlaylist
 import it.fast4x.riplay.utils.mediaItemToggleLike
 import it.fast4x.riplay.commonutils.setDisLikeState
+import it.fast4x.riplay.enums.ThumbnailRoundness
+import it.fast4x.riplay.extensions.preferences.thumbnailRoundnessKey
+import it.fast4x.riplay.ui.styling.secondary
 import it.fast4x.riplay.utils.unlikeYtVideoOrSong
 import timber.log.Timber
 import java.time.LocalTime.now
@@ -1027,21 +1044,32 @@ fun MediaItemMenu(
         if (currentIsViewingPlaylists) {
             val sortBy by rememberPreference(playlistSortByKey, PlaylistSortBy.DateAdded)
             val sortOrder by rememberPreference(playlistSortOrderKey, SortOrder.Descending)
+            var filter: String? by rememberSaveable { mutableStateOf(null) }
+
             val playlistPreviews by remember {
                 Database.playlistPreviews(sortBy, sortOrder)
             }.collectAsState(initial = emptyList(), context = Dispatchers.IO)
+
+            var playlistPreviewsFiltered by remember { mutableStateOf(playlistPreviews)}
+
+            LaunchedEffect(Unit, filter, playlistPreviews) {
+                Timber.d("MediaItemMenu filter $filter")
+                playlistPreviewsFiltered = if (filter != null)
+                playlistPreviews.filter { it.playlist.name.contains(filter!!, true) }
+                else playlistPreviews
+            }
 
             val playlistIds by remember {
                 Database.getPlaylistsWithSong(mediaItem.mediaId)
             }.collectAsState(initial = emptyList(), context = Dispatchers.IO)
 
-            val pinnedPlaylists = playlistPreviews.filter {
+            val pinnedPlaylists = playlistPreviewsFiltered.filter {
                 it.playlist.name.startsWith(PINNED_PREFIX, 0, true)
                         && if (isNetworkConnected(context)) !(it.playlist.isYoutubePlaylist && !it.playlist.isEditable) else !it.playlist.isYoutubePlaylist
             }
-            val youtubePlaylists = playlistPreviews.filter { it.playlist.isEditable && it.playlist.isYoutubePlaylist && !it.playlist.name.startsWith(PINNED_PREFIX) }
+            val youtubePlaylists = playlistPreviewsFiltered.filter { it.playlist.isEditable && it.playlist.isYoutubePlaylist && !it.playlist.name.startsWith(PINNED_PREFIX) }
 
-            val unpinnedPlaylists = playlistPreviews.filter {
+            val unpinnedPlaylists = playlistPreviewsFiltered.filter {
                 !it.playlist.name.startsWith(PINNED_PREFIX, 0, true) &&
                 !it.playlist.name.startsWith(MONTHLY_PREFIX, 0, true) &&
                         !it.playlist.isYoutubePlaylist //&&
@@ -1079,9 +1107,16 @@ fun MediaItemMenu(
                 isViewingPlaylists = false
             }
 
+            var searching by rememberSaveable { mutableStateOf(false) }
+
+            var thumbnailRoundness by rememberPreference(
+                thumbnailRoundnessKey,
+                ThumbnailRoundness.Heavy
+            )
+
             Menu(
                 modifier = modifier
-                    .requiredHeight(height)
+                    //.requiredHeight(height)
             ) {
                 Row(
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -1099,12 +1134,118 @@ fun MediaItemMenu(
                             .size(20.dp)
                     )
 
+                    IconButton(
+                        onClick = { searching = !searching },
+                        icon = R.drawable.search_circle,
+                        color = colorPalette().textSecondary,
+                        modifier = Modifier
+                            .padding(all = 4.dp)
+                            .size(20.dp)
+                    )
+
                     if (onAddToPlaylist != null) {
                         SecondaryTextButton(
                             text = stringResource(R.string.new_playlist),
                             onClick = { isCreatingNewPlaylist = true },
                             alternative = true
                         )
+                    }
+                }
+
+                Row(
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp, vertical = 8.dp)
+                        .fillMaxWidth()
+                ) {
+                    AnimatedVisibility(visible = searching) {
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(10.dp),
+                            verticalAlignment = Alignment.Bottom,
+                            modifier = Modifier
+                                //.requiredHeight(30.dp)
+                                .padding(all = 10.dp)
+                                .fillMaxWidth()
+                        ) {
+                            val focusRequester = remember { FocusRequester() }
+                            val focusManager = LocalFocusManager.current
+                            val keyboardController = LocalSoftwareKeyboardController.current
+
+                            LaunchedEffect(searching) {
+                                focusRequester.requestFocus()
+                            }
+
+                            BasicTextField(
+                                value = filter ?: "",
+                                onValueChange = { filter = it },
+                                textStyle = typography().xs.semiBold,
+                                singleLine = true,
+                                maxLines = 1,
+                                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                                keyboardActions = KeyboardActions(onDone = {
+                                    if (filter.isNullOrBlank()) filter = ""
+                                    focusManager.clearFocus()
+                                }),
+                                cursorBrush = SolidColor(colorPalette().text),
+                                decorationBox = { innerTextField ->
+                                    Box(
+                                        contentAlignment = Alignment.CenterStart,
+                                        modifier = Modifier
+                                            .weight(1f)
+                                            .padding(horizontal = 10.dp)
+                                    ) {
+                                        IconButton(
+                                            onClick = {},
+                                            icon = R.drawable.search,
+                                            color = colorPalette().favoritesIcon,
+                                            modifier = Modifier
+                                                .align(Alignment.CenterStart)
+                                                .size(16.dp)
+                                        )
+                                    }
+                                    Box(
+                                        contentAlignment = Alignment.CenterStart,
+                                        modifier = Modifier
+                                            .weight(1f)
+                                            .padding(horizontal = 30.dp)
+                                    ) {
+                                        androidx.compose.animation.AnimatedVisibility(
+                                            visible = filter?.isEmpty() ?: true,
+                                            enter = fadeIn(tween(100)),
+                                            exit = fadeOut(tween(100)),
+                                        ) {
+                                            BasicText(
+                                                text = stringResource(R.string.search),
+                                                maxLines = 1,
+                                                overflow = TextOverflow.Ellipsis,
+                                                style = typography().xs.semiBold.secondary.copy(color = colorPalette().textDisabled)
+                                            )
+                                        }
+
+                                        innerTextField()
+                                    }
+                                },
+                                modifier = Modifier
+                                    .height(30.dp)
+                                    .fillMaxWidth()
+                                    .background(
+                                        colorPalette().background4,
+                                        shape = thumbnailRoundness.shape()
+                                    )
+                                    .focusRequester(focusRequester)
+                                    .onFocusChanged {
+                                        if (!it.hasFocus) {
+                                            keyboardController?.hide()
+                                            if (filter?.isBlank() == true) {
+                                                filter = null
+                                                searching = false
+                                            }
+                                        }
+                                    }
+                            )
+                        }
+
                     }
                 }
 
