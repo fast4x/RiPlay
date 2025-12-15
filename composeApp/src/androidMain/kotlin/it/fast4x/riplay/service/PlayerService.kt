@@ -716,7 +716,7 @@ class PlayerService : Service(),
                     Timber.d("PlayerService onlinePlayer onReady localmediaItem ${localMediaItem?.mediaId} queue index ${binder.player.currentMediaItemIndex}")
                     Timber.d("PlayerService onlinePlayer onReady isPersistentQueueEnabled $isPersistentQueueEnabled isResumePlaybackOnStart $isResumePlaybackOnStart")
 
-                    youTubePlayer.setVolume(getSystemMediaVolume())
+
 
                     localMediaItem?.let{
                         if (isPersistentQueueEnabled) {
@@ -735,7 +735,7 @@ class PlayerService : Service(),
                             }
                         }
                     }
-
+                    youTubePlayer.setVolume(getSystemMediaVolume())
                 }
 
                 override fun onCurrentSecond(youTubePlayer: YouTubePlayer, second: Float) {
@@ -813,10 +813,10 @@ class PlayerService : Service(),
                             //durationLong = true,
                             context = this@PlayerService
                         )
-                        //if (checkVolumeLevel)
-                            youTubePlayer.setVolume(getSystemMediaVolume())
 
                         localMediaItem?.let { youTubePlayer.cueVideo(it.mediaId, 0f) }
+                        //if (checkVolumeLevel)
+                        youTubePlayer.setVolume(getSystemMediaVolume())
 
                     }
 
@@ -1112,11 +1112,12 @@ class PlayerService : Service(),
             if (!it.isLocal){
                 currentSecond.value = 0F
                 Timber.d("PlayerService onMediaItemTransition system volume ${getSystemMediaVolume()}")
-                //if (checkVolumeLevel)
-                    internalOnlinePlayer.value?.setVolume(getSystemMediaVolume())
 
                 internalOnlinePlayer.value?.loadVideo(it.mediaId, 1f)
                 //startFadeAnimator(player = internalOnlinePlayer, volumeDevice = getSystemMediaVolume(), duration = 5, fadeIn = true) {}
+                //if (checkVolumeLevel)
+                internalOnlinePlayer.value?.setVolume(getSystemMediaVolume())
+
 
             }
 
@@ -1311,10 +1312,11 @@ class PlayerService : Service(),
                     Timber.w("PlayerService maybeRecoverPlaybackError: try to recover player error")
                     localMediaItem?.let {
                         //internalOnlinePlayer.value?.cueVideo(it.mediaId, 0f)
-                        //if (checkVolumeLevel)
-                            internalOnlinePlayer.value?.setVolume(getSystemMediaVolume())
+
 
                         internalOnlinePlayer.value?.loadVideo(it.mediaId, 0f)
+                        //if (checkVolumeLevel)
+                        internalOnlinePlayer.value?.setVolume(getSystemMediaVolume())
                     }
                 }
             }
