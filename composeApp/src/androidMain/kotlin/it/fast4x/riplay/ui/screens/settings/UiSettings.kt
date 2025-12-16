@@ -1750,12 +1750,12 @@ fun UiSettings(
 
             }
 
-            settingsItem(
-                isHeader = true
-            ) {
-                SettingsGroupSpacer()
-                SettingsEntryGroupText("Android Auto")
-            }
+//            settingsItem(
+//                isHeader = true
+//            ) {
+//                SettingsGroupSpacer()
+//                SettingsEntryGroupText("Android Auto")
+//            }
 
 //            settingsItem {
 //                if (search.input.isBlank() || "Notifications".contains(
