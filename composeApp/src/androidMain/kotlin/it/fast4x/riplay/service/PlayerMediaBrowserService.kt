@@ -253,8 +253,9 @@ class PlayerMediaBrowserService : MediaBrowserServiceCompat(), ServiceConnection
                                 }
                         } else {
                             val artist = Database.artist(id).first()
-                            var songs = Database.artistAllSongs(id).first()
-                            if (songs.isEmpty()) {
+                            //var songs = Database.artistAllSongs(id).first()
+                            var songs = emptyList<Song>()
+                            //if (songs.isEmpty()) {
                                 EnvironmentExt.getArtistPage(browseId = id)
                                     .onSuccess { currentArtistPage ->
                                         var moreEndPointBrowseId: String? = null
@@ -297,7 +298,7 @@ class PlayerMediaBrowserService : MediaBrowserServiceCompat(), ServiceConnection
                                             }
 
                                     }
-                            }
+                            //}
                             songs
                                 .also { lastSongs = it }
                                 .map { it.asBrowserMediaItem }
