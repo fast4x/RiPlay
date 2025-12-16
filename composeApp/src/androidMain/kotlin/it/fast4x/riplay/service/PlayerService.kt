@@ -305,7 +305,7 @@ class PlayerService : Service(),
     var internalOnlinePlayer: MutableState<YouTubePlayer?> = mutableStateOf(null)
     var internalOnlinePlayerState by mutableStateOf(PlayerConstants.PlayerState.UNSTARTED)
     var load = true
-    var playFromSecond = 0f
+    var playFromSecond by mutableFloatStateOf(0f)
     var lastError: PlayerConstants.PlayerError? = null
     var isPlayingNow by mutableStateOf(false)
     var localMediaItem: MediaItem? = null
@@ -814,7 +814,7 @@ class PlayerService : Service(),
                             context = this@PlayerService
                         )
 
-                        localMediaItem?.let { youTubePlayer.cueVideo(it.mediaId, 0f) }
+                        localMediaItem?.let { youTubePlayer.cueVideo(it.mediaId, playFromSecond) }
                         //if (checkVolumeLevel)
                         youTubePlayer.setVolume(getSystemMediaVolume())
 
@@ -1113,7 +1113,7 @@ class PlayerService : Service(),
                 currentSecond.value = 0F
                 Timber.d("PlayerService onMediaItemTransition system volume ${getSystemMediaVolume()}")
 
-                internalOnlinePlayer.value?.loadVideo(it.mediaId, 0f)
+                internalOnlinePlayer.value?.loadVideo(it.mediaId, playFromSecond)
                 //startFadeAnimator(player = internalOnlinePlayer, volumeDevice = getSystemMediaVolume(), duration = 5, fadeIn = true) {}
                 //if (checkVolumeLevel)
                 internalOnlinePlayer.value?.setVolume(getSystemMediaVolume())
@@ -1311,10 +1311,10 @@ class PlayerService : Service(),
                 if (lastError != null) {
                     Timber.w("PlayerService maybeRecoverPlaybackError: try to recover player error")
                     localMediaItem?.let {
-                        //internalOnlinePlayer.value?.cueVideo(it.mediaId, 0f)
+                        //internalOnlinePlayer.value?.cueVideo(it.mediaId, playFromSecond)
 
 
-                        internalOnlinePlayer.value?.loadVideo(it.mediaId, 0f)
+                        internalOnlinePlayer.value?.loadVideo(it.mediaId, playFromSecond)
                         //if (checkVolumeLevel)
                         internalOnlinePlayer.value?.setVolume(getSystemMediaVolume())
                     }
