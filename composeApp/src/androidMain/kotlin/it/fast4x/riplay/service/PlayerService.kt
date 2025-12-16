@@ -1113,7 +1113,7 @@ class PlayerService : Service(),
                 currentSecond.value = 0F
                 Timber.d("PlayerService onMediaItemTransition system volume ${getSystemMediaVolume()}")
 
-                internalOnlinePlayer.value?.loadVideo(it.mediaId, 1f)
+                internalOnlinePlayer.value?.loadVideo(it.mediaId, 0f)
                 //startFadeAnimator(player = internalOnlinePlayer, volumeDevice = getSystemMediaVolume(), duration = 5, fadeIn = true) {}
                 //if (checkVolumeLevel)
                 internalOnlinePlayer.value?.setVolume(getSystemMediaVolume())
