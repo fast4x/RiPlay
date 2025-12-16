@@ -35,7 +35,6 @@ import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -46,7 +45,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
@@ -54,11 +52,8 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.ExperimentalTextApi
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.offline.Download
 import androidx.navigation.NavController
@@ -83,7 +78,7 @@ import it.fast4x.riplay.enums.UiType
 import it.fast4x.riplay.data.models.Artist
 import it.fast4x.riplay.data.models.PlaylistPreview
 import it.fast4x.riplay.data.models.Song
-import it.fast4x.riplay.extensions.listenerlevel.ListenerLevelBadges
+import it.fast4x.riplay.extensions.listenerlevel.HomepageListenerLevelBadges
 import it.fast4x.riplay.ui.components.LocalGlobalSheetState
 import it.fast4x.riplay.ui.components.PullToRefreshBox
 import it.fast4x.riplay.ui.components.themed.HeaderWithIcon
@@ -142,7 +137,6 @@ import it.fast4x.riplay.utils.asVideoMediaItem
 import it.fast4x.riplay.extensions.preferences.quickPicsHomePageKey
 import it.fast4x.riplay.extensions.preferences.showListenerLevelsKey
 import it.fast4x.riplay.extensions.rewind.HomepageRewind
-import it.fast4x.riplay.extensions.rewind.utils.getRewindYears
 import it.fast4x.riplay.utils.forcePlay
 import timber.log.Timber
 import kotlin.time.Duration
@@ -484,7 +478,7 @@ fun HomePage(
                 WelcomeMessage()
 
                 if (showListenerLevels)
-                    ListenerLevelBadges(navController)
+                    HomepageListenerLevelBadges(navController)
 
                 HomepageRewind(
                     showIfEndOfYear = true,

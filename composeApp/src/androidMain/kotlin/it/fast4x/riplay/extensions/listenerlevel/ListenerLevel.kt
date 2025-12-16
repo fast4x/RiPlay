@@ -21,7 +21,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -38,7 +37,6 @@ import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.ui.styling.bold
 import it.fast4x.riplay.utils.colorPalette
-import it.fast4x.riplay.utils.getCalculatedMonths
 import it.fast4x.riplay.utils.typography
 import kotlinx.coroutines.Dispatchers
 import timber.log.Timber
@@ -227,7 +225,7 @@ fun AnnualLevelChart(level: AnnualListenerLevel? = null) {
 }
 
 @Composable
-fun ListenerLevelBadges(navController: NavController){
+fun HomepageListenerLevelBadges(navController: NavController){
     val ann = annualListenerLevel()
     val mont = monthlyListenerLevel()
 
