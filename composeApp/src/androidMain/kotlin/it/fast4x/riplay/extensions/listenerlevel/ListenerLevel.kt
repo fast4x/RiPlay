@@ -35,6 +35,8 @@ import it.fast4x.riplay.LocalPlayerAwareWindowInsets
 import it.fast4x.riplay.R
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.enums.NavRoutes
+import it.fast4x.riplay.extensions.timeline.AnimatedVerticalTimeline
+import it.fast4x.riplay.extensions.timeline.TimelinePoint
 import it.fast4x.riplay.ui.styling.bold
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.utils.typography
@@ -225,6 +227,49 @@ fun AnnualLevelChart(level: AnnualListenerLevel? = null) {
 }
 
 @Composable
+fun MonthlyListenerHistoryItems(): MutableList<TimelinePoint> {
+    //var points by remember { mutableStateOf(emptyList<@Composable () -> Unit>() )}
+    var timelinePoints by remember { mutableStateOf(emptyList<TimelinePoint>() )}
+
+    for (i in 0..Calendar.getInstance().get(Calendar.MONTH)) {
+        val mont = monthlyListenerLevel(m = i)
+
+        val content = @Composable {
+            Row(
+                modifier = Modifier.padding(vertical = 4.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    text = when (i) {
+                        0 -> stringResource(R.string.month_january_s, ", ${mont.first.levelName}")
+                        1 -> stringResource(R.string.month_february_s, ", ${mont.first.levelName}")
+                        2 -> stringResource(R.string.month_march_s, ", ${mont.first.levelName}")
+                        3 -> stringResource(R.string.month_april_s, ", ${mont.first.levelName}")
+                        4 -> stringResource(R.string.month_may_s, ", ${mont.first.levelName}")
+                        5 -> stringResource(R.string.month_june_s, ", ${mont.first.levelName}")
+                        6 -> stringResource(R.string.month_july_s, ", ${mont.first.levelName}")
+                        7 -> stringResource(R.string.month_august_s, ", ${mont.first.levelName}")
+                        8 -> stringResource(R.string.month_september_s, ", ${mont.first.levelName}")
+                        9 -> stringResource(R.string.month_october_s, ", ${mont.first.levelName}")
+                        10 -> stringResource(R.string.month_november_s, ", ${mont.first.levelName}")
+                        11 -> stringResource(R.string.month_december_s, ", ${mont.first.levelName}")
+                        else -> ""
+                    },
+                    style = typography().xxs,
+                    modifier = Modifier.padding(end = 10.dp)
+                )
+                IconBadge(level = mont.first, size = 40)
+
+            }
+        }
+        timelinePoints = timelinePoints + TimelinePoint(point = content, marker = mont.first.marker)
+
+
+    }
+    return timelinePoints.distinctBy { it.point } .toMutableList()
+}
+
+@Composable
 fun HomepageListenerLevelBadges(navController: NavController){
     val ann = annualListenerLevel()
     val mont = monthlyListenerLevel()
@@ -266,6 +311,7 @@ fun HomepageListenerLevelBadges(navController: NavController){
 
 @Composable
 fun ListenerLevelCharts() {
+
     val scrollState = rememberScrollState()
     val windowInsets = LocalPlayerAwareWindowInsets.current
     Column (modifier = Modifier
@@ -303,6 +349,11 @@ fun ListenerLevelCharts() {
         AnimatedVisibility(showMonthlyChart) {
             Column {
                 MonthlyLevelChart()
+                Text(
+                    text = stringResource(R.string.history),
+                    style = typography().m
+                )
+                AnimatedVerticalTimeline(MonthlyListenerHistoryItems())
             }
         }
 

@@ -128,8 +128,19 @@ enum class MonthlyListenerLevel {
         @Composable
         get() = IconBadge(this)
 
+    val marker: Int
+        get() = when (this) {
+            SoundCheck -> R.drawable.play
+            TheMonthlyExplorer -> R.drawable.play
+            TheDJofYourDay -> R.drawable.play
+            FrequencyDominator -> R.drawable.play
+            VibeMaster -> R.drawable.play
+            MonthlyIcon -> R.drawable.play
+        }
 
-    companion object {
+
+
+                    companion object {
         fun getLevelByMinutes(range: Int): MonthlyListenerLevel {
             return when (range) {
                 in 0..100 -> SoundCheck
