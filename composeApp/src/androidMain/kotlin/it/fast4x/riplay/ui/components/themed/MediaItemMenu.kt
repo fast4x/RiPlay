@@ -146,6 +146,7 @@ import it.fast4x.riplay.commonutils.setDisLikeState
 import it.fast4x.riplay.enums.ThumbnailRoundness
 import it.fast4x.riplay.extensions.preferences.thumbnailRoundnessKey
 import it.fast4x.riplay.ui.styling.secondary
+import it.fast4x.riplay.utils.positionAndDurationStateFlow
 import it.fast4x.riplay.utils.unlikeYtVideoOrSong
 import timber.log.Timber
 import java.time.LocalTime.now
@@ -1718,7 +1719,7 @@ fun MediaItemMenu(
                     )
                 }
 
-                // TODO: find solution to this shit
+
                 onShowSleepTimer?.let {
                     val binder = LocalPlayerServiceBinder.current
                     var isShowingSleepTimerDialog by remember {
@@ -1734,8 +1735,7 @@ fun MediaItemMenu(
                     }
                     val playerViewModel: PlayerViewModel = viewModel(factory = factory)
                     val positionAndDuration by playerViewModel.positionAndDuration.collectAsStateWithLifecycle()
-
-                    var timeRemaining by remember { mutableIntStateOf(positionAndDuration.second.toInt() - positionAndDuration.first.toInt()) }
+                    val timeRemaining = positionAndDuration.second.toInt() - positionAndDuration.first.toInt()
 
                     if (isShowingSleepTimerDialog) {
                         if (sleepTimerMillisLeft != null) {
@@ -1841,10 +1841,10 @@ fun MediaItemMenu(
                                     ) {
                                         SecondaryTextButton(
                                             text = stringResource(R.string.set_to) + " "
-                                                    + formatAsDuration(timeRemaining.toLong())
+                                                    + formatAsDuration(if (mediaItem.isLocal) timeRemaining.toLong() else timeRemaining * 1000L)
                                                     + " " + stringResource(R.string.end_of_song),
                                             onClick = {
-                                                binder?.startSleepTimer(timeRemaining.toLong())
+                                                binder?.startSleepTimer(if (mediaItem.isLocal) timeRemaining.toLong() else timeRemaining * 1000L)
                                                 isShowingSleepTimerDialog = false
                                             }
                                         )
@@ -1884,17 +1884,24 @@ fun MediaItemMenu(
                         icon = R.drawable.sleep,
                         text = stringResource(R.string.sleep_timer),
                         onClick = { isShowingSleepTimerDialog = true },
+                        secondaryText = sleepTimerMillisLeft?.let {
+                            stringResource(
+                                R.string.left,
+                                formatAsDuration(it)
+                            )
+                        },
                         trailingContent = sleepTimerMillisLeft?.let {
                             {
                                 BasicText(
-                                    text = stringResource(
-                                        R.string.left,
-                                        formatAsDuration(it)
-                                    ) + " / " +
-                                            now()
-                                                .plusSeconds(it / 1000)
-                                                .format(DateTimeFormatter.ofPattern("HH:mm:ss")) + " " +
-                                            stringResource(R.string.sleeptimer_stop),
+                                    text = stringResource(R.string.sleeptimer_stop),
+//                                    text = stringResource(
+//                                        R.string.left,
+//                                        formatAsDuration(it)
+//                                    ) + " / " +
+//                                            now()
+//                                                .plusSeconds(it / 1000)
+//                                                .format(DateTimeFormatter.ofPattern("HH:mm:ss")) + " " +
+//                                            stringResource(R.string.sleeptimer_stop),
                                     style = typography().xxs.medium,
                                     modifier = modifier
                                         .background(

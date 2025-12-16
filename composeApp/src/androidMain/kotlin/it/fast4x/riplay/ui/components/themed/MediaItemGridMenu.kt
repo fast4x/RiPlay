@@ -525,8 +525,7 @@ fun MediaItemGridMenu (
     }
     val playerViewModel: PlayerViewModel = viewModel(factory = factory)
     val positionAndDuration by playerViewModel.positionAndDuration.collectAsStateWithLifecycle()
-
-    var timeRemaining by remember { mutableIntStateOf(positionAndDuration.second.toInt() - positionAndDuration.first.toInt()) }
+    val timeRemaining = positionAndDuration.second.toInt() - positionAndDuration.first.toInt()
 
     if (isShowingSleepTimerDialog) {
         if (sleepTimerMillisLeft != null) {

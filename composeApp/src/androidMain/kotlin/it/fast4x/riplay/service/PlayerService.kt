@@ -2238,7 +2238,7 @@ class PlayerService : Service(),
                             queueLoopTypeKey,
                             defaultValue = QueueLoopType.Default
                         )
-                        // TODO Implement repeat mode in queue
+
                         when (queueLoopType) {
                             QueueLoopType.RepeatOne -> {
                                 internalOnlinePlayer.value?.seekTo(0f)
