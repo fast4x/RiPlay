@@ -42,12 +42,13 @@ import it.fast4x.riplay.utils.getCalculatedMonths
 import it.fast4x.riplay.utils.typography
 import kotlinx.coroutines.Dispatchers
 import timber.log.Timber
+import java.util.Calendar
 
 @Composable
-fun monthlyListenerLevel(): Triple<MonthlyListenerLevel, MonthlyListenerLevel, Float> {
-    val ym by remember { mutableStateOf(getCalculatedMonths(0)) }
-    val y by remember { mutableLongStateOf( ym?.substring(0,4)?.toLong() ?: 0) }
-    val m by remember { mutableLongStateOf( ym?.substring(5,7)?.toLong() ?: 0) }
+fun monthlyListenerLevel(
+    y: Int = Calendar.getInstance().get(Calendar.YEAR),
+    m: Int = Calendar.getInstance().get(Calendar.MONTH)
+): Triple<MonthlyListenerLevel, MonthlyListenerLevel, Float> {
 
     val minutes = remember {
         Database.minutesListenedByYearMonth(y, m)
@@ -68,9 +69,9 @@ fun monthlyListenerLevel(): Triple<MonthlyListenerLevel, MonthlyListenerLevel, F
 }
 
 @Composable
-fun annualListenerLevel(): Triple<AnnualListenerLevel, AnnualListenerLevel, Float> {
-    val ym by remember { mutableStateOf(getCalculatedMonths(1)) }
-    val y by remember { mutableLongStateOf( ym?.substring(0,4)?.toLong() ?: 0) }
+fun annualListenerLevel(
+    y: Int = Calendar.getInstance().get(Calendar.YEAR)
+): Triple<AnnualListenerLevel, AnnualListenerLevel, Float> {
 
     val minutes = remember {
         Database.minutesListenedByYear(y)

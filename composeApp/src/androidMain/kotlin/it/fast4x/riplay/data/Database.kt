@@ -856,13 +856,13 @@ interface Database {
     @Query("SELECT ((SUM(playTime) / 60) / 1000) as totalPlayTime FROM Event WHERE " +
             "CAST(strftime('%m',timestamp / 1000,'unixepoch') AS INTEGER) = :month AND CAST(strftime('%Y',timestamp / 1000,'unixepoch') as INTEGER) = :year " )
     @RewriteQueriesToDropUnusedColumns
-    fun minutesListenedByYearMonth(year: Long, month: Long): Flow<Long>
+    fun minutesListenedByYearMonth(year: Int, month: Int): Flow<Long>
 
     @Transaction
     @Query("SELECT ((SUM(playTime) / 60) / 1000) as totalPlayTime FROM Event WHERE " +
             "CAST(strftime('%Y',timestamp / 1000,'unixepoch') as INTEGER) = :year " )
     @RewriteQueriesToDropUnusedColumns
-    fun minutesListenedByYear(year: Long): Flow<Long>
+    fun minutesListenedByYear(year: Int): Flow<Long>
 
 
     @Transaction
