@@ -113,7 +113,7 @@ fun HomeArtists(
     val lazyGridState = rememberLazyGridState()
 
     var items by persistList<Artist>( "")
-    var itemsToFilter by persistList<Artist>( "home/artists" )
+    //var itemsToFilter by persistList<Artist>( "home/artists" )
 
     var itemsOnDisplay by persistList<Artist>( "home/artists/on_display" )
 
@@ -155,32 +155,32 @@ fun HomeArtists(
 
     val buttonsList = ArtistsType.entries.map { it to it.textName }
 
-    var filterBy by rememberPreference(filterByKey, FilterBy.All)
-    val (colorPalette, typography) = LocalAppearance.current
-    val menuState = LocalGlobalSheetState.current
+    //var filterBy by rememberPreference(filterByKey, FilterBy.All)
+    //val (colorPalette, typography) = LocalAppearance.current
+    //val menuState = LocalGlobalSheetState.current
     val coroutineScope = rememberCoroutineScope()
 
-    if (!isSyncEnabled()) {
-        filterBy = FilterBy.All
-    }
+//    if (!isSyncEnabled()) {
+//        filterBy = FilterBy.All
+//    }
 
     LaunchedEffect( Unit, sort.sortBy, sort.sortOrder, artistType ) {
         when( artistType ) {
-            ArtistsType.Favorites -> Database.artists( sort.sortBy, sort.sortOrder ).collect { itemsToFilter = it }
-            ArtistsType.Library -> Database.artistsInLibrary( sort.sortBy, sort.sortOrder ).collect { itemsToFilter = it }
-            ArtistsType.OnDevice -> Database.artistsOnDevice( sort.sortBy, sort.sortOrder ).collect { itemsToFilter = it }
+            ArtistsType.Favorites -> Database.artists( sort.sortBy, sort.sortOrder ).collect { items = it }
+            ArtistsType.Library -> Database.artistsInLibrary( sort.sortBy, sort.sortOrder ).collect { items = it.filter { it.isYoutubeArtist } }
+            ArtistsType.OnDevice -> Database.artistsOnDevice( sort.sortBy, sort.sortOrder ).collect { items = it }
             ArtistsType.All -> Database.artistsWithSongsSaved( sort.sortBy, sort.sortOrder ).collect { items = it }
         }
     }
 
-    LaunchedEffect( Unit, itemsToFilter, filterBy ) {
-        items = when(filterBy) {
-            FilterBy.All -> itemsToFilter
-            FilterBy.YoutubeLibrary -> itemsToFilter.filter { it.isYoutubeArtist }
-            FilterBy.Local -> itemsToFilter.filterNot { it.isYoutubeArtist }
-        }
-
-    }
+//    LaunchedEffect( Unit, itemsToFilter, filterBy ) {
+//        items = when(filterBy) {
+//            FilterBy.All -> itemsToFilter
+//            FilterBy.YoutubeLibrary -> itemsToFilter.filter { it.isYoutubeArtist }
+//            FilterBy.Local -> itemsToFilter.filterNot { it.isYoutubeArtist }
+//        }
+//
+//    }
     LaunchedEffect( items, search.input ) {
         val scrollIndex = lazyGridState.firstVisibleItemIndex
         val scrollOffset = lazyGridState.firstVisibleItemScrollOffset
@@ -272,52 +272,52 @@ fun HomeArtists(
                             onValueUpdate = { artistType = it },
                             modifier = Modifier.padding(end = 12.dp)
                         )
-                        if (isSyncEnabled()) {
-                            Row(
-                                modifier = Modifier
-                                    .align(Alignment.CenterEnd)
-                            ) {
-                                BasicText(
-                                    text = when (filterBy) {
-                                        FilterBy.All -> stringResource(R.string.all)
-                                        FilterBy.Local -> stringResource(R.string.on_device)
-                                        FilterBy.YoutubeLibrary -> stringResource(R.string.ytm_library)
-                                    },
-                                    style = typography.xs.semiBold,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis,
-                                    modifier = Modifier
-                                        .align(Alignment.CenterVertically)
-                                        .padding(end = 5.dp)
-                                        .clickable {
-                                            menuState.display {
-                                                FilterMenu(
-                                                    title = stringResource(R.string.filter_by),
-                                                    onDismiss = menuState::hide,
-                                                    onAll = { filterBy = FilterBy.All },
-                                                    onYoutubeLibrary = {
-                                                        filterBy = FilterBy.YoutubeLibrary
-                                                    },
-                                                    onLocal = { filterBy = FilterBy.Local }
-                                                )
-                                            }
-
-                                        }
-                                )
-                                HeaderIconButton(
-                                    icon = R.drawable.playlist,
-                                    color = colorPalette.text,
-                                    onClick = {},
-                                    modifier = Modifier
-                                        .offset(0.dp, 2.5.dp)
-                                        .clickable(
-                                            interactionSource = remember { MutableInteractionSource() },
-                                            indication = null,
-                                            onClick = {}
-                                        )
-                                )
-                            }
-                        }
+//                        if (isSyncEnabled()) {
+//                            Row(
+//                                modifier = Modifier
+//                                    .align(Alignment.CenterEnd)
+//                            ) {
+//                                BasicText(
+//                                    text = when (filterBy) {
+//                                        FilterBy.All -> stringResource(R.string.all)
+//                                        FilterBy.Local -> stringResource(R.string.on_device)
+//                                        FilterBy.YoutubeLibrary -> stringResource(R.string.ytm_library)
+//                                    },
+//                                    style = typography.xs.semiBold,
+//                                    maxLines = 1,
+//                                    overflow = TextOverflow.Ellipsis,
+//                                    modifier = Modifier
+//                                        .align(Alignment.CenterVertically)
+//                                        .padding(end = 5.dp)
+//                                        .clickable {
+//                                            menuState.display {
+//                                                FilterMenu(
+//                                                    title = stringResource(R.string.filter_by),
+//                                                    onDismiss = menuState::hide,
+//                                                    onAll = { filterBy = FilterBy.All },
+//                                                    onYoutubeLibrary = {
+//                                                        filterBy = FilterBy.YoutubeLibrary
+//                                                    },
+//                                                    onLocal = { filterBy = FilterBy.Local }
+//                                                )
+//                                            }
+//
+//                                        }
+//                                )
+//                                HeaderIconButton(
+//                                    icon = R.drawable.playlist,
+//                                    color = colorPalette.text,
+//                                    onClick = {},
+//                                    modifier = Modifier
+//                                        .offset(0.dp, 2.5.dp)
+//                                        .clickable(
+//                                            interactionSource = remember { MutableInteractionSource() },
+//                                            indication = null,
+//                                            onClick = {}
+//                                        )
+//                                )
+//                            }
+//                        }
                     }
                 }
 
