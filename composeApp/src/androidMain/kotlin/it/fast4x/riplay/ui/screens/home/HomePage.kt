@@ -290,8 +290,11 @@ fun HomePage(
                 discoverPageResult = Environment.discoverPage()
             }
 
-            if (isLoggedIn())
+            if (isLoggedIn()) {
                 homePageResult = EnvironmentExt.getHomePage()
+                //todo implement chips
+                //Timber.d("Homepage ${homePageResult?.getOrNull()?.chips?.map { it.title }}")
+            }
 
         }.onFailure {
             //Timber.e("Failed loadData in QuickPicsModern ${it.stackTraceToString()}")

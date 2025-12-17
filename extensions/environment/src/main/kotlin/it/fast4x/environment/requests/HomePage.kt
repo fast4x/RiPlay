@@ -5,13 +5,34 @@ import it.fast4x.environment.Environment.getBestQuality
 import it.fast4x.environment.models.BrowseEndpoint
 import it.fast4x.environment.models.MusicCarouselShelfRenderer
 import it.fast4x.environment.models.MusicTwoRowItemRenderer
+import it.fast4x.environment.models.NavigationEndpoint
+import it.fast4x.environment.models.SectionListRenderer
 import it.fast4x.environment.models.oddElements
 import kotlinx.serialization.Serializable
 
 @Serializable
 data class HomePage(
     val sections: List<Section>,
+    val chips: List<Chip>?,
+    val continuation: String? = null,
 ) {
+    @Serializable
+    data class Chip(
+        val title: String,
+        val endpoint: NavigationEndpoint.Endpoint.Browse?,
+        val deselectEndPoint: NavigationEndpoint.Endpoint.Browse?,
+    ) {
+        companion object {
+            fun fromChipCloudChipRenderer(renderer: SectionListRenderer.Header.ChipCloudRenderer.Chip): Chip? {
+                return Chip(
+                    title = renderer.chipCloudChipRenderer.text?.runs?.firstOrNull()?.text ?: return null,
+                    endpoint = renderer.chipCloudChipRenderer.navigationEndpoint.browseEndpoint,
+                    deselectEndPoint = renderer.chipCloudChipRenderer.onDeselectedCommand?.browseEndpoint,
+                )
+            }
+        }
+    }
+
     @Serializable
     data class Section(
         val title: String,

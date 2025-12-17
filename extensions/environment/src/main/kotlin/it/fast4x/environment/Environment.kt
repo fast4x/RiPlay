@@ -817,13 +817,14 @@ object Environment {
                 context = Context.DefaultWebWithLocale,
                 browseId = browseId,
                 params = params,
+                continuation = continuation
             )
         )
-        parameter("continuation", continuation)
-        parameter("ctoken", continuation)
-        if (continuation != null) {
-            parameter("type", "next")
-        }
+//        parameter("continuation", continuation)
+//        parameter("ctoken", continuation)
+//        if (continuation != null) {
+//            parameter("type", "next")
+//        }
     }
 
     suspend fun customBrowse(
