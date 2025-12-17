@@ -252,7 +252,8 @@ fun HomePage(
             refreshScope.launch(Dispatchers.IO) {
                 when (playEventType) {
                     PlayEventsType.MostPlayed ->
-                        Database.songsMostPlayedByPeriod(from, now, 1).distinctUntilChanged()
+                        //Database.songsMostPlayedByPeriod(from, now, 1).distinctUntilChanged()
+                        Database.trending(1).distinctUntilChanged()
                             .collect { songs ->
                                 val song = songs.firstOrNull()
                                 if (relatedPageResult == null || trending?.id != song?.id) {
@@ -266,7 +267,7 @@ fun HomePage(
                             }
 
                     PlayEventsType.LastPlayed, PlayEventsType.CasualPlayed -> {
-                        val numSongs = if (playEventType == PlayEventsType.LastPlayed) 3 else 100
+                        val numSongs = if (playEventType == PlayEventsType.LastPlayed) 1 else 50
                         Database.lastPlayed(numSongs).distinctUntilChanged().collect { songs ->
                             val song =
                                 if (playEventType == PlayEventsType.LastPlayed) songs.firstOrNull()
