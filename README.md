@@ -65,7 +65,7 @@ RiPlay is a powerful, open-source music player designed for music lovers who wan
 
 **European Languages**  
 - **English:** Alejandro Moctezuma, twistios, Smk90, CanIn, koliwan, Glich440, fast4x  
-- **Italian:** Fabio Iotti, agefcgo, CiccioDerole, fast4x  
+- **Italian:** 32Dexter, Fabio Iotti, agefcgo, CiccioDerole, fast4x  
 - **German:** twistqj, nitro4542, twistios, materialred, OlimitLolli, Lolozweipunktnull, Seryoga1984, Conk, siggi1984  
 - **French:** Mickael81, esophagusdecency, NEVARLeVrai  
 - **Spanish:** MS-PC, Alejandro Moctezuma, Juan Ignacio Tejera, iOSStarWorld, Corotyest, DanielSevillano, Fabian Urra  
