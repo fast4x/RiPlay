@@ -180,7 +180,7 @@ object EnvironmentExt {
 
             //cont += 1
         }
-        HomePage( sections = sections, chips = chips, continuation = continuation)
+        HomePage( sections = sections.distinctBy { it.title }, chips = chips, continuation = continuation)
     }
 
     suspend fun getHistory(setLogin: Boolean = false): Result<HistoryPage> = runCatching {
