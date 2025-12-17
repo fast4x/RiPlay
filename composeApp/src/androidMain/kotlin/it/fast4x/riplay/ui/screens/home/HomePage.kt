@@ -298,12 +298,10 @@ fun HomePage(
             }
 
         }.onFailure {
-            //Timber.e("Failed loadData in QuickPicsModern ${it.stackTraceToString()}")
-            println("Failed loadData in QuickPicsModern ${it.stackTraceToString()}")
+            //Timber.e("Failed loadData  ${it.stackTraceToString()}")
             loadedData = false
         }.onSuccess {
-            //Timber.d("Success loadData in QuickPicsModern")
-            println("Success loadData in QuickPicsModern")
+            //Timber.d("Success loadData ")
             loadedData = true
         }
     }
