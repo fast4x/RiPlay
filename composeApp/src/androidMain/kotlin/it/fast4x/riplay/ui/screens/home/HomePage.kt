@@ -307,10 +307,6 @@ fun HomePage(
         }
     }
 
-    LaunchedEffect(Unit, playEventType, selectedCountryCode) {
-        loadData()
-    }
-
     var refreshing by remember { mutableStateOf(false) }
 
     fun refresh() {
@@ -325,6 +321,10 @@ fun HomePage(
             delay(500)
             refreshing = false
         }
+    }
+
+    LaunchedEffect(Unit, playEventType, selectedCountryCode) {
+        refresh()
     }
 
 
