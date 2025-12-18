@@ -41,6 +41,7 @@ import androidx.navigation.navArgument
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import it.fast4x.riplay.commonutils.cleanString
 import it.fast4x.riplay.data.Database
+import it.fast4x.riplay.data.models.Chip
 import it.fast4x.riplay.enums.BuiltInPlaylist
 import it.fast4x.riplay.enums.DeviceLists
 import it.fast4x.riplay.enums.NavRoutes
@@ -58,8 +59,8 @@ import it.fast4x.riplay.ui.screens.history.HistoryScreen
 import it.fast4x.riplay.ui.screens.home.HomeScreen
 import it.fast4x.riplay.ui.screens.ondevice.OnDeviceAlbumScreen
 import it.fast4x.riplay.ui.screens.localplaylist.LocalPlaylistScreen
-import it.fast4x.riplay.ui.screens.mood.MoodScreen
-import it.fast4x.riplay.ui.screens.mood.MoodsPageScreen
+import it.fast4x.riplay.ui.screens.moodandchip.MoodListScreen
+import it.fast4x.riplay.ui.screens.moodandchip.MoodsPageScreen
 import it.fast4x.riplay.ui.screens.newreleases.NewreleasesScreen
 import it.fast4x.riplay.ui.screens.ondevice.DeviceListSongsScreen
 import it.fast4x.riplay.ui.screens.ondevice.OnDeviceArtistScreen
@@ -82,7 +83,7 @@ import it.fast4x.riplay.extensions.preferences.thumbnailRoundnessKey
 import it.fast4x.riplay.extensions.preferences.transitionEffectKey
 import it.fast4x.riplay.extensions.rewind.RewindListScreen
 import it.fast4x.riplay.extensions.rewind.RewindScreen
-import it.fast4x.riplay.extensions.rewind.data.getRewindSlides
+import it.fast4x.riplay.ui.screens.moodandchip.ChipListScreen
 import it.fast4x.riplay.utils.MusicIdentifier
 
 @androidx.annotation.OptIn(UnstableApi::class)
@@ -542,7 +543,7 @@ fun AppNavigation(
         ) { navBackStackEntry ->
             val mood: Mood? = navController.previousBackStackEntry?.savedStateHandle?.get("mood")
             if (mood != null) {
-                MoodScreen(
+                MoodListScreen(
                     navController = navController,
                     mood = mood,
                     miniPlayer = miniPlayer,
@@ -561,9 +562,23 @@ fun AppNavigation(
             }
              */
             MoodsPageScreen(
-                navController = navController
+                navController = navController,
+                miniPlayer = miniPlayer,
             )
 
+        }
+
+        composable(
+            route = NavRoutes.chip.name,
+        ) { navBackStackEntry ->
+            val chip: Chip? = navController.previousBackStackEntry?.savedStateHandle?.get("chip")
+            if (chip != null) {
+                ChipListScreen(
+                    navController = navController,
+                    chip = chip,
+                    miniPlayer = miniPlayer,
+                )
+            }
         }
 
         composable(

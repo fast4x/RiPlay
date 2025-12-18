@@ -378,7 +378,7 @@ fun HomePlaylists(
                                 contentType = 0
                             ) {
                                 ButtonsRow(
-                                    chips = buttonsList,
+                                    buttons = buttonsList,
                                     currentValue = playlistType,
                                     onValueUpdate = { playlistType = it },
                                     modifier = Modifier.padding(start = 12.dp, end = 12.dp)
@@ -479,7 +479,7 @@ fun HomePlaylists(
                                 contentType = 0,
                                 span = { GridItemSpan(maxLineSpan) }) {
                                 ButtonsRow(
-                                    chips = buttonsList,
+                                    buttons = buttonsList,
                                     currentValue = playlistType,
                                     onValueUpdate = { playlistType = it },
                                     modifier = Modifier.padding(start = 12.dp, end = 12.dp)

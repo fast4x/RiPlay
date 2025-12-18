@@ -1,4 +1,4 @@
-package it.fast4x.riplay.ui.screens.podcast
+package it.fast4x.riplay.ui.screens.moodandchip
 
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -12,37 +12,46 @@ import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import it.fast4x.riplay.extensions.persist.PersistMapCleanup
 import it.fast4x.riplay.R
+import it.fast4x.riplay.ui.components.PageContainer
 import it.fast4x.riplay.ui.components.ScreenContainer
 
 @ExperimentalMaterialApi
 @ExperimentalTextApi
 @ExperimentalFoundationApi
-@ExperimentalAnimationApi
 @ExperimentalComposeUiApi
+@ExperimentalAnimationApi
 @UnstableApi
 @Composable
-fun PodcastScreen(
+fun MoodsPageScreen(
     navController: NavController,
-    browseId: String,
     miniPlayer: @Composable () -> Unit = {},
 ) {
     val saveableStateHolder = rememberSaveableStateHolder()
-    //PersistMapCleanup(tagPrefix = "podcast/$browseId")
 
-    ScreenContainer(
-        navController,
+    //PersistMapCleanup(tagPrefix = "playlist/$defaultBrowseId")
+
+    PageContainer(
+        //modifier = modifier,
+        navController = navController,
         miniPlayer = miniPlayer,
-        navBarContent = { item ->
-            item(0, stringResource(R.string.podcast_episodes), R.drawable.podcast)
-        }
-    ) { currentTabIndex ->
-        saveableStateHolder.SaveableStateProvider(key = currentTabIndex) {
-            when (currentTabIndex) {
-                0 -> Podcast(
-                    navController = navController,
-                    browseId = browseId,
-                )
-            }
-        }
+    ) {
+        MoodsPage(
+            navController = navController
+        )
     }
+
+//            ScreenContainer(
+//                navController,
+//                navBarContent = { item ->
+//                    item(0, stringResource(R.string.moods_and_genres), R.drawable.music_album)
+//                }
+//            ) { currentTabIndex ->
+//                saveableStateHolder.SaveableStateProvider(key = currentTabIndex) {
+//                    when (currentTabIndex) {
+//                        0 -> MoodsPage(
+//                            navController = navController
+//                        )
+//                    }
+//                }
+//            }
 }

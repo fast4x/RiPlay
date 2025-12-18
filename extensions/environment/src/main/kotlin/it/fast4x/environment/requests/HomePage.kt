@@ -13,25 +13,9 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class HomePage(
     val sections: List<Section>,
-    val chips: List<Chip>?,
+    val chips: List<Environment.Chip>?,
     val continuation: String? = null,
 ) {
-    @Serializable
-    data class Chip(
-        val title: String,
-        val endpoint: NavigationEndpoint.Endpoint.Browse?,
-        val deselectEndPoint: NavigationEndpoint.Endpoint.Browse?,
-    ) {
-        companion object {
-            fun fromChipCloudChipRenderer(renderer: SectionListRenderer.Header.ChipCloudRenderer.Chip): Chip? {
-                return Chip(
-                    title = renderer.chipCloudChipRenderer.text?.runs?.firstOrNull()?.text ?: return null,
-                    endpoint = renderer.chipCloudChipRenderer.navigationEndpoint.browseEndpoint,
-                    deselectEndPoint = renderer.chipCloudChipRenderer.onDeselectedCommand?.browseEndpoint,
-                )
-            }
-        }
-    }
 
     @Serializable
     data class Section(
@@ -115,7 +99,7 @@ data class HomePage(
                         )
                     }
 
-                    renderer?.isPlaylist == true -> {
+                    renderer?.isPlaylist == true || renderer?.isPodcast == true  -> {
 
                         Environment.PlaylistItem(
                             info = Environment.Info(

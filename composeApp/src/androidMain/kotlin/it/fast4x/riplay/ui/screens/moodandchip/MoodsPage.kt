@@ -1,4 +1,4 @@
-package it.fast4x.riplay.ui.screens.mood
+package it.fast4x.riplay.ui.screens.moodandchip
 
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi

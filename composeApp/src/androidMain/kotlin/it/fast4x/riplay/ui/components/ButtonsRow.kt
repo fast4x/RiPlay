@@ -1,6 +1,7 @@
 package it.fast4x.riplay.ui.components
 
 import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -11,6 +12,7 @@ import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import it.fast4x.riplay.enums.ColorPaletteMode
@@ -20,7 +22,7 @@ import it.fast4x.riplay.utils.colorPalette
 
 @Composable
 fun <E> ButtonsRow(
-    chips: List<Pair<E, String>>,
+    buttons: List<Pair<E, String>>,
     currentValue: E,
     onValueUpdate: (E) -> Unit,
     modifier: Modifier = Modifier,
@@ -29,11 +31,13 @@ fun <E> ButtonsRow(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .horizontalScroll(rememberScrollState())
+            .horizontalScroll(rememberScrollState()),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Center
     ) {
         Spacer(Modifier.width(12.dp))
 
-        chips.forEach { (value, label) ->
+        buttons.forEach { (value, label) ->
             FilterChip(
                 label = { Text(label) },
                 selected = currentValue == value,

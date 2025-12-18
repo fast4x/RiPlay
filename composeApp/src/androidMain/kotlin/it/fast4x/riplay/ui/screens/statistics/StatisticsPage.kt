@@ -93,7 +93,6 @@ import it.fast4x.riplay.ui.styling.semiBold
 import it.fast4x.riplay.extensions.preferences.showStatsListeningTimeKey
 import it.fast4x.riplay.extensions.preferences.statisticsCategoryKey
 import it.fast4x.riplay.commonutils.thumbnail
-import it.fast4x.riplay.enums.PlayerType
 import it.fast4x.riplay.extensions.preferences.thumbnailRoundnessKey
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -101,8 +100,6 @@ import kotlinx.coroutines.flow.map
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.utils.typography
 import it.fast4x.riplay.utils.LazyListContainer
-import it.fast4x.riplay.utils.playNext
-import it.fast4x.riplay.utils.playPrevious
 import timber.log.Timber
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.days
@@ -314,7 +311,7 @@ fun StatisticsPage(
                 ) {
 
                     ButtonsRow(
-                        chips = buttonsList,
+                        buttons = buttonsList,
                         currentValue = statisticsCategory,
                         onValueUpdate = { statisticsCategory = it },
                         modifier = Modifier.padding(horizontal = 12.dp)

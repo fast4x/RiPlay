@@ -781,7 +781,7 @@ fun HomeSongs(
                     ) {
                         Column {
                             ButtonsRow(
-                                chips = buttonsList,
+                                buttons = buttonsList,
                                 currentValue = builtInPlaylist,
                                 onValueUpdate = {
                                     builtInPlaylist = it

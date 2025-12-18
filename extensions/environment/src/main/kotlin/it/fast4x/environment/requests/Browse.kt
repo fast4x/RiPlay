@@ -15,6 +15,8 @@ suspend fun Environment.browse(body: BrowseBodyWithLocale) = runCatchingNonCance
         setBody(body)
     }.body<BrowseResponse>()
 
+    println("Environment.browse response $response")
+
     BrowseResult(
         title = response.header?.musicImmersiveHeaderRenderer?.title?.text ?: response.header
             ?.musicDetailHeaderRenderer?.title?.text,
@@ -55,5 +57,7 @@ fun MusicTwoRowItemRenderer.toItem() = when {
     isAlbum -> Environment.AlbumItem.from(this)
     isPlaylist -> Environment.PlaylistItem.from(this)
     isArtist -> Environment.ArtistItem.from(this)
+    //isPodcast -> Environment.PlaylistItem.from(this)
+    //isVideo -> Environment.VideoItem.from(this)
     else -> null
 }

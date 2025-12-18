@@ -1,4 +1,4 @@
-package it.fast4x.riplay.ui.screens.mood
+package it.fast4x.riplay.ui.screens.moodandchip
 
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -59,6 +59,7 @@ import it.fast4x.riplay.ui.styling.semiBold
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.utils.typography
 import it.fast4x.riplay.utils.LazyListContainer
+import timber.log.Timber
 
 internal const val defaultBrowseId = "FEmusic_moods_and_genres_category"
 
@@ -78,6 +79,7 @@ fun MoodList(
 
     LaunchedEffect(Unit) {
         moodPage = Environment.browse(BrowseBodyWithLocale(browseId = browseId, params = mood.params))
+        Timber.d("MoodList moodPage $moodPage")
     }
 
     val thumbnailSizeDp = Dimensions.thumbnails.album

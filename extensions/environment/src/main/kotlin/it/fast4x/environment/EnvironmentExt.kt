@@ -122,9 +122,9 @@ object EnvironmentExt {
         println("EnvironmentExt removelikeVideoOrSong error: ${it.stackTraceToString()}")
     }
 
-    suspend fun getHomePage(setLogin: Boolean = false): Result<HomePage> = runCatching {
+    suspend fun getHomePage(setLogin: Boolean = false, params: String? = null): Result<HomePage> = runCatching {
 
-        var response = Environment.browse(browseId = "FEmusic_home", setLogin = setLogin).body<BrowseResponse>()
+        var response = Environment.browse(browseId = "FEmusic_home", setLogin = setLogin, params = params).body<BrowseResponse>()
 
         println("EnvironmentExt homePage() response sections: ${response.contents?.singleColumnBrowseResultsRenderer?.tabs?.firstOrNull()
             ?.tabRenderer?.content?.sectionListRenderer?.contents}" )
@@ -143,7 +143,7 @@ object EnvironmentExt {
             }.toMutableList()
 
         val chips = sectionListRender.header?.chipCloudRenderer?.chips?.mapNotNull {
-            HomePage.Chip.fromChipCloudChipRenderer(it)
+            Environment.Chip.fromChipCloudChipRenderer(it)
         }
 
         val continuationsList = mutableListOf<String>()
