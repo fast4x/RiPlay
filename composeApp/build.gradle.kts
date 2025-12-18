@@ -306,8 +306,9 @@ android {
         val versionMajor = libs.versions.releaseVersionMajor.get().toInt()
         val versionMinor = libs.versions.releaseVersionMinor.get().toInt()
         versionCode = libs.versions.releaseVersionCode.get().toInt()
-        val releaseSuffix = libs.versions.releaseVersionSuffix.get()
-        versionName = "$versionMajor.$versionMinor.$versionCode$releaseSuffix"
+//        val releaseSuffix = libs.versions.releaseVersionSuffix.get()
+//        versionName = "$versionMajor.$versionMinor.$versionCode$releaseSuffix"
+        versionName = "$versionMajor.$versionMinor.$versionCode"
 
         multiDexEnabled = true
 

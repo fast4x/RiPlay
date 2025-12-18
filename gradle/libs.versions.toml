@@ -7,8 +7,8 @@ android-targetSdk = "36"
 
 releaseVersionMajor = "0"
 releaseVersionMinor = "0"
-releaseVersionCode = "48"
-releaseVersionSuffix = "-alpha"
+releaseVersionCode = "49"
+#releaseVersionSuffix = ""
 
 compose-plugin = "1.8.2"
 agp = "8.13.1"
