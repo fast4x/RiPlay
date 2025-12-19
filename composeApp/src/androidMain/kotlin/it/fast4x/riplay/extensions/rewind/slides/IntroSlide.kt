@@ -114,7 +114,7 @@ fun IntroSlide(slide: RewindSlide.IntroSlide, isPageActive: Boolean) {
 
                 AnimatedContent(isVisible = isContentVisible, delay = 1000) {
                     Text(
-                        text = "Your listening, your discoveries and your obsessions. Get ready to relive your most unforgettable musical moments.",
+                        text = "Your listening!\nYour discoveries!\nYour obsessions!\nGet ready to relive your most unforgettable musical moments.",
                         color = Color.White.copy(alpha = 0.8f),
                         fontSize = 18.sp,
                         textAlign = TextAlign.Center,
@@ -126,7 +126,7 @@ fun IntroSlide(slide: RewindSlide.IntroSlide, isPageActive: Boolean) {
 
                 AnimatedContent(isVisible = isContentVisible, delay = 1200) {
                     Text(
-                        text = "Remember, your privacy is respected, all data used is yours, is only in your device and managed by you.",
+                        text = "Remember, your privacy is respected!\nAll data used is only in your device and managed by you.",
                         color = Color.White.copy(alpha = 0.9f),
                         fontSize = 15.sp,
                         textAlign = TextAlign.Center,
