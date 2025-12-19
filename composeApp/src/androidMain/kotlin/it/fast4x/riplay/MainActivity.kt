@@ -204,6 +204,7 @@ import it.fast4x.riplay.extensions.preferences.restartActivityKey
 import it.fast4x.riplay.extensions.preferences.shakeEventEnabledKey
 import it.fast4x.riplay.extensions.preferences.showSearchTabKey
 import it.fast4x.riplay.extensions.preferences.showTotalTimeQueueKey
+import it.fast4x.riplay.extensions.preferences.showSnowfallEffectKey
 import it.fast4x.riplay.extensions.preferences.thumbnailRoundnessKey
 import it.fast4x.riplay.extensions.preferences.transitionEffectKey
 import it.fast4x.riplay.extensions.preferences.useSystemFontKey
@@ -226,6 +227,7 @@ import it.fast4x.riplay.ui.components.BottomSheetState
 import it.fast4x.riplay.ui.components.CustomModalBottomSheet
 import it.fast4x.riplay.ui.components.LocalGlobalSheetState
 import it.fast4x.riplay.ui.components.rememberBottomSheetState
+import it.fast4x.riplay.ui.components.Snowfall
 import it.fast4x.riplay.ui.components.themed.CrossfadeContainer
 import it.fast4x.riplay.ui.components.themed.SmartMessage
 import it.fast4x.riplay.ui.screens.player.local.LocalMiniPlayer
@@ -289,7 +291,6 @@ import java.util.Objects
 import java.util.UUID
 import java.util.concurrent.TimeUnit
 import kotlin.math.sqrt
-
 
 @UnstableApi
 class MainActivity :

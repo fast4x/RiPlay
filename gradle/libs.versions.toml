@@ -11,7 +11,7 @@ releaseVersionCode = "49"
 #releaseVersionSuffix = ""
 
 compose-plugin = "1.8.2"
-agp = "8.13.1"
+agp = "8.13.2"
 kotlin = "2.1.0"
 kotlin-ksp = "2.1.0-1.0.29"
 kotlin-coroutine = "1.10.2"
