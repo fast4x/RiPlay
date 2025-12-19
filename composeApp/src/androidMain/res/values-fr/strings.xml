@@ -1003,9 +1003,9 @@ Volume BAS : titre précédent</string>
     <string name="mll_your_monthly_level">Votre Niveau Mensuel</string>
     <string name="ll_your_annual_level">Votre Niveau Annuel</string>
     <string name="ll_your_monthly_level">Votre Niveau Mensuel</string>
-    <string name="ll_listener_level_charts">Listener Level Charts</string>
-    <string name="rw_riplay_rewind">Riplay Rewind</string>
-    <string name="rw_rewind">Rewind</string>
+    <string name="ll_listener_level_charts">Analyse du Niveau d\'Écoute</string>
+    <string name="rw_riplay_rewind">Rembobinage de RiPlay</string>
+    <string name="rw_rewind">Rembobiner</string>
     <string name="rw_top_songs">Meilleurs Titres %1$d</string>
     <string name="rw_top_albums">Meilleurs Albums %1$d</string>
     <string name="rw_top_artists">Meilleurs Artistes %1$d</string>
@@ -1029,14 +1029,14 @@ Volume BAS : titre précédent</string>
     <string name="rw_your_history">" votre historique !"</string>
     <string name="rw_ready_for">Prêt pour</string>
     <string name="rw_your_results">vos résultats ?</string>
-    <string name="rw_let_s_start">Let\'s start</string>
-    <string name="rw_your_numbers">your NUMBERS</string>
-    <string name="rw_your_music_story">your music story</string>
-    <string name="rw_now">Now</string>
-    <string name="rw_your_top">your TOP</string>
-    <string name="rw_your_music_preferences">your music preferences</string>
-    <string name="rw_and_now">and Now</string>
-    <string name="rw_your_badge">your BADGE</string>
-    <string name="rw_ready_to_know">ready to know</string>
-    <string name="rw_your_music_level">your music level</string>
+    <string name="rw_let_s_start">Commençons</string>
+    <string name="rw_your_numbers">vos chiffres !</string>
+    <string name="rw_your_music_story">votre historique musical ?</string>
+    <string name="rw_now">Maintenant</string>
+    <string name="rw_your_top">le meilleur !</string>
+    <string name="rw_your_music_preferences">vos préférences musicales ?</string>
+    <string name="rw_and_now">et enfin</string>
+    <string name="rw_your_badge">votre badge !</string>
+    <string name="rw_ready_to_know">Prêt à connaître</string>
+    <string name="rw_your_music_level">votre niveau musical ?</string>
 </resources>
