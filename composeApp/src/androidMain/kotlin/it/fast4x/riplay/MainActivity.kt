@@ -590,16 +590,79 @@ class MainActivity :
 
         isclosebackgroundPlayerEnabled = preferences.getBoolean(closebackgroundPlayerKey, false)
 
-        showAutostartPermissionDialog = preferences.getBoolean(showAutostartPermissionDialogKey, true)
+        showAutostartPermissionDialog =
+            preferences.getBoolean(showAutostartPermissionDialogKey, true)
 
         //initializeWorker()
 
         checkAndRequestStandardPermissions()
 
+        setContent {
+            // 1. THIS IS THE NEW STATE FOR THEME (Light/Dark/System)
+            //    It uses 'appearanceKey' which is the standard for this setting.
+            val appearance by rememberPreference(
+                key = appearanceKey, // Use the correct key for Appearance
+                defaultValue = Appearance.SYSTEM,
+                get = { getEnum(it, Appearance.SYSTEM) },
+                set = { putEnum(it, it) }
+            )
+
+            // 2. THIS IS YOUR EXISTING STATE FOR COLOR PALETTE (Monet/Custom/Default)
+            //    I've renamed the variable to 'colorPaletteMode' for clarity.
+            val colorPaletteMode by rememberPreference(
+                key = UiTypeKey, // This key controls the color source
+                defaultValue = ColorPaletteMode.DEFAULT,
+                get = { getEnum(it, ColorPaletteMode.DEFAULT) },
+                set = { putEnum(it, it) }
+            )
+
+            val isPitchBlack by rememberPreference(pitchBlackKey, false)
+            val useSystemFont by rememberPreference(useSystemFontKey, true)
+            val fontType by rememberPreference(
+                key = fontTypeKey,
+                defaultValue = FontType.ROBOTO,
+                get = { getEnum(it, FontType.ROBOTO) },
+                set = { putEnum(it, it) }
+            )
+
+            // Snowfall toggle preference - This remains correct
+            val isSnowEnabled by rememberPreference(showSnowfallEffectKey, true)
+
+            // The logic to determine the color palette is now based on 'colorPaletteMode'
+            val colorPalette = when (colorPaletteMode) {
+                ColorPaletteMode.MONET -> dynamicColorPaletteOf(localMonet)
+                ColorPaletteMode.CUSTOM -> customColorPalette(preferences)
+                ColorPaletteMode.DEFAULT -> colorPaletteOf(ColorPaletteName.DEFAULT)
+            }
+
+            CompositionLocalProvider(
+                // 3. PROVIDE THE CORRECT 'appearance' (Light/Dark/System) VALUE HERE
+                LocalAppearance provides appearance,
+                LocalMonetCompat provides localMonet,
+                LocalGlobalSheetState provides globalSheetState,
+            ) {
+                RiPlayTheme(
+                    colorPalette = colorPalette,
+                    typography = typographyOf(useSystemFont, fontType),
+                    isPitchBlack = isPitchBlack,
+                ) {
+                    Box(modifier = Modifier.fillMaxSize()) {
+                        AppNavigation(
+                            mainActivity = this@MainActivity,
+                            navController = rememberNavController(),
+                        )
+
+                        if (isSnowEnabled) {
+                            Snowfall(modifier = Modifier.fillMaxSize())
+                        }
+                    }
+                }
+            }
+        }
     }
 
 
-    private fun enableFullscreenMode() {
+        private fun enableFullscreenMode() {
 
         // Prepare the Activity to go in immersive mode
         WindowCompat.setDecorFitsSystemWindows(window, false)
@@ -1747,6 +1810,7 @@ class MainActivity :
             )
 
         //WorkManager.getInstance(this).cancelAllWorkByTag("RiPlayKaIdWorker")
+
 
     }
 
