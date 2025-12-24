@@ -61,6 +61,7 @@ import it.fast4x.riplay.data.models.PlaylistPreview
 import it.fast4x.riplay.data.models.Song
 import it.fast4x.riplay.enums.HomeSection
 import it.fast4x.riplay.enums.HomeType
+import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.ui.components.LocalGlobalSheetState
 import it.fast4x.riplay.ui.components.PullToRefreshBox
 import it.fast4x.riplay.ui.components.themed.HeaderWithIcon
@@ -462,6 +463,12 @@ fun HomePage(
                     horizontalArrangement = Arrangement.SpaceBetween,
                 ) {
                     WelcomeMessage()
+                    IconButton(
+                        modifier = Modifier.size(24.dp),
+                        icon = R.drawable.volume_up,
+                        onClick = {navController.navigate(NavRoutes.controller.name)},
+                        color = colorPalette().accent,
+                    )
                     IconButton(
                         modifier = Modifier.size(24.dp),
                         icon = when (homeType) {

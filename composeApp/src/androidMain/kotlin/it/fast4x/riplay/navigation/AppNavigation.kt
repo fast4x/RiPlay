@@ -84,6 +84,7 @@ import it.fast4x.riplay.extensions.preferences.transitionEffectKey
 import it.fast4x.riplay.extensions.rewind.RewindListScreen
 import it.fast4x.riplay.extensions.rewind.RewindScreen
 import it.fast4x.riplay.ui.screens.moodandchip.ChipListScreen
+import it.fast4x.riplay.ui.screens.player.controller.PlayerScreen
 import it.fast4x.riplay.utils.MusicIdentifier
 
 @androidx.annotation.OptIn(UnstableApi::class)
@@ -206,6 +207,11 @@ fun AppNavigation(
         }
 
 
+        composable(route = NavRoutes.controller.name) {
+            modalBottomSheetPage {
+                PlayerScreen()
+            }
+        }
 
         composable(route = NavRoutes.rewind.name) {
             modalBottomSheetPage {
