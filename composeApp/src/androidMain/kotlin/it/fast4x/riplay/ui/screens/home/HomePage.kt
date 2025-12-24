@@ -99,11 +99,13 @@ import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.ui.screens.settings.isLoggedIn
 import it.fast4x.riplay.extensions.preferences.quickPicsHomePageKey
 import it.fast4x.riplay.extensions.preferences.showListenerLevelsKey
+import it.fast4x.riplay.service.isLocal
 import it.fast4x.riplay.ui.components.ButtonsRow
 import it.fast4x.riplay.ui.components.themed.IconButton
 import it.fast4x.riplay.ui.screens.home.sections.ForYouPart
 import it.fast4x.riplay.ui.screens.home.sections.HomeSectionPart
 import it.fast4x.riplay.ui.screens.home.sections.MoodAndGenresPart
+import timber.log.Timber
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.days
 
@@ -222,10 +224,11 @@ fun HomePage(
                         Database.trending(1).distinctUntilChanged()
                             .collect { songs ->
                                 val song = songs.firstOrNull()
-                                if (relatedPageResult == null || trending?.id != song?.id) {
+                                val songId = if (song?.isLocal == true) song.mediaId else song?.id
+                                if (relatedPageResult == null || trending?.id != song?.id || trending?.mediaId != song?.id) {
                                     relatedPageResult = Environment.relatedPage(
                                         NextBody(
-                                            videoId = (song?.id ?: "HZnNt9nnEhw")
+                                            videoId = (songId ?: "HZnNt9nnEhw")
                                         )
                                     )
                                 }
@@ -238,11 +241,13 @@ fun HomePage(
                             val song =
                                 if (playEventType == PlayEventsType.LastPlayed) songs.firstOrNull()
                                 else songs.shuffled().firstOrNull()
-                            if (relatedPageResult == null || trending?.id != song?.id) {
+                            val songId = if (song?.isLocal == true) song.mediaId else song?.id
+                            Timber.d("HomePage Last played song $song relatedPageResult $relatedPageResult songId $songId")
+                            if (relatedPageResult == null || trending?.id != song?.id || trending?.mediaId != song?.id) {
                                 relatedPageResult =
                                     Environment.relatedPage(
                                         NextBody(
-                                            videoId = (song?.id ?: "HZnNt9nnEhw")
+                                            videoId = (songId ?: "HZnNt9nnEhw")
                                         )
                                     )
                             }
