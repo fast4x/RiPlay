@@ -453,7 +453,7 @@ class OnDeviceViewModel(application: Application) : AndroidViewModel(application
     }
 
     fun audioFilesFromFolder(folder: String): Flow<List<SongEntity>> {
-        Timber.d("OnDeviceViewModel audioFilesFromFolder folder $folder ${_audioFiles.value.size}")
+        //Timber.d("OnDeviceViewModel audioFilesFromFolder folder $folder ${_audioFiles.value.size}")
         return flowOf(_audioFiles.value.filter { it.folder == folder }.map { it.toSongEntity() } )
     }
 
