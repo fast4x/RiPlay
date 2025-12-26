@@ -202,7 +202,7 @@ fun HistoryList(
                     key = "tabList", contentType = 0,
                 ) {
                     ButtonsRow(
-                        chips = buttonsList,
+                        buttons = buttonsList,
                         currentValue = historyType,
                         onValueUpdate = { historyType = it },
                         modifier = Modifier.padding(start = 12.dp, end = 12.dp)

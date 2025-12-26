@@ -726,16 +726,17 @@ fun GeneralSettings(
 
                 settingsItem {
 
-                    if (search.input.isBlank() || "Check volume level before playing".contains(search.input,true)) {
-                        SwitchSettingEntry(
-                            title = "Check volume level before playing",
-                            text = "Prevents automatic volume lowering in some devices. Disable if the volume becomes very low.",
-                            isChecked = checkVolumeLevel,
-                            onCheckedChange = {
-                                checkVolumeLevel = it
-                            }
-                        )
-                    }
+                    // todo maybe not needed
+//                    if (search.input.isBlank() || "Check volume level before playing".contains(search.input,true)) {
+//                        SwitchSettingEntry(
+//                            title = "Check volume level before playing",
+//                            text = "Prevents automatic volume lowering in some devices. Disable if the volume becomes very low.",
+//                            isChecked = checkVolumeLevel,
+//                            onCheckedChange = {
+//                                checkVolumeLevel = it
+//                            }
+//                        )
+//                    }
 
 //        if (search.input.isBlank() || stringResource(R.string.streaming_player_type).contains(search.input,true)) {
 //            EnumValueSelectorSettingsEntry(

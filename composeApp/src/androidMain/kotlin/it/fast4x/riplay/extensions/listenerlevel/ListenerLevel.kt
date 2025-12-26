@@ -21,7 +21,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -29,24 +28,27 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import it.fast4x.riplay.LocalPlayerAwareWindowInsets
 import it.fast4x.riplay.R
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.enums.NavRoutes
+import it.fast4x.riplay.extensions.timeline.AnimatedVerticalTimeline
+import it.fast4x.riplay.extensions.timeline.TimelinePoint
 import it.fast4x.riplay.ui.styling.bold
 import it.fast4x.riplay.utils.colorPalette
-import it.fast4x.riplay.utils.getCalculatedMonths
 import it.fast4x.riplay.utils.typography
 import kotlinx.coroutines.Dispatchers
 import timber.log.Timber
+import java.util.Calendar
 
 @Composable
-fun monthlyListenerLevel(): Triple<MonthlyListenerLevel, MonthlyListenerLevel, Float> {
-    val ym by remember { mutableStateOf(getCalculatedMonths(0)) }
-    val y by remember { mutableLongStateOf( ym?.substring(0,4)?.toLong() ?: 0) }
-    val m by remember { mutableLongStateOf( ym?.substring(5,7)?.toLong() ?: 0) }
+fun monthlyListenerLevel(
+    y: Int = Calendar.getInstance().get(Calendar.YEAR),
+    m: Int = Calendar.getInstance().get(Calendar.MONTH)
+): Triple<MonthlyListenerLevel, MonthlyListenerLevel, Float> {
 
     val minutes = remember {
         Database.minutesListenedByYearMonth(y, m)
@@ -67,9 +69,9 @@ fun monthlyListenerLevel(): Triple<MonthlyListenerLevel, MonthlyListenerLevel, F
 }
 
 @Composable
-fun annualListenerLevel(): Triple<AnnualListenerLevel, AnnualListenerLevel, Float> {
-    val ym by remember { mutableStateOf(getCalculatedMonths(1)) }
-    val y by remember { mutableLongStateOf( ym?.substring(0,4)?.toLong() ?: 0) }
+fun annualListenerLevel(
+    y: Int = Calendar.getInstance().get(Calendar.YEAR)
+): Triple<AnnualListenerLevel, AnnualListenerLevel, Float> {
 
     val minutes = remember {
         Database.minutesListenedByYear(y)
@@ -100,7 +102,7 @@ fun LevelProgress(progress: Float, showTitle: Boolean = true) {
         if (showTitle)
             Text(
                 modifier = Modifier.padding(end = 10.dp),
-                text = "To next level",
+                text = stringResource(R.string.ll_to_next_level),
                 style = typography().xxs
             )
 
@@ -132,7 +134,7 @@ fun MonthlyLevelBadge(
         Column {
             if (showTitle)
                 Text(
-                    text = "Your Monthly Level",
+                    text = stringResource(R.string.mll_your_monthly_level),
                     style = typography().xxs.bold
                 )
 
@@ -173,7 +175,7 @@ fun AnnualLevelBadge(
         Column {
             if (showTitle)
                 Text(
-                    text = "Your Annual Level",
+                    text = stringResource(R.string.ll_your_annual_level),
                     style = typography().xxs.bold
                 )
 
@@ -225,7 +227,50 @@ fun AnnualLevelChart(level: AnnualListenerLevel? = null) {
 }
 
 @Composable
-fun ListenerLevelBadges(navController: NavController){
+fun MonthlyListenerHistoryItems(): MutableList<TimelinePoint> {
+    //var points by remember { mutableStateOf(emptyList<@Composable () -> Unit>() )}
+    var timelinePoints by remember { mutableStateOf(emptyList<TimelinePoint>() )}
+
+    for (i in 0..Calendar.getInstance().get(Calendar.MONTH)) {
+        val mont = monthlyListenerLevel(m = i)
+
+        val content = @Composable {
+            Row(
+                modifier = Modifier.padding(vertical = 4.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    text = when (i) {
+                        0 -> stringResource(R.string.month_january_s, ", ${mont.first.levelName}")
+                        1 -> stringResource(R.string.month_february_s, ", ${mont.first.levelName}")
+                        2 -> stringResource(R.string.month_march_s, ", ${mont.first.levelName}")
+                        3 -> stringResource(R.string.month_april_s, ", ${mont.first.levelName}")
+                        4 -> stringResource(R.string.month_may_s, ", ${mont.first.levelName}")
+                        5 -> stringResource(R.string.month_june_s, ", ${mont.first.levelName}")
+                        6 -> stringResource(R.string.month_july_s, ", ${mont.first.levelName}")
+                        7 -> stringResource(R.string.month_august_s, ", ${mont.first.levelName}")
+                        8 -> stringResource(R.string.month_september_s, ", ${mont.first.levelName}")
+                        9 -> stringResource(R.string.month_october_s, ", ${mont.first.levelName}")
+                        10 -> stringResource(R.string.month_november_s, ", ${mont.first.levelName}")
+                        11 -> stringResource(R.string.month_december_s, ", ${mont.first.levelName}")
+                        else -> ""
+                    },
+                    style = typography().xxs,
+                    modifier = Modifier.padding(end = 10.dp)
+                )
+                IconBadge(level = mont.first, size = 40)
+
+            }
+        }
+        timelinePoints = timelinePoints + TimelinePoint(point = content, marker = mont.first.marker)
+
+
+    }
+    return timelinePoints.distinctBy { it.point } .toMutableList()
+}
+
+@Composable
+fun HomepageListenerLevelBadges(navController: NavController){
     val ann = annualListenerLevel()
     val mont = monthlyListenerLevel()
 
@@ -241,7 +286,7 @@ fun ListenerLevelBadges(navController: NavController){
         Column(modifier = Modifier.padding(all = 12.dp), horizontalAlignment = Alignment.CenterHorizontally)  {
             IconBadge(mont.first, 40, 3)
             Text(
-                text = "Your Monthly Level:",
+                text = stringResource(R.string.ll_your_monthly_level),
                 style = typography().xxs
             )
             Text(
@@ -252,7 +297,7 @@ fun ListenerLevelBadges(navController: NavController){
         Column(modifier = Modifier.padding(all = 12.dp), horizontalAlignment = Alignment.CenterHorizontally)  {
             IconBadge(ann.first, 40, 3)
             Text(
-                text = "Your Annual Level:",
+                text = stringResource(R.string.ll_your_annual_level),
                 style = typography().xxs
             )
             Text(
@@ -266,6 +311,7 @@ fun ListenerLevelBadges(navController: NavController){
 
 @Composable
 fun ListenerLevelCharts() {
+
     val scrollState = rememberScrollState()
     val windowInsets = LocalPlayerAwareWindowInsets.current
     Column (modifier = Modifier
@@ -278,13 +324,13 @@ fun ListenerLevelCharts() {
         var showAnnualChart by remember { mutableStateOf(false) }
 
         Text(
-            text = "Listener Level Charts",
+            text = stringResource(R.string.ll_listener_level_charts),
             style = typography().xl,
             modifier = Modifier.padding(bottom = 30.dp)
         )
 
         Text(
-            text = "Your Monthly Level",
+            text = stringResource(R.string.ll_your_monthly_level),
             style = typography().l
         )
 
@@ -303,6 +349,11 @@ fun ListenerLevelCharts() {
         AnimatedVisibility(showMonthlyChart) {
             Column {
                 MonthlyLevelChart()
+                Text(
+                    text = stringResource(R.string.history),
+                    style = typography().m
+                )
+                AnimatedVerticalTimeline(MonthlyListenerHistoryItems())
             }
         }
 

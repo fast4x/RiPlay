@@ -11,7 +11,10 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.OptIn
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.ViewModel
@@ -52,6 +55,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 import java.util.ArrayDeque
@@ -496,69 +500,12 @@ inline fun Player.DisposableListener(crossinline listenerProvider: () -> Player.
     }
 }
 
-/*
-@Composable
-fun Player.positionAndDurationState(): State<Pair<Long, Long>> {
-    val state = remember {
-        mutableStateOf(currentPosition to duration)
-    }
-
-    LaunchedEffect(this) {
-        var isSeeking = false
-
-        val listener = object : Player.Listener {
-            override fun onPlaybackStateChanged(playbackState: Int) {
-                if (playbackState == Player.STATE_READY) {
-                    isSeeking = false
-                }
-            }
-
-            override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
-                state.value = currentPosition to state.value.second
-            }
-
-            override fun onPositionDiscontinuity(
-                oldPosition: Player.PositionInfo,
-                newPosition: Player.PositionInfo,
-                reason: Int
-            ) {
-                if (reason == Player.DISCONTINUITY_REASON_SEEK) {
-                    isSeeking = true
-                    state.value = currentPosition to duration
-                }
-            }
-        }
-
-        addListener(listener)
-
-        val pollJob = launch {
-            while (isActive) {
-                delay(500)
-                if (!isSeeking) {
-                    state.value = currentPosition to duration
-                }
-            }
-        }
-
-        try {
-            suspendCancellableCoroutine<Nothing> { }
-        } finally {
-            pollJob.cancel()
-            removeListener(listener)
-        }
-    }
-
-    return state
-}
-*/
-
 @OptIn(UnstableApi::class)
 fun Player.positionAndDurationStateFlow(
     scope: CoroutineScope,
     binder: PlayerService.Binder?
 ): StateFlow<Pair<Long, Long>> {
 
-    // Definiamo il valore iniziale
     val initialValue = if (currentMediaItem?.isLocal == true) {
         currentPosition to duration
     } else {
@@ -616,14 +563,14 @@ fun Player.positionAndDurationStateFlow(
             }
         }
 
-        // `awaitClose` garantisce la pulizia delle risorse quando il flow non è più raccolto
+
         awaitClose {
             removeListener(listener)
             pollJob.cancel()
         }
     }.stateIn(
         scope = scope,
-        started = SharingStarted.WhileSubscribed(5000), // Mantiene attivo il flow per 5s dopo l'ultimo collectore
+        started = SharingStarted.Eagerly,
         initialValue = initialValue
     )
 }

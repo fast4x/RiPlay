@@ -23,6 +23,7 @@ import androidx.navigation.NavController
 import it.fast4x.riplay.commonutils.LOCAL_KEY_PREFIX
 import it.fast4x.riplay.LocalPlayerSheetState
 import it.fast4x.riplay.R
+import it.fast4x.riplay.data.models.toUiChip
 import it.fast4x.riplay.enums.CheckUpdateState
 import it.fast4x.riplay.enums.HomeScreenTabs
 import it.fast4x.riplay.enums.NavRoutes
@@ -133,9 +134,13 @@ fun HomeScreen(
                     onSearchClick = {
                         navController.navigate(NavRoutes.search.name)
                     },
-                    onMoodClick = { mood ->
+                    onMoodAndGenresClick = { mood ->
                         navController.currentBackStackEntry?.savedStateHandle?.set("mood", mood.toUiMood())
                         navController.navigate(NavRoutes.mood.name)
+                    },
+                    onChipClick = { chip ->
+                        navController.currentBackStackEntry?.savedStateHandle?.set("chip", chip.toUiChip())
+                        navController.navigate(route = NavRoutes.chip.name)
                     },
                     onSettingsClick = {
                         navController.navigate(NavRoutes.settings.name)
@@ -184,7 +189,10 @@ fun HomeScreen(
 
                 4 -> HomePlaylists(
                     onPlaylistClick = {
-                        navController.navigate(route = "${NavRoutes.localPlaylist.name}/${it.id}")
+                        if (!it.isOnDevice)
+                            navController.navigate(route = "${NavRoutes.localPlaylist.name}/${it.playlist.id}")
+                        else
+                            navController.navigate(route = "${NavRoutes.onDevicePlaylist.name}/${it.folder?.replace("/", "$")}")
                     },
                     onSearchClick = {
                         navController.navigate(NavRoutes.search.name)

@@ -38,9 +38,11 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.github.doyaaaaaken.kotlincsv.client.KotlinCsvExperimental
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import it.fast4x.riplay.commonutils.cleanString
 import it.fast4x.riplay.data.Database
+import it.fast4x.riplay.data.models.Chip
 import it.fast4x.riplay.enums.BuiltInPlaylist
 import it.fast4x.riplay.enums.DeviceLists
 import it.fast4x.riplay.enums.NavRoutes
@@ -53,15 +55,13 @@ import it.fast4x.riplay.extensions.listenerlevel.ListenerLevelCharts
 import it.fast4x.riplay.ui.components.CustomModalBottomSheet
 import it.fast4x.riplay.ui.screens.album.AlbumScreen
 import it.fast4x.riplay.ui.screens.artist.ArtistScreen
-import it.fast4x.riplay.ui.screens.builtinplaylist.BuiltInPlaylistScreen
 import it.fast4x.riplay.ui.screens.history.HistoryScreen
 import it.fast4x.riplay.ui.screens.home.HomeScreen
 import it.fast4x.riplay.ui.screens.ondevice.OnDeviceAlbumScreen
 import it.fast4x.riplay.ui.screens.localplaylist.LocalPlaylistScreen
-import it.fast4x.riplay.ui.screens.mood.MoodScreen
-import it.fast4x.riplay.ui.screens.mood.MoodsPageScreen
+import it.fast4x.riplay.ui.screens.moodandchip.MoodListScreen
+import it.fast4x.riplay.ui.screens.moodandchip.MoodsPageScreen
 import it.fast4x.riplay.ui.screens.newreleases.NewreleasesScreen
-import it.fast4x.riplay.ui.screens.ondevice.DeviceListSongsScreen
 import it.fast4x.riplay.ui.screens.ondevice.OnDeviceArtistScreen
 import it.fast4x.riplay.ui.screens.player.local.LocalPlayer
 import it.fast4x.riplay.ui.screens.player.common.Queue
@@ -80,22 +80,25 @@ import it.fast4x.riplay.extensions.preferences.preferences
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.extensions.preferences.thumbnailRoundnessKey
 import it.fast4x.riplay.extensions.preferences.transitionEffectKey
+import it.fast4x.riplay.extensions.rewind.RewindListScreen
 import it.fast4x.riplay.extensions.rewind.RewindScreen
-import it.fast4x.riplay.extensions.rewind.data.getRewindSlides
+import it.fast4x.riplay.ui.screens.moodandchip.ChipListScreen
+import it.fast4x.riplay.ui.screens.ondevice.OnDevicePlaylist
+import it.fast4x.riplay.ui.screens.ondevice.OnDevicePlaylistScreen
+import it.fast4x.riplay.ui.screens.player.controller.PlayerScreen
 import it.fast4x.riplay.utils.MusicIdentifier
 
-@androidx.annotation.OptIn(UnstableApi::class)
 @OptIn(ExperimentalFoundationApi::class, ExperimentalAnimationApi::class,
     ExperimentalMaterialApi::class, ExperimentalTextApi::class, ExperimentalComposeUiApi::class,
     ExperimentalMaterial3Api::class
 )
+@UnstableApi
+@KotlinCsvExperimental
 @ExperimentalPermissionsApi
 @Composable
 fun AppNavigation(
     navController: NavHostController,
     miniPlayer: @Composable () -> Unit = {},
-    //player: MutableState<YouTubePlayer?>,
-    //playerState: MutableState<PlayerConstants.PlayerState>,
     openTabFromShortcut: Int
 ) {
     val transitionEffect by rememberPreference(transitionEffectKey, TransitionEffect.Scale)
@@ -136,7 +139,6 @@ fun AppNavigation(
                 Surface(
                     modifier = Modifier.padding(vertical = 0.dp),
                     color = Color.Transparent,
-                    //shape = thumbnailShape
                 ) {}
             },
             shape = thumbnailRoundness.shape()
@@ -145,7 +147,7 @@ fun AppNavigation(
         }
     }
 
-    // Clearing homeScreenTabIndex in opening app.
+
     val context = LocalContext.current
     clearPreference(context, homeScreenTabIndexKey)
 
@@ -204,12 +206,33 @@ fun AppNavigation(
         }
 
 
+        composable(route = NavRoutes.controller.name) {
+            modalBottomSheetPage {
+                PlayerScreen()
+            }
+        }
 
         composable(route = NavRoutes.rewind.name) {
             modalBottomSheetPage {
-                RewindScreen(pages = getRewindSlides())
+                RewindListScreen(navController)
             }
         }
+
+        composable(
+            route = "${NavRoutes.rewind.name}/{year}",
+            arguments = listOf(
+                navArgument(
+                    name = "year",
+                    builder = { type = NavType.StringType }
+                )
+            )
+        ) { navBackStackEntry ->
+            val year = navBackStackEntry.arguments?.getString("year") ?: ""
+            modalBottomSheetPage {
+                RewindScreen(year.toIntOrNull())
+            }
+        }
+
 
         composable(route = NavRoutes.listenerLevel.name) {
             modalBottomSheetPage {
@@ -248,10 +271,6 @@ fun AppNavigation(
                     navController = navController,
                     showPlayer = {},
                     hidePlayer = {},
-                    //player = player,
-                    //playerState = playerState,
-                    //currentDuration = 0f,
-                    //currentSecond = 0f,
                     onDismiss = {
                         showModalBottomSheetPage.value = false
                         navController.popBackStack()
@@ -265,8 +284,6 @@ fun AppNavigation(
             modalBottomSheetPage {
                 LocalPlayer(
                     navController = navController,
-                    //playerOnline = player,
-                    //playerState = playerState,
                     onDismiss = {}
                 )
             }
@@ -444,7 +461,6 @@ fun AppNavigation(
                 miniPlayer = miniPlayer,
                 initialTextInput = text,
                 onViewPlaylist = {},
-                //pop = popDestination,
                 onSearch = { query ->
 
                     navController.navigate(
@@ -485,24 +501,6 @@ fun AppNavigation(
         }
 
         composable(
-            route = "${NavRoutes.builtInPlaylist.name}/{index}",
-            arguments = listOf(
-                navArgument(
-                    name = "index",
-                    builder = { type = NavType.IntType }
-                )
-            )
-        ) { navBackStackEntry ->
-            val index = navBackStackEntry.arguments?.getInt("index") ?: 0
-
-            BuiltInPlaylistScreen(
-                navController = navController,
-                builtInPlaylist = BuiltInPlaylist.entries[index],
-                miniPlayer = miniPlayer,
-            )
-        }
-
-        composable(
             route = "${NavRoutes.localPlaylist.name}/{id}",
             arguments = listOf(
                 navArgument(
@@ -521,11 +519,29 @@ fun AppNavigation(
         }
 
         composable(
+            route = "${NavRoutes.onDevicePlaylist.name}/{folder}",
+            arguments = listOf(
+                navArgument(
+                    name = "folder",
+                    builder = { type = NavType.StringType }
+                )
+            )
+        ) { navBackStackEntry ->
+            val folder = navBackStackEntry.arguments?.getString("folder") ?: ""
+
+            OnDevicePlaylistScreen (
+                navController = navController,
+                folder = folder,
+                miniPlayer = miniPlayer
+            )
+        }
+
+        composable(
             route = NavRoutes.mood.name,
         ) { navBackStackEntry ->
             val mood: Mood? = navController.previousBackStackEntry?.savedStateHandle?.get("mood")
             if (mood != null) {
-                MoodScreen(
+                MoodListScreen(
                     navController = navController,
                     mood = mood,
                     miniPlayer = miniPlayer,
@@ -544,19 +560,23 @@ fun AppNavigation(
             }
              */
             MoodsPageScreen(
-                navController = navController
+                navController = navController,
+                miniPlayer = miniPlayer,
             )
 
         }
 
         composable(
-            route = NavRoutes.onDevice.name
+            route = NavRoutes.chip.name,
         ) { navBackStackEntry ->
-            DeviceListSongsScreen(
-                navController = navController,
-                deviceLists = DeviceLists.LocalSongs,
-                miniPlayer = miniPlayer,
-            )
+            val chip: Chip? = navController.previousBackStackEntry?.savedStateHandle?.get("chip")
+            if (chip != null) {
+                ChipListScreen(
+                    navController = navController,
+                    chip = chip,
+                    miniPlayer = miniPlayer,
+                )
+            }
         }
 
         composable(

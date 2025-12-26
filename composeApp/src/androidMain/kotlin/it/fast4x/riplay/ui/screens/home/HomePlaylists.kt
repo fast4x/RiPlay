@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
@@ -27,20 +28,26 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.compose.rememberNavController
+import coil.compose.AsyncImage
 import it.fast4x.riplay.extensions.persist.persistList
 import it.fast4x.environment.EnvironmentExt
+import it.fast4x.riplay.LocalOnDeviceViewModel
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.LocalSelectedQueue
@@ -48,6 +55,7 @@ import it.fast4x.riplay.commonutils.MONTHLY_PREFIX
 import it.fast4x.riplay.commonutils.PINNED_PREFIX
 import it.fast4x.riplay.R
 import it.fast4x.riplay.commonutils.YTP_PREFIX
+import it.fast4x.riplay.commonutils.thumbnail
 import it.fast4x.riplay.utils.appContext
 import it.fast4x.riplay.enums.NavigationBarPosition
 import it.fast4x.riplay.enums.PlaylistSortBy
@@ -80,6 +88,7 @@ import it.fast4x.riplay.enums.ViewType
 import it.fast4x.riplay.utils.getViewType
 import it.fast4x.riplay.data.models.SongAlbumMap
 import it.fast4x.riplay.data.models.SongArtistMap
+import it.fast4x.riplay.data.models.SongEntity
 import it.fast4x.riplay.ui.components.PullToRefreshBox
 import it.fast4x.riplay.ui.components.themed.IDialog
 import it.fast4x.riplay.ui.components.themed.Search
@@ -97,8 +106,10 @@ import it.fast4x.riplay.extensions.preferences.Preference.HOME_LIBRARY_ITEM_SIZE
 import it.fast4x.riplay.utils.autoSyncToolbutton
 import it.fast4x.riplay.extensions.preferences.autosyncKey
 import it.fast4x.riplay.data.models.defaultQueue
+import it.fast4x.riplay.extensions.ondevice.OnDeviceViewModel
 import it.fast4x.riplay.ui.components.LocalGlobalSheetState
 import it.fast4x.riplay.ui.components.themed.PlaylistsItemMenu
+import it.fast4x.riplay.ui.styling.px
 import it.fast4x.riplay.utils.CheckAndCreateMonthlyPlaylist
 import it.fast4x.riplay.utils.LazyListContainer
 import it.fast4x.riplay.utils.addNext
@@ -112,8 +123,10 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import timber.log.Timber
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import kotlin.collections.map
 
 
 @OptIn(ExperimentalTextApi::class)
@@ -125,7 +138,7 @@ import java.time.format.DateTimeFormatter
 @ExperimentalFoundationApi
 @Composable
 fun HomePlaylists(
-    onPlaylistClick: (Playlist) -> Unit,
+    onPlaylistClick: (PlaylistPreview) -> Unit,
     onSearchClick: () -> Unit,
     onSettingsClick: () -> Unit
 ) {
@@ -147,6 +160,9 @@ fun HomePlaylists(
 
     var itemsOnDisplay by persistList<PlaylistPreview>("home/playlists/on_display")
 
+    val playlistThumbnailSizeDp = Dimensions.thumbnails.playlist
+    val playlistThumbnailSizePx = playlistThumbnailSizeDp.px
+
     // Dialog states
     val newPlaylistToggleState = remember { mutableStateOf( false ) }
 
@@ -167,6 +183,7 @@ fun HomePlaylists(
             PlaylistsType.MonthlyPlaylist -> Database.songsInAllMonthlyPlaylists()
             PlaylistsType.PodcastPlaylist -> Database.songsInAllPodcastPlaylists()
             PlaylistsType.YTPlaylist -> Database.songsInAllYTPrivatePlaylists()
+            PlaylistsType.OnDevicePlaylist -> Database.songsOnDevice()
         }.map { it.map( Song::asMediaItem ) }
     }
     //<editor-fold desc="New playlist dialog">
@@ -219,7 +236,7 @@ fun HomePlaylists(
     val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd-HH:mm:ss")
     var time by remember {mutableStateOf("")}
     val formattedDate = currentDateTime.format(formatter)
-    //</editor-fold>
+
     val importPlaylistDialog = ImportSongsFromCSV.init(
         beforeTransaction = { _, row ->
             time = formattedDate
@@ -294,8 +311,15 @@ fun HomePlaylists(
             justSynced = true
     }
 
-    LaunchedEffect( sort.sortBy, sort.sortOrder ) {
-        Database.playlistPreviews(sort.sortBy, sort.sortOrder).collect { items = it }
+    // get playlists list
+
+    val onDeviceViewModel = LocalOnDeviceViewModel.current
+
+    LaunchedEffect( sort.sortBy, sort.sortOrder, playlistType ) {
+        if (playlistType == PlaylistsType.OnDevicePlaylist) {
+            onDeviceViewModel.audioFoldersAsPlaylists().collect { items = it }
+        } else
+            Database.playlistPreviews(sort.sortBy, sort.sortOrder).collect { items = it }
     }
     LaunchedEffect( items, search.input ) {
         val scrollIndex = lazyGridState.firstVisibleItemIndex
@@ -314,7 +338,7 @@ fun HomePlaylists(
     val showPipedPlaylists by rememberPreference(showPipedPlaylistsKey, true)
 
     val buttonsList = mutableListOf(PlaylistsType.Playlist to stringResource(R.string.playlists))
-    buttonsList += PlaylistsType.YTPlaylist to stringResource(R.string.yt_playlists)
+    buttonsList += PlaylistsType.YTPlaylist to stringResource(R.string.library)
     //if (showPipedPlaylists)
         buttonsList +=
         PlaylistsType.PodcastPlaylist to stringResource(R.string.podcasts)
@@ -322,6 +346,10 @@ fun HomePlaylists(
         PlaylistsType.PinnedPlaylist to stringResource(R.string.pinned_playlists)
     if (showMonthlyPlaylists) buttonsList +=
         PlaylistsType.MonthlyPlaylist to stringResource(R.string.monthly_playlists)
+
+    buttonsList += PlaylistsType.OnDevicePlaylist to stringResource(R.string.on_device)
+
+
     // END - Additional playlists
 
 
@@ -378,7 +406,7 @@ fun HomePlaylists(
                                 contentType = 0
                             ) {
                                 ButtonsRow(
-                                    chips = buttonsList,
+                                    buttons = buttonsList,
                                     currentValue = playlistType,
                                     onValueUpdate = { playlistType = it },
                                     modifier = Modifier.padding(start = 12.dp, end = 12.dp)
@@ -387,7 +415,7 @@ fun HomePlaylists(
 
                             val listPrefix =
                                 when (playlistType) {
-                                    PlaylistsType.Playlist -> ""    // Matches everything
+                                    PlaylistsType.Playlist, PlaylistsType.OnDevicePlaylist -> ""    // Matches everything
                                     PlaylistsType.PinnedPlaylist -> PINNED_PREFIX
                                     PlaylistsType.MonthlyPlaylist -> MONTHLY_PREFIX
                                     PlaylistsType.PodcastPlaylist -> ""
@@ -397,62 +425,158 @@ fun HomePlaylists(
                                 when (playlistType) {
                                     PlaylistsType.YTPlaylist -> it.playlist.isYoutubePlaylist
                                     PlaylistsType.PodcastPlaylist -> it.playlist.isPodcast
+                                    PlaylistsType.OnDevicePlaylist -> it.isOnDevice
                                     else -> it.playlist.name.startsWith(listPrefix, true)
                                 }
-//                            if (playlistType == PlaylistsType.YTPlaylist) {
-//                                it.playlist.isYoutubePlaylist
-//                            } else it.playlist.name.startsWith(listPrefix, true)
                             }
                             items(
                                 items = itemsOnDisplay.filter(condition),
                                 key = { it.playlist.id }
                             ) { preview ->
-                                PlaylistItem(
-                                    playlist = preview,
-                                    thumbnailSizeDp = itemSize.size.dp,
-                                    thumbnailSizePx = itemSize.size.px,
-                                    homepage = true,
-                                    iconSize = itemSize.size.dp,
-                                    alternative = false,
-                                    modifier = Modifier
-                                        .fillMaxSize()
-                                        .animateItem(fadeInSpec = null, fadeOutSpec = null)
-                                        .combinedClickable(
-                                            onClick = {
-                                                search.onItemSelected()
-                                                onPlaylistClick(preview.playlist)
-                                            },
-                                            onLongClick = {
-                                                menuState.display {
-                                                    PlaylistsItemMenu(
-                                                        navController = navController,
-                                                        onDismiss = menuState::hide,
-                                                        playlist = preview,
-                                                        disableScrollingText = disableScrollingText,
-                                                        onPlayNext = {
-                                                            coroutineScope.launch(Dispatchers.IO) {
-                                                                Database.playlistSongs(preview.playlist.id).distinctUntilChanged()
-                                                                    .map { it?.map( Song::asMediaItem) }
-                                                                    .onEach {
-                                                                        withContext(Dispatchers.Main) {
-                                                                            binder?.player?.addNext(it ?: emptyList(),
-                                                                                appContext(), selectedQueue ?: defaultQueue()
-                                                                            )
+                                if (!preview.isOnDevice)
+                                    PlaylistItem(
+                                        playlist = preview,
+                                        thumbnailSizeDp = itemSize.size.dp,
+                                        thumbnailSizePx = itemSize.size.px,
+                                        homepage = true,
+                                        iconSize = itemSize.size.dp,
+                                        alternative = false,
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .animateItem(fadeInSpec = null, fadeOutSpec = null)
+                                            .combinedClickable(
+                                                onClick = {
+                                                    search.onItemSelected()
+                                                    onPlaylistClick(preview)
+                                                },
+                                                onLongClick = {
+                                                    menuState.display {
+                                                        PlaylistsItemMenu(
+                                                            navController = navController,
+                                                            onDismiss = menuState::hide,
+                                                            playlist = preview,
+                                                            disableScrollingText = disableScrollingText,
+                                                            onPlayNext = {
+                                                                coroutineScope.launch(Dispatchers.IO) {
+                                                                    Database.playlistSongs(preview.playlist.id)
+                                                                        .distinctUntilChanged()
+                                                                        .map { it?.map(Song::asMediaItem) }
+                                                                        .onEach {
+                                                                            withContext(Dispatchers.Main) {
+                                                                                binder?.player?.addNext(
+                                                                                    it ?: emptyList(),
+                                                                                    appContext(),
+                                                                                    selectedQueue
+                                                                                        ?: defaultQueue()
+                                                                                )
+                                                                            }
                                                                         }
-                                                                    }
-                                                                    .collect()
-                                                            }
+                                                                        .collect()
+                                                                }
 
-                                                        }
-                                                    )
+                                                            }
+                                                        )
+                                                    }
+                                                }
+
+                                            ),
+                                        disableScrollingText = disableScrollingText,
+                                        isYoutubePlaylist = preview.playlist.isYoutubePlaylist,
+                                        isEditable = preview.playlist.isEditable
+                                    )
+                                else {
+                                    var songs by persistList<SongEntity>("playlist${preview.playlist.id}/songsThumbnails")
+                                    LaunchedEffect(Unit) {
+                                        onDeviceViewModel.audioFilesFromFolder(preview.folder ?: "").collect {
+                                            songs = it
+                                        }
+                                    }
+                                    val thumbnails = songs.map { song -> song.song }
+                                        .takeWhile { it.thumbnailUrl?.isNotEmpty() ?: false }
+                                        .take(4)
+                                        .map { it.thumbnailUrl.thumbnail(playlistThumbnailSizePx / 2) }
+
+                                    PlaylistItem(
+                                        thumbnailContent = {
+                                            if (thumbnails.toSet().size == 1) {
+                                                AsyncImage(
+                                                    model = thumbnails.first()
+                                                        .thumbnail(playlistThumbnailSizePx),
+                                                    contentDescription = null,
+                                                    contentScale = ContentScale.Crop,
+                                                )
+                                            } else {
+                                                Box(
+                                                    modifier = Modifier
+                                                        .fillMaxSize()
+                                                ) {
+                                                    listOf(
+                                                        Alignment.TopStart,
+                                                        Alignment.TopEnd,
+                                                        Alignment.BottomStart,
+                                                        Alignment.BottomEnd
+                                                    ).forEachIndexed { index, alignment ->
+                                                        AsyncImage(
+                                                            model = thumbnails.getOrNull(index),
+                                                            contentDescription = null,
+                                                            contentScale = ContentScale.Crop,
+                                                            modifier = Modifier
+                                                                .align(alignment)
+                                                                .size(playlistThumbnailSizeDp / 2)
+                                                        )
+                                                    }
                                                 }
                                             }
+                                        },
+                                        songCount = preview.songCount,
+                                        thumbnailSizeDp = playlistThumbnailSizeDp,
+                                        name = preview.playlist.name,
+                                        channelName = null,
+                                        alternative = true,
+                                        showName = true,
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .animateItem(fadeInSpec = null, fadeOutSpec = null)
+                                            .combinedClickable(
+                                                onClick = {
+                                                    search.onItemSelected()
+                                                    onPlaylistClick(preview)
+                                                },
+                                                onLongClick = {
+                                                    menuState.display {
+                                                        PlaylistsItemMenu(
+                                                            navController = navController,
+                                                            onDismiss = menuState::hide,
+                                                            playlist = preview,
+                                                            disableScrollingText = disableScrollingText,
+                                                            onPlayNext = {
+                                                                coroutineScope.launch(Dispatchers.IO) {
+                                                                    Database.playlistSongs(preview.playlist.id)
+                                                                        .distinctUntilChanged()
+                                                                        .map { it?.map(Song::asMediaItem) }
+                                                                        .onEach {
+                                                                            withContext(Dispatchers.Main) {
+                                                                                binder?.player?.addNext(
+                                                                                    it ?: emptyList(),
+                                                                                    appContext(),
+                                                                                    selectedQueue
+                                                                                        ?: defaultQueue()
+                                                                                )
+                                                                            }
+                                                                        }
+                                                                        .collect()
+                                                                }
 
-                                    ),
-                                    disableScrollingText = disableScrollingText,
-                                    isYoutubePlaylist = preview.playlist.isYoutubePlaylist,
-                                    isEditable = preview.playlist.isEditable
-                                )
+                                                            }
+                                                        )
+                                                    }
+                                                }
+
+                                            ),
+                                        disableScrollingText = disableScrollingText,
+
+                                        )
+                                }
                             }
 
                             item(
@@ -479,7 +603,7 @@ fun HomePlaylists(
                                 contentType = 0,
                                 span = { GridItemSpan(maxLineSpan) }) {
                                 ButtonsRow(
-                                    chips = buttonsList,
+                                    buttons = buttonsList,
                                     currentValue = playlistType,
                                     onValueUpdate = { playlistType = it },
                                     modifier = Modifier.padding(start = 12.dp, end = 12.dp)
@@ -488,7 +612,7 @@ fun HomePlaylists(
 
                             val listPrefix =
                                 when (playlistType) {
-                                    PlaylistsType.Playlist -> ""    // Matches everything
+                                    PlaylistsType.Playlist, PlaylistsType.OnDevicePlaylist -> ""    // Matches everything
                                     PlaylistsType.PinnedPlaylist -> PINNED_PREFIX
                                     PlaylistsType.MonthlyPlaylist -> MONTHLY_PREFIX
                                     PlaylistsType.PodcastPlaylist -> ""
@@ -498,6 +622,7 @@ fun HomePlaylists(
                                 when (playlistType) {
                                     PlaylistsType.YTPlaylist -> it.playlist.isYoutubePlaylist
                                     PlaylistsType.PodcastPlaylist -> it.playlist.isPodcast
+                                    PlaylistsType.OnDevicePlaylist -> it.isOnDevice
                                     PlaylistsType.Playlist -> {
                                         when {
                                             !showPinnedPlaylists -> !it.playlist.isPinned
@@ -507,86 +632,222 @@ fun HomePlaylists(
                                     }
                                     else -> it.playlist.name.startsWith(listPrefix, true)
                                 }
-//                            if (playlistType == PlaylistsType.YTPlaylist) {
-//                                it.playlist.isYoutubePlaylist
-//                            } else it.playlist.name.startsWith(listPrefix, true)
+
                             }
                             items(
                                 items = itemsOnDisplay.filter(condition),
                                 key = { it.playlist.id }
                             ) { preview ->
-                                PlaylistItem(
-                                    playlist = preview,
-                                    thumbnailSizeDp = itemSize.size.dp,
-                                    thumbnailSizePx = itemSize.size.px,
-                                    alternative = true,
-                                    homepage = true,
-                                    iconSize = itemSize.size.dp,
-                                    modifier = Modifier
-                                        .fillMaxSize()
-                                        .animateItem(fadeInSpec = null, fadeOutSpec = null)
-                                        .combinedClickable(
-                                            onClick = {
-                                                search.onItemSelected()
-                                                onPlaylistClick(preview.playlist)
-                                            },
-                                            onLongClick = {
-                                                menuState.display {
-                                                    PlaylistsItemMenu(
-                                                        navController = navController,
-                                                        onDismiss = menuState::hide,
-                                                        playlist = preview,
-                                                        disableScrollingText = disableScrollingText,
-                                                        onPlayNext = {
-                                                            coroutineScope.launch(Dispatchers.IO) {
-                                                                Database.playlistSongs(preview.playlist.id).distinctUntilChanged()
-                                                                    .map { it?.map( Song::asMediaItem) }
-                                                                    .onEach {
-                                                                        withContext(Dispatchers.Main) {
-                                                                            binder?.player?.addNext(it ?: emptyList(),
-                                                                                appContext(), selectedQueue ?: defaultQueue()
-                                                                            )
+                                if (!preview.isOnDevice)
+                                    PlaylistItem(
+                                        playlist = preview,
+                                        thumbnailSizeDp = itemSize.size.dp,
+                                        thumbnailSizePx = itemSize.size.px,
+                                        alternative = true,
+                                        homepage = true,
+                                        iconSize = itemSize.size.dp,
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .animateItem(fadeInSpec = null, fadeOutSpec = null)
+                                            .combinedClickable(
+                                                onClick = {
+                                                    search.onItemSelected()
+                                                    onPlaylistClick(preview)
+                                                },
+                                                onLongClick = {
+                                                    menuState.display {
+                                                        PlaylistsItemMenu(
+                                                            navController = navController,
+                                                            onDismiss = menuState::hide,
+                                                            playlist = preview,
+                                                            disableScrollingText = disableScrollingText,
+                                                            onPlayNext = {
+                                                                coroutineScope.launch(Dispatchers.IO) {
+                                                                    Database.playlistSongs(preview.playlist.id)
+                                                                        .distinctUntilChanged()
+                                                                        .map { it?.map(Song::asMediaItem) }
+                                                                        .onEach {
+                                                                            withContext(Dispatchers.Main) {
+                                                                                binder?.player?.addNext(
+                                                                                    it
+                                                                                        ?: emptyList(),
+                                                                                    appContext(),
+                                                                                    selectedQueue
+                                                                                        ?: defaultQueue()
+                                                                                )
+                                                                            }
                                                                         }
-                                                                    }
-                                                                    .collect()
-                                                            }
-                                                        },
-                                                        onPlayNow = {
-                                                            coroutineScope.launch(Dispatchers.IO) {
-                                                                Database.playlistSongs(preview.playlist.id).distinctUntilChanged()
-                                                                    .map { it?.map( Song::asMediaItem) }
-                                                                    .onEach {
-                                                                        if (it != null)
-                                                                            binder?.player?.forcePlayFromBeginning(it)
-//                                                                            fastPlay(it.first(),
-//                                                                                binder, it
-//                                                                            )
-                                                                    }
-                                                                    .collect()
-                                                            }
-                                                        },
-                                                        onShufflePlay = {
-                                                            coroutineScope.launch(Dispatchers.IO) {
-                                                                Database.playlistSongs(preview.playlist.id).distinctUntilChanged()
-                                                                    .map { it?.map( Song::asMediaItem) }
-                                                                    .onEach {
-                                                                        withContext(Dispatchers.Main) {
+                                                                        .collect()
+                                                                }
+                                                            },
+                                                            onPlayNow = {
+                                                                coroutineScope.launch(Dispatchers.IO) {
+                                                                    Database.playlistSongs(preview.playlist.id)
+                                                                        .distinctUntilChanged()
+                                                                        .map { it?.map(Song::asMediaItem) }
+                                                                        .onEach {
                                                                             if (it != null)
-                                                                                binder?.player?.forcePlayFromBeginning(it.shuffled())
+                                                                                binder?.player?.forcePlayFromBeginning(
+                                                                                    it
+                                                                                )
+                                                                            //                                                                            fastPlay(it.first(),
+                                                                            //                                                                                binder, it
+                                                                            //                                                                            )
                                                                         }
+                                                                        .collect()
+                                                                }
+                                                            },
+                                                            onShufflePlay = {
+                                                                coroutineScope.launch(Dispatchers.IO) {
+                                                                    Database.playlistSongs(preview.playlist.id)
+                                                                        .distinctUntilChanged()
+                                                                        .map { it?.map(Song::asMediaItem) }
+                                                                        .onEach {
+                                                                            withContext(Dispatchers.Main) {
+                                                                                if (it != null)
+                                                                                    binder?.player?.forcePlayFromBeginning(
+                                                                                        it.shuffled()
+                                                                                    )
+                                                                            }
 
-                                                                    }
-                                                                    .collect()
+                                                                        }
+                                                                        .collect()
+                                                                }
                                                             }
-                                                        }
-                                                    )
+                                                        )
+                                                    }
+                                                }
+                                            ),
+                                        disableScrollingText = disableScrollingText,
+                                        isYoutubePlaylist = preview.playlist.isYoutubePlaylist,
+                                        isEditable = preview.playlist.isEditable,
+                                    )
+                                else {
+                                    var songs by persistList<SongEntity>("playlist${preview.playlist.id}/songsThumbnails")
+                                    LaunchedEffect(Unit) {
+                                        onDeviceViewModel.audioFilesFromFolder(preview.folder ?: "").collect {
+                                            songs = it
+                                        }
+                                    }
+                                    val thumbnails = songs.map { song -> song.song }
+                                        .takeWhile { it.thumbnailUrl?.isNotEmpty() ?: false }
+                                        .take(4)
+                                        .map { it.thumbnailUrl.thumbnail(playlistThumbnailSizePx / 2) }
+
+                                    PlaylistItem(
+                                        thumbnailContent = {
+                                            if (thumbnails.toSet().size == 1) {
+                                                AsyncImage(
+                                                    model = thumbnails.first()
+                                                        .thumbnail(playlistThumbnailSizePx),
+                                                    contentDescription = null,
+                                                    contentScale = ContentScale.Crop,
+                                                )
+                                            } else {
+                                                Box(
+                                                    modifier = Modifier
+                                                        .fillMaxSize()
+                                                ) {
+                                                    listOf(
+                                                        Alignment.TopStart,
+                                                        Alignment.TopEnd,
+                                                        Alignment.BottomStart,
+                                                        Alignment.BottomEnd
+                                                    ).forEachIndexed { index, alignment ->
+                                                        AsyncImage(
+                                                            model = thumbnails.getOrNull(index),
+                                                            contentDescription = null,
+                                                            contentScale = ContentScale.Crop,
+                                                            modifier = Modifier
+                                                                .align(alignment)
+                                                                .size(playlistThumbnailSizeDp / 2)
+                                                        )
+                                                    }
                                                 }
                                             }
-                                        ),
-                                    disableScrollingText = disableScrollingText,
-                                    isYoutubePlaylist = preview.playlist.isYoutubePlaylist,
-                                    isEditable = preview.playlist.isEditable,
-                                )
+                                        },
+                                        songCount = preview.songCount,
+                                        thumbnailSizeDp = playlistThumbnailSizeDp,
+                                        name = preview.playlist.name,
+                                        channelName = null,
+                                        alternative = true,
+                                        showName = true,
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .animateItem(fadeInSpec = null, fadeOutSpec = null)
+                                            .combinedClickable(
+                                                onClick = {
+                                                    search.onItemSelected()
+                                                    onPlaylistClick(preview)
+                                                },
+                                                onLongClick = {
+                                                    menuState.display {
+                                                        PlaylistsItemMenu(
+                                                            navController = navController,
+                                                            onDismiss = menuState::hide,
+                                                            playlist = preview,
+                                                            disableScrollingText = disableScrollingText,
+                                                            onPlayNext = {
+                                                                coroutineScope.launch(Dispatchers.IO) {
+                                                                    Database.playlistSongs(preview.playlist.id)
+                                                                        .distinctUntilChanged()
+                                                                        .map { it?.map(Song::asMediaItem) }
+                                                                        .onEach {
+                                                                            withContext(Dispatchers.Main) {
+                                                                                binder?.player?.addNext(
+                                                                                    it
+                                                                                        ?: emptyList(),
+                                                                                    appContext(),
+                                                                                    selectedQueue
+                                                                                        ?: defaultQueue()
+                                                                                )
+                                                                            }
+                                                                        }
+                                                                        .collect()
+                                                                }
+                                                            },
+                                                            onPlayNow = {
+                                                                coroutineScope.launch(Dispatchers.IO) {
+                                                                    Database.playlistSongs(preview.playlist.id)
+                                                                        .distinctUntilChanged()
+                                                                        .map { it?.map(Song::asMediaItem) }
+                                                                        .onEach {
+                                                                            if (it != null)
+                                                                                binder?.player?.forcePlayFromBeginning(
+                                                                                    it
+                                                                                )
+                                                                            //                                                                            fastPlay(it.first(),
+                                                                            //                                                                                binder, it
+                                                                            //                                                                            )
+                                                                        }
+                                                                        .collect()
+                                                                }
+                                                            },
+                                                            onShufflePlay = {
+                                                                coroutineScope.launch(Dispatchers.IO) {
+                                                                    Database.playlistSongs(preview.playlist.id)
+                                                                        .distinctUntilChanged()
+                                                                        .map { it?.map(Song::asMediaItem) }
+                                                                        .onEach {
+                                                                            withContext(Dispatchers.Main) {
+                                                                                if (it != null)
+                                                                                    binder?.player?.forcePlayFromBeginning(
+                                                                                        it.shuffled()
+                                                                                    )
+                                                                            }
+
+                                                                        }
+                                                                        .collect()
+                                                                }
+                                                            }
+                                                        )
+                                                    }
+                                                }
+                                            ),
+                                        disableScrollingText = disableScrollingText,
+
+                                        )
+                                }
                             }
 
                             item(

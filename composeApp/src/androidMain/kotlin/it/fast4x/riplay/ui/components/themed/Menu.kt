@@ -95,6 +95,7 @@ fun MenuEntry(
         }
 
         trailingContent?.invoke()
+
     }
 }
 

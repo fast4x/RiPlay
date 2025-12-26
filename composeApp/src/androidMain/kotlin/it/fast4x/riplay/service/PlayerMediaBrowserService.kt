@@ -253,8 +253,9 @@ class PlayerMediaBrowserService : MediaBrowserServiceCompat(), ServiceConnection
                                 }
                         } else {
                             val artist = Database.artist(id).first()
-                            var songs = Database.artistAllSongs(id).first()
-                            if (songs.isEmpty()) {
+                            //var songs = Database.artistAllSongs(id).first()
+                            var songs = emptyList<Song>()
+                            //if (songs.isEmpty()) {
                                 EnvironmentExt.getArtistPage(browseId = id)
                                     .onSuccess { currentArtistPage ->
                                         var moreEndPointBrowseId: String? = null
@@ -297,7 +298,7 @@ class PlayerMediaBrowserService : MediaBrowserServiceCompat(), ServiceConnection
                                             }
 
                                     }
-                            }
+                            //}
                             songs
                                 .also { lastSongs = it }
                                 .map { it.asBrowserMediaItem }
@@ -389,7 +390,7 @@ class PlayerMediaBrowserService : MediaBrowserServiceCompat(), ServiceConnection
                         if (id == "") {
                             Timber.d("PlayerMediaBrowserService onLoadChildren inside albums id $id")
                             Database
-                                .albums(AlbumSortBy.Title, SortOrder.Ascending)
+                                .albums(AlbumSortBy.DateAdded, SortOrder.Descending)
                                 .first()
                                 .map { it.asBrowserMediaItem(MediaId.ALBUMS_FAVORITES) }
                                 .toMutableList()
@@ -458,7 +459,7 @@ class PlayerMediaBrowserService : MediaBrowserServiceCompat(), ServiceConnection
                         if (id == "") {
                             Timber.d("PlayerMediaBrowserService onLoadChildren inside albums on device id $id")
                             Database
-                                .albumsOnDevice(AlbumSortBy.Title, SortOrder.Ascending)
+                                .albumsOnDevice(AlbumSortBy.DateAdded, SortOrder.Descending)
                                 .first()
                                 .map { it.asBrowserMediaItem(MediaId.ALBUMS_ON_DEVICE) }
                                 .toMutableList()
@@ -476,7 +477,7 @@ class PlayerMediaBrowserService : MediaBrowserServiceCompat(), ServiceConnection
                         if (id == "") {
                             Timber.d("PlayerMediaBrowserService onLoadChildren inside albums on device id $id")
                             Database
-                                .albumsInLibrary(AlbumSortBy.Title, SortOrder.Ascending)
+                                .albumsInLibrary(AlbumSortBy.DateAdded, SortOrder.Descending)
                                 .first()
                                 .map { it.asBrowserMediaItem(MediaId.ALBUMS_IN_LIBRARY) }
                                 .toMutableList()

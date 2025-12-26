@@ -5,13 +5,18 @@ import it.fast4x.environment.Environment.getBestQuality
 import it.fast4x.environment.models.BrowseEndpoint
 import it.fast4x.environment.models.MusicCarouselShelfRenderer
 import it.fast4x.environment.models.MusicTwoRowItemRenderer
+import it.fast4x.environment.models.NavigationEndpoint
+import it.fast4x.environment.models.SectionListRenderer
 import it.fast4x.environment.models.oddElements
 import kotlinx.serialization.Serializable
 
 @Serializable
 data class HomePage(
     val sections: List<Section>,
+    val chips: List<Environment.Chip>?,
+    val continuation: String? = null,
 ) {
+
     @Serializable
     data class Section(
         val title: String,
@@ -94,7 +99,7 @@ data class HomePage(
                         )
                     }
 
-                    renderer?.isPlaylist == true -> {
+                    renderer?.isPlaylist == true || renderer?.isPodcast == true  -> {
 
                         Environment.PlaylistItem(
                             info = Environment.Info(

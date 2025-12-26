@@ -17,11 +17,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.TransformOrigin
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
+import it.fast4x.riplay.R
 
 enum class AnimationType {
     SLIDE_AND_FADE,
@@ -55,9 +57,12 @@ fun SequentialAnimationContainer(
         )
     ) {
         Box() {
-            Box(modifier = Modifier.padding(horizontal = 12.dp).align(Alignment.BottomCenter).zIndex(2f)) {
+            Box(modifier = Modifier
+                .padding(horizontal = 12.dp)
+                .align(Alignment.BottomCenter)
+                .zIndex(2f)) {
                 Text(
-                    text = "Riplay Rewind $year",
+                    text = stringResource(R.string.rw_riplay_rewind),
                     color = Color.White,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.SemiBold,
@@ -81,7 +86,7 @@ fun AnimatedContent(
 ) {
     AnimatedVisibility(
         visible = isVisible,
-        enter = AnimationEffect(animationType),
+        enter = animationEffect(animationType),
         exit = fadeOut(
             animationSpec = tween(500)
         )
@@ -93,7 +98,7 @@ fun AnimatedContent(
 }
 
 @Composable
-fun AnimationEffect(animationType: AnimationType) = when (animationType) {
+fun animationEffect(animationType: AnimationType) = when (animationType) {
     AnimationType.SLIDE_AND_FADE -> {
         slideInHorizontally(
             initialOffsetX = { it },
@@ -134,7 +139,7 @@ fun AnimationEffect(animationType: AnimationType) = when (animationType) {
     AnimationType.SPRING_SCALE_IN -> {
         scaleIn(
             animationSpec = spring(
-                dampingRatio = Spring.DampingRatioHighBouncy,
+                dampingRatio = Spring.DampingRatioMediumBouncy,
                 stiffness = Spring.StiffnessLow
             ),
             initialScale = 0.1f

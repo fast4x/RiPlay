@@ -37,6 +37,7 @@ import it.fast4x.environment.models.NavigationEndpoint
 import it.fast4x.environment.models.NextResponse
 import it.fast4x.environment.models.ReturnYouTubeDislikeResponse
 import it.fast4x.environment.models.Runs
+import it.fast4x.environment.models.SectionListRenderer
 import it.fast4x.environment.models.Thumbnail
 import it.fast4x.environment.models.VideoOrSongInfo
 import it.fast4x.environment.models.bodies.AccountMenuBody
@@ -524,6 +525,23 @@ object Environment {
         val recommendedVideo: VideoItem?,
     )
 
+    @Serializable
+    data class Chip(
+        val title: String,
+        val endpoint: NavigationEndpoint.Endpoint.Browse?,
+        val deselectEndPoint: NavigationEndpoint.Endpoint.Browse?,
+    ) {
+        companion object {
+            fun fromChipCloudChipRenderer(renderer: SectionListRenderer.Header.ChipCloudRenderer.Chip): Chip? {
+                return Chip(
+                    title = renderer.chipCloudChipRenderer.text?.runs?.firstOrNull()?.text ?: return null,
+                    endpoint = renderer.chipCloudChipRenderer.navigationEndpoint.browseEndpoint,
+                    deselectEndPoint = renderer.chipCloudChipRenderer.onDeselectedCommand?.browseEndpoint,
+                )
+            }
+        }
+    }
+
     fun MusicNavigationButtonRenderer.toMood(): Mood.Item? {
         return Mood.Item(
             title = buttonText.runs.firstOrNull()?.text ?: return null,
@@ -817,6 +835,7 @@ object Environment {
                 context = Context.DefaultWebWithLocale,
                 browseId = browseId,
                 params = params,
+                continuation = continuation
             )
         )
         parameter("continuation", continuation)

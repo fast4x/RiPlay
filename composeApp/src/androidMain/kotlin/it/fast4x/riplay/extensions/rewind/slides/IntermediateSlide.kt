@@ -41,16 +41,19 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.mikepenz.hypnoticcanvas.shaderBackground
 import com.mikepenz.hypnoticcanvas.shaders.GradientFlow
+import com.mikepenz.hypnoticcanvas.shaders.MeshGradient
 import it.fast4x.riplay.R
 import it.fast4x.riplay.extensions.rewind.data.AnimatedContent
 import it.fast4x.riplay.extensions.rewind.data.AnimationType
 import it.fast4x.riplay.extensions.rewind.data.RewindSlide
 import it.fast4x.riplay.extensions.rewind.data.slideTitleFontSize
+import it.fast4x.riplay.extensions.rewind.utils.colorsList
 import it.fast4x.riplay.extensions.visualbitmap.VisualBitmapCreator
 import it.fast4x.riplay.ui.items.SongItem
 import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.ui.styling.px
 import kotlinx.coroutines.delay
+import kotlin.random.Random
 
 
 @Composable
@@ -80,7 +83,9 @@ fun IntermediateSlide(slide: RewindSlide.Intermediate, isPageActive: Boolean = f
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .shaderBackground(GradientFlow),
+                .shaderBackground(MeshGradient(
+                    (colorsList()[Random.nextInt(0, colorsList().size -1 )]).toTypedArray()
+                )),
             contentAlignment = Alignment.Center
         ) {
 

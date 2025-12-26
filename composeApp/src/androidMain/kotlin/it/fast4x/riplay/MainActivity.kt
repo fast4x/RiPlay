@@ -95,8 +95,6 @@ import androidx.core.os.LocaleListCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
@@ -246,7 +244,6 @@ import it.fast4x.riplay.ui.styling.typographyOf
 import it.fast4x.riplay.utils.LocalMonetCompat
 import it.fast4x.riplay.utils.OkHttpRequest
 import it.fast4x.riplay.utils.asMediaItem
-import it.fast4x.riplay.utils.capitalized
 import it.fast4x.riplay.utils.globalContext
 import it.fast4x.riplay.utils.forcePlay
 import it.fast4x.riplay.utils.getDnsOverHttpsType
@@ -266,6 +263,8 @@ import it.fast4x.riplay.utils.setDefaultPalette
 import it.fast4x.riplay.commonutils.thumbnail
 import it.fast4x.riplay.extensions.databasebackup.BackupViewModel
 import it.fast4x.riplay.extensions.databasebackup.DatabaseBackupManager
+import it.fast4x.riplay.extensions.ondevice.OnDeviceViewModel
+import it.fast4x.riplay.service.PlayerServiceQueueViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
@@ -384,6 +383,14 @@ class MainActivity :
 
     private val backupManagerViewModel: BackupViewModel by viewModels {
         BackupViewModel(DatabaseBackupManager(this, Database), this)
+    }
+
+    private val playerServiceQueue: PlayerServiceQueueViewModel by viewModels {
+        PlayerServiceQueueViewModel()
+    }
+
+    private val onDeviceViewModel: OnDeviceViewModel by viewModels {
+        OnDeviceViewModel(application)
     }
 
 
@@ -824,7 +831,8 @@ class MainActivity :
                 ) == CheckUpdateState.Enabled
             ) {
                 val urlVersionCode =
-                    "https://raw.githubusercontent.com/fast4x/CentralUpdates/main/updates/VersionCode-Ri.ver"
+                    "https://raw.githubusercontent.com/fast4x/RiPlay/main/updatedVersion/updatedVersionCode.ver"
+                    //"https://raw.githubusercontent.com/fast4x/CentralUpdates/main/updates/VersionCode-Ri.ver"
                 request.GET(urlVersionCode, object : Callback {
                     override fun onResponse(call: Call, response: Response) {
                         val responseData = response.body?.string()
@@ -1438,6 +1446,8 @@ class MainActivity :
                             LocalSelectedQueue provides selectedQueue.value,
                             LocalAudioTagger provides audioTaggerViewModel,
                             LocalBackupManager provides backupManagerViewModel,
+                            LocalPlayerServiceQueue provides playerServiceQueue,
+                            LocalOnDeviceViewModel provides onDeviceViewModel
                             //LocalInternetAvailable provides isInternetAvailable
                         ) {
 
@@ -1710,8 +1720,6 @@ class MainActivity :
                 intentUriData = null
             }
 
-            // Load and update on device songs
-            OnDeviceLoader()
         }
 
     }
@@ -1925,6 +1933,10 @@ val LocalSelectedQueue = staticCompositionLocalOf<Queues?> { error("No selected 
 val LocalAudioTagger = staticCompositionLocalOf<AudioTagViewModel> { error("No audio tagger provided") }
 
 val LocalBackupManager = staticCompositionLocalOf<BackupViewModel> { error("No backup manager provided") }
+
+val LocalPlayerServiceQueue = staticCompositionLocalOf<PlayerServiceQueueViewModel> { error("No player service queue provided") }
+
+val LocalOnDeviceViewModel = staticCompositionLocalOf<OnDeviceViewModel> { error("No on device view model provided") }
 
 
 

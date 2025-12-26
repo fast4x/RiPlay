@@ -122,9 +122,9 @@ object EnvironmentExt {
         println("EnvironmentExt removelikeVideoOrSong error: ${it.stackTraceToString()}")
     }
 
-    suspend fun getHomePage(setLogin: Boolean = false): Result<HomePage> = runCatching {
+    suspend fun getHomePage(setLogin: Boolean = false, params: String? = null): Result<HomePage> = runCatching {
 
-        var response = Environment.browse(browseId = "FEmusic_home", setLogin = setLogin).body<BrowseResponse>()
+        var response = Environment.browse(browseId = "FEmusic_home", setLogin = setLogin, params = params).body<BrowseResponse>()
 
         println("EnvironmentExt homePage() response sections: ${response.contents?.singleColumnBrowseResultsRenderer?.tabs?.firstOrNull()
             ?.tabRenderer?.content?.sectionListRenderer?.contents}" )
@@ -133,17 +133,44 @@ object EnvironmentExt {
         var continuation = response.contents?.singleColumnBrowseResultsRenderer?.tabs?.firstOrNull()
             ?.tabRenderer?.content?.sectionListRenderer?.continuations?.getContinuation()
 
-        val sections = response.contents?.singleColumnBrowseResultsRenderer?.tabs?.firstOrNull()
-            ?.tabRenderer?.content?.sectionListRenderer?.contents!!
+        val sectionListRender = response.contents?.singleColumnBrowseResultsRenderer?.tabs?.firstOrNull()
+            ?.tabRenderer?.content?.sectionListRenderer
+
+        val sections = sectionListRender?.contents!!
             .mapNotNull { it.musicCarouselShelfRenderer }
             .mapNotNull {
                 HomePage.Section.fromMusicCarouselShelfRenderer(it)
             }.toMutableList()
+
+        val chips = sectionListRender.header?.chipCloudRenderer?.chips?.mapNotNull {
+            Environment.Chip.fromChipCloudChipRenderer(it)
+        }
+
+        val continuationsList = mutableListOf<String>()
+
+        //var cont = 0
         while (continuation != null) {
+            //cont += 1
+            //println("EnvironmentExt getHomepage() continuation PRE process cont $cont continuation $continuation")
+            try {
+                //println("EnvironmentExt getHomepage() continuation PRE process cont $cont continuation $continuation")
 
-            response = Environment.browse(continuation = continuation).body<BrowseResponse>()
-            continuation = response.continuationContents?.sectionListContinuation?.continuations?.getContinuation()
+                if (!continuationsList.contains(continuation)) {
+                    //println("EnvironmentExt getHomepage() continuation process $continuation")
+                    continuationsList.add(continuation)
+                    response =
+                        Environment.browse(continuation = continuation).body<BrowseResponse>()
+                }
 
+                continuation = response.continuationContents?.sectionListContinuation?.continuations?.getContinuation()
+
+            } catch (e: Exception) {
+                //println("EnvironmentExt getHomepage() continuation POST process ERROR ${e.message} cont $cont  continuation $continuation response $response" )
+                continuation = null
+            }
+
+
+            //println("EnvironmentExt getHomepage() continuation POST process cont $cont response $response" )
 
             sections += response.continuationContents?.sectionListContinuation?.contents
                 ?.mapNotNull { it.musicCarouselShelfRenderer }
@@ -151,8 +178,9 @@ object EnvironmentExt {
                     HomePage.Section.fromMusicCarouselShelfRenderer(it)
                 }.orEmpty()
 
+            //cont += 1
         }
-        HomePage( sections = sections )
+        HomePage( sections = sections.distinctBy { it.title }, chips = chips, continuation = continuation)
     }
 
     suspend fun getHistory(setLogin: Boolean = false): Result<HistoryPage> = runCatching {
@@ -160,8 +188,8 @@ object EnvironmentExt {
         val response = Environment.browse(browseId = "FEmusic_history", setLogin = setLogin)
             .body<BrowseResponse>()
 
-        println("EnvironmentExt getHistory() response sections: ${response.contents?.singleColumnBrowseResultsRenderer?.tabs?.firstOrNull()
-            ?.tabRenderer?.content?.sectionListRenderer?.contents}" )
+//        println("EnvironmentExt getHistory() response sections: ${response.contents?.singleColumnBrowseResultsRenderer?.tabs?.firstOrNull()
+//            ?.tabRenderer?.content?.sectionListRenderer?.contents}" )
 
         HistoryPage(
             sections = response.contents?.singleColumnBrowseResultsRenderer?.tabs?.firstOrNull()

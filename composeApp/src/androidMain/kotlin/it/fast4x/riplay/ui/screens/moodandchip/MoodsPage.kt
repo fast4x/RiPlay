@@ -1,4 +1,4 @@
-package it.fast4x.riplay.ui.screens.mood
+package it.fast4x.riplay.ui.screens.moodandchip
 
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -41,9 +41,9 @@ import it.fast4x.riplay.data.models.toUiMood
 import it.fast4x.riplay.ui.components.ShimmerHost
 import it.fast4x.riplay.ui.components.themed.HeaderPlaceholder
 import it.fast4x.riplay.ui.components.themed.HeaderWithIcon
+import it.fast4x.riplay.ui.components.themed.MoodGridItemColored
 import it.fast4x.riplay.ui.components.themed.TextPlaceholder
 import it.fast4x.riplay.ui.items.AlbumItemPlaceholder
-import it.fast4x.riplay.ui.screens.home.MoodGridItemColored
 import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.ui.styling.center
 import it.fast4x.riplay.ui.styling.secondary

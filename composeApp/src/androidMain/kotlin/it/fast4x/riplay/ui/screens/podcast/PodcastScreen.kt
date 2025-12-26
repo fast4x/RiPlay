@@ -29,20 +29,20 @@ fun PodcastScreen(
     val saveableStateHolder = rememberSaveableStateHolder()
     //PersistMapCleanup(tagPrefix = "podcast/$browseId")
 
-            ScreenContainer(
-                navController,
-                miniPlayer = miniPlayer,
-                navBarContent = { item ->
-                    item(0, stringResource(R.string.podcast_episodes), R.drawable.podcast)
-                }
-            ) { currentTabIndex ->
-                saveableStateHolder.SaveableStateProvider(key = currentTabIndex) {
-                    when (currentTabIndex) {
-                        0 -> Podcast(
-                            navController = navController,
-                            browseId = browseId,
-                        )
-                    }
-                }
+    ScreenContainer(
+        navController,
+        miniPlayer = miniPlayer,
+        navBarContent = { item ->
+            item(0, stringResource(R.string.podcast_episodes), R.drawable.podcast)
+        }
+    ) { currentTabIndex ->
+        saveableStateHolder.SaveableStateProvider(key = currentTabIndex) {
+            when (currentTabIndex) {
+                0 -> Podcast(
+                    navController = navController,
+                    browseId = browseId,
+                )
             }
+        }
+    }
 }

@@ -6,6 +6,8 @@ import androidx.room.Embedded
 @Immutable
 data class PlaylistPreview(
     @Embedded val playlist: Playlist,
-    val songCount: Int
+    val songCount: Int,
+    val isOnDevice: Boolean = false,
+    val folder: String? = null
 )
 

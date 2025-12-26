@@ -108,7 +108,7 @@ import it.fast4x.riplay.enums.ThumbnailRoundness
 import it.fast4x.riplay.enums.TopPlaylistPeriod
 import it.fast4x.riplay.enums.UiType
 import it.fast4x.riplay.enums.NavRoutes
-import it.fast4x.riplay.data.models.Folder
+import it.fast4x.riplay.extensions.ondevice.Folder
 import it.fast4x.riplay.data.models.Song
 import it.fast4x.riplay.data.models.SongEntity
 import it.fast4x.riplay.data.models.SongPlaylistMap
@@ -781,7 +781,7 @@ fun HomeSongs(
                     ) {
                         Column {
                             ButtonsRow(
-                                chips = buttonsList,
+                                buttons = buttonsList,
                                 currentValue = builtInPlaylist,
                                 onValueUpdate = {
                                     builtInPlaylist = it
@@ -1519,7 +1519,7 @@ fun HomeSongs(
                                                         onDismiss = menuState::hide,
                                                         onEnqueue = {
                                                             val allSongs = folder.getAllSongs()
-                                                                .map { it.toSong().asMediaItem }
+                                                                .map { it.asMediaItem }
                                                             binder?.player?.enqueue(allSongs, context)
                                                         },
                                                         thumbnailSizeDp = thumbnailSizeDp,
@@ -1560,7 +1560,7 @@ fun HomeSongs(
                                 binder?.player?.addNext(song.asMediaItem, queue = selectedQueue ?: defaultQueue())
                             }
                         ) {
-                            //Timber.d("SongItem title ${song.song.title} id ${song.song.id} mediaId ${song.song.mediaId}")
+                            Timber.d("SongItem title ${song.song.title} id ${song.song.id} mediaId ${song.song.mediaId} folder ${song.song.folder}")
 
                             SongItem(
                                 song = song.song,

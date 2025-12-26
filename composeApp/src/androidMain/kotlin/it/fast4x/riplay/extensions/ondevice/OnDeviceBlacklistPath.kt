@@ -1,4 +1,4 @@
-package it.fast4x.riplay.data.models
+package it.fast4x.riplay.extensions.ondevice
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey

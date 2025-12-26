@@ -72,7 +72,14 @@ fun StatisticsScreen(
                             else -> StatisticsType.All
                         }
 
-                    StatisticsPage( navController, type )
+                    StatisticsPage( navController, type,
+                        onSwipeToLeft = {
+                            onTabIndexChanged(if (currentTabIndex > 0) currentTabIndex - 1 else currentTabIndex)
+                        },
+                        onSwipeToRight = {
+                            onTabIndexChanged(if (currentTabIndex < 6) currentTabIndex + 1 else currentTabIndex)
+                        }
+                    )
                 }
             }
 }
