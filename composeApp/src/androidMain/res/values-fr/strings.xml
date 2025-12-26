@@ -972,7 +972,7 @@ Volume BAS : titre précédent</string>
     <string name="enable_voice_input">Activer la saisie vocale</string>
     <string name="music_identifier_provider">Fournisseur d\'identifiants musicaux</string>
     <string name="music_identify">Identifier</string>
-    <string name="listener_levels">Listener Levels</string>
+    <string name="listener_levels">Niveaux d\'écoute</string>
     <string name="rewinds">Rembobinages</string>
     <string name="rw_watch_your_rewind">Rembobinez</string>
     <string name="all_levelname_sonic_whisper">Murmure Sonique</string>
