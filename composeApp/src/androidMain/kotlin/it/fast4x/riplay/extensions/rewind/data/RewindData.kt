@@ -155,7 +155,7 @@ enum class SongLevel(val title: String, val goal: String, val description: Strin
         description = "You and this song are one and the same. \n An eternal flame burning in your musical heart. \n A legend.",
     ),
     UNDEFINED(
-        title = "Ops",
+        title = "Oops 😢",
         goal = "It seems like you haven't listened to any songs",
         description = "Nothing to see here",
     )
@@ -184,7 +184,7 @@ enum class AlbumLevel(val title: String, val goal: String, val description: Stri
         description = "This album is more than music, it's your sanctuary. \n A sacred place to return to for peace and inspiration.",
     ),
     UNDEFINED(
-        title = "Ops",
+        title = "Oops 😢",
         goal = "It seems like you haven't listened to any albums",
         description = "Nothing to see here",
     )
@@ -213,7 +213,7 @@ enum class PlaylistLevel(val title: String, val goal: String, val description: S
         description = "You didn't just create a playlist, you composed a masterpiece.\n This is your magnum opus, your legacy.",
     ),
     UNDEFINED(
-        title = "Ops",
+        title = "Oops 😢",
         goal = "It seems like you haven't listened to any playlists",
         description = "Nothing to see here",
     )
@@ -242,7 +242,7 @@ enum class ArtistLevel(val title: String, val goal: String, val description: Str
         description = "This artist's music is more than just sound, it's a part of you. \n A deep and unbreakable bond.",
     ),
     UNDEFINED(
-        title = "Ops",
+        title = "Oops 😢",
         goal = "It seems like you haven't listened to any artists",
         description = "Nothing to see here",
     )
