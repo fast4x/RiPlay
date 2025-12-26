@@ -28,7 +28,8 @@ data class Song(
     @ColumnInfo(defaultValue = "1")
     val isAudioOnly: Int = 1,
     @ColumnInfo(defaultValue = "0")
-    val isPodcast: Int = 0
+    val isPodcast: Int = 0,
+    val folder: String? = null,
 ) {
 
     val shareYTUrl: String?
@@ -81,5 +82,13 @@ data class Song(
     fun relativePlayTime(): Double {
         val totalPlayTimeMs = durationTextToMillis(this.durationText ?: "")
         return if(totalPlayTimeMs > 0) this.totalPlayTimeMs.toDouble() / totalPlayTimeMs.toDouble() else 0.0
+    }
+
+    fun toSongEntity(): SongEntity {
+        return SongEntity(
+            this,
+            albumTitle = "",
+            contentLength = 0L
+        )
     }
 }

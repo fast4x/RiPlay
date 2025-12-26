@@ -96,7 +96,7 @@ import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.enums.PlaylistSortBy
 import it.fast4x.riplay.enums.SortOrder
 import it.fast4x.riplay.data.models.Artist
-import it.fast4x.riplay.data.models.Folder
+import it.fast4x.riplay.extensions.ondevice.Folder
 import it.fast4x.riplay.data.models.Info
 import it.fast4x.riplay.data.models.Playlist
 import it.fast4x.riplay.data.models.PlaylistPreview

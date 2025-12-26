@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 38,
-    "identityHash": "a98a78a2f4f0b6a48c9ea3cde0b5ada6",
+    "identityHash": "b9a2e5316c6d3e55e5ffc33870412efa",
     "entities": [
       {
         "tableName": "Song",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `mediaId` TEXT, `title` TEXT NOT NULL, `artistsText` TEXT, `durationText` TEXT, `thumbnailUrl` TEXT, `likedAt` INTEGER, `totalPlayTimeMs` INTEGER NOT NULL, `isAudioOnly` INTEGER NOT NULL DEFAULT 1, `isPodcast` INTEGER NOT NULL DEFAULT 0, PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `mediaId` TEXT, `title` TEXT NOT NULL, `artistsText` TEXT, `durationText` TEXT, `thumbnailUrl` TEXT, `likedAt` INTEGER, `totalPlayTimeMs` INTEGER NOT NULL, `isAudioOnly` INTEGER NOT NULL DEFAULT 1, `isPodcast` INTEGER NOT NULL DEFAULT 0, `folder` TEXT, PRIMARY KEY(`id`))",
         "fields": [
           {
             "fieldPath": "id",
@@ -64,6 +64,11 @@
             "affinity": "INTEGER",
             "notNull": true,
             "defaultValue": "0"
+          },
+          {
+            "fieldPath": "folder",
+            "columnName": "folder",
+            "affinity": "TEXT"
           }
         ],
         "primaryKey": {
@@ -794,7 +799,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'a98a78a2f4f0b6a48c9ea3cde0b5ada6')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'b9a2e5316c6d3e55e5ffc33870412efa')"
     ]
   }
 }

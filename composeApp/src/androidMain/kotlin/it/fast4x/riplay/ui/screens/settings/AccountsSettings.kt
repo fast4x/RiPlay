@@ -525,7 +525,7 @@ fun isSyncEnabled(): Boolean {
 
 fun isLoggedIn(): Boolean {
     val cookie = appContext().preferences.getString(ytCookieKey, "")
-    val isLoggedIn = cookie?.let { parseCookieString(it) }?.contains("SAPISID") == true
+    val isLoggedIn = cookie?.let { parseCookieString(it) }?.contains("SAPISID") == true && isLoginEnabled()
     return isLoggedIn
 }
 
