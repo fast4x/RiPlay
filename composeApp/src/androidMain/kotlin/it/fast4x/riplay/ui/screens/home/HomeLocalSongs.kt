@@ -105,8 +105,7 @@ import it.fast4x.riplay.enums.ThumbnailRoundness
 import it.fast4x.riplay.enums.TopPlaylistPeriod
 import it.fast4x.riplay.enums.UiType
 import it.fast4x.riplay.enums.NavRoutes
-import it.fast4x.riplay.data.models.Folder
-import it.fast4x.riplay.data.models.OnDeviceSong
+import it.fast4x.riplay.extensions.ondevice.Folder
 import it.fast4x.riplay.data.models.Song
 import it.fast4x.riplay.data.models.SongEntity
 import it.fast4x.riplay.data.models.SongPlaylistMap
@@ -190,7 +189,6 @@ import it.fast4x.riplay.utils.asSong
 import it.fast4x.riplay.utils.formatAsDuration
 import org.dailyislam.android.utilities.isNetworkConnected
 import it.fast4x.riplay.extensions.preferences.showDislikedPlaylistKey
-import it.fast4x.riplay.utils.musicFilesAsFlow
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -301,7 +299,7 @@ fun HomeLocalSongs(
     val defaultFolder by rememberPreference(defaultFolderKey, "/")
 
     var songsDevice by remember(sortBy, sortOrder) {
-        mutableStateOf<List<OnDeviceSong>>(emptyList())
+        mutableStateOf<List<Song>>(emptyList())
     }
     var songs: List<SongEntity> = emptyList()
     var folders: List<Folder> = emptyList()
@@ -484,11 +482,12 @@ fun HomeLocalSongs(
         }
         BuiltInPlaylist.OnDevice -> {
             items = emptyList()
-            LaunchedEffect(sortByOnDevice, sortOrderOnDevice) {
-                if (hasPermission)
-                    context.musicFilesAsFlow(sortByOnDevice, sortOrderOnDevice, context)
-                        .collect { songsDevice = it.distinctBy { song -> song.id } }
-            }
+            // todo for the future new local songs management
+//            LaunchedEffect(sortByOnDevice, sortOrderOnDevice) {
+//                if (hasPermission)
+//                    context.musicFilesAsFlow(sortByOnDevice, sortOrderOnDevice, context)
+//                        .collect { songsDevice = it.distinctBy { song -> song.id } }
+//            }
         }
     }
 
@@ -1523,7 +1522,7 @@ fun HomeLocalSongs(
                                                         onDismiss = menuState::hide,
                                                         onEnqueue = {
                                                             val allSongs = folder.getAllSongs()
-                                                                .map { it.toSong().asMediaItem }
+                                                                .map { it.asMediaItem }
                                                             binder?.player?.enqueue(allSongs, context)
                                                         },
                                                         thumbnailSizeDp = thumbnailSizeDp,

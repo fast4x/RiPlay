@@ -263,6 +263,7 @@ import it.fast4x.riplay.utils.setDefaultPalette
 import it.fast4x.riplay.commonutils.thumbnail
 import it.fast4x.riplay.extensions.databasebackup.BackupViewModel
 import it.fast4x.riplay.extensions.databasebackup.DatabaseBackupManager
+import it.fast4x.riplay.extensions.ondevice.OnDeviceViewModel
 import it.fast4x.riplay.service.PlayerServiceQueueViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -386,6 +387,10 @@ class MainActivity :
 
     private val playerServiceQueue: PlayerServiceQueueViewModel by viewModels {
         PlayerServiceQueueViewModel()
+    }
+
+    private val onDeviceViewModel: OnDeviceViewModel by viewModels {
+        OnDeviceViewModel(application)
     }
 
 
@@ -1442,6 +1447,7 @@ class MainActivity :
                             LocalAudioTagger provides audioTaggerViewModel,
                             LocalBackupManager provides backupManagerViewModel,
                             LocalPlayerServiceQueue provides playerServiceQueue,
+                            LocalOnDeviceViewModel provides onDeviceViewModel
                             //LocalInternetAvailable provides isInternetAvailable
                         ) {
 
@@ -1714,8 +1720,6 @@ class MainActivity :
                 intentUriData = null
             }
 
-            // Load and update on device songs
-            OnDeviceLoader()
         }
 
     }
@@ -1931,6 +1935,8 @@ val LocalAudioTagger = staticCompositionLocalOf<AudioTagViewModel> { error("No a
 val LocalBackupManager = staticCompositionLocalOf<BackupViewModel> { error("No backup manager provided") }
 
 val LocalPlayerServiceQueue = staticCompositionLocalOf<PlayerServiceQueueViewModel> { error("No player service queue provided") }
+
+val LocalOnDeviceViewModel = staticCompositionLocalOf<OnDeviceViewModel> { error("No on device view model provided") }
 
 
 

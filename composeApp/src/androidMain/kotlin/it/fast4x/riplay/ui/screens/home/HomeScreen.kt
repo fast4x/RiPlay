@@ -189,7 +189,10 @@ fun HomeScreen(
 
                 4 -> HomePlaylists(
                     onPlaylistClick = {
-                        navController.navigate(route = "${NavRoutes.localPlaylist.name}/${it.id}")
+                        if (!it.isOnDevice)
+                            navController.navigate(route = "${NavRoutes.localPlaylist.name}/${it.playlist.id}")
+                        else
+                            navController.navigate(route = "${NavRoutes.onDevicePlaylist.name}/${it.folder?.replace("/", "$")}")
                     },
                     onSearchClick = {
                         navController.navigate(NavRoutes.search.name)
