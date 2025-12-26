@@ -404,6 +404,7 @@ const val closePlayerServiceWhenPausedAfterMinutesKey = "closePlayerServiceWhenP
 const val checkVolumeLevelKey = "checkVolumeLevel"
 const val showListenerLevelsKey = "showListenerLevels"
 const val homeTypeKey = "homeType"
+const val showSnowfallEffectKey = "showSnowfallEffect"
 
 
 inline fun <reified T : Enum<T>> SharedPreferences.getEnum(

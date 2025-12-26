@@ -210,6 +210,7 @@ import it.fast4x.riplay.extensions.preferences.showInLibraryAAKey
 import it.fast4x.riplay.extensions.preferences.showMonthlyPlaylistsAAKey
 import it.fast4x.riplay.extensions.preferences.showOnDeviceAAKey
 import it.fast4x.riplay.extensions.preferences.showShuffleSongsAAKey
+import it.fast4x.riplay.extensions.preferences.showSnowfallEffectKey
 import it.fast4x.riplay.extensions.preferences.showTopPlaylistAAKey
 import it.fast4x.riplay.extensions.preferences.usePlaceholderInImageLoaderKey
 import it.fast4x.riplay.utils.LazyListContainer
@@ -730,6 +731,8 @@ fun UiSettings(
     var usePlaceholder by rememberPreference(usePlaceholderInImageLoaderKey, true)
 
     var isEnabledFullscreen by rememberPreference(isEnabledFullscreenKey, false)
+
+    var isSnowEffectEnabled by rememberPreference(showSnowfallEffectKey, false)
 
 //    var notifyAAisEnabled by rememberPreference(notifyAndroidAutoTipsKey, true)
 //    var showShuffleSongsAA by rememberPreference(showShuffleSongsAAKey, true)
@@ -1320,6 +1323,18 @@ fun UiSettings(
                                 TransitionEffect.SlideHorizontal -> stringResource(R.string.te_slide_horizontal)
                             }
                         }
+                    )
+
+                if (search.input.isBlank() || stringResource(R.string.snow_effect).contains(
+                        search.input,
+                        true
+                    )
+                )
+                    SwitchSettingEntry(
+                        title = stringResource(R.string.snow_effect),
+                        text = "",
+                        isChecked = isSnowEffectEnabled,
+                        onCheckedChange = { isSnowEffectEnabled = it }
                     )
 
                 if (UiType.ViMusic.isCurrent()) {

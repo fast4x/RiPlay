@@ -264,7 +264,9 @@ import it.fast4x.riplay.commonutils.thumbnail
 import it.fast4x.riplay.extensions.databasebackup.BackupViewModel
 import it.fast4x.riplay.extensions.databasebackup.DatabaseBackupManager
 import it.fast4x.riplay.extensions.ondevice.OnDeviceViewModel
+import it.fast4x.riplay.extensions.preferences.showSnowfallEffectKey
 import it.fast4x.riplay.service.PlayerServiceQueueViewModel
+import it.fast4x.riplay.ui.components.Snowfall
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
@@ -1489,6 +1491,12 @@ class MainActivity :
                                     //playerState = onlinePlayerState,
                                     openTabFromShortcut = openTabFromShortcut
                                 )
+
+                                val isSnowEffectEnabled by rememberObservedPreference(showSnowfallEffectKey, false)
+                                if (isSnowEffectEnabled)
+                                    Box(modifier = Modifier.fillMaxSize()) {
+                                        Snowfall()
+                                    }
 
                                 checkIfAppIsRunningInBackground()
                                 if (appRunningInBackground) localPlayerSheetState.collapseSoft()
