@@ -2231,8 +2231,47 @@ class PlayerService : Service(),
 
                     //Timber.d("PlayerService initializePositionObserver BEFORE player.playbackState ${player.playbackState} internalOnlinePlayerState ${internalOnlinePlayerState} lastProcessedIndex $lastProcessedIndex player.currentMediaItemIndex ${player.currentMediaItemIndex}")
 
-                    if (player.currentMediaItem?.isLocal == false)
-                        player.pauseAtEndOfMediaItems = true else player.pauseAtEndOfMediaItems = false
+//                    if (player.currentMediaItem?.isLocal == false)
+//                        player.pauseAtEndOfMediaItems = true else player.pauseAtEndOfMediaItems = false
+
+                    //Increment playtime of song and add event in the database for online songs
+                    if (internalOnlinePlayerState == PlayerConstants.PlayerState.ENDED
+                        && currentSong.value?.isLocal == false
+                        && !preferences.getBoolean(pauseListenHistoryKey, false)
+                    ) {
+                        currentSong.value?.id?.let { mediaId ->
+                            val totalPlayTimeMs = (currentSecond.value * 1000).toLong()
+                            if (currentSecond.value > 5) {
+                                Timber.d("PlayerService initializePositionObserver INCREMENT totalPlayTimeMs $totalPlayTimeMs mediaItem ${currentSong.value?.id}")
+                                Database.asyncTransaction {
+                                    Database.incrementTotalPlayTimeMs(mediaId, totalPlayTimeMs)
+                                }
+                            }
+
+                            val minTimeForEvent =
+                                preferences.getEnum(exoPlayerMinTimeForEventKey, MinTimeForEvent.`20s`)
+
+                            if (currentSecond.value > minTimeForEvent.seconds) {
+                                Timber.d("PlayerService initializePositionObserver INSERT EVENT totalPlayTimeMs $totalPlayTimeMs")
+                                Database.asyncTransaction {
+                                    try {
+                                        Database.insert(
+                                            Event(
+                                                songId = mediaId,
+                                                timestamp = System.currentTimeMillis(),
+                                                playTime = totalPlayTimeMs
+                                            )
+                                        )
+                                    } catch (e: SQLException) {
+                                        Timber.e("PlayerService initializePositionObserver SQLException ${e.stackTraceToString()}")
+                                    }
+                                }
+
+                            }
+
+                        }
+
+                    }
 
 
                     if ((player.playbackState == Player.STATE_ENDED || internalOnlinePlayerState == PlayerConstants.PlayerState.ENDED)

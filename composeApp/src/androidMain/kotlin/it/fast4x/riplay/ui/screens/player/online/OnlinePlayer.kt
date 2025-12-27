@@ -1414,6 +1414,7 @@ fun OnlinePlayer(
 
     }
 
+    /*
     LaunchedEffect(positionAndDuration) {
 
         //positionAndDuration = currentSecond to currentDuration
@@ -1451,6 +1452,8 @@ fun OnlinePlayer(
         }
 
     }
+
+     */
 
     LaunchedEffect(playerState) {
 

@@ -2805,8 +2805,7 @@ interface Database {
 
 
     @Transaction
-    //@Query("SELECT Song.* FROM Event JOIN Song ON Song.id = songId WHERE playTime > 0 and Song.id NOT LIKE '$LOCAL_KEY_PREFIX%' GROUP BY songId ORDER BY timestamp DESC LIMIT :limit")
-    @Query("SELECT Song.* FROM Event JOIN Song ON Song.id = songId WHERE playTime > 0 GROUP BY songId ORDER BY timestamp DESC LIMIT :limit")
+    @Query("SELECT Song.* FROM Event JOIN Song ON Song.id = songId ORDER BY timestamp DESC LIMIT :limit")
     @RewriteQueriesToDropUnusedColumns
     fun lastPlayed( limit: Int = 10 ): Flow<List<Song>>
 

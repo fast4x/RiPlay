@@ -585,6 +585,7 @@ fun OnlineMiniPlayer(
 
         }
 
+        /*
         LaunchedEffect(positionAndDuration) {
 
             updateStatisticsEverySeconds = (positionAndDuration.second / steps).toInt()
@@ -619,6 +620,8 @@ fun OnlineMiniPlayer(
             }
 
         }
+
+         */
         /******* */
 
     }
