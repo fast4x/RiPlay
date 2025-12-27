@@ -33,6 +33,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -156,7 +157,7 @@ fun PlaylistAchievementSlide(slide: RewindSlide.PlaylistAchievement, isPageActiv
 
                 AnimatedContent(isVisible = isContentVisible, delay = 1500) {
                     Text(
-                        text = "${slide.songCount} songs",
+                        text = stringResource(R.string.rw_songs, slide.songCount),
                         color = Color.White.copy(alpha = 0.9f),
                         fontSize = 18.sp,
                         textAlign = TextAlign.Center

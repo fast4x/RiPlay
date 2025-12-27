@@ -25,6 +25,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -64,48 +65,51 @@ fun AudioTagger(viewModel: AudioTagViewModel, navController: NavController) {
         Image(
             painter = painterResource(R.drawable.app_icon),
             contentDescription = "RiPlay Logo",
-            modifier = Modifier.padding(bottom = 32.dp).size(70.dp),
+            modifier = Modifier
+                .padding(bottom = 32.dp)
+                .size(70.dp),
             colorFilter = ColorFilter.tint(colorPalette().accent)
         )
         when (uiState) {
             is UiState.Idle -> {
                 if (recordAudioPermission.status.isGranted) {
-                    Text("Tap to identify a song", fontSize = 20.sp,
+                    Text(
+                        stringResource(R.string.at_tap_to_identify_a_song), fontSize = 20.sp,
                         modifier = Modifier.padding(bottom = 16.dp),
                         color = colorPalette().text,
                         textAlign = TextAlign.Center
                     )
                     DialogTextButton(
-                        text = "Start Listening",
+                        text = stringResource(R.string.at_start_listening),
                         onClick = { viewModel.identifySong() },
                         primary = true
                     )
                     DialogTextButton(
-                        text = "Try & Play",
+                        text = stringResource(R.string.at_try_play),
                         onClick = { viewModel.tryAudioRecorder() },
                     )
                 } else {
-                    Text("Microphone permission is required.", color = Color.Red, textAlign = TextAlign.Center)
+                    Text(stringResource(R.string.at_microphone_permission_is_required), color = Color.Red, textAlign = TextAlign.Center)
                     Spacer(modifier = Modifier.height(8.dp))
                     DialogTextButton(
-                        text = "Grant Permission",
+                        text = stringResource(R.string.at_grant_permission),
                         onClick = { recordAudioPermission.launchPermissionRequest() },
                         primary = true
                     )
                 }
             }
             is UiState.Recording -> {
-                Text("Listening...", style = typography().xl, color = colorPalette().text)
+                Text(stringResource(R.string.at_listening), style = typography().xl, color = colorPalette().text)
                 Spacer(modifier = Modifier.height(16.dp))
                 CircularProgressIndicator()
             }
             is UiState.Loading -> {
-                Text("Identifying...", style = typography().xl, color = colorPalette().text)
+                Text(stringResource(R.string.at_identifying), style = typography().xl, color = colorPalette().text)
                 Spacer(modifier = Modifier.height(16.dp))
                 CircularProgressIndicator()
             }
             is UiState.Playing -> {
-                Text("Playing...", style = typography().xl, color = colorPalette().text)
+                Text(stringResource(R.string.at_playing), style = typography().xl, color = colorPalette().text)
                 Spacer(modifier = Modifier.height(16.dp))
                 LinearProgressIndicator()
             }
@@ -113,28 +117,28 @@ fun AudioTagger(viewModel: AudioTagViewModel, navController: NavController) {
                 SongInfoCard(uiState.tracks, navController)
                 Spacer(modifier = Modifier.height(24.dp))
                 DialogTextButton(
-                    text = "Identify another song",
+                    text = stringResource(R.string.at_identify_another_song),
                     onClick = { viewModel.identifySong() },
                     primary = true
                 )
             }
             is UiState.Error -> {
-                Text("Error", style = typography().xl, color = colorPalette().red)
+                Text(stringResource(R.string.at_error), style = typography().xl, color = colorPalette().red)
                 Text(AudioTagInfoErrors.getAudioTagInfoError(uiState.message).textName, fontSize = 16.sp, textAlign = TextAlign.Center, modifier = Modifier.padding(top = 8.dp), color = Color.White)
                 Spacer(modifier = Modifier.height(24.dp))
                 DialogTextButton(
-                    text = "Try again",
+                    text = stringResource(R.string.at_try_again),
                     onClick = { viewModel.identifySong() },
                     primary = true
                 )
             }
             is UiState.Response -> {
-                Text("Info", style = typography().xl, color = colorPalette().text)
+                Text(stringResource(R.string.at_info), style = typography().xl, color = colorPalette().text)
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(uiState.message, fontSize = 16.sp, textAlign = TextAlign.Center, color = Color.White)
                 Spacer(modifier = Modifier.height(24.dp))
                 DialogTextButton(
-                    text = "Identify another song",
+                    text = stringResource(R.string.at_identify_another_song),
                     onClick = { viewModel.identifySong() },
                     primary = true
                 )
@@ -149,7 +153,15 @@ fun SongInfoCard(tracks: List<Track>?, navController: NavController) {
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .clickable { navController.navigate("${NavRoutes.searchResults.name}/${cleanString(track.title)} ${cleanString(track.artist)}") },
+                .clickable {
+                    navController.navigate(
+                        "${NavRoutes.searchResults.name}/${
+                            cleanString(
+                                track.title
+                            )
+                        } ${cleanString(track.artist)}"
+                    )
+                },
             shape = RoundedCornerShape(16.dp),
             colors = CardDefaults.cardColors(containerColor = colorPalette().background1),
         ) {

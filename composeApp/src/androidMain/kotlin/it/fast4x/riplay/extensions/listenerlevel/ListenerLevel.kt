@@ -358,7 +358,7 @@ fun ListenerLevelCharts() {
         }
 
         Text(
-            text = "Your Annual Level",
+            text = stringResource(R.string.ll_your_annual_level),
             style = typography().l
         )
 

@@ -11,6 +11,7 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -74,7 +75,7 @@ fun OutroSlideComposable(slide: RewindSlide.OutroSlide, isPageActive: Boolean) {
 
                 AnimatedContent(isVisible = isContentVisible, delay = 500) {
                     Text(
-                        text = "Thank You",
+                        text = stringResource(R.string.rw_thank_you),
                         color = Color.White,
                         fontSize = 48.sp,
                         fontWeight = FontWeight.ExtraBold,
@@ -87,7 +88,7 @@ fun OutroSlideComposable(slide: RewindSlide.OutroSlide, isPageActive: Boolean) {
 
                 AnimatedContent(isVisible = isContentVisible, delay = 1000) {
                     Text(
-                        text = "The music you love is a piece of you. Sharing it is the best way to connect with others.",
+                        text = stringResource(R.string.rw_the_music_you_love_is_a_piece_of_you_sharing_it_is_the_best_way_to_connect_with_others),
                         color = Color.White.copy(alpha = 0.9f),
                         fontSize = 20.sp,
                         textAlign = TextAlign.Center,
@@ -100,7 +101,7 @@ fun OutroSlideComposable(slide: RewindSlide.OutroSlide, isPageActive: Boolean) {
 
                 AnimatedContent(isVisible = isContentVisible, delay = 1500) {
                     Text(
-                        text = "Keep listening, keep sharing, keep loving, never hate anyone.",
+                        text = stringResource(R.string.rw_keep_listening_keep_sharing_keep_loving_never_hate_anyone),
                         color = Color.White,
                         fontSize = 22.sp,
                         fontWeight = FontWeight.SemiBold,

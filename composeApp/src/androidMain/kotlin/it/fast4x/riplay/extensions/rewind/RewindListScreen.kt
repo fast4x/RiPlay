@@ -119,7 +119,7 @@ fun RewindListScreen(
                         span = { GridItemSpan(maxLineSpan) }
                     ) {
                         HeaderWithIcon(
-                            title = "Rewinds",
+                            title = stringResource(R.string.rewinds),
                             iconId = R.drawable.stat_year,
                             enabled = true,
                             showIcon = !showSearchTab,

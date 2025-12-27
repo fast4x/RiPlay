@@ -643,7 +643,7 @@ fun GeneralSettings(
                     isHeader = true
                 ) {
                     SettingsGroupSpacer()
-                    SettingsEntryGroupText("Self closing")
+                    SettingsEntryGroupText(stringResource(R.string.self_closing))
                 }
 
                 settingsItem {
@@ -689,7 +689,7 @@ fun GeneralSettings(
                             )
 
                             EnumValueSelectorSettingsEntry(
-                                title = "When player is paused",
+                                title = stringResource(R.string.when_player_is_paused),
                                 selectedValue = closePlayerWhenPausedAfterMinutes,
                                 onValueSelected = { closePlayerWhenPausedAfterMinutes = it },
                                 valueText = {
@@ -1063,13 +1063,13 @@ fun GeneralSettings(
                             }
                         )
 
-                    if (search.input.isBlank() || "Filter content type".contains(
+                    if (search.input.isBlank() || stringResource(R.string.filter_content_type).contains(
                             search.input,
                             true
                         )
                     )
                         EnumValueSelectorSettingsEntry(
-                            title = "Filter content type",
+                            title = stringResource(R.string.filter_content_type),
                             selectedValue = filterContentType,
                             onValueSelected = { filterContentType = it },
                             valueText = {

@@ -36,6 +36,7 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -83,9 +84,11 @@ fun IntermediateSlide(slide: RewindSlide.Intermediate, isPageActive: Boolean = f
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .shaderBackground(MeshGradient(
-                    (colorsList()[Random.nextInt(0, colorsList().size -1 )]).toTypedArray()
-                )),
+                .shaderBackground(
+                    MeshGradient(
+                        (colorsList()[Random.nextInt(0, colorsList().size - 1)]).toTypedArray()
+                    )
+                ),
             contentAlignment = Alignment.Center
         ) {
 
@@ -171,7 +174,7 @@ fun IntermediateSlide(slide: RewindSlide.Intermediate, isPageActive: Boolean = f
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Text(
-                            text = "Swipe to continue",
+                            text = stringResource(R.string.rw_swipe_to_continue),
                             color = Color.White.copy(alpha = 0.7f),
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Medium

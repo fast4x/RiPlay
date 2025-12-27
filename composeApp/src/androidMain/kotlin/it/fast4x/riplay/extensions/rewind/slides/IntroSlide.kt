@@ -11,6 +11,7 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -74,7 +75,7 @@ fun IntroSlide(slide: RewindSlide.IntroSlide, isPageActive: Boolean) {
                     }
                     AnimatedContent(isVisible = isContentVisible, delay = 200) {
                         Text(
-                            text = "RiPlay",
+                            text = stringResource(R.string.rw_riplay),
                             color = Color.White,
                             fontSize = 40.sp,
                             fontWeight = FontWeight.ExtraBold,
@@ -89,7 +90,7 @@ fun IntroSlide(slide: RewindSlide.IntroSlide, isPageActive: Boolean) {
 
                 AnimatedContent(isVisible = isContentVisible, delay = 400) {
                     Text(
-                        text = "Rewind",
+                        text = stringResource(R.string.rw_rewind),
                         color = Color.White,
                         fontSize = 56.sp,
                         fontWeight = FontWeight.ExtraBold,
@@ -101,7 +102,7 @@ fun IntroSlide(slide: RewindSlide.IntroSlide, isPageActive: Boolean) {
 
                 AnimatedContent(isVisible = isContentVisible, delay = 500) {
                     Text(
-                        text = "Your ${slide.year} in music",
+                        text = stringResource(R.string.your_in_music, slide.year),
                         color = Color.White.copy(alpha = 0.9f),
                         fontSize = 26.sp,
                         fontWeight = FontWeight.Medium,
@@ -114,7 +115,7 @@ fun IntroSlide(slide: RewindSlide.IntroSlide, isPageActive: Boolean) {
 
                 AnimatedContent(isVisible = isContentVisible, delay = 1000) {
                     Text(
-                        text = "Your listening!\nYour discoveries!\nYour obsessions!\nGet ready to relive your most unforgettable musical moments.",
+                        text = stringResource(R.string.rw_your_listening_your_discoveries_your_obsessions_get_ready_to_relive_your_most_unforgettable_musical_moments),
                         color = Color.White.copy(alpha = 0.8f),
                         fontSize = 18.sp,
                         textAlign = TextAlign.Center,
@@ -126,7 +127,7 @@ fun IntroSlide(slide: RewindSlide.IntroSlide, isPageActive: Boolean) {
 
                 AnimatedContent(isVisible = isContentVisible, delay = 1200) {
                     Text(
-                        text = "Remember, your privacy is respected!\nAll data used is only in your device and managed by you.",
+                        text = stringResource(R.string.rw_remember_your_privacy_is_respected_all_data_used_is_only_in_your_device_and_managed_by_you),
                         color = Color.White.copy(alpha = 0.9f),
                         fontSize = 15.sp,
                         textAlign = TextAlign.Center,
@@ -142,7 +143,7 @@ fun IntroSlide(slide: RewindSlide.IntroSlide, isPageActive: Boolean) {
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Text(
-                            text = "Swipe to get started",
+                            text = stringResource(R.string.rw_swipe_to_get_started),
                             color = Color.White.copy(alpha = 0.7f),
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Medium
