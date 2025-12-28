@@ -46,7 +46,7 @@
     <string name="edit_lyrics">Изменить текст песни</string>
     <string name="search_lyrics_online">Искать текст песни в Интернете</string>
     <string name="fetch_lyrics_again">Перезагрузить текст песни</string>
-    <string name="id">Id</string>
+    <string name="id">ID</string>
     <string name="itag">Itag</string>
     <string name="bitrate">Битрейт</string>
     <string name="size">Размер</string>
@@ -778,7 +778,7 @@
     <string name="settings_enable_pip_auto">Включить автоматически \"Картинка в картинке\"</string>
     <string name="pipmodule_cover">Обложка</string>
     <string name="settings_pip_module"> Модуль Pip</string>
-    <string name="menu_go_to_picture_in_picture">PIP</string>
+    <string name="menu_go_to_picture_in_picture">Картинка в картинке</string>
     <string name="pip_info_from_android_12_pip_can_be_automatically_enabled">С Android 12 pip можно включить автоматически</string>
     <string name="showsecondline">Показать перевод во второй строке</string>
     <string name="enter_the_value">Введите значение</string>
