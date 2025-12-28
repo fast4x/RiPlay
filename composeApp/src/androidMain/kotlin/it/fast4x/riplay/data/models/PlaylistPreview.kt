@@ -8,6 +8,7 @@ data class PlaylistPreview(
     @Embedded val playlist: Playlist,
     val songCount: Int,
     val isOnDevice: Boolean = false,
-    val folder: String? = null
+    val folder: String? = null,
+    val totalPlayTimeMs: Long? = null,
 )
 

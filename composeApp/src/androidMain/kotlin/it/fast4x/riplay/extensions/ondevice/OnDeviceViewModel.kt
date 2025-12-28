@@ -9,6 +9,7 @@ import android.database.ContentObserver
 import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.viewModelScope
 import it.fast4x.riplay.enums.OnDeviceSongSortBy
 import it.fast4x.riplay.enums.SortOrder
@@ -39,6 +40,7 @@ import it.fast4x.riplay.data.models.SongArtistMap
 import it.fast4x.riplay.data.models.SongEntity
 import it.fast4x.riplay.extensions.audiotag.AudioTagViewModel
 import it.fast4x.riplay.service.LOCAL_KEY_PREFIX
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -435,6 +437,16 @@ class OnDeviceViewModel(application: Application) : AndroidViewModel(application
     fun audioFoldersAsPlaylists(): Flow<MutableList<PlaylistPreview>> {
         val _playlists = mutableListOf<PlaylistPreview>()
         _audioFolders.value.forEachIndexed { index, folder ->
+
+            val totalPlayTimeMs = mutableStateOf(0L)
+            CoroutineScope(Dispatchers.IO).launch {
+                Database.getSongsTotalPlaytime(_audioFiles.value.filter { it.folder == folder }.map { it.id }).collect {
+                    totalPlayTimeMs.value = it
+                    //Timber.d("OnDeviceViewModel audioFoldersAsPlaylists totalPlayTimeMs ${totalPlayTimeMs.value}")
+                }
+            }
+
+            //Timber.d("OnDeviceViewModel audioFoldersAsPlaylists folder $folder totalPlayTimeMs ${totalPlayTimeMs.value}")
             val playlist = PlaylistPreview(
                 playlist = Playlist(
                     id = index.toLong(),
@@ -444,6 +456,7 @@ class OnDeviceViewModel(application: Application) : AndroidViewModel(application
                     isEditable = false
                 ),
                 songCount = _audioFiles.value.filter { it.folder == folder }.size,
+                totalPlayTimeMs = totalPlayTimeMs.value,
                 isOnDevice = true,
                 folder = folder
             )

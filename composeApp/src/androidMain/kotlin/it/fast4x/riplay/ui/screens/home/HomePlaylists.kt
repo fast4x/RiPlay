@@ -106,6 +106,7 @@ import it.fast4x.riplay.extensions.preferences.Preference.HOME_LIBRARY_ITEM_SIZE
 import it.fast4x.riplay.utils.autoSyncToolbutton
 import it.fast4x.riplay.extensions.preferences.autosyncKey
 import it.fast4x.riplay.data.models.defaultQueue
+import it.fast4x.riplay.enums.SortOrder
 import it.fast4x.riplay.extensions.ondevice.OnDeviceViewModel
 import it.fast4x.riplay.ui.components.LocalGlobalSheetState
 import it.fast4x.riplay.ui.components.themed.PlaylistsItemMenu
@@ -317,7 +318,26 @@ fun HomePlaylists(
 
     LaunchedEffect( sort.sortBy, sort.sortOrder, playlistType ) {
         if (playlistType == PlaylistsType.OnDevicePlaylist) {
-            onDeviceViewModel.audioFoldersAsPlaylists().collect { items = it }
+            onDeviceViewModel.audioFoldersAsPlaylists().collect { folders ->
+                items = when (sort.sortBy) {
+                    PlaylistSortBy.Name -> when (sort.sortOrder) {
+                        SortOrder.Ascending -> folders.sortedBy { it.playlist.name }
+                        SortOrder.Descending -> folders.sortedByDescending { it.playlist.name }
+                    }
+                    PlaylistSortBy.DateAdded -> when (sort.sortOrder) {
+                        SortOrder.Ascending -> folders.sortedBy { it.totalPlayTimeMs }
+                        SortOrder.Descending -> folders.sortedByDescending { it.totalPlayTimeMs }
+                    }
+                    PlaylistSortBy.SongCount -> when (sort.sortOrder) {
+                        SortOrder.Ascending -> folders.sortedBy { it.songCount }
+                        SortOrder.Descending -> folders.sortedByDescending { it.songCount }
+                    }
+                    PlaylistSortBy.MostPlayed -> when (sort.sortOrder) {
+                        SortOrder.Ascending -> folders.sortedBy { it.totalPlayTimeMs }
+                        SortOrder.Descending -> folders.sortedByDescending { it.totalPlayTimeMs }
+                    }
+                }
+            }
         } else
             Database.playlistPreviews(sort.sortBy, sort.sortOrder).collect { items = it }
     }

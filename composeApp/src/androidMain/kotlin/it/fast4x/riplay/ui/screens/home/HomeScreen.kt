@@ -101,8 +101,6 @@ fun HomeScreen(
         }
     }
 
-    //if (!enableQuickPicksPage && tabIndex==0) tabIndex = 1
-
     ScreenContainer(
         navController,
         tabIndex,
@@ -116,7 +114,7 @@ fun HomeScreen(
             Item(1, stringResource(R.string.songs), R.drawable.musical_notes)
             Item(2, stringResource(R.string.artists), R.drawable.music_artist)
             Item(3, stringResource(R.string.albums), R.drawable.music_album)
-            Item(4, stringResource(R.string.library), R.drawable.music_library)
+            Item(4, stringResource(R.string.playlists), R.drawable.music_library)
         }
     ) { currentTabIndex ->
         saveableStateHolder.SaveableStateProvider(key = currentTabIndex) {
