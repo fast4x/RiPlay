@@ -195,6 +195,10 @@ import it.fast4x.riplay.utils.asSong
 import it.fast4x.riplay.utils.formatAsDuration
 import org.dailyislam.android.utilities.isNetworkConnected
 import it.fast4x.riplay.extensions.preferences.showDislikedPlaylistKey
+import it.fast4x.riplay.ui.components.themed.StringListDialog
+import it.fast4x.riplay.ui.screens.settings.StringListValueSelectorSettingsEntry
+import it.fast4x.riplay.utils.isAtLeastAndroid10
+import java.io.File
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -239,9 +243,6 @@ fun HomeSongs(
         mutableStateOf(0)
     }
 
-//    LaunchedEffect(Unit) {
-//        Database.listAllSongsAsFlow().collect { itemsAll = it }
-//    }
 
     var includeLocalSongs by rememberPreference(includeLocalSongsKey, true)
     var autoShuffle by rememberPreference(autoShuffleKey, false)
@@ -282,7 +283,8 @@ fun HomeSongs(
         name ="..",
         note = "Previous",
     )
-    val showFolders by rememberPreference(showFoldersOnDeviceKey, true)
+    var showFolders by rememberPreference(showFoldersOnDeviceKey, true)
+    var showBlacklistedFolfers by remember { mutableStateOf(false) }
 
     var sortByOnDevice by rememberPreference(onDeviceSongSortByKey, OnDeviceSongSortBy.DateAdded)
     var sortByFolderOnDevice by rememberPreference(onDeviceFolderSortByKey, OnDeviceFolderSortBy.Title)
@@ -292,10 +294,6 @@ fun HomeSongs(
 
     val onDeviceViewModel: OnDeviceViewModel = viewModel()
     val songsDevice by onDeviceViewModel.audioFiles.collectAsState()
-//    var songsDevice by remember(sortBy, sortOrder) {
-//        mutableStateOf<List<OnDeviceSong>>(emptyList())
-//    }
-
 
     var songs: List<SongEntity> = emptyList()
     var folders: List<Folder> = emptyList()
@@ -364,9 +362,9 @@ fun HomeSongs(
 
     val showFavoritesPlaylist by rememberPreference(showFavoritesPlaylistKey, true)
     val showDislikedPlaylist by rememberPreference(showDislikedPlaylistKey, false)
-    //val showCachedPlaylist by rememberPreference(showCachedPlaylistKey, true)
+
     val showMyTopPlaylist by rememberPreference(showMyTopPlaylistKey, true)
-    //val showDownloadedPlaylist by rememberPreference(showDownloadedPlaylistKey, true)
+
     val showOnDevicePlaylist by rememberPreference(showOnDevicePlaylistKey, true)
 
     var buttonsList = listOf(BuiltInPlaylist.All to stringResource(R.string.all))
@@ -395,22 +393,6 @@ fun HomeSongs(
         BuiltInPlaylist.Top, BuiltInPlaylist.Disliked -> {
 
             LaunchedEffect(Unit, builtInPlaylist, sortBy, sortOrder, filter, topPlaylistPeriod) {
-
-//                if (builtInPlaylist == BuiltInPlaylist.Downloaded) {
-//
-//                    val downloads = MyDownloadHelper.downloads.value
-//                    Database.listAllSongsAsFlow()
-//                        .flowOn(Dispatchers.IO)
-//                        .map {
-//                            it.filter { song ->
-//                                binder?.downloadCache?.keys?.contains(song.song.id) == true
-//                                        && downloads[song.song.id]?.state == Download.STATE_COMPLETED
-//                            }
-//                        }
-//                        .collect {
-//                            items = it
-//                        }
-//                }
 
                 if (builtInPlaylist == BuiltInPlaylist.Favorites) {
                     Database.songsFavorites(sortBy, sortOrder)
@@ -478,11 +460,6 @@ fun HomeSongs(
                     //Timber.d("HomeSongs sortOrderOnDevice $sortOrderOnDevice")
                     onDeviceViewModel.sortBy = sortByOnDevice
                     onDeviceViewModel.sortOrder = sortOrderOnDevice
-
-// todo replaced by viewmodel logic
-                    //removeObsoleteOndeviceMusic(context)
-//                    context.musicFilesAsFlow(sortByOnDevice, sortOrderOnDevice, context)
-//                        .collect { songsDevice = it.distinctBy { song -> song.id } }
                 }
             }
         }
@@ -506,44 +483,6 @@ fun HomeSongs(
         }
     }
     /********** */
-
-//    if (!includeLocalSongs && builtInPlaylist == BuiltInPlaylist.All)
-//        items = items
-//            .filter {
-//                !it.song.id.startsWith(LOCAL_KEY_PREFIX)
-//            }
-
-//    if (builtInPlaylist == BuiltInPlaylist.Downloaded) {
-//        when (sortOrder) {
-//            SortOrder.Ascending -> {
-//                when (sortBy) {
-//                    SongSortBy.Title, SongSortBy.AlbumName -> items = items.sortedBy { it.song.title }
-//                    SongSortBy.PlayTime -> items = items.sortedBy { it.song.totalPlayTimeMs }
-//                    SongSortBy.RelativePlayTime -> items = items.sortedBy { it.relativePlayTime() }
-//                    SongSortBy.Duration -> items = items.sortedBy { it.song.durationText }
-//                    SongSortBy.Artist -> items = items.sortedBy { it.song.artistsText }
-//                    SongSortBy.DatePlayed -> {}
-//                    SongSortBy.DateLiked -> items = items.sortedBy { it.song.likedAt }
-//                    SongSortBy.DateAdded -> {}
-//                    SongSortBy.AlbumName -> items = items.sortedBy { it.albumTitle }
-//                }
-//            }
-//            SortOrder.Descending -> {
-//                when (sortBy) {
-//                    SongSortBy.Title, SongSortBy.AlbumName -> items = items.sortedByDescending { it.song.title }
-//                    SongSortBy.PlayTime -> items = items.sortedByDescending { it.song.totalPlayTimeMs }
-//                    SongSortBy.RelativePlayTime -> items = items.sortedByDescending { it.relativePlayTime() }
-//                    SongSortBy.Duration -> items = items.sortedByDescending { it.song.durationText }
-//                    SongSortBy.Artist -> items = items.sortedByDescending { it.song.artistsText }
-//                    SongSortBy.DatePlayed -> {}
-//                    SongSortBy.DateLiked -> items = items.sortedByDescending { it.song.likedAt }
-//                    SongSortBy.DateAdded -> {}
-//                    SongSortBy.AlbumName -> items = items.sortedByDescending { it.albumTitle }
-//                }
-//            }
-//        }
-//
-//    }
 
     var filterCharSequence: CharSequence
     filterCharSequence = filter.toString()
@@ -695,11 +634,39 @@ fun HomeSongs(
         )
     }
 
-    var showConfirmDeleteDownloadDialog by remember {
-        mutableStateOf(false)
+    var blackListedPaths by remember {
+        val file = File(context.filesDir, "Blacklisted_paths.txt")
+        if (file.exists()) {
+            mutableStateOf(file.readLines())
+        } else {
+            mutableStateOf(emptyList())
+        }
     }
-    var showConfirmDownloadAllDialog by remember {
-        mutableStateOf(false)
+
+    if (showBlacklistedFolfers) {
+        StringListDialog(
+            title = stringResource(R.string.blacklisted_folders),
+            addTitle = stringResource(R.string.add_folder),
+            addPlaceholder = if (isAtLeastAndroid10) {
+                "Android/media/com.whatsapp/WhatsApp/Media"
+            } else {
+                "/storage/emulated/0/Android/media/com.whatsapp/"
+            },
+            conflictTitle = stringResource(R.string.this_folder_already_exists),
+            removeTitle = stringResource(R.string.are_you_sure_you_want_to_remove_this_folder_from_the_blacklist),
+            list = blackListedPaths,
+            add = { newPath ->
+                blackListedPaths = blackListedPaths + newPath
+                val file = File(context.filesDir, "Blacklisted_paths.txt")
+                file.writeText(blackListedPaths.joinToString("\n"))
+            },
+            remove = { path ->
+                blackListedPaths = blackListedPaths.filter { it != path }
+                val file = File(context.filesDir, "Blacklisted_paths.txt")
+                file.writeText(blackListedPaths.joinToString("\n"))
+            },
+            onDismiss = { showBlacklistedFolfers = false },
+        )
     }
 
     var showRiPlayLikeYoutubeLikeConfirmDialog by remember {
@@ -964,31 +931,6 @@ fun HomeSongs(
                                 lazyListState.scrollToItem(nowPlayingItem, 1)
                             scrollToNowPlaying = false
                         }
-
-//                        if (builtInPlaylist == BuiltInPlaylist.Favorites) {
-//                            HeaderIconButton(
-//                                icon = R.drawable.downloaded,
-//                                enabled = (items.any { it.song.likedAt != -1L }),
-//                                color = if (items.any { it.song.likedAt != -1L }) colorPalette().text else colorPalette().text,
-//                                onClick = {},
-//                                modifier = Modifier
-//                                    .combinedClickable(
-//                                        onClick = {
-//                                            if (items.any { it.song.likedAt != -1L }) {
-//                                                showConfirmDownloadAllDialog = true
-//                                            } else {
-//                                                SmartMessage(context.resources.getString(R.string.disliked_this_collection),type = PopupType.Error, context = context)
-//                                            }
-//                                        },
-//                                        onLongClick = {
-//                                            SmartMessage(
-//                                                context.resources.getString(R.string.info_download_all_songs),
-//                                                context = context
-//                                            )
-//                                        }
-//                                    )
-//                            )
-//                        }
 
                         if (showRiPlayLikeYoutubeLikeConfirmDialog) {
                             Database.asyncTransaction {
@@ -1300,6 +1242,17 @@ fun HomeSongs(
                             modifier = Modifier
                                 .padding(horizontal = 2.dp)
                         )
+
+                        if (BuiltInPlaylist.OnDevice == builtInPlaylist)
+                            HeaderIconButton(
+                                icon = if (showFolders) R.drawable.list_view else R.drawable.grid_view,
+                                color = colorPalette().text,
+                                onClick = {},
+                                modifier = Modifier.combinedClickable(
+                                    onClick = { showFolders = !showFolders },
+                                    onLongClick = { showBlacklistedFolfers = true }
+                                )
+                            )
 
                     }
 
