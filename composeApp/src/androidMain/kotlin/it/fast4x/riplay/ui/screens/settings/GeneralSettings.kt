@@ -440,7 +440,7 @@ fun GeneralSettings(
                 settingsItem(
                     isHeader = true
                 ) {
-                    SettingsEntryGroupText(title = "Network")
+                    SettingsEntryGroupText(title = stringResource(R.string.title_network))
                 }
 
 

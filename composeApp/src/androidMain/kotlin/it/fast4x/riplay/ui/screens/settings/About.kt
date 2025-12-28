@@ -101,7 +101,7 @@ fun About() {
 
         SettingsGroupSpacer()
 
-        SettingsEntryGroupText(title = "Official Project Page")
+        SettingsEntryGroupText(title = stringResource(R.string.title_official_project_page))
 
         SettingsEntry(
             online = false,

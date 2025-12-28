@@ -2690,16 +2690,16 @@ fun AppearanceSettings(
 
                     SettingsGroupSpacer()
                     ButtonBarSettingEntry(
-                        title = "Export appearance settings",
-                        text = "Backup or share appearance settings",
+                        title = stringResource(R.string.export_appearance_settings),
+                        text = stringResource(R.string.info_backup_or_share_appearance_settings),
                         icon = R.drawable.export,
                         iconColor = colorPalette().text,
                         onClick = { isExporting = true },
                     )
 
                     ButtonBarSettingEntry(
-                        title = "Import appearance settings",
-                        text = "Restore backup or shared appearance settings",
+                        title = stringResource(R.string.import_appearance_settings),
+                        text = stringResource(R.string.info_restore_backup_or_shared_appearance_settings),
                         icon = R.drawable.resource_import,
                         iconColor = colorPalette().text,
                         onClick = {

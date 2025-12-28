@@ -1892,7 +1892,7 @@ fun UiSettings(
                 isHeader = true
             ) {
                 SettingsGroupSpacer()
-                SettingsEntryGroupText("Reset")
+                SettingsEntryGroupText(stringResource(R.string.settings_reset))
             }
 
             settingsItem {

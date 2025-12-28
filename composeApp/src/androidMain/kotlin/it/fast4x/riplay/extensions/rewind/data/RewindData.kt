@@ -132,119 +132,119 @@ sealed class RewindSlide(val id: Int, val backgroundBrush: Brush) {
 }
 
 
-enum class SongLevel(val title: String, val goal: String, val description: String) {
+enum class SongLevel(val title: Int, val goal: Int, val description: Int) {
     OBSESSION(
-        title = "You have an Obsession",
-        goal = "Listened to %s minutes",
-        description = "This song was the soundtrack to your year. \n An obsession you couldn't stop listening to.",
+        title = R.string.rw_songlevel_obsession_title_you_have_an_obsession,
+        goal = R.string.rw_songlevel_obsession_goal_listened_to_s_minutes,
+        description = R.string.rw_songlevel_obsession_desc_this_song_was_the_soundtrack_to_your_year_an_obsession_you_couldn_t_stop_listening_to,
     ),
     ANTHEM(
-        title = "It's your Anthem",
-        goal = "Listened to %s minutes",
-        description = "It's not just a song, it's your anthem. \n It defined your summer, your winter, your life.",
+        title = R.string.rw_songlevel_anthem_title_it_s_your_anthem,
+        goal = R.string.rw_songlevel_anthem_goal_listened_to_s_minutes,
+        description = R.string.rw_songlevel_anthem_desc_it_s_not_just_a_song_it_s_your_anthem_it_defined_your_summer_your_winter_your_life,
 
     ),
     SOUNDTRACK(
-        title = "It's your Soundtrack",
-        goal = "Listened to %s minutes",
-        description = "This song isn't just an anthem, it's the soundtrack to your life. \n The rhythm that accompanies your days.",
+        title = R.string.rw_songlevel_soundtrack_title_it_s_your_soundtrack,
+        goal = R.string.rw_songlevel_soundtrack_goal_listened_to_s_minutes,
+        description = R.string.rw_songlevel_soundtrack_desc_this_song_isn_t_just_an_anthem_it_s_the_soundtrack_to_your_life_the_rhythm_that_accompanies_your_days,
     ),
     ETERNAL_FLAME(
-        title = "You are an Eternal Flame",
-        goal = "Listened to %s minutes",
-        description = "You and this song are one and the same. \n An eternal flame burning in your musical heart. \n A legend.",
+        title = R.string.rw_songlevel_eternalflame_title_you_are_an_eternal_flame,
+        goal = R.string.rw_songlevel_eternalflame_goal_listened_to_s_minutes,
+        description = R.string.rw_songlevel_eternalflame_desc_you_and_this_song_are_one_and_the_same_an_eternal_flame_burning_in_your_musical_heart_a_legend,
     ),
     UNDEFINED(
-        title = "Oops 😢",
-        goal = "It seems like you haven't listened to any songs",
-        description = "Nothing to see here",
+        title = R.string.rw_songlevel_undefined_title_oops,
+        goal = R.string.rw_songlevel_undefined_goal_it_seems_like_you_haven_t_listened_to_any_songs,
+        description = R.string.rw_songlevel_undefined_desc_nothing_to_see_here,
     )
 }
 
 
-enum class AlbumLevel(val title: String, val goal: String, val description: String) {
+enum class AlbumLevel(val title: Int, val goal: Int, val description: Int) {
     DEEP_DIVE(
-        title = "You love conducting a Deep Dive",
-        goal = "Listened to %s minutes",
-        description = "You didn't stop at the singles. \n You dove deep into this masterpiece, note by note.",
+        title = R.string.rw_albumlevel_deepdive_title_you_love_conducting_a_deep_dive,
+        goal = R.string.rw_albumlevel_deepdive_goal_listened_to_s_minutes,
+        description = R.string.rw_albumlevel_deepdive_desc_you_didn_t_stop_at_the_singles_you_dove_deep_into_this_masterpiece_note_by_note,
     ),
     ON_REPEAT(
-        title = "You listen to it On Repeat",
-        goal = "Listened to %s minutes",
-        description = "This album was on repeat for weeks. \n You know every word, every pause, every beat.",
+        title = R.string.rw_albumlevel_onrepeat_title_you_listen_to_it_on_repeat,
+        goal = R.string.rw_albumlevel_onrepeat_goal_listened_to_s_minutes,
+        description = R.string.rw_albumlevel_onrepeat_desc_this_album_was_on_repeat_for_weeks_you_know_every_word_every_pause_every_beat,
     ),
     RESIDENT(
-        title = "You are a Resident",
-        goal = "Listened to %s minutes",
-        description = "You didn't just listen to this album, you lived in it. \n You're not just a listener, you're a resident.",
+        title = R.string.rw_albumlevel_resident_title_you_are_a_resident,
+        goal = R.string.rw_albumlevel_resident_goal_listened_to_s_minutes,
+        description = R.string.rw_albumlevel_resident_desc_you_didn_t_just_listen_to_this_album_you_lived_in_it_you_re_not_just_a_listener_you_re_a_resident,
     ),
     SANCTUARY(
-        title = "It's your Sanctuary",
-        goal = "Listened to %s minutes",
-        description = "This album is more than music, it's your sanctuary. \n A sacred place to return to for peace and inspiration.",
+        title = R.string.rw_albumlevel_sactuary_title_it_s_your_sanctuary,
+        goal = R.string.rw_albumlevel_sanctuary_goal_listened_to_s_minutes,
+        description = R.string.rw_albumlevel_sanctuary_desc_this_album_is_more_than_music_it_s_your_sanctuary_a_sacred_place_to_return_to_for_peace_and_inspiration,
     ),
     UNDEFINED(
-        title = "Oops 😢",
-        goal = "It seems like you haven't listened to any albums",
-        description = "Nothing to see here",
+        title = R.string.rw_albumlevel_undefined_title_oops,
+        goal = R.string.rw_albumlevel_undefined_goal_it_seems_like_you_haven_t_listened_to_any_albums,
+        description = R.string.rw_albumlevel_undefined_desc_nothing_to_see_here,
     )
 }
 
 
-enum class PlaylistLevel(val title: String, val goal: String, val description: String) {
+enum class PlaylistLevel(val title: Int, val goal: Int, val description: Int) {
     CURATOR(
-        title = "You are a Curator",
-        goal = "Listened to %s minutes",
-        description = "You're not just a listener, you're a curator. \n You created the perfect soundtrack for a moment.",
+        title = R.string.rw_playlistlevel_curator_title_you_are_a_curator,
+        goal = R.string.rw_playlistlevel_curator_goal_listened_to_s_minutes,
+        description = R.string.rw_playlistlevel_curator_desc_you_re_not_just_a_listener_you_re_a_curator_you_created_the_perfect_soundtrack_for_a_moment,
     ),
     MASTERMIND(
-        title = "You are a Mastermind",
-        goal = "Listened to %s minutes",
-        description = "Your playlist is a work of art. \n Maybe you should consider a career as a DJ.",
+        title = R.string.rw_playlistlevel_mastermind_title_you_are_a_mastermind,
+        goal = R.string.rw_playlistlevel_mastermind_goal_listened_to_s_minutes,
+        description = R.string.rw_playlistlevel_mastermind_desc_your_playlist_is_a_work_of_art_maybe_you_should_consider_a_career_as_a_dj,
     ),
     PHENOMENON(
-        title = "You are a Phenomenon",
-        goal = "Listened to %s minutes",
-        description = "This playlist isn't just a list of songs, it's a phenomenon. \n A cultural event in your world.",
+        title = R.string.rw_playlistlevel_phenomenon_title_you_are_a_phenomenon,
+        goal = R.string.rw_playlistlevel_phenomenon_goal_listened_to_s_minutes,
+        description = R.string.rw_playlistlevel_phenomenon_desc_this_playlist_isn_t_just_a_list_of_songs_it_s_a_phenomenon_a_cultural_event_in_your_world,
     ),
     OPUS(
-        title = "You created an Opus",
-        goal = "Listened to %s minutes",
-        description = "You didn't just create a playlist, you composed a masterpiece.\n This is your magnum opus, your legacy.",
+        title = R.string.rw_playlistlevel_opus_title_you_created_an_opus,
+        goal = R.string.rw_playlistlevel_opus_goal_listened_to_s_minutes,
+        description = R.string.rw_playlistlevel_opus_desc_you_didn_t_just_create_a_playlist_you_composed_a_masterpiece_this_is_your_magnum_opus_your_legacy,
     ),
     UNDEFINED(
-        title = "Oops 😢",
-        goal = "It seems like you haven't listened to any playlists",
-        description = "Nothing to see here",
+        title = R.string.rw_playlistlevel_undefined_title_oops,
+        goal = R.string.rw_playlistlevel_undefined_goal_it_seems_like_you_haven_t_listened_to_any_playlists,
+        description = R.string.rw_playlistlevel_undefined_desc_nothing_to_see_here,
     )
 }
 
 
-enum class ArtistLevel(val title: String, val goal: String, val description: String) {
+enum class ArtistLevel(val title: Int, val goal: Int, val description: Int) {
     NEW_FAVORITE(
-        title = "You discover New Favorite",
-        goal = "Listened to %s minutes",
-        description = "You discovered a new favorite and can't stop listening. \n The beginning of a beautiful musical story.",
+        title = R.string.rw_artistlevel_newfavorite_title_you_discover_new_favorite,
+        goal = R.string.rw_artistlevel_newfavorite_goal_listened_to_s_minutes,
+        description = R.string.rw_artistlevel_newfavorite_desc_you_discovered_a_new_favorite_and_can_t_stop_listening_the_beginning_of_a_beautiful_musical_story,
     ),
     A_LIST_FAN(
-        title = "You are an A-List Fan",
-        goal = "Listened to %s minutes",
-        description = "This artist made it to your A-List. \n Their music is a constant and loved presence in your routine.",
+        title = R.string.rw_artistlevel_alistfan_title_you_are_an_a_list_fan,
+        goal = R.string.rw_artistlevel_alistfan_goal_listened_to_s_minutes,
+        description = R.string.rw_artistlevel_alistfan_desc_this_artist_made_it_to_your_a_list_their_music_is_a_constant_and_loved_presence_in_your_routine,
     ),
     THE_ARCHIVIST(
-        title = "You are The Archivist",
-        goal = "Listened to %s minutes",
-        description = "You don't just stick to the hit singles. \n You've explored every corner of their discography, becoming a true expert.",
+        title = R.string.rw_artistlevel_thearchivist_title_you_are_the_archivist,
+        goal = R.string.rw_artistlevel_thearchivist_goal_listened_to_s_minutes,
+        description = R.string.rw_artistlevel_thearchivist_desc_you_don_t_just_stick_to_the_hit_singles_you_ve_explored_every_corner_of_their_discography_becoming_a_true_expert,
     ),
     THE_DEVOTEE(
-        title = "You are The Devoted",
-        goal = "Listened to %s minutes",
-        description = "This artist's music is more than just sound, it's a part of you. \n A deep and unbreakable bond.",
+        title = R.string.rw_artistlevel_thedevotee_title_you_are_the_devoted,
+        goal = R.string.rw_artistlevel_thedevotee_goal_listened_to_s_minutes,
+        description = R.string.rw_artistlevel_thedevotee_desc_this_artist_s_music_is_more_than_just_sound_it_s_a_part_of_you_a_deep_and_unbreakable_bond,
     ),
     UNDEFINED(
-        title = "Oops 😢",
-        goal = "It seems like you haven't listened to any artists",
-        description = "Nothing to see here",
+        title = R.string.rw_artistlevel_undefined_title_oops,
+        goal = R.string.rw_artistlevel_undefined_goal_it_seems_like_you_haven_t_listened_to_any_artists,
+        description = R.string.rw_artistlevel_undefined_desc_nothing_to_see_here,
     )
 }
 

@@ -163,10 +163,10 @@ fun AccountsSettings() {
 
 
         SettingsGroupSpacer()
-        SettingsEntryGroupText(title = "YOUTUBE MUSIC")
+        SettingsEntryGroupText(title = stringResource(R.string.title_youtube_music))
 
         SwitchSettingEntry(
-            title = "Enable YouTube Music Login",
+            title = stringResource(R.string.enable_youtube_music_login),
             text = "",
             isChecked = isYouTubeLoginEnabled,
             onCheckedChange = {
@@ -207,7 +207,9 @@ fun AccountsSettings() {
                         Column {
                             ButtonBarSettingEntry(
                                 isEnabled = true,
-                                title = if (isLoggedIn) "Disconnect" else "Connect",
+                                title = if (isLoggedIn) stringResource(R.string.disconnect) else stringResource(
+                                    R.string.connect
+                                ),
                                 text = "", //if (isLoggedIn) "$accountName ${accountChannelHandle}" else "",
                                 icon = R.drawable.internet,
                                 iconColor = colorPalette().text,
@@ -233,7 +235,7 @@ fun AccountsSettings() {
 
                             ButtonBarSettingEntry(
                                 isEnabled = true,
-                                title = "Account info",
+                                title = stringResource(R.string.account_info),
                                 text = "", //if (isLoggedIn) "$accountName ${accountChannelHandle}" else "",
                                 icon = R.drawable.person,
                                 iconColor = colorPalette().text,
@@ -297,8 +299,8 @@ fun AccountsSettings() {
                     }
 
                 SwitchSettingEntry(
-                    title = "Sync data with YTM account",
-                    text = "Playlists, albums, artists, history, like, etc.",
+                    title = stringResource(R.string.sync_data_with_ytm_account),
+                    text = stringResource(R.string.sync_data_playlists_albums_artists_history_like_etc),
                     isChecked = isYouTubeSyncEnabled,
                     onCheckedChange = {
                         isYouTubeSyncEnabled = it
@@ -365,7 +367,7 @@ fun AccountsSettings() {
                 if (discordPersonalAccessToken.isNotEmpty()) {
                     ButtonBarSettingEntry(
                         isEnabled = true,
-                        title = "Account info",
+                        title = stringResource(R.string.account_info),
                         text = discordAccountName,
                         icon = R.drawable.person,
                         iconColor = colorPalette().text,
@@ -425,10 +427,10 @@ fun AccountsSettings() {
     /****** DISCORD ******/
 
         SettingsGroupSpacer()
-        SettingsEntryGroupText(title = "MUSIC IDENTIFIER")
+        SettingsEntryGroupText(title = stringResource(R.string.title_music_identifier))
 
         SwitchSettingEntry(
-            title = "Enable Music Identifier",
+            title = stringResource(R.string.enable_music_identifier),
             text = "",
             isChecked = isEnabledMusicIdentifier,
             onCheckedChange = {
@@ -465,8 +467,8 @@ fun AccountsSettings() {
                         modifier = Modifier.padding(start = 12.dp)
                     ) {
                         TextDialogSettingEntry(
-                            title = "Api key",
-                            text = musicIdentifierApi.ifEmpty { "If empty, system api key will be used" },
+                            title = stringResource(R.string.api_key),
+                            text = musicIdentifierApi.ifEmpty { stringResource(R.string.if_empty_system_api_key_will_be_used) },
                             currentText = musicIdentifierApi,
                             onTextSave = {
                                 musicIdentifierApi = it
@@ -484,17 +486,26 @@ fun AccountsSettings() {
                         if (statState?.success == true) {
 
                             BasicText(
-                                text = "Api expiration: ${statState?.expirationDate?.substring(0,10)}",
+                                text = stringResource(
+                                    R.string.api_expiration,
+                                    statState?.expirationDate?.substring(0, 10).toString()
+                                ),
                                 style = typography().xxs.semiBold.copy(color = colorPalette().text),
                             )
                             Spacer(modifier = Modifier.height(10.dp))
                             BasicText(
-                                text = "Queries count: ${statState?.queriesCount}",
+                                text = stringResource(
+                                    R.string.api_queries_count,
+                                    statState?.queriesCount.toString()
+                                ),
                                 style = typography().xxs.semiBold.copy(color = colorPalette().textSecondary),
                             )
                             Spacer(modifier = Modifier.height(10.dp))
                             BasicText(
-                                text = "Free identification seconds remaining: ${statState?.identificationFreeSecRemainder}",
+                                text = stringResource(
+                                    R.string.music_identifier_free_identification_seconds_remaining,
+                                    statState?.identificationFreeSecRemainder.toString()
+                                ),
                                 style = typography().xxs.semiBold.copy(color = colorPalette().textSecondary),
                             )
                             Spacer(

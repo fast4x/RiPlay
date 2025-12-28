@@ -170,9 +170,9 @@ fun OtherSettings() {
             onDismiss = {
                 isExporting = false
             },
-            title = "Enter the name of log export",
+            title = stringResource(R.string.enter_the_name_of_log_export),
             value = "",
-            placeholder = "Enter the name of log export",
+            placeholder = stringResource(R.string.enter_the_name_of_log_export),
             setValue = { txt ->
                 fileName = txt
                 try {
@@ -541,7 +541,7 @@ fun OtherSettings() {
                     offline = false,
                     //isEnabled = logDebugEnabled,
                     title = stringResource(R.string.export_crash_log),
-                    text = "Is always enabled",
+                    text = stringResource(R.string.is_always_enabled),
                     icon = R.drawable.export,
                     onClick = {
                         exportCrashlog = true

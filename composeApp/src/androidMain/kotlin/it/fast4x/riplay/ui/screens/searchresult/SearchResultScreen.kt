@@ -160,9 +160,9 @@ fun SearchResultScreen(
                         )
                         BasicText(
                             text = when (filterContentType) {
-                                ContentType.All -> "All"
-                                ContentType.Official -> "Official"
-                                ContentType.UserGenerated -> "User Generated"
+                                ContentType.All -> ContentType.All.textName
+                                ContentType.Official -> ContentType.Official.textName
+                                ContentType.UserGenerated -> ContentType.UserGenerated.textName
 
                             },
                             style = typography().xxs.secondary,

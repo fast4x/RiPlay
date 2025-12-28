@@ -263,9 +263,9 @@ fun SearchOnlineEntity (
                 )
                 BasicText(
                     text = when (filterContentType) {
-                        it.fast4x.riplay.enums.ContentType.All -> "All"
-                        it.fast4x.riplay.enums.ContentType.Official -> "Official"
-                        ContentType.UserGenerated -> "User Generated"
+                        ContentType.All -> ContentType.All.textName
+                        ContentType.Official -> ContentType.Official.textName
+                        ContentType.UserGenerated -> ContentType.UserGenerated.textName
 
                     },
                     style = typography().xxs.secondary,

@@ -183,25 +183,21 @@ fun PlaylistAchievementSlide(slide: RewindSlide.PlaylistAchievement, isPageActiv
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             Text(
-                                text = slide.level.title,
+                                text = stringResource(slide.level.title),
                                 color = colorPalette().accent,
                                 fontSize = 32.sp,
                                 fontWeight = FontWeight.Bold,
                                 textAlign = TextAlign.Center
                             )
                             Text(
-                                text = slide.level.goal.replace(
-                                    "%s",
-                                    slide.totalMinutes.toString(),
-                                    true
-                                ),
+                                text = stringResource(slide.level.goal, slide.totalMinutes),
                                 color = Color.White,
                                 fontSize = 26.sp,
                                 fontWeight = FontWeight.SemiBold
                             )
                             Spacer(modifier = Modifier.height(12.dp))
                             Text(
-                                text = slide.level.description,
+                                text = stringResource(slide.level.description),
                                 color = Color.White,
                                 fontSize = 16.sp,
                                 textAlign = TextAlign.Center,

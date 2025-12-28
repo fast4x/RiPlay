@@ -437,12 +437,12 @@ class MainActivity :
 
     private fun showAutostartDialog() {
         AlertDialog.Builder(this)
-            .setTitle("Enable AutoStart")
-            .setMessage("To ensure that the app is working properly in the background (e.g. for notifications or music playback), you must enable autostart. Do you want to open the settings to activate it?")
-            .setPositiveButton("Open Settings Now") { _, _ ->
+            .setTitle(resources.getString(R.string.enable_autostart))
+            .setMessage(getString(R.string.to_ensure_that_the_app_is_working_properly_in_the_background_e_g_for_notifications_or_music_playback_you_must_enable_autostart_do_you_want_to_open_the_settings_to_activate_it))
+            .setPositiveButton(getString(R.string.open_settings_now)) { _, _ ->
                 openAutostartSettings()
             }
-            .setNegativeButton("Later", null)
+            .setNegativeButton(getString(R.string.later), null)
             .setCancelable(false)
             .show()
 

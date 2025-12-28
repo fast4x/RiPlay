@@ -1,16 +1,22 @@
 package it.fast4x.riplay.enums
 
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
+import it.fast4x.riplay.R
+
 enum class MusicIdentifierProvider {
     AudioTagInfo;
 
     val title: String
+        @Composable
         get() = when(this) {
-            AudioTagInfo -> "AudioTag"
+            AudioTagInfo -> stringResource(R.string.mi_name_audiotag)
         }
 
     val subtitle: String
+        @Composable
         get() = when(this) {
-            AudioTagInfo -> "Get your api key"
+            AudioTagInfo -> stringResource(R.string.get_your_api_key)
         }
 
 
@@ -20,8 +26,9 @@ enum class MusicIdentifierProvider {
         }
 
     val info: String
+        @Composable
         get() = when(this) {
-            AudioTagInfo -> "AudioTag recognizes music using its own proprietary patented acoustic fingerprinting technology."
+            AudioTagInfo -> stringResource(R.string.mi_info_audiotag_recognizes_music_using_its_own_proprietary_patented_acoustic_fingerprinting_technology)
         }
 
 }
