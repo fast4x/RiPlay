@@ -990,7 +990,7 @@
     <string name="mll_levelname_frequency_dominator">Frequenz-Beherrscher</string>
     <string name="mll_levelname_vibe_master">Vibe-Meister</string>
     <string name="mll_levelname_monthly_icon">Monatliches Symbol</string>
-    <string name="mll_leveldesc_you_ve_had_a_look_a_small_taste_of_what_this_month_has_to_offer">Sie haben einen kleinen Vorgeschmack darauf bekommen, was dieser Monat zu bieten hat.</string>
+    <string name="mll_leveldesc_you_ve_had_a_look_a_small_taste_of_what_this_month_has_to_offer">Du hast einen kleinen Vorgeschmack darauf bekommen, was dieser Monat zu bieten hat.</string>
     <string name="mll_leveldesc_you_re_discovering_new_tracks_and_artists_building_the_soundtrack_for_right_now">Du entdeckst neue Titel und Künstler und stellst den Soundtrack für den Moment zusammen.</string>
     <string name="mll_leveldesc_music_has_become_the_backbone_of_your_days_every_moment_has_its_own_song">Musik ist zum Rückgrat deiner Tage geworden. Jeder Moment hat sein eigenes Lied.</string>
     <string name="mll_leveldesc_your_headphones_are_almost_an_extension_of_you_you_re_always_tuned_into_the_right_frequency">Deine Kopfhörer sind fast eine Erweiterung von dir. Du bist immer auf die richtige Frequenz eingestellt.</string>
@@ -998,7 +998,7 @@
     <string name="mll_leveldesc_your_listening_level_is_legendary_you_re_a_sonic_reference_point_for_everyone_around_you">Deine Hörlevel ist legendär. Du bist für alle um dich herum ein Maßstab in Sachen Klangqualität.</string>
     <string name="ll_to_next_level">zum nächsten Level</string>
     <string name="mll_your_monthly_level">Dein Monatslevel</string>
-    <string name="ll_your_annual_level">Dein jährliches Level</string>
+    <string name="ll_your_annual_level">Dein jährliches Level:</string>
     <string name="ll_your_monthly_level">Dein monatliches Level:</string>
     <string name="ll_listener_level_charts">Hörer-Level-Charts</string>
     <string name="rw_riplay_rewind">Riplay Rewind</string>
@@ -1020,20 +1020,48 @@
     <string name="rw_playlists">%1$s Wiedergabelisten</string>
     <string name="rw_rewind_year">Rewind %1$d</string>
     <string name="rw_albums_listened_to">In %1$d angehörte Alben</string>
-    <string name="rw_artists_listened_to">Künstler, die in %1$d gehört wurden</string>
+    <string name="rw_artists_listened_to">In %1$d angehörte Künstler</string>
     <string name="rw_playlists_listened_to">In %1$d angehörte Wiedergabelisten</string>
-    <string name="rw_let_s_analyze">Lass uns analysieren</string>
-    <string name="rw_your_history">" deine HISTORIE"</string>
-    <string name="rw_ready_for">bereit für</string>
+    <string name="rw_let_s_analyze">Lass uns DEINE Musik analysieren.</string>
+    <string name="rw_your_history">"Dein Musikrückblick..."</string>
+    <string name="rw_ready_for">Bist DU bereit für</string>
     <string name="rw_your_results">Deine Ergebnisse</string>
     <string name="rw_let_s_start">Los geht\'s</string>
-    <string name="rw_your_numbers">your NUMBERS</string>
+    <string name="rw_your_numbers">deine Musik in Zahlen </string>
     <string name="rw_your_music_story">deine Musikgeschichte</string>
     <string name="rw_now">Jetzt</string>
-    <string name="rw_your_top">dein TOP</string>
+    <string name="rw_your_top">DEIN TOP.</string>
     <string name="rw_your_music_preferences">Deine Musikvorlieben</string>
     <string name="rw_and_now">und jetzt</string>
-    <string name="rw_your_badge">your BADGE</string>
-    <string name="rw_ready_to_know">bereit zu wissen</string>
-    <string name="rw_your_music_level">dein Musik Level</string>
+    <string name="rw_your_badge">DEIN Musik Level.</string>
+    <string name="rw_ready_to_know">Bist DU bereit</string>
+    <string name="rw_your_music_level">Dein Musik Level zu erfahren?</string>
+    <string name="snow_effect">Schnee-Effekt</string>
+    <string name="at_tap_to_identify_a_song">Tippen, um einen Song zu identifizieren</string>
+    <string name="at_start_listening">Aufnahme starten</string>
+    <string name="at_try_play"><![CDATA[Try & Play]]></string>
+    <string name="at_microphone_permission_is_required">Mikrofon-Berechtigung ist erforderlich.</string>
+    <string name="at_grant_permission">Berechtigung erteilen</string>
+    <string name="at_listening">Hört zu...</string>
+    <string name="at_identifying">Identifizieren...</string>
+    <string name="at_playing">Abspielen...</string>
+    <string name="at_identify_another_song">Einen anderen Song identifizieren</string>
+    <string name="at_error">Fehler</string>
+    <string name="at_try_again">Versuch es noch einmal</string>
+    <string name="at_info">Info</string>
+    <string name="self_closing">Selbstschließung</string>
+    <string name="when_player_is_paused">Wenn Player pausiert wird</string>
+    <string name="filter_content_type">Inhalt filtern</string>
+    <string name="rw_thank_you">Vielen Dank</string>
+    <string name="rw_the_music_you_love_is_a_piece_of_you_sharing_it_is_the_best_way_to_connect_with_others">Die Musik, die du liebst, ist ein Stück von dir. Teilen ist der beste Weg, sich mit anderen zu verbinden.</string>
+    <string name="rw_keep_listening_keep_sharing_keep_loving_never_hate_anyone">Höre weiterhin zu, teile weiter, liebe und hasse niemandem.</string>
+    <string name="rw_riplay">RiPlay</string>
+    <string name="your_in_music">Deine %1$d in Musik</string>
+    <string name="rw_your_listening_your_discoveries_your_obsessions_get_ready_to_relive_your_most_unforgettable_musical_moments">Dein Hörerlebnis! 
+Deine Entdeckungen! 
+Deine Obsessionen! 
+Mach dich bereit, deine unvergesslichsten musikalischen Momente noch einmal zu erleben.</string>
+    <string name="rw_remember_your_privacy_is_respected_all_data_used_is_only_in_your_device_and_managed_by_you">Denke daran, dass deine Privatsphäre respektiert wird! Alle verwendeten Daten befinden sich ausschließlich auf deinem Gerät und werden von Dir verwaltet.</string>
+    <string name="rw_swipe_to_get_started">Wischen um loszulegen</string>
+    <string name="rw_swipe_to_continue">Wischen um fortzufahren</string>
 </resources>
