@@ -763,6 +763,7 @@ class PlayerService : Service(),
                         PlayerConstants.PlayerState.PLAYING, PlayerConstants.PlayerState.PAUSED -> {
                             youTubePlayer.unMute()
                         }
+                        PlayerConstants.PlayerState.UNSTARTED -> { youTubePlayer.play() }
                         else -> { youTubePlayer.mute() }
                     }
 
@@ -1124,7 +1125,6 @@ class PlayerService : Service(),
                 //startFadeAnimator(player = internalOnlinePlayer, volumeDevice = getSystemMediaVolume(), duration = 5, fadeIn = true) {}
                 //if (checkVolumeLevel)
                 internalOnlinePlayer.value?.setVolume(getSystemMediaVolume())
-
 
             }
 
@@ -2231,8 +2231,8 @@ class PlayerService : Service(),
 
                     //Timber.d("PlayerService initializePositionObserver BEFORE player.playbackState ${player.playbackState} internalOnlinePlayerState ${internalOnlinePlayerState} lastProcessedIndex $lastProcessedIndex player.currentMediaItemIndex ${player.currentMediaItemIndex}")
 
-//                    if (player.currentMediaItem?.isLocal == false)
-//                        player.pauseAtEndOfMediaItems = true else player.pauseAtEndOfMediaItems = false
+                    if (player.currentMediaItem?.isLocal == false)
+                        player.pauseAtEndOfMediaItems = true else player.pauseAtEndOfMediaItems = false
 
                     //Increment playtime of song and add event in the database for online songs
                     if (internalOnlinePlayerState == PlayerConstants.PlayerState.ENDED
