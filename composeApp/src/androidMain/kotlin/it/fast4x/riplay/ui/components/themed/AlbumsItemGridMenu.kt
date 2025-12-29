@@ -86,7 +86,8 @@ fun AlbumsItemGridMenu(
     onAddToPlaylist: ((PlaylistPreview) -> Unit)? = null,
     onGoToPlaylist: ((Long) -> Unit)? = null,
     onAddToFavourites: (() -> Unit)? = null,
-    disableScrollingText: Boolean
+    disableScrollingText: Boolean,
+    onBlacklist: (() -> Unit)? = null
 ) {
     val density = LocalDensity.current
 
@@ -477,6 +478,19 @@ fun AlbumsItemGridMenu(
                             onClick = {
                                 onDismiss()
                                 onAddToFavourites()
+                            }
+                        )
+                    }
+
+                    onBlacklist?.let {
+                        GridMenuItem(
+                            icon = R.drawable.alert_circle,
+                            title = R.string.add_to_blacklist,
+                            colorIcon = color,
+                            colorText = color,
+                            onClick = {
+                                onDismiss()
+                                onBlacklist()
                             }
                         )
                     }

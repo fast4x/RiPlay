@@ -86,7 +86,8 @@ fun AlbumsItemMenu(
     onAddToPlaylist: ((PlaylistPreview) -> Unit)? = null,
     onGoToPlaylist: ((Long) -> Unit)? = null,
     onAddToFavourites: (() -> Unit)? = null,
-    disableScrollingText: Boolean
+    disableScrollingText: Boolean,
+    onBlacklist: (() -> Unit)? = null,
 ) {
     val density = LocalDensity.current
 
@@ -117,7 +118,8 @@ fun AlbumsItemMenu(
             onAddToPlaylist = onAddToPlaylist,
             onGoToPlaylist = onGoToPlaylist,
             onAddToFavourites = onAddToFavourites,
-            disableScrollingText = disableScrollingText
+            disableScrollingText = disableScrollingText,
+            onBlacklist = onBlacklist
         )
     } else {
         AnimatedContent(
@@ -550,6 +552,17 @@ fun AlbumsItemMenu(
                             onClick = {
                                 onDismiss()
                                 onAddToFavourites()
+                            }
+                        )
+                    }
+
+                    onBlacklist?.let { onBlacklist ->
+                        MenuEntry(
+                            icon = R.drawable.heart,
+                            text = stringResource(R.string.add_to_blacklist),
+                            onClick = {
+                                onDismiss()
+                                onBlacklist()
                             }
                         )
                     }

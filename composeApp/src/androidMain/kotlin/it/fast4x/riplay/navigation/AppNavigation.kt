@@ -43,14 +43,13 @@ import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import it.fast4x.riplay.commonutils.cleanString
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.data.models.Chip
-import it.fast4x.riplay.enums.BuiltInPlaylist
-import it.fast4x.riplay.enums.DeviceLists
 import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.enums.StatisticsType
 import it.fast4x.riplay.enums.ThumbnailRoundness
 import it.fast4x.riplay.enums.TransitionEffect
 import it.fast4x.riplay.data.models.Mood
 import it.fast4x.riplay.data.models.SearchQuery
+import it.fast4x.riplay.extensions.blacklist.BlacklistScreen
 import it.fast4x.riplay.extensions.listenerlevel.ListenerLevelCharts
 import it.fast4x.riplay.ui.components.CustomModalBottomSheet
 import it.fast4x.riplay.ui.screens.album.AlbumScreen
@@ -83,7 +82,6 @@ import it.fast4x.riplay.extensions.preferences.transitionEffectKey
 import it.fast4x.riplay.extensions.rewind.RewindListScreen
 import it.fast4x.riplay.extensions.rewind.RewindScreen
 import it.fast4x.riplay.ui.screens.moodandchip.ChipListScreen
-import it.fast4x.riplay.ui.screens.ondevice.OnDevicePlaylist
 import it.fast4x.riplay.ui.screens.ondevice.OnDevicePlaylistScreen
 import it.fast4x.riplay.ui.screens.player.controller.PlayerScreen
 import it.fast4x.riplay.utils.MusicIdentifier
@@ -417,6 +415,12 @@ fun AppNavigation(
         composable(route = NavRoutes.musicIdentifier.name) {
             modalBottomSheetPage {
                 MusicIdentifier(navController)
+            }
+        }
+
+        composable(route = NavRoutes.blacklist.name) {
+            modalBottomSheetPage {
+                BlacklistScreen(navController)
             }
         }
 

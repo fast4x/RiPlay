@@ -91,8 +91,10 @@ import it.fast4x.riplay.ui.screens.settings.isSyncEnabled
 import it.fast4x.riplay.utils.addToYtPlaylist
 import it.fast4x.riplay.utils.autoSyncToolbutton
 import it.fast4x.riplay.extensions.preferences.autosyncKey
+import it.fast4x.riplay.ui.components.tab.ToolbarMenuButton
 import it.fast4x.riplay.utils.LazyListContainer
 import it.fast4x.riplay.utils.importYTMLikedAlbums
+import it.fast4x.riplay.utils.insertOrUpdateBlacklist
 import it.fast4x.riplay.utils.viewTypeToolbutton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -209,6 +211,15 @@ fun HomeAlbums(
 
     val viewType = viewTypeToolbutton(R.string.viewType)
 
+    val blacklistButton = ToolbarMenuButton.init(
+        iconId = R.drawable.alert_circle,
+        titleId = R.string.blacklisted_folders,
+        onClick = {
+            menuState.hide()
+            navController.navigate(NavRoutes.blacklist.name)
+        }
+    )
+
     var refreshing by remember { mutableStateOf(false) }
     val refreshScope = rememberCoroutineScope()
 
@@ -250,7 +261,7 @@ fun HomeAlbums(
                 }
 
                 // Sticky tab's tool bar
-                TabToolBar.Buttons( sort, sync, search, randomizer, shuffle, itemSize, viewType )
+                TabToolBar.Buttons( sort, sync, search, randomizer, shuffle, itemSize, viewType, blacklistButton )
 
                 Row(
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -415,7 +426,6 @@ fun HomeAlbums(
                                                     AlbumsItemMenu(
                                                         navController = navController,
                                                         onDismiss = menuState::hide,
-                                                        album = album,
                                                         onChangeAlbumTitle = {
                                                             showDialogChangeAlbumTitle = true
                                                         },
@@ -425,6 +435,7 @@ fun HomeAlbums(
                                                         onChangeAlbumCover = {
                                                             showDialogChangeAlbumCover = true
                                                         },
+                                                        album = album,
                                                         onPlayNext = {
                                                             println("mediaItem ${songs}")
                                                             binder?.player?.addNext(
@@ -479,7 +490,10 @@ fun HomeAlbums(
                                                         onGoToPlaylist = {
                                                             navController.navigate("${NavRoutes.localPlaylist.name}/$it")
                                                         },
-                                                        disableScrollingText = disableScrollingText
+                                                        disableScrollingText = disableScrollingText,
+                                                        onBlacklist = {
+                                                            insertOrUpdateBlacklist(album)
+                                                        },
                                                     )
                                                 }
                                             },
@@ -657,7 +671,10 @@ fun HomeAlbums(
                                                         onGoToPlaylist = {
                                                             navController.navigate("${NavRoutes.localPlaylist.name}/$it")
                                                         },
-                                                        disableScrollingText = disableScrollingText
+                                                        disableScrollingText = disableScrollingText,
+                                                        onBlacklist = {
+                                                            insertOrUpdateBlacklist(album)
+                                                        },
                                                     )
                                                 }
                                             },

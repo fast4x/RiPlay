@@ -46,6 +46,7 @@ import it.fast4x.riplay.enums.SongSortBy
 import it.fast4x.riplay.enums.SortOrder
 import it.fast4x.riplay.data.models.Album
 import it.fast4x.riplay.data.models.Artist
+import it.fast4x.riplay.data.models.Blacklist
 import it.fast4x.riplay.data.models.Event
 import it.fast4x.riplay.data.models.EventWithSong
 import it.fast4x.riplay.data.models.ExternalApp
@@ -93,6 +94,14 @@ interface Database {
         get() = _internal
 
     //**********************************************
+    @Transaction
+    @Query("SELECT * FROM Blacklist")
+    fun blacklists(): Flow<List<Blacklist>>
+
+    @Transaction
+    @Query("SELECT id FROM Blacklist WHERE type = :type AND path = :path")
+    fun blacklist(type: String, path: String): Long
+
     @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Transaction
     @Query("SELECT * FROM Song")
@@ -2854,6 +2863,9 @@ interface Database {
     @Query("SELECT * FROM Queues WHERE id = :id")
     fun getQueue(id: Long): Queues?
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    fun insert(blacklist: Blacklist)
+
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     @Throws(SQLException::class)
     fun insert(event: Event)
@@ -2954,6 +2966,9 @@ interface Database {
     fun insert(externalApp: ExternalApp)
 
     @Update
+    fun update(blacklist: Blacklist)
+
+    @Update
     fun update(artist: Artist)
 
     @Update
@@ -2972,6 +2987,9 @@ interface Database {
             browseId = playlistItem.key
         ))
     }
+
+    @Upsert
+    fun upsert(blacklist: Blacklist)
 
     @Upsert
     fun upsert(lyrics: Lyrics)
@@ -3005,6 +3023,9 @@ interface Database {
 
     @Upsert
     fun upsert(queue: Queues)
+
+    @Delete
+    fun delete(blacklist: Blacklist)
 
     @Delete
     fun delete(searchQuery: SearchQuery)
@@ -3116,11 +3137,12 @@ interface Database {
         Lyrics::class,
         Queues::class,
         ExternalApp::class,
+        Blacklist::class
     ],
     views = [
         SortedSongPlaylistMap::class
     ],
-    version = 39,
+    version = 40,
     exportSchema = true,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
@@ -3152,6 +3174,7 @@ interface Database {
         AutoMigration(from = 36, to = 37),
         AutoMigration(from = 37, to = 38),
         AutoMigration(from = 38, to = 39),
+        AutoMigration(from = 39, to = 40),
     ],
 )
 @TypeConverters(Converters::class)

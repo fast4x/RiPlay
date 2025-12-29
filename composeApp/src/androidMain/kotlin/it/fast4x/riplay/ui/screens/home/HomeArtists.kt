@@ -6,6 +6,7 @@ import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -37,6 +38,7 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.util.UnstableApi
+import androidx.navigation.NavController
 import it.fast4x.riplay.extensions.persist.persistList
 import it.fast4x.environment.EnvironmentExt
 import it.fast4x.riplay.data.Database
@@ -47,6 +49,7 @@ import it.fast4x.riplay.enums.NavigationBarPosition
 import it.fast4x.riplay.enums.UiType
 import it.fast4x.riplay.data.models.Artist
 import it.fast4x.riplay.data.models.Song
+import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.ui.components.ButtonsRow
 import it.fast4x.riplay.ui.components.themed.FloatingActionsContainerWithScrollToTop
 import it.fast4x.riplay.ui.components.themed.HeaderInfo
@@ -75,8 +78,12 @@ import it.fast4x.riplay.ui.components.tab.toolbar.SongsShuffle
 import it.fast4x.riplay.extensions.preferences.Preference.HOME_ARTIST_ITEM_SIZE
 import it.fast4x.riplay.utils.autoSyncToolbutton
 import it.fast4x.riplay.extensions.preferences.autosyncKey
+import it.fast4x.riplay.ui.components.LocalGlobalSheetState
+import it.fast4x.riplay.ui.components.tab.ToolbarMenuButton
+import it.fast4x.riplay.ui.components.themed.ArtistsItemMenu
 import it.fast4x.riplay.utils.LazyListContainer
 import it.fast4x.riplay.utils.importYTMSubscribedChannels
+import it.fast4x.riplay.utils.insertOrUpdateBlacklist
 import it.fast4x.riplay.utils.viewTypeToolbutton
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -92,13 +99,14 @@ import kotlinx.coroutines.withContext
 @ExperimentalComposeUiApi
 @Composable
 fun HomeArtists(
+    navController: NavController,
     onArtistClick: (Artist) -> Unit,
     onSearchClick: () -> Unit,
     onSettingsClick: () -> Unit
 ) {
     // Essentials
     val lazyGridState = rememberLazyGridState()
-
+    val menuState = LocalGlobalSheetState.current
     var items by persistList<Artist>( "")
     //var itemsToFilter by persistList<Artist>( "home/artists" )
 
@@ -115,6 +123,15 @@ fun HomeArtists(
     )
 
     val itemSize = ItemSize.init( HOME_ARTIST_ITEM_SIZE )
+
+    val blacklistButton = ToolbarMenuButton.init(
+        iconId = R.drawable.alert_circle,
+        titleId = R.string.blacklisted_folders,
+        onClick = {
+            menuState.hide()
+            navController.navigate(NavRoutes.blacklist.name)
+        }
+    )
 
     val randomizer = object: Randomizer<Artist> {
         override fun getItems(): List<Artist> = itemsOnDisplay
@@ -241,7 +258,7 @@ fun HomeArtists(
                 }
 
                 // Sticky tab's tool bar
-                TabToolBar.Buttons( sort, sync, search, randomizer, shuffle, itemSize, viewType )
+                TabToolBar.Buttons( sort, sync, search, randomizer, shuffle, itemSize, viewType, blacklistButton )
 
                 Row(
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -333,10 +350,27 @@ fun HomeArtists(
                                             fadeInSpec = null,
                                             fadeOutSpec = null
                                         )
-                                        .clickable(onClick = {
-                                            search.onItemSelected()
-                                            onArtistClick(artist)
-                                        }),
+                                        .combinedClickable(
+                                            onClick = {
+                                                search.onItemSelected()
+                                                onArtistClick(artist)
+                                            },
+                                            onLongClick = {
+                                                menuState.display {
+                                                    ArtistsItemMenu(
+                                                        artist = artist,
+                                                        onDismiss = menuState::hide,
+                                                        onBlacklist = {
+                                                            menuState.hide()
+                                                            insertOrUpdateBlacklist(artist)
+                                                        },
+                                                        disableScrollingText = disableScrollingText
+
+                                                    )
+                                                }
+                                            }
+
+                                        ),
                                     disableScrollingText = disableScrollingText,
                                     isYoutubeArtist = artist.isYoutubeArtist
                                 )
@@ -368,10 +402,27 @@ fun HomeArtists(
                                             fadeInSpec = null,
                                             fadeOutSpec = null
                                         )
-                                        .clickable(onClick = {
-                                            search.onItemSelected()
-                                            onArtistClick(artist)
-                                        }),
+                                        .combinedClickable(
+                                            onClick = {
+                                                search.onItemSelected()
+                                                onArtistClick(artist)
+                                            },
+                                            onLongClick = {
+                                                menuState.display {
+                                                    ArtistsItemMenu(
+                                                        artist = artist,
+                                                        onDismiss = menuState::hide,
+                                                        onBlacklist = {
+                                                            menuState.hide()
+                                                            insertOrUpdateBlacklist(artist)
+                                                        },
+                                                        disableScrollingText = disableScrollingText
+
+                                                    )
+                                                }
+                                            }
+
+                                        ),
                                     disableScrollingText = disableScrollingText,
                                     isYoutubeArtist = artist.isYoutubeArtist
                                 )

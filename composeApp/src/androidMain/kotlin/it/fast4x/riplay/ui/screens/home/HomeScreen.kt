@@ -157,6 +157,7 @@ fun HomeScreen(
                 )
 
                 2 -> HomeArtists(
+                    navController = navController,
                     onArtistClick = {
                         if (!it.id.startsWith(LOCAL_KEY_PREFIX))
                             navController.navigate(route = "${NavRoutes.artist.name}/${it.id}")
@@ -186,6 +187,7 @@ fun HomeScreen(
                 )
 
                 4 -> HomePlaylists(
+                    navController = navController,
                     onPlaylistClick = {
                         if (!it.isOnDevice)
                             navController.navigate(route = "${NavRoutes.localPlaylist.name}/${it.playlist.id}")

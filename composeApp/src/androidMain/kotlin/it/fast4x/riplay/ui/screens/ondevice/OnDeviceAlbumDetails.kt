@@ -590,6 +590,7 @@ fun OnDeviceAlbumDetails(
                                                     onChangeAlbumCover = {
                                                         showDialogChangeAlbumCover = true
                                                     },
+                                                    album = it,
                                                     onPlayNext = {
                                                         if (listMediaItems.isEmpty()) {
                                                             if (songs.any { it.likedAt != -1L }) {
@@ -644,7 +645,6 @@ fun OnDeviceAlbumDetails(
                                                             selectItems = false
                                                         }
                                                     },
-                                                    album = it,
                                                     onAddToPlaylist = { playlistPreview ->
                                                         position =
                                                             playlistPreview.songCount.minus(1) ?: 0
@@ -687,6 +687,9 @@ fun OnDeviceAlbumDetails(
                                                             selectItems = false
                                                         }
                                                     },
+                                                    onGoToPlaylist = {
+                                                        navController.navigate("${NavRoutes.localPlaylist.name}/$it")
+                                                    },
                                                     onAddToFavourites = {
                                                         if (!isNetworkConnected(appContext()) && isSyncEnabled()) {
                                                             SmartMessage(
@@ -709,10 +712,7 @@ fun OnDeviceAlbumDetails(
                                                             }
                                                         }
                                                     },
-                                                    onGoToPlaylist = {
-                                                        navController.navigate("${NavRoutes.localPlaylist.name}/$it")
-                                                    },
-                                                    disableScrollingText = disableScrollingText
+                                                    disableScrollingText = disableScrollingText,
                                                 )
                                             }
                                         }

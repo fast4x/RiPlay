@@ -41,7 +41,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.util.UnstableApi
-import androidx.navigation.compose.rememberNavController
+import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import it.fast4x.riplay.extensions.persist.persistList
 import it.fast4x.environment.EnvironmentExt
@@ -54,10 +54,11 @@ import it.fast4x.riplay.commonutils.PINNED_PREFIX
 import it.fast4x.riplay.R
 import it.fast4x.riplay.commonutils.YTP_PREFIX
 import it.fast4x.riplay.commonutils.thumbnail
+import it.fast4x.riplay.data.models.Blacklist
 import it.fast4x.riplay.utils.appContext
 import it.fast4x.riplay.enums.NavigationBarPosition
 import it.fast4x.riplay.enums.PlaylistSortBy
-import it.fast4x.riplay.enums.PlaylistsType
+import it.fast4x.riplay.enums.PlaylistType
 import it.fast4x.riplay.enums.UiType
 import it.fast4x.riplay.data.models.Playlist
 import it.fast4x.riplay.data.models.PlaylistPreview
@@ -104,6 +105,8 @@ import it.fast4x.riplay.extensions.preferences.Preference.HOME_LIBRARY_ITEM_SIZE
 import it.fast4x.riplay.utils.autoSyncToolbutton
 import it.fast4x.riplay.extensions.preferences.autosyncKey
 import it.fast4x.riplay.data.models.defaultQueue
+import it.fast4x.riplay.enums.BlacklistType
+import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.enums.SortOrder
 import it.fast4x.riplay.extensions.ondevice.blackListedPathsFilename
 import it.fast4x.riplay.ui.components.LocalGlobalSheetState
@@ -115,6 +118,7 @@ import it.fast4x.riplay.utils.CheckAndCreateMonthlyPlaylist
 import it.fast4x.riplay.utils.LazyListContainer
 import it.fast4x.riplay.utils.addNext
 import it.fast4x.riplay.utils.forcePlayFromBeginning
+import it.fast4x.riplay.utils.insertOrUpdateBlacklist
 import it.fast4x.riplay.utils.isAtLeastAndroid10
 import it.fast4x.riplay.utils.viewTypeToolbutton
 import kotlinx.coroutines.CoroutineScope
@@ -142,20 +146,21 @@ import kotlin.collections.map
 fun HomePlaylists(
     onPlaylistClick: (PlaylistPreview) -> Unit,
     onSearchClick: () -> Unit,
-    onSettingsClick: () -> Unit
+    onSettingsClick: () -> Unit,
+    navController: NavController
 ) {
     // Essentials
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
     val lazyGridState = rememberLazyGridState()
     val menuState = LocalGlobalSheetState.current
-    val navController = rememberNavController()
+    //val navController = rememberNavController()
     val binder = LocalPlayerServiceBinder.current
     val selectedQueue = LocalSelectedQueue.current
 
     // Non-vital
     var plistId by remember { mutableLongStateOf( 0L ) }
-    var playlistType by rememberPreference(playlistTypeKey, PlaylistsType.Playlist)
+    var playlistType by rememberPreference(playlistTypeKey, PlaylistType.Playlist)
     val disableScrollingText by rememberPreference(disableScrollingTextKey, false)
 
     var items by persistList<PlaylistPreview>("home/playlists")
@@ -180,12 +185,12 @@ fun HomePlaylists(
 
     val shuffle = SongsShuffle.init {
         when( playlistType ) {
-            PlaylistsType.Playlist -> Database.songsInAllPlaylists()
-            PlaylistsType.PinnedPlaylist -> Database.songsInAllPinnedPlaylists()
-            PlaylistsType.MonthlyPlaylist -> Database.songsInAllMonthlyPlaylists()
-            PlaylistsType.PodcastPlaylist -> Database.songsInAllPodcastPlaylists()
-            PlaylistsType.YTPlaylist -> Database.songsInAllYTPrivatePlaylists()
-            PlaylistsType.OnDevicePlaylist -> Database.songsOnDevice()
+            PlaylistType.Playlist -> Database.songsInAllPlaylists()
+            PlaylistType.PinnedPlaylist -> Database.songsInAllPinnedPlaylists()
+            PlaylistType.MonthlyPlaylist -> Database.songsInAllMonthlyPlaylists()
+            PlaylistType.PodcastPlaylist -> Database.songsInAllPodcastPlaylists()
+            PlaylistType.YTPlaylist -> Database.songsInAllYTPrivatePlaylists()
+            PlaylistType.OnDevicePlaylist -> Database.songsOnDevice()
         }.map { it.map( Song::asMediaItem ) }
     }
 
@@ -316,57 +321,19 @@ fun HomePlaylists(
     // get playlists list
 
     val onDeviceViewModel = LocalOnDeviceViewModel.current
-    var showBlacklistedFolfers by remember { mutableStateOf(false) }
-    var blackListedPaths by remember {
-        val file = File(context.filesDir, blackListedPathsFilename)
-        if (file.exists()) {
-            mutableStateOf(file.readLines())
-        } else {
-            mutableStateOf(emptyList())
-        }
-    }
-
-    var updateBlackListedPaths by remember { mutableStateOf(false) }
-
 
     val blacklistButton = ToolbarMenuButton.init(
         iconId = R.drawable.alert_circle,
         titleId = R.string.blacklisted_folders,
-        onClick = { showBlacklistedFolfers = true }
+        onClick = {
+            menuState.hide()
+            navController.navigate(NavRoutes.blacklist.name)
+        }
     )
 
-    if (showBlacklistedFolfers) {
-        StringListDialog(
-            title = stringResource(R.string.blacklisted_folders),
-            addTitle = stringResource(R.string.add_folder),
-            addPlaceholder = if (isAtLeastAndroid10) {
-                "Android/media/com.whatsapp/WhatsApp/Media"
-            } else {
-                "/storage/emulated/0/Android/media/com.whatsapp/"
-            },
-            conflictTitle = stringResource(R.string.this_folder_already_exists),
-            removeTitle = stringResource(R.string.are_you_sure_you_want_to_remove_this_folder_from_the_blacklist),
-            list = blackListedPaths,
-            add = { newPath ->
-                blackListedPaths = blackListedPaths + newPath
-                val file = File(context.filesDir, blackListedPathsFilename)
-                file.writeText(blackListedPaths.joinToString("\n"))
-                //onDeviceViewModel.loadAudioFiles()
-                updateBlackListedPaths = !updateBlackListedPaths
-            },
-            remove = { path ->
-                blackListedPaths = blackListedPaths.filter { it != path }
-                val file = File(context.filesDir, blackListedPathsFilename)
-                file.writeText(blackListedPaths.joinToString("\n"))
-                //onDeviceViewModel.loadAudioFiles()
-                updateBlackListedPaths = !updateBlackListedPaths
-            },
-            onDismiss = { showBlacklistedFolfers = false },
-        )
-    }
 
-    LaunchedEffect( sort.sortBy, sort.sortOrder, playlistType, updateBlackListedPaths ) {
-        if (playlistType == PlaylistsType.OnDevicePlaylist) {
+    LaunchedEffect( sort.sortBy, sort.sortOrder, playlistType ) {
+        if (playlistType == PlaylistType.OnDevicePlaylist) {
             onDeviceViewModel.audioFoldersAsPlaylists().collect { folders ->
                 items = when (sort.sortBy) {
                     PlaylistSortBy.Name -> when (sort.sortOrder) {
@@ -406,17 +373,17 @@ fun HomePlaylists(
     val showMonthlyPlaylists by rememberPreference(showMonthlyPlaylistsKey, true)
     val showPipedPlaylists by rememberPreference(showPipedPlaylistsKey, true)
 
-    val buttonsList = mutableListOf(PlaylistsType.Playlist to stringResource(R.string.playlists))
-    buttonsList += PlaylistsType.YTPlaylist to stringResource(R.string.library)
+    val buttonsList = mutableListOf(PlaylistType.Playlist to stringResource(R.string.playlists))
+    buttonsList += PlaylistType.YTPlaylist to stringResource(R.string.library)
     //if (showPipedPlaylists)
         buttonsList +=
-        PlaylistsType.PodcastPlaylist to stringResource(R.string.podcasts)
+        PlaylistType.PodcastPlaylist to stringResource(R.string.podcasts)
     if (showPinnedPlaylists) buttonsList +=
-        PlaylistsType.PinnedPlaylist to stringResource(R.string.pinned_playlists)
+        PlaylistType.PinnedPlaylist to stringResource(R.string.pinned_playlists)
     if (showMonthlyPlaylists) buttonsList +=
-        PlaylistsType.MonthlyPlaylist to stringResource(R.string.monthly_playlists)
+        PlaylistType.MonthlyPlaylist to stringResource(R.string.monthly_playlists)
 
-    buttonsList += PlaylistsType.OnDevicePlaylist to stringResource(R.string.on_device)
+    buttonsList += PlaylistType.OnDevicePlaylist to stringResource(R.string.on_device)
 
 
     // END - Additional playlists
@@ -456,8 +423,8 @@ fun HomePlaylists(
 
                 // Sticky tab's tool bar
                 val buttons = mutableListOf(
-                    sort, sync, search, shuffle, newPlaylistDialog, importPlaylistDialog, itemSize, viewType
-                ).apply { if (playlistType == PlaylistsType.OnDevicePlaylist) add(blacklistButton) }
+                    sort, sync, search, shuffle, newPlaylistDialog, importPlaylistDialog, itemSize, viewType, blacklistButton)
+                    //.apply { if (playlistType == PlaylistType.OnDevicePlaylist) add(blacklistButton) }
                 TabToolBar.Buttons(buttons)
 
                 // Sticky search bar
@@ -487,17 +454,17 @@ fun HomePlaylists(
 
                             val listPrefix =
                                 when (playlistType) {
-                                    PlaylistsType.Playlist, PlaylistsType.OnDevicePlaylist -> ""    // Matches everything
-                                    PlaylistsType.PinnedPlaylist -> PINNED_PREFIX
-                                    PlaylistsType.MonthlyPlaylist -> MONTHLY_PREFIX
-                                    PlaylistsType.PodcastPlaylist -> ""
-                                    PlaylistsType.YTPlaylist -> YTP_PREFIX
+                                    PlaylistType.Playlist, PlaylistType.OnDevicePlaylist -> ""    // Matches everything
+                                    PlaylistType.PinnedPlaylist -> PINNED_PREFIX
+                                    PlaylistType.MonthlyPlaylist -> MONTHLY_PREFIX
+                                    PlaylistType.PodcastPlaylist -> ""
+                                    PlaylistType.YTPlaylist -> YTP_PREFIX
                                 }
                             val condition: (PlaylistPreview) -> Boolean = {
                                 when (playlistType) {
-                                    PlaylistsType.YTPlaylist -> it.playlist.isYoutubePlaylist
-                                    PlaylistsType.PodcastPlaylist -> it.playlist.isPodcast
-                                    PlaylistsType.OnDevicePlaylist -> it.isOnDevice
+                                    PlaylistType.YTPlaylist -> it.playlist.isYoutubePlaylist
+                                    PlaylistType.PodcastPlaylist -> it.playlist.isPodcast
+                                    PlaylistType.OnDevicePlaylist -> it.isOnDevice
                                     else -> it.playlist.name.startsWith(listPrefix, true)
                                 }
                             }
@@ -546,7 +513,10 @@ fun HomePlaylists(
                                                                         .collect()
                                                                 }
 
-                                                            }
+                                                            },
+                                                            onBlacklist = {
+                                                                insertOrUpdateBlacklist(PlaylistType.Playlist, preview)
+                                                            },
                                                         )
                                                     }
                                                 }
@@ -673,12 +643,7 @@ fun HomePlaylists(
                                                             },
                                                             onBlacklist = {
                                                                 if (preview.folder == null) return@PlaylistsItemMenu
-
-                                                                blackListedPaths = blackListedPaths + preview.folder
-                                                                val file = File(context.filesDir, blackListedPathsFilename)
-                                                                file.writeText(blackListedPaths.joinToString("\n"))
-                                                                //onDeviceViewModel.loadAudioFiles()
-                                                                updateBlackListedPaths = !updateBlackListedPaths
+                                                                insertOrUpdateBlacklist(PlaylistType.OnDevicePlaylist, preview)
                                                             },
                                                         )
                                                     }
@@ -724,18 +689,18 @@ fun HomePlaylists(
 
                             val listPrefix =
                                 when (playlistType) {
-                                    PlaylistsType.Playlist, PlaylistsType.OnDevicePlaylist -> ""    // Matches everything
-                                    PlaylistsType.PinnedPlaylist -> PINNED_PREFIX
-                                    PlaylistsType.MonthlyPlaylist -> MONTHLY_PREFIX
-                                    PlaylistsType.PodcastPlaylist -> ""
-                                    PlaylistsType.YTPlaylist -> YTP_PREFIX
+                                    PlaylistType.Playlist, PlaylistType.OnDevicePlaylist -> ""    // Matches everything
+                                    PlaylistType.PinnedPlaylist -> PINNED_PREFIX
+                                    PlaylistType.MonthlyPlaylist -> MONTHLY_PREFIX
+                                    PlaylistType.PodcastPlaylist -> ""
+                                    PlaylistType.YTPlaylist -> YTP_PREFIX
                                 }
                             val condition: (PlaylistPreview) -> Boolean = {
                                 when (playlistType) {
-                                    PlaylistsType.YTPlaylist -> it.playlist.isYoutubePlaylist
-                                    PlaylistsType.PodcastPlaylist -> it.playlist.isPodcast
-                                    PlaylistsType.OnDevicePlaylist -> it.isOnDevice
-                                    PlaylistsType.Playlist -> {
+                                    PlaylistType.YTPlaylist -> it.playlist.isYoutubePlaylist
+                                    PlaylistType.PodcastPlaylist -> it.playlist.isPodcast
+                                    PlaylistType.OnDevicePlaylist -> it.isOnDevice
+                                    PlaylistType.Playlist -> {
                                         when {
                                             !showPinnedPlaylists -> !it.playlist.isPinned
                                             !showMonthlyPlaylists -> !it.playlist.isMonthly
@@ -822,6 +787,9 @@ fun HomePlaylists(
                                                                         }
                                                                         .collect()
                                                                 }
+                                                            },
+                                                            onBlacklist = {
+                                                                insertOrUpdateBlacklist(PlaylistType.Playlist, preview)
                                                             },
                                                         )
                                                     }
@@ -948,12 +916,7 @@ fun HomePlaylists(
                                                             },
                                                             onBlacklist = {
                                                                 if (preview.folder == null) return@PlaylistsItemMenu
-
-                                                                blackListedPaths = blackListedPaths + preview.folder
-                                                                val file = File(context.filesDir, blackListedPathsFilename)
-                                                                file.writeText(blackListedPaths.joinToString("\n"))
-                                                                //onDeviceViewModel.loadAudioFiles()
-                                                                updateBlackListedPaths = !updateBlackListedPaths
+                                                                insertOrUpdateBlacklist(PlaylistType.OnDevicePlaylist, preview)
                                                             },
                                                         )
                                                     }
