@@ -9,6 +9,7 @@ import it.fast4x.riplay.extensions.ondevice.Folder
 import it.fast4x.riplay.extensions.ondevice.OnDeviceBlacklistPath
 import it.fast4x.riplay.data.models.Song
 import it.fast4x.riplay.data.models.SongEntity
+import timber.log.Timber
 import java.io.File
 
 class OnDeviceOrganize {
@@ -122,6 +123,7 @@ class OnDeviceBlacklist(context: Context) {
     }
 
     fun contains(path: String): Boolean {
-        return paths.any { it.test(path) }
+        Timber.d("OnDeviceBlacklist paths ${paths.map { it.path }} contains path $path")
+        return paths.any { path.startsWith(it.path) }
     }
 }

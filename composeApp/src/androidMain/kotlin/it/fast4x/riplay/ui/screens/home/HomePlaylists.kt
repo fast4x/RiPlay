@@ -28,7 +28,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -41,7 +40,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
@@ -107,14 +105,17 @@ import it.fast4x.riplay.utils.autoSyncToolbutton
 import it.fast4x.riplay.extensions.preferences.autosyncKey
 import it.fast4x.riplay.data.models.defaultQueue
 import it.fast4x.riplay.enums.SortOrder
-import it.fast4x.riplay.extensions.ondevice.OnDeviceViewModel
+import it.fast4x.riplay.extensions.ondevice.blackListedPathsFilename
 import it.fast4x.riplay.ui.components.LocalGlobalSheetState
+import it.fast4x.riplay.ui.components.tab.ToolbarMenuButton
 import it.fast4x.riplay.ui.components.themed.PlaylistsItemMenu
+import it.fast4x.riplay.ui.components.themed.StringListDialog
 import it.fast4x.riplay.ui.styling.px
 import it.fast4x.riplay.utils.CheckAndCreateMonthlyPlaylist
 import it.fast4x.riplay.utils.LazyListContainer
 import it.fast4x.riplay.utils.addNext
 import it.fast4x.riplay.utils.forcePlayFromBeginning
+import it.fast4x.riplay.utils.isAtLeastAndroid10
 import it.fast4x.riplay.utils.viewTypeToolbutton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -124,7 +125,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import timber.log.Timber
+import java.io.File
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import kotlin.collections.map
@@ -187,7 +188,7 @@ fun HomePlaylists(
             PlaylistsType.OnDevicePlaylist -> Database.songsOnDevice()
         }.map { it.map( Song::asMediaItem ) }
     }
-    //<editor-fold desc="New playlist dialog">
+
     val newPlaylistDialog = object: IDialog, Descriptive, MenuIcon {
 
         override val messageId: Int = R.string.create_new_playlist
@@ -315,8 +316,56 @@ fun HomePlaylists(
     // get playlists list
 
     val onDeviceViewModel = LocalOnDeviceViewModel.current
+    var showBlacklistedFolfers by remember { mutableStateOf(false) }
+    var blackListedPaths by remember {
+        val file = File(context.filesDir, blackListedPathsFilename)
+        if (file.exists()) {
+            mutableStateOf(file.readLines())
+        } else {
+            mutableStateOf(emptyList())
+        }
+    }
 
-    LaunchedEffect( sort.sortBy, sort.sortOrder, playlistType ) {
+    var updateBlackListedPaths by remember { mutableStateOf(false) }
+
+
+    val blacklistButton = ToolbarMenuButton.init(
+        iconId = R.drawable.alert_circle,
+        titleId = R.string.blacklisted_folders,
+        onClick = { showBlacklistedFolfers = true }
+    )
+
+    if (showBlacklistedFolfers) {
+        StringListDialog(
+            title = stringResource(R.string.blacklisted_folders),
+            addTitle = stringResource(R.string.add_folder),
+            addPlaceholder = if (isAtLeastAndroid10) {
+                "Android/media/com.whatsapp/WhatsApp/Media"
+            } else {
+                "/storage/emulated/0/Android/media/com.whatsapp/"
+            },
+            conflictTitle = stringResource(R.string.this_folder_already_exists),
+            removeTitle = stringResource(R.string.are_you_sure_you_want_to_remove_this_folder_from_the_blacklist),
+            list = blackListedPaths,
+            add = { newPath ->
+                blackListedPaths = blackListedPaths + newPath
+                val file = File(context.filesDir, blackListedPathsFilename)
+                file.writeText(blackListedPaths.joinToString("\n"))
+                //onDeviceViewModel.loadAudioFiles()
+                updateBlackListedPaths = !updateBlackListedPaths
+            },
+            remove = { path ->
+                blackListedPaths = blackListedPaths.filter { it != path }
+                val file = File(context.filesDir, blackListedPathsFilename)
+                file.writeText(blackListedPaths.joinToString("\n"))
+                //onDeviceViewModel.loadAudioFiles()
+                updateBlackListedPaths = !updateBlackListedPaths
+            },
+            onDismiss = { showBlacklistedFolfers = false },
+        )
+    }
+
+    LaunchedEffect( sort.sortBy, sort.sortOrder, playlistType, updateBlackListedPaths ) {
         if (playlistType == PlaylistsType.OnDevicePlaylist) {
             onDeviceViewModel.audioFoldersAsPlaylists().collect { folders ->
                 items = when (sort.sortBy) {
@@ -406,7 +455,10 @@ fun HomePlaylists(
                 }
 
                 // Sticky tab's tool bar
-                TabToolBar.Buttons( sort, sync, search, shuffle, newPlaylistDialog, importPlaylistDialog, itemSize, viewType )
+                val buttons = mutableListOf(
+                    sort, sync, search, shuffle, newPlaylistDialog, importPlaylistDialog, itemSize, viewType
+                ).apply { if (playlistType == PlaylistsType.OnDevicePlaylist) add(blacklistButton) }
+                TabToolBar.Buttons(buttons)
 
                 // Sticky search bar
                 search.SearchBar( this )
@@ -552,7 +604,7 @@ fun HomePlaylists(
                                         thumbnailSizeDp = playlistThumbnailSizeDp,
                                         name = preview.playlist.name,
                                         channelName = null,
-                                        alternative = true,
+                                        alternative = false,
                                         showName = true,
                                         modifier = Modifier
                                             .fillMaxSize()
@@ -587,7 +639,47 @@ fun HomePlaylists(
                                                                         .collect()
                                                                 }
 
-                                                            }
+                                                            },
+                                                            onPlayNow = {
+                                                                coroutineScope.launch(Dispatchers.IO) {
+                                                                    Database.playlistSongs(preview.playlist.id)
+                                                                        .distinctUntilChanged()
+                                                                        .map { it?.map(Song::asMediaItem) }
+                                                                        .onEach {
+                                                                            if (it != null)
+                                                                                binder?.player?.forcePlayFromBeginning(
+                                                                                    it
+                                                                                )
+                                                                        }
+                                                                        .collect()
+                                                                }
+                                                            },
+                                                            onShufflePlay = {
+                                                                coroutineScope.launch(Dispatchers.IO) {
+                                                                    Database.playlistSongs(preview.playlist.id)
+                                                                        .distinctUntilChanged()
+                                                                        .map { it?.map(Song::asMediaItem) }
+                                                                        .onEach {
+                                                                            withContext(Dispatchers.Main) {
+                                                                                if (it != null)
+                                                                                    binder?.player?.forcePlayFromBeginning(
+                                                                                        it.shuffled()
+                                                                                    )
+                                                                            }
+
+                                                                        }
+                                                                        .collect()
+                                                                }
+                                                            },
+                                                            onBlacklist = {
+                                                                if (preview.folder == null) return@PlaylistsItemMenu
+
+                                                                blackListedPaths = blackListedPaths + preview.folder
+                                                                val file = File(context.filesDir, blackListedPathsFilename)
+                                                                file.writeText(blackListedPaths.joinToString("\n"))
+                                                                //onDeviceViewModel.loadAudioFiles()
+                                                                updateBlackListedPaths = !updateBlackListedPaths
+                                                            },
                                                         )
                                                     }
                                                 }
@@ -710,9 +802,6 @@ fun HomePlaylists(
                                                                                 binder?.player?.forcePlayFromBeginning(
                                                                                     it
                                                                                 )
-                                                                            //                                                                            fastPlay(it.first(),
-                                                                            //                                                                                binder, it
-                                                                            //                                                                            )
                                                                         }
                                                                         .collect()
                                                                 }
@@ -733,7 +822,7 @@ fun HomePlaylists(
                                                                         }
                                                                         .collect()
                                                                 }
-                                                            }
+                                                            },
                                                         )
                                                     }
                                                 }
@@ -836,9 +925,6 @@ fun HomePlaylists(
                                                                                 binder?.player?.forcePlayFromBeginning(
                                                                                     it
                                                                                 )
-                                                                            //                                                                            fastPlay(it.first(),
-                                                                            //                                                                                binder, it
-                                                                            //                                                                            )
                                                                         }
                                                                         .collect()
                                                                 }
@@ -859,7 +945,16 @@ fun HomePlaylists(
                                                                         }
                                                                         .collect()
                                                                 }
-                                                            }
+                                                            },
+                                                            onBlacklist = {
+                                                                if (preview.folder == null) return@PlaylistsItemMenu
+
+                                                                blackListedPaths = blackListedPaths + preview.folder
+                                                                val file = File(context.filesDir, blackListedPathsFilename)
+                                                                file.writeText(blackListedPaths.joinToString("\n"))
+                                                                //onDeviceViewModel.loadAudioFiles()
+                                                                updateBlackListedPaths = !updateBlackListedPaths
+                                                            },
                                                         )
                                                     }
                                                 }

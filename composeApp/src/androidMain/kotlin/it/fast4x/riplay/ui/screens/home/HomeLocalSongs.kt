@@ -1525,6 +1525,7 @@ fun HomeLocalSongs(
                                                                 .map { it.asMediaItem }
                                                             binder?.player?.enqueue(allSongs, context)
                                                         },
+                                                        onBlacklist = {},
                                                         thumbnailSizeDp = thumbnailSizeDp,
                                                         disableScrollingText = disableScrollingText
                                                     )

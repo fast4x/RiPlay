@@ -929,58 +929,91 @@ inline fun StringListDialog(
                 .padding(all = 10.dp)
                 .background(color = colorPalette().background1, shape = RoundedCornerShape(8.dp))
                 .padding(vertical = 16.dp)
-                .defaultMinSize(Dp.Unspecified, 190.dp)
+                .defaultMinSize(Dp.Unspecified, 250.dp)
+                .verticalScroll(rememberScrollState())
         ) {
             Row(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 12.dp)
+                    .padding(bottom = 24.dp),
             ) {
                 BasicText(
                     text = title,
-                    style = typography().s.semiBold,
+                    style = typography().m.semiBold,
                     modifier = Modifier
-                        .padding(vertical = 8.dp, horizontal = 24.dp)
+                        //.padding(vertical = 8.dp, horizontal = 24.dp)
                 )
-                DialogTextButton(
-                    text = addTitle,
-                    primary = true,
-                    onClick = {
-                        showStringAddDialog = true
-                    }
+                Image(
+                    painter = painterResource(R.drawable.add),
+                    contentDescription = null,
+                    colorFilter = ColorFilter.tint(colorPalette().text),
+                    modifier = Modifier
+                        //.padding(vertical = 8.dp, horizontal = 24.dp)
+                        .clickable { showStringAddDialog = true }
                 )
+//                DialogTextButton(
+//                    text = addTitle,
+//                    primary = true,
+//                    onClick = {
+//                        showStringAddDialog = true
+//                    }
+//                )
             }
 
             Spacer(modifier = Modifier.height(5.dp))
 
             Column(
                 modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+                verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 list.forEach { item ->
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween,
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(end = 20.dp),
+                            .padding(horizontal = 12.dp),
                     ) {
+                        Image(
+                            painter = painterResource(R.drawable.folder),
+                            contentDescription = null,
+                            colorFilter = ColorFilter.tint(colorPalette().red),
+                            modifier = Modifier
+                                .size(24.dp)
+                                //.padding(vertical = 8.dp, horizontal = 24.dp)
+                        )
                         BasicText(
                             text = item,
-                            style = typography().s.semiBold,
+                            style = typography().s.semiBold.copy(color = colorPalette().textSecondary),
+                            overflow = TextOverflow.Ellipsis,
                             modifier = Modifier
                                 .weight(1f)
-                                .padding(horizontal = 24.dp, vertical = 8.dp)
+                                //.padding(horizontal = 24.dp, vertical = 8.dp)
                         )
-                        Icon(
+                        Image(
                             painter = painterResource(R.drawable.trash),
                             contentDescription = null,
-                            tint = Color.Red,
-                            modifier = Modifier.clickable {
-                                removingItem = item
-                                showStringRemoveDialog = true
-                            }
+                            colorFilter = ColorFilter.tint(colorPalette().red),
+                            modifier = Modifier
+                                .size(24.dp)
+                                //.padding(vertical = 8.dp, horizontal = 24.dp)
+                                .clickable {
+                                    removingItem = item
+                                    showStringRemoveDialog = true
+                                }
                         )
+//                        Icon(
+//                            painter = painterResource(R.drawable.trash),
+//                            contentDescription = null,
+//                            tint = Color.Red,
+//                            modifier = Modifier.clickable {
+//                                removingItem = item
+//                                showStringRemoveDialog = true
+//                            }
+//                        )
                     }
                 }
             }

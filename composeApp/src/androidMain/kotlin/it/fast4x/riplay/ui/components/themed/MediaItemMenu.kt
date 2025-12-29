@@ -826,6 +826,7 @@ fun FolderItemMenu(
     thumbnailSizeDp: Dp,
     onDismiss: () -> Unit,
     onEnqueue: () -> Unit,
+    onBlacklist: () -> Unit,
     disableScrollingText: Boolean
 ) {
     val density = LocalDensity.current
@@ -871,6 +872,14 @@ fun FolderItemMenu(
             onClick = {
                 onDismiss()
                 onEnqueue()
+            }
+        )
+        MenuEntry(
+            icon = R.drawable.alert_circle,
+            text = stringResource(R.string.add_to_blacklist),
+            onClick = {
+                onDismiss()
+                onBlacklist()
             }
         )
     }

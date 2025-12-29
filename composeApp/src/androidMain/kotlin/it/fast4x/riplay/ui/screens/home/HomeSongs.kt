@@ -155,6 +155,7 @@ import it.fast4x.riplay.ui.styling.color
 import it.fast4x.riplay.extensions.preferences.defaultFolderKey
 import it.fast4x.riplay.extensions.preferences.disableScrollingTextKey
 import it.fast4x.riplay.commonutils.durationTextToMillis
+import it.fast4x.riplay.extensions.ondevice.blackListedPathsFilename
 import it.fast4x.riplay.utils.enqueue
 import it.fast4x.riplay.extensions.preferences.excludeSongsWithDurationLimitKey
 import it.fast4x.riplay.utils.forcePlayAtIndex
@@ -635,13 +636,14 @@ fun HomeSongs(
     }
 
     var blackListedPaths by remember {
-        val file = File(context.filesDir, "Blacklisted_paths.txt")
+        val file = File(context.filesDir, blackListedPathsFilename)
         if (file.exists()) {
             mutableStateOf(file.readLines())
         } else {
             mutableStateOf(emptyList())
         }
     }
+
 
     if (showBlacklistedFolfers) {
         StringListDialog(
@@ -657,13 +659,15 @@ fun HomeSongs(
             list = blackListedPaths,
             add = { newPath ->
                 blackListedPaths = blackListedPaths + newPath
-                val file = File(context.filesDir, "Blacklisted_paths.txt")
+                val file = File(context.filesDir, blackListedPathsFilename)
                 file.writeText(blackListedPaths.joinToString("\n"))
+                onDeviceViewModel.loadAudioFiles()
             },
             remove = { path ->
                 blackListedPaths = blackListedPaths.filter { it != path }
-                val file = File(context.filesDir, "Blacklisted_paths.txt")
+                val file = File(context.filesDir, blackListedPathsFilename)
                 file.writeText(blackListedPaths.joinToString("\n"))
+                onDeviceViewModel.loadAudioFiles()
             },
             onDismiss = { showBlacklistedFolfers = false },
         )
@@ -1096,6 +1100,27 @@ fun HomeSongs(
                                     )
                             )
 
+                        if (BuiltInPlaylist.OnDevice == builtInPlaylist) {
+                            HeaderIconButton(
+                                icon = R.drawable.alert_circle,
+                                color = colorPalette().text,
+                                onClick = {},
+                                modifier = Modifier.combinedClickable(
+                                    onClick = { showBlacklistedFolfers = true },
+                                    onLongClick = { SmartMessage(context.resources.getString(R.string.blacklisted_folders), context = context) }
+                                )
+                            )
+                            HeaderIconButton(
+                                icon = if (showFolders) R.drawable.list_view else R.drawable.grid_view,
+                                color = colorPalette().text,
+                                onClick = {},
+                                modifier = Modifier.combinedClickable(
+                                    onClick = { showFolders = !showFolders },
+                                    onLongClick = { SmartMessage(context.resources.getString(R.string.viewType), context = context) }
+                                )
+                            )
+                        }
+
                         HeaderIconButton(
                             icon = R.drawable.ellipsis_horizontal,
                             color = colorPalette().text,
@@ -1242,17 +1267,6 @@ fun HomeSongs(
                             modifier = Modifier
                                 .padding(horizontal = 2.dp)
                         )
-
-                        if (BuiltInPlaylist.OnDevice == builtInPlaylist)
-                            HeaderIconButton(
-                                icon = if (showFolders) R.drawable.list_view else R.drawable.grid_view,
-                                color = colorPalette().text,
-                                onClick = {},
-                                modifier = Modifier.combinedClickable(
-                                    onClick = { showFolders = !showFolders },
-                                    onLongClick = { showBlacklistedFolfers = true }
-                                )
-                            )
 
                     }
 
@@ -1446,7 +1460,9 @@ fun HomeSongs(
                                     modifier = Modifier
                                         .combinedClickable(
                                             onClick = {
-                                                currentFolderPath = currentFolderPath.removeSuffix("/").substringBeforeLast("/") + "/"
+                                                currentFolderPath =
+                                                    currentFolderPath.removeSuffix("/")
+                                                        .substringBeforeLast("/") + "/"
                                             }
                                         )
                                         .animateItem(),
@@ -1473,13 +1489,35 @@ fun HomeSongs(
                                                         onEnqueue = {
                                                             val allSongs = folder.getAllSongs()
                                                                 .map { it.asMediaItem }
-                                                            binder?.player?.enqueue(allSongs, context)
+                                                            binder?.player?.enqueue(
+                                                                allSongs,
+                                                                context
+                                                            )
+                                                        },
+                                                        onBlacklist = {
+                                                            blackListedPaths = blackListedPaths +
+                                                                    if (folder.fullPath.startsWith("/"))
+                                                                        folder.fullPath.substringAfter(
+                                                                            "/"
+                                                                        ) else folder.fullPath
+                                                            val file = File(
+                                                                context.filesDir,
+                                                                blackListedPathsFilename
+                                                            )
+                                                            file.writeText(
+                                                                blackListedPaths.joinToString(
+                                                                    "\n"
+                                                                )
+                                                            )
+                                                            onDeviceViewModel.loadAudioFiles()
                                                         },
                                                         thumbnailSizeDp = thumbnailSizeDp,
                                                         disableScrollingText = disableScrollingText
                                                     )
                                                 };
-                                                hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+                                                hapticFeedback.performHapticFeedback(
+                                                    HapticFeedbackType.LongPress
+                                                )
                                             },
                                             onClick = {
                                                 currentFolderPath += folder.name + "/"

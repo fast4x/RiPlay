@@ -227,7 +227,7 @@ class OnDeviceViewModel(application: Application) : AndroidViewModel(application
                             }
                             val exclude = blacklist.contains(relativePath) || relativePath.contains("WhatsApp")
 
-                            //Timber.d("OnDeviceViewModel trackname $trackName exclude $exclude relativePath ${relativePath}")
+                            Timber.d("OnDeviceViewModel trackname $trackName exclude $exclude relativePath ${relativePath}")
 
                             if (!exclude) {
                                 runCatching {
@@ -435,6 +435,7 @@ class OnDeviceViewModel(application: Application) : AndroidViewModel(application
     }
 
     fun audioFoldersAsPlaylists(): Flow<MutableList<PlaylistPreview>> {
+        loadAudioFiles()
         val _playlists = mutableListOf<PlaylistPreview>()
         _audioFolders.value.forEachIndexed { index, folder ->
 

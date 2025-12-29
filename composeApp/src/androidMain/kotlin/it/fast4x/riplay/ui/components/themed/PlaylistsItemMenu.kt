@@ -99,7 +99,8 @@ fun PlaylistsItemMenu(
     onResetThumbnail: (() -> Unit)? = null,
     onGoToPlaylist: ((Long) -> Unit)? = null,
     onLinkUnlink: (() -> Unit)? = null,
-    disableScrollingText: Boolean
+    onBlacklist: (() -> Unit)? = null,
+    disableScrollingText: Boolean,
 ) {
     var isViewingPlaylists by remember {
         mutableStateOf(false)
@@ -134,6 +135,7 @@ fun PlaylistsItemMenu(
             showLinkUnlink = showLinkUnlink,
             onSyncronize = onSyncronize,
             onLinkUnlink = onLinkUnlink,
+            onBlacklist = onBlacklist,
             onRenumberPositions = onRenumberPositions,
             onDelete = onDelete,
             onRename = onRename,
@@ -730,6 +732,17 @@ fun PlaylistsItemMenu(
                             onClick = {
                                 onDismiss()
                                 onResetThumbnail()
+                            }
+                        )
+                    }
+
+                    onBlacklist?.let {
+                        MenuEntry(
+                            icon = R.drawable.alert_circle,
+                            text = stringResource(R.string.add_to_blacklist),
+                            onClick = {
+                                onDismiss()
+                                onBlacklist()
                             }
                         )
                     }

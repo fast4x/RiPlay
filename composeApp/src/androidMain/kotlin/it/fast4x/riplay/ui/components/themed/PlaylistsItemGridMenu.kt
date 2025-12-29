@@ -104,6 +104,7 @@ fun PlaylistsItemGridMenu(
     onResetThumbnail: (() -> Unit)? = null,
     onGoToPlaylist: ((Long) -> Unit)? = null,
     onLinkUnlink: (() -> Unit)? = null,
+    onBlacklist: (() -> Unit)? = null,
     disableScrollingText: Boolean
     ) {
     var isViewingPlaylists by remember {
@@ -672,6 +673,19 @@ fun PlaylistsItemGridMenu(
                         onClick = {
                             onDismiss()
                             onResetThumbnail()
+                        }
+                    )
+                }
+
+                onBlacklist?.let { onBlacklist ->
+                    GridMenuItem(
+                        icon = R.drawable.alert_circle,
+                        title = R.string.add_to_blacklist,
+                        colorIcon = colorPalette.text,
+                        colorText = colorPalette.text,
+                        onClick = {
+                            onDismiss()
+                            onBlacklist()
                         }
                     )
                 }
