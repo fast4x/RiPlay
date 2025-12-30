@@ -5,15 +5,15 @@ import androidx.compose.ui.res.stringResource
 import it.fast4x.riplay.R
 
 enum class BlacklistType {
-    Album, Artist, Song, Folder, Playlist;
+    Album, Artist, Song, Folder, Playlist, Video;
 
-    val title: String
-        @Composable
+    val title: Int
         get() = when(this) {
-            Album -> stringResource(R.string.albums)
-            Artist -> stringResource(R.string.artists)
-            Song -> stringResource(R.string.songs)
-            Folder -> stringResource(R.string.folders)
-            Playlist -> stringResource(R.string.playlists)
+            Album -> R.string.albums
+            Artist -> R.string.artists
+            Song -> R.string.songs
+            Folder -> R.string.folders
+            Playlist -> R.string.playlists
+            Video -> R.string.videos
         }
 }

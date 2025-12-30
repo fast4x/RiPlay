@@ -35,7 +35,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -49,7 +48,6 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.offline.Download
 import androidx.navigation.NavController
-import it.fast4x.riplay.extensions.persist.persist
 import it.fast4x.riplay.extensions.persist.persistList
 import it.fast4x.environment.Environment
 import it.fast4x.environment.EnvironmentExt
@@ -107,13 +105,11 @@ import it.fast4x.riplay.extensions.preferences.maxSongsInQueueKey
 import it.fast4x.riplay.utils.LazyListContainer
 import it.fast4x.riplay.utils.forcePlay
 import it.fast4x.riplay.commonutils.setLikeState
-import it.fast4x.riplay.ui.components.themed.LoaderScreen
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import timber.log.Timber
 
 @OptIn(ExperimentalMaterial3Api::class)
 @ExperimentalTextApi
@@ -533,11 +529,11 @@ fun ArtistOverviewItems(
                                                         menuState.hide()
 
                                                     },
+                                                    mediaItem = item,
                                                     onInfo = {
                                                         navController.navigate("${NavRoutes.videoOrSongInfo.name}/${item.mediaId}")
                                                     },
-                                                    mediaItem = item,
-                                                    disableScrollingText = disableScrollingText
+                                                    disableScrollingText = disableScrollingText,
                                                 )
                                             };
                                             hapticFeedback.performHapticFeedback(

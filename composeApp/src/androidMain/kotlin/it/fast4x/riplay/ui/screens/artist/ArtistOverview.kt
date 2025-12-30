@@ -745,11 +745,11 @@ fun ArtistOverview(
                                                                 menuState.hide()
                                                                 //forceRecompose = true
                                                             },
+                                                            mediaItem = item.asMediaItem,
                                                             onInfo = {
                                                                 navController.navigate("${NavRoutes.videoOrSongInfo.name}/${item.key}")
                                                             },
-                                                            mediaItem = item.asMediaItem,
-                                                            disableScrollingText = disableScrollingText
+                                                            disableScrollingText = disableScrollingText,
                                                         )
                                                     };
                                                     hapticFeedback.performHapticFeedback(

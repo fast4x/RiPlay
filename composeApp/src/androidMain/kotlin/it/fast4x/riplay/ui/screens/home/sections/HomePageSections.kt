@@ -251,7 +251,7 @@ fun HomeSectionPart(
                                                 onInfo = {
                                                     navController.navigate("${NavRoutes.videoOrSongInfo.name}/${song.id}")
                                                 },
-                                                disableScrollingText = disableScrollingText
+                                                disableScrollingText = disableScrollingText,
                                             )
                                         }
                                         hapticFeedback.performHapticFeedback(
@@ -315,7 +315,7 @@ fun HomeSectionPart(
                                                 onInfo = {
                                                     navController.navigate("${NavRoutes.videoOrSongInfo.name}/${song.key}")
                                                 },
-                                                disableScrollingText = disableScrollingText
+                                                disableScrollingText = disableScrollingText,
                                             )
                                         }
                                         hapticFeedback.performHapticFeedback(

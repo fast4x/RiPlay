@@ -10,6 +10,7 @@ import androidx.room.PrimaryKey
 data class Blacklist (
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
     @ColumnInfo(index = true) val type: String, // Album, Artist, Song, Folder
+    val name: String,
     val path: String,
     val enabled: Int = 1
 ) {

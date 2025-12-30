@@ -269,11 +269,11 @@ fun SearchResultScreen(
                                                                     menuState.hide()
                                                                     //forceRecompose = true
                                                                 },
+                                                                mediaItem = song.asMediaItem,
                                                                 onInfo = {
                                                                     navController.navigate("${NavRoutes.videoOrSongInfo.name}/${song.key}")
                                                                 },
-                                                                mediaItem = song.asMediaItem,
-                                                                disableScrollingText = disableScrollingText
+                                                                disableScrollingText = disableScrollingText,
                                                             )
                                                         };
                                                         hapticFeedback.performHapticFeedback(
@@ -623,12 +623,12 @@ fun SearchResultScreen(
                                                         menuState.display {
                                                             NonQueuedMediaItemMenu(
                                                                 navController = navController,
-                                                                mediaItem = video.asMediaItem,
                                                                 onDismiss = menuState::hide,
+                                                                mediaItem = video.asMediaItem,
                                                                 onInfo = {
                                                                     navController.navigate("${NavRoutes.videoOrSongInfo.name}/${video.key}")
                                                                 },
-                                                                disableScrollingText = disableScrollingText
+                                                                disableScrollingText = disableScrollingText,
                                                             )
                                                         };
                                                         hapticFeedback.performHapticFeedback(

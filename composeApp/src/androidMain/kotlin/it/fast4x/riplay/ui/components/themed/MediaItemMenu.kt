@@ -146,11 +146,8 @@ import it.fast4x.riplay.commonutils.setDisLikeState
 import it.fast4x.riplay.enums.ThumbnailRoundness
 import it.fast4x.riplay.extensions.preferences.thumbnailRoundnessKey
 import it.fast4x.riplay.ui.styling.secondary
-import it.fast4x.riplay.utils.positionAndDurationStateFlow
 import it.fast4x.riplay.utils.unlikeYtVideoOrSong
 import timber.log.Timber
-import java.time.LocalTime.now
-import java.time.format.DateTimeFormatter
 
 @ExperimentalTextApi
 @ExperimentalAnimationApi
@@ -165,7 +162,8 @@ fun InHistoryMediaItemMenu(
     onInfo: (() -> Unit)? = {},
     onSelectUnselect: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
-    disableScrollingText: Boolean
+    disableScrollingText: Boolean,
+    onBlacklist: () -> Unit
 ) {
 
     NonQueuedMediaItemMenu(
@@ -195,7 +193,8 @@ fun InHistoryMediaItemMenu(
         onInfo = onInfo,
         onSelectUnselect = onSelectUnselect,
         modifier = modifier,
-        disableScrollingText = disableScrollingText
+        disableScrollingText = disableScrollingText,
+        onBlacklist = onBlacklist
     )
 }
 
@@ -213,15 +212,17 @@ fun InPlaylistMediaItemMenu(
     onMatchingSong: (() -> Unit)? = null,
     onInfo: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
-    disableScrollingText: Boolean
+    disableScrollingText: Boolean,
+    onBlacklist: (() -> Unit)? = null
 ) {
     val coroutineScope = rememberCoroutineScope()
     val context = LocalContext.current
 
     NonQueuedMediaItemMenu(
         navController = navController,
-        mediaItem = song.asMediaItem,
         onDismiss = onDismiss,
+        mediaItem = song.asMediaItem,
+        modifier = modifier,
         onRemoveFromPlaylist = {
             if (!isNetworkConnected(context) && playlist?.playlist?.isYoutubePlaylist == true && playlist.playlist.isEditable && isSyncEnabled()){
                 SmartMessage(context.resources.getString(R.string.no_connection), context = context, type = PopupType.Error)
@@ -271,8 +272,8 @@ fun InPlaylistMediaItemMenu(
         onMatchingSong = { if (onMatchingSong != null) {onMatchingSong()}
             onDismiss() },
         onInfo = onInfo,
-        modifier = modifier,
-        disableScrollingText = disableScrollingText
+        disableScrollingText = disableScrollingText,
+        onBlacklist = onBlacklist
     )
 }
 
@@ -290,7 +291,8 @@ fun NonQueuedMediaItemMenuLibrary(
     onMatchingSong: (() -> Unit)? = null,
     onInfo: (() -> Unit)? = null,
     onSelectUnselect: (() -> Unit)? = null,
-    disableScrollingText: Boolean
+    disableScrollingText: Boolean,
+    onBlacklist: (() -> Unit)? = null
 ) {
     val binder = LocalPlayerServiceBinder.current
     val context = LocalContext.current
@@ -342,8 +344,9 @@ fun NonQueuedMediaItemMenuLibrary(
 
         BaseMediaItemGridMenu(
             navController = navController,
-            mediaItem = mediaItem,
             onDismiss = onDismiss,
+            mediaItem = mediaItem,
+            modifier = modifier,
             onStartRadio = {
                 binder?.stopRadio()
                 binder?.player?.forcePlay(mediaItem)
@@ -377,15 +380,15 @@ fun NonQueuedMediaItemMenuLibrary(
                     }
                 }
             },
-            modifier = modifier,
-            disableScrollingText = disableScrollingText
+            disableScrollingText = disableScrollingText,
         )
     } else {
 
         BaseMediaItemMenu(
             navController = navController,
-            mediaItem = mediaItem,
             onDismiss = onDismiss,
+            mediaItem = mediaItem,
+            modifier = modifier,
             onStartRadio = {
                 binder?.stopRadio()
                 binder?.player?.forcePlay(mediaItem)
@@ -422,8 +425,8 @@ fun NonQueuedMediaItemMenuLibrary(
             onMatchingSong = onMatchingSong,
             onInfo = onInfo,
             onSelectUnselect = onSelectUnselect,
-            modifier = modifier,
-            disableScrollingText = disableScrollingText
+            disableScrollingText = disableScrollingText,
+            onBlacklist = onBlacklist
         )
     }
 }
@@ -445,7 +448,8 @@ fun NonQueuedMediaItemMenu(
     onMatchingSong: (() -> Unit)? = null,
     onInfo: (() -> Unit)? = null,
     onSelectUnselect: (() -> Unit)? = null,
-    disableScrollingText: Boolean
+    disableScrollingText: Boolean,
+    onBlacklist: (() -> Unit)? = null,
 ) {
     val binder = LocalPlayerServiceBinder.current
     val context = LocalContext.current
@@ -485,7 +489,8 @@ fun NonQueuedMediaItemMenu(
             onInfo = onInfo,
             onSelectUnselect = onSelectUnselect,
             modifier = modifier,
-            disableScrollingText = disableScrollingText
+            disableScrollingText = disableScrollingText,
+            onBlacklist = onBlacklist
         )
     } else {
 
@@ -515,7 +520,8 @@ fun NonQueuedMediaItemMenu(
             onInfo = onInfo,
             onSelectUnselect = onSelectUnselect,
             modifier = modifier,
-            disableScrollingText = disableScrollingText
+            disableScrollingText = disableScrollingText,
+            onBlacklist = onBlacklist
         )
     }
 }
@@ -533,7 +539,8 @@ fun QueuedMediaItemMenu(
     mediaItem: MediaItem,
     indexInQueue: Int?,
     modifier: Modifier = Modifier,
-    disableScrollingText: Boolean
+    disableScrollingText: Boolean,
+    onBlacklist: (() -> Unit)? = null
 ) {
     val binder = LocalPlayerServiceBinder.current
     val context = LocalContext.current
@@ -546,13 +553,9 @@ fun QueuedMediaItemMenu(
     if (menuStyle == MenuStyle.Grid) {
         BaseMediaItemGridMenu(
             navController = navController,
-            mediaItem = mediaItem,
             onDismiss = onDismiss,
-            onRemoveFromQueue = if (indexInQueue != null) ({
-                binder?.player?.removeMediaItem(indexInQueue)
-            }) else null,
-            onPlayNext = { binder?.player?.addNext(mediaItem, context, selectedQueue ?: defaultQueue()) },
-            onEnqueue = { binder?.player?.enqueue(mediaItem, queue = it) },
+            mediaItem = mediaItem,
+            modifier = modifier,
             onStartRadio = {
                 binder?.stopRadio()
                 binder?.player?.forcePlay(mediaItem)
@@ -564,7 +567,11 @@ fun QueuedMediaItemMenu(
                     )
                 )
             },
-            modifier = modifier,
+            onPlayNext = { binder?.player?.addNext(mediaItem, context, selectedQueue ?: defaultQueue()) },
+            onEnqueue = { binder?.player?.enqueue(mediaItem, queue = it) },
+            onRemoveFromQueue = if (indexInQueue != null) ({
+                binder?.player?.removeMediaItem(indexInQueue)
+            }) else null,
             onGoToPlaylist = {
                 navController.navigate(route = "${NavRoutes.localPlaylist.name}/$it")
             },
@@ -585,18 +592,14 @@ fun QueuedMediaItemMenu(
                     }
                 }
             },
-            disableScrollingText = disableScrollingText
+            disableScrollingText = disableScrollingText,
         )
     } else {
         BaseMediaItemMenu(
             navController = navController,
-            mediaItem = mediaItem,
             onDismiss = onDismiss,
-            onRemoveFromQueue = if (indexInQueue != null) ({
-                binder?.player?.removeMediaItem(indexInQueue)
-            }) else null,
-            onPlayNext = { binder?.player?.addNext(mediaItem, context, selectedQueue ?: defaultQueue()) },
-            onEnqueue = { binder?.player?.enqueue(mediaItem, queue = it) },
+            mediaItem = mediaItem,
+            modifier = modifier,
             onStartRadio = {
                 binder?.stopRadio()
                 binder?.player?.forcePlay(mediaItem)
@@ -608,7 +611,11 @@ fun QueuedMediaItemMenu(
                     )
                 )
             },
-            modifier = modifier,
+            onPlayNext = { binder?.player?.addNext(mediaItem, context, selectedQueue ?: defaultQueue()) },
+            onEnqueue = { binder?.player?.enqueue(mediaItem, queue = it) },
+            onRemoveFromQueue = if (indexInQueue != null) ({
+                binder?.player?.removeMediaItem(indexInQueue)
+            }) else null,
             onGoToPlaylist = {
                 navController.navigate(route = "${NavRoutes.playlist.name}/$it")
             },
@@ -632,7 +639,8 @@ fun QueuedMediaItemMenu(
             onMatchingSong = onMatchingSong,
             onInfo = onInfo,
             onSelectUnselect = onSelectUnselect,
-            disableScrollingText = disableScrollingText
+            disableScrollingText = disableScrollingText,
+            onBlacklist = onBlacklist
         )
     }
 }
@@ -663,7 +671,8 @@ fun BaseMediaItemMenu(
     onMatchingSong: (() -> Unit)?,
     onInfo: (() -> Unit)?,
     onSelectUnselect: (() -> Unit)?,
-    disableScrollingText: Boolean
+    disableScrollingText: Boolean,
+    onBlacklist: (() -> Unit)?,
 ) {
     val context = LocalContext.current
 
@@ -742,7 +751,8 @@ fun BaseMediaItemMenu(
         onInfo = onInfo,
         onSelectUnselect = onSelectUnselect,
         modifier = modifier,
-        disableScrollingText = disableScrollingText
+        disableScrollingText = disableScrollingText,
+        onBlacklist = onBlacklist
     )
 
     FastShare(
@@ -771,8 +781,10 @@ fun MiniMediaItemMenu(
 
     MediaItemMenu(
         navController = navController,
-        mediaItem = mediaItem,
         onDismiss = onDismiss,
+        mediaItem = mediaItem,
+        modifier = modifier,
+        onAddToPreferites = onAddToPreferites,
         onAddToPlaylist = { playlist, position ->
             if (!isSyncEnabled() || !playlist.isYoutubePlaylist){
                 Database.asyncTransaction {
@@ -792,12 +804,6 @@ fun MiniMediaItemMenu(
             }
             onDismiss()
         },
-        onGoToPlaylist = {
-            navController.navigate(route = "${NavRoutes.localPlaylist.name}/$it")
-            if (onGoToPlaylist != null) {
-                onGoToPlaylist(it)
-            }
-        },
         onShare = {
             val sendIntent = Intent().apply {
                 action = Intent.ACTION_SEND
@@ -811,10 +817,14 @@ fun MiniMediaItemMenu(
 
             context.startActivity(Intent.createChooser(sendIntent, null))
         },
-        onAddToPreferites = onAddToPreferites,
+        onGoToPlaylist = {
+            navController.navigate(route = "${NavRoutes.localPlaylist.name}/$it")
+            if (onGoToPlaylist != null) {
+                onGoToPlaylist(it)
+            }
+        },
         onInfo = onInfo,
-        modifier = modifier,
-        disableScrollingText = disableScrollingText
+        disableScrollingText = disableScrollingText,
     )
 }
 
@@ -914,7 +924,8 @@ fun MediaItemMenu(
     onMatchingSong: (() -> Unit)? = null,
     onInfo: (() -> Unit)? = null,
     onSelectUnselect: (() -> Unit)? = null,
-    disableScrollingText: Boolean
+    disableScrollingText: Boolean,
+    onBlacklist: (() -> Unit)? = null,
 ) {
     val density = LocalDensity.current
 
@@ -2125,6 +2136,17 @@ fun MediaItemMenu(
                         onClick = {
                             onDismiss()
                             onRemoveFromQuickPicks()
+                        }
+                    )
+                }
+
+                onBlacklist?.let {
+                    MenuEntry(
+                        icon = R.drawable.alert_circle,
+                        text = stringResource(R.string.add_to_blacklist),
+                        onClick = {
+                            onDismiss()
+                            onBlacklist()
                         }
                     )
                 }

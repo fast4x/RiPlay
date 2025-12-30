@@ -22,6 +22,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
@@ -39,9 +40,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavHostController
 import it.fast4x.riplay.R
+import it.fast4x.riplay.commonutils.cleanPrefix
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.data.models.Blacklist
 import it.fast4x.riplay.enums.BlacklistType
+import it.fast4x.riplay.enums.PlaylistType
+import it.fast4x.riplay.ui.components.ButtonsRow
 import it.fast4x.riplay.ui.components.themed.ConfirmationDialog
 import it.fast4x.riplay.ui.components.themed.DefaultDialog
 import it.fast4x.riplay.ui.components.themed.DialogTextButton
@@ -49,11 +53,13 @@ import it.fast4x.riplay.ui.components.themed.InputTextDialog
 import it.fast4x.riplay.ui.styling.center
 import it.fast4x.riplay.ui.styling.medium
 import it.fast4x.riplay.ui.styling.semiBold
+import it.fast4x.riplay.utils.appContext
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.utils.typography
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.serialization.builtins.PairSerializer
 
 @Composable
 fun BlacklistScreen(navController: NavHostController) {
@@ -66,12 +72,23 @@ fun BlacklistScreen(navController: NavHostController) {
     var removingItem by remember { mutableStateOf("") }
     var errorDialog by remember { mutableStateOf(false) }
 
-    val list = remember {
-        Database.blacklists()
-    }.collectAsState(initial = null, context = Dispatchers.IO)
-
+//    val list = remember {
+//        Database.blacklists()
+//    }.collectAsState(initial = null, context = Dispatchers.IO)
+    var list: List<Blacklist> by remember { mutableStateOf(emptyList()) }
     var currentBlacklist: Blacklist? by remember { mutableStateOf(null) }
 
+    val buttonsList = remember { mutableStateOf<List<Pair<BlacklistType, String>>>(
+        BlacklistType.entries.map { Pair(it, appContext().resources.getString(it.title)) }
+    ) }
+
+    var blacklistType by remember { mutableStateOf(BlacklistType.Album) }
+
+    LaunchedEffect(Unit, blacklistType) {
+        Database.blacklists(blacklistType.name).collect {
+            list = it
+        }
+    }
 
     //Dialog(onDismissRequest = onDismiss) {
         Column(
@@ -79,7 +96,7 @@ fun BlacklistScreen(navController: NavHostController) {
                 .background(color = colorPalette().background1, shape = RoundedCornerShape(8.dp))
                 .padding(WindowInsets.systemBars.asPaddingValues())
                 .fillMaxWidth()
-                .fillMaxHeight(.7f)
+                .fillMaxHeight(.8f)
                 .verticalScroll(rememberScrollState())
         ) {
             Row(
@@ -88,7 +105,7 @@ fun BlacklistScreen(navController: NavHostController) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 12.dp)
-                    .padding(bottom = 24.dp),
+                    .padding(bottom = 12.dp),
             ) {
                 BasicText(
                     text = "Blacklist",
@@ -106,13 +123,20 @@ fun BlacklistScreen(navController: NavHostController) {
 
             }
 
-            Spacer(modifier = Modifier.height(5.dp))
+            //Spacer(modifier = Modifier.height(5.dp))
+
+            ButtonsRow(
+                buttons = buttonsList.value,
+                currentValue = blacklistType,
+                onValueUpdate = { blacklistType = it },
+                modifier = Modifier.padding(all = 12.dp)
+            )
 
             Column(
                 modifier = Modifier.fillMaxWidth(),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                list.value?.forEach { item ->
+                list.forEach { item ->
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -127,6 +151,7 @@ fun BlacklistScreen(navController: NavHostController) {
                                 BlacklistType.Album.name -> R.drawable.album
                                 BlacklistType.Song.name -> R.drawable.musical_note
                                 BlacklistType.Playlist.name -> R.drawable.music_library
+                                BlacklistType.Video.name -> R.drawable.video
                                 else -> R.drawable.text
                             }),
                             contentDescription = null,
@@ -134,13 +159,29 @@ fun BlacklistScreen(navController: NavHostController) {
                             modifier = Modifier
                                 .size(24.dp)
                         )
-                        BasicText(
-                            text = item.path,
-                            style = typography().s.semiBold.copy(color = if (item.isEnabled) colorPalette().text else colorPalette().textDisabled),
-                            overflow = TextOverflow.Ellipsis,
+                        Column(
+                            verticalArrangement = Arrangement.spacedBy(4.dp),
                             modifier = Modifier
                                 .weight(1f)
-                        )
+                        ) {
+                            BasicText(
+                                text = cleanPrefix(item.name),
+                                style = typography().xs.semiBold.copy(color = if (item.isEnabled) colorPalette().text else colorPalette().textDisabled),
+                                overflow = TextOverflow.Ellipsis,
+                                maxLines = 1,
+                                modifier = Modifier
+                                // .weight(1f)
+                            )
+                            BasicText(
+                                text = item.path,
+                                style = typography().xxxs.semiBold.copy(color = if (item.isEnabled) colorPalette().text else colorPalette().textDisabled),
+                                overflow = TextOverflow.Ellipsis,
+                                maxLines = 2,
+                                modifier = Modifier
+                                // .weight(1f)
+                            )
+                        }
+
                         Image(
                             painter = painterResource(if (item.isEnabled) R.drawable.eye else R.drawable.eye_off),
                             contentDescription = null,

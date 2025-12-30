@@ -62,7 +62,9 @@ import kotlinx.coroutines.delay
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.utils.typography
 import it.fast4x.riplay.utils.LazyListContainer
+import it.fast4x.riplay.utils.asSong
 import it.fast4x.riplay.utils.forcePlay
+import it.fast4x.riplay.utils.insertOrUpdateBlacklist
 
 @ExperimentalTextApi
 @SuppressLint("SuspiciousIndentation")
@@ -179,9 +181,12 @@ fun LocalSongSearch(
                                     menuState.display {
                                         InHistoryMediaItemMenu(
                                             navController = navController,
-                                            song = song,
                                             onDismiss = menuState::hide,
-                                            disableScrollingText = disableScrollingText
+                                            song = song,
+                                            disableScrollingText = disableScrollingText,
+                                            onBlacklist = {
+                                                insertOrUpdateBlacklist(song)
+                                            },
                                         )
                                     }
                                 },

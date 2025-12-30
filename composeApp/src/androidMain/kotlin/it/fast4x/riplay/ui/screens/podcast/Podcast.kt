@@ -742,11 +742,11 @@ fun Podcast(
                                                         menuState.hide()
                                                         //forceRecompose = true
                                                     },
+                                                    mediaItem = song.asMediaItem,
                                                     onInfo = {
                                                         navController.navigate("${NavRoutes.videoOrSongInfo.name}/${song.videoId}")
                                                     },
-                                                    mediaItem = song.asMediaItem,
-                                                    disableScrollingText = disableScrollingText
+                                                    disableScrollingText = disableScrollingText,
                                                 )
                                             };
                                             hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)

@@ -27,7 +27,7 @@ data class Typography(
     val xlxl: TextStyle,
 ) {
     fun copy(color: Color) = Typography(
-        xxxs = xxs.copy(color = color),
+        xxxs = xxxs.copy(color = color),
         xxs = xxs.copy(color = color),
         xs = xs.copy(color = color),
         s = s.copy(color = color),

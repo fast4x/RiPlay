@@ -1138,11 +1138,11 @@ fun PlaylistSongList(
                                                         menuState.hide()
                                                         //forceRecompose = true
                                                     },
+                                                    mediaItem = song.asMediaItem,
                                                     onInfo = {
                                                         navController.navigate("${NavRoutes.videoOrSongInfo.name}/${song.key}")
                                                     },
-                                                    mediaItem = song.asMediaItem,
-                                                    disableScrollingText = disableScrollingText
+                                                    disableScrollingText = disableScrollingText,
                                                 )
                                             };
                                             hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)

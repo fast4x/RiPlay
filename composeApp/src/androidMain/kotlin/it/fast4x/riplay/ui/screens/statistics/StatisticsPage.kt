@@ -378,11 +378,11 @@ fun StatisticsPage(
                                         menuState.display {
                                             NonQueuedMediaItemMenu(
                                                 navController = navController,
-                                                mediaItem = songs.get(it).asMediaItem,
                                                 onDismiss = {
                                                     menuState.hide()
                                                     //forceRecompose = true
                                                 },
+                                                mediaItem = songs.get(it).asMediaItem,
                                                 onInfo = {
                                                     navController.navigate(
                                                         "${NavRoutes.videoOrSongInfo.name}/${
@@ -392,7 +392,7 @@ fun StatisticsPage(
                                                         }"
                                                     )
                                                 },
-                                                disableScrollingText = disableScrollingText
+                                                disableScrollingText = disableScrollingText,
                                             )
                                         }
                                     },

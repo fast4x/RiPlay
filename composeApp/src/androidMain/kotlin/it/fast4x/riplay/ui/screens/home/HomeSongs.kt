@@ -197,7 +197,7 @@ import it.fast4x.riplay.utils.formatAsDuration
 import org.dailyislam.android.utilities.isNetworkConnected
 import it.fast4x.riplay.extensions.preferences.showDislikedPlaylistKey
 import it.fast4x.riplay.ui.components.themed.StringListDialog
-import it.fast4x.riplay.ui.screens.settings.StringListValueSelectorSettingsEntry
+import it.fast4x.riplay.utils.insertOrUpdateBlacklist
 import it.fast4x.riplay.utils.isAtLeastAndroid10
 import java.io.File
 
@@ -1260,7 +1260,7 @@ fun HomeSongs(
                                         onExport = {
                                             isExporting = true
                                         },
-                                        disableScrollingText = disableScrollingText
+                                        disableScrollingText = disableScrollingText,
                                     )
                                 }
                             },
@@ -1617,11 +1617,11 @@ fun HomeSongs(
                                             menuState.display {
                                                 InHistoryMediaItemMenu(
                                                     navController = navController,
-                                                    song = song.song,
                                                     onDismiss = {
                                                         //forceRecompose = true
                                                         menuState.hide()
                                                     },
+                                                    song = song.song,
                                                     onInfo = {
                                                         navController.navigate("${NavRoutes.videoOrSongInfo.name}/${song.song.id}")
                                                     },
@@ -1631,7 +1631,10 @@ fun HomeSongs(
                                                             listMediaItems.clear()
                                                         }
                                                     },
-                                                    disableScrollingText = disableScrollingText
+                                                    disableScrollingText = disableScrollingText,
+                                                    onBlacklist = {
+                                                        insertOrUpdateBlacklist(song.song)
+                                                    },
                                                 )
                                             }
                                             hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
@@ -1838,6 +1841,9 @@ fun HomeSongs(
                                                 onHideFromDatabase = { isHiding = true },
                                                 onDeleteFromDatabase = { isDeleting = true },
                                                 disableScrollingText = disableScrollingText,
+                                                onBlacklist = {
+                                                    insertOrUpdateBlacklist(song.song)
+                                                },
                                             )
                                         }
                                         hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)

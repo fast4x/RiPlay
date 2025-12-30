@@ -6,6 +6,7 @@ import it.fast4x.riplay.data.models.Album
 import it.fast4x.riplay.data.models.Artist
 import it.fast4x.riplay.data.models.Blacklist
 import it.fast4x.riplay.data.models.PlaylistPreview
+import it.fast4x.riplay.data.models.Song
 import it.fast4x.riplay.enums.BlacklistType
 import it.fast4x.riplay.enums.PlaylistType
 import it.fast4x.riplay.enums.PopupType
@@ -25,14 +26,17 @@ fun insertOrUpdateBlacklist(
 
     val path = when (playlistType) {
         PlaylistType.OnDevicePlaylist -> preview.folder.toString()
-        else -> preview.playlist.name
+        else -> preview.playlist.id.toString()
     }
+
+    val name = preview.playlist.name
 
     CoroutineScope(Dispatchers.IO).launch {
         Database.upsert(
             Blacklist(
                 id = Database.blacklist(type, path),
                 type = type,
+                name = name,
                 path = path
             )
         )
@@ -44,14 +48,17 @@ fun insertOrUpdateBlacklist(
     album: Album
 ) {
     val type = BlacklistType.Album.name
-    val path = album.title
+    val name = album.title.toString()
+    val path = album.id
+
 
     CoroutineScope(Dispatchers.IO).launch {
-        path?.let {
+        path.let {
             Database.upsert(
                 Blacklist(
                     id = Database.blacklist(type, it),
                     type = type,
+                    name = name,
                     path = it
                 )
             )
@@ -64,18 +71,43 @@ fun insertOrUpdateBlacklist(
     artist: Artist
 ) {
     val type = BlacklistType.Artist.name
-    val path = artist.name
+    val name = artist.name.toString()
+    val path = artist.id
+
 
     CoroutineScope(Dispatchers.IO).launch {
-        path?.let {
+        path.let {
             Database.upsert(
                 Blacklist(
                     id = Database.blacklist(type, it),
                     type = type,
+                    name = name,
                     path = it
                 )
             )
             SmartMessage(appContext().getString(R.string.blacklisted, artist.name), context = appContext())
+        }
+    }
+}
+
+fun insertOrUpdateBlacklist(
+    song: Song
+) {
+    val type = if (song.isVideo) BlacklistType.Video.name else BlacklistType.Song.name
+    val name = song.title
+    val path = song.id
+
+    CoroutineScope(Dispatchers.IO).launch {
+        path.let {
+            Database.upsert(
+                Blacklist(
+                    id = Database.blacklist(type, it),
+                    type = type,
+                    name = name,
+                    path = it
+                )
+            )
+            SmartMessage(appContext().getString(R.string.blacklisted, song.title), context = appContext())
         }
     }
 }

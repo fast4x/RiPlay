@@ -251,7 +251,7 @@ fun OnlineSearch(
                                                         navController = navController,
                                                         onDismiss = menuState::hide,
                                                         mediaItem = mediaItem,
-                                                        disableScrollingText = disableScrollingText
+                                                        disableScrollingText = disableScrollingText,
                                                     )
                                                 };
                                                 hapticFeedback.performHapticFeedback(

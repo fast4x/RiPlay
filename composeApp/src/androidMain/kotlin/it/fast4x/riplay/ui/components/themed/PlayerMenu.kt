@@ -32,6 +32,8 @@ import it.fast4x.riplay.extensions.preferences.menuStyleKey
 import it.fast4x.riplay.utils.rememberEqualizerLauncher
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.service.PlayerService
+import it.fast4x.riplay.utils.asSong
+import it.fast4x.riplay.utils.insertOrUpdateBlacklist
 import it.fast4x.riplay.utils.removeYTSongFromPlaylist
 import it.fast4x.riplay.utils.seamlessPlay
 import kotlinx.coroutines.CoroutineScope
@@ -114,14 +116,14 @@ fun PlayerMenu(
     if (menuStyle == MenuStyle.Grid) {
         BaseMediaItemGridMenu(
             navController = navController,
-            mediaItem = mediaItem,
             onDismiss = onDismiss,
+            mediaItem = mediaItem,
+            onGoToEqualizer = launchEqualizer,
             onStartRadio = {
                 binder.stopRadio()
                 binder.player.seamlessPlay(mediaItem)
                 binder.setupRadio(NavigationEndpoint.Endpoint.Watch(videoId = mediaItem.mediaId))
             },
-            onGoToEqualizer = launchEqualizer,
             /*
             onGoToEqualizer = {
                 try {
@@ -140,21 +142,22 @@ fun PlayerMenu(
             onHideFromDatabase = { isHiding = true },
             onClosePlayer = onClosePlayer,
             onInfo = onInfo,
-            disableScrollingText = disableScrollingText
+            disableScrollingText = disableScrollingText,
         )
     } else {
         BaseMediaItemMenu(
             navController = navController,
+            onDismiss = onDismiss,
             mediaItem = mediaItem,
+            onGoToEqualizer = launchEqualizer,
+            onShowSleepTimer = {},
             onStartRadio = {
                 binder.stopRadio()
                 binder.player.seamlessPlay(mediaItem)
                 binder.setupRadio(NavigationEndpoint.Endpoint.Watch(videoId = mediaItem.mediaId))
             },
-            onGoToEqualizer = launchEqualizer,
-            onShowSleepTimer = {},
             onHideFromDatabase = { isHiding = true },
-            onDismiss = onDismiss,
+            onClosePlayer = onClosePlayer,
             onAddToPreferites = {
                 if (!isNetworkConnected(globalContext()) && isSyncEnabled()){
                     SmartMessage(globalContext().resources.getString(R.string.no_connection), context = globalContext(), type = PopupType.Error)
@@ -172,11 +175,13 @@ fun PlayerMenu(
                     }
                 }
             },
-            onClosePlayer = onClosePlayer,
             onMatchingSong = onMatchingSong,
             onInfo = onInfo,
             onSelectUnselect = onSelectUnselect,
-            disableScrollingText = disableScrollingText
+            disableScrollingText = disableScrollingText,
+            onBlacklist = {
+                insertOrUpdateBlacklist(mediaItem.asSong)
+            },
         )
     }
 

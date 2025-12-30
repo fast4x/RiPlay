@@ -235,7 +235,7 @@ fun ArtistLocalSongs(
                                                     navController = navController,
                                                     onDismiss = menuState::hide,
                                                     mediaItem = song.asMediaItem,
-                                                    disableScrollingText = disableScrollingText
+                                                    disableScrollingText = disableScrollingText,
                                                 )
                                             }
                                         },

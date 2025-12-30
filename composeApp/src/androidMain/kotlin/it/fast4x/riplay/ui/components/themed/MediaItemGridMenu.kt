@@ -28,7 +28,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -116,15 +115,17 @@ fun NonQueuedMediaItemGridMenu(
     onRemoveFromPlaylist: (() -> Unit)? = null,
     onHideFromDatabase: (() -> Unit)? = null,
     onRemoveFromQuickPicks: (() -> Unit)? = null,
-    disableScrollingText: Boolean
+    disableScrollingText: Boolean,
+    onBlacklist: (() -> Unit)? = null
 ) {
     val binder = LocalPlayerServiceBinder.current
     val context = LocalContext.current
     val selectedQueue = LocalSelectedQueue.current
     BaseMediaItemGridMenu(
         navController = navController,
-        mediaItem = mediaItem,
         onDismiss = onDismiss,
+        mediaItem = mediaItem,
+        modifier = modifier,
         onStartRadio = {
             binder?.stopRadio()
             binder?.player?.forcePlay(mediaItem)
@@ -141,8 +142,8 @@ fun NonQueuedMediaItemGridMenu(
         onRemoveFromPlaylist = onRemoveFromPlaylist,
         onHideFromDatabase = onHideFromDatabase,
         onRemoveFromQuickPicks = onRemoveFromQuickPicks,
-        modifier = modifier,
-        disableScrollingText = disableScrollingText
+        disableScrollingText = disableScrollingText,
+        onBlacklist = onBlacklist
     )
 }
 
@@ -168,7 +169,8 @@ fun BaseMediaItemGridMenu(
     onMatchingSong: (() -> Unit)? = null,
     onInfo: (() -> Unit)? = null,
     onSelectUnselect: (() -> Unit)? = null,
-    disableScrollingText: Boolean
+    disableScrollingText: Boolean,
+    onBlacklist: (() -> Unit)? = null,
 ) {
     //val context = LocalContext.current
 
@@ -238,7 +240,8 @@ fun BaseMediaItemGridMenu(
         onInfo = onInfo,
         onSelectUnselect = onSelectUnselect,
         modifier = modifier,
-        disableScrollingText = disableScrollingText
+        disableScrollingText = disableScrollingText,
+        onBlacklist = onBlacklist
     )
 }
 
@@ -255,8 +258,10 @@ fun MiniMediaItemGridMenu(
 
     MediaItemGridMenu(
         navController = navController,
-        mediaItem = mediaItem,
         onDismiss = onDismiss,
+        mediaItem = mediaItem,
+        modifier = modifier,
+        onAddToPreferites = onAddToPreferites,
         onAddToPlaylist = { playlist, position ->
             if (!isSyncEnabled() || !playlist.isYoutubePlaylist){
                 Database.asyncTransaction {
@@ -283,9 +288,7 @@ fun MiniMediaItemGridMenu(
                 onGoToPlaylist(it)
             }
         },
-        onAddToPreferites = onAddToPreferites,
-        modifier = modifier,
-        disableScrollingText = disableScrollingText
+        disableScrollingText = disableScrollingText,
     )
 }
 
@@ -315,7 +318,8 @@ fun MediaItemGridMenu (
     onGoToPlaylist: ((Long) -> Unit)?,
     onInfo: (() -> Unit)? = null,
     onSelectUnselect: (() -> Unit)? = null,
-    disableScrollingText: Boolean
+    disableScrollingText: Boolean,
+    onBlacklist: (() -> Unit)? = null,
 ) {
     val binder = LocalPlayerServiceBinder.current
     val uriHandler = LocalUriHandler.current
@@ -1159,6 +1163,18 @@ fun MediaItemGridMenu (
                     )
                 }
 
+                onBlacklist?.let {
+                    GridMenuItem(
+                        icon = R.drawable.alert_circle,
+                        title = R.string.add_to_blacklist,
+                        colorIcon = colorPalette.text,
+                        colorText = colorPalette.text,
+                        onClick = {
+                            onDismiss()
+                            onBlacklist()
+                        }
+                    )
+                }
 
             }
 

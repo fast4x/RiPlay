@@ -422,11 +422,11 @@ fun OnDeviceArtistDetails(
                                                     menuState.hide()
                                                     //forceRecompose = true
                                                 },
+                                                mediaItem = item.asMediaItem,
                                                 onInfo = {
                                                     navController.navigate("${NavRoutes.videoOrSongInfo.name}/${item.id}")
                                                 },
-                                                mediaItem = item.asMediaItem,
-                                                disableScrollingText = disableScrollingText
+                                                disableScrollingText = disableScrollingText,
                                             )
                                         };
                                         hapticFeedback.performHapticFeedback(

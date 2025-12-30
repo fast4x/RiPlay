@@ -334,9 +334,9 @@ fun SearchOnlineEntity (
                                                 menuState.display {
                                                     NonQueuedMediaItemMenu(
                                                         navController = rememberNavController(),
-                                                        mediaItem = media.asMediaItem,
                                                         onDismiss = menuState::hide,
-                                                        disableScrollingText = disableScrollingText
+                                                        mediaItem = media.asMediaItem,
+                                                        disableScrollingText = disableScrollingText,
                                                     )
                                                 };
                                                 hapticFeedback.performHapticFeedback(
@@ -370,9 +370,9 @@ fun SearchOnlineEntity (
                                                 menuState.display {
                                                     NonQueuedMediaItemMenu(
                                                         navController = rememberNavController(),
-                                                        mediaItem = media.asMediaItem,
                                                         onDismiss = menuState::hide,
-                                                        disableScrollingText = disableScrollingText
+                                                        mediaItem = media.asMediaItem,
+                                                        disableScrollingText = disableScrollingText,
                                                     )
                                                 };
                                                 hapticFeedback.performHapticFeedback(

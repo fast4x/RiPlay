@@ -95,6 +95,10 @@ interface Database {
 
     //**********************************************
     @Transaction
+    @Query("SELECT * FROM Blacklist WHERE type = :type")
+    fun blacklists(type: String): Flow<List<Blacklist>>
+
+    @Transaction
     @Query("SELECT * FROM Blacklist")
     fun blacklists(): Flow<List<Blacklist>>
 
@@ -3142,7 +3146,7 @@ interface Database {
     views = [
         SortedSongPlaylistMap::class
     ],
-    version = 40,
+    version = 41,
     exportSchema = true,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
@@ -3175,6 +3179,7 @@ interface Database {
         AutoMigration(from = 37, to = 38),
         AutoMigration(from = 38, to = 39),
         AutoMigration(from = 39, to = 40),
+        //AutoMigration(from = 40, to = 41),
     ],
 )
 @TypeConverters(Converters::class)
@@ -3198,6 +3203,7 @@ abstract class DatabaseInitializer protected constructor() : RoomDatabase() {
                 From26To27Migration(),
                 From31To32Migration(),
                 From38To39Migration(),
+                From40To41Migration(),
             )
             .build()
 
@@ -3424,6 +3430,17 @@ abstract class DatabaseInitializer protected constructor() : RoomDatabase() {
                 db.execSQL("ALTER TABLE Song ADD COLUMN folder TEXT;")
             } catch (e: Exception) {
                 println("Database From38To39Migration error ${e.stackTraceToString()}")
+            }
+
+        }
+    }
+
+    class From40To41Migration : Migration(40, 41) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            try {
+                db.execSQL("ALTER TABLE Blacklist ADD COLUMN name TEXT NOT NULL;")
+            } catch (e: Exception) {
+                println("Database From40To41Migration error ${e.stackTraceToString()}")
             }
 
         }
