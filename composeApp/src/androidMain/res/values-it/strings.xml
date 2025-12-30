@@ -915,7 +915,7 @@
     <string name="viewType">Cambia tipo di visualizzazione</string>
     <string name="copy_translated_lyrics">Copia lyrics tradotte</string>
     <string name="description">Descrizione</string>
-    <string name="numbers">Numeri</string>
+    <string name="numbers">Risultati</string>
     <string name="subscribers">Iscritti</string>
     <string name="views">Visualizzazioni</string>
     <string name="likes">Mi piace</string>
@@ -1024,11 +1024,11 @@
     <string name="rw_playlists_listened_to">Playlist ascoltate in %1$d</string>
     <string name="rw_let_s_analyze">Analizziamo</string>
     <string name="rw_your_history">"la tua STORIA"</string>
-    <string name="rw_ready_for">pronto per</string>
+    <string name="rw_ready_for">sono pronti per</string>
     <string name="rw_your_results">i tuoi risultati</string>
     <string name="rw_let_s_start">Iniziamo!</string>
-    <string name="rw_your_numbers">i tuoi NUMERI</string>
-    <string name="rw_your_music_story">la tua storia musicale</string>
+    <string name="rw_your_numbers">I tuoi RISULTATI</string>
+    <string name="rw_your_music_story">il tuo viaggio musicale</string>
     <string name="rw_now">Ora</string>
     <string name="rw_your_top">i tuoi TOP</string>
     <string name="rw_your_music_preferences">le tue preferenze musicali</string>
