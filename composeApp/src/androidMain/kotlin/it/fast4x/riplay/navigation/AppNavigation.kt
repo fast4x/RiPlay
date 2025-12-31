@@ -49,7 +49,7 @@ import it.fast4x.riplay.enums.ThumbnailRoundness
 import it.fast4x.riplay.enums.TransitionEffect
 import it.fast4x.riplay.data.models.Mood
 import it.fast4x.riplay.data.models.SearchQuery
-import it.fast4x.riplay.extensions.blacklist.BlacklistScreen
+import it.fast4x.riplay.ui.screens.blacklist.BlacklistScreen
 import it.fast4x.riplay.extensions.listenerlevel.ListenerLevelCharts
 import it.fast4x.riplay.ui.components.CustomModalBottomSheet
 import it.fast4x.riplay.ui.screens.album.AlbumScreen
@@ -420,7 +420,7 @@ fun AppNavigation(
 
         composable(route = NavRoutes.blacklist.name) {
             modalBottomSheetPage {
-                BlacklistScreen(navController)
+                BlacklistScreen(navController, miniPlayer)
             }
         }
 

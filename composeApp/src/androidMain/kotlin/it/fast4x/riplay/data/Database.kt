@@ -3146,7 +3146,7 @@ interface Database {
     views = [
         SortedSongPlaylistMap::class
     ],
-    version = 41,
+    version = 42,
     exportSchema = true,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
@@ -3179,7 +3179,8 @@ interface Database {
         AutoMigration(from = 37, to = 38),
         AutoMigration(from = 38, to = 39),
         AutoMigration(from = 39, to = 40),
-        //AutoMigration(from = 40, to = 41),
+        AutoMigration(from = 40, to = 41),
+        AutoMigration(from = 41, to = 42),
     ],
 )
 @TypeConverters(Converters::class)
@@ -3438,7 +3439,7 @@ abstract class DatabaseInitializer protected constructor() : RoomDatabase() {
     class From40To41Migration : Migration(40, 41) {
         override fun migrate(db: SupportSQLiteDatabase) {
             try {
-                db.execSQL("ALTER TABLE Blacklist ADD COLUMN name TEXT NOT NULL;")
+                db.execSQL("ALTER TABLE Blacklist ADD COLUMN name TEXT;")
             } catch (e: Exception) {
                 println("Database From40To41Migration error ${e.stackTraceToString()}")
             }

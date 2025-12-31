@@ -47,6 +47,13 @@ private fun HamburgerMenu(
         modifier = Modifier.background( colorPalette().background0.copy(0.90f) ),
         onDismissRequest = onDismissRequest
     )
+    // Blacklist button
+    menu.add(
+        DropdownMenu.Item(
+            R.drawable.alert_circle,
+            R.string.blacklist,
+        ) { onItemClick( NavRoutes.blacklist ) }
+    )
     // History button
     menu.add(
         DropdownMenu.Item(

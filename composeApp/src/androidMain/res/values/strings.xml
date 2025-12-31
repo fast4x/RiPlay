@@ -1169,4 +1169,5 @@
     <string name="rw_artistlevel_undefined_desc_nothing_to_see_here">Nothing to see here</string>
     <string name="add_to_blacklist">Add to blacklist</string>
     <string name="blacklisted">%1$s Blacklisted</string>
+    <string name="blacklist">Blacklist</string>
 </resources>

@@ -1,4 +1,4 @@
-package it.fast4x.riplay.extensions.blacklist
+package it.fast4x.riplay.ui.screens.blacklist
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -6,14 +6,10 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
-import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
@@ -23,9 +19,7 @@ import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -35,16 +29,13 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
-import androidx.navigation.NavHostController
+import androidx.navigation.NavController
 import it.fast4x.riplay.R
 import it.fast4x.riplay.commonutils.cleanPrefix
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.data.models.Blacklist
 import it.fast4x.riplay.enums.BlacklistType
-import it.fast4x.riplay.enums.PlaylistType
 import it.fast4x.riplay.ui.components.ButtonsRow
 import it.fast4x.riplay.ui.components.themed.ConfirmationDialog
 import it.fast4x.riplay.ui.components.themed.DefaultDialog
@@ -59,10 +50,9 @@ import it.fast4x.riplay.utils.typography
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.serialization.builtins.PairSerializer
 
 @Composable
-fun BlacklistScreen(navController: NavHostController) {
+fun BlacklistScreen_old(navController: NavController) {
     var showStringAddDialog by remember {
         mutableStateOf(false)
     }
@@ -165,7 +155,7 @@ fun BlacklistScreen(navController: NavHostController) {
                                 .weight(1f)
                         ) {
                             BasicText(
-                                text = cleanPrefix(item.name),
+                                text = cleanPrefix(item.name.toString()),
                                 style = typography().xs.semiBold.copy(color = if (item.isEnabled) colorPalette().text else colorPalette().textDisabled),
                                 overflow = TextOverflow.Ellipsis,
                                 maxLines = 1,
