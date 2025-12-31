@@ -575,7 +575,7 @@ fun ShowVideoOrSongInfo(
 
     LaunchedEffect(Unit, videoId) {
         info = EnvironmentExt.getVideOrSongInfo(videoId).getOrNull()
-        //println("ShowVideoOrSongInfo: ${info?.description}")
+        Timber.d("ShowVideoOrSongInfo: ${info?.authorThumbnail}")
     }
 
     //if (info == null) return

@@ -211,15 +211,6 @@ fun HomeAlbums(
 
     val viewType = viewTypeToolbutton(R.string.viewType)
 
-    val blacklistButton = ToolbarMenuButton.init(
-        iconId = R.drawable.alert_circle,
-        titleId = R.string.blacklisted_folders,
-        onClick = {
-            menuState.hide()
-            navController.navigate(NavRoutes.blacklist.name)
-        }
-    )
-
     var refreshing by remember { mutableStateOf(false) }
     val refreshScope = rememberCoroutineScope()
 
@@ -261,7 +252,7 @@ fun HomeAlbums(
                 }
 
                 // Sticky tab's tool bar
-                TabToolBar.Buttons( sort, sync, search, randomizer, shuffle, itemSize, viewType, blacklistButton )
+                TabToolBar.Buttons( sort, sync, search, randomizer, shuffle, itemSize, viewType )
 
                 Row(
                     horizontalArrangement = Arrangement.SpaceBetween,

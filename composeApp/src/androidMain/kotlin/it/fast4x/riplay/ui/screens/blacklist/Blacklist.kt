@@ -86,9 +86,11 @@ import it.fast4x.riplay.extensions.preferences.historyTypeKey
 import it.fast4x.riplay.ui.components.tab.TabHeader
 import it.fast4x.riplay.ui.components.themed.ConfirmationDialog
 import it.fast4x.riplay.ui.components.themed.HeaderInfo
+import it.fast4x.riplay.ui.items.BlacklistItem
 import it.fast4x.riplay.ui.styling.semiBold
 import it.fast4x.riplay.utils.LazyListContainer
 import it.fast4x.riplay.utils.appContext
+import it.fast4x.riplay.utils.asBoolean
 import it.fast4x.riplay.utils.forcePlay
 import it.fast4x.riplay.utils.typography
 import kotlinx.coroutines.CoroutineScope
@@ -185,75 +187,31 @@ fun Blacklist(
                         items = list,
                         key = Blacklist::id
                     ) { item ->
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(12.dp),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 12.dp),
-                        ) {
-                            Image(
-                                painter = painterResource(when(item.type) {
-                                    BlacklistType.Folder.name -> R.drawable.folder
-                                    BlacklistType.Artist.name -> R.drawable.artist
-                                    BlacklistType.Album.name -> R.drawable.album
-                                    BlacklistType.Song.name -> R.drawable.musical_note
-                                    BlacklistType.Playlist.name -> R.drawable.music_library
-                                    BlacklistType.Video.name -> R.drawable.video
-                                    else -> R.drawable.text
-                                }),
-                                contentDescription = null,
-                                colorFilter = ColorFilter.tint(if (item.isEnabled) colorPalette().text else colorPalette().textDisabled),
-                                modifier = Modifier
-                                    .size(24.dp)
-                            )
-                            Column(
-                                verticalArrangement = Arrangement.spacedBy(4.dp),
-                                modifier = Modifier
-                                    .weight(1f)
-                            ) {
-                                BasicText(
-                                    text = cleanPrefix(item.name ?: stringResource(R.string.unknown_title)),
-                                    style = typography().xs.semiBold.copy(color = if (item.isEnabled) colorPalette().text else colorPalette().textDisabled),
-                                    overflow = TextOverflow.Ellipsis,
-                                    maxLines = 1,
-                                    modifier = Modifier
-                                )
-                                BasicText(
-                                    text = item.path,
-                                    style = typography().xxxs.semiBold.copy(color = if (item.isEnabled) colorPalette().text else colorPalette().textDisabled),
-                                    overflow = TextOverflow.Ellipsis,
-                                    maxLines = 2,
-                                    modifier = Modifier
-                                )
+                        BlacklistItem(
+                            blacklistedItem = item,
+                            enabled = item.enabled.asBoolean,
+                            onEnable = {
+                                CoroutineScope(Dispatchers.IO).launch {
+                                    Database.update(item.toggleEnabled())
+                                }
+                            },
+                            onRemove = {
+                                currentBlacklist = item
+                                showStringRemoveDialog = true
+                            },
+                            onClick = {
+                                val destination =  when (item.type) {
+                                    BlacklistType.Song.name, BlacklistType.Video.name -> "${NavRoutes.videoOrSongInfo.name}/${item.path}"
+                                    BlacklistType.Album.name -> "${NavRoutes.album.name}/${item.path}"
+                                    BlacklistType.Artist.name -> "${NavRoutes.artist.name}/${item.path}"
+                                    BlacklistType.Playlist.name -> "${NavRoutes.localPlaylist.name}/${item.path}"
+                                    else -> null
+                                }
+                                if (destination != null) {
+                                    navController.navigate(destination)
+                                }
                             }
-
-                            Image(
-                                painter = painterResource(if (item.isEnabled) R.drawable.eye else R.drawable.eye_off),
-                                contentDescription = null,
-                                colorFilter = ColorFilter.tint(if (item.isEnabled) colorPalette().text else colorPalette().textDisabled),
-                                modifier = Modifier
-                                    .size(24.dp)
-                                    .clickable {
-                                        CoroutineScope(Dispatchers.IO).launch {
-                                            Database.update(item.toggleEnabled())
-                                        }
-                                    }
-                            )
-                            Image(
-                                painter = painterResource(R.drawable.trash),
-                                contentDescription = null,
-                                colorFilter = ColorFilter.tint(colorPalette().red),
-                                modifier = Modifier
-                                    .size(24.dp)
-                                    .clickable {
-                                        currentBlacklist = item
-                                        showStringRemoveDialog = true
-                                    }
-                            )
-
-                        }
-
+                        )
                     }
                 }
             }

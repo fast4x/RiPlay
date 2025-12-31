@@ -124,15 +124,6 @@ fun HomeArtists(
 
     val itemSize = ItemSize.init( HOME_ARTIST_ITEM_SIZE )
 
-    val blacklistButton = ToolbarMenuButton.init(
-        iconId = R.drawable.alert_circle,
-        titleId = R.string.blacklisted_folders,
-        onClick = {
-            menuState.hide()
-            navController.navigate(NavRoutes.blacklist.name)
-        }
-    )
-
     val randomizer = object: Randomizer<Artist> {
         override fun getItems(): List<Artist> = itemsOnDisplay
         override fun onClick(index: Int) = onArtistClick(itemsOnDisplay[index])
@@ -258,7 +249,7 @@ fun HomeArtists(
                 }
 
                 // Sticky tab's tool bar
-                TabToolBar.Buttons( sort, sync, search, randomizer, shuffle, itemSize, viewType, blacklistButton )
+                TabToolBar.Buttons( sort, sync, search, randomizer, shuffle, itemSize, viewType )
 
                 Row(
                     horizontalArrangement = Arrangement.SpaceBetween,

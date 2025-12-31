@@ -42,13 +42,7 @@ inline fun ItemContainer(
                 .padding(vertical = Dimensions.itemsVerticalPadding, horizontal = 16.dp)
                 .fillMaxWidth()
         ) {
-            content(
-                /*
-                KOTLIN 2
-                centeredMod = Modifier
-                    .align(Alignment.CenterVertically)
-                 */
-            )
+            content()
         }
     }
 }

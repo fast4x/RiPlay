@@ -83,6 +83,7 @@ import it.fast4x.riplay.utils.asSong
 import it.fast4x.riplay.utils.asVideoMediaItem
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.utils.forcePlay
+import it.fast4x.riplay.utils.insertOrUpdateBlacklist
 import it.fast4x.riplay.utils.typography
 import timber.log.Timber
 
@@ -252,6 +253,9 @@ fun HomeSectionPart(
                                                     navController.navigate("${NavRoutes.videoOrSongInfo.name}/${song.id}")
                                                 },
                                                 disableScrollingText = disableScrollingText,
+                                                onBlacklist = {
+                                                    insertOrUpdateBlacklist(song)
+                                                },
                                             )
                                         }
                                         hapticFeedback.performHapticFeedback(
@@ -316,6 +320,9 @@ fun HomeSectionPart(
                                                     navController.navigate("${NavRoutes.videoOrSongInfo.name}/${song.key}")
                                                 },
                                                 disableScrollingText = disableScrollingText,
+                                                onBlacklist = {
+                                                    insertOrUpdateBlacklist(song.asSong)
+                                                },
                                             )
                                         }
                                         hapticFeedback.performHapticFeedback(
@@ -496,6 +503,7 @@ fun HomeSectionPart(
     }
 }
 
+@OptIn(UnstableApi::class)
 @Composable
 fun MoodAndGenresPart(
     homePageInit: HomePage?,
@@ -834,6 +842,7 @@ fun MoodAndGenresPart(
     }
 }
 
+@OptIn(UnstableApi::class)
 @Composable
 fun ForYouPart(
     homePageInit: HomePage?,

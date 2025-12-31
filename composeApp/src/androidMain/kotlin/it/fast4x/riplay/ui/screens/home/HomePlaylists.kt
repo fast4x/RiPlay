@@ -322,16 +322,6 @@ fun HomePlaylists(
 
     val onDeviceViewModel = LocalOnDeviceViewModel.current
 
-    val blacklistButton = ToolbarMenuButton.init(
-        iconId = R.drawable.alert_circle,
-        titleId = R.string.blacklisted_folders,
-        onClick = {
-            menuState.hide()
-            navController.navigate(NavRoutes.blacklist.name)
-        }
-    )
-
-
     LaunchedEffect( sort.sortBy, sort.sortOrder, playlistType ) {
         if (playlistType == PlaylistType.OnDevicePlaylist) {
             onDeviceViewModel.audioFoldersAsPlaylists().collect { folders ->
@@ -423,8 +413,7 @@ fun HomePlaylists(
 
                 // Sticky tab's tool bar
                 val buttons = mutableListOf(
-                    sort, sync, search, shuffle, newPlaylistDialog, importPlaylistDialog, itemSize, viewType, blacklistButton)
-                    //.apply { if (playlistType == PlaylistType.OnDevicePlaylist) add(blacklistButton) }
+                    sort, sync, search, shuffle, newPlaylistDialog, importPlaylistDialog, itemSize, viewType)
                 TabToolBar.Buttons(buttons)
 
                 // Sticky search bar

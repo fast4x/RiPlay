@@ -9,7 +9,7 @@ import it.fast4x.riplay.data.models.PlaylistPreview
 import it.fast4x.riplay.data.models.Song
 import it.fast4x.riplay.enums.BlacklistType
 import it.fast4x.riplay.enums.PlaylistType
-import it.fast4x.riplay.enums.PopupType
+import it.fast4x.riplay.extensions.ondevice.Folder
 import it.fast4x.riplay.ui.components.themed.SmartMessage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -40,7 +40,7 @@ fun insertOrUpdateBlacklist(
                 path = path
             )
         )
-        SmartMessage(appContext().getString(R.string.blacklisted, preview.playlist.name), context = appContext())
+        SmartMessage(appContext().getString(R.string.blacklisted, name), context = appContext())
     }
 }
 
@@ -62,7 +62,7 @@ fun insertOrUpdateBlacklist(
                     path = it
                 )
             )
-            SmartMessage(appContext().getString(R.string.blacklisted, album.title), context = appContext())
+            SmartMessage(appContext().getString(R.string.blacklisted, name), context = appContext())
         }
     }
 }
@@ -85,7 +85,7 @@ fun insertOrUpdateBlacklist(
                     path = it
                 )
             )
-            SmartMessage(appContext().getString(R.string.blacklisted, artist.name), context = appContext())
+            SmartMessage(appContext().getString(R.string.blacklisted, name), context = appContext())
         }
     }
 }
@@ -107,7 +107,29 @@ fun insertOrUpdateBlacklist(
                     path = it
                 )
             )
-            SmartMessage(appContext().getString(R.string.blacklisted, song.title), context = appContext())
+            SmartMessage(appContext().getString(R.string.blacklisted, name), context = appContext())
+        }
+    }
+}
+
+fun insertOrUpdateBlacklist(
+    folder: Folder
+) {
+    val type = BlacklistType.Folder.name
+    val name = folder.name
+    val path = folder.fullPath
+
+    CoroutineScope(Dispatchers.IO).launch {
+        path.let {
+            Database.upsert(
+                Blacklist(
+                    id = Database.blacklist(type, it),
+                    type = type,
+                    name = name,
+                    path = it
+                )
+            )
+            SmartMessage(appContext().getString(R.string.blacklisted, name), context = appContext())
         }
     }
 }

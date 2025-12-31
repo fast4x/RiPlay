@@ -1102,15 +1102,6 @@ fun HomeSongs(
 
                         if (BuiltInPlaylist.OnDevice == builtInPlaylist) {
                             HeaderIconButton(
-                                icon = R.drawable.alert_circle,
-                                color = colorPalette().text,
-                                onClick = {},
-                                modifier = Modifier.combinedClickable(
-                                    onClick = { showBlacklistedFolfers = true },
-                                    onLongClick = { SmartMessage(context.resources.getString(R.string.blacklisted_folders), context = context) }
-                                )
-                            )
-                            HeaderIconButton(
                                 icon = if (showFolders) R.drawable.list_view else R.drawable.grid_view,
                                 color = colorPalette().text,
                                 onClick = {},
@@ -1495,21 +1486,7 @@ fun HomeSongs(
                                                             )
                                                         },
                                                         onBlacklist = {
-                                                            blackListedPaths = blackListedPaths +
-                                                                    if (folder.fullPath.startsWith("/"))
-                                                                        folder.fullPath.substringAfter(
-                                                                            "/"
-                                                                        ) else folder.fullPath
-                                                            val file = File(
-                                                                context.filesDir,
-                                                                blackListedPathsFilename
-                                                            )
-                                                            file.writeText(
-                                                                blackListedPaths.joinToString(
-                                                                    "\n"
-                                                                )
-                                                            )
-                                                            onDeviceViewModel.loadAudioFiles()
+                                                            insertOrUpdateBlacklist(folder)
                                                         },
                                                         thumbnailSizeDp = thumbnailSizeDp,
                                                         disableScrollingText = disableScrollingText

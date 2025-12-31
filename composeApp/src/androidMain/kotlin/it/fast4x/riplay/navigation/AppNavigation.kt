@@ -419,9 +419,9 @@ fun AppNavigation(
         }
 
         composable(route = NavRoutes.blacklist.name) {
-            modalBottomSheetPage {
+            //modalBottomSheetPage {
                 BlacklistScreen(navController, miniPlayer)
-            }
+            //}
         }
 
         /*

@@ -1238,3 +1238,6 @@ fun isCompositionLaunched(): Boolean {
     }
     return isLaunched
 }
+
+inline val Int.asBoolean: Boolean
+    get() = this == 1
