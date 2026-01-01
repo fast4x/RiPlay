@@ -154,6 +154,7 @@ import it.fast4x.riplay.data.models.Queues
 import it.fast4x.riplay.data.models.defaultQueue
 import it.fast4x.riplay.data.models.defaultQueueId
 import it.fast4x.riplay.enums.BlacklistType
+import it.fast4x.riplay.extensions.preferences.excludeSongIfIsVideoKey
 import it.fast4x.riplay.ui.components.themed.EditQueueDialog
 import it.fast4x.riplay.ui.components.themed.QueueItemMenu
 import it.fast4x.riplay.ui.components.themed.Title
@@ -163,6 +164,7 @@ import it.fast4x.riplay.ui.screens.player.local.LocalMiniPlayer
 import it.fast4x.riplay.ui.screens.player.online.OnlineMiniPlayer
 import it.fast4x.riplay.ui.styling.secondary
 import it.fast4x.riplay.utils.getScreenDimensions
+import it.fast4x.riplay.utils.isVideo
 import it.fast4x.riplay.utils.move
 import kotlinx.coroutines.withContext
 
@@ -200,6 +202,7 @@ fun Queue(
 
 
     var queueLoopType by rememberPreference(queueLoopTypeKey, defaultValue = QueueLoopType.Default)
+    var excludeSongsIfAreVideos by rememberPreference(excludeSongIfIsVideoKey, false)
 
     val menuState = LocalGlobalSheetState.current
 
@@ -217,7 +220,6 @@ fun Queue(
     var windows by remember {
         mutableStateOf(
             binderPlayer.currentTimeline.windows
-                //.filter {item -> blacklisted.value?.map { it.path }?.contains(item.mediaItem.mediaId) == false }
         )
     }
     var windowsFiltered by remember {
@@ -711,7 +713,9 @@ fun Queue(
 
 
         items(
-            items = windowsInQueue.filter {item -> blacklisted.value?.map { it.path }?.contains(item.mediaItem.mediaId) == false },
+            items = windowsInQueue
+                .filter { item -> blacklisted.value?.map { it.path }?.contains(item.mediaItem.mediaId) == false }
+                .filter { item -> item.mediaItem.isVideo == !excludeSongsIfAreVideos },
             key =  { window -> window.uid.toString() }
         ) { window ->
             ReorderableItem(
