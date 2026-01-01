@@ -102,7 +102,7 @@ fun OtherSettings() {
 
     var defaultFolder by rememberPreference(defaultFolderKey, "/")
 
-    var isKeepScreenOnEnabled by rememberPreference(isKeepScreenOnEnabledKey, false)
+    //var isKeepScreenOnEnabled by rememberPreference(isKeepScreenOnEnabledKey, false)
 
     var checkUpdateState by rememberPreference(checkUpdateStateKey, CheckUpdateState.Disabled)
 
@@ -111,21 +111,21 @@ fun OtherSettings() {
         NavigationBarPosition.Bottom
     )
 
-    var showFolders by rememberPreference(showFoldersOnDeviceKey, true)
+    //var showFolders by rememberPreference(showFoldersOnDeviceKey, true)
 
-    var blackListedPaths by remember {
-        val file = File(context.filesDir, "Blacklisted_paths.txt")
-        if (file.exists()) {
-            mutableStateOf(file.readLines())
-        } else {
-            mutableStateOf(emptyList())
-        }
-    }
+//    var blackListedPaths by remember {
+//        val file = File(context.filesDir, "Blacklisted_paths.txt")
+//        if (file.exists()) {
+//            mutableStateOf(file.readLines())
+//        } else {
+//            mutableStateOf(emptyList())
+//        }
+//    }
 
-    var parentalControlEnabled by rememberPreference(parentalControlEnabledKey, false)
+    //var parentalControlEnabled by rememberPreference(parentalControlEnabledKey, false)
     var logDebugEnabled by rememberPreference(logDebugEnabledKey, false)
 
-    var extraspace by rememberPreference(extraspaceKey, false)
+    //var extraspace by rememberPreference(extraspaceKey, false)
 
     var fileName by remember {
         mutableStateOf("")
@@ -283,6 +283,7 @@ fun OtherSettings() {
                 }
             }
 
+            /*
             settingsItem(
                 isHeader = true
             ) {
@@ -334,6 +335,8 @@ fun OtherSettings() {
                 }
 
             }
+
+
 
             settingsItem(
                 isHeader = true
@@ -459,25 +462,25 @@ fun OtherSettings() {
 //            }
 //        }
             }
+*/
 
-
-            settingsItem(
-                isHeader = true
-            ) {
-                SettingsGroupSpacer()
-                SettingsEntryGroupText(title = stringResource(R.string.parental_control))
-            }
-
-            settingsItem {
-                SwitchSettingEntry(
-                    online = false,
-                    offline = false,
-                    title = stringResource(R.string.parental_control),
-                    text = stringResource(R.string.info_prevent_play_songs_with_age_limitation),
-                    isChecked = parentalControlEnabled,
-                    onCheckedChange = { parentalControlEnabled = it }
-                )
-            }
+//            settingsItem(
+//                isHeader = true
+//            ) {
+//                SettingsGroupSpacer()
+//                SettingsEntryGroupText(title = stringResource(R.string.parental_control))
+//            }
+//
+//            settingsItem {
+//                SwitchSettingEntry(
+//                    online = false,
+//                    offline = false,
+//                    title = stringResource(R.string.parental_control),
+//                    text = stringResource(R.string.info_prevent_play_songs_with_age_limitation),
+//                    isChecked = parentalControlEnabled,
+//                    onCheckedChange = { parentalControlEnabled = it }
+//                )
+//            }
 
 
             settingsItem(

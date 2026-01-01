@@ -183,6 +183,10 @@ import it.fast4x.riplay.utils.saveMasterQueue
 import it.fast4x.riplay.utils.seamlessQueue
 import it.fast4x.riplay.commonutils.setLikeState
 import it.fast4x.riplay.extensions.preferences.checkVolumeLevelKey
+import it.fast4x.riplay.extensions.preferences.excludeSongIfIsVideoKey
+import it.fast4x.riplay.extensions.preferences.parentalControlEnabledKey
+import it.fast4x.riplay.utils.isExplicit
+import it.fast4x.riplay.utils.isVideo
 import it.fast4x.riplay.utils.setQueueLoopState
 import it.fast4x.riplay.utils.toggleRepeatMode
 import kotlinx.coroutines.CoroutineScope
@@ -205,6 +209,7 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
@@ -338,6 +343,10 @@ class PlayerService : Service(),
     private var minTimeForEvent: MinTimeForEvent = MinTimeForEvent.`20s`
 
     private var lastMediaIdInHistory: String = ""
+
+    var excludeIfIsVideoEnabled by mutableStateOf(false)
+
+    var parentalControlEnabled by mutableStateOf(false)
 
     //private var checkVolumeLevel: Boolean = true
 
@@ -1112,6 +1121,28 @@ class PlayerService : Service(),
         Timber.d("PlayerService onMediaItemTransition mediaItem ${mediaItem.mediaId} reason $reason")
 
         currentQueuePosition = player.currentMediaItemIndex
+
+        if (parentalControlEnabled && mediaItem.isExplicit) {
+            handleSkipToNext()
+            SmartMessage(resources.getString(R.string.error_message_parental_control_restricted), context = this@PlayerService)
+            return
+        }
+
+        if (excludeIfIsVideoEnabled && mediaItem.isVideo) {
+            handleSkipToNext()
+            SmartMessage("Skipped video", context = this@PlayerService)
+            return
+        }
+
+        var blacklisted by mutableStateOf(false)
+        runBlocking(Dispatchers.IO) {
+            blacklisted = Database.blacklisted(mediaItem.mediaId) > 0
+        }
+        if (blacklisted) {
+            handleSkipToNext()
+            SmartMessage("Skipped blacklisted song", context = this@PlayerService)
+            return
+        }
 
         mediaItem.let {
             currentMediaItemState.value = it
@@ -1896,6 +1927,12 @@ class PlayerService : Service(),
             }
             skipSilenceKey -> {
                 player.skipSilenceEnabled = sharedPreferences.getBoolean(key, false)
+            }
+            excludeSongIfIsVideoKey -> {
+                excludeIfIsVideoEnabled = sharedPreferences.getBoolean(key, false)
+            }
+            parentalControlEnabledKey -> {
+                parentalControlEnabled = sharedPreferences.getBoolean(key, false)
             }
             queueLoopTypeKey -> {
                 player.repeatMode =

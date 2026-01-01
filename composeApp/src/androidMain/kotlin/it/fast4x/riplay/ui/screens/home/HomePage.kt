@@ -25,6 +25,7 @@ import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -33,13 +34,11 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.util.UnstableApi
-import androidx.media3.exoplayer.offline.Download
 import androidx.navigation.NavController
 import it.fast4x.environment.Environment
 import it.fast4x.environment.EnvironmentExt
@@ -59,9 +58,9 @@ import it.fast4x.riplay.enums.UiType
 import it.fast4x.riplay.data.models.Artist
 import it.fast4x.riplay.data.models.PlaylistPreview
 import it.fast4x.riplay.data.models.Song
+import it.fast4x.riplay.enums.BlacklistType
 import it.fast4x.riplay.enums.HomeSection
 import it.fast4x.riplay.enums.HomeType
-import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.ui.components.LocalGlobalSheetState
 import it.fast4x.riplay.ui.components.PullToRefreshBox
 import it.fast4x.riplay.ui.components.themed.HeaderWithIcon
@@ -106,8 +105,6 @@ import it.fast4x.riplay.ui.screens.home.sections.ForYouPart
 import it.fast4x.riplay.ui.screens.home.sections.HomeSectionPart
 import it.fast4x.riplay.ui.screens.home.sections.MoodAndGenresPart
 import timber.log.Timber
-import kotlin.time.Duration
-import kotlin.time.Duration.Companion.days
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -134,53 +131,31 @@ fun HomePage(
     val windowInsets = LocalPlayerAwareWindowInsets.current
     var playEventType by rememberPreference(playEventsTypeKey, PlayEventsType.MostPlayed)
 
-    //var trending by persist<Song?>("home/trending")
     var trending by remember { mutableStateOf<Song?>(null) }
-    //val trendingInit by persist<Song?>(tag = "home/trending")
     val trendingInit by remember { mutableStateOf<Song?>(null) }
     var trendingPreference by rememberPreference(quickPicsTrendingSongKey, trendingInit)
 
-    //var relatedPageResult by persist<Result<Environment.RelatedPage?>?>(tag = "home/relatedPageResult")
     var relatedPageResult by remember { mutableStateOf<Result<Environment.RelatedPage?>?>(null) }
-    //var relatedInit by persist<Environment.RelatedPage?>(tag = "home/relatedPage")
     var relatedInit by remember { mutableStateOf<Environment.RelatedPage?>(null) }
     var relatedPreference by rememberPreference(quickPicsRelatedPageKey, relatedInit)
 
-    //var discoverPageResult by persist<Result<Environment.DiscoverPage?>>("home/discoveryAlbums")
     var discoverPageResult by remember { mutableStateOf<Result<Environment.DiscoverPage?>?>(null) }
-    //var discoverPageInit by persist<Environment.DiscoverPage>("home/discoveryAlbums")
     var discoverPageInit by remember { mutableStateOf<Environment.DiscoverPage?>(null) }
     var discoverPagePreference by rememberPreference(quickPicsDiscoverPageKey, discoverPageInit)
 
-    //var homePageResult by persist<Result<HomePage?>>("home/homePage")
     var homePageResult by remember { mutableStateOf<Result<HomePage?>?>(null) }
-    //var homePageInit by persist<HomePage?>("home/homePage")
     var homePageInit by remember { mutableStateOf<HomePage?>(null) }
     var homePagePreference by rememberPreference(quickPicsHomePageKey, homePageInit)
 
-    //var chartsPageResult by persist<Result<Environment.ChartsPage?>>("home/chartsPage")
     var chartsPageResult by remember { mutableStateOf<Result<Environment.ChartsPage?>?>(null) }
-    //var chartsPageInit by persist<Environment.ChartsPage>("home/chartsPage")
     var chartsPageInit by remember { mutableStateOf<Environment.ChartsPage?>(null) }
-//    var chartsPagePreference by rememberPreference(quickPicsChartsPageKey, chartsPageInit)
 
-
-
-    //var preferitesArtists by persistList<Artist>("home/artists")
     var preferitesArtists by remember { mutableStateOf<List<Artist>>(emptyList()) }
 
-    //var localMonthlyPlaylists by persistList<PlaylistPreview>("home/monthlyPlaylists")
     var localMonthlyPlaylists by remember { mutableStateOf<List<PlaylistPreview>>(emptyList()) }
     LaunchedEffect(Unit) {
         Database.monthlyPlaylistsPreview("").collect { localMonthlyPlaylists = it }
     }
-
-    var downloadState by remember {
-        mutableStateOf(Download.STATE_STOPPED)
-    }
-
-    val context = LocalContext.current
-
 
     val showRelatedAlbums by rememberPreference(showRelatedAlbumsKey, true)
     val showSimilarArtists by rememberPreference(showSimilarArtistsKey, true)
@@ -196,20 +171,19 @@ fun HomePage(
     val showCharts by rememberPreference(showChartsKey, true)
     val showListenerLevels by rememberPreference(showListenerLevelsKey, true)
     val refreshScope = rememberCoroutineScope()
-    val now = System.currentTimeMillis()
-    val last50Year: Duration = 18250.days
-    val from = last50Year.inWholeMilliseconds
 
     var selectedCountryCode by rememberPreference(selectedCountryCodeKey, Countries.ZZ)
 
     val parentalControlEnabled by rememberPreference(parentalControlEnabledKey, false)
 
-    //var loadedData by rememberSaveable { mutableStateOf(false) }
+    val blacklisted = remember {
+        Database.blacklisted(listOf(BlacklistType.Song.name, BlacklistType.Video.name))
+    }.collectAsState(initial = null, context = Dispatchers.IO)
+
     var loadedData by rememberPreference(loadedDataKey, false)
 
     suspend fun loadData() {
 
-        //Used to refresh chart when country change
         if (showCharts)
             chartsPageResult =
                 Environment.chartsPageComplete(countryCode = selectedCountryCode.name)
@@ -220,10 +194,11 @@ fun HomePage(
             refreshScope.launch(Dispatchers.IO) {
                 when (playEventType) {
                     PlayEventsType.MostPlayed ->
-                        //Database.songsMostPlayedByPeriod(from, now, 1).distinctUntilChanged()
-                        Database.trending(1).distinctUntilChanged()
+                        Database.trending(3).distinctUntilChanged()
                             .collect { songs ->
-                                val song = songs.firstOrNull()
+                                val song = songs.firstOrNull { item ->
+                                    blacklisted.value?.map { it.path }?.contains(item.id) == false
+                                }
                                 val songId = if (song?.isLocal == true) song.mediaId else song?.id
                                 if (relatedPageResult == null || trending?.id != song?.id || trending?.mediaId != song?.id) {
                                     relatedPageResult = Environment.relatedPage(
@@ -236,11 +211,12 @@ fun HomePage(
                             }
 
                     PlayEventsType.LastPlayed, PlayEventsType.CasualPlayed -> {
-                        val numSongs = if (playEventType == PlayEventsType.LastPlayed) 1 else 50
+                        val numSongs = if (playEventType == PlayEventsType.LastPlayed) 3 else 50
                         Database.lastPlayed(numSongs).distinctUntilChanged().collect { songs ->
-                            val song =
-                                if (playEventType == PlayEventsType.LastPlayed) songs.firstOrNull()
-                                else songs.shuffled().firstOrNull()
+                            val song = (if (playEventType == PlayEventsType.LastPlayed) songs
+                                else songs.shuffled()).firstOrNull { item ->
+                                blacklisted.value?.map { it.path }?.contains(item.id) == false
+                            }
                             val songId = if (song?.isLocal == true) song.mediaId else song?.id
                             Timber.d("HomePage Last played song $song relatedPageResult $relatedPageResult songId $songId")
                             if (relatedPageResult == null || trending?.id != song?.id || trending?.mediaId != song?.id) {
@@ -264,15 +240,11 @@ fun HomePage(
 
             if (isLoggedIn()) {
                 homePageResult = EnvironmentExt.getHomePage()
-                //todo implement chips
-                //Timber.d("Homepage ${homePageResult?.getOrNull()?.chips?.map { it.title }}")
             }
 
         }.onFailure {
-            //Timber.e("Failed loadData  ${it.stackTraceToString()}")
             loadedData = false
         }.onSuccess {
-            //Timber.d("Success loadData ")
             loadedData = true
         }
     }
@@ -328,15 +300,6 @@ fun HomePage(
         .padding(endPaddingValues)
 
     val showSearchTab by rememberPreference(showSearchTabKey, false)
-
-//    val cachedSongs = remember {
-//        try {
-//            binder?.cache?.keys?.toMutableList()
-//        } catch (e: Exception) {
-//            null
-//        }
-//    }
-
 
     val hapticFeedback = LocalHapticFeedback.current
 
@@ -468,13 +431,7 @@ fun HomePage(
                     horizontalArrangement = Arrangement.SpaceBetween,
                 ) {
                     WelcomeMessage()
-                    // Demo to new queue project
-//                    IconButton(
-//                        modifier = Modifier.size(24.dp),
-//                        icon = R.drawable.volume_up,
-//                        onClick = {navController.navigate(NavRoutes.controller.name)},
-//                        color = colorPalette().accent,
-//                    )
+
                     IconButton(
                         modifier = Modifier.size(24.dp),
                         icon = when (homeType) {
@@ -541,7 +498,8 @@ fun HomePage(
             showSimilarArtists = showSimilarArtists,
             artistThumbnailSizeDp = artistThumbnailSizeDp,
             artistThumbnailSizePx = artistThumbnailSizePx,
-            showPlaylistMightLike = showPlaylistMightLike
+            showPlaylistMightLike = showPlaylistMightLike,
+            blacklisted = blacklisted
         )
     }
 
@@ -581,7 +539,8 @@ fun HomePage(
             binder = binder,
             itemWidth = itemWidth,
             chartsPageArtistLazyGridState = chartsPageArtistLazyGridState,
-            onArtistClick = onArtistClick
+            onArtistClick = onArtistClick,
+            blacklisted = blacklisted
         )
     }
 
@@ -604,7 +563,8 @@ fun HomePage(
                         artistThumbnailSizePx = artistThumbnailSizePx,
                         playlistThumbnailSizeDp = playlistThumbnailSizeDp,
                         playlistThumbnailSizePx = playlistThumbnailSizePx,
-                        relatedPageResult = relatedPageResult,
+                        blacklisted = blacklisted,
+                        //relatedPageResult = relatedPageResult,
                     )
                 }
 // END SECTION FOR YOU

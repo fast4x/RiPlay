@@ -120,7 +120,6 @@ fun AccountsSettings() {
     Column(
         modifier = Modifier
             .background(colorPalette().background0)
-            //.fillMaxSize()
             .fillMaxHeight()
             .fillMaxWidth(
                 if (NavigationBarPosition.Right.isCurrent())
@@ -172,9 +171,6 @@ fun AccountsSettings() {
             onCheckedChange = {
                 isYouTubeLoginEnabled = it
                 if (!it) {
-//                    visitorData = ""
-//                    dataSyncId = ""
-//                    cookie = ""
                     accountName = ""
                     accountChannelHandle = ""
                     accountEmail = ""
@@ -186,7 +182,6 @@ fun AccountsSettings() {
             Column(
                 modifier = Modifier.padding(start = 12.dp)
             ) {
-                //if (isAtLeastAndroid7) {
 
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -210,20 +205,17 @@ fun AccountsSettings() {
                                 title = if (isLoggedIn) stringResource(R.string.disconnect) else stringResource(
                                     R.string.connect
                                 ),
-                                text = "", //if (isLoggedIn) "$accountName ${accountChannelHandle}" else "",
+                                text = "",
                                 icon = R.drawable.internet,
                                 iconColor = colorPalette().text,
                                 onClick = {
-                                    if (isLoggedIn) { // if logged in, disconnect and clean data
+                                    if (isLoggedIn) {
                                         cookie = ""
                                         accountName = ""
                                         accountChannelHandle = ""
                                         accountEmail = ""
                                         accountThumbnail = ""
-                                        //visitorData = ""
-                                        //dataSyncId = ""
                                         loginYouTube = false
-                                        //Delete cookies after logout
                                         val cookieManager = CookieManager.getInstance()
                                         cookieManager.removeAllCookies(null)
                                         cookieManager.flush()
@@ -236,7 +228,7 @@ fun AccountsSettings() {
                             ButtonBarSettingEntry(
                                 isEnabled = true,
                                 title = stringResource(R.string.account_info),
-                                text = "", //if (isLoggedIn) "$accountName ${accountChannelHandle}" else "",
+                                text = "",
                                 icon = R.drawable.person,
                                 iconColor = colorPalette().text,
                                 onClick = {
@@ -403,14 +395,6 @@ fun AccountsSettings() {
                     },
                     shape = thumbnailRoundness.shape()
                 ) {
-//                    DiscordLoginAndGetTokenOLD(
-//                        rememberNavController(),
-//                        onGetToken = { token ->
-//                            loginDiscord = false
-//                            discordPersonalAccessToken = token
-//                            SmartMessage(token, type = PopupType.Info, context = context)
-//                        }
-//                    )
                     DiscordLoginAndGetToken(
                         navController = rememberNavController(),
                         onGetToken = { token, username, avatar ->
@@ -496,7 +480,8 @@ fun AccountsSettings() {
                             BasicText(
                                 text = stringResource(
                                     R.string.api_queries_count,
-                                    statState?.queriesCount.toString()
+                                    statState?.queriesCount ?: "0"
+
                                 ),
                                 style = typography().xxs.semiBold.copy(color = colorPalette().textSecondary),
                             )
@@ -504,7 +489,7 @@ fun AccountsSettings() {
                             BasicText(
                                 text = stringResource(
                                     R.string.music_identifier_free_identification_seconds_remaining,
-                                    statState?.identificationFreeSecRemainder.toString()
+                                    statState?.identificationFreeSecRemainder ?: "0"
                                 ),
                                 style = typography().xxs.semiBold.copy(color = colorPalette().textSecondary),
                             )

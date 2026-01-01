@@ -25,6 +25,7 @@ import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -49,6 +50,7 @@ import it.fast4x.riplay.R
 import it.fast4x.riplay.commonutils.EXPLICIT_PREFIX
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.data.models.Artist
+import it.fast4x.riplay.data.models.Blacklist
 import it.fast4x.riplay.data.models.PlaylistPreview
 import it.fast4x.riplay.data.models.Song
 import it.fast4x.riplay.enums.Countries
@@ -124,9 +126,26 @@ fun HomeSectionPart(
     artistThumbnailSizeDp: Dp,
     artistThumbnailSizePx: Int,
     showPlaylistMightLike: Boolean,
+    blacklisted: State<List<Blacklist>?>,
+) {
 
-
-    ) {
+    val relatedInit by remember(relatedInit) { mutableStateOf(
+        relatedInit?.copy(
+                songs = relatedInit.songs?.filter { item ->
+                    blacklisted.value?.map { it.path }?.contains(item.key) == false
+                },
+                artists = relatedInit.artists?.filter { item ->
+                    blacklisted.value?.map { it.path }?.contains(item.key) == false
+                },
+                playlists = relatedInit.playlists?.filter { item ->
+                    blacklisted.value?.map { it.path }?.contains(item.key) == false
+                },
+                albums = relatedInit.albums?.filter { item ->
+                    blacklisted.value?.map { it.path }?.contains(item.key) == false
+                }
+            )
+        )
+    }
 
     Column(
         modifier = Modifier.fillMaxSize(),
@@ -330,7 +349,7 @@ fun HomeSectionPart(
                                         )
                                     },
                                     onClick = {
-                                        println("HomePage Clicked on song")
+                                        Timber.d("HomePage Clicked on song")
                                         val mediaItem = if (song.isAudioOnly)
                                             song.asMediaItem
                                         else
@@ -534,8 +553,46 @@ fun MoodAndGenresPart(
     binder: PlayerService.Binder?,
     itemWidth: Dp,
     chartsPageArtistLazyGridState: LazyGridState,
-    onArtistClick: (String) -> Unit
+    onArtistClick: (String) -> Unit,
+    blacklisted: State<List<Blacklist>?>
 ) {
+
+    val discoverPageInit by remember(discoverPageInit) {
+        mutableStateOf(
+            discoverPageInit?.copy(
+                newReleaseAlbums = discoverPageInit.newReleaseAlbums.filter { item ->
+                    blacklisted.value?.map { it.path }?.contains(item.key) == false
+                },
+            )
+        )
+    }
+
+    val localMonthlyPlaylists by remember(localMonthlyPlaylists) { mutableStateOf(
+        localMonthlyPlaylists.filter { item ->
+                blacklisted.value?.map { it.path }?.contains(item.playlist.id.toString()) == false
+            }
+        )
+    }
+
+    val chartsPageInit by remember(chartsPageInit) { mutableStateOf(
+        chartsPageInit?.copy(
+            playlists = chartsPageInit.playlists?.filter { item ->
+                blacklisted.value?.map { it.path }?.contains(item.key) == false
+            },
+            songs = chartsPageInit.songs?.filter { item ->
+                blacklisted.value?.map { it.path }?.contains(item.key) == false
+            },
+            artists = chartsPageInit.artists?.filter { item ->
+                blacklisted.value?.map { it.path }?.contains(item.key) == false
+            },
+            videos = chartsPageInit.videos?.filter { item ->
+                blacklisted.value?.map { it.path }?.contains(item.key) == false
+            },
+            trending = chartsPageInit.trending?.filter { item ->
+                blacklisted.value?.map { it.path }?.contains(item.key) == false
+            }
+        )
+    ) }
 
     Column(
         modifier = Modifier.fillMaxSize(),
@@ -856,7 +913,8 @@ fun ForYouPart(
     artistThumbnailSizePx: Int,
     playlistThumbnailSizeDp: Dp,
     playlistThumbnailSizePx: Int,
-    relatedPageResult: Result<Environment.RelatedPage?>?
+    blacklisted: State<List<Blacklist>?>,
+    //relatedPageResult: Result<Environment.RelatedPage?>?
 ) {
 
     Column(
@@ -881,10 +939,10 @@ fun ForYouPart(
                         .padding(vertical = 4.dp)
                 )
                 LazyRow(contentPadding = endPaddingValues) {
-                    items(it.items) { item ->
+                    items(it.items.filter {item -> blacklisted.value?.map { it.path }?.contains(item?.key) == false }) { item ->
                         when (item) {
                             is Environment.SongItem -> {
-                                println("Innertube homePage SongItem: ${item.info?.name}")
+                                Timber.d("Environment homePage SongItem: ${item.info?.name}")
                                 SongItem(
                                     song = item,
                                     thumbnailSizePx = albumThumbnailSizePx,
@@ -899,7 +957,7 @@ fun ForYouPart(
                             }
 
                             is Environment.AlbumItem -> {
-                                println("Innertube homePage AlbumItem: ${item.info?.name}")
+                                Timber.d("Environment homePage AlbumItem: ${item.info?.name}")
                                 AlbumItem(
                                     album = item,
                                     alternative = true,
@@ -914,7 +972,7 @@ fun ForYouPart(
                             }
 
                             is Environment.ArtistItem -> {
-                                println("Innertube homePage ArtistItem: ${item.info?.name}")
+                                Timber.d("Environment homePage ArtistItem: ${item.info?.name}")
                                 ArtistItem(
                                     artist = item,
                                     thumbnailSizePx = artistThumbnailSizePx,
@@ -927,7 +985,7 @@ fun ForYouPart(
                             }
 
                             is Environment.PlaylistItem -> {
-                                println("Innertube homePage PlaylistItem: ${item.info?.name}")
+                                Timber.d("Environment homePage PlaylistItem: ${item.info?.name}")
                                 PlaylistItem(
                                     playlist = item,
                                     alternative = true,
@@ -941,7 +999,7 @@ fun ForYouPart(
                             }
 
                             is Environment.VideoItem -> {
-                                println("Innertube homePage VideoItem: ${item.info?.name}")
+                                Timber.d("Environment homePage VideoItem: ${item.info?.name}")
                                 VideoItem(
                                     video = item,
                                     thumbnailHeightDp = playlistThumbnailSizeDp,
@@ -1016,15 +1074,15 @@ fun ForYouPart(
 
         //} ?:
 
-        relatedPageResult?.exceptionOrNull()?.let {
-            BasicText(
-                text = stringResource(R.string.page_not_been_loaded),
-                style = typography().s.secondary.center,
-                modifier = Modifier
-                    .align(Alignment.CenterHorizontally)
-                    .padding(all = 16.dp)
-            )
-        }
+//        relatedPageResult?.exceptionOrNull()?.let {
+//            BasicText(
+//                text = stringResource(R.string.page_not_been_loaded),
+//                style = typography().s.secondary.center,
+//                modifier = Modifier
+//                    .align(Alignment.CenterHorizontally)
+//                    .padding(all = 16.dp)
+//            )
+//        }
 
         /*
             if (related == null)

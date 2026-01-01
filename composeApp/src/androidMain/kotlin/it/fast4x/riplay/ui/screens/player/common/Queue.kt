@@ -164,6 +164,7 @@ import it.fast4x.riplay.ui.screens.player.local.LocalMiniPlayer
 import it.fast4x.riplay.ui.screens.player.online.OnlineMiniPlayer
 import it.fast4x.riplay.ui.styling.secondary
 import it.fast4x.riplay.utils.getScreenDimensions
+import it.fast4x.riplay.utils.insertOrUpdateBlacklist
 import it.fast4x.riplay.utils.isVideo
 import it.fast4x.riplay.utils.move
 import kotlinx.coroutines.withContext
@@ -552,59 +553,57 @@ fun Queue(
                 )
 
                 if (showQueues)
-                LazyColumn(
-                    state = rememberLazyListState(),
-                    contentPadding = windowInsets
-                        .only(WindowInsetsSides.Horizontal)
-                        .asPaddingValues(),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier
-                        .height(heightQueues.value)
-                        .background(colorPalette().background0)
-                ) {
+                    LazyColumn(
+                        state = rememberLazyListState(),
+                        contentPadding = windowInsets
+                            .only(WindowInsetsSides.Horizontal)
+                            .asPaddingValues(),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier
+                            .height(heightQueues.value)
+                            .background(colorPalette().background0)
+                    ) {
 
-                        items(
-                            items = queueslist,
-                            key = { it.id }
-                        ) {
-                            QueueItem(
-                                title = it.title.toString(),
-                                isSelected = it.isSelected == true,
-                                acceptSong = it.acceptSong,
-                                acceptVideo = it.acceptVideo,
-                                acceptPodcast = it.acceptPodcast,
-                                onClick = {
-                                    CoroutineScope(Dispatchers.IO).launch {
-                                        Database.toggleSelectQueue(it)
-                                    }
-                                    println("Queue selected")
-                                },
-                                onLongClick = {
-                                    menuState.display {
-                                        QueueItemMenu(
-                                            navController = navController,
-                                            onDismiss = { menuState.hide() },
-                                            onEdit = {
-                                                queueToEdit = it
-                                                editQueue = true
-                                                addQueue = false
-                                                println("Queue selected for editing")
-                                            },
-                                            onRemove = {
-                                                CoroutineScope(Dispatchers.IO).launch {
-                                                    Database.asyncTransaction {
-                                                        deleteQueue(it.id)
+                            items(
+                                items = queueslist,
+                                key = { it.id }
+                            ) {
+                                QueueItem(
+                                    title = it.title.toString(),
+                                    isSelected = it.isSelected == true,
+                                    acceptSong = it.acceptSong,
+                                    acceptVideo = it.acceptVideo,
+                                    acceptPodcast = it.acceptPodcast,
+                                    onClick = {
+                                        CoroutineScope(Dispatchers.IO).launch {
+                                            Database.toggleSelectQueue(it)
+                                        }
+                                    },
+                                    onLongClick = {
+                                        menuState.display {
+                                            QueueItemMenu(
+                                                navController = navController,
+                                                onDismiss = { menuState.hide() },
+                                                onEdit = {
+                                                    queueToEdit = it
+                                                    editQueue = true
+                                                    addQueue = false
+                                                },
+                                                onRemove = {
+                                                    CoroutineScope(Dispatchers.IO).launch {
+                                                        Database.asyncTransaction {
+                                                            deleteQueue(it.id)
+                                                        }
                                                     }
                                                 }
-                                            }
-                                        )
+                                            )
 
+                                        }
                                     }
-                                }
-                            )
-                        }
+                                )
+                            }
 
-                }
+                    }
 
                 Row(
                     horizontalArrangement = Arrangement.Start,
@@ -728,12 +727,8 @@ fun Queue(
                 val currentItem by rememberUpdatedState(window)
                 val checkedState = rememberSaveable { mutableStateOf(false) }
 
-                //var deltaX by remember { mutableStateOf(0f) }
                 val isPlayingThisMediaItem =
                     mediaItemIndex == window.firstPeriodIndex
-                //val currentItem by rememberUpdatedState(window)
-                //val isLocal by remember { derivedStateOf { window.mediaItem.isLocal } }
-                //var forceRecompose by remember { mutableStateOf(false) }
 
                 Box(
                     modifier = Modifier
@@ -863,7 +858,10 @@ fun Queue(
                                                     updateWindowsList = !updateWindowsList
                                                 },
                                                 onInfo = {},
-                                                disableScrollingText = disableScrollingText
+                                                disableScrollingText = disableScrollingText,
+                                                onBlacklist = {
+                                                    insertOrUpdateBlacklist(window.mediaItem.asSong)
+                                                }
                                             )
                                         }
                                         hapticFeedback.performHapticFeedback(

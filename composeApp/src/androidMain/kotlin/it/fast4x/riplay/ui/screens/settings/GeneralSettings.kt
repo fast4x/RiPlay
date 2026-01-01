@@ -146,6 +146,7 @@ import it.fast4x.riplay.extensions.preferences.closePlayerServiceWhenPausedAfter
 import it.fast4x.riplay.extensions.preferences.enableVoiceInputKey
 import it.fast4x.riplay.extensions.preferences.excludeSongIfIsVideoKey
 import it.fast4x.riplay.extensions.preferences.filterContentTypeKey
+import it.fast4x.riplay.extensions.preferences.parentalControlEnabledKey
 import it.fast4x.riplay.extensions.preferences.resumeOrPausePlaybackWhenDeviceKey
 import it.fast4x.riplay.extensions.preferences.showFavoritesPlaylistsAAKey
 import it.fast4x.riplay.extensions.preferences.showGridAAKey
@@ -318,7 +319,8 @@ fun GeneralSettings(
         true
     )
 
-    var checkVolumeLevel by rememberPreference(checkVolumeLevelKey, true)
+    //var checkVolumeLevel by rememberPreference(checkVolumeLevelKey, true)
+    var parentalControlEnabled by rememberPreference(parentalControlEnabledKey, false)
 
 
     Column(
@@ -1261,6 +1263,20 @@ fun GeneralSettings(
                         }
 
                     }
+
+                    if (search.input.isBlank() || stringResource(R.string.parental_control).contains(
+                            search.input,
+                            true
+                        )
+                    )
+                        SwitchSettingEntry(
+                            online = false,
+                            offline = false,
+                            title = stringResource(R.string.parental_control),
+                            text = stringResource(R.string.info_prevent_play_songs_with_age_limitation),
+                            isChecked = parentalControlEnabled,
+                            onCheckedChange = { parentalControlEnabled = it }
+                        )
 
                     if (search.input.isBlank() || stringResource(R.string.loudness_normalization).contains(
                             search.input,
