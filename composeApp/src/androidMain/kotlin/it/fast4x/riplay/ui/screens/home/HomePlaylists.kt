@@ -26,6 +26,7 @@ import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -347,13 +348,20 @@ fun HomePlaylists(
         } else
             Database.playlistPreviews(sort.sortBy, sort.sortOrder).collect { items = it }
     }
+
+    val blacklisted = remember {
+        Database.blacklisted(listOf(BlacklistType.Playlist.name))
+    }.collectAsState(initial = null, context = Dispatchers.IO)
+
     LaunchedEffect( items, search.input ) {
         val scrollIndex = lazyGridState.firstVisibleItemIndex
         val scrollOffset = lazyGridState.firstVisibleItemScrollOffset
 
-        itemsOnDisplay = items.filter {
-            it.playlist.name.contains( search.input, true )
-        }
+        itemsOnDisplay = items
+            .filter {
+                it.playlist.name.contains( search.input, true )
+            }
+            .filter {item -> blacklisted.value?.map { it.path }?.contains(item.playlist.id.toString()) == false }
 
         lazyGridState.scrollToItem( scrollIndex, scrollOffset )
     }

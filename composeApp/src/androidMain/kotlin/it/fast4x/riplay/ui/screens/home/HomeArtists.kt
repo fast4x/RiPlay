@@ -27,6 +27,7 @@ import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -49,6 +50,7 @@ import it.fast4x.riplay.enums.NavigationBarPosition
 import it.fast4x.riplay.enums.UiType
 import it.fast4x.riplay.data.models.Artist
 import it.fast4x.riplay.data.models.Song
+import it.fast4x.riplay.enums.BlacklistType
 import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.ui.components.ButtonsRow
 import it.fast4x.riplay.ui.components.themed.FloatingActionsContainerWithScrollToTop
@@ -168,21 +170,20 @@ fun HomeArtists(
         }
     }
 
-//    LaunchedEffect( Unit, itemsToFilter, filterBy ) {
-//        items = when(filterBy) {
-//            FilterBy.All -> itemsToFilter
-//            FilterBy.YoutubeLibrary -> itemsToFilter.filter { it.isYoutubeArtist }
-//            FilterBy.Local -> itemsToFilter.filterNot { it.isYoutubeArtist }
-//        }
-//
-//    }
+
+    val blacklisted = remember {
+        Database.blacklisted(listOf(BlacklistType.Artist.name))
+    }.collectAsState(initial = null, context = Dispatchers.IO)
+
     LaunchedEffect( items, search.input ) {
         val scrollIndex = lazyGridState.firstVisibleItemIndex
         val scrollOffset = lazyGridState.firstVisibleItemScrollOffset
 
-        itemsOnDisplay = items.filter {
-            it.name?.contains( search.input, true ) ?: false
-        }
+        itemsOnDisplay = items
+            .filter {
+                it.name?.contains( search.input, true ) ?: false
+            }
+            .filter {item -> blacklisted.value?.map { it.path }?.contains(item.id) == false }
 
         lazyGridState.scrollToItem( scrollIndex, scrollOffset )
     }

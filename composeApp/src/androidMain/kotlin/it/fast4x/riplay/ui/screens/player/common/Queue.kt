@@ -153,6 +153,7 @@ import java.util.Date
 import it.fast4x.riplay.data.models.Queues
 import it.fast4x.riplay.data.models.defaultQueue
 import it.fast4x.riplay.data.models.defaultQueueId
+import it.fast4x.riplay.enums.BlacklistType
 import it.fast4x.riplay.ui.components.themed.EditQueueDialog
 import it.fast4x.riplay.ui.components.themed.QueueItemMenu
 import it.fast4x.riplay.ui.components.themed.Title
@@ -209,8 +210,15 @@ fun Queue(
         mutableIntStateOf(if (binderPlayer.mediaItemCount == 0) -1 else binderPlayer.currentMediaItemIndex)
     }
 
+    val blacklisted = remember {
+        Database.blacklisted(listOf(BlacklistType.Song.name, BlacklistType.Video.name))
+    }.collectAsState(initial = null, context = Dispatchers.IO)
+
     var windows by remember {
-        mutableStateOf(binderPlayer.currentTimeline.windows)
+        mutableStateOf(
+            binderPlayer.currentTimeline.windows
+                //.filter {item -> blacklisted.value?.map { it.path }?.contains(item.mediaItem.mediaId) == false }
+        )
     }
     var windowsFiltered by remember {
         mutableStateOf(windows)
@@ -703,7 +711,7 @@ fun Queue(
 
 
         items(
-            items = windowsInQueue,
+            items = windowsInQueue.filter {item -> blacklisted.value?.map { it.path }?.contains(item.mediaItem.mediaId) == false },
             key =  { window -> window.uid.toString() }
         ) { window ->
             ReorderableItem(

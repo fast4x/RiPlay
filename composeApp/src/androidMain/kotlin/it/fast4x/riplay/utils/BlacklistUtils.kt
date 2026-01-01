@@ -1,5 +1,8 @@
 package it.fast4x.riplay.utils
 
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.toMutableStateList
 import it.fast4x.riplay.R
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.data.models.Album
@@ -7,6 +10,7 @@ import it.fast4x.riplay.data.models.Artist
 import it.fast4x.riplay.data.models.Blacklist
 import it.fast4x.riplay.data.models.PlaylistPreview
 import it.fast4x.riplay.data.models.Song
+import it.fast4x.riplay.data.models.SongEntity
 import it.fast4x.riplay.enums.BlacklistType
 import it.fast4x.riplay.enums.PlaylistType
 import it.fast4x.riplay.extensions.ondevice.Folder
@@ -14,6 +18,7 @@ import it.fast4x.riplay.ui.components.themed.SmartMessage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 
 fun insertOrUpdateBlacklist(
     playlistType: PlaylistType,
@@ -133,3 +138,4 @@ fun insertOrUpdateBlacklist(
         }
     }
 }
+

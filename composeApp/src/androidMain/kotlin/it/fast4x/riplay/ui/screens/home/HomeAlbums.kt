@@ -24,6 +24,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -77,6 +78,7 @@ import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.enums.ViewType
 import it.fast4x.riplay.utils.getViewType
 import it.fast4x.riplay.data.models.defaultQueue
+import it.fast4x.riplay.enums.BlacklistType
 import it.fast4x.riplay.ui.components.themed.Search
 import it.fast4x.riplay.ui.components.navigation.header.TabToolBar
 import it.fast4x.riplay.ui.components.tab.ItemSize
@@ -101,6 +103,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlin.collections.map
 
 @OptIn(ExperimentalMaterial3Api::class)
 @ExperimentalTextApi
@@ -166,14 +169,11 @@ fun HomeAlbums(
 
         }
     }
-//    LaunchedEffect( Unit, itemsToFilter, filterBy ) {
-//        items = when(filterBy) {
-//            FilterBy.All -> itemsToFilter
-//            FilterBy.YoutubeLibrary -> itemsToFilter.filter { it.isYoutubeAlbum }
-//            FilterBy.Local -> itemsToFilter.filterNot { it.isYoutubeAlbum }
-//        }
-//
-//    }
+
+    val blacklisted = remember {
+        Database.blacklisted(listOf(BlacklistType.Album.name))
+    }.collectAsState(initial = null, context = Dispatchers.IO)
+
     LaunchedEffect( items, search.input ) {
         val scrollIndex = lazyGridState.firstVisibleItemIndex
         val scrollOffset = lazyGridState.firstVisibleItemScrollOffset
@@ -182,7 +182,8 @@ fun HomeAlbums(
             it.title?.contains( search.input, true) ?: false
                     || it.year?.contains( search.input, true) ?: false
                     || it.authorsText?.contains( search.input, true) ?: false
-        }
+            }
+            .filter {item -> blacklisted.value?.map { it.path }?.contains(item.id) == false }
 
         lazyGridState.scrollToItem( scrollIndex, scrollOffset )
     }

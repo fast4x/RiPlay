@@ -11,10 +11,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.OptIn
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.ViewModel
@@ -28,18 +25,18 @@ import androidx.media3.common.Player.REPEAT_MODE_OFF
 import androidx.media3.common.Player.REPEAT_MODE_ONE
 import androidx.media3.common.Timeline
 import androidx.media3.common.util.UnstableApi
-import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.R
 import it.fast4x.riplay.commonutils.durationTextToMillis
-import it.fast4x.riplay.enums.DurationInMinutes
-import it.fast4x.riplay.enums.PopupType
-import it.fast4x.riplay.extensions.preferences.excludeSongsWithDurationLimitKey
-import it.fast4x.riplay.extensions.preferences.getEnum
-import it.fast4x.riplay.extensions.preferences.preferences
+import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.data.models.QueuedMediaItem
 import it.fast4x.riplay.data.models.Queues
 import it.fast4x.riplay.data.models.defaultQueueId
+import it.fast4x.riplay.enums.DurationInMinutes
+import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.extensions.preferences.excludeSongIfIsVideoKey
+import it.fast4x.riplay.extensions.preferences.excludeSongsWithDurationLimitKey
+import it.fast4x.riplay.extensions.preferences.getEnum
+import it.fast4x.riplay.extensions.preferences.preferences
 import it.fast4x.riplay.service.PlayerService
 import it.fast4x.riplay.service.isLocal
 import it.fast4x.riplay.ui.components.themed.SmartMessage
@@ -55,7 +52,6 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 import java.util.ArrayDeque
@@ -147,14 +143,15 @@ fun Player.playAtIndex(mediaItemIndex: Int) {
 @SuppressLint("Range")
 @UnstableApi
 fun Player.forcePlayAtIndex(mediaItems: List<MediaItem>, mediaItemIndex: Int) {
-    if (excludeMediaItems(mediaItems, globalContext()).isEmpty()) return
+    val filteredMediaItems = excludeMediaItems(mediaItems, globalContext())
 
-    setMediaItems(mediaItems.map { it.cleaned }, mediaItemIndex, C.TIME_UNSET)
+    setMediaItems(filteredMediaItems.map { it.cleaned }, mediaItemIndex, C.TIME_UNSET)
 
     restoreGlobalVolume()
     playWhenReady = true
     prepare()
 }
+
 @UnstableApi
 fun Player.forcePlayFromBeginning(mediaItems: List<MediaItem>) =
     forcePlayAtIndex(mediaItems, 0)
@@ -275,18 +272,18 @@ fun Player.findMediaItemIndexById(mediaId: String): Int {
 
 fun Player.excludeMediaItems(mediaItems: List<MediaItem>, context: Context): List<MediaItem> {
     var filteredMediaItems = mediaItems
-    runCatching {
+    //runCatching {
         val preferences = context.preferences
         val excludeIfIsVideo = preferences.getBoolean(excludeSongIfIsVideoKey, false)
         if (excludeIfIsVideo) {
             filteredMediaItems = mediaItems.filter { !it.isVideo }
         }
-        val excludedVideos = mediaItems.size - filteredMediaItems.size
-
-        if (excludedVideos > 0)
-            CoroutineScope(Dispatchers.Main).launch {
-                SmartMessage(context.resources.getString(R.string.message_excluded_videos).format(excludedVideos), context = context)
-            }
+//        val excludedVideos = mediaItems.size - filteredMediaItems.size
+//
+//        if (excludedVideos > 0)
+//            CoroutineScope(Dispatchers.Main).launch {
+//                SmartMessage(context.resources.getString(R.string.message_excluded_videos).format(excludedVideos), context = context)
+//            }
 
         val excludeSongWithDurationLimit =
             preferences.getEnum(excludeSongsWithDurationLimitKey, DurationInMinutes.Disabled)
@@ -298,20 +295,38 @@ fun Player.excludeMediaItems(mediaItems: List<MediaItem>, context: Context): Lis
                 }!! < excludeSongWithDurationLimit.minutesInMilliSeconds
             }
 
-            val excludedSongs = mediaItems.size - filteredMediaItems.size
-            if (excludedSongs > 0)
-                CoroutineScope(Dispatchers.Main).launch {
-                        SmartMessage(context.resources.getString(R.string.message_excluded_s_songs).format(excludedSongs), context = context)
-                }
+//            val excludedSongs = mediaItems.size - filteredMediaItems.size
+//            if (excludedSongs > 0)
+//                CoroutineScope(Dispatchers.Main).launch {
+//                        SmartMessage(context.resources.getString(R.string.message_excluded_s_songs).format(excludedSongs), context = context)
+//                }
         }
-    }.onFailure {
-        Timber.e(it.message)
-    }
+
+        // CHECK il blacklisted
+        filteredMediaItems = filteredMediaItems.filter { mediaItem ->
+            val listed = runBlocking(Dispatchers.IO) {
+                Database.blacklisted(mediaItem.mediaId)
+            }
+
+            val filtered = listed == 0L
+            Timber.d("ExcludeMediaitems: ${mediaItem.mediaId} listed: $listed filtered: $filtered")
+            filtered
+        }
+
+        val excludedSongs = mediaItems.size - filteredMediaItems.size
+        if (excludedSongs > 0)
+            CoroutineScope(Dispatchers.Main).launch {
+                    SmartMessage(context.resources.getString(R.string.message_excluded_s_songs).format(excludedSongs), context = context)
+            }
+
+//    }.onFailure {
+//        Timber.e(it.message)
+//    }
 
     return filteredMediaItems
 }
 fun Player.excludeMediaItem(mediaItem: MediaItem, context: Context): Boolean {
-    runCatching {
+    //runCatching {
         val preferences = context.preferences
         val excludeIfIsVideo = preferences.getBoolean(excludeSongIfIsVideoKey, false)
         if (excludeIfIsVideo && mediaItem.isVideo) {
@@ -335,12 +350,23 @@ fun Player.excludeMediaItem(mediaItem: MediaItem, context: Context): Boolean {
 
             return excludedSong
         }
-    }.onFailure {
-        Timber.e(it.message)
-        return false
-    }
 
-    return false
+        // CHECK il blacklisted
+        val listed = runBlocking(Dispatchers.IO) {
+            Database.blacklisted(mediaItem.mediaId)
+        } != 0L
+
+        if (listed)
+            CoroutineScope(Dispatchers.Main).launch {
+                SmartMessage(context.resources.getString(R.string.message_excluded_s_songs).format(1), context = context)
+            }
+
+        return listed
+
+//    }.onFailure {
+//        Timber.e(it.message)
+//        return false
+//    }
 
 }
 

@@ -38,7 +38,6 @@ import it.fast4x.riplay.data.models.Song
 import it.fast4x.riplay.data.models.SongAlbumMap
 import it.fast4x.riplay.data.models.SongArtistMap
 import it.fast4x.riplay.data.models.SongEntity
-import it.fast4x.riplay.extensions.audiotag.AudioTagViewModel
 import it.fast4x.riplay.service.LOCAL_KEY_PREFIX
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.currentCoroutineContext
@@ -192,12 +191,11 @@ class OnDeviceViewModel(application: Application) : AndroidViewModel(application
                             val dateModifiedIdx = cursor.getColumnIndex(MediaStore.Audio.Media.DATE_MODIFIED)
                             //Timber.i(" OnDeviceViewModel colums dateModifiedIdx $dateModifiedIdx")
 
-
                             val blacklist = OnDeviceBlacklist(context = globalContext())
 
                             //Timber.i(" OnDeviceViewModel SDK ${Build.VERSION.SDK_INT} initialize columns complete")
 
-                            val uri = Uri.withAppendedPath(collection, idIdx.toString())
+                            //val uri = Uri.withAppendedPath(collection, idIdx.toString())
 
                             val id = cursor.getLong(idIdx)
                             val name = cursor.getString(nameIdx).substringBeforeLast(".")
@@ -225,7 +223,9 @@ class OnDeviceViewModel(application: Application) : AndroidViewModel(application
                             } else {
                                 cursor.getString(relativePathIdx).substringBeforeLast("/")
                             }
-                            val exclude = blacklist.contains(relativePath) || relativePath.contains("WhatsApp")
+                            val exclude = blacklist.startWith(relativePath) || blacklist.startWith("/$relativePath")
+                                    || blacklist.startWith(mediaId ?: "")
+                                    || relativePath.contains("WhatsApp")
 
                             Timber.d("OnDeviceViewModel trackname $trackName exclude $exclude relativePath ${relativePath}")
 

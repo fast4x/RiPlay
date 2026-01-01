@@ -155,6 +155,7 @@ import it.fast4x.riplay.ui.styling.color
 import it.fast4x.riplay.extensions.preferences.defaultFolderKey
 import it.fast4x.riplay.extensions.preferences.disableScrollingTextKey
 import it.fast4x.riplay.commonutils.durationTextToMillis
+import it.fast4x.riplay.enums.BlacklistType
 import it.fast4x.riplay.extensions.ondevice.blackListedPathsFilename
 import it.fast4x.riplay.utils.enqueue
 import it.fast4x.riplay.extensions.preferences.excludeSongsWithDurationLimitKey
@@ -285,7 +286,7 @@ fun HomeSongs(
         note = "Previous",
     )
     var showFolders by rememberPreference(showFoldersOnDeviceKey, true)
-    var showBlacklistedFolfers by remember { mutableStateOf(false) }
+    //var showBlacklistedFolfers by remember { mutableStateOf(false) }
 
     var sortByOnDevice by rememberPreference(onDeviceSongSortByKey, OnDeviceSongSortBy.DateAdded)
     var sortByFolderOnDevice by rememberPreference(onDeviceFolderSortByKey, OnDeviceFolderSortBy.Title)
@@ -383,11 +384,17 @@ fun HomeSongs(
 
     val disableScrollingText by rememberPreference(disableScrollingTextKey, false)
 
+    val blacklisted = remember {
+        Database.blacklisted(listOf(BlacklistType.Song.name, BlacklistType.Video.name, BlacklistType.Folder.name))
+    }.collectAsState(initial = null, context = Dispatchers.IO)
+
+    Timber.d("HomeSongs blacklisted ${blacklisted.value}")
+
     when (builtInPlaylist) {
         BuiltInPlaylist.All -> {
             LaunchedEffect(sortBy, sortOrder, filter, showHiddenSongs, includeLocalSongs) {
-                Database.songs(sortBy, sortOrder, showHiddenSongs).collect { items = it }
-
+                Database.songs(sortBy, sortOrder, showHiddenSongs)
+                    .collect { items = it.filter {item -> blacklisted.value?.map { it.path }?.contains(item.song.id) == false } }
             }
         }
         BuiltInPlaylist.Favorites,
@@ -398,10 +405,8 @@ fun HomeSongs(
                 if (builtInPlaylist == BuiltInPlaylist.Favorites) {
                     Database.songsFavorites(sortBy, sortOrder)
                         .collect {
-                            items =
-                                if (autoShuffle)
-                                    it.shuffled()
-                                else it
+                            items = (if (autoShuffle) it.shuffled() else it)
+                                .filter {item -> blacklisted.value?.map { it.path }?.contains(item.song.id) == false }
                         }
                 }
 
@@ -409,9 +414,8 @@ fun HomeSongs(
                     Database.songsDisliked(sortBy, sortOrder)
                         .collect {
                             items =
-                                if (autoShuffle)
-                                    it.shuffled()
-                                else it
+                                (if (autoShuffle) it.shuffled() else it)
+                                    .filter {item -> blacklisted.value?.map { it.path }?.contains(item.song.id) == false }
                         }
                 }
 
@@ -432,6 +436,7 @@ fun HomeSongs(
                                             durationTextToMillis(it1)
                                         } ?: 0L) < excludeSongWithDurationLimit.minutesInMilliSeconds
                                 }
+                                .filter {item -> blacklisted.value?.map { it.path }?.contains(item.song.id) == false }
                             }
                     } else {
                         Database
@@ -448,6 +453,7 @@ fun HomeSongs(
                                             durationTextToMillis(it1)
                                         } ?: 0L) < excludeSongWithDurationLimit.minutesInMilliSeconds
                                 }
+                                .filter {item -> blacklisted.value?.map { it.path }?.contains(item.song.id) == false }
                             }
                     }
                 }
@@ -475,11 +481,13 @@ fun HomeSongs(
                 sortOrder,
                 sortByFolderOnDevice,
                 currentFolder?.songs?.map { it.toSongEntity() } ?: emptyList())
+                .filter {item -> blacklisted.value?.map { it.path }?.contains(item.song.id) == false }
             filteredSongs = songs
             folders = currentFolder?.subFolders?.toList() ?: emptyList()
             filteredFolders = folders
         } else {
             songs = songsDevice.map { it.toSongEntity() }
+                .filter {item -> blacklisted.value?.map { it.path }?.contains(item.song.id) == false }
             filteredSongs = songs
         }
     }
@@ -635,43 +643,43 @@ fun HomeSongs(
         )
     }
 
-    var blackListedPaths by remember {
-        val file = File(context.filesDir, blackListedPathsFilename)
-        if (file.exists()) {
-            mutableStateOf(file.readLines())
-        } else {
-            mutableStateOf(emptyList())
-        }
-    }
+//    var blackListedPaths by remember {
+//        val file = File(context.filesDir, blackListedPathsFilename)
+//        if (file.exists()) {
+//            mutableStateOf(file.readLines())
+//        } else {
+//            mutableStateOf(emptyList())
+//        }
+//    }
 
 
-    if (showBlacklistedFolfers) {
-        StringListDialog(
-            title = stringResource(R.string.blacklisted_folders),
-            addTitle = stringResource(R.string.add_folder),
-            addPlaceholder = if (isAtLeastAndroid10) {
-                "Android/media/com.whatsapp/WhatsApp/Media"
-            } else {
-                "/storage/emulated/0/Android/media/com.whatsapp/"
-            },
-            conflictTitle = stringResource(R.string.this_folder_already_exists),
-            removeTitle = stringResource(R.string.are_you_sure_you_want_to_remove_this_folder_from_the_blacklist),
-            list = blackListedPaths,
-            add = { newPath ->
-                blackListedPaths = blackListedPaths + newPath
-                val file = File(context.filesDir, blackListedPathsFilename)
-                file.writeText(blackListedPaths.joinToString("\n"))
-                onDeviceViewModel.loadAudioFiles()
-            },
-            remove = { path ->
-                blackListedPaths = blackListedPaths.filter { it != path }
-                val file = File(context.filesDir, blackListedPathsFilename)
-                file.writeText(blackListedPaths.joinToString("\n"))
-                onDeviceViewModel.loadAudioFiles()
-            },
-            onDismiss = { showBlacklistedFolfers = false },
-        )
-    }
+//    if (showBlacklistedFolfers) {
+//        StringListDialog(
+//            title = stringResource(R.string.blacklisted_folders),
+//            addTitle = stringResource(R.string.add_folder),
+//            addPlaceholder = if (isAtLeastAndroid10) {
+//                "Android/media/com.whatsapp/WhatsApp/Media"
+//            } else {
+//                "/storage/emulated/0/Android/media/com.whatsapp/"
+//            },
+//            conflictTitle = stringResource(R.string.this_folder_already_exists),
+//            removeTitle = stringResource(R.string.are_you_sure_you_want_to_remove_this_folder_from_the_blacklist),
+//            list = blackListedPaths,
+//            add = { newPath ->
+//                blackListedPaths = blackListedPaths + newPath
+//                val file = File(context.filesDir, blackListedPathsFilename)
+//                file.writeText(blackListedPaths.joinToString("\n"))
+//                onDeviceViewModel.loadAudioFiles()
+//            },
+//            remove = { path ->
+//                blackListedPaths = blackListedPaths.filter { it != path }
+//                val file = File(context.filesDir, blackListedPathsFilename)
+//                file.writeText(blackListedPaths.joinToString("\n"))
+//                onDeviceViewModel.loadAudioFiles()
+//            },
+//            onDismiss = { showBlacklistedFolfers = false },
+//        )
+//    }
 
     var showRiPlayLikeYoutubeLikeConfirmDialog by remember {
         mutableStateOf(false)

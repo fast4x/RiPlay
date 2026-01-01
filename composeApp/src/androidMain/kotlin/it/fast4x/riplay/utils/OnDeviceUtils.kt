@@ -3,14 +3,16 @@ package it.fast4x.riplay.utils
 import android.content.Context
 import android.util.Log
 import it.fast4x.riplay.commonutils.durationToMillis
+import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.enums.OnDeviceFolderSortBy
 import it.fast4x.riplay.enums.SortOrder
 import it.fast4x.riplay.extensions.ondevice.Folder
 import it.fast4x.riplay.extensions.ondevice.OnDeviceBlacklistPath
 import it.fast4x.riplay.data.models.Song
 import it.fast4x.riplay.data.models.SongEntity
+import it.fast4x.riplay.enums.BlacklistType
+import kotlinx.coroutines.runBlocking
 import timber.log.Timber
-import java.io.File
 
 class OnDeviceOrganize {
     companion object {
@@ -114,15 +116,14 @@ class OnDeviceBlacklist(context: Context) {
     var paths: List<OnDeviceBlacklistPath> = emptyList()
 
     init {
-        val file = File(context.filesDir, "Blacklisted_paths.txt")
-        paths = if (file.exists()) {
-            file.readLines().map { OnDeviceBlacklistPath(path = it) }
-        } else {
-            emptyList()
+        paths = runBlocking {
+            Database.blacklistedN(listOf(BlacklistType.Song.name, BlacklistType.Video.name, BlacklistType.Folder.name))
+                .map { OnDeviceBlacklistPath(path = it.path) }
         }
+
     }
 
-    fun contains(path: String): Boolean {
+    fun startWith(path: String): Boolean {
         Timber.d("OnDeviceBlacklist paths ${paths.map { it.path }} contains path $path")
         return paths.any { path.startsWith(it.path) }
     }

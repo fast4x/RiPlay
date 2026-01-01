@@ -106,6 +106,18 @@ interface Database {
     @Query("SELECT id FROM Blacklist WHERE type = :type AND path = :path")
     fun blacklist(type: String, path: String): Long
 
+    @Transaction
+    @Query("SELECT COUNT(id) FROM Blacklist WHERE path = :path AND enabled = 1")
+    fun blacklisted(path: String): Long
+
+    @Transaction
+    @Query("SELECT * FROM Blacklist WHERE enabled = 1 AND type IN (:types)")
+    fun blacklisted(types: List<String>): Flow<List<Blacklist>>
+
+    @Transaction
+    @Query("SELECT * FROM Blacklist WHERE enabled = 1 AND type IN (:types)")
+    fun blacklistedN(types: List<String>): List<Blacklist>
+
     @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Transaction
     @Query("SELECT * FROM Song")
