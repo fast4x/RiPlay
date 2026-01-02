@@ -1653,9 +1653,15 @@ class MainActivity :
             }
 
             LaunchedEffect(intentUriData) {
-                val uri = intentUriData ?: return@LaunchedEffect
+                var uri = intentUriData ?: return@LaunchedEffect
+                if (uri.host == "www.shazam.com") {
+                    uri = "${"https://"}${
+                        uri.toString().substringAfter("https://").substringBeforeLast("\"")
+                    }".toUri()
+                }
 
                 Timber.d("MainActivity LaunchedEffect intentUriData $uri path ${uri.pathSegments.firstOrNull()} host ${uri.host}")
+                Timber.d("MainActivity LaunchedEffect intentUriData scheme ${"https://"}${uri.toString().substringAfter("https://").substringBeforeLast("\"")}")
 
                 SmartMessage(
                     message = "${"RiPlay "}${getString(R.string.opening_url)}",

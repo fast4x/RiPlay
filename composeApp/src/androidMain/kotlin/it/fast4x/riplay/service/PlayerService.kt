@@ -348,6 +348,8 @@ class PlayerService : Service(),
 
     var parentalControlEnabled by mutableStateOf(false)
 
+    var firstTimeStarted by mutableStateOf(true)
+
     //private var checkVolumeLevel: Boolean = true
 
 
@@ -725,26 +727,14 @@ class PlayerService : Service(),
                     Timber.d("PlayerService onlinePlayer onReady localmediaItem ${localMediaItem?.mediaId} queue index ${binder.player.currentMediaItemIndex}")
                     Timber.d("PlayerService onlinePlayer onReady isPersistentQueueEnabled $isPersistentQueueEnabled isResumePlaybackOnStart $isResumePlaybackOnStart")
 
-
-
                     localMediaItem?.let{
-                        if (isPersistentQueueEnabled) {
-                            if (isResumePlaybackOnStart) {
-                                //if (checkVolumeLevel)
-                                    //youTubePlayer.setVolume(getSystemMediaVolume())
-
-                                youTubePlayer.loadVideo(it.mediaId, playFromSecond)
-                                Timber.d("PlayerService onlinePlayer onReady loadVideo ${it.mediaId}")
-                            } else {
-                                //if (checkVolumeLevel)
-                                    //youTubePlayer.setVolume(getSystemMediaVolume())
-
-                                youTubePlayer.cueVideo(it.mediaId, playFromSecond)
-                                Timber.d("PlayerService onlinePlayer onReady cueVideo ${it.mediaId}")
-                            }
+                        if (isPersistentQueueEnabled && isResumePlaybackOnStart && firstTimeStarted) {
+                            youTubePlayer.loadVideo(it.mediaId, playFromSecond)
+                            Timber.d("PlayerService onlinePlayer onReady loadVideo ${it.mediaId}")
                         }
                     }
                     youTubePlayer.setVolume(getSystemMediaVolume())
+                    firstTimeStarted = false
                 }
 
                 override fun onCurrentSecond(youTubePlayer: YouTubePlayer, second: Float) {
@@ -772,7 +762,10 @@ class PlayerService : Service(),
                         PlayerConstants.PlayerState.PLAYING, PlayerConstants.PlayerState.PAUSED -> {
                             youTubePlayer.unMute()
                         }
-                        PlayerConstants.PlayerState.UNSTARTED -> { youTubePlayer.play() }
+                        PlayerConstants.PlayerState.VIDEO_CUED, PlayerConstants.PlayerState.UNSTARTED -> {
+                            if (!firstTimeStarted)
+                                youTubePlayer.play()
+                        }
                         else -> { youTubePlayer.mute() }
                     }
 
@@ -824,7 +817,7 @@ class PlayerService : Service(),
                             context = this@PlayerService
                         )
 
-                        localMediaItem?.let { youTubePlayer.cueVideo(it.mediaId, playFromSecond) }
+                        //localMediaItem?.let { youTubePlayer.cueVideo(it.mediaId, playFromSecond) }
                         //if (checkVolumeLevel)
                         youTubePlayer.setVolume(getSystemMediaVolume())
 
@@ -1152,7 +1145,8 @@ class PlayerService : Service(),
                 currentSecond.value = 0F
                 Timber.d("PlayerService onMediaItemTransition system volume ${getSystemMediaVolume()}")
 
-                internalOnlinePlayer.value?.loadVideo(it.mediaId, playFromSecond)
+                internalOnlinePlayer.value?.cueVideo(it.mediaId, playFromSecond)
+                //internalOnlinePlayer.value?.loadVideo(it.mediaId, playFromSecond)
                 //startFadeAnimator(player = internalOnlinePlayer, volumeDevice = getSystemMediaVolume(), duration = 5, fadeIn = true) {}
                 //if (checkVolumeLevel)
                 internalOnlinePlayer.value?.setVolume(getSystemMediaVolume())
@@ -1349,11 +1343,9 @@ class PlayerService : Service(),
                 if (lastError != null) {
                     Timber.w("PlayerService maybeRecoverPlaybackError: try to recover player error")
                     localMediaItem?.let {
-                        //internalOnlinePlayer.value?.cueVideo(it.mediaId, playFromSecond)
+                        internalOnlinePlayer.value?.cueVideo(it.mediaId, playFromSecond)
+                        //internalOnlinePlayer.value?.loadVideo(it.mediaId, playFromSecond)
 
-
-                        internalOnlinePlayer.value?.loadVideo(it.mediaId, playFromSecond)
-                        //if (checkVolumeLevel)
                         internalOnlinePlayer.value?.setVolume(getSystemMediaVolume())
                     }
                 }
