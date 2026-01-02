@@ -1169,4 +1169,7 @@
     <string name="rw_artistlevel_thearchivist_desc_you_don_t_just_stick_to_the_hit_singles_you_ve_explored_every_corner_of_their_discography_becoming_a_true_expert">You don\'t just stick to the hit singles. \n You\'ve explored every corner of their discography, becoming a true expert.</string>
     <string name="rw_artistlevel_thedevotee_desc_this_artist_s_music_is_more_than_just_sound_it_s_a_part_of_you_a_deep_and_unbreakable_bond">This artist\'s music is more than just sound, it\'s a part of you. \n A deep and unbreakable bond.</string>
     <string name="rw_artistlevel_undefined_desc_nothing_to_see_here">Nothing to see here</string>
+    <string name="add_to_blacklist">Add to blacklist</string>
+    <string name="blacklisted">%1$s Blacklisted</string>
+    <string name="blacklist">Blacklist</string>
 </resources>
