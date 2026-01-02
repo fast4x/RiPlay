@@ -37,6 +37,8 @@ RiPlay is a powerful, open-source music player designed for music lovers who wan
 - Listening statistics
 - Lyrics support: fetch, display, edit, translate
 - Listener level ranking with personal monthly and annual badge
+- Blacklist, can ignore artist, album, Song, Playlist, Device folder
+- Rewind, your year in music
 
 ### ⏰ Smart Features
 - Music Recognize (title & artist)

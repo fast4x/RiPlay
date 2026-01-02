@@ -63,6 +63,7 @@ multidex = "2.0.1"
 fastscroller = "0.3.2"
 workmanager = "2.10.5"
 accompanist = "0.37.3"
+jsoup = "1.15.3"
 
 
 [libraries]
@@ -146,6 +147,8 @@ fastscroller-material3 = { group = "io.github.oikvpqya.compose.fastscroller", na
 fastscroller-indicator = { group = "io.github.oikvpqya.compose.fastscroller", name = "fastscroller-indicator", version.ref = "fastscroller" }
 workmanager = { group = "androidx.work", name = "work-runtime-ktx", version.ref = "workmanager" }
 accompanist = { group = "com.google.accompanist", name = "accompanist-permissions", version.ref = "accompanist"}
+jsoup = { group = "org.jsoup", name = "jsoup", version.ref = "jsoup"}
+
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

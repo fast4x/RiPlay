@@ -212,7 +212,6 @@ import it.fast4x.riplay.extensions.rescuecenter.RescueScreen
 import it.fast4x.riplay.data.models.Queues
 import it.fast4x.riplay.data.models.defaultQueue
 import it.fast4x.riplay.extensions.audiotag.AudioTagViewModel
-import it.fast4x.riplay.extensions.ondevice.OnDeviceLoader
 import it.fast4x.riplay.extensions.preferences.closebackgroundPlayerKey
 import it.fast4x.riplay.extensions.preferences.showAutostartPermissionDialogKey
 import it.fast4x.riplay.navigation.AppNavigation
@@ -263,6 +262,7 @@ import it.fast4x.riplay.utils.setDefaultPalette
 import it.fast4x.riplay.commonutils.thumbnail
 import it.fast4x.riplay.extensions.databasebackup.BackupViewModel
 import it.fast4x.riplay.extensions.databasebackup.DatabaseBackupManager
+import it.fast4x.riplay.extensions.htmlscraper.shazamSongInfoExtractor
 import it.fast4x.riplay.extensions.ondevice.OnDeviceViewModel
 import it.fast4x.riplay.extensions.preferences.showSnowfallEffectKey
 import it.fast4x.riplay.service.PlayerServiceQueueViewModel
@@ -1702,6 +1702,16 @@ class MainActivity :
                                 }
                                 null
                             }
+                            uri.host == "www.shazam.com" && (path == "track" || path == "song") -> {
+                                shazamSongInfoExtractor(uri.toString(), { artist, title, error ->
+                                    Timber.d("MainActivity shazamSongInfoExtractor result $artist $title $error")
+                                    if (title.isNotEmpty())
+                                        navController.navigate(route = "${NavRoutes.searchResults.name}/${title} ${artist}")
+
+                                })
+                                null
+                            }
+
                             else -> null
                         }?.let { videoId ->
                             Environment.song(videoId)?.getOrNull()?.let { song ->
