@@ -72,11 +72,11 @@
     <string name="show_song_cover">Afficher la pochette d\'album</string>
     <string name="use_song_cover_on_lockscreen">Afficher la pochette d\'album sur le fond d\'écran de l\'écran de verrouillage</string>
     <string name="cache">Cache</string>
-    <string name="cache_cleared">Lorsque le cache manque d\'espace, les ressources qui n\'ont pas été consultées depuis le plus longtemps sont effacées</string>
+    <string name="cache_cleared">Lorsque le cache manque d\'espace, les ressources qui n\'ont pas été consultées depuis le plus longtemps sont effacées.</string>
     <string name="image_cache">CACHE D\'IMAGE</string>
     <string name="max_size">Taille maximale</string>
     <string name="database">Base de données</string>
-    <string name="reset_quick_picks">Réinitialiser la sélection rapide</string>
+    <string name="reset_quick_picks">Réinitialiser la Sélection Rapide</string>
     <string name="quick_picks_are_cleared">La sélection rapide a été effacée avec succès</string>
     <string name="backup">SAUVEGARDE</string>
     <string name="personal_preference">Les préférences personnelles (c.-à-d. le mode du thème) et le cache sont exclus.</string>
@@ -229,7 +229,7 @@
     <string name="user_interface">Interface Utilisateur</string>
     <string name="ui_tab">Interface Utilisateur</string>
     <string name="system_language">Langue du système</string>
-    <string name="biggest">Très gros</string>
+    <string name="biggest">Énorme</string>
     <string name="set_custom_cache">Définir un cache personnalisé</string>
     <string name="enter_value_in_mb">Entrez la valeur en Mo</string>
     <string name="value_cannot_be_empty">La valeur ne peut pas être vide</string>
@@ -274,7 +274,7 @@
     <string name="audio_quality_automatic">Automatique</string>
     <string name="statistics_songs_heard">titres écoutés</string>
     <string name="statistics_of_time_taken">du temps écoulé</string>
-    <string name="statistics_max_number_of_items">Nombre maximum d\'items</string>
+    <string name="statistics_max_number_of_items">Nombre maximal d\'éléments</string>
     <string name="arabic">Arabe (عرب)</string>
     <string name="chinese_simplified">Chinois Simplifié (简体中文)</string>
     <string name="chinese_traditional">Chinois traditionnel (繁體中文)</string>
@@ -463,7 +463,7 @@
     <string name="show_equalizer">Afficher l\'egaliseur</string>
     <string name="theme_pure_black">Noir Pur</string>
     <string name="theme_modern_black">Noir Moderne</string>
-    <string name="theme_mode_pitch_black">Noir profond</string>
+    <string name="theme_mode_pitch_black">Noir Profond</string>
     <string name="show_actions_bar">Afficher la barre d\'actions</string>
     <string name="transition_effect">Effet de transition</string>
     <string name="te_expand">Agrandir</string>
@@ -563,7 +563,7 @@
     <string name="player_swap_controls_with_timeline">Échanger les contrôles avec la barre de lecture</string>
     <string name="player_enable_lyrics_popup_message">Activer les messages des paroles</string>
     <string name="exclude_songs_with_duration_limit">Exclure les titres avec une limite de durée</string>
-    <string name="exclude_songs_with_duration_limit_description">Si activé, les titres dont la durée dépasse la limite seront exclues, se sera appliqué à la file d\'attente de Mon Top et pour la fille d\'attente</string>
+    <string name="exclude_songs_with_duration_limit_description">Si cette option est activée, les titres dont la durée dépasse la limite seront exclus et ajoutés à votre playlist et à votre file d\'attente de lecture.</string>
     <string name="no_log_available">Pas de journaux disponibles</string>
     <string name="enable_quick_picks_page">Activer la page de Sélection Rapide</string>
     <string name="lang_vietnamese">Vietnamien (Tiếng Việt)</string>
