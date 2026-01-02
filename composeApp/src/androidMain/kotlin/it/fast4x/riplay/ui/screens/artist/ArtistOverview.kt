@@ -308,22 +308,6 @@ fun ArtistOverview(
                             .padding(top = 5.dp, end = 5.dp),
                         onClick = {
                             showFastShare = true
-//                            val sendIntent = Intent().apply {
-//                                action = Intent.ACTION_SEND
-//                                type = "text/plain"
-//                                putExtra(
-//                                    Intent.EXTRA_TEXT,
-//                                    //"https://music.youtube.com/channel/$browseId"
-//                                    "$YTM_ARTIST_SHARE_BASEURL$browseId"
-//                                )
-//                            }
-//
-//                            context.startActivity(
-//                                Intent.createChooser(
-//                                    sendIntent,
-//                                    null
-//                                )
-//                            )
                         }
                     )
 
@@ -449,84 +433,6 @@ fun ArtistOverview(
                         alternative = artist?.bookmarkedAt == null,
                         modifier = Modifier.padding(end = 30.dp)
                     )
-
-//                    HeaderIconButton(
-//                        icon = R.drawable.downloaded,
-//                        color = colorPalette().text,
-//                        onClick = {},
-//                        modifier = Modifier
-//                            .padding(horizontal = 5.dp)
-//                            .combinedClickable(
-//                                onClick = {
-//                                    showConfirmDownloadAllDialog = true
-//                                },
-//                                onLongClick = {
-//                                    SmartMessage(context.resources.getString(R.string.info_download_all_songs), context = context)
-//                                }
-//                            )
-//                    )
-
-//                    if (showConfirmDownloadAllDialog) {
-//                        ConfirmationDialog(
-//                            text = stringResource(R.string.do_you_really_want_to_download_all),
-//                            onDismiss = { showConfirmDownloadAllDialog = false },
-//                            onConfirm = {
-//                                showConfirmDownloadAllDialog = false
-//                                downloadState = Download.STATE_DOWNLOADING
-//                                if (youtubeArtistPage?.songs?.isNotEmpty() == true)
-//                                    youtubeArtistPage.songs?.forEach {
-//                                        binder?.cache?.removeResource(it.asMediaItem.mediaId)
-//                                        CoroutineScope(Dispatchers.IO).launch {
-//                                            Database.deleteFormat( it.asMediaItem.mediaId )
-//                                        }
-//                                        manageDownload(
-//                                            context = context,
-//                                            mediaItem = it.asMediaItem,
-//                                            downloadState = false
-//                                        )
-//                                    }
-//                            }
-//                        )
-//                    }
-
-//                    HeaderIconButton(
-//                        icon = R.drawable.download,
-//                        color = colorPalette().text,
-//                        onClick = {},
-//                        modifier = Modifier
-//                            .padding(horizontal = 5.dp)
-//                            .combinedClickable(
-//                                onClick = {
-//                                    showConfirmDeleteDownloadDialog = true
-//                                },
-//                                onLongClick = {
-//                                    SmartMessage(context.resources.getString(R.string.info_remove_all_downloaded_songs), context = context)
-//                                }
-//                            )
-//                    )
-//
-//                    if (showConfirmDeleteDownloadDialog) {
-//                        ConfirmationDialog(
-//                            text = stringResource(R.string.do_you_really_want_to_delete_download),
-//                            onDismiss = { showConfirmDeleteDownloadDialog = false },
-//                            onConfirm = {
-//                                showConfirmDeleteDownloadDialog = false
-//                                downloadState = Download.STATE_DOWNLOADING
-//                                if (youtubeArtistPage?.songs?.isNotEmpty() == true)
-//                                    youtubeArtistPage.songs?.forEach {
-//                                        binder?.cache?.removeResource(it.asMediaItem.mediaId)
-//                                        CoroutineScope(Dispatchers.IO).launch {
-//                                            Database.deleteFormat( it.asMediaItem.mediaId )
-//                                        }
-//                                        manageDownload(
-//                                            context = context,
-//                                            mediaItem = it.asMediaItem,
-//                                            downloadState = true
-//                                        )
-//                                    }
-//                            }
-//                        )
-//                    }
 
                     artistPage?.shuffleEndpoint?.let { endpoint ->
                         HeaderIconButton(

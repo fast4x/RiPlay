@@ -1,7 +1,11 @@
 package it.fast4x.riplay.ui.screens.artist
 
 import android.annotation.SuppressLint
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -10,6 +14,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.asPaddingValues
@@ -19,6 +24,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
@@ -28,7 +34,9 @@ import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.BasicText
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -38,6 +46,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
@@ -105,6 +114,14 @@ import it.fast4x.riplay.extensions.preferences.maxSongsInQueueKey
 import it.fast4x.riplay.utils.LazyListContainer
 import it.fast4x.riplay.utils.forcePlay
 import it.fast4x.riplay.commonutils.setLikeState
+import it.fast4x.riplay.enums.ItemSortBy
+import it.fast4x.riplay.enums.SongSortBy
+import it.fast4x.riplay.enums.SortOrder
+import it.fast4x.riplay.extensions.preferences.songSortByKey
+import it.fast4x.riplay.extensions.preferences.songSortOrderKey
+import it.fast4x.riplay.ui.components.themed.SortMenu
+import it.fast4x.riplay.ui.styling.style
+import it.fast4x.riplay.utils.typography
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.firstOrNull
@@ -142,27 +159,11 @@ fun ArtistOverviewItems(
     val playlistThumbnailSizeDp = 108.dp
     val playlistThumbnailSizePx = playlistThumbnailSizeDp.px
 
-    val endPaddingValues = windowInsets.only(WindowInsetsSides.End).asPaddingValues()
-
     val sectionTextModifier = Modifier
         .padding(horizontal = 16.dp)
         .padding(top = 24.dp, bottom = 8.dp)
 
-    val scrollState = rememberScrollState()
-
-    var downloadState by remember {
-        mutableStateOf(Download.STATE_STOPPED)
-    }
-
     val context = LocalContext.current
-
-    var showConfirmDeleteDownloadDialog by remember {
-        mutableStateOf(false)
-    }
-
-    var showConfirmDownloadAllDialog by remember {
-        mutableStateOf(false)
-    }
 
     var showYoutubeLikeConfirmDialog by remember {
         mutableStateOf(false)
@@ -170,16 +171,6 @@ fun ArtistOverviewItems(
 
     var notLikedSongs by persistList<MediaItem>("")
     var totalMinutesToLike by remember { mutableStateOf("") }
-
-    var translateEnabled by remember {
-        mutableStateOf(false)
-    }
-
-    val translator = Translator(getHttpClient())
-    val languageDestination = languageDestination()
-    val listMediaItems = remember { mutableListOf<MediaItem>() }
-
-    //var artist by persist<Artist?>("artist/${artistSection?.moreEndpoint?.browseId}/items")
 
     val hapticFeedback = LocalHapticFeedback.current
     val parentalControlEnabled by rememberPreference(parentalControlEnabledKey, false)
@@ -209,7 +200,6 @@ fun ArtistOverviewItems(
     Box(
         modifier = Modifier
             .background(colorPalette().background0)
-            //.fillMaxSize()
             .fillMaxHeight()
             .fillMaxWidth(
                 if (NavigationBarPosition.Right.isCurrent())
@@ -276,7 +266,6 @@ fun ArtistOverviewItems(
                         ) {
                             HeaderIconButton(
                                 icon = R.drawable.shuffle,
-                                //enabled = artistSongs.any { it.mediaMetadata.artworkUri.toString() != "" && it.song.likedAt != -1L },
                                 color = if (artistSongs.any { it.asSong.thumbnailUrl != "" }) colorPalette().text else colorPalette().textDisabled,
                                 onClick = {},
                                 modifier = Modifier
@@ -385,40 +374,7 @@ fun ArtistOverviewItems(
                                         }
                                     )
                             )
-//                        HeaderIconButton(
-//                            icon = R.drawable.downloaded,
-//                            //enabled = playlistSongs.any { it.song.likedAt != -1L },
-//                            color = if (artistSongs.any { it.asSong.thumbnailUrl != "" }) colorPalette().text else colorPalette().textDisabled,
-//                            onClick = {},
-//                            modifier = Modifier
-//                                .combinedClickable(
-//                                    onClick = {
-//                                        showConfirmDownloadAllDialog = true
-//                                    },
-//                                    onLongClick = {
-//                                        SmartMessage(context.resources.getString(R.string.info_download_all_songs), context = context)
-//                                    }
-//                                )
-//                        )
-//                        HeaderIconButton(
-//                            icon = R.drawable.download,
-//                            //enabled = playlistSongs.any { it.song.likedAt != -1L },
-//                            color = if (artistSongs.any { it.asSong.thumbnailUrl != "" }) colorPalette().text else colorPalette().textDisabled,
-//                            onClick = {},
-//                            modifier = Modifier
-//                                .combinedClickable(
-//                                    onClick = {
-//                                        if (artistSongs.any { it.asSong.thumbnailUrl != "" }) {
-//                                            showConfirmDeleteDownloadDialog = true
-//                                        } else {
-//                                            SmartMessage(context.resources.getString(R.string.disliked_this_collection),type = PopupType.Error, context = context)
-//                                        }
-//                                    },
-//                                    onLongClick = {
-//                                        SmartMessage(context.resources.getString(R.string.info_remove_all_downloaded_songs), context = context)
-//                                    }
-//                                )
-//                        )
+
                             HeaderIconButton(
                                 icon = R.drawable.add_in_playlist,
                                 color = colorPalette().text,
@@ -562,70 +518,54 @@ fun ArtistOverviewItems(
                                             }
                                         }
                                     ),
-                                //disableScrollingText = disableScrollingText,
-                                //isNowPlaying = binder?.player?.isNowPlaying(item.mediaId) ?: false,
-                                //forceRecompose = forceRecompose
                             )
                         }
-                        /*else -> {}
-//                        is Innertube.AlbumItem -> {
-//                            AlbumItem(
-//                                album = item,
-//                                thumbnailSizePx = thumbnailSizePx,
-//                                thumbnailSizeDp = thumbnailSizeDp,
-//                                alternative = false,
-//                                yearCentered = false,
-//                                showAuthors = true,
-//                                modifier = Modifier.clickable(onClick = {
-//                                    navController.navigate(route = "${NavRoutes.album.name}/${item.key}")
-//                                }),
-//                                disableScrollingText = disableScrollingText
-//                            )
-//                        }
-//                        is Innertube.PlaylistItem -> {
-//                            PlaylistItem(
-//                                playlist = item,
-//                                alternative = false,
-//                                thumbnailSizePx = playlistThumbnailSizePx,
-//                                thumbnailSizeDp = playlistThumbnailSizeDp,
-//                                disableScrollingText = disableScrollingText,
-//                                modifier = Modifier.clickable(onClick = {
-//                                    navController.navigate("${NavRoutes.playlist.name}/${item.key}")
-//                                })
-//                            )
-//                        }
-//                        is Innertube.VideoItem -> {
-//                            VideoItem(
-//                                video = item,
-//                                thumbnailHeightDp = playlistThumbnailSizeDp,
-//                                thumbnailWidthDp = playlistThumbnailSizeDp,
-//                                disableScrollingText = disableScrollingText,
-//                                modifier = Modifier.clickable(onClick = {
-//                                    binder?.stopRadio()
-//                                    if (isVideoEnabled())
-//                                        binder?.player?.playVideo(item.asMediaItem)
-//                                    else
-//                                        binder?.player?.forcePlay(item.asMediaItem)
-//                                })
-//                            )
-//                        }
-//                        is Innertube.ArtistItem -> {
-//                            ArtistItem(
-//                                artist = item,
-//                                thumbnailSizePx = artistThumbnailSizePx,
-//                                thumbnailSizeDp = artistThumbnailSizeDp,
-//                                disableScrollingText = disableScrollingText,
-//                                modifier = Modifier.clickable(onClick = {
-//                                    navController.navigate("${NavRoutes.artist.name}/${item.key}")
-//                                })
-//                            )
-//                        }*/
 
                     }
 
                 }
             }
         } else {
+            var sortBy by remember{ mutableStateOf(ItemSortBy.Year)}
+            var sortOrder by rememberPreference(songSortOrderKey, SortOrder.Descending)
+            val sortOrderIconRotation by animateFloatAsState(
+                targetValue = if (sortOrder == SortOrder.Ascending) 0f else 180f,
+                animationSpec = tween(durationMillis = 400, easing = LinearEasing), label = ""
+            )
+            var items by remember (artistItemsPage) {
+                mutableStateOf(artistItemsPage?.items)
+            }
+            LaunchedEffect(Unit, sortOrder, sortBy) {
+                when (sortOrder) {
+                    SortOrder.Ascending -> {
+                        items = items?.sortedBy {
+                            when (sortBy) {
+                                ItemSortBy.Year -> (it as Environment.AlbumItem).year
+                                ItemSortBy.Title -> it.title
+                            }
+                        }
+                    }
+                    SortOrder.Descending -> {
+                        items = items?.sortedByDescending {
+                            when (sortBy) {
+                                ItemSortBy.Year -> (it as Environment.AlbumItem).year
+                                ItemSortBy.Title -> it.title
+                            }
+                        }
+                    }
+                }
+            }
+
+            val sortMenu: @Composable () -> Unit = {
+                SortMenu(
+                    title = stringResource(R.string.sorting_order),
+                    onDismiss = menuState::hide,
+                    onTitle = { sortBy = ItemSortBy.Title},
+                    onYear = { sortBy = ItemSortBy.Year}
+                )
+            }
+
+
             val gridState = rememberLazyGridState()
             LazyListContainer(
                 state = gridState
@@ -638,7 +578,6 @@ fun ArtistOverviewItems(
                         .fillMaxSize(),
                     contentPadding = WindowInsets.systemBars.asPaddingValues()
                 ) {
-
                     item(span = { GridItemSpan(maxLineSpan) }) {
                         Column {
                             Title(
@@ -656,90 +595,55 @@ fun ArtistOverviewItems(
                         }
 
                     }
+
+                    item(span = { GridItemSpan(maxLineSpan) }) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Start,
+                            modifier = Modifier
+                                .padding(horizontal = 10.dp)
+                                .padding(vertical = 10.dp)
+                                .fillMaxWidth()
+                        ) {
+                            HeaderIconButton(
+                                icon = R.drawable.arrow_up,
+                                color = colorPalette().text,
+                                onClick = {},
+                                modifier = Modifier
+                                    .padding(horizontal = 2.dp)
+                                    .graphicsLayer {
+                                        rotationZ =
+                                            sortOrderIconRotation
+                                    }
+                                    .combinedClickable(
+                                        onClick = { sortOrder = !sortOrder },
+                                        onLongClick = {
+                                            menuState.display {
+                                                sortMenu()
+                                            }
+                                        }
+                                    )
+                            )
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Text(
+                                text = sortBy.textName,
+                                style = typography().s,
+                                color = colorPalette().text,
+                                modifier = Modifier.clickable {
+                                    menuState.display {
+                                        sortMenu()
+                                    }
+                                }
+                            )
+
+                        }
+                    }
+
                     items(
-                        items = artistItemsPage?.items!!
+                        items = items!!
                     ) { item ->
                         when (item) {
-//                        is Innertube.SongItem -> {
-////                            if (parentalControlEnabled && item.explicit) return@items
-////
-////                            downloadState = getDownloadState(item.asMediaItem.mediaId)
-////                            val isDownloaded = isDownloadedSong(item.asMediaItem.mediaId)
-////
-////                            SwipeablePlaylistItem(
-////                                mediaItem = item.asMediaItem,
-////                                onPlayNext = {
-////                                    binder?.player?.addNext(item.asMediaItem)
-////                                },
 
-////                                onEnqueue = {
-////                                    binder?.player?.enqueue(item.asMediaItem)
-////                                }
-////                            ) {
-////                                listMediaItems.add(item.asMediaItem)
-////                                var forceRecompose by remember { mutableStateOf(false) }
-////                                SongItem(
-////                                    song = item,
-////                                    onDownloadClick = {
-////                                        binder?.cache?.removeResource(item.asMediaItem.mediaId)
-////                                        CoroutineScope(Dispatchers.IO).launch {
-////                                            Database.deleteFormat( item.asMediaItem.mediaId )
-////                                        }
-////
-////                                        manageDownload(
-////                                            context = context,
-////                                            mediaItem = item.asMediaItem,
-////                                            downloadState = isDownloaded
-////                                        )
-////                                    },
-////                                    thumbnailContent = {
-////                                        NowPlayingSongIndicator(item.asMediaItem.mediaId, binder?.player)
-////                                    },
-////                                    downloadState = downloadState,
-////                                    thumbnailSizeDp = songThumbnailSizeDp,
-////                                    thumbnailSizePx = songThumbnailSizePx,
-////                                    modifier = Modifier
-////                                        .combinedClickable(
-////                                            onLongClick = {
-////                                                menuState.display {
-////                                                    NonQueuedMediaItemMenu(
-////                                                        navController = navController,
-////                                                        onDismiss = {
-////                                                            menuState.hide()
-////                                                            forceRecompose = true
-////                                                        },
-////                                                        mediaItem = item.asMediaItem,
-////                                                        disableScrollingText = disableScrollingText
-////                                                    )
-////                                                };
-////                                                hapticFeedback.performHapticFeedback(
-////                                                    HapticFeedbackType.LongPress
-////                                                )
-////                                            },
-////                                            onClick = {
-////                                                CoroutineScope(Dispatchers.IO).launch {
-////                                                    withContext(Dispatchers.Main) {
-////                                                        binder?.stopRadio()
-////                                                        binder?.player?.forcePlay(item.asMediaItem)
-////                                                        binder?.player?.addMediaItems(
-////                                                            artistItemsPage!!.items
-////                                                                .map{it as Innertube.SongItem}
-////                                                                .map { it.asMediaItem }
-////                                                                .filterNot { it.mediaId == item.key }
-////                                                            //.toMutableList()
-////
-////                                                        )
-////                                                    }
-////                                                }
-////
-////                                            }
-////                                        ),
-////                                    disableScrollingText = disableScrollingText,
-////                                    isNowPlaying = binder?.player?.isNowPlaying(item.key) ?: false,
-////                                    forceRecompose = forceRecompose
-////                                )
-////                            }
-//                        }
                             is Environment.AlbumItem -> {
                                 var albumById by remember { mutableStateOf<Album?>(null) }
                                 LaunchedEffect(item) {
