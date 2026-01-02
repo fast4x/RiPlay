@@ -1,4 +1,4 @@
-package it.fast4x.riplay.extensions.htmlscraper
+package it.fast4x.riplay.extensions.htmlreader
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

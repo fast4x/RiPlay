@@ -262,7 +262,7 @@ import it.fast4x.riplay.utils.setDefaultPalette
 import it.fast4x.riplay.commonutils.thumbnail
 import it.fast4x.riplay.extensions.databasebackup.BackupViewModel
 import it.fast4x.riplay.extensions.databasebackup.DatabaseBackupManager
-import it.fast4x.riplay.extensions.htmlscraper.shazamSongInfoExtractor
+import it.fast4x.riplay.extensions.htmlreader.shazamSongInfoExtractor
 import it.fast4x.riplay.extensions.ondevice.OnDeviceViewModel
 import it.fast4x.riplay.extensions.preferences.showSnowfallEffectKey
 import it.fast4x.riplay.service.PlayerServiceQueueViewModel
