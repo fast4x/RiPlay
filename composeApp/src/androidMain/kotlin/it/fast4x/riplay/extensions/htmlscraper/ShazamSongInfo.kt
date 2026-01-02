@@ -1,10 +1,5 @@
 package it.fast4x.riplay.extensions.htmlscraper
 
-import android.os.Build
-import androidx.annotation.RequiresApi
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -24,7 +19,7 @@ fun shazamSongInfo(url: String, callback: (String, String, String?) -> Unit) {
             if (html != null) {
                 val doc = Jsoup.parse(html)
 
-                // Cerca titolo della canzone
+
                 var title = ""
                 val titleElements = doc.select(".title, .song-title, .track-title, h1")
                 if (titleElements.isNotEmpty()) {
@@ -34,7 +29,7 @@ fun shazamSongInfo(url: String, callback: (String, String, String?) -> Unit) {
                     if (metaTitle != null) title = metaTitle.trim()
                 }
 
-                // Cerca artista
+
                 var artist = ""
                 val artistElements = doc.select(".artist, .performer, .track-artist")
                 if (artistElements.isNotEmpty()) {
@@ -44,7 +39,7 @@ fun shazamSongInfo(url: String, callback: (String, String, String?) -> Unit) {
                     if (metaArtist != null) artist = metaArtist.trim()
                 }
 
-                // Se non trova nulla, prova con altri selettori comuni
+
                 if (title.isEmpty()) {
                     val titleFromMeta = doc.selectFirst("meta[name='title']")?.attr("content")
                     if (titleFromMeta != null) title = titleFromMeta.trim()
@@ -55,7 +50,7 @@ fun shazamSongInfo(url: String, callback: (String, String, String?) -> Unit) {
                     if (artistFromMeta != null) artist = artistFromMeta.trim()
                 }
 
-                // Esegui il callback sul thread principale
+
                 withContext(Dispatchers.Main) {
                     callback(artist, title, null)
                 }
@@ -72,7 +67,6 @@ fun shazamSongInfo(url: String, callback: (String, String, String?) -> Unit) {
     }
 }
 
-@RequiresApi(Build.VERSION_CODES.KITKAT)
 private fun fetchHtml(urlString: String): String? {
     var connection: HttpURLConnection? = null
     return try {
