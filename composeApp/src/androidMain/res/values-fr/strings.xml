@@ -1109,7 +1109,7 @@ Volume BAS : titre précédent</string>
     <string name="audio_preset_large_room">Grande pièce</string>
     <string name="audio_preset_medium_hall">Salle moyenne</string>
     <string name="audio_preset_large_hall">Grande salle</string>
-    <string name="audio_preset_plate">Plate</string>
+    <string name="audio_preset_plate">Plaque</string>
     <string name="rw_songlevel_obsession_title_you_have_an_obsession">Vous avez une obsession</string>
     <string name="rw_songlevel_anthem_title_it_s_your_anthem">C\'est votre hymne</string>
     <string name="rw_songlevel_soundtrack_title_it_s_your_soundtrack">C\'est votre bande-son</string>
