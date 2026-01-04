@@ -25,7 +25,7 @@ import it.fast4x.riplay.ui.components.tab.toolbar.Descriptive
 import it.fast4x.riplay.ui.components.tab.toolbar.DynamicColor
 import it.fast4x.riplay.ui.components.tab.toolbar.MenuIcon
 import it.fast4x.riplay.ui.components.themed.SmartMessage
-import it.fast4x.riplay.ui.screens.settings.isSyncEnabled
+import it.fast4x.riplay.ui.screens.settings.isYtSyncEnabled
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.firstOrNull
@@ -34,7 +34,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 
 suspend fun importYTMPrivatePlaylists(): Boolean {
-    if (isSyncEnabled()) {
+    if (isYtSyncEnabled()) {
 
         SmartMessage(
             message = appContext().resources.getString(R.string.syncing),
@@ -169,8 +169,8 @@ fun ytmPrivatePlaylistSync(playlist: Playlist, playlistId: Long) {
 }
 
 suspend fun importYTMSubscribedChannels(): Boolean {
-    println("importYTMSubscribedChannels isYouTubeSyncEnabled() = ${isSyncEnabled()} and isAutoSyncEnabled() = ${isAutoSyncEnabled()}")
-    if (isSyncEnabled()) {
+    println("importYTMSubscribedChannels isYouTubeSyncEnabled() = ${isYtSyncEnabled()} and isAutoSyncEnabled() = ${isAutoSyncEnabled()}")
+    if (isYtSyncEnabled()) {
 
         SmartMessage(
             message = appContext().resources.getString(R.string.syncing),
@@ -228,8 +228,8 @@ suspend fun importYTMSubscribedChannels(): Boolean {
 }
 
 suspend fun importYTMLikedAlbums(): Boolean {
-    println("importYTMLikedAlbums isYouTubeSyncEnabled() = ${isSyncEnabled()} and isAutoSyncEnabled() = ${isAutoSyncEnabled()}")
-    if (isSyncEnabled()) {
+    println("importYTMLikedAlbums isYouTubeSyncEnabled() = ${isYtSyncEnabled()} and isAutoSyncEnabled() = ${isAutoSyncEnabled()}")
+    if (isYtSyncEnabled()) {
 
         SmartMessage(
             message = appContext().resources.getString(R.string.syncing),
@@ -295,7 +295,7 @@ suspend fun removeYTSongFromPlaylist(
 
     println("removeYTSongFromPlaylist removeSongFromPlaylist params songId = $songId, playlistBrowseId = $playlistBrowseId, playlistId = $playlistId")
 
-    if (isSyncEnabled()) {
+    if (isYtSyncEnabled()) {
         Database.asyncTransaction {
             CoroutineScope(Dispatchers.IO).launch {
                 val songSetVideoId = Database.getSetVideoIdFromPlaylist(songId, playlistId).firstOrNull()

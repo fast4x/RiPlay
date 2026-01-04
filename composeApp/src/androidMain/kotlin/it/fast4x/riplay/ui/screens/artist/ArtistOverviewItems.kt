@@ -1,7 +1,6 @@
 package it.fast4x.riplay.ui.screens.artist
 
 import android.annotation.SuppressLint
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateFloatAsState
@@ -16,12 +15,10 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.width
@@ -33,8 +30,6 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.text.BasicText
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -55,7 +50,6 @@ import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.MediaItem
 import androidx.media3.common.util.UnstableApi
-import androidx.media3.exoplayer.offline.Download
 import androidx.navigation.NavController
 import it.fast4x.riplay.extensions.persist.persistList
 import it.fast4x.environment.Environment
@@ -81,11 +75,8 @@ import it.fast4x.riplay.ui.items.SongItem
 import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.ui.styling.px
 import it.fast4x.riplay.utils.asMediaItem
-import org.dailyislam.android.utilities.getHttpClient
-import it.fast4x.riplay.utils.languageDestination
 import it.fast4x.riplay.extensions.preferences.parentalControlEnabledKey
 import it.fast4x.riplay.extensions.preferences.rememberPreference
-import me.bush.translator.Translator
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.enums.MaxSongs
 import it.fast4x.riplay.enums.PopupType
@@ -100,7 +91,7 @@ import it.fast4x.riplay.ui.components.themed.NowPlayingSongIndicator
 import it.fast4x.riplay.ui.components.themed.TitleSection
 import it.fast4x.riplay.ui.items.ArtistItem
 import it.fast4x.riplay.ui.items.VideoItem
-import it.fast4x.riplay.ui.screens.settings.isSyncEnabled
+import it.fast4x.riplay.ui.screens.settings.isYtSyncEnabled
 import it.fast4x.riplay.utils.addNext
 import it.fast4x.riplay.utils.addToYtLikedSongs
 import it.fast4x.riplay.utils.asSong
@@ -115,12 +106,9 @@ import it.fast4x.riplay.utils.LazyListContainer
 import it.fast4x.riplay.utils.forcePlay
 import it.fast4x.riplay.commonutils.setLikeState
 import it.fast4x.riplay.enums.ItemSortBy
-import it.fast4x.riplay.enums.SongSortBy
 import it.fast4x.riplay.enums.SortOrder
-import it.fast4x.riplay.extensions.preferences.songSortByKey
 import it.fast4x.riplay.extensions.preferences.songSortOrderKey
 import it.fast4x.riplay.ui.components.themed.SortMenu
-import it.fast4x.riplay.ui.styling.style
 import it.fast4x.riplay.utils.typography
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -414,13 +402,13 @@ fun ArtistOverviewItems(
                                     .padding(horizontal = 5.dp)
                                     .combinedClickable(
                                         onClick = {
-                                            if (!isNetworkConnected(appContext()) && isSyncEnabled()) {
+                                            if (!isNetworkConnected(appContext()) && isYtSyncEnabled()) {
                                                 SmartMessage(
                                                     appContext().resources.getString(R.string.no_connection),
                                                     context = appContext(),
                                                     type = PopupType.Error
                                                 )
-                                            } else if (!isSyncEnabled()) {
+                                            } else if (!isYtSyncEnabled()) {
                                                 artistSongs.forEachIndexed { _, song ->
                                                     Database.asyncTransaction {
                                                         if (like(

@@ -231,7 +231,7 @@ import it.fast4x.riplay.ui.screens.player.local.rememberLocalPlayerSheetState
 import it.fast4x.riplay.ui.screens.player.online.OnlineMiniPlayer
 import it.fast4x.riplay.ui.screens.player.online.OnlinePlayer
 import it.fast4x.riplay.ui.screens.player.online.components.core.OnlinePlayerView
-import it.fast4x.riplay.ui.screens.settings.isLoggedIn
+import it.fast4x.riplay.ui.screens.settings.isYtLoggedIn
 import it.fast4x.riplay.ui.styling.Appearance
 import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.ui.styling.LocalAppearance
@@ -906,7 +906,7 @@ class MainActivity :
             Timber.d("MainActivity.setContent visitorData in use: ${visitorData.value}")
 
             cookie.let {
-                if (isLoggedIn())
+                if (isYtLoggedIn())
                     Environment.cookie = it.value
                 else {
                     Environment.cookie = ""

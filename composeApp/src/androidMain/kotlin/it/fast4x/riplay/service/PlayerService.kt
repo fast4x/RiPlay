@@ -187,6 +187,7 @@ import it.fast4x.riplay.extensions.lastfm.sendNowPlaying
 import it.fast4x.riplay.extensions.lastfm.sendScrobble
 import it.fast4x.riplay.extensions.preferences.checkVolumeLevelKey
 import it.fast4x.riplay.extensions.preferences.excludeSongIfIsVideoKey
+import it.fast4x.riplay.extensions.preferences.isEnabledLastfmKey
 import it.fast4x.riplay.extensions.preferences.lastfmSessionTokenKey
 import it.fast4x.riplay.extensions.preferences.parentalControlEnabledKey
 import it.fast4x.riplay.utils.isExplicit
@@ -1175,22 +1176,23 @@ class PlayerService : Service(),
 
         saveMasterQueueWithPosition()
 
-        preferences.getString(lastfmSessionTokenKey, "")?.let {
-            /*
-            sendScrobble(
-                mediaItem.mediaMetadata.artist as String,
-                mediaItem.mediaMetadata.title as String,
-                mediaItem.mediaMetadata.albumTitle as String,
-                it
-            )
-             */
-            sendNowPlaying(
-                mediaItem.mediaMetadata.artist as String,
-                mediaItem.mediaMetadata.title as String,
-                mediaItem.mediaMetadata.albumTitle as String,
-                it
-            )
-        }
+        if (preferences.getBoolean(isEnabledLastfmKey, false))
+            preferences.getString(lastfmSessionTokenKey, "")?.let {
+                /*
+                sendScrobble(
+                    mediaItem.mediaMetadata.artist as String,
+                    mediaItem.mediaMetadata.title as String,
+                    mediaItem.mediaMetadata.albumTitle as String,
+                    it
+                )
+                 */
+                sendNowPlaying(
+                    mediaItem.mediaMetadata.artist as String,
+                    mediaItem.mediaMetadata.title as String,
+                    mediaItem.mediaMetadata.albumTitle as String,
+                    it
+                )
+            }
 
 
     }

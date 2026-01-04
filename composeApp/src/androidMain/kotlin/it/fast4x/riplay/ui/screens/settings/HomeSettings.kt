@@ -112,7 +112,7 @@ fun  HomeSettings() {
                 settingsItem {
                     HeaderWithIcon(
                         title = stringResource(R.string.home),
-                        iconId = if (!isLoggedIn()) R.drawable.sparkles else R.drawable.home,
+                        iconId = if (!isYtLoggedIn()) R.drawable.sparkles else R.drawable.home,
                         enabled = false,
                         showIcon = true,
                         modifier = Modifier,

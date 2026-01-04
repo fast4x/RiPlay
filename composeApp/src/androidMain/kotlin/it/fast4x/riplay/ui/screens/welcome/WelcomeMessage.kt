@@ -9,7 +9,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import it.fast4x.riplay.R
 import it.fast4x.riplay.ui.components.themed.TitleMiniSection
-import it.fast4x.riplay.ui.screens.settings.isLoggedIn
+import it.fast4x.riplay.ui.screens.settings.isYtLoggedIn
 import it.fast4x.riplay.utils.ytAccountName
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -41,7 +41,7 @@ fun WelcomeMessage(){
             stringResource(R.string.good_night)
         }
     }.let {
-        if (isLoggedIn()) "$it, ${ytAccountName()}"
+        if (isYtLoggedIn()) "$it, ${ytAccountName()}"
         else it
     }
 

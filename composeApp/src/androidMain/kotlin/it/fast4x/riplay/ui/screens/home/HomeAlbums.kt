@@ -89,11 +89,10 @@ import it.fast4x.riplay.ui.components.tab.toolbar.SongsShuffle
 import it.fast4x.riplay.extensions.preferences.Preference.HOME_ALBUM_ITEM_SIZE
 import it.fast4x.riplay.utils.thumbnailShape
 import it.fast4x.riplay.ui.components.PullToRefreshBox
-import it.fast4x.riplay.ui.screens.settings.isSyncEnabled
+import it.fast4x.riplay.ui.screens.settings.isYtSyncEnabled
 import it.fast4x.riplay.utils.addToYtPlaylist
 import it.fast4x.riplay.utils.autoSyncToolbutton
 import it.fast4x.riplay.extensions.preferences.autosyncKey
-import it.fast4x.riplay.ui.components.tab.ToolbarMenuButton
 import it.fast4x.riplay.utils.LazyListContainer
 import it.fast4x.riplay.utils.importYTMLikedAlbums
 import it.fast4x.riplay.utils.insertOrUpdateBlacklist
@@ -453,7 +452,7 @@ fun HomeAlbums(
                                                             if (position > 0) position++ else position =
                                                                 0
 
-                                                            if (!isSyncEnabled() || !playlistPreview.playlist.isYoutubePlaylist) {
+                                                            if (!isYtSyncEnabled() || !playlistPreview.playlist.isYoutubePlaylist) {
                                                                 songs.forEachIndexed { index, song ->
                                                                     Database.asyncTransaction {
                                                                         insert(song.asMediaItem)
@@ -634,7 +633,7 @@ fun HomeAlbums(
                                                             if (position > 0) position++ else position =
                                                                 0
 
-                                                            if (!isSyncEnabled() || !playlistPreview.playlist.isYoutubePlaylist) {
+                                                            if (!isYtSyncEnabled() || !playlistPreview.playlist.isYoutubePlaylist) {
                                                                 songs.forEachIndexed { index, song ->
                                                                     Database.asyncTransaction {
                                                                         insert(song.asMediaItem)

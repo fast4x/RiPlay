@@ -12,7 +12,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
@@ -28,8 +27,7 @@ import it.fast4x.riplay.ui.components.SheetBody
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.utils.thumbnailShape
 import it.fast4x.riplay.ui.components.themed.DropdownMenu
-import it.fast4x.riplay.ui.components.themed.Menu
-import it.fast4x.riplay.ui.screens.settings.isLoggedIn
+import it.fast4x.riplay.ui.screens.settings.isYtLoggedIn
 import it.fast4x.riplay.utils.MusicIdentifier
 import it.fast4x.riplay.utils.ytAccountThumbnail
 
@@ -127,7 +125,7 @@ fun ActionBar(
     // Search Icon
     HeaderIcon( R.drawable.search) { navController.navigate(NavRoutes.search.name) }
 
-    if (isLoggedIn()) {
+    if (isYtLoggedIn()) {
         if (ytAccountThumbnail() != "")
             AsyncImage(
                 model = ytAccountThumbnail(),

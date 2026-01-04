@@ -94,16 +94,16 @@ import it.fast4x.riplay.data.models.Song
 import it.fast4x.riplay.data.models.defaultQueue
 import it.fast4x.riplay.extensions.persist.persistList
 import it.fast4x.riplay.utils.typography
-import it.fast4x.riplay.ui.screens.settings.isSyncEnabled
+import it.fast4x.riplay.ui.screens.settings.isYtSyncEnabled
 import it.fast4x.riplay.utils.PlayerViewModel
 import it.fast4x.riplay.utils.PlayerViewModelFactory
 import it.fast4x.riplay.utils.addSongToYtPlaylist
-import it.fast4x.riplay.utils.addToYtLikedSong
+import it.fast4x.riplay.utils.addToOnlineLikedSong
 import it.fast4x.riplay.utils.forcePlay
 import org.dailyislam.android.utilities.isNetworkConnected
 import it.fast4x.riplay.utils.getLikeState
 import it.fast4x.riplay.commonutils.setDisLikeState
-import it.fast4x.riplay.utils.unlikeYtVideoOrSong
+import it.fast4x.riplay.utils.removeFromOnlineLikedSong
 
 @OptIn(UnstableApi::class)
 @Composable
@@ -186,7 +186,7 @@ fun BaseMediaItemGridMenu(
         onAddToPreferites = onAddToPreferites,
         onMatchingSong =  onMatchingSong,
         onAddToPlaylist = { playlist, position ->
-            if (!isSyncEnabled() || !playlist.isYoutubePlaylist){
+            if (!isYtSyncEnabled() || !playlist.isYoutubePlaylist){
                 Database.asyncTransaction {
                     insert(mediaItem)
                     insert(
@@ -263,7 +263,7 @@ fun MiniMediaItemGridMenu(
         modifier = modifier,
         onAddToPreferites = onAddToPreferites,
         onAddToPlaylist = { playlist, position ->
-            if (!isSyncEnabled() || !playlist.isYoutubePlaylist){
+            if (!isYtSyncEnabled() || !playlist.isYoutubePlaylist){
                 Database.asyncTransaction {
                     insert(mediaItem)
                     insert(
@@ -445,21 +445,21 @@ fun MediaItemGridMenu (
                     icon = getLikeState(mediaItem.mediaId),
                     color = colorPalette().favoritesIcon,
                     onClick = {
-                        if (!isNetworkConnected(appContext()) && isSyncEnabled()) {
+                        if (!isNetworkConnected(appContext()) && isYtSyncEnabled()) {
                             SmartMessage(appContext().resources.getString(R.string.no_connection), context = appContext(), type = PopupType.Error)
-                        } else if (!isSyncEnabled()){
+                        } else if (!isYtSyncEnabled()){
                             mediaItemToggleLike(mediaItem)
                             updateData = !updateData
                         } else {
                             CoroutineScope(Dispatchers.IO).launch {
-                                addToYtLikedSong(mediaItem)
+                                addToOnlineLikedSong(mediaItem)
                             }
                         }
                     },
                     onLongClick = {
-                        if (!isNetworkConnected(appContext()) && isSyncEnabled()) {
+                        if (!isNetworkConnected(appContext()) && isYtSyncEnabled()) {
                             SmartMessage(appContext().resources.getString(R.string.no_connection), context = appContext(), type = PopupType.Error)
-                        } else if (!isSyncEnabled()){
+                        } else if (!isYtSyncEnabled()){
                             Database.asyncTransaction {
                                 if (like(mediaItem.mediaId, setDisLikeState(likedAt)) == 0){
                                     insert(mediaItem, Song::toggleDislike)
@@ -469,7 +469,7 @@ fun MediaItemGridMenu (
                         } else {
                             CoroutineScope(Dispatchers.IO).launch {
                                 // currently can not implement dislike for sync so only unliking song
-                                unlikeYtVideoOrSong(mediaItem)
+                                removeFromOnlineLikedSong(mediaItem)
                                 updateData = !updateData
                             }
                         }

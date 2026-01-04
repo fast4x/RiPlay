@@ -319,14 +319,14 @@ import it.fast4x.riplay.ui.screens.player.common.Queue
 import it.fast4x.riplay.ui.screens.player.common.StatsForNerds
 import it.fast4x.riplay.ui.screens.player.common.Thumbnail
 import it.fast4x.riplay.ui.screens.player.common.thumbnailpause
-import it.fast4x.riplay.ui.screens.settings.isSyncEnabled
+import it.fast4x.riplay.ui.screens.settings.isYtSyncEnabled
 import it.fast4x.riplay.ui.styling.favoritesIcon
-import it.fast4x.riplay.utils.addToYtLikedSong
+import it.fast4x.riplay.utils.addToOnlineLikedSong
 import it.fast4x.riplay.utils.animatedGradient
 import it.fast4x.riplay.utils.getLikeState
 import it.fast4x.riplay.utils.mediaItemToggleLike
 import it.fast4x.riplay.commonutils.setDisLikeState
-import it.fast4x.riplay.utils.unlikeYtVideoOrSong
+import it.fast4x.riplay.utils.removeFromOnlineLikedSong
 import kotlinx.coroutines.CoroutineScope
 import org.dailyislam.android.utilities.isNetworkConnected
 import kotlin.math.sqrt
@@ -3165,9 +3165,9 @@ fun LocalPlayer(
                                 color = colorPalette().favoritesIcon,
                                 icon = getLikeState(mediaItem.mediaId),
                                 onClick = {
-                                    if (!isNetworkConnected(appContext()) && isSyncEnabled()) {
+                                    if (!isNetworkConnected(appContext()) && isYtSyncEnabled()) {
                                         SmartMessage(appContext().resources.getString(R.string.no_connection), context = appContext(), type = PopupType.Error)
-                                    } else if (!isSyncEnabled()){
+                                    } else if (!isYtSyncEnabled()){
                                         Database.asyncTransaction {
                                             CoroutineScope(Dispatchers.IO).launch {
                                                 mediaItem.takeIf { it.mediaId == mediaItem.mediaId }?.let { mediaItem ->
@@ -3177,15 +3177,15 @@ fun LocalPlayer(
                                         }
                                     } else {
                                         CoroutineScope(Dispatchers.IO).launch {
-                                            addToYtLikedSong(mediaItem)
+                                            addToOnlineLikedSong(mediaItem)
                                         }
                                     }
                                     if (effectRotationEnabled) isRotated = !isRotated
                                 },
                                 onLongClick = {
-                                    if (!isNetworkConnected(appContext()) && isSyncEnabled()) {
+                                    if (!isNetworkConnected(appContext()) && isYtSyncEnabled()) {
                                         SmartMessage(appContext().resources.getString(R.string.no_connection), context = appContext(), type = PopupType.Error)
-                                    } else if (!isSyncEnabled()){
+                                    } else if (!isYtSyncEnabled()){
                                         Database.asyncTransaction {
                                             CoroutineScope(Dispatchers.IO).launch {
                                                 mediaItem.takeIf { it.mediaId == mediaItem.mediaId }?.let { mediaItem ->
@@ -3197,7 +3197,7 @@ fun LocalPlayer(
                                         }
                                     } else {
                                         CoroutineScope(Dispatchers.IO).launch {
-                                            unlikeYtVideoOrSong(mediaItem)
+                                            removeFromOnlineLikedSong(mediaItem)
                                         }
                                     }
                                     if (effectRotationEnabled) isRotated = !isRotated

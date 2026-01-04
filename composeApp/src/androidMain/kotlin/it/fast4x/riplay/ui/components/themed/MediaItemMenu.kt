@@ -132,11 +132,11 @@ import it.fast4x.riplay.extensions.fastshare.FastShare
 import it.fast4x.riplay.data.models.Queues
 import it.fast4x.riplay.data.models.defaultQueue
 import it.fast4x.riplay.utils.typography
-import it.fast4x.riplay.ui.screens.settings.isSyncEnabled
+import it.fast4x.riplay.ui.screens.settings.isYtSyncEnabled
 import it.fast4x.riplay.utils.PlayerViewModel
 import it.fast4x.riplay.utils.PlayerViewModelFactory
 import it.fast4x.riplay.utils.addSongToYtPlaylist
-import it.fast4x.riplay.utils.addToYtLikedSong
+import it.fast4x.riplay.utils.addToOnlineLikedSong
 import it.fast4x.riplay.utils.asSong
 import it.fast4x.riplay.utils.forcePlay
 import org.dailyislam.android.utilities.isNetworkConnected
@@ -146,7 +146,7 @@ import it.fast4x.riplay.commonutils.setDisLikeState
 import it.fast4x.riplay.enums.ThumbnailRoundness
 import it.fast4x.riplay.extensions.preferences.thumbnailRoundnessKey
 import it.fast4x.riplay.ui.styling.secondary
-import it.fast4x.riplay.utils.unlikeYtVideoOrSong
+import it.fast4x.riplay.utils.removeFromOnlineLikedSong
 import timber.log.Timber
 
 @ExperimentalTextApi
@@ -173,9 +173,9 @@ fun InHistoryMediaItemMenu(
         onHideFromDatabase = onHideFromDatabase,
         onDeleteFromDatabase = onDeleteFromDatabase,
         onAddToPreferites = {
-            if (!isNetworkConnected(globalContext()) && isSyncEnabled()){
+            if (!isNetworkConnected(globalContext()) && isYtSyncEnabled()){
                 SmartMessage(globalContext().resources.getString(R.string.no_connection), context = globalContext(), type = PopupType.Error)
-            } else if (!isSyncEnabled()){
+            } else if (!isYtSyncEnabled()){
                 Database.asyncTransaction {
                     like(
                         song.asMediaItem.mediaId,
@@ -186,7 +186,7 @@ fun InHistoryMediaItemMenu(
             }
             else {
                 CoroutineScope(Dispatchers.IO).launch {
-                    addToYtLikedSong(song.asMediaItem)
+                    addToOnlineLikedSong(song.asMediaItem)
                 }
             }
         },
@@ -224,7 +224,7 @@ fun InPlaylistMediaItemMenu(
         mediaItem = song.asMediaItem,
         modifier = modifier,
         onRemoveFromPlaylist = {
-            if (!isNetworkConnected(context) && playlist?.playlist?.isYoutubePlaylist == true && playlist.playlist.isEditable && isSyncEnabled()){
+            if (!isNetworkConnected(context) && playlist?.playlist?.isYoutubePlaylist == true && playlist.playlist.isEditable && isYtSyncEnabled()){
                 SmartMessage(context.resources.getString(R.string.no_connection), context = context, type = PopupType.Error)
             } else if (playlist?.playlist?.isEditable == true) {
 
@@ -232,7 +232,7 @@ fun InPlaylistMediaItemMenu(
                     CoroutineScope(Dispatchers.IO).launch {
                         playlist.playlist.browseId.let {
                             println("InPlaylistMediaItemMenu isYoutubePlaylist ${playlist.playlist.isYoutubePlaylist} isEditable ${playlist.playlist.isEditable} songId ${song.id} browseId ${playlist.playlist.browseId} playlistId $playlistId")
-                            if (isSyncEnabled() && playlist.playlist.isYoutubePlaylist && playlist.playlist.isEditable) {
+                            if (isYtSyncEnabled() && playlist.playlist.isYoutubePlaylist && playlist.playlist.isEditable) {
                                 CoroutineScope(Dispatchers.IO).launch {
                                     if (removeYTSongFromPlaylist(song.id,playlist.playlist.browseId ?: "",playlistId))
                                         deleteSongFromPlaylist(song.id, playlistId)
@@ -253,9 +253,9 @@ fun InPlaylistMediaItemMenu(
             }
         },
         onAddToPreferites = {
-            if (!isNetworkConnected(globalContext()) && isSyncEnabled()){
+            if (!isNetworkConnected(globalContext()) && isYtSyncEnabled()){
                 SmartMessage(context.resources.getString(R.string.no_connection), context = context, type = PopupType.Error)
-            } else if (!isSyncEnabled()){
+            } else if (!isYtSyncEnabled()){
                 Database.asyncTransaction {
                     like(
                         song.asMediaItem.mediaId,
@@ -265,7 +265,7 @@ fun InPlaylistMediaItemMenu(
             }
             else {
                 CoroutineScope(Dispatchers.IO).launch {
-                    addToYtLikedSong(song.asMediaItem)
+                    addToOnlineLikedSong(song.asMediaItem)
                 }
             }
         },
@@ -364,9 +364,9 @@ fun NonQueuedMediaItemMenuLibrary(
             onHideFromDatabase = { isHiding = true },
             onRemoveFromQuickPicks = onRemoveFromQuickPicks,
             onAddToPreferites = {
-                if (!isNetworkConnected(globalContext()) && isSyncEnabled()){
+                if (!isNetworkConnected(globalContext()) && isYtSyncEnabled()){
                     SmartMessage(globalContext().resources.getString(R.string.no_connection), context = globalContext(), type = PopupType.Error)
-                } else if (!isSyncEnabled()){
+                } else if (!isYtSyncEnabled()){
                     Database.asyncTransaction {
                         like(
                             mediaItem.mediaId,
@@ -376,7 +376,7 @@ fun NonQueuedMediaItemMenuLibrary(
                 }
                 else {
                     CoroutineScope(Dispatchers.IO).launch {
-                        addToYtLikedSong(mediaItem)
+                        addToOnlineLikedSong(mediaItem)
                     }
                 }
             },
@@ -406,9 +406,9 @@ fun NonQueuedMediaItemMenuLibrary(
             onHideFromDatabase = { isHiding = true },
             onRemoveFromQuickPicks = onRemoveFromQuickPicks,
             onAddToPreferites = {
-                if (!isNetworkConnected(globalContext()) && isSyncEnabled()){
+                if (!isNetworkConnected(globalContext()) && isYtSyncEnabled()){
                     SmartMessage(globalContext().resources.getString(R.string.no_connection), context = globalContext(), type = PopupType.Error)
-                } else if (!isSyncEnabled()){
+                } else if (!isYtSyncEnabled()){
                     Database.asyncTransaction {
                         like(
                             mediaItem.mediaId,
@@ -418,7 +418,7 @@ fun NonQueuedMediaItemMenuLibrary(
                 }
                 else {
                     CoroutineScope(Dispatchers.IO).launch {
-                        addToYtLikedSong(mediaItem)
+                        addToOnlineLikedSong(mediaItem)
                     }
                 }
             },
@@ -576,9 +576,9 @@ fun QueuedMediaItemMenu(
                 navController.navigate(route = "${NavRoutes.localPlaylist.name}/$it")
             },
             onAddToPreferites = {
-                if (!isNetworkConnected(globalContext()) && isSyncEnabled()){
+                if (!isNetworkConnected(globalContext()) && isYtSyncEnabled()){
                     SmartMessage(context.resources.getString(R.string.no_connection), context = context, type = PopupType.Error)
-                } else if (!isSyncEnabled()){
+                } else if (!isYtSyncEnabled()){
                     Database.asyncTransaction {
                         like(
                             mediaItem.mediaId,
@@ -588,7 +588,7 @@ fun QueuedMediaItemMenu(
                 }
                 else {
                     CoroutineScope(Dispatchers.IO).launch {
-                        addToYtLikedSong(mediaItem)
+                        addToOnlineLikedSong(mediaItem)
                     }
                 }
             },
@@ -620,9 +620,9 @@ fun QueuedMediaItemMenu(
                 navController.navigate(route = "${NavRoutes.playlist.name}/$it")
             },
             onAddToPreferites = {
-                if (!isNetworkConnected(globalContext()) && isSyncEnabled()){
+                if (!isNetworkConnected(globalContext()) && isYtSyncEnabled()){
                     SmartMessage(context.resources.getString(R.string.no_connection), context = context, type = PopupType.Error)
-                } else if (!isSyncEnabled()){
+                } else if (!isYtSyncEnabled()){
                     Database.asyncTransaction {
                         like(
                             mediaItem.mediaId,
@@ -632,7 +632,7 @@ fun QueuedMediaItemMenu(
                 }
                 else {
                     CoroutineScope(Dispatchers.IO).launch {
-                        addToYtLikedSong(mediaItem)
+                        addToOnlineLikedSong(mediaItem)
                     }
                 }
             },
@@ -692,7 +692,7 @@ fun BaseMediaItemMenu(
         onAddToPreferites = onAddToPreferites,
         onMatchingSong =  onMatchingSong,
         onAddToPlaylist = { playlist, position ->
-            if (!isSyncEnabled() || !playlist.isYoutubePlaylist){
+            if (!isYtSyncEnabled() || !playlist.isYoutubePlaylist){
                 Database.asyncTransaction {
                     insert(mediaItem)
                     insert(
@@ -786,7 +786,7 @@ fun MiniMediaItemMenu(
         modifier = modifier,
         onAddToPreferites = onAddToPreferites,
         onAddToPlaylist = { playlist, position ->
-            if (!isSyncEnabled() || !playlist.isYoutubePlaylist){
+            if (!isYtSyncEnabled() || !playlist.isYoutubePlaylist){
                 Database.asyncTransaction {
                     insert(mediaItem)
                     insert(
@@ -1470,22 +1470,22 @@ fun MediaItemMenu(
                             color = colorPalette().favoritesIcon,
                             //color = if (likedAt == null) colorPalette().textDisabled else colorPalette().text,
                             onClick = {
-                                if (!isNetworkConnected(appContext()) && isSyncEnabled()) {
+                                if (!isNetworkConnected(appContext()) && isYtSyncEnabled()) {
                                     SmartMessage(appContext().resources.getString(R.string.no_connection), context = appContext(), type = PopupType.Error)
-                                } else if (!isSyncEnabled()){
+                                } else if (!isYtSyncEnabled()){
                                     Database.asyncTransaction {
                                         mediaItemToggleLike(mediaItem)
                                     }
                                 } else {
                                     CoroutineScope(Dispatchers.IO).launch {
-                                        addToYtLikedSong(mediaItem)
+                                        addToOnlineLikedSong(mediaItem)
                                     }
                                 }
                             },
                             onLongClick = {
-                                if (!isNetworkConnected(appContext()) && isSyncEnabled()) {
+                                if (!isNetworkConnected(appContext()) && isYtSyncEnabled()) {
                                     SmartMessage(appContext().resources.getString(R.string.no_connection), context = appContext(), type = PopupType.Error)
-                                } else if (!isSyncEnabled()){
+                                } else if (!isYtSyncEnabled()){
                                     Database.asyncTransaction {
                                         if (like(mediaItem.mediaId, setDisLikeState(likedAt)) == 0) {
                                             insert(mediaItem, Song::toggleDislike)
@@ -1494,7 +1494,7 @@ fun MediaItemMenu(
                                 } else {
                                     CoroutineScope(Dispatchers.IO).launch {
                                         // currently disliking can not be implemented for syncing so just unliking songs
-                                        unlikeYtVideoOrSong(mediaItem)
+                                        removeFromOnlineLikedSong(mediaItem)
                                     }
                                 }
                             },

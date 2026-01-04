@@ -79,14 +79,14 @@ import it.fast4x.riplay.utils.typography
 import it.fast4x.riplay.ui.components.themed.IconButton
 import it.fast4x.riplay.ui.components.themed.NowPlayingSongIndicator
 import it.fast4x.riplay.ui.components.themed.SmartMessage
-import it.fast4x.riplay.ui.screens.settings.isSyncEnabled
+import it.fast4x.riplay.ui.screens.settings.isYtSyncEnabled
 import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.ui.styling.collapsedPlayerProgressBar
 import it.fast4x.riplay.ui.styling.favoritesIcon
 import it.fast4x.riplay.ui.styling.favoritesOverlay
 import it.fast4x.riplay.ui.styling.px
 import it.fast4x.riplay.utils.DisposableListener
-import it.fast4x.riplay.utils.addToYtLikedSong
+import it.fast4x.riplay.utils.addToOnlineLikedSong
 import it.fast4x.riplay.extensions.preferences.backgroundProgressKey
 import it.fast4x.riplay.utils.applyIf
 import it.fast4x.riplay.extensions.preferences.disableClosingPlayerSwipingDownKey
@@ -106,7 +106,7 @@ import it.fast4x.riplay.ui.styling.semiBold
 import it.fast4x.riplay.commonutils.setDisLikeState
 import it.fast4x.riplay.utils.shouldBePlaying
 import it.fast4x.riplay.commonutils.thumbnail
-import it.fast4x.riplay.utils.unlikeYtVideoOrSong
+import it.fast4x.riplay.utils.removeFromOnlineLikedSong
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -186,9 +186,9 @@ fun LocalMiniPlayer(
 
     LaunchedEffect(updateLike, updateDislike) {
         if (updateLike) {
-            if (!isNetworkConnected(appContext()) && isSyncEnabled()) {
+            if (!isNetworkConnected(appContext()) && isYtSyncEnabled()) {
                 SmartMessage(appContext().resources.getString(R.string.no_connection), context = appContext(), type = PopupType.Error)
-            } else if (!isSyncEnabled()){
+            } else if (!isYtSyncEnabled()){
                 mediaItemToggleLike(mediaItem)
                 if (likedAt == null || likedAt == -1L)
                     SmartMessage(context.resources.getString(R.string.added_to_favorites), context = context)
@@ -196,15 +196,15 @@ fun LocalMiniPlayer(
                     SmartMessage(context.resources.getString(R.string.removed_from_favorites), context = context)
             } else {
                 CoroutineScope(Dispatchers.IO).launch {
-                    addToYtLikedSong(mediaItem)
+                    addToOnlineLikedSong(mediaItem)
                 }
             }
             updateLike = false
         }
         if (updateDislike) {
-            if (!isNetworkConnected(appContext()) && isSyncEnabled()) {
+            if (!isNetworkConnected(appContext()) && isYtSyncEnabled()) {
                 SmartMessage(appContext().resources.getString(R.string.no_connection), context = appContext(), type = PopupType.Error)
-            } else if (!isSyncEnabled()){
+            } else if (!isYtSyncEnabled()){
                 Database.asyncTransaction {
                     if (like(mediaItem.mediaId, setDisLikeState(likedAt)) == 0)
                         insert(mediaItem, Song::toggleDislike)
@@ -216,7 +216,7 @@ fun LocalMiniPlayer(
             } else {
                 CoroutineScope(Dispatchers.IO).launch {
                     // can currently not implement dislike for sync, so unliking the song
-                    unlikeYtVideoOrSong(mediaItem)
+                    removeFromOnlineLikedSong(mediaItem)
                 }
             }
             updateDislike = false

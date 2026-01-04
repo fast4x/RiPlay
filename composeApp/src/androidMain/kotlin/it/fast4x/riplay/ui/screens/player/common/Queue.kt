@@ -115,7 +115,7 @@ import it.fast4x.riplay.ui.components.themed.QueuedMediaItemMenu
 import it.fast4x.riplay.ui.components.themed.SmartMessage
 import it.fast4x.riplay.ui.items.SongItem
 import it.fast4x.riplay.ui.items.SongItemPlaceholder
-import it.fast4x.riplay.ui.screens.settings.isSyncEnabled
+import it.fast4x.riplay.ui.screens.settings.isYtSyncEnabled
 import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.ui.styling.favoritesIcon
 import it.fast4x.riplay.ui.styling.px
@@ -1166,7 +1166,7 @@ fun Queue(
                                         if (position > 0) position++ else position = 0
                                         //Log.d("mediaItem", "next initial pos ${position}")
                                         if (listMediaItems.isEmpty()) {
-                                            if (!isSyncEnabled() || !playlistPreview.playlist.isYoutubePlaylist) {
+                                            if (!isYtSyncEnabled() || !playlistPreview.playlist.isYoutubePlaylist) {
                                                 windows.forEachIndexed { index, song ->
                                                     Database.asyncTransaction {
                                                         insert(song.mediaItem)
@@ -1192,7 +1192,7 @@ fun Queue(
                                                 }
                                             }
                                         } else {
-                                            if (!isSyncEnabled() || !playlistPreview.playlist.isYoutubePlaylist) {
+                                            if (!isYtSyncEnabled() || !playlistPreview.playlist.isYoutubePlaylist) {
                                                 listMediaItems.forEachIndexed { index, song ->
                                                     //Log.d("mediaItemMaxPos", position.toString())
                                                     Database.asyncTransaction {

@@ -56,11 +56,13 @@ import it.fast4x.riplay.data.models.SongAlbumMap
 import it.fast4x.riplay.data.models.SongArtistMap
 import it.fast4x.riplay.data.models.SongEntity
 import it.fast4x.riplay.data.models.SongPlaylistMap
+import it.fast4x.riplay.extensions.lastfm.sendLoveTrack
+import it.fast4x.riplay.extensions.lastfm.sendUnloveTrack
 import it.fast4x.riplay.service.LOCAL_KEY_PREFIX
 import it.fast4x.riplay.service.isLocal
 import it.fast4x.riplay.ui.components.themed.NewVersionDialog
 import it.fast4x.riplay.ui.components.themed.SmartMessage
-import it.fast4x.riplay.ui.screens.settings.isSyncEnabled
+import it.fast4x.riplay.ui.screens.settings.isYtSyncEnabled
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -831,7 +833,7 @@ suspend fun getAlbumVersionFromVideo(song: Song,playlistId : Long, position : In
 
     Database.asyncTransaction {
         if (findSongIndex() != -1) {
-            if (isSyncEnabled() && playlist?.isYoutubePlaylist == true && playlist.isEditable){
+            if (isYtSyncEnabled() && playlist?.isYoutubePlaylist == true && playlist.isEditable){
                 Database.asyncTransaction {
                     CoroutineScope(Dispatchers.IO).launch {
                         if (removeYTSongFromPlaylist(
@@ -867,7 +869,7 @@ suspend fun getAlbumVersionFromVideo(song: Song,playlistId : Long, position : In
                     val album = Database.album(matchedSong.album?.endpoint?.browseId ?: "").firstOrNull()
                     album?.copy(thumbnailUrl = matchedSong.thumbnail?.url)?.let { update(it) }
 
-                    if (isSyncEnabled() && playlist?.isYoutubePlaylist == true && playlist.isEditable){
+                    if (isYtSyncEnabled() && playlist?.isYoutubePlaylist == true && playlist.isEditable){
                         addToPlaylist(playlist.browseId ?: "", matchedSong.asMediaItem.mediaId)
                     }
                 }
@@ -1087,7 +1089,7 @@ suspend fun addToYtPlaylist(localPlaylistId: Long, position: Int, ytplaylistId: 
 }
 
 suspend fun addSongToYtPlaylist(localPlaylistId: Long, position: Int, ytplaylistId: String, mediaItem: MediaItem){
-    if (isSyncEnabled()) {
+    if (isYtSyncEnabled()) {
         addToPlaylist(ytplaylistId,mediaItem.mediaId)
             .onSuccess {
                 Database.asyncTransaction {
@@ -1121,8 +1123,15 @@ suspend fun addSongToYtPlaylist(localPlaylistId: Long, position: Int, ytplaylist
 
 
 @OptIn(UnstableApi::class)
-suspend fun addToYtLikedSong(mediaItem: MediaItem){
-    if (isSyncEnabled()) {
+suspend fun addToOnlineLikedSong(mediaItem: MediaItem){
+
+    if(isEnabledLastFm()) {
+        sendLoveTrack(mediaItem.mediaMetadata.artist as String,
+            mediaItem.mediaMetadata.title as String
+        )
+    }
+
+    if (isYtSyncEnabled()) {
         if (getLikedAt(mediaItem.mediaId) in listOf(-1L, null)) {
             likeVideoOrSong(mediaItem.mediaId)
                 .onSuccess {
@@ -1147,14 +1156,21 @@ suspend fun addToYtLikedSong(mediaItem: MediaItem){
                     )
                 }
         } else {
-            unlikeYtVideoOrSong(mediaItem)
+            removeFromOnlineLikedSong(mediaItem)
         }
     }
 }
 
 @OptIn(UnstableApi::class)
-suspend fun unlikeYtVideoOrSong(mediaItem: MediaItem){
-    if(isSyncEnabled()){
+suspend fun removeFromOnlineLikedSong(mediaItem: MediaItem){
+
+    if(isEnabledLastFm()) {
+        sendUnloveTrack(mediaItem.mediaMetadata.artist as String,
+            mediaItem.mediaMetadata.title as String
+        )
+    }
+
+    if(isYtSyncEnabled()){
         removelikeVideoOrSong(mediaItem.mediaId)
             .onSuccess {
                 Database.asyncTransaction {
@@ -1182,7 +1198,7 @@ suspend fun unlikeYtVideoOrSong(mediaItem: MediaItem){
 
 @OptIn(UnstableApi::class)
 suspend fun addToYtLikedSongs(mediaItems: List<MediaItem>){
-    if (isSyncEnabled()) {
+    if (isYtSyncEnabled()) {
         mediaItems.forEachIndexed { index, item ->
             delay(1000)
             likeVideoOrSong(item.mediaId).onSuccess {

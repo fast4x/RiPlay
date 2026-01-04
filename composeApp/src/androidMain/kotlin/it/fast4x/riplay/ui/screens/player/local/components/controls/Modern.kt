@@ -69,9 +69,9 @@ import it.fast4x.riplay.ui.components.themed.IconButton
 import it.fast4x.riplay.ui.components.themed.SelectorArtistsDialog
 import it.fast4x.riplay.ui.components.themed.SmartMessage
 import it.fast4x.riplay.ui.screens.player.local.bounceClick
-import it.fast4x.riplay.ui.screens.settings.isSyncEnabled
+import it.fast4x.riplay.ui.screens.settings.isYtSyncEnabled
 import it.fast4x.riplay.ui.styling.favoritesIcon
-import it.fast4x.riplay.utils.addToYtLikedSong
+import it.fast4x.riplay.utils.addToOnlineLikedSong
 import it.fast4x.riplay.ui.styling.bold
 import it.fast4x.riplay.extensions.preferences.colorPaletteModeKey
 import it.fast4x.riplay.utils.doubleShadowDrop
@@ -93,7 +93,7 @@ import it.fast4x.riplay.commonutils.setDisLikeState
 import it.fast4x.riplay.extensions.preferences.showthumbnailKey
 import it.fast4x.riplay.utils.copyTextToClipboard
 import it.fast4x.riplay.extensions.preferences.textoutlineKey
-import it.fast4x.riplay.utils.unlikeYtVideoOrSong
+import it.fast4x.riplay.utils.removeFromOnlineLikedSong
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -242,9 +242,9 @@ fun InfoAlbumAndArtistModern(
                         color = colorPalette().favoritesIcon,
                         icon = getLikeState(mediaId),
                         onClick = {
-                            if (!isNetworkConnected(appContext()) && isSyncEnabled()) {
+                            if (!isNetworkConnected(appContext()) && isYtSyncEnabled()) {
                                 SmartMessage(appContext().resources.getString(R.string.no_connection), context = appContext(), type = PopupType.Error)
-                            } else if (!isSyncEnabled()){
+                            } else if (!isYtSyncEnabled()){
                                 currentMediaItem?.takeIf { it.mediaId == mediaId }.let { mediaItem ->
                                     if (mediaItem != null) {
                                         Database.asyncQuery {
@@ -255,16 +255,16 @@ fun InfoAlbumAndArtistModern(
                             } else {
                                 CoroutineScope(Dispatchers.IO).launch {
                                     if (currentMediaItem != null) {
-                                        addToYtLikedSong(currentMediaItem)
+                                        addToOnlineLikedSong(currentMediaItem)
                                     }
                                 }
                             }
                             if (effectRotationEnabled) isRotated = !isRotated
                         },
                         onLongClick = {
-                            if (!isNetworkConnected(appContext()) && isSyncEnabled()) {
+                            if (!isNetworkConnected(appContext()) && isYtSyncEnabled()) {
                                 SmartMessage(appContext().resources.getString(R.string.no_connection), context = appContext(), type = PopupType.Error)
-                            } else if (!isSyncEnabled()){
+                            } else if (!isYtSyncEnabled()){
                                 currentMediaItem?.takeIf { it.mediaId == mediaId }.let { mediaItem ->
                                     if (mediaItem != null) {
                                         Database.asyncTransaction {
@@ -278,7 +278,7 @@ fun InfoAlbumAndArtistModern(
                                 CoroutineScope(Dispatchers.IO).launch {
                                     if (currentMediaItem != null) {
                                         // currently can not implement dislike for sync, so unliking song
-                                        unlikeYtVideoOrSong(currentMediaItem)
+                                        removeFromOnlineLikedSong(currentMediaItem)
                                     }
                                 }
                             }

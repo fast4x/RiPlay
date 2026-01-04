@@ -168,7 +168,7 @@ import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.enums.PlaylistSongsTypeFilter
 import it.fast4x.riplay.extensions.fastshare.FastShare
 import it.fast4x.riplay.ui.components.themed.NowPlayingSongIndicator
-import it.fast4x.riplay.ui.screens.settings.isSyncEnabled
+import it.fast4x.riplay.ui.screens.settings.isYtSyncEnabled
 import it.fast4x.riplay.utils.checkFileExists
 import it.fast4x.riplay.utils.deleteFileIfExists
 import it.fast4x.riplay.extensions.preferences.disableScrollingTextKey
@@ -194,7 +194,7 @@ import it.fast4x.riplay.ui.components.themed.FastPlayActionsBar
 import it.fast4x.riplay.utils.LazyListContainer
 import it.fast4x.riplay.utils.forcePlay
 import it.fast4x.riplay.utils.removeYTSongFromPlaylist
-import it.fast4x.riplay.utils.unlikeYtVideoOrSong
+import it.fast4x.riplay.utils.removeFromOnlineLikedSong
 import it.fast4x.riplay.utils.updateLocalPlaylist
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -456,7 +456,7 @@ fun LocalPlaylistSongs(
             onDismiss = { isDeleting = false },
             onConfirm = {
                 CoroutineScope(Dispatchers.IO).launch {
-                    if (isSyncEnabled() && playlistPreview?.playlist?.isYoutubePlaylist == true) {
+                    if (isYtSyncEnabled() && playlistPreview?.playlist?.isYoutubePlaylist == true) {
                         if (playlistPreview?.playlist?.isEditable == true) {
                             playlistPreview?.playlist?.browseId?.let {EnvironmentExt.deletePlaylist(cleanPrefix(it))
                             }
@@ -783,7 +783,7 @@ fun LocalPlaylistSongs(
             setValue = { text ->
                 if (isRenaming) {
                     CoroutineScope(Dispatchers.IO).launch {
-                        if (isSyncEnabled() && (playlistPreview?.playlist?.isEditable == true)) {
+                        if (isYtSyncEnabled() && (playlistPreview?.playlist?.isEditable == true)) {
                             println("Innertube YtMusic try to rename Playlist with browseId: ${playlistPreview?.playlist?.browseId}, name: $text")
                             playlistPreview?.playlist?.browseId?.let {
                                 println("Innertube YtMusic renamePlaylist with id: $it, name: $text")
@@ -1389,7 +1389,7 @@ fun LocalPlaylistSongs(
                                     modifier = Modifier
                                         .combinedClickable(
                                             onClick = {
-                                                if (!isNetworkConnected(context) && playlistPreview?.playlist?.isYoutubePlaylist == true && (playlistPreview?.playlist?.isEditable == true) && isSyncEnabled()) {
+                                                if (!isNetworkConnected(context) && playlistPreview?.playlist?.isYoutubePlaylist == true && (playlistPreview?.playlist?.isEditable == true) && isYtSyncEnabled()) {
                                                     SmartMessage(
                                                         context.resources.getString(R.string.no_connection),
                                                         context = context,
@@ -1523,7 +1523,7 @@ fun LocalPlaylistSongs(
                                                 showLinkUnlink = isNetworkConnected(context) && (!playlistPreview.playlist.browseId.isNullOrBlank()),
                                                 onSyncronize = { sync() },
                                                 onLinkUnlink = {
-                                                    if (!isNetworkConnected(context) && playlistPreview.playlist.isYoutubePlaylist && playlistPreview.playlist.isEditable && isSyncEnabled()) {
+                                                    if (!isNetworkConnected(context) && playlistPreview.playlist.isYoutubePlaylist && playlistPreview.playlist.isEditable && isYtSyncEnabled()) {
                                                         SmartMessage(
                                                             context.resources.getString(R.string.no_connection),
                                                             context = context,
@@ -1563,7 +1563,7 @@ fun LocalPlaylistSongs(
                                                     }
                                                 },
                                                 onRename = {
-                                                    if (!isNetworkConnected(context) && playlistPreview.playlist.isYoutubePlaylist && (playlistPreview.playlist.isEditable) && isSyncEnabled()) {
+                                                    if (!isNetworkConnected(context) && playlistPreview.playlist.isYoutubePlaylist && (playlistPreview.playlist.isEditable) && isYtSyncEnabled()) {
                                                         SmartMessage(
                                                             context.resources.getString(R.string.no_connection),
                                                             context = context,
@@ -1598,7 +1598,7 @@ fun LocalPlaylistSongs(
                                                             var distinctSongs =
                                                                 filteredPLSongs.filterNot { it in songsInTheToPlaylist }
 
-                                                            if ((distinctSongs.size + toPlaylistPreview.songCount) > 5000 && toPlaylistPreview.playlist.isYoutubePlaylist && isSyncEnabled()) {
+                                                            if ((distinctSongs.size + toPlaylistPreview.songCount) > 5000 && toPlaylistPreview.playlist.isYoutubePlaylist && isYtSyncEnabled()) {
                                                                 SmartMessage(
                                                                     context.resources.getString(
                                                                         R.string.yt_playlist_limited
@@ -1606,7 +1606,7 @@ fun LocalPlaylistSongs(
                                                                     context = context,
                                                                     type = PopupType.Error
                                                                 )
-                                                            } else if (!isSyncEnabled() || !toPlaylistPreview.playlist.isYoutubePlaylist) {
+                                                            } else if (!isYtSyncEnabled() || !toPlaylistPreview.playlist.isYoutubePlaylist) {
                                                                 playlistSongs.forEachIndexed { index, song ->
                                                                     Database.asyncTransaction {
                                                                         Database.insert(song.asMediaItem)
@@ -1676,7 +1676,7 @@ fun LocalPlaylistSongs(
 
                                                             val distinctSongs =
                                                                 filteredListMediaItems.filter { item -> item !in songsInTheToPlaylist.map { it.asMediaItem } }
-                                                            if ((distinctSongs.size + toPlaylistPreview.songCount) > 5000 && toPlaylistPreview.playlist.isYoutubePlaylist && isSyncEnabled()) {
+                                                            if ((distinctSongs.size + toPlaylistPreview.songCount) > 5000 && toPlaylistPreview.playlist.isYoutubePlaylist && isYtSyncEnabled()) {
                                                                 SmartMessage(
                                                                     context.resources.getString(
                                                                         R.string.yt_playlist_limited
@@ -1684,7 +1684,7 @@ fun LocalPlaylistSongs(
                                                                     context = context,
                                                                     type = PopupType.Error
                                                                 )
-                                                            } else if (!isSyncEnabled() || !toPlaylistPreview.playlist.isYoutubePlaylist) {
+                                                            } else if (!isYtSyncEnabled() || !toPlaylistPreview.playlist.isYoutubePlaylist) {
                                                                 listMediaItems.forEachIndexed { index, song ->
                                                                     Database.asyncTransaction {
                                                                         Database.insert(song)
@@ -1717,13 +1717,13 @@ fun LocalPlaylistSongs(
                                                     }
                                                 },
                                                 onAddToPreferites = {
-                                                    if (!isNetworkConnected(appContext()) && isSyncEnabled()) {
+                                                    if (!isNetworkConnected(appContext()) && isYtSyncEnabled()) {
                                                         SmartMessage(
                                                             appContext().resources.getString(R.string.no_connection),
                                                             context = appContext(),
                                                             type = PopupType.Error
                                                         )
-                                                    } else if (!isSyncEnabled()) {
+                                                    } else if (!isYtSyncEnabled()) {
                                                         if (listMediaItems.isEmpty()) {
                                                             playlistSongs.forEachIndexed { index, song ->
                                                                 if (song.song.likedAt in listOf(
@@ -1764,7 +1764,7 @@ fun LocalPlaylistSongs(
                                                         )
                                                 },
                                                 onDelete = {
-                                                    if (!isNetworkConnected(context) && playlistPreview.playlist.isYoutubePlaylist && isSyncEnabled()) {
+                                                    if (!isNetworkConnected(context) && playlistPreview.playlist.isYoutubePlaylist && isYtSyncEnabled()) {
                                                         SmartMessage(
                                                             context.resources.getString(R.string.no_connection),
                                                             context = context,
@@ -2229,14 +2229,14 @@ fun LocalPlaylistSongs(
                                 SwipeableQueueItem(
                                     mediaItem = song.asMediaItem,
                                     onRemoveFromQueue = {
-                                        if (!isNetworkConnected(context) && playlistPreview?.playlist?.isYoutubePlaylist == true && (playlistPreview?.playlist?.isEditable == true) && isSyncEnabled()) {
+                                        if (!isNetworkConnected(context) && playlistPreview?.playlist?.isYoutubePlaylist == true && (playlistPreview?.playlist?.isEditable == true) && isYtSyncEnabled()) {
                                             SmartMessage(
                                                 context.resources.getString(R.string.no_connection),
                                                 context = context,
                                                 type = PopupType.Error
                                             )
                                         } else if (playlistPreview?.playlist?.isEditable == true) {
-                                            if (isSyncEnabled() && playlistPreview?.playlist?.isYoutubePlaylist == true) {
+                                            if (isYtSyncEnabled() && playlistPreview?.playlist?.isYoutubePlaylist == true) {
                                                 Database.asyncTransaction {
                                                     CoroutineScope(Dispatchers.IO).launch {
                                                         if (removeYTSongFromPlaylist(
@@ -2252,7 +2252,7 @@ fun LocalPlaylistSongs(
                                                             )
                                                         }
                                                         if (playlistPreview?.playlist?.browseId == "LM") {
-                                                            unlikeYtVideoOrSong(song.asMediaItem)
+                                                            removeFromOnlineLikedSong(song.asMediaItem)
                                                         }
                                                     }
                                                 }
@@ -2398,7 +2398,7 @@ fun LocalPlaylistSongs(
                                                     menuState.display {
                                                         InPlaylistMediaItemMenu(
                                                             onMatchingSong = {
-                                                                if (!isNetworkConnected(context) && playlistPreview?.playlist?.isYoutubePlaylist == true && (playlistPreview?.playlist?.isEditable == true) && isSyncEnabled()) {
+                                                                if (!isNetworkConnected(context) && playlistPreview?.playlist?.isYoutubePlaylist == true && (playlistPreview?.playlist?.isEditable == true) && isYtSyncEnabled()) {
                                                                     SmartMessage(
                                                                         context.resources.getString(
                                                                             R.string.no_connection

@@ -23,9 +23,9 @@ import it.fast4x.riplay.utils.globalContext
 import it.fast4x.riplay.enums.MenuStyle
 import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.data.models.SongPlaylistMap
-import it.fast4x.riplay.ui.screens.settings.isSyncEnabled
+import it.fast4x.riplay.ui.screens.settings.isYtSyncEnabled
 import it.fast4x.riplay.utils.addSongToYtPlaylist
-import it.fast4x.riplay.utils.addToYtLikedSong
+import it.fast4x.riplay.utils.addToOnlineLikedSong
 import it.fast4x.riplay.utils.addToYtPlaylist
 import org.dailyislam.android.utilities.isNetworkConnected
 import it.fast4x.riplay.extensions.preferences.menuStyleKey
@@ -159,9 +159,9 @@ fun PlayerMenu(
             onHideFromDatabase = { isHiding = true },
             onClosePlayer = onClosePlayer,
             onAddToPreferites = {
-                if (!isNetworkConnected(globalContext()) && isSyncEnabled()){
+                if (!isNetworkConnected(globalContext()) && isYtSyncEnabled()){
                     SmartMessage(globalContext().resources.getString(R.string.no_connection), context = globalContext(), type = PopupType.Error)
-                } else if (!isSyncEnabled()){
+                } else if (!isYtSyncEnabled()){
                     Database.asyncTransaction {
                         like(
                             mediaItem.mediaId,
@@ -171,7 +171,7 @@ fun PlayerMenu(
                 }
                 else {
                     CoroutineScope(Dispatchers.IO).launch {
-                        addToYtLikedSong(mediaItem)
+                        addToOnlineLikedSong(mediaItem)
                     }
                 }
             },
@@ -215,9 +215,9 @@ fun MiniPlayerMenu(
                 onClosePlayer()
             },
             onAddToPreferites = {
-                if (!isNetworkConnected(globalContext()) && isSyncEnabled()){
+                if (!isNetworkConnected(globalContext()) && isYtSyncEnabled()){
                     SmartMessage(globalContext().resources.getString(R.string.no_connection), context = globalContext(), type = PopupType.Error)
-                } else if (!isSyncEnabled()){
+                } else if (!isYtSyncEnabled()){
                     Database.asyncTransaction {
                         like(
                             mediaItem.mediaId,
@@ -227,7 +227,7 @@ fun MiniPlayerMenu(
                 }
                 else {
                     CoroutineScope(Dispatchers.IO).launch {
-                        addToYtLikedSong(mediaItem)
+                        addToOnlineLikedSong(mediaItem)
                     }
                 }
             },
@@ -242,9 +242,9 @@ fun MiniPlayerMenu(
                 onClosePlayer()
             },
             onAddToPreferites = {
-                if (!isNetworkConnected(globalContext()) && isSyncEnabled()){
+                if (!isNetworkConnected(globalContext()) && isYtSyncEnabled()){
                     SmartMessage(globalContext().resources.getString(R.string.no_connection), context = globalContext(), type = PopupType.Error)
-                } else if (!isSyncEnabled()){
+                } else if (!isYtSyncEnabled()){
                     Database.asyncTransaction {
                         like(
                             mediaItem.mediaId,
@@ -254,7 +254,7 @@ fun MiniPlayerMenu(
                 }
                 else {
                     CoroutineScope(Dispatchers.IO).launch {
-                        addToYtLikedSong(mediaItem)
+                        addToOnlineLikedSong(mediaItem)
                     }
                 }
             },
@@ -285,7 +285,7 @@ fun AddToPlaylistPlayerMenu(
             onClosePlayer()
         },
         onAddToPlaylist = { playlist, position ->
-            if (!isSyncEnabled() || !playlist.isYoutubePlaylist){
+            if (!isYtSyncEnabled() || !playlist.isYoutubePlaylist){
                 Database.asyncTransaction {
                     insert(mediaItem)
                     insert(
@@ -303,7 +303,7 @@ fun AddToPlaylistPlayerMenu(
             }
         },
         onRemoveFromPlaylist = { playlist ->
-            if(isSyncEnabled() && playlist.isYoutubePlaylist && playlist.isEditable) {
+            if(isYtSyncEnabled() && playlist.isYoutubePlaylist && playlist.isEditable) {
                 Database.asyncTransaction {
                     CoroutineScope(Dispatchers.IO).launch {
                         if (removeYTSongFromPlaylist(
@@ -350,7 +350,7 @@ fun AddToPlaylistArtistSongs(
             position = playlistPreview.songCount.minus(1)
             if (position > 0) position++ else position = 0
             mediaItems.forEachIndexed { index, mediaItem ->
-                if (!isSyncEnabled() || !playlistPreview.playlist.isYoutubePlaylist){
+                if (!isYtSyncEnabled() || !playlistPreview.playlist.isYoutubePlaylist){
                     Database.asyncTransaction {
                         insert(mediaItem)
                         insert(

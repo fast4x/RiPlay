@@ -7,7 +7,6 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -66,7 +65,6 @@ import it.fast4x.riplay.utils.isAtLeastAndroid81
 import it.fast4x.riplay.extensions.preferences.isDiscordPresenceEnabledKey
 import it.fast4x.riplay.extensions.preferences.preferences
 import it.fast4x.riplay.extensions.preferences.rememberPreference
-import it.fast4x.riplay.extensions.preferences.restartActivityKey
 import it.fast4x.riplay.extensions.preferences.thumbnailRoundnessKey
 import it.fast4x.riplay.extensions.preferences.useYtLoginOnlyForBrowseKey
 import it.fast4x.riplay.extensions.preferences.ytAccountChannelHandleKey
@@ -84,10 +82,7 @@ import it.fast4x.riplay.extensions.preferences.isEnabledLastfmKey
 import it.fast4x.riplay.extensions.preferences.lastfmSessionTokenKey
 import it.fast4x.riplay.extensions.preferences.musicIdentifierApiKey
 import it.fast4x.riplay.extensions.preferences.musicIdentifierProviderKey
-import it.fast4x.riplay.ui.components.themed.Title
-import it.fast4x.riplay.ui.styling.bold
 import it.fast4x.riplay.ui.styling.semiBold
-import it.fast4x.riplay.utils.RestartActivity
 import it.fast4x.riplay.utils.typography
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
@@ -585,19 +580,19 @@ fun AccountsSettings() {
 
 }
 
-fun isLoginEnabled(): Boolean {
+fun isYtLoginEnabled(): Boolean {
     val isLoginEnabled = appContext().preferences.getBoolean(enableYouTubeLoginKey, false)
     return isLoginEnabled
 }
 
-fun isSyncEnabled(): Boolean {
+fun isYtSyncEnabled(): Boolean {
     val isSyncEnabled = appContext().preferences.getBoolean(enableYouTubeSyncKey, false)
-    return isSyncEnabled && isLoggedIn() && isLoginEnabled()
+    return isSyncEnabled && isYtLoggedIn() && isYtLoginEnabled()
 }
 
-fun isLoggedIn(): Boolean {
+fun isYtLoggedIn(): Boolean {
     val cookie = appContext().preferences.getString(ytCookieKey, "")
-    val isLoggedIn = cookie?.let { parseCookieString(it) }?.contains("SAPISID") == true && isLoginEnabled()
+    val isLoggedIn = cookie?.let { parseCookieString(it) }?.contains("SAPISID") == true && isYtLoginEnabled()
     return isLoggedIn
 }
 

@@ -95,7 +95,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import it.fast4x.riplay.utils.colorPalette
-import it.fast4x.riplay.ui.screens.settings.isLoggedIn
+import it.fast4x.riplay.ui.screens.settings.isYtLoggedIn
 import it.fast4x.riplay.extensions.preferences.quickPicsHomePageKey
 import it.fast4x.riplay.extensions.preferences.showListenerLevelsKey
 import it.fast4x.riplay.service.isLocal
@@ -238,7 +238,7 @@ fun HomePage(
                 discoverPageResult = Environment.discoverPage()
             }
 
-            if (isLoggedIn()) {
+            if (isYtLoggedIn()) {
                 homePageResult = EnvironmentExt.getHomePage()
             }
 
@@ -308,7 +308,7 @@ fun HomePage(
     val buttonsList = listOf(
         HomeSection.Home to HomeSection.Home.textName
     ).toMutableList().apply {
-        if (isLoggedIn()) add(HomeSection.ForYou to HomeSection.ForYou.textName)
+        if (isYtLoggedIn()) add(HomeSection.ForYou to HomeSection.ForYou.textName)
         add(HomeSection.Other to HomeSection.Other.textName)
     }
 
@@ -416,7 +416,7 @@ fun HomePage(
 
                 if (UiType.ViMusic.isCurrent())
                     HeaderWithIcon(
-                        title = if (!isLoggedIn()) stringResource(R.string.quick_picks)
+                        title = if (!isYtLoggedIn()) stringResource(R.string.quick_picks)
                         else stringResource(R.string.home),
                         iconId = R.drawable.search,
                         enabled = true,

@@ -55,7 +55,6 @@ import it.fast4x.riplay.commonutils.PINNED_PREFIX
 import it.fast4x.riplay.R
 import it.fast4x.riplay.commonutils.YTP_PREFIX
 import it.fast4x.riplay.commonutils.thumbnail
-import it.fast4x.riplay.data.models.Blacklist
 import it.fast4x.riplay.utils.appContext
 import it.fast4x.riplay.enums.NavigationBarPosition
 import it.fast4x.riplay.enums.PlaylistSortBy
@@ -100,27 +99,22 @@ import it.fast4x.riplay.ui.components.tab.TabHeader
 import it.fast4x.riplay.ui.components.tab.toolbar.Descriptive
 import it.fast4x.riplay.ui.components.tab.toolbar.MenuIcon
 import it.fast4x.riplay.ui.components.tab.toolbar.SongsShuffle
-import it.fast4x.riplay.ui.screens.settings.isSyncEnabled
+import it.fast4x.riplay.ui.screens.settings.isYtSyncEnabled
 import it.fast4x.riplay.utils.importYTMPrivatePlaylists
 import it.fast4x.riplay.extensions.preferences.Preference.HOME_LIBRARY_ITEM_SIZE
 import it.fast4x.riplay.utils.autoSyncToolbutton
 import it.fast4x.riplay.extensions.preferences.autosyncKey
 import it.fast4x.riplay.data.models.defaultQueue
 import it.fast4x.riplay.enums.BlacklistType
-import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.enums.SortOrder
-import it.fast4x.riplay.extensions.ondevice.blackListedPathsFilename
 import it.fast4x.riplay.ui.components.LocalGlobalSheetState
-import it.fast4x.riplay.ui.components.tab.ToolbarMenuButton
 import it.fast4x.riplay.ui.components.themed.PlaylistsItemMenu
-import it.fast4x.riplay.ui.components.themed.StringListDialog
 import it.fast4x.riplay.ui.styling.px
 import it.fast4x.riplay.utils.CheckAndCreateMonthlyPlaylist
 import it.fast4x.riplay.utils.LazyListContainer
 import it.fast4x.riplay.utils.addNext
 import it.fast4x.riplay.utils.forcePlayFromBeginning
 import it.fast4x.riplay.utils.insertOrUpdateBlacklist
-import it.fast4x.riplay.utils.isAtLeastAndroid10
 import it.fast4x.riplay.utils.viewTypeToolbutton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -130,7 +124,6 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.io.File
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import kotlin.collections.map
@@ -217,7 +210,7 @@ fun HomePlaylists(
         override fun onShortClick() = super.onShortClick()
 
         override fun onSet(newValue: String) {
-            if (isSyncEnabled()) {
+            if (isYtSyncEnabled()) {
                 CoroutineScope(Dispatchers.IO).launch {
                     EnvironmentExt.createPlaylist(newValue).getOrNull()
                         .also {

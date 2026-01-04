@@ -38,7 +38,6 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Checkbox
 import androidx.compose.material.CheckboxDefaults
-import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
 import androidx.compose.material.TextFieldDefaults
@@ -141,7 +140,7 @@ import it.fast4x.riplay.data.models.defaultQueue
 import it.fast4x.riplay.extensions.persist.persist
 import it.fast4x.riplay.utils.typography
 import it.fast4x.riplay.ui.items.SongItem
-import it.fast4x.riplay.ui.screens.settings.isSyncEnabled
+import it.fast4x.riplay.ui.screens.settings.isYtSyncEnabled
 import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.ui.styling.px
 import it.fast4x.riplay.utils.asMediaItem
@@ -1899,7 +1898,7 @@ fun SongMatchingDialog(
                                         .padding(horizontal = 10.dp)
                                         .clickable(onClick = {
                                             Database.asyncTransaction {
-                                                if (isSyncEnabled() && playlist?.isYoutubePlaylist == true && playlist.isEditable) {
+                                                if (isYtSyncEnabled() && playlist?.isYoutubePlaylist == true && playlist.isEditable) {
                                                     CoroutineScope(Dispatchers.IO).launch {
                                                         if (removeYTSongFromPlaylist(
                                                                 songToRematch.id,
@@ -1945,7 +1944,7 @@ fun SongMatchingDialog(
                                                     album?.copy(thumbnailUrl = song.thumbnail?.url)
                                                         ?.let { update(it) }
 
-                                                    if (isSyncEnabled() && playlist?.isYoutubePlaylist == true && playlist.isEditable) {
+                                                    if (isYtSyncEnabled() && playlist?.isYoutubePlaylist == true && playlist.isEditable) {
                                                         EnvironmentExt.addToPlaylist(
                                                             playlist.browseId ?: "",
                                                             song.asMediaItem.mediaId

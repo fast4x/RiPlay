@@ -4,6 +4,7 @@ import androidx.lifecycle.viewModelScope
 import it.fast4x.lastfm.LastFmService
 import it.fast4x.riplay.R
 import it.fast4x.riplay.utils.appContext
+import it.fast4x.riplay.utils.getlastFmSessionKey
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -51,6 +52,40 @@ fun sendScrobble(artist: String, track: String, album: String, sessionKey: Strin
             Timber.d("LastFmClient Scrobbled accepted: ${data?.attr?.accepted}")
         } else {
             Timber.d("LastFmClient Error Scrobble: ${result.exceptionOrNull()?.message}")
+        }
+    }
+}
+
+fun sendLoveTrack(artist: String, track: String) {
+    val sessionKey = getlastFmSessionKey() ?: return
+
+    CoroutineScope(Dispatchers.IO).launch {
+        val result = LastFmClient.service.loveTrack(
+            artist = artist,
+            track = track,
+            sessionKey = sessionKey
+        )
+        result.onSuccess {
+            Timber.d("LastFmClient Love track: $it")
+        }.onFailure { error ->
+            Timber.d("LastFmClient Error love track: ${error.message}")
+        }
+    }
+}
+
+fun sendUnloveTrack(artist: String, track: String) {
+    val sessionKey = getlastFmSessionKey() ?: return
+
+    CoroutineScope(Dispatchers.IO).launch {
+        val result = LastFmClient.service.unloveTrack(
+            artist = artist,
+            track = track,
+            sessionKey = sessionKey
+        )
+        result.onSuccess {
+            Timber.d("LastFmClient Unlove track: $it")
+        }.onFailure { error ->
+            Timber.d("LastFmClient Error Unlove track: ${error.message}")
         }
     }
 }

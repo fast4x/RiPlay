@@ -3,7 +3,6 @@ package it.fast4x.riplay.ui.screens.player.online
 import android.annotation.SuppressLint
 import android.content.ActivityNotFoundException
 import android.content.Intent
-import android.database.SQLException
 import android.graphics.RenderEffect
 import android.graphics.Shader
 import android.media.audiofx.AudioEffect
@@ -204,9 +203,6 @@ import it.fast4x.riplay.extensions.link.toCommandLoad
 import it.fast4x.riplay.extensions.link.toCommandPlay
 import it.fast4x.riplay.extensions.link.toCommandPlayAt
 import it.fast4x.riplay.extensions.link.toLinkDevice
-import it.fast4x.riplay.utils.getMinTimeForEvent
-import it.fast4x.riplay.utils.getPauseListenHistory
-import it.fast4x.riplay.data.models.Event
 import it.fast4x.riplay.data.models.Info
 import it.fast4x.riplay.data.models.Song
 import it.fast4x.riplay.data.models.defaultQueue
@@ -234,7 +230,7 @@ import it.fast4x.riplay.ui.screens.player.common.NextVisualizer
 import it.fast4x.riplay.ui.screens.player.common.Queue
 import it.fast4x.riplay.ui.screens.player.common.StatsForNerds
 import it.fast4x.riplay.utils.animatedGradient
-import it.fast4x.riplay.ui.screens.settings.isSyncEnabled
+import it.fast4x.riplay.ui.screens.settings.isYtSyncEnabled
 import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.ui.styling.collapsedPlayerProgressBar
 import it.fast4x.riplay.ui.styling.dynamicColorPaletteOf
@@ -249,7 +245,7 @@ import it.fast4x.riplay.extensions.preferences.VinylSizeKey
 import it.fast4x.riplay.extensions.preferences.actionExpandedKey
 import it.fast4x.riplay.extensions.preferences.actionspacedevenlyKey
 import it.fast4x.riplay.utils.addNext
-import it.fast4x.riplay.utils.addToYtLikedSong
+import it.fast4x.riplay.utils.addToOnlineLikedSong
 import it.fast4x.riplay.extensions.preferences.albumCoverRotationKey
 import it.fast4x.riplay.extensions.preferences.animatedGradientKey
 import it.fast4x.riplay.utils.asSong
@@ -351,7 +347,7 @@ import it.fast4x.riplay.extensions.preferences.timelineExpandedKey
 import it.fast4x.riplay.extensions.preferences.titleExpandedKey
 import it.fast4x.riplay.extensions.preferences.topPaddingKey
 import it.fast4x.riplay.extensions.preferences.transparentBackgroundPlayerActionBarKey
-import it.fast4x.riplay.utils.unlikeYtVideoOrSong
+import it.fast4x.riplay.utils.removeFromOnlineLikedSong
 import it.fast4x.riplay.extensions.preferences.visualizerEnabledKey
 import it.fast4x.riplay.ui.components.DelayedControls
 import it.fast4x.riplay.utils.PlayerViewModel
@@ -3818,13 +3814,13 @@ fun OnlinePlayer(
                                         color = colorPalette().favoritesIcon,
                                         icon = getLikeState(mediaItem.mediaId),
                                         onClick = {
-                                            if (!isNetworkConnected(appContext()) && isSyncEnabled()) {
+                                            if (!isNetworkConnected(appContext()) && isYtSyncEnabled()) {
                                                 SmartMessage(
                                                     appContext().resources.getString(R.string.no_connection),
                                                     context = appContext(),
                                                     type = PopupType.Error
                                                 )
-                                            } else if (!isSyncEnabled()) {
+                                            } else if (!isYtSyncEnabled()) {
                                                 Database.asyncTransaction {
                                                     CoroutineScope(Dispatchers.IO).launch {
                                                         mediaItem.takeIf { it.mediaId == mediaItem.mediaId }
@@ -3835,19 +3831,19 @@ fun OnlinePlayer(
                                                 }
                                             } else {
                                                 CoroutineScope(Dispatchers.IO).launch {
-                                                    addToYtLikedSong(mediaItem)
+                                                    addToOnlineLikedSong(mediaItem)
                                                 }
                                             }
                                             if (effectRotationEnabled) isRotated = !isRotated
                                         },
                                         onLongClick = {
-                                            if (!isNetworkConnected(appContext()) && isSyncEnabled()) {
+                                            if (!isNetworkConnected(appContext()) && isYtSyncEnabled()) {
                                                 SmartMessage(
                                                     appContext().resources.getString(R.string.no_connection),
                                                     context = appContext(),
                                                     type = PopupType.Error
                                                 )
-                                            } else if (!isSyncEnabled()) {
+                                            } else if (!isYtSyncEnabled()) {
                                                 Database.asyncTransaction {
                                                     CoroutineScope(Dispatchers.IO).launch {
                                                         mediaItem.takeIf { it.mediaId == mediaItem.mediaId }
@@ -3867,7 +3863,7 @@ fun OnlinePlayer(
                                                 }
                                             } else {
                                                 CoroutineScope(Dispatchers.IO).launch {
-                                                    unlikeYtVideoOrSong(mediaItem)
+                                                    removeFromOnlineLikedSong(mediaItem)
                                                 }
                                             }
                                             if (effectRotationEnabled) isRotated = !isRotated

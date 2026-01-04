@@ -27,12 +27,14 @@ import it.fast4x.riplay.extensions.preferences.exoPlayerMinTimeForEventKey
 import it.fast4x.riplay.extensions.preferences.getEnum
 import it.fast4x.riplay.extensions.preferences.handleAudioFocusEnabledKey
 import it.fast4x.riplay.extensions.preferences.isEnabledFullscreenKey
+import it.fast4x.riplay.extensions.preferences.isEnabledLastfmKey
 import it.fast4x.riplay.extensions.preferences.isInvincibilityEnabledKey
 import it.fast4x.riplay.extensions.preferences.isKeepScreenOnEnabledKey
 import it.fast4x.riplay.extensions.preferences.keepPlayerMinimizedKey
 import it.fast4x.riplay.extensions.preferences.lastMediaItemWasLocalKey
 import it.fast4x.riplay.extensions.preferences.lastVideoIdKey
 import it.fast4x.riplay.extensions.preferences.lastVideoSecondsKey
+import it.fast4x.riplay.extensions.preferences.lastfmSessionTokenKey
 import it.fast4x.riplay.extensions.preferences.logDebugEnabledKey
 import it.fast4x.riplay.extensions.preferences.notifyAndroidAutoTipsKey
 import it.fast4x.riplay.extensions.preferences.notifyTipsKey
@@ -94,6 +96,7 @@ fun getLastYTVideoSeconds() = appContext().preferences.getFloat(lastVideoSeconds
 fun getPlayerTimelineType() = appContext().preferences.getEnum(playerTimelineTypeKey, PlayerTimelineType.Default)
 fun getPlaybackFadeAudioDuration() = appContext().preferences.getEnum(playbackFadeAudioDurationKey, DurationInMilliseconds.Disabled)
 fun getKeepPlayerMinimized() = appContext().preferences.getBoolean(keepPlayerMinimizedKey, false)
+fun getlastFmSessionKey() = appContext().preferences.getString(lastfmSessionTokenKey, "")
 
 fun ytAccountName() = appContext().preferences.getString(ytAccountNameKey, "")
 fun ytAccountThumbnail() = appContext().preferences.getString(ytAccountThumbnailKey, "")
@@ -113,6 +116,8 @@ fun isNotifyTipsEnabled() = appContext().preferences.getBoolean(notifyTipsKey, f
 fun isNotifyAndroidAutoTipsEnabled() = appContext().preferences.getBoolean(notifyAndroidAutoTipsKey, true)
 fun isKeepScreenOnEnabled() = appContext().preferences.getBoolean(isKeepScreenOnEnabledKey, false)
 fun isResumePlaybackOnStart() = appContext().preferences.getBoolean(resumePlaybackOnStartKey, false)
+fun isEnabledLastFm() = appContext().preferences.getBoolean(isEnabledLastfmKey, false)
+        && getlastFmSessionKey()?.isNotEmpty() == true
 
 fun shuffleSongsAAEnabled() = appContext().preferences.getBoolean(showShuffleSongsAAKey, true)
 fun showMonthlyPlaylistsAA() = appContext().preferences.getBoolean(showMonthlyPlaylistsAAKey, true)

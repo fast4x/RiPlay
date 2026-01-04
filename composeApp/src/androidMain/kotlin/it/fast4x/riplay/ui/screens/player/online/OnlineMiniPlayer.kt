@@ -1,6 +1,5 @@
 package it.fast4x.riplay.ui.screens.player.online
 
-import android.database.SQLException
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateDp
 import androidx.compose.animation.core.animateFloatAsState
@@ -77,9 +76,6 @@ import it.fast4x.riplay.enums.BackgroundProgress
 import it.fast4x.riplay.enums.MiniPlayerType
 import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.enums.PopupType
-import it.fast4x.riplay.utils.getMinTimeForEvent
-import it.fast4x.riplay.utils.getPauseListenHistory
-import it.fast4x.riplay.data.models.Event
 import it.fast4x.riplay.data.models.Info
 import it.fast4x.riplay.data.models.Song
 import it.fast4x.riplay.utils.thumbnailShape
@@ -87,14 +83,14 @@ import it.fast4x.riplay.utils.typography
 import it.fast4x.riplay.ui.components.themed.IconButton
 import it.fast4x.riplay.ui.components.themed.NowPlayingSongIndicator
 import it.fast4x.riplay.ui.components.themed.SmartMessage
-import it.fast4x.riplay.ui.screens.settings.isSyncEnabled
+import it.fast4x.riplay.ui.screens.settings.isYtSyncEnabled
 import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.ui.styling.collapsedPlayerProgressBar
 import it.fast4x.riplay.ui.styling.favoritesIcon
 import it.fast4x.riplay.ui.styling.favoritesOverlay
 import it.fast4x.riplay.ui.styling.px
 import it.fast4x.riplay.utils.DisposableListener
-import it.fast4x.riplay.utils.addToYtLikedSong
+import it.fast4x.riplay.utils.addToOnlineLikedSong
 import it.fast4x.riplay.extensions.preferences.backgroundProgressKey
 import it.fast4x.riplay.utils.applyIf
 import it.fast4x.riplay.utils.asSong
@@ -116,13 +112,12 @@ import it.fast4x.riplay.utils.PlayerViewModel
 import it.fast4x.riplay.utils.PlayerViewModelFactory
 import it.fast4x.riplay.commonutils.setDisLikeState
 import it.fast4x.riplay.commonutils.thumbnail
-import it.fast4x.riplay.utils.unlikeYtVideoOrSong
+import it.fast4x.riplay.utils.removeFromOnlineLikedSong
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import timber.log.Timber
 import kotlin.math.absoluteValue
 
 @ExperimentalMaterial3Api
@@ -177,9 +172,9 @@ fun OnlineMiniPlayer(
 
     LaunchedEffect(updateLike, updateDislike) {
         if (updateLike) {
-            if (!isNetworkConnected(appContext()) && isSyncEnabled()) {
+            if (!isNetworkConnected(appContext()) && isYtSyncEnabled()) {
                 SmartMessage(appContext().resources.getString(R.string.no_connection), context = appContext(), type = PopupType.Error)
-            } else if (!isSyncEnabled()){
+            } else if (!isYtSyncEnabled()){
                 mediaItemToggleLike(mediaItem)
                 if (likedAt == null || likedAt == -1L)
                     SmartMessage(context.resources.getString(R.string.added_to_favorites), context = context)
@@ -187,15 +182,15 @@ fun OnlineMiniPlayer(
                     SmartMessage(context.resources.getString(R.string.removed_from_favorites), context = context)
             } else {
                 CoroutineScope(Dispatchers.IO).launch {
-                    addToYtLikedSong(mediaItem)
+                    addToOnlineLikedSong(mediaItem)
                 }
             }
             updateLike = false
         }
         if (updateDislike) {
-            if (!isNetworkConnected(appContext()) && isSyncEnabled()) {
+            if (!isNetworkConnected(appContext()) && isYtSyncEnabled()) {
                 SmartMessage(appContext().resources.getString(R.string.no_connection), context = appContext(), type = PopupType.Error)
-            } else if (!isSyncEnabled()){
+            } else if (!isYtSyncEnabled()){
                 Database.asyncTransaction {
                     if (like(mediaItem.mediaId, setDisLikeState(likedAt)) == 0)
                         insert(mediaItem, Song::toggleDislike)
@@ -207,7 +202,7 @@ fun OnlineMiniPlayer(
             } else {
                 CoroutineScope(Dispatchers.IO).launch {
                     // can currently not implement dislike for sync, so unliking the song
-                    unlikeYtVideoOrSong(mediaItem)
+                    removeFromOnlineLikedSong(mediaItem)
                 }
             }
             updateDislike = false

@@ -156,7 +156,6 @@ import it.fast4x.riplay.extensions.preferences.defaultFolderKey
 import it.fast4x.riplay.extensions.preferences.disableScrollingTextKey
 import it.fast4x.riplay.commonutils.durationTextToMillis
 import it.fast4x.riplay.enums.BlacklistType
-import it.fast4x.riplay.extensions.ondevice.blackListedPathsFilename
 import it.fast4x.riplay.utils.enqueue
 import it.fast4x.riplay.extensions.preferences.excludeSongsWithDurationLimitKey
 import it.fast4x.riplay.utils.forcePlayAtIndex
@@ -190,17 +189,14 @@ import java.util.Date
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.time.Duration
-import it.fast4x.riplay.ui.screens.settings.isSyncEnabled
+import it.fast4x.riplay.ui.screens.settings.isYtSyncEnabled
 import it.fast4x.riplay.utils.addToYtLikedSongs
 import it.fast4x.riplay.utils.addToYtPlaylist
 import it.fast4x.riplay.utils.asSong
 import it.fast4x.riplay.utils.formatAsDuration
 import org.dailyislam.android.utilities.isNetworkConnected
 import it.fast4x.riplay.extensions.preferences.showDislikedPlaylistKey
-import it.fast4x.riplay.ui.components.themed.StringListDialog
 import it.fast4x.riplay.utils.insertOrUpdateBlacklist
-import it.fast4x.riplay.utils.isAtLeastAndroid10
-import java.io.File
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -1178,9 +1174,9 @@ fun HomeSongs(
                                             }
                                         },
                                         onAddToPreferites = {
-                                            if (!isNetworkConnected(appContext()) && isSyncEnabled()) {
+                                            if (!isNetworkConnected(appContext()) && isYtSyncEnabled()) {
                                                 SmartMessage(appContext().resources.getString(R.string.no_connection), context = appContext(), type = PopupType.Error)
-                                            } else if (!isSyncEnabled()){
+                                            } else if (!isYtSyncEnabled()){
                                                 if (listMediaItems.isNotEmpty()) {
                                                     Database.asyncTransaction {
                                                         listMediaItems.filter{getLikedAt(it.mediaId) in listOf(-1L,null)}.map {
@@ -1206,7 +1202,7 @@ fun HomeSongs(
                                                 showYoutubeLikeConfirmDialog = true
                                             }
                                         },
-                                        showonAddToPreferitesYoutube = isSyncEnabled(),
+                                        showonAddToPreferitesYoutube = isYtSyncEnabled(),
                                         onAddToPreferitesYoutube = {
                                             if (!isNetworkConnected(appContext())) {
                                                 SmartMessage(appContext().resources.getString(R.string.no_connection), context = appContext(), type = PopupType.Error)
@@ -1222,9 +1218,9 @@ fun HomeSongs(
                                             if (position > 0) position++ else position = 0
 
                                             val filteredItems = items.filterNot {it.asMediaItem.mediaId.startsWith(LOCAL_KEY_PREFIX) || it.song.thumbnailUrl == ""}
-                                            if ((filteredItems.size + playlistPreview.songCount) > 5000 && playlistPreview.playlist.isYoutubePlaylist && isSyncEnabled()){
+                                            if ((filteredItems.size + playlistPreview.songCount) > 5000 && playlistPreview.playlist.isYoutubePlaylist && isYtSyncEnabled()){
                                                 SmartMessage(context.resources.getString(R.string.yt_playlist_limited), context = context, type = PopupType.Error)
-                                            } else if (!isSyncEnabled() || !playlistPreview.playlist.isYoutubePlaylist) {
+                                            } else if (!isYtSyncEnabled() || !playlistPreview.playlist.isYoutubePlaylist) {
                                                 items.forEachIndexed { index, song ->
                                                     runCatching {
                                                         CoroutineScope(Dispatchers.IO).launch {

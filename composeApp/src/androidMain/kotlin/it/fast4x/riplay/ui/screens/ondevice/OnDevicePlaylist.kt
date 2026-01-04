@@ -10,8 +10,6 @@ import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -22,16 +20,12 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -47,7 +41,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -60,8 +53,6 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
@@ -77,22 +68,14 @@ import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.zIndex
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.media3.common.MediaItem
 import androidx.media3.common.util.UnstableApi
-import androidx.media3.exoplayer.offline.Download
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.github.doyaaaaaken.kotlincsv.client.KotlinCsvExperimental
-import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
 import com.github.doyaaaaaken.kotlincsv.dsl.csvWriter
 import it.fast4x.riplay.extensions.persist.persist
-import it.fast4x.environment.Environment
 import it.fast4x.environment.EnvironmentExt
-import it.fast4x.environment.models.bodies.NextBody
-import it.fast4x.environment.requests.relatedSongs
-import it.fast4x.environment.utils.completed
 import it.fast4x.riplay.LocalOnDeviceViewModel
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.data.Database.Companion.songAlbumInfo
@@ -103,19 +86,14 @@ import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.MaxSongs
 import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.enums.NavigationBarPosition
-import it.fast4x.riplay.enums.PlaylistSongSortBy
 import it.fast4x.riplay.enums.PopupType
-import it.fast4x.riplay.enums.RecommendationsNumber
 import it.fast4x.riplay.enums.SortOrder
 import it.fast4x.riplay.enums.ThumbnailRoundness
 import it.fast4x.riplay.enums.UiType
 import it.fast4x.riplay.data.models.PlaylistPreview
-import it.fast4x.riplay.data.models.Song
 import it.fast4x.riplay.data.models.SongPlaylistMap
-import it.fast4x.riplay.service.isLocal
 import it.fast4x.riplay.ui.components.LocalGlobalSheetState
 import it.fast4x.riplay.ui.components.SwipeableQueueItem
-import it.fast4x.riplay.ui.components.themed.ConfirmationDialog
 import it.fast4x.riplay.ui.components.themed.FloatingActionsContainerWithScrollToTop
 import it.fast4x.riplay.ui.components.themed.HeaderIconButton
 import it.fast4x.riplay.ui.components.themed.HeaderWithIcon
@@ -123,7 +101,6 @@ import it.fast4x.riplay.ui.components.themed.IconButton
 import it.fast4x.riplay.ui.components.themed.IconInfo
 import it.fast4x.riplay.ui.components.themed.InPlaylistMediaItemMenu
 import it.fast4x.riplay.ui.components.themed.InputTextDialog
-import it.fast4x.riplay.ui.components.themed.Playlist
 import it.fast4x.riplay.ui.components.themed.PlaylistsItemMenu
 import it.fast4x.riplay.ui.components.themed.SmartMessage
 import it.fast4x.riplay.ui.components.themed.SortMenu
@@ -131,85 +108,46 @@ import it.fast4x.riplay.ui.items.SongItem
 import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.ui.styling.LocalAppearance
 import it.fast4x.riplay.ui.styling.favoritesIcon
-import it.fast4x.riplay.ui.styling.onOverlay
-import it.fast4x.riplay.ui.styling.overlay
 import it.fast4x.riplay.ui.styling.px
 import it.fast4x.riplay.extensions.preferences.UiTypeKey
 import it.fast4x.riplay.utils.addNext
 import it.fast4x.riplay.utils.asMediaItem
-import it.fast4x.riplay.ui.styling.center
-import it.fast4x.riplay.ui.styling.color
 import it.fast4x.riplay.commonutils.durationTextToMillis
 import it.fast4x.riplay.utils.enqueue
 import it.fast4x.riplay.utils.forcePlayAtIndex
 import it.fast4x.riplay.utils.forcePlayFromBeginning
 import it.fast4x.riplay.utils.formatAsTime
-import it.fast4x.riplay.extensions.preferences.isRecommendationEnabledKey
 import it.fast4x.riplay.extensions.preferences.maxSongsInQueueKey
 import it.fast4x.riplay.extensions.preferences.navigationBarPositionKey
-import it.fast4x.riplay.extensions.preferences.playlistSongSortByKey
-import it.fast4x.riplay.extensions.preferences.recommendationsNumberKey
 import it.fast4x.riplay.extensions.preferences.rememberPreference
-import it.fast4x.riplay.extensions.preferences.reorderInQueueEnabledKey
-import it.fast4x.riplay.ui.styling.secondary
 import it.fast4x.riplay.ui.styling.semiBold
 import it.fast4x.riplay.extensions.preferences.showFloatingIconKey
 import it.fast4x.riplay.extensions.preferences.songSortOrderKey
 import it.fast4x.riplay.extensions.preferences.thumbnailRoundnessKey
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.Date
 import it.fast4x.riplay.commonutils.cleanPrefix
-import it.fast4x.riplay.commonutils.MONTHLY_PREFIX
-import it.fast4x.riplay.commonutils.PINNED_PREFIX
-import it.fast4x.riplay.commonutils.PIPED_PREFIX
-import it.fast4x.riplay.commonutils.YTP_PREFIX
 import it.fast4x.riplay.commonutils.thumbnail
 import it.fast4x.riplay.data.models.Playlist
-import it.fast4x.riplay.utils.appContext
-import it.fast4x.riplay.utils.colorPalette
-import it.fast4x.riplay.enums.PlaylistSongsTypeFilter
 import it.fast4x.riplay.extensions.fastshare.FastShare
 import it.fast4x.riplay.ui.components.themed.NowPlayingSongIndicator
-import it.fast4x.riplay.ui.screens.settings.isSyncEnabled
-import it.fast4x.riplay.utils.checkFileExists
-import it.fast4x.riplay.utils.deleteFileIfExists
+import it.fast4x.riplay.ui.screens.settings.isYtSyncEnabled
 import it.fast4x.riplay.extensions.preferences.disableScrollingTextKey
-import it.fast4x.riplay.utils.saveImageToInternalStorage
 import kotlinx.coroutines.CoroutineScope
 import it.fast4x.riplay.data.models.SongEntity
 import it.fast4x.riplay.data.models.defaultQueue
 import it.fast4x.riplay.enums.OnDeviceSongSortBy
-import it.fast4x.riplay.extensions.ondevice.OnDeviceViewModel
 import it.fast4x.riplay.service.LOCAL_KEY_PREFIX
 import it.fast4x.riplay.ui.components.PullToRefreshBox
-import it.fast4x.riplay.ui.components.themed.FilterMenu
-import it.fast4x.riplay.ui.components.themed.InProgressDialog
-import it.fast4x.riplay.utils.addToYtLikedSongs
 import it.fast4x.riplay.utils.addToYtPlaylist
 import it.fast4x.riplay.utils.asSong
-import it.fast4x.riplay.utils.formatAsDuration
-import it.fast4x.riplay.utils.getAlbumVersionFromVideo
-import it.fast4x.riplay.utils.isExplicit
-import org.dailyislam.android.utilities.isNetworkConnected
 import it.fast4x.riplay.utils.mediaItemToggleLike
-import it.fast4x.riplay.utils.move
-import it.fast4x.riplay.extensions.preferences.playlistSongsTypeFilterKey
 import it.fast4x.riplay.ui.components.themed.FastPlayActionsBar
 import it.fast4x.riplay.utils.LazyListContainer
-import it.fast4x.riplay.utils.forcePlay
-import it.fast4x.riplay.utils.removeYTSongFromPlaylist
-import it.fast4x.riplay.utils.unlikeYtVideoOrSong
-import it.fast4x.riplay.utils.updateLocalPlaylist
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
-import sh.calvin.reorderable.ReorderableItem
-import sh.calvin.reorderable.rememberReorderableLazyListState
 import it.fast4x.riplay.extensions.persist.persistList
 import it.fast4x.riplay.extensions.preferences.onDeviceSongSortByKey
 import it.fast4x.riplay.ui.items.PlaylistItem
@@ -791,7 +729,7 @@ fun OnDevicePlaylist(
                                                             var distinctSongs =
                                                                 filteredPLSongs.filterNot { it in songsInTheToPlaylist }
 
-                                                            if ((distinctSongs.size + toPlaylistPreview.songCount) > 5000 && toPlaylistPreview.playlist.isYoutubePlaylist && isSyncEnabled()) {
+                                                            if ((distinctSongs.size + toPlaylistPreview.songCount) > 5000 && toPlaylistPreview.playlist.isYoutubePlaylist && isYtSyncEnabled()) {
                                                                 SmartMessage(
                                                                     context.resources.getString(
                                                                         R.string.yt_playlist_limited
@@ -799,7 +737,7 @@ fun OnDevicePlaylist(
                                                                     context = context,
                                                                     type = PopupType.Error
                                                                 )
-                                                            } else if (!isSyncEnabled() || !toPlaylistPreview.playlist.isYoutubePlaylist) {
+                                                            } else if (!isYtSyncEnabled() || !toPlaylistPreview.playlist.isYoutubePlaylist) {
                                                                 playlistSongs.forEachIndexed { index, song ->
                                                                     Database.asyncTransaction {
                                                                         Database.insert(song.asMediaItem)
@@ -869,7 +807,7 @@ fun OnDevicePlaylist(
 
                                                             val distinctSongs =
                                                                 filteredListMediaItems.filter { item -> item !in songsInTheToPlaylist.map { it.asMediaItem } }
-                                                            if ((distinctSongs.size + toPlaylistPreview.songCount) > 5000 && toPlaylistPreview.playlist.isYoutubePlaylist && isSyncEnabled()) {
+                                                            if ((distinctSongs.size + toPlaylistPreview.songCount) > 5000 && toPlaylistPreview.playlist.isYoutubePlaylist && isYtSyncEnabled()) {
                                                                 SmartMessage(
                                                                     context.resources.getString(
                                                                         R.string.yt_playlist_limited
@@ -877,7 +815,7 @@ fun OnDevicePlaylist(
                                                                     context = context,
                                                                     type = PopupType.Error
                                                                 )
-                                                            } else if (!isSyncEnabled() || !toPlaylistPreview.playlist.isYoutubePlaylist) {
+                                                            } else if (!isYtSyncEnabled() || !toPlaylistPreview.playlist.isYoutubePlaylist) {
                                                                 listMediaItems.forEachIndexed { index, song ->
                                                                     Database.asyncTransaction {
                                                                         Database.insert(song)

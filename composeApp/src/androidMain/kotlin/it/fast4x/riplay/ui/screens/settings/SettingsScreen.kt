@@ -92,8 +92,8 @@ fun SettingsScreen(
                     item(0, stringResource(R.string.tab_general), R.drawable.app_icon)
                     item(1, stringResource(R.string.ui_tab), R.drawable.ui)
                     item(2, stringResource(R.string.player_appearance), R.drawable.color_palette)
-                    item(3, if (!isLoggedIn()) stringResource(R.string.home)
-                    else stringResource(R.string.home), if (!isLoggedIn()) R.drawable.sparkles
+                    item(3, if (!isYtLoggedIn()) stringResource(R.string.home)
+                    else stringResource(R.string.home), if (!isYtLoggedIn()) R.drawable.sparkles
                     else R.drawable.home)
                     item(4, stringResource(R.string.tab_data), R.drawable.server)
                     item(5, stringResource(R.string.tab_accounts), R.drawable.person)

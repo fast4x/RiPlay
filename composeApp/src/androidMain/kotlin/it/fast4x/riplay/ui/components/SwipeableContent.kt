@@ -52,8 +52,8 @@ import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.data.models.Queues
 import it.fast4x.riplay.ui.components.themed.QueuesDialog
-import it.fast4x.riplay.ui.screens.settings.isSyncEnabled
-import it.fast4x.riplay.utils.addToYtLikedSong
+import it.fast4x.riplay.ui.screens.settings.isYtSyncEnabled
+import it.fast4x.riplay.utils.addToOnlineLikedSong
 import org.dailyislam.android.utilities.isNetworkConnected
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -151,9 +151,9 @@ fun SwipeableQueueItem(
         Database.likedAt(mediaItem.mediaId).distinctUntilChanged().collect { likedAt = it }
     }
     val onFavourite: () -> Unit = {
-        if (!isNetworkConnected(appContext()) && isSyncEnabled()) {
+        if (!isNetworkConnected(appContext()) && isYtSyncEnabled()) {
             SmartMessage(appContext().resources.getString(R.string.no_connection), context = appContext(), type = PopupType.Error)
-        } else if (!isSyncEnabled()){
+        } else if (!isYtSyncEnabled()){
             mediaItemToggleLike(mediaItem)
             val message: String
             val mTitle: String = cleanPrefix(mediaItem.mediaMetadata.title?.toString() ?: "")
@@ -174,7 +174,7 @@ fun SwipeableQueueItem(
             )
         } else {
             CoroutineScope(Dispatchers.IO).launch {
-                addToYtLikedSong(mediaItem)
+                addToOnlineLikedSong(mediaItem)
             }
         }
     }
@@ -235,9 +235,9 @@ fun SwipeablePlaylistItem(
         Database.likedAt(mediaItem.mediaId).distinctUntilChanged().collect { likedAt = it }
     }
     val onFavourite: () -> Unit = {
-        if (!isNetworkConnected(appContext()) && isSyncEnabled()) {
+        if (!isNetworkConnected(appContext()) && isYtSyncEnabled()) {
             SmartMessage(appContext().resources.getString(R.string.no_connection), context = appContext(), type = PopupType.Error)
-        } else if (!isSyncEnabled()){
+        } else if (!isYtSyncEnabled()){
             mediaItemToggleLike(mediaItem)
             val message: String
             val mTitle: String = cleanPrefix(mediaItem.mediaMetadata.title?.toString() ?: "")
@@ -258,7 +258,7 @@ fun SwipeablePlaylistItem(
             )
         } else {
             CoroutineScope(Dispatchers.IO).launch {
-                addToYtLikedSong(mediaItem)
+                addToOnlineLikedSong(mediaItem)
             }
         }
     }

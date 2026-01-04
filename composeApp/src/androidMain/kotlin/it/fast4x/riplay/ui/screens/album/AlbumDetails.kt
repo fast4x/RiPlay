@@ -145,7 +145,7 @@ import it.fast4x.riplay.ui.components.themed.FastPlayActionsBar
 import it.fast4x.riplay.ui.components.themed.LoaderScreen
 import it.fast4x.riplay.ui.components.themed.QueuesDialog
 import it.fast4x.riplay.ui.components.themed.Title
-import it.fast4x.riplay.ui.screens.settings.isSyncEnabled
+import it.fast4x.riplay.ui.screens.settings.isYtSyncEnabled
 import it.fast4x.riplay.utils.LazyListContainer
 import it.fast4x.riplay.utils.addToYtLikedSongs
 import it.fast4x.riplay.utils.addToYtPlaylist
@@ -727,7 +727,7 @@ fun AlbumDetails(
                                         .padding(horizontal = 25.dp)
                                         .combinedClickable(
                                             onClick = {
-                                                if (isSyncEnabled() && !isNetworkConnected(
+                                                if (isYtSyncEnabled() && !isNetworkConnected(
                                                         context
                                                     )
                                                 ) {
@@ -748,7 +748,7 @@ fun AlbumDetails(
 
 
 
-                                                    if (isSyncEnabled())
+                                                    if (isYtSyncEnabled())
                                                         CoroutineScope(Dispatchers.IO).launch {
                                                             if (bookmarkedAt == null)
                                                                 albumPage?.album?.playlistId.let {
@@ -1018,7 +1018,7 @@ fun AlbumDetails(
                                                             0
                                                         //Log.d("mediaItem", "next initial pos ${position}")
                                                         if (listMediaItems.isEmpty()) {
-                                                            if (!isSyncEnabled() || !playlistPreview.playlist.isYoutubePlaylist) {
+                                                            if (!isYtSyncEnabled() || !playlistPreview.playlist.isYoutubePlaylist) {
                                                                 songs.forEachIndexed { index, song ->
                                                                     Database.asyncTransaction {
                                                                         insert(song.asMediaItem)
@@ -1059,7 +1059,7 @@ fun AlbumDetails(
                                                                 }
                                                             }
                                                         } else {
-                                                            if (!isSyncEnabled() || !playlistPreview.playlist.isYoutubePlaylist) {
+                                                            if (!isYtSyncEnabled() || !playlistPreview.playlist.isYoutubePlaylist) {
                                                                 listMediaItems.forEachIndexed { index, song ->
                                                                     //Log.d("mediaItemMaxPos", position.toString())
                                                                     Database.asyncTransaction {
@@ -1094,7 +1094,7 @@ fun AlbumDetails(
                                                         navController.navigate("${NavRoutes.localPlaylist.name}/$it")
                                                     },
                                                     onAddToFavourites = {
-                                                        if (!isNetworkConnected(appContext()) && isSyncEnabled()) {
+                                                        if (!isNetworkConnected(appContext()) && isYtSyncEnabled()) {
                                                             SmartMessage(
                                                                 appContext().resources.getString(
                                                                     R.string.no_connection
@@ -1102,7 +1102,7 @@ fun AlbumDetails(
                                                                 context = appContext(),
                                                                 type = PopupType.Error
                                                             )
-                                                        } else if (!isSyncEnabled()) {
+                                                        } else if (!isYtSyncEnabled()) {
                                                             songs.forEach { song ->
                                                                 mediaItemSetLiked(song.asMediaItem)
                                                             }

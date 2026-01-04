@@ -66,7 +66,7 @@ import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.enums.HistoryType
 import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.ui.components.ButtonsRow
-import it.fast4x.riplay.ui.screens.settings.isLoggedIn
+import it.fast4x.riplay.ui.screens.settings.isYtLoggedIn
 import it.fast4x.riplay.extensions.preferences.historyTypeKey
 import it.fast4x.riplay.utils.LazyListContainer
 import it.fast4x.riplay.utils.forcePlay
@@ -132,14 +132,14 @@ fun HistoryList(
 
     val buttonsList = mutableListOf(HistoryType.History to stringResource(R.string.history))
 
-    if (isLoggedIn())
+    if (isYtLoggedIn())
         buttonsList += HistoryType.YTMHistory to stringResource(R.string.yt_history)
 
     var historyType by rememberPreference(historyTypeKey, HistoryType.History)
 
     var historyPage by persist<Result<HistoryPage>>("home/historyPage")
     LaunchedEffect(Unit, historyType) {
-        if (isLoggedIn())
+        if (isYtLoggedIn())
             historyPage = EnvironmentExt.getHistory()
     }
 

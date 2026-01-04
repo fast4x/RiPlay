@@ -65,9 +65,6 @@ fun LastFmAuthScreen(
                         scope = viewModel.viewModelScope,
                         onAuthApproved = {
                             viewModel.onUserApproved(state.token)
-                        },
-                        onAuthError = { error ->
-                            Timber.d("LastFmAuthScreen: Error $error")
                         }
                     )
                 }
