@@ -78,9 +78,13 @@ import it.fast4x.riplay.extensions.preferences.ytDataSyncIdKey
 import it.fast4x.riplay.extensions.preferences.ytVisitorDataKey
 import it.fast4x.riplay.ui.components.themed.AccountInfoDialog
 import it.fast4x.riplay.extensions.encryptedpreferences.rememberEncryptedPreference
+import it.fast4x.riplay.extensions.lastfm.LastFmAuthScreen
 import it.fast4x.riplay.extensions.preferences.enableMusicIdentifierKey
+import it.fast4x.riplay.extensions.preferences.isEnabledLastfmKey
+import it.fast4x.riplay.extensions.preferences.lastfmSessionTokenKey
 import it.fast4x.riplay.extensions.preferences.musicIdentifierApiKey
 import it.fast4x.riplay.extensions.preferences.musicIdentifierProviderKey
+import it.fast4x.riplay.ui.components.themed.Title
 import it.fast4x.riplay.ui.styling.bold
 import it.fast4x.riplay.ui.styling.semiBold
 import it.fast4x.riplay.utils.RestartActivity
@@ -410,6 +414,76 @@ fun AccountsSettings() {
 
     /****** DISCORD ******/
 
+    var isEnabledLastfm by rememberPreference(isEnabledLastfmKey, false)
+        var lastFmSessionToken by rememberPreference(lastfmSessionTokenKey, "")
+        var loginLastfm by remember { mutableStateOf(false) }
+
+
+
+        SettingsGroupSpacer()
+        SettingsEntryGroupText(title = stringResource(R.string.title_lastfm))
+
+        SwitchSettingEntry(
+            title = stringResource(R.string.enable_lastfm),
+            text = "",
+            isChecked = isEnabledLastfm,
+            onCheckedChange = {
+                isEnabledLastfm = it
+            },
+            offline = false,
+        )
+
+        AnimatedVisibility(visible = isEnabledLastfm) {
+            Column(
+                modifier = Modifier.padding(start = 12.dp)
+            ) {
+                ButtonBarSettingEntry(
+                    isEnabled = true,
+                    title = if (lastFmSessionToken.isNotEmpty()) stringResource(R.string.lastfm_disconnect) else stringResource(
+                        R.string.lastfm_connect
+                    ),
+                    text = if (lastFmSessionToken.isNotEmpty()) stringResource(R.string.lastfm_connected_to_lastfm_account) else "",
+                    icon = R.drawable.logo_lastfm,
+                    iconColor = colorPalette().text,
+                    onClick = {
+                        if (lastFmSessionToken.isNotEmpty())
+                            lastFmSessionToken = ""
+                        else
+                            loginLastfm = true
+                    }
+                )
+
+                CustomModalBottomSheet(
+                    showSheet = loginLastfm,
+                    onDismissRequest = {
+                        loginLastfm = false
+                    },
+                    containerColor = colorPalette().background0,
+                    contentColor = colorPalette().background0,
+                    modifier = Modifier.fillMaxWidth(),
+                    sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+                    dragHandle = {
+                        Surface(
+                            modifier = Modifier.padding(vertical = 0.dp),
+                            color = colorPalette().background0,
+                            shape = thumbnailShape()
+                        ) {}
+                    },
+                    shape = thumbnailRoundness.shape()
+                ) {
+                    LastFmAuthScreen(
+                        navController = rememberNavController(),
+                        onAuthSuccess = {
+                            loginLastfm = false
+                            lastFmSessionToken = context.preferences.getString(lastfmSessionTokenKey, "") ?: ""
+                            Timber.d("LastFmAuthScreen: Authentication complete")
+                        }
+                    )
+                }
+
+            }
+        }
+
         SettingsGroupSpacer()
         SettingsEntryGroupText(title = stringResource(R.string.title_music_identifier))
 
@@ -504,7 +578,9 @@ fun AccountsSettings() {
             }
         }
 
+        //Spacer(modifier = Modifier.height(Dimensions.bottomSpacer))
     }
+
 
 
 }

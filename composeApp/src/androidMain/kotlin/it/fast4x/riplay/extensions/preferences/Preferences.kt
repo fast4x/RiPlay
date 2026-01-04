@@ -406,6 +406,10 @@ const val showListenerLevelsKey = "showListenerLevels"
 const val homeTypeKey = "homeType"
 const val showSnowfallEffectKey = "showSnowfallEffect"
 
+const val isEnabledLastfmKey = "isEnabledLastfm"
+const val lastfmSessionTokenKey = "lastfmSessionToken"
+
+
 
 inline fun <reified T : Enum<T>> SharedPreferences.getEnum(
     key: String,

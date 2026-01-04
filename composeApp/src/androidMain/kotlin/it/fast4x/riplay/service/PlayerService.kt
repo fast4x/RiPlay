@@ -182,8 +182,12 @@ import it.fast4x.riplay.utils.principalCache
 import it.fast4x.riplay.utils.saveMasterQueue
 import it.fast4x.riplay.utils.seamlessQueue
 import it.fast4x.riplay.commonutils.setLikeState
+import it.fast4x.riplay.extensions.lastfm.LastFmAuthViewModel
+import it.fast4x.riplay.extensions.lastfm.sendNowPlaying
+import it.fast4x.riplay.extensions.lastfm.sendScrobble
 import it.fast4x.riplay.extensions.preferences.checkVolumeLevelKey
 import it.fast4x.riplay.extensions.preferences.excludeSongIfIsVideoKey
+import it.fast4x.riplay.extensions.preferences.lastfmSessionTokenKey
 import it.fast4x.riplay.extensions.preferences.parentalControlEnabledKey
 import it.fast4x.riplay.utils.isExplicit
 import it.fast4x.riplay.utils.isVideo
@@ -1114,6 +1118,7 @@ class PlayerService : Service(),
         Timber.d("PlayerService onMediaItemTransition mediaItem ${mediaItem.mediaId} reason $reason")
 
         currentQueuePosition = player.currentMediaItemIndex
+        currentSecond.value = 0F
 
         if (parentalControlEnabled && mediaItem.isExplicit) {
             handleSkipToNext()
@@ -1142,7 +1147,7 @@ class PlayerService : Service(),
             localMediaItem = it
 
             if (!it.isLocal){
-                currentSecond.value = 0F
+
                 Timber.d("PlayerService onMediaItemTransition system volume ${getSystemMediaVolume()}")
 
                 internalOnlinePlayer.value?.cueVideo(it.mediaId, playFromSecond)
@@ -1169,6 +1174,24 @@ class PlayerService : Service(),
         updateDiscordPresence()
 
         saveMasterQueueWithPosition()
+
+        preferences.getString(lastfmSessionTokenKey, "")?.let {
+            /*
+            sendScrobble(
+                mediaItem.mediaMetadata.artist as String,
+                mediaItem.mediaMetadata.title as String,
+                mediaItem.mediaMetadata.albumTitle as String,
+                it
+            )
+             */
+            sendNowPlaying(
+                mediaItem.mediaMetadata.artist as String,
+                mediaItem.mediaMetadata.title as String,
+                mediaItem.mediaMetadata.albumTitle as String,
+                it
+            )
+        }
+
 
     }
 

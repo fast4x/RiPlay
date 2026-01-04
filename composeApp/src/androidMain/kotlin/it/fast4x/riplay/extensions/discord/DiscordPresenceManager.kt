@@ -31,6 +31,7 @@ import it.fast4x.riplay.service.isLocal
 import it.fast4x.riplay.ui.components.themed.SmartMessage
 import it.fast4x.riplay.extensions.encryptedpreferences.encryptedPreferences
 import it.fast4x.riplay.service.PlayerService
+import it.fast4x.riplay.utils.appContext
 import it.fast4x.riplay.utils.isAtLeastAndroid8
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -56,14 +57,6 @@ import timber.log.Timber
 import java.io.IOException
 import java.util.concurrent.TimeUnit
 
-/**
-     * THIS IS STILL IN BETA AND MAY NOT WORK AS EXPECTED AND CAUSE CRASH
-     * Call this method when the playing state changes.
-     * - isPlaying = true : send the "playing" presence and refresh it every 10s
-     * - isPlaying = false : launch a timer, then send the "paused" presence (frozen time)
-     */
-
-
 class DiscordPresenceManager(
     private val context: Context,
     private val getToken: () -> String?,
@@ -71,7 +64,8 @@ class DiscordPresenceManager(
 ) {
     companion object {
 
-        private const val APPLICATION_ID = "1281989764358082570"
+        private
+        val APPLICATION_ID = appContext().resources.getString(R.string.RiPlay_DISCORD_APPLICATION_ID)
         private const val TEMP_FILE_HOST = "https://litterbox.catbox.moe/resources/internals/api.php"
         private const val MAX_DIMENSION = 1024                           // Per Discord's guidelines
         private const val MAX_FILE_SIZE_BYTES = 2L * 1024 * 1024     // 2 MB in bytes

@@ -1170,4 +1170,9 @@
     <string name="add_to_blacklist">Add to blacklist</string>
     <string name="blacklisted">%1$s Blacklisted</string>
     <string name="blacklist">Blacklist</string>
+    <string name="lastfm_connected_to_lastfm_account">Connected to last.fm account</string>
+    <string name="lastfm_connect">Connect</string>
+    <string name="lastfm_disconnect">Disconnect</string>
+    <string name="title_lastfm">last.fm</string>
+    <string name="enable_lastfm">Enable last.fm</string>
 </resources>

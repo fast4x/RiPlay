@@ -33,7 +33,7 @@ val generateEnvironmentConfig by tasks.registering {
         "i3BRhLrV1v", "MApdyHLMyJ", "hizI7yLjL4", "rLoZP7BF4c", "nza34sU88C", "dwbUvjWUl3",
         "fqqhBZd0cf", "9sZKrkMg8p", "aQpNCVOe2i", "XNl2TKXLlB", "yNjbjspY8v", "eZueG672lt",
         "WkUFhXtC3G", "z4Xe47r8Vs", "RiPlay_CHROMECAST_APPLICATION_ID", "Ayp_CHROMECAST_APPLICATION_ID",
-        "AudioTagInfo_API_KEY"
+        "AudioTagInfo_API_KEY", "RiPlay_LASTFM_API_KEY", "RiPlay_LASTFM_SECRET", "RiPlay_DISCORD_APPLICATION_IT"
     )
     inputs.properties(environmentPropertyNames.associateWith { propertyOrEmpty(it) })
 
@@ -100,6 +100,9 @@ val generateEnvironmentConfig by tasks.registering {
                 const val RiPlay_CHROMECAST_APPLICATION_ID = "${props["RiPlay_CHROMECAST_APPLICATION_ID"]}"
                 const val Ayp_CHROMECAST_APPLICATION_ID = "${props["Ayp_CHROMECAST_APPLICATION_ID"]}"
                 const val AudioTagInfo_API_KEY = "${props["AudioTagInfo_API_KEY"]}"
+                const val RiPlay_LASTFM_API_KEY = "${props["RiPlay_LASTFM_API_KEY"]}"
+                const val RiPlay_LASTFM_SECRET = "${props["RiPlay_LASTFM_SECRET"]}"
+                const val RiPlay_DISCORD_APPLICATION_ID = "${props["RiPlay_DISCORD_APPLICATION_ID"]}"
             }
             """.trimIndent()
         )
@@ -154,6 +157,7 @@ kotlin {
                 implementation(project(":kugou"))
                 implementation(project(":lrclib"))
                 implementation(project(":audiotaginfo"))
+                implementation(project(":lastfm"))
 
                 implementation(libs.room.ktx)
                 implementation(libs.room.runtime)
@@ -558,6 +562,27 @@ android {
             propertyOrEmpty("AudioTagInfo_API_KEY")
         )
         //INIT AudioTagInfo Api
+
+        //INIT LASTFM
+        resValue(
+            "string",
+            "RiPlay_LASTFM_API_KEY",
+            propertyOrEmpty("RiPlay_LASTFM_API_KEY")
+        )
+        resValue(
+            "string",
+            "RiPlay_LASTFM_SECRET",
+            propertyOrEmpty("RiPlay_LASTFM_SECRET")
+        )
+        //INIT LASTFM
+
+        //INIT DISCORD
+        resValue(
+            "string",
+            "RiPlay_DISCORD_APPLICATION_ID",
+            propertyOrEmpty("RiPlay_DISCORD_APPLICATION_ID")
+        )
+        //INIT DISCORD
 
     }
 
