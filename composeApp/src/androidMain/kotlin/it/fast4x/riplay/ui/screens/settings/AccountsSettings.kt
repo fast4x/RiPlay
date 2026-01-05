@@ -42,6 +42,7 @@ import it.fast4x.environment.Environment
 import it.fast4x.environment.utils.parseCookieString
 import it.fast4x.riplay.LocalAudioTagger
 import it.fast4x.riplay.R
+import it.fast4x.riplay.enums.LastFmScrobbleType
 import it.fast4x.riplay.enums.MusicIdentifierProvider
 import it.fast4x.riplay.utils.appContext
 import it.fast4x.riplay.utils.colorPalette
@@ -79,6 +80,7 @@ import it.fast4x.riplay.extensions.encryptedpreferences.rememberEncryptedPrefere
 import it.fast4x.riplay.extensions.lastfm.LastFmAuthScreen
 import it.fast4x.riplay.extensions.preferences.enableMusicIdentifierKey
 import it.fast4x.riplay.extensions.preferences.isEnabledLastfmKey
+import it.fast4x.riplay.extensions.preferences.lastfmScrobbleTypeKey
 import it.fast4x.riplay.extensions.preferences.lastfmSessionTokenKey
 import it.fast4x.riplay.extensions.preferences.musicIdentifierApiKey
 import it.fast4x.riplay.extensions.preferences.musicIdentifierProviderKey
@@ -409,11 +411,10 @@ fun AccountsSettings() {
 
     /****** DISCORD ******/
 
-    var isEnabledLastfm by rememberPreference(isEnabledLastfmKey, false)
+        var isEnabledLastfm by rememberPreference(isEnabledLastfmKey, false)
         var lastFmSessionToken by rememberPreference(lastfmSessionTokenKey, "")
         var loginLastfm by remember { mutableStateOf(false) }
-
-
+        var lastfmScrobbleType by rememberPreference(lastfmScrobbleTypeKey, LastFmScrobbleType.Simple)
 
         SettingsGroupSpacer()
         SettingsEntryGroupText(title = stringResource(R.string.title_lastfm))
@@ -475,6 +476,15 @@ fun AccountsSettings() {
                         }
                     )
                 }
+
+                EnumValueSelectorSettingsEntry(
+                    title = stringResource(R.string.lastfm_scrobble_type),
+                    titleSecondary = "",
+                    selectedValue = lastfmScrobbleType,
+                    onValueSelected = { lastfmScrobbleType = it },
+                    valueText = { it.textName },
+                    offline = false
+                )
 
             }
         }

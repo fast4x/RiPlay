@@ -408,6 +408,8 @@ const val showSnowfallEffectKey = "showSnowfallEffect"
 
 const val isEnabledLastfmKey = "isEnabledLastfm"
 const val lastfmSessionTokenKey = "lastfmSessionToken"
+const val lastfmScrobbleTypeKey = "lastfmScrobbleType"
+
 
 
 

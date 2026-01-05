@@ -1129,6 +1129,11 @@ suspend fun addToOnlineLikedSong(mediaItem: MediaItem){
         sendLoveTrack(mediaItem.mediaMetadata.artist as String,
             mediaItem.mediaMetadata.title as String
         )
+        SmartMessage(
+            appContext().resources.getString(R.string.song_liked_lastfm),
+            context = appContext(),
+            durationLong = false
+        )
     }
 
     if (isYtSyncEnabled()) {
@@ -1167,6 +1172,11 @@ suspend fun removeFromOnlineLikedSong(mediaItem: MediaItem){
     if(isEnabledLastFm()) {
         sendUnloveTrack(mediaItem.mediaMetadata.artist as String,
             mediaItem.mediaMetadata.title as String
+        )
+        SmartMessage(
+            appContext().resources.getString(R.string.song_unliked_lastfm),
+            context = appContext(),
+            durationLong = false
         )
     }
 
