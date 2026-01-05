@@ -52,6 +52,7 @@ import it.fast4x.riplay.extensions.rewind.slides.TopPlaylistsSlide
 import it.fast4x.riplay.extensions.rewind.slides.TopSongsSlide
 import it.fast4x.riplay.extensions.rewind.utils.getRewindYears
 import it.fast4x.riplay.extensions.rewind.utils.shadersList
+import it.fast4x.riplay.extensions.visualbitmap.VisualBitmapCreator
 import it.fast4x.riplay.ui.components.themed.Title
 import it.fast4x.riplay.ui.items.RewindItem
 import it.fast4x.riplay.ui.styling.semiBold
@@ -64,7 +65,7 @@ import kotlin.random.Random
 @Composable
 fun DynamicRewindSlide(slide: RewindSlide, isPageActive: Boolean) {
     SequentialAnimationContainer(year = slide.year) {
-        //VisualBitmapCreator(modifier = Modifier.fillMaxSize()) {
+        VisualBitmapCreator(modifier = Modifier.fillMaxSize()) {
             when (slide) {
                 is RewindSlide.IntroSlide -> IntroSlide(slide, isPageActive)
                 is RewindSlide.TopSongs -> TopSongsSlide(slide, isPageActive)
@@ -79,7 +80,7 @@ fun DynamicRewindSlide(slide: RewindSlide, isPageActive: Boolean) {
                 is RewindSlide.Intermediate -> IntermediateSlide(slide, isPageActive)
                 is RewindSlide.AnnualListener -> AnnualListenerSlide(slide, isPageActive)
             }
-        //}
+        }
     }
 }
 
