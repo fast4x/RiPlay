@@ -2,18 +2,24 @@ package it.fast4x.riplay.ui.screens.home
 
 import android.annotation.SuppressLint
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -22,6 +28,7 @@ import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -35,6 +42,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.ExperimentalTextApi
@@ -78,7 +86,9 @@ import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.enums.ViewType
 import it.fast4x.riplay.utils.getViewType
 import it.fast4x.riplay.data.models.defaultQueue
+import it.fast4x.riplay.enums.ArtistSortBy
 import it.fast4x.riplay.enums.BlacklistType
+import it.fast4x.riplay.enums.SortOrder
 import it.fast4x.riplay.ui.components.themed.Search
 import it.fast4x.riplay.ui.components.navigation.header.TabToolBar
 import it.fast4x.riplay.ui.components.tab.ItemSize
@@ -87,15 +97,20 @@ import it.fast4x.riplay.ui.components.tab.TabHeader
 import it.fast4x.riplay.ui.components.tab.toolbar.Randomizer
 import it.fast4x.riplay.ui.components.tab.toolbar.SongsShuffle
 import it.fast4x.riplay.extensions.preferences.Preference.HOME_ALBUM_ITEM_SIZE
+import it.fast4x.riplay.extensions.preferences.artistSortByKey
+import it.fast4x.riplay.extensions.preferences.artistSortOrderKey
 import it.fast4x.riplay.utils.thumbnailShape
 import it.fast4x.riplay.ui.components.PullToRefreshBox
 import it.fast4x.riplay.ui.screens.settings.isYtSyncEnabled
 import it.fast4x.riplay.utils.addToYtPlaylist
 import it.fast4x.riplay.utils.autoSyncToolbutton
 import it.fast4x.riplay.extensions.preferences.autosyncKey
+import it.fast4x.riplay.ui.components.themed.EnumsMenu
+import it.fast4x.riplay.ui.components.themed.HeaderIconButton
 import it.fast4x.riplay.utils.LazyListContainer
 import it.fast4x.riplay.utils.importYTMLikedAlbums
 import it.fast4x.riplay.utils.insertOrUpdateBlacklist
+import it.fast4x.riplay.utils.typography
 import it.fast4x.riplay.utils.viewTypeToolbutton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -135,11 +150,11 @@ fun HomeAlbums(
 
     val search = Search.init()
 
-    val sort = Sort.init(
-        albumSortOrderKey,
-        AlbumSortBy.entries,
-        rememberPreference(albumSortByKey, AlbumSortBy.DateAdded)
-    )
+//    val sort = Sort.init(
+//        albumSortOrderKey,
+//        AlbumSortBy.entries,
+//        rememberPreference(albumSortByKey, AlbumSortBy.DateAdded)
+//    )
 
     val itemSize = ItemSize.init( HOME_ALBUM_ITEM_SIZE )
 
@@ -155,16 +170,19 @@ fun HomeAlbums(
     val buttonsList = AlbumsType.entries.map { it to it.textName }
     val coroutineScope = rememberCoroutineScope()
 
-//    if (!isSyncEnabled()) {
-//        filterBy = FilterBy.All
-//    }
+    var sortBy by rememberPreference(albumSortByKey, AlbumSortBy.DateAdded)
+    var sortOrder by rememberPreference(albumSortOrderKey, SortOrder.Descending)
+    val sortOrderIconRotation by animateFloatAsState(
+        targetValue = if (sortOrder == SortOrder.Ascending) 0f else 180f,
+        animationSpec = tween(durationMillis = 400, easing = LinearEasing), label = ""
+    )
 
-    LaunchedEffect( sort.sortBy, sort.sortOrder, albumType ) {
+    LaunchedEffect( sortBy, sortOrder, albumType ) {
         when ( albumType ) {
-            AlbumsType.Favorites -> Database.albums( sort.sortBy, sort.sortOrder ).collect { items = it }
-            AlbumsType.Library -> Database.albumsInLibrary( sort.sortBy, sort.sortOrder ).collect { items = it.filter { it.isYoutubeAlbum } }
-            AlbumsType.OnDevice -> Database.albumsOnDevice( sort.sortBy, sort.sortOrder ).collect { items = it }
-            AlbumsType.All -> Database.albumsWithSongsSaved( sort.sortBy, sort.sortOrder ).collect { items = it }
+            AlbumsType.Favorites -> Database.albums( sortBy, sortOrder ).collect { items = it }
+            AlbumsType.Library -> Database.albumsInLibrary( sortBy, sortOrder ).collect { items = it.filter { it.isYoutubeAlbum } }
+            AlbumsType.OnDevice -> Database.albumsOnDevice( sortBy, sortOrder ).collect { items = it }
+            AlbumsType.All -> Database.albumsWithSongsSaved( sortBy, sortOrder ).collect { items = it }
 
         }
     }
@@ -230,6 +248,17 @@ fun HomeAlbums(
             justSynced = true
     }
 
+    val sortMenu: @Composable () -> Unit = {
+        EnumsMenu(
+            title = stringResource(R.string.sorting_order),
+            onDismiss = menuState::hide,
+            selectedValue = sortBy.menuItem,
+            onValueSelected = { sortBy = AlbumSortBy.entries[it.ordinal] },
+            values = AlbumSortBy.entries.map { it.menuItem },
+            valueText = { stringResource(it.titleId) }
+        )
+    }
+
     PullToRefreshBox(
         refreshing = refreshing,
         onRefresh = { refresh() }
@@ -249,18 +278,57 @@ fun HomeAlbums(
                 // Sticky tab's title
                 TabHeader(R.string.albums) {
                     HeaderInfo(itemsOnDisplay.size.toString(), R.drawable.music_album)
-                }
 
-                // Sticky tab's tool bar
-                TabToolBar.Buttons( sort, sync, search, randomizer, shuffle, itemSize, viewType )
+                    Spacer(
+                        modifier = Modifier
+                            .weight(1f)
+                    )
+                    Text(
+                        text = stringResource(sortBy.textId),
+                        style = typography().s,
+                        color = colorPalette().text,
+                        modifier = Modifier.clickable {
+                            menuState.display {
+                                sortMenu()
+                            }
+                        }
+                    )
+                    Spacer(modifier = Modifier.width(12.dp))
+                    HeaderIconButton(
+                        icon = R.drawable.arrow_up,
+                        color = colorPalette().text,
+                        onClick = {},
+                        modifier = Modifier
+                            .padding(horizontal = 2.dp)
+                            .graphicsLayer {
+                                rotationZ =
+                                    sortOrderIconRotation
+                            }
+                            .combinedClickable(
+                                onClick = {
+                                    sortOrder =
+                                        if (sortOrder == SortOrder.Ascending)
+                                            SortOrder.Descending
+                                        else SortOrder.Ascending
+                                },
+                                onLongClick = {
+                                    menuState.display {
+                                        sortMenu()
+                                    }
+                                }
+
+                            )
+                    )
+                    Spacer(modifier = Modifier.width(12.dp))
+                }
 
                 Row(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
                         .padding(horizontal = 12.dp)
-                        //.padding(vertical = 4.dp)
-                        .padding(bottom = 8.dp)
+                        .padding(vertical = 4.dp)
+                        //.padding(bottom = 8.dp)
                         .fillMaxWidth()
                 ) {
                     Box {
@@ -270,57 +338,65 @@ fun HomeAlbums(
                             onValueUpdate = { albumType = it },
                             modifier = Modifier.padding(end = 12.dp)
                         )
-//                        if (isSyncEnabled()) {
-//                            Row(
-//                                modifier = Modifier
-//                                    .align(Alignment.CenterEnd)
-//                            ) {
-//                                BasicText(
-//                                    text = when (filterBy) {
-//                                        FilterBy.All -> stringResource(R.string.all)
-//                                        FilterBy.Local -> stringResource(R.string.on_device)
-//                                        FilterBy.YoutubeLibrary -> stringResource(R.string.ytm_library)
-//                                    },
-//                                    style = typography.xs.semiBold,
-//                                    maxLines = 1,
-//                                    overflow = TextOverflow.Ellipsis,
-//                                    modifier = Modifier
-//                                        .align(Alignment.CenterVertically)
-//                                        .padding(end = 5.dp)
-//                                        .clickable {
-//                                            menuState.display {
-//                                                FilterMenu(
-//                                                    title = stringResource(R.string.filter_by),
-//                                                    onDismiss = menuState::hide,
-//                                                    onAll = { filterBy = FilterBy.All },
-//                                                    onYoutubeLibrary = {
-//                                                        filterBy = FilterBy.YoutubeLibrary
-//                                                    },
-//                                                    onLocal = { filterBy = FilterBy.Local }
-//                                                )
-//                                            }
-//
-//                                        }
-//                                )
-//                                HeaderIconButton(
-//                                    icon = R.drawable.playlist,
-//                                    color = colorPalette.text,
-//                                    onClick = {},
-//                                    modifier = Modifier
-//                                        .offset(0.dp, 2.5.dp)
-//                                        .clickable(
-//                                            interactionSource = remember { MutableInteractionSource() },
-//                                            indication = null,
-//                                            onClick = {}
-//                                        )
-//                                )
-//                            }
-//                        }
+
                     }
                 }
 
+                // Sticky tab's tool bar
+                TabToolBar.Buttons( sync, search, randomizer, shuffle, itemSize, viewType )
+
                 // Sticky search bar
                 search.SearchBar( this )
+
+                /*
+                Row(
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .padding(horizontal = 12.dp)
+                        .padding(vertical = 4.dp)
+                        .fillMaxWidth()
+                ) {
+
+                    HeaderIconButton(
+                        icon = R.drawable.arrow_up,
+                        color = colorPalette().text,
+                        onClick = {},
+                        modifier = Modifier
+                            .padding(horizontal = 2.dp)
+                            .graphicsLayer {
+                                rotationZ =
+                                    sortOrderIconRotation
+                            }
+                            .combinedClickable(
+                                onClick = {
+                                    sortOrder =
+                                        if (sortOrder == SortOrder.Ascending)
+                                            SortOrder.Descending
+                                        else SortOrder.Ascending
+                                },
+                                onLongClick = {
+                                    menuState.display {
+                                        sortMenu()
+                                    }
+                                }
+
+                            )
+                    )
+
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Text(
+                        text = stringResource(sortBy.textId),
+                        style = typography().s,
+                        color = colorPalette().text,
+                        modifier = Modifier.clickable {
+                            menuState.display {
+                                sortMenu()
+                            }
+                        }
+                    )
+                }
+                */
 
                 if (getViewType() == ViewType.List) {
                     val state = rememberLazyListState()

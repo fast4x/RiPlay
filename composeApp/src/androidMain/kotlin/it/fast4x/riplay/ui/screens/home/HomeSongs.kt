@@ -35,6 +35,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -45,6 +46,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.Checkbox
 import androidx.compose.material.CheckboxDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -155,6 +157,7 @@ import it.fast4x.riplay.ui.styling.color
 import it.fast4x.riplay.extensions.preferences.defaultFolderKey
 import it.fast4x.riplay.extensions.preferences.disableScrollingTextKey
 import it.fast4x.riplay.commonutils.durationTextToMillis
+import it.fast4x.riplay.enums.ArtistSortBy
 import it.fast4x.riplay.enums.BlacklistType
 import it.fast4x.riplay.utils.enqueue
 import it.fast4x.riplay.extensions.preferences.excludeSongsWithDurationLimitKey
@@ -196,6 +199,7 @@ import it.fast4x.riplay.utils.asSong
 import it.fast4x.riplay.utils.formatAsDuration
 import org.dailyislam.android.utilities.isNetworkConnected
 import it.fast4x.riplay.extensions.preferences.showDislikedPlaylistKey
+import it.fast4x.riplay.ui.components.themed.EnumsMenu
 import it.fast4x.riplay.utils.insertOrUpdateBlacklist
 
 
@@ -690,6 +694,114 @@ fun HomeSongs(
     val queueLimit by remember { mutableStateOf(QueueSelection.END_OF_QUEUE_WINDOWED) }
     var songItemsToLike = remember { mutableStateListOf<MediaItem>() }
 
+    val sortMenu: @Composable () -> Unit = {
+        when (builtInPlaylist) {
+            BuiltInPlaylist.OnDevice -> {
+                if (!showFolders)
+                    EnumsMenu(
+                        title = stringResource(R.string.sorting_order),
+                        onDismiss = menuState::hide,
+                        selectedValue = sortByOnDevice.menuItem,
+                        onValueSelected = { sortByOnDevice = OnDeviceSongSortBy.entries[it.ordinal] },
+                        values = OnDeviceSongSortBy.entries.map { it.menuItem },
+                        valueText = { stringResource(it.titleId) }
+                    )
+                    /*
+                    SortMenu(
+                        title = stringResource(R.string.sorting_order),
+                        onDismiss = menuState::hide,
+                        onTitle = {
+                            sortByOnDevice =
+                                OnDeviceSongSortBy.Title
+                        },
+                        onDateAdded = {
+                            sortByOnDevice =
+                                OnDeviceSongSortBy.DateAdded
+                        },
+                        onArtist = {
+                            sortByOnDevice =
+                                OnDeviceSongSortBy.Artist
+                        },
+                        onAlbum = {
+                            sortByOnDevice =
+                                OnDeviceSongSortBy.Album
+                        },
+                    )
+                     */
+                else
+                    EnumsMenu(
+                        title = stringResource(R.string.sorting_order),
+                        onDismiss = menuState::hide,
+                        selectedValue = sortByFolderOnDevice.menuItem,
+                        onValueSelected = { sortByFolderOnDevice = OnDeviceFolderSortBy.entries[it.ordinal] },
+                        values = OnDeviceFolderSortBy.entries.map { it.menuItem },
+                        valueText = { stringResource(it.titleId) }
+                    )
+                    /*
+                    SortMenu(
+                        title = stringResource(R.string.sorting_order),
+                        onDismiss = menuState::hide,
+                        onTitle = {
+                            sortByFolderOnDevice =
+                                OnDeviceFolderSortBy.Title
+                        },
+                        onArtist = {
+                            sortByFolderOnDevice =
+                                OnDeviceFolderSortBy.Artist
+                        },
+                        onDuration = {
+                            sortByFolderOnDevice =
+                                OnDeviceFolderSortBy.Duration
+                        },
+                    )
+                     */
+            }
+
+            else -> {
+                EnumsMenu(
+                    title = stringResource(R.string.sorting_order),
+                    onDismiss = menuState::hide,
+                    selectedValue = sortBy.menuItem,
+                    onValueSelected = { sortBy = SongSortBy.entries[it.ordinal] },
+                    values = SongSortBy.entries.map { it.menuItem },
+                    valueText = { stringResource(it.titleId) }
+                )
+
+                /*
+                SortMenu(
+                    title = stringResource(R.string.sorting_order),
+                    onDismiss = menuState::hide,
+                    onTitle = { sortBy = SongSortBy.Title },
+                    onDatePlayed = {
+                        sortBy = SongSortBy.DatePlayed
+                    },
+                    onDateAdded = {
+                        sortBy = SongSortBy.DateAdded
+                    },
+                    onPlayTime = {
+                        sortBy = SongSortBy.PlayTime
+                    },
+                    onRelativePlayTime = {
+                        sortBy = SongSortBy.RelativePlayTime
+                    },
+                    onDateLiked = {
+                        sortBy = SongSortBy.DateLiked
+                    },
+                    onArtist = {
+                        sortBy = SongSortBy.Artist
+                    },
+                    onDuration = {
+                        sortBy = SongSortBy.Duration
+                    },
+                    onAlbum = {
+                        sortBy = SongSortBy.AlbumName
+                    },
+                )
+                 */
+            }
+        }
+    }
+
     Box(
         modifier = Modifier
             .background(colorPalette().background0)
@@ -744,6 +856,47 @@ fun HomeSongs(
                             modifier = Modifier
                                 .weight(1f)
                         )
+
+                        if (builtInPlaylist != BuiltInPlaylist.Top) {
+                            Text(
+                                text = stringResource(sortBy.textId),
+                                style = typography().s,
+                                color = colorPalette().text,
+                                overflow = TextOverflow.Ellipsis,
+                                maxLines = 1,
+                                modifier = Modifier.clickable {
+                                    menuState.display {
+                                        sortMenu()
+                                    }
+                                }
+                            )
+                            Spacer(modifier = Modifier.width(12.dp))
+                            HeaderIconButton(
+                                icon = R.drawable.arrow_up,
+                                color = colorPalette().text,
+                                onClick = {},
+                                modifier = Modifier
+                                    .padding(horizontal = 2.dp)
+                                    .graphicsLayer {
+                                        rotationZ =
+                                            sortOrderIconRotation
+                                    }
+                                    .combinedClickable(
+                                        onClick = {
+                                            if (builtInPlaylist != BuiltInPlaylist.OnDevice)
+                                                sortOrder = !sortOrder
+                                            else sortOrderOnDevice = !sortOrderOnDevice
+                                        },
+                                        onLongClick = {
+                                            menuState.display {
+                                                sortMenu()
+                                            }
+                                        }
+                                    )
+                            )
+                            Spacer(modifier = Modifier.width(12.dp))
+                        }
+
                     }
 
                     Row(
@@ -775,7 +928,7 @@ fun HomeSongs(
                             .padding(vertical = 4.dp)
                             .fillMaxWidth()
                     ) {
-
+                        /*
                         if (builtInPlaylist != BuiltInPlaylist.Top) {
                             HeaderIconButton(
                                 icon = R.drawable.arrow_up,
@@ -795,86 +948,14 @@ fun HomeSongs(
                                         },
                                         onLongClick = {
                                             menuState.display {
-                                                when (builtInPlaylist) {
-                                                    BuiltInPlaylist.OnDevice -> {
-                                                        if (!showFolders)
-                                                            SortMenu(
-                                                                title = stringResource(R.string.sorting_order),
-                                                                onDismiss = menuState::hide,
-                                                                onTitle = {
-                                                                    sortByOnDevice =
-                                                                        OnDeviceSongSortBy.Title
-                                                                },
-                                                                onDateAdded = {
-                                                                    sortByOnDevice =
-                                                                        OnDeviceSongSortBy.DateAdded
-                                                                },
-                                                                onArtist = {
-                                                                    sortByOnDevice =
-                                                                        OnDeviceSongSortBy.Artist
-                                                                },
-                                                                onAlbum = {
-                                                                    sortByOnDevice =
-                                                                        OnDeviceSongSortBy.Album
-                                                                },
-                                                            )
-                                                        else
-                                                            SortMenu(
-                                                                title = stringResource(R.string.sorting_order),
-                                                                onDismiss = menuState::hide,
-                                                                onTitle = {
-                                                                    sortByFolderOnDevice =
-                                                                        OnDeviceFolderSortBy.Title
-                                                                },
-                                                                onArtist = {
-                                                                    sortByFolderOnDevice =
-                                                                        OnDeviceFolderSortBy.Artist
-                                                                },
-                                                                onDuration = {
-                                                                    sortByFolderOnDevice =
-                                                                        OnDeviceFolderSortBy.Duration
-                                                                },
-                                                            )
-                                                    }
-
-                                                    else -> {
-                                                        SortMenu(
-                                                            title = stringResource(R.string.sorting_order),
-                                                            onDismiss = menuState::hide,
-                                                            onTitle = { sortBy = SongSortBy.Title },
-                                                            onDatePlayed = {
-                                                                sortBy = SongSortBy.DatePlayed
-                                                            },
-                                                            onDateAdded = {
-                                                                sortBy = SongSortBy.DateAdded
-                                                            },
-                                                            onPlayTime = {
-                                                                sortBy = SongSortBy.PlayTime
-                                                            },
-                                                            onRelativePlayTime = {
-                                                                sortBy = SongSortBy.RelativePlayTime
-                                                            },
-                                                            onDateLiked = {
-                                                                sortBy = SongSortBy.DateLiked
-                                                            },
-                                                            onArtist = {
-                                                                sortBy = SongSortBy.Artist
-                                                            },
-                                                            onDuration = {
-                                                                sortBy = SongSortBy.Duration
-                                                            },
-                                                            onAlbum = {
-                                                                sortBy = SongSortBy.AlbumName
-                                                            },
-                                                        )
-                                                    }
-                                                }
+                                                sortMenu()
 
                                             }
                                         }
                                     )
                             )
                         }
+                        */
                         if (builtInPlaylist == BuiltInPlaylist.Top) {
                             HeaderIconButton(
                                 icon = R.drawable.stat,
@@ -1264,6 +1345,54 @@ fun HomeSongs(
                         )
 
                     }
+
+                    /*
+                    Row(
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .padding(horizontal = 12.dp)
+                            .padding(vertical = 4.dp)
+                            .fillMaxWidth()
+                    ) {
+                        if (builtInPlaylist != BuiltInPlaylist.Top) {
+                            HeaderIconButton(
+                                icon = R.drawable.arrow_up,
+                                color = colorPalette().text,
+                                onClick = {},
+                                modifier = Modifier
+                                    .padding(horizontal = 2.dp)
+                                    .graphicsLayer {
+                                        rotationZ =
+                                            sortOrderIconRotation
+                                    }
+                                    .combinedClickable(
+                                        onClick = {
+                                            if (builtInPlaylist != BuiltInPlaylist.OnDevice)
+                                                sortOrder = !sortOrder
+                                            else sortOrderOnDevice = !sortOrderOnDevice
+                                        },
+                                        onLongClick = {
+                                            menuState.display {
+                                                sortMenu()
+                                            }
+                                        }
+                                    )
+                            )
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Text(
+                                text = stringResource(sortBy.textId),
+                                style = typography().s,
+                                color = colorPalette().text,
+                                modifier = Modifier.clickable {
+                                    menuState.display {
+                                        sortMenu()
+                                    }
+                                }
+                            )
+                        }
+                    }
+                    */
 
                     /*        */
 

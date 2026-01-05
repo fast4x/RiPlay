@@ -6,6 +6,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
 import it.fast4x.riplay.R
+import it.fast4x.riplay.utils.GenericMenuItem
 
 enum class PlaylistSortBy(
     @StringRes val textId: Int,
@@ -26,4 +27,8 @@ enum class PlaylistSortBy(
     override val icon: Painter
         @Composable
         get() = painterResource( this.iconId )
+
+    val menuItem: GenericMenuItem
+        @Composable
+        get() = GenericMenuItem( this.ordinal,textId, iconId )
 }

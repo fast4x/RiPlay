@@ -2,11 +2,17 @@ package it.fast4x.riplay.ui.screens.home
 
 import android.annotation.SuppressLint
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -14,6 +20,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
@@ -24,6 +31,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -36,6 +44,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -105,9 +114,14 @@ import it.fast4x.riplay.extensions.preferences.Preference.HOME_LIBRARY_ITEM_SIZE
 import it.fast4x.riplay.utils.autoSyncToolbutton
 import it.fast4x.riplay.extensions.preferences.autosyncKey
 import it.fast4x.riplay.data.models.defaultQueue
+import it.fast4x.riplay.enums.AlbumSortBy
 import it.fast4x.riplay.enums.BlacklistType
 import it.fast4x.riplay.enums.SortOrder
+import it.fast4x.riplay.extensions.preferences.albumSortByKey
+import it.fast4x.riplay.extensions.preferences.albumSortOrderKey
 import it.fast4x.riplay.ui.components.LocalGlobalSheetState
+import it.fast4x.riplay.ui.components.themed.EnumsMenu
+import it.fast4x.riplay.ui.components.themed.HeaderIconButton
 import it.fast4x.riplay.ui.components.themed.PlaylistsItemMenu
 import it.fast4x.riplay.ui.styling.px
 import it.fast4x.riplay.utils.CheckAndCreateMonthlyPlaylist
@@ -115,6 +129,7 @@ import it.fast4x.riplay.utils.LazyListContainer
 import it.fast4x.riplay.utils.addNext
 import it.fast4x.riplay.utils.forcePlayFromBeginning
 import it.fast4x.riplay.utils.insertOrUpdateBlacklist
+import it.fast4x.riplay.utils.typography
 import it.fast4x.riplay.utils.viewTypeToolbutton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -169,11 +184,11 @@ fun HomePlaylists(
 
     val search = Search.init()
 
-    val sort = Sort.init(
-        playlistSortOrderKey,
-        PlaylistSortBy.entries,
-        rememberPreference(playlistSortByKey, PlaylistSortBy.DateAdded)
-    )
+//    val sort = Sort.init(
+//        playlistSortOrderKey,
+//        PlaylistSortBy.entries,
+//        rememberPreference(playlistSortByKey, PlaylistSortBy.DateAdded)
+//    )
 
     val itemSize = ItemSize.init( HOME_LIBRARY_ITEM_SIZE )
 
@@ -316,30 +331,37 @@ fun HomePlaylists(
 
     val onDeviceViewModel = LocalOnDeviceViewModel.current
 
-    LaunchedEffect( sort.sortBy, sort.sortOrder, playlistType ) {
+    var sortBy by rememberPreference(playlistSortByKey, PlaylistSortBy.DateAdded)
+    var sortOrder by rememberPreference(playlistSortOrderKey, SortOrder.Descending)
+    val sortOrderIconRotation by animateFloatAsState(
+        targetValue = if (sortOrder == SortOrder.Ascending) 0f else 180f,
+        animationSpec = tween(durationMillis = 400, easing = LinearEasing), label = ""
+    )
+
+    LaunchedEffect( sortBy, sortOrder, playlistType ) {
         if (playlistType == PlaylistType.OnDevicePlaylist) {
             onDeviceViewModel.audioFoldersAsPlaylists().collect { folders ->
-                items = when (sort.sortBy) {
-                    PlaylistSortBy.Name -> when (sort.sortOrder) {
+                items = when (sortBy) {
+                    PlaylistSortBy.Name -> when (sortOrder) {
                         SortOrder.Ascending -> folders.sortedBy { it.playlist.name }
                         SortOrder.Descending -> folders.sortedByDescending { it.playlist.name }
                     }
-                    PlaylistSortBy.DateAdded -> when (sort.sortOrder) {
+                    PlaylistSortBy.DateAdded -> when (sortOrder) {
                         SortOrder.Ascending -> folders.sortedBy { it.totalPlayTimeMs }
                         SortOrder.Descending -> folders.sortedByDescending { it.totalPlayTimeMs }
                     }
-                    PlaylistSortBy.SongCount -> when (sort.sortOrder) {
+                    PlaylistSortBy.SongCount -> when (sortOrder) {
                         SortOrder.Ascending -> folders.sortedBy { it.songCount }
                         SortOrder.Descending -> folders.sortedByDescending { it.songCount }
                     }
-                    PlaylistSortBy.MostPlayed -> when (sort.sortOrder) {
+                    PlaylistSortBy.MostPlayed -> when (sortOrder) {
                         SortOrder.Ascending -> folders.sortedBy { it.totalPlayTimeMs }
                         SortOrder.Descending -> folders.sortedByDescending { it.totalPlayTimeMs }
                     }
                 }
             }
         } else
-            Database.playlistPreviews(sort.sortBy, sort.sortOrder).collect { items = it }
+            Database.playlistPreviews(sortBy, sortOrder).collect { items = it }
     }
 
     val blacklisted = remember {
@@ -390,6 +412,17 @@ fun HomePlaylists(
         CheckAndCreateMonthlyPlaylist()
     // END - Monthly playlist
 
+    val sortMenu: @Composable () -> Unit = {
+        EnumsMenu(
+            title = stringResource(R.string.sorting_order),
+            onDismiss = menuState::hide,
+            selectedValue = sortBy.menuItem,
+            onValueSelected = { sortBy = PlaylistSortBy.entries[it.ordinal] },
+            values = PlaylistSortBy.entries.map { it.menuItem },
+            valueText = { stringResource(it.titleId) }
+        )
+    }
+
     PullToRefreshBox(
         refreshing = refreshing,
         onRefresh = { refresh() }
@@ -410,15 +443,127 @@ fun HomePlaylists(
                 // Sticky tab's title
                 TabHeader( R.string.playlists ) {
                     HeaderInfo( itemsOnDisplay.size.toString(), R.drawable.playlist )
+
+                    Spacer(
+                        modifier = Modifier
+                            .weight(1f)
+                    )
+                    Text(
+                        text = stringResource(sortBy.textId),
+                        style = typography().s,
+                        color = colorPalette().text,
+                        modifier = Modifier.clickable {
+                            menuState.display {
+                                sortMenu()
+                            }
+                        }
+                    )
+                    Spacer(modifier = Modifier.width(12.dp))
+                    HeaderIconButton(
+                        icon = R.drawable.arrow_up,
+                        color = colorPalette().text,
+                        onClick = {},
+                        modifier = Modifier
+                            .padding(horizontal = 2.dp)
+                            .graphicsLayer {
+                                rotationZ =
+                                    sortOrderIconRotation
+                            }
+                            .combinedClickable(
+                                onClick = {
+                                    sortOrder =
+                                        if (sortOrder == SortOrder.Ascending)
+                                            SortOrder.Descending
+                                        else SortOrder.Ascending
+                                },
+                                onLongClick = {
+                                    menuState.display {
+                                        sortMenu()
+                                    }
+                                }
+
+                            )
+                    )
+                    Spacer(modifier = Modifier.width(12.dp))
+                }
+
+                Row(
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .padding(horizontal = 12.dp)
+                        .padding(vertical = 4.dp)
+                        //.padding(bottom = 8.dp)
+                        .fillMaxWidth()
+                ) {
+                    Box {
+                        ButtonsRow(
+                            buttons = buttonsList,
+                            currentValue = playlistType,
+                            onValueUpdate = { playlistType = it },
+                            modifier = Modifier.padding(end = 12.dp)
+                        )
+
+                    }
                 }
 
                 // Sticky tab's tool bar
                 val buttons = mutableListOf(
-                    sort, sync, search, shuffle, newPlaylistDialog, importPlaylistDialog, itemSize, viewType)
+                    sync, search, shuffle, newPlaylistDialog, importPlaylistDialog, itemSize, viewType)
                 TabToolBar.Buttons(buttons)
 
                 // Sticky search bar
                 search.SearchBar( this )
+
+                /*
+                Row(
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .padding(horizontal = 12.dp)
+                        .padding(vertical = 4.dp)
+                        .fillMaxWidth()
+                ) {
+
+                    HeaderIconButton(
+                        icon = R.drawable.arrow_up,
+                        color = colorPalette().text,
+                        onClick = {},
+                        modifier = Modifier
+                            .padding(horizontal = 2.dp)
+                            .graphicsLayer {
+                                rotationZ =
+                                    sortOrderIconRotation
+                            }
+                            .combinedClickable(
+                                onClick = {
+                                    sortOrder =
+                                        if (sortOrder == SortOrder.Ascending)
+                                            SortOrder.Descending
+                                        else SortOrder.Ascending
+                                },
+                                onLongClick = {
+                                    menuState.display {
+                                        sortMenu()
+                                    }
+                                }
+
+                            )
+                    )
+
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Text(
+                        text = stringResource(sortBy.textId),
+                        style = typography().s,
+                        color = colorPalette().text,
+                        modifier = Modifier.clickable {
+                            menuState.display {
+                                sortMenu()
+                            }
+                        }
+                    )
+                }
+                */
 
                 if (getViewType() == ViewType.List) {
                     val state = rememberLazyListState()
@@ -430,17 +575,17 @@ fun HomePlaylists(
                             modifier = Modifier
 
                         ) {
-                            item(
-                                key = "separator",
-                                contentType = 0
-                            ) {
-                                ButtonsRow(
-                                    buttons = buttonsList,
-                                    currentValue = playlistType,
-                                    onValueUpdate = { playlistType = it },
-                                    modifier = Modifier.padding(start = 12.dp, end = 12.dp)
-                                )
-                            }
+//                            item(
+//                                key = "separator",
+//                                contentType = 0
+//                            ) {
+//                                ButtonsRow(
+//                                    buttons = buttonsList,
+//                                    currentValue = playlistType,
+//                                    onValueUpdate = { playlistType = it },
+//                                    modifier = Modifier.padding(start = 12.dp, end = 12.dp)
+//                                )
+//                            }
 
                             val listPrefix =
                                 when (playlistType) {
@@ -665,17 +810,17 @@ fun HomePlaylists(
                             modifier = Modifier
                                 .background(colorPalette().background0)
                         ) {
-                            item(
-                                key = "separator",
-                                contentType = 0,
-                                span = { GridItemSpan(maxLineSpan) }) {
-                                ButtonsRow(
-                                    buttons = buttonsList,
-                                    currentValue = playlistType,
-                                    onValueUpdate = { playlistType = it },
-                                    modifier = Modifier.padding(start = 12.dp, end = 12.dp)
-                                )
-                            }
+//                            item(
+//                                key = "separator",
+//                                contentType = 0,
+//                                span = { GridItemSpan(maxLineSpan) }) {
+//                                ButtonsRow(
+//                                    buttons = buttonsList,
+//                                    currentValue = playlistType,
+//                                    onValueUpdate = { playlistType = it },
+//                                    modifier = Modifier.padding(start = 12.dp, end = 12.dp)
+//                                )
+//                            }
 
                             val listPrefix =
                                 when (playlistType) {
