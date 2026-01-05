@@ -1057,24 +1057,24 @@ interface Database {
     fun songCached(songId: String): Flow<SongWithContentLength?>
 
     @Query("""
-        SELECT DISTINCT Song.*, Format.contentLength, Album.title
+        SELECT DISTINCT Song.*, null, Album.title
         FROM Song 
+        JOIN SongArtistMap ON Song.id = SongArtistMap.songId
         LEFT JOIN SongAlbumMap ON Song.id = SongAlbumMap.songId 
-        LEFT JOIN Album ON Album.id = SongAlbumMap.albumId 
-        LEFT JOIN Format ON Format.songId = Song.id
-        WHERE Format.contentLength IS NOT NULL 
+        LEFT JOIN Album ON Album.id = SongAlbumMap.albumId
+        WHERE SongArtistMap.artistId = :artistId 
         ORDER BY totalPlayTimeMs
     """)
     @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
-    fun sortOfflineSongsByPlayTime(): Flow<List<SongEntity>>
+    fun listArtistLibrarySongsByPlayTime(artistId: String): Flow<List<SongEntity>>
 
     @Query("""
-        SELECT DISTINCT Song.*, Format.contentLength, Album.title
+        SELECT DISTINCT Song.*, null, Album.title
         FROM Song 
+        JOIN SongArtistMap ON Song.id = SongArtistMap.songId
         LEFT JOIN SongAlbumMap ON Song.id = SongAlbumMap.songId 
         LEFT JOIN Album ON Album.id = SongAlbumMap.albumId 
-        LEFT JOIN Format ON Format.songId = Song.id
-        WHERE Format.contentLength IS NOT NULL 
+        WHERE SongArtistMap.artistId = :artistId 
         ORDER BY 
             CASE
                 WHEN Song.title LIKE "${EXPLICIT_PREFIX}%" THEN SUBSTR(Song.title, LENGTH('${EXPLICIT_PREFIX}') + 1)
@@ -1083,112 +1083,95 @@ interface Database {
         COLLATE NOCASE
     """)
     @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
-    fun sortOfflineSongsByTitle(): Flow<List<SongEntity>>
+    fun listArtistLibrarySongsByTitle(artistId: String): Flow<List<SongEntity>>
 
     @Query("""
-        SELECT DISTINCT Song.*, Format.contentLength, Album.title
+        SELECT DISTINCT Song.*, null, Album.title
         FROM Song 
+        JOIN SongArtistMap ON Song.id = SongArtistMap.songId
         LEFT JOIN SongAlbumMap ON Song.id = SongAlbumMap.songId 
-        LEFT JOIN Album ON Album.id = SongAlbumMap.albumId 
-        LEFT JOIN Format ON Format.songId = Song.id
-        WHERE Format.contentLength IS NOT NULL 
+        LEFT JOIN Album ON Album.id = SongAlbumMap.albumId         
+        WHERE SongArtistMap.artistId = :artistId 
         ORDER BY Song.ROWID
     """)
     @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
-    fun sortOfflineSongsByRowId(): Flow<List<SongEntity>>
+    fun listArtistLibrarySongsByRowId(artistId: String): Flow<List<SongEntity>>
 
     @Query("""
-        SELECT DISTINCT Song.*, Format.contentLength, Album.title
+        SELECT DISTINCT Song.*, null, Album.title
         FROM Song 
+        JOIN SongArtistMap ON Song.id = SongArtistMap.songId
         LEFT JOIN SongAlbumMap ON Song.id = SongAlbumMap.songId 
-        LEFT JOIN Album ON Album.id = SongAlbumMap.albumId 
-        LEFT JOIN Format ON Format.songId = Song.id
-        WHERE Format.contentLength IS NOT NULL 
+        LEFT JOIN Album ON Album.id = SongAlbumMap.albumId         
+        WHERE SongArtistMap.artistId = :artistId 
         ORDER BY Song.likedAt
     """)
     @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
-    fun sortOfflineSongsByLikedAt(): Flow<List<SongEntity>>
+    fun listArtistLibrarySongsByLikedAt(artistId: String): Flow<List<SongEntity>>
 
     @Query("""
-        SELECT DISTINCT Song.*, Format.contentLength, Album.title
+        SELECT DISTINCT Song.*, null, Album.title
         FROM Song 
+        JOIN SongArtistMap ON Song.id = SongArtistMap.songId
         LEFT JOIN SongAlbumMap ON Song.id = SongAlbumMap.songId 
-        LEFT JOIN Album ON Album.id = SongAlbumMap.albumId 
-        LEFT JOIN Format ON Format.songId = Song.id
-        WHERE Format.contentLength IS NOT NULL 
+        LEFT JOIN Album ON Album.id = SongAlbumMap.albumId         
+        WHERE SongArtistMap.artistId = :artistId 
         ORDER BY Song.artistsText
     """)
     @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
-    fun sortOfflineSongsByArtist(): Flow<List<SongEntity>>
+    fun listArtistLibrarySongsByArtist(artistId: String): Flow<List<SongEntity>>
 
     @Query("""
-        SELECT DISTINCT Song.*, Format.contentLength, Album.title
+        SELECT DISTINCT Song.*, null, Album.title
         FROM Song 
+        JOIN SongArtistMap ON Song.id = SongArtistMap.songId
         LEFT JOIN SongAlbumMap ON Song.id = SongAlbumMap.songId 
-        LEFT JOIN Album ON Album.id = SongAlbumMap.albumId 
-        LEFT JOIN Format ON Format.songId = Song.id
-        WHERE Format.contentLength IS NOT NULL 
+        LEFT JOIN Album ON Album.id = SongAlbumMap.albumId         
+        WHERE SongArtistMap.artistId = :artistId
         ORDER BY Song.durationText
     """)
     @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
-    fun sortOfflineSongsByDuration(): Flow<List<SongEntity>>
+    fun listArtistLibrarySongsByDuration(artistId: String): Flow<List<SongEntity>>
 
     @Query("""
-        SELECT DISTINCT Song.*, Format.contentLength, Album.title
+        SELECT DISTINCT Song.*, null, Album.title
         FROM Song 
+        JOIN SongArtistMap ON Song.id = SongArtistMap.songId
         LEFT JOIN Event E ON E.songId=Song.id 
         LEFT JOIN SongAlbumMap ON Song.id = SongAlbumMap.songId 
         LEFT JOIN Album ON Album.id = SongAlbumMap.albumId 
-        LEFT JOIN Format ON Format.songId = Song.id
-        WHERE Format.contentLength IS NOT NULL 
+        WHERE SongArtistMap.artistId = :artistId
         ORDER BY E.timestamp
     """)
     @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
-    fun sortOfflineSongsByDatePlayed(): Flow<List<SongEntity>>
+    fun listArtistLibrarySongsByDatePlayed(artistId: String): Flow<List<SongEntity>>
 
     @Query("""
-        SELECT DISTINCT Song.*, Format.contentLength, Album.title
+        SELECT DISTINCT Song.*, null, Album.title
         FROM Song 
+        JOIN SongArtistMap ON Song.id = SongArtistMap.songId
         LEFT JOIN SongAlbumMap ON Song.id = SongAlbumMap.songId 
         LEFT JOIN Album ON Album.id = SongAlbumMap.albumId 
-        LEFT JOIN Format ON Format.songId = Song.id
-        WHERE Format.contentLength IS NOT NULL 
+        WHERE SongArtistMap.artistId = :artistId
         ORDER BY Album.title COLLATE NOCASE
     """)
     @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
-    fun sortOfflineSongsByAlbum(): Flow<List<SongEntity>>
+    fun listArtistLibrarySongsByAlbum(artistId: String): Flow<List<SongEntity>>
 
-    /**
-     * Fetch all songs from that are cached the database
-     * and sort them according to [sortBy] and [sortOrder].
-     *
-     * [sortBy] sorts all based on each song's property
-     * such as [SongSortBy.Title], [SongSortBy.PlayTime], etc.
-     * While [sortOrder] arranges order of sorted songs
-     * to follow alphabetical order A to Z, or numerical order 0 to 9, etc.
-     *
-     * @param sortBy which song's property is used to sort
-     * @param sortOrder what order should results be in
-     *
-     * @return a **SORTED** list of [SongEntity]'s that are continuously
-     * updated to reflect changes within the database - wrapped by [Flow]
-     *
-     * @see SongSortBy
-     * @see SortOrder
-     */
-    fun listOfflineSongs(
+
+    fun listArtistLibrarySongs(
+        artistId: String,
         sortBy: SongSortBy,
         sortOrder: SortOrder
     ): Flow<List<SongEntity>> = when (sortBy) {
-        SongSortBy.PlayTime -> sortOfflineSongsByPlayTime()
-        SongSortBy.Title -> sortOfflineSongsByTitle()
-        SongSortBy.DateAdded -> sortOfflineSongsByRowId()
-        SongSortBy.DatePlayed -> sortOfflineSongsByDatePlayed()
-        SongSortBy.DateLiked -> sortOfflineSongsByLikedAt()
-        SongSortBy.Artist -> sortOfflineSongsByArtist()
-        SongSortBy.Duration -> sortOfflineSongsByDuration()
-        SongSortBy.AlbumName -> sortOfflineSongsByAlbum()
-        SongSortBy.RelativePlayTime -> TODO()
+        SongSortBy.PlayTime, SongSortBy.RelativePlayTime -> listArtistLibrarySongsByPlayTime(artistId)
+        SongSortBy.Title -> listArtistLibrarySongsByTitle(artistId)
+        SongSortBy.DateAdded -> listArtistLibrarySongsByRowId(artistId)
+        SongSortBy.DatePlayed -> listArtistLibrarySongsByDatePlayed(artistId)
+        SongSortBy.DateLiked -> listArtistLibrarySongsByLikedAt(artistId)
+        SongSortBy.Artist -> listArtistLibrarySongsByArtist(artistId)
+        SongSortBy.Duration -> listArtistLibrarySongsByDuration(artistId)
+        SongSortBy.AlbumName -> listArtistLibrarySongsByAlbum(artistId)
     }.map( sortOrder::applyTo )
 
     @Query("""

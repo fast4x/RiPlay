@@ -649,7 +649,8 @@ fun ArtistOverviewItems(
                                     isYoutubeAlbum = albumById?.isYoutubeAlbum == true,
                                     modifier = Modifier.clickable(onClick = {
                                         navController.navigate(route = "${NavRoutes.album.name}/${item.key}")
-                                    }),
+                                    })
+                                        .animateItem(),
                                     disableScrollingText = disableScrollingText
                                 )
                             }
@@ -664,6 +665,7 @@ fun ArtistOverviewItems(
                                     modifier = Modifier.clickable(onClick = {
                                         navController.navigate("${NavRoutes.playlist.name}/${item.key}")
                                     })
+                                        .animateItem()
                                 )
                             }
 
@@ -681,6 +683,7 @@ fun ArtistOverviewItems(
                                         binder?.player?.forcePlay(item.asMediaItem)
                                         //fastPlay(item.asMediaItem, binder)
                                     })
+                                        .animateItem()
                                 )
                             }
 
@@ -694,6 +697,7 @@ fun ArtistOverviewItems(
                                     modifier = Modifier.clickable(onClick = {
                                         navController.navigate("${NavRoutes.artist.name}/${item.key}")
                                     })
+                                        .animateItem()
                                 )
                             }
 

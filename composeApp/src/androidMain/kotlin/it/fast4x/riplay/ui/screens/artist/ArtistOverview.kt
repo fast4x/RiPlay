@@ -862,7 +862,7 @@ fun ArtistOverview(
             },
             shape = thumbnailRoundness.shape()
         ) {
-            ArtistLocalSongs(
+            ArtistLibrarySongs(
                 navController = navController,
                 browseId = browseId,
                 artistName = cleanPrefix(artist?.name ?: ""),
