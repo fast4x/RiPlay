@@ -1167,7 +1167,17 @@
     <string name="rw_artistlevel_thearchivist_desc_you_don_t_just_stick_to_the_hit_singles_you_ve_explored_every_corner_of_their_discography_becoming_a_true_expert">Non ti limiti ai singoli di successo. \n Hai esplorato ogni angolo della loro discografia, diventando un vero esperto.</string>
     <string name="rw_artistlevel_thedevotee_desc_this_artist_s_music_is_more_than_just_sound_it_s_a_part_of_you_a_deep_and_unbreakable_bond">La musica di questo artista è più di un semplice suono: è parte di te. \n Un legame profondo e indissolubile.</string>
     <string name="rw_artistlevel_undefined_desc_nothing_to_see_here">Lista vuota</string>
-    <string name="add_to_blacklist">Aggiungi alla Blacklist</string>
-    <string name="blacklisted">%1$s in Blacklist</string>
+    <string name="add_to_blacklist">Add to blacklist</string>
+    <string name="blacklisted">%1$s Blacklisted</string>
     <string name="blacklist">Blacklist</string>
+    <string name="lastfm_connected_to_lastfm_account">Connected to last.fm account</string>
+    <string name="lastfm_connect">Connect</string>
+    <string name="lastfm_disconnect">Disconnect</string>
+    <string name="title_lastfm">last.fm</string>
+    <string name="enable_lastfm">Enable last.fm</string>
+    <string name="lastfm_scrobble_simple">Simple</string>
+    <string name="lastfm_scrobble_now_playing">Now Playing</string>
+    <string name="lastfm_scrobble_type">Scrobble type</string>
+    <string name="song_unliked_lastfm">Song is Unliked in last.fm</string>
+    <string name="song_liked_lastfm">Song is liked in last.fm</string>
 </resources>
