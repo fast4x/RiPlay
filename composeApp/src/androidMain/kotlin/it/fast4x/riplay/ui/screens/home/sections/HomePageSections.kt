@@ -679,12 +679,6 @@ fun MoodAndGenresPart(
                 }
             }
 
-        HomepageRewind(
-            navController = navController,
-            playlistThumbnailSizeDp = playlistThumbnailSizeDp,
-            endPaddingValues = endPaddingValues,
-            disableScrollingText = disableScrollingText
-        )
 
         if (showMonthlyPlaylistInQuickPicks)
             localMonthlyPlaylists.let { playlists ->

@@ -32,10 +32,12 @@ fun getRewindYears(limit: Int = 5): List<Int> {
         Database.rewindYears(limit = limit)
     }.collectAsState(initial = null, context = Dispatchers.IO)
     val currentMonth = Calendar.getInstance().get(Calendar.MONTH)
-    return when (currentMonth) {
-        0,11 -> yearsList.value
-        else -> yearsList.value?.drop(if (yearsList.value?.size!! > 1) 1 else 0)
-    } ?: emptyList()
+    val currentYear = Calendar.getInstance().get(Calendar.YEAR)
+    return yearsList.value?.dropWhile { if(currentMonth in listOf(10,11)) false else it == currentYear } ?: emptyList()
+//    return when (currentMonth) {
+//        0,11 -> yearsList.value
+//        else -> yearsList.value?.drop(if (yearsList.value?.size!! > 1) 1 else 0)
+//    } ?: emptyList()
 }
 
 fun shadersList() = listOf(
