@@ -1183,17 +1183,17 @@ class PlayerService : Service(),
                 when (preferences.getEnum(lastfmScrobbleTypeKey, LastFmScrobbleType.Simple)) {
                     LastFmScrobbleType.Simple -> {
                         sendScrobble(
-                            mediaItem.mediaMetadata.artist as String,
-                            mediaItem.mediaMetadata.title as String,
-                            mediaItem.mediaMetadata.albumTitle as String,
+                            mediaItem.mediaMetadata.artist.toString(),
+                            mediaItem.mediaMetadata.title.toString(),
+                            mediaItem.mediaMetadata.albumTitle.toString(),
                             it
                         )
                     }
                     LastFmScrobbleType.NowPlaying -> {
                         sendNowPlaying(
-                            mediaItem.mediaMetadata.artist as String,
-                            mediaItem.mediaMetadata.title as String,
-                            mediaItem.mediaMetadata.albumTitle as String,
+                            mediaItem.mediaMetadata.artist.toString(),
+                            mediaItem.mediaMetadata.title.toString(),
+                            mediaItem.mediaMetadata.albumTitle.toString(),
                             it
                         )
                     }

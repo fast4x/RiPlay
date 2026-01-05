@@ -226,29 +226,31 @@ fun AccountsSettings() {
                                 }
                             )
 
-                            ButtonBarSettingEntry(
-                                isEnabled = true,
-                                title = stringResource(R.string.account_info),
-                                text = "",
-                                icon = R.drawable.person,
-                                iconColor = colorPalette().text,
-                                onClick = {
-                                    if (accountThumbnail == "" || accountName == "" || accountEmail == "")
-                                        GlobalScope.launch {
-                                            Environment.accountInfo().onSuccess {
-                                                println("YoutubeLogin doUpdateVisitedHistory accountInfo() $it")
-                                                accountName = it?.name.orEmpty()
-                                                accountEmail = it?.email.orEmpty()
-                                                accountChannelHandle = it?.channelHandle.orEmpty()
-                                                accountThumbnail = it?.thumbnailUrl.orEmpty()
-                                            }.onFailure {
-                                                Timber.e("Error YoutubeLogin: $it.stackTraceToString()")
-                                                println("Error YoutubeLogin: ${it.stackTraceToString()}")
+                            if (isLoggedIn)
+                                ButtonBarSettingEntry(
+                                    isEnabled = true,
+                                    title = stringResource(R.string.account_info),
+                                    text = "",
+                                    icon = R.drawable.person,
+                                    iconColor = colorPalette().text,
+                                    onClick = {
+                                        if (accountThumbnail == "" || accountName == "" || accountEmail == "")
+                                            GlobalScope.launch {
+                                                Environment.accountInfo().onSuccess {
+                                                    println("YoutubeLogin doUpdateVisitedHistory accountInfo() $it")
+                                                    accountName = it?.name.orEmpty()
+                                                    accountEmail = it?.email.orEmpty()
+                                                    accountChannelHandle =
+                                                        it?.channelHandle.orEmpty()
+                                                    accountThumbnail = it?.thumbnailUrl.orEmpty()
+                                                }.onFailure {
+                                                    Timber.e("Error YoutubeLogin: $it.stackTraceToString()")
+                                                    println("Error YoutubeLogin: ${it.stackTraceToString()}")
+                                                }
                                             }
-                                        }
-                                    showUserInfoDialog = true
-                                }
-                            )
+                                        showUserInfoDialog = true
+                                    }
+                                )
 
 
                             CustomModalBottomSheet(
@@ -274,17 +276,17 @@ fun AccountsSettings() {
                                         cookie = cookieRetrieved
                                         if (cookieRetrieved.contains("SAPISID")) {
                                             isLoggedIn = true
-                                            loginYouTube = false
+                                            //loginYouTube = false
                                             SmartMessage(
                                                 "Login successful",
                                                 type = PopupType.Info,
                                                 context = context
                                             )
 
-                                        }
+                                            }
 
-                                    }
-                                )
+                                        }
+                                    )
                             }
 
                         }

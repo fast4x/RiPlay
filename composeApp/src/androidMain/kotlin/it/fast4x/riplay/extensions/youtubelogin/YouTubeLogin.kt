@@ -71,7 +71,11 @@ fun YouTubeLogin(
                     webViewClient = object : WebViewClient() {
                         override fun doUpdateVisitedHistory(view: WebView, url: String, isReload: Boolean) {
                             if (url.startsWith("https://music.youtube.com")) {
-                                cookie = CookieManager.getInstance().getCookie(url)
+                                val freshCookie = CookieManager.getInstance().getCookie(url)
+                                if (freshCookie != null && freshCookie.isNotEmpty()) {
+                                    cookie = freshCookie
+                                    println("YoutubeLogin update cookie: $cookie")
+                                }
                                 println("YoutubeLogin doUpdateVisitedHistory cookie $cookie")
                                 onLogin(cookie)
 //                                GlobalScope.launch {
@@ -102,7 +106,14 @@ fun YouTubeLogin(
                         javaScriptEnabled = true
                         setSupportZoom(true)
                         builtInZoomControls = true
+
+                        val userAgent = settings.userAgentString
+                        settings.userAgentString = userAgent.replace("; wv", "")
                     }
+                    val cookieManager = CookieManager.getInstance()
+                    cookieManager.setAcceptCookie(true)
+                    cookieManager.setAcceptThirdPartyCookies(this, true)
+
                     addJavascriptInterface(object {
                         @JavascriptInterface
                         fun onRetrieveVisitorData(newVisitorData: String?) {
@@ -118,8 +129,17 @@ fun YouTubeLogin(
                         }
                     }, "Android")
                     webView = this
+
+                    val url = if (cookie.isNotEmpty()) {
+                        "https://music.youtube.com"
+                    } else {
+                        "https://accounts.google.com/ServiceLogin?continue=https%3A%2F%2Fmusic.youtube.com"
+                    }
+
+                    loadUrl(url)
+
                     //loadUrl("https://accounts.google.com/ServiceLogin?ltmpl=music&service=youtube&passive=true&continue=https%3A%2F%2Fwww.youtube.com%2Fsignin%3Faction_handle_signin%3Dtrue%26next%3Dhttps%253A%252F%252Fmusic.youtube.com%252F")
-                    loadUrl("https://accounts.google.com/ServiceLogin?continue=https%3A%2F%2Fmusic.youtube.com")
+                    //loadUrl("https://accounts.google.com/ServiceLogin?continue=https%3A%2F%2Fmusic.youtube.com")
                 }
             }
         )
