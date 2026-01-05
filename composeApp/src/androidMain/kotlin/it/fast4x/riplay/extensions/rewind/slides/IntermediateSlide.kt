@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -38,6 +39,7 @@ import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.mikepenz.hypnoticcanvas.shaderBackground
@@ -125,6 +127,12 @@ fun IntermediateSlide(slide: RewindSlide.Intermediate, isPageActive: Boolean = f
                         color = Color.White,
                         fontSize = 40.sp,
                         fontWeight = FontWeight.Bold,
+                        maxLines = 1,
+                        softWrap = false,
+                        autoSize = TextAutoSize.StepBased(
+                            minFontSize = 12.sp,
+                            maxFontSize = 40.sp,
+                        )
                     )
                 }
 
@@ -138,6 +146,12 @@ fun IntermediateSlide(slide: RewindSlide.Intermediate, isPageActive: Boolean = f
                         color = Color.White,
                         fontSize = 30.sp,
                         fontWeight = FontWeight.Bold,
+                        maxLines = 1,
+                        softWrap = false,
+                        autoSize = TextAutoSize.StepBased(
+                            minFontSize = 12.sp,
+                            maxFontSize = 30.sp,
+                        )
                     )
                 }
 
@@ -151,6 +165,12 @@ fun IntermediateSlide(slide: RewindSlide.Intermediate, isPageActive: Boolean = f
                         color = Color.White,
                         fontSize = 40.sp,
                         fontWeight = FontWeight.Bold,
+                        maxLines = 1,
+                        softWrap = false,
+                        autoSize = TextAutoSize.StepBased(
+                            minFontSize = 12.sp,
+                            maxFontSize = 40.sp,
+                        )
                     )
                 }
 
@@ -164,6 +184,12 @@ fun IntermediateSlide(slide: RewindSlide.Intermediate, isPageActive: Boolean = f
                         color = Color.White,
                         fontSize = 30.sp,
                         fontWeight = FontWeight.Bold,
+                        maxLines = 1,
+                        softWrap = false,
+                        autoSize = TextAutoSize.StepBased(
+                            minFontSize = 12.sp,
+                            maxFontSize = 30.sp,
+                        )
                     )
                 }
 
