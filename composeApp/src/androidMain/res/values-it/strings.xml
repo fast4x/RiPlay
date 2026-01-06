@@ -948,7 +948,7 @@
     <string name="restore_from_other_backup">Ripristina da altro backup</string>
     <string name="import_the_database_be_carefull">Importa il database da altri backup. Fai attenzione, potresti dover reinstallare l\'app.</string>
     <string name="enable_fullscreen">Abilita modalità schermo intero</string>
-    <string name="enable_fullscreen_info">Fullscreen hide system bars</string>
+    <string name="enable_fullscreen_info"></string>
     <string name="invalid_token">Token non valido</string>
     <string name="unknown_title">Titolo sconosciuto</string>
     <string name="unknown_artist">Artista sconosciuto</string>
@@ -1167,8 +1167,8 @@
     <string name="rw_artistlevel_thearchivist_desc_you_don_t_just_stick_to_the_hit_singles_you_ve_explored_every_corner_of_their_discography_becoming_a_true_expert">Non ti limiti ai singoli di successo. \n Hai esplorato ogni angolo della loro discografia, diventando un vero esperto.</string>
     <string name="rw_artistlevel_thedevotee_desc_this_artist_s_music_is_more_than_just_sound_it_s_a_part_of_you_a_deep_and_unbreakable_bond">La musica di questo artista è più di un semplice suono: è parte di te. \n Un legame profondo e indissolubile.</string>
     <string name="rw_artistlevel_undefined_desc_nothing_to_see_here">Lista vuota</string>
-    <string name="add_to_blacklist">Add to blacklist</string>
-    <string name="blacklisted">%1$s Blacklisted</string>
+    <string name="add_to_blacklist">Aggiungi alla Blacklist</string>
+    <string name="blacklisted">%1$s in Blacklist</string>
     <string name="blacklist">Blacklist</string>
     <string name="lastfm_connected_to_lastfm_account">Connected to last.fm account</string>
     <string name="lastfm_connect">Connect</string>
