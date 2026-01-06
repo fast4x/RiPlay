@@ -23,7 +23,6 @@ import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.ui.styling.favoritesIcon
 import it.fast4x.riplay.ui.components.themed.Button
 import it.fast4x.riplay.utils.colorPalette
-import it.fast4x.riplay.utils.getAudioQualityFormat
 import it.fast4x.riplay.utils.isDebugModeEnabled
 import it.fast4x.riplay.utils.isParentalControlEnabled
 import it.fast4x.riplay.utils.typography
@@ -110,15 +109,6 @@ fun AppTitle(
                        // .align(Alignment.TopEnd)
                 )
             }
-            Image(
-                painter = painterResource(R.drawable.dot),
-                contentDescription = null,
-                colorFilter = ColorFilter.tint(getAudioQualityFormat().color),
-                modifier = Modifier
-                    .size(12.dp)
-                    //.align(Alignment.TopEnd)
-                    .absoluteOffset(0.dp, (-10).dp)
-            )
 
             if (isDebugModeEnabled())
                 Image(

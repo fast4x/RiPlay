@@ -386,8 +386,6 @@ class PlayerService : Service(),
             preferences.getBoolean(isShowingThumbnailInLockscreenKey, false)
         medleyDuration = preferences.getFloat(playbackDurationKey, 0f)
 
-        //audioQualityFormat = preferences.getEnum(audioQualityFormatKey, AudioQualityFormat.High)
-
         player = ExoPlayer.Builder(this)
             .setMediaSourceFactory(createMediaSourceFactory())
             .setRenderersFactory(createRendersFactory())

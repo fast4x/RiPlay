@@ -17,7 +17,6 @@ import it.fast4x.riplay.enums.ViewType
 import it.fast4x.riplay.ui.styling.LocalAppearance
 import it.fast4x.riplay.extensions.preferences.UiTypeKey
 import it.fast4x.riplay.extensions.preferences.appIsRunningKey
-import it.fast4x.riplay.extensions.preferences.audioQualityFormatKey
 import it.fast4x.riplay.extensions.preferences.autosyncKey
 import it.fast4x.riplay.extensions.preferences.bassboostEnabledKey
 import it.fast4x.riplay.extensions.preferences.colorPaletteModeKey
@@ -84,7 +83,6 @@ fun appContext(): Context = Dependencies.application.applicationContext
 fun globalContext(): Context = Dependencies.application
 
 fun getColorTheme() = appContext().preferences.getEnum(colorPaletteModeKey, ColorPaletteMode.Dark)
-fun getAudioQualityFormat() = appContext().preferences.getEnum(audioQualityFormatKey, AudioQualityFormat.Auto)
 fun getViewType() = appContext().preferences.getEnum(viewTypeKey, ViewType.Grid)
 fun getDnsOverHttpsType() = appContext().preferences.getEnum(dnsOverHttpsTypeKey, DnsOverHttpsType.None)
 fun getUiType() = appContext().preferences.getEnum(UiTypeKey, UiType.RiPlay)

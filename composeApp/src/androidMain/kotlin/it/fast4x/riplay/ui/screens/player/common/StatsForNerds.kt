@@ -73,7 +73,6 @@ fun StatsForNerds(
     val context = LocalContext.current
     val binder = LocalPlayerServiceBinder.current ?: return
 
-//    val audioQualityFormat by rememberPreference(audioQualityFormatKey, AudioQualityFormat.High)
 //
 //    val connectivityManager = getSystemService(context, ConnectivityManager::class.java) as ConnectivityManager
 

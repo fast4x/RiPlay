@@ -57,7 +57,6 @@ import it.fast4x.riplay.ui.styling.DefaultLightColorPalette
 import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.utils.RestartActivity
 import it.fast4x.riplay.utils.RestartPlayerService
-import it.fast4x.riplay.extensions.preferences.audioQualityFormatKey
 import it.fast4x.riplay.extensions.preferences.autoLoadSongsInQueueKey
 import it.fast4x.riplay.extensions.preferences.closeWithBackButtonKey
 import it.fast4x.riplay.extensions.preferences.closebackgroundPlayerKey
@@ -199,9 +198,7 @@ fun GeneralSettings(
     var skipSilence by rememberPreference(skipSilenceKey, false)
     var skipMediaOnError by rememberPreference(skipMediaOnErrorKey, false)
     var volumeNormalization by rememberPreference(volumeNormalizationKey, false)
-    var audioQualityFormat by rememberPreference(audioQualityFormatKey, AudioQualityFormat.Auto)
     var isConnectionMeteredEnabled by rememberPreference(isConnectionMeteredEnabledKey, true)
-    var isPreCacheEnabled by rememberPreference(enablePreCacheKey, false)
 
     var useDnsOverHttpsType by rememberPreference(dnsOverHttpsTypeKey, DnsOverHttpsType.None)
 
