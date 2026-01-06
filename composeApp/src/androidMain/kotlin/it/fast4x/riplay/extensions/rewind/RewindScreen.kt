@@ -1,6 +1,7 @@
 package it.fast4x.riplay.extensions.rewind
 
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -18,12 +19,21 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.BasicText
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -58,6 +68,7 @@ import it.fast4x.riplay.ui.items.RewindItem
 import it.fast4x.riplay.ui.styling.semiBold
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.utils.typography
+import kotlinx.coroutines.delay
 import java.util.Calendar
 import kotlin.random.Random
 
@@ -65,7 +76,7 @@ import kotlin.random.Random
 @Composable
 fun DynamicRewindSlide(slide: RewindSlide, isPageActive: Boolean) {
     SequentialAnimationContainer(year = slide.year) {
-        VisualBitmapCreator(modifier = Modifier.fillMaxSize()) {
+        //VisualBitmapCreator(modifier = Modifier.fillMaxSize()) {
             when (slide) {
                 is RewindSlide.IntroSlide -> IntroSlide(slide, isPageActive)
                 is RewindSlide.TopSongs -> TopSongsSlide(slide, isPageActive)
@@ -80,7 +91,7 @@ fun DynamicRewindSlide(slide: RewindSlide, isPageActive: Boolean) {
                 is RewindSlide.Intermediate -> IntermediateSlide(slide, isPageActive)
                 is RewindSlide.AnnualListener -> AnnualListenerSlide(slide, isPageActive)
             }
-        }
+        //}
     }
 }
 
@@ -92,19 +103,78 @@ fun RewindScreen(year: Int? = null) {
 
     val pagerState = rememberPagerState(pageCount = { pages.size })
 
+    var autoSwipe by remember { mutableStateOf(false) }
+    val autoSwipeDelay by remember { mutableStateOf(5000L) }
+
     Box(modifier = Modifier.fillMaxSize()) {
 
         HorizontalPager(
+            userScrollEnabled = !autoSwipe,
             state = pagerState,
             modifier = Modifier.fillMaxSize()
         ) { pageIndex ->
             val isPageActive = pagerState.currentPage == pageIndex
-            DynamicRewindSlide(
-                slide = pages[pageIndex],
-                isPageActive = isPageActive
-            )
+            VisualBitmapCreator(modifier = Modifier.fillMaxSize()) {
+                DynamicRewindSlide(
+                    slide = pages[pageIndex],
+                    isPageActive = isPageActive
+                )
+            }
         }
 
+
+        LaunchedEffect(Unit, autoSwipe) {
+            if (!autoSwipe) return@LaunchedEffect
+            for (i in pagerState.currentPage until pagerState.pageCount) {
+                pagerState.animateScrollToPage(i)
+                delay(5000)
+                if (i==pagerState.pageCount-1) {
+                    pagerState.animateScrollToPage(0)
+                    autoSwipe = false
+                }
+            }
+        }
+
+
+        Box(
+            modifier = Modifier
+                .padding(end = 8.dp, bottom = 8.dp)
+                .align(Alignment.BottomEnd)
+        ) {
+            Image(
+                painter = painterResource(if (autoSwipe) R.drawable.pause else R.drawable.play),
+                contentDescription = "Auto swipe",
+                colorFilter = ColorFilter.tint(colorPalette().text),
+                modifier = Modifier
+                    .size(28.dp)
+                    .clickable { autoSwipe = !autoSwipe }
+            )
+        }
+//        Row(
+//            Modifier
+//                .wrapContentHeight()
+//                .fillMaxWidth()
+//                .align(Alignment.BottomCenter)
+//                .padding(bottom = 46.dp),
+//            horizontalArrangement = Arrangement.Center,
+//            verticalAlignment = Alignment.CenterVertically
+//        ) {
+//            Checkbox(
+//                checked = autoSwipe,
+//                onCheckedChange = { autoSwipe = it },
+//                modifier = Modifier.scale(.7f),
+//                colors = androidx.compose.material3.CheckboxDefaults.colors(
+//                    checkedColor = colorPalette().accent,
+//                    uncheckedColor = colorPalette().textDisabled
+//                )
+//            )
+//            Text(
+//                text = "Auto swipe",
+//                color = colorPalette().accent.copy(alpha = 0.7f),
+//                fontSize = 16.sp,
+//                fontWeight = FontWeight.Medium
+//            )
+//        }
 
         Row(
             Modifier
