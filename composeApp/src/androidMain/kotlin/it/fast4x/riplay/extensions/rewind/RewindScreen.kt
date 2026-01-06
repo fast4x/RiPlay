@@ -24,6 +24,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -99,12 +100,14 @@ fun DynamicRewindSlide(slide: RewindSlide, isPageActive: Boolean) {
 @Composable
 fun RewindScreen(year: Int? = null) {
 
+    // todo export rewind to pdf
+
     val pages = getRewindSlides(year)
 
     val pagerState = rememberPagerState(pageCount = { pages.size })
 
     var autoSwipe by remember { mutableStateOf(false) }
-    val autoSwipeDelay by remember { mutableStateOf(5000L) }
+    val autoSwipeDelay by remember { mutableLongStateOf(5000L) }
 
     Box(modifier = Modifier.fillMaxSize()) {
 
@@ -127,7 +130,7 @@ fun RewindScreen(year: Int? = null) {
             if (!autoSwipe) return@LaunchedEffect
             for (i in pagerState.currentPage until pagerState.pageCount) {
                 pagerState.animateScrollToPage(i)
-                delay(5000)
+                delay(autoSwipeDelay)
                 if (i==pagerState.pageCount-1) {
                     pagerState.animateScrollToPage(0)
                     autoSwipe = false
