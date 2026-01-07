@@ -180,10 +180,6 @@ fun Queue(
     navController: NavController,
     showPlayer: () -> Unit? = {},
     hidePlayer: () -> Unit? = {},
-    //player: MutableState<YouTubePlayer?>,
-    //playerState: MutableState<PlayerConstants.PlayerState>,
-    //currentDuration: Float,
-    //currentSecond: Float,
     onDismiss: (QueueLoopType) -> Unit,
     onDiscoverClick: (Boolean) -> Unit,
 ) {
@@ -429,7 +425,7 @@ fun Queue(
 
     var windowsInQueue by remember { mutableStateOf(windows) }
     var updateWindowsList by remember { mutableStateOf(false) }
-    LaunchedEffect(selectedQueue, updateWindowsList, filter) {
+    LaunchedEffect(Unit, selectedQueue, updateWindowsList, filter) {
         val filterCharSequence = filter.toString()
         if (!filter.isNullOrBlank())
             windowsFiltered = windows
@@ -444,6 +440,7 @@ fun Queue(
                 it.mediaItem.mediaMetadata.extras
                     ?.getLong("idQueue", defaultQueueId()) == selectedQueue?.id
         }
+
         //binderPlayer.setMediaItems(windowsInQueue.map { it.mediaItem })
         println("windowsInQueue changed: ${windowsInQueue.size}")
     }
@@ -713,8 +710,10 @@ fun Queue(
 
         items(
             items = windowsInQueue
-                .filter { item -> blacklisted.value?.map { it.path }?.contains(item.mediaItem.mediaId) == false }
-                .filter { item -> item.mediaItem.isVideo == !excludeSongsIfAreVideos },
+                .filter {
+                    item -> blacklisted.value?.map { it.path }?.contains(item.mediaItem.mediaId) == false
+                        || item.mediaItem.isVideo == !excludeSongsIfAreVideos
+                },
             key =  { window -> window.uid.toString() }
         ) { window ->
             ReorderableItem(
@@ -1002,7 +1001,10 @@ fun Queue(
                 ) {
 
                     BasicText(
-                        text = "${windowsInQueue.size} ",
+                        text = "${windowsInQueue.filter {
+                                item -> blacklisted.value?.map { it.path }?.contains(item.mediaItem.mediaId) == false
+                                || item.mediaItem.isVideo == !excludeSongsIfAreVideos
+                        }.size} ",
                         style = typography().xxs.medium,
                     )
                     Image(
