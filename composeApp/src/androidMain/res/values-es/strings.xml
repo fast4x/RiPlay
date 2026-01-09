@@ -402,7 +402,7 @@
     <string name="use_gradient_background">Utilizar fondo degradado</string>
     <string name="show_total_time_of_queue">Mostrar duración total de la cola</string>
     <string name="lang_telugu">Télugu</string>
-    <string name="media_permission_required_please_grant">Es necesario el permiso de multimedia, debes concederlo.</string>
+    <string name="media_permission_required_please_grant">Es necesario el permiso de multimedia, por favor concédelo.</string>
     <string name="open_permission_settings">Abrir ajustes de permisos</string>
     <string name="background_progress_bar">Fondo de barra de progreso</string>
     <string name="minimized_player">Reproductor minimizado</string>
