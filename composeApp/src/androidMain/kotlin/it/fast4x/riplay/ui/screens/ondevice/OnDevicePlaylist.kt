@@ -151,6 +151,7 @@ import kotlinx.coroutines.delay
 import it.fast4x.riplay.extensions.persist.persistList
 import it.fast4x.riplay.extensions.preferences.onDeviceSongSortByKey
 import it.fast4x.riplay.ui.items.PlaylistItem
+import it.fast4x.riplay.utils.cleanOnDeviceName
 import timber.log.Timber
 
 @KotlinCsvExperimental
@@ -462,7 +463,7 @@ fun OnDevicePlaylist(
 
                             HeaderWithIcon(
                                 title = playlistPreview?.playlist?.name?.let { name ->
-                                    cleanPrefix(name)
+                                    cleanPrefix(name).substringBeforeLast("/").cleanOnDeviceName()
                                 } ?: "Unknown",
                                 iconId = R.drawable.playlist,
                                 enabled = true,

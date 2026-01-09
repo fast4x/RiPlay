@@ -63,6 +63,7 @@ import it.fast4x.riplay.commonutils.MONTHLY_PREFIX
 import it.fast4x.riplay.commonutils.PINNED_PREFIX
 import it.fast4x.riplay.R
 import it.fast4x.riplay.commonutils.YTP_PREFIX
+import it.fast4x.riplay.commonutils.cleanPrefix
 import it.fast4x.riplay.commonutils.thumbnail
 import it.fast4x.riplay.utils.appContext
 import it.fast4x.riplay.enums.NavigationBarPosition
@@ -103,7 +104,6 @@ import it.fast4x.riplay.ui.components.themed.Search
 import it.fast4x.riplay.ui.components.navigation.header.TabToolBar
 import it.fast4x.riplay.ui.components.tab.ImportSongsFromCSV
 import it.fast4x.riplay.ui.components.tab.ItemSize
-import it.fast4x.riplay.ui.components.tab.Sort
 import it.fast4x.riplay.ui.components.tab.TabHeader
 import it.fast4x.riplay.ui.components.tab.toolbar.Descriptive
 import it.fast4x.riplay.ui.components.tab.toolbar.MenuIcon
@@ -114,12 +114,11 @@ import it.fast4x.riplay.extensions.preferences.Preference.HOME_LIBRARY_ITEM_SIZE
 import it.fast4x.riplay.utils.autoSyncToolbutton
 import it.fast4x.riplay.extensions.preferences.autosyncKey
 import it.fast4x.riplay.data.models.defaultQueue
-import it.fast4x.riplay.enums.AlbumSortBy
 import it.fast4x.riplay.enums.BlacklistType
 import it.fast4x.riplay.enums.SortOrder
-import it.fast4x.riplay.extensions.preferences.albumSortByKey
-import it.fast4x.riplay.extensions.preferences.albumSortOrderKey
+import it.fast4x.riplay.extensions.preferences.shortOnDeviceFolderNameKey
 import it.fast4x.riplay.ui.components.LocalGlobalSheetState
+import it.fast4x.riplay.ui.components.tab.ToolbarMenuButton
 import it.fast4x.riplay.ui.components.themed.EnumsMenu
 import it.fast4x.riplay.ui.components.themed.HeaderIconButton
 import it.fast4x.riplay.ui.components.themed.PlaylistsItemMenu
@@ -127,6 +126,7 @@ import it.fast4x.riplay.ui.styling.px
 import it.fast4x.riplay.utils.CheckAndCreateMonthlyPlaylist
 import it.fast4x.riplay.utils.LazyListContainer
 import it.fast4x.riplay.utils.addNext
+import it.fast4x.riplay.utils.cleanOnDeviceName
 import it.fast4x.riplay.utils.forcePlayFromBeginning
 import it.fast4x.riplay.utils.insertOrUpdateBlacklist
 import it.fast4x.riplay.utils.typography
@@ -307,6 +307,14 @@ fun HomePlaylists(
     var justSynced by rememberSaveable { mutableStateOf(!doAutoSync) }
 
     val viewType = viewTypeToolbutton(R.string.viewType)
+
+    var shortOnDeviceFolderName by rememberPreference(shortOnDeviceFolderNameKey, false)
+
+    val toggleOndeviceFolderName = ToolbarMenuButton.build (
+        R.drawable.flip,
+        R.string.toggle_ondevice_folder_name_instead_full_path,
+        onClick = { shortOnDeviceFolderName = !shortOnDeviceFolderName }
+    )
 
     var refreshing by remember { mutableStateOf(false) }
     val refreshScope = rememberCoroutineScope()
@@ -510,6 +518,10 @@ fun HomePlaylists(
                 // Sticky tab's tool bar
                 val buttons = mutableListOf(
                     sync, search, shuffle, newPlaylistDialog, importPlaylistDialog, itemSize, viewType)
+                    .apply {
+                        if (playlistType == PlaylistType.OnDevicePlaylist)
+                            add(toggleOndeviceFolderName)
+                    }
                 TabToolBar.Buttons(buttons)
 
                 // Sticky search bar
@@ -707,7 +719,7 @@ fun HomePlaylists(
                                         },
                                         songCount = preview.songCount,
                                         thumbnailSizeDp = playlistThumbnailSizeDp,
-                                        name = preview.playlist.name,
+                                        name = preview.playlist.name.cleanOnDeviceName(),
                                         channelName = null,
                                         alternative = false,
                                         showName = true,
@@ -980,7 +992,7 @@ fun HomePlaylists(
                                         },
                                         songCount = preview.songCount,
                                         thumbnailSizeDp = playlistThumbnailSizeDp,
-                                        name = preview.playlist.name,
+                                        name = preview.playlist.name.cleanOnDeviceName(),
                                         channelName = null,
                                         alternative = true,
                                         showName = true,

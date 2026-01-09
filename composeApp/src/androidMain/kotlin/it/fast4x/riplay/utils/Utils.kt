@@ -58,6 +58,9 @@ import it.fast4x.riplay.data.models.SongEntity
 import it.fast4x.riplay.data.models.SongPlaylistMap
 import it.fast4x.riplay.extensions.lastfm.sendLoveTrack
 import it.fast4x.riplay.extensions.lastfm.sendUnloveTrack
+import it.fast4x.riplay.extensions.preferences.rememberObservedPreference
+import it.fast4x.riplay.extensions.preferences.rememberPreference
+import it.fast4x.riplay.extensions.preferences.shortOnDeviceFolderNameKey
 import it.fast4x.riplay.service.LOCAL_KEY_PREFIX
 import it.fast4x.riplay.service.isLocal
 import it.fast4x.riplay.ui.components.themed.NewVersionDialog
@@ -1267,3 +1270,10 @@ fun isCompositionLaunched(): Boolean {
 
 inline val Int.asBoolean: Boolean
     get() = this == 1
+
+@Composable
+fun String.cleanOnDeviceName(): String {
+    val shortOnDeviceFolderName by rememberObservedPreference(shortOnDeviceFolderNameKey, false)
+    return if (shortOnDeviceFolderName)
+         this.substringAfterLast("/") else this
+}

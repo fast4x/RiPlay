@@ -17,7 +17,7 @@ class ToolbarMenuButton private constructor(
     companion object {
         @JvmStatic
         @Composable
-        fun init(
+        fun build(
             iconId: Int = R.drawable.horizontal_bold_line,
             titleId: Int = R.string.unknown_title,
             onClick: () -> Unit = {}

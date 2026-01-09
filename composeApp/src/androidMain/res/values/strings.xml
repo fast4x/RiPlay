@@ -1180,4 +1180,5 @@
     <string name="lastfm_scrobble_type">Scrobble type</string>
     <string name="song_unliked_lastfm">Song is Unliked in last.fm</string>
     <string name="song_liked_lastfm">Song is liked in last.fm</string>
+    <string name="toggle_ondevice_folder_name_instead_full_path">Toggle folder name instead full path</string>
 </resources>
