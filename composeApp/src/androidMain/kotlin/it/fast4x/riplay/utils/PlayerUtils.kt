@@ -98,6 +98,7 @@ fun Player.seamlessPlay(mediaItem: MediaItem) {
         if (currentMediaItemIndex < mediaItemCount - 1)
             removeMediaItems(currentMediaItemIndex + 1 until mediaItemCount)
     } else forcePlay(mediaItem)
+    Timber.d("PlayerService-seamlessPlay mediaItem: ${mediaItem.mediaId}")
 }
 
 fun Player.seamlessQueue(mediaItem: MediaItem) {
@@ -127,6 +128,7 @@ fun Player.forcePlay(mediaItem: MediaItem, replace: Boolean = false) {
     restoreGlobalVolume()
     playWhenReady = true
     prepare()
+    Timber.d("PlayerService-forcePlay withReplace $replace mediaItem: ${mediaItem.mediaId} currentMediaItemIndex: $currentMediaItemIndex shuffleModeEnabled $shuffleModeEnabled repeatMode $repeatMode")
 }
 
 fun Player.playAtIndex(mediaItemIndex: Int) {

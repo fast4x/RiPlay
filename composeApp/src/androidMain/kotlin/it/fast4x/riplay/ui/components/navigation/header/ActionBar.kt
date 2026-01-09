@@ -45,6 +45,14 @@ private fun HamburgerMenu(
         modifier = Modifier.background( colorPalette().background0.copy(0.90f) ),
         onDismissRequest = onDismissRequest
     )
+
+    menu.add(
+        DropdownMenu.Item(
+            R.drawable.cast_connected,
+            R.string.blacklist,
+        ) { onItemClick( NavRoutes.rilinkcontroller ) }
+    )
+
     // Blacklist button
     menu.add(
         DropdownMenu.Item(

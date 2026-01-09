@@ -271,6 +271,7 @@ kotlin {
             implementation(libs.hypnoticcanvas.shaders)
             implementation(libs.ktor.client.core)
             implementation(libs.ktor.client.okhttp)
+            implementation(libs.ktor.client.websockets)
             implementation(libs.multidex)
             implementation(libs.jsoup)
 

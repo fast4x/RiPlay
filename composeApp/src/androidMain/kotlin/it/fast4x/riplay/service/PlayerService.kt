@@ -1199,6 +1199,7 @@ class PlayerService : Service(),
 
             }
 
+        Timber.d("PlayerService-onMediaItemTransition mediaItem: ${mediaItem.mediaId} currentMediaItemIndex: $currentQueuePosition shuffleModeEnabled ${player.shuffleModeEnabled} repeatMode ${player.repeatMode} reason $reason")
 
     }
 
