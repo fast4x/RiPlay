@@ -669,6 +669,7 @@ fun GeneralSettings(
                                 valueText = {
                                     when (it) {
                                         DurationInMinutes.Disabled -> stringResource(R.string.vt_disabled)
+                                        DurationInMinutes.`0` -> "0m"
                                         DurationInMinutes.`1` -> "1m"
                                         DurationInMinutes.`3` -> "3m"
                                         DurationInMinutes.`5` -> "5m"
@@ -690,10 +691,13 @@ fun GeneralSettings(
                             EnumValueSelectorSettingsEntry(
                                 title = stringResource(R.string.when_player_is_paused),
                                 selectedValue = closePlayerWhenPausedAfterMinutes,
-                                onValueSelected = { closePlayerWhenPausedAfterMinutes = it },
+                                onValueSelected = {
+                                    closePlayerWhenPausedAfterMinutes = if (it == DurationInMinutes.`0`) DurationInMinutes.`1` else it
+                                },
                                 valueText = {
                                     when (it) {
                                         DurationInMinutes.Disabled -> stringResource(R.string.vt_disabled)
+                                        DurationInMinutes.`0` -> "0m"
                                         DurationInMinutes.`1` -> "1m"
                                         DurationInMinutes.`3` -> "3m"
                                         DurationInMinutes.`5` -> "5m"
@@ -848,10 +852,13 @@ fun GeneralSettings(
                         EnumValueSelectorSettingsEntry(
                             title = stringResource(R.string.exclude_songs_with_duration_limit),
                             selectedValue = excludeSongWithDurationLimit,
-                            onValueSelected = { excludeSongWithDurationLimit = it },
+                            onValueSelected = {
+                                excludeSongWithDurationLimit = if (it == DurationInMinutes.`0`) DurationInMinutes.`1` else it
+                            },
                             valueText = {
                                 when (it) {
                                     DurationInMinutes.Disabled -> stringResource(R.string.vt_disabled)
+                                    DurationInMinutes.`0` -> "0m"
                                     DurationInMinutes.`1` -> "1m"
                                     DurationInMinutes.`3` -> "3m"
                                     DurationInMinutes.`5` -> "5m"
