@@ -1207,7 +1207,7 @@ class PlayerService : Service(),
     fun handleSkipToNext() {
         try {
             val hasNext = player.hasNextMediaItem()
-            Timber.d("PlayerService handleSkipToNext hasNext before: $hasNext, previous osition: $currentQueuePosition")
+            Timber.d("PlayerService handleSkipToNext hasNext before: $hasNext, previous position: $currentQueuePosition")
 
             if (hasNext) {
                 Timber.d("PlayerService handleSkipToNext hasNext inside: Yes, previous position: $currentQueuePosition")
