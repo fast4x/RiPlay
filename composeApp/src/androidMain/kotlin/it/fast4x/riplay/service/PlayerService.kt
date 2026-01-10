@@ -798,7 +798,7 @@ class PlayerService : Service(),
                     youTubePlayer: YouTubePlayer,
                     error: PlayerConstants.PlayerError
                 ) {
-                    super.onError(youTubePlayer, error)
+                    //super.onError(youTubePlayer, error)
 
                     localMediaItem?.isLocal?.let { if (it) return }
                     if (isPersistentQueueEnabled)
@@ -811,21 +811,23 @@ class PlayerService : Service(),
                     val errorString = when (error) {
                         PlayerConstants.PlayerError.VIDEO_NOT_PLAYABLE_IN_EMBEDDED_PLAYER -> "Content not playable, recovery in progress, try to click play but if the error persists try to log in"
                         PlayerConstants.PlayerError.VIDEO_NOT_FOUND -> "Content not found, perhaps no longer available"
+                        PlayerConstants.PlayerError.INVALID_PARAMETER_IN_REQUEST -> "Invalid parameters in request"
                         else -> null
                     }
 
                     if (errorString != null && lastError != error) {
-                        SmartMessage(
-                            errorString,
-                            PopupType.Error,
-                            //durationLong = true,
-                            context = this@PlayerService
-                        )
+                        if (error != PlayerConstants.PlayerError.INVALID_PARAMETER_IN_REQUEST)
+                            SmartMessage(
+                                errorString,
+                                PopupType.Error,
+                                //durationLong = true,
+                                context = this@PlayerService
+                            )
 
-                        //localMediaItem?.let { youTubePlayer.cueVideo(it.mediaId, playFromSecond) }
+                        localMediaItem?.let { youTubePlayer.cueVideo(it.mediaId, playFromSecond) }
                         //if (checkVolumeLevel)
                         youTubePlayer.setVolume(getSystemMediaVolume())
-
+                        return
                     }
 
                     lastError = error
