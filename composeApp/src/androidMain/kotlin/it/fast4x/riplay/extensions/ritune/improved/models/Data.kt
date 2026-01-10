@@ -1,4 +1,4 @@
-package it.fast4x.riplay.extensions.link.improved.models
+package it.fast4x.riplay.extensions.ritune.improved.models
 
 import kotlinx.serialization.Serializable
 

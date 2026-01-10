@@ -1,4 +1,4 @@
-package it.fast4x.riplay.extensions.link
+package it.fast4x.riplay.extensions.ritune
 
 import android.content.Context
 import android.net.nsd.NsdServiceInfo
@@ -7,25 +7,25 @@ import timber.log.Timber
 import java.io.File
 
 @Serializable
-data class LinkDevices(
-    var devices: List<LinkDevice> = emptyList<LinkDevice>(),
+data class RiTuneDevices(
+    var devices: List<RiTuneDevice> = emptyList<RiTuneDevice>(),
 )
 
 @Serializable
-data class LinkDevice (
+data class RiTuneDevice (
     val name: String,
     val host: String,
     val port: Int,
     val selected: Boolean = false,
 )
 
-fun NsdServiceInfo.toLinkDevice() = LinkDevice(
+fun NsdServiceInfo.toLinkDevice() = RiTuneDevice(
     name = this.serviceName,
     host = this.host.toString(),
     port = this.port,
 )
 
-fun String.toLinkDevice() = LinkDevice(
+fun String.toLinkDevice() = RiTuneDevice(
     name = this.split(",")[0],
     host = this.split(",")[1],
     port = this.split(",")[2].toInt(),
@@ -45,7 +45,7 @@ class LinkDevicesSelected(context: Context) {
         }
     } else { emptyList() }
 
-    fun saveDevices (devices: List<LinkDevice>) {
+    fun saveDevices (devices: List<RiTuneDevice>) {
         val lines = devices.map { device ->
             "${device.name},${device.host},${device.port}"
         }

@@ -1,156 +1,50 @@
-package it.fast4x.riplay.extensions.link.improved
+package it.fast4x.riplay.extensions.ritune.improved
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Divider
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Slider
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import io.ktor.client.*
-import io.ktor.client.engine.cio.*
-import io.ktor.client.engine.okhttp.OkHttp
-import io.ktor.client.plugins.websocket.*
-import io.ktor.http.*
-import io.ktor.websocket.*
-import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.launch
-import kotlinx.serialization.json.Json
-import java.security.cert.X509Certificate
-import javax.net.ssl.X509TrustManager
 import it.fast4x.riplay.R
-import it.fast4x.riplay.extensions.link.improved.models.ConnectionStatus
-import it.fast4x.riplay.extensions.link.improved.models.PlayerState
-import it.fast4x.riplay.extensions.link.improved.models.RemoteCommand
+import it.fast4x.riplay.extensions.ritune.improved.models.ConnectionStatus
+import it.fast4x.riplay.extensions.ritune.improved.models.RemoteCommand
 import it.fast4x.riplay.utils.colorPalette
-import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.delay
-import timber.log.Timber
-import javax.net.ssl.SSLContext
-import javax.net.ssl.TrustManager
+import kotlinx.coroutines.launch
 
-
-
-class ConnectedRiLinkClient {
-    private val json = Json { ignoreUnknownKeys = true }
-    private var session: DefaultClientWebSocketSession? = null
-
-    private val _state = MutableStateFlow<PlayerState?>(null)
-    val state: StateFlow<PlayerState?> = _state.asStateFlow()
-
-    private val _connectionStatus = MutableStateFlow<ConnectionStatus>(ConnectionStatus.Disconnected)
-    val connectionStatus: StateFlow<ConnectionStatus> = _connectionStatus.asStateFlow()
-
-    private val commandChannel = Channel<RemoteCommand>()
-
-    private val client = HttpClient(OkHttp) {
-        install(WebSockets)
-
-        engine {
-            config {
-                val trustAllCerts = arrayOf<TrustManager>(object : X509TrustManager {
-                    override fun checkClientTrusted(chain: Array<out X509Certificate>?, authType: String?) {}
-                    override fun checkServerTrusted(chain: Array<out X509Certificate>?, authType: String?) {}
-                    override fun getAcceptedIssuers(): Array<X509Certificate> = arrayOf()
-                })
-                val sslContext = SSLContext.getInstance("SSL")
-                sslContext.init(null, trustAllCerts, java.security.SecureRandom())
-                sslSocketFactory(sslContext.socketFactory, trustAllCerts[0] as X509TrustManager)
-
-                hostnameVerifier { _, _ -> true }
-            }
-        }
-    }
-//    private val client = HttpClient(CIO) {
-//        engine {
-//            https {
-//                trustManager = object : X509TrustManager {
-//                    override fun checkClientTrusted(chain: Array<out X509Certificate>?, authType: String?) {}
-//                    override fun checkServerTrusted(chain: Array<out X509Certificate>?, authType: String?) {}
-//                    override fun getAcceptedIssuers(): Array<X509Certificate> = arrayOf()
-//                }
-//            }
-//        }
-//        install(WebSockets)
-//    }
-
-    suspend fun startAutoConnect(ip: String, port: Int = 18443) {
-        while (true) {
-            try {
-                startConnection(ip, port)
-                break
-            } catch (e: Exception) {
-                Timber.w("Connessione persa, riconnessione tra 5 secondi...")
-                delay(5000)
-            }
-        }
-    }
-
-    suspend fun startConnection(ip: String, port: Int = 18443) {
-        _connectionStatus.value = ConnectionStatus.Connecting
-        try {
-            client.webSocket(
-                method = HttpMethod.Get,
-                host = ip,
-                port = port,
-                path = "/ws",
-                request = {
-                    url.protocol = URLProtocol.WSS
-                }
-            ) {
-                session = this@webSocket
-                _connectionStatus.value = ConnectionStatus.Connected
-
-                val senderJob = launch {
-                    for (cmd in commandChannel) {
-                        try {
-                            send(json.encodeToString(cmd))
-                        } catch (e: Exception) {
-                            Timber.d("RiLink Client Errore invio: ${e.message}")
-                            break
-                        }
-                    }
-                }
-
-                try {
-                    for (frame in incoming) {
-                        if (frame is Frame.Text) {
-                            val text = frame.readText()
-                            val newState = json.decodeFromString<PlayerState>(text)
-                            _state.value = newState
-                        }
-                    }
-                } catch (e: Exception) {
-                    Timber.d("RiLink Client Errore ricezione: ${e.message}")
-                } finally {
-                    senderJob.cancel()
-                    _connectionStatus.value = ConnectionStatus.Disconnected
-                    session = null
-                }
-            }
-        } catch (e: Exception) {
-            _connectionStatus.value = ConnectionStatus.Error(e.message ?: "Impossibile connettersi")
-            session = null
-        }
-    }
-
-    suspend fun sendCommand(cmd: RemoteCommand) {
-        commandChannel.send(cmd)
-    }
-
-    suspend fun disconnect() {
-        session?.close()
-    }
-
-}
 
 @Composable
-fun RiLinkControllerScreen() {
+fun RiTuneControllerScreen() {
     val coroutineScope = rememberCoroutineScope()
-    val client = remember { ConnectedRiLinkClient() }
+    val client = remember { ConnectedRiTuneClient() }
     val connectionStatus by client.connectionStatus.collectAsState()
     val playerState by client.state.collectAsState()
 
@@ -314,11 +208,5 @@ fun RiLinkControllerScreen() {
             Text("In attesa dello stato player...")
         }
     }
-}
-
-fun formatTime(seconds: Float): String {
-    val mins = (seconds / 60).toInt()
-    val secs = (seconds % 60).toInt()
-    return String.format("%02d:%02d", mins, secs)
 }
 

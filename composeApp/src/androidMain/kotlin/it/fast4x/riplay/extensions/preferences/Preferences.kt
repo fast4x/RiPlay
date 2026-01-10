@@ -12,7 +12,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.edit
 import it.fast4x.environment.Environment
 import it.fast4x.environment.requests.HomePage
-import it.fast4x.riplay.extensions.link.LinkDevices
+import it.fast4x.riplay.extensions.ritune.RiTuneDevices
 import it.fast4x.riplay.data.models.Song
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
@@ -361,7 +361,7 @@ const val customDnsOverHttpsServerKey = "customDnsOverHttpsServer"
 const val enablePreCacheKey = "enablePreCache"
 const val streamingPlayerTypeKey = "streamingPlayerType"
 
-const val castToLinkDeviceEnabledKey = "castToLinkDeviceEnabled"
+const val castToRiTuneDeviceEnabledKey = "castToRiTuneDeviceEnabled"
 const val usePlaceholderInImageLoaderKey = "usePlaceholderInImageLoader"
 
 const val seekWithTapKey = "seekWithTap"
@@ -435,14 +435,14 @@ val Context.preferences: SharedPreferences
     get() = getSharedPreferences("preferences", Context.MODE_PRIVATE)
 
 @Composable
-fun rememberPreference(key: String, defaultValue: LinkDevices?): MutableState<LinkDevices?> {
+fun rememberPreference(key: String, defaultValue: RiTuneDevices?): MutableState<RiTuneDevices?> {
     val context = LocalContext.current
     val json = Json.encodeToString(defaultValue)
     return remember {
         mutableStatePreferenceOf(
             try {
                 context.preferences.getString(key, json)
-                    ?.let { Json.decodeFromString<LinkDevices>(it) }
+                    ?.let { Json.decodeFromString<RiTuneDevices>(it) }
             } catch (e: Exception) {
                 Timber.e("RememberPreference LinkDevices Error: ${ e.message }")
                 null

@@ -1,4 +1,4 @@
-package it.fast4x.riplay.extensions.link
+package it.fast4x.riplay.extensions.ritune
 
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.okhttp.OkHttp
@@ -33,7 +33,7 @@ import javax.net.ssl.X509TrustManager
 fun linkServiceClientSend(
     command: String,
     castToLinkDevice: Boolean,
-    linkDevicesSelected: MutableList<LinkDevice>
+    linkDevicesSelected: MutableList<RiTuneDevice>
 ){
     if (!castToLinkDevice) return
 

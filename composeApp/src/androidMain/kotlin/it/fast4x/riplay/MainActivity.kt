@@ -23,7 +23,6 @@ import android.os.Bundle
 import android.os.IBinder
 import android.provider.Settings
 import android.view.WindowManager
-import android.window.OnBackInvokedDispatcher
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -152,7 +151,6 @@ import it.fast4x.riplay.extensions.preferences.appIsRunningKey
 import it.fast4x.riplay.extensions.preferences.applyFontPaddingKey
 import it.fast4x.riplay.extensions.preferences.backgroundProgressKey
 import it.fast4x.riplay.extensions.preferences.checkUpdateStateKey
-import it.fast4x.riplay.extensions.preferences.closeWithBackButtonKey
 import it.fast4x.riplay.extensions.preferences.colorPaletteModeKey
 import it.fast4x.riplay.extensions.preferences.colorPaletteNameKey
 import it.fast4x.riplay.extensions.preferences.customColorKey
@@ -347,7 +345,7 @@ class MainActivity :
     var visitorData: MutableState<String> =
         mutableStateOf("")
 
-    var linkDevices: MutableState<List<NsdServiceInfo>> = mutableStateOf(emptyList())
+    var riTuneDevices: MutableState<List<NsdServiceInfo>> = mutableStateOf(emptyList())
 
     var onlinePlayerPlayingState by mutableStateOf(false)
     var localPlayerPlayingState: MutableState<Boolean> = mutableStateOf(false)
@@ -593,11 +591,10 @@ class MainActivity :
 
         checkIfAppIsRunningInBackground()
 
-        //TODO Implement link client logic
         //registerNsdService()
         discoverNsdServices(
             onServiceFound = {
-                linkDevices.value = it
+                riTuneDevices.value = it
             }
         )
 
@@ -1444,7 +1441,7 @@ class MainActivity :
                             LocalLayoutDirection provides LayoutDirection.Ltr,
                             LocalPlayerSheetState provides localPlayerSheetState,
                             LocalMonetCompat provides localMonet,
-                            LocalLinkDevices provides linkDevices.value,
+                            LocalRiTuneDevices provides riTuneDevices.value,
                             LocalOnlinePlayerPlayingState provides onlinePlayerPlayingState,
                             LocalSelectedQueue provides selectedQueue.value,
                             LocalAudioTagger provides audioTaggerViewModel,
@@ -1950,8 +1947,8 @@ val LocalPlayerSheetState =
 val LocalOnlinePlayerPlayingState =
     staticCompositionLocalOf<Boolean> { error("No player sheet state provided") }
 
-val LocalLinkDevices =
-    staticCompositionLocalOf<List<NsdServiceInfo>> { error("No link devices provided") }
+val LocalRiTuneDevices =
+    staticCompositionLocalOf<List<NsdServiceInfo>> { error("No RiTune devices provided") }
 
 val LocalSelectedQueue = staticCompositionLocalOf<Queues?> { error("No selected queue provided") }
 

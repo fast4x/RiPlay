@@ -19,6 +19,7 @@ import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.extensions.pip.isPipSupported
 import it.fast4x.riplay.extensions.pip.rememberPipHandler
+import it.fast4x.riplay.extensions.preferences.castToRiTuneDeviceEnabledKey
 import it.fast4x.riplay.extensions.preferences.enableMusicIdentifierKey
 import it.fast4x.riplay.extensions.preferences.enablePictureInPictureKey
 import it.fast4x.riplay.extensions.preferences.rememberPreference
@@ -114,6 +115,11 @@ fun ActionBar(
     navController: NavController,
 ) {
     var expanded by remember { mutableStateOf(false) }
+
+    var castToRiTuneDevice by rememberPreference(castToRiTuneDeviceEnabledKey, false )
+    HeaderIcon(if (castToRiTuneDevice) R.drawable.cast_connected else R.drawable.cast_disconnected) {
+        castToRiTuneDevice = !castToRiTuneDevice
+    }
 
     val isEnabledMusicIdentifier by rememberPreference(
         enableMusicIdentifierKey,

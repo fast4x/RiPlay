@@ -1,7 +1,4 @@
-package it.fast4x.riplay.extensions.link
-
-import android.content.Context
-import java.io.File
+package it.fast4x.riplay.extensions.ritune
 
 const val LINK_COMMAND_SEPARATOR = "|"
 const val LINK_COMMAND_LOAD = "load$LINK_COMMAND_SEPARATOR"

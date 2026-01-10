@@ -49,7 +49,7 @@ import it.fast4x.riplay.enums.ThumbnailRoundness
 import it.fast4x.riplay.enums.TransitionEffect
 import it.fast4x.riplay.data.models.Mood
 import it.fast4x.riplay.data.models.SearchQuery
-import it.fast4x.riplay.extensions.link.improved.RiLinkControllerScreen
+import it.fast4x.riplay.extensions.ritune.improved.RiTuneControllerScreen
 import it.fast4x.riplay.ui.screens.blacklist.BlacklistScreen
 import it.fast4x.riplay.extensions.listenerlevel.ListenerLevelCharts
 import it.fast4x.riplay.ui.components.CustomModalBottomSheet
@@ -206,7 +206,7 @@ fun AppNavigation(
 
         composable(route = NavRoutes.rilinkcontroller.name) {
             modalBottomSheetPage {
-                RiLinkControllerScreen()
+                RiTuneControllerScreen()
             }
         }
 

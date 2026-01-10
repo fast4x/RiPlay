@@ -22,10 +22,12 @@ import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
@@ -56,6 +58,9 @@ import androidx.compose.foundation.layout.requiredHeight
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PageSize
 import androidx.compose.foundation.pager.PagerDefaults
@@ -68,7 +73,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
@@ -161,19 +168,15 @@ import dev.chrisbanes.haze.haze
 import dev.chrisbanes.haze.hazeChild
 import it.fast4x.environment.Environment
 import it.fast4x.environment.models.NavigationEndpoint
+import it.fast4x.riplay.data.Database
+import it.fast4x.riplay.LocalRiTuneDevices
 import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.LocalSelectedQueue
 import it.fast4x.riplay.R
+import it.fast4x.riplay.utils.appContext
 import it.fast4x.riplay.appRunningInBackground
 import it.fast4x.riplay.commonutils.cleanPrefix
-import it.fast4x.riplay.commonutils.durationTextToMillis
-import it.fast4x.riplay.commonutils.setDisLikeState
-import it.fast4x.riplay.commonutils.thumbnail
-import it.fast4x.riplay.data.Database
-import it.fast4x.riplay.data.models.Info
-import it.fast4x.riplay.data.models.Song
-import it.fast4x.riplay.data.models.defaultQueue
-import it.fast4x.riplay.data.models.toUiMedia
+import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.enums.AnimatedGradient
 import it.fast4x.riplay.enums.BackgroundProgress
 import it.fast4x.riplay.enums.CarouselSize
@@ -191,11 +194,61 @@ import it.fast4x.riplay.enums.SwipeAnimationNoThumbnail
 import it.fast4x.riplay.enums.ThumbnailCoverType
 import it.fast4x.riplay.enums.ThumbnailRoundness
 import it.fast4x.riplay.enums.ThumbnailType
+import it.fast4x.riplay.extensions.ritune.LINKWEB_COMMAND_PAUSE
+import it.fast4x.riplay.extensions.ritune.RiTuneDevice
+import it.fast4x.riplay.extensions.ritune.LinkDevicesSelected
+import it.fast4x.riplay.extensions.ritune.linkServiceClientSend
+import it.fast4x.riplay.extensions.ritune.toCommand
+import it.fast4x.riplay.extensions.ritune.toCommandLoad
+import it.fast4x.riplay.extensions.ritune.toCommandPlay
+import it.fast4x.riplay.extensions.ritune.toCommandPlayAt
+import it.fast4x.riplay.extensions.ritune.toLinkDevice
+import it.fast4x.riplay.data.models.Info
+import it.fast4x.riplay.data.models.Song
+import it.fast4x.riplay.data.models.defaultQueue
+import it.fast4x.riplay.data.models.toUiMedia
+import it.fast4x.riplay.utils.thumbnailShape
+import it.fast4x.riplay.utils.typography
+import it.fast4x.riplay.ui.components.BottomSheetState
+import it.fast4x.riplay.ui.components.CustomModalBottomSheet
+import it.fast4x.riplay.ui.components.LocalGlobalSheetState
+import it.fast4x.riplay.ui.components.themed.AddToPlaylistPlayerMenu
+import it.fast4x.riplay.ui.components.themed.BlurParamsDialog
+import it.fast4x.riplay.ui.components.themed.CircularSlider
+import it.fast4x.riplay.ui.components.themed.ConfirmationDialog
+import it.fast4x.riplay.ui.components.themed.DefaultDialog
+import it.fast4x.riplay.ui.components.themed.IconButton
+import it.fast4x.riplay.ui.components.themed.NowPlayingSongIndicator
+import it.fast4x.riplay.ui.components.themed.PlayerMenu
+import it.fast4x.riplay.ui.components.themed.RotateThumbnailCoverAnimationModern
+import it.fast4x.riplay.ui.components.themed.SecondaryTextButton
+import it.fast4x.riplay.ui.components.themed.SmartMessage
+import it.fast4x.riplay.ui.components.themed.ThumbnailOffsetDialog
+import it.fast4x.riplay.ui.components.themed.animateBrushRotation
+import it.fast4x.riplay.ui.screens.player.common.Lyrics
+import it.fast4x.riplay.ui.screens.player.common.NextVisualizer
+import it.fast4x.riplay.ui.screens.player.common.Queue
+import it.fast4x.riplay.ui.screens.player.common.StatsForNerds
+import it.fast4x.riplay.utils.animatedGradient
+import it.fast4x.riplay.ui.screens.settings.isYtSyncEnabled
+import it.fast4x.riplay.ui.styling.Dimensions
+import it.fast4x.riplay.ui.styling.collapsedPlayerProgressBar
+import it.fast4x.riplay.ui.styling.dynamicColorPaletteOf
+import it.fast4x.riplay.ui.styling.favoritesIcon
+import it.fast4x.riplay.ui.styling.favoritesOverlay
+import it.fast4x.riplay.ui.styling.px
+import it.fast4x.riplay.utils.BlurTransformation
+import it.fast4x.riplay.utils.DisposableListener
+import it.fast4x.riplay.utils.SearchOnlineEntity
+import it.fast4x.riplay.utils.verticalfadingEdge2
 import it.fast4x.riplay.extensions.preferences.VinylSizeKey
 import it.fast4x.riplay.extensions.preferences.actionExpandedKey
 import it.fast4x.riplay.extensions.preferences.actionspacedevenlyKey
+import it.fast4x.riplay.utils.addNext
+import it.fast4x.riplay.utils.addToOnlineLikedSong
 import it.fast4x.riplay.extensions.preferences.albumCoverRotationKey
 import it.fast4x.riplay.extensions.preferences.animatedGradientKey
+import it.fast4x.riplay.utils.asSong
 import it.fast4x.riplay.extensions.preferences.backgroundProgressKey
 import it.fast4x.riplay.extensions.preferences.blackgradientKey
 import it.fast4x.riplay.extensions.preferences.blurDarkenFactorKey
@@ -203,24 +256,42 @@ import it.fast4x.riplay.extensions.preferences.blurStrengthKey
 import it.fast4x.riplay.extensions.preferences.bottomgradientKey
 import it.fast4x.riplay.extensions.preferences.carouselKey
 import it.fast4x.riplay.extensions.preferences.carouselSizeKey
+import it.fast4x.riplay.extensions.preferences.castToRiTuneDeviceEnabledKey
 import it.fast4x.riplay.extensions.preferences.clickOnLyricsTextKey
 import it.fast4x.riplay.extensions.preferences.colorPaletteModeKey
 import it.fast4x.riplay.extensions.preferences.colorPaletteNameKey
 import it.fast4x.riplay.extensions.preferences.controlsExpandedKey
 import it.fast4x.riplay.extensions.preferences.coverThumbnailAnimationKey
+import it.fast4x.riplay.utils.currentWindow
 import it.fast4x.riplay.extensions.preferences.disablePlayerHorizontalSwipeKey
 import it.fast4x.riplay.extensions.preferences.disableScrollingTextKey
 import it.fast4x.riplay.extensions.preferences.discoverKey
+import it.fast4x.riplay.utils.doubleShadowDrop
+import it.fast4x.riplay.commonutils.durationTextToMillis
 import it.fast4x.riplay.extensions.preferences.effectRotationKey
 import it.fast4x.riplay.extensions.preferences.expandedplayerKey
 import it.fast4x.riplay.extensions.preferences.expandedplayertoggleKey
 import it.fast4x.riplay.extensions.preferences.extraspaceKey
 import it.fast4x.riplay.extensions.preferences.fadingedgeKey
 import it.fast4x.riplay.extensions.preferences.jumpPreviousKey
+import it.fast4x.riplay.utils.formatAsDuration
+import it.fast4x.riplay.utils.formatAsTime
+import it.fast4x.riplay.utils.getBitmapFromUrl
+import it.fast4x.riplay.utils.getIconQueueLoopState
+import it.fast4x.riplay.utils.getLikeState
+import it.fast4x.riplay.utils.horizontalFadingEdge
+import it.fast4x.riplay.utils.isExplicit
+import it.fast4x.riplay.utils.isLandscape
+import it.fast4x.riplay.utils.isVideo
 import it.fast4x.riplay.extensions.preferences.lastVideoIdKey
 import it.fast4x.riplay.extensions.preferences.lastVideoSecondsKey
+import it.fast4x.riplay.utils.mediaItemToggleLike
+import it.fast4x.riplay.utils.mediaItems
 import it.fast4x.riplay.extensions.preferences.miniQueueExpandedKey
 import it.fast4x.riplay.extensions.preferences.noblurKey
+import it.fast4x.riplay.utils.playAtIndex
+import it.fast4x.riplay.utils.playNext
+import it.fast4x.riplay.utils.playPrevious
 import it.fast4x.riplay.extensions.preferences.playerBackgroundColorsKey
 import it.fast4x.riplay.extensions.preferences.playerThumbnailSizeKey
 import it.fast4x.riplay.extensions.preferences.playerThumbnailSizeLKey
@@ -231,6 +302,10 @@ import it.fast4x.riplay.extensions.preferences.queueLoopTypeKey
 import it.fast4x.riplay.extensions.preferences.queueTypeKey
 import it.fast4x.riplay.extensions.preferences.rememberObservedPreference
 import it.fast4x.riplay.extensions.preferences.rememberPreference
+import it.fast4x.riplay.utils.seamlessPlay
+import it.fast4x.riplay.ui.styling.semiBold
+import it.fast4x.riplay.commonutils.setDisLikeState
+import it.fast4x.riplay.utils.setQueueLoopState
 import it.fast4x.riplay.extensions.preferences.showButtonPlayerAddToPlaylistKey
 import it.fast4x.riplay.extensions.preferences.showButtonPlayerArrowKey
 import it.fast4x.riplay.extensions.preferences.showButtonPlayerDiscoverKey
@@ -253,12 +328,14 @@ import it.fast4x.riplay.extensions.preferences.showlyricsthumbnailKey
 import it.fast4x.riplay.extensions.preferences.showsongsKey
 import it.fast4x.riplay.extensions.preferences.showthumbnailKey
 import it.fast4x.riplay.extensions.preferences.showvisthumbnailKey
+import it.fast4x.riplay.utils.shuffleQueue
 import it.fast4x.riplay.extensions.preferences.statsExpandedKey
 import it.fast4x.riplay.extensions.preferences.statsfornerdsKey
 import it.fast4x.riplay.extensions.preferences.swipeAnimationsNoThumbnailKey
 import it.fast4x.riplay.extensions.preferences.swipeUpQueueKey
 import it.fast4x.riplay.extensions.preferences.tapqueueKey
 import it.fast4x.riplay.extensions.preferences.textoutlineKey
+import it.fast4x.riplay.commonutils.thumbnail
 import it.fast4x.riplay.extensions.preferences.thumbnailFadeExKey
 import it.fast4x.riplay.extensions.preferences.thumbnailFadeKey
 import it.fast4x.riplay.extensions.preferences.thumbnailRoundnessKey
@@ -270,75 +347,18 @@ import it.fast4x.riplay.extensions.preferences.timelineExpandedKey
 import it.fast4x.riplay.extensions.preferences.titleExpandedKey
 import it.fast4x.riplay.extensions.preferences.topPaddingKey
 import it.fast4x.riplay.extensions.preferences.transparentBackgroundPlayerActionBarKey
+import it.fast4x.riplay.utils.removeFromOnlineLikedSong
 import it.fast4x.riplay.extensions.preferences.visualizerEnabledKey
-import it.fast4x.riplay.ui.components.BottomSheetState
-import it.fast4x.riplay.ui.components.CustomModalBottomSheet
 import it.fast4x.riplay.ui.components.DelayedControls
-import it.fast4x.riplay.ui.components.LocalGlobalSheetState
-import it.fast4x.riplay.ui.components.themed.AddToPlaylistPlayerMenu
-import it.fast4x.riplay.ui.components.themed.BlurParamsDialog
-import it.fast4x.riplay.ui.components.themed.CircularSlider
-import it.fast4x.riplay.ui.components.themed.ConfirmationDialog
-import it.fast4x.riplay.ui.components.themed.DefaultDialog
-import it.fast4x.riplay.ui.components.themed.IconButton
-import it.fast4x.riplay.ui.components.themed.NowPlayingSongIndicator
-import it.fast4x.riplay.ui.components.themed.PlayerMenu
-import it.fast4x.riplay.ui.components.themed.RotateThumbnailCoverAnimationModern
-import it.fast4x.riplay.ui.components.themed.SecondaryTextButton
-import it.fast4x.riplay.ui.components.themed.SmartMessage
-import it.fast4x.riplay.ui.components.themed.ThumbnailOffsetDialog
-import it.fast4x.riplay.ui.components.themed.animateBrushRotation
-import it.fast4x.riplay.ui.screens.player.common.Lyrics
-import it.fast4x.riplay.ui.screens.player.common.NextVisualizer
-import it.fast4x.riplay.ui.screens.player.common.Queue
-import it.fast4x.riplay.ui.screens.player.common.StatsForNerds
-import it.fast4x.riplay.ui.screens.settings.isYtSyncEnabled
-import it.fast4x.riplay.ui.styling.Dimensions
-import it.fast4x.riplay.ui.styling.collapsedPlayerProgressBar
-import it.fast4x.riplay.ui.styling.dynamicColorPaletteOf
-import it.fast4x.riplay.ui.styling.favoritesIcon
-import it.fast4x.riplay.ui.styling.favoritesOverlay
-import it.fast4x.riplay.ui.styling.px
-import it.fast4x.riplay.ui.styling.semiBold
-import it.fast4x.riplay.utils.BlurTransformation
-import it.fast4x.riplay.utils.DisposableListener
 import it.fast4x.riplay.utils.PlayerViewModel
 import it.fast4x.riplay.utils.PlayerViewModelFactory
-import it.fast4x.riplay.utils.SearchOnlineEntity
-import it.fast4x.riplay.utils.addNext
-import it.fast4x.riplay.utils.addToOnlineLikedSong
-import it.fast4x.riplay.utils.animatedGradient
-import it.fast4x.riplay.utils.appContext
-import it.fast4x.riplay.utils.asSong
-import it.fast4x.riplay.utils.colorPalette
-import it.fast4x.riplay.utils.currentWindow
 import it.fast4x.riplay.utils.detectGestures
-import it.fast4x.riplay.utils.doubleShadowDrop
-import it.fast4x.riplay.utils.formatAsDuration
-import it.fast4x.riplay.utils.formatAsTime
-import it.fast4x.riplay.utils.getBitmapFromUrl
-import it.fast4x.riplay.utils.getIconQueueLoopState
-import it.fast4x.riplay.utils.getLikeState
 import it.fast4x.riplay.utils.hide
-import it.fast4x.riplay.utils.horizontalFadingEdge
-import it.fast4x.riplay.utils.isExplicit
-import it.fast4x.riplay.utils.isLandscape
-import it.fast4x.riplay.utils.isVideo
-import it.fast4x.riplay.utils.mediaItemToggleLike
-import it.fast4x.riplay.utils.mediaItems
-import it.fast4x.riplay.utils.playAtIndex
-import it.fast4x.riplay.utils.playNext
-import it.fast4x.riplay.utils.playPrevious
-import it.fast4x.riplay.utils.removeFromOnlineLikedSong
-import it.fast4x.riplay.utils.seamlessPlay
-import it.fast4x.riplay.utils.setQueueLoopState
-import it.fast4x.riplay.utils.shuffleQueue
-import it.fast4x.riplay.utils.thumbnailShape
-import it.fast4x.riplay.utils.typography
-import it.fast4x.riplay.utils.verticalfadingEdge2
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
@@ -348,6 +368,7 @@ import timber.log.Timber
 import kotlin.Float.Companion.POSITIVE_INFINITY
 import kotlin.math.absoluteValue
 import kotlin.math.sqrt
+
 
 
 @ExperimentalPermissionsApi
@@ -361,10 +382,15 @@ import kotlin.math.sqrt
 @ExperimentalAnimationApi
 @UnstableApi
 @Composable
-fun OnlinePlayer(
+fun RiTunePlayerINITIAL(
     navController: NavController,
     playFromSecond: Float = 0f,
     onlineCore: @Composable () -> Unit,
+    //player: MutableState<YouTubePlayer?>,
+    //playerState: MutableState<PlayerConstants.PlayerState>,
+    //currentDuration: Float,
+    //currentSecond: Float,
+    //showControls: Boolean,
     playerSheetState: BottomSheetState,
     onDismiss: () -> Unit,
 ) {
@@ -401,6 +427,8 @@ fun OnlinePlayer(
     }
 
     var shouldBePlaying by remember { mutableStateOf(false) }
+
+    var castToLinkDevice by rememberPreference(castToRiTuneDeviceEnabledKey, false )
 
     var isRotated by remember { mutableStateOf(false) }
     val rotationAngle by animateFloatAsState(
@@ -514,12 +542,28 @@ fun OnlinePlayer(
         }
     }
 
+    val linkDevices = LocalRiTuneDevices.current
+
+    val linkDevicesSavedProvider = MutableStateFlow<LinkDevicesSelected>(LinkDevicesSelected(context))
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val linkDevicesSavedAsState = linkDevicesSavedProvider.collectAsState()
+
+    val linkDevicesSelected = remember { mutableListOf<RiTuneDevice>() }
+    LaunchedEffect(Unit) {
+        linkDevicesSelected.addAll(linkDevicesSavedAsState.value.devices())
+    }
+
     var queueLoopType by rememberPreference(queueLoopTypeKey, defaultValue = QueueLoopType.Default)
 
     binder.player.DisposableListener {
         object : Player.Listener {
             override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
                 nullableMediaItem = mediaItem
+
+                mediaItem?.let {
+                    linkServiceClientSend(it.mediaId.toCommandLoad(), castToLinkDevice, linkDevicesSelected)
+                }
             }
 
             override fun onTimelineChanged(timeline: Timeline, reason: Int) {
@@ -1411,6 +1455,12 @@ fun OnlinePlayer(
 
         shouldBePlaying = playerState == PlayerConstants.PlayerState.PLAYING
 
+        linkServiceClientSend(
+            if (shouldBePlaying) mediaItem.mediaId.toCommandPlay() else LINKWEB_COMMAND_PAUSE.toCommand(),
+            castToLinkDevice,
+            linkDevicesSelected
+        )
+
     }
 
     val thumbnailRoundness by rememberObservedPreference(
@@ -1443,9 +1493,23 @@ fun OnlinePlayer(
             mediaItem = mediaItem,
             onPlay = {
                 binder.onlinePlayer?.play()
+
+                linkServiceClientSend(
+                    mediaItem.mediaId.toCommandPlayAt(positionAndDuration.first.toInt()),
+                    castToLinkDevice,
+                    linkDevicesSelected
+                )
+
             },
             onPause = {
                 binder.onlinePlayer?.pause()
+
+                linkServiceClientSend(
+                    LINKWEB_COMMAND_PAUSE.toCommand(),
+                    castToLinkDevice,
+                    linkDevicesSelected
+                )
+
             },
             onSeekTo = { binder.onlinePlayer?.seekTo(it) },
             onNext = { binder.player.playNext() },
@@ -1483,7 +1547,86 @@ fun OnlinePlayer(
                     modifier = Modifier
                         .zIndex(1f)
                         .align(Alignment.Center),
-                    visible = showControls && it.fast4x.riplay.utils.isLandscape,
+                    visible = castToLinkDevice,
+                    enter = fadeIn(),
+                    exit = fadeOut()
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .background(colorPalette().background0)
+                            .fillMaxSize()
+                    ) {
+
+                        LazyColumn(
+                            state = rememberLazyListState(),
+                            contentPadding = PaddingValues(all = 10.dp),
+                            modifier = Modifier
+                                .background(
+                                    colorPalette().background0
+                                )
+                                .fillMaxSize()
+                        ) {
+                            item {
+                                Text(
+                                    text = "Link Devices",
+                                    color = colorPalette().text,
+                                    modifier = Modifier.padding(bottom = 10.dp)
+                                )
+
+
+                            }
+                            items(
+                                items = linkDevices.distinct()
+                            ) { device ->
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(36.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    IconButton(
+                                        icon = if (linkDevicesSelected.contains(device.toLinkDevice())) R.drawable.cast_connected else R.drawable.cast_disconnected,
+                                        color = colorPalette().text,
+                                        enabled = true,
+                                        onClick = {
+                                            if (linkDevicesSelected.contains(device.toLinkDevice()))
+                                                linkDevicesSelected.remove(device.toLinkDevice())
+                                            else
+                                                linkDevicesSelected.add(device.toLinkDevice())
+
+                                            linkDevicesSavedProvider.value.saveDevices(linkDevicesSelected)
+
+                                            //println("LinkClient OnLinePlayer Controls cast selected -${device.toLinkDevice()}- devices after ${linkDevicesSelected}")
+                                            //player.value?.pause()
+                                            binder.onlinePlayer?.pause()
+                                        },
+                                        modifier = Modifier
+                                            .size(32.dp),
+                                    )
+                                    Spacer(modifier = Modifier.width(16.dp))
+                                    Text(
+                                        text = device.serviceName.toString(),
+                                        color = colorPalette().text,
+                                        modifier = Modifier.border(BorderStroke(1.dp, Color.Red))
+                                    )
+                                }
+                            }
+                        }
+
+                        LinearProgressIndicator(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(1.dp)
+                                .align(Alignment.BottomCenter),
+                        )
+
+                    }
+                }
+                AnimatedVisibility(
+                    modifier = Modifier
+                        .zIndex(1f)
+                        .align(Alignment.Center),
+                    visible = showControls && it.fast4x.riplay.utils.isLandscape && !castToLinkDevice,
                     enter = fadeIn(),
                     exit = fadeOut()
                 ) {
@@ -1552,7 +1695,7 @@ fun OnlinePlayer(
                     modifier = Modifier
                         .zIndex(1f)
                         .align(Alignment.Center),
-                    visible = !showControls && it.fast4x.riplay.utils.isLandscape,
+                    visible = !showControls && it.fast4x.riplay.utils.isLandscape && !castToLinkDevice,
                     enter = fadeIn(),
                     exit = fadeOut()
                 ) {
@@ -1906,6 +2049,27 @@ fun OnlinePlayer(
                                 .padding(horizontal = 12.dp)
                                 .fillMaxWidth()
                         ) {
+                            // TODO Implement RiPlay Connect
+                            IconButton(
+                                icon = if (castToLinkDevice) R.drawable.cast_connected else R.drawable.cast_disconnected,
+                                color = colorPalette().accent,
+                                enabled = true,
+                                onClick = {
+                                    castToLinkDevice = !castToLinkDevice
+                                    //player.value?.pause()
+                                    binder.onlinePlayer?.pause()
+                                    if (castToLinkDevice) binder.onlinePlayer?.mute() else binder.onlinePlayer?.unMute()
+                                    if (!castToLinkDevice) linkServiceClientSend(
+                                        LINKWEB_COMMAND_PAUSE.toCommand(),
+                                        true,
+                                        linkDevicesSelected
+                                    )
+                                    //println("CastToLinkDevice: $castToLinkDevice")
+                                },
+                                modifier = Modifier
+                                    .size(24.dp),
+                            )
+
                             if (showButtonPlayerVideo)
                                 IconButton(
                                     icon = R.drawable.left_and_right_arrows,
@@ -2793,11 +2957,27 @@ fun OnlinePlayer(
                                         //player.value?.play()
                                         binder.onlinePlayer?.play()
                                         //println("LinkClient OnLinePlayer Controls play")
+                                        linkServiceClientSend(
+                                            binderPlayer.getMediaItemAt(index).mediaId.toCommandPlayAt(
+                                                positionAndDuration.first.toInt()
+                                            ),
+                                            castToLinkDevice,
+                                            linkDevicesSelected
+                                        )
                                     },
                                     onPause = {
                                         //player.value?.pause()
                                         binder.onlinePlayer?.pause()
                                         //println("LinkClient OnLinePlayer Controls pause 2")
+                                        //CoroutineScope(Dispatchers.IO).launch {
+                                        //if (linkClient != null)
+                                        linkServiceClientSend(
+                                            LINKWEB_COMMAND_PAUSE.toCommand(),
+                                            castToLinkDevice,
+                                            linkDevicesSelected
+                                        )
+                                        //linkClient?.send("pause|")
+                                        //}
                                     },
                                     onSeekTo = { binder.onlinePlayer?.seekTo(it) },
                                     onNext = { binder.player.playNext() },
@@ -3087,11 +3267,23 @@ fun OnlinePlayer(
                                                 //player.value?.play()
                                                 binder.onlinePlayer?.play()
                                                 //println("LinkClient OnLinePlayer Controls pause 3")
+                                                linkServiceClientSend(
+                                                    binderPlayer.getMediaItemAt(it).mediaId.toCommandPlayAt(positionAndDuration.first.toInt()),
+                                                    castToLinkDevice,
+                                                    linkDevicesSelected
+                                                )
+
                                             },
                                             onPause = {
                                                 //player.value?.pause()
                                                 binder.onlinePlayer?.pause()
                                                 //println("LinkClient OnLinePlayer Controls pause 4")
+                                                linkServiceClientSend(
+                                                    LINKWEB_COMMAND_PAUSE.toCommand(),
+                                                    castToLinkDevice,
+                                                    linkDevicesSelected
+                                                )
+
                                             },
                                             onSeekTo = { binder.onlinePlayer?.seekTo(it) },
                                             onNext = { binder.player.playNext() },
@@ -3581,7 +3773,7 @@ fun OnlinePlayer(
 
                         //use online player core in portrait mpode
                         thumbnailContent(
-                            if ((!mediaItem.isVideo || isShowingVisualizer))
+                            if ((!mediaItem.isVideo || isShowingVisualizer) && !castToLinkDevice)
                                 Modifier.hide()
                             else
                                 coverModifier
@@ -3792,12 +3984,27 @@ fun OnlinePlayer(
                                         //player.value?.play()
                                         binder.onlinePlayer?.play()
                                         //println("LinkClient OnLinePlayer Controls play")
+                                        linkServiceClientSend(
+                                            binderPlayer.getMediaItemAt(index).mediaId.toCommandPlayAt(positionAndDuration.first.toInt()),
+                                            castToLinkDevice,
+                                            linkDevicesSelected
+                                        )
+
                                     },
                                     onPause = {
                                         //player.value?.pause()
                                         binder.onlinePlayer?.pause()
 
                                         //println("LinkClient OnLinePlayer Controls pause 5")
+                                        //CoroutineScope(Dispatchers.IO).launch {
+                                            //if (linkClient != null)
+                                                linkServiceClientSend(
+                                                    LINKWEB_COMMAND_PAUSE.toCommand(),
+                                                    castToLinkDevice,
+                                                    linkDevicesSelected
+                                                )
+                                                //linkClient?.send("pause|")
+                                        //}
                                     },
                                     onSeekTo = { binder.onlinePlayer?.seekTo(it) },
                                     onNext = { binder.player.playNext() },
