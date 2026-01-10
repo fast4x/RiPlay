@@ -948,7 +948,7 @@
     <string name="restore_from_other_backup">Ripristina da altro backup</string>
     <string name="import_the_database_be_carefull">Importa il database da altri backup. Fai attenzione, potresti dover reinstallare l\'app.</string>
     <string name="enable_fullscreen">Abilita modalità schermo intero</string>
-    <string name="enable_fullscreen_info"></string>
+    <string name="enable_fullscreen_info">Fullscreen hide system bars</string>
     <string name="invalid_token">Token non valido</string>
     <string name="unknown_title">Titolo sconosciuto</string>
     <string name="unknown_artist">Artista sconosciuto</string>
@@ -1180,4 +1180,7 @@
     <string name="lastfm_scrobble_type">Scrobble type</string>
     <string name="song_unliked_lastfm">Song is Unliked in last.fm</string>
     <string name="song_liked_lastfm">Song is liked in last.fm</string>
+    <string name="toggle_ondevice_folder_name_instead_full_path">Toggle folder name instead full path</string>
+    <string name="music_paused_headphones_disconnected">Music Paused (Headphones disconnected)</string>
+    <string name="music_resumed_headphones_connected">Music resumed (headphones connected)</string>
 </resources>

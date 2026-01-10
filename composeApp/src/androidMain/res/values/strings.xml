@@ -1181,4 +1181,6 @@
     <string name="song_unliked_lastfm">Song is Unliked in last.fm</string>
     <string name="song_liked_lastfm">Song is liked in last.fm</string>
     <string name="toggle_ondevice_folder_name_instead_full_path">Toggle folder name instead full path</string>
+    <string name="music_paused_headphones_disconnected">Music Paused (Headphones disconnected)</string>
+    <string name="music_resumed_headphones_connected">Music resumed (headphones connected)</string>
 </resources>

@@ -22,7 +22,6 @@ import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.media.AudioDeviceCallback
-import android.media.AudioDeviceInfo
 import android.media.AudioManager
 import android.media.audiofx.AudioEffect
 import android.media.audiofx.BassBoost
@@ -190,6 +189,7 @@ import it.fast4x.riplay.extensions.preferences.isEnabledLastfmKey
 import it.fast4x.riplay.extensions.preferences.lastfmScrobbleTypeKey
 import it.fast4x.riplay.extensions.preferences.lastfmSessionTokenKey
 import it.fast4x.riplay.extensions.preferences.parentalControlEnabledKey
+import it.fast4x.riplay.service.helpers.BluetoothConnectReceiver
 import it.fast4x.riplay.service.helpers.NoisyAudioReceiver
 import it.fast4x.riplay.utils.isExplicit
 import it.fast4x.riplay.utils.isVideo
@@ -278,8 +278,8 @@ class PlayerService : Service(),
     private var isShowingThumbnailInLockscreen = true
     private var medleyDuration by mutableFloatStateOf(0f)
 
-    private var audioManager: AudioManager? = null
-    private var audioDeviceCallback: AudioDeviceCallback? = null
+//    private var audioManager: AudioManager? = null
+//    private var audioDeviceCallback: AudioDeviceCallback? = null
 
     private var loudnessEnhancer: LoudnessEnhancer? = null
 
@@ -357,6 +357,7 @@ class PlayerService : Service(),
     var firstTimeStarted by mutableStateOf(true)
 
     private var noisyReceiver: NoisyAudioReceiver? = null
+    private var bluetoothReceiver: BluetoothConnectReceiver? = null
 
     //private var checkVolumeLevel: Boolean = true
 
@@ -479,7 +480,7 @@ class PlayerService : Service(),
         startForeground()
 
         initializePositionObserver()
-        initializeResumeOrPausePlaybackWhenDevice()
+        initializeBluetoothConnect()
         initializeBassBoost()
         initializeReverb()
         initializeSensorListener()
@@ -566,16 +567,6 @@ class PlayerService : Service(),
             }
         }
 
-    }
-
-    private fun initializeNoisyReceiver() {
-        noisyReceiver = NoisyAudioReceiver(this) {
-            player.pause()
-            internalOnlinePlayer.value?.pause()
-            SmartMessage("Music Paused (Headphones disconnected)", context = this)
-        }
-
-        noisyReceiver?.register()
     }
 
     private fun initializeMedleyMode() {
@@ -1021,6 +1012,7 @@ class PlayerService : Service(),
             loudnessEnhancer?.release()
             audioVolumeObserver.unregister()
             noisyReceiver?.unregister()
+            bluetoothReceiver?.unregister()
 
             discordPresenceManager?.onStop()
 
@@ -1509,6 +1501,34 @@ class PlayerService : Service(),
         unifiedMediaSession.setMetadata(metadataBuilder.build())
     }
 
+    private fun initializeNoisyReceiver() {
+        if (!preferences.getBoolean(resumeOrPausePlaybackWhenDeviceKey, false)) return
+
+        noisyReceiver = NoisyAudioReceiver(this) {
+            player.pause()
+            internalOnlinePlayer.value?.pause()
+            SmartMessage(getString(R.string.music_paused_headphones_disconnected), context = this)
+        }
+
+        noisyReceiver?.register()
+    }
+
+    private fun initializeBluetoothConnect() {
+        if (!preferences.getBoolean(resumeOrPausePlaybackWhenDeviceKey, false)) return
+
+        bluetoothReceiver = BluetoothConnectReceiver(this) {
+            if (currentSong.value?.isLocal == true) {
+                player.play()
+            } else {
+                internalOnlinePlayer.value?.play()
+            }
+
+            SmartMessage(getString(R.string.music_resumed_headphones_connected), context = this)
+        }
+        bluetoothReceiver?.register()
+
+    }
+    /* todo old maybe will be removed in the future
     @SuppressLint("NewApi")
     private fun initializeResumeOrPausePlaybackWhenDevice() {
         if (!isAtLeastAndroid6) return
@@ -1559,6 +1579,7 @@ class PlayerService : Service(),
             audioDeviceCallback = null
         }
     }
+    */
 
     @UnstableApi
     private fun sendOpenEqualizerIntent() {
@@ -2004,7 +2025,7 @@ class PlayerService : Service(),
 //            checkVolumeLevelKey -> {
 //                checkVolumeLevel = sharedPreferences.getBoolean(key, false)
 //            }
-            resumeOrPausePlaybackWhenDeviceKey -> initializeResumeOrPausePlaybackWhenDevice()
+            resumeOrPausePlaybackWhenDeviceKey -> initializeBluetoothConnect()
             bassboostLevelKey, bassboostEnabledKey -> initializeBassBoost()
             audioReverbPresetKey -> initializeReverb()
             volumeNormalizationKey, loudnessBaseGainKey, volumeBoostLevelKey -> initializeNormalizeVolume()

@@ -267,6 +267,7 @@ import it.fast4x.riplay.extensions.ondevice.OnDeviceViewModel
 import it.fast4x.riplay.extensions.preferences.showSnowfallEffectKey
 import it.fast4x.riplay.service.PlayerServiceQueueViewModel
 import it.fast4x.riplay.ui.components.Snowfall
+import it.fast4x.riplay.utils.isAtLeastAndroid12
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
@@ -407,6 +408,9 @@ class MainActivity :
         } else {
             permissionsToRequest.add(Manifest.permission.READ_EXTERNAL_STORAGE)
         }
+
+        if (isAtLeastAndroid12)
+            permissionsToRequest.add(Manifest.permission.BLUETOOTH_CONNECT)
 
         val permissionsNotGranted = permissionsToRequest.filter {
             ContextCompat.checkSelfPermission(this, it) != PackageManager.PERMISSION_GRANTED
