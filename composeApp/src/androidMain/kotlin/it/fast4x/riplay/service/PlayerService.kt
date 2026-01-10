@@ -183,15 +183,14 @@ import it.fast4x.riplay.utils.saveMasterQueue
 import it.fast4x.riplay.utils.seamlessQueue
 import it.fast4x.riplay.commonutils.setLikeState
 import it.fast4x.riplay.enums.LastFmScrobbleType
-import it.fast4x.riplay.extensions.lastfm.LastFmAuthViewModel
 import it.fast4x.riplay.extensions.lastfm.sendNowPlaying
 import it.fast4x.riplay.extensions.lastfm.sendScrobble
-import it.fast4x.riplay.extensions.preferences.checkVolumeLevelKey
 import it.fast4x.riplay.extensions.preferences.excludeSongIfIsVideoKey
 import it.fast4x.riplay.extensions.preferences.isEnabledLastfmKey
 import it.fast4x.riplay.extensions.preferences.lastfmScrobbleTypeKey
 import it.fast4x.riplay.extensions.preferences.lastfmSessionTokenKey
 import it.fast4x.riplay.extensions.preferences.parentalControlEnabledKey
+import it.fast4x.riplay.service.helpers.NoisyAudioReceiver
 import it.fast4x.riplay.utils.isExplicit
 import it.fast4x.riplay.utils.isVideo
 import it.fast4x.riplay.utils.setQueueLoopState
@@ -357,6 +356,8 @@ class PlayerService : Service(),
 
     var firstTimeStarted by mutableStateOf(true)
 
+    private var noisyReceiver: NoisyAudioReceiver? = null
+
     //private var checkVolumeLevel: Boolean = true
 
 
@@ -486,6 +487,7 @@ class PlayerService : Service(),
         initializeMedleyMode()
         initializeVariables()
         initializePlaybackParameters()
+        initializeNoisyReceiver()
         //initializeServiceRestartReceiver() not used for now
 
         initializeDiscordPresence()
@@ -564,6 +566,16 @@ class PlayerService : Service(),
             }
         }
 
+    }
+
+    private fun initializeNoisyReceiver() {
+        noisyReceiver = NoisyAudioReceiver(this) {
+            player.pause()
+            internalOnlinePlayer.value?.pause()
+            SmartMessage("Music Paused (Headphones disconnected)", context = this)
+        }
+
+        noisyReceiver?.register()
     }
 
     private fun initializeMedleyMode() {
@@ -1008,6 +1020,7 @@ class PlayerService : Service(),
             cache.release()
             loudnessEnhancer?.release()
             audioVolumeObserver.unregister()
+            noisyReceiver?.unregister()
 
             discordPresenceManager?.onStop()
 

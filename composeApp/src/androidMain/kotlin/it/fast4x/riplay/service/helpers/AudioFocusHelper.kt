@@ -1,4 +1,4 @@
-package it.fast4x.riplay.service
+package it.fast4x.riplay.service.helpers
 
 import android.content.Context
 import android.media.AudioAttributes
