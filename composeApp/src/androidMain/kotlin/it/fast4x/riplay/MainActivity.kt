@@ -756,19 +756,15 @@ class MainActivity :
         // Used for android auto to show notification to invite user launch app
         preferences.edit(commit = true) { putBoolean(appIsRunningKey, true) }
 
-        if (!preferences.getBoolean(closeWithBackButtonKey, false))
-            if (Build.VERSION.SDK_INT >= 33) {
-                onBackInvokedDispatcher.registerOnBackInvokedCallback(
-                    OnBackInvokedDispatcher.PRIORITY_DEFAULT
-                ) {
-                    //Log.d("onBackPress", "yeah")
-                }
-            }
+//        if (!preferences.getBoolean(closeWithBackButtonKey, false))
+//            if (Build.VERSION.SDK_INT >= 33) {
+//                onBackInvokedDispatcher.registerOnBackInvokedCallback(
+//                    OnBackInvokedDispatcher.PRIORITY_DEFAULT
+//                ) {
+//                    //Log.d("onBackPress", "yeah")
+//                }
+//            }
 
-        /*
-            Instead of checking getBoolean() individually, we can use .let() to express condition.
-            Or, the whole thing is 'false' if null appears in the process.
-         */
         val launchedFromNotification: Boolean =
             intent?.extras?.let {
                 it.getBoolean("expandPlayerBottomSheet") || it.getBoolean("fromWidget")
