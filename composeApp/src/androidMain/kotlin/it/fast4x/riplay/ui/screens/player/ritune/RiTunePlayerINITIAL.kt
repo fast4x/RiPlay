@@ -169,7 +169,7 @@ import dev.chrisbanes.haze.hazeChild
 import it.fast4x.environment.Environment
 import it.fast4x.environment.models.NavigationEndpoint
 import it.fast4x.riplay.data.Database
-import it.fast4x.riplay.LocalRiTuneDevices
+//import it.fast4x.riplay.LocalRiTuneDevices
 import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.LocalSelectedQueue
 import it.fast4x.riplay.R
@@ -202,7 +202,7 @@ import it.fast4x.riplay.extensions.ritune.toCommand
 import it.fast4x.riplay.extensions.ritune.toCommandLoad
 import it.fast4x.riplay.extensions.ritune.toCommandPlay
 import it.fast4x.riplay.extensions.ritune.toCommandPlayAt
-import it.fast4x.riplay.extensions.ritune.toLinkDevice
+import it.fast4x.riplay.extensions.ritune.toRiTuneDevice
 import it.fast4x.riplay.data.models.Info
 import it.fast4x.riplay.data.models.Song
 import it.fast4x.riplay.data.models.defaultQueue
@@ -542,7 +542,7 @@ fun RiTunePlayerINITIAL(
         }
     }
 
-    val linkDevices = LocalRiTuneDevices.current
+    //val linkDevices = LocalRiTuneDevices.current
 
     val linkDevicesSavedProvider = MutableStateFlow<LinkDevicesSelected>(LinkDevicesSelected(context))
 
@@ -1543,6 +1543,7 @@ fun RiTunePlayerINITIAL(
                     .fillMaxSize()
                     .background(Color.Transparent)
             ) {
+                /*
                 AnimatedVisibility(
                     modifier = Modifier
                         .zIndex(1f)
@@ -1585,14 +1586,14 @@ fun RiTunePlayerINITIAL(
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     IconButton(
-                                        icon = if (linkDevicesSelected.contains(device.toLinkDevice())) R.drawable.cast_connected else R.drawable.cast_disconnected,
+                                        icon = if (linkDevicesSelected.contains(device.toRiTuneDevice())) R.drawable.cast_connected else R.drawable.cast_disconnected,
                                         color = colorPalette().text,
                                         enabled = true,
                                         onClick = {
-                                            if (linkDevicesSelected.contains(device.toLinkDevice()))
-                                                linkDevicesSelected.remove(device.toLinkDevice())
+                                            if (linkDevicesSelected.contains(device.toRiTuneDevice()))
+                                                linkDevicesSelected.remove(device.toRiTuneDevice())
                                             else
-                                                linkDevicesSelected.add(device.toLinkDevice())
+                                                linkDevicesSelected.add(device.toRiTuneDevice())
 
                                             linkDevicesSavedProvider.value.saveDevices(linkDevicesSelected)
 
@@ -1622,6 +1623,8 @@ fun RiTunePlayerINITIAL(
 
                     }
                 }
+                */
+
                 AnimatedVisibility(
                     modifier = Modifier
                         .zIndex(1f)

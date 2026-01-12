@@ -19,18 +19,22 @@ import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.extensions.pip.isPipSupported
 import it.fast4x.riplay.extensions.pip.rememberPipHandler
+import it.fast4x.riplay.extensions.preferences.castToRiTuneDeviceActiveKey
 import it.fast4x.riplay.extensions.preferences.castToRiTuneDeviceEnabledKey
 import it.fast4x.riplay.extensions.preferences.enableMusicIdentifierKey
 import it.fast4x.riplay.extensions.preferences.enablePictureInPictureKey
 import it.fast4x.riplay.extensions.preferences.rememberPreference
+import it.fast4x.riplay.extensions.ritune.improved.RiTuneSelector
 import it.fast4x.riplay.ui.components.LocalGlobalSheetState
 import it.fast4x.riplay.ui.components.SheetBody
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.utils.thumbnailShape
 import it.fast4x.riplay.ui.components.themed.DropdownMenu
 import it.fast4x.riplay.ui.screens.settings.isYtLoggedIn
+import it.fast4x.riplay.utils.GlobalSharedData
 import it.fast4x.riplay.utils.MusicIdentifier
 import it.fast4x.riplay.utils.ytAccountThumbnail
+import timber.log.Timber
 
 @Composable
 private fun HamburgerMenu(
@@ -51,7 +55,7 @@ private fun HamburgerMenu(
         DropdownMenu.Item(
             R.drawable.cast_connected,
             R.string.blacklist,
-        ) { onItemClick( NavRoutes.rilinkcontroller ) }
+        ) { onItemClick( NavRoutes.ritunecontroller ) }
     )
 
     // Blacklist button
@@ -116,9 +120,24 @@ fun ActionBar(
 ) {
     var expanded by remember { mutableStateOf(false) }
 
-    var castToRiTuneDevice by rememberPreference(castToRiTuneDeviceEnabledKey, false )
-    HeaderIcon(if (castToRiTuneDevice) R.drawable.cast_connected else R.drawable.cast_disconnected) {
-        castToRiTuneDevice = !castToRiTuneDevice
+    var castToRiTuneDeviceEnabled by rememberPreference(castToRiTuneDeviceEnabledKey, false )
+    var castToRiTuneDeviceActive by remember { mutableStateOf(false) } //rememberPreference(castToRiTuneDeviceActiveKey, false )
+    var showRiTuneSelector by remember { mutableStateOf(false) }
+
+    if (showRiTuneSelector) {
+        RiTuneSelector(
+            onDismiss = {
+                showRiTuneSelector = false
+            },
+            onSelect = {
+                Timber.d("RiTuneSelector: $it")
+                castToRiTuneDeviceActive = it.any { device -> device.selected }
+            }
+        )
+    }
+
+    HeaderIcon(if (castToRiTuneDeviceActive) R.drawable.cast_connected else R.drawable.cast_disconnected) {
+        showRiTuneSelector = true
     }
 
     val isEnabledMusicIdentifier by rememberPreference(

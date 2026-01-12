@@ -16,16 +16,16 @@ data class RiTuneDevice (
     val name: String,
     val host: String,
     val port: Int,
-    val selected: Boolean = false,
+    var selected: Boolean = false,
 )
 
-fun NsdServiceInfo.toLinkDevice() = RiTuneDevice(
+fun NsdServiceInfo.toRiTuneDevice() = RiTuneDevice(
     name = this.serviceName,
     host = this.host.toString(),
     port = this.port,
 )
 
-fun String.toLinkDevice() = RiTuneDevice(
+fun String.toRiTuneDevice() = RiTuneDevice(
     name = this.split(",")[0],
     host = this.split(",")[1],
     port = this.split(",")[2].toInt(),
@@ -38,7 +38,7 @@ class LinkDevicesSelected(context: Context) {
     private val devicesLoaded = if (file.exists()) {
         try {
             file.readLines().map { line ->
-                line.toLinkDevice()
+                line.toRiTuneDevice()
             }
         } catch (e: Exception) {
             emptyList()

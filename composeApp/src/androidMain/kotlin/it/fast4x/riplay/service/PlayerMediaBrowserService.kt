@@ -95,10 +95,8 @@ class PlayerMediaBrowserService : MediaBrowserServiceCompat(), ServiceConnection
         if (service is PlayerService.Binder) {
             bound = true
             sessionToken = service.mediaSession.sessionToken
-            service.mediaSession.setCallback(
-                //SessionCallback(service)
-                sessionCallback(service)
-            )
+            // IMPORTANT: Do not override the MediaSession callback here.
+            // PlayerService owns the callback and implements the authoritative queue/skip logic.
         }
     }
 

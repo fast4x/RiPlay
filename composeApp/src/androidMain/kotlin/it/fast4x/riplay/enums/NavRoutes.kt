@@ -35,7 +35,7 @@ enum class NavRoutes {
     controller,
     onDevicePlaylist,
     blacklist,
-    rilinkcontroller;
+    ritunecontroller;
 
     companion object {
         fun current( navController: NavController ) = navController.currentBackStackEntry?.destination?.route

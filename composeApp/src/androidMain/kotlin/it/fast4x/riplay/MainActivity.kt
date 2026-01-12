@@ -40,24 +40,39 @@ import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.add
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.LocalRippleConfiguration
 import androidx.compose.material3.RippleConfiguration
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
@@ -75,6 +90,8 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.runtime.toMutableStateList
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -262,10 +279,19 @@ import it.fast4x.riplay.extensions.databasebackup.BackupViewModel
 import it.fast4x.riplay.extensions.databasebackup.DatabaseBackupManager
 import it.fast4x.riplay.extensions.htmlreader.shazamSongInfoExtractor
 import it.fast4x.riplay.extensions.ondevice.OnDeviceViewModel
+import it.fast4x.riplay.extensions.preferences.castToRiTuneDeviceActiveKey
+import it.fast4x.riplay.extensions.preferences.castToRiTuneDeviceEnabledKey
 import it.fast4x.riplay.extensions.preferences.resumeOrPausePlaybackWhenDeviceKey
 import it.fast4x.riplay.extensions.preferences.showSnowfallEffectKey
+import it.fast4x.riplay.extensions.ritune.toRiTuneDevice
 import it.fast4x.riplay.service.PlayerServiceQueueViewModel
+import it.fast4x.riplay.ui.components.SheetBody
 import it.fast4x.riplay.ui.components.Snowfall
+import it.fast4x.riplay.ui.components.themed.IconButton
+import it.fast4x.riplay.ui.screens.player.local.RiTunePlayer
+import it.fast4x.riplay.utils.GlobalSharedData
+import it.fast4x.riplay.utils.GlobalSharedData.riTuneDevices
+import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.utils.isAtLeastAndroid12
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -345,7 +371,7 @@ class MainActivity :
     var visitorData: MutableState<String> =
         mutableStateOf("")
 
-    var riTuneDevices: MutableState<List<NsdServiceInfo>> = mutableStateOf(emptyList())
+    //var riTuneDevices: MutableState<List<NsdServiceInfo>> = mutableStateOf(emptyList())
 
     var onlinePlayerPlayingState by mutableStateOf(false)
     var localPlayerPlayingState: MutableState<Boolean> = mutableStateOf(false)
@@ -394,7 +420,6 @@ class MainActivity :
     private val onDeviceViewModel: OnDeviceViewModel by viewModels {
         OnDeviceViewModel(application)
     }
-
 
     private fun checkAndRequestStandardPermissions() {
         val permissionsToRequest = mutableListOf<String>()
@@ -459,19 +484,19 @@ class MainActivity :
         try {
             val intent = when (Build.MANUFACTURER.lowercase()) {
                 "xiaomi" -> Intent().apply {
-                    component = android.content.ComponentName("com.miui.securitycenter", "com.miui.permcenter.autostart.AutoStartManagementActivity")
+                    component = ComponentName("com.miui.securitycenter", "com.miui.permcenter.autostart.AutoStartManagementActivity")
                 }
                 "huawei" -> Intent().apply {
-                    component = android.content.ComponentName("com.huawei.systemmanager", "com.huawei.systemmanager.appcontrol.activity.StartupAppControlActivity")
+                    component = ComponentName("com.huawei.systemmanager", "com.huawei.systemmanager.appcontrol.activity.StartupAppControlActivity")
                 }
                 "oppo" -> Intent().apply {
-                    component = android.content.ComponentName("com.coloros.safecenter", "com.coloros.safecenter.permission.startup.StartupAppListActivity")
+                    component = ComponentName("com.coloros.safecenter", "com.coloros.safecenter.permission.startup.StartupAppListActivity")
                 }
                 "vivo" -> Intent().apply {
-                    component = android.content.ComponentName("com.iqoo.secure", "com.iqoo.secure.ui.phoneoptimize.AddWhiteListActivity")
+                    component = ComponentName("com.iqoo.secure", "com.iqoo.secure.ui.phoneoptimize.AddWhiteListActivity")
                 }
                 "oneplus" -> Intent().apply {
-                    component = android.content.ComponentName("com.oneplus.security", "com.oneplus.security.chainlaunch.view.ChainLaunchAppListActivity")
+                    component = ComponentName("com.oneplus.security", "com.oneplus.security.chainlaunch.view.ChainLaunchAppListActivity")
                 }
                 "samsung" -> { // Samsung is more complicated, often going into battery settings
                     Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
@@ -594,7 +619,8 @@ class MainActivity :
         //registerNsdService()
         discoverNsdServices(
             onServiceFound = {
-                riTuneDevices.value = it
+                //riTuneDevices.value = it
+                riTuneDevices = it.map { it.toRiTuneDevice() }.toMutableStateList()
             }
         )
 
@@ -1243,6 +1269,7 @@ class MainActivity :
                                     closebackgroundPlayerKey,
                                     false
                                 )
+
                         }
                     }
 
@@ -1373,22 +1400,8 @@ class MainActivity :
                     intent.action = null
                 }
 
-                fun <I, O> ComponentActivity.registerActivityResultLauncher(
-                    contract: ActivityResultContract<I, O>,
-                    callback: ActivityResultCallback<O>
-                ): ActivityResultLauncher<I> {
-                    val key = UUID.randomUUID().toString()
-                    return activityResultRegistry.register(key, contract, callback)
-                }
-
-                // get value from PlayerService
-
                 onlinePlayerPlayingState = binder?.onlinePlayerPlayingState == true
-
-//                currentDuration.value = binder?.onlinePlayerCurrentDuration ?: 0F
-//                currentSecond.value = binder?.onlinePlayerCurrentSecond ?: 0F
                 onlinePlayerView = binder?.onlinePlayerView
-                //onlinePositionAndDuration.value = currentSecond.value.toLong() to currentDuration.value.toLong()
 
                 val pip = isInPip(
                     onChange = {
@@ -1441,7 +1454,7 @@ class MainActivity :
                             LocalLayoutDirection provides LayoutDirection.Ltr,
                             LocalPlayerSheetState provides localPlayerSheetState,
                             LocalMonetCompat provides localMonet,
-                            LocalRiTuneDevices provides riTuneDevices.value,
+                            //LocalRiTuneDevices provides riTuneDevices.value,
                             LocalOnlinePlayerPlayingState provides onlinePlayerPlayingState,
                             LocalSelectedQueue provides selectedQueue.value,
                             LocalAudioTagger provides audioTaggerViewModel,
@@ -1507,8 +1520,6 @@ class MainActivity :
                                 val localPlayer: @Composable () -> Unit = {
                                     LocalPlayer(
                                         navController = navController,
-                                        //playerOnline = onlinePlayer,
-                                        //playerState = onlinePlayerState,
                                         onDismiss = {
                                             localPlayerSheetState.collapseSoft()
                                         }
@@ -1530,10 +1541,6 @@ class MainActivity :
                                                 )
                                             }
                                         },
-                                        //player = onlinePlayer,
-                                        //playerState = onlinePlayerState,
-                                        //currentDuration = currentDuration.value,
-                                        //currentSecond = currentSecond.value,
                                         playerSheetState = localPlayerSheetState,
                                         onDismiss = {
                                             localPlayerSheetState.collapseSoft()
@@ -1541,6 +1548,7 @@ class MainActivity :
                                     )
                                 }
 
+                                var castToRiTuneDeviceActive by rememberPreference(castToRiTuneDeviceActiveKey, false )
 
                                 BottomSheet(
                                     state = localPlayerSheetState,
@@ -1551,10 +1559,16 @@ class MainActivity :
                                     },
                                     contentAlwaysAvailable = true
                                 ) {
-                                    if (binder?.currentMediaItemAsSong?.isLocal == true)
-                                        localPlayer()
-                                    else
-                                        onlinePlayer()
+                                    if (!castToRiTuneDeviceActive) {
+                                        if (binder?.currentMediaItemAsSong?.isLocal == true)
+                                            localPlayer()
+                                        else
+                                            onlinePlayer()
+                                    } else
+                                        RiTunePlayer(
+                                            navController = navController,
+                                            onDismiss = {}
+                                        )
                                 }
 
                                 val menuState = LocalGlobalSheetState.current
@@ -1577,6 +1591,82 @@ class MainActivity :
                                     menuState.content()
                                 }
 
+                                /*
+                                if (showSelectorRiTuneDevices) {
+                                    menuState.display {
+                                        SheetBody {
+                                            Box(
+                                                modifier = Modifier
+                                                    .background(colorPalette().background0)
+                                                    .fillMaxSize()
+                                            ) {
+
+                                                LazyColumn(
+                                                    state = rememberLazyListState(),
+                                                    contentPadding = PaddingValues(all = 10.dp),
+                                                    modifier = Modifier
+                                                        .background(
+                                                            colorPalette().background0
+                                                        )
+                                                        .height(400.dp)
+                                                ) {
+                                                    item {
+                                                        Text(
+                                                            text = "Available RiTune Devices",
+                                                            color = colorPalette().text,
+                                                            modifier = Modifier.padding(bottom = 10.dp)
+                                                        )
+
+
+                                                    }
+                                                    items(
+                                                        items = riTuneDevices.distinctBy { it.host },
+                                                        //key = { it.host }
+                                                    ) { device ->
+                                                        Row(
+                                                            modifier = Modifier
+                                                                .fillMaxWidth()
+                                                                .height(36.dp)
+                                                                .clickable {
+                                                                    var dev = riTuneDevices[ riTuneDevices.indexOf(device) ]
+                                                                    dev.selected = !dev.selected
+                                                                    menuState.hide()
+                                                                    showSelectorRiTuneDevices =
+                                                                        false
+                                                                },
+                                                            verticalAlignment = Alignment.CenterVertically
+                                                        ) {
+                                                            IconButton(
+                                                                icon = if (device.selected) R.drawable.cast_connected else R.drawable.cast_disconnected,
+                                                                color = colorPalette().text,
+                                                                enabled = true,
+                                                                onClick = {},
+                                                                modifier = Modifier
+                                                                    .size(32.dp),
+                                                            )
+                                                            Spacer(modifier = Modifier.width(16.dp))
+                                                            Text(
+                                                                text = device.name,
+                                                                color = colorPalette().text,
+                                                                modifier = Modifier.border(BorderStroke(1.dp, Color.Red))
+                                                            )
+                                                        }
+                                                    }
+                                                }
+
+                                                LinearProgressIndicator(
+                                                    modifier = Modifier
+                                                        .fillMaxWidth()
+                                                        .height(1.dp)
+                                                        .align(Alignment.BottomCenter),
+                                                )
+
+                                            }
+                                        }
+                                    }
+                                }
+
+                                 */
 
                             }
                         }
@@ -1745,7 +1835,6 @@ class MainActivity :
         }
 
     }
-
 
     fun updateSelectedQueue() {
         Database.asyncTransaction {
@@ -1947,8 +2036,8 @@ val LocalPlayerSheetState =
 val LocalOnlinePlayerPlayingState =
     staticCompositionLocalOf<Boolean> { error("No player sheet state provided") }
 
-val LocalRiTuneDevices =
-    staticCompositionLocalOf<List<NsdServiceInfo>> { error("No RiTune devices provided") }
+//val LocalRiTuneDevices =
+//    staticCompositionLocalOf<List<NsdServiceInfo>> { error("No RiTune devices provided") }
 
 val LocalSelectedQueue = staticCompositionLocalOf<Queues?> { error("No selected queue provided") }
 

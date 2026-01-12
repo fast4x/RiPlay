@@ -27,6 +27,7 @@ import android.media.audiofx.AudioEffect
 import android.media.audiofx.BassBoost
 import android.media.audiofx.LoudnessEnhancer
 import android.media.audiofx.PresetReverb
+import android.net.nsd.NsdServiceInfo
 import android.os.Build
 import android.support.v4.media.MediaDescriptionCompat
 import android.support.v4.media.MediaMetadataCompat
@@ -38,8 +39,10 @@ import androidx.annotation.RequiresApi
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.app.ServiceCompat
@@ -176,7 +179,6 @@ import it.fast4x.riplay.utils.isOfficialContent
 import it.fast4x.riplay.utils.isSkipMediaOnErrorEnabled
 import it.fast4x.riplay.utils.isUserGeneratedContent
 import it.fast4x.riplay.utils.loadMasterQueue
-import it.fast4x.riplay.utils.playPrevious
 import it.fast4x.riplay.utils.principalCache
 import it.fast4x.riplay.utils.saveMasterQueue
 import it.fast4x.riplay.utils.seamlessQueue
@@ -189,8 +191,10 @@ import it.fast4x.riplay.extensions.preferences.isEnabledLastfmKey
 import it.fast4x.riplay.extensions.preferences.lastfmScrobbleTypeKey
 import it.fast4x.riplay.extensions.preferences.lastfmSessionTokenKey
 import it.fast4x.riplay.extensions.preferences.parentalControlEnabledKey
+import it.fast4x.riplay.extensions.ritune.RiTuneDevice
 import it.fast4x.riplay.service.helpers.BluetoothConnectReceiver
 import it.fast4x.riplay.service.helpers.NoisyAudioReceiver
+import it.fast4x.riplay.utils.GlobalSharedData
 import it.fast4x.riplay.utils.isExplicit
 import it.fast4x.riplay.utils.isVideo
 import it.fast4x.riplay.utils.setQueueLoopState
@@ -358,6 +362,8 @@ class PlayerService : Service(),
 
     private var noisyReceiver: NoisyAudioReceiver? = null
     private var bluetoothReceiver: BluetoothConnectReceiver? = null
+
+    var riTuneDevices = mutableStateListOf<RiTuneDevice>()
 
     //private var checkVolumeLevel: Boolean = true
 
@@ -1119,6 +1125,8 @@ class PlayerService : Service(),
     @UnstableApi
     override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
 
+        Timber.d("PlayerService onMediaItemTransition RiTune Devices ${GlobalSharedData.riTuneDevices}")
+
         startForeground()
 
         if (mediaItem == null) return
@@ -1237,6 +1245,70 @@ class PlayerService : Service(),
             }
         } catch (e: Exception) {
             Timber.e("PlayerService handleSkipToNext: skip to next in error ${e.stackTraceToString()}")
+            maybeRecoverPlaybackError()
+        }
+    }
+
+
+    fun handleSkipToPrevious() {
+        try {
+            val hasPrevious = player.hasPreviousMediaItem()
+            Timber.d("PlayerService handleSkipToPrevious hasPrevious before: $hasPrevious, previous position: $currentQueuePosition")
+
+            if (hasPrevious) {
+                val previousPosition = currentQueuePosition
+
+                player.forceSeekToPrevious()
+                currentQueuePosition = player.currentMediaItemIndex
+
+                if (currentQueuePosition >= previousPosition) {
+                    Timber.w("PlayerService handleSkipToPrevious: index not decreased force to previous")
+                    player.forceSeekToPrevious()
+                    currentQueuePosition = player.currentMediaItemIndex
+                }
+
+                Timber.d("PlayerService handleSkipToPrevious end: current position: $currentQueuePosition")
+                saveMasterQueueWithPosition()
+            } else {
+                Timber.d("PlayerService handleSkipToPrevious: already at start of queue")
+            }
+        } catch (e: Exception) {
+            Timber.e("PlayerService handleSkipToPrevious: skip to previous in error ${e.stackTraceToString()}")
+            maybeRecoverPlaybackError()
+        }
+    }
+
+    private fun handlePlayQueueItem(targetIndex: Int) {
+        try {
+            if (targetIndex < 0 || targetIndex >= player.mediaItemCount) {
+                Timber.w("PlayerService handlePlayQueueItem: invalid index=$targetIndex (count=${player.mediaItemCount})")
+                return
+            }
+
+            val currentIndex = player.currentMediaItemIndex
+            Timber.d("PlayerService handlePlayQueueItem targetIndex=$targetIndex currentIndex=$currentIndex")
+
+            // Android Auto may call "play queue item" even for the currently selected item.
+            // If we're already on it (especially for the online player), force a re-cue to avoid staying UNSTARTED/VIDEO_CUED.
+            if (targetIndex == currentIndex) {
+                player.currentMediaItem?.let { item ->
+                    if (!item.isLocal) {
+                        internalOnlinePlayer.value?.cueVideo(item.mediaId, playFromSecond)
+                        internalOnlinePlayer.value?.setVolume(getSystemMediaVolume())
+                        //internalOnlinePlayer.value?.play()
+                    } else {
+                        // For local items, just ensure playback resumes.
+                        if (!player.isPlaying) player.play()
+                    }
+                }
+                return
+            }
+
+            player.seekToDefaultPosition(targetIndex)
+            currentQueuePosition = targetIndex
+            saveMasterQueueWithPosition()
+        } catch (e: Exception) {
+            Timber.e("PlayerService handlePlayQueueItem: error ${e.stackTraceToString()}")
             maybeRecoverPlaybackError()
         }
     }
@@ -1640,10 +1712,10 @@ class PlayerService : Service(),
                         handleSkipToNext()
                     },
                     onPlayPrevious = {
-                        it.player.playPrevious()
+                        handleSkipToPrevious()
                     },
                     onPlayQueueItem = { id ->
-                        it.player.seekToDefaultPosition(id.toInt())
+                        handlePlayQueueItem(id.toInt())
                     },
                     onCustomClick = { customAction ->
                         Timber.d("PlayerService MediaSessionCallback onCustomClick $customAction")
@@ -1756,6 +1828,10 @@ class PlayerService : Service(),
                 .apply {
                     addCustomAction(firstCustomAction)
                     addCustomAction(secondCustomAction)
+                    setActiveQueueItemId(
+                        if (player.currentMediaItemIndex >= 0) player.currentMediaItemIndex.toLong()
+                        else MediaSessionCompat.QueueItem.UNKNOWN_ID.toLong()
+                    )
                     setState(
                         if (internalOnlinePlayerState == PlayerConstants.PlayerState.PLAYING || player.isPlaying)
                             PlaybackStateCompat.STATE_PLAYING else PlaybackStateCompat.STATE_PAUSED,
@@ -1789,7 +1865,7 @@ class PlayerService : Service(),
                             internalOnlinePlayer.value?.play()
                     }
                     Action.next.value -> handleSkipToNext() //it.player.playNext()
-                    Action.previous.value -> it.player.playPrevious()
+                    Action.previous.value -> handleSkipToPrevious()
                     Action.like.value -> {
                         it.toggleLike()
                     }
@@ -2470,6 +2546,14 @@ class PlayerService : Service(),
 
         var isLoadingRadio by mutableStateOf(false)
             private set
+
+        var riTuneDevices: SnapshotStateList<RiTuneDevice> = mutableStateListOf()
+            set(value) {
+                this@PlayerService.riTuneDevices = value
+                field = value
+            }
+            get() = this@PlayerService.riTuneDevices
+
 
         fun setBitmapListener(listener: ((Bitmap?) -> Unit)?) {
             bitmapProvider?.listener = listener

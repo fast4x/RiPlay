@@ -411,7 +411,7 @@ const val lastfmSessionTokenKey = "lastfmSessionToken"
 const val lastfmScrobbleTypeKey = "lastfmScrobbleType"
 
 const val shortOnDeviceFolderNameKey = "shortOnDeviceFolderName"
-
+const val castToRiTuneDeviceActiveKey = "castToRiTuneDeviceActive"
 
 inline fun <reified T : Enum<T>> SharedPreferences.getEnum(
     key: String,

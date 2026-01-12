@@ -2843,7 +2843,7 @@ fun RiTunePlayer(
 
 
                             Image(
-                                painter = painterResource(R.drawable.app_icon),
+                                painter = painterResource(R.drawable.cast_connected),
                                 contentDescription = null,
                                 colorFilter = ColorFilter.tint(if (playerBackgroundColors == PlayerBackgroundColors.MidnightOdyssey) dynamicColorPalette.background2 else colorPalette().collapsedPlayerProgressBar),
                                 modifier = Modifier
