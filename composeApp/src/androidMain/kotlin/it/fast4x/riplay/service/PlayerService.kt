@@ -190,6 +190,7 @@ import it.fast4x.riplay.extensions.preferences.parentalControlEnabledKey
 import it.fast4x.riplay.extensions.ritune.improved.RiTuneClient
 import it.fast4x.riplay.extensions.ritune.improved.models.RiTuneConnectionStatus
 import it.fast4x.riplay.extensions.ritune.improved.models.RiTunePlayerState
+import it.fast4x.riplay.extensions.ritune.improved.models.RiTuneRemoteCommand
 import it.fast4x.riplay.service.helpers.BluetoothConnectReceiver
 import it.fast4x.riplay.service.helpers.NoisyAudioReceiver
 import it.fast4x.riplay.utils.GlobalSharedData
@@ -365,6 +366,8 @@ class PlayerService : Service(),
 
     private val riTuneClient: RiTuneClient = RiTuneClient()
     private var riTuneObserverJob: Job? = null
+    private var riTunePlayerState: RiTunePlayerState? = null
+
     //private var checkVolumeLevel: Boolean = true
 
 
@@ -603,7 +606,21 @@ class PlayerService : Service(),
                 val connectionStatus = riTuneClient.connectionStatus.value
                 val isCastActive = GlobalSharedData.riTuneCastActive
 
-                Timber.d("PlayerService initializeRiTune Loop - CastActive: $isCastActive, Status: $connectionStatus, isConnecting: $isConnecting")
+                val playerState = riTuneClient.state.value?.state
+                internalOnlinePlayerState = playerState ?: PlayerConstants.PlayerState.UNSTARTED
+                val duration = riTuneClient.state.value?.duration
+                if (duration != null) {
+                    currentDuration.value = duration
+                }
+                val second = riTuneClient.state.value?.currentTime
+                if (second != null) {
+                    currentSecond.value = second
+                }
+
+
+
+
+                Timber.d("PlayerService initializeRiTune Loop - CastActive: $isCastActive, Status: $connectionStatus, isConnecting: $isConnecting PlayerState $playerState  ")
 
                 if (!isCastActive) {
                     if (isConnecting) isConnecting = false
@@ -1234,7 +1251,16 @@ class PlayerService : Service(),
 
                 Timber.d("PlayerService onMediaItemTransition system volume ${getSystemMediaVolume()}")
 
-                internalOnlinePlayer.value?.cueVideo(it.mediaId, playFromSecond)
+                //internalOnlinePlayer.value?.cueVideo(it.mediaId, playFromSecond)
+                coroutineScope.launch {
+                    riTuneClient.sendCommand(
+                        RiTuneRemoteCommand(
+                            "load",
+                            mediaId = it.mediaId,
+                            position = 0f
+                        )
+                    )
+                }
                 //internalOnlinePlayer.value?.loadVideo(it.mediaId, playFromSecond)
                 //startFadeAnimator(player = internalOnlinePlayer, volumeDevice = getSystemMediaVolume(), duration = 5, fadeIn = true) {}
                 //if (checkVolumeLevel)

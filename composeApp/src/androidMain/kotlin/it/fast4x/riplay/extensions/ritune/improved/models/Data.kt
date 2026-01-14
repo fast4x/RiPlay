@@ -1,5 +1,6 @@
 package it.fast4x.riplay.extensions.ritune.improved.models
 
+import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.PlayerConstants
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -8,7 +9,8 @@ data class RiTunePlayerState(
     val isPlaying: Boolean = false,
     val currentTime: Float = 0f,
     val duration: Float = 0f,
-    val title: String? = null
+    val title: String? = null,
+    val state: PlayerConstants.PlayerState = PlayerConstants.PlayerState.UNSTARTED
 )
 
 @Serializable
