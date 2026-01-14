@@ -649,9 +649,10 @@ class PlayerService : Service(),
                         Timber.d("PlayerService initializeRiTune Connection already in progress, waiting...")
                     }
                 }
-
+                Timber.d("PlayerService initializeRiTune Loop Tick - Active: $isActive")
                 delay(1000)
             }
+            Timber.d("PlayerService initializeRiTune: JOB TERMINATO (end of loop)")
         }
     }
 
