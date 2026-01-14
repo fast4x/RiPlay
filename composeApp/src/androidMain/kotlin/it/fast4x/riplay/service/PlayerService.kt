@@ -629,19 +629,21 @@ class PlayerService : Service(),
 
                         if (device != null) {
                             isConnecting = true
-
-                            try {
-                                riTuneClient.startConnection(
-                                    device.host.substringAfter("/"),
-                                    device.port
-                                )
-                            } catch (e: TimeoutCancellationException) {
-                                isConnecting = false
-                                Timber.e("PlayerService initializeRiTune CAST TIMEOUT: $e")
-                            } catch (e: Exception) {
-                                isConnecting = false
-                                Timber.e("PlayerService initializeRiTune CAST ERROR: $e")
+                            launch {
+                                try {
+                                    riTuneClient.startConnection(
+                                        device.host.substringAfter("/"),
+                                        device.port
+                                    )
+                                } catch (e: TimeoutCancellationException) {
+                                    isConnecting = false
+                                    Timber.e("PlayerService initializeRiTune CAST TIMEOUT: $e")
+                                } catch (e: Exception) {
+                                    isConnecting = false
+                                    Timber.e("PlayerService initializeRiTune CAST ERROR: $e")
+                                }
                             }
+
                         } else {
                             Timber.w("PlayerService initializeRiTune NO DEVICE SELECTED!")
                         }
