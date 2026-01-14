@@ -279,8 +279,6 @@ import it.fast4x.riplay.extensions.databasebackup.BackupViewModel
 import it.fast4x.riplay.extensions.databasebackup.DatabaseBackupManager
 import it.fast4x.riplay.extensions.htmlreader.shazamSongInfoExtractor
 import it.fast4x.riplay.extensions.ondevice.OnDeviceViewModel
-import it.fast4x.riplay.extensions.preferences.castToRiTuneDeviceActiveKey
-import it.fast4x.riplay.extensions.preferences.castToRiTuneDeviceEnabledKey
 import it.fast4x.riplay.extensions.preferences.resumeOrPausePlaybackWhenDeviceKey
 import it.fast4x.riplay.extensions.preferences.showSnowfallEffectKey
 import it.fast4x.riplay.extensions.ritune.toRiTuneDevice
@@ -1548,7 +1546,7 @@ class MainActivity :
                                     )
                                 }
 
-                                var castToRiTuneDeviceActive by rememberPreference(castToRiTuneDeviceActiveKey, false )
+
 
                                 BottomSheet(
                                     state = localPlayerSheetState,
@@ -1559,16 +1557,16 @@ class MainActivity :
                                     },
                                     contentAlwaysAvailable = true
                                 ) {
-                                    if (!castToRiTuneDeviceActive) {
+                                    //if (!castToRiTuneDeviceActive) {
                                         if (binder?.currentMediaItemAsSong?.isLocal == true)
                                             localPlayer()
                                         else
                                             onlinePlayer()
-                                    } else
-                                        RiTunePlayer(
-                                            navController = navController,
-                                            onDismiss = {}
-                                        )
+//                                    } else
+//                                        RiTunePlayer(
+//                                            navController = navController,
+//                                            onDismiss = {}
+//                                        )
                                 }
 
                                 val menuState = LocalGlobalSheetState.current

@@ -19,7 +19,6 @@ import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.extensions.pip.isPipSupported
 import it.fast4x.riplay.extensions.pip.rememberPipHandler
-import it.fast4x.riplay.extensions.preferences.castToRiTuneDeviceActiveKey
 import it.fast4x.riplay.extensions.preferences.castToRiTuneDeviceEnabledKey
 import it.fast4x.riplay.extensions.preferences.enableMusicIdentifierKey
 import it.fast4x.riplay.extensions.preferences.enablePictureInPictureKey
@@ -31,7 +30,6 @@ import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.utils.thumbnailShape
 import it.fast4x.riplay.ui.components.themed.DropdownMenu
 import it.fast4x.riplay.ui.screens.settings.isYtLoggedIn
-import it.fast4x.riplay.utils.GlobalSharedData
 import it.fast4x.riplay.utils.MusicIdentifier
 import it.fast4x.riplay.utils.ytAccountThumbnail
 import timber.log.Timber
@@ -121,7 +119,7 @@ fun ActionBar(
     var expanded by remember { mutableStateOf(false) }
 
     var castToRiTuneDeviceEnabled by rememberPreference(castToRiTuneDeviceEnabledKey, false )
-    var castToRiTuneDeviceActive by remember { mutableStateOf(false) } //rememberPreference(castToRiTuneDeviceActiveKey, false )
+    var castToRiTuneDeviceActive by remember { mutableStateOf(false) }
     var showRiTuneSelector by remember { mutableStateOf(false) }
 
     if (showRiTuneSelector) {
@@ -136,6 +134,7 @@ fun ActionBar(
         )
     }
 
+    //if (castToRiTuneDeviceEnabled)
     HeaderIcon(if (castToRiTuneDeviceActive) R.drawable.cast_connected else R.drawable.cast_disconnected) {
         showRiTuneSelector = true
     }

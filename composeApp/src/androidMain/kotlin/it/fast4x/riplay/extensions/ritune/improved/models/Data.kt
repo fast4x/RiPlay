@@ -3,7 +3,7 @@ package it.fast4x.riplay.extensions.ritune.improved.models
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class PlayerState(
+data class RiTunePlayerState(
     val mediaId: String? = null,
     val isPlaying: Boolean = false,
     val currentTime: Float = 0f,
@@ -12,15 +12,15 @@ data class PlayerState(
 )
 
 @Serializable
-data class RemoteCommand(
+data class RiTuneRemoteCommand(
     val action: String, // "load", "play", "pause", "seek", "sync"
     val mediaId: String? = null,
     val position: Float? = null
 )
 
-sealed class ConnectionStatus {
-    object Disconnected : ConnectionStatus()
-    object Connecting : ConnectionStatus()
-    object Connected : ConnectionStatus()
-    data class Error(val message: String) : ConnectionStatus()
+sealed class RiTuneConnectionStatus {
+    object Disconnected : RiTuneConnectionStatus()
+    object Connecting : RiTuneConnectionStatus()
+    object Connected : RiTuneConnectionStatus()
+    data class Error(val message: String) : RiTuneConnectionStatus()
 }

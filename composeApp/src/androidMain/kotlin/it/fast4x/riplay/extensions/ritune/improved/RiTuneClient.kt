@@ -11,9 +11,9 @@ import io.ktor.websocket.Frame
 import io.ktor.websocket.close
 import io.ktor.websocket.readText
 import io.ktor.websocket.send
-import it.fast4x.riplay.extensions.ritune.improved.models.ConnectionStatus
-import it.fast4x.riplay.extensions.ritune.improved.models.PlayerState
-import it.fast4x.riplay.extensions.ritune.improved.models.RemoteCommand
+import it.fast4x.riplay.extensions.ritune.improved.models.RiTuneConnectionStatus
+import it.fast4x.riplay.extensions.ritune.improved.models.RiTunePlayerState
+import it.fast4x.riplay.extensions.ritune.improved.models.RiTuneRemoteCommand
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -27,17 +27,17 @@ import javax.net.ssl.SSLContext
 import javax.net.ssl.TrustManager
 import javax.net.ssl.X509TrustManager
 
-class ConnectedRiTuneClient {
+class RiTuneClient {
     private val json = Json { ignoreUnknownKeys = true }
     private var session: DefaultClientWebSocketSession? = null
 
-    private val _state = MutableStateFlow<PlayerState?>(null)
-    val state: StateFlow<PlayerState?> = _state.asStateFlow()
+    private val _state = MutableStateFlow<RiTunePlayerState?>(null)
+    val state: StateFlow<RiTunePlayerState?> = _state.asStateFlow()
 
-    private val _connectionStatus = MutableStateFlow<ConnectionStatus>(ConnectionStatus.Disconnected)
-    val connectionStatus: StateFlow<ConnectionStatus> = _connectionStatus.asStateFlow()
+    private val _connectionStatus = MutableStateFlow<RiTuneConnectionStatus>(RiTuneConnectionStatus.Disconnected)
+    val connectionStatus: StateFlow<RiTuneConnectionStatus> = _connectionStatus.asStateFlow()
 
-    private val commandChannel = Channel<RemoteCommand>()
+    private val commandChannel = Channel<RiTuneRemoteCommand>()
 
     private val client = HttpClient(OkHttp) {
         install(WebSockets)
@@ -83,7 +83,7 @@ class ConnectedRiTuneClient {
     }
 
     suspend fun startConnection(ip: String, port: Int = 18443) {
-        _connectionStatus.value = ConnectionStatus.Connecting
+        _connectionStatus.value = RiTuneConnectionStatus.Connecting
         try {
             client.webSocket(
                 method = HttpMethod.Get,
@@ -95,14 +95,14 @@ class ConnectedRiTuneClient {
                 }
             ) {
                 session = this@webSocket
-                _connectionStatus.value = ConnectionStatus.Connected
+                _connectionStatus.value = RiTuneConnectionStatus.Connected
 
                 val senderJob = launch {
                     for (cmd in commandChannel) {
                         try {
                             send(json.encodeToString(cmd))
                         } catch (e: Exception) {
-                            Timber.d("RiLink Client Errore invio: ${e.message}")
+                            Timber.d("RiTune Client Errore invio: ${e.message}")
                             break
                         }
                     }
@@ -112,25 +112,25 @@ class ConnectedRiTuneClient {
                     for (frame in incoming) {
                         if (frame is Frame.Text) {
                             val text = frame.readText()
-                            val newState = json.decodeFromString<PlayerState>(text)
+                            val newState = json.decodeFromString<RiTunePlayerState>(text)
                             _state.value = newState
                         }
                     }
                 } catch (e: Exception) {
-                    Timber.d("RiLink Client Errore ricezione: ${e.message}")
+                    Timber.d("RiTune Client Errore ricezione: ${e.message}")
                 } finally {
                     senderJob.cancel()
-                    _connectionStatus.value = ConnectionStatus.Disconnected
+                    _connectionStatus.value = RiTuneConnectionStatus.Disconnected
                     session = null
                 }
             }
         } catch (e: Exception) {
-            _connectionStatus.value = ConnectionStatus.Error(e.message ?: "Impossibile connettersi")
+            _connectionStatus.value = RiTuneConnectionStatus.Error(e.message ?: "Impossibile connettersi")
             session = null
         }
     }
 
-    suspend fun sendCommand(cmd: RemoteCommand) {
+    suspend fun sendCommand(cmd: RiTuneRemoteCommand) {
         commandChannel.send(cmd)
     }
 

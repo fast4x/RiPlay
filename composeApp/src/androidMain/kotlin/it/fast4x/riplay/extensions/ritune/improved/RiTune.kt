@@ -35,8 +35,8 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import it.fast4x.riplay.R
-import it.fast4x.riplay.extensions.ritune.improved.models.ConnectionStatus
-import it.fast4x.riplay.extensions.ritune.improved.models.RemoteCommand
+import it.fast4x.riplay.extensions.ritune.improved.models.RiTuneConnectionStatus
+import it.fast4x.riplay.extensions.ritune.improved.models.RiTuneRemoteCommand
 import it.fast4x.riplay.utils.colorPalette
 import kotlinx.coroutines.launch
 
@@ -44,7 +44,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun RiTuneControllerScreen() {
     val coroutineScope = rememberCoroutineScope()
-    val client = remember { ConnectedRiTuneClient() }
+    val client = remember { RiTuneClient() }
     val connectionStatus by client.connectionStatus.collectAsState()
     val playerState by client.state.collectAsState()
 
@@ -72,7 +72,7 @@ fun RiTuneControllerScreen() {
 
         Spacer(modifier = Modifier.height(20.dp))
 
-        if (connectionStatus is ConnectionStatus.Disconnected || connectionStatus is ConnectionStatus.Error) {
+        if (connectionStatus is RiTuneConnectionStatus.Disconnected || connectionStatus is RiTuneConnectionStatus.Error) {
             OutlinedTextField(
                 value = ipAddress,
                 onValueChange = { ipAddress = it },
@@ -93,11 +93,11 @@ fun RiTuneControllerScreen() {
             }) {
                 Text("Connetti")
             }
-            if (connectionStatus is ConnectionStatus.Error) {
-                Text("Errore: ${(connectionStatus as ConnectionStatus.Error).message}", color = MaterialTheme.colorScheme.error)
+            if (connectionStatus is RiTuneConnectionStatus.Error) {
+                Text("Errore: ${(connectionStatus as RiTuneConnectionStatus.Error).message}", color = MaterialTheme.colorScheme.error)
             }
         } else {
-            Text("Stato: ${if (connectionStatus == ConnectionStatus.Connected) "Connesso" else "Connessione..."}", color = MaterialTheme.colorScheme.primary)
+            Text("Stato: ${if (connectionStatus == RiTuneConnectionStatus.Connected) "Connesso" else "Connessione..."}", color = MaterialTheme.colorScheme.primary)
             Button(onClick = {
                 coroutineScope.launch {
                     client.disconnect()
@@ -109,7 +109,7 @@ fun RiTuneControllerScreen() {
 
         Spacer(modifier = Modifier.height(30.dp))
 
-        if (connectionStatus == ConnectionStatus.Connected && playerState != null) {
+        if (connectionStatus == RiTuneConnectionStatus.Connected && playerState != null) {
 
             playerState?.title?.let { title ->
                 Text(title, style = MaterialTheme.typography.titleMedium, maxLines = 2)
@@ -130,7 +130,7 @@ fun RiTuneControllerScreen() {
                     },
                     onValueChangeFinished = {
                         isDragging = false
-                        coroutineScope.launch { client.sendCommand(RemoteCommand("seek", position = sliderPosition)) }
+                        coroutineScope.launch { client.sendCommand(RiTuneRemoteCommand("seek", position = sliderPosition)) }
                     },
                     valueRange = 0f..duration,
                     modifier = Modifier.fillMaxWidth()
@@ -155,7 +155,7 @@ fun RiTuneControllerScreen() {
 
                 IconButton(
                     onClick = {
-                        coroutineScope.launch { client.sendCommand(RemoteCommand(if(isPlaying) "pause" else "play")) }
+                        coroutineScope.launch { client.sendCommand(RiTuneRemoteCommand(if(isPlaying) "pause" else "play")) }
                     },
                     modifier = Modifier.size(64.dp)
                 ) {
@@ -194,7 +194,7 @@ fun RiTuneControllerScreen() {
                     onClick = {
                         if (videoId.isNotBlank()) {
                             coroutineScope.launch {
-                                client.sendCommand(RemoteCommand("load", mediaId = videoId, position = 0f))
+                                client.sendCommand(RiTuneRemoteCommand("load", mediaId = videoId, position = 0f))
                             }
                         }
                     }
@@ -203,7 +203,7 @@ fun RiTuneControllerScreen() {
                 }
             }
 
-        } else if (connectionStatus == ConnectionStatus.Connected) {
+        } else if (connectionStatus == RiTuneConnectionStatus.Connected) {
             CircularProgressIndicator()
             Text("In attesa dello stato player...")
         }

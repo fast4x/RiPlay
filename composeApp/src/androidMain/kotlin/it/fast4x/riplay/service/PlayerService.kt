@@ -21,13 +21,11 @@ import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
-import android.media.AudioDeviceCallback
 import android.media.AudioManager
 import android.media.audiofx.AudioEffect
 import android.media.audiofx.BassBoost
 import android.media.audiofx.LoudnessEnhancer
 import android.media.audiofx.PresetReverb
-import android.net.nsd.NsdServiceInfo
 import android.os.Build
 import android.support.v4.media.MediaDescriptionCompat
 import android.support.v4.media.MediaMetadataCompat
@@ -39,10 +37,8 @@ import androidx.annotation.RequiresApi
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.app.ServiceCompat
@@ -191,7 +187,9 @@ import it.fast4x.riplay.extensions.preferences.isEnabledLastfmKey
 import it.fast4x.riplay.extensions.preferences.lastfmScrobbleTypeKey
 import it.fast4x.riplay.extensions.preferences.lastfmSessionTokenKey
 import it.fast4x.riplay.extensions.preferences.parentalControlEnabledKey
-import it.fast4x.riplay.extensions.ritune.RiTuneDevice
+import it.fast4x.riplay.extensions.ritune.improved.RiTuneClient
+import it.fast4x.riplay.extensions.ritune.improved.models.RiTuneConnectionStatus
+import it.fast4x.riplay.extensions.ritune.improved.models.RiTunePlayerState
 import it.fast4x.riplay.service.helpers.BluetoothConnectReceiver
 import it.fast4x.riplay.service.helpers.NoisyAudioReceiver
 import it.fast4x.riplay.utils.GlobalSharedData
@@ -205,6 +203,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -222,6 +221,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeout
 import okhttp3.OkHttpClient
 import timber.log.Timber
 import java.util.Objects
@@ -363,8 +363,10 @@ class PlayerService : Service(),
     private var noisyReceiver: NoisyAudioReceiver? = null
     private var bluetoothReceiver: BluetoothConnectReceiver? = null
 
-    var riTuneDevices = mutableStateListOf<RiTuneDevice>()
-
+    private val riTuneClient: RiTuneClient = RiTuneClient()
+    private val riTuneConnectionStatus: RiTuneConnectionStatus? = null
+    private val ritunePlayerState: RiTunePlayerState = RiTunePlayerState()
+    private var riTuneObserverJob: Job? = null
     //private var checkVolumeLevel: Boolean = true
 
 
@@ -495,9 +497,9 @@ class PlayerService : Service(),
         initializeVariables()
         initializePlaybackParameters()
         initializeNoisyReceiver()
-        //initializeServiceRestartReceiver() not used for now
-
+        initializeRiTune()
         initializeDiscordPresence()
+        //initializeServiceRestartReceiver() not used for now
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -586,6 +588,94 @@ class PlayerService : Service(),
                         handleSkipToNext()
                     }
                 }
+            }
+        }
+    }
+
+    private fun initializeRiTune() {
+
+        riTuneObserverJob?.cancel()
+
+        // CORREZIONE 1: Variabile di stato dichiarata FUORI dal while
+        // così mantiene il valore tra un ciclo e l'altro.
+        var isConnecting = false
+
+        riTuneObserverJob = coroutineScope.launch {
+
+            while (isActive) {
+
+                val connectionStatus = riTuneClient.connectionStatus.value
+                val isCastActive = GlobalSharedData.riTuneCastActive
+
+                // Log per monitorare lo stato
+                Timber.d("PlayerService initializeRiTune Loop - CastActive: $isCastActive, Status: $connectionStatus, isConnecting: $isConnecting")
+
+                if (!isCastActive) {
+                    // --- CASO 1: CAST NON ATTIVO ---
+
+                    // Se stavo provando a connettere ma l'utente ha disattivato il cast, resetto lo stato
+                    if (isConnecting) isConnecting = false
+
+                    if (connectionStatus == RiTuneConnectionStatus.Connected) {
+                        riTuneClient.disconnect()
+                        Timber.d("PlayerService initializeRiTune CAST NOT ACTIVE - Disconnected")
+                    }
+
+                } else {
+                    // --- CASO 2: CAST ATTIVO ---
+
+                    if (connectionStatus == RiTuneConnectionStatus.Connected) {
+                        // Se siamo connessi, mi assicuro che il flag isConnecting sia false
+                        // (così se dovesse disconnettersi in futuro, riproverà)
+                        if (isConnecting) {
+                            isConnecting = false
+                            Timber.d("PlayerService initializeRiTune Connection established successfully")
+                        }
+
+                    } else if (!isConnecting) {
+                        // NON siamo connessi E NON stiamo già provando a connettere -> Avvio connessione
+
+                        Timber.d("PlayerService initializeRiTune CAST ACTIVE - Trying to connect...")
+
+                        val device = GlobalSharedData.riTuneDevices.firstOrNull { it.selected }
+
+                        if (device != null) {
+                            // CORREZIONE 2: Imposto a true PRIMA di iniziare la chiamata bloccante
+                            isConnecting = true
+
+                            try {
+                                withContext(Dispatchers.IO) {
+                                    withTimeout(5000) {
+                                        riTuneClient.startConnection(
+                                            device.host.substringAfter("/"),
+                                            device.port
+                                        )
+                                    }
+                                }
+                                // NOTA: Non metto isConnecting = false qui subito.
+                                // Aspetto il prossimo giro di loop per verificare se connectionStatus è passato a "Connected".
+                                // Se qui lanciasse eccezione, verrei catturato dal catch sotto.
+
+                            } catch (e: TimeoutCancellationException) {
+                                isConnecting = false // Reset per permettere il retry
+                                Timber.e("PlayerService initializeRiTune CAST TIMEOUT: $e")
+                            } catch (e: Exception) {
+                                isConnecting = false // Reset per permettere il retry
+                                Timber.e("PlayerService initializeRiTune CAST ERROR: $e")
+                            }
+                        } else {
+                            Timber.w("PlayerService Nessun dispositivo selezionato trovato")
+                        }
+                    } else {
+                        // Siamo qui se: Cast Attivo, Status != Connected, isConnecting = true.
+                        // Significa che la connessione è in corso (o in attesa di timeout).
+                        // Non facciamo nulla e aspettiamo il prossimo check.
+                        Timber.d("PlayerService initializeRiTune Connection already in progress, waiting...")
+                    }
+                }
+
+                // Attendi 1 secondo prima del prossimo check
+                delay(1000)
             }
         }
     }
@@ -1144,7 +1234,7 @@ class PlayerService : Service(),
 
         if (excludeIfIsVideoEnabled && mediaItem.isVideo) {
             handleSkipToNext()
-            SmartMessage("Skipped video", context = this@PlayerService)
+            SmartMessage(getString(R.string.warning_skipped_video), context = this@PlayerService)
             return
         }
 
@@ -1154,7 +1244,7 @@ class PlayerService : Service(),
         }
         if (blacklisted) {
             handleSkipToNext()
-            SmartMessage("Skipped blacklisted song", context = this@PlayerService)
+            SmartMessage(getString(R.string.warning_skipped_blacklisted_song), context = this@PlayerService)
             return
         }
 
@@ -2546,14 +2636,6 @@ class PlayerService : Service(),
 
         var isLoadingRadio by mutableStateOf(false)
             private set
-
-        var riTuneDevices: SnapshotStateList<RiTuneDevice> = mutableStateListOf()
-            set(value) {
-                this@PlayerService.riTuneDevices = value
-                field = value
-            }
-            get() = this@PlayerService.riTuneDevices
-
 
         fun setBitmapListener(listener: ((Bitmap?) -> Unit)?) {
             bitmapProvider?.listener = listener
