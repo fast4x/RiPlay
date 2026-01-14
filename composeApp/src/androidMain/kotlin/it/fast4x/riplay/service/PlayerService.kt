@@ -364,8 +364,6 @@ class PlayerService : Service(),
     private var bluetoothReceiver: BluetoothConnectReceiver? = null
 
     private val riTuneClient: RiTuneClient = RiTuneClient()
-    private val riTuneConnectionStatus: RiTuneConnectionStatus? = null
-    private val ritunePlayerState: RiTunePlayerState = RiTunePlayerState()
     private var riTuneObserverJob: Job? = null
     //private var checkVolumeLevel: Boolean = true
 
@@ -596,8 +594,6 @@ class PlayerService : Service(),
 
         riTuneObserverJob?.cancel()
 
-        // CORREZIONE 1: Variabile di stato dichiarata FUORI dal while
-        // così mantiene il valore tra un ciclo e l'altro.
         var isConnecting = false
 
         riTuneObserverJob = coroutineScope.launch {
@@ -607,74 +603,53 @@ class PlayerService : Service(),
                 val connectionStatus = riTuneClient.connectionStatus.value
                 val isCastActive = GlobalSharedData.riTuneCastActive
 
-                // Log per monitorare lo stato
                 Timber.d("PlayerService initializeRiTune Loop - CastActive: $isCastActive, Status: $connectionStatus, isConnecting: $isConnecting")
 
                 if (!isCastActive) {
-                    // --- CASO 1: CAST NON ATTIVO ---
-
-                    // Se stavo provando a connettere ma l'utente ha disattivato il cast, resetto lo stato
                     if (isConnecting) isConnecting = false
-
+                    Timber.d("PlayerService initializeRiTune CAST NOT ACTIVE - Status: $connectionStatus, isConnecting: $isConnecting")
                     if (connectionStatus == RiTuneConnectionStatus.Connected) {
                         riTuneClient.disconnect()
                         Timber.d("PlayerService initializeRiTune CAST NOT ACTIVE - Disconnected")
                     }
 
                 } else {
-                    // --- CASO 2: CAST ATTIVO ---
 
                     if (connectionStatus == RiTuneConnectionStatus.Connected) {
-                        // Se siamo connessi, mi assicuro che il flag isConnecting sia false
-                        // (così se dovesse disconnettersi in futuro, riproverà)
                         if (isConnecting) {
                             isConnecting = false
                             Timber.d("PlayerService initializeRiTune Connection established successfully")
                         }
 
                     } else if (!isConnecting) {
-                        // NON siamo connessi E NON stiamo già provando a connettere -> Avvio connessione
 
                         Timber.d("PlayerService initializeRiTune CAST ACTIVE - Trying to connect...")
 
                         val device = GlobalSharedData.riTuneDevices.firstOrNull { it.selected }
 
                         if (device != null) {
-                            // CORREZIONE 2: Imposto a true PRIMA di iniziare la chiamata bloccante
                             isConnecting = true
 
                             try {
-                                withContext(Dispatchers.IO) {
-                                    withTimeout(5000) {
-                                        riTuneClient.startConnection(
-                                            device.host.substringAfter("/"),
-                                            device.port
-                                        )
-                                    }
-                                }
-                                // NOTA: Non metto isConnecting = false qui subito.
-                                // Aspetto il prossimo giro di loop per verificare se connectionStatus è passato a "Connected".
-                                // Se qui lanciasse eccezione, verrei catturato dal catch sotto.
-
+                                riTuneClient.startConnection(
+                                    device.host.substringAfter("/"),
+                                    device.port
+                                )
                             } catch (e: TimeoutCancellationException) {
-                                isConnecting = false // Reset per permettere il retry
+                                isConnecting = false
                                 Timber.e("PlayerService initializeRiTune CAST TIMEOUT: $e")
                             } catch (e: Exception) {
-                                isConnecting = false // Reset per permettere il retry
+                                isConnecting = false
                                 Timber.e("PlayerService initializeRiTune CAST ERROR: $e")
                             }
                         } else {
-                            Timber.w("PlayerService Nessun dispositivo selezionato trovato")
+                            Timber.w("PlayerService initializeRiTune NO DEVICE SELECTED!")
                         }
                     } else {
-                        // Siamo qui se: Cast Attivo, Status != Connected, isConnecting = true.
-                        // Significa che la connessione è in corso (o in attesa di timeout).
-                        // Non facciamo nulla e aspettiamo il prossimo check.
                         Timber.d("PlayerService initializeRiTune Connection already in progress, waiting...")
                     }
                 }
 
-                // Attendi 1 secondo prima del prossimo check
                 delay(1000)
             }
         }

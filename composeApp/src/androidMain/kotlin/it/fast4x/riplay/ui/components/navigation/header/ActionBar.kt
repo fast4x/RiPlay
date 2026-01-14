@@ -137,6 +137,7 @@ fun ActionBar(
     //if (castToRiTuneDeviceEnabled)
     HeaderIcon(if (castToRiTuneDeviceActive) R.drawable.cast_connected else R.drawable.cast_disconnected) {
         showRiTuneSelector = true
+        //navController.navigate(NavRoutes.ritunecontroller.name)
     }
 
     val isEnabledMusicIdentifier by rememberPreference(
