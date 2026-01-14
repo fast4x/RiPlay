@@ -112,6 +112,8 @@ import it.fast4x.riplay.utils.PlayerViewModel
 import it.fast4x.riplay.utils.PlayerViewModelFactory
 import it.fast4x.riplay.commonutils.setDisLikeState
 import it.fast4x.riplay.commonutils.thumbnail
+import it.fast4x.riplay.extensions.ritune.improved.models.RiTuneRemoteCommand
+import it.fast4x.riplay.utils.GlobalSharedData
 import it.fast4x.riplay.utils.removeFromOnlineLikedSong
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -330,8 +332,16 @@ fun OnlineMiniPlayer(
                             if (dragAmount < 0) showPlayer()
                             else if (dragAmount > 20) {
                                 if (!disableClosingPlayerSwipingDown) {
-                                    //player.value?.pause()
-                                    binder.onlinePlayer?.pause()
+                                    if (!GlobalSharedData.riTuneCastActive)
+                                        binder.onlinePlayer?.pause()
+                                    else
+                                        CoroutineScope(Dispatchers.IO).launch {
+                                            binder.riTuneClient.sendCommand(
+                                                RiTuneRemoteCommand(
+                                                    "play"
+                                                )
+                                            )
+                                        }
                                     binder.player.clearMediaItems()
                                     hidePlayer()
                                     runCatching {
@@ -455,11 +465,27 @@ fun OnlineMiniPlayer(
                             .clip(RoundedCornerShape(playPauseRoundness))
                             .clickable {
                                 if (shouldBePlaying) {
-                                    //player.value?.pause()
-                                    binder.onlinePlayer?.pause()
+                                    if (!GlobalSharedData.riTuneCastActive)
+                                        binder.onlinePlayer?.pause()
+                                    else
+                                        CoroutineScope(Dispatchers.IO).launch {
+                                            binder.riTuneClient.sendCommand(
+                                                RiTuneRemoteCommand(
+                                                    "pause"
+                                                )
+                                            )
+                                        }
                                 } else {
-                                    //player.value?.play()
-                                    binder.onlinePlayer?.play()
+                                    if (!GlobalSharedData.riTuneCastActive)
+                                        binder.onlinePlayer?.play()
+                                    else
+                                        CoroutineScope(Dispatchers.IO).launch {
+                                            binder.riTuneClient.sendCommand(
+                                                RiTuneRemoteCommand(
+                                                    "play"
+                                                )
+                                            )
+                                        }
                                 }
                                 if (effectRotationEnabled) isRotated = !isRotated
                             }

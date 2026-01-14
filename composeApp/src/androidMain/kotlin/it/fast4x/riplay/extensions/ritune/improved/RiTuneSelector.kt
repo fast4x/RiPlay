@@ -79,7 +79,7 @@ fun RiTuneSelector(
                 }
                 items(
                     items = deviceList,
-                    key = { it.host }
+                    key = { "${it.host}:${it.port}" }
                 ) { device ->
 
                     Row(

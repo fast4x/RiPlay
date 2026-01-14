@@ -30,6 +30,7 @@ import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.utils.thumbnailShape
 import it.fast4x.riplay.ui.components.themed.DropdownMenu
 import it.fast4x.riplay.ui.screens.settings.isYtLoggedIn
+import it.fast4x.riplay.utils.GlobalSharedData
 import it.fast4x.riplay.utils.MusicIdentifier
 import it.fast4x.riplay.utils.ytAccountThumbnail
 import timber.log.Timber
@@ -119,7 +120,7 @@ fun ActionBar(
     var expanded by remember { mutableStateOf(false) }
 
     var castToRiTuneDeviceEnabled by rememberPreference(castToRiTuneDeviceEnabledKey, false )
-    var castToRiTuneDeviceActive by remember { mutableStateOf(false) }
+    //var castToRiTuneDeviceActive by remember { mutableStateOf(false) }
     var showRiTuneSelector by remember { mutableStateOf(false) }
 
     if (showRiTuneSelector) {
@@ -129,13 +130,13 @@ fun ActionBar(
             },
             onSelect = {
                 Timber.d("RiTuneSelector: $it")
-                castToRiTuneDeviceActive = it.any { device -> device.selected }
+                //castToRiTuneDeviceActive = it.any { device -> device.selected }
             }
         )
     }
 
     //if (castToRiTuneDeviceEnabled)
-    HeaderIcon(if (castToRiTuneDeviceActive) R.drawable.cast_connected else R.drawable.cast_disconnected) {
+    HeaderIcon(if (GlobalSharedData.riTuneCastActive) R.drawable.cast_connected else R.drawable.cast_disconnected) {
         showRiTuneSelector = true
         //navController.navigate(NavRoutes.ritunecontroller.name)
     }

@@ -606,21 +606,24 @@ class PlayerService : Service(),
                 val connectionStatus = riTuneClient.connectionStatus.value
                 val isCastActive = GlobalSharedData.riTuneCastActive
 
+
                 val playerState = riTuneClient.state.value?.state
-                internalOnlinePlayerState = playerState ?: PlayerConstants.PlayerState.UNSTARTED
                 val duration = riTuneClient.state.value?.duration
-                if (duration != null) {
-                    currentDuration.value = duration
-                }
                 val second = riTuneClient.state.value?.currentTime
-                if (second != null) {
-                    currentSecond.value = second
+
+                if (isCastActive) {
+                    internalOnlinePlayerState = playerState ?: PlayerConstants.PlayerState.UNSTARTED
+                    if (duration != null) {
+                        currentDuration.value = duration
+                    }
+
+                    if (second != null) {
+                        currentSecond.value = second
+                    }
+                    Timber.d("PlayerService initializeRiTune Loop - CastActive PlayerState $playerState, duration $duration, second $second")
                 }
 
-
-
-
-                Timber.d("PlayerService initializeRiTune Loop - CastActive: $isCastActive, Status: $connectionStatus, isConnecting: $isConnecting PlayerState $playerState  ")
+                //Timber.d("PlayerService initializeRiTune Loop - CastActive: $isCastActive, Status: $connectionStatus, isConnecting: $isConnecting PlayerState $playerState  ")
 
                 if (!isCastActive) {
                     if (isConnecting) isConnecting = false
@@ -862,8 +865,19 @@ class PlayerService : Service(),
                             youTubePlayer.unMute()
                         }
                         PlayerConstants.PlayerState.VIDEO_CUED, PlayerConstants.PlayerState.UNSTARTED -> {
-                            if (!firstTimeStarted)
-                                youTubePlayer.play()
+                            if (!firstTimeStarted) {
+                                if (!GlobalSharedData.riTuneCastActive)
+                                    youTubePlayer.play()
+                                else
+                                    coroutineScope.launch {
+                                        riTuneClient.sendCommand(
+                                            RiTuneRemoteCommand(
+                                                "play",
+                                                position = playFromSecond
+                                            )
+                                        )
+                                    }
+                            }
                         }
                         else -> { youTubePlayer.mute() }
                     }
@@ -898,7 +912,18 @@ class PlayerService : Service(),
                     if (isPersistentQueueEnabled)
                         saveMasterQueueWithPosition()
 
-                    youTubePlayer.pause()
+                    if (!GlobalSharedData.riTuneCastActive)
+                        youTubePlayer.pause()
+                    else
+                        coroutineScope.launch {
+                            riTuneClient.sendCommand(
+                                RiTuneRemoteCommand(
+                                    "pause",
+                                    position = playFromSecond
+                                )
+                            )
+                        }
+
                     clearWebViewData()
 
                     Timber.e("PlayerService: onError $error")
@@ -918,7 +943,20 @@ class PlayerService : Service(),
                                 context = this@PlayerService
                             )
 
-                        localMediaItem?.let { youTubePlayer.cueVideo(it.mediaId, playFromSecond) }
+                        localMediaItem?.let {
+                            if (!GlobalSharedData.riTuneCastActive)
+                                youTubePlayer.cueVideo(it.mediaId, playFromSecond)
+                            else
+                                coroutineScope.launch {
+                                    riTuneClient.sendCommand(
+                                        RiTuneRemoteCommand(
+                                            "load",
+                                            mediaId = it.mediaId,
+                                            position = playFromSecond
+                                        )
+                                    )
+                                }
+                        }
                         //if (checkVolumeLevel)
                         youTubePlayer.setVolume(getSystemMediaVolume())
                         return
@@ -1251,16 +1289,18 @@ class PlayerService : Service(),
 
                 Timber.d("PlayerService onMediaItemTransition system volume ${getSystemMediaVolume()}")
 
-                //internalOnlinePlayer.value?.cueVideo(it.mediaId, playFromSecond)
-                coroutineScope.launch {
-                    riTuneClient.sendCommand(
-                        RiTuneRemoteCommand(
-                            "load",
-                            mediaId = it.mediaId,
-                            position = 0f
+                if (!GlobalSharedData.riTuneCastActive)
+                    internalOnlinePlayer.value?.cueVideo(it.mediaId, playFromSecond)
+                else
+                    coroutineScope.launch {
+                        riTuneClient.sendCommand(
+                            RiTuneRemoteCommand(
+                                "load",
+                                mediaId = it.mediaId,
+                                position = playFromSecond
+                            )
                         )
-                    )
-                }
+                    }
                 //internalOnlinePlayer.value?.loadVideo(it.mediaId, playFromSecond)
                 //startFadeAnimator(player = internalOnlinePlayer, volumeDevice = getSystemMediaVolume(), duration = 5, fadeIn = true) {}
                 //if (checkVolumeLevel)
@@ -1387,9 +1427,21 @@ class PlayerService : Service(),
             if (targetIndex == currentIndex) {
                 player.currentMediaItem?.let { item ->
                     if (!item.isLocal) {
-                        internalOnlinePlayer.value?.cueVideo(item.mediaId, playFromSecond)
-                        internalOnlinePlayer.value?.setVolume(getSystemMediaVolume())
-                        //internalOnlinePlayer.value?.play()
+                        if (!GlobalSharedData.riTuneCastActive) {
+                            internalOnlinePlayer.value?.cueVideo(item.mediaId, playFromSecond)
+                            internalOnlinePlayer.value?.setVolume(getSystemMediaVolume())
+                            //internalOnlinePlayer.value?.play()
+                        } else {
+                            coroutineScope.launch {
+                                riTuneClient.sendCommand(
+                                    RiTuneRemoteCommand(
+                                        "load",
+                                        mediaId = item.mediaId,
+                                        position = playFromSecond
+                                    )
+                                )
+                            }
+                        }
                     } else {
                         // For local items, just ensure playback resumes.
                         if (!player.isPlaying) player.play()
@@ -1547,10 +1599,22 @@ class PlayerService : Service(),
                 if (lastError != null) {
                     Timber.w("PlayerService maybeRecoverPlaybackError: try to recover player error")
                     localMediaItem?.let {
-                        internalOnlinePlayer.value?.cueVideo(it.mediaId, playFromSecond)
-                        //internalOnlinePlayer.value?.loadVideo(it.mediaId, playFromSecond)
+                        if (!GlobalSharedData.riTuneCastActive) {
+                            internalOnlinePlayer.value?.cueVideo(it.mediaId, playFromSecond)
+                            //internalOnlinePlayer.value?.loadVideo(it.mediaId, playFromSecond)
 
-                        internalOnlinePlayer.value?.setVolume(getSystemMediaVolume())
+                            internalOnlinePlayer.value?.setVolume(getSystemMediaVolume())
+                        } else {
+                            coroutineScope.launch {
+                                riTuneClient.sendCommand(
+                                    RiTuneRemoteCommand(
+                                        "load",
+                                        mediaId = it.mediaId,
+                                        position = playFromSecond
+                                    )
+                                )
+                            }
+                        }
                     }
                 }
             }
@@ -1672,7 +1736,9 @@ class PlayerService : Service(),
 
         noisyReceiver = NoisyAudioReceiver(this) {
             player.pause()
-            internalOnlinePlayer.value?.pause()
+            if (!GlobalSharedData.riTuneCastActive)
+                internalOnlinePlayer.value?.pause()
+
             SmartMessage(getString(R.string.music_paused_headphones_disconnected), context = this)
         }
 
@@ -1787,18 +1853,51 @@ class PlayerService : Service(),
                         Timber.d("PlayerService MediaSessionCallback onPlayClick")
                         if (player.currentMediaItem?.isLocal == true)
                             it.player.play()
-                        else
-                            internalOnlinePlayer.value?.play()
+                        else {
+                            if (!GlobalSharedData.riTuneCastActive)
+                                internalOnlinePlayer.value?.play()
+                            else
+                                coroutineScope.launch {
+                                    riTuneClient.sendCommand(
+                                        RiTuneRemoteCommand(
+                                            "play",
+                                            position = playFromSecond
+                                        )
+                                    )
+                                }
+                        }
                     },
                     onPauseClick = {
                         Timber.d("PlayerService MediaSessionCallback onPauseClick")
                         it.player.pause()
-                        internalOnlinePlayer.value?.pause()
+                        if (!GlobalSharedData.riTuneCastActive) {
+                            internalOnlinePlayer.value?.pause()
+                        } else {
+                            coroutineScope.launch {
+                                riTuneClient.sendCommand(
+                                    RiTuneRemoteCommand(
+                                        "pause",
+                                    )
+                                )
+                            }
+                        }
                     },
                     onSeekToPos = { second ->
                         val newPosition = (second / 1000).toFloat()
                         Timber.d("PlayerService MediaSessionCallback onSeekPosTo ${newPosition}")
-                        internalOnlinePlayer.value?.seekTo(newPosition)
+                        if (!GlobalSharedData.riTuneCastActive)
+                            internalOnlinePlayer.value?.seekTo(newPosition)
+                        else
+                            coroutineScope.launch {
+                                riTuneClient.sendCommand(
+                                    RiTuneRemoteCommand(
+                                        "seek",
+                                        //mediaId = item.mediaId,
+                                        position = newPosition
+                                    )
+                                )
+                            }
+
                         currentSecond.value = second.toFloat()
                     },
                     onPlayNext = {
@@ -1828,7 +1927,19 @@ class PlayerService : Service(),
                                 if (currentMediaItem != null) {
                                     it.stopRadio()
                                     it.player.seamlessQueue(currentMediaItem)
-                                    internalOnlinePlayer.value?.play()
+
+                                    if(!GlobalSharedData.riTuneCastActive)
+                                        internalOnlinePlayer.value?.play()
+                                    else
+                                        coroutineScope.launch {
+                                            riTuneClient.sendCommand(
+                                                RiTuneRemoteCommand(
+                                                    "play",
+                                                    position = playFromSecond
+                                                )
+                                            )
+                                        }
+
                                     it.setupRadio(
                                         NavigationEndpoint.Endpoint.Watch(videoId = currentMediaItem.mediaId)
                                     )
@@ -1950,13 +2061,34 @@ class PlayerService : Service(),
                 when (intent.action) {
                     Action.pause.value -> {
                         player.pause()
-                        internalOnlinePlayer.value?.pause()
+                        if (!GlobalSharedData.riTuneCastActive)
+                            internalOnlinePlayer.value?.pause()
+                        else
+                            coroutineScope.launch {
+                                riTuneClient.sendCommand(
+                                    RiTuneRemoteCommand(
+                                        "pause",
+                                        position = playFromSecond
+                                    )
+                                )
+                            }
                     }
                     Action.play.value -> {
                         if (player.currentMediaItem?.isLocal == true)
                             it.player.play()
-                        else
-                            internalOnlinePlayer.value?.play()
+                        else {
+                            if (!GlobalSharedData.riTuneCastActive)
+                                internalOnlinePlayer.value?.play()
+                            else
+                                coroutineScope.launch {
+                                    riTuneClient.sendCommand(
+                                        RiTuneRemoteCommand(
+                                            "play",
+                                            position = playFromSecond
+                                        )
+                                    )
+                                }
+                        }
                     }
                     Action.next.value -> handleSkipToNext() //it.player.playNext()
                     Action.previous.value -> handleSkipToPrevious()
@@ -1974,7 +2106,19 @@ class PlayerService : Service(),
                         if (currentMediaItem != null) {
                             it.stopRadio()
                             it.player.seamlessQueue(currentMediaItem)
-                            internalOnlinePlayer.value?.play()
+
+                            if(!GlobalSharedData.riTuneCastActive)
+                                internalOnlinePlayer.value?.play()
+                            else
+                                coroutineScope.launch {
+                                    riTuneClient.sendCommand(
+                                        RiTuneRemoteCommand(
+                                            "play",
+                                            position = playFromSecond
+                                        )
+                                    )
+                                }
+
                             it.setupRadio(
                                 NavigationEndpoint.Endpoint.Watch(videoId = currentMediaItem.mediaId)
                             )
@@ -2572,7 +2716,18 @@ class PlayerService : Service(),
                                 Timber.d("PlayerService initializePositionObserver Repeat: RepeatAll fired")
                                 if (!hasNext) {
                                     binder.player.seekTo(0, 0)
-                                    internalOnlinePlayer.value?.play()
+                                    if (!GlobalSharedData.riTuneCastActive)
+                                        internalOnlinePlayer.value?.play()
+                                    else
+                                        coroutineScope.launch {
+                                            riTuneClient.sendCommand(
+                                                RiTuneRemoteCommand(
+                                                    "play",
+                                                    position = playFromSecond
+                                                )
+                                            )
+                                        }
+
                                     Timber.d("PlayerService initializePositionObserver Repeat: RepeatAll fired first")
                                 } else {
                                     lastProcessedIndex = player.currentMediaItemIndex
@@ -2632,6 +2787,12 @@ class PlayerService : Service(),
 
         val currentMediaItemAsSong: Song?
             get() = this@PlayerService.player.currentMediaItem?.asSong
+
+        val riTuneClient: RiTuneClient
+            @Synchronized
+            get() = this@PlayerService.riTuneClient
+
+
 
         val sleepTimerMillisLeft: StateFlow<Long?>?
             get() = timerJob?.millisLeft
