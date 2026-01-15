@@ -76,7 +76,7 @@ class RiTuneClient {
                 startConnection(ip, port)
                 break
             } catch (e: Exception) {
-                Timber.w("Connessione persa, riconnessione tra 5 secondi...")
+                Timber.w("Connection lost, try after 5 seconds...")
                 delay(5000)
             }
         }
@@ -102,7 +102,7 @@ class RiTuneClient {
                         try {
                             send(json.encodeToString(cmd))
                         } catch (e: Exception) {
-                            Timber.d("RiTune Client Errore invio: ${e.message}")
+                            Timber.d("RiTune Client Error sent: ${e.message}")
                             break
                         }
                     }
@@ -117,7 +117,7 @@ class RiTuneClient {
                         }
                     }
                 } catch (e: Exception) {
-                    Timber.d("RiTune Client Errore ricezione: ${e.message}")
+                    Timber.d("RiTune Client Errore received: ${e.message}")
                 } finally {
                     senderJob.cancel()
                     _connectionStatus.value = RiTuneConnectionStatus.Disconnected
@@ -125,7 +125,7 @@ class RiTuneClient {
                 }
             }
         } catch (e: Exception) {
-            _connectionStatus.value = RiTuneConnectionStatus.Error(e.message ?: "Impossibile connettersi")
+            _connectionStatus.value = RiTuneConnectionStatus.Error(e.message ?: "Connection not possible")
             session = null
         }
     }

@@ -604,6 +604,15 @@ class PlayerService : Service(),
             while (isActive) {
 
                 val connectionStatus = riTuneClient.connectionStatus.value
+                try {
+                    GlobalSharedData.riTuneError.value = when(connectionStatus) {
+                        is RiTuneConnectionStatus.Error -> connectionStatus.message
+                        else -> null
+                    }
+                    GlobalSharedData.riTuneConnected.value = connectionStatus == RiTuneConnectionStatus.Connected
+                } catch (e: Exception) {
+                    Timber.e("PlayerService initializeRiTune LOOP ERROR: $e")
+                }
                 val isCastActive = GlobalSharedData.riTuneCastActive
 
 

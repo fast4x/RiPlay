@@ -2,8 +2,10 @@ package it.fast4x.riplay.utils
 
 import android.content.Context
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
 import it.fast4x.riplay.Dependencies
 import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.enums.AudioQualityFormat
@@ -130,6 +132,8 @@ fun showGridAA() = appContext().preferences.getBoolean(showGridAAKey, true)
 
 object GlobalSharedData {
     var riTuneDevices = mutableStateListOf<RiTuneDevice>()
+    var riTuneConnected = mutableStateOf(false)
+    var riTuneError: MutableState<String?> = mutableStateOf(null)
     val riTuneCastActive: Boolean
         get() = riTuneDevices.any { it.selected }
 }
