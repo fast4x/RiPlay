@@ -204,7 +204,7 @@
     <string name="play_next">Reproducir a continuación</string>
     <string name="toggle_lyrics">Mostrar letra</string>
     <string name="by_tapping_on_the_thumbnail">Al tocar en la miniatura</string>
-    <string name="require_mic_permission">Require mic permission</string>
+    <string name="require_mic_permission">Requiere permiso del micrófono</string>
     <string name="vt_fancy">Elegante</string>
     <string name="vt_circular">Circular</string>
     <string name="vt_disabled">Deshabilitado</string>
@@ -402,7 +402,7 @@
     <string name="use_gradient_background">Utilizar fondo degradado</string>
     <string name="show_total_time_of_queue">Mostrar duración total de la cola</string>
     <string name="lang_telugu">Télugu</string>
-    <string name="media_permission_required_please_grant">Es necesario el permiso de multimedia, debes concederlo.</string>
+    <string name="media_permission_required_please_grant">Es necesario el permiso de multimedia, por favor concédelo.</string>
     <string name="open_permission_settings">Abrir ajustes de permisos</string>
     <string name="background_progress_bar">Fondo de barra de progreso</string>
     <string name="minimized_player">Reproductor minimizado</string>
@@ -961,9 +961,9 @@
     <string name="sleep_timer_notification_channel_id">Sleep Timer Notification</string>
     <string name="voice_you_can_talk_now">You can talk now...</string>
     <string name="voice_you_said">You said: %1$s</string>
-    <string name="voice_microphone_permission_granted">Microphone permission granted</string>
-    <string name="voice_microphone_permission_denied">Microphone permission denied</string>
-    <string name="voice_missing_microphone_permissions_please_grant">Missing microphone permissions, please grant it in the app settings</string>
+    <string name="voice_microphone_permission_granted">Permiso del micrófono concedido</string>
+    <string name="voice_microphone_permission_denied">Permiso del micrófono denegado</string>
+    <string name="voice_missing_microphone_permissions_please_grant">Faltan permisos del micrófono, por favor concédelos en los ajustes de la aplicación</string>
     <string name="message_excluded_videos">Excluded %s videos</string>
     <string name="exclude_song_if_is_video">Exclude video playback</string>
     <string name="enable_voice_input">Enable voice input</string>
@@ -1040,8 +1040,8 @@
     <string name="at_tap_to_identify_a_song">Tap to identify a song</string>
     <string name="at_start_listening">Start Listening</string>
     <string name="at_try_play"><![CDATA[Try & Play]]></string>
-    <string name="at_microphone_permission_is_required">Microphone permission is required.</string>
-    <string name="at_grant_permission">Grant Permission</string>
+    <string name="at_microphone_permission_is_required">Es necesario el permiso del micrófono.</string>
+    <string name="at_grant_permission">Conceder permiso</string>
     <string name="at_listening">Listening...</string>
     <string name="at_identifying">Identifying...</string>
     <string name="at_playing">Playing...</string>
