@@ -22,6 +22,7 @@ import it.fast4x.riplay.ui.components.themed.SmartMessage
 import it.fast4x.riplay.utils.cleaned
 import it.fast4x.riplay.utils.forcePlay
 import it.fast4x.riplay.utils.globalContext
+import it.fast4x.riplay.utils.isLocal
 import it.fast4x.riplay.utils.isPersistentQueueEnabled
 import it.fast4x.riplay.utils.isPodcast
 import it.fast4x.riplay.utils.isVideo

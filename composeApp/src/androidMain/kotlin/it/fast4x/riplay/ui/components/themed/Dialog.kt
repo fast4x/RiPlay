@@ -155,7 +155,7 @@ import it.fast4x.riplay.extensions.preferences.lyricsSizeLKey
 import it.fast4x.riplay.utils.removeYTSongFromPlaylist
 import it.fast4x.riplay.extensions.preferences.thumbnailFadeExKey
 import it.fast4x.riplay.extensions.preferences.thumbnailSpacingLKey
-import it.fast4x.riplay.service.isLocal
+import it.fast4x.riplay.utils.isLocal
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.firstOrNull

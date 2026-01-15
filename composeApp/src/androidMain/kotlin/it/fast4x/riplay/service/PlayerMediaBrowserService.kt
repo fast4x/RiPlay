@@ -51,6 +51,7 @@ import it.fast4x.riplay.utils.asMediaItem
 import it.fast4x.riplay.utils.asSong
 import it.fast4x.riplay.utils.getTitleMonthlyPlaylist
 import it.fast4x.riplay.utils.intent
+import it.fast4x.riplay.utils.isLocal
 import it.fast4x.riplay.utils.mediaItemToggleLike
 import it.fast4x.riplay.utils.playNext
 import it.fast4x.riplay.utils.playPrevious

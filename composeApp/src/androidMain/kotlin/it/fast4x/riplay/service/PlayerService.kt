@@ -195,6 +195,7 @@ import it.fast4x.riplay.service.helpers.BluetoothConnectReceiver
 import it.fast4x.riplay.service.helpers.NoisyAudioReceiver
 import it.fast4x.riplay.utils.GlobalSharedData
 import it.fast4x.riplay.utils.isExplicit
+import it.fast4x.riplay.utils.isLocal
 import it.fast4x.riplay.utils.isVideo
 import it.fast4x.riplay.utils.setQueueLoopState
 import it.fast4x.riplay.utils.toggleRepeatMode
@@ -234,16 +235,6 @@ import kotlin.system.exitProcess
 import kotlin.time.Duration.Companion.minutes
 import android.os.Binder as AndroidBinder
 
-const val LOCAL_KEY_PREFIX = "local:"
-const val LOCAL_AUDIO_URI_PATH = "content://media/external/audio/media/"
-
-@get:OptIn(UnstableApi::class)
-val DataSpec.isLocal get() = key?.startsWith(LOCAL_KEY_PREFIX) == true
-@get:OptIn(UnstableApi::class)
-val DataSpec.isLocalUri get() = uri.toString().startsWith("content://")
-
-val MediaItem.isLocal get() = mediaId.startsWith(LOCAL_KEY_PREFIX)
-val Song.isLocal get() = id.startsWith(LOCAL_KEY_PREFIX)
 
 @UnstableApi
 @Suppress("DEPRECATION")

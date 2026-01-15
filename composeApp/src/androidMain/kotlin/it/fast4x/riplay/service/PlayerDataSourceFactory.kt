@@ -7,8 +7,11 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.DataSource
 import androidx.media3.datasource.ResolvingDataSource
 import it.fast4x.riplay.data.Database
+import it.fast4x.riplay.utils.LOCAL_KEY_PREFIX
 import it.fast4x.riplay.utils.asSong
 import it.fast4x.riplay.utils.isAtLeastAndroid10
+import it.fast4x.riplay.utils.isLocal
+import it.fast4x.riplay.utils.isLocalUri
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext

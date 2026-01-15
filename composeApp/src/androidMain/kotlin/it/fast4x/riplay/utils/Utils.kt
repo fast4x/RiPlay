@@ -59,10 +59,7 @@ import it.fast4x.riplay.data.models.SongPlaylistMap
 import it.fast4x.riplay.extensions.lastfm.sendLoveTrack
 import it.fast4x.riplay.extensions.lastfm.sendUnloveTrack
 import it.fast4x.riplay.extensions.preferences.rememberObservedPreference
-import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.extensions.preferences.shortOnDeviceFolderNameKey
-import it.fast4x.riplay.service.LOCAL_KEY_PREFIX
-import it.fast4x.riplay.service.isLocal
 import it.fast4x.riplay.ui.components.themed.NewVersionDialog
 import it.fast4x.riplay.ui.components.themed.SmartMessage
 import it.fast4x.riplay.ui.screens.settings.isYtSyncEnabled

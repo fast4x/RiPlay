@@ -74,7 +74,7 @@ import it.fast4x.riplay.extensions.rewind.data.PlaylistMostListened
 import it.fast4x.riplay.extensions.rewind.data.PlaylistsListenedCount
 import it.fast4x.riplay.extensions.rewind.data.SongMostListened
 import it.fast4x.riplay.extensions.rewind.data.SongsListenedCount
-import it.fast4x.riplay.service.LOCAL_KEY_PREFIX
+import it.fast4x.riplay.utils.LOCAL_KEY_PREFIX
 import it.fast4x.riplay.utils.appContext
 import it.fast4x.riplay.utils.isExplicit
 import kotlinx.coroutines.flow.Flow

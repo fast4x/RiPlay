@@ -159,7 +159,7 @@ import me.bush.translator.Language
 import me.bush.translator.Translator
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.enums.ColorPaletteName
-import it.fast4x.riplay.service.isLocal
+import it.fast4x.riplay.utils.isLocal
 import it.fast4x.riplay.utils.thumbnailShape
 import it.fast4x.riplay.utils.typography
 import it.fast4x.riplay.ui.components.themed.LyricsSizeDialog

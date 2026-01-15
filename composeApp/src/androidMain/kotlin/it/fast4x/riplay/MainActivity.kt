@@ -232,7 +232,7 @@ import it.fast4x.riplay.extensions.preferences.showAutostartPermissionDialogKey
 import it.fast4x.riplay.navigation.AppNavigation
 import it.fast4x.riplay.service.PlayerService
 import it.fast4x.riplay.service.ToolsWorker
-import it.fast4x.riplay.service.isLocal
+import it.fast4x.riplay.utils.isLocal
 import it.fast4x.riplay.ui.components.BottomSheet
 import it.fast4x.riplay.ui.components.BottomSheetState
 import it.fast4x.riplay.ui.components.CustomModalBottomSheet

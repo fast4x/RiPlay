@@ -98,7 +98,7 @@ import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.ui.screens.settings.isYtLoggedIn
 import it.fast4x.riplay.extensions.preferences.quickPicsHomePageKey
 import it.fast4x.riplay.extensions.preferences.showListenerLevelsKey
-import it.fast4x.riplay.service.isLocal
+import it.fast4x.riplay.utils.isLocal
 import it.fast4x.riplay.ui.components.ButtonsRow
 import it.fast4x.riplay.ui.components.themed.IconButton
 import it.fast4x.riplay.ui.screens.home.sections.ForYouPart

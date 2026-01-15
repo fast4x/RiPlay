@@ -100,7 +100,7 @@ import it.fast4x.riplay.enums.QueueLoopType
 import it.fast4x.riplay.enums.QueueType
 import it.fast4x.riplay.enums.ThumbnailRoundness
 import it.fast4x.riplay.data.models.SongPlaylistMap
-import it.fast4x.riplay.service.isLocal
+import it.fast4x.riplay.utils.isLocal
 import it.fast4x.riplay.utils.thumbnailShape
 import it.fast4x.riplay.utils.typography
 import it.fast4x.riplay.ui.components.LocalGlobalSheetState

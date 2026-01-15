@@ -25,11 +25,13 @@ import androidx.media3.common.Player.REPEAT_MODE_OFF
 import androidx.media3.common.Player.REPEAT_MODE_ONE
 import androidx.media3.common.Timeline
 import androidx.media3.common.util.UnstableApi
+import androidx.media3.datasource.DataSpec
 import it.fast4x.riplay.R
 import it.fast4x.riplay.commonutils.durationTextToMillis
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.data.models.QueuedMediaItem
 import it.fast4x.riplay.data.models.Queues
+import it.fast4x.riplay.data.models.Song
 import it.fast4x.riplay.data.models.defaultQueueId
 import it.fast4x.riplay.enums.DurationInMinutes
 import it.fast4x.riplay.enums.PopupType
@@ -38,7 +40,6 @@ import it.fast4x.riplay.extensions.preferences.excludeSongsWithDurationLimitKey
 import it.fast4x.riplay.extensions.preferences.getEnum
 import it.fast4x.riplay.extensions.preferences.preferences
 import it.fast4x.riplay.service.PlayerService
-import it.fast4x.riplay.service.isLocal
 import it.fast4x.riplay.ui.components.themed.SmartMessage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -55,6 +56,18 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 import java.util.ArrayDeque
+
+
+const val LOCAL_KEY_PREFIX = "local:"
+const val LOCAL_AUDIO_URI_PATH = "content://media/external/audio/media/"
+
+@get:OptIn(UnstableApi::class)
+val DataSpec.isLocal get() = key?.startsWith(LOCAL_KEY_PREFIX) == true
+@get:OptIn(UnstableApi::class)
+val DataSpec.isLocalUri get() = uri.toString().startsWith("content://")
+
+val MediaItem.isLocal get() = mediaId.startsWith(LOCAL_KEY_PREFIX)
+val Song.isLocal get() = id.startsWith(LOCAL_KEY_PREFIX)
 
 var GlobalVolume: Float = 0.5f
 

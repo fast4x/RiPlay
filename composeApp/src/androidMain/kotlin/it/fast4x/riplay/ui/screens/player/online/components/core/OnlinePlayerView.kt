@@ -12,7 +12,7 @@ import it.fast4x.riplay.enums.PlayerThumbnailSize
 import it.fast4x.riplay.extensions.preferences.isKeepScreenOnEnabledKey
 import it.fast4x.riplay.extensions.preferences.playerThumbnailSizeKey
 import it.fast4x.riplay.extensions.preferences.rememberPreference
-import it.fast4x.riplay.service.isLocal
+import it.fast4x.riplay.utils.isLocal
 import it.fast4x.riplay.utils.isLandscape
 import it.fast4x.riplay.utils.isVideo
 

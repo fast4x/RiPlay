@@ -1,7 +1,7 @@
 package it.fast4x.riplay.data.models
 
 import androidx.media3.common.MediaItem
-import it.fast4x.riplay.service.isLocal
+import it.fast4x.riplay.utils.isLocal
 
 data class UiMedia(
     val id: String,

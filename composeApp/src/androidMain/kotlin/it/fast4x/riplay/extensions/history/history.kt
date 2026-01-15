@@ -9,7 +9,7 @@ import it.fast4x.riplay.utils.globalContext
 import it.fast4x.riplay.extensions.preferences.pauseListenHistoryKey
 import it.fast4x.riplay.extensions.preferences.preferences
 import it.fast4x.riplay.data.models.Format
-import it.fast4x.riplay.service.isLocal
+import it.fast4x.riplay.utils.isLocal
 import it.fast4x.riplay.ui.screens.settings.isYtSyncEnabled
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

@@ -110,7 +110,7 @@ import it.fast4x.riplay.data.models.Song
 import it.fast4x.riplay.data.models.SongEntity
 import it.fast4x.riplay.data.models.SongPlaylistMap
 import it.fast4x.riplay.data.models.defaultQueue
-import it.fast4x.riplay.service.LOCAL_KEY_PREFIX
+import it.fast4x.riplay.utils.LOCAL_KEY_PREFIX
 import it.fast4x.riplay.utils.thumbnailShape
 import it.fast4x.riplay.utils.typography
 import it.fast4x.riplay.ui.components.LocalGlobalSheetState
