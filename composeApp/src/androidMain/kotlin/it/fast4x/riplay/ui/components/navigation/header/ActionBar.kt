@@ -120,7 +120,6 @@ fun ActionBar(
     var expanded by remember { mutableStateOf(false) }
 
     var castToRiTuneDeviceEnabled by rememberPreference(castToRiTuneDeviceEnabledKey, false )
-    //var castToRiTuneDeviceActive by remember { mutableStateOf(false) }
     var showRiTuneSelector by remember { mutableStateOf(false) }
 
     if (showRiTuneSelector) {
@@ -135,11 +134,12 @@ fun ActionBar(
         )
     }
 
-    //if (castToRiTuneDeviceEnabled)
-    HeaderIcon(if (GlobalSharedData.riTuneCastActive) R.drawable.cast_connected else R.drawable.cast_disconnected) {
-        showRiTuneSelector = true
-        //navController.navigate(NavRoutes.ritunecontroller.name)
-    }
+    // todo cast to complete
+//    if (castToRiTuneDeviceEnabled)
+//        HeaderIcon(if (GlobalSharedData.riTuneCastActive) R.drawable.cast_connected else R.drawable.cast_disconnected) {
+//            showRiTuneSelector = true
+//            //navController.navigate(NavRoutes.ritunecontroller.name)
+//        }
 
     val isEnabledMusicIdentifier by rememberPreference(
         enableMusicIdentifierKey,

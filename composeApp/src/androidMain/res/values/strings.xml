@@ -1185,4 +1185,7 @@
     <string name="music_resumed_headphones_connected">Music resumed (headphones connected)</string>
     <string name="warning_skipped_video">Skipped video</string>
     <string name="warning_skipped_blacklisted_song">Skipped blacklisted song</string>
+    <string name="cast">Cast</string>
+    <string name="enable_ritune_cast">Enable RiTune Cast</string>
+    <string name="ritune_cast_info">"Cast to RiTune devices, require RiTune installed in other devices "</string>
 </resources>

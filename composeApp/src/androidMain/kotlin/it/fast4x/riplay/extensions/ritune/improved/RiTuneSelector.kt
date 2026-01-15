@@ -43,7 +43,7 @@ fun RiTuneSelector(
     onDismiss: () -> Unit,
     onSelect: (List<RiTuneDevice>) -> Unit
 ) {
-    val deviceList = GlobalSharedData.riTuneDevices
+    val deviceList = GlobalSharedData.riTuneDevices.distinctBy { it.host }.distinctBy { it.port }
 
 //    LaunchedEffect(key1 = deviceList) {
 //        riTuneDevices = deviceList

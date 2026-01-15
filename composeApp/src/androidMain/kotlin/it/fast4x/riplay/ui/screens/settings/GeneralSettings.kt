@@ -41,7 +41,6 @@ import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.R
-import it.fast4x.riplay.enums.AudioQualityFormat
 import it.fast4x.riplay.enums.DurationInMilliseconds
 import it.fast4x.riplay.enums.DurationInMinutes
 import it.fast4x.riplay.enums.MinTimeForEvent
@@ -124,7 +123,6 @@ import it.fast4x.riplay.extensions.preferences.bassboostEnabledKey
 import it.fast4x.riplay.extensions.preferences.bassboostLevelKey
 import it.fast4x.riplay.extensions.preferences.customDnsOverHttpsServerKey
 import it.fast4x.riplay.extensions.preferences.dnsOverHttpsTypeKey
-import it.fast4x.riplay.extensions.preferences.enablePreCacheKey
 import it.fast4x.riplay.utils.getSystemlanguage
 import it.fast4x.riplay.extensions.preferences.handleAudioFocusEnabledKey
 import it.fast4x.riplay.extensions.preferences.isConnectionMeteredEnabledKey
@@ -139,7 +137,7 @@ import java.net.Proxy
 import androidx.core.net.toUri
 import androidx.core.text.isDigitsOnly
 import it.fast4x.riplay.enums.ContentType
-import it.fast4x.riplay.extensions.preferences.checkVolumeLevelKey
+import it.fast4x.riplay.extensions.preferences.castToRiTuneDeviceEnabledKey
 import it.fast4x.riplay.extensions.preferences.closePlayerServiceAfterMinutesKey
 import it.fast4x.riplay.extensions.preferences.closePlayerServiceWhenPausedAfterMinutesKey
 import it.fast4x.riplay.extensions.preferences.enableVoiceInputKey
@@ -318,6 +316,8 @@ fun GeneralSettings(
 
     //var checkVolumeLevel by rememberPreference(checkVolumeLevelKey, true)
     var parentalControlEnabled by rememberPreference(parentalControlEnabledKey, false)
+
+    var castToRiTuneDeviceEnabled by rememberPreference(castToRiTuneDeviceEnabledKey, false )
 
 
     Column(
@@ -1572,6 +1572,31 @@ fun GeneralSettings(
                      */
                         )
                 }
+
+                /* // cast to complete in the future
+                settingsItem(
+                    isHeader = true
+                ) {
+                    SettingsGroupSpacer()
+                    SettingsEntryGroupText(title = stringResource(R.string.cast))
+                }
+
+                settingsItem {
+                    if (search.input.isBlank() || stringResource(R.string.cast).contains(
+                            search.input,
+                            true
+                        )
+                    )
+                        SwitchSettingEntry(
+                            title = stringResource(R.string.enable_ritune_cast),
+                            text = stringResource(R.string.ritune_cast_info),
+                            isChecked = castToRiTuneDeviceEnabled,
+                            onCheckedChange = {
+                                castToRiTuneDeviceEnabled = it
+                            }
+                        )
+                }
+                 */
 
                 settingsItem(
                     isHeader = true
