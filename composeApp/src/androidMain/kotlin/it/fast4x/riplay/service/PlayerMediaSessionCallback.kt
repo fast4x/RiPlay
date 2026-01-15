@@ -46,13 +46,13 @@ class PlayerMediaSessionCallback (
     }
     override fun onSkipToPrevious() {
         Timber.d("MediaSessionCallback onSkipToPrevious()")
-        //onPlayPrevious()
-        binder.player.playPrevious()
+        onPlayPrevious()
+        //binder.player.playPrevious()
     }
     override fun onSkipToNext() {
         Timber.d("MediaSessionCallback onSkipToNext()")
-        //onPlayNext()
-        binder.player.playNext()
+        onPlayNext()
+        //binder.player.playNext()
     }
     override fun onSeekTo(pos: Long) {
         Timber.d("MediaSessionCallback onSeekTo() $pos")
@@ -65,8 +65,8 @@ class PlayerMediaSessionCallback (
     }
     override fun onSkipToQueueItem(id: Long) {
         Timber.d("MediaSessionCallback onSkipToQueueItem() $id")
-        //onPlayQueueItem(id)
-        binder.player.seekToDefaultPosition(id.toInt())
+        onPlayQueueItem(id)
+        //binder.player.seekToDefaultPosition(id.toInt())
     }
     override fun onCustomAction(action: String, extras: Bundle?) {
         Timber.d("MediaSessionCallback onCustomAction() action $action")
@@ -158,7 +158,7 @@ class PlayerMediaSessionCallback (
             }?.map(Song::asMediaItem) ?: return@launch
 
             withContext(Dispatchers.Main) {
-                Timber.d("MediaSessionCallback onPlayFromMediaId mediaId ${mediaId} mediaItems ${mediaItems.size} ready to play")
+                Timber.d("MediaSessionCallback onPlayFromMediaId mediaId ${mediaId} index $index mediaItems ${mediaItems.size} ready to play")
                 //binder.stopRadio()
                 binder.player.forcePlayAtIndex(mediaItems, index)
             }

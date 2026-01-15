@@ -390,7 +390,7 @@ const val showPlayerActionsBarKey = "showPlayerActionsBar"
 
 const val showAutostartPermissionDialogKey = "showAutostartPermissionDialog"
 
-const val currentQueuePositionKey = "currentQueuePosition"
+const val currentQueuePositionKey = "currentQueuePosition" // todo maybe not needed
 
 const val excludeSongIfIsVideoKey = "excludeSongIfIsVideo"
 

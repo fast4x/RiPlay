@@ -182,6 +182,7 @@ import it.fast4x.riplay.commonutils.setLikeState
 import it.fast4x.riplay.enums.LastFmScrobbleType
 import it.fast4x.riplay.extensions.lastfm.sendNowPlaying
 import it.fast4x.riplay.extensions.lastfm.sendScrobble
+import it.fast4x.riplay.extensions.preferences.castToRiTuneDeviceEnabledKey
 import it.fast4x.riplay.extensions.preferences.excludeSongIfIsVideoKey
 import it.fast4x.riplay.extensions.preferences.isEnabledLastfmKey
 import it.fast4x.riplay.extensions.preferences.lastfmScrobbleTypeKey
@@ -197,6 +198,8 @@ import it.fast4x.riplay.utils.GlobalSharedData
 import it.fast4x.riplay.utils.isExplicit
 import it.fast4x.riplay.utils.isLocal
 import it.fast4x.riplay.utils.isVideo
+import it.fast4x.riplay.utils.playNext
+import it.fast4x.riplay.utils.playPrevious
 import it.fast4x.riplay.utils.setQueueLoopState
 import it.fast4x.riplay.utils.toggleRepeatMode
 import kotlinx.coroutines.CoroutineScope
@@ -443,14 +446,17 @@ class PlayerService : Service(),
         if (isPersistentQueueEnabled) {
             coroutineScope.launch {
 
-                loadMasterQueueWithPosition()
+                //loadMasterQueueWithPosition()
+                player.loadMasterQueue()
+
                 withContext(Dispatchers.Main) {
                     resumePlaybackOnStart()
                 }
 
                 while (isActive) {
                     delay(2.minutes)
-                    saveMasterQueueWithPosition()
+                    //saveMasterQueueWithPosition()
+                    player.saveMasterQueue()
 
                     if (currentSecond.value >= minTimeForEvent.seconds && lastMediaIdInHistory != currentSong.value?.id) {
                         currentSong.value?.let {
@@ -577,7 +583,8 @@ class PlayerService : Service(),
                     val seconds = if (localMediaItem?.isLocal == true) player.currentPosition.div(1000).toInt() else currentSecond.value.toInt()
                     if (medleyDuration.toInt() <= seconds) {
                         //delay(1.seconds * (medleyDuration.toInt() + 2))
-                        handleSkipToNext()
+                        //handleSkipToNext()
+                        player.playNext()
                     }
                 }
             }
@@ -585,6 +592,10 @@ class PlayerService : Service(),
     }
 
     private fun initializeRiTune() {
+
+        val isRiTuneEnabled = preferences.getBoolean(castToRiTuneDeviceEnabledKey, false)
+        if (!isRiTuneEnabled) return
+        Timber.d("PlayerService initializeRiTune isRituneEnabled $isRiTuneEnabled")
 
         riTuneObserverJob?.cancel()
 
@@ -730,7 +741,8 @@ class PlayerService : Service(),
                 if (shakeCounter >= 1) {
                     //Toast.makeText(applicationContext, "Shaked $shakeCounter times", Toast.LENGTH_SHORT).show()
                     shakeCounter = 0
-                    handleSkipToNext()
+                    //handleSkipToNext()
+                    player.playNext()
                 }
 
             }
@@ -910,7 +922,8 @@ class PlayerService : Service(),
 
                     localMediaItem?.isLocal?.let { if (it) return }
                     if (isPersistentQueueEnabled)
-                        saveMasterQueueWithPosition()
+                        player.saveMasterQueue()
+                        //saveMasterQueueWithPosition()
 
                     if (!GlobalSharedData.riTuneCastActive)
                         youTubePlayer.pause()
@@ -968,7 +981,8 @@ class PlayerService : Service(),
                     val prev = binder.player.currentMediaItem ?: return
 
                     //binder.player.playNext()
-                    handleSkipToNext()
+                    //handleSkipToNext()
+                    player.playNext()
 
                     SmartMessage(
                         message = this@PlayerService.getString(
@@ -1120,7 +1134,8 @@ class PlayerService : Service(),
 
 
         runCatching {
-            saveMasterQueueWithPosition()
+            //saveMasterQueueWithPosition()
+            player.saveMasterQueue()
 
             preferences.unregisterOnSharedPreferenceChangeListener(this)
 
@@ -1260,13 +1275,15 @@ class PlayerService : Service(),
         currentSecond.value = 0F
 
         if (parentalControlEnabled && mediaItem.isExplicit) {
-            handleSkipToNext()
+            //handleSkipToNext()
+            player.playNext()
             SmartMessage(resources.getString(R.string.error_message_parental_control_restricted), context = this@PlayerService)
             return
         }
 
         if (excludeIfIsVideoEnabled && mediaItem.isVideo) {
-            handleSkipToNext()
+            //handleSkipToNext()
+            player.playNext()
             SmartMessage(getString(R.string.warning_skipped_video), context = this@PlayerService)
             return
         }
@@ -1276,7 +1293,8 @@ class PlayerService : Service(),
             blacklisted = Database.blacklisted(mediaItem.mediaId) > 0
         }
         if (blacklisted) {
-            handleSkipToNext()
+            //handleSkipToNext()
+            player.playNext()
             SmartMessage(getString(R.string.warning_skipped_blacklisted_song), context = this@PlayerService)
             return
         }
@@ -1323,7 +1341,8 @@ class PlayerService : Service(),
         updateWidgets()
         updateDiscordPresence()
 
-        saveMasterQueueWithPosition()
+        //saveMasterQueueWithPosition()
+        player.saveMasterQueue()
 
         if (preferences.getBoolean(isEnabledLastfmKey, false))
             preferences.getString(lastfmSessionTokenKey, "")?.let {
@@ -1353,6 +1372,7 @@ class PlayerService : Service(),
     }
 
 
+    /*
     fun handleSkipToNext() {
         try {
             val hasNext = player.hasNextMediaItem()
@@ -1412,6 +1432,8 @@ class PlayerService : Service(),
         }
     }
 
+     */
+
     private fun handlePlayQueueItem(targetIndex: Int) {
         try {
             if (targetIndex < 0 || targetIndex >= player.mediaItemCount) {
@@ -1452,7 +1474,8 @@ class PlayerService : Service(),
 
             player.seekToDefaultPosition(targetIndex)
             currentQueuePosition = targetIndex
-            saveMasterQueueWithPosition()
+            //saveMasterQueueWithPosition()
+            player.saveMasterQueue()
         } catch (e: Exception) {
             Timber.e("PlayerService handlePlayQueueItem: error ${e.stackTraceToString()}")
             maybeRecoverPlaybackError()
@@ -1527,7 +1550,8 @@ class PlayerService : Service(),
         val isLowMemory = level == ComponentCallbacks2.TRIM_MEMORY_RUNNING_CRITICAL
         Timber.d("PlayerService onTrimMemory level $level isLowMemory $isLowMemory")
         if (isLowMemory)
-            saveMasterQueueWithPosition()
+            player.saveMasterQueue()
+            //saveMasterQueueWithPosition()
     }
 
     fun updateUnifiedNotification() {
@@ -1902,10 +1926,12 @@ class PlayerService : Service(),
                     },
                     onPlayNext = {
                         //it.player.playNext()
-                        handleSkipToNext()
+                        //handleSkipToNext()
+                        player.playNext()
                     },
                     onPlayPrevious = {
-                        handleSkipToPrevious()
+                        //handleSkipToPrevious()
+                        player.playPrevious()
                     },
                     onPlayQueueItem = { id ->
                         handlePlayQueueItem(id.toInt())
@@ -2090,8 +2116,8 @@ class PlayerService : Service(),
                                 }
                         }
                     }
-                    Action.next.value -> handleSkipToNext() //it.player.playNext()
-                    Action.previous.value -> handleSkipToPrevious()
+                    Action.next.value -> player.playNext() //handleSkipToNext() //it.player.playNext()
+                    Action.previous.value -> player.playPrevious() //handleSkipToPrevious()
                     Action.like.value -> {
                         it.toggleLike()
                     }
@@ -2706,7 +2732,8 @@ class PlayerService : Service(),
                                 Timber.d("PlayerService initializePositionObserver Repeat: Default fired")
                                 if (hasNext) {
                                     lastProcessedIndex = player.currentMediaItemIndex
-                                    handleSkipToNext()
+                                    //handleSkipToNext()
+                                    player.playNext()
                                     Timber.d("PlayerService initializePositionObserver Repeat: Default fired next")
                                 }
                             }
@@ -2731,7 +2758,8 @@ class PlayerService : Service(),
                                     Timber.d("PlayerService initializePositionObserver Repeat: RepeatAll fired first")
                                 } else {
                                     lastProcessedIndex = player.currentMediaItemIndex
-                                    handleSkipToNext()
+                                    //handleSkipToNext()
+                                    player.playNext()
                                     Timber.d("PlayerService initializePositionObserver Repeat: RepeatAll fired next")
                                 }
                             }

@@ -74,7 +74,7 @@ import kotlin.also
 
 @UnstableApi
 class PlayerMediaBrowserService : MediaBrowserServiceCompat(), ServiceConnection {
-    private val coroutineScope = CoroutineScope(Dispatchers.IO)
+    //private val coroutineScope = CoroutineScope(Dispatchers.IO)
 
     companion object {
         var lastSongs = emptyList<Song>()
@@ -153,7 +153,6 @@ class PlayerMediaBrowserService : MediaBrowserServiceCompat(), ServiceConnection
             }?.getOrNull() ?: emptyList()
 
             val resultList = searchedSongs.map {
-                //it.asBrowserMediaItem
                 MediaItem(
                     MediaDescriptionCompat.Builder()
                         .setMediaId(MediaId.forSearched(it.id))
@@ -784,6 +783,7 @@ class PlayerMediaBrowserService : MediaBrowserServiceCompat(), ServiceConnection
             MediaItem.FLAG_BROWSABLE
         )
 
+    /*
     private fun sessionCallback(  binder: PlayerService.Binder ) =
         PlayerMediaSessionCallback(
             binder,
@@ -849,6 +849,8 @@ class PlayerMediaBrowserService : MediaBrowserServiceCompat(), ServiceConnection
                 //binder.updateUnifiedNotification()
             }
         )
+
+     */
 
     /*
     private inner class SessionCallback @OptIn(UnstableApi::class) constructor(
