@@ -534,7 +534,10 @@ fun Queue(
                 }
 
                 Title2Actions(
-                    title = "Queue: ${selectedQueue?.title}",
+                    title = stringResource(
+                        R.string.queue_queue,
+                        selectedQueue?.title.toString()
+                    ),
                     icon1 = if (showQueues) R.drawable.chevron_up else R.drawable.chevron_down,
                     icon2 = R.drawable.addqueue,
                     onClick1 = {
@@ -609,7 +612,7 @@ fun Queue(
                         .background(colorPalette().background1)
                         .fillMaxWidth()
                 ) {
-                    Title("List of media")
+                    Title(stringResource(R.string.queue_list_of_media))
                 }
 
                 if (searching)

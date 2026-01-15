@@ -2851,6 +2851,8 @@ class PlayerService : Service(),
                     .setSmallIcon(R.drawable.app_icon)
                     .build()
 
+                player.saveMasterQueue()
+
                 notificationManager?.notify(SLEEPTIMER_NOTIFICATION_ID, notification)
 
                 stopSelf()

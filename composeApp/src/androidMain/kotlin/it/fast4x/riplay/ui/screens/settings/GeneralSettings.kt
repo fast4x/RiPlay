@@ -1629,13 +1629,13 @@ fun GeneralSettings(
                             modifier = Modifier.padding(start = 12.dp)
                         ) {
 
-                            if (search.input.isBlank() || "Show list as grid".contains(
+                            if (search.input.isBlank() || stringResource(R.string.aa_show_list_as_grid).contains(
                                     search.input,
                                     true
                                 )
                             ) {
                                 SwitchSettingEntry(
-                                    title = "Show list as grid",
+                                    title = stringResource(R.string.aa_show_list_as_grid),
                                     text = "",
                                     isChecked = showGridAA,
                                     onCheckedChange = {
@@ -1644,13 +1644,13 @@ fun GeneralSettings(
                                 )
                             }
 
-                            if (search.input.isBlank() || "Show shuffle in songs".contains(
+                            if (search.input.isBlank() || stringResource(R.string.aa_show_shuffle_in_songs).contains(
                                     search.input,
                                     true
                                 )
                             ) {
                                 SwitchSettingEntry(
-                                    title = "Show shuffle in songs",
+                                    title = stringResource(R.string.aa_show_shuffle_in_songs),
                                     text = "",
                                     isChecked = showShuffleSongsAA,
                                     onCheckedChange = {
@@ -1659,62 +1659,62 @@ fun GeneralSettings(
                                 )
                             }
 
-                            if (search.input.isBlank() || "Show monthly playlists".contains(
+                            if (search.input.isBlank() || stringResource(R.string.aa_show_monthly_playlists).contains(
                                     search.input,
                                     true
                                 )
                             )
                                 SwitchSettingEntry(
-                                    title = "Show monthly playlists",
-                                    text = "Show monthly playlists in playlists screen",
+                                    title = stringResource(R.string.aa_show_monthly_playlists),
+                                    text = stringResource(R.string.aa_info_show_monthly_playlists_in_playlists_screen),
                                     isChecked = showMonthlyPlaylistsAA,
                                     onCheckedChange = { showMonthlyPlaylistsAA = it }
                                 )
 
-                            if (search.input.isBlank() || "Show In Library".contains(
+                            if (search.input.isBlank() || stringResource(R.string.aa_show_in_library).contains(
                                     search.input,
                                     true
                                 )
                             )
                                 SwitchSettingEntry(
-                                    title = "Show In Library",
-                                    text = "Show In Library in artists and albums screen",
+                                    title = stringResource(R.string.aa_show_in_library),
+                                    text = stringResource(R.string.aa_info_show_in_library_in_artists_and_albums_screen),
                                     isChecked = showInLibraryAA,
                                     onCheckedChange = { showInLibraryAA = it }
                                 )
 
-                            if (search.input.isBlank() || "Show On Device".contains(
+                            if (search.input.isBlank() || stringResource(R.string.aa_show_on_device).contains(
                                     search.input,
                                     true
                                 )
                             )
                                 SwitchSettingEntry(
-                                    title = "Show On Device",
-                                    text = "Show On Device in artists and albums screen",
+                                    title = stringResource(R.string.aa_show_on_device),
+                                    text = stringResource(R.string.aa_info_show_on_device_in_artists_and_albums_screen),
                                     isChecked = showOnDeviceAA,
                                     onCheckedChange = { showOnDeviceAA = it }
                                 )
 
-                            if (search.input.isBlank() || "Show Top Playlist".contains(
+                            if (search.input.isBlank() || stringResource(R.string.aa_show_top_playlist).contains(
                                     search.input,
                                     true
                                 )
                             )
                                 SwitchSettingEntry(
-                                    title = "Show Top Playlist",
-                                    text = "Show Top Playlist in playlists screen",
+                                    title = stringResource(R.string.aa_show_top_playlist),
+                                    text = stringResource(R.string.aa_info_show_top_playlist_in_playlists_screen),
                                     isChecked = showTopPlaylistAA,
                                     onCheckedChange = { showTopPlaylistAA = it }
                                 )
 
-                            if (search.input.isBlank() || "Show Favorites Playlists".contains(
+                            if (search.input.isBlank() || stringResource(R.string.aa_show_favorites_playlists).contains(
                                     search.input,
                                     true
                                 )
                             )
                                 SwitchSettingEntry(
-                                    title = "Show Favorites Playlists",
-                                    text = "Show Favorites Playlists in playlists screen",
+                                    title = stringResource(R.string.aa_show_favorites_playlists),
+                                    text = stringResource(R.string.aa_info_show_favorites_playlists_in_playlists_screen),
                                     isChecked = showFavoritesPlaylistsAA,
                                     onCheckedChange = { showFavoritesPlaylistsAA = it }
                                 )

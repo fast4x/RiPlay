@@ -19,6 +19,7 @@ import it.fast4x.riplay.extensions.preferences.excludeSongsWithDurationLimitKey
 import it.fast4x.riplay.extensions.preferences.getEnum
 import it.fast4x.riplay.extensions.preferences.preferences
 import it.fast4x.riplay.ui.components.themed.SmartMessage
+import it.fast4x.riplay.utils.appContext
 import it.fast4x.riplay.utils.cleaned
 import it.fast4x.riplay.utils.forcePlay
 import it.fast4x.riplay.utils.globalContext
@@ -254,7 +255,7 @@ class PlayerServiceQueueViewModel(
 
     fun canAddedToQueue(mediaItem: MediaItem, queue: Queues): Boolean {
         if (mediaItem.isVideo && !queue.acceptVideo) {
-            SmartMessage("Queue not accept video", type = PopupType.Warning, context = globalContext())
+            SmartMessage(appContext().resources.getString(R.string.queue_queue_not_accept_video), type = PopupType.Warning, context = globalContext())
             return false
         }
         if (!mediaItem.isVideo && !queue.acceptSong) {

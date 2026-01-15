@@ -59,7 +59,7 @@ fun playShuffledSongs( mediaItems: List<MediaItem>, context: Context, binder: Pl
     // Send message saying that there's no song to play
     if( mediaItems.isEmpty() ) {
         SmartMessage(
-            message = "There's no song to play",
+            message = context.resources.getString(R.string.player_there_s_no_song_to_play),
             context = context
         )
         return

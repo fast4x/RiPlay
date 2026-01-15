@@ -1912,7 +1912,10 @@ fun SongMatchingDialog(
                                                             )
                                                     }
                                                 } else {
-                                                    deleteSongFromPlaylist(songToRematch.id, playlistId)
+                                                    deleteSongFromPlaylist(
+                                                        songToRematch.id,
+                                                        playlistId
+                                                    )
                                                 }
 
                                                 if (songExist(song.asSong.id) == 0) {
@@ -1933,7 +1936,8 @@ fun SongMatchingDialog(
                                                     ),
                                                     SongAlbumMap(
                                                         songId = song.asMediaItem.mediaId,
-                                                        albumId = song.album?.endpoint?.browseId ?: "",
+                                                        albumId = song.album?.endpoint?.browseId
+                                                            ?: "",
                                                         position = null
                                                     )
                                                 )
@@ -1959,13 +1963,15 @@ fun SongMatchingDialog(
                                                                     artistNames.mapIndexed { index, artistName ->
                                                                         Artist(
                                                                             id = (artistIds[index])
-                                                                                ?: "", name = artistName
+                                                                                ?: "",
+                                                                            name = artistName
                                                                         )
                                                                     },
                                                                     artistIds.map { artistId ->
                                                                         SongArtistMap(
                                                                             songId = song.asMediaItem.mediaId,
-                                                                            artistId = (artistId) ?: ""
+                                                                            artistId = (artistId)
+                                                                                ?: ""
                                                                         )
                                                                     }
                                                                 )
@@ -1980,7 +1986,7 @@ fun SongMatchingDialog(
                                             }
                                             onDismiss()
                                         }
-                                    )
+                                        )
                                 )
                             }
                         }
@@ -2852,7 +2858,7 @@ inline fun EditQueueDialog(
                 .defaultMinSize(Dp.Unspecified, 190.dp)
         ) {
             BasicText(
-                text = if (queue == null) "Create new queue" else queue.title.toString(),
+                text = if (queue == null) stringResource(R.string.queue_create_new_queue) else queue.title.toString(),
                 style = typography().s.semiBold,
                 modifier = Modifier
                     .padding(vertical = 8.dp, horizontal = 24.dp)
@@ -2893,7 +2899,7 @@ inline fun EditQueueDialog(
                          */
 
                     },
-                    placeholder = { Text(text = if (queue == null) "Name of the queue" else "") },
+                    placeholder = { Text(text = if (queue == null) stringResource(R.string.queue_name_of_the_queue) else "") },
                     value = txtField.value,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
                     onValueChange = {
@@ -2923,7 +2929,7 @@ inline fun EditQueueDialog(
                         .scale(0.7f)
                 )
                 BasicText(
-                    text = "Accept song",
+                    text = stringResource(R.string.queue_accept_song),
                     style = typography().xs.medium,
                     maxLines = 2,
                     modifier = Modifier
@@ -2949,7 +2955,7 @@ inline fun EditQueueDialog(
                         .scale(0.7f)
                 )
                 BasicText(
-                    text = "Accept video",
+                    text = stringResource(R.string.queue_accept_video),
                     style = typography().xs.medium,
                     maxLines = 2,
                     modifier = Modifier
@@ -2975,7 +2981,7 @@ inline fun EditQueueDialog(
                         .scale(0.7f)
                 )
                 BasicText(
-                    text = "Accept podcast",
+                    text = stringResource(R.string.queue_accept_podcast),
                     style = typography().xs.medium,
                     maxLines = 2,
                     modifier = Modifier
@@ -3044,7 +3050,7 @@ fun QueuesDialog(
         onDismiss = onDismiss
     ) {
         BasicText(
-            text = "Select queue",
+            text = stringResource(R.string.queue_select_queue),
             style = typography().s.semiBold,
             modifier = Modifier
                 .padding(vertical = 8.dp, horizontal = 24.dp)
@@ -3084,7 +3090,9 @@ fun AccountInfoDialog(
 ) {
     DefaultDialog(
         onDismiss = onDismiss,
-        modifier = Modifier.padding(all = 16.dp).fillMaxWidth(),
+        modifier = Modifier
+            .padding(all = 16.dp)
+            .fillMaxWidth(),
         horizontalAlignment = Alignment.Start
     ) {
         BasicText(
