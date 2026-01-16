@@ -376,14 +376,19 @@ fun HomeSectionPart(
 
         discoverPageInit?.let { page ->
 
-            //var newReleaseAlbumsFiltered by persistList<Environment.AlbumItem>("discovery/newalbumsartist")
-            var newReleaseAlbumsFiltered by remember { mutableStateOf(emptyList<Environment.AlbumItem>()) }
+            val newReleaseAlbumsFiltered = mutableListOf<Environment.AlbumItem>()
+            val preferredNames = preferitesArtists.map { it.name }.toSet()
+
             page.newReleaseAlbums.forEach { album ->
-                preferitesArtists.forEach { artist ->
-                    if (artist.name == album.authors?.first()?.name) {
-                        newReleaseAlbumsFiltered += album
+                val apiAuthorsNames = album.authors?.map { it.name } ?: emptyList()
+
+                val match = apiAuthorsNames.any { apiName ->
+
+                    preferredNames.any { dbName ->
+                        apiName?.contains(dbName.toString(), ignoreCase = true) == true
                     }
                 }
+                if (match) newReleaseAlbumsFiltered.add(album)
             }
 
             if (showNewAlbumsArtists)

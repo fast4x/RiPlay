@@ -6,6 +6,7 @@ import it.fast4x.environment.utils.EnvironmentLocale
 import it.fast4x.environment.utils.EnvironmentPreferences
 import it.fast4x.environment.utils.LocalePreferences
 import kotlinx.serialization.Serializable
+import java.util.Locale
 
 @Serializable
 data class Context(

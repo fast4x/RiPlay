@@ -29,6 +29,7 @@ import it.fast4x.riplay.ui.components.SheetBody
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.utils.thumbnailShape
 import it.fast4x.riplay.ui.components.themed.DropdownMenu
+import it.fast4x.riplay.ui.screens.events.EventsScreen
 import it.fast4x.riplay.ui.screens.settings.isYtLoggedIn
 import it.fast4x.riplay.utils.GlobalSharedData
 import it.fast4x.riplay.utils.MusicIdentifier
@@ -50,11 +51,27 @@ private fun HamburgerMenu(
         onDismissRequest = onDismissRequest
     )
 
+//    menu.add(
+//        DropdownMenu.Item(
+//            R.drawable.cast_connected,
+//            R.string.blacklist,
+//        ) { onItemClick( NavRoutes.ritunecontroller ) }
+//    )
+
+    val sheet = LocalGlobalSheetState.current
+
+    // Events button
     menu.add(
         DropdownMenu.Item(
-            R.drawable.cast_connected,
-            R.string.blacklist,
-        ) { onItemClick( NavRoutes.ritunecontroller ) }
+            R.drawable.alarm,
+            R.string.events,
+        ) {
+            sheet.display {
+                SheetBody {
+                    EventsScreen()
+                }
+            }
+        }
     )
 
     // Blacklist button

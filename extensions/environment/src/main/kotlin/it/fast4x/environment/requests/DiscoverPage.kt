@@ -5,14 +5,26 @@ import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import it.fast4x.environment.Environment
 import it.fast4x.environment.models.BrowseResponse
+import it.fast4x.environment.models.Context
+import it.fast4x.environment.models.Context.Companion.DefaultWeb
+import it.fast4x.environment.models.Context.Companion.hl
 import it.fast4x.environment.models.MusicTwoRowItemRenderer
 import it.fast4x.environment.models.bodies.BrowseBodyWithLocale
 import it.fast4x.environment.models.oddElements
 import it.fast4x.environment.models.splitBySeparator
+import java.util.Locale
 
 suspend fun Environment.discoverPage() = runCatching {
+
     val response = client.post(_3djbhqyLpE) {
-        setBody(BrowseBodyWithLocale(browseId = "FEmusic_explore"))
+        setBody(
+            BrowseBodyWithLocale(
+                context = DefaultWeb.copy(
+                    client = DefaultWeb.client.copy(hl = Locale.getDefault().language)
+                ),
+                browseId = "FEmusic_explore"
+            )
+        )
         mask("contents")
     }.body<BrowseResponse>()
 
