@@ -1213,4 +1213,21 @@ Mach dich bereit, deine unvergesslichsten musikalischen Momente noch einmal zu e
     <string name="aa_info_show_top_playlist_in_playlists_screen">Show Top Playlist in playlists screen</string>
     <string name="aa_show_favorites_playlists">Show Favorites Playlists</string>
     <string name="aa_info_show_favorites_playlists_in_playlists_screen">Show Favorites Playlists in playlists screen</string>
+    <string name="events">Events</string>
+    <string name="event_notification_for_new_release">Notification for new release</string>
+    <string name="event_from_your_favorites_artists">From your favorites Artists</string>
+    <string name="event_scheduled">Scheduled</string>
+    <string name="event_running">Running</string>
+    <string name="event_completed">Completed</string>
+    <string name="event_failed">Failed</string>
+    <string name="event_blocked">Blocked</string>
+    <string name="event_cancelled">Cancelled</string>
+    <string name="event_not_active">Not active</string>
+    <string name="event_unknown">Unknown</string>
+    <string name="event_next_run">Next Run: %1$s</string>
+    <string name="event_daily">Daily</string>
+    <string name="event_weekly">Weekly</string>
+    <string name="event_disable_notification">Disable notification</string>
+    <string name="event_enable_notification">Enable notification</string>
+    <string name="event_if_there_are_new_releases_you_will_be_notified_with_a_system_notification_even_if_the_app_is_not_open">If there are new releases, you will be notified with a system notification, even if the app is not open.</string>
 </resources>
