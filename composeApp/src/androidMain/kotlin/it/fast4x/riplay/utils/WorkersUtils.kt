@@ -26,7 +26,7 @@ fun formatTimeRemaining(millis: Long): String {
 
     return when {
         days > 0 -> appContext().getString(R.string.formattedtime_within_days_and_hours, days, hours)
-        hours > 0 -> "Within $hours hours"
-        else -> "Soon"
+        hours > 0 -> appContext().getString(R.string.formattedtime_within_hours, hours)
+        else -> appContext().getString(R.string.formattedtime_soon)
     }
 }
