@@ -2,6 +2,7 @@ package it.fast4x.riplay.utils
 
 import android.content.Context
 import androidx.work.*
+import it.fast4x.riplay.R
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
@@ -22,12 +23,10 @@ fun isWorkScheduled(workInfo: WorkInfo?): Boolean {
 fun formatTimeRemaining(millis: Long): String {
     val days = millis / (1000 * 60 * 60 * 24)
     val hours = (millis % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
-    val minutes = millis / (1000 * 60 * 60)
 
     return when {
-        days > 0 -> "Within $days days and $hours hours"
+        days > 0 -> appContext().getString(R.string.formattedtime_within_days_and_hours, days, hours)
         hours > 0 -> "Within $hours hours"
-        minutes > 0 -> "Within $minutes minutes"
         else -> "Soon"
     }
 }

@@ -1,6 +1,5 @@
 package it.fast4x.riplay.ui.screens.events
 
-import android.widget.RadioGroup
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.material3.*
@@ -15,6 +14,7 @@ import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import it.fast4x.riplay.R
 import it.fast4x.riplay.extensions.scheduled.periodicCheckNewFromArtists
+import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.utils.formatTimeRemaining
 import it.fast4x.riplay.utils.getWorkStatusFlow
 import it.fast4x.riplay.utils.isWorkScheduled
@@ -65,7 +65,7 @@ fun EventsScreen() {
 
         Text(
             text = statusText,
-            color = if (isScheduled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error,
+            color = if (isScheduled) colorPalette().accent else colorPalette().red,
             style = typography().m
         )
 
@@ -73,20 +73,34 @@ fun EventsScreen() {
 
         val nextRunTime = workInfo?.nextScheduleTimeMillis
         val timeRemaining = (nextRunTime?.minus(System.currentTimeMillis())) ?: 0L
+        val formattedTimeRemaining = formatTimeRemaining(timeRemaining)
 
-        if (isScheduled)
+        if (isScheduled) {
             Text(
-                text = stringResource(R.string.event_next_run, formatTimeRemaining(timeRemaining)),
+                text = stringResource(R.string.event_next_run, formattedTimeRemaining),
                 style = typography().s
             )
+        }
 
         Spacer(modifier = Modifier.height(24.dp))
 
         if (!isScheduled)
             Row(modifier = Modifier.fillMaxWidth(.7f), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically){
-                RadioButton(selected = !weeklyOrDaily, onClick = { weeklyOrDaily = false })
+                RadioButton(
+                    selected = !weeklyOrDaily, onClick = { weeklyOrDaily = false },
+                    colors = RadioButtonDefaults.colors(
+                        selectedColor = colorPalette().text,
+                        unselectedColor = colorPalette().textDisabled
+                    )
+                )
                 Text(text = stringResource(R.string.event_daily), style = typography().s)
-                RadioButton(selected = weeklyOrDaily, onClick = { weeklyOrDaily = true })
+                RadioButton(
+                    selected = weeklyOrDaily, onClick = { weeklyOrDaily = true },
+                    colors = RadioButtonDefaults.colors(
+                        selectedColor = colorPalette().text,
+                        unselectedColor = colorPalette().textDisabled
+                    )
+                )
                 Text(text = stringResource(R.string.event_weekly), style = typography().s)
 
             }
@@ -99,7 +113,11 @@ fun EventsScreen() {
                     periodicCheckNewFromArtists(context, weeklyOrDaily)
                 }
             },
-            enabled = true
+            enabled = true,
+            colors = ButtonDefaults.buttonColors(
+                containerColor = colorPalette().background0,
+                contentColor = colorPalette().text,
+            )
         ) {
             Text(if (isScheduled) stringResource(R.string.event_disable_notification) else stringResource(
                 R.string.event_enable_notification
