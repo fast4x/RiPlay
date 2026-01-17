@@ -1110,7 +1110,7 @@ Mach dich bereit, deine unvergesslichsten musikalischen Momente noch einmal zu e
     <string name="audio_preset_medium_hall">Mittlerer Saal</string>
     <string name="audio_preset_large_hall">Großer Saal</string>
     <string name="audio_preset_plate">Plate</string>
-    <string name="rw_songlevel_obsession_title_you_have_an_obsession">You have an Obsession</string>
+    <string name="rw_songlevel_obsession_title_you_have_an_obsession">Du bist besessen</string>
     <string name="rw_songlevel_anthem_title_it_s_your_anthem">Es ist deine Hymne</string>
     <string name="rw_songlevel_soundtrack_title_it_s_your_soundtrack">Es ist dein Soundtrack</string>
     <string name="rw_songlevel_eternalflame_title_you_are_an_eternal_flame">Du bist eine Ewige Flamme</string>
@@ -1125,9 +1125,9 @@ Mach dich bereit, deine unvergesslichsten musikalischen Momente noch einmal zu e
     <string name="rw_songlevel_soundtrack_desc_this_song_isn_t_just_an_anthem_it_s_the_soundtrack_to_your_life_the_rhythm_that_accompanies_your_days">Dieser Song ist keine Hymne, er ist der Soundtrack zu deinem Leben. Der Rhythmus, der deine Tage begleitet.</string>
     <string name="rw_songlevel_eternalflame_desc_you_and_this_song_are_one_and_the_same_an_eternal_flame_burning_in_your_musical_heart_a_legend">Du und dieser Song seid ein und dasselbe. Eine ewige Flamme, die in deinem musikalischen Herzen brennt. Eine Legende.</string>
     <string name="rw_songlevel_undefined_desc_nothing_to_see_here">Ist ziemlich leer hier</string>
-    <string name="rw_albumlevel_deepdive_title_you_love_conducting_a_deep_dive">You love conducting a Deep Dive</string>
+    <string name="rw_albumlevel_deepdive_title_you_love_conducting_a_deep_dive">Du liebst es, tief in die Materie einzutauchen</string>
     <string name="rw_albumlevel_onrepeat_title_you_listen_to_it_on_repeat">Du hörst es in Dauerschleife</string>
-    <string name="rw_albumlevel_resident_title_you_are_a_resident">You are a Resident</string>
+    <string name="rw_albumlevel_resident_title_you_are_a_resident">Sie sind ein Einwohner</string>
     <string name="rw_albumlevel_sactuary_title_it_s_your_sanctuary">Es ist dein Zufluchtsort</string>
     <string name="rw_albumlevel_undefined_title_oops">Hoppla 😢</string>
     <string name="rw_albumlevel_deepdive_goal_listened_to_s_minutes">%s Minuten angehört</string>
