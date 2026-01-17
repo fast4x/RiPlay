@@ -1230,4 +1230,7 @@ Mach dich bereit, deine unvergesslichsten musikalischen Momente noch einmal zu e
     <string name="event_disable_notification">Disable notification</string>
     <string name="event_enable_notification">Enable notification</string>
     <string name="event_if_there_are_new_releases_you_will_be_notified_with_a_system_notification_even_if_the_app_is_not_open">If there are new releases, you will be notified with a system notification, even if the app is not open.</string>
+    <string name="formattedtime_within_days_and_hours">Within %1$d days and %2$d hours</string>
+    <string name="formattedtime_within_hours">Within %1$d hours</string>
+    <string name="formattedtime_soon">Soon</string>
 </resources>
