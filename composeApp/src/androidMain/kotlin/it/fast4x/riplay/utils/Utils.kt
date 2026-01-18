@@ -620,12 +620,12 @@ fun CheckAvailableNewVersion(
     }
 }
 
-@Composable
+
 fun getAvailableUpdateInfo(): Triple<String, String, Int> {
     var updatedProductName = ""
     var updatedVersionName = ""
     var updatedVersionCode = 0
-    val file = File(LocalContext.current.filesDir, "UpdatedVersionCode.ver")
+    val file = File(appContext().filesDir, "UpdatedVersionCode.ver")
     if (file.exists()) {
         val dataText = file.readText().substring(0, file.readText().length - 1).split("-")
         updatedVersionCode =
@@ -678,9 +678,8 @@ fun getLongVersionCode(): Long {
 }
 
 
-@Composable
 fun getVersionCode(): Int {
-    val context = LocalContext.current
+    val context = appContext()
     try {
         val pInfo = context.packageManager.getPackageInfo(context.packageName, 0)
         return pInfo.versionCode

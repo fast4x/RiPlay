@@ -4,16 +4,12 @@ import android.annotation.SuppressLint
 import android.content.ActivityNotFoundException
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -26,31 +22,21 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
 import androidx.media3.common.util.UnstableApi
 
 import it.fast4x.riplay.R
-import it.fast4x.riplay.enums.CheckUpdateState
 import it.fast4x.riplay.enums.NavigationBarPosition
 import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.ui.components.themed.HeaderWithIcon
 import it.fast4x.riplay.ui.components.themed.InputTextDialog
-import it.fast4x.riplay.ui.components.themed.SecondaryTextButton
 import it.fast4x.riplay.ui.components.themed.SmartMessage
 import it.fast4x.riplay.ui.components.themed.settingsItem
 import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.ui.styling.LocalAppearance
-import it.fast4x.riplay.utils.CheckAvailableNewVersion
-import it.fast4x.riplay.extensions.preferences.checkUpdateStateKey
 import it.fast4x.riplay.extensions.preferences.defaultFolderKey
-import it.fast4x.riplay.extensions.preferences.extraspaceKey
-import it.fast4x.riplay.utils.isAtLeastAndroid10
-import it.fast4x.riplay.extensions.preferences.isKeepScreenOnEnabledKey
 import it.fast4x.riplay.extensions.preferences.logDebugEnabledKey
 import it.fast4x.riplay.extensions.preferences.navigationBarPositionKey
-import it.fast4x.riplay.extensions.preferences.parentalControlEnabledKey
 import it.fast4x.riplay.extensions.preferences.rememberPreference
-import it.fast4x.riplay.extensions.preferences.showFoldersOnDeviceKey
 import java.io.File
 import java.io.FileInputStream
 import java.text.SimpleDateFormat
@@ -61,7 +47,7 @@ import java.util.Date
 @SuppressLint("BatteryLife")
 @ExperimentalAnimationApi
 @Composable
-fun OtherSettings() {
+fun MiscSettings() {
     val context = LocalContext.current
     val (colorPalette, _, _) = LocalAppearance.current
 //    var isAndroidAutoEnabled by remember {
@@ -102,30 +88,30 @@ fun OtherSettings() {
 
     var defaultFolder by rememberPreference(defaultFolderKey, "/")
 
-    var isKeepScreenOnEnabled by rememberPreference(isKeepScreenOnEnabledKey, false)
+    //var isKeepScreenOnEnabled by rememberPreference(isKeepScreenOnEnabledKey, false)
 
-    var checkUpdateState by rememberPreference(checkUpdateStateKey, CheckUpdateState.Disabled)
+    //var checkUpdateState by rememberPreference(checkUpdateStateKey, CheckUpdateState.Disabled)
 
     val navigationBarPosition by rememberPreference(
         navigationBarPositionKey,
         NavigationBarPosition.Bottom
     )
 
-    var showFolders by rememberPreference(showFoldersOnDeviceKey, true)
+    //var showFolders by rememberPreference(showFoldersOnDeviceKey, true)
 
-    var blackListedPaths by remember {
-        val file = File(context.filesDir, "Blacklisted_paths.txt")
-        if (file.exists()) {
-            mutableStateOf(file.readLines())
-        } else {
-            mutableStateOf(emptyList())
-        }
-    }
+//    var blackListedPaths by remember {
+//        val file = File(context.filesDir, "Blacklisted_paths.txt")
+//        if (file.exists()) {
+//            mutableStateOf(file.readLines())
+//        } else {
+//            mutableStateOf(emptyList())
+//        }
+//    }
 
-    var parentalControlEnabled by rememberPreference(parentalControlEnabledKey, false)
+    //var parentalControlEnabled by rememberPreference(parentalControlEnabledKey, false)
     var logDebugEnabled by rememberPreference(logDebugEnabledKey, false)
 
-    var extraspace by rememberPreference(extraspaceKey, false)
+    //var extraspace by rememberPreference(extraspaceKey, false)
 
     var fileName by remember {
         mutableStateOf("")
@@ -170,9 +156,9 @@ fun OtherSettings() {
             onDismiss = {
                 isExporting = false
             },
-            title = "Enter the name of log export",
+            title = stringResource(R.string.enter_the_name_of_log_export),
             value = "",
-            placeholder = "Enter the name of log export",
+            placeholder = stringResource(R.string.enter_the_name_of_log_export),
             setValue = { txt ->
                 fileName = txt
                 try {
@@ -227,6 +213,7 @@ fun OtherSettings() {
                 )
             }
 
+            /*
             settingsItem(
                 isHeader = true
             ) {
@@ -283,6 +270,9 @@ fun OtherSettings() {
                 }
             }
 
+             */
+
+            /*
             settingsItem(
                 isHeader = true
             ) {
@@ -334,6 +324,8 @@ fun OtherSettings() {
                 }
 
             }
+
+
 
             settingsItem(
                 isHeader = true
@@ -459,25 +451,25 @@ fun OtherSettings() {
 //            }
 //        }
             }
+*/
 
-
-            settingsItem(
-                isHeader = true
-            ) {
-                SettingsGroupSpacer()
-                SettingsEntryGroupText(title = stringResource(R.string.parental_control))
-            }
-
-            settingsItem {
-                SwitchSettingEntry(
-                    online = false,
-                    offline = false,
-                    title = stringResource(R.string.parental_control),
-                    text = stringResource(R.string.info_prevent_play_songs_with_age_limitation),
-                    isChecked = parentalControlEnabled,
-                    onCheckedChange = { parentalControlEnabled = it }
-                )
-            }
+//            settingsItem(
+//                isHeader = true
+//            ) {
+//                SettingsGroupSpacer()
+//                SettingsEntryGroupText(title = stringResource(R.string.parental_control))
+//            }
+//
+//            settingsItem {
+//                SwitchSettingEntry(
+//                    online = false,
+//                    offline = false,
+//                    title = stringResource(R.string.parental_control),
+//                    text = stringResource(R.string.info_prevent_play_songs_with_age_limitation),
+//                    isChecked = parentalControlEnabled,
+//                    onCheckedChange = { parentalControlEnabled = it }
+//                )
+//            }
 
 
             settingsItem(
@@ -541,7 +533,7 @@ fun OtherSettings() {
                     offline = false,
                     //isEnabled = logDebugEnabled,
                     title = stringResource(R.string.export_crash_log),
-                    text = "Is always enabled",
+                    text = stringResource(R.string.is_always_enabled),
                     icon = R.drawable.export,
                     onClick = {
                         exportCrashlog = true

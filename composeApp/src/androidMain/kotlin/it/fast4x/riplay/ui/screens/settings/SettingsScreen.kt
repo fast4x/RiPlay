@@ -110,7 +110,7 @@ fun SettingsScreen(
                         3 -> HomeSettings()
                         4 -> DataSettings()
                         5 -> AccountsSettings()
-                        6 -> OtherSettings()
+                        6 -> MiscSettings()
                         7 -> About()
 
                     }

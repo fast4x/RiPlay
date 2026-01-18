@@ -61,17 +61,16 @@ fun HomeScreen(
     openTabFromShortcut: Int
 ) {
 
-    var showNewversionDialog by remember {
-        mutableStateOf(true)
-    }
-
-    var checkUpdateState by rememberPreference(checkUpdateStateKey, CheckUpdateState.Disabled)
+//    var showNewversionDialog by remember {
+//        mutableStateOf(true)
+//    }
+//
+//    var checkUpdateState by rememberPreference(checkUpdateStateKey, CheckUpdateState.Disabled)
 
     val saveableStateHolder = rememberSaveableStateHolder()
 
     val preferences = LocalContext.current.preferences
     //val enableQuickPicksPage by rememberPreference(enableQuickPicksPageKey, true)
-
 
     val openTabFromShortcut1 by remember{ mutableIntStateOf(openTabFromShortcut) }
 
@@ -208,25 +207,25 @@ fun HomeScreen(
     }
 
 
-    if (showNewversionDialog && checkUpdateState == CheckUpdateState.Enabled)
-        CheckAvailableNewVersion(
-            onDismiss = { showNewversionDialog = false },
-            updateAvailable = {}
-        )
-
-    if (checkUpdateState == CheckUpdateState.Ask)
-        ConfirmationDialog(
-            text = stringResource(R.string.check_at_github_for_updates) + "\n\n" +
-                    stringResource(R.string.when_an_update_is_available_you_will_be_asked_if_you_want_to_install_info) + "\n\n" +
-                    stringResource(R.string.but_these_updates_would_not_go_through) + "\n\n" +
-                    stringResource(R.string.you_can_still_turn_it_on_or_off_from_the_settings),
-            confirmText = stringResource(R.string.enable),
-            cancelText = stringResource(R.string.don_t_enable),
-            cancelBackgroundPrimary = true,
-            onCancel = { checkUpdateState = CheckUpdateState.Disabled },
-            onDismiss = { checkUpdateState = CheckUpdateState.Disabled },
-            onConfirm = { checkUpdateState = CheckUpdateState.Enabled },
-        )
+//    if (showNewversionDialog && checkUpdateState == CheckUpdateState.Enabled)
+//        CheckAvailableNewVersion(
+//            onDismiss = { showNewversionDialog = false },
+//            updateAvailable = {}
+//        )
+//
+//    if (checkUpdateState == CheckUpdateState.Ask)
+//        ConfirmationDialog(
+//            text = stringResource(R.string.check_at_github_for_updates) + "\n\n" +
+//                    stringResource(R.string.when_an_update_is_available_you_will_be_asked_if_you_want_to_install_info) + "\n\n" +
+//                    stringResource(R.string.but_these_updates_would_not_go_through) + "\n\n" +
+//                    stringResource(R.string.you_can_still_turn_it_on_or_off_from_the_settings),
+//            confirmText = stringResource(R.string.enable),
+//            cancelText = stringResource(R.string.don_t_enable),
+//            cancelBackgroundPrimary = true,
+//            onCancel = { checkUpdateState = CheckUpdateState.Disabled },
+//            onDismiss = { checkUpdateState = CheckUpdateState.Disabled },
+//            onConfirm = { checkUpdateState = CheckUpdateState.Enabled },
+//        )
 
     // Exit app when user uses back
     val context = LocalContext.current
