@@ -1153,7 +1153,7 @@ fun NewVersionDialog (
                         .size(30.dp)
                         .clickable {
                             onDismiss()
-                            uriHandler.openUri("https://github.com/fast4x/RiPlay/releases/download/v$updatedVersionName/riplay-full-release-$updatedVersionName.apk")
+                            uriHandler.openUri("https://github.com/fast4x/RiPlay/releases/download/$updatedVersionName/riplay-full-release-$updatedVersionName.apk")
                         }
                 )
             }
