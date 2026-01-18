@@ -829,9 +829,9 @@ object Environment {
         browseId: String? = null,
         params: String? = null,
         continuation: String? = null,
-        setLogin: Boolean = false,
+        setLogin: Boolean = true,
     ) = client.post(_3djbhqyLpE) {
-        setLogin(ytClient, true)
+        setLogin(ytClient, setLogin)
         setBody(
             BrowseBody(
                 context = Context.DefaultWebWithLocale,

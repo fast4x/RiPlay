@@ -238,9 +238,8 @@ fun HomePage(
                 discoverPageResult = Environment.discoverPage()
             }
 
-            if (isYtLoggedIn()) {
-                homePageResult = EnvironmentExt.getHomePage()
-            }
+            homePageResult = EnvironmentExt.getHomePage(setLogin = isYtLoggedIn())
+
 
         }.onFailure {
             loadedData = false
@@ -308,7 +307,7 @@ fun HomePage(
     val buttonsList = listOf(
         HomeSection.Home to HomeSection.Home.textName
     ).toMutableList().apply {
-        if (isYtLoggedIn()) add(HomeSection.ForYou to HomeSection.ForYou.textName)
+        add(HomeSection.ForYou to HomeSection.ForYou.textName)
         add(HomeSection.Other to HomeSection.Other.textName)
     }
 

@@ -164,7 +164,7 @@ fun HomeSectionPart(
 
         if (showTips) {
             Title2Actions(
-                title = stringResource(R.string.tips),
+                title = stringResource(R.string.quick_picks),
                 onClick1 = {
                     menuState.display {
                         Menu {
