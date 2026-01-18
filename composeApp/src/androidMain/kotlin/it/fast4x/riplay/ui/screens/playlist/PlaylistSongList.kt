@@ -848,7 +848,8 @@ fun PlaylistSongList(
                                                                             position = index
                                                                         ).default()
                                                                     }
-                                                                    ?.let(::insert)
+                                                                    ?.onEach { Database.insert(it) }
+                                                                    //?.let(::upsert)
                                                             }
                                                         }
                                                         SmartMessage(

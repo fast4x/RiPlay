@@ -236,7 +236,8 @@ fun Podcast(
                                 playlistId = playlistId,
                                 position = index
                             ).default()
-                        }?.let( ::insert )
+                        }
+                        ?.onEach { Database.insert(it) }
                 }
                 SmartMessage(context.resources.getString(R.string.done), PopupType.Success, context = context)
             }
