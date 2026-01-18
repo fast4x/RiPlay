@@ -212,12 +212,14 @@ object Environment {
             client = buildClient()
         }
 
-    var locale = EnvironmentLocale(
-        gl = Locale.getDefault().country,
-        hl = Locale.getDefault().toLanguageTag()
-        //gl = LocalePreferences.preference?.gl ?: "US",
-        //hl = LocalePreferences.preference?.hl ?: "en"
-    )
+//    var locale = EnvironmentLocale(
+//        gl = Locale.getDefault().country,
+//        hl = Locale.getDefault().toLanguageTag()
+//        //gl = LocalePreferences.preference?.gl ?: "US",
+//        //hl = LocalePreferences.preference?.hl ?: "en"
+//    )
+
+    var locale = EnvironmentLocale()
 
     var visitorData: String = "" //_uMYwa66ycM
     var dataSyncId: String? = null
@@ -695,37 +697,37 @@ object Environment {
         setLogin(ytClient, setLogin = true)
         setBody(
             EditPlaylistBody(
-                context = Context.DefaultWebWithLocale,
+                context = DefaultWeb.client.toContext(locale, visitorData, dataSyncId),
                 playlistId = playlistId.removePrefix("VL"),
                 actions = videoIds.map{ Action.AddVideoAction(addedVideoId = it)}
             )
         )
     }
 
-    suspend fun removeFromPlaylist(
-        ytClient: Client,
-        playlistId: String,
-        videoId: String,
-        setVideoId: String? = null,
-    ) = removeFromPlaylist(ytClient, playlistId, videoId, listOf(setVideoId))
+//    suspend fun removeFromPlaylist(
+//        ytClient: Client,
+//        playlistId: String,
+//        videoId: String,
+//        setVideoId: String? = null,
+//    ) = removeFromPlaylist(ytClient, playlistId, videoId, listOf(setVideoId))
 
     suspend fun removeFromPlaylist(
         ytClient: Client,
         playlistId: String,
         videoId: String,
-        setVideoIds: List<String?>,
+        setVideoId: String,
     ) = client.post(_Pb7oepZC3P) {
         setLogin(ytClient, setLogin = true)
         setBody(
             EditPlaylistBody(
-                context = Context.DefaultWebWithLocale,
+                context = DefaultWeb.client.toContext(locale, visitorData, dataSyncId),
                 playlistId = playlistId.removePrefix("VL"),
-                actions = setVideoIds.map {
+                actions = listOf(
                     Action.RemoveVideoAction(
                         removedVideoId = videoId,
-                        setVideoId = it,
+                        setVideoId = setVideoId,
                     )
-                }
+                )
             )
         )
     }

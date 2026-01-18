@@ -2902,8 +2902,8 @@ interface Database {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insert(queuedMediaItems: List<QueuedMediaItem>)
 
-    @Insert(onConflict = OnConflictStrategy.IGNORE)
-    fun insertSongPlaylistMaps(songPlaylistMaps: List<SongPlaylistMap>)
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    fun insert(songPlaylistMaps: List<SongPlaylistMap>)
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     fun insert(album: Album, songAlbumMap: SongAlbumMap)
@@ -3007,6 +3007,9 @@ interface Database {
 
     @Upsert
     fun upsert(songAlbumMap: SongAlbumMap)
+
+    @Upsert
+    fun upsert(songPlaylistMap: SongPlaylistMap)
 
     @Upsert
     fun upsert(artist: Artist)

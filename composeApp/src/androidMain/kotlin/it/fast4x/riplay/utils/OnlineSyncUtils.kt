@@ -32,6 +32,7 @@ import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
+import timber.log.Timber
 
 suspend fun importYTMPrivatePlaylists(): Boolean {
     if (isYtSyncEnabled()) {
@@ -154,7 +155,11 @@ fun ytmPrivatePlaylistSync(playlist: Playlist, playlistId: Long) {
                                         position = position,
                                         setVideoId = mediaItem.mediaMetadata.extras?.getString("setVideoId"),
                                     ).default()
-                                }.let(Database::insertSongPlaylistMaps)
+                                }
+                                .onEach {
+                                    Timber.d("ytmPrivatePlaylistSync synced list of setvideoid ${it.setVideoId}")
+                                    Database.upsert(it)
+                                }
                         }
 
                         /*localPlaylistSongs.filter { it.asMediaItem.mediaId !in remotePlaylist.songs.map { it.asMediaItem.mediaId } }
@@ -293,13 +298,13 @@ suspend fun removeYTSongFromPlaylist(
     playlistId: Long,
 ): Boolean {
 
-    println("removeYTSongFromPlaylist removeSongFromPlaylist params songId = $songId, playlistBrowseId = $playlistBrowseId, playlistId = $playlistId")
+    Timber.d("removeYTSongFromPlaylist removeSongFromPlaylist params songId = $songId, playlistBrowseId = $playlistBrowseId, playlistId = $playlistId")
 
     if (isYtSyncEnabled()) {
         Database.asyncTransaction {
             CoroutineScope(Dispatchers.IO).launch {
                 val songSetVideoId = Database.getSetVideoIdFromPlaylist(songId, playlistId).firstOrNull()
-                println("removeYTSongFromPlaylist removeSongFromPlaylist songSetVideoId = $songSetVideoId")
+                Timber.d("removeYTSongFromPlaylist removeSongFromPlaylist songSetVideoId = $songSetVideoId")
                 if (songSetVideoId != null)
                     EnvironmentExt.removeFromPlaylist(playlistId = playlistBrowseId, videoId =  songId, setVideoId = songSetVideoId)
             }

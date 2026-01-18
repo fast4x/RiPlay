@@ -329,7 +329,8 @@ fun PlaylistSongList(
                                         position = index
                                     ).default()
                                 }
-                                ?.let( ::insertSongPlaylistMaps )
+
+                                //?.let( ::insertOrUpdateSongPlaylistMaps )
                 }
                 SmartMessage(context.resources.getString(R.string.done), PopupType.Success, context = context)
             }
@@ -847,7 +848,7 @@ fun PlaylistSongList(
                                                                             position = index
                                                                         ).default()
                                                                     }
-                                                                    ?.let(::insertSongPlaylistMaps)
+                                                                    ?.let(::insert)
                                                             }
                                                         }
                                                         SmartMessage(

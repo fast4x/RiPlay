@@ -4,6 +4,6 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class EnvironmentLocale(
-    val gl: String, // geolocation
-    val hl: String, // host language
+    val gl: String? = "US", // geolocation
+    val hl: String? = "en", // host language
 )

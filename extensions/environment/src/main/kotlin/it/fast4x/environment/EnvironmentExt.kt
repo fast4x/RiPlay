@@ -63,11 +63,11 @@ object EnvironmentExt {
         println("EnvironmentExt addToPlaylist (list of size ${videoIds.size}) error: ${it.stackTraceToString()}")
     }
 
-    suspend fun removeFromPlaylist(playlistId: String, videoId: String, setVideoId: String? = null) = runCatching {
-
+    suspend fun removeFromPlaylist(playlistId: String, videoId: String, setVideoId: String) = runCatching {
+            println("EnvironmentExt removeFromPlaylist playlistId: $playlistId videoId: $videoId setVideoId: $setVideoId")
             Environment.removeFromPlaylist(Context.DefaultWeb.client, playlistId, videoId, setVideoId)
         }.onFailure {
-            println("YtMusic removeFromPlaylist error: ${it.stackTraceToString()}")
+            println("EnvironmentExt removeFromPlaylist error: ${it.stackTraceToString()}")
         }
 
     suspend fun addPlaylistToPlaylist(playlistId: String, videoId: String) = runCatching {
@@ -76,16 +76,16 @@ object EnvironmentExt {
         println("EnvironmentExt addPlaylistToPlaylist error: ${it.stackTraceToString()}")
     }
 
-    suspend fun removeFromPlaylist(playlistId: String, videoId: String, setVideoIds: List<String?>) = runCatching {
-        Environment.removeFromPlaylist(Context.DefaultWeb.client, playlistId, videoId, setVideoIds)
-    }.onFailure {
-        println("EnvironmentExt removeFromPlaylist (list of size ${setVideoIds.size}) error: ${it.stackTraceToString()}")
-    }
+//    suspend fun removeFromPlaylist(playlistId: String, videoId: String, setVideoIds: List<String?>) = runCatching {
+//        Environment.removeFromPlaylist(Context.DefaultWeb.client, playlistId, videoId, setVideoIds)
+//    }.onFailure {
+//        println("EnvironmentExt removeFromPlaylist (list of size ${setVideoIds.size}) error: ${it.stackTraceToString()}")
+//    }
 
     suspend fun subscribeChannel(channelId: String) = runCatching {
         Environment.subscribeChannel(channelId)
     }.onFailure {
-        println("YtMusic subscribeChannel error: ${it.stackTraceToString()}")
+        println("EnvironmentExt subscribeChannel error: ${it.stackTraceToString()}")
     }
 
     suspend fun unsubscribeChannel(channelId: String) = runCatching {
@@ -396,15 +396,15 @@ object EnvironmentExt {
                             it1
                         )
                     }
-                }!!,
+                } ?: emptyList(),
 //            songsContinuation = response.contents.twoColumnBrowseResultsRenderer.secondaryContents.sectionListRenderer
 //                .contents.firstOrNull()?.musicPlaylistShelfRenderer?.continuations?.getContinuation(),
-            songsContinuation = response.contents.twoColumnBrowseResultsRenderer.secondaryContents.sectionListRenderer
-                .contents.firstOrNull()?.musicPlaylistShelfRenderer?.contents!!.lastOrNull()
+            songsContinuation = response.contents?.twoColumnBrowseResultsRenderer?.secondaryContents?.sectionListRenderer
+                ?.contents?.firstOrNull()?.musicPlaylistShelfRenderer?.contents?.lastOrNull()
                     ?.continuationItemRenderer?.continuationEndpoint?.continuationCommand?.token
                 ,
-            continuation = response.contents.twoColumnBrowseResultsRenderer.secondaryContents.sectionListRenderer
-                .continuations?.getContinuation(),
+            continuation = response.contents?.twoColumnBrowseResultsRenderer?.secondaryContents?.sectionListRenderer
+                ?.continuations?.getContinuation(),
             isEditable = isEditable
         )
     }

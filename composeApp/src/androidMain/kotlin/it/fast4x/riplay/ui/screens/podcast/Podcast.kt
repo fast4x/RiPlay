@@ -236,7 +236,7 @@ fun Podcast(
                                 playlistId = playlistId,
                                 position = index
                             ).default()
-                        }?.let( ::insertSongPlaylistMaps )
+                        }?.let( ::insert )
                 }
                 SmartMessage(context.resources.getString(R.string.done), PopupType.Success, context = context)
             }

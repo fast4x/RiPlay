@@ -201,6 +201,7 @@ import kotlinx.coroutines.delay
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
 import it.fast4x.riplay.extensions.persist.persistList
+import timber.log.Timber
 
 @KotlinCsvExperimental
 @ExperimentalMaterialApi
@@ -517,7 +518,7 @@ fun LocalPlaylistSongs(
 //                        val playlistIdChecked =
 //                            if (remotePlaylist.playlist.key.startsWith("VL")) remotePlaylist.playlist.key.substringAfter("VL") else remotePlaylist.playlist.key
 
-                        Database.clearPlaylist(playlistId)
+                        //Database.clearPlaylist(playlistId)
 
                         remotePlaylist.songs
                             .map(Environment.SongItem::asMediaItem)
@@ -529,8 +530,15 @@ fun LocalPlaylistSongs(
                                     position = position,
                                     setVideoId = mediaItem.mediaMetadata.extras?.getString("setVideoId"),
                                 ).default()
-                            }.let(Database::insertSongPlaylistMaps)
-                            .also { SmartMessage(context.resources.getString(R.string.done), context = context) }
+                            }
+                            .onEach {
+                                Timber.d("LocalPlaylistSongs synced list of setvideoid ${it.setVideoId}")
+                                Database.upsert(it)
+                            }
+                            .also {
+                                //Timber.d("LocalPlaylistSongs synced list of setvideoid ${remotePlaylist.songs.map { it.setVideoId }}")
+                                SmartMessage(context.resources.getString(R.string.done), context = context)
+                            }
                     }
                 }
 

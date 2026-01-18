@@ -112,6 +112,7 @@ import it.fast4x.environment.Environment
 import it.fast4x.environment.models.bodies.BrowseBody
 import it.fast4x.environment.requests.playlistPage
 import it.fast4x.environment.requests.song
+import it.fast4x.environment.utils.EnvironmentLocale
 import it.fast4x.environment.utils.LocalePreferenceItem
 import it.fast4x.environment.utils.LocalePreferences
 import it.fast4x.environment.utils.ProxyPreferenceItem
@@ -850,6 +851,10 @@ class MainActivity :
                     gl = locale.country
                         ?: "US"
                 )
+            Environment.locale = EnvironmentLocale(
+                hl = LocalePreferences.preference?.hl,
+                gl = LocalePreferences.preference?.gl
+            )
 
             cookie.value = preferences.getString(ytCookieKey, "").toString()
             visitorData.value = preferences.getString(ytVisitorDataKey, "").toString()
