@@ -46,7 +46,7 @@
     <string name="search_lyrics_online">Şarkı sözlerini çevrimiçi ara</string>
     <string name="fetch_lyrics_again">Şarkı sözlerini yeniden indir</string>
     <string name="id">Kimlik</string>
-    <string name="itag">Itag</string>
+    <string name="itag"></string>
     <string name="bitrate">Bit hızı</string>
     <string name="size">Boyut</string>
     <string name="cached">Önbellektekiler</string>
