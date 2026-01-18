@@ -33,7 +33,7 @@ val generateEnvironmentConfig by tasks.registering {
         "i3BRhLrV1v", "MApdyHLMyJ", "hizI7yLjL4", "rLoZP7BF4c", "nza34sU88C", "dwbUvjWUl3",
         "fqqhBZd0cf", "9sZKrkMg8p", "aQpNCVOe2i", "XNl2TKXLlB", "yNjbjspY8v", "eZueG672lt",
         "WkUFhXtC3G", "z4Xe47r8Vs", "RiPlay_CHROMECAST_APPLICATION_ID", "Ayp_CHROMECAST_APPLICATION_ID",
-        "AudioTagInfo_API_KEY", "RiPlay_LASTFM_API_KEY", "RiPlay_LASTFM_SECRET", "RiPlay_DISCORD_APPLICATION_IT"
+        "AudioTagInfo_API_KEY", "RiPlay_LASTFM_API_KEY", "RiPlay_LASTFM_SECRET", "RiPlay_DISCORD_APPLICATION_ID"
     )
     inputs.properties(environmentPropertyNames.associateWith { propertyOrEmpty(it) })
 

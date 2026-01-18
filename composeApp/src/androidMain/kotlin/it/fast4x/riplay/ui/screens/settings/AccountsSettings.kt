@@ -401,6 +401,7 @@ fun AccountsSettings() {
                     DiscordLoginAndGetToken(
                         navController = rememberNavController(),
                         onGetToken = { token, username, avatar ->
+                            //Timber.d("DiscordLoginAndGetToken DiscordPresence: token $token user $username avatar $avatar")
                             loginDiscord = false
                             discordPersonalAccessToken = token
                             discordAccountName = username

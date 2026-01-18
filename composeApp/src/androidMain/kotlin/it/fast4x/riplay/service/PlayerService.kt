@@ -180,6 +180,7 @@ import it.fast4x.riplay.utils.saveMasterQueue
 import it.fast4x.riplay.utils.seamlessQueue
 import it.fast4x.riplay.commonutils.setLikeState
 import it.fast4x.riplay.enums.LastFmScrobbleType
+import it.fast4x.riplay.extensions.encryptedpreferences.encryptedPreferences
 import it.fast4x.riplay.extensions.lastfm.sendNowPlaying
 import it.fast4x.riplay.extensions.lastfm.sendScrobble
 import it.fast4x.riplay.extensions.preferences.castToRiTuneDeviceEnabledKey
@@ -693,7 +694,8 @@ class PlayerService : Service(),
         if (!isAtLeastAndroid81) return
 
         if (preferences.getBoolean(isDiscordPresenceEnabledKey, false)) {
-            val token = preferences.getString(discordPersonalAccessTokenKey, "")
+            val token = encryptedPreferences.getString(discordPersonalAccessTokenKey, "")
+            //Timber.d("PlayerService initializeDiscordPresence token $token")
             if (token?.isNotEmpty() == true) {
                 discordPresenceManager = DiscordPresenceManager(
                     context = this,
@@ -1029,9 +1031,10 @@ class PlayerService : Service(),
 
     private fun updateDiscordPresence() {
         if (!isAtLeastAndroid81) return
-
-        localMediaItem?.let{
-            if (it.isLocal) {
+        Timber.d("PlayerService UpdateDiscordPresence")
+        currentSong.value?.asMediaItem?.let{
+            Timber.d("PlayerService UpdateDiscordPresence inside isLocal ${it.isLocal}")
+            if (!it.isLocal) {
                 updateDiscordPresenceWithOnlinePlayer(
                     discordPresenceManager,
                     it,

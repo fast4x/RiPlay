@@ -494,6 +494,7 @@ fun updateDiscordPresenceWithOnlinePlayer(
     currentDuration: Float,
     currentSecond: Float,
 ) {
+    Timber.d("UpdateDiscordPresence")
     if (mediaItem.isLocal) return
 
     val isDiscordPresenceEnabled = globalContext().preferences.getBoolean(isDiscordPresenceEnabledKey, false)
