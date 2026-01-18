@@ -34,7 +34,7 @@ fun EventsScreen() {
     val buttonsList = mutableListOf(
         EventType.NewRelease to EventType.NewRelease.textName,
         EventType.CheckUpdate to EventType.CheckUpdate.textName,
-        EventType.AutoBackup to EventType.AutoBackup.textName
+        //EventType.AutoBackup to EventType.AutoBackup.textName
     )
     var eventType by remember { mutableStateOf(EventType.NewRelease) }
 
