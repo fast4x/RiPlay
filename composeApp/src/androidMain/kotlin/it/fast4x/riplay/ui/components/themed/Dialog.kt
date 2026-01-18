@@ -155,6 +155,7 @@ import it.fast4x.riplay.extensions.preferences.lyricsSizeLKey
 import it.fast4x.riplay.utils.removeYTSongFromPlaylist
 import it.fast4x.riplay.extensions.preferences.thumbnailFadeExKey
 import it.fast4x.riplay.extensions.preferences.thumbnailSpacingLKey
+import it.fast4x.riplay.utils.getUpdateDownloadUrl
 import it.fast4x.riplay.utils.isLocal
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -1153,7 +1154,7 @@ fun NewVersionDialog (
                         .size(30.dp)
                         .clickable {
                             onDismiss()
-                            uriHandler.openUri("https://github.com/fast4x/RiPlay/releases/download/$updatedVersionName/riplay-full-release-$updatedVersionName.apk")
+                            uriHandler.openUri(getUpdateDownloadUrl())
                         }
                 )
             }

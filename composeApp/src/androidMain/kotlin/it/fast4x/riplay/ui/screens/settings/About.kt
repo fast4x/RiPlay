@@ -17,6 +17,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
+import it.fast4x.riplay.BuildConfig
 import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.NavigationBarPosition
 import it.fast4x.riplay.ui.components.themed.HeaderWithIcon
@@ -24,6 +25,7 @@ import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.utils.getVersionName
 import it.fast4x.riplay.ui.styling.secondary
 import it.fast4x.riplay.utils.colorPalette
+import it.fast4x.riplay.utils.getUpdateDownloadUrl
 import it.fast4x.riplay.utils.typography
 
 
@@ -69,7 +71,7 @@ fun About() {
                 .fillMaxSize()
         ) {
             BasicText(
-                text = "RiPlay v${getVersionName()} by fast4x",
+                text = "RiPlay ${BuildConfig.VERSION_NAME} by fast4x",
                 style = typography().s.secondary,
 
                 )
@@ -113,7 +115,15 @@ fun About() {
             }
         )
 
-
+        SettingsEntry(
+            online = false,
+            offline = false,
+            title = stringResource(R.string.social_github),
+            text = stringResource(R.string.download_latest_version_from_github_you_will_find_the_file_in_the_notification_area_and_you_can_install_by_clicking_on_it),
+            onClick = {
+                uriHandler.openUri(getUpdateDownloadUrl())
+            }
+        )
 
         SettingsGroupSpacer()
 

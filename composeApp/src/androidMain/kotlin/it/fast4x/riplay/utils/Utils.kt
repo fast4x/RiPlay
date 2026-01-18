@@ -40,6 +40,7 @@ import it.fast4x.environment.requests.song
 import it.fast4x.environment.utils.from
 import it.fast4x.kugou.KuGou
 import it.fast4x.lrclib.LrcLib
+import it.fast4x.riplay.BuildConfig
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.data.Database.Companion.getLikedAt
 import it.fast4x.riplay.R
@@ -603,6 +604,24 @@ fun CheckAvailableNewVersion(
     onDismiss: () -> Unit,
     updateAvailable: (Boolean) -> Unit
 ) {
+    val (updatedVersionName, updatedProductName, updatedVersionCode) = getAvailableUpdateInfo()
+    if (updatedVersionCode > getVersionCode()) {
+        //if (updatedVersionCode > BuildConfig.VERSION_CODE)
+        NewVersionDialog(
+            updatedVersionName = updatedVersionName,
+            updatedVersionCode = updatedVersionCode,
+            updatedProductName = updatedProductName,
+            onDismiss = onDismiss
+        )
+        updateAvailable(true)
+    } else {
+        updateAvailable(false)
+        onDismiss()
+    }
+}
+
+@Composable
+fun getAvailableUpdateInfo(): Triple<String, String, Int> {
     var updatedProductName = ""
     var updatedVersionName = ""
     var updatedVersionCode = 0
@@ -619,19 +638,19 @@ fun CheckAvailableNewVersion(
         updatedProductName =  if(dataText.size == 3) dataText[2] else ""
     }
 
-    if (updatedVersionCode > getVersionCode()) {
-        //if (updatedVersionCode > BuildConfig.VERSION_CODE)
-        NewVersionDialog(
-            updatedVersionName = updatedVersionName,
-            updatedVersionCode = updatedVersionCode,
-            updatedProductName = updatedProductName,
-            onDismiss = onDismiss
-        )
-        updateAvailable(true)
+    return Triple(updatedProductName, updatedVersionName, updatedVersionCode)
+}
+
+fun getUpdateDownloadUrl(): String {
+    val file = File(appContext().filesDir, "UpdatedVersionCode.ver")
+    var updatedVersionName = ""
+    if (file.exists()) {
+        val dataText = file.readText().substring(0, file.readText().length - 1).split("-")
+        updatedVersionName = if (dataText.size == 3) dataText[1] else ""
     } else {
-        updateAvailable(false)
-        onDismiss()
+        updatedVersionName = BuildConfig.VERSION_NAME
     }
+    return "https://github.com/fast4x/RiPlay/releases/download/$updatedVersionName/riplay-full-release-$updatedVersionName.apk"
 }
 
 @Composable
