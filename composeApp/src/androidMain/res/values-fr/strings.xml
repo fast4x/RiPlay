@@ -1189,13 +1189,13 @@ Volume BAS : titre précédent</string>
     <string name="warning_skipped_video">Skipped video</string>
     <string name="warning_skipped_blacklisted_song">Skipped blacklisted song</string>
     <string name="cast">Cast</string>
-    <string name="enable_ritune_cast">Enable RiTune Cast</string>
-    <string name="ritune_cast_info">"Cast to RiTune devices, require RiTune installed in other devices "</string>
-    <string name="queue_create_new_queue">Create new queue</string>
-    <string name="queue_list_of_media">List of media</string>
-    <string name="queue_queue">Queue: %1$s</string>
-    <string name="queue_name_of_the_queue">Name of the queue</string>
-    <string name="queue_queue_not_accept_video">Queue not accept video</string>
+    <string name="enable_ritune_cast">Activer RiTune Cast</string>
+    <string name="ritune_cast_info">"Diffuser sur les appareils RiTune nécessite l'installation de RiTune sur d'autres appareils "</string>
+    <string name="queue_create_new_queue">Créer une nouvelle file d\'attente</string>
+    <string name="queue_list_of_media">Liste des médias</string>
+    <string name="queue_queue">File d\'attente : %1$s</string>
+    <string name="queue_name_of_the_queue">Nom de la file d\'attente</string>
+    <string name="queue_queue_not_accept_video">La file d\'attente n\'accepte pas les vidéos</string>
     <string name="queue_accept_song">Accept song</string>
     <string name="queue_accept_video">Accept video</string>
     <string name="queue_accept_podcast">Accept podcast</string>
@@ -1230,7 +1230,7 @@ Volume BAS : titre précédent</string>
     <string name="event_disable_notification">Disable notification</string>
     <string name="event_enable_notification">Enable notification</string>
     <string name="event_if_there_are_new_releases_you_will_be_notified_with_a_system_notification_even_if_the_app_is_not_open">If there are new releases, you will be notified with a system notification, even if the app is not open.</string>
-    <string name="formattedtime_within_days_and_hours">Within %1$d days and %2$d hours</string>
-    <string name="formattedtime_within_hours">Within %1$d hours</string>
-    <string name="formattedtime_soon">Soon</string>
+    <string name="formattedtime_within_days_and_hours">Dans %1$d jours et %2$d heures</string>
+    <string name="formattedtime_within_hours">Dans les %1$d heures</string>
+    <string name="formattedtime_soon">Bientôt</string>
 </resources>
