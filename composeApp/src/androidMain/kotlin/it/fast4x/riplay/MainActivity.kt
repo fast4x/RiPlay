@@ -17,20 +17,15 @@ import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.net.Uri
-import android.net.nsd.NsdServiceInfo
 import android.os.Build
 import android.os.Bundle
 import android.os.IBinder
 import android.provider.Settings
 import android.view.WindowManager
-import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.activity.result.ActivityResultCallback
-import androidx.activity.result.ActivityResultLauncher
-import androidx.activity.result.contract.ActivityResultContract
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
@@ -40,39 +35,24 @@ import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.add
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.LocalRippleConfiguration
 import androidx.compose.material3.RippleConfiguration
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
@@ -91,7 +71,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.runtime.toMutableStateList
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -118,11 +97,6 @@ import androidx.media3.common.util.Log
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.compose.rememberNavController
 import androidx.palette.graphics.Palette
-import androidx.work.Constraints
-import androidx.work.ExistingPeriodicWorkPolicy
-import androidx.work.NetworkType
-import androidx.work.PeriodicWorkRequest
-import androidx.work.WorkManager
 import coil.imageLoader
 import coil.request.ImageRequest
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
@@ -231,7 +205,6 @@ import it.fast4x.riplay.extensions.preferences.closebackgroundPlayerKey
 import it.fast4x.riplay.extensions.preferences.showAutostartPermissionDialogKey
 import it.fast4x.riplay.navigation.AppNavigation
 import it.fast4x.riplay.service.PlayerService
-import it.fast4x.riplay.service.ToolsWorker
 import it.fast4x.riplay.utils.isLocal
 import it.fast4x.riplay.ui.components.BottomSheet
 import it.fast4x.riplay.ui.components.BottomSheetState
@@ -282,14 +255,9 @@ import it.fast4x.riplay.extensions.ondevice.OnDeviceViewModel
 import it.fast4x.riplay.extensions.preferences.resumeOrPausePlaybackWhenDeviceKey
 import it.fast4x.riplay.extensions.preferences.showSnowfallEffectKey
 import it.fast4x.riplay.extensions.ritune.toRiTuneDevice
-import it.fast4x.riplay.service.PlayerServiceQueueViewModel
-import it.fast4x.riplay.ui.components.SheetBody
+import it.fast4x.riplay.service.experimental.PlayerServiceQueueViewModel
 import it.fast4x.riplay.ui.components.Snowfall
-import it.fast4x.riplay.ui.components.themed.IconButton
-import it.fast4x.riplay.ui.screens.player.local.RiTunePlayer
-import it.fast4x.riplay.utils.GlobalSharedData
 import it.fast4x.riplay.utils.GlobalSharedData.riTuneDevices
-import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.utils.isAtLeastAndroid12
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -311,8 +279,6 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import java.util.Objects
-import java.util.UUID
-import java.util.concurrent.TimeUnit
 import kotlin.math.sqrt
 
 
@@ -331,21 +297,15 @@ class MainActivity :
         override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
             if (service is PlayerService.Binder) {
                 this@MainActivity.binder = service
-                //this@MainActivity.onlinePlayer.value = service.onlinePlayer
                 this@MainActivity.onlinePlayerPlayingState = service.onlinePlayerPlayingState
-//                this@MainActivity.currentDuration.value = service.onlinePlayerCurrentDuration
-//                this@MainActivity.currentSecond.value = service.onlinePlayerCurrentSecond
                 this@MainActivity.onlinePlayerView = service.onlinePlayerView
             }
 
-//            if (service is ToolsService.LocalBinder) {
-//                this@MainActivity.toolsService = service.serviceInstance.LocalBinder()
-//            }
+
         }
 
         override fun onServiceDisconnected(name: ComponentName?) {
             binder = null
-            //toolsService = null
         }
 
     }
@@ -375,8 +335,6 @@ class MainActivity :
     var localPlayerPlayingState: MutableState<Boolean> = mutableStateOf(false)
 
     var selectedQueue: MutableState<Queues> = mutableStateOf(defaultQueue())
-
-    //var toolsService by mutableStateOf<ToolsService.LocalBinder?>(null)
 
     private var onlinePlayerView: YouTubePlayerView? = null
 
@@ -534,16 +492,6 @@ class MainActivity :
             Timber.e("MainActivity.onStart bindService ${it.stackTraceToString()}")
         }
 
-        /*
-        runCatching {
-            val intent = Intent(this, ToolsService::class.java)
-            bindService(intent, serviceConnection, BIND_AUTO_CREATE)
-            startService(intent)
-        }.onFailure {
-            Timber.e("MainActivity.onStart startService ToolsService ${it.stackTraceToString()}")
-        }
-         */
-
         super.onStart()
     }
 
@@ -625,8 +573,6 @@ class MainActivity :
         isclosebackgroundPlayerEnabled = preferences.getBoolean(closebackgroundPlayerKey, false)
 
         showAutostartPermissionDialog = preferences.getBoolean(showAutostartPermissionDialogKey, true)
-
-        //initializeWorker()
 
         checkAndRequestStandardPermissions()
 
@@ -937,9 +883,14 @@ class MainActivity :
                 }
             }
 
-            Environment.dataSyncId = preferences.getString(ytDataSyncIdKey, "").toString()
+            val dataSyncId = preferences.getString(ytDataSyncIdKey, "").toString()
+            Environment.dataSyncId = dataSyncId.let {
+                it.takeIf { !it.contains("||") }
+                    ?: it.takeIf { it.endsWith("||") }?.substringBefore("||")
+                    ?: it.substringAfter("||")
+            }
 
-            Timber.d("MainActivity.setContent cookie: ${cookie.value}")
+            Timber.d("MainActivity.setContent Environment variables cookie: ${Environment.cookie} visitorData: ${Environment.visitorData} dataSyncId: ${Environment.dataSyncId}")
             val customDnsOverHttpsServer =
                 preferences.getString(customDnsOverHttpsServerKey, "")
 
@@ -1838,31 +1789,6 @@ class MainActivity :
         Database.asyncTransaction {
             selectedQueue.value = Database.selectedQueue() ?: defaultQueue()
         }
-    }
-
-    private fun initializeWorker() {
-
-        val constraints = Constraints.Builder()
-            .setRequiredNetworkType(NetworkType.NOT_REQUIRED)
-            .build()
-
-        val keepAliveRequest = PeriodicWorkRequest.Builder(
-            ToolsWorker::class.java,
-            5,
-            TimeUnit.SECONDS
-        ).setConstraints(constraints)
-            .addTag("RiPlayKaIdWorker")
-            .build()
-
-        WorkManager.getInstance(this)
-            .enqueueUniquePeriodicWork(
-                "RiPlayKaIdWorker",
-                ExistingPeriodicWorkPolicy.KEEP,
-                keepAliveRequest
-            )
-
-        //WorkManager.getInstance(this).cancelAllWorkByTag("RiPlayKaIdWorker")
-
     }
 
     private val sensorListener: SensorEventListener = object : SensorEventListener {

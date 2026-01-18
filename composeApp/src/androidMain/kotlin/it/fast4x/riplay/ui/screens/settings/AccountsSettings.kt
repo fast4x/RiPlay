@@ -283,10 +283,10 @@ fun AccountsSettings() {
                                                 context = context
                                             )
 
-                                            }
-
                                         }
-                                    )
+
+                                    }
+                                )
                             }
 
                         }

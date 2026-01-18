@@ -1,4 +1,4 @@
-package it.fast4x.riplay.service
+package it.fast4x.riplay.service.experimental
 
 import android.content.Context
 import androidx.lifecycle.ViewModel
@@ -18,6 +18,7 @@ import it.fast4x.riplay.extensions.preferences.excludeSongIfIsVideoKey
 import it.fast4x.riplay.extensions.preferences.excludeSongsWithDurationLimitKey
 import it.fast4x.riplay.extensions.preferences.getEnum
 import it.fast4x.riplay.extensions.preferences.preferences
+import it.fast4x.riplay.service.PlayerService
 import it.fast4x.riplay.ui.components.themed.SmartMessage
 import it.fast4x.riplay.utils.appContext
 import it.fast4x.riplay.utils.cleaned

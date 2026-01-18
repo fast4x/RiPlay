@@ -577,7 +577,7 @@ object Environment {
         val response =
             client.post(_qkHMinedvm) {
                 setLogin(setLogin = true)
-                setBody(AccountMenuBody())
+                setBody(AccountMenuBody().copy(context = DefaultWeb.client.toContext(locale, visitorData, dataSyncId)))
             }
 
         return response
@@ -753,7 +753,7 @@ object Environment {
         setLogin(setLogin = true)
         setBody(
             SubscribeBody(
-                context = DefaultWeb,
+                context = DefaultWeb.client.toContext(locale, visitorData, dataSyncId),
                 channelIds = listOf(channelId)
             )
         )
@@ -765,7 +765,7 @@ object Environment {
         setLogin(setLogin = true)
         setBody(
             SubscribeBody(
-                context = DefaultWeb,
+                context = DefaultWeb.client.toContext(locale, visitorData, dataSyncId),
                 channelIds = listOf(channelId)
             )
         )
@@ -778,7 +778,7 @@ object Environment {
         setLogin(setLogin = true)
         setBody(
             LikeBody(
-                context = DefaultWeb,
+                context = DefaultWeb.client.toContext(locale, visitorData, dataSyncId),
                 target = LikeBody.Target.PlaylistTarget(playlistId = playlistId)
             )
         )
@@ -790,7 +790,7 @@ object Environment {
         setLogin(setLogin = true)
         setBody(
             LikeBody(
-                context = DefaultWeb,
+                context = DefaultWeb.client.toContext(locale, visitorData, dataSyncId),
                 target = LikeBody.Target.PlaylistTarget(playlistId = playlistId)
             )
         )
@@ -802,7 +802,7 @@ object Environment {
         setLogin(setLogin = true)
         setBody(
             LikeBody(
-                context = DefaultWeb,
+                context = DefaultWeb.client.toContext(locale, visitorData, dataSyncId),
                 target = LikeBody.Target.VideoTarget(videoId = videoId)
             )
         )
@@ -814,7 +814,7 @@ object Environment {
         setLogin(setLogin = true)
         setBody(
             LikeBody(
-                context = DefaultWeb,
+                context = DefaultWeb.client.toContext(locale, visitorData, dataSyncId),
                 target = LikeBody.Target.VideoTarget(videoId = videoId)
             )
         )

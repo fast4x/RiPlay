@@ -1,4 +1,4 @@
-package it.fast4x.riplay.service
+package it.fast4x.riplay.service.experimental
 
 import androidx.annotation.OptIn
 import androidx.lifecycle.ViewModel
@@ -6,6 +6,7 @@ import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
+import it.fast4x.riplay.service.PlayerService
 import it.fast4x.riplay.utils.isLocal
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

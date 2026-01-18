@@ -30,6 +30,8 @@ import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.extensions.preferences.ytAccountThumbnailKey
 import it.fast4x.riplay.extensions.preferences.ytDataSyncIdKey
 import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.launch
+import timber.log.Timber
 
 @OptIn(DelicateCoroutinesApi::class)
 @SuppressLint("SetJavaScriptEnabled")
@@ -56,7 +58,7 @@ fun YouTubeLogin(
         modifier = Modifier.fillMaxSize().windowInsetsPadding(LocalPlayerAwareWindowInsets.current)
     ) {
         //Row(modifier = Modifier.fillMaxWidth()) {
-            Title("Login to YouTube Music",
+            Title("Login",
                 icon = R.drawable.chevron_down,
                 onClick = { onLogin(cookie) }
             )
@@ -76,21 +78,20 @@ fun YouTubeLogin(
                                     cookie = freshCookie
                                     println("YoutubeLogin update cookie: $cookie")
                                 }
+
+                                scope.launch {
+                                    Environment.accountInfo().onSuccess {
+                                        println("YoutubeLogin doUpdateVisitedHistory accountInfo() $it")
+                                        accountName = it?.name.orEmpty()
+                                        accountEmail = it?.email.orEmpty()
+                                        accountChannelHandle = it?.channelHandle.orEmpty()
+                                        accountThumbnail = it?.thumbnailUrl.orEmpty()
+                                    }.onFailure {
+                                        Timber.e("YoutubeLogin doUpdateVisitedHistory accountError YoutubeLogin: $it.stackTraceToString()")
+                                    }
+                                }
                                 println("YoutubeLogin doUpdateVisitedHistory cookie $cookie")
                                 onLogin(cookie)
-//                                GlobalScope.launch {
-//                                    Environment.accountInfo().onSuccess {
-//                                        println("YoutubeLogin doUpdateVisitedHistory accountInfo() $it")
-//                                        accountName = it?.name.orEmpty()
-//                                        accountEmail = it?.email.orEmpty()
-//                                        accountChannelHandle = it?.channelHandle.orEmpty()
-//                                        accountThumbnail = it?.thumbnailUrl.orEmpty()
-//                                        onLogin(cookie)
-//                                    }.onFailure {
-//                                        Timber.e("Error YoutubeLogin: $it.stackTraceToString()")
-//                                        println("Error YoutubeLogin: ${it.stackTraceToString()}")
-//                                    }
-//                                }
                             }
                         }
 
@@ -106,6 +107,7 @@ fun YouTubeLogin(
                         javaScriptEnabled = true
                         setSupportZoom(true)
                         builtInZoomControls = true
+                        displayZoomControls = false
 
                         val userAgent = settings.userAgentString
                         settings.userAgentString = userAgent.replace("; wv", "")
@@ -124,7 +126,7 @@ fun YouTubeLogin(
                         @JavascriptInterface
                         fun onRetrieveDataSyncId(newDataSyncId: String?) {
                             if (newDataSyncId != null) {
-                                dataSyncId = newDataSyncId
+                                dataSyncId = newDataSyncId.substringBefore("||")
                             }
                         }
                     }, "Android")
