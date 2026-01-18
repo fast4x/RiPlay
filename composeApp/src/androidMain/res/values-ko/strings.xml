@@ -1036,9 +1036,9 @@
     <string name="rw_your_badge">당신의 \'뱃지\'</string>
     <string name="rw_ready_to_know">파악 준비:</string>
     <string name="rw_your_music_level">당신의 음악 수준</string>
-    <string name="snow_effect">Snow effect</string>
-    <string name="at_tap_to_identify_a_song">Tap to identify a song</string>
-    <string name="at_start_listening">Start Listening</string>
+    <string name="snow_effect">눈 효과</string>
+    <string name="at_tap_to_identify_a_song">탭해서 곡 찾기</string>
+    <string name="at_start_listening">듣기 시작</string>
     <string name="at_try_play"><![CDATA[Try & Play]]></string>
     <string name="at_microphone_permission_is_required">Microphone permission is required.</string>
     <string name="at_grant_permission">Grant Permission</string>
