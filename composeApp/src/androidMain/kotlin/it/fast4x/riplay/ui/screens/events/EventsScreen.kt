@@ -31,6 +31,8 @@ import it.fast4x.riplay.utils.formatTimeRemaining
 import it.fast4x.riplay.utils.getWorkStatusFlow
 import it.fast4x.riplay.utils.isWorkScheduled
 import it.fast4x.riplay.utils.typography
+import it.fast4x.riplay.BuildConfig
+
 
 const val workNameNewRelease = "weeklyOrDailyCheckNewFromArtistsWork"
 const val workNameCheckUpdate = "weeklyOrDailyCheckUpdateWork"
@@ -46,8 +48,8 @@ fun EventsScreen() {
         EventType.NewArtistsRelease to EventType.NewArtistsRelease.textName,
         //EventType.AutoBackup to EventType.AutoBackup.textName
     ).apply {
-        //if(BuildConfig.BUILD_VARIANT == "full") // This is in the gradle file
-        //    add(EventType.CheckUpdate to EventType.CheckUpdate.textName)
+        if(BuildConfig.BUILD_VARIANT == "full") // This is in the gradle file
+            add(EventType.CheckUpdate to EventType.CheckUpdate.textName)
     }
     var eventType by remember { mutableStateOf(EventType.NewArtistsRelease) }
 
