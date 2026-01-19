@@ -18,7 +18,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
-import it.fast4x.riplay.BuildConfig
 import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.EventType
 import it.fast4x.riplay.extensions.preferences.autoBackupFolderKey
@@ -44,13 +43,13 @@ fun EventsScreen() {
     val context = LocalContext.current
 
     val buttonsList = mutableListOf(
-        EventType.NewRelease to EventType.NewRelease.textName,
-        EventType.AutoBackup to EventType.AutoBackup.textName
+        EventType.NewArtistsRelease to EventType.NewArtistsRelease.textName,
+        //EventType.AutoBackup to EventType.AutoBackup.textName
     ).apply {
         //if(BuildConfig.BUILD_VARIANT == "full") // This is in the gradle file
         //    add(EventType.CheckUpdate to EventType.CheckUpdate.textName)
     }
-    var eventType by remember { mutableStateOf(EventType.NewRelease) }
+    var eventType by remember { mutableStateOf(EventType.NewArtistsRelease) }
 
 
     val workInfoNewRelease by context.getWorkStatusFlow(workNameNewRelease).collectAsState(initial = null)
@@ -90,7 +89,7 @@ fun EventsScreen() {
             }
         }
 
-        if (eventType == EventType.NewRelease) {
+        if (eventType == EventType.NewArtistsRelease) {
             val isScheduled = isWorkScheduled(workInfoNewRelease)
             val statusText = eventStatus(workInfoNewRelease)
 
