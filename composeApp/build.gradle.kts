@@ -32,8 +32,8 @@ val generateEnvironmentConfig by tasks.registering {
         "a4AcHS8CSg", "krdLqpYLxM", "ye6KGLZL7n", "ec09m20YH5", "LDRlbOvbF1", "EEqX0yizf2",
         "i3BRhLrV1v", "MApdyHLMyJ", "hizI7yLjL4", "rLoZP7BF4c", "nza34sU88C", "dwbUvjWUl3",
         "fqqhBZd0cf", "9sZKrkMg8p", "aQpNCVOe2i", "XNl2TKXLlB", "yNjbjspY8v", "eZueG672lt",
-        "WkUFhXtC3G", "z4Xe47r8Vs", "RiPlay_CHROMECAST_APPLICATION_ID", "Ayp_CHROMECAST_APPLICATION_ID",
-        "AudioTagInfo_API_KEY", "RiPlay_LASTFM_API_KEY", "RiPlay_LASTFM_SECRET", "RiPlay_DISCORD_APPLICATION_ID"
+        "WkUFhXtC3G", "z4Xe47r8Vs", "AudioTagInfo_API_KEY", "RiPlay_LASTFM_API_KEY",
+        "RiPlay_LASTFM_SECRET", "RiPlay_DISCORD_APPLICATION_ID"
     )
     inputs.properties(environmentPropertyNames.associateWith { propertyOrEmpty(it) })
 
@@ -96,9 +96,6 @@ val generateEnvironmentConfig by tasks.registering {
                 const val env_eZueG672lt = "${props["eZueG672lt"]}"
                 const val env_WkUFhXtC3G = "${props["WkUFhXtC3G"]}"
                 const val env_z4Xe47r8Vs = "${props["z4Xe47r8Vs"]}"
-                
-                const val RiPlay_CHROMECAST_APPLICATION_ID = "${props["RiPlay_CHROMECAST_APPLICATION_ID"]}"
-                const val Ayp_CHROMECAST_APPLICATION_ID = "${props["Ayp_CHROMECAST_APPLICATION_ID"]}"
                 const val AudioTagInfo_API_KEY = "${props["AudioTagInfo_API_KEY"]}"
                 const val RiPlay_LASTFM_API_KEY = "${props["RiPlay_LASTFM_API_KEY"]}"
                 const val RiPlay_LASTFM_SECRET = "${props["RiPlay_LASTFM_SECRET"]}"
@@ -262,8 +259,6 @@ kotlin {
             implementation(libs.haze)
             implementation(libs.androidyoutubeplayer)
             implementation(libs.androidyoutubeplayer.custom.ui)
-            implementation(libs.androidyoutubeplayer.chromecast.sender)
-            implementation(libs.androidx.mediarouter)
             implementation(libs.glance.widgets)
             implementation(libs.kizzy.rpc)
             implementation(libs.gson)
@@ -543,19 +538,6 @@ android {
         )
         // INIT ENVIRONMENT
 
-        //INIT CHROMECAST RECEIVER
-        resValue(
-            "string",
-            "RiPlay_CHROMECAST_APPLICATION_ID",
-            propertyOrEmpty("RiPlay_CHROMECAST_APPLICATION_ID")
-        )
-        resValue(
-            "string",
-            "Ayp_CHROMECAST_APPLICATION_ID",
-            propertyOrEmpty("Ayp_CHROMECAST_APPLICATION_ID")
-        )
-        //INIT CHROMECAST RECEIVER
-
         //INIT AudioTagInfo Api
         resValue(
             "string",
@@ -626,26 +608,29 @@ android {
         create("full") {
             isDefault = true
             dimension = "version"
+            buildConfigField("String", "BUILD_VARIANT", "\"full\"")
         }
     }
     productFlavors {
         create("accrescent") {
             dimension = "version"
             manifestPlaceholders["appName"] = "RiPlay-Acc"
+            buildConfigField("String", "BUILD_VARIANT", "\"accrescent\"")
         }
     }
     productFlavors {
         create("fdroid") {
             dimension = "version"
             //manifestPlaceholders["appName"] = "RiPlay"
+            buildConfigField("String", "BUILD_VARIANT", "\"fdroid\"")
         }
     }
 
-    tasks.withType<KotlinCompile> {
-        if (name.substringAfter("compile").lowercase().startsWith("fdroid")) {
-            exclude("**/extensions/chromecast/**")
-        }
-    }
+//    tasks.withType<KotlinCompile> {
+//        if (name.substringAfter("compile").lowercase().startsWith("fdroid")) {
+//            exclude("**/extensions/chromecast/**")
+//        }
+//    }
 
     applicationVariants.all {
         val variant = this

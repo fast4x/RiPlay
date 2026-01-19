@@ -412,6 +412,9 @@ const val lastfmScrobbleTypeKey = "lastfmScrobbleType"
 
 const val shortOnDeviceFolderNameKey = "shortOnDeviceFolderName"
 
+const val autoBackupFolderKey = "autoBackupFolder"
+
+
 inline fun <reified T : Enum<T>> SharedPreferences.getEnum(
     key: String,
     defaultValue: T

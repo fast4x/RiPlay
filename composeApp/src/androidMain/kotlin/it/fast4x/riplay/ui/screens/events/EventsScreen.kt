@@ -1,5 +1,10 @@
 package it.fast4x.riplay.ui.screens.events
 
+import android.content.Intent
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.material3.*
@@ -9,11 +14,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
+import it.fast4x.riplay.BuildConfig
 import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.EventType
+import it.fast4x.riplay.extensions.preferences.autoBackupFolderKey
+import it.fast4x.riplay.extensions.preferences.rememberPreference
+import it.fast4x.riplay.extensions.scheduled.periodicAutoBackup
 import it.fast4x.riplay.extensions.scheduled.periodicCheckNewFromArtists
 import it.fast4x.riplay.extensions.scheduled.periodicCheckUpdate
 import it.fast4x.riplay.ui.components.ButtonsRow
@@ -25,6 +35,8 @@ import it.fast4x.riplay.utils.typography
 
 const val workNameNewRelease = "weeklyOrDailyCheckNewFromArtistsWork"
 const val workNameCheckUpdate = "weeklyOrDailyCheckUpdateWork"
+const val workNameAutoBackup = "weeklyOrDailyAutoBackupWork"
+
 
 
 @Composable
@@ -33,14 +45,18 @@ fun EventsScreen() {
 
     val buttonsList = mutableListOf(
         EventType.NewRelease to EventType.NewRelease.textName,
-        EventType.CheckUpdate to EventType.CheckUpdate.textName,
-        //EventType.AutoBackup to EventType.AutoBackup.textName
-    )
+        EventType.AutoBackup to EventType.AutoBackup.textName
+    ).apply {
+        if(BuildConfig.BUILD_VARIANT == "full") // This is in the gradle file
+            add(EventType.CheckUpdate to EventType.CheckUpdate.textName)
+    }
     var eventType by remember { mutableStateOf(EventType.NewRelease) }
 
 
     val workInfoNewRelease by context.getWorkStatusFlow(workNameNewRelease).collectAsState(initial = null)
     val workInfoCheckUpdate by context.getWorkStatusFlow(workNameCheckUpdate).collectAsState(initial = null)
+    val workInfoAutoBackup by context.getWorkStatusFlow(workNameAutoBackup).collectAsState(initial = null)
+
 
     var weeklyOrDaily by remember { mutableStateOf(true) }
 
@@ -246,6 +262,119 @@ fun EventsScreen() {
             Spacer(modifier = Modifier.height(16.dp))
             Text(
                 text = stringResource(R.string.when_enabled_a_new_version_is_checked_and_notified_during_startup),
+                style = typography().xs,
+                textAlign = TextAlign.Justify
+            )
+        }
+
+        if (eventType == EventType.AutoBackup) {
+            val isScheduled = isWorkScheduled(workInfoAutoBackup)
+            val statusText = eventStatus(workInfoAutoBackup)
+
+            var selectedFolderUri by rememberPreference(autoBackupFolderKey, "")
+            val folderPickerLauncher = rememberLauncherForActivityResult(
+                contract = ActivityResultContracts.OpenDocumentTree()
+            ) { uri: Uri? ->
+                if (uri != null) {
+                    context.contentResolver.takePersistableUriPermission(
+                        uri,
+                        Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+                    )
+
+                    selectedFolderUri = uri.toString()
+                }
+            }
+
+            Text(
+                text = "Enable auto backup",
+                style = typography().m
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Text(
+                text = statusText,
+                color = if (isScheduled) colorPalette().accent else colorPalette().red,
+                style = typography().m
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            val nextRunTime = workInfoAutoBackup?.nextScheduleTimeMillis
+            val timeRemaining = (nextRunTime?.minus(System.currentTimeMillis())) ?: 0L
+            val formattedTimeRemaining = formatTimeRemaining(timeRemaining)
+
+            if (isScheduled) {
+                Text(
+                    text = stringResource(R.string.event_next_run, formattedTimeRemaining),
+                    style = typography().s
+                )
+            } else {
+                Text(
+                    text = "Click to select the folder where the backup will be saved:",
+                    style = typography().xs
+                )
+                Text(
+                    text = selectedFolderUri.ifEmpty { "No folder selected, click here to select a folder" },
+                    style = typography().xxs,
+                    maxLines = 3,
+                    overflow = TextOverflow.Ellipsis,
+                    color = colorPalette().accent,
+                    modifier = Modifier.clickable {
+                        folderPickerLauncher.launch(null)
+                    }
+                )
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(.7f),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    RadioButton(
+                        selected = !weeklyOrDaily, onClick = { weeklyOrDaily = false },
+                        colors = RadioButtonDefaults.colors(
+                            selectedColor = colorPalette().text,
+                            unselectedColor = colorPalette().textDisabled
+                        )
+                    )
+                    Text(text = stringResource(R.string.event_daily), style = typography().s)
+                    RadioButton(
+                        selected = weeklyOrDaily, onClick = { weeklyOrDaily = true },
+                        colors = RadioButtonDefaults.colors(
+                            selectedColor = colorPalette().text,
+                            unselectedColor = colorPalette().textDisabled
+                        )
+                    )
+                    Text(text = stringResource(R.string.event_weekly), style = typography().s)
+
+                }
+
+            }
+
+            Button(
+                onClick = {
+                    if (isScheduled) {
+                        WorkManager.getInstance(context).cancelUniqueWork(workNameCheckUpdate)
+                    } else {
+                        periodicAutoBackup(context, weeklyOrDaily)
+                    }
+                },
+                enabled = true,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = colorPalette().background0,
+                    contentColor = colorPalette().text,
+                )
+            ) {
+                Text(
+                    if (isScheduled) stringResource(R.string.event_disable_notification) else stringResource(
+                        R.string.event_enable_notification
+                    )
+                )
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                text = "Viene eseguito un backup completo del database e delle impostazioni, anche se l'app è chiusa.",
                 style = typography().xs,
                 textAlign = TextAlign.Justify
             )

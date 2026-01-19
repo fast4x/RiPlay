@@ -71,7 +71,7 @@ fun About() {
                 .fillMaxSize()
         ) {
             BasicText(
-                text = "RiPlay ${BuildConfig.VERSION_NAME} by fast4x",
+                text = "RiPlay ${BuildConfig.VERSION_NAME} (${BuildConfig.BUILD_VARIANT}) by fast4x",
                 style = typography().s.secondary,
 
                 )

@@ -47,7 +47,6 @@ math3 = "3.6.1"
 toasty = "1.5.2"
 haze = "0.7.3"
 androidyoutubeplayer = "13.0.0"
-androidyoutubeplayercast = "0.32"
 mediarouter = "1.8.1"
 glance = "1.1.1"
 kizzyrpc = "1.0.71"
@@ -122,8 +121,6 @@ toasty = {group = "com.github.GrenderG", name = "Toasty", version.ref = "toasty"
 haze = {group = "dev.chrisbanes.haze", name = "haze", version.ref = "haze"}
 androidyoutubeplayer = {group = "com.pierfrancescosoffritti.androidyoutubeplayer", name = "core", version.ref = "androidyoutubeplayer"}
 androidyoutubeplayer-custom-ui = {group = "com.pierfrancescosoffritti.androidyoutubeplayer", name = "custom-ui", version.ref = "androidyoutubeplayer"}
-androidyoutubeplayer-chromecast-sender = {group = "com.pierfrancescosoffritti.androidyoutubeplayer", name = "chromecast-sender", version.ref = "androidyoutubeplayercast"}
-androidx-mediarouter = { group = "androidx.mediarouter", name = "mediarouter", version.ref = "mediarouter" }
 glance-widgets = {group = "androidx.glance", name = "glance-appwidget", version.ref = "glance"}
 kizzy-rpc = {group = "com.github.dead8309", name = "KizzyRPC", version.ref = "kizzyrpc"}
 gson = {group = "com.google.code.gson", name = "gson", version.ref = "gson"}
