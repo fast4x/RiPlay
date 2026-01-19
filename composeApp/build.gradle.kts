@@ -300,18 +300,14 @@ android {
         compose = true
     }
 
-    compileSdk = libs.versions.android.compileSdk.get().toInt()
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "it.fast4x.riplay"
-        minSdk = libs.versions.android.minSdk.get().toInt()
-        targetSdk = libs.versions.android.targetSdk.get().toInt()
-        val versionMajor = libs.versions.releaseVersionMajor.get().toInt()
-        val versionMinor = libs.versions.releaseVersionMinor.get().toInt()
-        versionCode = libs.versions.releaseVersionCode.get().toInt()
-//        val releaseSuffix = libs.versions.releaseVersionSuffix.get()
-//        versionName = "$versionMajor.$versionMinor.$versionCode$releaseSuffix"
-        versionName = "$versionMajor.$versionMinor.$versionCode"
+        minSdk = 24
+        targetSdk = 36
+        versionCode = 56
+        versionName = "0.0.56"
 
         multiDexEnabled = true
 
