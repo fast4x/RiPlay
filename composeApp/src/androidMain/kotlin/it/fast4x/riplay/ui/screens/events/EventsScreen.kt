@@ -47,8 +47,8 @@ fun EventsScreen() {
         EventType.NewRelease to EventType.NewRelease.textName,
         EventType.AutoBackup to EventType.AutoBackup.textName
     ).apply {
-        if(BuildConfig.BUILD_VARIANT == "full") // This is in the gradle file
-            add(EventType.CheckUpdate to EventType.CheckUpdate.textName)
+        //if(BuildConfig.BUILD_VARIANT == "full") // This is in the gradle file
+        //    add(EventType.CheckUpdate to EventType.CheckUpdate.textName)
     }
     var eventType by remember { mutableStateOf(EventType.NewRelease) }
 

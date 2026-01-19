@@ -614,7 +614,7 @@ android {
     productFlavors {
         create("accrescent") {
             dimension = "version"
-            manifestPlaceholders["appName"] = "RiPlay-Acc"
+            //manifestPlaceholders["appName"] = "RiPlay-Acc"
             buildConfigField("String", "BUILD_VARIANT", "\"accrescent\"")
         }
     }
