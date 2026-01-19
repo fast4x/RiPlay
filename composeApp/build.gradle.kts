@@ -611,18 +611,18 @@ android {
             buildConfigField("String", "BUILD_VARIANT", "\"full\"")
         }
     }
+//    productFlavors {
+//        create("accrescent") {
+//            dimension = "version"
+//            //manifestPlaceholders["appName"] = "RiPlay-Acc"
+//            buildConfigField("String", "BUILD_VARIANT", "\"accrescent\"")
+//        }
+//    }
     productFlavors {
-        create("accrescent") {
-            dimension = "version"
-            //manifestPlaceholders["appName"] = "RiPlay-Acc"
-            buildConfigField("String", "BUILD_VARIANT", "\"accrescent\"")
-        }
-    }
-    productFlavors {
-        create("fdroid") {
+        create("base") {
             dimension = "version"
             //manifestPlaceholders["appName"] = "RiPlay"
-            buildConfigField("String", "BUILD_VARIANT", "\"fdroid\"")
+            buildConfigField("String", "BUILD_VARIANT", "\"base\"")
         }
     }
 
