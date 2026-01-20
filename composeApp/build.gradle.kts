@@ -534,35 +534,6 @@ android {
         )
         // INIT ENVIRONMENT
 
-        //INIT AudioTagInfo Api
-        resValue(
-            "string",
-            "AudioTagInfo_API_KEY",
-            propertyOrEmpty("AudioTagInfo_API_KEY")
-        )
-        //INIT AudioTagInfo Api
-
-        //INIT LASTFM
-        resValue(
-            "string",
-            "RiPlay_LASTFM_API_KEY",
-            propertyOrEmpty("RiPlay_LASTFM_API_KEY")
-        )
-        resValue(
-            "string",
-            "RiPlay_LASTFM_SECRET",
-            propertyOrEmpty("RiPlay_LASTFM_SECRET")
-        )
-        //INIT LASTFM
-
-        //INIT DISCORD
-        resValue(
-            "string",
-            "RiPlay_DISCORD_APPLICATION_ID",
-            propertyOrEmpty("RiPlay_DISCORD_APPLICATION_ID")
-        )
-        //INIT DISCORD
-
     }
 
     packaging {
@@ -605,6 +576,11 @@ android {
             isDefault = true
             dimension = "version"
             buildConfigField("String", "BUILD_VARIANT", "\"full\"")
+
+            resValue("string", "AudioTagInfo_API_KEY", propertyOrEmpty("AudioTagInfo_API_KEY"))
+            resValue("string", "RiPlay_LASTFM_API_KEY", propertyOrEmpty("RiPlay_LASTFM_API_KEY"))
+            resValue("string", "RiPlay_LASTFM_SECRET", propertyOrEmpty("RiPlay_LASTFM_SECRET"))
+            resValue("string", "RiPlay_DISCORD_APPLICATION_ID", propertyOrEmpty("RiPlay_DISCORD_APPLICATION_ID"))
         }
     }
 //    productFlavors {
@@ -612,6 +588,11 @@ android {
 //            dimension = "version"
 //            //manifestPlaceholders["appName"] = "RiPlay-Acc"
 //            buildConfigField("String", "BUILD_VARIANT", "\"accrescent\"")
+//
+//            resValue("string", "AudioTagInfo_API_KEY", "")
+//            resValue("string", "RiPlay_LASTFM_API_KEY", "")
+//            resValue("string", "RiPlay_LASTFM_SECRET", "")
+//            resValue("string", "RiPlay_DISCORD_APPLICATION_ID", "")
 //        }
 //    }
     productFlavors {
@@ -619,6 +600,11 @@ android {
             dimension = "version"
             //manifestPlaceholders["appName"] = "RiPlay"
             buildConfigField("String", "BUILD_VARIANT", "\"base\"")
+
+            resValue("string", "AudioTagInfo_API_KEY", "")
+            resValue("string", "RiPlay_LASTFM_API_KEY", "")
+            resValue("string", "RiPlay_LASTFM_SECRET", "")
+            resValue("string", "RiPlay_DISCORD_APPLICATION_ID", "")
         }
     }
 

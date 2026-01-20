@@ -120,7 +120,7 @@ object AudioTagInfo {
             if (responseIdentify.success == true && responseIdentify.token != null) {
                getResult(apiKey, responseIdentify.token)?.getOrNull() as? GetResultResponse
             } else {
-                println("AudioTagInfo identifyAudioFile error: ${responseIdentify.error}")
+                GetResultResponse(success = false, error = responseIdentify.error.toString(), jobStatus = "error")
             }
 
         }

@@ -40,6 +40,7 @@ import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
 import it.fast4x.environment.Environment
 import it.fast4x.environment.utils.parseCookieString
+import it.fast4x.riplay.BuildConfig
 import it.fast4x.riplay.LocalAudioTagger
 import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.LastFmScrobbleType
@@ -316,277 +317,292 @@ fun AccountsSettings() {
 
     /****** YOUTUBE LOGIN ******/
 
-    /****** DISCORD ******/
+        if (BuildConfig.BUILD_VARIANT == "full") {
+            /****** DISCORD ******/
+            var isDiscordPresenceEnabled by rememberPreference(isDiscordPresenceEnabledKey, false)
+            var loginDiscord by remember { mutableStateOf(false) }
+            var showDiscordUserInfoDialog by remember { mutableStateOf(false) }
+            var discordPersonalAccessToken by rememberEncryptedPreference(
+                key = discordPersonalAccessTokenKey,
+                defaultValue = ""
+            )
+            var discordAccountName by rememberEncryptedPreference(
+                key = discordAccountNameKey,
+                defaultValue = ""
+            )
+            SettingsGroupSpacer()
+            SettingsEntryGroupText(title = stringResource(R.string.social_discord))
+            SwitchSettingEntry(
+                isEnabled = isAtLeastAndroid81,
+                title = stringResource(R.string.discord_enable_rich_presence),
+                text = "",
+                isChecked = isDiscordPresenceEnabled,
+                onCheckedChange = { isDiscordPresenceEnabled = it }
+            )
 
-        var isDiscordPresenceEnabled by rememberPreference(isDiscordPresenceEnabledKey, false)
-        var loginDiscord by remember { mutableStateOf(false) }
-        var showDiscordUserInfoDialog by remember { mutableStateOf(false) }
-        var discordPersonalAccessToken by rememberEncryptedPreference(
-            key = discordPersonalAccessTokenKey,
-            defaultValue = ""
-        )
-        var discordAccountName by rememberEncryptedPreference(
-            key = discordAccountNameKey,
-            defaultValue = ""
-        )
-        SettingsGroupSpacer()
-        SettingsEntryGroupText(title = stringResource(R.string.social_discord))
-        SwitchSettingEntry(
-            isEnabled = isAtLeastAndroid81,
-            title = stringResource(R.string.discord_enable_rich_presence),
-            text = "",
-            isChecked = isDiscordPresenceEnabled,
-            onCheckedChange = { isDiscordPresenceEnabled = it }
-        )
-
-        AnimatedVisibility(visible = isDiscordPresenceEnabled) {
-            Column(
-                modifier = Modifier.padding(start = 12.dp)
-            ) {
-                ButtonBarSettingEntry(
-                    isEnabled = true,
-                    title = if (discordPersonalAccessToken.isNotEmpty()) stringResource(R.string.discord_disconnect) else stringResource(
-                        R.string.discord_connect
-                    ),
-                    text = if (discordPersonalAccessToken.isNotEmpty()) stringResource(R.string.discord_connected_to_discord_account) else "",
-                    icon = R.drawable.logo_discord,
-                    iconColor = colorPalette().text,
-                    onClick = {
-                        if (discordPersonalAccessToken.isNotEmpty())
-                            discordPersonalAccessToken = ""
-                        else
-                            loginDiscord = true
-                    }
-                )
-
-                if (discordPersonalAccessToken.isNotEmpty()) {
+            AnimatedVisibility(visible = isDiscordPresenceEnabled) {
+                Column(
+                    modifier = Modifier.padding(start = 12.dp)
+                ) {
                     ButtonBarSettingEntry(
                         isEnabled = true,
-                        title = stringResource(R.string.account_info),
-                        text = discordAccountName,
-                        icon = R.drawable.person,
+                        title = if (discordPersonalAccessToken.isNotEmpty()) stringResource(R.string.discord_disconnect) else stringResource(
+                            R.string.discord_connect
+                        ),
+                        text = if (discordPersonalAccessToken.isNotEmpty()) stringResource(R.string.discord_connected_to_discord_account) else "",
+                        icon = R.drawable.logo_discord,
                         iconColor = colorPalette().text,
                         onClick = {
-                            showDiscordUserInfoDialog = true
+                            if (discordPersonalAccessToken.isNotEmpty())
+                                discordPersonalAccessToken = ""
+                            else
+                                loginDiscord = true
                         }
                     )
 
-                    if (showDiscordUserInfoDialog) {
-                        AccountInfoDialog(
-                            accountName = discordAccountName,
-                            onDismiss = { showDiscordUserInfoDialog = false }
+                    if (discordPersonalAccessToken.isNotEmpty()) {
+                        ButtonBarSettingEntry(
+                            isEnabled = true,
+                            title = stringResource(R.string.account_info),
+                            text = discordAccountName,
+                            icon = R.drawable.person,
+                            iconColor = colorPalette().text,
+                            onClick = {
+                                showDiscordUserInfoDialog = true
+                            }
                         )
+
+                        if (showDiscordUserInfoDialog) {
+                            AccountInfoDialog(
+                                accountName = discordAccountName,
+                                onDismiss = { showDiscordUserInfoDialog = false }
+                            )
+                        }
+
                     }
 
-                }
-
-                CustomModalBottomSheet(
-                    showSheet = loginDiscord,
-                    onDismissRequest = {
-                        loginDiscord = false
-                    },
-                    containerColor = colorPalette().background0,
-                    contentColor = colorPalette().background0,
-                    modifier = Modifier.fillMaxWidth(),
-                    sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
-                    dragHandle = {
-                        Surface(
-                            modifier = Modifier.padding(vertical = 0.dp),
-                            color = colorPalette().background0,
-                            shape = thumbnailShape()
-                        ) {}
-                    },
-                    shape = thumbnailRoundness.shape()
-                ) {
-                    DiscordLoginAndGetToken(
-                        navController = rememberNavController(),
-                        onGetToken = { token, username, avatar ->
-                            //Timber.d("DiscordLoginAndGetToken DiscordPresence: token $token user $username avatar $avatar")
+                    CustomModalBottomSheet(
+                        showSheet = loginDiscord,
+                        onDismissRequest = {
                             loginDiscord = false
-                            discordPersonalAccessToken = token
-                            discordAccountName = username
-                            SmartMessage(globalContext().resources.getString(R.string.discord_connected_to_discord_account) + " $username", type = PopupType.Info, context = context)
-                        }
-                    )
-                }
-            }
-        }
-
-    /****** DISCORD ******/
-
-        var isEnabledLastfm by rememberPreference(isEnabledLastfmKey, false)
-        var lastFmSessionToken by rememberPreference(lastfmSessionTokenKey, "")
-        var loginLastfm by remember { mutableStateOf(false) }
-        var lastfmScrobbleType by rememberPreference(lastfmScrobbleTypeKey, LastFmScrobbleType.Simple)
-
-        SettingsGroupSpacer()
-        SettingsEntryGroupText(title = stringResource(R.string.title_lastfm))
-
-        SwitchSettingEntry(
-            title = stringResource(R.string.enable_lastfm),
-            text = "",
-            isChecked = isEnabledLastfm,
-            onCheckedChange = {
-                isEnabledLastfm = it
-            },
-            offline = false,
-        )
-
-        AnimatedVisibility(visible = isEnabledLastfm) {
-            Column(
-                modifier = Modifier.padding(start = 12.dp)
-            ) {
-                ButtonBarSettingEntry(
-                    isEnabled = true,
-                    title = if (lastFmSessionToken.isNotEmpty()) stringResource(R.string.lastfm_disconnect) else stringResource(
-                        R.string.lastfm_connect
-                    ),
-                    text = if (lastFmSessionToken.isNotEmpty()) stringResource(R.string.lastfm_connected_to_lastfm_account) else "",
-                    icon = R.drawable.logo_lastfm,
-                    iconColor = colorPalette().text,
-                    onClick = {
-                        if (lastFmSessionToken.isNotEmpty())
-                            lastFmSessionToken = ""
-                        else
-                            loginLastfm = true
-                    }
-                )
-
-                CustomModalBottomSheet(
-                    showSheet = loginLastfm,
-                    onDismissRequest = {
-                        loginLastfm = false
-                    },
-                    containerColor = colorPalette().background0,
-                    contentColor = colorPalette().background0,
-                    modifier = Modifier.fillMaxWidth(),
-                    sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
-                    dragHandle = {
-                        Surface(
-                            modifier = Modifier.padding(vertical = 0.dp),
-                            color = colorPalette().background0,
-                            shape = thumbnailShape()
-                        ) {}
-                    },
-                    shape = thumbnailRoundness.shape()
-                ) {
-                    LastFmAuthScreen(
-                        navController = rememberNavController(),
-                        onAuthSuccess = {
-                            loginLastfm = false
-                            lastFmSessionToken = context.preferences.getString(lastfmSessionTokenKey, "") ?: ""
-                            Timber.d("LastFmAuthScreen: Authentication complete")
-                        }
-                    )
-                }
-
-                EnumValueSelectorSettingsEntry(
-                    title = stringResource(R.string.lastfm_scrobble_type),
-                    titleSecondary = "",
-                    selectedValue = lastfmScrobbleType,
-                    onValueSelected = { lastfmScrobbleType = it },
-                    valueText = { it.textName },
-                    offline = false
-                )
-
-            }
-        }
-
-        SettingsGroupSpacer()
-        SettingsEntryGroupText(title = stringResource(R.string.title_music_identifier))
-
-        SwitchSettingEntry(
-            title = stringResource(R.string.enable_music_identifier),
-            text = "",
-            isChecked = isEnabledMusicIdentifier,
-            onCheckedChange = {
-                isEnabledMusicIdentifier = it
-            },
-            offline = false
-        )
-
-        AnimatedVisibility(visible = isEnabledMusicIdentifier) {
-            Column(
-                modifier = Modifier.padding(start = 12.dp)
-            ) {
-                EnumValueSelectorSettingsEntry(
-                    title = stringResource(R.string.music_identifier_provider),
-                    titleSecondary = musicIdentifierProvider.info,
-                    selectedValue = musicIdentifierProvider,
-                    onValueSelected = { musicIdentifierProvider = it },
-                    valueText = { it.title },
-                    offline = false
-                )
-                SettingsEntry(
-                    online = false,
-                    offline = false,
-                    title = musicIdentifierProvider.subtitle,
-                    text = musicIdentifierProvider.website,
-                    onClick = {
-                        uriHandler.openUri(musicIdentifierProvider.website)
-                    }
-                )
-
-
-                AnimatedVisibility(visible = musicIdentifierProvider == MusicIdentifierProvider.AudioTagInfo) {
-                    Column (
-                        modifier = Modifier.padding(start = 12.dp)
+                        },
+                        containerColor = colorPalette().background0,
+                        contentColor = colorPalette().background0,
+                        modifier = Modifier.fillMaxWidth(),
+                        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+                        dragHandle = {
+                            Surface(
+                                modifier = Modifier.padding(vertical = 0.dp),
+                                color = colorPalette().background0,
+                                shape = thumbnailShape()
+                            ) {}
+                        },
+                        shape = thumbnailRoundness.shape()
                     ) {
-                        TextDialogSettingEntry(
-                            title = stringResource(R.string.api_key),
-                            text = musicIdentifierApi.ifEmpty { stringResource(R.string.if_empty_system_api_key_will_be_used) },
-                            currentText = musicIdentifierApi,
-                            onTextSave = {
-                                musicIdentifierApi = it
-                            },
-                            validationType = ValidationType.None,
-                            offline = false,
-                            online = false
+                        DiscordLoginAndGetToken(
+                            navController = rememberNavController(),
+                            onGetToken = { token, username, avatar ->
+                                //Timber.d("DiscordLoginAndGetToken DiscordPresence: token $token user $username avatar $avatar")
+                                loginDiscord = false
+                                discordPersonalAccessToken = token
+                                discordAccountName = username
+                                SmartMessage(
+                                    globalContext().resources.getString(R.string.discord_connected_to_discord_account) + " $username",
+                                    type = PopupType.Info,
+                                    context = context
+                                )
+                            }
                         )
-
-                        val localAudioTagger = LocalAudioTagger.current
-                        LaunchedEffect(Unit) {
-                            localAudioTagger.stat()
-                        }
-                        val statState by localAudioTagger.statsState.collectAsState()
-                        if (statState?.success == true) {
-
-                            BasicText(
-                                text = stringResource(
-                                    R.string.api_expiration,
-                                    statState?.expirationDate?.substring(0, 10).toString()
-                                ),
-                                style = typography().xxs.semiBold.copy(color = colorPalette().text),
-                            )
-                            Spacer(modifier = Modifier.height(10.dp))
-                            BasicText(
-                                text = stringResource(
-                                    R.string.api_queries_count,
-                                    statState?.queriesCount ?: "0"
-
-                                ),
-                                style = typography().xxs.semiBold.copy(color = colorPalette().textSecondary),
-                            )
-                            Spacer(modifier = Modifier.height(10.dp))
-                            BasicText(
-                                text = stringResource(
-                                    R.string.music_identifier_free_identification_seconds_remaining,
-                                    statState?.identificationFreeSecRemainder ?: "0"
-                                ),
-                                style = typography().xxs.semiBold.copy(color = colorPalette().textSecondary),
-                            )
-                            Spacer(
-                                modifier = Modifier
-                                    .height(Dimensions.bottomSpacer)
-                            )
-                        }
                     }
+                }
+            }
+
+
+            /****** DISCORD ******/
+
+            /****** LASTFM ******/
+            var isEnabledLastfm by rememberPreference(isEnabledLastfmKey, false)
+            var lastFmSessionToken by rememberPreference(lastfmSessionTokenKey, "")
+            var loginLastfm by remember { mutableStateOf(false) }
+            var lastfmScrobbleType by rememberPreference(
+                lastfmScrobbleTypeKey,
+                LastFmScrobbleType.Simple
+            )
+
+            SettingsGroupSpacer()
+            SettingsEntryGroupText(title = stringResource(R.string.title_lastfm))
+
+            SwitchSettingEntry(
+                title = stringResource(R.string.enable_lastfm),
+                text = "",
+                isChecked = isEnabledLastfm,
+                onCheckedChange = {
+                    isEnabledLastfm = it
+                },
+                offline = false,
+            )
+
+            AnimatedVisibility(visible = isEnabledLastfm) {
+                Column(
+                    modifier = Modifier.padding(start = 12.dp)
+                ) {
+                    ButtonBarSettingEntry(
+                        isEnabled = true,
+                        title = if (lastFmSessionToken.isNotEmpty()) stringResource(R.string.lastfm_disconnect) else stringResource(
+                            R.string.lastfm_connect
+                        ),
+                        text = if (lastFmSessionToken.isNotEmpty()) stringResource(R.string.lastfm_connected_to_lastfm_account) else "",
+                        icon = R.drawable.logo_lastfm,
+                        iconColor = colorPalette().text,
+                        onClick = {
+                            if (lastFmSessionToken.isNotEmpty())
+                                lastFmSessionToken = ""
+                            else
+                                loginLastfm = true
+                        }
+                    )
+
+                    CustomModalBottomSheet(
+                        showSheet = loginLastfm,
+                        onDismissRequest = {
+                            loginLastfm = false
+                        },
+                        containerColor = colorPalette().background0,
+                        contentColor = colorPalette().background0,
+                        modifier = Modifier.fillMaxWidth(),
+                        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+                        dragHandle = {
+                            Surface(
+                                modifier = Modifier.padding(vertical = 0.dp),
+                                color = colorPalette().background0,
+                                shape = thumbnailShape()
+                            ) {}
+                        },
+                        shape = thumbnailRoundness.shape()
+                    ) {
+                        LastFmAuthScreen(
+                            navController = rememberNavController(),
+                            onAuthSuccess = {
+                                loginLastfm = false
+                                lastFmSessionToken =
+                                    context.preferences.getString(lastfmSessionTokenKey, "") ?: ""
+                                Timber.d("LastFmAuthScreen: Authentication complete")
+                            }
+                        )
+                    }
+
+                    EnumValueSelectorSettingsEntry(
+                        title = stringResource(R.string.lastfm_scrobble_type),
+                        titleSecondary = "",
+                        selectedValue = lastfmScrobbleType,
+                        onValueSelected = { lastfmScrobbleType = it },
+                        valueText = { it.textName },
+                        offline = false
+                    )
 
                 }
             }
-        }
 
-        //Spacer(modifier = Modifier.height(Dimensions.bottomSpacer))
+            /****** LASTFM ******/
+        }
+            /**** MUSIC IDENTIFIER ******/
+            SettingsGroupSpacer()
+            SettingsEntryGroupText(title = stringResource(R.string.title_music_identifier))
+
+            SwitchSettingEntry(
+                title = stringResource(R.string.enable_music_identifier),
+                text = "",
+                isChecked = isEnabledMusicIdentifier,
+                onCheckedChange = {
+                    isEnabledMusicIdentifier = it
+                },
+                offline = false
+            )
+
+            AnimatedVisibility(visible = isEnabledMusicIdentifier) {
+                Column(
+                    modifier = Modifier.padding(start = 12.dp)
+                ) {
+                    EnumValueSelectorSettingsEntry(
+                        title = stringResource(R.string.music_identifier_provider),
+                        titleSecondary = musicIdentifierProvider.info,
+                        selectedValue = musicIdentifierProvider,
+                        onValueSelected = { musicIdentifierProvider = it },
+                        valueText = { it.title },
+                        offline = false
+                    )
+                    SettingsEntry(
+                        online = false,
+                        offline = false,
+                        title = musicIdentifierProvider.subtitle,
+                        text = musicIdentifierProvider.website,
+                        onClick = {
+                            uriHandler.openUri(musicIdentifierProvider.website)
+                        }
+                    )
+
+
+                    AnimatedVisibility(visible = musicIdentifierProvider == MusicIdentifierProvider.AudioTagInfo) {
+                        Column(
+                            modifier = Modifier.padding(start = 12.dp)
+                        ) {
+                            TextDialogSettingEntry(
+                                title = stringResource(R.string.api_key),
+                                text = musicIdentifierApi.ifEmpty { stringResource(R.string.if_empty_system_api_key_will_be_used) },
+                                currentText = musicIdentifierApi,
+                                onTextSave = {
+                                    musicIdentifierApi = it
+                                },
+                                validationType = ValidationType.None,
+                                offline = false,
+                                online = false
+                            )
+
+                            val localAudioTagger = LocalAudioTagger.current
+                            LaunchedEffect(Unit) {
+                                localAudioTagger.stat()
+                            }
+                            val statState by localAudioTagger.statsState.collectAsState()
+                            if (statState?.success == true) {
+
+                                BasicText(
+                                    text = stringResource(
+                                        R.string.api_expiration,
+                                        statState?.expirationDate?.substring(0, 10).toString()
+                                    ),
+                                    style = typography().xxs.semiBold.copy(color = colorPalette().text),
+                                )
+                                Spacer(modifier = Modifier.height(10.dp))
+                                BasicText(
+                                    text = stringResource(
+                                        R.string.api_queries_count,
+                                        statState?.queriesCount ?: "0"
+
+                                    ),
+                                    style = typography().xxs.semiBold.copy(color = colorPalette().textSecondary),
+                                )
+                                Spacer(modifier = Modifier.height(10.dp))
+                                BasicText(
+                                    text = stringResource(
+                                        R.string.music_identifier_free_identification_seconds_remaining,
+                                        statState?.identificationFreeSecRemainder ?: "0"
+                                    ),
+                                    style = typography().xxs.semiBold.copy(color = colorPalette().textSecondary),
+                                )
+                                Spacer(
+                                    modifier = Modifier
+                                        .height(Dimensions.bottomSpacer)
+                                )
+                            }
+                        }
+
+                    }
+                }
+            }
+            /**** MUSIC IDENTIFIER ******/
+
+        Spacer(modifier = Modifier.height(Dimensions.bottomSpacer))
+
     }
 
 

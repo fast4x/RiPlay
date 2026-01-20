@@ -46,6 +46,8 @@ class AudioTagViewModel() : ViewModel(), ViewModelProvider.Factory {
 
 
     fun info() {
+        if (!checkApiKey()) return
+
         viewModelScope.launch {
             val response = AudioTagInfo.info(apiKey)
             Timber.d("AudioTag apiKey $apiKey Info: $response")
@@ -53,6 +55,8 @@ class AudioTagViewModel() : ViewModel(), ViewModelProvider.Factory {
     }
 
     fun stat() {
+        if (!checkApiKey()) return
+
         viewModelScope.launch {
             val response = AudioTagInfo.stat(apiKey)?.getOrNull()
             _statsState.value = response
@@ -61,6 +65,9 @@ class AudioTagViewModel() : ViewModel(), ViewModelProvider.Factory {
     }
 
     fun tryAudioRecorder() {
+
+        if (!checkApiKey()) return
+
         viewModelScope.launch {
             _uiState.value = UiState.Recording
             val audioData = audioRecorder.startRecording(AudioRecorder.OutputFormat.WAV)
@@ -78,7 +85,8 @@ class AudioTagViewModel() : ViewModel(), ViewModelProvider.Factory {
     }
 
     fun identifySong() {
-        if (_uiState.value is UiState.Recording) return
+
+        if ((_uiState.value is UiState.Recording) || !checkApiKey()) return
 
         viewModelScope.launch {
             _uiState.value = UiState.Recording
@@ -95,14 +103,16 @@ class AudioTagViewModel() : ViewModel(), ViewModelProvider.Factory {
                 result?.fold(
                     onSuccess = { response ->
                         Timber.d("AudioTag Success: $response")
+
                         val resultResponse = response as GetResultResponse
 
                         val success = resultResponse.success && resultResponse.jobStatus == "found"
+
                         Timber.d("AudioTag Success $success inside response: $resultResponse")
                         if (success)
                             _uiState.value = UiState.Success(resultResponse.data?.first()?.tracks)
                         else
-                            _uiState.value = UiState.Response(resultResponse.jobStatus)
+                            _uiState.value = UiState.Error(resultResponse.error) //UiState.Response(resultResponse.jobStatus)
                     },
                     onFailure = { error ->
                         _uiState.value = UiState.Error(error.message ?: "An unknown error occurred.")
@@ -112,6 +122,14 @@ class AudioTagViewModel() : ViewModel(), ViewModelProvider.Factory {
                 _uiState.value = UiState.Error("Recording failed.")
             }
         }
+    }
+
+    fun checkApiKey(): Boolean {
+        val apiKeyPresent = apiKey.isNotEmpty()
+        if (!apiKeyPresent)
+            _uiState.value = UiState.Error("API key is not present, please add in settings.")
+        return apiKeyPresent
+
     }
 
     override fun onCleared() {

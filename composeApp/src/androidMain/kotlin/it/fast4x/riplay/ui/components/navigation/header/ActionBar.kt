@@ -15,6 +15,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import it.fast4x.riplay.BuildConfig
 import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.extensions.pip.isPipSupported
@@ -162,7 +163,9 @@ fun ActionBar(
         enableMusicIdentifierKey,
         true
     )
-    if (isEnabledMusicIdentifier) {
+    if (isEnabledMusicIdentifier
+        //&&  BuildConfig.BUILD_VARIANT == "full"
+        ) {
         val sheet = LocalGlobalSheetState.current
         HeaderIcon(R.drawable.soundwave) {
             sheet.display {

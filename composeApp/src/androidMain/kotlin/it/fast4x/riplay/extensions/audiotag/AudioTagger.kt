@@ -42,6 +42,7 @@ import it.fast4x.riplay.extensions.audiotag.models.UiState
 import it.fast4x.riplay.ui.components.themed.DialogTextButton
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.utils.typography
+import timber.log.Timber
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
@@ -123,6 +124,7 @@ fun AudioTagger(viewModel: AudioTagViewModel, navController: NavController) {
                 )
             }
             is UiState.Error -> {
+                Timber.d("AudioTag Error uiState.message ${uiState.message}")
                 Text(stringResource(R.string.at_error), style = typography().xl, color = colorPalette().red)
                 Text(AudioTagInfoErrors.getAudioTagInfoError(uiState.message).textName, fontSize = 16.sp, textAlign = TextAlign.Center, modifier = Modifier.padding(top = 8.dp), color = Color.White)
                 Spacer(modifier = Modifier.height(24.dp))

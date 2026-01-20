@@ -32,7 +32,6 @@ import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import android.view.LayoutInflater
-import androidx.annotation.OptIn
 import androidx.annotation.RequiresApi
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
@@ -56,7 +55,6 @@ import androidx.media3.common.Player.STATE_IDLE
 import androidx.media3.common.Timeline
 import androidx.media3.common.audio.SonicAudioProcessor
 import androidx.media3.common.util.UnstableApi
-import androidx.media3.datasource.DataSpec
 import androidx.media3.datasource.DefaultDataSource
 import androidx.media3.datasource.cache.Cache
 import androidx.media3.datasource.cache.CacheDataSource
@@ -86,6 +84,7 @@ import it.fast4x.environment.models.NavigationEndpoint
 import it.fast4x.environment.models.bodies.SearchBody
 import it.fast4x.environment.requests.searchPage
 import it.fast4x.environment.utils.from
+import it.fast4x.riplay.BuildConfig
 import it.fast4x.riplay.MainActivity
 import it.fast4x.riplay.enums.DurationInMilliseconds
 import it.fast4x.riplay.data.models.Event
@@ -227,7 +226,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
-import kotlinx.coroutines.withTimeout
 import okhttp3.OkHttpClient
 import timber.log.Timber
 import java.util.Objects
@@ -691,7 +689,7 @@ class PlayerService : Service(),
     }
 
     private fun initializeDiscordPresence() {
-        if (!isAtLeastAndroid81) return
+        if (!isAtLeastAndroid81 || BuildConfig.BUILD_VARIANT == "base") return
 
         if (preferences.getBoolean(isDiscordPresenceEnabledKey, false)) {
             val token = encryptedPreferences.getString(discordPersonalAccessTokenKey, "")
@@ -795,6 +793,8 @@ class PlayerService : Service(),
 
         if (preferences.getBoolean(useVolumeKeysToChangeSongKey, false))
             unifiedMediaSession.setPlaybackToRemote(getVolumeProvider())
+
+        initializeUnifiedSessionCallback()
 
         unifiedMediaSession.isActive = true
 
@@ -1030,7 +1030,8 @@ class PlayerService : Service(),
     }
 
     private fun updateDiscordPresence() {
-        if (!isAtLeastAndroid81) return
+        if (!isAtLeastAndroid81 || BuildConfig.BUILD_VARIANT == "base") return
+
         Timber.d("PlayerService UpdateDiscordPresence")
         currentSong.value?.asMediaItem?.let{
             Timber.d("PlayerService UpdateDiscordPresence inside isLocal ${it.isLocal}")
@@ -1347,7 +1348,7 @@ class PlayerService : Service(),
         //saveMasterQueueWithPosition()
         player.saveMasterQueue()
 
-        if (preferences.getBoolean(isEnabledLastfmKey, false))
+        if (preferences.getBoolean(isEnabledLastfmKey, false) && BuildConfig.BUILD_VARIANT == "full") {
             preferences.getString(lastfmSessionTokenKey, "")?.let {
                 when (preferences.getEnum(lastfmScrobbleTypeKey, LastFmScrobbleType.Simple)) {
                     LastFmScrobbleType.Simple -> {
@@ -1358,6 +1359,7 @@ class PlayerService : Service(),
                             it
                         )
                     }
+
                     LastFmScrobbleType.NowPlaying -> {
                         sendNowPlaying(
                             mediaItem.mediaMetadata.artist.toString(),
@@ -1369,7 +1371,7 @@ class PlayerService : Service(),
                 }
 
             }
-
+        }
         Timber.d("PlayerService-onMediaItemTransition mediaItem: ${mediaItem.mediaId} currentMediaItemIndex: $currentQueuePosition shuffleModeEnabled ${player.shuffleModeEnabled} repeatMode ${player.repeatMode} reason $reason")
 
     }
@@ -1871,6 +1873,8 @@ class PlayerService : Service(),
     private fun updateUnifiedMediasession() {
         Timber.d("PlayerService updateUnifiedMediasessionData")
         val currentMediaItem = binder.player.currentMediaItem
+        /*
+
         val queueLoopType = preferences.getEnum(queueLoopTypeKey, defaultValue = QueueLoopType.Default)
         binder.let {
             unifiedMediaSession.setCallback(
@@ -1983,6 +1987,8 @@ class PlayerService : Service(),
                 )
             )
         }
+
+         */
 
         unifiedMediaSession.setMetadata(
             MediaMetadataCompat.Builder()
@@ -3035,6 +3041,122 @@ class PlayerService : Service(),
         }
     }
 
+    fun initializeUnifiedSessionCallback() {
+        Timber.d("PlayerService InitializeUnifiedSessionCallback")
+        val currentMediaItem = binder.player.currentMediaItem
+        val queueLoopType = preferences.getEnum(queueLoopTypeKey, defaultValue = QueueLoopType.Default)
+        binder.let {
+            unifiedMediaSession.setCallback(
+                PlayerMediaSessionCallback(
+                    binder = it,
+                    onPlayClick = {
+                        Timber.d("PlayerService InitializeUnifiedSessionCallback onPlayClick")
+                        if (player.currentMediaItem?.isLocal == true)
+                            it.player.play()
+                        else {
+                            if (!GlobalSharedData.riTuneCastActive)
+                                internalOnlinePlayer.value?.play()
+                            else
+                                coroutineScope.launch {
+                                    riTuneClient.sendCommand(
+                                        RiTuneRemoteCommand(
+                                            "play",
+                                            position = playFromSecond
+                                        )
+                                    )
+                                }
+                        }
+                    },
+                    onPauseClick = {
+                        Timber.d("PlayerService InitializeUnifiedSessionCallback onPauseClick")
+                        it.player.pause()
+                        if (!GlobalSharedData.riTuneCastActive) {
+                            internalOnlinePlayer.value?.pause()
+                        } else {
+                            coroutineScope.launch {
+                                riTuneClient.sendCommand(
+                                    RiTuneRemoteCommand(
+                                        "pause",
+                                    )
+                                )
+                            }
+                        }
+                    },
+                    onSeekToPos = { second ->
+                        val newPosition = (second / 1000).toFloat()
+                        Timber.d("PlayerService InitializeUnifiedSessionCallback onSeekPosTo ${newPosition}")
+                        if (!GlobalSharedData.riTuneCastActive)
+                            internalOnlinePlayer.value?.seekTo(newPosition)
+                        else
+                            coroutineScope.launch {
+                                riTuneClient.sendCommand(
+                                    RiTuneRemoteCommand(
+                                        "seek",
+                                        //mediaId = item.mediaId,
+                                        position = newPosition
+                                    )
+                                )
+                            }
+
+                        currentSecond.value = second.toFloat()
+                    },
+                    onPlayNext = {
+                        //it.player.playNext()
+                        //handleSkipToNext()
+                        player.playNext()
+                    },
+                    onPlayPrevious = {
+                        //handleSkipToPrevious()
+                        player.playPrevious()
+                    },
+                    onPlayQueueItem = { id ->
+                        handlePlayQueueItem(id.toInt())
+                    },
+                    onCustomClick = { customAction ->
+                        Timber.d("PlayerService InitializeUnifiedSessionCallback onCustomClick $customAction")
+                        when (customAction) {
+                            NotificationButtons.Favorites.action -> {
+                                it.toggleLike()
+                            }
+                            NotificationButtons.Repeat.action -> {
+                                preferences.edit(commit = true) { putEnum(queueLoopTypeKey, setQueueLoopState(queueLoopType)) }
+                            }
+                            NotificationButtons.Shuffle.action -> {
+                                //it.player.shuffleQueue()
+                                it.toggleShuffle() // toggle shuffle mode
+                            }
+                            NotificationButtons.Radio.action -> {
+                                if (currentMediaItem != null) {
+                                    it.stopRadio()
+                                    it.player.seamlessQueue(currentMediaItem)
+
+                                    if(!GlobalSharedData.riTuneCastActive)
+                                        internalOnlinePlayer.value?.play()
+                                    else
+                                        coroutineScope.launch {
+                                            riTuneClient.sendCommand(
+                                                RiTuneRemoteCommand(
+                                                    "play",
+                                                    position = playFromSecond
+                                                )
+                                            )
+                                        }
+
+                                    it.setupRadio(
+                                        NavigationEndpoint.Endpoint.Watch(videoId = currentMediaItem.mediaId)
+                                    )
+                                }
+                            }
+                            NotificationButtons.Search.action -> {
+                                it.actionSearch()
+                            }
+                        }
+                        updateUnifiedNotification()
+                    }
+                )
+            )
+        }
+    }
 
     @JvmInline
     value class Action(val value: String) {

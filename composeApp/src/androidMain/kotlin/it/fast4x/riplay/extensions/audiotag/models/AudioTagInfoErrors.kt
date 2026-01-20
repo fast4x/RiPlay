@@ -6,7 +6,8 @@ enum class AudioTagInfoErrors {
     NoCredit,
     NoAudioFound,
     AudioTooShort,
-    InternalError;
+    InternalError,
+    NoApiKey;
 
     val textName: String
     @Composable
@@ -15,6 +16,8 @@ enum class AudioTagInfoErrors {
         NoAudioFound -> "The file does not include audio track or format is not supported"
         AudioTooShort -> "Audio track duration is too short"
         InternalError -> "Can't process the file due to server unavailability, please try again later"
+        NoApiKey -> "API key is not present, please add in settings"
+
     }
 
     companion object {
@@ -25,6 +28,7 @@ enum class AudioTagInfoErrors {
                 "audio duration is too short" -> AudioTooShort
                 "internal error: could not communicate to the recognition server",
                 "internal error: could not process the file" -> InternalError
+                "API key is not present, please add in settings." -> NoApiKey
                 else -> InternalError
             }
     }
