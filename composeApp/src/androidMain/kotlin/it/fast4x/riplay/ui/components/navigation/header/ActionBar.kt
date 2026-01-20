@@ -163,9 +163,7 @@ fun ActionBar(
         enableMusicIdentifierKey,
         true
     )
-    if (isEnabledMusicIdentifier
-        //&&  BuildConfig.BUILD_VARIANT == "full"
-        ) {
+    if (isEnabledMusicIdentifier) {
         val sheet = LocalGlobalSheetState.current
         HeaderIcon(R.drawable.soundwave) {
             sheet.display {
