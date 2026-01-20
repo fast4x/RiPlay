@@ -3151,7 +3151,7 @@ class PlayerService : Service(),
                                 it.actionSearch()
                             }
                         }
-                        updateUnifiedNotification()
+                        //updateUnifiedNotification()
                     }
                 )
             )
