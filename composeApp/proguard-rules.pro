@@ -1,5 +1,5 @@
 #-dontshrink
--dontobfuscate
+#-dontobfuscate
 #-dontoptimize
 #-repackageclasses 'defpackage'
 
@@ -88,3 +88,8 @@
 -keep,allowobfuscation,allowoptimization @com.google.gson.annotations.JsonAdapter class *
 
 ##---------------End: proguard configuration for Gson  ----------
+
+# Offuscation class SecureConfig
+-optimizations !code/simplification/arithmetic,!field/*,!class/merging/*
+-keep,allowobfuscation class it.fast4x.riplay.utils.SecureConfig { *; }
+-keep class javax.crypto.** { *; }

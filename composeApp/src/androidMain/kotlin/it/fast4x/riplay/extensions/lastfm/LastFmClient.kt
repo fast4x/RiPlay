@@ -3,6 +3,7 @@ package it.fast4x.riplay.extensions.lastfm
 import androidx.lifecycle.viewModelScope
 import it.fast4x.lastfm.LastFmService
 import it.fast4x.riplay.R
+import it.fast4x.riplay.utils.SecureConfig
 import it.fast4x.riplay.utils.appContext
 import it.fast4x.riplay.utils.getlastFmSessionKey
 import kotlinx.coroutines.CoroutineScope
@@ -11,8 +12,8 @@ import kotlinx.coroutines.launch
 import timber.log.Timber
 
 object LastFmClient {
-    private val API_KEY = appContext().resources.getString(R.string.RiPlay_LASTFM_API_KEY)
-    private val API_SECRET = appContext().resources.getString(R.string.RiPlay_LASTFM_SECRET)
+    private val API_KEY = SecureConfig.getApiKey(appContext().resources.getString(R.string.RiPlay_LASTFM_API_KEY))
+    private val API_SECRET = SecureConfig.getApiKey(appContext().resources.getString(R.string.RiPlay_LASTFM_SECRET))
 
     val service: LastFmService = LastFmService(apiKey = API_KEY, apiSecret = API_SECRET)
 }

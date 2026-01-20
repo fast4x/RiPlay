@@ -689,7 +689,7 @@ class PlayerService : Service(),
     }
 
     private fun initializeDiscordPresence() {
-        if (!isAtLeastAndroid81 || BuildConfig.BUILD_VARIANT == "base") return
+        if (!isAtLeastAndroid81) return
 
         if (preferences.getBoolean(isDiscordPresenceEnabledKey, false)) {
             val token = encryptedPreferences.getString(discordPersonalAccessTokenKey, "")
@@ -1030,7 +1030,7 @@ class PlayerService : Service(),
     }
 
     private fun updateDiscordPresence() {
-        if (!isAtLeastAndroid81 || BuildConfig.BUILD_VARIANT == "base") return
+        if (!isAtLeastAndroid81) return
 
         Timber.d("PlayerService UpdateDiscordPresence")
         currentSong.value?.asMediaItem?.let{
@@ -1348,7 +1348,7 @@ class PlayerService : Service(),
         //saveMasterQueueWithPosition()
         player.saveMasterQueue()
 
-        if (preferences.getBoolean(isEnabledLastfmKey, false) && BuildConfig.BUILD_VARIANT == "full") {
+        if (preferences.getBoolean(isEnabledLastfmKey, false)) {
             preferences.getString(lastfmSessionTokenKey, "")?.let {
                 when (preferences.getEnum(lastfmScrobbleTypeKey, LastFmScrobbleType.Simple)) {
                     LastFmScrobbleType.Simple -> {

@@ -31,6 +31,7 @@ import it.fast4x.riplay.utils.isLocal
 import it.fast4x.riplay.ui.components.themed.SmartMessage
 import it.fast4x.riplay.extensions.encryptedpreferences.encryptedPreferences
 import it.fast4x.riplay.service.PlayerService
+import it.fast4x.riplay.utils.SecureConfig
 import it.fast4x.riplay.utils.appContext
 import it.fast4x.riplay.utils.isAtLeastAndroid8
 import kotlinx.coroutines.CoroutineScope
@@ -65,7 +66,7 @@ class DiscordPresenceManager(
     companion object {
 
         private
-        val APPLICATION_ID = appContext().resources.getString(R.string.RiPlay_DISCORD_APPLICATION_ID)
+        val APPLICATION_ID = SecureConfig.getApiKey(appContext().resources.getString(R.string.RiPlay_DISCORD_APPLICATION_ID))
         private const val TEMP_FILE_HOST = "https://litterbox.catbox.moe/resources/internals/api.php"
         private const val MAX_DIMENSION = 1024                           // Per Discord's guidelines
         private const val MAX_FILE_SIZE_BYTES = 2L * 1024 * 1024     // 2 MB in bytes
