@@ -84,7 +84,6 @@ import it.fast4x.environment.models.NavigationEndpoint
 import it.fast4x.environment.models.bodies.SearchBody
 import it.fast4x.environment.requests.searchPage
 import it.fast4x.environment.utils.from
-import it.fast4x.riplay.BuildConfig
 import it.fast4x.riplay.MainActivity
 import it.fast4x.riplay.enums.DurationInMilliseconds
 import it.fast4x.riplay.data.models.Event
@@ -1333,9 +1332,9 @@ class PlayerService : Service(),
             bitmapProvider?.load(it.mediaMetadata.artworkUri) {}
         }
 
-        if (reason == Player.MEDIA_ITEM_TRANSITION_REASON_AUTO || reason == Player.MEDIA_ITEM_TRANSITION_REASON_SEEK) {
-            updateMediaSessionQueue(player.currentTimeline)
-        }
+//        if (reason == Player.MEDIA_ITEM_TRANSITION_REASON_AUTO || reason == Player.MEDIA_ITEM_TRANSITION_REASON_SEEK) {
+//            updateMediaSessionQueue(player.currentTimeline)
+//        }
 
         maybeRecoverPlaybackError()
         initializeNormalizeVolume()
@@ -1439,6 +1438,7 @@ class PlayerService : Service(),
 
      */
 
+    /*
     private fun handlePlayQueueItem(targetIndex: Int) {
         try {
             if (targetIndex < 0 || targetIndex >= player.mediaItemCount) {
@@ -1486,6 +1486,8 @@ class PlayerService : Service(),
             maybeRecoverPlaybackError()
         }
     }
+
+     */
 
 
     private fun saveMasterQueueWithPosition() {
@@ -1572,7 +1574,35 @@ class PlayerService : Service(),
         }
     }
 
+        private fun updateMediaSessionQueue(timeline: Timeline) {
+        if (!this::unifiedMediaSession.isInitialized) return
 
+        val queueItems = mutableListOf<MediaSessionCompat.QueueItem>()
+        val window = Timeline.Window()
+
+        for (i in 0 until timeline.windowCount) {
+            timeline.getWindow(i, window)
+
+            val mediaItem = window.mediaItem
+
+            val description = MediaDescriptionCompat.Builder()
+                .setMediaId(mediaItem.mediaId)
+                .setTitle(mediaItem.mediaMetadata.title)
+                .setSubtitle(mediaItem.mediaMetadata.artist)
+
+                .setIconUri(mediaItem.mediaMetadata.artworkUri)
+                .build()
+
+
+            val queueItem = MediaSessionCompat.QueueItem(description, i.toLong())
+            queueItems.add(queueItem)
+        }
+
+        unifiedMediaSession.setQueue(queueItems)
+        unifiedMediaSession.setQueueTitle("Playback Queue")
+    }
+
+    /*
     private fun updateMediaSessionQueue(timeline: Timeline) {
         val builder = MediaDescriptionCompat.Builder()
 
@@ -1612,6 +1642,8 @@ class PlayerService : Service(),
             }
         )
     }
+
+     */
 
     private fun maybeRecoverPlaybackError() {
         try {
@@ -3109,8 +3141,11 @@ class PlayerService : Service(),
                         //handleSkipToPrevious()
                         player.playPrevious()
                     },
-                    onPlayQueueItem = { id ->
-                        handlePlayQueueItem(id.toInt())
+                    onPlayQueueItem = { queueId ->
+                        val timelineIndex = queueId.toInt()
+                        if (timelineIndex >= 0 && timelineIndex < player.currentTimeline.windowCount) {
+                            player.seekToDefaultPosition(timelineIndex)
+                        }
                     },
                     onCustomClick = { customAction ->
                         Timber.d("PlayerService InitializeUnifiedSessionCallback onCustomClick $customAction")

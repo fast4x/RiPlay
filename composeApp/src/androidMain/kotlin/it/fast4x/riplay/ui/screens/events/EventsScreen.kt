@@ -46,7 +46,7 @@ fun EventsScreen() {
 
     val buttonsList = mutableListOf(
         EventType.NewArtistsRelease to EventType.NewArtistsRelease.textName,
-        //EventType.AutoBackup to EventType.AutoBackup.textName
+        EventType.AutoBackup to EventType.AutoBackup.textName
     ).apply {
         if(BuildConfig.BUILD_VARIANT == "full") // This is in the gradle file
             add(EventType.CheckUpdate to EventType.CheckUpdate.textName)
@@ -301,6 +301,22 @@ fun EventsScreen() {
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            Text(
+                text = "Click to select the folder where the backup will be saved:",
+                style = typography().xs
+            )
+            Spacer(modifier = Modifier.height(5.dp))
+            Text(
+                text = selectedFolderUri.ifEmpty { "No folder selected, click here to select a folder" },
+                style = typography().xxs,
+                maxLines = 3,
+                overflow = TextOverflow.Ellipsis,
+                color = colorPalette().accent,
+                modifier = Modifier.clickable {
+                    folderPickerLauncher.launch(null)
+                }
+            )
+            Spacer(modifier = Modifier.height(16.dp))
             val nextRunTime = workInfoAutoBackup?.nextScheduleTimeMillis
             val timeRemaining = (nextRunTime?.minus(System.currentTimeMillis())) ?: 0L
             val formattedTimeRemaining = formatTimeRemaining(timeRemaining)
@@ -311,21 +327,6 @@ fun EventsScreen() {
                     style = typography().s
                 )
             } else {
-                Text(
-                    text = "Click to select the folder where the backup will be saved:",
-                    style = typography().xs
-                )
-                Text(
-                    text = selectedFolderUri.ifEmpty { "No folder selected, click here to select a folder" },
-                    style = typography().xxs,
-                    maxLines = 3,
-                    overflow = TextOverflow.Ellipsis,
-                    color = colorPalette().accent,
-                    modifier = Modifier.clickable {
-                        folderPickerLauncher.launch(null)
-                    }
-                )
-
                 Row(
                     modifier = Modifier.fillMaxWidth(.7f),
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -352,10 +353,12 @@ fun EventsScreen() {
 
             }
 
+            Spacer(modifier = Modifier.height(16.dp))
+
             Button(
                 onClick = {
                     if (isScheduled) {
-                        WorkManager.getInstance(context).cancelUniqueWork(workNameCheckUpdate)
+                        WorkManager.getInstance(context).cancelUniqueWork(workNameAutoBackup)
                     } else {
                         periodicAutoBackup(context, weeklyOrDaily)
                     }
