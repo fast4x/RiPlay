@@ -19,8 +19,8 @@ fun periodicAutoBackup(context: Context, weeklyOrDaily: Boolean = false) {
 
     val calendar = Calendar.getInstance().apply {
         if (!weeklyOrDaily) {
-            set(Calendar.HOUR_OF_DAY, 22)
-            set(Calendar.MINUTE, 15)
+            set(Calendar.HOUR_OF_DAY, 9)
+            set(Calendar.MINUTE, 20)
             set(Calendar.SECOND, 0)
         } else {
             set(Calendar.DAY_OF_YEAR, Calendar.MONDAY)
