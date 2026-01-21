@@ -1186,10 +1186,10 @@ Mach dich bereit, deine unvergesslichsten musikalischen Momente noch einmal zu e
     <string name="toggle_ondevice_folder_name_instead_full_path">Toggle folder name instead full path</string>
     <string name="music_paused_headphones_disconnected">Music Paused (Headphones disconnected)</string>
     <string name="music_resumed_headphones_connected">Music resumed (headphones connected)</string>
-    <string name="warning_skipped_video">Skipped video</string>
-    <string name="warning_skipped_blacklisted_song">Skipped blacklisted song</string>
+    <string name="warning_skipped_video">Übersprungene Videos</string>
+    <string name="warning_skipped_blacklisted_song">Gesperrter Song übersprungen</string>
     <string name="cast">Cast</string>
-    <string name="enable_ritune_cast">Enable RiTune Cast</string>
+    <string name="enable_ritune_cast">RiTune Cast aktivieren</string>
     <string name="ritune_cast_info">"Cast to RiTune devices, require RiTune installed in other devices "</string>
     <string name="queue_create_new_queue">Neue Warteschlange erstellen</string>
     <string name="queue_list_of_media">Liste der Medien</string>
