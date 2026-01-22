@@ -3,6 +3,7 @@ package it.fast4x.riplay.ui.screens.player.local
 import android.annotation.SuppressLint
 import android.content.ActivityNotFoundException
 import android.content.Intent
+import android.graphics.Bitmap
 import android.graphics.RenderEffect
 import android.graphics.Shader
 import android.media.audiofx.AudioEffect
@@ -69,6 +70,7 @@ import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
@@ -334,6 +336,8 @@ import it.fast4x.riplay.utils.PlayerViewModel
 import it.fast4x.riplay.utils.PlayerViewModelFactory
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import it.fast4x.riplay.utils.conditional
+import it.fast4x.riplay.utils.saturate
 
 @ExperimentalPermissionsApi
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeUiApi::class)
@@ -373,7 +377,7 @@ fun LocalPlayer(
         mutableStateOf(binder.player.currentMediaItem, neverEqualPolicy())
     }
 
-    var shouldBePlaying by remember {
+    var shouldBePlaying by rememberSaveable {
         mutableStateOf(binder.player.shouldBePlaying)
     }
 
@@ -410,7 +414,7 @@ fun LocalPlayer(
         mutableStateOf(false)
     }
     val showvisthumbnail by rememberPreference(showvisthumbnailKey, false)
-    var isShowingVisualizer by remember {
+    var isShowingVisualizer by rememberSaveable {
         mutableStateOf(false)
     }
 
@@ -440,7 +444,7 @@ fun LocalPlayer(
 
     val context = LocalContext.current
 
-    var mediaItems by remember {
+    var mediaItems by remember{
         mutableStateOf(binder.player.currentTimeline.mediaItems)
     }
 //    var mediaItemIndex by remember {
@@ -526,11 +530,11 @@ fun LocalPlayer(
     //Temporaly commented for debug
     //playerError?.let { PlayerError(error = it) }
 
-    var isShowingSleepTimerDialog by remember {
+    var isShowingSleepTimerDialog by rememberSaveable {
         mutableStateOf(false)
     }
 
-    var delayedSleepTimer by remember {
+    var delayedSleepTimer by rememberSaveable {
         mutableStateOf(false)
     }
 
@@ -544,9 +548,10 @@ fun LocalPlayer(
     val playerViewModel: PlayerViewModel = viewModel(factory = factory)
     val positionAndDuration by playerViewModel.positionAndDuration.collectAsStateWithLifecycle()
 
-    var timeRemaining by remember { mutableIntStateOf(0) }
-    LaunchedEffect(positionAndDuration) {
-        timeRemaining = positionAndDuration.second.toInt() - positionAndDuration.first.toInt()
+    val timeRemaining by remember {
+        derivedStateOf {
+            positionAndDuration.second.toInt() - positionAndDuration.first.toInt()
+        }
     }
 
     if (sleepTimerMillisLeft != null)
@@ -579,7 +584,7 @@ fun LocalPlayer(
     val actionspacedevenly by rememberPreference(actionspacedevenlyKey, false)
     var expandedplayer by rememberPreference(expandedplayerKey, false)
 
-    var updateBrush by remember { mutableStateOf(false) }
+    var updateBrush by rememberSaveable { mutableStateOf(false) }
 
     if (showlyricsthumbnail) expandedplayer = false
 
@@ -658,7 +663,7 @@ fun LocalPlayer(
     )
 
     var queueLoopType by rememberPreference(queueLoopTypeKey, defaultValue = QueueLoopType.Default)
-    var showCircularSlider by remember {
+    var showCircularSlider by rememberSaveable {
         mutableStateOf(false)
     }
     val showsongs by rememberPreference(showsongsKey, SongsNumber.`2`)
@@ -690,7 +695,7 @@ fun LocalPlayer(
             DefaultDialog(
                 onDismiss = { isShowingSleepTimerDialog = false }
             ) {
-                var amount by remember {
+                var amount by rememberSaveable {
                     mutableStateOf(1)
                 }
 
@@ -818,27 +823,17 @@ fun LocalPlayer(
 
     val color = colorPalette()
     var dynamicColorPalette by remember { mutableStateOf( color ) }
-    var dominant by remember{ mutableStateOf(0) }
-    var vibrant by remember{ mutableStateOf(0) }
-    var lightVibrant by remember{ mutableStateOf(0) }
-    var darkVibrant by remember{ mutableStateOf(0) }
-    var muted by remember{ mutableStateOf(0) }
-    var lightMuted by remember{ mutableStateOf(0) }
-    var darkMuted by remember{ mutableStateOf(0) }
+    var dominant by rememberSaveable{ mutableStateOf(0) }
+    var vibrant by rememberSaveable{ mutableStateOf(0) }
+    var lightVibrant by rememberSaveable{ mutableStateOf(0) }
+    var darkVibrant by rememberSaveable{ mutableStateOf(0) }
+    var muted by rememberSaveable{ mutableStateOf(0) }
+    var lightMuted by rememberSaveable{ mutableStateOf(0) }
+    var darkMuted by rememberSaveable{ mutableStateOf(0) }
 
 
 
     val colorPaletteMode by rememberPreference(colorPaletteModeKey, ColorPaletteMode.Dark)
-
-    @Composable
-    fun saturate(color : Int): Color {
-        val colorHSL by remember { mutableStateOf(floatArrayOf(0f, 0f, 0f)) }
-        val lightTheme = colorPaletteMode == ColorPaletteMode.Light || (colorPaletteMode == ColorPaletteMode.System && (!isSystemInDarkTheme()))
-        colorToHSL(color,colorHSL)
-        colorHSL[1] = (colorHSL[1] + if (lightTheme || colorHSL[1] < 0.1f) 0f else 0.35f).coerceIn(0f,1f)
-        colorHSL[2] = if (lightTheme) {colorHSL[2].coerceIn(0.5f,1f)} else colorHSL[2]
-        return Color.hsl(colorHSL[0],colorHSL[1],colorHSL[2])
-    }
 
     var lightTheme = colorPaletteMode == ColorPaletteMode.Light || (colorPaletteMode == ColorPaletteMode.System && (!isSystemInDarkTheme()))
     var ratio = if (lightTheme) 1f else 0.5f
@@ -882,7 +877,8 @@ fun LocalPlayer(
                     !lightTheme
                 ) ?: color
 
-                val palette = Palette.from(bitmap).generate()
+                val scaledBitmap = Bitmap.createScaledBitmap(bitmap, 100, 100, false)
+                val palette = Palette.from(scaledBitmap).generate()
 
                 dominant = palette.getDominantColor(dynamicColorPalette.accent.toArgb())
                 vibrant = palette.getVibrantColor(dynamicColorPalette.accent.toArgb())
@@ -997,7 +993,7 @@ fun LocalPlayer(
     var containerModifier = Modifier
         //.padding(bottom = bottomDp)
         .padding(bottom = 0.dp)
-    var deltaX by remember { mutableStateOf(0f) }
+    var deltaX by rememberSaveable { mutableStateOf(0f) }
     val blackgradient by rememberPreference(blackgradientKey, false)
     val bottomgradient by rememberPreference(bottomgradientKey, false)
     val disableScrollingText by rememberPreference(disableScrollingTextKey, false)
@@ -1010,20 +1006,11 @@ fun LocalPlayer(
     val showCoverThumbnailAnimation by rememberPreference(showCoverThumbnailAnimationKey, false)
     var coverThumbnailAnimation by rememberPreference(coverThumbnailAnimationKey, ThumbnailCoverType.Vinyl)
 
-    var valueGrad by remember{ mutableStateOf(2) }
+    var valueGrad by rememberSaveable{ mutableStateOf(2) }
     val gradients = enumValues<AnimatedGradient>()
-    var tempGradient by remember{ mutableStateOf(AnimatedGradient.Linear) }
+    var tempGradient by rememberSaveable{ mutableStateOf(AnimatedGradient.Linear) }
     var albumCoverRotation by rememberPreference(albumCoverRotationKey, false)
-    var circleOffsetY by remember {mutableStateOf(0f)}
-
-    @Composable
-    fun Modifier.conditional(condition : Boolean, modifier : @Composable Modifier.() -> Modifier) : Modifier {
-        return if (condition) {
-            then(modifier(Modifier))
-        } else {
-            this
-        }
-    }
+    var circleOffsetY by rememberSaveable {mutableStateOf(0f)}
 
     if (animatedGradient == AnimatedGradient.Random){
         LaunchedEffect(mediaItem.mediaId){
@@ -1302,8 +1289,8 @@ fun LocalPlayer(
     val thumbnailContent: @Composable (
         //modifier: Modifier
     ) -> Unit = { //innerModifier ->
-        var deltaX by remember { mutableStateOf(0f) }
-        //var direction by remember { mutableIntStateOf(-1)}
+        var deltaX by rememberSaveable { mutableStateOf(0f) }
+        //var direction by rememberSaveable { mutableIntStateOf(-1)}
 
         Thumbnail(
             thumbnailTapEnabledKey = thumbnailTapEnabled,
@@ -1397,7 +1384,7 @@ fun LocalPlayer(
     }
     val textoutline by rememberPreference(textoutlineKey, false)
 
-    var songPlaylist by remember {
+    var songPlaylist by rememberSaveable {
         mutableStateOf(0)
     }
     LaunchedEffect(Unit, mediaItem.mediaId) {
@@ -2000,7 +1987,7 @@ fun LocalPlayer(
             && binder.player.currentMediaItemIndex + 1 < binder.player.mediaItemCount )
             binder.player.getMediaItemAt(binder.player.currentMediaItemIndex + 1) else MediaItem.EMPTY
 
-        var songPlaylist1 by remember {
+        var songPlaylist1 by rememberSaveable {
             mutableStateOf(0)
         }
         LaunchedEffect(Unit, nextmedia.mediaId) {
@@ -2009,7 +1996,7 @@ fun LocalPlayer(
             }
         }
 
-        var songLiked by remember {
+        var songLiked by rememberSaveable {
             mutableStateOf(0)
         }
 
@@ -2066,7 +2053,7 @@ fun LocalPlayer(
                      modifier = Modifier
                  ) { it ->
 
-                     var currentRotation by remember {
+                     var currentRotation by rememberSaveable {
                          mutableFloatStateOf(0f)
                      }
 
@@ -2589,11 +2576,11 @@ fun LocalPlayer(
                             }
                     ) { it ->
 
-                        var currentRotation by remember {
+                        var currentRotation by rememberSaveable {
                             mutableFloatStateOf(0f)
                         }
 
-                        val rotation = remember {
+                        val rotation = rememberSaveable {
                             Animatable(currentRotation)
                         }
 

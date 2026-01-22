@@ -1513,16 +1513,10 @@ class MainActivity :
                                     },
                                     contentAlwaysAvailable = true
                                 ) {
-                                    //if (!castToRiTuneDeviceActive) {
-                                        if (binder?.currentMediaItemAsSong?.isLocal == true)
-                                            localPlayer()
-                                        else
-                                            onlinePlayer()
-//                                    } else
-//                                        RiTunePlayer(
-//                                            navController = navController,
-//                                            onDismiss = {}
-//                                        )
+                                    if (binder?.currentMediaItemAsSong?.isLocal == true)
+                                        localPlayer()
+                                    else
+                                        onlinePlayer()
                                 }
 
                                 val menuState = LocalGlobalSheetState.current

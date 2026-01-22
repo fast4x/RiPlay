@@ -129,7 +129,7 @@ fun HomeSectionPart(
     blacklisted: State<List<Blacklist>?>,
 ) {
 
-    val relatedInit by remember(relatedInit) { mutableStateOf(
+    val relatedInit by remember(relatedInit, blacklisted.value) { mutableStateOf(
         relatedInit?.copy(
                 songs = relatedInit.songs?.filter { item ->
                     blacklisted.value?.map { it.path }?.contains(item.key) == false

@@ -454,3 +454,23 @@ fun Modifier.pulsatingEffect(
             }
         }
 }
+
+@Composable
+fun Modifier.conditional(
+    condition: Boolean,
+    modifier: @Composable Modifier.() -> Modifier
+): Modifier {
+    return if (condition) {
+        then(modifier(Modifier))
+    } else {
+        this
+    }
+}
+
+fun Modifier.applyIf(condition : Boolean, modifier : Modifier.() -> Modifier) : Modifier {
+    return if (condition) {
+        then(modifier(Modifier))
+    } else {
+        this
+    }
+}

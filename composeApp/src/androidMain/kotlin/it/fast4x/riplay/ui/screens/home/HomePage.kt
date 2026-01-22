@@ -104,6 +104,7 @@ import it.fast4x.riplay.ui.components.themed.IconButton
 import it.fast4x.riplay.ui.screens.home.sections.ForYouPart
 import it.fast4x.riplay.ui.screens.home.sections.HomeSectionPart
 import it.fast4x.riplay.ui.screens.home.sections.MoodAndGenresPart
+import kotlinx.coroutines.flow.first
 import timber.log.Timber
 
 
@@ -193,42 +194,42 @@ fun HomePage(
         runCatching {
             refreshScope.launch(Dispatchers.IO) {
                 when (playEventType) {
-                    PlayEventsType.MostPlayed ->
-                        Database.trending(3).distinctUntilChanged()
-                            .collect { songs ->
-                                val song = songs.firstOrNull { item ->
-                                    blacklisted.value?.map { it.path }?.contains(item.id) == false
-                                }
-                                val songId = if (song?.isLocal == true) song.mediaId else song?.id
-                                if (relatedPageResult == null || trending?.id != song?.id || trending?.mediaId != song?.id) {
-                                    relatedPageResult = Environment.relatedPage(
-                                        NextBody(
-                                            videoId = (songId ?: "HZnNt9nnEhw")
-                                        )
-                                    )
-                                }
-                                trending = song
-                            }
+                    PlayEventsType.MostPlayed -> {
+                        val songs = Database.trending(3).distinctUntilChanged().first()
+                        val song = songs.firstOrNull { item ->
+                            blacklisted.value?.map { it.path }?.contains(item.id) == false
+                        }
+                        val songId = if (song?.isLocal == true) song.mediaId else song?.id
+                        if (relatedPageResult == null || trending?.id != song?.id || trending?.mediaId != song?.id) {
+                            relatedPageResult = Environment.relatedPage(
+                                NextBody(
+                                    videoId = (songId ?: "HZnNt9nnEhw")
+                                )
+                            )
+                        }
+                        trending = song
+
+                    }
 
                     PlayEventsType.LastPlayed, PlayEventsType.CasualPlayed -> {
                         val numSongs = if (playEventType == PlayEventsType.LastPlayed) 3 else 50
-                        Database.lastPlayed(numSongs).distinctUntilChanged().collect { songs ->
-                            val song = (if (playEventType == PlayEventsType.LastPlayed) songs
-                                else songs.shuffled()).firstOrNull { item ->
-                                blacklisted.value?.map { it.path }?.contains(item.id) == false
-                            }
-                            val songId = if (song?.isLocal == true) song.mediaId else song?.id
-                            Timber.d("HomePage Last played song $song relatedPageResult $relatedPageResult songId $songId")
-                            if (relatedPageResult == null || trending?.id != song?.id || trending?.mediaId != song?.id) {
-                                relatedPageResult =
-                                    Environment.relatedPage(
-                                        NextBody(
-                                            videoId = (songId ?: "HZnNt9nnEhw")
-                                        )
-                                    )
-                            }
-                            trending = song
+                        val songs = Database.lastPlayed(numSongs).distinctUntilChanged().first()
+                        val song = (if (playEventType == PlayEventsType.LastPlayed) songs
+                            else songs.shuffled()).firstOrNull { item ->
+                            blacklisted.value?.map { it.path }?.contains(item.id) == false
                         }
+                        val songId = if (song?.isLocal == true) song.mediaId else song?.id
+                        Timber.d("HomePage Last played song $song relatedPageResult $relatedPageResult songId $songId")
+                        if (relatedPageResult == null || trending?.id != song?.id || trending?.mediaId != song?.id) {
+                            relatedPageResult =
+                                Environment.relatedPage(
+                                    NextBody(
+                                        videoId = (songId ?: "HZnNt9nnEhw")
+                                    )
+                                )
+                        }
+                        trending = song
+
                     }
 
                 }
@@ -342,13 +343,7 @@ fun HomePage(
                 if (isLandscape && maxWidth * 0.475f >= 320.dp) 0.475f else 0.9f
             val itemWidth = maxWidth * moodItemWidthFactor
 
-            Column(
-                modifier = Modifier
-                    .background(colorPalette().background0)
-                    .fillMaxHeight()
-                    .verticalScroll(scrollState)
-            ) {
-
+            LaunchedEffect(loadedData) {
                 /*   Load data from url or from saved preference   */
                 if (trendingPreference != null) {
                     when (loadedData) {
@@ -411,6 +406,16 @@ fun HomePage(
                 }
 
                 /*   Load data from url or from saved preference   */
+            }
+
+            Column(
+                modifier = Modifier
+                    .background(colorPalette().background0)
+                    .fillMaxHeight()
+                    .verticalScroll(scrollState)
+            ) {
+
+
 
 
                 if (UiType.ViMusic.isCurrent())
@@ -426,7 +431,9 @@ fun HomePage(
                     )
 
                 Row (
-                    modifier = Modifier.fillMaxWidth().padding(end = 12.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(end = 12.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                 ) {
                     WelcomeMessage()

@@ -1,6 +1,11 @@
 package it.fast4x.riplay.utils
 
 import android.graphics.Bitmap
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
@@ -11,8 +16,14 @@ import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.toArgb
+import androidx.core.graphics.ColorUtils.colorToHSL
 import coil.size.Size
 import coil.transform.Transformation
+import it.fast4x.riplay.enums.ColorPaletteMode
+import it.fast4x.riplay.extensions.preferences.colorPaletteModeKey
+import it.fast4x.riplay.extensions.preferences.getEnum
+import it.fast4x.riplay.extensions.preferences.preferences
+import it.fast4x.riplay.extensions.preferences.rememberPreference
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlin.math.abs
@@ -295,4 +306,19 @@ private suspend fun Bitmap.blur(
     bitmap.setPixels(pix, 0, w, 0, 0, w, h)
     sentBitmap.recycle()
     return@withContext bitmap
+}
+
+@Composable
+fun saturate(color: Int): Color {
+    val colorPaletteMode by rememberPreference(colorPaletteModeKey, ColorPaletteMode.Dark)
+    val colorHSL by rememberSaveable { mutableStateOf(floatArrayOf(0f, 0f, 0f)) }
+    val lightTheme =
+        colorPaletteMode == ColorPaletteMode.Light || (colorPaletteMode == ColorPaletteMode.System && (!isSystemInDarkTheme()))
+    colorToHSL(color, colorHSL)
+    colorHSL[1] =
+        (colorHSL[1] + if (lightTheme || colorHSL[1] < 0.1f) 0f else 0.35f).coerceIn(0f, 1f)
+    colorHSL[2] = if (lightTheme) {
+        colorHSL[2].coerceIn(0.5f, 1f)
+    } else colorHSL[2]
+    return Color.hsl(colorHSL[0], colorHSL[1], colorHSL[2])
 }

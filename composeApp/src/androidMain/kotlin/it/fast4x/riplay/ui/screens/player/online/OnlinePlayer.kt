@@ -3,6 +3,7 @@ package it.fast4x.riplay.ui.screens.player.online
 import android.annotation.SuppressLint
 import android.content.ActivityNotFoundException
 import android.content.Intent
+import android.graphics.Bitmap
 import android.graphics.RenderEffect
 import android.graphics.Shader
 import android.media.audiofx.AudioEffect
@@ -74,6 +75,7 @@ import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
@@ -81,6 +83,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.neverEqualPolicy
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
@@ -311,6 +314,7 @@ import it.fast4x.riplay.utils.animatedGradient
 import it.fast4x.riplay.utils.appContext
 import it.fast4x.riplay.utils.asSong
 import it.fast4x.riplay.utils.colorPalette
+import it.fast4x.riplay.utils.conditional
 import it.fast4x.riplay.utils.currentWindow
 import it.fast4x.riplay.utils.detectGestures
 import it.fast4x.riplay.utils.doubleShadowDrop
@@ -330,6 +334,7 @@ import it.fast4x.riplay.utils.playAtIndex
 import it.fast4x.riplay.utils.playNext
 import it.fast4x.riplay.utils.playPrevious
 import it.fast4x.riplay.utils.removeFromOnlineLikedSong
+import it.fast4x.riplay.utils.saturate
 import it.fast4x.riplay.utils.seamlessPlay
 import it.fast4x.riplay.utils.setQueueLoopState
 import it.fast4x.riplay.utils.shuffleQueue
@@ -400,9 +405,9 @@ fun OnlinePlayer(
         mutableStateOf(binder.player.currentMediaItem, neverEqualPolicy())
     }
 
-    var shouldBePlaying by remember { mutableStateOf(false) }
+    var shouldBePlaying by rememberSaveable { mutableStateOf(false) }
 
-    var isRotated by remember { mutableStateOf(false) }
+    var isRotated by rememberSaveable { mutableStateOf(false) }
     val rotationAngle by animateFloatAsState(
         targetValue = if (isRotated) 360F else 0f,
         animationSpec = tween(durationMillis = 200), label = ""
@@ -423,17 +428,17 @@ fun OnlinePlayer(
     var thumbnailFadeEx by rememberPreference(thumbnailFadeExKey, defaultFade)
     var imageCoverSize by rememberPreference(VinylSizeKey, defaultImageCoverSize)
     var blurDarkenFactor by rememberPreference(blurDarkenFactorKey, defaultDarkenFactor)
-    var showBlurPlayerDialog by remember {
+    var showBlurPlayerDialog by rememberSaveable {
         mutableStateOf(false)
     }
-    var showThumbnailOffsetDialog by remember {
+    var showThumbnailOffsetDialog by rememberSaveable {
         mutableStateOf(false)
     }
-    var isShowingLyrics by remember {
+    var isShowingLyrics by rememberSaveable {
         mutableStateOf(false)
     }
     val showvisthumbnail by rememberObservedPreference(showvisthumbnailKey, false)
-    var isShowingVisualizer by remember {
+    var isShowingVisualizer by rememberSaveable {
         mutableStateOf(false)
     }
 
@@ -546,11 +551,11 @@ fun OnlinePlayer(
     val isDragged by pagerState.interactionSource.collectIsDraggedAsState()
     val isDraggedFS by pagerStateFS.interactionSource.collectIsDraggedAsState()
 
-    var isShowingSleepTimerDialog by remember {
+    var isShowingSleepTimerDialog by rememberSaveable {
         mutableStateOf(false)
     }
 
-    var delayedSleepTimer by remember {
+    var delayedSleepTimer by rememberSaveable {
         mutableStateOf(false)
     }
 
@@ -563,7 +568,11 @@ fun OnlinePlayer(
     }
     val playerViewModel: PlayerViewModel = viewModel(factory = factory)
     val positionAndDuration by playerViewModel.positionAndDuration.collectAsStateWithLifecycle()
-    var timeRemaining by remember { mutableIntStateOf(0) }
+    val timeRemaining by remember {
+        derivedStateOf {
+            positionAndDuration.second.toInt() - positionAndDuration.first.toInt()
+        }
+    }
 
 
     if (sleepTimerMillisLeft != null)
@@ -599,7 +608,7 @@ fun OnlinePlayer(
     val actionspacedevenly by rememberObservedPreference(actionspacedevenlyKey, false)
     var expandedplayer by rememberPreference(expandedplayerKey, false)
 
-    var updateBrush by remember { mutableStateOf(false) }
+    var updateBrush by rememberSaveable { mutableStateOf(false) }
 
     if (showlyricsthumbnail) expandedplayer = false
 
@@ -645,7 +654,7 @@ fun OnlinePlayer(
         }
     }
 
-    var likedAt by remember {
+    var likedAt by rememberSaveable {
         mutableStateOf<Long?>(null)
     }
 
@@ -679,7 +688,7 @@ fun OnlinePlayer(
     )
 
 
-    var showCircularSlider by remember {
+    var showCircularSlider by rememberSaveable {
         mutableStateOf(false)
     }
     val showsongs by rememberObservedPreference(showsongsKey, SongsNumber.`2`)
@@ -713,7 +722,7 @@ fun OnlinePlayer(
             DefaultDialog(
                 onDismiss = { isShowingSleepTimerDialog = false }
             ) {
-                var amount by remember {
+                var amount by rememberSaveable {
                     mutableStateOf(1)
                 }
 
@@ -841,30 +850,16 @@ fun OnlinePlayer(
 
     val color = colorPalette()
     var dynamicColorPalette by remember { mutableStateOf(color) }
-    var dominant by remember { mutableStateOf(0) }
-    var vibrant by remember { mutableStateOf(0) }
-    var lightVibrant by remember { mutableStateOf(0) }
-    var darkVibrant by remember { mutableStateOf(0) }
-    var muted by remember { mutableStateOf(0) }
-    var lightMuted by remember { mutableStateOf(0) }
-    var darkMuted by remember { mutableStateOf(0) }
+    var dominant by rememberSaveable { mutableStateOf(0) }
+    var vibrant by rememberSaveable { mutableStateOf(0) }
+    var lightVibrant by rememberSaveable { mutableStateOf(0) }
+    var darkVibrant by rememberSaveable { mutableStateOf(0) }
+    var muted by rememberSaveable { mutableStateOf(0) }
+    var lightMuted by rememberSaveable { mutableStateOf(0) }
+    var darkMuted by rememberSaveable { mutableStateOf(0) }
 
 
     val colorPaletteMode by rememberPreference(colorPaletteModeKey, ColorPaletteMode.Dark)
-
-    @Composable
-    fun saturate(color: Int): Color {
-        val colorHSL by remember { mutableStateOf(floatArrayOf(0f, 0f, 0f)) }
-        val lightTheme =
-            colorPaletteMode == ColorPaletteMode.Light || (colorPaletteMode == ColorPaletteMode.System && (!isSystemInDarkTheme()))
-        colorToHSL(color, colorHSL)
-        colorHSL[1] =
-            (colorHSL[1] + if (lightTheme || colorHSL[1] < 0.1f) 0f else 0.35f).coerceIn(0f, 1f)
-        colorHSL[2] = if (lightTheme) {
-            colorHSL[2].coerceIn(0.5f, 1f)
-        } else colorHSL[2]
-        return Color.hsl(colorHSL[0], colorHSL[1], colorHSL[2])
-    }
 
     var lightTheme =
         colorPaletteMode == ColorPaletteMode.Light || (colorPaletteMode == ColorPaletteMode.System && (!isSystemInDarkTheme()))
@@ -909,7 +904,8 @@ fun OnlinePlayer(
                     !lightTheme
                 ) ?: color
 
-                val palette = Palette.from(bitmap).generate()
+                val scaledBitmap = Bitmap.createScaledBitmap(bitmap, 100, 100, false)
+                val palette = Palette.from(scaledBitmap).generate()
 
                 dominant = palette.getDominantColor(dynamicColorPalette.accent.toArgb())
                 vibrant = palette.getVibrantColor(dynamicColorPalette.accent.toArgb())
@@ -1005,15 +1001,15 @@ fun OnlinePlayer(
 
 
 
-//    var isShowingStatsForNerds by remember {
+//    var isShowingStatsForNerds by rememberSaveable {
 //        mutableStateOf(false)
 //    }
 
     val thumbnailTapEnabled by rememberObservedPreference(thumbnailTapEnabledKey, true)
     val showNextSongsInPlayer by rememberObservedPreference(showNextSongsInPlayerKey, false)
 
-    var showQueue by remember { mutableStateOf(false) }
-    var showSearchEntity by remember { mutableStateOf(false) }
+    var showQueue by rememberSaveable { mutableStateOf(false) }
+    var showSearchEntity by rememberSaveable { mutableStateOf(false) }
 
     val transparentBackgroundActionBarPlayer by rememberObservedPreference(
         transparentBackgroundPlayerActionBarKey,
@@ -1025,7 +1021,7 @@ fun OnlinePlayer(
     var containerModifier = Modifier
         //.padding(bottom = bottomDp)
         .padding(bottom = 0.dp)
-    var deltaX by remember { mutableStateOf(0f) }
+    var deltaX by rememberSaveable { mutableStateOf(0f) }
     val blackgradient by rememberObservedPreference(blackgradientKey, false)
     val bottomgradient by rememberObservedPreference(bottomgradientKey, false)
     val disableScrollingText by rememberObservedPreference(disableScrollingTextKey, false)
@@ -1041,25 +1037,11 @@ fun OnlinePlayer(
         ThumbnailCoverType.Vinyl
     )
 
-    var valueGrad by remember { mutableStateOf(2) }
+    var valueGrad by rememberSaveable { mutableStateOf(2) }
     val gradients = enumValues<AnimatedGradient>()
-    var tempGradient by remember { mutableStateOf(AnimatedGradient.Linear) }
+    var tempGradient by rememberSaveable { mutableStateOf(AnimatedGradient.Linear) }
     var albumCoverRotation by rememberObservedPreference(albumCoverRotationKey, false)
-    var circleOffsetY by remember { mutableStateOf(0f) }
-
-    @Composable
-    fun Modifier.conditional(
-        condition: Boolean,
-        modifier: @Composable Modifier.() -> Modifier
-    ): Modifier {
-        return if (condition) {
-            then(modifier(Modifier))
-        } else {
-            this
-        }
-    }
-
-
+    var circleOffsetY by rememberSaveable { mutableStateOf(0f) }
 
     if (animatedGradient == AnimatedGradient.Random) {
         LaunchedEffect(mediaItem.mediaId) {
@@ -1338,9 +1320,9 @@ fun OnlinePlayer(
     var lastYTVideoId by rememberPreference(key = lastVideoIdKey, defaultValue = "")
     var lastYTVideoSeconds by rememberPreference(key = lastVideoSecondsKey, defaultValue = 0f)
 
-    var updateStatisticsEverySeconds by remember { mutableIntStateOf(0) }
-    val steps by remember { mutableIntStateOf(5) }
-    var stepToUpdateStats by remember { mutableIntStateOf(1) }
+    var updateStatisticsEverySeconds by rememberSaveable { mutableIntStateOf(0) }
+    val steps by rememberSaveable { mutableIntStateOf(5) }
+    var stepToUpdateStats by rememberSaveable { mutableIntStateOf(1) }
 
     val isLandscape = isLandscape
 
@@ -1464,7 +1446,7 @@ fun OnlinePlayer(
 
     /***** NEW PLAYER *****/
 
-    var showControls by remember { mutableStateOf(true) }
+    var showControls by rememberSaveable { mutableStateOf(true) }
     DelayedControls(delayControls = showControls) {
         showControls = false
     }
@@ -1584,7 +1566,7 @@ fun OnlinePlayer(
 
     val textoutline by rememberObservedPreference(textoutlineKey, false)
 
-    var songPlaylist by remember {
+    var songPlaylist by rememberSaveable {
         mutableStateOf(0)
     }
     LaunchedEffect(Unit, mediaItem.mediaId) {
@@ -2204,7 +2186,7 @@ fun OnlinePlayer(
         )
             binder.player.getMediaItemAt(binder.player.currentMediaItemIndex + 1) else MediaItem.EMPTY
 
-        var songPlaylist1 by remember {
+        var songPlaylist1 by rememberSaveable {
             mutableStateOf(0)
         }
         LaunchedEffect(Unit, nextmedia.mediaId) {
@@ -2213,7 +2195,7 @@ fun OnlinePlayer(
             }
         }
 
-        var songLiked by remember {
+        var songLiked by rememberSaveable {
             mutableStateOf(0)
         }
 
@@ -2284,7 +2266,7 @@ fun OnlinePlayer(
                             modifier = Modifier
                         ) { it ->
 
-                            var currentRotation by remember {
+                            var currentRotation by rememberSaveable {
                                 mutableFloatStateOf(0f)
                             }
 
@@ -2882,7 +2864,7 @@ fun OnlinePlayer(
                             }
                     ) { it ->
 
-                        var currentRotation by remember {
+                        var currentRotation by rememberSaveable {
                             mutableFloatStateOf(0f)
                         }
 
@@ -3440,7 +3422,7 @@ fun OnlinePlayer(
                                                 ) {
 
                                                     val isVideo =
-                                                        remember { binder.player.getMediaItemAt(index).isVideo }
+                                                        rememberSaveable { binder.player.getMediaItemAt(index).isVideo }
                                                     if (!isVideo)
                                                         Image(
                                                             painter = coverPainter,

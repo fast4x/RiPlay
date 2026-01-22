@@ -751,14 +751,6 @@ fun isTabletDevice(): Boolean {
     }
 
 
-fun Modifier.applyIf(condition : Boolean, modifier : Modifier.() -> Modifier) : Modifier {
-    return if (condition) {
-        then(modifier(Modifier))
-    } else {
-        this
-    }
-}
-
 @OptIn(UnstableApi::class)
 suspend fun getAlbumVersionFromVideo(song: Song,playlistId : Long, position : Int, playlist : Playlist?){
     val isExtPlaylist = (song.thumbnailUrl == "") && (song.durationText != "0:00")
