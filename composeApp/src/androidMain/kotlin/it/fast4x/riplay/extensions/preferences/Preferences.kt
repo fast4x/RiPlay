@@ -14,9 +14,14 @@ import it.fast4x.environment.Environment
 import it.fast4x.environment.requests.HomePage
 import it.fast4x.riplay.extensions.ritune.RiTuneDevices
 import it.fast4x.riplay.data.models.Song
+import it.fast4x.riplay.enums.SongSortBy
+import it.fast4x.riplay.utils.PlaylistSongsSort
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.channelFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 import kotlinx.serialization.json.Json
 import timber.log.Timber
 
@@ -753,4 +758,27 @@ inline fun <reified T : Enum<T>> Int.toEnum(): T? {
 //Enum to Int
 inline fun <reified T : Enum<T>> T.toInt(): Int {
     return this.ordinal
+}
+
+fun SharedPreferences.observeString(key: String, defaultValue: String): Flow<String> {
+    return callbackFlow {
+        val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, k ->
+            if (k == key) {
+                trySend(getString(key, defaultValue) ?: defaultValue).isSuccess
+            }
+        }
+
+        registerOnSharedPreferenceChangeListener(listener)
+
+        trySend(getString(key, defaultValue) ?: defaultValue).isSuccess
+
+        awaitClose {
+            unregisterOnSharedPreferenceChangeListener(listener)
+        }
+    }.distinctUntilChanged()
+}
+
+fun SharedPreferences.observeSortBy(key: String, default: SongSortBy): Flow<SongSortBy> {
+    return observeString(key, default.name)
+        .map { stringValue -> SongSortBy.fromString(stringValue) }
 }

@@ -41,4 +41,14 @@ enum class SongSortBy(
     val menuItem: GenericMenuItem
         @Composable
         get() = GenericMenuItem( this.ordinal,textId, iconId )
+
+    companion object {
+        fun fromString(value: String): SongSortBy {
+            return try {
+                valueOf(value)
+            } catch (e: IllegalArgumentException) {
+                DateAdded
+            }
+        }
+    }
 }

@@ -4,6 +4,7 @@ import android.content.ComponentName
 import android.content.ContentResolver
 import android.content.Context
 import android.content.ServiceConnection
+import android.content.SharedPreferences
 import android.net.Uri
 import android.os.Bundle
 import android.os.IBinder
@@ -12,14 +13,12 @@ import android.support.v4.media.MediaDescriptionCompat
 import androidx.annotation.DrawableRes
 import androidx.annotation.OptIn
 import androidx.compose.ui.util.fastFilter
-import androidx.core.content.edit
 import androidx.core.net.toUri
 import androidx.media.MediaBrowserServiceCompat
 import androidx.media3.common.util.UnstableApi
 import it.fast4x.environment.Environment
 import it.fast4x.environment.EnvironmentExt
 import it.fast4x.environment.models.BrowseEndpoint
-import it.fast4x.environment.models.NavigationEndpoint
 import it.fast4x.environment.models.bodies.SearchBody
 import it.fast4x.environment.requests.searchPage
 import it.fast4x.environment.utils.completed
@@ -38,56 +37,150 @@ import it.fast4x.riplay.data.models.SongArtistMap
 import it.fast4x.riplay.enums.AlbumSortBy
 import it.fast4x.riplay.enums.ArtistSortBy
 import it.fast4x.riplay.enums.MaxTopPlaylistItems
-import it.fast4x.riplay.enums.NotificationButtons
-import it.fast4x.riplay.enums.QueueLoopType
 import it.fast4x.riplay.enums.SortOrder
 import it.fast4x.riplay.extensions.preferences.MaxTopPlaylistItemsKey
 import it.fast4x.riplay.extensions.preferences.getEnum
 import it.fast4x.riplay.extensions.preferences.preferences
-import it.fast4x.riplay.extensions.preferences.putEnum
-import it.fast4x.riplay.extensions.preferences.queueLoopTypeKey
 import it.fast4x.riplay.commonutils.removePrefix
+import it.fast4x.riplay.enums.PlaylistSongSortBy
+import it.fast4x.riplay.enums.PlaylistSortBy
+import it.fast4x.riplay.enums.SongSortBy
+import it.fast4x.riplay.extensions.preferences.albumSortByKey
+import it.fast4x.riplay.extensions.preferences.albumSortOrderKey
+import it.fast4x.riplay.extensions.preferences.artistSortByKey
+import it.fast4x.riplay.extensions.preferences.artistSortOrderKey
+import it.fast4x.riplay.extensions.preferences.observeKeyEnum
+import it.fast4x.riplay.extensions.preferences.observeSortBy
+import it.fast4x.riplay.extensions.preferences.playlistSongSortByKey
+import it.fast4x.riplay.extensions.preferences.playlistSortByKey
+import it.fast4x.riplay.extensions.preferences.playlistSortOrderKey
+import it.fast4x.riplay.extensions.preferences.songSortByKey
+import it.fast4x.riplay.extensions.preferences.songSortOrderKey
 import it.fast4x.riplay.utils.asMediaItem
 import it.fast4x.riplay.utils.asSong
 import it.fast4x.riplay.utils.getTitleMonthlyPlaylist
 import it.fast4x.riplay.utils.intent
-import it.fast4x.riplay.utils.isLocal
-import it.fast4x.riplay.utils.mediaItemToggleLike
-import it.fast4x.riplay.utils.playNext
-import it.fast4x.riplay.utils.playPrevious
-import it.fast4x.riplay.utils.seamlessQueue
-import it.fast4x.riplay.utils.setQueueLoopState
 import it.fast4x.riplay.utils.showFavoritesPlaylistsAA
 import it.fast4x.riplay.utils.showGridAA
 import it.fast4x.riplay.utils.showInLibraryAA
 import it.fast4x.riplay.utils.showMonthlyPlaylistsAA
 import it.fast4x.riplay.utils.showOnDeviceAA
 import it.fast4x.riplay.utils.showTopPlaylistAA
-import it.fast4x.riplay.utils.shuffleQueue
 import it.fast4x.riplay.utils.shuffleSongsAAEnabled
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import timber.log.Timber
 import kotlin.also
 
 @UnstableApi
-class PlayerMediaBrowserService : MediaBrowserServiceCompat(), ServiceConnection {
-    //private val coroutineScope = CoroutineScope(Dispatchers.IO)
+class PlayerMediaBrowserService : MediaBrowserServiceCompat(),
+    ServiceConnection,
+    SharedPreferences.OnSharedPreferenceChangeListener {
 
     companion object {
         var lastSongs = emptyList<Song>()
         var searchedSongs = emptyList<Song>()
     }
 
+    //val context = (this as Context)
+    //private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
+
+    private var playlistSongsSortBy: PlaylistSongSortBy = PlaylistSongSortBy.DateAdded
+    private var songsSortBy: SongSortBy = SongSortBy.DateAdded
+    private var playlistSortBy: PlaylistSortBy = PlaylistSortBy.DateAdded
+    private var artistSortBy: ArtistSortBy = ArtistSortBy.DateAdded
+    private var albumSortBy: AlbumSortBy = AlbumSortBy.DateAdded
+
+
+    private var songSortOrder: SortOrder = SortOrder.Descending
+    private var artistSortOrder: SortOrder = SortOrder.Descending
+    private var albumSortOrder: SortOrder = SortOrder.Descending
+
+
+
     private var bound = false
+
+
+    override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences?, key: String?) {
+        sharedPreferences ?: return
+        Timber.d("PlayerMediaBrowserService onSharedPreferenceChanged $key")
+        when (key) {
+            songSortByKey -> {
+                songsSortBy = sharedPreferences.getEnum(songSortByKey, SongSortBy.DateAdded)
+                notifyChildrenChanged(MediaId.SONGS)
+            }
+
+            songSortOrderKey -> {
+                songSortOrder = sharedPreferences.getEnum(songSortOrderKey, SortOrder.Descending)
+                notifyChildrenChanged(MediaId.SONGS)
+            }
+
+            artistSortOrderKey -> {
+                artistSortOrder =
+                    sharedPreferences.getEnum(artistSortOrderKey, SortOrder.Descending)
+                notifyChildrenChanged(MediaId.ARTISTS_FAVORITES)
+            }
+            artistSortByKey -> {
+                artistSortBy =
+                    sharedPreferences.getEnum(artistSortByKey, ArtistSortBy.DateAdded)
+                notifyChildrenChanged(MediaId.ARTISTS_FAVORITES)
+            }
+
+            albumSortOrderKey -> {
+                albumSortOrder = sharedPreferences.getEnum(albumSortOrderKey, SortOrder.Descending)
+                notifyChildrenChanged(MediaId.ALBUMS_FAVORITES)
+            }
+
+            albumSortByKey -> {
+                albumSortBy =
+                    sharedPreferences.getEnum(albumSortByKey, AlbumSortBy.DateAdded)
+                notifyChildrenChanged(MediaId.ALBUMS_FAVORITES)
+            }
+
+            playlistSongSortByKey -> {
+                playlistSongsSortBy =
+                    sharedPreferences.getEnum(playlistSongSortByKey, PlaylistSongSortBy.DateAdded)
+                notifyChildrenChanged(MediaId.PLAYLISTS)
+            }
+
+            playlistSortByKey -> {
+                playlistSortBy =
+                    sharedPreferences.getEnum(playlistSortByKey, PlaylistSortBy.DateAdded)
+                notifyChildrenChanged(MediaId.PLAYLISTS)
+            }
+
+        }
+    }
+
+    override fun onCreate() {
+        super.onCreate()
+
+        songsSortBy = preferences.getEnum(songSortByKey, SongSortBy.DateAdded)
+        songSortOrder = preferences.getEnum(songSortOrderKey, SortOrder.Descending)
+        playlistSortBy = preferences.getEnum(playlistSortByKey, PlaylistSortBy.DateAdded)
+        playlistSongsSortBy = preferences.getEnum(playlistSongSortByKey, PlaylistSongSortBy.DateAdded)
+        artistSortBy = preferences.getEnum(artistSortByKey, ArtistSortBy.DateAdded)
+        artistSortOrder = preferences.getEnum(artistSortOrderKey, SortOrder.Descending)
+        albumSortBy = preferences.getEnum(albumSortByKey, AlbumSortBy.DateAdded)
+        albumSortOrder = preferences.getEnum(albumSortOrderKey, SortOrder.Descending)
+
+
+
+        preferences.registerOnSharedPreferenceChangeListener(this)
+
+        Timber.d("PlayerMediaBrowserService onCreate")
+    }
 
 
     override fun onDestroy() {
         if (bound) {
             unbindService(this)
         }
+        preferences.unregisterOnSharedPreferenceChangeListener(this)
         super.onDestroy()
     }
 
@@ -188,26 +281,35 @@ class PlayerMediaBrowserService : MediaBrowserServiceCompat(), ServiceConnection
                     // Start Navigation items
                     MediaId.ROOT -> listOf(
                         songsBrowserMediaItem,
-                        playlistsBrowserMediaItem,
+                        artistsFavoritesBrowserMediaItem,
                         albumsFavoritesBrowserMediaItem,
-                        artistsFavoritesBrowserMediaItem
+                        playlistsBrowserMediaItem
                     )
 
-                    MediaId.SONGS -> Database
-                        .songsByPlayTimeDesc()
-                        .first()
-                        .take(500)
-                        .also { lastSongs = it.map { it.song } }
-                        .map { it.song.asBrowserMediaItem }
-                        .toMutableList()
-                        .apply {
-                            if (shuffleSongsAAEnabled() && isNotEmpty()) add(0, shuffleBrowserMediaItem)
-                        }
+                    MediaId.SONGS -> {
+
+                        Database
+                            //.songsByPlayTimeDesc()
+                            .songs(songsSortBy, songSortOrder, 0)
+                            .first()
+                            .take(500)
+                            .also { lastSongs = it.map { it.song } }
+                            .map { it.song.asBrowserMediaItem }
+                            .toMutableList()
+                            .apply {
+                                if (shuffleSongsAAEnabled() && isNotEmpty()) add(
+                                    0,
+                                    shuffleBrowserMediaItem
+                                )
+                            }
+                    }
 
                     MediaId.PLAYLISTS -> {
+
                         if (id == "") {
                             Database
-                                .playlistPreviewsByNameAsc()
+                                .playlistPreviews(playlistSortBy, songSortOrder)
+                                //.playlistPreviewsByNameAsc()
                                 .first()
                                 .fastFilter {
                                     if (showMonthlyPlaylistsAA()) true
@@ -226,20 +328,23 @@ class PlayerMediaBrowserService : MediaBrowserServiceCompat(), ServiceConnection
                                         add(2, ondeviceBrowserMediaItem)
                                 }
                         } else {
-                            Database.playlistWithSongs(id.toLong())
+                            Database
+                                .songsPlaylist(id.toLong(), playlistSongsSortBy, songSortOrder)
+                                //.playlistWithSongs(id.toLong())
                                 .first()
-                                ?.songs
-                                .also { lastSongs = it ?: emptyList() }
-                                ?.map { it.asBrowserMediaItem }
-                                ?.toMutableList()
+                                //?.songs
+                                .also { lastSongs = it.map { it.song } }
+                                .map { it.song.asBrowserMediaItem }
+                                .toMutableList()
                         }
 
                     }
 
                     MediaId.ARTISTS_FAVORITES -> {
+
                         if (id == "") {
                             Database
-                                .artists(ArtistSortBy.Name, SortOrder.Ascending)
+                                .artists(artistSortBy, artistSortOrder)
                                 .first()
                                 .map { it.asBrowserMediaItem(MediaId.ARTISTS_FAVORITES) }
                                 .toMutableList()
@@ -305,9 +410,10 @@ class PlayerMediaBrowserService : MediaBrowserServiceCompat(), ServiceConnection
                     }
 
                     MediaId.ARTISTS_ONDEVICE -> {
+
                         if (id == "") {
                             Database
-                                .artistsOnDevice(ArtistSortBy.Name, SortOrder.Ascending)
+                                .artistsOnDevice(artistSortBy, artistSortOrder)
                                 .first()
                                 .map { it.asBrowserMediaItem(MediaId.ARTISTS_ONDEVICE) }
                                 .toMutableList()
@@ -321,10 +427,11 @@ class PlayerMediaBrowserService : MediaBrowserServiceCompat(), ServiceConnection
                     }
 
                     MediaId.ARTISTS_IN_LIBRARY -> {
+
                         if (id == "") {
                             Timber.d("PlayerMediaBrowserService onLoadChildren inside artists in library id $id")
                             Database
-                                .artistsInLibrary(ArtistSortBy.Name, SortOrder.Ascending)
+                                .artistsInLibrary(artistSortBy, artistSortOrder)
                                 .first()
                                 .map { it.asBrowserMediaItem(MediaId.ARTISTS_IN_LIBRARY) }
                                 .toMutableList()
@@ -385,10 +492,11 @@ class PlayerMediaBrowserService : MediaBrowserServiceCompat(), ServiceConnection
                     }
 
                     MediaId.ALBUMS_FAVORITES -> {
+
                         if (id == "") {
                             Timber.d("PlayerMediaBrowserService onLoadChildren inside albums id $id")
                             Database
-                                .albums(AlbumSortBy.DateAdded, SortOrder.Descending)
+                                .albums(albumSortBy, albumSortOrder)
                                 .first()
                                 .map { it.asBrowserMediaItem(MediaId.ALBUMS_FAVORITES) }
                                 .toMutableList()
@@ -454,10 +562,11 @@ class PlayerMediaBrowserService : MediaBrowserServiceCompat(), ServiceConnection
                     }
 
                     MediaId.ALBUMS_ON_DEVICE -> {
+
                         if (id == "") {
                             Timber.d("PlayerMediaBrowserService onLoadChildren inside albums on device id $id")
                             Database
-                                .albumsOnDevice(AlbumSortBy.DateAdded, SortOrder.Descending)
+                                .albumsOnDevice(albumSortBy, albumSortOrder)
                                 .first()
                                 .map { it.asBrowserMediaItem(MediaId.ALBUMS_ON_DEVICE) }
                                 .toMutableList()
@@ -472,10 +581,11 @@ class PlayerMediaBrowserService : MediaBrowserServiceCompat(), ServiceConnection
                     }
 
                     MediaId.ALBUMS_IN_LIBRARY -> {
+
                         if (id == "") {
                             Timber.d("PlayerMediaBrowserService onLoadChildren inside albums on device id $id")
                             Database
-                                .albumsInLibrary(AlbumSortBy.DateAdded, SortOrder.Descending)
+                                .albumsInLibrary(albumSortBy, albumSortOrder)
                                 .first()
                                 .map { it.asBrowserMediaItem(MediaId.ALBUMS_IN_LIBRARY) }
                                 .toMutableList()
@@ -538,12 +648,16 @@ class PlayerMediaBrowserService : MediaBrowserServiceCompat(), ServiceConnection
 
                     // Start Browsable and playable items
                     MediaId.SHUFFLE -> lastSongs.shuffled().map { it.asBrowserMediaItem }.toMutableList()
-                    MediaId.FAVORITES -> Database
-                        .favorites()
-                        .first()
-                        .also { lastSongs = it }
-                        .map { it.asBrowserMediaItem }
-                        .toMutableList()
+                    MediaId.FAVORITES -> {
+
+                        Database
+                            .songsFavorites(songsSortBy, songSortOrder)
+                            //.favorites()
+                            .first()
+                            .also { lastSongs = it.map { it.song }}
+                            .map { it.song.asBrowserMediaItem }
+                            .toMutableList()
+                    }
                     MediaId.TOP -> {
                         val maxTopSongs = preferences.getEnum(MaxTopPlaylistItemsKey,
                             MaxTopPlaylistItems.`10`).number.toInt()
@@ -553,12 +667,14 @@ class PlayerMediaBrowserService : MediaBrowserServiceCompat(), ServiceConnection
                             .also { lastSongs = it }
                             .map { it.asBrowserMediaItem }.toMutableList()
                     }
-                    MediaId.ONDEVICE -> Database
-                        .songsOnDevice()
-                        .first()
-                        .also { lastSongs = it }
-                        .map { it.asBrowserMediaItem }
-                        .toMutableList()
+                    MediaId.ONDEVICE -> {
+                        Database
+                            .songsOnDevice()
+                            .first()
+                            .also { lastSongs = it }
+                            .map { it.asBrowserMediaItem }
+                            .toMutableList()
+                    }
 
                     // End Browsable and playable items
 
@@ -783,214 +899,9 @@ class PlayerMediaBrowserService : MediaBrowserServiceCompat(), ServiceConnection
             MediaItem.FLAG_BROWSABLE
         )
 
-    /*
-    private fun sessionCallback(  binder: PlayerService.Binder ) =
-        PlayerMediaSessionCallback(
-            binder,
-            onPlayClick = {
-                Timber.d("PlayerMediaBorwserService MediaSessionCallback onPlayClick")
-                if (binder.player.currentMediaItem?.isLocal == true)
-                    binder.player.play()
-                else
-                    binder.onlinePlayer?.play()
-            },
-            onPauseClick = {
-                Timber.d("PlayerMediaBorwserService MediaSessionCallback onPauseClick")
-                binder.player.pause()
-                binder.onlinePlayer?.pause()
-            },
-            onSeekToPos = { second ->
-                Timber.d("PlayerMediaBorwserService MediaSessionCallback onSeekToPos")
-                val newPosition = (second / 1000).toFloat()
-                binder.onlinePlayer?.seekTo(newPosition)
-                //currentPlaybackPosition.value = second
-                //currentSecond.value = second.toFloat()
-            },
-            onPlayNext = {
-                Timber.d("PlayerMediaBorwserService MediaSessionCallback onPlayNext")
-                binder.player.playNext()
-            },
-            onPlayPrevious = {
-                Timber.d("PlayerMediaBorwserService MediaSessionCallback onPlayPrevious")
-                binder.player.playPrevious()
-            },
-            onPlayQueueItem = { id ->
-                binder.player.seekToDefaultPosition(id.toInt())
-            },
-            onCustomClick = { customAction ->
-                Timber.d("PlayerMediaBorwserService MediaSessionCallback onCustomClick")
-                val currentMediaItem = binder.player.currentMediaItem
-                val queueLoopType = preferences.getEnum(queueLoopTypeKey, defaultValue = QueueLoopType.Default)
-                when (customAction) {
-                    NotificationButtons.Favorites.action -> {
-                        if (currentMediaItem != null)
-                            mediaItemToggleLike(currentMediaItem)
-                    }
-                    NotificationButtons.Repeat.action -> {
-                        preferences.edit(commit = true) { putEnum(queueLoopTypeKey, setQueueLoopState(queueLoopType)) }
-                    }
-                    NotificationButtons.Shuffle.action -> {
-                        binder.player.shuffleQueue()
-                    }
-                    NotificationButtons.Radio.action -> {
-                        if (currentMediaItem != null) {
-                            binder.stopRadio()
-                            binder.player.seamlessQueue(currentMediaItem)
-                            binder.onlinePlayer?.play()
-                            binder.setupRadio(
-                                NavigationEndpoint.Endpoint.Watch(videoId = currentMediaItem.mediaId)
-                            )
-                        }
-                    }
-                    NotificationButtons.Search.action -> {
-                        binder.actionSearch()
-                    }
-                }
-                //binder.updateUnifiedNotification()
-            }
-        )
-
-     */
-
-    /*
-    private inner class SessionCallback @OptIn(UnstableApi::class) constructor(
-        private val binder: PlayerService.Binder,
-    ) :
-        MediaSessionCompat.Callback() {
-        override fun onPlay() = binder.player.play()
-        override fun onPause() = binder.player.pause()
-        override fun onSkipToPrevious() = binder.player.playPrevious()
-        override fun onSkipToNext() = binder.player.playNext()
-        override fun onSeekTo(pos: Long) = binder.player.seekTo(pos)
-        override fun onSkipToQueueItem(id: Long) = binder.player.seekToDefaultPosition(id.toInt())
-
-        @OptIn(UnstableApi::class)
-        override fun onPlayFromSearch(query: String?, extras: Bundle?) {
-            if (query.isNullOrBlank()) return
-            binder.playFromSearch(query)
-        }
-
-
-        @FlowPreview
-        @ExperimentalCoroutinesApi
-        @UnstableApi
-        override fun onCustomAction(action: String?, extras: Bundle?) {
-            if (action == "LIKE") {
-                binder.toggleLike()
-                binder.refreshPlayer()
-            }
-
-            if (action == "SHUFFLE") {
-                binder.toggleShuffle()
-                binder.refreshPlayer()
-            }
-            if (action == "PLAYRADIO") {
-                coroutineScope.launch {
-                    withContext(Dispatchers.Main) {
-                        binder.stopRadio()
-                        binder.playRadio(NavigationEndpoint.Endpoint.Watch(videoId = binder.player.currentMediaItem?.mediaId))
-                    }
-                }
-
-            }
-
-
-            super.onCustomAction(action, extras)
-        }
-
-        @OptIn(UnstableApi::class)
-        override fun onPlayFromMediaId(mediaId: String?, extras: Bundle?) {
-            Timber.d("MediaSessionCallback onPlayFromMediaId mediaId $mediaId called")
-            val data = mediaId?.split('/') ?: return
-            var index = 0
-            //var mediaItemSelected: MediaItem? = null
-
-            Timber.d("MediaSessionCallback onPlayFromMediaId mediaId $mediaId data $data processing")
-
-            CoroutineScope(Dispatchers.IO).launch {
-                val mediaItems = when (data.getOrNull(0)) {
-
-                    MediaId.SONGS -> data
-                        .getOrNull(1)
-                        ?.let { songId ->
-                            index = lastSongs.indexOfFirst { it.id == songId }
-
-                            if (index < 0) return@launch // index not found
-
-                            //mediaItemSelected = lastSongs[index].asMediaItem
-                            lastSongs
-                        }
-                        .also { Timber.d("MediaSessionCallback onPlayFromMediaId processing songs, mediaId $mediaId index $index songs ${it?.size}") }
-
-                    MediaId.SEARCHED -> data
-                        .getOrNull(1)
-                        ?.let { songId ->
-                            index = searchedSongs.indexOfFirst { it.id == songId }
-
-                            if (index < 0) return@launch // index not found
-
-                            //mediaItemSelected = searchedSongs[index].asMediaItem
-                            searchedSongs
-
-                        }
-
-                    // Maybe it needed in the future
-                    /*
-                    MediaId.shuffle -> lastSongs.shuffled()
-    
-                    MediaId.favorites -> Database
-                        .favorites()
-                        .first()
-    
-                    MediaId.ondevice -> Database
-                        .songsOnDevice()
-                        .first()
-    
-                    MediaId.top -> {
-                        val maxTopSongs = context().preferences.getEnum(MaxTopPlaylistItemsKey,
-                            MaxTopPlaylistItems.`10`).number.toInt()
-    
-                        Database.trending(maxTopSongs)
-                            .first()
-                    }
-    
-                    MediaId.playlists -> data
-                        .getOrNull(1)
-                        ?.toLongOrNull()
-                        ?.let(Database::playlistWithSongs)
-                        ?.first()
-                        ?.songs
-    
-                    MediaId.albums -> data
-                        .getOrNull(1)
-                        ?.let(Database::albumSongs)
-                        ?.first()
-    
-                    MediaId.artists -> {
-                        data
-                            .getOrNull(1)
-                            ?.let(Database::artistSongsByname)
-                            ?.first()
-                    }
-    
-    
-                    */
-
-                    else -> emptyList()
-                }?.map(Song::asMediaItem) ?: return@launch
-
-                withContext(Dispatchers.Main) {
-                    Timber.d("MediaSessionCallback onPlayFromMediaId mediaId ${mediaId} mediaItems ${mediaItems.size} ready to play")
-                    //binder.stopRadio()
-                    binder.player.forcePlayAtIndex(mediaItems, index)
-                }
-            }
-
-            // END PROCESSING
-
-        }
+    fun reloadPlaylist(){
+        notifyChildrenChanged(MediaId.PLAYLISTS)
     }
-     */
 
     object MediaId {
         const val FAULT = "fault"

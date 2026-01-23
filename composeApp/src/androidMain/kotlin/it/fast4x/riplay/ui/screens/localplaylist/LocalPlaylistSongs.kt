@@ -201,6 +201,7 @@ import kotlinx.coroutines.delay
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
 import it.fast4x.riplay.extensions.persist.persistList
+import it.fast4x.riplay.service.PlayerMediaBrowserService
 import timber.log.Timber
 
 @KotlinCsvExperimental
@@ -245,6 +246,8 @@ fun LocalPlaylistSongs(
     LaunchedEffect(Unit, filter, sortOrder, sortBy) {
         Database.songsPlaylist(playlistId, sortBy, sortOrder).filterNotNull()
             .collect { playlistAllSongs = it }
+
+
     }
 
 //    Database.asyncTransaction {

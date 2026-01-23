@@ -166,7 +166,6 @@ import it.fast4x.riplay.utils.clearWebViewData
 import it.fast4x.riplay.utils.collect
 import it.fast4x.riplay.utils.globalContext
 import it.fast4x.riplay.utils.forcePlayFromBeginning
-import it.fast4x.riplay.utils.isAtLeastAndroid11
 import it.fast4x.riplay.utils.isHandleAudioFocusEnabled
 import it.fast4x.riplay.utils.isKeepScreenOnEnabled
 import it.fast4x.riplay.utils.isOfficialContent
@@ -284,7 +283,7 @@ class PlayerService : Service(),
 
     private var isNotificationStarted = false
 
-    var notificationActionReceiverUpAndroid11: NotificationActionReceiverUpAndroid11? = null
+    var legacyNotificationActionReceiver: LegacyNotificationActionReceiver? = null
 
     var serviceRestartReceiver: ServiceRestartReceiver? = null
 
@@ -476,7 +475,7 @@ class PlayerService : Service(),
             }
         }
 
-        initializeNotificationActionReceiverUpAndroid11()
+        initializeLegacyNotificationActionReceiver()
         initializeUnifiedMediaSession()
         initializeBitmapProvider()
         initializeOnlinePlayer()
@@ -1003,10 +1002,9 @@ class PlayerService : Service(),
 
     }
 
-    private fun initializeNotificationActionReceiverUpAndroid11() {
-        if (!isAtLeastAndroid11) return
+    private fun initializeLegacyNotificationActionReceiver() {
 
-        notificationActionReceiverUpAndroid11 = NotificationActionReceiverUpAndroid11()
+        legacyNotificationActionReceiver = LegacyNotificationActionReceiver()
 
         val filter = IntentFilter().apply {
             addAction(Action.play.value)
@@ -1022,7 +1020,7 @@ class PlayerService : Service(),
 
         ContextCompat.registerReceiver(
             this@PlayerService,
-            notificationActionReceiverUpAndroid11,
+            legacyNotificationActionReceiver,
             filter,
             ContextCompat.RECEIVER_NOT_EXPORTED
         )
@@ -1130,7 +1128,7 @@ class PlayerService : Service(),
         Timber.d("PlayerService onDestroy")
 
         try {
-            unregisterReceiver(notificationActionReceiverUpAndroid11)
+            unregisterReceiver(legacyNotificationActionReceiver)
         } catch (e: Exception) {
             Timber.e("PlayerService onDestroy unregisterReceiver ${e.stackTraceToString()}")
         }
@@ -2116,7 +2114,7 @@ class PlayerService : Service(),
         Timber.d("PlayerService updateUnifiedMediasessionData onlineplayer playing ${internalOnlinePlayerState == PlayerConstants.PlayerState.PLAYING} localplayer playing ${player?.isPlaying}")
     }
 
-    inner class NotificationActionReceiverUpAndroid11() : BroadcastReceiver() {
+    inner class LegacyNotificationActionReceiver() : BroadcastReceiver() {
 
         @ExperimentalCoroutinesApi
         @FlowPreview
