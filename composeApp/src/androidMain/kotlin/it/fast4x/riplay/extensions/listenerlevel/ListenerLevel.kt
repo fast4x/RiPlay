@@ -19,8 +19,10 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -41,6 +43,8 @@ import it.fast4x.riplay.ui.styling.bold
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.utils.typography
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flowOn
 import timber.log.Timber
 import java.util.Calendar
 
@@ -50,15 +54,16 @@ fun monthlyListenerLevel(
     m: Int = Calendar.getInstance().get(Calendar.MONTH)
 ): Triple<MonthlyListenerLevel, MonthlyListenerLevel, Float> {
 
-    val minutes = remember {
-        Database.minutesListenedByYearMonth(y, m+1)
-    }.collectAsState(initial = 0, context = Dispatchers.IO)
+    var minutes by remember { mutableLongStateOf(0L) }
+    LaunchedEffect(Unit) {
+        minutes = Database.minutesListenedByYearMonth(y, m+1).first()
+    }
 
-    val level = MonthlyListenerLevel.getLevelByMinutes(minutes.value.toInt())
+    val level = MonthlyListenerLevel.getLevelByMinutes(minutes.toInt())
     val nextLevel = MonthlyListenerLevel.getNextLevel(level)
 
-    val progress = minutes.value.toFloat() / MonthlyListenerLevel.getRangeLevel(level).second.toFloat()
-    Timber.d("monthlyListenerLevel year $y month $m minutes ${minutes.value} level ${level.name} nextLevel ${nextLevel.name} progress $progress rangeLevel = ${MonthlyListenerLevel.getRangeLevel(level)}")
+    val progress = minutes.toFloat() / MonthlyListenerLevel.getRangeLevel(level).second.toFloat()
+    Timber.d("monthlyListenerLevel year $y month $m minutes ${minutes} level ${level.name} nextLevel ${nextLevel.name} progress $progress rangeLevel = ${MonthlyListenerLevel.getRangeLevel(level)}")
 
     return Triple(
         level,
@@ -73,16 +78,18 @@ fun annualListenerLevel(
     y: Int = Calendar.getInstance().get(Calendar.YEAR)
 ): Triple<AnnualListenerLevel, AnnualListenerLevel, Float> {
 
-    val minutes = remember {
-        Database.minutesListenedByYear(y)
-    }.collectAsState(initial = 0, context = Dispatchers.IO)
+    var minutes by remember { mutableLongStateOf(0L) }
+    LaunchedEffect(Unit) {
+        minutes = Database.minutesListenedByYear(y).first()
+    }
 
-    Timber.d("annuallyListenerLevel minutes ${minutes.value}")
-    val level = AnnualListenerLevel.getLevelByMinutes(minutes.value.toInt())
+
+    Timber.d("annuallyListenerLevel minutes ${minutes}")
+    val level = AnnualListenerLevel.getLevelByMinutes(minutes.toInt())
     val nextLevel = AnnualListenerLevel.getNextLevel(level)
 
-    val progress = minutes.value.toFloat() / AnnualListenerLevel.getRangeLevel(level).second.toFloat()
-    Timber.d("annualListenerLevel year $y minutes ${minutes.value} level ${level.name} nextLevel ${nextLevel.name} progress $progress rangeLevel = ${AnnualListenerLevel.getRangeLevel(level)}")
+    val progress = minutes.toFloat() / AnnualListenerLevel.getRangeLevel(level).second.toFloat()
+    Timber.d("annualListenerLevel year $y minutes ${minutes} level ${level.name} nextLevel ${nextLevel.name} progress $progress rangeLevel = ${AnnualListenerLevel.getRangeLevel(level)}")
 
     return Triple(
         level,
