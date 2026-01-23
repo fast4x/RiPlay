@@ -499,7 +499,7 @@ class PlayerService : Service(),
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         startForeground()
-        return START_NOT_STICKY
+        return START_STICKY
     }
 
     private fun startForeground() {
@@ -1127,32 +1127,52 @@ class PlayerService : Service(),
     override fun onDestroy() {
         Timber.d("PlayerService onDestroy")
 
+        player.saveMasterQueue()
+
         try {
             unregisterReceiver(legacyNotificationActionReceiver)
         } catch (e: Exception) {
             Timber.e("PlayerService onDestroy unregisterReceiver ${e.stackTraceToString()}")
         }
 
+        if (this::unifiedMediaSession.isInitialized) {
+            unifiedMediaSession.isActive = false
+            unifiedMediaSession.release()
+        }
+
+        try {
+            player.removeListener(this)
+            player.release()
+        } catch (e: Exception) {
+            Timber.e("PlayerService Error in local player release: ${e.message}")
+        }
+
+        try {
+            internalOnlinePlayer.value = null
+            internalOnlinePlayerView.value.release()
+        } catch (e: Exception) {
+            Timber.e("PlayerService Error in online player release: ${e.message}")
+        }
+
 
         runCatching {
-            //saveMasterQueueWithPosition()
-            player.saveMasterQueue()
 
-            preferences.unregisterOnSharedPreferenceChangeListener(this)
-
-            coroutineScope.launch {
-                withContext(Dispatchers.Main){
-                    player.removeListener(this@PlayerService)
-                    player.stop()
-                    player.release()
-                }
-            }
+//            coroutineScope.launch {
+//                withContext(Dispatchers.Main){
+//                    player.removeListener(this@PlayerService)
+//                    player.stop()
+//                    player.release()
+//                }
+//            }
 
 
             //unregisterReceiver(serviceRestartReceiver)
 
-            unifiedMediaSession.isActive = false
-            unifiedMediaSession.release()
+            //unifiedMediaSession.isActive = false
+            //unifiedMediaSession.release()
+
+            preferences.unregisterOnSharedPreferenceChangeListener(this)
+
             cache.release()
             loudnessEnhancer?.release()
             audioVolumeObserver.unregister()
@@ -1161,7 +1181,7 @@ class PlayerService : Service(),
 
             discordPresenceManager?.onStop()
 
-            coroutineScope.launch { delay(1000) }
+            coroutineScope.launch { delay(500) }
 
             coroutineScope.cancel()
 
