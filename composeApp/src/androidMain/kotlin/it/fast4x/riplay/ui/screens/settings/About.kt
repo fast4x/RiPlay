@@ -22,7 +22,6 @@ import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.NavigationBarPosition
 import it.fast4x.riplay.ui.components.themed.HeaderWithIcon
 import it.fast4x.riplay.ui.styling.Dimensions
-import it.fast4x.riplay.utils.getVersionName
 import it.fast4x.riplay.ui.styling.secondary
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.utils.getUpdateDownloadUrl
@@ -115,15 +114,16 @@ fun About() {
             }
         )
 
-        SettingsEntry(
-            online = false,
-            offline = false,
-            title = stringResource(R.string.social_github),
-            text = stringResource(R.string.download_latest_version_from_github_you_will_find_the_file_in_the_notification_area_and_you_can_install_by_clicking_on_it),
-            onClick = {
-                uriHandler.openUri(getUpdateDownloadUrl())
-            }
-        )
+        if (BuildConfig.BUILD_VARIANT == "full")
+            SettingsEntry(
+                online = false,
+                offline = false,
+                title = stringResource(R.string.social_github),
+                text = stringResource(R.string.download_latest_version_from_github_you_will_find_the_file_in_the_notification_area_and_you_can_install_by_clicking_on_it),
+                onClick = {
+                    uriHandler.openUri(getUpdateDownloadUrl())
+                }
+            )
 
         SettingsGroupSpacer()
 
