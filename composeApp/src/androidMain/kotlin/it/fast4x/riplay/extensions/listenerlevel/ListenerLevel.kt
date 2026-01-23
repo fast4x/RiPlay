@@ -51,14 +51,14 @@ fun monthlyListenerLevel(
 ): Triple<MonthlyListenerLevel, MonthlyListenerLevel, Float> {
 
     val minutes = remember {
-        Database.minutesListenedByYearMonth(y, m)
+        Database.minutesListenedByYearMonth(y, m+1)
     }.collectAsState(initial = 0, context = Dispatchers.IO)
 
     val level = MonthlyListenerLevel.getLevelByMinutes(minutes.value.toInt())
     val nextLevel = MonthlyListenerLevel.getNextLevel(level)
 
     val progress = minutes.value.toFloat() / MonthlyListenerLevel.getRangeLevel(level).second.toFloat()
-    Timber.d("monthlyListenerLevel minutes ${minutes.value} level ${level.name} nextLevel ${nextLevel.name} progress $progress rangeLevel = ${MonthlyListenerLevel.getRangeLevel(level)}")
+    Timber.d("monthlyListenerLevel year $y month $m minutes ${minutes.value} level ${level.name} nextLevel ${nextLevel.name} progress $progress rangeLevel = ${MonthlyListenerLevel.getRangeLevel(level)}")
 
     return Triple(
         level,
