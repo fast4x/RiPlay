@@ -47,11 +47,10 @@ RiPlay is a powerful, open-source music player designed for music lovers who wan
 - Fast Share (direct sharing with installed apps)
 - Cast to another Android device / TV via [RiLink](https://github.com/fast4x/RiLink) (experimental)
 - Self-closing app scheduling
-- Events, new releases from your artists
+- Events daily/weekly, new releases from your artists, auto backup and check update
 - Android Auto support
 - Android TV support (experimental)
 - Widget support (experimental)
-- Optional update checking
 
 ### 🎨 Customization
 - Themes
@@ -124,6 +123,9 @@ RiPlay is a powerful, open-source music player designed for music lovers who wan
 ---
 
 ## 📲 Installation
+**What version to use?**
+- Full, all features
+- Base, as Full but without chack update
 
 <div align="center">
   <a href="https://github.com/fast4x/RiPlay/releases/latest">
