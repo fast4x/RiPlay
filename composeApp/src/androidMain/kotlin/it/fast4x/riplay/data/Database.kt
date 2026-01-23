@@ -875,23 +875,20 @@ interface Database {
     @RewriteQueriesToDropUnusedColumns
     fun songsMostPlayedByYearMonth(year: Long, month: Long, limit:Long = Long.MAX_VALUE): Flow<List<Song>>
 
-    @Transaction
     @Query("SELECT Song.* FROM Event JOIN Song ON Song.id = songId WHERE " +
             "CAST(strftime('%m',timestamp / 1000,'unixepoch') AS INTEGER) = :month AND CAST(strftime('%Y',timestamp / 1000,'unixepoch') as INTEGER) = :year " +
             "GROUP BY songId  ORDER BY timestamp DESC LIMIT :limit")
     @RewriteQueriesToDropUnusedColumns
     fun songsMostPlayedByYearMonthNoFlow(year: Long, month: Long, limit:Long = Long.MAX_VALUE): List<Song>
 
-    @Transaction
-    @Query("SELECT ((SUM(playTime) / 60) / 1000) as totalPlayTime FROM Event WHERE " +
-            "CAST(strftime('%m',timestamp / 1000,'unixepoch') AS INTEGER) = :month AND CAST(strftime('%Y',timestamp / 1000,'unixepoch') as INTEGER) = :year " )
-    @RewriteQueriesToDropUnusedColumns
+
+    @Query("SELECT COALESCE(SUM(playTime) / 60000, 0) as totalPlayTime FROM Event WHERE " +
+            "CAST(strftime('%m', timestamp / 1000, 'unixepoch') AS INTEGER) = :month AND " +
+            "CAST(strftime('%Y', timestamp / 1000, 'unixepoch') AS INTEGER) = :year")
     fun minutesListenedByYearMonth(year: Int, month: Int): Flow<Long>
 
-    @Transaction
-    @Query("SELECT ((SUM(playTime) / 60) / 1000) as totalPlayTime FROM Event WHERE " +
+    @Query("SELECT COALESCE(SUM(playTime) / 60000, 0) as totalPlayTime FROM Event WHERE " +
             "CAST(strftime('%Y',timestamp / 1000,'unixepoch') as INTEGER) = :year " )
-    @RewriteQueriesToDropUnusedColumns
     fun minutesListenedByYear(year: Int): Flow<Long>
 
 

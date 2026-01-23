@@ -82,7 +82,7 @@ fun annualListenerLevel(
     val nextLevel = AnnualListenerLevel.getNextLevel(level)
 
     val progress = minutes.value.toFloat() / AnnualListenerLevel.getRangeLevel(level).second.toFloat()
-    Timber.d("annualListenerLevel minutes ${minutes.value} level ${level.name} nextLevel ${nextLevel.name} progress $progress rangeLevel = ${AnnualListenerLevel.getRangeLevel(level)}")
+    Timber.d("annualListenerLevel year $y minutes ${minutes.value} level ${level.name} nextLevel ${nextLevel.name} progress $progress rangeLevel = ${AnnualListenerLevel.getRangeLevel(level)}")
 
     return Triple(
         level,
