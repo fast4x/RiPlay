@@ -1,6 +1,9 @@
 package it.fast4x.riplay.ui.components
 
 import androidx.annotation.OptIn
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -19,6 +22,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
@@ -80,6 +84,7 @@ fun SwipeableContent(
             return@rememberSwipeToDismissBoxState false
         }
     )
+
     val isSwipeToActionEnabled by rememberPreference(isSwipeToActionEnabledKey, true)
 
     val current = LocalViewConfiguration.current
@@ -90,8 +95,6 @@ fun SwipeableContent(
         SwipeToDismissBox(
             gesturesEnabled = isSwipeToActionEnabled,
             modifier = modifier,
-            //.padding(horizontal = 16.dp)
-            //.clip(RoundedCornerShape(12.dp)),
             state = dismissState,
             backgroundContent = {
                 Row(
@@ -99,14 +102,14 @@ fun SwipeableContent(
                         .fillMaxSize()
                         //.background(colorPalette.background1)
                         .padding(horizontal = 16.dp),
-                    horizontalArrangement = when (dismissState.targetValue) {
+                    horizontalArrangement = when (dismissState.dismissDirection) {
                         SwipeToDismissBoxValue.StartToEnd -> Arrangement.Start
                         SwipeToDismissBoxValue.EndToStart -> Arrangement.End
                         SwipeToDismissBoxValue.Settled -> Arrangement.Center
                     },
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    val icon = when (dismissState.targetValue) {
+                    val icon = when (dismissState.dismissDirection) {
                         SwipeToDismissBoxValue.StartToEnd -> if (swipeToRightIcon == null) null else ImageVector.vectorResource(
                             swipeToRightIcon
                         )
