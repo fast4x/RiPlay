@@ -7,8 +7,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.res.stringResource
+import it.fast4x.environment.Environment
+import it.fast4x.environment.requests.HomePage
 import it.fast4x.riplay.R
+import it.fast4x.riplay.data.models.Song
 import it.fast4x.riplay.enums.MenuStyle
+import it.fast4x.riplay.enums.PlayEventsType
 import it.fast4x.riplay.enums.TopPlaylistPeriod
 import it.fast4x.riplay.extensions.preferences.autoShuffleKey
 import it.fast4x.riplay.extensions.preferences.menuStyleKey
@@ -109,4 +113,23 @@ class PeriodSelector private constructor(
     override fun MenuComponent() = PeriodMenu(::onDismiss)
 
     override fun onShortClick() = super.onShortClick()
+}
+
+object HomeDataCache {
+    var homePage: HomePage? = null
+    var discoverPage: Environment.DiscoverPage? = null
+    var relatedPage: Environment.RelatedPage? = null
+    var trending: Song? = null
+
+    var lastCountryCode: String? = null
+    var lastPlayEventType: PlayEventsType? = null
+
+    fun clear() {
+        homePage = null
+        discoverPage = null
+        relatedPage = null
+        trending = null
+        lastCountryCode = null
+        lastPlayEventType = null
+    }
 }
