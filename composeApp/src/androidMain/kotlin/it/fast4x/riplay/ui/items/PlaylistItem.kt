@@ -121,16 +121,8 @@ fun PlaylistItem(
 ) {
     val context = LocalContext.current
 
-    val playlistThumbnailUrl = remember { mutableStateOf("") }
-
-    fun initialisePlaylistThumbnail (){
-        val thumbnailName = "thumbnail/playlist_${playlist.playlist.id}"
-        val presentThumbnailUrl: String? = checkFileExists(context, thumbnailName)
-        if (presentThumbnailUrl != null) {
-            playlistThumbnailUrl.value = presentThumbnailUrl
-        }
-    }
-    initialisePlaylistThumbnail()
+    val thumbnailName = "thumbnail/playlist_${playlist.playlist.id}"
+    val playlistThumbnailUrl by remember { mutableStateOf(checkFileExists(context, thumbnailName)) }
 
     val thumbnails by remember {
         Database.playlistThumbnailUrls(playlist.playlist.id).distinctUntilChanged().map {
@@ -140,18 +132,22 @@ fun PlaylistItem(
         }
     }.collectAsState(initial = emptyList(), context = Dispatchers.IO)
 
+    //Timber.d("PlaylistItem.-: $thumbnails")
+
     PlaylistItem(
         browseId = playlist.playlist.browseId,
         thumbnailContent = {
-            if (playlistThumbnailUrl.value != "") {
+            if (playlistThumbnailUrl != null) {
+                //Timber.d("PlaylistItem.-: playlistThumbnailUrl not null")
                 AsyncImage(
-                    model = playlistThumbnailUrl.value,
+                    model = playlistThumbnailUrl,
                     contentDescription = null,
                     modifier = Modifier
                         .fillMaxSize(),
                     contentScale = ContentScale.Crop
                 )
             } else if (playlist.playlist.browseId == "LM") {
+                //Timber.d("PlaylistItem.-: playlist LM")
                 AsyncImage(
                     model = "https://www.gstatic.com/youtube/media/ytm/images/pbg/liked-music-@1200.png",
                     contentDescription = null,
@@ -160,19 +156,21 @@ fun PlaylistItem(
                     contentScale = ContentScale.Crop
                 )
             } else if (thumbnails.toSet().size == 1) {
+                //Timber.d("PlaylistItem.-: 1 image playlist ${playlist.playlist.name}")
                 AsyncImage(
                     model = ImageRequest.Builder(LocalContext.current)
                         .data(thumbnails.first())
                         .setHeader("User-Agent", "Mozilla/5.0")
-                        .build(), //thumbnails.first().thumbnail(thumbnailSizePx),
+                        .build(),
                     onError = {error ->
                         Timber.e("Failed AsyncImage in PlaylistItem ${error.result.throwable.stackTraceToString()}")
                     },
                     contentDescription = null,
                     contentScale = ContentScale.Crop,
-                    //modifier = it KOTLIN 2
+                    modifier = Modifier.fillMaxSize()
                 )
             } else {
+                //Timber.d("PlaylistItem.-: 4 images  ${playlist.playlist.name}")
                 Box(
                     modifier = Modifier // KOTLIN 2
                         .fillMaxSize()
@@ -268,7 +266,8 @@ fun PlaylistItem(
             AsyncImage(
                 model = thumbnailUrl?.thumbnail(thumbnailSizePx),
                 contentDescription = null,
-                contentScale = ContentScale.Crop
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.fillMaxSize()
             )
         },
         songCount = songCount,
