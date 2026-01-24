@@ -336,6 +336,7 @@ import it.fast4x.riplay.utils.PlayerViewModel
 import it.fast4x.riplay.utils.PlayerViewModelFactory
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import it.fast4x.riplay.utils.applyIf
 import it.fast4x.riplay.utils.conditional
 import it.fast4x.riplay.utils.saturate
 
@@ -2337,6 +2338,9 @@ fun LocalPlayer(
                                          )
 
                                          val coverModifier = Modifier
+                                             .applyIf(!isLandscape){
+                                                 fillMaxSize()
+                                             }
                                              .aspectRatio(1f)
                                              .padding(all = playerThumbnailSizeL.padding.dp)
                                              .graphicsLayer {
@@ -2963,6 +2967,9 @@ fun LocalPlayer(
                                      )
 
                                      val coverModifier = Modifier
+                                         .applyIf(!isLandscape){
+                                             fillMaxSize()
+                                         }
                                          .aspectRatio(1f)
                                          .padding(all = animatePadding)
                                          .conditional(carousel)

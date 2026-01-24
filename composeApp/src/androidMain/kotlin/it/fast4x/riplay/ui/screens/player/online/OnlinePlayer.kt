@@ -312,6 +312,7 @@ import it.fast4x.riplay.utils.addNext
 import it.fast4x.riplay.utils.addToOnlineLikedSong
 import it.fast4x.riplay.utils.animatedGradient
 import it.fast4x.riplay.utils.appContext
+import it.fast4x.riplay.utils.applyIf
 import it.fast4x.riplay.utils.asSong
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.utils.conditional
@@ -2573,6 +2574,9 @@ fun OnlinePlayer(
                                                 )
 
                                                 val coverModifier = Modifier
+                                                    .applyIf(!isLandscape){
+                                                        fillMaxSize()
+                                                    }
                                                     .aspectRatio(1f)
                                                     .padding(all = playerThumbnailSizeL.padding.dp)
                                                     .graphicsLayer {
@@ -3328,6 +3332,9 @@ fun OnlinePlayer(
                                         )
 
                                         val coverModifier = Modifier
+                                            .applyIf(!isLandscape){
+                                                fillMaxSize()
+                                            }
                                             .aspectRatio(1f)
                                             .padding(all = animatePadding)
                                             .conditional(carousel)
@@ -3461,6 +3468,9 @@ fun OnlinePlayer(
                                    )
 
                                      val coverModifier = Modifier
+                                         .applyIf(!it.fast4x.riplay.utils.isLandscape){
+                                             fillMaxSize()
+                                         }
                                          .conditional(thumbnailType == ThumbnailType.Modern) {
                                              padding(
                                                  all = 10.dp
@@ -3542,6 +3552,9 @@ fun OnlinePlayer(
                         )
 
                         val coverModifier = Modifier
+                            .applyIf(!it.fast4x.riplay.utils.isLandscape){
+                                fillMaxSize()
+                            }
                             .conditional(!it.fast4x.riplay.utils.isLandscape && !mediaItem.isVideo) {
                                 aspectRatio(1f)
                             }
