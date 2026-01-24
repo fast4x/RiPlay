@@ -1214,7 +1214,7 @@ Mach dich bereit, deine unvergesslichsten musikalischen Momente noch einmal zu e
     <string name="aa_show_favorites_playlists">Show Favorites Playlists</string>
     <string name="aa_info_show_favorites_playlists_in_playlists_screen">Show Favorites Playlists in playlists screen</string>
     <string name="events">Events</string>
-    <string name="event_notification_for_new_release">Notification for new release</string>
+    <string name="event_notification_for_new_release">Benachrichtigen bei neuen Veröffentlichung</string>
     <string name="event_from_your_favorites_artists">From your favorites Artists</string>
     <string name="event_scheduled">Scheduled</string>
     <string name="event_running">Running</string>
