@@ -54,6 +54,7 @@ import it.fast4x.riplay.extensions.persist.persistList
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.LocalPlayerAwareWindowInsets
 import it.fast4x.riplay.LocalPlayerServiceBinder
+import it.fast4x.riplay.LocalSelectedQueue
 import it.fast4x.riplay.R
 import it.fast4x.riplay.commonutils.cleanPrefix
 import it.fast4x.riplay.enums.MaxStatisticsItems
@@ -93,13 +94,16 @@ import it.fast4x.riplay.ui.styling.semiBold
 import it.fast4x.riplay.extensions.preferences.showStatsListeningTimeKey
 import it.fast4x.riplay.extensions.preferences.statisticsCategoryKey
 import it.fast4x.riplay.commonutils.thumbnail
+import it.fast4x.riplay.data.models.defaultQueue
 import it.fast4x.riplay.extensions.preferences.thumbnailRoundnessKey
+import it.fast4x.riplay.ui.components.SwipeablePlaylistItem
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.utils.typography
 import it.fast4x.riplay.utils.LazyListContainer
+import it.fast4x.riplay.utils.addNext
 import timber.log.Timber
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.days
@@ -208,10 +212,6 @@ fun StatisticsPage(
             .collect { songs = it }
     }
 
-    var downloadState by remember {
-        mutableStateOf(Download.STATE_STOPPED)
-    }
-
     val navigationBarPosition by rememberPreference(
         navigationBarPositionKey,
         NavigationBarPosition.Bottom
@@ -227,6 +227,8 @@ fun StatisticsPage(
         StatisticsCategory.Albums to stringResource(R.string.albums),
         StatisticsCategory.Playlists to stringResource(R.string.playlists)
     )
+
+    val selectedQueue = LocalSelectedQueue.current
 
     Box(
         modifier = Modifier
@@ -255,6 +257,7 @@ fun StatisticsPage(
                 modifier = Modifier
                     .background(colorPalette().background0)
                     .fillMaxSize()
+                    /*
                     .pointerInput(Unit) {
                         detectHorizontalDragGestures(
                             onHorizontalDrag = { change, dragAmount ->
@@ -273,6 +276,7 @@ fun StatisticsPage(
 
                         )
                     }
+                     */
             ) {
 
                 item(
@@ -357,58 +361,63 @@ fun StatisticsPage(
                     items(
                         count = songs.count(),
                     ) {
-                        SongItem(
-                            song = songs.get(it).asMediaItem,
-                            thumbnailSizeDp = thumbnailSizeDp,
-                            thumbnailSizePx = thumbnailSize,
-                            onThumbnailContent = {
-                                BasicText(
-                                    text = "${it + 1}",
-                                    style = typography().s.semiBold.center.color(colorPalette().text),
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis,
-                                    modifier = Modifier
-                                        .width(thumbnailSizeDp)
-                                        .align(Alignment.Center)
-                                )
-                            },
-                            modifier = Modifier
-                                .combinedClickable(
-                                    onLongClick = {
-                                        menuState.display {
-                                            NonQueuedMediaItemMenu(
-                                                navController = navController,
-                                                onDismiss = {
-                                                    menuState.hide()
-                                                    //forceRecompose = true
-                                                },
-                                                mediaItem = songs.get(it).asMediaItem,
-                                                onInfo = {
-                                                    navController.navigate(
-                                                        "${NavRoutes.videoOrSongInfo.name}/${
-                                                            songs.get(
-                                                                it
-                                                            ).id
-                                                        }"
-                                                    )
-                                                },
-                                                disableScrollingText = disableScrollingText,
+                        SwipeablePlaylistItem(
+                            mediaItem = songs[it].asMediaItem,
+                            onPlayNext = {
+                                binder?.player?.addNext(songs[it].asMediaItem, queue = selectedQueue ?: defaultQueue())
+                            }
+                        ) {
+                            SongItem(
+                                song = songs[it].asMediaItem,
+                                thumbnailSizeDp = thumbnailSizeDp,
+                                thumbnailSizePx = thumbnailSize,
+                                onThumbnailContent = {
+                                    BasicText(
+                                        text = "${it + 1}",
+                                        style = typography().s.semiBold.center.color(colorPalette().text),
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis,
+                                        modifier = Modifier
+                                            .width(thumbnailSizeDp)
+                                            .align(Alignment.Center)
+                                    )
+                                },
+                                modifier = Modifier
+                                    .combinedClickable(
+                                        onLongClick = {
+                                            menuState.display {
+                                                NonQueuedMediaItemMenu(
+                                                    navController = navController,
+                                                    onDismiss = {
+                                                        menuState.hide()
+                                                        //forceRecompose = true
+                                                    },
+                                                    mediaItem = songs.get(it).asMediaItem,
+                                                    onInfo = {
+                                                        navController.navigate(
+                                                            "${NavRoutes.videoOrSongInfo.name}/${
+                                                                songs.get(
+                                                                    it
+                                                                ).id
+                                                            }"
+                                                        )
+                                                    },
+                                                    disableScrollingText = disableScrollingText,
+                                                )
+                                            }
+                                        },
+                                        onClick = {
+                                            binder?.stopRadio()
+                                            binder?.player?.forcePlayAtIndex(
+                                                songs.map(Song::asMediaItem),
+                                                it
                                             )
                                         }
-                                    },
-                                    onClick = {
-                                        binder?.stopRadio()
-                                        binder?.player?.forcePlayAtIndex(
-                                            songs.map(Song::asMediaItem),
-                                            it
-                                        )
-                                    }
-                                )
-                                .fillMaxWidth(),
-                            //disableScrollingText = disableScrollingText,
-                            //isNowPlaying = binder?.player?.isNowPlaying(songs.get(it).id) ?: false,
-                            //forceRecompose = forceRecompose
-                        )
+                                    )
+                                    .fillMaxWidth(),
+                                //disableScrollingText = disableScrollingText,
+                            )
+                        }
                     }
                 }
 
