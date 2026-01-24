@@ -125,7 +125,7 @@ RiPlay is a powerful, open-source music player designed for music lovers who wan
 ## 📲 Installation
 **What version to use?**
 - Full, all features
-- Base, as Full but without chack update
+- Base, as Full but without check update
 
 <div align="center">
   <a href="https://github.com/fast4x/RiPlay/releases/latest">
