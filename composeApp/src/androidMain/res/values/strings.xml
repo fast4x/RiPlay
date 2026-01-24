@@ -1230,4 +1230,8 @@
     <string name="formattedtime_within_days_and_hours">Within %1$d days and %2$d hours</string>
     <string name="formattedtime_within_hours">Within %1$d hours</string>
     <string name="formattedtime_soon">Soon</string>
+    <string name="genres">Genres</string>
+    <string name="reset_playback_events">Reset playback events</string>
+    <string name="no_playback_events">No playback events</string>
+    <string name="playback_events">Playback events</string>
 </resources>

@@ -1,14 +1,15 @@
 package it.fast4x.riplay.ui.screens.home
 
 import android.annotation.SuppressLint
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.gestures.ScrollableDefaults
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.asPaddingValues
@@ -18,8 +19,15 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -30,11 +38,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.unit.dp
@@ -42,9 +52,9 @@ import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import it.fast4x.environment.Environment
 import it.fast4x.environment.EnvironmentExt
+import it.fast4x.environment.models.NavigationEndpoint
 import it.fast4x.environment.models.bodies.NextBody
 import it.fast4x.environment.requests.HomePage
-import it.fast4x.environment.requests.chartsPageComplete
 import it.fast4x.environment.requests.discoverPage
 import it.fast4x.environment.requests.relatedPage
 import it.fast4x.riplay.data.Database
@@ -59,8 +69,8 @@ import it.fast4x.riplay.data.models.Artist
 import it.fast4x.riplay.data.models.PlaylistPreview
 import it.fast4x.riplay.data.models.Song
 import it.fast4x.riplay.enums.BlacklistType
-import it.fast4x.riplay.enums.HomeSection
-import it.fast4x.riplay.enums.HomeType
+import it.fast4x.riplay.enums.NavRoutes
+import it.fast4x.riplay.extensions.listenerlevel.HomepageListenerLevelBadges
 import it.fast4x.riplay.ui.components.LocalGlobalSheetState
 import it.fast4x.riplay.ui.components.PullToRefreshBox
 import it.fast4x.riplay.ui.components.themed.HeaderWithIcon
@@ -69,14 +79,10 @@ import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.ui.styling.px
 import it.fast4x.riplay.ui.screens.welcome.WelcomeMessage
 import it.fast4x.riplay.extensions.preferences.disableScrollingTextKey
-import it.fast4x.riplay.extensions.preferences.homeTypeKey
 import it.fast4x.riplay.utils.isLandscape
 import it.fast4x.riplay.extensions.preferences.loadedDataKey
 import it.fast4x.riplay.extensions.preferences.parentalControlEnabledKey
 import it.fast4x.riplay.extensions.preferences.playEventsTypeKey
-import it.fast4x.riplay.extensions.preferences.quickPicsDiscoverPageKey
-import it.fast4x.riplay.extensions.preferences.quickPicsRelatedPageKey
-import it.fast4x.riplay.extensions.preferences.quickPicsTrendingSongKey
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.extensions.preferences.selectedCountryCodeKey
 import it.fast4x.riplay.extensions.preferences.showChartsKey
@@ -98,12 +104,31 @@ import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.ui.screens.settings.isYtLoggedIn
 import it.fast4x.riplay.extensions.preferences.quickPicsHomePageKey
 import it.fast4x.riplay.extensions.preferences.showListenerLevelsKey
+import it.fast4x.riplay.extensions.rewind.HomepageRewind
+import it.fast4x.riplay.ui.components.themed.ChipItemColored
 import it.fast4x.riplay.utils.isLocal
-import it.fast4x.riplay.ui.components.ButtonsRow
-import it.fast4x.riplay.ui.components.themed.IconButton
-import it.fast4x.riplay.ui.screens.home.sections.ForYouPart
-import it.fast4x.riplay.ui.screens.home.sections.HomeSectionPart
-import it.fast4x.riplay.ui.screens.home.sections.MoodAndGenresPart
+import it.fast4x.riplay.ui.components.themed.Loader
+import it.fast4x.riplay.ui.components.themed.Menu
+import it.fast4x.riplay.ui.components.themed.MenuEntry
+import it.fast4x.riplay.ui.components.themed.MoodItemColored
+import it.fast4x.riplay.ui.components.themed.NonQueuedMediaItemMenu
+import it.fast4x.riplay.ui.components.themed.Title
+import it.fast4x.riplay.ui.components.themed.Title2Actions
+import it.fast4x.riplay.ui.components.themed.TitleMiniSection
+import it.fast4x.riplay.ui.items.AlbumItem
+import it.fast4x.riplay.ui.items.ArtistItem
+import it.fast4x.riplay.ui.items.PlaylistItem
+import it.fast4x.riplay.ui.items.SongItem
+import it.fast4x.riplay.ui.items.VideoItem
+import it.fast4x.riplay.ui.styling.color
+import it.fast4x.riplay.ui.styling.secondary
+import it.fast4x.riplay.ui.styling.semiBold
+import it.fast4x.riplay.utils.asMediaItem
+import it.fast4x.riplay.utils.asSong
+import it.fast4x.riplay.utils.asVideoMediaItem
+import it.fast4x.riplay.utils.forcePlay
+import it.fast4x.riplay.utils.insertOrUpdateBlacklist
+import it.fast4x.riplay.utils.typography
 import kotlinx.coroutines.flow.first
 import timber.log.Timber
 
@@ -133,49 +158,23 @@ fun HomePage(
     var playEventType by rememberPreference(playEventsTypeKey, PlayEventsType.MostPlayed)
 
     var trending by remember { mutableStateOf<Song?>(null) }
-    val trendingInit by remember { mutableStateOf<Song?>(null) }
-    var trendingPreference by rememberPreference(quickPicsTrendingSongKey, trendingInit)
+    var relatedPage by remember { mutableStateOf<Environment.RelatedPage?>(null) }
 
-    var relatedPageResult by remember { mutableStateOf<Result<Environment.RelatedPage?>?>(null) }
-    var relatedInit by remember { mutableStateOf<Environment.RelatedPage?>(null) }
-    var relatedPreference by rememberPreference(quickPicsRelatedPageKey, relatedInit)
+    var discoverPage by remember { mutableStateOf<Environment.DiscoverPage?>(null) }
 
-    var discoverPageResult by remember { mutableStateOf<Result<Environment.DiscoverPage?>?>(null) }
-    var discoverPageInit by remember { mutableStateOf<Environment.DiscoverPage?>(null) }
-    var discoverPagePreference by rememberPreference(quickPicsDiscoverPageKey, discoverPageInit)
-
-    var homePageResult by remember { mutableStateOf<Result<HomePage?>?>(null) }
-    var homePageInit by remember { mutableStateOf<HomePage?>(null) }
-    var homePagePreference by rememberPreference(quickPicsHomePageKey, homePageInit)
-
-    var chartsPageResult by remember { mutableStateOf<Result<Environment.ChartsPage?>?>(null) }
-    var chartsPageInit by remember { mutableStateOf<Environment.ChartsPage?>(null) }
+    var homePage by remember { mutableStateOf<HomePage?>(null) }
 
     var preferitesArtists by remember { mutableStateOf<List<Artist>>(emptyList()) }
 
-    var localMonthlyPlaylists by remember { mutableStateOf<List<PlaylistPreview>>(emptyList()) }
-    LaunchedEffect(Unit) {
-        Database.monthlyPlaylistsPreview("").collect { localMonthlyPlaylists = it }
-    }
-
-    val showRelatedAlbums by rememberPreference(showRelatedAlbumsKey, true)
-    val showSimilarArtists by rememberPreference(showSimilarArtistsKey, true)
     val showNewAlbumsArtists by rememberPreference(showNewAlbumsArtistsKey, true)
-    val showPlaylistMightLike by rememberPreference(showPlaylistMightLikeKey, true)
     val showMoodsAndGenres by rememberPreference(showMoodsAndGenresKey, true)
     val showNewAlbums by rememberPreference(showNewAlbumsKey, true)
-    val showMonthlyPlaylistInQuickPicks by rememberPreference(
-        showMonthlyPlaylistInQuickPicksKey,
-        true
-    )
+
     val showTips by rememberPreference(showTipsKey, true)
-    val showCharts by rememberPreference(showChartsKey, true)
     val showListenerLevels by rememberPreference(showListenerLevelsKey, true)
     val refreshScope = rememberCoroutineScope()
 
     var selectedCountryCode by rememberPreference(selectedCountryCodeKey, Countries.ZZ)
-
-    val parentalControlEnabled by rememberPreference(parentalControlEnabledKey, false)
 
     val blacklisted = remember {
         Database.blacklisted(listOf(BlacklistType.Song.name, BlacklistType.Video.name))
@@ -185,14 +184,17 @@ fun HomePage(
 
     suspend fun loadData() {
 
-        if (showCharts)
-            chartsPageResult =
-                Environment.chartsPageComplete(countryCode = selectedCountryCode.name)
-
         if (loadedData) return
 
         runCatching {
             refreshScope.launch(Dispatchers.IO) {
+
+                homePage = EnvironmentExt.getHomePage(setLogin = isYtLoggedIn()).getOrNull()
+
+                if (showNewAlbums || showNewAlbumsArtists || showMoodsAndGenres) {
+                    discoverPage = Environment.discoverPage().getOrNull()
+                }
+
                 when (playEventType) {
                     PlayEventsType.MostPlayed -> {
                         val songs = Database.trending(3).distinctUntilChanged().first()
@@ -200,12 +202,27 @@ fun HomePage(
                             blacklisted.value?.map { it.path }?.contains(item.id) == false
                         }
                         val songId = if (song?.isLocal == true) song.mediaId else song?.id
-                        if (relatedPageResult == null || trending?.id != song?.id || trending?.mediaId != song?.id) {
-                            relatedPageResult = Environment.relatedPage(
+                        if (relatedPage == null || trending?.id != song?.id || trending?.mediaId != song?.id) {
+                            relatedPage = Environment.relatedPage(
                                 NextBody(
                                     videoId = (songId ?: "HZnNt9nnEhw")
                                 )
-                            )
+                            )?.getOrNull().let {
+                                it?.copy(
+                                    songs = it.songs?.filter { item ->
+                                        blacklisted.value?.map { it.path }?.contains(item.key) == false
+                                    },
+                                    artists = it.artists?.filter { item ->
+                                        blacklisted.value?.map { it.path }?.contains(item.key) == false
+                                    },
+                                    playlists = it.playlists?.filter { item ->
+                                        blacklisted.value?.map { it.path }?.contains(item.key) == false
+                                    },
+                                    albums = it.albums?.filter { item ->
+                                        blacklisted.value?.map { it.path }?.contains(item.key) == false
+                                    }
+                                )
+                            }
                         }
                         trending = song
 
@@ -219,27 +236,40 @@ fun HomePage(
                             blacklisted.value?.map { it.path }?.contains(item.id) == false
                         }
                         val songId = if (song?.isLocal == true) song.mediaId else song?.id
-                        Timber.d("HomePage Last played song $song relatedPageResult $relatedPageResult songId $songId")
-                        if (relatedPageResult == null || trending?.id != song?.id || trending?.mediaId != song?.id) {
-                            relatedPageResult =
+                        Timber.d("HomePage Last played song $song relatedPageResult $relatedPage songId $songId")
+                        if (relatedPage == null || trending?.id != song?.id || trending?.mediaId != song?.id) {
+                            relatedPage =
                                 Environment.relatedPage(
                                     NextBody(
                                         videoId = (songId ?: "HZnNt9nnEhw")
                                     )
-                                )
+                                )?.getOrNull().let {
+                                    it?.copy(
+                                        songs = it.songs?.filter { item ->
+                                            blacklisted.value?.map { it.path }?.contains(item.key) == false
+                                        },
+                                        artists = it.artists?.filter { item ->
+                                            blacklisted.value?.map { it.path }?.contains(item.key) == false
+                                        },
+                                        playlists = it.playlists?.filter { item ->
+                                            blacklisted.value?.map { it.path }?.contains(item.key) == false
+                                        },
+                                        albums = it.albums?.filter { item ->
+                                            blacklisted.value?.map { it.path }?.contains(item.key) == false
+                                        }
+                                    )
+                                }
                         }
                         trending = song
 
                     }
 
                 }
+
+
             }
 
-            if (showNewAlbums || showNewAlbumsArtists || showMoodsAndGenres) {
-                discoverPageResult = Environment.discoverPage()
-            }
 
-            homePageResult = EnvironmentExt.getHomePage(setLogin = isYtLoggedIn())
 
 
         }.onFailure {
@@ -254,8 +284,7 @@ fun HomePage(
     fun refresh() {
         if (refreshing) return
         loadedData = false
-        relatedPageResult = null
-        relatedInit = null
+        relatedPage = null
         trending = null
         refreshScope.launch(Dispatchers.IO) {
             refreshing = true
@@ -288,8 +317,6 @@ fun HomePage(
     val scrollState = rememberScrollState()
     val quickPicksLazyGridState = rememberLazyGridState()
     val moodAngGenresLazyGridState = rememberLazyGridState()
-    val chartsPageSongLazyGridState = rememberLazyGridState()
-    val chartsPageArtistLazyGridState = rememberLazyGridState()
     val chipsLazyGridState = rememberLazyGridState()
 
     val endPaddingValues = windowInsets.only(WindowInsetsSides.End).asPaddingValues()
@@ -304,17 +331,6 @@ fun HomePage(
     val hapticFeedback = LocalHapticFeedback.current
 
     val disableScrollingText by rememberPreference(disableScrollingTextKey, false)
-
-    val buttonsList = listOf(
-        HomeSection.Home to HomeSection.Home.textName
-    ).toMutableList().apply {
-        add(HomeSection.ForYou to HomeSection.ForYou.textName)
-        add(HomeSection.Other to HomeSection.Other.textName)
-    }
-
-
-    var homeSection by rememberSaveable { mutableStateOf(HomeSection.Home) }
-    var homeType by rememberPreference(homeTypeKey, HomeType.Tabbed)
 
 
     PullToRefreshBox(
@@ -343,80 +359,12 @@ fun HomePage(
                 if (isLandscape && maxWidth * 0.475f >= 320.dp) 0.475f else 0.9f
             val itemWidth = maxWidth * moodItemWidthFactor
 
-            LaunchedEffect(loadedData) {
-                /*   Load data from url or from saved preference   */
-                if (trendingPreference != null) {
-                    when (loadedData) {
-                        true -> trending = trendingPreference
-                        else -> trendingPreference = trending
-                    }
-                } else trendingPreference = trending
-
-                if (relatedPreference != null) {
-                    when (loadedData) {
-                        true -> {
-                            relatedPageResult = Result.success(relatedPreference)
-                            relatedInit = relatedPageResult?.getOrNull()
-                        }
-                        else -> {
-                            relatedInit = relatedPageResult?.getOrNull()
-                            relatedPreference = relatedInit
-                        }
-                    }
-                } else {
-                    relatedInit = relatedPageResult?.getOrNull()
-                    relatedPreference = relatedInit
-                }
-
-                if (discoverPagePreference != null) {
-                    when (loadedData) {
-                        true -> {
-                            discoverPageResult = Result.success(discoverPagePreference)
-                            discoverPageInit = discoverPageResult?.getOrNull()
-                        }
-                        else -> {
-                            discoverPageInit = discoverPageResult?.getOrNull()
-                            discoverPagePreference = discoverPageInit
-                        }
-
-                    }
-                } else {
-                    discoverPageInit = discoverPageResult?.getOrNull()
-                    discoverPagePreference = discoverPageInit
-                }
-
-                // Not saved/cached to preference
-                chartsPageInit = chartsPageResult?.getOrNull()
-
-                if (homePagePreference != null) {
-                    when (loadedData) {
-                        true -> {
-                            homePageResult = Result.success(homePagePreference)
-                            homePageInit = homePageResult?.getOrNull()
-                        }
-                        else -> {
-                            homePageInit = homePageResult?.getOrNull()
-                            homePagePreference = homePageInit
-                        }
-
-                    }
-                } else {
-                    homePageInit = homePageResult?.getOrNull()
-                    homePagePreference = homePageInit
-                }
-
-                /*   Load data from url or from saved preference   */
-            }
-
             Column(
                 modifier = Modifier
                     .background(colorPalette().background0)
                     .fillMaxHeight()
                     .verticalScroll(scrollState)
             ) {
-
-
-
 
                 if (UiType.ViMusic.isCurrent())
                     HeaderWithIcon(
@@ -430,153 +378,489 @@ fun HomePage(
                         navController = navController
                     )
 
-                Row (
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(end = 12.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                ) {
-                    WelcomeMessage()
+                WelcomeMessage()
 
-                    IconButton(
-                        modifier = Modifier.size(24.dp),
-                        icon = when (homeType) {
-                            HomeType.Tabbed -> R.drawable.singlepage
-                            else -> R.drawable.multipage
-                        },
-                        onClick = { homeType = when (homeType) {
-                                HomeType.Tabbed -> HomeType.Classic
-                                else ->  HomeType.Tabbed
+                if (showListenerLevels)
+                    HomepageListenerLevelBadges(navController)
+
+                HomepageRewind(
+                    showIfEndOfYear = true,
+                    navController = navController,
+                    playlistThumbnailSizeDp = playlistThumbnailSizeDp,
+                    endPaddingValues = endPaddingValues,
+                    disableScrollingText = disableScrollingText
+                )
+
+                if (showTips) {
+                    Title2Actions(
+                        title = stringResource(R.string.quick_picks),
+                        onClick1 = {
+                            menuState.display {
+                                Menu {
+                                    MenuEntry(
+                                        icon = R.drawable.chevron_up,
+                                        text = stringResource(R.string.by_most_played_song),
+                                        onClick = {
+                                            playEventType = PlayEventsType.MostPlayed
+                                            menuState.hide()
+                                        }
+                                    )
+                                    MenuEntry(
+                                        icon = R.drawable.chevron_down,
+                                        text = stringResource(R.string.by_last_played_song),
+                                        onClick = {
+                                            playEventType = PlayEventsType.LastPlayed
+                                            menuState.hide()
+                                        }
+                                    )
+                                    MenuEntry(
+                                        icon = R.drawable.random,
+                                        text = stringResource(R.string.by_casual_played_song),
+                                        onClick = {
+                                            playEventType = PlayEventsType.CasualPlayed
+                                            menuState.hide()
+                                        }
+                                    )
+                                }
                             }
                         },
-                        color = colorPalette().accent,
-                    )
-                }
+                        icon2 = R.drawable.play_now,
+                        onClick2 = {
+                            //trending?.let { fastPlay(it.asMediaItem, binder, relatedInit?.songs?.map { it.asMediaItem }) }
+                            binder?.stopRadio()
+                            trending?.let { binder?.player?.forcePlay(it.asMediaItem) }
+                            binder?.player?.addMediaItems(relatedPage?.songs?.map { it.asMediaItem }
+                                ?: emptyList())
+                        }
 
-                if (homeType == HomeType.Tabbed) {
-                    ButtonsRow(
-                        buttons = buttonsList,
-                        currentValue = homeSection,
-                        onValueUpdate = {
-                            homeSection = it
+                        //modifier = Modifier.fillMaxWidth(0.7f)
+                    )
+
+                    BasicText(
+                        text = when (playEventType) {
+                            PlayEventsType.MostPlayed -> stringResource(R.string.by_most_played_song)
+                            PlayEventsType.LastPlayed -> stringResource(R.string.by_last_played_song)
+                            PlayEventsType.CasualPlayed -> stringResource(R.string.by_casual_played_song)
                         },
-                        modifier = Modifier.padding(all = 12.dp)
+                        style = typography().xxs.secondary,
+                        modifier = Modifier
+                            .padding(horizontal = 16.dp)
+                            .padding(bottom = 8.dp)
                     )
+
+
+
+
+                    LazyHorizontalGrid (
+                        state = quickPicksLazyGridState,
+                        rows = GridCells.Fixed(if (relatedPage != null) 3 else 1),
+                        flingBehavior = ScrollableDefaults.flingBehavior(),
+                        contentPadding = endPaddingValues,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(if (relatedPage != null) Dimensions.itemsVerticalPadding * 3 * 9 else Dimensions.itemsVerticalPadding * 9)
+                        //.height((songThumbnailSizeDp + Dimensions.itemsVerticalPadding * 2) * 4)
+                    ) {
+                        trending?.let { song ->
+                            item {
+                                //val isLocal by remember { derivedStateOf { song.asMediaItem.isLocal } }
+                                //var forceRecompose by remember { mutableStateOf(false) }
+                                SongItem(
+                                    song = song,
+                                    thumbnailSizePx = songThumbnailSizePx,
+                                    thumbnailSizeDp = songThumbnailSizeDp,
+                                    trailingContent = {
+                                        Image(
+                                            painter = painterResource(R.drawable.star),
+                                            contentDescription = null,
+                                            colorFilter = ColorFilter.tint(colorPalette().accent),
+                                            modifier = Modifier
+                                                .size(16.dp)
+                                        )
+                                    },
+                                    modifier = Modifier
+                                        .combinedClickable(
+                                            onLongClick = {
+                                                menuState.display {
+                                                    NonQueuedMediaItemMenu(
+                                                        navController = navController,
+                                                        onDismiss = {
+                                                            menuState.hide()
+                                                            //forceRecompose = true
+                                                        },
+                                                        mediaItem = song.asMediaItem,
+                                                        onRemoveFromQuickPicks = {
+                                                            Database.asyncTransaction {
+                                                                clearEventsFor(song.id)
+                                                            }
+                                                        },
+                                                        onInfo = {
+                                                            navController.navigate("${NavRoutes.videoOrSongInfo.name}/${song.id}")
+                                                        },
+                                                        disableScrollingText = disableScrollingText,
+                                                        onBlacklist = {
+                                                            insertOrUpdateBlacklist(song)
+                                                        },
+                                                    )
+                                                }
+                                                hapticFeedback.performHapticFeedback(
+                                                    HapticFeedbackType.LongPress
+                                                )
+                                            },
+                                            onClick = {
+
+                                                val mediaItem = if (song.isAudioOnly == 1)
+                                                    song.asMediaItem
+                                                else
+                                                    song.asVideoMediaItem
+
+                                                binder?.stopRadio()
+                                                binder?.player?.forcePlay(mediaItem)
+                                                //binder?.player?.playOnline(mediaItem)
+                                                //fastPlay(mediaItem, binder)
+                                                binder?.setupRadio(
+                                                    NavigationEndpoint.Endpoint.Watch(videoId = mediaItem.mediaId)
+                                                )
+                                            }
+                                        )
+                                        .animateItem(
+                                            fadeInSpec = null,
+                                            fadeOutSpec = null
+                                        )
+                                        .width(itemInHorizontalGridWidth),
+
+                                    )
+                            }
+                        }
+
+                        items(
+                            items = relatedPage?.songs?.distinctBy { it.key }
+                                ?.dropLast(if (trending == null) 0 else 1)
+                                ?: emptyList(),
+                            key = Environment.SongItem::key
+                        ) { song ->
+                            Timber.d("HomePage RELATED Environment.SongItem duration ${song.durationText}")
+                            SongItem(
+                                song = song,
+                                thumbnailSizePx = songThumbnailSizePx,
+                                thumbnailSizeDp = songThumbnailSizeDp,
+                                modifier = Modifier
+                                    .animateItem(
+                                        fadeInSpec = null,
+                                        fadeOutSpec = null
+                                    )
+                                    .width(itemInHorizontalGridWidth)
+                                    .combinedClickable(
+                                        onLongClick = {
+                                            menuState.display {
+                                                NonQueuedMediaItemMenu(
+                                                    navController = navController,
+                                                    onDismiss = {
+                                                        menuState.hide()
+                                                        //forceRecompose = true
+                                                    },
+                                                    mediaItem = song.asMediaItem,
+                                                    onInfo = {
+                                                        navController.navigate("${NavRoutes.videoOrSongInfo.name}/${song.key}")
+                                                    },
+                                                    disableScrollingText = disableScrollingText,
+                                                    onBlacklist = {
+                                                        insertOrUpdateBlacklist(song.asSong)
+                                                    },
+                                                )
+                                            }
+                                            hapticFeedback.performHapticFeedback(
+                                                HapticFeedbackType.LongPress
+                                            )
+                                        },
+                                        onClick = {
+                                            Timber.d("HomePage Clicked on song")
+                                            val mediaItem = if (song.isAudioOnly)
+                                                song.asMediaItem
+                                            else
+                                                song.asVideoMediaItem
+
+                                            binder?.stopRadio()
+                                            binder?.player?.forcePlay(mediaItem)
+                                            //fastPlay(mediaItem, binder)
+                                            binder?.setupRadio(
+                                                NavigationEndpoint.Endpoint.Watch(videoId = mediaItem.mediaId)
+                                            )
+                                        }
+                                    ),
+
+                                )
+                        }
+
+                    }
+
+                    if (relatedPage == null) Loader()
+
                 }
 
-// START SECTION HOME
+                discoverPage?.let { page ->
 
+                    val newReleaseAlbumsFiltered = mutableListOf<Environment.AlbumItem>()
+                    val preferredNames = preferitesArtists.map { it.name }.toSet()
 
+                    page.newReleaseAlbums.forEach { album ->
+                        val apiAuthorsNames = album.authors?.map { it.name } ?: emptyList()
 
-    AnimatedVisibility(
-        visible = homeSection == HomeSection.Home || homeType == HomeType.Classic
-    ) {
-        HomeSectionPart(
-            navController = navController,
-            showListenerLevels = showListenerLevels,
-            showTips = showTips,
-            onAlbumClick = onAlbumClick,
-            onArtistClick = onArtistClick,
-            onPlaylistClick = onPlaylistClick,
-            playlistThumbnailSizeDp = playlistThumbnailSizeDp,
-            playlistThumbnailSizePx = playlistThumbnailSizePx,
-            disableScrollingText = disableScrollingText,
-            endPaddingValues = endPaddingValues,
-            menuState = menuState,
-            onPlayEventTypeClick = { playEventType = it },
-            binder = binder,
-            trending = trending,
-            relatedInit = relatedInit,
-            discoverPageInit = discoverPageInit,
-            playEventType = playEventType,
-            quickPicksLazyGridState = quickPicksLazyGridState,
-            songThumbnailSizeDp = songThumbnailSizeDp,
-            songThumbnailSizePx = songThumbnailSizePx,
-            hapticFeedback = hapticFeedback,
-            itemInHorizontalGridWidth = itemInHorizontalGridWidth,
-            preferitesArtists = preferitesArtists,
-            showNewAlbumsArtists = showNewAlbumsArtists,
-            showNewAlbums = showNewAlbums,
-            sectionTextModifier = sectionTextModifier,
-            albumThumbnailSizeDp = albumThumbnailSizeDp,
-            albumThumbnailSizePx = albumThumbnailSizePx,
-            showRelatedAlbums = showRelatedAlbums,
-            showSimilarArtists = showSimilarArtists,
-            artistThumbnailSizeDp = artistThumbnailSizeDp,
-            artistThumbnailSizePx = artistThumbnailSizePx,
-            showPlaylistMightLike = showPlaylistMightLike,
-            blacklisted = blacklisted
-        )
-    }
+                        val match = apiAuthorsNames.any { apiName ->
 
-// END SECTION HOME
+                            preferredNames.any { dbName ->
+                                apiName?.contains(dbName.toString(), ignoreCase = true) == true
+                            }
+                        }
+                        if (match) newReleaseAlbumsFiltered.add(album)
+                    }
 
-//START SECTION MOOD AND GENRES
+                    if (showNewAlbumsArtists)
+                        if (newReleaseAlbumsFiltered.isNotEmpty() && preferitesArtists.isNotEmpty()) {
 
-    AnimatedVisibility(
-        visible = homeSection == HomeSection.Other || homeType == HomeType.Classic
-    ) {
-        MoodAndGenresPart(
-            homePageInit = homePageInit,
-            chipsLazyGridState = chipsLazyGridState,
-            endPaddingValues = endPaddingValues,
-            onChipClick = onChipClick,
-            showMoodsAndGenres = showMoodsAndGenres,
-            discoverPageInit = discoverPageInit,
-            navController = navController,
-            moodAndGenresLazyGridState = moodAngGenresLazyGridState,
-            onMoodAndGenresClick = onMoodAndGenresClick,
-            playlistThumbnailSizeDp = playlistThumbnailSizeDp,
-            playlistThumbnailSizePx = playlistThumbnailSizePx,
-            disableScrollingText = disableScrollingText,
-            showMonthlyPlaylistInQuickPicks = showMonthlyPlaylistInQuickPicks,
-            localMonthlyPlaylists = localMonthlyPlaylists,
-            moodAngGenresLazyGridState = moodAngGenresLazyGridState,
-            showCharts = showCharts,
-            chartsPageInit = chartsPageInit,
-            selectedCountryCode = selectedCountryCode,
-            menuState = menuState,
-            onSelectCountryCode = { selectedCountryCode = it },
-            onPlaylistClick = onPlaylistClick,
-            chartsPageSongLazyGridState = chartsPageSongLazyGridState,
-            parentalControlEnabled = parentalControlEnabled,
-            songThumbnailSizeDp = songThumbnailSizeDp,
-            songThumbnailSizePx = songThumbnailSizePx,
-            binder = binder,
-            itemWidth = itemWidth,
-            chartsPageArtistLazyGridState = chartsPageArtistLazyGridState,
-            onArtistClick = onArtistClick,
-            blacklisted = blacklisted
-        )
-    }
+                            BasicText(
+                                text = stringResource(R.string.new_albums_of_your_artists),
+                                style = typography().l.semiBold,
+                                modifier = sectionTextModifier
+                            )
 
-// END SECTION MOOD AND GENRES
+                            LazyRow(contentPadding = endPaddingValues) {
+                                items(
+                                    items = newReleaseAlbumsFiltered.distinctBy { it.key },
+                                    key = { it.key }) {
+                                    AlbumItem(
+                                        album = it,
+                                        thumbnailSizePx = albumThumbnailSizePx,
+                                        thumbnailSizeDp = albumThumbnailSizeDp,
+                                        alternative = true,
+                                        modifier = Modifier.clickable(onClick = {
+                                            onAlbumClick(it.key)
+                                        }),
+                                        disableScrollingText = disableScrollingText
+                                    )
+                                }
+                            }
 
-// START SECTION FOR YOU
+                        }
 
-                AnimatedVisibility(
-                    visible = homeSection == HomeSection.ForYou || homeType == HomeType.Classic
-                ) {
-                    ForYouPart(
-                        homePageInit = homePageInit,
-                        endPaddingValues = endPaddingValues,
-                        disableScrollingText = disableScrollingText,
-                        navController = navController,
-                        albumThumbnailSizeDp = albumThumbnailSizeDp,
-                        albumThumbnailSizePx = albumThumbnailSizePx,
-                        binder = binder,
-                        artistThumbnailSizeDp = artistThumbnailSizeDp,
-                        artistThumbnailSizePx = artistThumbnailSizePx,
-                        playlistThumbnailSizeDp = playlistThumbnailSizeDp,
-                        playlistThumbnailSizePx = playlistThumbnailSizePx,
-                        blacklisted = blacklisted,
-                        //relatedPageResult = relatedPageResult,
-                    )
+                    if (showNewAlbums) {
+                        Title(
+                            title = stringResource(R.string.new_albums),
+                            onClick = { navController.navigate(NavRoutes.newAlbums.name) },
+                        )
+
+                        LazyRow(contentPadding = endPaddingValues) {
+                            items(
+                                items = page.newReleaseAlbums.distinctBy { it.key },
+                                key = { it.key }) {
+                                AlbumItem(
+                                    album = it,
+                                    thumbnailSizePx = albumThumbnailSizePx,
+                                    thumbnailSizeDp = albumThumbnailSizeDp,
+                                    alternative = true,
+                                    modifier = Modifier.clickable(onClick = {
+                                        onAlbumClick(it.key)
+                                    }),
+                                    disableScrollingText = disableScrollingText
+                                )
+                            }
+                        }
+                    }
                 }
-// END SECTION FOR YOU
+
+                homePage?.let { page ->
+
+                    page.sections.forEach {
+                        if (it.items.isEmpty() || it.items.firstOrNull()?.key == null) return@forEach
+
+                        TitleMiniSection(
+                            it.label ?: "", modifier = Modifier
+                                .padding(horizontal = 16.dp)
+                                .padding(top = 14.dp, bottom = 4.dp)
+                        )
+
+                        BasicText(
+                            text = it.title,
+                            style = typography().l.semiBold.color(colorPalette().text),
+                            modifier = Modifier
+                                .padding(horizontal = 16.dp)
+                                .padding(vertical = 4.dp)
+                        )
+                        LazyRow(contentPadding = endPaddingValues) {
+                            items(it.items.filter {item -> blacklisted.value?.map { it.path }?.contains(item?.key) == false }) { item ->
+                                when (item) {
+                                    is Environment.SongItem -> {
+                                        Timber.d("Environment homePage SongItem: ${item.info?.name}")
+                                        SongItem(
+                                            song = item,
+                                            thumbnailSizePx = albumThumbnailSizePx,
+                                            thumbnailSizeDp = albumThumbnailSizeDp,
+                                            //disableScrollingText = disableScrollingText,
+                                            //isNowPlaying = false,
+                                            modifier = Modifier.clickable(onClick = {
+                                                binder?.player?.forcePlay(item.asMediaItem)
+                                                //fastPlay(item.asMediaItem, binder)
+                                            })
+                                        )
+                                    }
+
+                                    is Environment.AlbumItem -> {
+                                        Timber.d("Environment homePage AlbumItem: ${item.info?.name}")
+                                        AlbumItem(
+                                            album = item,
+                                            alternative = true,
+                                            thumbnailSizePx = albumThumbnailSizePx,
+                                            thumbnailSizeDp = albumThumbnailSizeDp,
+                                            disableScrollingText = disableScrollingText,
+                                            modifier = Modifier.clickable(onClick = {
+                                                navController.navigate("${NavRoutes.album.name}/${item.key}")
+                                            })
+
+                                        )
+                                    }
+
+                                    is Environment.ArtistItem -> {
+                                        Timber.d("Environment homePage ArtistItem: ${item.info?.name}")
+                                        ArtistItem(
+                                            artist = item,
+                                            thumbnailSizePx = artistThumbnailSizePx,
+                                            thumbnailSizeDp = artistThumbnailSizeDp,
+                                            disableScrollingText = disableScrollingText,
+                                            modifier = Modifier.clickable(onClick = {
+                                                navController.navigate("${NavRoutes.artist.name}/${item.key}")
+                                            })
+                                        )
+                                    }
+
+                                    is Environment.PlaylistItem -> {
+                                        Timber.d("Environment homePage PlaylistItem: ${item.info?.name}")
+                                        PlaylistItem(
+                                            playlist = item,
+                                            alternative = true,
+                                            thumbnailSizePx = playlistThumbnailSizePx,
+                                            thumbnailSizeDp = playlistThumbnailSizeDp,
+                                            disableScrollingText = disableScrollingText,
+                                            modifier = Modifier.clickable(onClick = {
+                                                navController.navigate("${NavRoutes.playlist.name}/${item.key}")
+                                            })
+                                        )
+                                    }
+
+                                    is Environment.VideoItem -> {
+                                        Timber.d("Environment homePage VideoItem: ${item.info?.name}")
+                                        VideoItem(
+                                            video = item,
+                                            thumbnailHeightDp = playlistThumbnailSizeDp,
+                                            thumbnailWidthDp = playlistThumbnailSizeDp,
+                                            disableScrollingText = disableScrollingText,
+                                            modifier = Modifier.clickable(onClick = {
+                                                binder?.stopRadio()
+//                                                if (isVideoEnabled())
+//                                                    binder?.player?.playOnline(item.asMediaItem)
+//                                                else
+                                                binder?.player?.forcePlay(item.asMediaItem)
+                                                //fastPlay(item.asMediaItem, binder)
+                                            })
+                                        )
+                                    }
+
+                                    null -> {}
+                                }
+
+                            }
+                        }
+                    }
+
+                    if (showMoodsAndGenres) {
+                        if (page.chips?.isNotEmpty() == true) {
+                            Title(
+                                title = stringResource(R.string.mood),
+                                //onClick = { navController.navigate(NavRoutes.moodsPage.name) },
+                                //modifier = Modifier.fillMaxWidth(0.7f)
+                            )
+
+                            LazyHorizontalGrid(
+                                state = chipsLazyGridState,
+                                rows = GridCells.Fixed(4),
+                                flingBehavior = ScrollableDefaults.flingBehavior(),
+                                //flingBehavior = rememberSnapFlingBehavior(snapLayoutInfoProvider),
+                                contentPadding = endPaddingValues,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    //.height((thumbnailSizeDp + Dimensions.itemsVerticalPadding * 8) * 8)
+                                    .height(Dimensions.itemsVerticalPadding * 4 * 8)
+                            ) {
+                                items(
+                                    items = homePage?.chips?.sortedBy { it.title } ?: emptyList(),
+                                    key = { it.endpoint?.params!! }
+                                ) {
+                                    ChipItemColored(
+                                        chip = it,
+                                        onClick = { it.endpoint?.browseId?.let { _ -> onChipClick(it) } },
+                                        modifier = Modifier
+                                            //.width(itemWidth)
+                                            .padding(4.dp)
+                                    )
+                                }
+                            }
+                        }
+
+
+
+
+                        discoverPage?.let { page ->
+
+                            if (page.moods.isNotEmpty()) {
+
+                                Title(
+                                    title = stringResource(R.string.genres),
+                                    onClick = { navController.navigate(NavRoutes.moodsPage.name) },
+                                    //modifier = Modifier.fillMaxWidth(0.7f)
+                                )
+
+                                LazyHorizontalGrid(
+                                    state = moodAngGenresLazyGridState,
+                                    rows = GridCells.Fixed(4),
+                                    flingBehavior = ScrollableDefaults.flingBehavior(),
+                                    //flingBehavior = rememberSnapFlingBehavior(snapLayoutInfoProvider),
+                                    contentPadding = endPaddingValues,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        //.height((thumbnailSizeDp + Dimensions.itemsVerticalPadding * 8) * 8)
+                                        .height(Dimensions.itemsVerticalPadding * 4 * 8)
+                                ) {
+                                    items(
+                                        items = page.moods.sortedBy { it.title },
+                                        key = { it.endpoint.params ?: it.title }
+                                    ) {
+                                        MoodItemColored(
+                                            mood = it,
+                                            onClick = {
+                                                it.endpoint.browseId?.let { _ ->
+                                                    onMoodAndGenresClick(
+                                                        it
+                                                    )
+                                                }
+                                            },
+                                            modifier = Modifier
+                                                //.width(itemWidth)
+                                                .padding(4.dp)
+                                        )
+                                    }
+                                }
+                            }
+
+                        }
+                    }
+                }
+
+                /****** END HOMEPAGE CONTENT *******/
 
                 Spacer(modifier = Modifier.height(Dimensions.bottomSpacer))
             }
+
+
+
 
 
             val showFloatingIcon by rememberPreference(showFloatingIconKey, false)

@@ -24,6 +24,7 @@ import androidx.compose.material.TextField
 import androidx.compose.material.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SnapshotMutationPolicy
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -136,6 +137,7 @@ import it.fast4x.riplay.extensions.preferences.volumeBoostLevelKey
 import java.net.Proxy
 import androidx.core.net.toUri
 import androidx.core.text.isDigitsOnly
+import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.enums.ContentType
 import it.fast4x.riplay.extensions.preferences.castToRiTuneDeviceEnabledKey
 import it.fast4x.riplay.extensions.preferences.closePlayerServiceAfterMinutesKey
@@ -144,6 +146,7 @@ import it.fast4x.riplay.extensions.preferences.enableVoiceInputKey
 import it.fast4x.riplay.extensions.preferences.excludeSongIfIsVideoKey
 import it.fast4x.riplay.extensions.preferences.filterContentTypeKey
 import it.fast4x.riplay.extensions.preferences.parentalControlEnabledKey
+import it.fast4x.riplay.extensions.preferences.pauseSearchHistoryKey
 import it.fast4x.riplay.extensions.preferences.resumeOrPausePlaybackWhenDeviceKey
 import it.fast4x.riplay.extensions.preferences.showFavoritesPlaylistsAAKey
 import it.fast4x.riplay.extensions.preferences.showGridAAKey
@@ -153,10 +156,12 @@ import it.fast4x.riplay.extensions.preferences.showOnDeviceAAKey
 import it.fast4x.riplay.extensions.preferences.showShuffleSongsAAKey
 import it.fast4x.riplay.extensions.preferences.showTopPlaylistAAKey
 import it.fast4x.riplay.service.PlayerMediaBrowserService
+import it.fast4x.riplay.ui.components.themed.ConfirmationDialog
 import it.fast4x.riplay.ui.components.themed.settingsItem
 import it.fast4x.riplay.ui.components.themed.settingsSearchBarItem
 import it.fast4x.riplay.utils.LazyListContainer
 import it.fast4x.riplay.utils.loadMasterQueue
+import kotlinx.coroutines.flow.distinctUntilChanged
 
 
 @ExperimentalAnimationApi
@@ -319,6 +324,23 @@ fun GeneralSettings(
 
     var castToRiTuneDeviceEnabled by rememberPreference(castToRiTuneDeviceEnabledKey, false )
 
+    val eventsCount by remember {
+        Database.eventsCount().distinctUntilChanged()
+    }.collectAsState(initial = 0)
+    var clearEvents by remember { mutableStateOf(false) }
+    if (clearEvents) {
+        ConfirmationDialog(
+            text = stringResource(R.string.do_you_really_want_to_delete_all_playback_events),
+            onDismiss = { clearEvents = false },
+            onConfirm = { Database.asyncTransaction( Database::clearEvents ) }
+        )
+    }
+
+    var pauseSearchHistory by rememberPreference(pauseSearchHistoryKey, false)
+
+    val queriesCount by remember {
+        Database.queriesCount().distinctUntilChanged()
+    }.collectAsState(initial = 0)
 
     Column(
         modifier = Modifier
@@ -919,22 +941,6 @@ fun GeneralSettings(
                             }
                         )
 
-                    if (search.input.isBlank() || stringResource(R.string.player_pause_listen_history).contains(
-                            search.input,
-                            true
-                        )
-                    ) {
-                        SwitchSettingEntry(
-                            title = stringResource(R.string.player_pause_listen_history),
-                            text = stringResource(R.string.player_pause_listen_history_info),
-                            isChecked = pauseListenHistory,
-                            onCheckedChange = {
-                                pauseListenHistory = it
-                                restartService = true
-                            }
-                        )
-                        RestartPlayerService(restartService, onRestart = { restartService = false })
-                    }
 
                     if (search.input.isBlank() || stringResource(R.string.player_pause_on_volume_zero).contains(
                             search.input,
@@ -1599,6 +1605,73 @@ fun GeneralSettings(
                     RestartPlayerService(restartService, onRestart = { restartService = false })
                 }
                 */
+
+                settingsItem(
+                    isHeader = true
+                ) {
+                    SettingsGroupSpacer()
+                    SettingsEntryGroupText(title = stringResource(R.string.playback_events))
+                }
+                settingsItem {
+                    if (search.input.isBlank() || stringResource(R.string.player_pause_listen_history).contains(
+                            search.input,
+                            true
+                        )
+                    ) {
+                        SwitchSettingEntry(
+                            title = stringResource(R.string.player_pause_listen_history),
+                            text = stringResource(R.string.player_pause_listen_history_info),
+                            isChecked = pauseListenHistory,
+                            onCheckedChange = {
+                                pauseListenHistory = it
+                                restartService = true
+                            }
+                        )
+                        RestartPlayerService(restartService, onRestart = { restartService = false })
+
+                        SettingsEntry(
+                            offline = false,
+                            title = stringResource(R.string.reset_playback_events),
+                            text = if (eventsCount > 0) {
+                                stringResource(R.string.delete_playback_events, eventsCount)
+                            } else {
+                                stringResource(R.string.no_playback_events)
+                            },
+                            isEnabled = eventsCount > 0,
+                            onClick = { clearEvents = true }
+                        )
+                    }
+                }
+
+                settingsItem(
+                    isHeader = true
+                ) {
+                    SettingsGroupSpacer()
+                    SettingsEntryGroupText(title = stringResource(R.string.search_history))
+                }
+                settingsItem {
+                    SwitchSettingEntry(
+                        title = stringResource(R.string.pause_search_history),
+                        text = stringResource(R.string.neither_save_new_searched_query),
+                        isChecked = pauseSearchHistory,
+                        onCheckedChange = {
+                            pauseSearchHistory = it
+                            restartService = true
+                        }
+                    )
+                    RestartPlayerService(restartService, onRestart = { restartService = false } )
+
+                    SettingsEntry(
+                        title = stringResource(R.string.clear_search_history),
+                        text = if (queriesCount > 0) {
+                            "${stringResource(R.string.delete)} " + queriesCount + stringResource(R.string.search_queries)
+                        } else {
+                            stringResource(R.string.history_is_empty)
+                        },
+                        isEnabled = queriesCount > 0,
+                        onClick = { Database.asyncTransaction( Database::clearQueries ) }
+                    )
+                }
 
                 settingsItem(
                     isHeader = true

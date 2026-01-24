@@ -1,4 +1,4 @@
-package it.fast4x.riplay.ui.screens.home.sections
+package it.fast4x.riplay.ui.screens.home.old
 
 import androidx.annotation.OptIn
 import androidx.compose.animation.ExperimentalAnimationApi
@@ -29,7 +29,6 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
