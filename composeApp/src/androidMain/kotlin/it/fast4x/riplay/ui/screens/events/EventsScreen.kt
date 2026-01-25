@@ -302,7 +302,7 @@ fun EventsScreen() {
             Spacer(modifier = Modifier.height(16.dp))
 
             Text(
-                text = "Click to select the folder where the backup will be saved:",
+                text = stringResource(R.string.event_click_to_select_the_folder_where_the_backup_will_be_saved),
                 style = typography().xs
             )
             Spacer(modifier = Modifier.height(5.dp))
@@ -378,7 +378,7 @@ fun EventsScreen() {
 
             Spacer(modifier = Modifier.height(16.dp))
             Text(
-                text = "Viene eseguito un backup completo del database e delle impostazioni, anche se l'app è chiusa.",
+                text = stringResource(R.string.event_a_full_backup_of_the_database_and_settings_is_performed_even_if_the_app_is_closed),
                 style = typography().xs,
                 textAlign = TextAlign.Justify
             )
