@@ -34,7 +34,6 @@ import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.MediaItem
 import androidx.media3.common.util.UnstableApi
-import androidx.media3.exoplayer.offline.Download
 import androidx.navigation.NavController
 import it.fast4x.riplay.extensions.persist.persist
 import it.fast4x.environment.EnvironmentExt
@@ -133,18 +132,14 @@ fun HistoryList(
     val buttonsList = mutableListOf(HistoryType.History to stringResource(R.string.history))
 
     if (isYtLoggedIn())
-        buttonsList += HistoryType.YTMHistory to stringResource(R.string.yt_history)
+        buttonsList += HistoryType.OnlineHistory to stringResource(R.string.online_history)
 
     var historyType by rememberPreference(historyTypeKey, HistoryType.History)
 
     var historyPage by persist<Result<HistoryPage>>("home/historyPage")
     LaunchedEffect(Unit, historyType) {
         if (isYtLoggedIn())
-            historyPage = EnvironmentExt.getHistory()
-    }
-
-    var downloadState by remember {
-        mutableStateOf(Download.STATE_STOPPED)
+            historyPage = EnvironmentExt.getHistory(setLogin = true)
     }
 
     var listMediaItems = remember {
@@ -159,8 +154,6 @@ fun HistoryList(
         thumbnailRoundnessKey,
         ThumbnailRoundness.Heavy
     )
-
-
 
     Column (
         modifier = Modifier
@@ -242,9 +235,7 @@ fun HistoryList(
                             }.distinctBy { it.song.id },
                             key = { it.event.id }
                         ) { event ->
-                            //val isLocal by remember { derivedStateOf { event.song.asMediaItem.isLocal } }
                             val checkedState = rememberSaveable { mutableStateOf(false) }
-                            //var forceRecompose by remember { mutableStateOf(false) }
 
                             SongItem(
                                 song = event.song,
@@ -299,15 +290,12 @@ fun HistoryList(
                                     )
                                     .background(color = colorPalette().background0)
                                     .animateItem(),
-                                //disableScrollingText = disableScrollingText,
-                                //isNowPlaying = binder?.player?.isNowPlaying(event.song.id) ?: false,
-                                //forceRecompose = forceRecompose
                             )
 
                         }
                     }
 
-                if (historyType == HistoryType.YTMHistory)
+                if (historyType == HistoryType.OnlineHistory)
                     historyPage?.getOrNull()?.sections?.forEach { section ->
                         stickyHeader {
                             Title(
@@ -326,9 +314,7 @@ fun HistoryList(
                                 .filter { it.mediaId.isNotEmpty() },
                             key = { it.mediaId }
                         ) { song ->
-                            //val isLocal by remember { derivedStateOf { song.isLocal } }
                             val checkedState = rememberSaveable { mutableStateOf(false) }
-                            //var forceRecompose by remember { mutableStateOf(false) }
                             SongItem(
                                 song = song,
                                 thumbnailSizeDp = thumbnailSizeDp,
@@ -379,9 +365,6 @@ fun HistoryList(
                                     )
                                     .background(color = colorPalette().background0)
                                     .animateItem(),
-                                //disableScrollingText = disableScrollingText,
-                                //isNowPlaying = binder?.player?.isNowPlaying(song.mediaId) ?: false,
-                                //forceRecompose = forceRecompose
                             )
                         }
 

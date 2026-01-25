@@ -188,8 +188,8 @@ object EnvironmentExt {
         val response = Environment.browse(browseId = "FEmusic_history", setLogin = setLogin)
             .body<BrowseResponse>()
 
-//        println("EnvironmentExt getHistory() response sections: ${response.contents?.singleColumnBrowseResultsRenderer?.tabs?.firstOrNull()
-//            ?.tabRenderer?.content?.sectionListRenderer?.contents}" )
+        println("EnvironmentExt getHistory() response sections: ${response.contents?.singleColumnBrowseResultsRenderer?.tabs?.firstOrNull()
+            ?.tabRenderer?.content?.sectionListRenderer?.contents}" )
 
         HistoryPage(
             sections = response.contents?.singleColumnBrowseResultsRenderer?.tabs?.firstOrNull()
