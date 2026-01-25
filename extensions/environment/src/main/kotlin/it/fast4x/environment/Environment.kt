@@ -579,7 +579,10 @@ object Environment {
         val response =
             client.post(_qkHMinedvm) {
                 setLogin(setLogin = true)
-                setBody(AccountMenuBody().copy(context = DefaultWeb.client.toContext(locale, visitorData, dataSyncId)))
+                setBody(
+                    AccountMenuBody()
+                        //.copy(context = DefaultWeb.client.toContext(locale, visitorData, dataSyncId))
+                )
             }
 
         return response
