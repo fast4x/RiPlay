@@ -1231,4 +1231,10 @@ CC-BY-SA 3.0</string>
     <string name="formattedtime_within_days_and_hours">Within %1$d days and %2$d hours</string>
     <string name="formattedtime_within_hours">Within %1$d hours</string>
     <string name="formattedtime_soon">Soon</string>
+    <string name="event_enable_auto_backup">Enable auto backup</string>
+    <string name="event_no_folder_selected_click_here_to_select_a_folder">No folder selected, click here to select a folder</string>
+    <string name="event_click_to_select_the_folder_where_the_backup_will_be_saved">Click to select the folder where the backup will be saved.</string>
+    <string name="event_a_full_backup_of_the_database_and_settings_is_performed_even_if_the_app_is_closed">A full backup of the database and settings is performed, even if the app is closed.</string>
+    <string name="event_enable_automatic_update_check">Enable automatic update check</string>
+    <string name="event_show_notification_to_prompt_app_update_when_new_version_is_available.">Show notification to prompt app update when new version is available.</string>
 </resources>
