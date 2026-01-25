@@ -12,6 +12,7 @@ import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import it.fast4x.riplay.extensions.persist.PersistMapCleanup
 import it.fast4x.riplay.R
+import it.fast4x.riplay.ui.components.PageContainer
 import it.fast4x.riplay.ui.components.ScreenContainer
 
 @ExperimentalMaterialApi
@@ -25,24 +26,16 @@ fun HistoryScreen(
     navController: NavController,
     miniPlayer: @Composable () -> Unit = {},
 ) {
-    val saveableStateHolder = rememberSaveableStateHolder()
 
-    PersistMapCleanup(tagPrefix = "history")
-
-            ScreenContainer(
-                navController,
-                miniPlayer = miniPlayer,
-                navBarContent = { item ->
-                    item(0, stringResource(R.string.history), R.drawable.history)
-                }
-            ) { currentTabIndex ->
-                saveableStateHolder.SaveableStateProvider(key = currentTabIndex) {
-                    when (currentTabIndex) {
-                        0 -> HistoryList(
-                            navController = navController,
-                        )
-                    }
-                }
-            }
+    PageContainer(
+        navController = navController,
+        miniPlayer = miniPlayer,
+    ) { currentTabIndex ->
+        when (currentTabIndex) {
+            0 -> HistoryList(
+                navController = navController,
+            )
+        }
+    }
 
 }

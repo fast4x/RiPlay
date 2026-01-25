@@ -575,20 +575,7 @@ fun LocalPlaylistSongs(
 
     val rippleIndication = ripple(bounded = false)
 
-    var downloadState by remember {
-        mutableStateOf(Download.STATE_STOPPED)
-    }
-
-
     val uriHandler = LocalUriHandler.current
-
-    var showConfirmDeleteDownloadDialog by remember {
-        mutableStateOf(false)
-    }
-
-    var showConfirmDownloadAllDialog by remember {
-        mutableStateOf(false)
-    }
 
     var showConfirmMatchAllDialog by remember {
         mutableStateOf(false)
@@ -610,22 +597,6 @@ fun LocalPlaylistSongs(
         mutableStateOf(-1)
     }
 
-    /*
-    var showSortTypeSelectDialog by remember {
-        mutableStateOf(false)
-    }
-     */
-    /*
-        var showAddPlaylistSelectDialog by remember {
-            mutableStateOf(false)
-        }
-        var isCreatingNewPlaylist by rememberSaveable {
-            mutableStateOf(false)
-        }
-        var showPlaylistSelectDialog by remember {
-            mutableStateOf(false)
-        }
-        */
     var listMediaItems = remember {
         mutableListOf<MediaItem>()
     }
@@ -640,11 +611,6 @@ fun LocalPlaylistSongs(
     var plistName by remember {
         mutableStateOf(playlistPreview?.playlist?.name)
     }
-    /*
-    val playlistPreviews by remember {
-        Database.playlistPreviews(PlaylistSortBy.Name, SortOrder.Ascending)
-    }.collectAsState(initial = emptyList(), context = Dispatchers.IO)
-     */
 
     var position by remember {
         mutableIntStateOf(0)
@@ -841,8 +807,6 @@ fun LocalPlaylistSongs(
     val editThumbnailLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.GetContent()
     ) { uri ->
-        // Callback is invoked after the user selects a media item or closes the
-        // photo picker.
         if (uri != null) {
             val thumbnailName = "playlist_${playlistPreview?.playlist?.id}"
             val permaUri = saveImageToInternalStorage(context, uri, "thumbnail", thumbnailName)

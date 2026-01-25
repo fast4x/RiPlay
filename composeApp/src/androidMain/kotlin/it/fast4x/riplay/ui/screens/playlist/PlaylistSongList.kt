@@ -152,6 +152,8 @@ import org.dailyislam.android.utilities.isNetworkConnected
 import it.fast4x.riplay.utils.languageDestination
 import it.fast4x.riplay.utils.mediaItemSetLiked
 import it.fast4x.riplay.commonutils.setLikeState
+import it.fast4x.riplay.data.models.Song
+import it.fast4x.riplay.ui.components.themed.FastPlayActionsBar
 import it.fast4x.riplay.ui.components.themed.LoaderScreen
 import kotlinx.coroutines.flow.filterNotNull
 import me.bush.translator.Language
@@ -263,10 +265,6 @@ fun PlaylistSongList(
 
     var isImportingPlaylist by rememberSaveable {
         mutableStateOf(false)
-    }
-
-    var downloadState by remember {
-        mutableStateOf(Download.STATE_STOPPED)
     }
 
     var thumbnailRoundness by rememberPreference(
@@ -476,6 +474,28 @@ fun PlaylistSongList(
 //
 //                                        context.startActivity(Intent.createChooser(sendIntent, null))
 //                                    }
+                                    }
+                                )
+
+                                FastPlayActionsBar(
+                                    modifier = Modifier
+                                        .fillMaxWidth(.5f)
+                                        .align(Alignment.BottomCenter)
+                                        .padding(bottom = 70.dp),
+                                    onPlayNowClick = {
+                                        binder?.stopRadio()
+                                        binder?.player?.forcePlayFromBeginning(
+                                            playlistSongs
+                                                .map{ it.asMediaItem }
+                                        )
+                                    },
+                                    onShufflePlayClick = {
+                                        binder?.stopRadio()
+                                        binder?.player?.forcePlayFromBeginning(
+                                            playlistSongs
+                                                .shuffled()
+                                                .map{ it.asMediaItem }
+                                        )
                                     }
                                 )
 

@@ -67,6 +67,7 @@ import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.ui.components.ButtonsRow
 import it.fast4x.riplay.ui.screens.settings.isYtLoggedIn
 import it.fast4x.riplay.extensions.preferences.historyTypeKey
+import it.fast4x.riplay.ui.components.themed.Search
 import it.fast4x.riplay.utils.LazyListContainer
 import it.fast4x.riplay.utils.forcePlay
 import java.time.DayOfWeek
@@ -136,10 +137,12 @@ fun HistoryList(
 
     var historyType by rememberPreference(historyTypeKey, HistoryType.History)
 
-    var historyPage by persist<Result<HistoryPage>>("home/historyPage")
+    var historyPage by persist<HistoryPage>("home/historyPage")
+
     LaunchedEffect(Unit, historyType) {
-        if (isYtLoggedIn())
-            historyPage = EnvironmentExt.getHistory(setLogin = true)
+        if (isYtLoggedIn()) {
+            historyPage = EnvironmentExt.getHistory(setLogin = true).getOrNull()
+        }
     }
 
     var listMediaItems = remember {
@@ -155,13 +158,15 @@ fun HistoryList(
         ThumbnailRoundness.Heavy
     )
 
+    val search = Search.init()
+
     Column (
         modifier = Modifier
             .background(colorPalette().background0)
             //.fillMaxSize()
             .fillMaxHeight()
             .fillMaxWidth(
-                if( NavigationBarPosition.Right.isCurrent() )
+                if (NavigationBarPosition.Right.isCurrent())
                     Dimensions.contentWidthRightBar
                 else
                     1f
@@ -173,8 +178,8 @@ fun HistoryList(
         ) {
             LazyColumn(
                 state = state,
-                contentPadding = LocalPlayerAwareWindowInsets.current
-                    .only(WindowInsetsSides.Vertical + WindowInsetsSides.End).asPaddingValues(),
+//                contentPadding = LocalPlayerAwareWindowInsets.current
+//                    .only(WindowInsetsSides.Vertical + WindowInsetsSides.End).asPaddingValues(),
                 modifier = Modifier
                     .background(colorPalette().background0)
                     .fillMaxSize()
@@ -200,6 +205,13 @@ fun HistoryList(
                         onValueUpdate = { historyType = it },
                         modifier = Modifier.padding(start = 12.dp, end = 12.dp)
                     )
+                }
+
+                item {
+                    Column {
+                        search.ToolBarButton()
+                        search.SearchBar(this)
+                    }
                 }
 
                 if (historyType == HistoryType.History)
@@ -232,7 +244,17 @@ fun HistoryList(
                                 it.apply {
                                     this.event.timestamp = this.timestampDay!!
                                 }
-                            }.distinctBy { it.song.id },
+                            }
+                                .filter {
+                                    when{
+                                        search.input.isNotEmpty() -> {
+                                            it.song.title.contains(search.input, ignoreCase = true)
+                                                    || it.song.artistsText?.contains(search.input, ignoreCase = true) == true
+                                        }
+                                        else -> true
+                                    }
+                                }
+                                .distinctBy { it.song.id },
                             key = { it.event.id }
                         ) { event ->
                             val checkedState = rememberSaveable { mutableStateOf(false) }
@@ -296,7 +318,7 @@ fun HistoryList(
                     }
 
                 if (historyType == HistoryType.OnlineHistory)
-                    historyPage?.getOrNull()?.sections?.forEach { section ->
+                    historyPage?.sections?.forEach { section ->
                         stickyHeader {
                             Title(
                                 title = section.title,
@@ -310,8 +332,18 @@ fun HistoryList(
                             )
                         }
                         items(
-                            items = section.songs.map { it.asMediaItem }
-                                .filter { it.mediaId.isNotEmpty() },
+                            items = section.songs
+                                .filter {
+                                    when{
+                                        search.input.isNotEmpty() -> {
+                                            it.title?.contains(search.input, ignoreCase = true) == true
+                                                    || it.authors?.joinToString { it.name.toString() }?.contains(search.input, ignoreCase = true) == true
+                                        }
+                                        else -> true
+                                    }
+                                }
+                                .map { it.asMediaItem },
+                                //.filter { it.mediaId.isNotEmpty() },
                             key = { it.mediaId }
                         ) { song ->
                             val checkedState = rememberSaveable { mutableStateOf(false) }
