@@ -271,8 +271,8 @@ fun EventsScreen() {
         if (eventType == EventType.AutoBackup) {
             val isScheduled = isWorkScheduled(workInfoAutoBackup)
             val statusText = eventStatus(workInfoAutoBackup)
-
-            var selectedFolderUri by rememberPreference(autoBackupFolderKey, "")
+            val DEFAULT_DOWNLOADS_URI = "content://com.android.externalstorage.documents/tree/primary%3ADownload"
+            var selectedFolderUri by rememberPreference(autoBackupFolderKey, DEFAULT_DOWNLOADS_URI)
             val folderPickerLauncher = rememberLauncherForActivityResult(
                 contract = ActivityResultContracts.OpenDocumentTree()
             ) { uri: Uri? ->
