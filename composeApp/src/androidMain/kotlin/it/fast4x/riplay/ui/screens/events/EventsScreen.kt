@@ -378,7 +378,7 @@ fun EventsScreen() {
 
             Spacer(modifier = Modifier.height(16.dp))
             Text(
-                text = "Viene eseguito un backup completo del database e delle impostazioni, anche se l'app è chiusa.",
+                text = "A full backup of the database and settings is performed, even if the app is closed.",
                 style = typography().xs,
                 textAlign = TextAlign.Justify
             )
