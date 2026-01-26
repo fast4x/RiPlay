@@ -2,20 +2,14 @@ package it.fast4x.riplay.extensions.rewind.data
 
 import android.net.Uri
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
 import it.fast4x.riplay.R
-import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.data.models.Playlist
 import it.fast4x.riplay.data.models.Song
-import it.fast4x.riplay.extensions.rewind.utils.getRewindYear
-import kotlinx.coroutines.Dispatchers
-import timber.log.Timber
 
 
 val slideTitleFontSize = 20.sp
@@ -272,63 +266,11 @@ data class RewindState (
     val intermediate10: RewindSlide.Intermediate?,
 )
 
+
 @Composable
-fun buildRewindState(year: Int? = null): RewindState {
-    val y = year ?: getRewindYear()
+fun buildRewindState(state: RewindUiState): RewindState {
 
-    val songMostListened = remember {
-        Database.songMostListenedByYear(y, 10)
-    }.collectAsState(initial = null, context = Dispatchers.IO)
-
-    Timber.d("RewindData: songMostListened: $songMostListened")
-
-    val albumMostListened = remember {
-        Database.albumMostListenedByYear(y, 10)
-    }.collectAsState(initial = null, context = Dispatchers.IO)
-
-    val albumSongs = remember {
-        Database.albumSongs(albumMostListened.value?.firstOrNull()?.album?.id.toString())
-    }.collectAsState(initial = null, context = Dispatchers.IO)
-
-    Timber.d("RewindData: albumMostListened: $albumMostListened")
-
-
-    val playlistMostListened = remember {
-        Database.playlistMostListenedByYear(y, 10)
-    }.collectAsState(initial = null, context = Dispatchers.IO)
-
-    val playlistSongs = remember {
-        Database.playlistSongs(playlistMostListened.value?.first()?.playlist?.id ?: -1)
-    }.collectAsState(initial = null, context = Dispatchers.IO)
-
-    Timber.d("RewindData: playlistMostListened: $playlistMostListened")
-
-
-    val artistMostListened = remember {
-        Database.artistMostListenedByYear(y, 10)
-    }.collectAsState(initial = null, context = Dispatchers.IO)
-
-    val artistSongs = remember {
-        Database.artistSongs(artistMostListened.value?.first()?.artist?.id.toString())
-    }.collectAsState(initial = null, context = Dispatchers.IO)
-
-    Timber.d("RewindData: artistMostListened: $artistMostListened")
-
-    val songsListenedCount = remember {
-        Database.songsListenedCountByYear(y)
-    }.collectAsState(initial = null, context = Dispatchers.IO)
-
-    val albumsListenedCount = remember {
-        Database.albumsListenedCountByYear(y)
-    }.collectAsState(initial = null, context = Dispatchers.IO)
-
-    val artistsListenedCount = remember {
-        Database.artistsListenedCountByYear(y)
-    }.collectAsState(initial = null, context = Dispatchers.IO)
-
-    val playlistsListenedCount = remember {
-        Database.playlistsListenedCountByYear(y)
-    }.collectAsState(initial = null, context = Dispatchers.IO)
+    val y = state.year ?: 0
 
     return RewindState(
         intro = RewindSlide.IntroSlide(
@@ -341,7 +283,7 @@ fun buildRewindState(year: Int? = null): RewindState {
         topSongs = RewindSlide.TopSongs(
             title = stringResource(R.string.rw_top_songs, y.toInt()),
             year = y.toInt(),
-            songs = songMostListened.value ?: emptyList(),
+            songs = state.topSongs,
             brush = Brush.verticalGradient(
                 colors = listOf(Color(0xFF1DB954), Color(0xFFBBA0A0))
             )
@@ -349,7 +291,7 @@ fun buildRewindState(year: Int? = null): RewindState {
         topAlbums = RewindSlide.TopAlbums(
             title = stringResource(R.string.rw_top_albums, y.toInt()),
             year = y.toInt(),
-            albums = albumMostListened.value ?: emptyList(),
+            albums = state.topAlbums,
             brush = Brush.verticalGradient(
                 colors = listOf(Color(0xFF2196F3), Color(0xFF3F51B5))
             )
@@ -357,7 +299,7 @@ fun buildRewindState(year: Int? = null): RewindState {
         topArtists = RewindSlide.TopArtists(
             title = stringResource(R.string.rw_top_artists, y.toInt()),
             year = y.toInt(),
-            artists = artistMostListened.value ?: emptyList(),
+            artists = state.topArtists,
             brush = Brush.verticalGradient(
                 colors = listOf(Color(0xFF5A6CD2), Color(0xFF1DB954))
             )
@@ -365,7 +307,7 @@ fun buildRewindState(year: Int? = null): RewindState {
         topPlaylists = RewindSlide.TopPlaylists(
             title = stringResource(R.string.rw_top_playlists, y.toInt()),
             year = y.toInt(),
-            playlists = playlistMostListened.value ?: emptyList(),
+            playlists = state.topPlaylists,
             brush = Brush.verticalGradient(
                 colors = listOf(Color(0xFFFF9800), Color(0xFFFF5722))
             )
@@ -373,10 +315,10 @@ fun buildRewindState(year: Int? = null): RewindState {
         song = RewindSlide.SongAchievement(
             title = stringResource(R.string.rw_your_favorite_song, y.toInt()),
             year = y.toInt(),
-            songTitle = songMostListened.value?.firstOrNull()?.song?.title ?: "",
-            artistName = songMostListened.value?.firstOrNull()?.song?.artistsText ?: "",
-            albumArtUri = (songMostListened.value?.firstOrNull()?.song?.thumbnailUrl ?: "").toUri(),
-            level = when (songMostListened.value?.firstOrNull()?.minutes) {
+            songTitle = state.favoriteSong?.title.toString(),
+            artistName = state.favoriteSong?.subtitle.toString(),
+            albumArtUri = (state.favoriteSong?.thumbnailUrl ?: "" ).toUri(),
+            level = when (state.favoriteSong?.minutes) {
                 in 0L..200L  -> SongLevel.OBSESSION
                 in 201L..500L -> SongLevel.ANTHEM
                 in 501L..1000L -> SongLevel.SOUNDTRACK
@@ -386,16 +328,16 @@ fun buildRewindState(year: Int? = null): RewindState {
             brush = Brush.verticalGradient(
                 colors = listOf(Color(0xFF1DB954), Color(0xFFBBA0A0))
             ),
-            minutesListened = songMostListened.value?.firstOrNull()?.minutes ?: 0,
-            song = songMostListened.value?.firstOrNull()?.song,
+            minutesListened = state.favoriteSong?.minutes ?: 0,
+            song = state.favoriteSong?.songPreview,
         ),
         album = RewindSlide.AlbumAchievement(
             title = stringResource(R.string.rw_your_favorite_album, y.toInt()),
             year = y.toInt(),
-            albumTitle = albumMostListened.value?.firstOrNull()?.album?.title ?: "",
-            artistName = albumMostListened.value?.firstOrNull()?.album?.authorsText ?: "",
-            albumArtUri = (albumMostListened.value?.firstOrNull()?.album?.thumbnailUrl ?: "").toUri(),
-            level = when (albumMostListened.value?.firstOrNull()?.minutes) {
+            albumTitle = state.favoriteAlbum?.title.toString(),
+            artistName = state.favoriteAlbum?.subtitle.toString(),
+            albumArtUri = (state.favoriteAlbum?.thumbnailUrl ?: "").toUri(),
+            level = when (state.favoriteAlbum?.minutes) {
                 in 0L..1000L -> AlbumLevel.DEEP_DIVE
                 in 1001L..2500L -> AlbumLevel.ON_REPEAT
                 in 2501L..5000L -> AlbumLevel.RESIDENT
@@ -405,17 +347,17 @@ fun buildRewindState(year: Int? = null): RewindState {
             brush = Brush.verticalGradient(
                 colors = listOf(Color(0xFF2196F3), Color(0xFF3F51B5))
             ),
-            minutesListened = albumMostListened.value?.firstOrNull()?.minutes ?: 0,
-            song = albumSongs.value?.firstOrNull()
+            minutesListened = state.favoriteAlbum?.minutes ?: 0,
+            song = state.favoriteAlbum?.songPreview
         ),
         playlist = RewindSlide.PlaylistAchievement(
             title = stringResource(R.string.rw_your_favorite_playlist, y.toInt()),
             year = y.toInt(),
-            playlist = playlistMostListened.value?.firstOrNull()?.playlist,
-            playlistName = playlistMostListened.value?.firstOrNull()?.playlist?.name ?: "",
-            songCount = playlistMostListened.value?.firstOrNull()?.songs ?: 0,
-            totalMinutes = playlistMostListened.value?.firstOrNull()?.minutes ?: 0,
-            level = when (playlistMostListened.value?.firstOrNull()?.minutes) {
+            playlist = null, // todo
+            playlistName = state.favoritePlaylist?.title.toString(),
+            songCount = 0, // todo
+            totalMinutes = state.favoritePlaylist?.minutes ?: 0,
+            level = when (state.favoritePlaylist?.minutes) {
                 in  0L..500L -> PlaylistLevel.CURATOR
                 in 501L..1500L -> PlaylistLevel.MASTERMIND
                 in 1501L..3000L -> PlaylistLevel.PHENOMENON
@@ -425,15 +367,15 @@ fun buildRewindState(year: Int? = null): RewindState {
             brush = Brush.verticalGradient(
                 colors = listOf(Color(0xFFFF9800), Color(0xFFFF5722))
             ),
-            song = playlistSongs.value?.firstOrNull()
+            song = state.favoritePlaylist?.songPreview
         ),
         artist = RewindSlide.ArtistAchievement(
             title = stringResource(R.string.rw_your_favorite_artist, y.toInt()),
             year = y.toInt(),
-            artistName = artistMostListened.value?.firstOrNull()?.artist?.name ?: "",
-            artistImageUri = (artistMostListened.value?.firstOrNull()?.artist?.thumbnailUrl ?: "").toUri(),
-            minutesListened = artistMostListened.value?.firstOrNull()?.minutes ?: 0,
-            level = when (artistMostListened.value?.firstOrNull()?.minutes) {
+            artistName = state.favoriteArtist?.title ?: "",
+            artistImageUri = (state.favoriteArtist?.thumbnailUrl ?: "").toUri(),
+            minutesListened = state.favoriteArtist?.minutes ?: 0,
+            level = when (state.favoriteArtist?.minutes) {
                 in 0L..2000L-> ArtistLevel.NEW_FAVORITE
                 in 2001L..5000L -> ArtistLevel.A_LIST_FAN
                 in 5001L..10000L -> ArtistLevel.THE_ARCHIVIST
@@ -443,7 +385,7 @@ fun buildRewindState(year: Int? = null): RewindState {
             brush = Brush.verticalGradient(
                 colors = listOf(Color(0xFF5A6CD2), Color(0xFF1DB954))
             ),
-            song = artistSongs.value?.firstOrNull()
+            song = state.favoriteArtist?.songPreview
         ),
         outro = RewindSlide.OutroSlide(
             title = stringResource(R.string.rw_rewind),
@@ -462,9 +404,9 @@ fun buildRewindState(year: Int? = null): RewindState {
         intermediate1 = RewindSlide.Intermediate(
             title = stringResource(R.string.rw_songs_listened_to, y.toInt()),
             year = y.toInt(),
-            message = stringResource(R.string.rw_songs, songsListenedCount.value?.songs.toString()),
+            message = stringResource(R.string.rw_songs, state.totals?.songsCount.toString()),
             subMessage = "",
-            message1 = stringResource(R.string.rw_minutes, songsListenedCount.value?.minutes.toString()),
+            message1 = stringResource(R.string.rw_minutes, state.totals?.songsMinutes.toString()),
             subMessage1 = "",
             brush = Brush.verticalGradient(
                 colors = listOf(Color(0xFFE91E63), Color(0xFF9C27B0), Color(0xFF3F51B5))
@@ -473,9 +415,9 @@ fun buildRewindState(year: Int? = null): RewindState {
         intermediate2 = RewindSlide.Intermediate(
             title = stringResource(R.string.rw_albums_listened_to, y.toInt()),
             year = y.toInt(),
-            message = stringResource(R.string.rw_albums, albumsListenedCount.value?.albums.toString()),
+            message = stringResource(R.string.rw_albums, state.totals?.albumsCount.toString()),
             subMessage = "",
-            message1 = stringResource(R.string.rw_minutes, albumsListenedCount.value?.minutes.toString()),
+            message1 = stringResource(R.string.rw_minutes, state.totals?.albumsMinutes.toString()),
             subMessage1 = "",
             brush = Brush.verticalGradient(
                 colors = listOf(Color(0xFFE91E63), Color(0xFF9C27B0), Color(0xFF3F51B5))
@@ -484,9 +426,9 @@ fun buildRewindState(year: Int? = null): RewindState {
         intermediate3 = RewindSlide.Intermediate(
             title = stringResource(R.string.rw_artists_listened_to, y.toInt()),
             year = y.toInt(),
-            message = stringResource(R.string.rw_artists, artistsListenedCount.value?.artists.toString()),
+            message = stringResource(R.string.rw_artists, state.totals?.artistsCount.toString()),
             subMessage = "",
-            message1 = stringResource(R.string.rw_minutes, artistsListenedCount.value?.minutes.toString()),
+            message1 = stringResource(R.string.rw_minutes, state.totals?.artistsMinutes.toString()),
             subMessage1 = "",
             brush = Brush.verticalGradient(
                 colors = listOf(Color(0xFFE91E63), Color(0xFF9C27B0), Color(0xFF3F51B5))
@@ -495,9 +437,9 @@ fun buildRewindState(year: Int? = null): RewindState {
         intermediate4 = RewindSlide.Intermediate(
             title = stringResource(R.string.rw_playlists_listened_to, y.toInt()),
             year = y.toInt(),
-            message = stringResource(R.string.rw_playlists, playlistsListenedCount.value?.playlists.toString()),
+            message = stringResource(R.string.rw_playlists, state.totals?.playlistsCount.toString()),
             subMessage = "",
-            message1 = stringResource(R.string.rw_minutes, playlistsListenedCount.value?.minutes.toString()),
+            message1 = stringResource(R.string.rw_minutes, state.totals?.playlistsMinutes.toString()),
             subMessage1 = "",
             brush = Brush.verticalGradient(
                 colors = listOf(Color(0xFFE91E63), Color(0xFF9C27B0), Color(0xFF3F51B5))
@@ -555,9 +497,9 @@ fun buildRewindState(year: Int? = null): RewindState {
 
 
 @Composable
-fun getRewindSlides(year: Int? = null): List<RewindSlide> {
+fun getRewindSlides(vmState: RewindUiState): List<RewindSlide> {
 
-    val state = buildRewindState(year)
+    val state = buildRewindState(vmState)
 
     return listOf(
         state.intro,

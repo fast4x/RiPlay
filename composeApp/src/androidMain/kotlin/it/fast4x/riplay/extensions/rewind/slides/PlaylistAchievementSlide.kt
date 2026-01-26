@@ -154,7 +154,7 @@ fun PlaylistAchievementSlide(slide: RewindSlide.PlaylistAchievement, isPageActiv
                     )
                 }
 
-
+                /* todo to improve
                 AnimatedContent(isVisible = isContentVisible, delay = 1500) {
                     Text(
                         text = stringResource(R.string.rw_songs, slide.songCount),
@@ -163,6 +163,8 @@ fun PlaylistAchievementSlide(slide: RewindSlide.PlaylistAchievement, isPageActiv
                         textAlign = TextAlign.Center
                     )
                 }
+
+                 */
 
                 Spacer(modifier = Modifier.height(32.dp))
 

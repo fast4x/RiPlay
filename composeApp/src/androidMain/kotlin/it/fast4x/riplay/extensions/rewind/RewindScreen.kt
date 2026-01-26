@@ -18,11 +18,10 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.text.BasicText
-import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -31,7 +30,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
@@ -41,12 +39,14 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.mikepenz.hypnoticcanvas.shaderBackground
-import com.mikepenz.hypnoticcanvas.shaders.GradientFlow
 import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.extensions.rewind.data.RewindSlide
+import it.fast4x.riplay.extensions.rewind.data.RewindViewModel
+import it.fast4x.riplay.extensions.rewind.data.RewindViewModelFactory
 import it.fast4x.riplay.extensions.rewind.data.SequentialAnimationContainer
 import it.fast4x.riplay.extensions.rewind.data.getRewindSlides
 import it.fast4x.riplay.extensions.rewind.slides.AlbumAchievementSlide
@@ -64,11 +64,10 @@ import it.fast4x.riplay.extensions.rewind.slides.TopSongsSlide
 import it.fast4x.riplay.extensions.rewind.utils.getRewindYears
 import it.fast4x.riplay.extensions.rewind.utils.shadersList
 import it.fast4x.riplay.extensions.visualbitmap.VisualBitmapCreator
+import it.fast4x.riplay.ui.components.themed.LoaderScreen
 import it.fast4x.riplay.ui.components.themed.Title
 import it.fast4x.riplay.ui.items.RewindItem
-import it.fast4x.riplay.ui.styling.semiBold
 import it.fast4x.riplay.utils.colorPalette
-import it.fast4x.riplay.utils.typography
 import kotlinx.coroutines.delay
 import java.util.Calendar
 import kotlin.random.Random
@@ -100,105 +99,114 @@ fun DynamicRewindSlide(slide: RewindSlide, isPageActive: Boolean) {
 @Composable
 fun RewindScreen(year: Int? = null) {
 
+    val factory = remember {
+        RewindViewModelFactory(year)
+    }
+    val viewModel = viewModel(RewindViewModel::class.java, factory = factory)
+
+    val state by viewModel.uiState.collectAsState()
+
     // todo export rewind to pdf
 
-    val pages = getRewindSlides(year)
+    val pages = getRewindSlides(state)
 
     val pagerState = rememberPagerState(pageCount = { pages.size })
 
     var autoSwipe by remember { mutableStateOf(false) }
     val autoSwipeDelay by remember { mutableLongStateOf(5000L) }
 
-    Box(modifier = Modifier.fillMaxSize()) {
+    if (!state.isLoading)
+        Box(modifier = Modifier.fillMaxSize()) {
 
-        HorizontalPager(
-            userScrollEnabled = !autoSwipe,
-            state = pagerState,
-            modifier = Modifier.fillMaxSize()
-        ) { pageIndex ->
-            val isPageActive = pagerState.currentPage == pageIndex
-            VisualBitmapCreator(modifier = Modifier.fillMaxSize()) {
-                DynamicRewindSlide(
-                    slide = pages[pageIndex],
-                    isPageActive = isPageActive
+            HorizontalPager(
+                userScrollEnabled = !autoSwipe,
+                state = pagerState,
+                modifier = Modifier.fillMaxSize()
+            ) { pageIndex ->
+                val isPageActive = pagerState.currentPage == pageIndex
+                VisualBitmapCreator(modifier = Modifier.fillMaxSize()) {
+                    DynamicRewindSlide(
+                        slide = pages[pageIndex],
+                        isPageActive = isPageActive
+                    )
+                }
+            }
+
+
+            LaunchedEffect(Unit, autoSwipe) {
+                if (!autoSwipe) return@LaunchedEffect
+                for (i in pagerState.currentPage until pagerState.pageCount) {
+                    pagerState.animateScrollToPage(i)
+                    delay(autoSwipeDelay)
+                    if (i==pagerState.pageCount-1) {
+                        pagerState.animateScrollToPage(0)
+                        autoSwipe = false
+                    }
+                }
+            }
+
+
+            Box(
+                modifier = Modifier
+                    .padding(end = 8.dp, bottom = 8.dp)
+                    .align(Alignment.BottomEnd)
+            ) {
+                Image(
+                    painter = painterResource(if (autoSwipe) R.drawable.pause else R.drawable.play),
+                    contentDescription = "Auto swipe",
+                    colorFilter = ColorFilter.tint(colorPalette().text),
+                    modifier = Modifier
+                        .size(28.dp)
+                        .clickable { autoSwipe = !autoSwipe }
                 )
             }
-        }
+    //        Row(
+    //            Modifier
+    //                .wrapContentHeight()
+    //                .fillMaxWidth()
+    //                .align(Alignment.BottomCenter)
+    //                .padding(bottom = 46.dp),
+    //            horizontalArrangement = Arrangement.Center,
+    //            verticalAlignment = Alignment.CenterVertically
+    //        ) {
+    //            Checkbox(
+    //                checked = autoSwipe,
+    //                onCheckedChange = { autoSwipe = it },
+    //                modifier = Modifier.scale(.7f),
+    //                colors = androidx.compose.material3.CheckboxDefaults.colors(
+    //                    checkedColor = colorPalette().accent,
+    //                    uncheckedColor = colorPalette().textDisabled
+    //                )
+    //            )
+    //            Text(
+    //                text = "Auto swipe",
+    //                color = colorPalette().accent.copy(alpha = 0.7f),
+    //                fontSize = 16.sp,
+    //                fontWeight = FontWeight.Medium
+    //            )
+    //        }
 
-
-        LaunchedEffect(Unit, autoSwipe) {
-            if (!autoSwipe) return@LaunchedEffect
-            for (i in pagerState.currentPage until pagerState.pageCount) {
-                pagerState.animateScrollToPage(i)
-                delay(autoSwipeDelay)
-                if (i==pagerState.pageCount-1) {
-                    pagerState.animateScrollToPage(0)
-                    autoSwipe = false
+            Row(
+                Modifier
+                    .wrapContentHeight()
+                    .fillMaxWidth()
+                    .align(Alignment.BottomCenter)
+                    .padding(bottom = 16.dp),
+                horizontalArrangement = Arrangement.Center
+            ) {
+                repeat(pages.size) { iteration ->
+                    val color = if (pagerState.currentPage == iteration) Color.White else Color.White.copy(alpha = 0.5f)
+                    Box(
+                        modifier = Modifier
+                            .padding(2.dp)
+                            .clip(CircleShape)
+                            .background(color)
+                            .size(8.dp)
+                    )
                 }
             }
         }
-
-
-        Box(
-            modifier = Modifier
-                .padding(end = 8.dp, bottom = 8.dp)
-                .align(Alignment.BottomEnd)
-        ) {
-            Image(
-                painter = painterResource(if (autoSwipe) R.drawable.pause else R.drawable.play),
-                contentDescription = "Auto swipe",
-                colorFilter = ColorFilter.tint(colorPalette().text),
-                modifier = Modifier
-                    .size(28.dp)
-                    .clickable { autoSwipe = !autoSwipe }
-            )
-        }
-//        Row(
-//            Modifier
-//                .wrapContentHeight()
-//                .fillMaxWidth()
-//                .align(Alignment.BottomCenter)
-//                .padding(bottom = 46.dp),
-//            horizontalArrangement = Arrangement.Center,
-//            verticalAlignment = Alignment.CenterVertically
-//        ) {
-//            Checkbox(
-//                checked = autoSwipe,
-//                onCheckedChange = { autoSwipe = it },
-//                modifier = Modifier.scale(.7f),
-//                colors = androidx.compose.material3.CheckboxDefaults.colors(
-//                    checkedColor = colorPalette().accent,
-//                    uncheckedColor = colorPalette().textDisabled
-//                )
-//            )
-//            Text(
-//                text = "Auto swipe",
-//                color = colorPalette().accent.copy(alpha = 0.7f),
-//                fontSize = 16.sp,
-//                fontWeight = FontWeight.Medium
-//            )
-//        }
-
-        Row(
-            Modifier
-                .wrapContentHeight()
-                .fillMaxWidth()
-                .align(Alignment.BottomCenter)
-                .padding(bottom = 16.dp),
-            horizontalArrangement = Arrangement.Center
-        ) {
-            repeat(pages.size) { iteration ->
-                val color = if (pagerState.currentPage == iteration) Color.White else Color.White.copy(alpha = 0.5f)
-                Box(
-                    modifier = Modifier
-                        .padding(2.dp)
-                        .clip(CircleShape)
-                        .background(color)
-                        .size(8.dp)
-                )
-            }
-        }
-    }
+    else LoaderScreen()
 }
 
 
