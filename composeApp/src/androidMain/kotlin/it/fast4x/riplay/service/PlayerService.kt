@@ -191,6 +191,7 @@ import it.fast4x.riplay.extensions.ritune.improved.models.RiTuneConnectionStatus
 import it.fast4x.riplay.extensions.ritune.improved.models.RiTunePlayerState
 import it.fast4x.riplay.extensions.ritune.improved.models.RiTuneRemoteCommand
 import it.fast4x.riplay.service.helpers.BluetoothConnectReceiver
+import it.fast4x.riplay.service.helpers.EqualizerHelper
 import it.fast4x.riplay.service.helpers.NoisyAudioReceiver
 import it.fast4x.riplay.utils.GlobalSharedData
 import it.fast4x.riplay.utils.isExplicit
@@ -318,6 +319,9 @@ class PlayerService : Service(),
     var localMediaItem: MediaItem? = null
     var closingTimerStarted: Boolean? = false
 
+    private var onlineListenedDurationMs = 0L
+    private var lastOnlineMediaId: String? = null
+
     /**
      * end online configuration
      */
@@ -358,6 +362,8 @@ class PlayerService : Service(),
     private val riTuneClient: RiTuneClient = RiTuneClient()
     private var riTuneObserverJob: Job? = null
     private var riTunePlayerState: RiTunePlayerState? = null
+
+    private lateinit var equalizerHelper: EqualizerHelper
 
     //private var checkVolumeLevel: Boolean = true
 
@@ -428,6 +434,9 @@ class PlayerService : Service(),
         audioVolumeObserver = AudioVolumeObserver(this)
         audioVolumeObserver.register(AudioManager.STREAM_MUSIC, this)
 
+        equalizerHelper = EqualizerHelper(this)
+        equalizerHelper.setup(0)
+
         //connectivityManager = getSystemService()!!
 
         coroutineScope.launch {
@@ -467,12 +476,21 @@ class PlayerService : Service(),
         }
 
         currentSong.debounce(1000).collect(coroutineScope) { song ->
-            Timber.d("PlayerService onCreate update currentSong $song mediaItemState ${currentMediaItemState.value}")
+            val currentMediaId = song?.id
+
+            if (lastOnlineMediaId != currentMediaId) {
+                if(onlineListenedDurationMs > 0) incrementOnlineListenedPlaytimeMs()
+                delay(200)
+                onlineListenedDurationMs = 0L
+                lastOnlineMediaId = currentMediaId
+            }
+
             withContext(Dispatchers.Main) {
                 updateUnifiedNotification()
                 updateWidgets()
 
             }
+            Timber.d("PlayerService onCreate update currentSong $song mediaItemState ${currentMediaItemState.value}")
         }
 
         initializeLegacyNotificationActionReceiver()
@@ -494,7 +512,24 @@ class PlayerService : Service(),
         initializeNoisyReceiver()
         initializeRiTune()
         initializeDiscordPresence()
-        //initializeServiceRestartReceiver() not used for now
+
+        coroutineScope.launch(Dispatchers.Default) {
+            while (isActive) {
+                if (localMediaItem?.isLocal == false) {
+                    if (internalOnlinePlayerState == PlayerConstants.PlayerState.PLAYING) {
+                        onlineListenedDurationMs += 1000
+                    } else {
+                        if (onlineListenedDurationMs > 0) {
+                            incrementOnlineListenedPlaytimeMs()
+                            delay(200)
+                            onlineListenedDurationMs = 0L
+                        }
+                    }
+                }
+                delay(1000)
+                Timber.d("PlayerService onCreate onlineListenedDurationMs $onlineListenedDurationMs")
+            }
+        }
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -519,21 +554,6 @@ class PlayerService : Service(),
         }.onFailure {
             Timber.e("PlayerService oncreate startForeground ${it.stackTraceToString()}")
         }
-    }
-
-    private fun initializeServiceRestartReceiver() {
-        serviceRestartReceiver = ServiceRestartReceiver()
-
-        val filter = IntentFilter().apply {
-            addAction("restart")
-        }
-
-        ContextCompat.registerReceiver(
-            this@PlayerService,
-            serviceRestartReceiver,
-            filter,
-            ContextCompat.RECEIVER_NOT_EXPORTED
-        )
     }
 
     private fun initializeVariables() {
@@ -1140,6 +1160,10 @@ class PlayerService : Service(),
             unifiedMediaSession.release()
         }
 
+        if(this::equalizerHelper.isInitialized) {
+            equalizerHelper.release()
+        }
+
         try {
             player.removeListener(this)
             player.release()
@@ -1156,20 +1180,6 @@ class PlayerService : Service(),
 
 
         runCatching {
-
-//            coroutineScope.launch {
-//                withContext(Dispatchers.Main){
-//                    player.removeListener(this@PlayerService)
-//                    player.stop()
-//                    player.release()
-//                }
-//            }
-
-
-            //unregisterReceiver(serviceRestartReceiver)
-
-            //unifiedMediaSession.isActive = false
-            //unifiedMediaSession.release()
 
             preferences.unregisterOnSharedPreferenceChangeListener(this)
 
@@ -2714,6 +2724,46 @@ class PlayerService : Service(),
         }
     }
 
+    private fun incrementOnlineListenedPlaytimeMs() {
+        if (currentSong.value?.isLocal == true
+                || preferences.getBoolean(pauseListenHistoryKey, false)
+        ) return
+
+        //Increment playtime of song and add event in the database for online songs
+
+        currentSong.value?.id?.let { mediaId ->
+            if (currentSecond.value > 5) {
+                Timber.d("PlayerService incrementOnlineListenedPlaytimeMs INCREMENT totalPlayTimeMs $onlineListenedDurationMs mediaItem ${currentSong.value?.id}")
+                Database.asyncTransaction {
+                    Database.incrementTotalPlayTimeMs(mediaId, onlineListenedDurationMs)
+                }
+            }
+
+            val minTimeForEvent =
+                preferences.getEnum(exoPlayerMinTimeForEventKey, MinTimeForEvent.`20s`)
+
+            if (currentSecond.value > minTimeForEvent.seconds) {
+                Timber.d("PlayerService incrementOnlineListenedPlaytimeMs INSERT EVENT totalPlayTimeMs $onlineListenedDurationMs")
+                Database.asyncTransaction {
+                    try {
+                        Database.insert(
+                            Event(
+                                songId = mediaId,
+                                timestamp = System.currentTimeMillis(),
+                                playTime = onlineListenedDurationMs
+                            )
+                        )
+                    } catch (e: SQLException) {
+                        Timber.e("PlayerService incrementOnlineListenedPlaytimeMs SQLException ${e.stackTraceToString()}")
+                    }
+                }
+
+            }
+
+        }
+
+    }
+
     private fun initializePositionObserver() {
         positionObserverJob?.cancel()
         positionObserverJob = coroutineScope.launch {
@@ -2729,6 +2779,7 @@ class PlayerService : Service(),
                     if (player.currentMediaItem?.isLocal == false)
                         player.pauseAtEndOfMediaItems = true else player.pauseAtEndOfMediaItems = false
 
+                    /*
                     //Increment playtime of song and add event in the database for online songs
                     if (internalOnlinePlayerState == PlayerConstants.PlayerState.ENDED
                         && currentSong.value?.isLocal == false
@@ -2767,6 +2818,7 @@ class PlayerService : Service(),
                         }
 
                     }
+                     */
 
 
                     if ((player.playbackState == Player.STATE_ENDED || internalOnlinePlayerState == PlayerConstants.PlayerState.ENDED)
@@ -2879,7 +2931,8 @@ class PlayerService : Service(),
             @Synchronized
             get() = this@PlayerService.riTuneClient
 
-
+        val equalizer: EqualizerHelper
+            get() = this@PlayerService.equalizerHelper
 
         val sleepTimerMillisLeft: StateFlow<Long?>?
             get() = timerJob?.millisLeft
