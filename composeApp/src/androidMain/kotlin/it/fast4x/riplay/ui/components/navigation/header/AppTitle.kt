@@ -12,14 +12,19 @@ import androidx.compose.foundation.layout.absoluteOffset
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.NavRoutes
+import it.fast4x.riplay.extensions.preferences.eqEnabledKey
+import it.fast4x.riplay.extensions.preferences.logDebugEnabledKey
+import it.fast4x.riplay.extensions.preferences.rememberObservedPreference
 import it.fast4x.riplay.ui.styling.favoritesIcon
 import it.fast4x.riplay.ui.components.themed.Button
 import it.fast4x.riplay.utils.colorPalette
@@ -93,7 +98,9 @@ fun AppTitle(
         Column {
             AppLogoText(navController)
         }
-        Column {
+        Column(
+            verticalArrangement = Arrangement.spacedBy(2.dp),
+        ) {
             if (isAtLeastAndroid7) {
                 val dataTypeIcon = when (getNetworkType(context)) {
                     "WIFI" -> R.drawable.datawifi
@@ -105,18 +112,30 @@ fun AppTitle(
                     contentDescription = null,
                     colorFilter = ColorFilter.tint(colorPalette().text),
                     modifier = Modifier
-                        .size(12.dp)
+                        .size(9.dp)
                        // .align(Alignment.TopEnd)
                 )
             }
 
-            if (isDebugModeEnabled())
+            val isEqualizerEnabled by rememberObservedPreference(eqEnabledKey, false)
+            if (isEqualizerEnabled) {
+                Image(
+                    painter = painterResource(R.drawable.music_equalizer),
+                    contentDescription = null,
+                    colorFilter = ColorFilter.tint(colorPalette().text),
+                    modifier = Modifier
+                        .size(8.dp)
+                )
+            }
+
+            val isDebugModeEnabled by rememberObservedPreference(logDebugEnabledKey, false)
+            if (isDebugModeEnabled)
                 Image(
                     painter = painterResource(R.drawable.maintenance),
                     contentDescription = null,
                     colorFilter = ColorFilter.tint(colorPalette().red),
                     modifier = Modifier
-                        .size(12.dp)
+                        .size(8.dp)
                        // .align(Alignment.BottomEnd)
                 )
         }

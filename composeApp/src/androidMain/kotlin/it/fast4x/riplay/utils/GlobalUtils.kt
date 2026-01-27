@@ -25,6 +25,7 @@ import it.fast4x.riplay.extensions.preferences.bassboostEnabledKey
 import it.fast4x.riplay.extensions.preferences.colorPaletteModeKey
 import it.fast4x.riplay.extensions.preferences.dnsOverHttpsTypeKey
 import it.fast4x.riplay.extensions.preferences.enablePictureInPictureAutoKey
+import it.fast4x.riplay.extensions.preferences.eqEnabledKey
 import it.fast4x.riplay.extensions.preferences.exoPlayerMinTimeForEventKey
 import it.fast4x.riplay.extensions.preferences.getEnum
 import it.fast4x.riplay.extensions.preferences.handleAudioFocusEnabledKey
@@ -120,6 +121,7 @@ fun isKeepScreenOnEnabled() = appContext().preferences.getBoolean(isKeepScreenOn
 fun isResumePlaybackOnStart() = appContext().preferences.getBoolean(resumePlaybackOnStartKey, false)
 fun isEnabledLastFm() = appContext().preferences.getBoolean(isEnabledLastfmKey, false)
         && getlastFmSessionKey()?.isNotEmpty() == true
+
 
 fun shuffleSongsAAEnabled() = appContext().preferences.getBoolean(showShuffleSongsAAKey, true)
 fun showMonthlyPlaylistsAA() = appContext().preferences.getBoolean(showMonthlyPlaylistsAAKey, true)

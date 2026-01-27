@@ -67,7 +67,7 @@ private fun HamburgerMenu(
     LocalPlayerServiceBinder.current?.equalizer?.let {
         menu.add(
             DropdownMenu.Item(
-                R.drawable.equalizer,
+                R.drawable.music_equalizer,
                 R.string.equalizer,
             ) {
                 sheet.display {

@@ -7,25 +7,28 @@ import timber.log.Timber
 import kotlin.math.abs
 import kotlin.math.roundToInt
 import androidx.core.content.edit
+import it.fast4x.riplay.extensions.preferences.eqBandsKey
+import it.fast4x.riplay.extensions.preferences.eqEnabledKey
+import it.fast4x.riplay.extensions.preferences.eqPresetKey
 
 class EqualizerHelper(private val context: Context) {
 
     private val prefs = context.preferences
-    private val eqEnabled = "eq_enabled"
-    private val eqPreset = "eq_preset"
-    private val eqBands = "eq_bands"
+    //private val eqEnabledKey = "eq_enabled"
+    //private val eqPresetKey = "eq_preset"
+    //private val eqBandsKey = "eq_bands"
 
     private var equalizer: Equalizer? = null
 
     fun saveSettings(isEnabled: Boolean, presetName: String, bandLevels: Map<Short, Float>) {
         try {
-            prefs.edit().putBoolean(eqEnabled, isEnabled).apply()
-            prefs.edit().putString(eqPreset, presetName).apply()
+            prefs.edit { putBoolean(eqEnabledKey, isEnabled) }
+            prefs.edit { putString(eqPresetKey, presetName) }
 
             val sortedBands = bandLevels.keys.sorted().map { bandLevels[it] ?: 0.5f }
             val bandsString = sortedBands.joinToString(separator = ",")
 
-            prefs.edit().putString(eqBands, bandsString).apply()
+            prefs.edit { putString(eqBandsKey, bandsString) }
 
             Timber.d("EqualizerHelper settings saved")
         } catch (e: Exception) {
@@ -35,9 +38,9 @@ class EqualizerHelper(private val context: Context) {
 
     fun loadSettings(): Triple<Boolean, String?, Map<Short, Float>>? {
         return try {
-            val isEnabled = prefs.getBoolean(eqEnabled, false)
-            val presetName = prefs.getString(eqPreset, "Flat")
-            val bandsString = prefs.getString(eqBands, null)
+            val isEnabled = prefs.getBoolean(eqEnabledKey, false)
+            val presetName = prefs.getString(eqPresetKey, "Flat")
+            val bandsString = prefs.getString(eqBandsKey, null)
 
             if (bandsString != null) {
                 val values = bandsString.split(",").map { it.toFloat() }
@@ -76,8 +79,8 @@ class EqualizerHelper(private val context: Context) {
 
         try {
 
-            val isEnabled = prefs.getBoolean(eqEnabled, false) // Default false
-            val bandsString = prefs.getString(eqBands, null)
+            val isEnabled = prefs.getBoolean(eqEnabledKey, false) // Default false
+            val bandsString = prefs.getString(eqBandsKey, null)
 
             val range = eq.bandLevelRange
             val minLevel = range[0]
@@ -197,7 +200,7 @@ class EqualizerHelper(private val context: Context) {
     fun setEnabled(enabled: Boolean) {
         try {
             equalizer?.enabled = enabled
-            prefs.edit { putBoolean(eqEnabled, enabled) }
+            prefs.edit { putBoolean(eqEnabledKey, enabled) }
         } catch (e: Exception) {
             Timber.d("EqualizerHelper Errore set enabled ${e.message}")
         }
