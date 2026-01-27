@@ -98,12 +98,29 @@ fun EqualizerScreen(equalizerHelper: EqualizerHelper) {
                 )
                 Switch(
                     checked = isEqEnabled,
-                    onCheckedChange = {
-                        isEqEnabled = it
-                        equalizerHelper.setEnabled(it)
+                    onCheckedChange = { isChecked ->
+                        isEqEnabled = isChecked
+
+                        if (isChecked) {
+                            equalizerHelper.setEnabled(true)
+
+                            config?.let { cfg ->
+                                bandLevels.forEach { (index, percent) ->
+                                    val levelShort = percentToLevel(percent, cfg.minLevel, cfg.maxLevel)
+                                    equalizerHelper.setBandLevel(index, levelShort)
+                                }
+                            }
+                        } else {
+                            equalizerHelper.setEnabled(false)
+                        }
+
                         equalizerHelper.saveSettings(isEqEnabled, selectedPreset, bandLevels)
                     },
-                    modifier = Modifier.scale(.7f)
+                    colors = androidx.compose.material3.SwitchDefaults.colors(
+                        checkedThumbColor = colorPalette().accent,
+                        checkedTrackColor = colorPalette().text,
+                    ),
+                    modifier = Modifier.scale(0.7f)
                 )
             }
 
@@ -117,6 +134,17 @@ fun EqualizerScreen(equalizerHelper: EqualizerHelper) {
                     }
                     .fillMaxWidth()
             ) {
+
+                EqualizerCurve(
+                    bandLevels = bandLevels,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(120.dp)
+                        .padding(horizontal = 8.dp)
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
                 PresetSelector(
                     selectedPreset = selectedPreset,
                     onPresetSelected = { name ->
