@@ -28,7 +28,7 @@ fun EqualizerCurve(
 
         if (sortedValues.isEmpty()) return@Canvas
 
-        val padding = 20.dp.toPx()
+        val padding = 8.dp.toPx()
         val availableWidth = canvasWidth - (padding * 2)
         val availableHeight = canvasHeight - (padding * 2)
 
@@ -61,8 +61,8 @@ fun EqualizerCurve(
             path = fillPath,
             brush = androidx.compose.ui.graphics.Brush.verticalGradient(
                 colors = listOf(
-                    colorPalette.background0,
                     colorPalette.background1,
+                    colorPalette.background2,
                 )
             )
         )

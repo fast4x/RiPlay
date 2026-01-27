@@ -4,7 +4,9 @@ import android.content.Context
 import android.media.audiofx.Equalizer
 import it.fast4x.riplay.extensions.preferences.preferences
 import timber.log.Timber
+import kotlin.math.abs
 import kotlin.math.roundToInt
+import androidx.core.content.edit
 
 class EqualizerHelper(private val context: Context) {
 
@@ -27,7 +29,7 @@ class EqualizerHelper(private val context: Context) {
 
             Timber.d("EqualizerHelper settings saved")
         } catch (e: Exception) {
-            Timber.e("EqualizerHelper", "EqualizerHelper Error saving prefs", e)
+            Timber.d("EqualizerHelper EqualizerHelper Error saving prefs ${e.message}")
         }
     }
 
@@ -48,7 +50,7 @@ class EqualizerHelper(private val context: Context) {
                 null
             }
         } catch (e: Exception) {
-            Timber.e("EqualizerHelper", "Error loading prefs", e)
+            Timber.d("EqualizerHelper Error loading prefs ${e.message}")
             null
         }
     }
@@ -77,27 +79,39 @@ class EqualizerHelper(private val context: Context) {
             val isEnabled = prefs.getBoolean(eqEnabled, false) // Default false
             val bandsString = prefs.getString(eqBands, null)
 
+            val range = eq.bandLevelRange
+            val minLevel = range[0]
+            val maxLevel = range[1]
+            val bandsCount = eq.numberOfBands
+
+            val trueFlatPercent = getZeroDbPercent(minLevel, maxLevel)
+
             if (bandsString != null) {
+
                 val values = bandsString.split(",").map { it.toFloat() }
-                val range = eq.bandLevelRange // [min, max]
-                val minLevel = range[0]
-                val maxLevel = range[1]
-                val bandsCount = eq.numberOfBands
-
                 for (i in 0 until bandsCount) {
-                    val savedValue = if (i < values.size) values[i] else 0.5f
-
+                    val savedValue = if (i < values.size) values[i] else trueFlatPercent
                     val levelShort = percentToLevel(savedValue, minLevel, maxLevel)
                     eq.setBandLevel(i.toShort(), levelShort)
                 }
-
                 eq.enabled = isEnabled
+
+                if (isEnabled && bandsCount > 0 && abs(values[0] - 0.5f) < 0.01f && abs(trueFlatPercent - 0.5f) > 0.1f) {
+                    reset(trueFlatPercent)
+                    return
+                }
+
             } else {
-                eq.enabled = false
+                val flatLevels = List(bandsCount.toInt()) { trueFlatPercent }
+                flatLevels.forEachIndexed { index, percent ->
+                    val levelShort = percentToLevel(percent, minLevel, maxLevel)
+                    eq.setBandLevel(index.toShort(), levelShort)
+                }
+                eq.enabled = false // Spento di default al primo avvio
             }
 
         } catch (e: Exception) {
-            Timber.e("EqualizerHelper", "Error restoreState", e)
+            Timber.d("EqualizerHelper Error restoreState ${e.message}")
         }
     }
 
@@ -143,22 +157,31 @@ class EqualizerHelper(private val context: Context) {
                 }
             }
         } catch (e: Exception) {
-            Timber.e("EqualizerHelper", "Error setupping equalizer bands:", e)
+            Timber.d("EqualizerHelper Error setupping equalizer bands: ${e.message}")
         }
     }
 
-    fun reset() {
+
+    fun reset(customFlatPercent: Float? = null) {
         val eq = equalizer ?: return
         try {
             val range = eq.bandLevelRange
-            val center = ((range[0] + range[1]) / 2).toShort()
-            val bands = eq.numberOfBands
-            val flatLevels = List(bands.toInt()) { center }
-            setBandsLevels(flatLevels)
+            val minLevel = range[0]
+            val maxLevel = range[1]
+            val bandsCount = eq.numberOfBands
 
-            saveSettings(eq.enabled, "Flat", flatLevels.map { 0.5f }.mapIndexed { i, f -> i.toShort() to f }.toMap())
+            val trueFlatPercent = customFlatPercent ?: getZeroDbPercent(minLevel, maxLevel)
+
+            for (i in 0 until bandsCount) {
+                val levelShort = percentToLevel(trueFlatPercent, minLevel, maxLevel)
+                eq.setBandLevel(i.toShort(), levelShort)
+            }
+
+            val flatMap = (0 until bandsCount).associate { i -> i.toShort() to trueFlatPercent }
+            saveSettings(eq.enabled, "Flat", flatMap)
+
         } catch (e: Exception) {
-            Timber.e("EqualizerHelper", "Error resetting equalizer:",e.printStackTrace())
+            e.printStackTrace()
         }
     }
 
@@ -174,9 +197,9 @@ class EqualizerHelper(private val context: Context) {
     fun setEnabled(enabled: Boolean) {
         try {
             equalizer?.enabled = enabled
-            prefs.edit().putBoolean(eqEnabled, enabled).apply()
+            prefs.edit { putBoolean(eqEnabled, enabled) }
         } catch (e: Exception) {
-            Timber.e("EqualizerHelper", "Errore set enabled", e)
+            Timber.d("EqualizerHelper Errore set enabled ${e.message}")
         }
     }
 
@@ -186,6 +209,18 @@ class EqualizerHelper(private val context: Context) {
         } catch (e: Exception) {
             false
         }
+    }
+
+    private fun getZeroDbPercent(min: Short, max: Short): Float {
+        val minF = min.toFloat()
+        val maxF = max.toFloat()
+        val range = maxF - minF
+
+        if (range == 0f) return 0.5f
+
+        val zeroPercent = (0f - minF) / range
+
+        return zeroPercent.coerceIn(0f, 1f)
     }
 
 }
