@@ -336,6 +336,8 @@ import it.fast4x.riplay.utils.PlayerViewModel
 import it.fast4x.riplay.utils.PlayerViewModelFactory
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import it.fast4x.riplay.extensions.equalizer.EqualizerScreen
+import it.fast4x.riplay.ui.components.SheetBody
 import it.fast4x.riplay.utils.applyIf
 import it.fast4x.riplay.utils.conditional
 import it.fast4x.riplay.utils.saturate
@@ -1400,6 +1402,8 @@ fun LocalPlayer(
     var showButtonPlayerDiscover by rememberPreference(showButtonPlayerDiscoverKey, false)
     val hazeState = remember { HazeState() }
 
+    val equalizer = LocalPlayerServiceBinder.current?.equalizer
+
     Box(
         modifier = Modifier
             .padding(windowInsets.only(WindowInsetsSides.Bottom).asPaddingValues())
@@ -1858,14 +1862,22 @@ fun LocalPlayer(
                             }
 
                         if (showButtonPlayerSystemEqualizer) {
-                            val activityResultLauncher =
-                                rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { }
+//                            val activityResultLauncher =
+//                                rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { }
 
                             IconButton(
                                 icon = R.drawable.equalizer,
                                 color = colorPalette().accent,
                                 enabled = true,
                                 onClick = {
+                                    equalizer?.let {
+                                        menuState.display {
+                                            SheetBody {
+                                                EqualizerScreen(it)
+                                            }
+                                        }
+                                    }
+                                    /*
                                     try {
                                         activityResultLauncher.launch(
                                             Intent(AudioEffect.ACTION_DISPLAY_AUDIO_EFFECT_CONTROL_PANEL).apply {
@@ -1889,6 +1901,7 @@ fun LocalPlayer(
                                             type = PopupType.Warning, context = context
                                         )
                                     }
+                                     */
                                 },
                                 modifier = Modifier
                                     .size(20.dp),

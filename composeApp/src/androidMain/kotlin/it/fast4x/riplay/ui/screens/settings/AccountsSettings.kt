@@ -109,7 +109,7 @@ fun AccountsSettings() {
 
     var isEnabledMusicIdentifier by rememberPreference(
         enableMusicIdentifierKey,
-        true
+        false
     )
     var musicIdentifierProvider by rememberPreference(musicIdentifierProviderKey,
         MusicIdentifierProvider.AudioTagInfo)

@@ -254,10 +254,10 @@ fun GeneralSettings(
     var isPauseOnVolumeZeroEnabled by rememberPreference(isPauseOnVolumeZeroEnabledKey, false)
 
 
-    val launchEqualizer by rememberEqualizerLauncher(audioSessionId = {
-        //binder?.player?.audioSessionId
-        0
-    })
+//    val launchEqualizer by rememberEqualizerLauncher(audioSessionId = {
+//        //binder?.player?.audioSessionId
+//        0
+//    })
 
     var minimumSilenceDuration by rememberPreference(minimumSilenceDurationKey, 2_000_000L)
 
@@ -1551,6 +1551,7 @@ fun GeneralSettings(
 //            }
 //        }
 
+                    /*
                     if (search.input.isBlank() || stringResource(R.string.equalizer).contains(
                             search.input,
                             true
@@ -1577,6 +1578,8 @@ fun GeneralSettings(
                     }
                      */
                         )
+
+                     */
                 }
 
                 /* // cast to complete in the future

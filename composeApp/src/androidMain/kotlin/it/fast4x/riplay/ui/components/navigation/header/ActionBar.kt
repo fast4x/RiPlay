@@ -16,8 +16,10 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import it.fast4x.riplay.BuildConfig
+import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.NavRoutes
+import it.fast4x.riplay.extensions.equalizer.EqualizerScreen
 import it.fast4x.riplay.extensions.pip.isPipSupported
 import it.fast4x.riplay.extensions.pip.rememberPipHandler
 import it.fast4x.riplay.extensions.preferences.castToRiTuneDeviceEnabledKey
@@ -60,6 +62,25 @@ private fun HamburgerMenu(
 //    )
 
     val sheet = LocalGlobalSheetState.current
+
+    // Equalizer button
+    LocalPlayerServiceBinder.current?.equalizer?.let {
+        menu.add(
+            DropdownMenu.Item(
+                R.drawable.equalizer,
+                R.string.equalizer,
+            ) {
+                sheet.display {
+                    SheetBody {
+                        EqualizerScreen(it)
+                    }
+                }
+                onDismissRequest()
+            }
+        )
+    }
+
+
 
     // Events button
     menu.add(
@@ -136,6 +157,7 @@ fun ActionBar(
     navController: NavController,
 ) {
     var expanded by remember { mutableStateOf(false) }
+    val sheet = LocalGlobalSheetState.current
 
     var castToRiTuneDeviceEnabled by rememberPreference(castToRiTuneDeviceEnabledKey, false )
     var showRiTuneSelector by remember { mutableStateOf(false) }
@@ -152,6 +174,19 @@ fun ActionBar(
         )
     }
 
+    /* todo maybe nor right place
+    val equalizer = LocalPlayerServiceBinder.current?.equalizer
+    equalizer?.let {
+        HeaderIcon(R.drawable.equalizer) {
+            sheet.display {
+                SheetBody {
+                    EqualizerScreen(it)
+                }
+            }
+        }
+    }
+     */
+
     // todo cast to complete
 //    if (castToRiTuneDeviceEnabled)
 //        HeaderIcon(if (GlobalSharedData.riTuneCastActive) R.drawable.cast_connected else R.drawable.cast_disconnected) {
@@ -161,10 +196,9 @@ fun ActionBar(
 
     val isEnabledMusicIdentifier by rememberPreference(
         enableMusicIdentifierKey,
-        true
+        false
     )
     if (isEnabledMusicIdentifier) {
-        val sheet = LocalGlobalSheetState.current
         HeaderIcon(R.drawable.soundwave) {
             sheet.display {
                 SheetBody {

@@ -194,6 +194,7 @@ import it.fast4x.riplay.enums.SwipeAnimationNoThumbnail
 import it.fast4x.riplay.enums.ThumbnailCoverType
 import it.fast4x.riplay.enums.ThumbnailRoundness
 import it.fast4x.riplay.enums.ThumbnailType
+import it.fast4x.riplay.extensions.equalizer.EqualizerScreen
 import it.fast4x.riplay.extensions.preferences.VinylSizeKey
 import it.fast4x.riplay.extensions.preferences.actionExpandedKey
 import it.fast4x.riplay.extensions.preferences.actionspacedevenlyKey
@@ -278,6 +279,7 @@ import it.fast4x.riplay.ui.components.BottomSheetState
 import it.fast4x.riplay.ui.components.CustomModalBottomSheet
 import it.fast4x.riplay.ui.components.DelayedControls
 import it.fast4x.riplay.ui.components.LocalGlobalSheetState
+import it.fast4x.riplay.ui.components.SheetBody
 import it.fast4x.riplay.ui.components.themed.AddToPlaylistPlayerMenu
 import it.fast4x.riplay.ui.components.themed.BlurParamsDialog
 import it.fast4x.riplay.ui.components.themed.CircularSlider
@@ -1582,6 +1584,8 @@ fun OnlinePlayer(
     var showButtonPlayerDiscover by rememberObservedPreference(showButtonPlayerDiscoverKey, false)
     val hazeState = remember { HazeState() }
 
+    val equalizer = LocalPlayerServiceBinder.current?.equalizer
+
     Box(
         modifier = Modifier
             .padding(windowInsets.only(WindowInsetsSides.Bottom).asPaddingValues())
@@ -2055,14 +2059,22 @@ fun OnlinePlayer(
                                 }
 
                             if (showButtonPlayerSystemEqualizer) {
-                                val activityResultLauncher =
-                                    rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { }
+//                                val activityResultLauncher =
+//                                    rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { }
 
                                 IconButton(
                                     icon = R.drawable.equalizer,
                                     color = colorPalette().accent,
                                     enabled = true,
                                     onClick = {
+                                        equalizer?.let {
+                                            menuState.display {
+                                                SheetBody {
+                                                    EqualizerScreen(it)
+                                                }
+                                            }
+                                        }
+                                        /*
                                         try {
                                             activityResultLauncher.launch(
                                                 Intent(AudioEffect.ACTION_DISPLAY_AUDIO_EFFECT_CONTROL_PANEL).apply {
@@ -2087,6 +2099,8 @@ fun OnlinePlayer(
                                                 type = PopupType.Warning, context = context
                                             )
                                         }
+
+                                         */
                                     },
                                     modifier = Modifier
                                         .size(20.dp),

@@ -87,7 +87,7 @@ fun HomeScreen(
 
     val isEnabledMusicIdentifier by rememberPreference(
         enableMusicIdentifierKey,
-        true
+        false
     )
 
     if (tabIndex == -2) navController.navigate(NavRoutes.search.name)
