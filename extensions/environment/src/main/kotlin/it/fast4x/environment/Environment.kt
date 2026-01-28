@@ -859,6 +859,15 @@ object Environment {
         browse(DefaultWeb.client, browseId, params, continuation, setLogin).body<BrowseResponse>()
     }
 
+    suspend fun rawBrowse(
+        browseId: String? = null,
+        params: String? = null,
+        continuation: String? = null,
+        setLogin: Boolean = true,
+    ) = runCatching {
+        browse(DefaultWeb.client, browseId, params, continuation, setLogin).bodyAsText()
+    }
+
     suspend fun next(
         context: Context = DefaultWeb2WithLocale,
         videoId: String?,
