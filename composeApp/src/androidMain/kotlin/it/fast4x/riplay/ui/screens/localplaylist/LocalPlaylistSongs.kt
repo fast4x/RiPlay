@@ -1129,11 +1129,11 @@ fun LocalPlaylistSongs(
                                         icon = painterResource(R.drawable.alert)
                                     )
                                 }
-                                Spacer(modifier = Modifier.height(5.dp))
-                                IconInfo(
-                                    title = formatAsTime(totalPlayTimes),
-                                    icon = painterResource(R.drawable.time)
-                                )
+//                                Spacer(modifier = Modifier.height(5.dp))
+//                                IconInfo(
+//                                    title = formatAsTime(totalPlayTimes),
+//                                    icon = painterResource(R.drawable.time)
+//                                )
                                 if (isRecommendationEnabled) {
                                     Spacer(modifier = Modifier.height(5.dp))
                                     IconInfo(

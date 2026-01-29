@@ -332,9 +332,9 @@ fun Podcast(
                                 )
 
                                 BasicText(
-                                    text = podcastPage!!.listEpisode.size.toString() + " "
-                                            + stringResource(R.string.songs)
-                                            + " - " + formatAsTime(totalPlayTimes),
+                                    text = podcastPage!!.listEpisode.size.toString()
+                                            + " " + stringResource(R.string.songs),
+                                            //+ " - " + formatAsTime(totalPlayTimes),
                                     style = typography().xs.medium,
                                     maxLines = 1,
                                     modifier = Modifier

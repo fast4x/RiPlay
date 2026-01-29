@@ -12,6 +12,7 @@ import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import it.fast4x.riplay.extensions.persist.PersistMapCleanup
 import it.fast4x.riplay.R
+import it.fast4x.riplay.ui.components.PageContainer
 import it.fast4x.riplay.ui.components.ScreenContainer
 
 @ExperimentalMaterialApi
@@ -26,23 +27,16 @@ fun PodcastScreen(
     browseId: String,
     miniPlayer: @Composable () -> Unit = {},
 ) {
-    val saveableStateHolder = rememberSaveableStateHolder()
-    //PersistMapCleanup(tagPrefix = "podcast/$browseId")
 
-    ScreenContainer(
-        navController,
+    PageContainer(
+        navController = navController,
         miniPlayer = miniPlayer,
-        navBarContent = { item ->
-            item(0, stringResource(R.string.podcast_episodes), R.drawable.podcast)
-        }
     ) { currentTabIndex ->
-        saveableStateHolder.SaveableStateProvider(key = currentTabIndex) {
-            when (currentTabIndex) {
-                0 -> Podcast(
-                    navController = navController,
-                    browseId = browseId,
-                )
-            }
+        when (currentTabIndex) {
+            0 -> Podcast(
+                navController = navController,
+                browseId = browseId,
+            )
         }
     }
 }
