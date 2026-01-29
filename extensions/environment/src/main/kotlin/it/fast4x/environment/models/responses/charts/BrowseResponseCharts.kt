@@ -1,15 +1,10 @@
-package it.fast4x.environment.models.v0624.charts
-
-// To parse the JSON, install kotlin's serialization plugin and do:
-//
-// val json                 = Json { allowStructuredMapKeys = true }
-// val browseChartsResponse = json.parse(BrowseChartsResponse.serializer(), jsonString)
+package it.fast4x.environment.models.responses.charts
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class BrowseChartsResponse0624 (
+data class BrowseResponseCharts (
     val contents: Contents? = null,
     val header: BrowseChartsResponseHeader? = null,
     val trackingParams: String? = null,

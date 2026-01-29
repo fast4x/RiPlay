@@ -1,6 +1,6 @@
 package it.fast4x.environment.models
 
-import it.fast4x.environment.models.v0624.charts.DefaultServiceEndpoint
+import it.fast4x.environment.models.responses.charts.DefaultServiceEndpoint
 import kotlinx.serialization.Serializable
 
 @Serializable

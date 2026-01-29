@@ -6,14 +6,15 @@ import io.ktor.client.request.setBody
 import it.fast4x.environment.Environment
 import it.fast4x.environment.models.Thumbnail
 import it.fast4x.environment.models.bodies.BrowseBody
-import it.fast4x.environment.models.v0624.podcasts.BrowsePodcastsResponse0624
-import it.fast4x.environment.models.v0624.podcasts.MusicShelfRendererContent
+import it.fast4x.environment.models.responses.podcasts.BrowseResponsePodcasts
+import it.fast4x.environment.models.responses.podcasts.MusicShelfContinuation
+import it.fast4x.environment.models.responses.podcasts.MusicShelfRendererContent
 
 suspend fun Environment.podcastPage(body: BrowseBody) = runCatching {
     val response = client.post(_3djbhqyLpE) {
         setBody(body)
         body.context.apply()
-    }.body<BrowsePodcastsResponse0624>()
+    }.body<BrowseResponsePodcasts>()
     //println("mediaItem podcastPage response $response")
 
     /*
@@ -78,17 +79,55 @@ suspend fun Environment.podcastPage(body: BrowseBody) = runCatching {
     val description =
         response.contents?.twoColumnBrowseResultsRenderer?.tabs?.firstOrNull()?.tabRenderer?.content?.sectionListRenderer
             ?.contents?.firstOrNull()?.musicResponsiveHeaderRenderer
-            ?.description?.musicDescriptionShelfRenderer?.description?.runs?.map {
-                it.text
-            }?.joinToString("")
+            ?.description?.musicDescriptionShelfRenderer?.description?.runs?.joinToString("") {
+                it.text.toString()
+            }
     val data =
         response.contents?.twoColumnBrowseResultsRenderer?.secondaryContents?.sectionListRenderer?.contents?.firstOrNull()
             ?.musicShelfRenderer?.contents
     println("mediaItem podcastPage contents count ${data?.size}")
-    parsePodcastData(data, author).let {
+
+    buildPodcastEpisodes(data, author).let {
         listEpisode.addAll(it)
     }
 
+    var continueParam =
+        response.contents
+            ?.twoColumnBrowseResultsRenderer
+            ?.secondaryContents
+            ?.sectionListRenderer
+            ?.contents
+            ?.firstOrNull()
+            ?.musicShelfRenderer
+            ?.continuations
+            ?.firstOrNull()
+            ?.nextContinuationData
+            ?.continuation
+
+    println("Environment podcastPage first continueParam $continueParam")
+
+    while (continueParam != null) {
+        val continueData = Environment.browse(continuation = continueParam, browseId = null, setLogin = true).body<BrowseResponsePodcasts>()
+
+
+                buildContinuationPodcastEpisodes(
+                    continueData.continuationContents?.musicShelfContinuation?.contents,
+                    author,
+                ).let {
+                    listEpisode.addAll(it)
+                }
+
+                continueParam =
+                    continueData.continuationContents
+                        ?.musicShelfContinuation
+                        ?.continuations
+                        ?.firstOrNull()
+                        ?.nextContinuationData
+                        ?.continuation
+
+        println("Environment podcastPage other continueParam $continueParam")
+
+    }
 
     //println("mediaItem podcastPage listEpisode ${listEpisode.size}")
     Environment.Podcast(
@@ -106,7 +145,7 @@ suspend fun Environment.podcastPage(body: BrowseBody) = runCatching {
     println("mediaItem ERROR IN Innertube podcastsPage " + it.message)
 }
 
-fun parsePodcastData(
+fun buildPodcastEpisodes(
     listContent: List<MusicShelfRendererContent>?,
     //author: Innertube.ArtistItem?
     author: String?
@@ -153,6 +192,73 @@ fun parsePodcastData(
         return listEpisode
     //}
 }
+
+
+fun buildContinuationPodcastEpisodes(
+    listContent: List<MusicShelfContinuation.Content>?,
+    author: String?,
+): List<Environment.Podcast.EpisodeItem> {
+    if (listContent == null || author == null) {
+        return emptyList()
+    } else {
+        val listEpisode: ArrayList<Environment.Podcast.EpisodeItem> = arrayListOf()
+        listContent.forEach { content ->
+            listEpisode.add(
+                Environment.Podcast.EpisodeItem(
+                    title =
+                        content.musicMultiRowListItemRenderer
+                            ?.title
+                            ?.runs
+                            ?.firstOrNull()
+                            ?.text
+                            ?: "",
+                    author = author,
+                    description =
+                        content.musicMultiRowListItemRenderer?.description?.runs?.joinToString(
+                            separator = "",
+                        ) { it.text.toString() } ?: "",
+                    thumbnail =
+                        content.musicMultiRowListItemRenderer
+                            ?.thumbnail
+                            ?.musicThumbnailRenderer
+                            ?.thumbnail
+                            ?.thumbnails
+                            ?.map {
+                                Thumbnail(
+                                    url = it.url ?: "",
+                                    width = it.width?.toInt(),
+                                    height = it.height?.toInt()
+                                )
+                            }
+                            ?: emptyList<Thumbnail>(),
+                    createdDay =
+                        content.musicMultiRowListItemRenderer
+                            ?.subtitle
+                            ?.runs
+                            ?.firstOrNull()
+                            ?.text
+                            ?: "",
+                    durationString =
+                        content.musicMultiRowListItemRenderer
+                            ?.subtitle
+                            ?.runs
+                            ?.lastOrNull()
+                            ?.text
+                            ?: "",
+                    videoId =
+                        content.musicMultiRowListItemRenderer
+                            ?.onTap
+                            ?.watchEndpoint
+                            ?.videoID
+                            ?: "",
+                ),
+            )
+        }
+
+        return listEpisode
+    }
+}
+
 
 fun List<Thumbnail>.toListThumbnail(): List<Thumbnail> {
     val list = mutableListOf<Thumbnail>()

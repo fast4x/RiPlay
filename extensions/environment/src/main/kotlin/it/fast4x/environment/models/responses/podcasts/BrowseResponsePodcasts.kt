@@ -1,16 +1,14 @@
-package it.fast4x.environment.models.v0624.podcasts
+package it.fast4x.environment.models.responses.podcasts
 
-// To parse the JSON, install kotlin's serialization plugin and do:
-//
-// val json                  = Json { allowStructuredMapKeys = true }
-// val browseExploreResponse = json.parse(BrowseExploreResponse.serializer(), jsonString)
-
+import it.fast4x.environment.models.MusicResponsiveListItemRenderer
 import kotlinx.serialization.*
+import kotlinx.serialization.json.JsonNames
 
 
 @Serializable
-data class BrowsePodcastsResponse0624 (
+data class BrowseResponsePodcasts (
     val contents: Contents? = null,
+    val continuationContents: ContinuationContents? = null,
     val trackingParams: String? = null,
     val background: ThumbnailClass? = null
 )
@@ -89,7 +87,8 @@ data class PurpleContent (
 data class MusicShelfRenderer (
     val contents: List<MusicShelfRendererContent>? = null,
     val trackingParams: String? = null,
-    val shelfDivider: ShelfDivider? = null
+    val shelfDivider: ShelfDivider? = null,
+    val continuations: List<Continuation>?,
 )
 
 @Serializable
@@ -322,46 +321,9 @@ data class OnTap (
 data class OnTapWatchEndpoint (
     @SerialName("videoId")
     val videoID: String? = null,
-
-    //@SerialName("playlistId")
-    //val playlistID: PlaylistID? = null,
-
     val index: Long? = null,
-    //val params: Params? = null,
-    //val loggingContext: LoggingContext? = null,
     val watchEndpointMusicSupportedConfigs: WatchEndpointMusicSupportedConfigs? = null
 )
-/*
-@Serializable
-data class LoggingContext (
-    val vssLoggingContext: VssLoggingContext? = null
-)
-
-@Serializable
-data class VssLoggingContext (
-    val serializedContextData: SerializedContextData? = null
-)
-
-@Serializable
-enum class SerializedContextData(val value: String) {
-    @SerialName("GiJQTDlLMGZ5dE5GMjhNTHNOWTY4M09tMmJDLU9aRmc3QWYy") GiJQTDLLMGZ5DE5GMjhNTHNOWTY4M09TMmJDLU9ARmc3QWYy("GiJQTDlLMGZ5dE5GMjhNTHNOWTY4M09tMmJDLU9aRmc3QWYy");
-}
- */
-/*
-@Serializable
-enum class Params(val value: String) {
-    @SerialName("8gEDmAEI8gQECAEQAYoFAgg2") The8GEDmAEI8GQECAEQAYoFAgg2("8gEDmAEI8gQECAEQAYoFAgg2");
-}
-
- */
-
-/*
-@Serializable
-enum class PlaylistID(val value: String) {
-    @SerialName("PL9K0fytNF28MLsNY683Om2bC-OZFg7Af2") PL9K0FytNF28MLsNY683Om2BCOZFg7Af2("PL9K0fytNF28MLsNY683Om2bC-OZFg7Af2");
-}
-
- */
 
 @Serializable
 data class WatchEndpointMusicSupportedConfigs (
@@ -456,25 +418,7 @@ data class MusicPlaybackProgressRenderer (
     val playbackProgressText: SubtitleClass? = null,
     val videoPlaybackPositionFeedbackToken: String? = null,
     val durationText: SubtitleClass? = null,
-    val playedText: PlayedText? = null
 )
-
-@Serializable
-data class PlayedText (
-    val runs: List<PlayedTextRun>? = null
-)
-
-@Serializable
-data class PlayedTextRun (
-    val text: TextEnum? = null,
-    val textColor: Long? = null
-)
-
-@Serializable
-enum class TextEnum(val value: String) {
-    @SerialName(" • ") Empty(" • "),
-    @SerialName("Played") Played("Played");
-}
 
 @Serializable
 data class Title (
@@ -582,7 +526,9 @@ data class BrowseSectionListReloadEndpoint (
 
 @Serializable
 data class Continuation (
-    val reloadContinuationData: ReloadContinuationData? = null
+    val reloadContinuationData: ReloadContinuationData? = null,
+    @JsonNames("nextContinuationData", "nextRadioContinuationData")
+    val nextContinuationData: NextContinuationData?,
 )
 
 @Serializable
@@ -843,3 +789,219 @@ data class FluffyBrowseEndpoint (
 
 @Serializable
 class Subtitle()
+
+//****************
+//******************
+
+@Serializable
+data class Welcome (
+    val responseContext: ResponseContext? = null,
+    val continuationContents: ContinuationContents? = null,
+    val trackingParams: String? = null
+)
+
+@Serializable
+data class ContinuationContents (
+    val musicShelfContinuation: MusicShelfContinuation? = null
+)
+
+@Serializable
+data class MusicShelfContinuation (
+    val contents: List<Content>? = null,
+    val trackingParams: String? = null,
+    val continuations: List<Continuation>? = null,
+    val shelfDivider: ShelfDivider? = null
+) {
+    @Serializable
+    data class Content(
+        val musicResponsiveListItemRenderer: MusicResponsiveListItemRenderer?,
+        val musicMultiRowListItemRenderer: MusicMultiRowListItemRenderer?,
+    )
+}
+
+@Serializable
+data class Description (
+    val runs: List<DescriptionRun>? = null
+)
+
+@Serializable
+data class Endpoint (
+    @SerialName("videoId")
+    val videoID: String? = null
+)
+
+@Serializable
+data class CommandAddToToastAction (
+    val item: PurpleItem? = null
+)
+
+@Serializable
+data class MenuServiceItemDownloadRendererServiceEndpoint (
+    val clickTrackingParams: String? = null,
+    val offlineVideoEndpoint: OfflineVideoEndpoint? = null
+)
+
+@Serializable
+data class OfflineVideoEndpoint (
+    @SerialName("videoId")
+    val videoID: String? = null,
+
+    val onAddCommand: OnAddCommand? = null
+)
+
+@Serializable
+data class OnAddCommand (
+    val clickTrackingParams: String? = null,
+    val getDownloadActionCommand: GetDownloadActionCommand? = null
+)
+
+@Serializable
+data class GetDownloadActionCommand (
+    @SerialName("videoId")
+    val videoID: String? = null,
+
+    val params: GetDownloadActionCommandParams? = null
+)
+
+@Serializable
+enum class GetDownloadActionCommandParams(val value: String) {
+    @SerialName("CAI%3D") CAI3D("CAI%3D");
+}
+
+@Serializable
+data class CommandExecutorCommand (
+    val commands: List<CommandExecutorCommandCommand>? = null
+)
+
+@Serializable
+data class CommandExecutorCommandCommand (
+    val clickTrackingParams: String? = null,
+    val playlistEditEndpoint: CommandPlaylistEditEndpoint? = null
+)
+
+@Serializable
+data class CommandPlaylistEditEndpoint (
+    @SerialName("playlistId")
+    val playlistID: PlaylistID? = null,
+
+    val actions: List<PurpleAction>? = null,
+    val params: PurpleParams? = null
+)
+
+@Serializable
+data class PurpleAction (
+    val action: TentacledAction? = null,
+    val suppressSuccessToast: Boolean? = null,
+
+    @SerialName("addedVideoId")
+    val addedVideoID: String? = null,
+
+    val dedupeOption: DedupeOption? = null,
+    val addedVideoPositionIfManualSort: Long? = null
+)
+
+@Serializable
+enum class TentacledAction(val value: String) {
+    @SerialName("ACTION_ADD_VIDEO") ActionAddVideo("ACTION_ADD_VIDEO"),
+    @SerialName("ACTION_REMOVE_WATCHED_VIDEOS") ActionRemoveWatchedVideos("ACTION_REMOVE_WATCHED_VIDEOS");
+}
+
+@Serializable
+enum class DedupeOption(val value: String) {
+    @SerialName("DEDUPE_OPTION_CHECK") DedupeOptionCheck("DEDUPE_OPTION_CHECK");
+}
+
+@Serializable
+enum class PurpleParams(val value: String) {
+    @SerialName("YAFwZA%3D%3D") YAFwZA3D3D("YAFwZA%3D%3D");
+}
+
+@Serializable
+enum class PlaylistID(val value: String) {
+    @SerialName("SE") SE("SE");
+}
+
+@Serializable
+data class FeedbackEndpointAction (
+    val clickTrackingParams: String? = null,
+    val addToToastAction: ActionAddToToastAction? = null
+)
+
+@Serializable
+data class ActionAddToToastAction (
+    val item: FluffyItem? = null
+)
+
+@Serializable
+data class FluffyAction (
+    val action: StickyAction? = null,
+
+    @SerialName("removedVideoId")
+    val removedVideoID: String? = null,
+
+    val suppressSuccessToast: Boolean? = null
+)
+
+@Serializable
+enum class StickyAction(val value: String) {
+    @SerialName("ACTION_REMOVE_VIDEO_BY_VIDEO_ID") ActionRemoveVideoByVideoID("ACTION_REMOVE_VIDEO_BY_VIDEO_ID"),
+    @SerialName("ACTION_REMOVE_WATCHED_VIDEOS") ActionRemoveWatchedVideos("ACTION_REMOVE_WATCHED_VIDEOS");
+}
+
+@Serializable
+enum class FluffyParams(val value: String) {
+    @SerialName("cGQ%3D") CGQ3D("cGQ%3D");
+}
+
+@Serializable
+enum class WatchEndpointParams(val value: String) {
+    @SerialName("8gEDmAEI") The8GEDmAEI("8gEDmAEI");
+}
+
+@Serializable
+enum class PlayerParams(val value: String) {
+    @SerialName("0gcJCZcBs75h_Tjp") The0GcJCZcBs75HTjp("0gcJCZcBs75h_Tjp"),
+    @SerialName("0gcJCasA-iE-y48-") The0GcJCasAIEY48("0gcJCasA-iE-y48-");
+}
+
+@Serializable
+data class Background (
+    val verticalGradient: VerticalGradient? = null
+)
+
+@Serializable
+data class RunNavigationEndpoint (
+    val clickTrackingParams: String? = null,
+    val browseEndpoint: BrowseEndpoint? = null
+)
+
+@Serializable
+data class BrowseEndpoint (
+    @SerialName("browseId")
+    val browseID: String? = null,
+
+    val browseEndpointContextSupportedConfigs: BrowseEndpointContextSupportedConfigs? = null
+)
+
+@Serializable
+data class NextContinuationData (
+    val continuation: String? = null,
+    val clickTrackingParams: String? = null
+)
+
+@Serializable
+data class ResponseContext (
+    val serviceTrackingParams: List<ServiceTrackingParam>? = null
+)
+
+@Serializable
+data class ServiceTrackingParam (
+    val service: String? = null,
+    val params: List<Param>? = null
+)
+
+@Serializable
+data class Param (
+    val key: String? = null,
+    val value: String? = null
+)

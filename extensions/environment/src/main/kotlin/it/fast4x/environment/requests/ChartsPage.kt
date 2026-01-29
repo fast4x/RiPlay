@@ -6,14 +6,14 @@ import io.ktor.client.request.setBody
 import it.fast4x.environment.Environment
 import it.fast4x.environment.models.bodies.BrowseBodyWithLocale
 import it.fast4x.environment.models.bodies.FormData
-import it.fast4x.environment.models.v0624.charts.BrowseChartsResponse0624
-import it.fast4x.environment.models.v0624.charts.MusicCarouselShelfRenderer
-import it.fast4x.environment.models.v0624.charts.MusicCarouselShelfRendererContent
+import it.fast4x.environment.models.responses.charts.BrowseResponseCharts
+import it.fast4x.environment.models.responses.charts.MusicCarouselShelfRenderer
+import it.fast4x.environment.models.responses.charts.MusicCarouselShelfRendererContent
 
 suspend fun Environment.chartsPage(countryCode: String = "") = runCatching {
     val response = client.post(_3djbhqyLpE) {
         setBody(BrowseBodyWithLocale(browseId = "FEmusic_charts", formData = FormData(listOf(countryCode))))
-    }.body<BrowseChartsResponse0624>()
+    }.body<BrowseResponseCharts>()
 
     val musicDetailRenderer =
         response.contents?.singleColumnBrowseResultsRenderer?.tabs?.firstOrNull()
