@@ -11,10 +11,14 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -137,9 +141,12 @@ import it.fast4x.riplay.extensions.preferences.volumeBoostLevelKey
 import java.net.Proxy
 import androidx.core.net.toUri
 import androidx.core.text.isDigitsOnly
+import it.fast4x.riplay.BuildConfig
 import it.fast4x.riplay.data.Database
+import it.fast4x.riplay.enums.CheckUpdateState
 import it.fast4x.riplay.enums.ContentType
 import it.fast4x.riplay.extensions.preferences.castToRiTuneDeviceEnabledKey
+import it.fast4x.riplay.extensions.preferences.checkUpdateStateKey
 import it.fast4x.riplay.extensions.preferences.closePlayerServiceAfterMinutesKey
 import it.fast4x.riplay.extensions.preferences.closePlayerServiceWhenPausedAfterMinutesKey
 import it.fast4x.riplay.extensions.preferences.enableVoiceInputKey
@@ -157,8 +164,10 @@ import it.fast4x.riplay.extensions.preferences.showShuffleSongsAAKey
 import it.fast4x.riplay.extensions.preferences.showTopPlaylistAAKey
 import it.fast4x.riplay.service.PlayerMediaBrowserService
 import it.fast4x.riplay.ui.components.themed.ConfirmationDialog
+import it.fast4x.riplay.ui.components.themed.SecondaryTextButton
 import it.fast4x.riplay.ui.components.themed.settingsItem
 import it.fast4x.riplay.ui.components.themed.settingsSearchBarItem
+import it.fast4x.riplay.utils.CheckAvailableNewVersion
 import it.fast4x.riplay.utils.LazyListContainer
 import it.fast4x.riplay.utils.loadMasterQueue
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -342,6 +351,8 @@ fun GeneralSettings(
         Database.queriesCount().distinctUntilChanged()
     }.collectAsState(initial = 0)
 
+    var checkUpdateState by rememberPreference(checkUpdateStateKey, CheckUpdateState.Disabled)
+
     Column(
         modifier = Modifier
             .background(colorPalette().background0)
@@ -430,6 +441,65 @@ fun GeneralSettings(
                 settingsSearchBarItem {
                     search.ToolBarButton()
                     search.SearchBar(this)
+                }
+
+                if (BuildConfig.BUILD_VARIANT == "full") {
+                    settingsItem(
+                        isHeader = true
+                    ) {
+                        SettingsEntryGroupText(title = stringResource(R.string.check_update))
+                    }
+
+                    settingsItem {
+                        var checkUpdateNow by remember { mutableStateOf(false) }
+                        if (checkUpdateNow)
+                            CheckAvailableNewVersion(
+                                onDismiss = { checkUpdateNow = false },
+                                updateAvailable = {
+                                    if (!it)
+                                        SmartMessage(
+                                            context.resources.getString(R.string.info_no_update_available),
+                                            type = PopupType.Info,
+                                            context = context
+                                        )
+                                }
+                            )
+
+                        EnumValueSelectorSettingsEntry(
+                            online = false,
+                            offline = false,
+                            title = stringResource(R.string.enable_check_for_update),
+                            selectedValue = checkUpdateState,
+                            onValueSelected = { checkUpdateState = it },
+                            valueText = {
+                                when (it) {
+                                    CheckUpdateState.Disabled -> stringResource(R.string.vt_disabled)
+                                    CheckUpdateState.Enabled -> stringResource(R.string.enabled)
+                                    CheckUpdateState.Ask -> stringResource(R.string.ask)
+                                }
+
+                            }
+                        )
+                        SettingsDescription(text = stringResource(R.string.when_enabled_a_new_version_is_checked_and_notified_during_startup))
+                        AnimatedVisibility(visible = checkUpdateState != CheckUpdateState.Disabled) {
+                            Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                                SettingsDescription(
+                                    text = stringResource(R.string.check_update),
+                                    important = true,
+                                    modifier = Modifier.weight(1f)
+                                )
+
+                                SecondaryTextButton(
+                                    text = stringResource(R.string.info_check_update_now),
+                                    onClick = { checkUpdateNow = true },
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .padding(end = 24.dp)
+                                )
+                            }
+                        }
+                        Spacer(modifier = Modifier.height(16.dp))
+                    }
                 }
 
 

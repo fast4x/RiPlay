@@ -44,26 +44,27 @@ import kotlinx.coroutines.isActive
 
 @Composable
 fun Loader(
+    modifier: Modifier = Modifier.fillMaxWidth(),
     size: Dp = 32.dp,
-    modifier: Modifier = Modifier.fillMaxWidth()
 ) = Box(
     modifier = modifier,
 ) {
-    Image(
-        painter = painterResource(R.drawable.loader),
-        contentDescription = null,
-        colorFilter = ColorFilter.tint(colorPalette().text),
-        modifier = Modifier
-            .align(Alignment.Center)
-            .size(size)
-    )
+    PoligonIndicatorScreen(mini = true)
+//    Image(
+//        painter = painterResource(R.drawable.loader),
+//        contentDescription = null,
+//        colorFilter = ColorFilter.tint(colorPalette().text),
+//        modifier = Modifier
+//            .align(Alignment.Center)
+//            .size(size)
+//    )
 }
 
 @Composable
 fun LoaderScreen(show: Boolean = true) {
     if (!show) return
     //RotatingLoaderScreen()
-    PoligonIndicatorScreen(Modifier)
+    PoligonIndicatorScreen()
 }
 
 @Composable
@@ -109,7 +110,9 @@ fun RotatingLoaderScreen() {
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-fun PoligonIndicatorScreen(modifier: Modifier) {
+fun PoligonIndicatorScreen(
+    mini: Boolean = false,
+) {
     var containerShape by remember {
         mutableStateOf(LoadingIndicatorDefaults.IndeterminateIndicatorPolygons.random())
     }
@@ -122,7 +125,7 @@ fun PoligonIndicatorScreen(modifier: Modifier) {
     }
 
     Column(
-        modifier = Modifier.fillMaxSize(),
+        modifier = if(!mini) Modifier.fillMaxSize() else Modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
@@ -134,7 +137,7 @@ fun PoligonIndicatorScreen(modifier: Modifier) {
             ContainedLoadingIndicator(
                 modifier =
                     Modifier
-                        .size(96.dp),
+                        .size(if(mini) 48.dp else 96.dp),
                 polygons = LoadingIndicatorDefaults.IndeterminateIndicatorPolygons,
                 containerColor = colorPalette().background0,
                 indicatorColor = colorPalette().accent,
@@ -144,7 +147,7 @@ fun PoligonIndicatorScreen(modifier: Modifier) {
             ContainedLoadingIndicator(
                 modifier =
                     Modifier
-                        .size(64.dp),
+                        .size(if(mini) 32.dp else 64.dp),
                 polygons = LoadingIndicatorDefaults.IndeterminateIndicatorPolygons.shuffled(),
                 containerColor = colorPalette().background0,
                 indicatorColor = colorPalette().accent.copy(alpha = .6f),
@@ -152,12 +155,14 @@ fun PoligonIndicatorScreen(modifier: Modifier) {
             )
         }
 
-        Spacer(modifier = Modifier.height(24.dp))
+        if (!mini) {
+            Spacer(modifier = Modifier.height(24.dp))
 
-        Text(
-            text = stringResource(R.string.loading_please_wait),
-            style = typography().xs
-        )
+            Text(
+                text = stringResource(R.string.loading_please_wait),
+                style = typography().xs
+            )
+        }
 
     }
 }
