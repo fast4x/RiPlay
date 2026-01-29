@@ -1241,4 +1241,5 @@
     <string name="event_enable_automatic_update_check">Enable automatic update check</string>
     <string name="event_show_notification_to_prompt_app_update_when_new_version_is_available.">Show notification to prompt app update when new version is available.</string>
     <string name="online_history">Online history</string>
+    <string name="loading_please_wait">Loading, please wait...</string>
 </resources>

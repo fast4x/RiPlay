@@ -34,6 +34,7 @@ import it.fast4x.environment.EnvironmentExt.likeVideoOrSong
 import it.fast4x.environment.EnvironmentExt.removelikeVideoOrSong
 import it.fast4x.environment.models.bodies.ContinuationBody
 import it.fast4x.environment.models.bodies.SearchBody
+import it.fast4x.environment.requests.PlaylistPage
 import it.fast4x.environment.requests.playlistPage
 import it.fast4x.environment.requests.searchPage
 import it.fast4x.environment.requests.song
@@ -597,7 +598,6 @@ suspend fun Result<LibraryPage?>.completed(): Result<LibraryPage> = runCatching 
         continuation = page?.continuation
     )
 }
-
 
 @Composable
 fun CheckAvailableNewVersion(

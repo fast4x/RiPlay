@@ -84,7 +84,10 @@ import com.github.doyaaaaaken.kotlincsv.dsl.csvWriter
 import it.fast4x.riplay.extensions.persist.persist
 import it.fast4x.environment.Environment
 import it.fast4x.environment.EnvironmentExt
+import it.fast4x.environment.models.bodies.BrowseBody
 import it.fast4x.environment.models.bodies.NextBody
+import it.fast4x.environment.requests.PlaylistPage
+import it.fast4x.environment.requests.podcastPage
 import it.fast4x.environment.requests.relatedSongs
 import it.fast4x.environment.utils.completed
 import it.fast4x.riplay.data.Database
@@ -512,19 +515,22 @@ fun LocalPlaylistSongs(
                     runBlocking(Dispatchers.IO) {
                         withContext(Dispatchers.IO) {
                             playlistPreview.playlist.browseId?.let {
-                                EnvironmentExt.getPlaylist(
-                                    playlistId = cleanPrefix(it)
-                                ).completed()
+                                if (playlistPreview.playlist.isPodcast) {
+                                    Environment.podcastPage(BrowseBody(browseId = it))?.getOrNull()
+                                } else {
+                                    EnvironmentExt.getPlaylist(
+                                        playlistId = cleanPrefix(it)
+                                    ).completed()?.getOrNull()
+                                }
                             }
                         }
-                    }?.getOrNull()?.let { remotePlaylist ->
-//                        val playlistIdChecked =
-//                            if (remotePlaylist.playlist.key.startsWith("VL")) remotePlaylist.playlist.key.substringAfter("VL") else remotePlaylist.playlist.key
-
-                        //Database.clearPlaylist(playlistId)
-
-                        remotePlaylist.songs
-                            .map(Environment.SongItem::asMediaItem)
+                    }?.let { remotePlaylist ->
+                        when (remotePlaylist) {
+                            is Environment.Podcast -> remotePlaylist.listEpisode.map(Environment.Podcast.EpisodeItem::asMediaItem)
+                            is PlaylistPage -> remotePlaylist.songs.map(Environment.SongItem::asMediaItem)
+                            else -> emptyList<MediaItem>()
+                        }.let { songs ->
+                            songs
                             .onEach(Database::insert)
                             .mapIndexed { position, mediaItem ->
                                 SongPlaylistMap(
@@ -542,6 +548,10 @@ fun LocalPlaylistSongs(
                                 //Timber.d("LocalPlaylistSongs synced list of setvideoid ${remotePlaylist.songs.map { it.setVideoId }}")
                                 SmartMessage(context.resources.getString(R.string.done), context = context)
                             }
+                        }
+
+
+
                     }
                 }
 

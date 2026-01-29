@@ -109,21 +109,20 @@ suspend fun Environment.podcastPage(body: BrowseBody) = runCatching {
     while (continueParam != null) {
         val continueData = Environment.browse(continuation = continueParam, browseId = null, setLogin = true).body<BrowseResponsePodcasts>()
 
+        buildContinuationPodcastEpisodes(
+            continueData.continuationContents?.musicShelfContinuation?.contents,
+            author,
+        ).let {
+            listEpisode.addAll(it)
+        }
 
-                buildContinuationPodcastEpisodes(
-                    continueData.continuationContents?.musicShelfContinuation?.contents,
-                    author,
-                ).let {
-                    listEpisode.addAll(it)
-                }
-
-                continueParam =
-                    continueData.continuationContents
-                        ?.musicShelfContinuation
-                        ?.continuations
-                        ?.firstOrNull()
-                        ?.nextContinuationData
-                        ?.continuation
+        continueParam =
+            continueData.continuationContents
+                ?.musicShelfContinuation
+                ?.continuations
+                ?.firstOrNull()
+                ?.nextContinuationData
+                ?.continuation
 
         println("Environment podcastPage other continueParam $continueParam")
 
