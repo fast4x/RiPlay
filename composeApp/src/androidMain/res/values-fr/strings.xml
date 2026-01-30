@@ -1244,5 +1244,5 @@ Volume BAS : titre précédent</string>
     <string name="event_enable_automatic_update_check">Activer la vérification automatique des mises à jour</string>
     <string name="event_show_notification_to_prompt_app_update_when_new_version_is_available.">Afficher une notification pour demander la mise à jour de l\'application lorsqu\'une nouvelle version est disponible.</string>
     <string name="online_history">Online history</string>
-    <string name="loading_please_wait">Loading, please wait...</string>
+    <string name="loading_please_wait">Chargement en cours, veuillez patienter...</string>
 </resources>
