@@ -1233,10 +1233,16 @@ Volume BAS : titre précédent</string>
     <string name="formattedtime_within_days_and_hours">Dans %1$d jours et %2$d heures</string>
     <string name="formattedtime_within_hours">Dans les %1$d heures</string>
     <string name="formattedtime_soon">Bientôt</string>
+    <string name="playback_events">Playback events</string>
     <string name="event_enable_auto_backup">Activer la sauvegarde automatique</string>
     <string name="event_no_folder_selected_click_here_to_select_a_folder">Aucun dossier sélectionné, cliquez ici pour sélectionner un dossier</string>
     <string name="event_click_to_select_the_folder_where_the_backup_will_be_saved">Cliquez pour sélectionner le dossier dans lequel la sauvegarde sera enregistrée.</string>
     <string name="event_a_full_backup_of_the_database_and_settings_is_performed_even_if_the_app_is_closed">Une sauvegarde complète de la base de données et des paramètres est effectuée, même si l\'application est fermée.</string>
     <string name="event_enable_automatic_update_check">Activer la vérification automatique des mises à jour</string>
     <string name="event_show_notification_to_prompt_app_update_when_new_version_is_available.">Afficher une notification pour demander la mise à jour de l\'application lorsqu\'une nouvelle version est disponible.</string>
+    <string name="genres">Genres</string>
+    <string name="reset_playback_events">Reset playback events</string>
+    <string name="no_playback_events">No playback events</string>
+    <string name="online_history">Online history</string>
+    <string name="loading_please_wait">Loading, please wait...</string>
 </resources>

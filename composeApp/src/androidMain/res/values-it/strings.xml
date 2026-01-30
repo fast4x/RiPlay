@@ -948,7 +948,7 @@
     <string name="restore_from_other_backup">Ripristina da altro backup</string>
     <string name="import_the_database_be_carefull">Importa il database da altri backup. Fai attenzione, potresti dover reinstallare l\'app.</string>
     <string name="enable_fullscreen">Abilita modalità schermo intero</string>
-    <string name="enable_fullscreen_info"></string>
+    <string name="enable_fullscreen_info">Fullscreen hide system bars</string>
     <string name="invalid_token">Token non valido</string>
     <string name="unknown_title">Titolo sconosciuto</string>
     <string name="unknown_artist">Artista sconosciuto</string>
@@ -1230,10 +1230,16 @@
     <string name="formattedtime_within_days_and_hours">Entro %1$d giorni e %2$d ore</string>
     <string name="formattedtime_within_hours">Entro %1$d ore</string>
     <string name="formattedtime_soon">Prossimamente</string>
+    <string name="playback_events">Playback events</string>
     <string name="event_enable_auto_backup">Abilita backup automatico</string>
     <string name="event_no_folder_selected_click_here_to_select_a_folder">Nessuna cartella selezionata, fare clic qui per selezionare una cartella</string>
     <string name="event_click_to_select_the_folder_where_the_backup_will_be_saved">Fare clic per selezionare la cartella in cui verrà salvato il backup.</string>
     <string name="event_a_full_backup_of_the_database_and_settings_is_performed_even_if_the_app_is_closed">Viene eseguito un backup completo del database e delle impostazioni, anche se l\'app è chiusa.</string>
     <string name="event_enable_automatic_update_check">Abilita il controllo degli aggiornamento automatico</string>
     <string name="event_show_notification_to_prompt_app_update_when_new_version_is_available.">Mostra notifica per richiedere l\'aggiornamento dell\'app quando è disponibile una nuova versione.</string>
+    <string name="genres">Genres</string>
+    <string name="reset_playback_events">Reset playback events</string>
+    <string name="no_playback_events">No playback events</string>
+    <string name="online_history">Online history</string>
+    <string name="loading_please_wait">Loading, please wait...</string>
 </resources>
