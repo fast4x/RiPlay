@@ -1230,6 +1230,9 @@
     <string name="formattedtime_within_days_and_hours">Within %1$d days and %2$d hours</string>
     <string name="formattedtime_within_hours">Within %1$d hours</string>
     <string name="formattedtime_soon">Soon</string>
+    <string name="genres">Genres</string>
+    <string name="reset_playback_events">Reset playback events</string>
+    <string name="no_playback_events">No playback events</string>
     <string name="playback_events">Playback events</string>
     <string name="event_enable_auto_backup">Enable auto backup</string>
     <string name="event_no_folder_selected_click_here_to_select_a_folder">No folder selected, click here to select a folder</string>
@@ -1237,9 +1240,6 @@
     <string name="event_a_full_backup_of_the_database_and_settings_is_performed_even_if_the_app_is_closed">A full backup of the database and settings is performed, even if the app is closed.</string>
     <string name="event_enable_automatic_update_check">Enable automatic update check</string>
     <string name="event_show_notification_to_prompt_app_update_when_new_version_is_available.">Show notification to prompt app update when new version is available.</string>
-    <string name="genres">Genres</string>
-    <string name="reset_playback_events">Reset playback events</string>
-    <string name="no_playback_events">No playback events</string>
     <string name="online_history">Online history</string>
     <string name="loading_please_wait">Loading, please wait...</string>
 </resources>
