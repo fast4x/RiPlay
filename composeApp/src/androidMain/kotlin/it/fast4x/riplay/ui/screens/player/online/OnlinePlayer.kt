@@ -907,8 +907,8 @@ fun OnlinePlayer(
                     !lightTheme
                 ) ?: color
 
-                //val scaledBitmap = Bitmap.createScaledBitmap(bitmap, 100, 100, false)
-                val palette = Palette.from(bitmap).generate()
+                val scaledBitmap = Bitmap.createScaledBitmap(bitmap, 100, 100, false)
+                val palette = Palette.from(scaledBitmap).generate()
 
                 dominant = palette.getDominantColor(dynamicColorPalette.accent.toArgb())
                 vibrant = palette.getVibrantColor(dynamicColorPalette.accent.toArgb())
