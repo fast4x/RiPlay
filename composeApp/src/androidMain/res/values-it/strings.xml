@@ -1242,4 +1242,16 @@
     <string name="event_show_notification_to_prompt_app_update_when_new_version_is_available.">Mostra notifica per richiedere l\'aggiornamento dell\'app quando è disponibile una nuova versione.</string>
     <string name="online_history">Online history</string>
     <string name="loading_please_wait">Loading, please wait...</string>
+    <string name="equalizer_equalizer">Equalizer</string>
+    <string name="equalizer_flat">Flat</string>
+    <string name="equalizer_bass_boost">Bass Boost</string>
+    <string name="equalizer_rock">Rock</string>
+    <string name="equalizer_jazz">Jazz</string>
+    <string name="equalizer_vocal">Vocal</string>
+    <string name="equalizer_classical">Classical</string>
+    <string name="equalizer_pop">Pop</string>
+    <string name="equalizer_electronic">Electronic</string>
+    <string name="equalizer_dance">Dance</string>
+    <string name="equalizer_acoustic">Acoustic</string>
+    <string name="equalizer_reset">Reset</string>
 </resources>
