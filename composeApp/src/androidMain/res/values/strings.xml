@@ -1242,4 +1242,16 @@
     <string name="event_show_notification_to_prompt_app_update_when_new_version_is_available.">Show notification to prompt app update when new version is available.</string>
     <string name="online_history">Online history</string>
     <string name="loading_please_wait">Loading, please wait...</string>
+    <string name="loading_please_wait">Equalizer</string>
+    <string name="loading_please_wait">Flat</string>
+    <string name="loading_please_wait">Bass Boost</string>
+    <string name="loading_please_wait">Rock</string>
+    <string name="loading_please_wait">Jazz</string>
+    <string name="loading_please_wait">Vocal</string>
+    <string name="loading_please_wait">Classical</string>
+    <string name="loading_please_wait">Pop</string>
+    <string name="loading_please_wait">Electronic</string>
+    <string name="loading_please_wait">Dance</string>
+    <string name="loading_please_wait">Acoustic</string>
+    <string name="loading_please_wait">Reset</string>   
 </resources>
