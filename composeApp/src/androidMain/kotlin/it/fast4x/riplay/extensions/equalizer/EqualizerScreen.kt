@@ -319,24 +319,37 @@ private fun formatFrequency(milliHz: Int): String {
 
 @Composable
 fun PresetSelector(
-    selectedPreset: String,
-    onPresetSelected: (String) -> Unit,
+    selectedPreset: EqualizerPreset,
+    onPresetSelected: (EqualizerPreset) -> Unit,
     onReset: () -> Unit
 ) {
-    val presets = listOf("Flat", "Bass Boost", "Rock", "Jazz", "Vocal", "Classical", "Pop", "Electronic", "Dance", "Acoustic")
+    val presets = remember { EqualizerPreset.entries }
 
-    LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+    LazyRow(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        contentPadding = PaddingValues(horizontal = 16.dp)
+    ) {
         items(presets) { preset ->
             FilterChip(
                 selected = selectedPreset == preset,
                 onClick = { onPresetSelected(preset) },
-                label = { Text(preset, fontSize = 12.sp) },
+                label = { 
+                    Text(
+                        text = stringResource(id = preset.labelRes), 
+                        fontSize = 12.sp
+                    ) 
+                },
                 modifier = Modifier.height(32.dp)
             )
         }
+        
         item {
-            TextButton(onClick = onReset, modifier = Modifier.height(32.dp)) {
-                Text("Reset", fontSize = 12.sp)
+            TextButton(
+                onClick = onReset, 
+                modifier = Modifier.height(32.dp)
+            ) {
+                Text(stringResource(R.string.preset_reset), fontSize = 12.sp)
             }
         }
     }
