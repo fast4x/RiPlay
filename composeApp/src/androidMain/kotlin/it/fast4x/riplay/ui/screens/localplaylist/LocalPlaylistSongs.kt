@@ -253,21 +253,6 @@ fun LocalPlaylistSongs(
 
     }
 
-//    Database.asyncTransaction {
-//        val downloads = MyDownloadHelper.downloads.value
-//        CoroutineScope(Dispatchers.IO).launch {
-//            downloadedPlaylistSongs = playlistAllSongs.filter { song -> downloads[song.song.id]?.state == Download.STATE_COMPLETED }
-//            cachedPlaylistSongs = playlistAllSongs.filter { song -> song.contentLength?.let {
-//                try {
-//                    binder?.cache?.isCached(song.song.id, 0, song.contentLength)
-//                } catch (e: Exception) {
-//                    false
-//                }
-//            } ?: false
-//            }
-//        }
-//    }
-
     LaunchedEffect(Unit, playlistAllSongs, filter, playlistSongsTypeFilter) {
         when (playlistSongsTypeFilter) {
             PlaylistSongsTypeFilter.All -> {playlistSongs = playlistAllSongs}
@@ -1216,7 +1201,7 @@ fun LocalPlaylistSongs(
                         ) {
                             HeaderIconButton(
                                 onClick = {},
-                                icon = R.drawable.search,
+                                icon = R.drawable.search_circle,
                                 color = colorPalette.text,
                                 modifier = Modifier
                                     .combinedClickable(
