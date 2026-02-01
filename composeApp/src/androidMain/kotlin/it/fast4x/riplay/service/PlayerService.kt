@@ -539,7 +539,7 @@ class PlayerService : Service(),
 
     private fun startForeground() {
         runCatching {
-            notification()?.let {
+            notification().let {
                 ServiceCompat.startForeground(
                     this@PlayerService,
                     NOTIFICATION_ID,
@@ -2498,11 +2498,11 @@ class PlayerService : Service(),
     }
 
 
-    fun notification(): Notification? {
+    fun notification(): Notification {
 
         val currentMediaItem = binder.player.currentMediaItem
 
-        bitmapProvider?.load(currentMediaItem?.mediaMetadata?.artworkUri) {}
+        //bitmapProvider?.load(currentMediaItem?.mediaMetadata?.artworkUri) {}
 
         createNotificationChannel()
 

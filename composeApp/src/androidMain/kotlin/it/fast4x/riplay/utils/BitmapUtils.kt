@@ -22,6 +22,9 @@ import kotlinx.coroutines.guava.future
 import timber.log.Timber
 import java.util.concurrent.ExecutionException
 import kotlin.toString
+import androidx.core.graphics.createBitmap
+import androidx.core.graphics.scale
+import coil.size.Scale
 
 suspend fun getBitmapFromUrl(context: Context, url: String): Bitmap {
     val loading = context.imageLoader
@@ -94,6 +97,107 @@ class BitmapProvider(
     var listener: ((Bitmap?) -> Unit)? = null
         set(value) {
             field = value
+            value?.invoke(bitmap)
+        }
+
+    init {
+        setDefaultBitmap()
+    }
+
+    fun setDefaultBitmap(): Boolean {
+        val isSystemInDarkMode = appContext().resources.configuration.uiMode and
+                Configuration.UI_MODE_NIGHT_MASK == Configuration.UI_MODE_NIGHT_YES
+
+        if (::defaultBitmap.isInitialized && isSystemInDarkMode == lastIsSystemInDarkMode) return false
+
+        lastIsSystemInDarkMode = isSystemInDarkMode
+
+        runCatching {
+            defaultBitmap =
+                createBitmap(bitmapSize, bitmapSize).applyCanvas {
+                    drawColor(colorProvider(isSystemInDarkMode))
+                }
+        }.onFailure {
+            Timber.e("Failed set default bitmap in BitmapProvider ${it.stackTraceToString()}")
+        }
+
+        return lastBitmap == null
+    }
+
+    fun load(uri: Uri?, onDone: (Bitmap) -> Unit) {
+        Timber.d("BitmapProvider load method being called")
+
+        if (uri == null) {
+            onDone(bitmap)
+            return
+        }
+
+        if (lastUri == uri) {
+            onDone(bitmap)
+            return
+        }
+
+        lastEnqueued?.dispose()
+        lastUri = uri
+
+        lastBitmap = null
+
+        val url = uri.toString().thumbnail(bitmapSize)
+        runCatching {
+            lastEnqueued = appContext().imageLoader.enqueue(
+                ImageRequest.Builder(appContext())
+                    .data(url)
+                    .allowHardware(false)
+                    .diskCacheKey(url.toString())
+                    .memoryCacheKey(url.toString())
+                    .listener(
+                        onError = { _, result ->
+                            Timber.e("Failed to load bitmap ${result.throwable.stackTraceToString()}")
+                            lastBitmap = null
+                            onDone(bitmap)
+                            //listener?.invoke(bitmap)
+                        },
+                        onSuccess = { _, result ->
+                            val drawable = result.drawable
+                            if (drawable is BitmapDrawable) {
+                                lastBitmap = drawable.bitmap
+                            } else {
+                                lastBitmap = null
+                            }
+                            onDone(bitmap)
+                            // listener?.invoke(bitmap)
+                        }
+                    )
+                    .build()
+            )
+        }.onFailure {
+            Timber.e("Failed enqueue in BitmapProvider ${it.stackTraceToString()}")
+            onDone(bitmap)
+        }
+    }
+}
+
+/*
+class BitmapProvider(
+    private val bitmapSize: Int,
+    private val colorProvider: (isSystemInDarkMode: Boolean) -> Int
+) {
+    var lastUri: Uri? = null
+        private set
+
+    var lastBitmap: Bitmap? = null
+    private var lastIsSystemInDarkMode = false
+
+    private var lastEnqueued: Disposable? = null
+
+    private lateinit var defaultBitmap: Bitmap
+
+    val bitmap: Bitmap
+        get() = lastBitmap ?: defaultBitmap
+
+    var listener: ((Bitmap?) -> Unit)? = null
+        set(value) {
+            field = value
             value?.invoke(lastBitmap)
         }
 
@@ -111,18 +215,18 @@ class BitmapProvider(
 
         runCatching {
             defaultBitmap =
-                Bitmap.createBitmap(bitmapSize, bitmapSize, Bitmap.Config.ARGB_8888).applyCanvas {
+                createBitmap(bitmapSize, bitmapSize).applyCanvas {
                     drawColor(colorProvider(isSystemInDarkMode))
                 }
         }.onFailure {
-            Timber.Forest.e("Failed set default bitmap in BitmapProvider ${it.stackTraceToString()}")
+            Timber.e("Failed set default bitmap in BitmapProvider ${it.stackTraceToString()}")
         }
 
         return lastBitmap == null
     }
 
     fun load(uri: Uri?, onDone: (Bitmap) -> Unit) {
-        Timber.Forest.d("BitmapProvider load method being called")
+        Timber.d("BitmapProvider load method being called")
         if (lastUri == uri || uri == null) {
             listener?.invoke(lastBitmap)
             return
@@ -161,3 +265,4 @@ class BitmapProvider(
         }
     }
 }
+ */
