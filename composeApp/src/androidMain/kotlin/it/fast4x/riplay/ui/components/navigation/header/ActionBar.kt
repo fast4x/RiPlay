@@ -15,16 +15,19 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
-import it.fast4x.riplay.BuildConfig
 import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.R
+import it.fast4x.riplay.enums.EqualizerType
 import it.fast4x.riplay.enums.NavRoutes
-import it.fast4x.riplay.extensions.equalizer.EqualizerScreen
+import it.fast4x.riplay.extensions.equalizer.InternalEqualizerScreen
+import it.fast4x.riplay.extensions.equalizer.rememberSystemEqualizerLauncher
 import it.fast4x.riplay.extensions.pip.isPipSupported
 import it.fast4x.riplay.extensions.pip.rememberPipHandler
 import it.fast4x.riplay.extensions.preferences.castToRiTuneDeviceEnabledKey
 import it.fast4x.riplay.extensions.preferences.enableMusicIdentifierKey
 import it.fast4x.riplay.extensions.preferences.enablePictureInPictureKey
+import it.fast4x.riplay.extensions.preferences.equalizerTypeKey
+import it.fast4x.riplay.extensions.preferences.rememberObservedPreference
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.extensions.ritune.improved.RiTuneSelector
 import it.fast4x.riplay.ui.components.LocalGlobalSheetState
@@ -34,7 +37,6 @@ import it.fast4x.riplay.utils.thumbnailShape
 import it.fast4x.riplay.ui.components.themed.DropdownMenu
 import it.fast4x.riplay.ui.screens.events.EventsScreen
 import it.fast4x.riplay.ui.screens.settings.isYtLoggedIn
-import it.fast4x.riplay.utils.GlobalSharedData
 import it.fast4x.riplay.utils.MusicIdentifier
 import it.fast4x.riplay.utils.ytAccountThumbnail
 import timber.log.Timber
@@ -63,22 +65,28 @@ private fun HamburgerMenu(
 
     val sheet = LocalGlobalSheetState.current
 
-    // Equalizer button
-    LocalPlayerServiceBinder.current?.equalizer?.let {
-        menu.add(
+    val equalizerType by rememberObservedPreference(equalizerTypeKey, EqualizerType.Internal)
+    val internalEqualizer = LocalPlayerServiceBinder.current?.equalizer
+    val launchSystemEqualizer by rememberSystemEqualizerLauncher(audioSessionId = {0})
+    menu.add(
             DropdownMenu.Item(
                 R.drawable.music_equalizer,
                 R.string.equalizer,
             ) {
-                sheet.display {
-                    SheetBody {
-                        EqualizerScreen(it)
+                if (equalizerType == EqualizerType.Internal) {
+                    internalEqualizer?.let {
+                        sheet.display {
+                            SheetBody {
+                                InternalEqualizerScreen(it)
+                            }
+                        }
                     }
+                } else {
+                    launchSystemEqualizer()
                 }
                 onDismissRequest()
             }
-        )
-    }
+    )
 
 
 

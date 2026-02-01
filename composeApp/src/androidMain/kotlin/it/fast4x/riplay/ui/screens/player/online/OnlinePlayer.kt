@@ -1,15 +1,10 @@
 package it.fast4x.riplay.ui.screens.player.online
 
 import android.annotation.SuppressLint
-import android.content.ActivityNotFoundException
-import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.RenderEffect
 import android.graphics.Shader
-import android.media.audiofx.AudioEffect
 import androidx.activity.compose.BackHandler
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.animateContentSize
@@ -131,7 +126,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.times
 import androidx.compose.ui.util.lerp
 import androidx.compose.ui.zIndex
-import androidx.core.graphics.ColorUtils.colorToHSL
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.media3.common.MediaItem
@@ -194,7 +188,7 @@ import it.fast4x.riplay.enums.SwipeAnimationNoThumbnail
 import it.fast4x.riplay.enums.ThumbnailCoverType
 import it.fast4x.riplay.enums.ThumbnailRoundness
 import it.fast4x.riplay.enums.ThumbnailType
-import it.fast4x.riplay.extensions.equalizer.EqualizerScreen
+import it.fast4x.riplay.extensions.equalizer.InternalEqualizerScreen
 import it.fast4x.riplay.extensions.preferences.VinylSizeKey
 import it.fast4x.riplay.extensions.preferences.actionExpandedKey
 import it.fast4x.riplay.extensions.preferences.actionspacedevenlyKey
@@ -2080,7 +2074,7 @@ fun OnlinePlayer(
                                         equalizer?.let {
                                             menuState.display {
                                                 SheetBody {
-                                                    EqualizerScreen(it)
+                                                    InternalEqualizerScreen(it)
                                                 }
                                             }
                                         }

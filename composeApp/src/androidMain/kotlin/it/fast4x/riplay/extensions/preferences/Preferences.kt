@@ -422,6 +422,7 @@ const val eqEnabledKey = "eqEnabled"
 const val eqPresetKey = "eqPreset"
 const val eqBandsKey = "eqBands"
 
+const val equalizerTypeKey = "equalizerType"
 
 
 inline fun <reified T : Enum<T>> SharedPreferences.getEnum(

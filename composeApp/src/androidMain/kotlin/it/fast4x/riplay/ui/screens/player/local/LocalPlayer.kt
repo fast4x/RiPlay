@@ -1,14 +1,9 @@
 package it.fast4x.riplay.ui.screens.player.local
 
 import android.annotation.SuppressLint
-import android.content.ActivityNotFoundException
-import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.RenderEffect
 import android.graphics.Shader
-import android.media.audiofx.AudioEffect
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.Animatable
@@ -73,7 +68,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.neverEqualPolicy
 import androidx.compose.runtime.remember
@@ -118,7 +112,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.times
 import androidx.compose.ui.util.lerp
 import androidx.compose.ui.zIndex
-import androidx.core.graphics.ColorUtils.colorToHSL
 import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
@@ -336,7 +329,7 @@ import it.fast4x.riplay.utils.PlayerViewModel
 import it.fast4x.riplay.utils.PlayerViewModelFactory
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import it.fast4x.riplay.extensions.equalizer.EqualizerScreen
+import it.fast4x.riplay.extensions.equalizer.InternalEqualizerScreen
 import it.fast4x.riplay.ui.components.SheetBody
 import it.fast4x.riplay.utils.LandscapeToSquareTransformation
 import it.fast4x.riplay.utils.applyIf
@@ -1875,7 +1868,7 @@ fun LocalPlayer(
                                     equalizer?.let {
                                         menuState.display {
                                             SheetBody {
-                                                EqualizerScreen(it)
+                                                InternalEqualizerScreen(it)
                                             }
                                         }
                                     }

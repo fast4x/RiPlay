@@ -29,7 +29,7 @@ import it.fast4x.riplay.utils.addToOnlineLikedSong
 import it.fast4x.riplay.utils.addToYtPlaylist
 import org.dailyislam.android.utilities.isNetworkConnected
 import it.fast4x.riplay.extensions.preferences.menuStyleKey
-import it.fast4x.riplay.utils.rememberEqualizerLauncher
+import it.fast4x.riplay.extensions.equalizer.rememberSystemEqualizerLauncher
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.service.PlayerService
 import it.fast4x.riplay.utils.asSong
@@ -64,7 +64,7 @@ fun PlayerMenu(
 
     //val context = LocalContext.current
 
-    val launchEqualizer by rememberEqualizerLauncher(audioSessionId = {
+    val launchEqualizer by rememberSystemEqualizerLauncher(audioSessionId = {
         //binder.player.audioSessionId
         0
     })

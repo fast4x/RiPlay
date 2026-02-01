@@ -10,7 +10,7 @@ import androidx.compose.ui.unit.dp
 import it.fast4x.riplay.utils.colorPalette
 
 @Composable
-fun EqualizerCurve(
+fun InternalEqualizerCurve(
     bandLevels: Map<Short, Float>,
     modifier: Modifier = Modifier
 ) {

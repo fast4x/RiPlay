@@ -1,7 +1,6 @@
 package it.fast4x.riplay.extensions.equalizer
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
@@ -10,10 +9,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.FilterChip
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Slider
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -39,7 +34,7 @@ import kotlin.math.roundToInt
 import it.fast4x.riplay.R
 
 @Composable
-fun EqualizerScreen(equalizerHelper: EqualizerHelper) {
+fun InternalEqualizerScreen(equalizerHelper: EqualizerHelper) {
     val context = LocalContext.current
     var config by remember { mutableStateOf<EqualizerConfig?>(null) }
     val bandLevels = remember { mutableStateMapOf<Short, Float>() }
@@ -135,7 +130,7 @@ fun EqualizerScreen(equalizerHelper: EqualizerHelper) {
                     .fillMaxWidth()
             ) {
 
-                EqualizerCurve(
+                InternalEqualizerCurve(
                     bandLevels = bandLevels,
                     modifier = Modifier
                         .fillMaxWidth()

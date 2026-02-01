@@ -108,7 +108,6 @@ import it.fast4x.riplay.extensions.preferences.persistentQueueKey
 import it.fast4x.riplay.extensions.preferences.pipModuleKey
 import it.fast4x.riplay.extensions.preferences.playbackFadeAudioDurationKey
 import it.fast4x.riplay.extensions.preferences.playlistindicatorKey
-import it.fast4x.riplay.utils.rememberEqualizerLauncher
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.extensions.preferences.resumePlaybackOnStartKey
 import it.fast4x.riplay.ui.styling.semiBold
@@ -145,11 +144,13 @@ import it.fast4x.riplay.BuildConfig
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.enums.CheckUpdateState
 import it.fast4x.riplay.enums.ContentType
+import it.fast4x.riplay.enums.EqualizerType
 import it.fast4x.riplay.extensions.preferences.castToRiTuneDeviceEnabledKey
 import it.fast4x.riplay.extensions.preferences.checkUpdateStateKey
 import it.fast4x.riplay.extensions.preferences.closePlayerServiceAfterMinutesKey
 import it.fast4x.riplay.extensions.preferences.closePlayerServiceWhenPausedAfterMinutesKey
 import it.fast4x.riplay.extensions.preferences.enableVoiceInputKey
+import it.fast4x.riplay.extensions.preferences.equalizerTypeKey
 import it.fast4x.riplay.extensions.preferences.excludeSongIfIsVideoKey
 import it.fast4x.riplay.extensions.preferences.filterContentTypeKey
 import it.fast4x.riplay.extensions.preferences.parentalControlEnabledKey
@@ -267,6 +268,7 @@ fun GeneralSettings(
 //        //binder?.player?.audioSessionId
 //        0
 //    })
+    var equalizerType by rememberPreference(equalizerTypeKey, EqualizerType.Internal)
 
     var minimumSilenceDuration by rememberPreference(minimumSilenceDurationKey, 2_000_000L)
 
@@ -352,6 +354,8 @@ fun GeneralSettings(
     }.collectAsState(initial = 0)
 
     var checkUpdateState by rememberPreference(checkUpdateStateKey, CheckUpdateState.Disabled)
+
+    val internalEqualizer = LocalPlayerServiceBinder.current?.equalizer
 
     Column(
         modifier = Modifier
@@ -1621,12 +1625,27 @@ fun GeneralSettings(
 //            }
 //        }
 
-                    /*
+
                     if (search.input.isBlank() || stringResource(R.string.equalizer).contains(
                             search.input,
                             true
                         )
-                    )
+                    ) {
+                        EnumValueSelectorSettingsEntry(
+                            online = false,
+                            offline = false,
+                            title = stringResource(R.string.equalizer),
+                            selectedValue = equalizerType,
+                            onValueSelected = {
+                                equalizerType = it
+
+                                if (it == EqualizerType.System)
+                                    internalEqualizer?.setEnabled(false)
+                            },
+                            valueText = { it.textName }
+                        )
+
+                        /*
                         SettingsEntry(
                             online = false,
                             title = stringResource(R.string.equalizer),
@@ -1648,8 +1667,10 @@ fun GeneralSettings(
                     }
                      */
                         )
+                        */
 
-                     */
+                    }
+
                 }
 
                 /* // cast to complete in the future

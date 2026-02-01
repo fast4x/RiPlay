@@ -637,33 +637,3 @@ class PlayerViewModelFactory(
         throw IllegalArgumentException("Unknown ViewModel class")
     }
 }
-
-@Composable
-fun rememberEqualizerLauncher(
-    audioSessionId: () -> Int?,
-    contentType: Int = AudioEffect.CONTENT_TYPE_MUSIC
-): State<() -> Unit> {
-    val context = LocalContext.current
-    val launcher =
-        rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) {}
-
-    return rememberUpdatedState {
-        try {
-            launcher.launch(
-                Intent(AudioEffect.ACTION_DISPLAY_AUDIO_EFFECT_CONTROL_PANEL).apply {
-                    replaceExtras(EqualizerIntentBundleAccessor.bundle {
-                        audioSessionId()?.let { audioSession = it }
-                        packageName = context.packageName
-                        this.contentType = contentType
-                    })
-                }
-            )
-        } catch (e: ActivityNotFoundException) {
-            SmartMessage(
-                context.resources.getString(R.string.info_not_find_application_audio),
-                type = PopupType.Warning,
-                context = context
-            )
-        }
-    }
-}
