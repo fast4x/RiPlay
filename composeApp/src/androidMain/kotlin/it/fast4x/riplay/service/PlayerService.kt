@@ -2942,9 +2942,12 @@ class PlayerService : Service(),
         var isLoadingRadio by mutableStateOf(false)
             private set
 
-        fun setBitmapListener(listener: ((Bitmap?) -> Unit)?) {
-            bitmapProvider?.listener = listener
-        }
+//        fun setBitmapListener(listener: ((Bitmap?) -> Unit)?) {
+//            bitmapProvider?.listener = listener
+//        }
+
+        val bitmap: Bitmap?
+            get() = this@PlayerService.bitmapProvider?.bitmap
 
         fun startSleepTimer(delayMillis: Long) {
             timerJob?.cancel()

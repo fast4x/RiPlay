@@ -338,6 +338,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import it.fast4x.riplay.extensions.equalizer.EqualizerScreen
 import it.fast4x.riplay.ui.components.SheetBody
+import it.fast4x.riplay.utils.LandscapeToSquareTransformation
 import it.fast4x.riplay.utils.applyIf
 import it.fast4x.riplay.utils.conditional
 import it.fast4x.riplay.utils.saturate
@@ -945,9 +946,10 @@ fun LocalPlayer(
         model = ImageRequest.Builder(LocalContext.current)
             .data(
                 mediaItem.mediaMetadata.artworkUri.toString().thumbnail(1200))
-            .size(coil.size.Size.ORIGINAL)
+            .size(1200, 1200)
             .transformations(
                 listOf(
+                    LandscapeToSquareTransformation(1200),
                   if (showthumbnail) {
                       BlurTransformation(
                           scale = 0.5f,
@@ -1567,10 +1569,10 @@ fun LocalPlayer(
                                                     .align(Alignment.CenterVertically)
                                             ) {
                                                 AsyncImage(
-                                                    model = binder.player.getMediaItemAt(
-                                                        index
-                                                        //if (it + 1 <= mediaItems.size - 1) it + 1 else it
-                                                    ).mediaMetadata.artworkUri.toString().thumbnail(1200),
+                                                    ImageRequest.Builder(LocalContext.current)
+                                                        .data(binder.player.getMediaItemAt(index).mediaMetadata.artworkUri.toString().thumbnail(1200))
+                                                        .size(1200, 1200)
+                                                        .transformations(LandscapeToSquareTransformation(1200)),
                                                     contentDescription = null,
                                                     contentScale = ContentScale.Crop,
                                                     modifier = Modifier
@@ -2104,8 +2106,10 @@ fun LocalPlayer(
                      AsyncImage(
                          model = ImageRequest.Builder(LocalContext.current)
                              .data(binder.player.getMediaItemAt(it).mediaMetadata.artworkUri.toString().thumbnail(1200))
+                             .size(1200, 1200)
                              .transformations(
                                  listOf(
+                                     LandscapeToSquareTransformation(1200),
                                      if (showthumbnail) {
                                          BlurTransformation(
                                              scale = 0.5f,
@@ -2347,6 +2351,8 @@ fun LocalPlayer(
                                                  .data(
                                                      binder.player.getMediaItemAt(it).mediaMetadata.artworkUri.toString().thumbnail(1200)
                                                  )
+                                                 .size(1200, 1200)
+                                                 .transformations(LandscapeToSquareTransformation(1200))
                                                  .build()
                                          )
 
@@ -2642,8 +2648,10 @@ fun LocalPlayer(
                             AsyncImage(
                               model = ImageRequest.Builder(LocalContext.current)
                                 .data(binder.player.getMediaItemAt(it).mediaMetadata.artworkUri.toString().thumbnail(1200))
+                                .size(1200, 1200)
                                 .transformations(
                                     listOf(
+                                        LandscapeToSquareTransformation(1200),
                                         if (showthumbnail) {
                                             BlurTransformation(
                                                 scale = 0.5f,
@@ -2976,6 +2984,8 @@ fun LocalPlayer(
                                      val coverPainter = rememberAsyncImagePainter(
                                          model = ImageRequest.Builder(LocalContext.current)
                                              .data(binder.player.getMediaItemAt(index).mediaMetadata.artworkUri.toString().thumbnail(1200))
+                                             .size(1200, 1200)
+                                             .transformations(LandscapeToSquareTransformation(1200))
                                              .build()
                                      )
 

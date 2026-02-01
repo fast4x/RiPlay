@@ -4,6 +4,8 @@ import android.content.Context
 import android.content.res.Configuration
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.Canvas
+import android.graphics.Paint
 import android.graphics.drawable.BitmapDrawable
 import android.net.Uri
 import androidx.core.graphics.applyCanvas
@@ -25,6 +27,7 @@ import kotlin.toString
 import androidx.core.graphics.createBitmap
 import androidx.core.graphics.scale
 import coil.size.Scale
+import coil.transform.Transformation
 
 suspend fun getBitmapFromUrl(context: Context, url: String): Bitmap {
     val loading = context.imageLoader
@@ -147,6 +150,8 @@ class BitmapProvider(
             lastEnqueued = appContext().imageLoader.enqueue(
                 ImageRequest.Builder(appContext())
                     .data(url)
+                    .size(bitmapSize, bitmapSize)
+                    .transformations(LandscapeToSquareTransformation(bitmapSize))
                     .allowHardware(false)
                     .diskCacheKey(url.toString())
                     .memoryCacheKey(url.toString())
@@ -175,6 +180,41 @@ class BitmapProvider(
             onDone(bitmap)
         }
     }
+}
+
+class LandscapeToSquareTransformation(private val targetSize: Int) : Transformation {
+
+    override val cacheKey: String = "landscape_square_crop_$targetSize"
+
+    override suspend fun transform(input: Bitmap, size: coil.size.Size): Bitmap {
+
+        if (input.width <= input.height) {
+            return input
+        }
+
+        val output = createBitmap(targetSize, targetSize)
+
+        val scale = targetSize.toFloat() / input.height
+
+        val scaledWidth = input.width * scale
+
+        val dx = (scaledWidth - targetSize) / 2f
+
+        val canvas = Canvas(output)
+        val paint = Paint(Paint.ANTI_ALIAS_FLAG or Paint.FILTER_BITMAP_FLAG)
+
+        val matrix = android.graphics.Matrix().apply {
+            postScale(scale, scale)
+            postTranslate(-dx, 0f)
+        }
+
+        canvas.drawBitmap(input, matrix, paint)
+
+        return output
+    }
+
+    override fun equals(other: Any?): Boolean = other is LandscapeToSquareTransformation && other.targetSize == targetSize
+    override fun hashCode(): Int = targetSize.hashCode()
 }
 
 /*

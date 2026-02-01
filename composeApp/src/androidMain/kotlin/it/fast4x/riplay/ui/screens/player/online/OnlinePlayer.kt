@@ -307,6 +307,7 @@ import it.fast4x.riplay.ui.styling.px
 import it.fast4x.riplay.ui.styling.semiBold
 import it.fast4x.riplay.utils.BlurTransformation
 import it.fast4x.riplay.utils.DisposableListener
+import it.fast4x.riplay.utils.LandscapeToSquareTransformation
 import it.fast4x.riplay.utils.PlayerViewModel
 import it.fast4x.riplay.utils.PlayerViewModelFactory
 import it.fast4x.riplay.utils.SearchOnlineEntity
@@ -972,7 +973,8 @@ fun OnlinePlayer(
             .data(
                 mediaItem.mediaMetadata.artworkUri.toString().thumbnail(1200)
             )
-            .size(coil.size.Size.ORIGINAL)
+            .size(1200, 1200)
+            .transformations(LandscapeToSquareTransformation(1200))
             .transformations(
                 listOf(
                     if (showthumbnail) {
@@ -1760,10 +1762,18 @@ fun OnlinePlayer(
                                                         .align(Alignment.CenterVertically)
                                                 ) {
                                                     AsyncImage(
-                                                        model = binder.player.getMediaItemAt(
-                                                            index
-                                                            //if (it + 1 <= mediaItems.size - 1) it + 1 else it
-                                                        ).mediaMetadata.artworkUri.toString().thumbnail(1200),
+                                                        model = ImageRequest.Builder(LocalContext.current)
+                                                            .data(
+                                                                binder.player.getMediaItemAt(index).mediaMetadata.artworkUri.toString().thumbnail(
+                                                                    1200
+                                                                )
+                                                            )
+                                                            .size(1200, 1200)
+                                                            .transformations(LandscapeToSquareTransformation(1200)),
+//                                                        model = binder.player.getMediaItemAt(
+//                                                            index
+//                                                            //if (it + 1 <= mediaItems.size - 1) it + 1 else it
+//                                                        ).mediaMetadata.artworkUri.toString().thumbnail(1200),
                                                         contentDescription = null,
                                                         contentScale = ContentScale.Crop,
                                                         modifier = Modifier
@@ -2322,8 +2332,10 @@ fun OnlinePlayer(
                                             1200
                                         )
                                     )
+                                    .size(1200, 1200)
                                     .transformations(
                                         listOf(
+                                            LandscapeToSquareTransformation(1200),
                                             if (showthumbnail) {
                                                 BlurTransformation(
                                                     scale = 0.5f,
@@ -2584,6 +2596,8 @@ fun OnlinePlayer(
                                                                 1200
                                                             )
                                                         )
+                                                        .size(1200, 1200)
+                                                        .transformations(LandscapeToSquareTransformation(1200))
                                                         .build()
                                                 )
 
@@ -2935,6 +2949,8 @@ fun OnlinePlayer(
                                             1200
                                         )
                                     )
+                                    .size(1200, 1200)
+                                    .transformations(LandscapeToSquareTransformation(1200))
                                     .transformations(
                                         listOf(
                                             if (showthumbnail) {
@@ -3342,6 +3358,8 @@ fun OnlinePlayer(
                                                         1200
                                                     )
                                                 )
+                                                .size(1200, 1200)
+                                                .transformations(LandscapeToSquareTransformation(1200))
                                                 .build()
                                         )
 
@@ -3478,6 +3496,8 @@ fun OnlinePlayer(
                                     val coverPainter = rememberAsyncImagePainter(
                                         model = ImageRequest.Builder(LocalContext.current)
                                             .data(mediaItem.mediaMetadata.artworkUri.toString().thumbnail(1200))
+                                            .size(1200, 1200)
+                                            .transformations(LandscapeToSquareTransformation(1200))
                                             .build()
                                    )
 
