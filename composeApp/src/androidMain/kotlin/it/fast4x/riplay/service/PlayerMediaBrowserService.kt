@@ -14,6 +14,7 @@ import androidx.annotation.DrawableRes
 import androidx.annotation.OptIn
 import androidx.compose.ui.util.fastFilter
 import androidx.core.net.toUri
+import androidx.core.os.bundleOf
 import androidx.media.MediaBrowserServiceCompat
 import androidx.media3.common.util.UnstableApi
 import it.fast4x.environment.Environment
@@ -42,18 +43,19 @@ import it.fast4x.riplay.extensions.preferences.MaxTopPlaylistItemsKey
 import it.fast4x.riplay.extensions.preferences.getEnum
 import it.fast4x.riplay.extensions.preferences.preferences
 import it.fast4x.riplay.commonutils.removePrefix
+import it.fast4x.riplay.commonutils.thumbnail
+import it.fast4x.riplay.enums.HomeItemSize
 import it.fast4x.riplay.enums.PlaylistSongSortBy
 import it.fast4x.riplay.enums.PlaylistSortBy
 import it.fast4x.riplay.enums.SongSortBy
 import it.fast4x.riplay.extensions.preferences.albumSortByKey
 import it.fast4x.riplay.extensions.preferences.albumSortOrderKey
+import it.fast4x.riplay.extensions.preferences.albumsItemSizeKey
 import it.fast4x.riplay.extensions.preferences.artistSortByKey
 import it.fast4x.riplay.extensions.preferences.artistSortOrderKey
-import it.fast4x.riplay.extensions.preferences.observeKeyEnum
-import it.fast4x.riplay.extensions.preferences.observeSortBy
+import it.fast4x.riplay.extensions.preferences.artistsItemSizeKey
 import it.fast4x.riplay.extensions.preferences.playlistSongSortByKey
 import it.fast4x.riplay.extensions.preferences.playlistSortByKey
-import it.fast4x.riplay.extensions.preferences.playlistSortOrderKey
 import it.fast4x.riplay.extensions.preferences.songSortByKey
 import it.fast4x.riplay.extensions.preferences.songSortOrderKey
 import it.fast4x.riplay.utils.asMediaItem
@@ -67,11 +69,8 @@ import it.fast4x.riplay.utils.showMonthlyPlaylistsAA
 import it.fast4x.riplay.utils.showOnDeviceAA
 import it.fast4x.riplay.utils.showTopPlaylistAA
 import it.fast4x.riplay.utils.shuffleSongsAAEnabled
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import timber.log.Timber
 import kotlin.also
@@ -315,7 +314,7 @@ class PlayerMediaBrowserService : MediaBrowserServiceCompat(),
                                     if (showMonthlyPlaylistsAA()) true
                                     else !it.playlist.name.startsWith(MONTHLY_PREFIX)
                                 }
-                                .map { it.asBrowserMediaItem }
+                                .map { it.asBrowserMediaItem(Database.playlistThumbnailUrls(it.playlist.id).first().take(1)) }
                                 .sortedBy { it.description.title.toString() }
                                 .map { it.asCleanMediaItem }
                                 .toMutableList()
@@ -703,17 +702,58 @@ class PlayerMediaBrowserService : MediaBrowserServiceCompat(),
             MediaItem.FLAG_PLAYABLE
         )
 
-    private val PlaylistPreview.asBrowserMediaItem
-        inline get() = MediaItem(
+    private fun PlaylistPreview.asBrowserMediaItem(thumbnailUrls: List<String?>) =
+        MediaItem(
             MediaDescriptionCompat.Builder()
                 .setMediaId(MediaId.forPlaylist(playlist.id))
-                //.setTitle(playlist.name.substringAfter(PINNED_PREFIX))
                 .setTitle(if (playlist.name.startsWith(PINNED_PREFIX)) playlist.name.replace(PINNED_PREFIX,"0:",true) else
                     if (playlist.name.startsWith(MONTHLY_PREFIX)) playlist.name.replace(
                         MONTHLY_PREFIX,"1:",true) else playlist.name.removePrefix())
                 .setSubtitle("$songCount ${(this@PlayerMediaBrowserService as Context).resources.getString(R.string.songs)}")
-                .setIconUri(uriFor(if (playlist.name.startsWith(PINNED_PREFIX)) R.drawable.pin else
-                    if (playlist.name.startsWith(MONTHLY_PREFIX)) R.drawable.stat_month else R.drawable.playlist))
+                .setIconUri(
+                    if (playlist.browseId?.trim() == "LM") "https://www.gstatic.com/youtube/media/ytm/images/pbg/liked-music-@1200.png".toUri()
+                    else {
+                        uriFor(
+                            if (playlist.name.startsWith(PINNED_PREFIX)) R.drawable.pin else
+                                if (playlist.name.startsWith(MONTHLY_PREFIX)) R.drawable.stat_month else R.drawable.playlist
+                        )
+                    }
+                )
+                .setExtras(
+                    bundleOf(
+                        "browseId" to playlist.browseId,
+                    ).apply {
+                        thumbnailUrls.forEachIndexed { index, url ->
+                            putString("thumbnailUrl$index", url)
+                        }
+                    }
+                )
+                .build(),
+            MediaItem.FLAG_BROWSABLE
+        )
+
+    private val PlaylistPreview.asBrowserMediaItem
+        inline get() = MediaItem(
+            MediaDescriptionCompat.Builder()
+                .setMediaId(MediaId.forPlaylist(playlist.id))
+                .setTitle(if (playlist.name.startsWith(PINNED_PREFIX)) playlist.name.replace(PINNED_PREFIX,"0:",true) else
+                    if (playlist.name.startsWith(MONTHLY_PREFIX)) playlist.name.replace(
+                        MONTHLY_PREFIX,"1:",true) else playlist.name.removePrefix())
+                .setSubtitle("$songCount ${(this@PlayerMediaBrowserService as Context).resources.getString(R.string.songs)}")
+                .setIconUri(
+                    if (playlist.browseId?.trim() == "LM") "https://www.gstatic.com/youtube/media/ytm/images/pbg/liked-music-@1200.png".toUri()
+                    else {
+                        uriFor(
+                            if (playlist.name.startsWith(PINNED_PREFIX)) R.drawable.pin else
+                                if (playlist.name.startsWith(MONTHLY_PREFIX)) R.drawable.stat_month else R.drawable.playlist
+                        )
+                    }
+                )
+                .setExtras(
+                    bundleOf(
+                        "browseId" to playlist.browseId
+                    )
+                )
                 .build(),
             MediaItem.FLAG_BROWSABLE
         )
@@ -731,7 +771,8 @@ class PlayerMediaBrowserService : MediaBrowserServiceCompat(),
                 )
                 .setTitle(title?.removePrefix())
                 .setSubtitle(authorsText)
-                .setIconUri(thumbnailUrl?.toUri())
+                //.setIconUri(thumbnailUrl?.toUri())
+                .setIconUri(thumbnailUrl?.thumbnail(preferences.getEnum(albumsItemSizeKey,HomeItemSize.BIG).size)?.toUri())
                 .build(),
             MediaItem.FLAG_BROWSABLE
         )
@@ -749,7 +790,8 @@ class PlayerMediaBrowserService : MediaBrowserServiceCompat(),
                 )
                 .setTitle(name?.removePrefix())
                 //.setSubtitle()
-                .setIconUri(thumbnailUrl?.toUri())
+                //.setIconUri(thumbnailUrl?.toUri())
+                .setIconUri(thumbnailUrl?.thumbnail(preferences.getEnum(artistsItemSizeKey,HomeItemSize.BIG).size)?.toUri())
                 .build(),
             MediaItem.FLAG_BROWSABLE
         )
@@ -760,8 +802,22 @@ class PlayerMediaBrowserService : MediaBrowserServiceCompat(),
                 .setMediaId(mediaId)
                 .setTitle(if (description.title.toString().startsWith("0:")) description.title.toString().substringAfter("0:") else
                     if (description.title.toString().startsWith("1:")) getTitleMonthlyPlaylist(description.title.toString().substringAfter("1:"), this@PlayerMediaBrowserService) else description.title.toString())
-                .setIconUri(uriFor(if (description.title.toString().startsWith("0:")) R.drawable.pin else
-                    if (description.title.toString().startsWith("1:")) R.drawable.stat_month else R.drawable.playlist))
+                .setIconUri(
+                    when {
+                        description.extras?.getString("browseId") == "LM" -> "https://www.gstatic.com/youtube/media/ytm/images/pbg/liked-music-@1200.png".toUri()
+                        description.extras?.getString("browseId") != "LM"
+                                && description.extras?.getString("thumbnailUrl0") != null -> description.extras?.getString("thumbnailUrl0")?.toUri()
+                        else -> {
+                            uriFor(
+                                if (description.title.toString().startsWith("0:")) R.drawable.pin else
+                                    if (description.title.toString()
+                                            .startsWith("1:")
+                                    ) R.drawable.stat_month else R.drawable.playlist
+                            )
+                        }
+                    }
+
+                )
                 .build(),
             MediaItem.FLAG_BROWSABLE
         )
