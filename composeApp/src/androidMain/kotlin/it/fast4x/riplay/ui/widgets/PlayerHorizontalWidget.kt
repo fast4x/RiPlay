@@ -89,13 +89,6 @@ class PlayerHorizontalWidget: GlanceAppWidget() {
                             .width(120.dp).height(120.dp)
                             .clickable (
                                 onClick = actionStartActivity<MainActivity>()
-                                /*
-                                onClick = actionStartActivity(
-                                    Intent( context, MainActivity::class.java)
-                                        .putExtra("expandPlayerBottomSheet", true)
-
-                                )
-                                 */
                             )
 
                     )
@@ -177,9 +170,7 @@ class PlayerHorizontalWidget: GlanceAppWidget() {
     @OptIn(UnstableApi::class)
     suspend fun updateInfo(
         context: Context,
-//        songTitle: String,
-//        songArtist: String,
-//        isPlaying: Boolean,
+        isPlaying: Boolean,
         bitmap: Bitmap?,
         binder: PlayerService.Binder
     ) {
@@ -196,8 +187,7 @@ class PlayerHorizontalWidget: GlanceAppWidget() {
                 preferences.toMutablePreferences().apply {
                     this[songTitleKey] = cleanPrefix(binder.player.mediaMetadata.title.toString())
                     this[songArtistKey] = binder.player.mediaMetadata.artist.toString()
-                    this[isPlayingKey] =
-                        binder.player.isPlaying || binder.onlinePlayerState == PlayerConstants.PlayerState.PLAYING
+                    this[isPlayingKey] = isPlaying
                 }
             }
         }
