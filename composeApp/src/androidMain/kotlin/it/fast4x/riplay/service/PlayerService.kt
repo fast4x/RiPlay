@@ -538,22 +538,23 @@ class PlayerService : Service(),
     }
 
     private fun startForeground() {
-        runCatching {
-            notification().let {
-                ServiceCompat.startForeground(
-                    this@PlayerService,
-                    NOTIFICATION_ID,
-                    it,
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                        ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK
-                    } else {
-                        0
-                    }
-                )
-            }
-        }.onFailure {
-            Timber.e("PlayerService oncreate startForeground ${it.stackTraceToString()}")
-        }
+        startForeground(NOTIFICATION_ID,notification())
+        //runCatching {
+//            notification().let {
+//                ServiceCompat.startForeground(
+//                    this@PlayerService,
+//                    NOTIFICATION_ID,
+//                    it,
+//                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+//                        ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK
+//                    } else {
+//                        0
+//                    }
+//                )
+//            }
+//        }.onFailure {
+//            Timber.e("PlayerService oncreate startForeground ${it.stackTraceToString()}")
+//        }
     }
 
     private fun initializeVariables() {
@@ -1419,13 +1420,19 @@ class PlayerService : Service(),
             player.saveMasterQueue()
     }
 
+
     fun updateUnifiedNotification() {
         coroutineScope.launch {
             withContext(Dispatchers.Main){
                 if (player.mediaItemCount <= 0) return@withContext
                 updateUnifiedMediasession()
                 val notifyInstance = notification()
-                notifyInstance?.let { NotificationManagerCompat.from(this@PlayerService).notify(NOTIFICATION_ID, it) }
+                notifyInstance.let {
+                    @Suppress("MissingPermission")
+                    NotificationManagerCompat
+                        .from(this@PlayerService)
+                        .notify(NOTIFICATION_ID, it)
+                }
             }
         }
     }
@@ -2348,7 +2355,7 @@ class PlayerService : Service(),
 
                 withContext(Dispatchers.Main) {
 
-                    updateWidgets()
+                    //updateWidgets()
 
                     //Timber.d("PlayerService initializePositionObserver BEFORE player.playbackState ${player.playbackState} internalOnlinePlayerState ${internalOnlinePlayerState} lastProcessedIndex $lastProcessedIndex player.currentMediaItemIndex ${player.currentMediaItemIndex}")
 

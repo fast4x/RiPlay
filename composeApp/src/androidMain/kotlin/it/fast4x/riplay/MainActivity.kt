@@ -481,17 +481,19 @@ class MainActivity :
     }
 
     override fun onStart() {
-        runCatching {
+        //runCatching {
             val intent = Intent(this, PlayerService::class.java)
-            bindService(intent, serviceConnection, BIND_AUTO_CREATE)
-            if (isAtLeastAndroid8)
-                startForegroundService(intent)
-            else
-                startService(intent)
 
-        }.onFailure {
-            Timber.e("MainActivity.onStart bindService ${it.stackTraceToString()}")
-        }
+//            if (isAtLeastAndroid8)
+//                startForegroundService(intent)
+//            else
+            startService(intent)
+
+            bindService(intent, serviceConnection, BIND_AUTO_CREATE)
+
+//        }.onFailure {
+//            Timber.e("MainActivity.onStart bindService ${it.stackTraceToString()}")
+//        }
 
         super.onStart()
     }
