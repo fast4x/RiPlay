@@ -461,7 +461,6 @@ class PlayerService : Service(),
 
                 while (isActive) {
                     delay(2.minutes)
-                    //saveMasterQueueWithPosition()
                     player.saveMasterQueue()
 
                     if (currentSecond.value >= minTimeForEvent.seconds && lastMediaIdInHistory != currentSong.value?.id) {
@@ -487,7 +486,7 @@ class PlayerService : Service(),
 
             withContext(Dispatchers.Main) {
                 updateUnifiedNotification()
-                updateWidgets()
+                //updateWidgets()
 
             }
             Timber.d("PlayerService onCreate update currentSong $song mediaItemState ${currentMediaItemState.value}")
@@ -943,7 +942,7 @@ class PlayerService : Service(),
                     localMediaItem?.isLocal?.let { if (it) return }
                     if (isPersistentQueueEnabled)
                         player.saveMasterQueue()
-                        //saveMasterQueueWithPosition()
+
 
                     if (!GlobalSharedData.riTuneCastActive)
                         youTubePlayer.pause()
@@ -1369,10 +1368,9 @@ class PlayerService : Service(),
         maybeProcessRadio(reason)
 
         updateUnifiedNotification()
-        updateWidgets()
+        //updateWidgets()
         updateDiscordPresence()
 
-        //saveMasterQueueWithPosition()
         player.saveMasterQueue()
 
         if (preferences.getBoolean(isEnabledLastfmKey, false)) {
@@ -1403,162 +1401,6 @@ class PlayerService : Service(),
 
     }
 
-
-    /*
-    fun handleSkipToNext() {
-        try {
-            val hasNext = player.hasNextMediaItem()
-            Timber.d("PlayerService handleSkipToNext hasNext before: $hasNext, previous position: $currentQueuePosition")
-
-            if (hasNext) {
-                Timber.d("PlayerService handleSkipToNext hasNext inside: Yes, previous position: $currentQueuePosition")
-                val previousPosition = currentQueuePosition
-
-                player.forceSeekToNext()
-
-                currentQueuePosition = player.currentMediaItemIndex
-
-                if (currentQueuePosition <= previousPosition) {
-                    Timber.w("PlayerService handleSkipToNext: index not increased force to next")
-                    player.forceSeekToNext()
-                    currentQueuePosition = player.currentMediaItemIndex
-                }
-                Timber.d("PlayerService handleSkipToNext hasNext inside end: Yes, current position: $currentQueuePosition")
-
-                saveMasterQueueWithPosition()
-            } else {
-                Timber.d("PlayerService handleSkipToNext: queue ended")
-            }
-        } catch (e: Exception) {
-            Timber.e("PlayerService handleSkipToNext: skip to next in error ${e.stackTraceToString()}")
-            maybeRecoverPlaybackError()
-        }
-    }
-
-
-    fun handleSkipToPrevious() {
-        try {
-            val hasPrevious = player.hasPreviousMediaItem()
-            Timber.d("PlayerService handleSkipToPrevious hasPrevious before: $hasPrevious, previous position: $currentQueuePosition")
-
-            if (hasPrevious) {
-                val previousPosition = currentQueuePosition
-
-                player.forceSeekToPrevious()
-                currentQueuePosition = player.currentMediaItemIndex
-
-                if (currentQueuePosition >= previousPosition) {
-                    Timber.w("PlayerService handleSkipToPrevious: index not decreased force to previous")
-                    player.forceSeekToPrevious()
-                    currentQueuePosition = player.currentMediaItemIndex
-                }
-
-                Timber.d("PlayerService handleSkipToPrevious end: current position: $currentQueuePosition")
-                saveMasterQueueWithPosition()
-            } else {
-                Timber.d("PlayerService handleSkipToPrevious: already at start of queue")
-            }
-        } catch (e: Exception) {
-            Timber.e("PlayerService handleSkipToPrevious: skip to previous in error ${e.stackTraceToString()}")
-            maybeRecoverPlaybackError()
-        }
-    }
-
-     */
-
-    /*
-    private fun handlePlayQueueItem(targetIndex: Int) {
-        try {
-            if (targetIndex < 0 || targetIndex >= player.mediaItemCount) {
-                Timber.w("PlayerService handlePlayQueueItem: invalid index=$targetIndex (count=${player.mediaItemCount})")
-                return
-            }
-
-            val currentIndex = player.currentMediaItemIndex
-            Timber.d("PlayerService handlePlayQueueItem targetIndex=$targetIndex currentIndex=$currentIndex")
-
-            // Android Auto may call "play queue item" even for the currently selected item.
-            // If we're already on it (especially for the online player), force a re-cue to avoid staying UNSTARTED/VIDEO_CUED.
-            if (targetIndex == currentIndex) {
-                player.currentMediaItem?.let { item ->
-                    if (!item.isLocal) {
-                        if (!GlobalSharedData.riTuneCastActive) {
-                            internalOnlinePlayer.value?.cueVideo(item.mediaId, playFromSecond)
-                            internalOnlinePlayer.value?.setVolume(getSystemMediaVolume())
-                            //internalOnlinePlayer.value?.play()
-                        } else {
-                            coroutineScope.launch {
-                                riTuneClient.sendCommand(
-                                    RiTuneRemoteCommand(
-                                        "load",
-                                        mediaId = item.mediaId,
-                                        position = playFromSecond
-                                    )
-                                )
-                            }
-                        }
-                    } else {
-                        // For local items, just ensure playback resumes.
-                        if (!player.isPlaying) player.play()
-                    }
-                }
-                return
-            }
-
-            player.seekToDefaultPosition(targetIndex)
-            currentQueuePosition = targetIndex
-            //saveMasterQueueWithPosition()
-            player.saveMasterQueue()
-        } catch (e: Exception) {
-            Timber.e("PlayerService handlePlayQueueItem: error ${e.stackTraceToString()}")
-            maybeRecoverPlaybackError()
-        }
-    }
-
-     */
-
-
-    private fun saveMasterQueueWithPosition() {
-        try {
-            player.saveMasterQueue()
-
-            preferences.edit {
-                putInt(currentQueuePositionKey, currentQueuePosition)
-            }
-
-            Timber.d("PlayerService saveMasterQueueWithPosition: position and queue saved $currentQueuePosition")
-        } catch (e: Exception) {
-            Timber.e("PlayerService saveMasterQueueWithPosition: error ${e.stackTraceToString()}")
-        }
-    }
-
-    private suspend fun loadMasterQueueWithPosition() = suspendCancellableCoroutine { continuation ->
-        try {
-            val listener = object : Player.Listener {
-                override fun onTimelineChanged(timeline: Timeline, reason: Int) {
-                    if (reason == Player.TIMELINE_CHANGE_REASON_PLAYLIST_CHANGED) {
-                        Timber.d("PlayerService: Timeline changed, queue is now populated.")
-                        player.removeListener(this)
-                        restoreMasterQueuePosition()
-                        continuation.resume(Unit, onCancellation = {})
-                    }
-                }
-            }
-
-            player.addListener(listener)
-
-            player.loadMasterQueue()
-
-            continuation.invokeOnCancellation {
-                player.removeListener(listener)
-            }
-
-        } catch (e: Exception) {
-            Timber.e("PlayerService loadMasterQueueWithPosition: error ${e.stackTraceToString()}")
-            continuation.resumeWithException(e)
-        }
-    }
-
     private fun restoreMasterQueuePosition() {
         val savedPosition = preferences.getInt(currentQueuePositionKey, 0)
         val mediaItemCount = player.mediaItemCount
@@ -1586,11 +1428,10 @@ class PlayerService : Service(),
         Timber.d("PlayerService onTrimMemory level $level isLowMemory $isLowMemory")
         if (isLowMemory)
             player.saveMasterQueue()
-            //saveMasterQueueWithPosition()
     }
 
     fun updateUnifiedNotification() {
-
+        updateWidgets()
 
         coroutineScope.launch {
             withContext(Dispatchers.Main){
@@ -2375,7 +2216,7 @@ class PlayerService : Service(),
         if (currentMediaItemState.value?.isLocal == true)
             updateUnifiedNotification()
 
-        updateWidgets()
+        //updateWidgets()
         updateDiscordPresence()
 
         super.onIsPlayingChanged(isPlaying)
@@ -2701,25 +2542,22 @@ class PlayerService : Service(),
     }.setExtensionRendererMode(EXTENSION_RENDERER_MODE_PREFER) // prefer extension renderers to opus format
 
     fun updateWidgets() {
-        val songTitle = player.mediaMetadata.title.toString()
-        val songArtist = player.mediaMetadata.artist.toString()
-        val isPlaying = player.isPlaying
+//        val songTitle = player.mediaMetadata.title.toString()
+//        val songArtist = player.mediaMetadata.artist.toString()
+//        val isPlaying = (isPlayingNow || player.isPlaying)
         coroutineScope.launch {
-            playerVerticalWidget.updateInfo(
-                context = applicationContext,
-                songTitle = songTitle,
-                songArtist = songArtist,
-                isPlaying = isPlaying,
-                bitmap = bitmapProvider?.bitmap,
-                player = player
-            )
+//            playerVerticalWidget.updateInfo(
+//                context = applicationContext,
+//                songTitle = songTitle,
+//                songArtist = songArtist,
+//                isPlaying = isPlaying,
+//                bitmap = bitmapProvider?.bitmap,
+//                player = player
+//            )
             playerHorizontalWidget.updateInfo(
-                context = applicationContext,
-                songTitle = songTitle,
-                songArtist = songArtist,
-                isPlaying = isPlaying,
+                context = this@PlayerService,
                 bitmap = bitmapProvider?.bitmap,
-                player = player
+                binder = binder
             )
         }
     }

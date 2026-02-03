@@ -158,12 +158,6 @@
                 android:resource="@xml/shortcuts" />
         </activity>
 
-        <activity
-            android:name=".extensions.chromecast.ChromeCastActivity"
-            android:configChanges="orientation|screenSize|keyboardHidden|smallestScreenSize|screenLayout"
-            android:hardwareAccelerated="true"
-            android:label="RiPlay Chromecast Activity" />
-
         <receiver android:name=".ui.widgets.PlayerVerticalWidgetReceiver"
             android:exported="true">
             <intent-filter>
@@ -199,19 +193,6 @@
                 <action android:name="android.media.browse.MediaBrowserService" />
             </intent-filter>
         </service>
-
-        <!--
-        <service
-            android:enabled="true"
-            android:name=".service.ToolsService"
-            android:exported="false"
-            android:foregroundServiceType="mediaPlayback"
-            tools:ignore="ExportedService">
-            <intent-filter>
-                <action android:name=".service.ToolsService" />
-            </intent-filter>
-        </service>
-        -->
 
         <receiver android:name="androidx.media3.session.MediaButtonReceiver"
             android:exported="true">
