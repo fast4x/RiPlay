@@ -1,5 +1,7 @@
 package it.fast4x.riplay
 
+import android.content.ComponentName
+import android.content.pm.PackageManager
 import androidx.multidex.MultiDexApplication
 import coil.ImageLoader
 import coil.ImageLoaderFactory
@@ -17,6 +19,7 @@ import it.fast4x.riplay.extensions.preferences.logDebugEnabledKey
 import it.fast4x.riplay.extensions.preferences.preferences
 import it.fast4x.riplay.extensions.preferences.usePlaceholderInImageLoaderKey
 import it.fast4x.riplay.commonutils.initializeEnvironment
+import it.fast4x.riplay.service.PlayerService
 import timber.log.Timber
 import java.io.File
 
@@ -24,7 +27,16 @@ class MainApplication : MultiDexApplication(), ImageLoaderFactory {
 
     override fun onCreate() {
         super.onCreate()
-        //DatabaseInitializer()
+
+        val receiver = ComponentName(this, PlayerService::class.java)
+        val pm = packageManager
+
+        pm.setComponentEnabledSetting(
+            receiver,
+            PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
+            PackageManager.DONT_KILL_APP
+        )
+
         Dependencies.init(this)
 
         /***** CRASH LOG ALWAYS ENABLED *****/
