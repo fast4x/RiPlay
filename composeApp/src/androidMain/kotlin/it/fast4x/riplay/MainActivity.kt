@@ -90,10 +90,10 @@ import androidx.core.os.LocaleListCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
-import androidx.media3.common.util.Log
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.compose.rememberNavController
 import androidx.palette.graphics.Palette
@@ -119,7 +119,6 @@ import it.fast4x.environment.utils.ProxyPreferenceItem
 import it.fast4x.environment.utils.ProxyPreferences
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.enums.AnimatedGradient
-import it.fast4x.riplay.enums.CheckUpdateState
 import it.fast4x.riplay.enums.ColorPaletteMode
 import it.fast4x.riplay.enums.ColorPaletteName
 import it.fast4x.riplay.enums.DnsOverHttpsType
@@ -142,7 +141,6 @@ import it.fast4x.riplay.extensions.preferences.animatedGradientKey
 import it.fast4x.riplay.extensions.preferences.appIsRunningKey
 import it.fast4x.riplay.extensions.preferences.applyFontPaddingKey
 import it.fast4x.riplay.extensions.preferences.backgroundProgressKey
-import it.fast4x.riplay.extensions.preferences.checkUpdateStateKey
 import it.fast4x.riplay.extensions.preferences.colorPaletteModeKey
 import it.fast4x.riplay.extensions.preferences.colorPaletteNameKey
 import it.fast4x.riplay.extensions.preferences.customColorKey
@@ -230,7 +228,6 @@ import it.fast4x.riplay.ui.styling.customColorPalette
 import it.fast4x.riplay.ui.styling.dynamicColorPaletteOf
 import it.fast4x.riplay.ui.styling.typographyOf
 import it.fast4x.riplay.utils.LocalMonetCompat
-import it.fast4x.riplay.utils.OkHttpRequest
 import it.fast4x.riplay.utils.asMediaItem
 import it.fast4x.riplay.utils.globalContext
 import it.fast4x.riplay.utils.forcePlay
@@ -256,7 +253,8 @@ import it.fast4x.riplay.extensions.ondevice.OnDeviceViewModel
 import it.fast4x.riplay.extensions.preferences.resumeOrPausePlaybackWhenDeviceKey
 import it.fast4x.riplay.extensions.preferences.showSnowfallEffectKey
 import it.fast4x.riplay.extensions.ritune.toRiTuneDevice
-import it.fast4x.riplay.service.experimental.PlayerServiceQueueViewModel
+import it.fast4x.riplay.service.experimental.AppSharedScope
+import it.fast4x.riplay.service.experimental.GlobalQueueViewModel
 import it.fast4x.riplay.ui.components.Snowfall
 import it.fast4x.riplay.utils.GlobalSharedData.riTuneDevices
 import it.fast4x.riplay.utils.isAtLeastAndroid12
@@ -268,13 +266,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
-import okhttp3.Call
-import okhttp3.Callback
-import okhttp3.OkHttpClient
-import okhttp3.Response
 import timber.log.Timber
-import java.io.File
-import java.io.IOException
 import java.net.Proxy
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -370,9 +362,11 @@ class MainActivity :
         BackupViewModel(DatabaseBackupManager(this, Database), this)
     }
 
-    private val playerServiceQueue: PlayerServiceQueueViewModel by viewModels {
-        PlayerServiceQueueViewModel()
+    private val globalQueueViewModel: GlobalQueueViewModel by lazy {
+        ViewModelProvider(AppSharedScope)[GlobalQueueViewModel::class.java]
     }
+
+
 
     private val onDeviceViewModel: OnDeviceViewModel by viewModels {
         OnDeviceViewModel(application)
@@ -1422,7 +1416,7 @@ class MainActivity :
                             LocalSelectedQueue provides selectedQueue.value,
                             LocalAudioTagger provides audioTaggerViewModel,
                             LocalBackupManager provides backupManagerViewModel,
-                            LocalPlayerServiceQueue provides playerServiceQueue,
+                            LocalGlobalQueue provides globalQueueViewModel,
                             LocalOnDeviceViewModel provides onDeviceViewModel
                             //LocalInternetAvailable provides isInternetAvailable
                         ) {
@@ -1977,7 +1971,7 @@ val LocalAudioTagger = staticCompositionLocalOf<AudioTagViewModel> { error("No a
 
 val LocalBackupManager = staticCompositionLocalOf<BackupViewModel> { error("No backup manager provided") }
 
-val LocalPlayerServiceQueue = staticCompositionLocalOf<PlayerServiceQueueViewModel> { error("No player service queue provided") }
+val LocalGlobalQueue = staticCompositionLocalOf<GlobalQueueViewModel> { error("No player service queue provided") }
 
 val LocalOnDeviceViewModel = staticCompositionLocalOf<OnDeviceViewModel> { error("No on device view model provided") }
 

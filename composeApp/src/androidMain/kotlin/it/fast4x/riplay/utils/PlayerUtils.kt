@@ -59,7 +59,6 @@ import java.util.ArrayDeque
 
 
 const val LOCAL_KEY_PREFIX = "local:"
-const val LOCAL_AUDIO_URI_PATH = "content://media/external/audio/media/"
 
 @get:OptIn(UnstableApi::class)
 val DataSpec.isLocal get() = key?.startsWith(LOCAL_KEY_PREFIX) == true

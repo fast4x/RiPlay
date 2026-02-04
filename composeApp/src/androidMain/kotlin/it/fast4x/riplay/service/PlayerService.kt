@@ -14,7 +14,6 @@ import android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK
 import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.content.IntentFilter
 import android.content.SharedPreferences
-import android.content.pm.ServiceInfo
 import android.database.SQLException
 import android.graphics.Bitmap
 import android.hardware.Sensor
@@ -40,10 +39,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
-import androidx.core.app.ServiceCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.edit
 import androidx.core.content.getSystemService
+import androidx.lifecycle.ViewModelProvider
 import androidx.media.VolumeProviderCompat
 import androidx.media3.common.AudioAttributes
 import androidx.media3.common.AuxEffectInfo
@@ -124,7 +123,6 @@ import it.fast4x.riplay.extensions.preferences.bassboostEnabledKey
 import it.fast4x.riplay.extensions.preferences.bassboostLevelKey
 import it.fast4x.riplay.extensions.preferences.closePlayerServiceAfterMinutesKey
 import it.fast4x.riplay.extensions.preferences.closePlayerServiceWhenPausedAfterMinutesKey
-import it.fast4x.riplay.extensions.preferences.currentQueuePositionKey
 import it.fast4x.riplay.extensions.preferences.discordPersonalAccessTokenKey
 import it.fast4x.riplay.extensions.preferences.discoverKey
 import it.fast4x.riplay.extensions.preferences.exoPlayerMinTimeForEventKey
@@ -190,6 +188,8 @@ import it.fast4x.riplay.extensions.ritune.improved.RiTuneClient
 import it.fast4x.riplay.extensions.ritune.improved.models.RiTuneConnectionStatus
 import it.fast4x.riplay.extensions.ritune.improved.models.RiTunePlayerState
 import it.fast4x.riplay.extensions.ritune.improved.models.RiTuneRemoteCommand
+import it.fast4x.riplay.service.experimental.AppSharedScope
+import it.fast4x.riplay.service.experimental.GlobalQueueViewModel
 import it.fast4x.riplay.service.helpers.BluetoothConnectReceiver
 import it.fast4x.riplay.service.helpers.EqualizerHelper
 import it.fast4x.riplay.service.helpers.NoisyAudioReceiver
@@ -223,13 +223,11 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 import timber.log.Timber
 import java.util.Objects
 import kotlin.collections.map
-import kotlin.coroutines.resumeWithException
 import kotlin.math.roundToInt
 import kotlin.math.sqrt
 import kotlin.system.exitProcess
@@ -364,6 +362,10 @@ class PlayerService : Service(),
     private var riTunePlayerState: RiTunePlayerState? = null
 
     private lateinit var equalizerHelper: EqualizerHelper
+
+    private val globalQueueViewModel: GlobalQueueViewModel by lazy {
+        ViewModelProvider(AppSharedScope)[GlobalQueueViewModel::class.java]
+    }
 
     //private var checkVolumeLevel: Boolean = true
 
@@ -509,6 +511,8 @@ class PlayerService : Service(),
         initializeNoisyReceiver()
         initializeRiTune()
         initializeDiscordPresence()
+
+        globalQueueViewModel.linkController(binder)
 
         coroutineScope.launch(Dispatchers.Default) {
             while (isActive) {

@@ -39,14 +39,14 @@ import kotlinx.coroutines.withContext
 import timber.log.Timber
 
 @UnstableApi
-class PlayerServiceQueueViewModel(
+class GlobalQueueViewModel(
     //private val initialQueue: MutableList<MediaItem>
 ) : ViewModel(), ViewModelProvider.Factory {
 
     @Suppress("UNCHECKED_CAST")
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        if (modelClass.isAssignableFrom(PlayerServiceQueueViewModel::class.java)) {
-            return PlayerServiceQueueViewModel() as T
+        if (modelClass.isAssignableFrom(GlobalQueueViewModel::class.java)) {
+            return GlobalQueueViewModel() as T
         }
 
         throw IllegalArgumentException("Unknown ViewModel class")
@@ -72,14 +72,17 @@ class PlayerServiceQueueViewModel(
         }
     }
 
+    /*
     fun onPlayerStateChanged(isPlaying: Boolean, playbackState: Int) {
         _nowPlaying.value = isPlaying
         _playerState.value = playbackState
 
         if (playbackState == Player.STATE_ENDED) {
             playNext()
-        }
+       }
     }
+
+     */
 
     fun add(mediaItem: MediaItem, index: Int) {
         queue.add(index, mediaItem)
@@ -107,6 +110,14 @@ class PlayerServiceQueueViewModel(
 
     fun remove(mediaItems: List<MediaItem>) {
         queue.removeAll(mediaItems)
+    }
+
+    fun remove(from: Int, to: Int) {
+        queue.subList(from, to).clear()
+    }
+
+    fun remove(range: IntRange) {
+        remove(range.first, range.last)
     }
 
     fun exclude(mediaItem: MediaItem, context: Context): Boolean {
@@ -213,10 +224,6 @@ class PlayerServiceQueueViewModel(
                         clearQueuedMediaItems()
                         insert(queuedMediaItems)
                         Timber.d("SaveMasterQueue QueuePersistentEnabled Saved mediaItems ${queuedMediaItems.size}")
-//                    queuedMediaItems.forEach {
-//                        insert(it)
-//                        Timber.d("SaveMasterQueue QueuePersistentEnabled Save mediaItem ${it.mediaId}")
-//                    }
                     }
 
                 }
@@ -348,21 +355,19 @@ class PlayerServiceQueueViewModel(
         }
     }
 
-    fun playPrevious() {
-        if (_currentIndex.value < queue.size - 1) {
+    fun playNext() {
+        if (hasNext()) {
             _currentIndex.value += 1
             loadCurrentMedia()
-            //play()
         } else {
             _nowPlaying.value = false
         }
     }
 
-    fun playNext() {
-        if (_currentIndex.value > 0) {
+    fun playPrevious() {
+        if (hasPrevious()) {
             _currentIndex.value -= 1
             loadCurrentMedia()
-            //play()
         }
     }
 
@@ -370,8 +375,67 @@ class PlayerServiceQueueViewModel(
         if (indice in queue.indices) {
             _currentIndex.value = indice
             loadCurrentMedia()
-            //play()
+
         }
+    }
+
+    fun setMediaItem(mediaItem: MediaItem) {
+        clear()
+        add(mediaItem)
+    }
+
+    fun replaceMediaItem(index: Int, mediaItem: MediaItem) {
+        queue[index] = mediaItem
+    }
+
+    fun forcePlay(mediaItem: MediaItem, replace: Boolean = false) {
+        if (exclude(mediaItem, globalContext())) return
+        if (!replace)
+            setMediaItem(mediaItem.cleaned)
+        else
+            replaceMediaItem(_currentIndex.value, mediaItem.cleaned)
+
+        loadCurrentMedia()
+    }
+
+    fun forcePlayAtIndex(mediaItems: List<MediaItem>, mediaItemIndex: Int) {
+        queue.clear()
+        queue.addAll(mediaItems)
+        _currentIndex.value = mediaItemIndex
+        loadCurrentMedia()
+    }
+
+    fun isNowPlaying(mediaId: String): Boolean {
+        return mediaId == queue[_currentIndex.value].mediaId
+    }
+
+    fun seamlessPlay(mediaItem: MediaItem) {
+        if (mediaItem.mediaId == queue[_currentIndex.value].mediaId) {
+            if (_currentIndex.value > 0) remove(0 until _currentIndex.value)
+            if (_currentIndex.value < queue.size - 1)
+                remove(_currentIndex.value + 1 until queue.size)
+        } else forcePlay(mediaItem)
+    }
+
+    fun seamlessQueue(mediaItem: MediaItem) {
+        if (mediaItem.mediaId == queue[_currentIndex.value].mediaId) {
+            if (_currentIndex.value > 0) remove(0 until _currentIndex.value)
+            if (_currentIndex.value < queue.size - 1)
+                remove(_currentIndex.value + 1 until queue.size)
+        }
+    }
+
+    fun shuffleQueue() {
+        queue.shuffle()
+    }
+
+    fun hasNext(): Boolean {
+        return _currentIndex.value < queue.size - 1
+
+    }
+
+    fun hasPrevious(): Boolean {
+        return _currentIndex.value > 0
     }
 
 }
