@@ -431,7 +431,7 @@ class PlayerService : Service(),
         player.repeatMode = preferences.getEnum(queueLoopTypeKey, QueueLoopType.Default).type
 
         player.skipSilenceEnabled = preferences.getBoolean(skipSilenceKey, false)
-        //player.pauseAtEndOfMediaItems = true
+        player.pauseAtEndOfMediaItems = true
 
         audioVolumeObserver = AudioVolumeObserver(this)
         audioVolumeObserver.register(AudioManager.STREAM_MUSIC, this)
@@ -526,9 +526,17 @@ class PlayerService : Service(),
                             onlineListenedDurationMs = 0L
                         }
                     }
+                    if (currentDuration.value > 0) {
+                        if (currentSecond.value >= currentDuration.value - 0.5f) {
+                            if (internalOnlinePlayerState == PlayerConstants.PlayerState.PLAYING) {
+                                Timber.d("PlayerService Watchdog: End of online track detected by time, forcing playNext()")
+                                player.playNext()
+                            }
+                        }
+                    }
+                    Timber.d("PlayerService onCreate onlineListenedDurationMs $onlineListenedDurationMs")
                 }
                 delay(1000)
-                Timber.d("PlayerService onCreate onlineListenedDurationMs $onlineListenedDurationMs")
             }
         }
 
@@ -916,6 +924,10 @@ class PlayerService : Service(),
                                     }
                             }
                         }
+                        PlayerConstants.PlayerState.ENDED -> {
+                            Timber.d("PlayerService onlinePlayerView: onStateChange ENDED regular playNext()")
+                            player.playNext()
+                        }
                         else -> { youTubePlayer.mute() }
                     }
 
@@ -1255,13 +1267,15 @@ class PlayerService : Service(),
 
         Timber.d("PlayerService onPlaybackStatsReady CALLED eventTime $eventTime playbackStats $playbackStats")
 
-        // if pause listen history is enabled, don't register statistic event
+        // if pause listen history is enabled or mediaitem is not local, don't register statistic event
         if (preferences.getBoolean(pauseListenHistoryKey, false)) return
-
-        Timber.d("PlayerService onPlaybackStatsReady PROCESS eventTime $eventTime playbackStats $playbackStats")
 
         val mediaItem =
             eventTime.timeline.getWindow(eventTime.windowIndex, Timeline.Window()).mediaItem
+
+        if (!mediaItem.isLocal) return
+
+        Timber.d("PlayerService onPlaybackStatsReady PROCESS eventTime $eventTime playbackStats $playbackStats")
 
         val totalPlayTimeMs = playbackStats.totalPlayTimeMs
 
@@ -2363,10 +2377,10 @@ class PlayerService : Service(),
 
                     //Timber.d("PlayerService initializePositionObserver BEFORE player.playbackState ${player.playbackState} internalOnlinePlayerState ${internalOnlinePlayerState} lastProcessedIndex $lastProcessedIndex player.currentMediaItemIndex ${player.currentMediaItemIndex}")
 
-                    if (player.currentMediaItem?.isLocal == false)
-                        player.pauseAtEndOfMediaItems = true else player.pauseAtEndOfMediaItems = false
+//                    if (player.currentMediaItem?.isLocal == false)
+//                        player.pauseAtEndOfMediaItems = true else player.pauseAtEndOfMediaItems = false
 
-                    if ((player.playbackState == Player.STATE_ENDED || internalOnlinePlayerState == PlayerConstants.PlayerState.ENDED)
+                    if (player.currentMediaItem?.isLocal == false && (player.playbackState == Player.STATE_ENDED || internalOnlinePlayerState == PlayerConstants.PlayerState.ENDED)
                         && lastProcessedIndex != player.currentMediaItemIndex
                     ) {
 
@@ -2383,7 +2397,9 @@ class PlayerService : Service(),
                                 Timber.d("PlayerService initializePositionObserver Repeat: RepeatOne fired")
                             }
 
+
                             QueueLoopType.Default -> {
+                                /*
                                 val hasNext = binder.player.hasNextMediaItem()
                                 Timber.d("PlayerService initializePositionObserver Repeat: Default fired")
                                 if (hasNext) {
@@ -2392,6 +2408,7 @@ class PlayerService : Service(),
                                     player.playNext()
                                     Timber.d("PlayerService initializePositionObserver Repeat: Default fired next")
                                 }
+                                 */
                             }
 
                             QueueLoopType.RepeatAll -> {
@@ -2412,12 +2429,15 @@ class PlayerService : Service(),
                                         }
 
                                     Timber.d("PlayerService initializePositionObserver Repeat: RepeatAll fired first")
-                                } else {
+                                }
+                                /*
+                                else {
                                     lastProcessedIndex = player.currentMediaItemIndex
                                     //handleSkipToNext()
                                     player.playNext()
                                     Timber.d("PlayerService initializePositionObserver Repeat: RepeatAll fired next")
                                 }
+                                 */
                             }
                         }
                         delay(500)
