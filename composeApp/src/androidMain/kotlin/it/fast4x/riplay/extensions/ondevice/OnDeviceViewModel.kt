@@ -236,15 +236,6 @@ class OnDeviceViewModel(application: Application) : AndroidViewModel(application
                                         duration.milliseconds.toComponents { minutes, seconds, _ ->
                                             "$minutes:${seconds.toString().padStart(2, '0')}"
                                         }
-    //                                val song = OnDeviceSong(
-    //                                    id = "$LOCAL_KEY_PREFIX$id",
-    //                                    mediaId = mediaId,
-    //                                    title = trackName ?: name,
-    //                                    artistsText = artist,
-    //                                    durationText = durationText,
-    //                                    thumbnailUrl = albumUri.toString(),
-    //                                    relativePath = relativePath
-    //                                )
                                     val song = Song(
                                         id = "$LOCAL_KEY_PREFIX$id",
                                         mediaId = mediaId,
@@ -255,7 +246,6 @@ class OnDeviceViewModel(application: Application) : AndroidViewModel(application
                                         folder = relativePath
                                     )
                                     Database.upsert(
-                                        //song.toSong(),
                                         song,
                                         Format(
                                             songId = song.id,
