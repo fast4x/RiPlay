@@ -550,12 +550,12 @@ object EnvironmentExt {
     }
 
     /**************
-     * Simple player without use of potoken
+     * Simple Metadata Player
      */
-    suspend fun simplePlayer(videoId: String, playlistId: String? = null, client: Context.Client, signatureTimestamp: Int? = null, webPlayerPot: String? = null): Result<PlayerResponse> = runCatching {
-        Environment.simplePlayer(client, videoId, playlistId, signatureTimestamp, webPlayerPot).body<PlayerResponse>()
+    suspend fun simpleMetadataPlayer(videoId: String, playlistId: String? = null, client: Context.Client, signatureTimestamp: Int? = null, webPlayerPot: String? = null): Result<PlayerResponse> = runCatching {
+        Environment.simpleMetadataPlayer(client, videoId, playlistId, signatureTimestamp, webPlayerPot).body<PlayerResponse>()
     }.onFailure {
-        println("EnvironmentExt simplePlayer error: ${it.stackTraceToString()}")
+        println("EnvironmentExt simpleMetadataPlayer error: ${it.stackTraceToString()}")
     }
 
     suspend fun addPlaybackToHistory(playlistId: String? = null, playbackTracking: String) = runCatching {

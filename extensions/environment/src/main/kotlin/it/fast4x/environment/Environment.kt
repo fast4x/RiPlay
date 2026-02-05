@@ -59,7 +59,6 @@ import it.fast4x.environment.utils.sha1
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonPrimitive
-import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonPrimitive
 import okhttp3.HttpUrl.Companion.toHttpUrl
@@ -68,7 +67,6 @@ import okhttp3.dnsoverhttps.DnsOverHttps
 import okhttp3.logging.HttpLoggingInterceptor
 import java.net.InetAddress
 import java.net.Proxy
-import java.util.Locale
 import java.util.concurrent.TimeUnit
 
 const val YT_PLAYLIST_SHARE_BASEURL = "https://www.youtube.com/playlist?list="
@@ -1040,7 +1038,7 @@ object Environment {
 
         }
 
-    suspend fun simplePlayer(
+    suspend fun simpleMetadataPlayer(
         clientType: Client,
         videoId: String,
         playlistId: String?,

@@ -565,7 +565,7 @@ fun OnlinePlayer(
         PlayerViewModelFactory(binder)
     }
     val playerViewModel: PlayerViewModel = viewModel(factory = factory)
-    val positionAndDuration by playerViewModel.positionAndDuration.collectAsStateWithLifecycle()
+    val positionAndDuration by playerViewModel.positionAndDuration.collectAsState()
     val timeRemaining by remember {
         derivedStateOf {
             positionAndDuration.second.toInt() - positionAndDuration.first.toInt()

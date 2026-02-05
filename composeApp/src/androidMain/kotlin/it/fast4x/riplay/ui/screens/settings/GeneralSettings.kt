@@ -1235,7 +1235,7 @@ fun GeneralSettings(
                             isChecked = persistentQueue,
                             onCheckedChange = {
                                 persistentQueue = it
-                                if(it) binder?.player?.loadMasterQueue() // try to load last known queue now
+                                if(it) binder?.player?.loadMasterQueue(onLoaded = {}) // try to load last known queue now
                                 //restartService = true
                             }
                         )

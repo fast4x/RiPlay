@@ -103,6 +103,7 @@ import it.fast4x.riplay.commonutils.thumbnail
 import it.fast4x.riplay.utils.timer
 import it.fast4x.riplay.R
 import it.fast4x.riplay.commonutils.cleanPrefix
+import it.fast4x.riplay.commonutils.durationTextToMillis
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.enums.ContentType
 import it.fast4x.riplay.enums.DurationInMinutes
@@ -174,10 +175,12 @@ import it.fast4x.riplay.utils.principalCache
 import it.fast4x.riplay.utils.saveMasterQueue
 import it.fast4x.riplay.utils.seamlessQueue
 import it.fast4x.riplay.commonutils.setLikeState
+import it.fast4x.riplay.data.models.Format
 import it.fast4x.riplay.enums.LastFmScrobbleType
 import it.fast4x.riplay.extensions.encryptedpreferences.encryptedPreferences
 import it.fast4x.riplay.extensions.lastfm.sendNowPlaying
 import it.fast4x.riplay.extensions.lastfm.sendScrobble
+import it.fast4x.riplay.extensions.players.getOnlineMetadata
 import it.fast4x.riplay.extensions.preferences.castToRiTuneDeviceEnabledKey
 import it.fast4x.riplay.extensions.preferences.excludeSongIfIsVideoKey
 import it.fast4x.riplay.extensions.preferences.isEnabledLastfmKey
@@ -216,6 +219,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
@@ -452,18 +456,28 @@ class PlayerService : Service(),
         }
 
         if (isPersistentQueueEnabled) {
+
             coroutineScope.launch {
 
-                //loadMasterQueueWithPosition()
-                player.loadMasterQueue()
-
                 withContext(Dispatchers.Main) {
+                    player.loadMasterQueue(
+                        onLoaded = {
+                            /* todo improve restore position from saved queue
+                            val seconds = it.div(1000)
+                            playFromSecond = seconds.toFloat()
+                            currentSecond.value = seconds.toFloat()
+                            Timber.d("PlayerService onCreate loadMasterQueue playFromSecond $playFromSecond currentSecond ${currentSecond.value} currentDuration ${currentDuration.value} durationText ${currentSong.value?.durationText}")
+
+                             */
+                        }
+                    )
+
                     resumePlaybackOnStart()
                 }
 
                 while (isActive) {
                     delay(2.minutes)
-                    player.saveMasterQueue()
+                    player.saveMasterQueue(currentSecond.value.toInt())
 
                     if (currentSecond.value >= minTimeForEvent.seconds && lastMediaIdInHistory != currentSong.value?.id) {
                         currentSong.value?.let {
@@ -895,7 +909,6 @@ class PlayerService : Service(),
                     currentDuration.value = duration
                     updateUnifiedNotification()
                     updateDiscordPresence()
-
                 }
 
                 override fun onStateChange(
@@ -959,7 +972,7 @@ class PlayerService : Service(),
 
                     localMediaItem?.isLocal?.let { if (it) return }
                     if (isPersistentQueueEnabled)
-                        player.saveMasterQueue()
+                        player.saveMasterQueue(currentSecond.value.toInt())
 
 
                     if (!GlobalSharedData.riTuneCastActive)
@@ -1164,7 +1177,7 @@ class PlayerService : Service(),
     override fun onDestroy() {
         Timber.d("PlayerService onDestroy")
 
-        player.saveMasterQueue()
+        player.saveMasterQueue(currentSecond.value.toInt())
 
         try {
             unregisterReceiver(legacyNotificationActionReceiver)
@@ -1391,7 +1404,7 @@ class PlayerService : Service(),
 
         updateDiscordPresence()
 
-        player.saveMasterQueue()
+        player.saveMasterQueue(currentSecond.value.toInt())
 
         if (preferences.getBoolean(isEnabledLastfmKey, false)) {
             preferences.getString(lastfmSessionTokenKey, "")?.let {
@@ -1435,7 +1448,7 @@ class PlayerService : Service(),
         val isLowMemory = level == ComponentCallbacks2.TRIM_MEMORY_RUNNING_CRITICAL
         Timber.d("PlayerService onTrimMemory level $level isLowMemory $isLowMemory")
         if (isLowMemory)
-            player.saveMasterQueue()
+            player.saveMasterQueue(currentSecond.value.toInt())
     }
 
 
@@ -2531,7 +2544,7 @@ class PlayerService : Service(),
                     .setSmallIcon(R.drawable.app_icon)
                     .build()
 
-                player.saveMasterQueue()
+                player.saveMasterQueue(currentSecond.value.toInt())
 
                 notificationManager?.notify(SLEEPTIMER_NOTIFICATION_ID, notification)
 

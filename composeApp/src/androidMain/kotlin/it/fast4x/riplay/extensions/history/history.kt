@@ -9,6 +9,7 @@ import it.fast4x.riplay.utils.globalContext
 import it.fast4x.riplay.extensions.preferences.pauseListenHistoryKey
 import it.fast4x.riplay.extensions.preferences.preferences
 import it.fast4x.riplay.data.models.Format
+import it.fast4x.riplay.extensions.players.getOnlineMetadata
 import it.fast4x.riplay.utils.isLocal
 import it.fast4x.riplay.ui.screens.settings.isYtSyncEnabled
 import kotlinx.coroutines.CoroutineScope
@@ -16,30 +17,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import timber.log.Timber
-
-/**
- * The main client is used for metadata and initial streams.
- * Do not use other clients for this because it can result in inconsistent metadata.
- * For example other clients can have different normalization targets (loudnessDb).
- *
- * should be preferred here because currently it is the only client which provides:
- * - the correct metadata (like loudnessDb)
- * - premium formats
- */
-private val MAIN_CLIENT: Context.Client = Context.DefaultWeb.client
-
-/**
- * Simple player response intended to use for metadata only.
- * Stream URLs of this response might not work so don't use them.
- */
-suspend fun getOnlineMetadata(
-    videoId: String,
-    playlistId: String? = null,
-): PlayerResponse? {
-    val metaData = EnvironmentExt.simplePlayer(videoId, playlistId, client = MAIN_CLIENT).getOrNull()
-    Timber.d("getOnlineMetadata $metaData")
-    return metaData
-}
 
 
 fun updateOnlineHistory(mediaItem: MediaItem) {

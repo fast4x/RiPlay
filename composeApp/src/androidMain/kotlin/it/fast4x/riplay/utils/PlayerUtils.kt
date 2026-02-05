@@ -179,12 +179,16 @@ fun Player.forceSeekToNext() {
 }
 
 fun Player.playNext() {
-    restoreGlobalVolume()
+    CoroutineScope(Dispatchers.Main).launch {
+        restoreGlobalVolume()
+    }
     forceSeekToNext()
 }
 
 fun Player.playPrevious() {
-    restoreGlobalVolume()
+    CoroutineScope(Dispatchers.Main).launch {
+        restoreGlobalVolume()
+    }
     forceSeekToPrevious()
 }
 
@@ -458,13 +462,13 @@ fun Player.getQueueWindows(): List<Timeline.Window> {
     return queue.toList()
 }
 
-fun Player.saveMasterQueue() {
+fun Player.saveMasterQueue(currentOnlineSecond: Int) {
     if (!isPersistentQueueEnabled()) return
 
     CoroutineScope(Dispatchers.Main).launch {
         val mediaItems = currentTimeline.mediaItems
         val mediaItemIndex = currentMediaItemIndex
-        val mediaItemPosition = currentPosition
+        val mediaItemPosition = if (currentMediaItem?.isLocal == true) currentPosition else currentOnlineSecond * 1000L
 
         Timber.d("SaveMasterQueue savePersistentQueue mediaItems ${mediaItems.size} mediaItemIndex $mediaItemIndex mediaItemPosition $mediaItemPosition")
 
@@ -476,8 +480,8 @@ fun Player.saveMasterQueue() {
                 QueuedMediaItem(
                     mediaItem = mediaItem,
                     mediaId = mediaItem.mediaId,
-                    //position = if (index == mediaItemIndex) mediaItemPosition else null,
-                    position = if (index == mediaItemIndex) mediaItemIndex.toLong() else -1,
+                    position = if (index == mediaItemIndex) mediaItemPosition else -1,
+                    //position = if (index == mediaItemIndex) mediaItemIndex.toLong() else -1,
                     idQueue = mediaItem.mediaMetadata.extras?.getLong("idQueue", defaultQueueId())
                 )
             }.let { queuedMediaItems ->
@@ -499,18 +503,20 @@ fun Player.saveMasterQueue() {
 }
 
 @OptIn(UnstableApi::class)
-fun Player.loadMasterQueue() {
+fun Player.loadMasterQueue(onLoaded: (Long) -> Unit) {
     Timber.d("LoadMasterQueue loadPersistentQueue is enabled, called")
     if (!isPersistentQueueEnabled()) return
 
-    println("LoadMasterQueue loadPersistentQueue is enabled, processing")
     Database.asyncQuery {
         val queuedSong = queuedMediaItems()
 
         if (queuedSong.isEmpty()) return@asyncQuery
 
         //val index = queuedSong.indexOfFirst { it.position != null }.coerceAtLeast(0)
-        val index = queuedSong.indexOfFirst { (it.position ?: -1) >= 0L }.coerceAtLeast(0)
+        val index = queuedSong.indexOfFirst { (it.position ?: 0L) >= 0L }.coerceAtLeast(0)
+        val mediaItemPosition = queuedSong[index].position ?: C.TIME_UNSET
+
+        Timber.d("LoadMasterQueue loadPersistentQueue is enabled, processing, restored index: $index and mediaItemPosition: $mediaItemPosition")
 
         runBlocking(Dispatchers.Main) {
             setMediaItems(
@@ -524,10 +530,11 @@ fun Player.loadMasterQueue() {
                         }
                 },
                 index,
-                0 //queuedSong[index].position ?: C.TIME_UNSET
+                 mediaItemPosition
             )
             prepare()
         }
+        onLoaded(mediaItemPosition)
     }
 }
 
