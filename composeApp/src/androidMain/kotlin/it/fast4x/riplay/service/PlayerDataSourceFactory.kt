@@ -37,29 +37,6 @@ internal fun PlayerService.createLocalDataSourceFactory(): DataSource.Factory {
         }
 
 
-        /*
-        when {
-            dataSpec.isLocal -> {
-                val contentUriBase =
-                    if (isAtLeastAndroid10) MediaStore.Audio.Media.getContentUri(MediaStore.VOLUME_EXTERNAL)
-                    else MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
-                val id = dataSpec.key?.removePrefix(LOCAL_KEY_PREFIX)
-                val contentUri = contentUriBase.buildUpon().appendPath(id).build()
-                Timber.d("createLocalDataSourceFactory dataSpec.isLocal: yes contentUri: $contentUri")
-                return@Factory dataSpec.withUri(contentUri)
-            }
-            else -> {
-                throw PlaybackException(
-                    "File not exists, or not on device, or simply is online",
-                    Throwable(),
-                    PlaybackException.ERROR_CODE_IO_FILE_NOT_FOUND
-                )
-            }
-        }
-        */
-
-
-
         when {
             dataSpec.isLocal && dataSpec.isLocalUri -> {
                 Timber.d("createLocalDataSourceFactory dataSpec.isLocalUri: YES")
