@@ -540,14 +540,18 @@ class PlayerService : Service(),
                             onlineListenedDurationMs = 0L
                         }
                     }
-                    if (currentDuration.value > 0) {
-                        if (currentSecond.value >= currentDuration.value - 0.5f) {
-                            if (internalOnlinePlayerState == PlayerConstants.PlayerState.PLAYING) {
-                                Timber.d("PlayerService Watchdog: End of online track detected by time, forcing playNext()")
-                                player.playNext()
-                            }
-                        }
-                    }
+                    // not required for now
+//                    if (currentDuration.value > 0) {
+//                        if (currentSecond.value >= currentDuration.value - 0.5f) {
+//                            if (internalOnlinePlayerState == PlayerConstants.PlayerState.PLAYING) {
+//                                Timber.d("PlayerService Watchdog: End of online track detected by time, forcing playNext()")
+//                                withContext(Dispatchers.Main) {
+//                                    player.playNext()
+//                                }
+//
+//                            }
+//                        }
+//                    }
                     Timber.d("PlayerService onCreate onlineListenedDurationMs $onlineListenedDurationMs")
                 }
                 delay(1000)
@@ -585,7 +589,9 @@ class PlayerService : Service(),
 
     private fun initializeVariables() {
         // todo add here all val that requires first initialize and add references in shared preferences, so is not nededed restart service when change it
-        currentMediaItemState.value =  player.currentMediaItem
+        CoroutineScope(Dispatchers.Main).launch {
+            currentMediaItemState.value = player.currentMediaItem
+        }
         //isclosebackgroundPlayerEnabled = preferences.getBoolean(closebackgroundPlayerKey, false)
         closeServiceAfterMinutes = preferences.getEnum(closePlayerServiceAfterMinutesKey, DurationInMinutes.Disabled)
         closeServiceWhenPlayerPausedAfterMinutes = preferences.getEnum(
@@ -651,11 +657,14 @@ class PlayerService : Service(),
 
                 val connectionStatus = riTuneClient.connectionStatus.value
                 try {
-                    GlobalSharedData.riTuneError.value = when(connectionStatus) {
-                        is RiTuneConnectionStatus.Error -> connectionStatus.message
-                        else -> null
+                    withContext(Dispatchers.Main) {
+                        GlobalSharedData.riTuneError.value = when (connectionStatus) {
+                            is RiTuneConnectionStatus.Error -> connectionStatus.message
+                            else -> null
+                        }
+                        GlobalSharedData.riTuneConnected.value =
+                            connectionStatus == RiTuneConnectionStatus.Connected
                     }
-                    GlobalSharedData.riTuneConnected.value = connectionStatus == RiTuneConnectionStatus.Connected
                 } catch (e: Exception) {
                     Timber.e("PlayerService initializeRiTune LOOP ERROR: $e")
                 }
@@ -667,15 +676,18 @@ class PlayerService : Service(),
                 val second = riTuneClient.state.value?.currentTime
 
                 if (isCastActive) {
-                    internalOnlinePlayerState = playerState ?: PlayerConstants.PlayerState.UNSTARTED
-                    if (duration != null) {
-                        currentDuration.value = duration
-                    }
+                    withContext(Dispatchers.Main) {
+                        internalOnlinePlayerState =
+                            playerState ?: PlayerConstants.PlayerState.UNSTARTED
+                        if (duration != null) {
+                            currentDuration.value = duration
+                        }
 
-                    if (second != null) {
-                        currentSecond.value = second
+                        if (second != null) {
+                            currentSecond.value = second
+                        }
+                        Timber.d("PlayerService initializeRiTune Loop - CastActive PlayerState $playerState, duration $duration, second $second")
                     }
-                    Timber.d("PlayerService initializeRiTune Loop - CastActive PlayerState $playerState, duration $duration, second $second")
                 }
 
                 //Timber.d("PlayerService initializeRiTune Loop - CastActive: $isCastActive, Status: $connectionStatus, isConnecting: $isConnecting PlayerState $playerState  ")
@@ -864,7 +876,9 @@ class PlayerService : Service(),
 
                 override fun onReady(youTubePlayer: YouTubePlayer) {
                     super.onReady(youTubePlayer)
-                    internalOnlinePlayer.value = youTubePlayer
+                    CoroutineScope(Dispatchers.Main).launch {
+                        internalOnlinePlayer.value = youTubePlayer
+                    }
 
                     val customUiController =
                         CustomDefaultPlayerUiController(
@@ -900,13 +914,17 @@ class PlayerService : Service(),
 
                 override fun onCurrentSecond(youTubePlayer: YouTubePlayer, second: Float) {
                     super.onCurrentSecond(youTubePlayer, second)
-                    currentSecond.value = second
-                    //Timber.d("PlayerService onlinePlayerView: onCurrentSecond $second")
+                    CoroutineScope(Dispatchers.Main).launch {
+                        currentSecond.value = second
+                        //Timber.d("PlayerService onlinePlayerView: onCurrentSecond $second")
+                    }
                 }
 
                 override fun onVideoDuration(youTubePlayer: YouTubePlayer, duration: Float) {
                     super.onVideoDuration(youTubePlayer, duration)
-                    currentDuration.value = duration
+                    CoroutineScope(Dispatchers.Main).launch {
+                        currentDuration.value = duration
+                    }
                     updateUnifiedNotification()
                     updateDiscordPresence()
                 }
@@ -1155,6 +1173,7 @@ class PlayerService : Service(),
             player.shuffleOrder = DefaultShuffleOrder(shuffledIndices, System.currentTimeMillis())
         }
         updateUnifiedNotification()
+        player.saveMasterQueue(currentSecond.value.toInt())
     }
 
     override fun onTaskRemoved(rootIntent: Intent?) {
@@ -1202,7 +1221,9 @@ class PlayerService : Service(),
         }
 
         try {
-            internalOnlinePlayer.value = null
+            CoroutineScope(Dispatchers.Main).launch {
+                internalOnlinePlayer.value = null
+            }
             internalOnlinePlayerView.value.release()
         } catch (e: Exception) {
             Timber.e("PlayerService Error in online player release: ${e.message}")
@@ -1326,16 +1347,37 @@ class PlayerService : Service(),
     @UnstableApi
     override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
 
-        Timber.d("PlayerService onMediaItemTransition RiTune Devices ${GlobalSharedData.riTuneDevices}")
+        if (mediaItem == null) return
+
+//        if (reason == Player.MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED) {
+//            Timber.d("PlayerService: MediaItem transition ignored (Reason: Playlist Changed)")
+//            return
+//        }
+
+        val newMediaId = mediaItem.mediaId
+
+        if (lastOnlineMediaId == newMediaId) {
+            Timber.d("PlayerService: Transition ignored, same MediaID ($newMediaId) skipped")
+            CoroutineScope(Dispatchers.Main).launch {
+                binder.player.playNext()
+            }
+            //return
+        }
+
+        //Timber.d("PlayerService: MediaItem transition executed (Reason: $reason)")
+
+        //Timber.d("PlayerService onMediaItemTransition RiTune Devices ${GlobalSharedData.riTuneDevices}")
 
         startForeground()
 
-        if (mediaItem == null) return
+
 
         Timber.d("PlayerService onMediaItemTransition mediaItem ${mediaItem.mediaId} reason $reason")
 
         currentQueuePosition = player.currentMediaItemIndex
-        currentSecond.value = 0F
+        CoroutineScope(Dispatchers.Main).launch {
+            currentSecond.value = 0F
+        }
 
         if (parentalControlEnabled && mediaItem.isExplicit) {
             //handleSkipToNext()
@@ -1363,7 +1405,9 @@ class PlayerService : Service(),
         }
 
         mediaItem.let {
-            currentMediaItemState.value = it
+            CoroutineScope(Dispatchers.Main).launch {
+                currentMediaItemState.value = it
+            }
             localMediaItem = it
 
             if (!it.isLocal){
@@ -1391,6 +1435,7 @@ class PlayerService : Service(),
 
             bitmapProvider?.load(it.mediaMetadata.artworkUri) {}
         }
+
 
 //        if (reason == Player.MEDIA_ITEM_TRANSITION_REASON_AUTO || reason == Player.MEDIA_ITEM_TRANSITION_REASON_SEEK) {
 //            updateMediaSessionQueue(player.currentTimeline)
@@ -1555,7 +1600,7 @@ class PlayerService : Service(),
                     //if (player.mediaItemCount - player.currentMediaItemIndex <= 3) {
                     coroutineScope.launch(Dispatchers.Main) {
                         if (player.playbackState != STATE_IDLE)
-                            player.addMediaItems(radio.process())
+                            player.addMediaItems(player.currentMediaItemIndex + 1,radio.process())
                     }
                     //}
                 }
@@ -2606,7 +2651,7 @@ class PlayerService : Service(),
                     }
 
                     if (justAdd) {
-                        player.addMediaItems(songs.drop(1))
+                        player.addMediaItems(player.currentMediaItemIndex + 1, songs.drop(1))
                     } else {
                         player.forcePlayFromBeginning(songs)
                     }
@@ -2781,8 +2826,9 @@ class PlayerService : Service(),
                                     )
                                 )
                             }
-
-                        currentSecond.value = second.toFloat()
+                        CoroutineScope(Dispatchers.Main).launch {
+                            currentSecond.value = second.toFloat()
+                        }
                     },
                     onPlayNext = {
                         //it.player.playNext()

@@ -171,7 +171,11 @@ fun Player.forcePlayFromBeginning(mediaItems: List<MediaItem>) =
     forcePlayAtIndex(mediaItems, 0)
 
 fun Player.forceSeekToPrevious() {
-    seekToPrevious()
+    val prevIndex = previousMediaItemIndex
+    if (prevIndex != C.INDEX_UNSET) {
+        seekToDefaultPosition(prevIndex)
+    }
+    //seekToPrevious()
 }
 
 fun Player.forceSeekToNext() {

@@ -258,6 +258,8 @@ import it.fast4x.riplay.service.experimental.GlobalQueueViewModel
 import it.fast4x.riplay.ui.components.Snowfall
 import it.fast4x.riplay.utils.GlobalSharedData.riTuneDevices
 import it.fast4x.riplay.utils.isAtLeastAndroid12
+import it.fast4x.riplay.utils.isManufacturerWithAutostart
+import it.fast4x.riplay.utils.manufacturersWithAutostart
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
@@ -403,10 +405,7 @@ class MainActivity :
     private fun checkAndRequestAutostartPermission() {
         val manufacturer = Build.MANUFACTURER.lowercase()
 
-        // List of vendors with known restrictions on autostart
-        val manufacturersWithAutostart = setOf("xiaomi", "huawei", "oppo", "vivo", "oneplus", "samsung", "asus")
-
-        if (manufacturer in manufacturersWithAutostart) {
+        if (isManufacturerWithAutostart()) {
             Timber.d("MainActivity Found vendor with autostart restrictions: $manufacturer")
             showAutostartDialog()
         } else {
