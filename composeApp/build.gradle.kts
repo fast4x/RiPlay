@@ -306,8 +306,8 @@ android {
         applicationId = "it.fast4x.riplay"
         minSdk = 24
         targetSdk = 36
-        versionCode = 59
-        versionName = "0.0.59"
+        versionCode = 60
+        versionName = "0.0.60"
 
         multiDexEnabled = true
 
@@ -600,10 +600,10 @@ android {
 //        }
 //    }
     productFlavors {
-        create("base") {
+        create("foss") {
             dimension = "version"
             //manifestPlaceholders["appName"] = "RiPlay"
-            buildConfigField("String", "BUILD_VARIANT", "\"base\"")
+            buildConfigField("String", "BUILD_VARIANT", "\"foss\"")
         }
     }
 
