@@ -39,9 +39,7 @@ import kotlinx.coroutines.withContext
 import timber.log.Timber
 
 @UnstableApi
-class GlobalQueueViewModel(
-    //private val initialQueue: MutableList<MediaItem>
-) : ViewModel(), ViewModelProvider.Factory {
+class GlobalQueueViewModel() : ViewModel(), ViewModelProvider.Factory {
 
     @Suppress("UNCHECKED_CAST")
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
@@ -59,30 +57,12 @@ class GlobalQueueViewModel(
     private val _currentIndex = MutableStateFlow(0)
     val currentIndex: StateFlow<Int> = _currentIndex.asStateFlow()
 
-    private val _nowPlaying = MutableStateFlow(false)
-    val nowPlaying: StateFlow<Boolean> = _nowPlaying.asStateFlow()
-
-    private val _playerState = MutableStateFlow(Player.STATE_IDLE)
-    val playerState: StateFlow<Int> = _playerState.asStateFlow()
-
     fun linkController(controller: PlayerService.Binder) {
         this.playerController = controller
         if (queue.isNotEmpty()) {
             loadCurrentMedia()
         }
     }
-
-    /*
-    fun onPlayerStateChanged(isPlaying: Boolean, playbackState: Int) {
-        _nowPlaying.value = isPlaying
-        _playerState.value = playbackState
-
-        if (playbackState == Player.STATE_ENDED) {
-            playNext()
-       }
-    }
-
-     */
 
     fun add(mediaItem: MediaItem, index: Int) {
         queue.add(index, mediaItem)
@@ -355,12 +335,13 @@ class GlobalQueueViewModel(
         }
     }
 
+    fun currentMediaItem(): MediaItem? =
+         queue.getOrNull(_currentIndex.value)
+
     fun playNext() {
         if (hasNext()) {
             _currentIndex.value += 1
             loadCurrentMedia()
-        } else {
-            _nowPlaying.value = false
         }
     }
 

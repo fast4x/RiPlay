@@ -71,7 +71,9 @@ val Song.isLocal get() = id.startsWith(LOCAL_KEY_PREFIX)
 var GlobalVolume: Float = 0.5f
 
 fun Player.restoreGlobalVolume() {
-    volume = GlobalVolume
+    CoroutineScope(Dispatchers.Main).launch {
+        volume = GlobalVolume
+    }
 }
 
 fun Player.setGlobalVolume(v: Float) {

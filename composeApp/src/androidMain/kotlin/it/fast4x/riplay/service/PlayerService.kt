@@ -103,7 +103,6 @@ import it.fast4x.riplay.commonutils.thumbnail
 import it.fast4x.riplay.utils.timer
 import it.fast4x.riplay.R
 import it.fast4x.riplay.commonutils.cleanPrefix
-import it.fast4x.riplay.commonutils.durationTextToMillis
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.enums.ContentType
 import it.fast4x.riplay.enums.DurationInMinutes
@@ -175,12 +174,10 @@ import it.fast4x.riplay.utils.principalCache
 import it.fast4x.riplay.utils.saveMasterQueue
 import it.fast4x.riplay.utils.seamlessQueue
 import it.fast4x.riplay.commonutils.setLikeState
-import it.fast4x.riplay.data.models.Format
 import it.fast4x.riplay.enums.LastFmScrobbleType
 import it.fast4x.riplay.extensions.encryptedpreferences.encryptedPreferences
 import it.fast4x.riplay.extensions.lastfm.sendNowPlaying
 import it.fast4x.riplay.extensions.lastfm.sendScrobble
-import it.fast4x.riplay.extensions.players.getOnlineMetadata
 import it.fast4x.riplay.extensions.preferences.castToRiTuneDeviceEnabledKey
 import it.fast4x.riplay.extensions.preferences.excludeSongIfIsVideoKey
 import it.fast4x.riplay.extensions.preferences.isEnabledLastfmKey
@@ -219,7 +216,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
@@ -367,7 +363,7 @@ class PlayerService : Service(),
 
     private lateinit var equalizerHelper: EqualizerHelper
 
-    private val globalQueueViewModel: GlobalQueueViewModel by lazy {
+    private val globalQueue: GlobalQueueViewModel by lazy {
         ViewModelProvider(AppSharedScope)[GlobalQueueViewModel::class.java]
     }
 
@@ -526,7 +522,7 @@ class PlayerService : Service(),
         initializeRiTune()
         initializeDiscordPresence()
 
-        globalQueueViewModel.linkController(binder)
+        globalQueue.linkController(binder)
 
         coroutineScope.launch(Dispatchers.Default) {
             while (isActive) {
@@ -540,18 +536,18 @@ class PlayerService : Service(),
                             onlineListenedDurationMs = 0L
                         }
                     }
-                    // not required for now
-//                    if (currentDuration.value > 0) {
-//                        if (currentSecond.value >= currentDuration.value - 0.5f) {
-//                            if (internalOnlinePlayerState == PlayerConstants.PlayerState.PLAYING) {
-//                                Timber.d("PlayerService Watchdog: End of online track detected by time, forcing playNext()")
-//                                withContext(Dispatchers.Main) {
-//                                    player.playNext()
-//                                }
-//
-//                            }
-//                        }
-//                    }
+                    //fallback if online player not fire state ended
+                    if (currentDuration.value > 0) {
+                        if (currentSecond.value >= currentDuration.value - 0.5f) {
+                            if (internalOnlinePlayerState == PlayerConstants.PlayerState.PLAYING) {
+                                Timber.d("PlayerService Watchdog: End of online track detected by time, forcing playNext()")
+                                withContext(Dispatchers.Main) {
+                                    player.playNext()
+                                }
+
+                            }
+                        }
+                    }
                     Timber.d("PlayerService onCreate onlineListenedDurationMs $onlineListenedDurationMs")
                 }
                 delay(1000)
@@ -955,10 +951,10 @@ class PlayerService : Service(),
                                     }
                             }
                         }
-                        PlayerConstants.PlayerState.ENDED -> {
-                            Timber.d("PlayerService onlinePlayerView: onStateChange ENDED regular playNext()")
-                            player.playNext()
-                        }
+//                        PlayerConstants.PlayerState.ENDED -> {
+//                            Timber.d("PlayerService onlinePlayerView: onStateChange ENDED regular playNext()")
+//                            player.playNext()
+//                        }
                         else -> { youTubePlayer.mute() }
                     }
 
@@ -2435,8 +2431,8 @@ class PlayerService : Service(),
 
                     //Timber.d("PlayerService initializePositionObserver BEFORE player.playbackState ${player.playbackState} internalOnlinePlayerState ${internalOnlinePlayerState} lastProcessedIndex $lastProcessedIndex player.currentMediaItemIndex ${player.currentMediaItemIndex}")
 
-//                    if (player.currentMediaItem?.isLocal == false)
-//                        player.pauseAtEndOfMediaItems = true else player.pauseAtEndOfMediaItems = false
+                    if (player.currentMediaItem?.isLocal == false)
+                        player.pauseAtEndOfMediaItems = true else player.pauseAtEndOfMediaItems = false
 
                     if (player.currentMediaItem?.isLocal == false && (player.playbackState == Player.STATE_ENDED || internalOnlinePlayerState == PlayerConstants.PlayerState.ENDED)
                         && lastProcessedIndex != player.currentMediaItemIndex
@@ -2457,16 +2453,13 @@ class PlayerService : Service(),
 
 
                             QueueLoopType.Default -> {
-                                /*
                                 val hasNext = binder.player.hasNextMediaItem()
                                 Timber.d("PlayerService initializePositionObserver Repeat: Default fired")
                                 if (hasNext) {
-                                    lastProcessedIndex = player.currentMediaItemIndex
-                                    //handleSkipToNext()
-                                    player.playNext()
+                                    lastProcessedIndex = binder.player.currentMediaItemIndex
+                                    binder.player.playNext()
                                     Timber.d("PlayerService initializePositionObserver Repeat: Default fired next")
                                 }
-                                 */
                             }
 
                             QueueLoopType.RepeatAll -> {
