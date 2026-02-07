@@ -1579,7 +1579,12 @@ class PlayerService : Service(),
     }
 
     private fun maybeProcessRadio(reason: Int) {
-        if (!preferences.getBoolean(autoLoadSongsInQueueKey, true)) return
+        if (!preferences.getBoolean(autoLoadSongsInQueueKey, true)
+            || preferences.getEnum(
+                queueLoopTypeKey,
+                defaultValue = QueueLoopType.Default
+            ) == QueueLoopType.RepeatAll
+        ) return
 
         // New feature auto start radio in queue
         //val isDiscoverEnabled = applicationContext.preferences.getBoolean(discoverKey, false)
