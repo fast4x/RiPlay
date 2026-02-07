@@ -196,6 +196,7 @@ import it.fast4x.riplay.service.helpers.NoisyAudioReceiver
 import it.fast4x.riplay.utils.GlobalSharedData
 import it.fast4x.riplay.utils.isExplicit
 import it.fast4x.riplay.utils.isLocal
+import it.fast4x.riplay.utils.isManufacturerWithAutostart
 import it.fast4x.riplay.utils.isVideo
 import it.fast4x.riplay.utils.playAtIndex
 import it.fast4x.riplay.utils.playNext
@@ -561,7 +562,7 @@ class PlayerService : Service(),
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         startForeground()
-        return START_STICKY
+        return if (isManufacturerWithAutostart()) START_STICKY else START_NOT_STICKY
     }
 
     private fun startForeground() {
