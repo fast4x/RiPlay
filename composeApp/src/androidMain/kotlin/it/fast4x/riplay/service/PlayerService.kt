@@ -197,6 +197,7 @@ import it.fast4x.riplay.utils.GlobalSharedData
 import it.fast4x.riplay.utils.isExplicit
 import it.fast4x.riplay.utils.isLocal
 import it.fast4x.riplay.utils.isVideo
+import it.fast4x.riplay.utils.playAtIndex
 import it.fast4x.riplay.utils.playNext
 import it.fast4x.riplay.utils.playPrevious
 import it.fast4x.riplay.utils.setQueueLoopState
@@ -2453,42 +2454,31 @@ class PlayerService : Service(),
 
 
                             QueueLoopType.Default -> {
-                                val hasNext = binder.player.hasNextMediaItem()
-                                Timber.d("PlayerService initializePositionObserver Repeat: Default fired")
-                                if (hasNext) {
-                                    lastProcessedIndex = binder.player.currentMediaItemIndex
-                                    binder.player.playNext()
-                                    Timber.d("PlayerService initializePositionObserver Repeat: Default fired next")
+                                withContext(Dispatchers.Main) {
+                                    val hasNext = binder.player.hasNextMediaItem()
+                                    Timber.d("PlayerService initializePositionObserver Repeat: Default fired")
+                                    if (hasNext) {
+                                        lastProcessedIndex = binder.player.currentMediaItemIndex
+                                        binder.player.playNext()
+                                        Timber.d("PlayerService initializePositionObserver Repeat: Default fired next")
+                                    }
                                 }
                             }
 
                             QueueLoopType.RepeatAll -> {
-                                val hasNext = binder.player.hasNextMediaItem()
-                                Timber.d("PlayerService initializePositionObserver Repeat: RepeatAll fired")
-                                if (!hasNext) {
-                                    binder.player.seekTo(0, 0)
-                                    if (!GlobalSharedData.riTuneCastActive)
-                                        internalOnlinePlayer.value?.play()
-                                    else
-                                        coroutineScope.launch {
-                                            riTuneClient.sendCommand(
-                                                RiTuneRemoteCommand(
-                                                    "play",
-                                                    position = playFromSecond
-                                                )
-                                            )
-                                        }
+                                withContext(Dispatchers.Main) {
+                                    val hasNext = binder.player.hasNextMediaItem()
+                                    Timber.d("PlayerService initializePositionObserver Repeat: RepeatAll fired")
+                                    if (!hasNext) {
+                                        binder.player.playAtIndex(0)
+                                        Timber.d("PlayerService initializePositionObserver Repeat: RepeatAll fired first")
+                                    } else {
+                                        lastProcessedIndex = player.currentMediaItemIndex
+                                        player.playNext()
+                                        Timber.d("PlayerService initializePositionObserver Repeat: RepeatAll fired next")
+                                    }
+                                }
 
-                                    Timber.d("PlayerService initializePositionObserver Repeat: RepeatAll fired first")
-                                }
-                                /*
-                                else {
-                                    lastProcessedIndex = player.currentMediaItemIndex
-                                    //handleSkipToNext()
-                                    player.playNext()
-                                    Timber.d("PlayerService initializePositionObserver Repeat: RepeatAll fired next")
-                                }
-                                 */
                             }
                         }
                         delay(500)

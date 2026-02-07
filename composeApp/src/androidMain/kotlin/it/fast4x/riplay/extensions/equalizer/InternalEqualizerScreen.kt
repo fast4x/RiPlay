@@ -32,6 +32,7 @@ import it.fast4x.riplay.utils.typography
 import kotlin.math.abs
 import kotlin.math.roundToInt
 import it.fast4x.riplay.R
+import it.fast4x.riplay.enums.EqualizerPreset
 
 @Composable
 fun InternalEqualizerScreen(equalizerHelper: EqualizerHelper) {
@@ -40,7 +41,7 @@ fun InternalEqualizerScreen(equalizerHelper: EqualizerHelper) {
     val bandLevels = remember { mutableStateMapOf<Short, Float>() }
 
     var isLinked by remember { mutableStateOf(false) }
-    var selectedPreset by remember { mutableStateOf("Flat") }
+    var selectedPreset by remember { mutableStateOf(EqualizerPreset.FLAT) }
     var isEqEnabled by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
@@ -52,7 +53,7 @@ fun InternalEqualizerScreen(equalizerHelper: EqualizerHelper) {
 
                 isEqEnabled = savedData.first
                 val savedPreset = savedData.second
-                if (savedPreset != null) selectedPreset = savedPreset
+                if (savedPreset != null) selectedPreset = EqualizerPreset.fromString(savedPreset)
 
                 val savedBands = savedData.third
 
@@ -109,7 +110,7 @@ fun InternalEqualizerScreen(equalizerHelper: EqualizerHelper) {
                             equalizerHelper.setEnabled(false)
                         }
 
-                        equalizerHelper.saveSettings(isEqEnabled, selectedPreset, bandLevels)
+                        equalizerHelper.saveSettings(isEqEnabled, selectedPreset.name, bandLevels)
                     },
                     colors = androidx.compose.material3.SwitchDefaults.colors(
                         checkedThumbColor = colorPalette().accent,
@@ -148,11 +149,11 @@ fun InternalEqualizerScreen(equalizerHelper: EqualizerHelper) {
                             equalizerHelper.setEnabled(true)
                         }
                         selectedPreset = name
-                        applyPreset(name, cfg, bandLevels, equalizerHelper)
-                        equalizerHelper.saveSettings(true, name, bandLevels)
+                        applyPreset(name.name, cfg, bandLevels, equalizerHelper)
+                        equalizerHelper.saveSettings(true, name.name, bandLevels)
                     },
                     onReset = {
-                        selectedPreset = "Flat"
+                        selectedPreset = EqualizerPreset.FLAT
                         equalizerHelper.reset()
                         val centerPercent = levelToPercent(
                             ((cfg.minLevel + cfg.maxLevel) / 2).toShort(),
@@ -160,7 +161,7 @@ fun InternalEqualizerScreen(equalizerHelper: EqualizerHelper) {
                             cfg.maxLevel
                         )
                         cfg.bands.forEach { bandLevels[it.index] = centerPercent }
-                        equalizerHelper.saveSettings(isEqEnabled, selectedPreset, bandLevels)
+                        equalizerHelper.saveSettings(isEqEnabled, selectedPreset.name, bandLevels)
                     }
                 )
 
@@ -189,7 +190,7 @@ fun InternalEqualizerScreen(equalizerHelper: EqualizerHelper) {
                                         percentToLevel(percent, cfg.minLevel, cfg.maxLevel)
                                     equalizerHelper.setBandLevel(index, levelShort)
                                 }
-                                equalizerHelper.saveSettings(isEqEnabled, selectedPreset, bandLevels)
+                                equalizerHelper.saveSettings(isEqEnabled, selectedPreset.name, bandLevels)
                             },
                             enabled = isEqEnabled
                         )
@@ -344,7 +345,7 @@ fun PresetSelector(
                 onClick = onReset, 
                 modifier = Modifier.height(32.dp)
             ) {
-                Text(stringResource(R.string.preset_reset), fontSize = 12.sp)
+                Text(stringResource(R.string.equalizer_reset), fontSize = 12.sp)
             }
         }
     }
