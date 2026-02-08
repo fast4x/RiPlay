@@ -66,7 +66,7 @@ class BackupViewModel(
         viewModelScope.launch {
             _uiState.value = BackupUiState.Restoring
             try {
-                backupManager.restoreDatabase(restoreUri)
+                backupManager.smartRestoredatabase(restoreUri)
                 _uiState.value = BackupUiState.Success("Database restored, wait app will restart...")
                 delay(5000)
                 val packageManager = context.packageManager

@@ -3118,6 +3118,8 @@ interface Database {
 
     fun path() = _internal.openHelper.writableDatabase.path
 
+    fun openHelper() = _internal.openHelper
+
     fun close() = _internal.close()
 }
 
