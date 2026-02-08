@@ -559,11 +559,11 @@ class PlayerService : Service(),
         updateWidgets()
 
     }
-
-    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        startForeground()
-        return if (isManufacturerWithAutostart()) START_STICKY else START_NOT_STICKY
-    }
+// not important for now
+//    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+//        startForeground()
+//        return if (isManufacturerWithAutostart()) START_STICKY else START_NOT_STICKY
+//    }
 
     private fun startForeground() {
         startForeground(NOTIFICATION_ID,notification())
@@ -1235,6 +1235,7 @@ class PlayerService : Service(),
             cache.release()
             loudnessEnhancer?.release()
             audioVolumeObserver.unregister()
+            positionObserverJob?.cancel()
             noisyReceiver?.unregister()
             bluetoothReceiver?.unregister()
 
