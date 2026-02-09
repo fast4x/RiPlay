@@ -1043,7 +1043,6 @@ object Environment {
         videoId: String,
         playlistId: String?,
         signatureTimestamp: Int?,
-        webPlayerPot: String?,
     ) = client.post(_cdSL7DrPbA) {
         setLogin(clientType, setLogin = true)
         setBody(
@@ -1063,16 +1062,13 @@ object Environment {
                     },
                 videoId = videoId,
                 playlistId = playlistId,
-                playbackContext = if (clientType.useSignatureTimestamp && signatureTimestamp != null) {
+                playbackContext = if (signatureTimestamp != null) {
                     PlayerBody.PlaybackContext(
                         PlayerBody.PlaybackContext.ContentPlaybackContext(
                             signatureTimestamp = signatureTimestamp
                         )
                     )
                 } else null,
-                serviceIntegrityDimensions = if (clientType.useWebPoTokens && webPlayerPot != null) {
-                    PlayerBody.ServiceIntegrityDimensions(webPlayerPot)
-                } else null
             ),
         )
     }

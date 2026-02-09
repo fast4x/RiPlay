@@ -22,6 +22,7 @@ dependencies {
     implementation(libs.ktor.serialization.kotlinx.xml)
     implementation(libs.ktor.serialization.kotlinx.protobuf)
     implementation(libs.okhttp.dnsoverhttps)
+    implementation(libs.newpipeExt)
     
 
     //testImplementation(libs.junit)

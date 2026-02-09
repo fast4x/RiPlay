@@ -552,8 +552,8 @@ object EnvironmentExt {
     /**************
      * Simple Metadata Player
      */
-    suspend fun simpleMetadataPlayer(videoId: String, playlistId: String? = null, client: Context.Client, signatureTimestamp: Int? = null, webPlayerPot: String? = null): Result<PlayerResponse> = runCatching {
-        Environment.simpleMetadataPlayer(client, videoId, playlistId, signatureTimestamp, webPlayerPot).body<PlayerResponse>()
+    suspend fun simpleMetadataPlayer(videoId: String, playlistId: String? = null, client: Context.Client, signatureTimestamp: Int? = null): Result<PlayerResponse> = runCatching {
+        Environment.simpleMetadataPlayer(client, videoId, playlistId, signatureTimestamp).body<PlayerResponse>()
     }.onFailure {
         println("EnvironmentExt simpleMetadataPlayer error: ${it.stackTraceToString()}")
     }

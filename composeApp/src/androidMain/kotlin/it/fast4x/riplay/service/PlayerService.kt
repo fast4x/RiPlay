@@ -174,10 +174,12 @@ import it.fast4x.riplay.utils.principalCache
 import it.fast4x.riplay.utils.saveMasterQueue
 import it.fast4x.riplay.utils.seamlessQueue
 import it.fast4x.riplay.commonutils.setLikeState
+import it.fast4x.riplay.data.models.Format
 import it.fast4x.riplay.enums.LastFmScrobbleType
 import it.fast4x.riplay.extensions.encryptedpreferences.encryptedPreferences
 import it.fast4x.riplay.extensions.lastfm.sendNowPlaying
 import it.fast4x.riplay.extensions.lastfm.sendScrobble
+import it.fast4x.riplay.extensions.players.getOnlineMetadata
 import it.fast4x.riplay.extensions.preferences.castToRiTuneDeviceEnabledKey
 import it.fast4x.riplay.extensions.preferences.excludeSongIfIsVideoKey
 import it.fast4x.riplay.extensions.preferences.isEnabledLastfmKey
@@ -218,6 +220,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
@@ -489,7 +492,9 @@ class PlayerService : Service(),
         }
 
         currentSong.debounce(1000).collect(coroutineScope) { song ->
-            val currentMediaId = song?.id
+            if (song == null) return@collect
+
+            var currentMediaId = song.id
 
             if (lastOnlineMediaId != currentMediaId) {
                 if(onlineListenedDurationMs > 0) incrementOnlineListenedPlaytimeMs()
@@ -502,6 +507,30 @@ class PlayerService : Service(),
                 updateUnifiedNotification()
             }
             Timber.d("PlayerService onCreate update currentSong $song mediaItemState ${currentMediaItemState.value}")
+
+            //Update online
+            currentMediaId = if (!song.isLocal) song.id else song.mediaId.toString()
+
+            val format = Database.format(currentMediaId.toString()).first()
+            Timber.d("PlayerService onCreate update currentSong $currentMediaId format $format")
+            if (format == null) {
+                getOnlineMetadata(currentMediaId)
+                    ?.let {
+                        Timber.d("PlayerService onCreate update currentSong onlinemetadata it $it")
+                        Database.upsert(Format(
+                            songId = currentMediaId,
+                            contentLength = it.videoDetails?.lengthSeconds?.toLong(),
+                            loudnessDb = it.playerConfig?.audioConfig?.loudnessDb
+                                ?: it.playerConfig?.audioConfig?.perceptualLoudnessDb?.toFloat(),
+                            playbackUrl = it.playbackTracking?.videostatsPlaybackUrl?.baseUrl
+                        ))
+                    }
+            }
+
+            withContext(Dispatchers.Main) {
+                initializeNormalizeVolume()
+            }
+
         }
 
         initializeLegacyNotificationActionReceiver()
@@ -1631,16 +1660,16 @@ class PlayerService : Service(),
             }
         }.onFailure {
             Timber.e("PlayerService maybeNormalizeVolume load loudnessEnhancer ${it.stackTraceToString()}")
-            println("PlayerService maybeNormalizeVolume load loudnessEnhancer ${it.stackTraceToString()}")
             return
         }
 
         val baseGain = preferences.getFloat(loudnessBaseGainKey, 5.00f)
-        player.currentMediaItem?.mediaId?.let { songId ->
+        currentSong.value?.let { song ->
+            if (song.isLocal && song.mediaId?.isEmpty() == true) return@let
             volumeNormalizationJob?.cancel()
             volumeNormalizationJob = coroutineScope.launch(Dispatchers.Main) {
                 fun Float?.toMb() = ((this ?: 0f) * 100).toInt()
-                Database.loudnessDb(songId).cancellable().collectLatest { loudnessDb ->
+                Database.loudnessDb((if(song.isLocal) song.mediaId else song.id).toString()).cancellable().collectLatest { loudnessDb ->
                     val loudnessMb = loudnessDb.toMb().let {
                         if (it !in -2000..2000) {
                             withContext(Dispatchers.Main) {
@@ -1665,7 +1694,6 @@ class PlayerService : Service(),
                         loudnessEnhancer?.enabled = true
                     } catch (e: Exception) {
                         Timber.e("PlayerService maybeNormalizeVolume apply targetGain ${e.stackTraceToString()}")
-                        println("PlayerService maybeNormalizeVolume apply targetGain ${e.stackTraceToString()}")
                     }
                 }
             }

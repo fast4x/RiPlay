@@ -270,7 +270,6 @@ kotlin {
             implementation(libs.multidex)
             implementation(libs.jsoup)
 
-
         }
 
     }
