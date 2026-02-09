@@ -526,11 +526,6 @@ class PlayerService : Service(),
                         ))
                     }
             }
-
-            withContext(Dispatchers.Main) {
-                initializeNormalizeVolume()
-            }
-
         }
 
         initializeLegacyNotificationActionReceiver()
@@ -542,6 +537,7 @@ class PlayerService : Service(),
 
         initializePositionObserver()
         initializeBluetoothConnect()
+        initializeNormalizeVolume()
         initializeBassBoost()
         initializeReverb()
         initializeSensorListener()
@@ -550,6 +546,7 @@ class PlayerService : Service(),
         initializeVariables()
         initializePlaybackParameters()
         initializeNoisyReceiver()
+
         initializeRiTune()
         initializeDiscordPresence()
 
@@ -1658,20 +1655,39 @@ class PlayerService : Service(),
             return
         }
 
-        runCatching {
-            if (loudnessEnhancer == null) {
-                loudnessEnhancer = LoudnessEnhancer(0)
-            }
-        }.onFailure {
-            Timber.e("PlayerService maybeNormalizeVolume load loudnessEnhancer ${it.stackTraceToString()}")
-            return
+        try {
+            loudnessEnhancer?.release()
+        } catch (e: Exception) {
+            Timber.e("PlayerService initializeNormalizeVolume Errore durante il release di LoudnessEnhancer: ${e.message}")
         }
+        loudnessEnhancer = null
+        loudnessEnhancer = LoudnessEnhancer(0)
+
+//        runCatching {
+//            if (loudnessEnhancer == null) {
+//                loudnessEnhancer = LoudnessEnhancer(0)
+//            }
+//        }.onFailure {
+//            Timber.e("PlayerService maybeNormalizeVolume load loudnessEnhancer ${it.stackTraceToString()}")
+//            return
+//        }
+
 
         val baseGain = preferences.getFloat(loudnessBaseGainKey, 5.00f)
+
+        try {
+            loudnessEnhancer?.setTargetGain((baseGain * 1000).toInt())
+            loudnessEnhancer?.enabled = true
+        } catch (e: Exception) {
+            Timber.e("PlayerService maybeNormalizeVolume apply targetGain ${e.stackTraceToString()}")
+        }
+
+        /*
         currentSong.value?.let { song ->
             if (song.isLocal && song.mediaId?.isEmpty() == true) return@let
             volumeNormalizationJob?.cancel()
             volumeNormalizationJob = coroutineScope.launch(Dispatchers.Main) {
+                /*
                 fun Float?.toMb() = ((this ?: 0f) * 100).toInt()
                 Database.loudnessDb((if(song.isLocal) song.mediaId else song.id).toString()).cancellable().collectLatest { loudnessDb ->
                     val loudnessMb = loudnessDb.toMb().let {
@@ -1700,8 +1716,11 @@ class PlayerService : Service(),
                         Timber.e("PlayerService maybeNormalizeVolume apply targetGain ${e.stackTraceToString()}")
                     }
                 }
+                 */
             }
         }
+
+         */
     }
 
     private fun initializeSongCoverInLockScreen() {
