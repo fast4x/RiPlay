@@ -131,6 +131,9 @@ RiPlay is a powerful, open-source music player designed for music lovers who wan
   <a href="https://github.com/fast4x/RiPlay/releases/latest">
     <img src="./assets/images/getItGithub.png" alt="Download from GitHub" height="80">
   </a>
+  <a href="https://apt.izzysoft.de/fdroid/index/apk/it.fast4x.riplay">
+    <img src="./assets/images/getItIzzyOnDroid.png" alt="Download from IzzyOnDroid" height="80">
+  </a>
 </div>
 
 ---
