@@ -1,2 +1,2 @@
-del composeApp\accrescent\release\composeApp-accrescent-release.apks
-java -jar ./bundletool.jar build-apks --ks="./APK keystore/RiPlayKeystore.jks" --ks-key-alias=key0 --bundle=./composeApp/accrescent/release/composeApp-accrescent-release.aab --output=./composeApp/accrescent/release/composeApp-accrescent-release.apks
+del composeApp\foss\release\composeApp-foss-release.apks
+java -jar ./bundletool.jar build-apks --ks="./APK keystore/RiPlayKeystore.jks" --ks-key-alias=key0 --bundle=./composeApp/foss/release/composeApp-foss-release.aab --output=./composeApp/foss/release/composeApp-foss-release.apks
