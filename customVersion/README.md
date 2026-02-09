@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="./assets/design/latest/app_icon.svg" width="120" height="120" alt="RiPlay Icon"/>
+  <img src="../assets/design/latest/app_icon.svg" width="120" height="120" alt="RiPlay Icon"/>
   <p><b>RiPlay</b> Custom Version</p>
   <p>Remember, the custom version is not an official release.</p>
 </div>
