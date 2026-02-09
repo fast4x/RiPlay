@@ -1383,12 +1383,12 @@ fun GeneralSettings(
                                 )
                             }
 
-//                            val initialValueVolume by remember { derivedStateOf { volumeBoostLevel } }
-//                            var newValueVolume by remember(initialValue) {
-//                                mutableFloatStateOf(
-//                                    initialValueVolume
-//                                )
-//                            }
+                            val initialValueVolume by remember { derivedStateOf { volumeBoostLevel } }
+                            var newValueVolume by remember(initialValue) {
+                                mutableFloatStateOf(
+                                    initialValueVolume
+                                )
+                            }
 
 
                             Column(
@@ -1408,19 +1408,19 @@ fun GeneralSettings(
                                     range = -20f..20f
                                 )
 
-//                                SliderSettingsEntry(
-//                                    title = stringResource(R.string.loudness_boost_level),
-//                                    text = stringResource(R.string.loudness_boost_level_info),
-//                                    state = newValueVolume,
-//                                    onSlide = { newValueVolume = it },
-//                                    onSlideComplete = {
-//                                        volumeBoostLevel = newValueVolume
-//                                    },
-//                                    toDisplay = {
-//                                        "%.2f dB".format(volumeBoostLevel).replace(",", ".")
-//                                    },
-//                                    range = -30f..30f
-//                                )
+                                SliderSettingsEntry(
+                                    title = stringResource(R.string.loudness_boost_level),
+                                    text = stringResource(R.string.loudness_boost_level_info),
+                                    state = newValueVolume,
+                                    onSlide = { newValueVolume = it },
+                                    onSlideComplete = {
+                                        volumeBoostLevel = newValueVolume
+                                    },
+                                    toDisplay = {
+                                        "%.2f dB".format(volumeBoostLevel).replace(",", ".")
+                                    },
+                                    range = -20f..20f
+                                )
                             }
                         }
                     }

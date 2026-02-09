@@ -1663,64 +1663,35 @@ class PlayerService : Service(),
         loudnessEnhancer = null
         loudnessEnhancer = LoudnessEnhancer(0)
 
-//        runCatching {
-//            if (loudnessEnhancer == null) {
-//                loudnessEnhancer = LoudnessEnhancer(0)
-//            }
-//        }.onFailure {
-//            Timber.e("PlayerService maybeNormalizeVolume load loudnessEnhancer ${it.stackTraceToString()}")
-//            return
-//        }
-
-
         val baseGain = preferences.getFloat(loudnessBaseGainKey, 5.00f)
+        val boostLevel = preferences.getFloat(volumeBoostLevelKey, 0.00f)
 
-        try {
-            loudnessEnhancer?.setTargetGain((baseGain * 1000).toInt())
-            loudnessEnhancer?.enabled = true
-        } catch (e: Exception) {
-            Timber.e("PlayerService maybeNormalizeVolume apply targetGain ${e.stackTraceToString()}")
-        }
+        if (currentSong.value?.isLocal == true && currentSong.value?.mediaId?.isEmpty() == true) return
 
-        /*
-        currentSong.value?.let { song ->
-            if (song.isLocal && song.mediaId?.isEmpty() == true) return@let
-            volumeNormalizationJob?.cancel()
-            volumeNormalizationJob = coroutineScope.launch(Dispatchers.Main) {
-                /*
-                fun Float?.toMb() = ((this ?: 0f) * 100).toInt()
-                Database.loudnessDb((if(song.isLocal) song.mediaId else song.id).toString()).cancellable().collectLatest { loudnessDb ->
-                    val loudnessMb = loudnessDb.toMb().let {
-                        if (it !in -2000..2000) {
-                            withContext(Dispatchers.Main) {
-                                SmartMessage("Extreme loudness detected", context = this@PlayerService)
-                                /*
-                                SmartMessage(
-                                    getString(
-                                        R.string.loudness_normalization_extreme,
-                                        getString(R.string.format_db, (it / 100f).toString())
-                                    )
-                                )
-                                 */
-                            }
+        volumeNormalizationJob?.cancel()
+        volumeNormalizationJob = coroutineScope.launch(Dispatchers.Main) {
 
-                            0
-                        } else it
-                    }
-                    try {
-                        //default
-                        //loudnessEnhancer?.setTargetGain(-((loudnessDb ?: 0f) * 100).toInt() + 500)
-                        loudnessEnhancer?.setTargetGain(baseGain.toMb() - loudnessMb)
-                        loudnessEnhancer?.enabled = true
-                    } catch (e: Exception) {
-                        Timber.e("PlayerService maybeNormalizeVolume apply targetGain ${e.stackTraceToString()}")
-                    }
+            fun Float?.toMb() = ((this ?: 0f) * 100).toInt()
+
+            Database.loudnessDb((if(currentSong.value?.isLocal == true)
+                currentSong.value?.mediaId else currentSong.value?.id).toString())
+                .cancellable().collectLatest { loudnessDb ->
+                val loudnessMb = loudnessDb.toMb().let {
+                    if (it !in -2000..2000) {
+                        withContext(Dispatchers.Main) {
+                            SmartMessage("Extreme loudness detected", context = this@PlayerService)
+                        }
+                        0
+                    } else it
                 }
-                 */
+                try {
+                    loudnessEnhancer?.setTargetGain((baseGain.toMb() + boostLevel.toMb()) - loudnessMb)
+                    loudnessEnhancer?.enabled = true
+                } catch (e: Exception) {
+                    Timber.e("PlayerService maybeNormalizeVolume apply targetGain ${e.stackTraceToString()}")
+                }
             }
         }
-
-         */
     }
 
     private fun initializeSongCoverInLockScreen() {
