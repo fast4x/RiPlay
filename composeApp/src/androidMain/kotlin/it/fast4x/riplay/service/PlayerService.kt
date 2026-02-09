@@ -968,6 +968,9 @@ class PlayerService : Service(),
                             youTubePlayer.unMute()
                         }
                         PlayerConstants.PlayerState.VIDEO_CUED, PlayerConstants.PlayerState.UNSTARTED -> {
+                            Timber.d("PlayerService onlinePlayerView: onStateChange VIDEO_CUED, UNSTARTED regular play()")
+                            //youTubePlayer.play()
+
                             if (!firstTimeStarted) {
                                 if (!GlobalSharedData.riTuneCastActive)
                                     youTubePlayer.play()
@@ -981,6 +984,7 @@ class PlayerService : Service(),
                                         )
                                     }
                             }
+
                         }
 //                        PlayerConstants.PlayerState.ENDED -> {
 //                            Timber.d("PlayerService onlinePlayerView: onStateChange ENDED regular playNext()")
