@@ -1763,7 +1763,7 @@ fun OnlinePlayer(
                                                                 )
                                                             )
                                                             .size(1200, 1200)
-                                                            .transformations(LandscapeToSquareTransformation(1200)),
+                                                            .transformations(LandscapeToSquareTransformation(1200)).build(),
 //                                                        model = binder.player.getMediaItemAt(
 //                                                            index
 //                                                            //if (it + 1 <= mediaItems.size - 1) it + 1 else it

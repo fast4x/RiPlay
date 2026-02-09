@@ -1565,7 +1565,8 @@ fun LocalPlayer(
                                                     ImageRequest.Builder(LocalContext.current)
                                                         .data(binder.player.getMediaItemAt(index).mediaMetadata.artworkUri.toString().thumbnail(1200))
                                                         .size(1200, 1200)
-                                                        .transformations(LandscapeToSquareTransformation(1200)),
+                                                        .transformations(LandscapeToSquareTransformation(1200))
+                                                        .build(),
                                                     contentDescription = null,
                                                     contentScale = ContentScale.Crop,
                                                     modifier = Modifier
