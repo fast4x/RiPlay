@@ -1634,7 +1634,7 @@ class PlayerService : Service(),
                     //if (player.mediaItemCount - player.currentMediaItemIndex <= 3) {
                     coroutineScope.launch(Dispatchers.Main) {
                         if (player.playbackState != STATE_IDLE)
-                            player.addMediaItems(player.currentMediaItemIndex + 1,radio.process())
+                            player.addMediaItems(radio.process())
                     }
                     //}
                 }
@@ -2663,7 +2663,7 @@ class PlayerService : Service(),
                     }
 
                     if (justAdd) {
-                        player.addMediaItems(player.currentMediaItemIndex + 1, songs.drop(1))
+                        player.addMediaItems( songs.drop(1))
                     } else {
                         player.forcePlayFromBeginning(songs)
                     }
