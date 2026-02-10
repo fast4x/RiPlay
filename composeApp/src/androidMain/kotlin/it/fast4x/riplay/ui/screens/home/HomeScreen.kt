@@ -66,7 +66,7 @@ fun HomeScreen(
         mutableStateOf(true)
     }
 
-    var checkUpdateState by rememberPreference(checkUpdateStateKey, CheckUpdateState.Disabled)
+    var checkUpdateState by rememberPreference(checkUpdateStateKey, CheckUpdateState.Enabled)
 
     val saveableStateHolder = rememberSaveableStateHolder()
 

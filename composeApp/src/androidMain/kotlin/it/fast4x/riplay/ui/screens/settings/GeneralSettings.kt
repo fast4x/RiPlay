@@ -27,6 +27,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.TextField
 import androidx.compose.material.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SnapshotMutationPolicy
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
@@ -170,6 +171,7 @@ import it.fast4x.riplay.ui.components.themed.settingsItem
 import it.fast4x.riplay.ui.components.themed.settingsSearchBarItem
 import it.fast4x.riplay.utils.CheckAvailableNewVersion
 import it.fast4x.riplay.utils.LazyListContainer
+import it.fast4x.riplay.utils.checkAndDownloadNewVersionCode
 import it.fast4x.riplay.utils.loadMasterQueue
 import kotlinx.coroutines.flow.distinctUntilChanged
 
@@ -353,7 +355,7 @@ fun GeneralSettings(
         Database.queriesCount().distinctUntilChanged()
     }.collectAsState(initial = 0)
 
-    var checkUpdateState by rememberPreference(checkUpdateStateKey, CheckUpdateState.Disabled)
+    var checkUpdateState by rememberPreference(checkUpdateStateKey, CheckUpdateState.Enabled)
 
     val internalEqualizer = LocalPlayerServiceBinder.current?.equalizer
 
@@ -456,7 +458,10 @@ fun GeneralSettings(
 
                     settingsItem {
                         var checkUpdateNow by remember { mutableStateOf(false) }
-                        if (checkUpdateNow)
+                        if (checkUpdateNow) {
+                            LaunchedEffect(Unit) {
+                                checkAndDownloadNewVersionCode()
+                            }
                             CheckAvailableNewVersion(
                                 onDismiss = { checkUpdateNow = false },
                                 updateAvailable = {
@@ -468,6 +473,7 @@ fun GeneralSettings(
                                         )
                                 }
                             )
+                        }
 
                         EnumValueSelectorSettingsEntry(
                             online = false,

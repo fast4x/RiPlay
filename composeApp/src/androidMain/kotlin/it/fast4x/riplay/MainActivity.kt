@@ -246,10 +246,12 @@ import it.fast4x.riplay.utils.playNext
 import it.fast4x.riplay.utils.resize
 import it.fast4x.riplay.utils.setDefaultPalette
 import it.fast4x.riplay.commonutils.thumbnail
+import it.fast4x.riplay.enums.CheckUpdateState
 import it.fast4x.riplay.extensions.databasebackup.BackupViewModel
 import it.fast4x.riplay.extensions.databasebackup.DatabaseBackupManager
 import it.fast4x.riplay.extensions.htmlreader.shazamSongInfoExtractor
 import it.fast4x.riplay.extensions.ondevice.OnDeviceViewModel
+import it.fast4x.riplay.extensions.preferences.checkUpdateStateKey
 import it.fast4x.riplay.extensions.preferences.resumeOrPausePlaybackWhenDeviceKey
 import it.fast4x.riplay.extensions.preferences.showSnowfallEffectKey
 import it.fast4x.riplay.extensions.ritune.toRiTuneDevice
@@ -257,9 +259,9 @@ import it.fast4x.riplay.service.experimental.AppSharedScope
 import it.fast4x.riplay.service.experimental.GlobalQueueViewModel
 import it.fast4x.riplay.ui.components.Snowfall
 import it.fast4x.riplay.utils.GlobalSharedData.riTuneDevices
+import it.fast4x.riplay.utils.checkAndDownloadNewVersionCode
 import it.fast4x.riplay.utils.isAtLeastAndroid12
 import it.fast4x.riplay.utils.isManufacturerWithAutostart
-import it.fast4x.riplay.utils.manufacturersWithAutostart
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
@@ -284,9 +286,6 @@ class MainActivity :
     MonetColorsChangedListener
 {
     //lateinit var internetConnectivityObserver: InternetConnectivityObserver
-
-//    var client = OkHttpClient()
-//    var request = OkHttpRequest(client)
 
     private val serviceConnection = object : ServiceConnection {
         override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
@@ -798,35 +797,16 @@ class MainActivity :
             )
             val isPicthBlack = colorPaletteMode == ColorPaletteMode.PitchBlack
 
-//            if (preferences.getEnum(
-//                    checkUpdateStateKey,
-//                    CheckUpdateState.Ask
-//                ) == CheckUpdateState.Enabled
-//            ) {
-//                val urlVersionCode =
-//                    "https://raw.githubusercontent.com/fast4x/RiPlay/main/updatedVersion/updatedVersionCode.ver"
-//                    //"https://raw.githubusercontent.com/fast4x/CentralUpdates/main/updates/VersionCode-Ri.ver"
-//                request.GET(urlVersionCode, object : Callback {
-//                    override fun onResponse(call: Call, response: Response) {
-//                        val responseData = response.body?.string()
-//                        runOnUiThread {
-//                            try {
-//                                if (responseData != null) {
-//                                    val file = File(filesDir, "UpdatedVersionCode.ver")
-//                                    file.writeText(responseData.toString())
-//                                }
-//                            } catch (e: Exception) {
-//                                e.printStackTrace()
-//                            }
-//                        }
-//
-//                    }
-//
-//                    override fun onFailure(call: Call, e: IOException) {
-//                        Log.d("UpdatedVersionCode", "Check failure")
-//                    }
-//                })
-//            }
+            if (preferences.getEnum(
+                    checkUpdateStateKey,
+                    CheckUpdateState.Enabled
+                ) == CheckUpdateState.Enabled
+                && BuildConfig.BUILD_VARIANT == "full"
+            ) {
+                LaunchedEffect(Unit) {
+                    checkAndDownloadNewVersionCode()
+                }
+            }
 
 
             val coroutineScope = rememberCoroutineScope()
