@@ -108,11 +108,13 @@ jobs:
             git log ${PREVIOUS_TAG}..HEAD --pretty=format:"- %s ([%h](https://github.com/${{ github.repository }}/commit/%H))" > /tmp/changelog.txt
           fi
           
+          echo "" >> /tmp/changelog.txt
+          
           DELIMITER="EOF_CHANGEOLOG_Z_$(date +%s)"
           echo "changelog<<$DELIMITER" >> $GITHUB_OUTPUT
           cat /tmp/changelog.txt >> $GITHUB_OUTPUT
           echo "$DELIMITER" >> $GITHUB_OUTPUT
-
+          
       - name: Create Release Notes
         id: release_notes
         run: |
