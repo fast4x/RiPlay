@@ -4,6 +4,12 @@ on:
   push:
     tags:
       - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version tag (e.g., v1.0.0)'
+        required: true
+        type: string
 
 jobs:
   build-and-release:
@@ -14,6 +20,30 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate version format and check if tag exists
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          VERSION="${{ github.event.inputs.version }}"
+          
+          # Validazione formato
+          if [[ ! $VERSION =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "❌ Invalid version format! Use v1.0.0"
+            exit 1
+          fi
+          
+          # Controlla se il tag esiste
+          if git rev-parse "$VERSION" >/dev/null 2>&1; then
+            echo "❌ Tag $VERSION already exists!"
+            exit 1
+          fi
+          
+          echo "✅ Version $VERSION is valid and new"
 
       - name: Set up JDK 21
         uses: actions/setup-java@v4
