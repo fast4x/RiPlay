@@ -21,6 +21,13 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Fetch latest commits
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          git fetch origin main
+          git reset --hard origin/main
+          echo "✅ Synced to latest commit on main"
+
       - name: Validate version format and check if tag exists
         if: github.event_name == 'workflow_dispatch'
         run: |
