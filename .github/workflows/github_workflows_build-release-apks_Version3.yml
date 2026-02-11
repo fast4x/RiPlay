@@ -98,18 +98,17 @@ jobs:
             CURRENT_TAG="${{ github.ref_name }}"
           fi
           
-          PREVIOUS_TAG=$(git tag --sort=-version:refname --list "v*" --merged ${CURRENT_TAG} | grep -v "^${CURRENT_TAG}$" | head -1)
+          PREVIOUS_TAG=$(git tag --sort=-version:refname --list "v*" --merged HEAD | grep -v "^${CURRENT_TAG}$" | head -1)
           
           if [ -z "$PREVIOUS_TAG" ]; then
             echo "⚠️  No previous tag found - showing all commits"
             git log --pretty=format:"- %s ([%h](https://github.com/${{ github.repository }}/commit/%H))" --reverse | head -20 > /tmp/changelog.txt
           else
             echo "📋 Changes between $PREVIOUS_TAG and $CURRENT_TAG"
-            git log ${PREVIOUS_TAG}..${CURRENT_TAG} --pretty=format:"- %s ([%h](https://github.com/${{ github.repository }}/commit/%H))" > /tmp/changelog.txt
+            git log ${PREVIOUS_TAG}..HEAD --pretty=format:"- %s ([%h](https://github.com/${{ github.repository }}/commit/%H))" > /tmp/changelog.txt
           fi
           
           DELIMITER="EOF_CHANGEOLOG_Z_$(date +%s)"
-          
           echo "changelog<<$DELIMITER" >> $GITHUB_OUTPUT
           cat /tmp/changelog.txt >> $GITHUB_OUTPUT
           echo "$DELIMITER" >> $GITHUB_OUTPUT
@@ -126,27 +125,28 @@ jobs:
           RELEASE_DATE=$(date +'%Y-%m-%d')
           COMMIT_HASH=$(git rev-parse --short HEAD)
           
-          cat > /tmp/release_notes.md << EOF
-          ## 📱 RiPlay ${CURRENT_TAG} - Released ${RELEASE_DATE}
-
-          ### 📋 What's Changed
-          ${{ steps.changelog.outputs.changelog }}
+          {
+            echo "## 📱 RiPlay ${CURRENT_TAG} - Released ${RELEASE_DATE}"
+            echo ""
+            echo "### 📋 What's Changed"
+            echo "${{ steps.changelog.outputs.changelog }}"
+            echo ""
+            echo "### 📦 Downloads"
+            echo "- **Full Flavor** (All features)"
+            echo "- **FOSS Flavor** (Open source only)"
+            echo ""
+            echo "### ✨ Build Information"
+            echo "- **Build Date**: ${RELEASE_DATE}"
+            echo "- **Git Commit**: \`${COMMIT_HASH}\`"
+            echo "- **Java Version**: 21"
+            echo ""
+            echo "**Thank you for using RiPlay!** 🎵"
+          } > /tmp/release_notes.md
           
-          ### 📦 Downloads
-          - **Full Flavor** (All features)
-          - **FOSS Flavor** (Open source only)
-          
-          ### ✨ Build Information
-          - **Build Date**: ${RELEASE_DATE}
-          - **Git Commit**: \`${COMMIT_HASH}\`
-          - **Java Version**: 21
-          
-          **Thank you for using RiPlay!** 🎵
-          EOF
-          
-          echo "release_notes<<EOF" >> $GITHUB_OUTPUT
+          DELIMITER="EOF_NOTES_Z_$(date +%s)"
+          echo "release_notes<<$DELIMITER" >> $GITHUB_OUTPUT
           cat /tmp/release_notes.md >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
+          echo "$DELIMITER" >> $GITHUB_OUTPUT
 
       - name: Create Release
         uses: softprops/action-gh-release@v1
