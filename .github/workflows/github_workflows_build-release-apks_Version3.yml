@@ -89,24 +89,32 @@ jobs:
           CURRENT_TAG=$(git describe --tags --abbrev=0)
           RELEASE_DATE=$(date +'%Y-%m-%d')
           
-          NOTES="## 📱 RiPlay ${CURRENT_TAG} - Released ${RELEASE_DATE}
+          # Leggi il changelog generato nel step precedente
+          CHANGELOG="${{ steps.changelog.outputs.changelog }}"
+          
+          # Decodifica i %0A in vere newline
+          CHANGELOG=$(echo -e "${CHANGELOG//\\%0A/\\n}")
+          
+          cat > /tmp/release_notes.md << 'EOF'
+          ## 📱 RiPlay ${{ github.ref_name }} - Released $RELEASE_DATE
 
           ### 📋 What's Changed
-          ${{ steps.changelog.outputs.changelog }}
+          $CHANGELOG
           
           ### 📦 Downloads
           - **Full Flavor** (All features)
           - **FOSS Flavor** (Open source only)
           
           ### ✨ Build Information
-          - **Build Date**: ${RELEASE_DATE}
-          - **Git Commit**: \`$(git rev-parse --short HEAD)\`
+          - **Build Date**: $RELEASE_DATE
+          - **Git Commit**: `$(git rev-parse --short HEAD)`
           - **Java Version**: 21
           
-          **Thank you for using RiPlay!** 🎵"
+          **Thank you for using RiPlay!** 🎵
+          EOF
           
           echo "release_notes<<EOF" >> $GITHUB_OUTPUT
-          echo "$NOTES" >> $GITHUB_OUTPUT
+          cat /tmp/release_notes.md >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Create Release
