@@ -1848,21 +1848,22 @@ class MainActivity :
 
     }
 
-    override fun onStop() {
-        Timber.d("MainActivity.onStop")
-        runCatching {
-            unbindService(serviceConnection)
-        }.onFailure {
-            Timber.e("MainActivity.onStop unbindService ${it.stackTraceToString()}")
-        }
-
-        if (!isclosebackgroundPlayerEnabled)
-            onStart() // some device require white listed
-
-
-
-        super.onStop()
-    }
+    // not needed
+//    override fun onStop() {
+//        Timber.d("MainActivity.onStop")
+//        runCatching {
+//            unbindService(serviceConnection)
+//        }.onFailure {
+//            Timber.e("MainActivity.onStop unbindService ${it.stackTraceToString()}")
+//        }
+//
+//        if (!isclosebackgroundPlayerEnabled)
+//            onStart() // some device require white listed
+//
+//
+//
+//        super.onStop()
+//    }
 
     @UnstableApi
     override fun onDestroy() {
