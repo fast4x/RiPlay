@@ -83,6 +83,15 @@ jobs:
           CHANGELOG="${CHANGELOG//$'\r'/'%0D'}"
           echo "changelog=${CHANGELOG}" >> $GITHUB_OUTPUT
 
+      - name: Test Release Variables
+        run: |
+          CURRENT_TAG=$(git describe --tags --abbrev=0)
+          RELEASE_DATE=$(date +'%Y-%m-%d')
+          
+          echo "Tag: ${CURRENT_TAG}"
+          echo "Date: ${RELEASE_DATE}"
+          echo "Changelog: ${{ steps.changelog.outputs.changelog }}"
+
       - name: Create Release Notes
         id: release_notes
         run: |
