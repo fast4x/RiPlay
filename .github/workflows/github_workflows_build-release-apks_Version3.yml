@@ -98,8 +98,7 @@ jobs:
             CURRENT_TAG="${{ github.ref_name }}"
           fi
           
-          # Prendi il tag precedente (escludendo il tag corrente)
-          PREVIOUS_TAG=$(git tag --sort=-version:refname --merged ${CURRENT_TAG} | grep -v "^${CURRENT_TAG}$" | head -1)
+          PREVIOUS_TAG=$(git tag --sort=-version:refname --list "v*" --merged ${CURRENT_TAG} | grep -v "^${CURRENT_TAG}$" | head -1)
           
           if [ -z "$PREVIOUS_TAG" ]; then
             echo "⚠️  No previous tag found - showing all commits"
