@@ -13,7 +13,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Fetch all history for changelog generation
+          fetch-depth: 0
 
       - name: Set up JDK 21
         uses: actions/setup-java@v4
@@ -60,48 +60,50 @@ jobs:
       - name: Generate Changelog
         id: changelog
         run: |
-          CURRENT_TAG=$(git describe --tags --abbrev=0)
+          # Usa l'input del workflow_dispatch, non github.ref_name
+          CURRENT_TAG="${{ github.event.inputs.version }}"
+          
+          if [ -z "$CURRENT_TAG" ]; then
+            CURRENT_TAG="${{ github.ref_name }}"
+          fi
+          
           PREVIOUS_TAG=$(git describe --tags --abbrev=0 ${CURRENT_TAG}^ 2>/dev/null || echo "")
           
           if [ -z "$PREVIOUS_TAG" ]; then
-            # First release - get all commits
-            CHANGELOG=$(git log --pretty=format:"- %s ([%h](https://github.com/${{ github.repository }}/commit/%H))" --reverse | head -20)
+            git log --pretty=format:"- %s ([%h](https://github.com/${{ github.repository }}/commit/%H))" --reverse | head -20 > /tmp/changelog.txt
           else
-            # Get commits between two tags
-            CHANGELOG=$(git log ${PREVIOUS_TAG}..${CURRENT_TAG} --pretty=format:"- %s ([%h](https://github.com/${{ github.repository }}/commit/%H))" --reverse)
+            git log ${PREVIOUS_TAG}..${CURRENT_TAG} --pretty=format:"- %s ([%h](https://github.com/${{ github.repository }}/commit/%H))" --reverse > /tmp/changelog.txt
           fi
           
-          # Handle multiline changelog
-          CHANGELOG="${CHANGELOG//'%'/'%25'}"
-          CHANGELOG="${CHANGELOG//$'\n'/'%0A'}"
-          CHANGELOG="${CHANGELOG//$'\r'/'%0D'}"
-          echo "changelog=${CHANGELOG}" >> $GITHUB_OUTPUT
+          echo "changelog<<EOF" >> $GITHUB_OUTPUT
+          cat /tmp/changelog.txt >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Create Release Notes
         id: release_notes
         run: |
-          CURRENT_TAG=$(git describe --tags --abbrev=0)
+          CURRENT_TAG="${{ github.event.inputs.version }}"
+          
+          if [ -z "$CURRENT_TAG" ]; then
+            CURRENT_TAG="${{ github.ref_name }}"
+          fi
+          
           RELEASE_DATE=$(date +'%Y-%m-%d')
+          COMMIT_HASH=$(git rev-parse --short HEAD)
           
-          # Leggi il changelog generato nel step precedente
-          CHANGELOG="${{ steps.changelog.outputs.changelog }}"
-          
-          # Decodifica i %0A in vere newline
-          CHANGELOG=$(echo -e "${CHANGELOG//\\%0A/\\n}")
-          
-          cat > /tmp/release_notes.md << 'EOF'
-          ## 📱 RiPlay ${{ github.ref_name }} - Released $RELEASE_DATE
+          cat > /tmp/release_notes.md << EOF
+          ## 📱 RiPlay ${CURRENT_TAG} - Released ${RELEASE_DATE}
 
           ### 📋 What's Changed
-          $CHANGELOG
+          ${{ steps.changelog.outputs.changelog }}
           
           ### 📦 Downloads
           - **Full Flavor** (All features)
           - **FOSS Flavor** (Open source only)
           
           ### ✨ Build Information
-          - **Build Date**: $RELEASE_DATE
-          - **Git Commit**: `$(git rev-parse --short HEAD)`
+          - **Build Date**: ${RELEASE_DATE}
+          - **Git Commit**: \`${COMMIT_HASH}\`
           - **Java Version**: 21
           
           **Thank you for using RiPlay!** 🎵
@@ -118,7 +120,7 @@ jobs:
           body: ${{ steps.release_notes.outputs.release_notes }}
           draft: false
           prerelease: false
-          tag_name: ${{ github.ref_name || github.event.inputs.version }}
+          tag_name: ${{ github.event.inputs.version || github.ref_name }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
