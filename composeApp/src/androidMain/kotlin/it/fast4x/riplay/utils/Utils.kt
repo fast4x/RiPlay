@@ -395,6 +395,8 @@ val MediaItem.asSong: Song
         isAudioOnly = if (mediaMetadata.extras?.getBoolean("isVideo") == true) 0 else 1
     )
 
+
+/*
 val MediaItem.cleaned: MediaItem
     @UnstableApi
     get() = MediaItem.Builder()
@@ -415,6 +417,8 @@ val MediaItem.cleaned: MediaItem
         )
         .setCustomCacheKey(mediaId)
         .build()
+
+ */
 
 val MediaItem.isVideo: Boolean
     get() = mediaMetadata.extras?.getBoolean("isVideo") == true

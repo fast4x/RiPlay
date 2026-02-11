@@ -1316,12 +1316,12 @@ fun OnlinePlayer(
 
     /***** NEW PLAYER *****/
 
-    var lastYTVideoId by rememberPreference(key = lastVideoIdKey, defaultValue = "")
-    var lastYTVideoSeconds by rememberPreference(key = lastVideoSecondsKey, defaultValue = 0f)
+//    var lastYTVideoId by rememberPreference(key = lastVideoIdKey, defaultValue = "")
+//    var lastYTVideoSeconds by rememberPreference(key = lastVideoSecondsKey, defaultValue = 0f)
 
-    var updateStatisticsEverySeconds by rememberSaveable { mutableIntStateOf(0) }
-    val steps by rememberSaveable { mutableIntStateOf(5) }
-    var stepToUpdateStats by rememberSaveable { mutableIntStateOf(1) }
+//    var updateStatisticsEverySeconds by rememberSaveable { mutableIntStateOf(0) }
+//    val steps by rememberSaveable { mutableIntStateOf(5) }
+//    var stepToUpdateStats by rememberSaveable { mutableIntStateOf(1) }
 
     val isLandscape = isLandscape
 
@@ -1343,7 +1343,7 @@ fun OnlinePlayer(
         }
         updateBrush = true
 
-        stepToUpdateStats = 1
+        //stepToUpdateStats = 1
 
     }
 

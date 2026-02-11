@@ -135,9 +135,9 @@ fun Player.forcePlay(mediaItem: MediaItem, replace: Boolean = false) {
     if (excludeMediaItem(mediaItem, globalContext())) return
 
     if (!replace)
-        setMediaItem(mediaItem.cleaned, true)
+        setMediaItem(mediaItem, true)
     else
-        replaceMediaItem(currentMediaItemIndex, mediaItem.cleaned)
+        replaceMediaItem(currentMediaItemIndex, mediaItem)
 
     restoreGlobalVolume()
     playWhenReady = true
@@ -161,7 +161,7 @@ fun Player.playAtIndex(mediaItemIndex: Int) {
 fun Player.forcePlayAtIndex(mediaItems: List<MediaItem>, mediaItemIndex: Int) {
     //val filteredMediaItems = excludeMediaItems(mediaItems, globalContext())
     val filteredMediaItems = mediaItems
-    setMediaItems(filteredMediaItems.map { it.cleaned }, mediaItemIndex, C.TIME_UNSET)
+    setMediaItems(filteredMediaItems, mediaItemIndex, C.TIME_UNSET)
 
     restoreGlobalVolume()
     playWhenReady = true
@@ -210,7 +210,7 @@ fun Player.addNext(mediaItem: MediaItem, context: Context? = null, queue: Queues
     mediaItem.mediaMetadata.extras?.putLong("idQueue", queue.id)
     println("mediaItem-addNext extras: ${mediaItem.mediaMetadata.extras}")
 
-    addMediaItem(currentMediaItemIndex + 1, mediaItem.cleaned)
+    addMediaItem(currentMediaItemIndex + 1, mediaItem)
     SmartMessage(globalContext().resources.getString(R.string.done), context = globalContext())
 }
 
@@ -229,7 +229,7 @@ fun Player.addNext(mediaItems: List<MediaItem>, context: Context? = null, queue:
         }
     }
 
-    addMediaItems(currentMediaItemIndex + 1, filteredMediaItems.map { it.cleaned })
+    addMediaItems(currentMediaItemIndex + 1, filteredMediaItems)
     SmartMessage(globalContext().resources.getString(R.string.done), context = globalContext())
 }
 
@@ -242,7 +242,7 @@ fun Player.enqueue(mediaItem: MediaItem, context: Context? = null, queue: Queues
     mediaItem.mediaMetadata.extras?.putLong("idQueue", queue.id)
     println("mediaItem-enqueue extras: ${mediaItem.mediaMetadata.extras}")
 
-    addMediaItem(mediaItemCount, mediaItem.cleaned)
+    addMediaItem(mediaItemCount, mediaItem)
     SmartMessage(globalContext().resources.getString(R.string.done), context = globalContext())
 
 }
@@ -257,7 +257,7 @@ fun Player.enqueue(
     val filteredMediaItems = if (context != null) excludeMediaItems(mediaItems, context)
     else mediaItems
 
-    addMediaItems(mediaItemCount, filteredMediaItems.map { it.cleaned })
+    addMediaItems(mediaItemCount, filteredMediaItems)
     SmartMessage(globalContext().resources.getString(R.string.done), context = globalContext())
 }
 

@@ -344,13 +344,9 @@ fun SearchOnlineEntity (
                                                 )
                                             },
                                             onClick = {
-                                                binder?.stopRadio()
-                                                //                                        if (isVideoEnabled)
-                                                //                                            binder?.player?.playOnline(video.asMediaItem)
-                                                //                                        else
-                                                binder?.player?.forcePlay(media.asMediaItem)
-                                                binder?.setupRadio(media.info?.endpoint)
-                                                //fastPlay(media.asMediaItem, binder, withReplace = true)
+                                                //binder?.stopRadio()
+                                                binder?.player?.forcePlay(media.asMediaItem, true)
+                                                //binder?.setupRadio(media.info?.endpoint)
                                                 onDismiss()
                                             }
                                         ),
@@ -380,13 +376,9 @@ fun SearchOnlineEntity (
                                                 )
                                             },
                                             onClick = {
-                                                binder?.stopRadio()
-                                                //                                        if (isVideoEnabled)
-                                                //                                            binder?.player?.playOnline(video.asMediaItem)
-                                                //                                        else
-                                                binder?.player?.forcePlay(media.asMediaItem)
-                                                binder?.setupRadio(media.info?.endpoint)
-                                                //fastPlay(media.asMediaItem, binder, withReplace = true)
+                                                //binder?.stopRadio()
+                                                binder?.player?.forcePlay(media.asMediaItem, true)
+                                                //binder?.setupRadio(media.info?.endpoint)
                                                 onDismiss()
                                             }
                                         )
