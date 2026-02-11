@@ -92,19 +92,21 @@ jobs:
       - name: Generate Changelog
         id: changelog
         run: |
-          # Usa l'input del workflow_dispatch, non github.ref_name
           CURRENT_TAG="${{ github.event.inputs.version }}"
           
           if [ -z "$CURRENT_TAG" ]; then
             CURRENT_TAG="${{ github.ref_name }}"
           fi
           
-          PREVIOUS_TAG=$(git describe --tags --abbrev=0 ${CURRENT_TAG}^ 2>/dev/null || echo "")
+          # Prendi il tag precedente (escludendo il tag corrente)
+          PREVIOUS_TAG=$(git tag --sort=-version:refname --merged ${CURRENT_TAG} | grep -v "^${CURRENT_TAG}$" | head -1)
           
           if [ -z "$PREVIOUS_TAG" ]; then
+            echo "⚠️  No previous tag found - showing all commits"
             git log --pretty=format:"- %s ([%h](https://github.com/${{ github.repository }}/commit/%H))" --reverse | head -20 > /tmp/changelog.txt
           else
-            git log ${PREVIOUS_TAG}..${CURRENT_TAG} --pretty=format:"- %s ([%h](https://github.com/${{ github.repository }}/commit/%H))" --reverse > /tmp/changelog.txt
+            echo "📋 Changes between $PREVIOUS_TAG and $CURRENT_TAG"
+            git log ${PREVIOUS_TAG}..${CURRENT_TAG} --pretty=format:"- %s ([%h](https://github.com/${{ github.repository }}/commit/%H))" > /tmp/changelog.txt
           fi
           
           echo "changelog<<EOF" >> $GITHUB_OUTPUT
