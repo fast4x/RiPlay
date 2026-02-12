@@ -475,21 +475,17 @@ class MainActivity :
     }
 
     override fun onStart() {
-        //runCatching {
-            val intent = Intent(this, PlayerService::class.java)
+        super.onStart()
 
-//            if (isAtLeastAndroid8)
-//                startForegroundService(intent)
-//            else
+        val intent = Intent(this, PlayerService::class.java)
+
+        if (isAtLeastAndroid8)
+            startForegroundService(intent)
+        else
             startService(intent)
 
-            bindService(intent, serviceConnection, BIND_AUTO_CREATE)
+        bindService(intent, serviceConnection, BIND_AUTO_CREATE)
 
-//        }.onFailure {
-//            Timber.e("MainActivity.onStart bindService ${it.stackTraceToString()}")
-//        }
-
-        super.onStart()
     }
 
     @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
@@ -1873,22 +1869,21 @@ class MainActivity :
 
     }
 
-    // not needed
-//    override fun onStop() {
-//        Timber.d("MainActivity.onStop")
-//        runCatching {
-//            unbindService(serviceConnection)
-//        }.onFailure {
-//            Timber.e("MainActivity.onStop unbindService ${it.stackTraceToString()}")
-//        }
-//
+
+    override fun onStop() {
+        super.onStop()
+
+        Timber.d("MainActivity.onStop")
+        runCatching {
+            unbindService(serviceConnection)
+        }.onFailure {
+            Timber.e("MainActivity.onStop unbindService ${it.stackTraceToString()}")
+        }
+
 //        if (!isclosebackgroundPlayerEnabled)
 //            onStart() // some device require white listed
-//
-//
-//
-//        super.onStop()
-//    }
+
+    }
 
     @UnstableApi
     override fun onDestroy() {

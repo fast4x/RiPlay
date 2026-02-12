@@ -405,10 +405,13 @@ class PlayerService : Service(),
     override fun onCreate() {
         super.onCreate()
 
+        createNotificationChannel()
+        //startForeground()
+
         /**
          * Online initialization
          */
-        createNotificationChannel()
+
 
         preferences.registerOnSharedPreferenceChangeListener(this)
 
@@ -553,8 +556,6 @@ class PlayerService : Service(),
         initializeBitmapProvider()
         initializeOnlinePlayer()
 
-        startForeground()
-
         initializePositionObserver()
         initializeBluetoothConnect()
         initializeNormalizeVolume()
@@ -604,11 +605,12 @@ class PlayerService : Service(),
         updateWidgets()
 
     }
-// not important for now
-//    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-//        startForeground()
-//        return if (isManufacturerWithAutostart()) START_STICKY else START_NOT_STICKY
-//    }
+
+
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        startForeground()
+        return START_STICKY
+    }
 
     private fun startForeground() {
         startForeground(NOTIFICATION_ID,notification())
@@ -2359,7 +2361,7 @@ class PlayerService : Service(),
     private fun createNotificationChannel() {
         if (!isAtLeastAndroid8) return
 
-        notificationManager = applicationContext.getSystemService<NotificationManager>()
+        notificationManager = getSystemService(NotificationManager::class.java)
 
         notificationManager?.run {
             if (getNotificationChannel(NOTIFICATION_CHANNEL_ID) == null) {
