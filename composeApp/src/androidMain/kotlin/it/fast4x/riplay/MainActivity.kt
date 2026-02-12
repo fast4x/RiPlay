@@ -772,6 +772,7 @@ class MainActivity :
 
         setContent {
 
+            // Binder observer
             val binder = this@MainActivity.binder
             LaunchedEffect(binder) {
                 val serviceBinder = binder ?: return@LaunchedEffect
@@ -781,7 +782,7 @@ class MainActivity :
 //                }
 
                 serviceBinder.onlinePlayerState.collect { newState ->
-                    Timber.d("MainActivity: new state from Service: $newState")
+                    Timber.d("MainActivity: onlinePlayerState new state from Service: $newState")
 
                     //this@MainActivity.onlinePlayerPlayingState = (newState == PlayerConstants.PlayerState.PLAYING)
 
@@ -1360,7 +1361,8 @@ class MainActivity :
 
                 val playerState = binder?.onlinePlayerState?.collectAsState()
                 val onlinePlayerPlayingState = playerState?.value == PlayerConstants.PlayerState.PLAYING
-                onlinePlayerView = binder?.onlinePlayerView
+                val playerView = binder?.onlinePlayerView?.collectAsState()
+                onlinePlayerView = playerView?.value
 
                 val pip = isInPip(
                     onChange = {

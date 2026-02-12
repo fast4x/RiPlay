@@ -308,11 +308,18 @@ class PlayerService : Service(),
      */
     var currentSecond: MutableState<Float> = mutableFloatStateOf(0f)
     var currentDuration: MutableState<Float> = mutableFloatStateOf(0f)
-    var internalOnlinePlayerView: MutableState<YouTubePlayerView> = mutableStateOf(
+
+    private val _internalOnlinePlayerView = MutableStateFlow<YouTubePlayerView>(
         LayoutInflater.from(appContext())
             .inflate(R.layout.youtube_player, null, false)
                 as YouTubePlayerView
     )
+    val internalOnlinePlayerView: StateFlow<YouTubePlayerView?> = _internalOnlinePlayerView
+//    var internalOnlinePlayerView: MutableState<YouTubePlayerView> = mutableStateOf(
+//        LayoutInflater.from(appContext())
+//            .inflate(R.layout.youtube_player, null, false)
+//                as YouTubePlayerView
+//    )
     var internalOnlinePlayer: MutableState<YouTubePlayer?> = mutableStateOf(null)
 
     private val _internalOnlinePlayerState = MutableStateFlow<PlayerConstants.PlayerState>(PlayerConstants.PlayerState.UNSTARTED)
@@ -618,11 +625,10 @@ class PlayerService : Service(),
 
     private fun initializeVariables() {
 
-        internalOnlinePlayerView = mutableStateOf(
-        LayoutInflater.from(appContext())
-            .inflate(R.layout.youtube_player, null, false)
-                as YouTubePlayerView
-        )
+        val view = LayoutInflater.from(appContext())
+            .inflate(R.layout.youtube_player, null, false) as YouTubePlayerView
+
+        _internalOnlinePlayerView.value = view
 
         // todo add here all val that requires first initialize and add references in shared preferences, so is not nededed restart service when change it
         CoroutineScope(Dispatchers.Main).launch {
@@ -895,7 +901,7 @@ class PlayerService : Service(),
 
     private fun initializeOnlinePlayer() {
 
-        internalOnlinePlayerView.value.apply {
+        _internalOnlinePlayerView.value.apply {
             enableAutomaticInitialization = false
 
             enableBackgroundPlayback(true)
@@ -919,7 +925,7 @@ class PlayerService : Service(),
                     val customUiController =
                         CustomDefaultPlayerUiController(
                             context,
-                            internalOnlinePlayerView.value,
+                            _internalOnlinePlayerView.value,
                             youTubePlayer,
                             onTap = {}
                         )
@@ -933,7 +939,7 @@ class PlayerService : Service(),
                     customUiController.showBufferingProgress(false)
                     customUiController.showYouTubeButton(false)
                     customUiController.showFullscreenButton(false)
-                    internalOnlinePlayerView.value.setCustomPlayerUi(customUiController.rootView)
+                    _internalOnlinePlayerView.value.setCustomPlayerUi(customUiController.rootView)
 
                     Timber.d("PlayerService onlinePlayer onReady localmediaItem ${localMediaItem?.mediaId} queue index ${binder.player.currentMediaItemIndex}")
                     Timber.d("PlayerService onlinePlayer onReady isPersistentQueueEnabled $isPersistentQueueEnabled isResumePlaybackOnStart $isResumePlaybackOnStart")
@@ -1271,7 +1277,7 @@ class PlayerService : Service(),
             CoroutineScope(Dispatchers.Main).launch {
                 internalOnlinePlayer.value = null
             }
-            internalOnlinePlayerView.value.release()
+            _internalOnlinePlayerView.value.release()
         } catch (e: Exception) {
             Timber.e("PlayerService Error in online player release: ${e.message}")
         }
@@ -2569,8 +2575,8 @@ class PlayerService : Service(),
         val onlinePlayerCurrentSecond: Float
             get() = this@PlayerService.currentSecond.value
 
-        val onlinePlayerView: YouTubePlayerView?
-            get() = this@PlayerService.internalOnlinePlayerView.value
+        val onlinePlayerView: StateFlow<YouTubePlayerView?>
+            get() = this@PlayerService.internalOnlinePlayerView
 
         val cache: Cache
             get() = this@PlayerService.cache
