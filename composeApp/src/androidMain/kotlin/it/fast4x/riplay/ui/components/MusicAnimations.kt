@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -23,7 +24,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
-import it.fast4x.riplay.LocalOnlinePlayerPlayingState
+import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.PlayerConstants
 import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.enums.MusicAnimationType
 import it.fast4x.riplay.utils.DisposableListener
@@ -52,7 +53,8 @@ fun MusicAnimation(
         }
     }
 
-    val isOnlinePlayRunning = LocalOnlinePlayerPlayingState.current
+    val playerState = binder?.onlinePlayerState?.collectAsState()
+    val isOnlinePlayRunning = playerState?.value == PlayerConstants.PlayerState.PLAYING
 
     val nowPlayingIndicator by rememberPreference(nowPlayingIndicatorKey, MusicAnimationType.Bubbles)
     if (nowPlayingIndicator == MusicAnimationType.Disabled) return

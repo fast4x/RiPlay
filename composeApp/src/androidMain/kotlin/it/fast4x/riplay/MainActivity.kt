@@ -61,6 +61,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -104,6 +105,7 @@ import com.kieronquinn.monetcompat.app.MonetCompatActivity
 import com.kieronquinn.monetcompat.core.MonetActivityAccessException
 import com.kieronquinn.monetcompat.core.MonetCompat
 import com.kieronquinn.monetcompat.interfaces.MonetColorsChangedListener
+import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.PlayerConstants
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
 import com.valentinilk.shimmer.LocalShimmerTheme
 import com.valentinilk.shimmer.defaultShimmerTheme
@@ -291,8 +293,8 @@ class MainActivity :
         override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
             if (service is PlayerService.Binder) {
                 this@MainActivity.binder = service
-                this@MainActivity.onlinePlayerPlayingState = service.onlinePlayerPlayingState
-                this@MainActivity.onlinePlayerView = service.onlinePlayerView
+                //this@MainActivity.onlinePlayerPlayingState = service.onlinePlayerPlayingState
+                //this@MainActivity.onlinePlayerView = service.onlinePlayerView
             }
 
 
@@ -325,7 +327,7 @@ class MainActivity :
 
     //var riTuneDevices: MutableState<List<NsdServiceInfo>> = mutableStateOf(emptyList())
 
-    var onlinePlayerPlayingState by mutableStateOf(false)
+    //var onlinePlayerPlayingState by mutableStateOf(false)
     var localPlayerPlayingState: MutableState<Boolean> = mutableStateOf(false)
 
     var selectedQueue: MutableState<Queues> = mutableStateOf(defaultQueue())
@@ -769,6 +771,26 @@ class MainActivity :
         }
 
         setContent {
+
+            val binder = this@MainActivity.binder
+            LaunchedEffect(binder) {
+                val serviceBinder = binder ?: return@LaunchedEffect
+
+//                serviceBinder.onlinePlayerView.collect { onlinePlayerView ->
+//                    this@MainActivity.onlinePlayerView = onlinePlayerView
+//                }
+
+                serviceBinder.onlinePlayerState.collect { newState ->
+                    Timber.d("MainActivity: new state from Service: $newState")
+
+                    //this@MainActivity.onlinePlayerPlayingState = (newState == PlayerConstants.PlayerState.PLAYING)
+
+                    // Se vuoi gestire lo stato UNSTARTED specificamente nella UI:
+//                    if (newState == PlayerConstants.PlayerState.UNSTARTED) {
+//                        // Puoi mostrare un messaggio o aggiornare la UI di conseguenza
+//                    }
+                }
+            }
 
             val backupLauncher = rememberLauncherForActivityResult(
                 contract = ActivityResultContracts.CreateDocument("application/octet-stream")
@@ -1336,7 +1358,8 @@ class MainActivity :
                     intent.action = null
                 }
 
-                onlinePlayerPlayingState = binder?.onlinePlayerPlayingState == true
+                val playerState = binder?.onlinePlayerState?.collectAsState()
+                val onlinePlayerPlayingState = playerState?.value == PlayerConstants.PlayerState.PLAYING
                 onlinePlayerView = binder?.onlinePlayerView
 
                 val pip = isInPip(
@@ -1391,7 +1414,7 @@ class MainActivity :
                             LocalPlayerSheetState provides localPlayerSheetState,
                             LocalMonetCompat provides localMonet,
                             //LocalRiTuneDevices provides riTuneDevices.value,
-                            LocalOnlinePlayerPlayingState provides onlinePlayerPlayingState,
+                            //LocalOnlinePlayerPlayingState provides onlinePlayerPlayingState,
                             LocalSelectedQueue provides selectedQueue.value,
                             LocalAudioTagger provides audioTaggerViewModel,
                             LocalBackupManager provides backupManagerViewModel,
@@ -1939,8 +1962,8 @@ val LocalPlayerAwareWindowInsets = staticCompositionLocalOf<WindowInsets> { TODO
 val LocalPlayerSheetState =
     staticCompositionLocalOf<BottomSheetState> { error("No sheet state provided") }
 
-val LocalOnlinePlayerPlayingState =
-    staticCompositionLocalOf<Boolean> { error("No player sheet state provided") }
+//val LocalOnlinePlayerPlayingState =
+//    staticCompositionLocalOf<Boolean> { error("No player sheet state provided") }
 
 //val LocalRiTuneDevices =
 //    staticCompositionLocalOf<List<NsdServiceInfo>> { error("No RiTune devices provided") }

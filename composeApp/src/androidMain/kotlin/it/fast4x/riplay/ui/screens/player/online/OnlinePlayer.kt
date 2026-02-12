@@ -397,13 +397,14 @@ fun OnlinePlayer(
     binder?.player ?: return
     if (binder.player.currentTimeline.windowCount == 0) return
 
-    val playerState = binder.onlinePlayerState
+    val playerState = binder.onlinePlayerState.collectAsState()
+    val shouldBePlaying = playerState.value == PlayerConstants.PlayerState.PLAYING
 
     var nullableMediaItem by remember {
         mutableStateOf(binder.player.currentMediaItem, neverEqualPolicy())
     }
 
-    var shouldBePlaying by rememberSaveable { mutableStateOf(false) }
+
 
     var isRotated by rememberSaveable { mutableStateOf(false) }
     val rotationAngle by animateFloatAsState(
@@ -1388,11 +1389,11 @@ fun OnlinePlayer(
 
      */
 
-    LaunchedEffect(playerState) {
-
-        shouldBePlaying = playerState == PlayerConstants.PlayerState.PLAYING
-
-    }
+//    LaunchedEffect(playerState) {
+//
+//        shouldBePlaying = playerState == PlayerConstants.PlayerState.PLAYING
+//
+//    }
 
     val thumbnailRoundness by rememberObservedPreference(
         thumbnailRoundnessKey,
@@ -1437,7 +1438,7 @@ fun OnlinePlayer(
                 }
                 else binder.player.playPrevious()
             },
-            playerState = playerState,
+            playerState = playerState.value,
         )
     }
 
@@ -2816,7 +2817,7 @@ fun OnlinePlayer(
                                         }
                                         else binder.player.playPrevious()
                                     },
-                                    playerState = playerState,
+                                    playerState = playerState.value,
                                 )
 
                             }
@@ -3112,7 +3113,7 @@ fun OnlinePlayer(
                                                 }
                                                 else binder.player.playPrevious()
                                             },
-                                            playerState = playerState,
+                                            playerState = playerState.value,
                                         )
                                     }
                                 }
@@ -3831,7 +3832,7 @@ fun OnlinePlayer(
                                         }
                                         else binder.player.playPrevious()
                                     },
-                                    playerState = playerState,
+                                    playerState = playerState.value,
                                 )
 
                             }

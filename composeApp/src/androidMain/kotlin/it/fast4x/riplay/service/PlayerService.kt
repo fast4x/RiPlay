@@ -314,7 +314,11 @@ class PlayerService : Service(),
                 as YouTubePlayerView
     )
     var internalOnlinePlayer: MutableState<YouTubePlayer?> = mutableStateOf(null)
-    var internalOnlinePlayerState by mutableStateOf(PlayerConstants.PlayerState.UNSTARTED)
+
+    private val _internalOnlinePlayerState = MutableStateFlow<PlayerConstants.PlayerState>(PlayerConstants.PlayerState.UNSTARTED)
+    val internalOnlinePlayerState: StateFlow<PlayerConstants.PlayerState> = _internalOnlinePlayerState
+    //var internalOnlinePlayerState by mutableStateOf(PlayerConstants.PlayerState.UNSTARTED)
+
     var load = true
     var playFromSecond by mutableFloatStateOf(0f)
     var lastError: PlayerConstants.PlayerError? = null
@@ -528,6 +532,8 @@ class PlayerService : Service(),
             }
         }
 
+        initializeVariables()
+
         initializeLegacyNotificationActionReceiver()
         initializeUnifiedMediaSession()
         initializeBitmapProvider()
@@ -543,7 +549,6 @@ class PlayerService : Service(),
         initializeSensorListener()
         initializeSongCoverInLockScreen()
         initializeMedleyMode()
-        initializeVariables()
         initializePlaybackParameters()
         initializeNoisyReceiver()
 
@@ -555,7 +560,7 @@ class PlayerService : Service(),
         coroutineScope.launch(Dispatchers.Default) {
             while (isActive) {
                 if (localMediaItem?.isLocal == false) {
-                    if (internalOnlinePlayerState == PlayerConstants.PlayerState.PLAYING) {
+                    if (_internalOnlinePlayerState.value == PlayerConstants.PlayerState.PLAYING) {
                         onlineListenedDurationMs += 1000
                     } else {
                         if (onlineListenedDurationMs > 0) {
@@ -567,7 +572,7 @@ class PlayerService : Service(),
                     //fallback if online player not fire state ended
                     if (currentDuration.value > 0) {
                         if (currentSecond.value >= currentDuration.value - 0.5f) {
-                            if (internalOnlinePlayerState == PlayerConstants.PlayerState.PLAYING) {
+                            if (_internalOnlinePlayerState.value == PlayerConstants.PlayerState.PLAYING) {
                                 Timber.d("PlayerService Watchdog: End of online track detected by time, forcing playNext()")
                                 withContext(Dispatchers.Main) {
                                     player.playNext()
@@ -612,6 +617,13 @@ class PlayerService : Service(),
     }
 
     private fun initializeVariables() {
+
+        internalOnlinePlayerView = mutableStateOf(
+        LayoutInflater.from(appContext())
+            .inflate(R.layout.youtube_player, null, false)
+                as YouTubePlayerView
+        )
+
         // todo add here all val that requires first initialize and add references in shared preferences, so is not nededed restart service when change it
         CoroutineScope(Dispatchers.Main).launch {
             currentMediaItemState.value = player.currentMediaItem
@@ -653,7 +665,7 @@ class PlayerService : Service(),
         coroutineScope.launch {
             while (medleyDuration > 0) {
                 withContext(Dispatchers.Main) {
-                    Timber.d("PlayerService initializeMedleyMode medleyDuration $medleyDuration player.isPlaying ${player.isPlaying} internalOnlinePlayerState ${internalOnlinePlayerState == PlayerConstants.PlayerState.PLAYING}")
+                    Timber.d("PlayerService initializeMedleyMode medleyDuration $medleyDuration player.isPlaying ${player.isPlaying} internalOnlinePlayerState ${_internalOnlinePlayerState.value == PlayerConstants.PlayerState.PLAYING}")
                     val seconds = if (localMediaItem?.isLocal == true) player.currentPosition.div(1000).toInt() else currentSecond.value.toInt()
                     if (medleyDuration.toInt() <= seconds) {
                         //delay(1.seconds * (medleyDuration.toInt() + 2))
@@ -701,7 +713,7 @@ class PlayerService : Service(),
 
                 if (isCastActive) {
                     withContext(Dispatchers.Main) {
-                        internalOnlinePlayerState =
+                        _internalOnlinePlayerState.value =
                             playerState ?: PlayerConstants.PlayerState.UNSTARTED
                         if (duration != null) {
                             currentDuration.value = duration
@@ -961,12 +973,19 @@ class PlayerService : Service(),
                     Timber.d("PlayerService onlinePlayerView: onStateChange $state")
 
                     when(state) {
-                        PlayerConstants.PlayerState.PLAYING, PlayerConstants.PlayerState.PAUSED -> {
-                            youTubePlayer.unMute()
+                        PlayerConstants.PlayerState.PLAYING -> youTubePlayer.unMute()
+                        PlayerConstants.PlayerState.PAUSED -> youTubePlayer.mute()
+                            /* todo if system kill webview UNSTARTED is new state idle nothing todo must reinitialize webview
+                        PlayerConstants.PlayerState.UNSTARTED -> {
+                            Timber.d("PlayerService onlinePlayerView: onStateChange UNSTARTED regular load again")
+//                            localMediaItem?.let { item ->
+//                                Timber.w("PlayerService: Rilevato UNSTARTED anomalo. Re-inizializzazione caricamento video ${item.mediaId}")
+//                                youTubePlayer.cueVideo(item.mediaId, playFromSecond)
+//                            }
                         }
+                             */
                         PlayerConstants.PlayerState.VIDEO_CUED, PlayerConstants.PlayerState.UNSTARTED -> {
-                            Timber.d("PlayerService onlinePlayerView: onStateChange VIDEO_CUED, UNSTARTED regular play()")
-                            //youTubePlayer.play()
+                            Timber.d("PlayerService onlinePlayerView: onStateChange VIDEO_CUED regular play()")
 
                             if (!firstTimeStarted) {
                                 if (!GlobalSharedData.riTuneCastActive)
@@ -1003,7 +1022,7 @@ class PlayerService : Service(),
                         }
                     }
 
-                    internalOnlinePlayerState = state
+                    _internalOnlinePlayerState.value = state
                     isPlayingNow = state == PlayerConstants.PlayerState.PLAYING
                     updateUnifiedNotification()
                     updateDiscordPresence()
@@ -1132,7 +1151,7 @@ class PlayerService : Service(),
                 updateDiscordPresenceWithOnlinePlayer(
                     discordPresenceManager,
                     it,
-                    mutableStateOf(internalOnlinePlayerState),
+                    mutableStateOf(_internalOnlinePlayerState.value),
                     currentDuration.value,
                     currentSecond.value
                 )
@@ -1285,7 +1304,7 @@ class PlayerService : Service(),
     private var pausedByZeroVolume = false
     override fun onAudioVolumeChanged(currentVolume: Int, maxVolume: Int) {
         if (preferences.getBoolean(isPauseOnVolumeZeroEnabledKey, false)) {
-            if ((player.isPlaying || internalOnlinePlayerState == PlayerConstants.PlayerState.PLAYING) && currentVolume < 1) {
+            if ((player.isPlaying || _internalOnlinePlayerState.value == PlayerConstants.PlayerState.PLAYING) && currentVolume < 1) {
                 if (player.currentMediaItem?.isLocal == true) {
                     binder.callPause {}
                 } else {
@@ -1858,7 +1877,7 @@ class PlayerService : Service(),
                         else MediaSessionCompat.QueueItem.UNKNOWN_ID.toLong()
                     )
                     setState(
-                        if (internalOnlinePlayerState == PlayerConstants.PlayerState.PLAYING || player.isPlaying)
+                        if (_internalOnlinePlayerState.value == PlayerConstants.PlayerState.PLAYING || player.isPlaying)
                             PlaybackStateCompat.STATE_PLAYING else PlaybackStateCompat.STATE_PAUSED,
                         if(player.currentMediaItem?.isLocal == false) (currentSecond.value * 1000).toLong() else player.currentPosition,
                         1f
@@ -1866,7 +1885,7 @@ class PlayerService : Service(),
                 }
                 .build()
         )
-        Timber.d("PlayerService updateUnifiedMediasessionData onlineplayer playing ${internalOnlinePlayerState == PlayerConstants.PlayerState.PLAYING} localplayer playing ${player?.isPlaying}")
+        Timber.d("PlayerService updateUnifiedMediasessionData onlineplayer playing ${_internalOnlinePlayerState.value == PlayerConstants.PlayerState.PLAYING} localplayer playing ${player?.isPlaying}")
     }
 
     inner class LegacyNotificationActionReceiver() : BroadcastReceiver() {
@@ -2302,7 +2321,7 @@ class PlayerService : Service(),
                     NotificationChannel(
                         NOTIFICATION_CHANNEL_ID,
                         NOTIFICATION_CHANNEL_ID,
-                        NotificationManager.IMPORTANCE_LOW
+                        NotificationManager.IMPORTANCE_HIGH
                     ).apply {
                         setSound(null, null)
                         enableLights(false)
@@ -2316,7 +2335,7 @@ class PlayerService : Service(),
                     NotificationChannel(
                         SLEEPTIMER_NOTIFICATION_CHANNEL_ID,
                         SLEEPTIMER_NOTIFICATION_CHANNEL_ID,
-                        NotificationManager.IMPORTANCE_LOW
+                        NotificationManager.IMPORTANCE_HIGH
                     ).apply {
                         setSound(null, null)
                         enableLights(false)
@@ -2464,11 +2483,11 @@ class PlayerService : Service(),
                     if (player.currentMediaItem?.isLocal == false)
                         player.pauseAtEndOfMediaItems = true else player.pauseAtEndOfMediaItems = false
 
-                    if (player.currentMediaItem?.isLocal == false && (player.playbackState == Player.STATE_ENDED || internalOnlinePlayerState == PlayerConstants.PlayerState.ENDED)
+                    if (player.currentMediaItem?.isLocal == false && (player.playbackState == Player.STATE_ENDED || _internalOnlinePlayerState.value == PlayerConstants.PlayerState.ENDED)
                         && lastProcessedIndex != player.currentMediaItemIndex
                     ) {
 
-                        Timber.d("PlayerService initializePositionObserver INSIDE player.playbackState ${player.playbackState} internalOnlinePlayerState ${internalOnlinePlayerState} lastProcessedIndex $lastProcessedIndex player.currentMediaItemIndex ${player.currentMediaItemIndex}")
+                        Timber.d("PlayerService initializePositionObserver INSIDE player.playbackState ${player.playbackState} internalOnlinePlayerState ${_internalOnlinePlayerState} lastProcessedIndex $lastProcessedIndex player.currentMediaItemIndex ${player.currentMediaItemIndex}")
 
                         val queueLoopType = preferences.getEnum(
                             queueLoopTypeKey,
@@ -2539,9 +2558,9 @@ class PlayerService : Service(),
             get() = this@PlayerService.internalOnlinePlayer.value
 
         val onlinePlayerPlayingState: Boolean
-            get() = this@PlayerService.internalOnlinePlayerState == PlayerConstants.PlayerState.PLAYING
+            get() = this@PlayerService.internalOnlinePlayerState.value == PlayerConstants.PlayerState.PLAYING
 
-        val onlinePlayerState: PlayerConstants.PlayerState
+        val onlinePlayerState: StateFlow<PlayerConstants.PlayerState>
             get() = this@PlayerService.internalOnlinePlayerState
 
         val onlinePlayerCurrentDuration: Float
