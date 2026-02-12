@@ -42,6 +42,7 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.edit
 import androidx.core.content.getSystemService
+import androidx.core.view.isGone
 import androidx.lifecycle.ViewModelProvider
 import androidx.media.VolumeProviderCompat
 import androidx.media3.common.AudioAttributes
@@ -383,6 +384,8 @@ class PlayerService : Service(),
         ViewModelProvider(AppSharedScope)[GlobalQueueViewModel::class.java]
     }
 
+    private var unstartedWatchdogJob: Job? = null
+
     //private var checkVolumeLevel: Boolean = true
 
 
@@ -625,15 +628,15 @@ class PlayerService : Service(),
 
     private fun initializeVariables() {
 
-        val view = LayoutInflater.from(appContext())
+        _internalOnlinePlayerView.value = LayoutInflater.from(appContext())
             .inflate(R.layout.youtube_player, null, false) as YouTubePlayerView
 
-        _internalOnlinePlayerView.value = view
+        //_internalOnlinePlayerView.value = view
 
         // todo add here all val that requires first initialize and add references in shared preferences, so is not nededed restart service when change it
-        CoroutineScope(Dispatchers.Main).launch {
-            currentMediaItemState.value = player.currentMediaItem
-        }
+
+        currentMediaItemState.value = player.currentMediaItem
+
         //isclosebackgroundPlayerEnabled = preferences.getBoolean(closebackgroundPlayerKey, false)
         closeServiceAfterMinutes = preferences.getEnum(closePlayerServiceAfterMinutesKey, DurationInMinutes.Disabled)
         closeServiceWhenPlayerPausedAfterMinutes = preferences.getEnum(
@@ -899,6 +902,19 @@ class PlayerService : Service(),
 
     }
 
+    fun recreateOnlinePlayerView() {
+//        _internalOnlinePlayerView.value.release()
+//
+//        val newView = LayoutInflater.from(appContext())
+//            .inflate(R.layout.youtube_player, null, false) as YouTubePlayerView
+//
+//        _internalOnlinePlayerView.value = newView
+
+        initializeVariables()
+
+        initializeOnlinePlayer()
+    }
+
     private fun initializeOnlinePlayer() {
 
         _internalOnlinePlayerView.value.apply {
@@ -918,9 +934,8 @@ class PlayerService : Service(),
 
                 override fun onReady(youTubePlayer: YouTubePlayer) {
                     super.onReady(youTubePlayer)
-                    CoroutineScope(Dispatchers.Main).launch {
-                        internalOnlinePlayer.value = youTubePlayer
-                    }
+
+                    internalOnlinePlayer.value = youTubePlayer
 
                     val customUiController =
                         CustomDefaultPlayerUiController(
@@ -956,17 +971,17 @@ class PlayerService : Service(),
 
                 override fun onCurrentSecond(youTubePlayer: YouTubePlayer, second: Float) {
                     super.onCurrentSecond(youTubePlayer, second)
-                    CoroutineScope(Dispatchers.Main).launch {
-                        currentSecond.value = second
-                        //Timber.d("PlayerService onlinePlayerView: onCurrentSecond $second")
-                    }
+
+                    currentSecond.value = second
+                    //Timber.d("PlayerService onlinePlayerView: onCurrentSecond $second")
+
                 }
 
                 override fun onVideoDuration(youTubePlayer: YouTubePlayer, duration: Float) {
                     super.onVideoDuration(youTubePlayer, duration)
-                    CoroutineScope(Dispatchers.Main).launch {
-                        currentDuration.value = duration
-                    }
+
+                    currentDuration.value = duration
+
                     updateUnifiedNotification()
                     updateDiscordPresence()
                 }
@@ -976,21 +991,43 @@ class PlayerService : Service(),
                     state: PlayerConstants.PlayerState
                 ) {
 
+                    _internalOnlinePlayerState.value = state
+
                     Timber.d("PlayerService onlinePlayerView: onStateChange $state")
+
+                    unstartedWatchdogJob?.cancel()
 
                     when(state) {
                         PlayerConstants.PlayerState.PLAYING -> youTubePlayer.unMute()
                         PlayerConstants.PlayerState.PAUSED -> youTubePlayer.mute()
-                            /* todo if system kill webview UNSTARTED is new state idle nothing todo must reinitialize webview
                         PlayerConstants.PlayerState.UNSTARTED -> {
-                            Timber.d("PlayerService onlinePlayerView: onStateChange UNSTARTED regular load again")
-//                            localMediaItem?.let { item ->
-//                                Timber.w("PlayerService: Rilevato UNSTARTED anomalo. Re-inizializzazione caricamento video ${item.mediaId}")
-//                                youTubePlayer.cueVideo(item.mediaId, playFromSecond)
-//                            }
+                            if (!firstTimeStarted) {
+                                unstartedWatchdogJob = CoroutineScope(Dispatchers.Main).launch {
+                                    Timber.d("PlayerService onlinePlayerView: onStateChange UNSTARTED watchdog")
+                                    delay(500)
+
+                                    if (_internalOnlinePlayerState.value == PlayerConstants.PlayerState.UNSTARTED) {
+                                        Timber.e("PlayerService onlinePlayerView: Persistent UNSTARTED state. Probably webView killed. Force to re-initialize.")
+
+                                        recreateOnlinePlayerView()
+                                        delay(500)
+                                        val currentPlayer = this@PlayerService.internalOnlinePlayer.value
+
+                                        localMediaItem?.let { item ->
+                                            if (currentPlayer != null) {
+                                                Timber.d("PlayerService onlinePlayerView: Try reload song/video")
+                                                currentPlayer.cueVideo(item.mediaId, playFromSecond)
+                                            } else {
+                                                Timber.w("PlayerService onlinePlayerView: Recovery - internalOnlinePlayer is not defined, impossible to continue")
+                                            }
+                                        }
+
+                                    }
+                                }
+                            }
                         }
-                             */
-                        PlayerConstants.PlayerState.VIDEO_CUED, PlayerConstants.PlayerState.UNSTARTED -> {
+
+                        PlayerConstants.PlayerState.VIDEO_CUED -> {
                             Timber.d("PlayerService onlinePlayerView: onStateChange VIDEO_CUED regular play()")
 
                             if (!firstTimeStarted) {
@@ -1028,7 +1065,6 @@ class PlayerService : Service(),
                         }
                     }
 
-                    _internalOnlinePlayerState.value = state
                     isPlayingNow = state == PlayerConstants.PlayerState.PLAYING
                     updateUnifiedNotification()
                     updateDiscordPresence()
@@ -1274,9 +1310,9 @@ class PlayerService : Service(),
         }
 
         try {
-            CoroutineScope(Dispatchers.Main).launch {
-                internalOnlinePlayer.value = null
-            }
+
+            internalOnlinePlayer.value = null
+
             _internalOnlinePlayerView.value.release()
         } catch (e: Exception) {
             Timber.e("PlayerService Error in online player release: ${e.message}")
@@ -1412,9 +1448,9 @@ class PlayerService : Service(),
 
         if (lastOnlineMediaId == newMediaId) {
             Timber.d("PlayerService: Transition ignored, same MediaID ($newMediaId) skipped")
-            CoroutineScope(Dispatchers.Main).launch {
-                binder.player.playNext()
-            }
+
+            binder.player.playNext()
+
             //return
         }
 
@@ -1429,9 +1465,9 @@ class PlayerService : Service(),
         Timber.d("PlayerService onMediaItemTransition mediaItem ${mediaItem.mediaId} reason $reason")
 
         currentQueuePosition = player.currentMediaItemIndex
-        CoroutineScope(Dispatchers.Main).launch {
-            currentSecond.value = 0F
-        }
+
+        currentSecond.value = 0F
+
 
         if (parentalControlEnabled && mediaItem.isExplicit) {
             //handleSkipToNext()
@@ -1459,9 +1495,9 @@ class PlayerService : Service(),
         }
 
         mediaItem.let {
-            CoroutineScope(Dispatchers.Main).launch {
-                currentMediaItemState.value = it
-            }
+
+            currentMediaItemState.value = it
+
             localMediaItem = it
 
             if (!it.isLocal){
@@ -2863,9 +2899,9 @@ class PlayerService : Service(),
                                     )
                                 )
                             }
-                        CoroutineScope(Dispatchers.Main).launch {
-                            currentSecond.value = second.toFloat()
-                        }
+
+                        currentSecond.value = second.toFloat()
+
                     },
                     onPlayNext = {
                         //it.player.playNext()
