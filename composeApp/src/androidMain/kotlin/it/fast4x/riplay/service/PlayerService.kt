@@ -321,7 +321,11 @@ class PlayerService : Service(),
 //            .inflate(R.layout.youtube_player, null, false)
 //                as YouTubePlayerView
 //    )
-    var internalOnlinePlayer: MutableState<YouTubePlayer?> = mutableStateOf(null)
+
+    private val _internalOnlinePlayer = MutableStateFlow<YouTubePlayer?>(null)
+    val internalOnlinePlayer: StateFlow<YouTubePlayer?> = _internalOnlinePlayer
+
+    //var internalOnlinePlayer: MutableState<YouTubePlayer?> = mutableStateOf(null)
 
     private val _internalOnlinePlayerState = MutableStateFlow<PlayerConstants.PlayerState>(PlayerConstants.PlayerState.UNSTARTED)
     val internalOnlinePlayerState: StateFlow<PlayerConstants.PlayerState> = _internalOnlinePlayerState
@@ -658,7 +662,7 @@ class PlayerService : Service(),
                     (playbackSpeed.toDouble() > 1.76) -> PlayerConstants.PlaybackRate.RATE_2
                     else -> PlayerConstants.PlaybackRate.RATE_1
                 }
-                internalOnlinePlayer.value?.setPlaybackRate(onlinePlabackRate)
+                _internalOnlinePlayer.value?.setPlaybackRate(onlinePlabackRate)
             }
             else -> {
                 player.playbackParameters = PlaybackParameters(
@@ -935,7 +939,7 @@ class PlayerService : Service(),
                 override fun onReady(youTubePlayer: YouTubePlayer) {
                     super.onReady(youTubePlayer)
 
-                    internalOnlinePlayer.value = youTubePlayer
+                    _internalOnlinePlayer.value = youTubePlayer
 
                     val customUiController =
                         CustomDefaultPlayerUiController(
@@ -1011,14 +1015,14 @@ class PlayerService : Service(),
 
                                         recreateOnlinePlayerView()
                                         delay(500)
-                                        val currentPlayer = this@PlayerService.internalOnlinePlayer.value
+                                        val currentPlayer = this@PlayerService._internalOnlinePlayer.value
 
                                         localMediaItem?.let { item ->
                                             if (currentPlayer != null) {
                                                 Timber.d("PlayerService onlinePlayerView: Try reload song/video")
                                                 currentPlayer.cueVideo(item.mediaId, playFromSecond)
                                             } else {
-                                                Timber.w("PlayerService onlinePlayerView: Recovery - internalOnlinePlayer is not defined, impossible to continue")
+                                                Timber.w("PlayerService onlinePlayerView: Recovery - _internalOnlinePlayer is not defined, impossible to continue")
                                             }
                                         }
 
@@ -1144,7 +1148,7 @@ class PlayerService : Service(),
                     SmartMessage(
                         message = this@PlayerService.getString(
                             R.string.skip_media_on_error_message,
-                            prev.mediaMetadata.title
+                            cleanPrefix(prev.mediaMetadata.title.toString())
                         ),
                         context = this@PlayerService,
                     )
@@ -1272,7 +1276,7 @@ class PlayerService : Service(),
         }
 //        if (isclosebackgroundPlayerEnabled) {
 //            player.pause()
-//            internalOnlinePlayer.value?.pause()
+//            _internalOnlinePlayer.value?.pause()
 //            broadCastPendingIntent<NotificationDismissReceiver>().send()
 //            this.stopService(this.intent<PlayerService>())
 //            //stopSelf()
@@ -1311,7 +1315,7 @@ class PlayerService : Service(),
 
         try {
 
-            internalOnlinePlayer.value = null
+            _internalOnlinePlayer.value = null
 
             _internalOnlinePlayerView.value.release()
         } catch (e: Exception) {
@@ -1350,14 +1354,14 @@ class PlayerService : Service(),
                 if (player.currentMediaItem?.isLocal == true) {
                     binder.callPause {}
                 } else {
-                    internalOnlinePlayer.value?.pause()
+                    _internalOnlinePlayer.value?.pause()
                 }
                 pausedByZeroVolume = true
             } else if (pausedByZeroVolume && currentVolume >= 1) {
                 if (player.currentMediaItem?.isLocal == true) {
                     binder.player.play()
                 } else {
-                    internalOnlinePlayer.value?.play()
+                    _internalOnlinePlayer.value?.play()
                 }
                 pausedByZeroVolume = false
             }
@@ -1368,7 +1372,7 @@ class PlayerService : Service(),
             ) {
             val onlineVolume = getSystemMediaVolume()
             Timber.d("PlayerService onAudioVolumeChanged currentVolume $currentVolume onlineVolume $onlineVolume")
-            internalOnlinePlayer.value?.setVolume(onlineVolume)
+            _internalOnlinePlayer.value?.setVolume(onlineVolume)
         }
     }
 
@@ -1505,7 +1509,7 @@ class PlayerService : Service(),
                 Timber.d("PlayerService onMediaItemTransition system volume ${getSystemMediaVolume()}")
 
                 if (!GlobalSharedData.riTuneCastActive)
-                    internalOnlinePlayer.value?.cueVideo(it.mediaId, playFromSecond)
+                    _internalOnlinePlayer.value?.cueVideo(it.mediaId, playFromSecond)
                 else
                     coroutineScope.launch {
                         riTuneClient.sendCommand(
@@ -1516,10 +1520,10 @@ class PlayerService : Service(),
                             )
                         )
                     }
-                //internalOnlinePlayer.value?.loadVideo(it.mediaId, playFromSecond)
-                //startFadeAnimator(player = internalOnlinePlayer, volumeDevice = getSystemMediaVolume(), duration = 5, fadeIn = true) {}
+                //_internalOnlinePlayer.value?.loadVideo(it.mediaId, playFromSecond)
+                //startFadeAnimator(player = _internalOnlinePlayer, volumeDevice = getSystemMediaVolume(), duration = 5, fadeIn = true) {}
                 //if (checkVolumeLevel)
-                internalOnlinePlayer.value?.setVolume(getSystemMediaVolume())
+                _internalOnlinePlayer.value?.setVolume(getSystemMediaVolume())
 
             }
 
@@ -1547,7 +1551,7 @@ class PlayerService : Service(),
                     LastFmScrobbleType.Simple -> {
                         sendScrobble(
                             mediaItem.mediaMetadata.artist.toString(),
-                            mediaItem.mediaMetadata.title.toString(),
+                            cleanPrefix(mediaItem.mediaMetadata.title.toString()),
                             mediaItem.mediaMetadata.albumTitle.toString(),
                             it
                         )
@@ -1556,7 +1560,7 @@ class PlayerService : Service(),
                     LastFmScrobbleType.NowPlaying -> {
                         sendNowPlaying(
                             mediaItem.mediaMetadata.artist.toString(),
-                            mediaItem.mediaMetadata.title.toString(),
+                            cleanPrefix(mediaItem.mediaMetadata.title.toString()),
                             mediaItem.mediaMetadata.albumTitle.toString(),
                             it
                         )
@@ -1616,7 +1620,7 @@ class PlayerService : Service(),
 
             val description = MediaDescriptionCompat.Builder()
                 .setMediaId(mediaItem.mediaId)
-                .setTitle(mediaItem.mediaMetadata.title)
+                .setTitle(cleanPrefix(mediaItem.mediaMetadata.title.toString()))
                 .setSubtitle(mediaItem.mediaMetadata.artist)
 
                 .setIconUri(mediaItem.mediaMetadata.artworkUri)
@@ -1647,10 +1651,10 @@ class PlayerService : Service(),
                     Timber.w("PlayerService maybeRecoverPlaybackError: try to recover player error")
                     localMediaItem?.let {
                         if (!GlobalSharedData.riTuneCastActive) {
-                            internalOnlinePlayer.value?.cueVideo(it.mediaId, playFromSecond)
-                            //internalOnlinePlayer.value?.loadVideo(it.mediaId, playFromSecond)
+                            _internalOnlinePlayer.value?.cueVideo(it.mediaId, playFromSecond)
+                            //_internalOnlinePlayer.value?.loadVideo(it.mediaId, playFromSecond)
 
-                            internalOnlinePlayer.value?.setVolume(getSystemMediaVolume())
+                            _internalOnlinePlayer.value?.setVolume(getSystemMediaVolume())
                         } else {
                             coroutineScope.launch {
                                 riTuneClient.sendCommand(
@@ -1781,7 +1785,7 @@ class PlayerService : Service(),
         noisyReceiver = NoisyAudioReceiver(this) {
             player.pause()
             if (!GlobalSharedData.riTuneCastActive)
-                internalOnlinePlayer.value?.pause()
+                _internalOnlinePlayer.value?.pause()
 
             SmartMessage(getString(R.string.music_paused_headphones_disconnected), context = this)
         }
@@ -1796,7 +1800,7 @@ class PlayerService : Service(),
             if (currentSong.value?.isLocal == true) {
                 player.play()
             } else {
-                internalOnlinePlayer.value?.play()
+                _internalOnlinePlayer.value?.play()
             }
 
             SmartMessage(getString(R.string.music_resumed_headphones_connected), context = this)
@@ -1849,7 +1853,7 @@ class PlayerService : Service(),
                 )
                 .putString(
                     MediaMetadataCompat.METADATA_KEY_TITLE,
-                    currentMediaItem?.mediaMetadata?.title.toString()
+                    cleanPrefix(currentMediaItem?.mediaMetadata?.title.toString())
                 )
                 .putString(
                     MediaMetadataCompat.METADATA_KEY_ARTIST,
@@ -1943,7 +1947,7 @@ class PlayerService : Service(),
                     Action.pause.value -> {
                         player.pause()
                         if (!GlobalSharedData.riTuneCastActive)
-                            internalOnlinePlayer.value?.pause()
+                            _internalOnlinePlayer.value?.pause()
                         else
                             coroutineScope.launch {
                                 riTuneClient.sendCommand(
@@ -1959,7 +1963,7 @@ class PlayerService : Service(),
                             it.player.play()
                         else {
                             if (!GlobalSharedData.riTuneCastActive)
-                                internalOnlinePlayer.value?.play()
+                                _internalOnlinePlayer.value?.play()
                             else
                                 coroutineScope.launch {
                                     riTuneClient.sendCommand(
@@ -1989,7 +1993,7 @@ class PlayerService : Service(),
                             it.player.seamlessQueue(currentMediaItem)
 
                             if(!GlobalSharedData.riTuneCastActive)
-                                internalOnlinePlayer.value?.play()
+                                _internalOnlinePlayer.value?.play()
                             else
                                 coroutineScope.launch {
                                     riTuneClient.sendCommand(
@@ -2314,7 +2318,7 @@ class PlayerService : Service(),
         } else {
             NotificationCompat.Builder(this)
         }
-            .setContentTitle(currentMediaItem?.mediaMetadata?.title)
+            .setContentTitle(cleanPrefix(currentMediaItem?.mediaMetadata?.title.toString()))
             .setContentText(currentMediaItem?.mediaMetadata?.artist)
             //.setSubText(currentMediaItem?.mediaMetadata?.artist)
             .setContentInfo(currentMediaItem?.mediaMetadata?.albumTitle)
@@ -2538,7 +2542,7 @@ class PlayerService : Service(),
 
                         when (queueLoopType) {
                             QueueLoopType.RepeatOne -> {
-                                internalOnlinePlayer.value?.seekTo(0f)
+                               _internalOnlinePlayer.value?.seekTo(0f)
                                 Timber.d("PlayerService initializePositionObserver Repeat: RepeatOne fired")
                             }
 
@@ -2857,7 +2861,7 @@ class PlayerService : Service(),
                             it.player.play()
                         else {
                             if (!GlobalSharedData.riTuneCastActive)
-                                internalOnlinePlayer.value?.play()
+                                _internalOnlinePlayer.value?.play()
                             else
                                 coroutineScope.launch {
                                     riTuneClient.sendCommand(
@@ -2873,7 +2877,7 @@ class PlayerService : Service(),
                         Timber.d("PlayerService InitializeUnifiedSessionCallback onPauseClick")
                         it.player.pause()
                         if (!GlobalSharedData.riTuneCastActive) {
-                            internalOnlinePlayer.value?.pause()
+                            _internalOnlinePlayer.value?.pause()
                         } else {
                             coroutineScope.launch {
                                 riTuneClient.sendCommand(
@@ -2888,7 +2892,7 @@ class PlayerService : Service(),
                         val newPosition = (second / 1000).toFloat()
                         Timber.d("PlayerService InitializeUnifiedSessionCallback onSeekPosTo ${newPosition}")
                         if (!GlobalSharedData.riTuneCastActive)
-                            internalOnlinePlayer.value?.seekTo(newPosition)
+                            _internalOnlinePlayer.value?.seekTo(newPosition)
                         else
                             coroutineScope.launch {
                                 riTuneClient.sendCommand(
@@ -2937,7 +2941,7 @@ class PlayerService : Service(),
                                     it.player.seamlessQueue(currentMediaItem)
 
                                     if(!GlobalSharedData.riTuneCastActive)
-                                        internalOnlinePlayer.value?.play()
+                                        _internalOnlinePlayer.value?.play()
                                     else
                                         coroutineScope.launch {
                                             riTuneClient.sendCommand(
