@@ -1090,7 +1090,8 @@ class PlayerService : Service(),
                 ) {
                     //super.onError(youTubePlayer, error)
 
-                    localMediaItem?.isLocal?.let { if (it) return }
+                    if (localMediaItem == null || localMediaItem?.isLocal == true) return
+
                     if (isPersistentQueueEnabled)
                         player.saveMasterQueue(currentSecond.value.toInt())
 

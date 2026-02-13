@@ -346,13 +346,13 @@ fun Thumbnail(
 
                 var errorCounter by remember { mutableIntStateOf(0) }
 
-                if (error != null) {
+                if (error != null && currentWindow.mediaItem.isLocal) {
                     errorCounter = errorCounter.plus(1)
                     if (errorCounter < 3) {
                         Timber.e("Playback error: error ${error?.message} code ${error?.errorCode} ${error?.cause?.cause}")
                         SmartMessage(
-                            if (currentWindow.mediaItem.isLocal) localMusicFileNotFoundError
-                            else when (error?.cause?.cause) {
+                            //if (currentWindow.mediaItem.isLocal) localMusicFileNotFoundError else
+                                when (error?.cause?.cause) {
                                 is UnresolvedAddressException, is UnknownHostException -> networkerror
                                 is PlayableFormatNotFoundException -> notfindplayableaudioformaterror
                                 is UnplayableException -> originalvideodeletederror
