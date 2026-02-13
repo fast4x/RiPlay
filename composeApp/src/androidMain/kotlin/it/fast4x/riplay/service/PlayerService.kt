@@ -515,6 +515,8 @@ class PlayerService : Service(),
         currentSong.debounce(1000).collect(coroutineScope) { song ->
             if (song == null) return@collect
 
+            currentSecond.value = 0F
+
             var currentMediaId = song.id
 
             if (lastOnlineMediaId != currentMediaId) {
@@ -1450,6 +1452,8 @@ class PlayerService : Service(),
 
         if (mediaItem == null) return
 
+        currentSecond.value = 0F
+
 //        if (reason == Player.MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED) {
 //            Timber.d("PlayerService: MediaItem transition ignored (Reason: Playlist Changed)")
 //            return
@@ -1476,8 +1480,6 @@ class PlayerService : Service(),
         Timber.d("PlayerService onMediaItemTransition mediaItem ${mediaItem.mediaId} reason $reason")
 
         currentQueuePosition = player.currentMediaItemIndex
-
-        currentSecond.value = 0F
 
 
         if (parentalControlEnabled && mediaItem.isExplicit) {
