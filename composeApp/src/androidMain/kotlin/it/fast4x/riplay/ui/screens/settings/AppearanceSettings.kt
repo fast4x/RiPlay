@@ -307,7 +307,7 @@ fun DefaultAppearanceSettings() {
     playerInfoType = PlayerInfoType.Modern
     var transparentBackgroundActionBarPlayer by rememberPreference(
         transparentBackgroundPlayerActionBarKey,
-        false
+        true
     )
     transparentBackgroundActionBarPlayer = false
     var iconLikeType by rememberPreference(iconLikeTypeKey, IconLikeType.Essential)
@@ -486,7 +486,7 @@ fun AppearanceSettings(
     var playerInfoType by rememberPreference(playerInfoTypeKey, PlayerInfoType.Essential)
     var transparentBackgroundActionBarPlayer by rememberPreference(
         transparentBackgroundPlayerActionBarKey,
-        false
+        true
     )
     var iconLikeType by rememberPreference(iconLikeTypeKey, IconLikeType.Essential)
     var playerSwapControlsWithTimeline by rememberPreference(

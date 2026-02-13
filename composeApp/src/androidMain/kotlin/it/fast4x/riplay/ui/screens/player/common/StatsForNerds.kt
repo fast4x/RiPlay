@@ -99,7 +99,7 @@ fun StatsForNerds(
         val playerType by rememberPreference(playerTypeKey, PlayerType.Modern)
         val transparentBackgroundActionBarPlayer by rememberPreference(
             transparentBackgroundPlayerActionBarKey,
-            false
+            true
         )
         var blackgradient by rememberPreference(blackgradientKey, false)
         val playerBackgroundColors by rememberPreference(

@@ -1013,7 +1013,7 @@ fun OnlinePlayer(
 
     val transparentBackgroundActionBarPlayer by rememberObservedPreference(
         transparentBackgroundPlayerActionBarKey,
-        false
+        true
     )
     val showTopActionsBar by rememberObservedPreference(showTopActionsBarKey, true)
     val showPlayerActionsBar by rememberObservedPreference(showPlayerActionsBarKey, true)

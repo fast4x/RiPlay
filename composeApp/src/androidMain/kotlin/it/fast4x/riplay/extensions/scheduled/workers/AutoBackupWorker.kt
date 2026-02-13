@@ -180,7 +180,7 @@ class AutoBackupWorker(context: Context, params: WorkerParameters) : CoroutineWo
             val playerInfoType = context.preferences.getEnum(playerInfoTypeKey, PlayerType.Modern)
             val transparentBackgroundActionBarPlayer = context.preferences.getBoolean(
                 transparentBackgroundPlayerActionBarKey,
-                false
+                true
             )
             val iconLikeType = context.preferences.getEnum(iconLikeTypeKey, IconLikeType.Essential)
             val playerSwapControlsWithTimeline = context.preferences.getBoolean(

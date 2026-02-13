@@ -984,7 +984,7 @@ fun LocalPlayer(
     var showFullLyrics by rememberSaveable { mutableStateOf(false) }
     var showSearchEntity by rememberSaveable { mutableStateOf(false) }
 
-    val transparentBackgroundActionBarPlayer by rememberPreference(transparentBackgroundPlayerActionBarKey, false)
+    val transparentBackgroundActionBarPlayer by rememberPreference(transparentBackgroundPlayerActionBarKey, true)
     val showTopActionsBar by rememberPreference(showTopActionsBarKey, true)
     val showPlayerActionsBar by rememberPreference(showPlayerActionsBarKey, true)
 

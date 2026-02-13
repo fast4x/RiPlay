@@ -161,7 +161,7 @@ fun Controls(
     var showlyricsthumbnail by rememberPreference(showlyricsthumbnailKey, false)
     var transparentBackgroundActionBarPlayer by rememberPreference(
         transparentBackgroundPlayerActionBarKey,
-        false
+        true
     )
     var playerControlsType by rememberPreference(playerControlsTypeKey, PlayerControlsType.Essential)
     var playerPlayButtonType by rememberPreference(playerPlayButtonTypeKey, PlayerPlayButtonType.Disabled)

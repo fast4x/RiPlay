@@ -469,7 +469,7 @@ fun DefaultUiSettings() {
     backgroundProgress = BackgroundProgress.MiniPlayer
     var transparentBackgroundActionBarPlayer by rememberPreference(
         transparentBackgroundPlayerActionBarKey,
-        false
+        true
     )
     transparentBackgroundActionBarPlayer = false
     var actionspacedevenly by rememberPreference(actionspacedevenlyKey, false)
@@ -674,7 +674,7 @@ fun UiSettings(
     )
     var transparentBackgroundActionBarPlayer by rememberPreference(
         transparentBackgroundPlayerActionBarKey,
-        false
+        true
     )
     var actionspacedevenly by rememberPreference(actionspacedevenlyKey, false)
     var tapqueue by rememberPreference(tapqueueKey, true)
