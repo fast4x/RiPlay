@@ -1880,9 +1880,6 @@ class MainActivity :
             Timber.e("MainActivity.onStop unbindService ${it.stackTraceToString()}")
         }
 
-//        if (!isclosebackgroundPlayerEnabled)
-//            onStart() // some device require white listed
-
     }
 
     @UnstableApi

@@ -1,0 +1,2 @@
+REM "C:\Users\rinor\AppData\Local\Android\Sdk\build-tools\36.1.0\apksigner.bat" verify --print-certs ./composeApp/foss/release/RiPlay-foss-release-0.0.61.apk
+"C:\Users\rinor\AppData\Local\Android\Sdk\build-tools\36.1.0\apksigner.bat" verify --print-certs ./composeApp/full/release/RiPlay-full-release-0.7.67.apk

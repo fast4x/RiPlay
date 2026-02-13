@@ -1,2 +1,2 @@
 del composeApp\foss\release\composeApp-foss-release.apks
-java -jar ./bundletool.jar build-apks --ks="./APK keystore/RiPlayKeystore.jks" --ks-key-alias=key0 --bundle=./composeApp/foss/release/composeApp-foss-release.aab --output=./composeApp/foss/release/composeApp-foss-release.apks
+java -jar ./bundletool.jar build-apks --ks="./APK keystore/keystore.jks" --ks-key-alias=key0 --bundle=./composeApp/foss/release/composeApp-foss-release.aab --output=./composeApp/foss/release/composeApp-foss-release.apks
