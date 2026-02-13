@@ -538,13 +538,18 @@ class PlayerService : Service(),
                 getOnlineMetadata(currentMediaId)
                     ?.let {
                         Timber.d("PlayerService onCreate update currentSong onlinemetadata it $it")
-                        Database.upsert(Format(
-                            songId = currentMediaId,
-                            contentLength = it.videoDetails?.lengthSeconds?.toLong(),
-                            loudnessDb = it.playerConfig?.audioConfig?.loudnessDb
-                                ?: it.playerConfig?.audioConfig?.perceptualLoudnessDb?.toFloat(),
-                            playbackUrl = it.playbackTracking?.videostatsPlaybackUrl?.baseUrl
-                        ))
+                        try {
+                            Database.upsert(Format(
+                                songId = currentMediaId,
+                                contentLength = it.videoDetails?.lengthSeconds?.toLong(),
+                                loudnessDb = it.playerConfig?.audioConfig?.loudnessDb
+                                    ?: it.playerConfig?.audioConfig?.perceptualLoudnessDb?.toFloat(),
+                                playbackUrl = it.playbackTracking?.videostatsPlaybackUrl?.baseUrl
+                            ))
+                        } catch (e: Exception) {
+                            Timber.e("PlayerService onCreate update currentSong exception ${e.stackTraceToString()}")
+                        }
+
                     }
             }
         }
