@@ -187,7 +187,7 @@ import it.fast4x.riplay.utils.addToYtLikedSongs
 import it.fast4x.riplay.utils.addToYtPlaylist
 import it.fast4x.riplay.utils.asSong
 import it.fast4x.riplay.utils.formatAsDuration
-import org.dailyislam.android.utilities.isNetworkConnected
+import it.fast4x.riplay.utils.isNetworkConnected
 import it.fast4x.riplay.extensions.preferences.showDislikedPlaylistKey
 import it.fast4x.riplay.utils.insertOrUpdateBlacklist
 

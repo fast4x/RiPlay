@@ -8,7 +8,6 @@ import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.absoluteOffset
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -19,20 +18,19 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.NavRoutes
+import it.fast4x.riplay.enums.NetworkType
 import it.fast4x.riplay.extensions.preferences.eqEnabledKey
 import it.fast4x.riplay.extensions.preferences.logDebugEnabledKey
 import it.fast4x.riplay.extensions.preferences.rememberObservedPreference
 import it.fast4x.riplay.ui.styling.favoritesIcon
 import it.fast4x.riplay.ui.components.themed.Button
 import it.fast4x.riplay.utils.colorPalette
-import it.fast4x.riplay.utils.isDebugModeEnabled
 import it.fast4x.riplay.utils.isParentalControlEnabled
 import it.fast4x.riplay.utils.typography
 import it.fast4x.riplay.utils.isAtLeastAndroid7
-import org.dailyislam.android.utilities.getNetworkType
+import it.fast4x.riplay.utils.getNetworkType
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -103,8 +101,9 @@ fun AppTitle(
         ) {
             if (isAtLeastAndroid7) {
                 val dataTypeIcon = when (getNetworkType(context)) {
-                    "WIFI" -> R.drawable.datawifi
-                    "CELLULAR" -> R.drawable.datamobile
+                    NetworkType.WIFI -> R.drawable.datawifi
+                    NetworkType.CELLULAR -> R.drawable.datamobile
+                    NetworkType.ETHERNET -> R.drawable.dataethernet
                     else -> R.drawable.alert_circle_not_filled
                 }
                 Image(

@@ -76,7 +76,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import androidx.media3.common.MediaItem
 import androidx.media3.common.util.UnstableApi
-import androidx.media3.exoplayer.offline.Download
 import androidx.navigation.NavController
 import com.github.doyaaaaaken.kotlincsv.client.KotlinCsvExperimental
 import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
@@ -139,7 +138,6 @@ import it.fast4x.riplay.commonutils.durationTextToMillis
 import it.fast4x.riplay.utils.enqueue
 import it.fast4x.riplay.utils.forcePlayAtIndex
 import it.fast4x.riplay.utils.forcePlayFromBeginning
-import it.fast4x.riplay.utils.formatAsTime
 import it.fast4x.riplay.extensions.preferences.isRecommendationEnabledKey
 import it.fast4x.riplay.extensions.preferences.maxSongsInQueueKey
 import it.fast4x.riplay.extensions.preferences.navigationBarPositionKey
@@ -189,7 +187,7 @@ import it.fast4x.riplay.utils.asSong
 import it.fast4x.riplay.utils.formatAsDuration
 import it.fast4x.riplay.utils.getAlbumVersionFromVideo
 import it.fast4x.riplay.utils.isExplicit
-import org.dailyislam.android.utilities.isNetworkConnected
+import it.fast4x.riplay.utils.isNetworkConnected
 import it.fast4x.riplay.utils.mediaItemToggleLike
 import it.fast4x.riplay.utils.move
 import it.fast4x.riplay.extensions.preferences.playlistSongsTypeFilterKey
@@ -204,7 +202,6 @@ import kotlinx.coroutines.delay
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
 import it.fast4x.riplay.extensions.persist.persistList
-import it.fast4x.riplay.service.PlayerMediaBrowserService
 import timber.log.Timber
 
 @KotlinCsvExperimental

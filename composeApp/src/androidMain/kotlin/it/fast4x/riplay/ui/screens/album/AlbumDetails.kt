@@ -118,7 +118,6 @@ import it.fast4x.riplay.utils.fadingEdge
 import it.fast4x.riplay.utils.forcePlayAtIndex
 import it.fast4x.riplay.utils.forcePlayFromBeginning
 import it.fast4x.riplay.utils.formatAsTime
-import org.dailyislam.android.utilities.getHttpClient
 import it.fast4x.riplay.utils.isLandscape
 import it.fast4x.riplay.utils.languageDestination
 import it.fast4x.riplay.ui.styling.medium
@@ -150,7 +149,8 @@ import it.fast4x.riplay.utils.LazyListContainer
 import it.fast4x.riplay.utils.addToYtLikedSongs
 import it.fast4x.riplay.utils.addToYtPlaylist
 import it.fast4x.riplay.utils.globalContext
-import org.dailyislam.android.utilities.isNetworkConnected
+import it.fast4x.riplay.utils.httpClient
+import it.fast4x.riplay.utils.isNetworkConnected
 import it.fast4x.riplay.utils.mediaItemSetLiked
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
@@ -499,7 +499,7 @@ fun AlbumDetails(
         mutableStateOf(false)
     }
 
-    val translator = Translator(getHttpClient())
+    val translator = Translator(httpClient())
     val languageDestination = languageDestination()
 
     var readMore by remember { mutableStateOf(false) }

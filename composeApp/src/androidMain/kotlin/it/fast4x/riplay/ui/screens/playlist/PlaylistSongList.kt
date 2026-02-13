@@ -67,7 +67,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.media3.common.util.UnstableApi
-import androidx.media3.exoplayer.offline.Download
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import it.fast4x.riplay.extensions.persist.persist
@@ -147,14 +146,13 @@ import it.fast4x.riplay.ui.styling.align
 import it.fast4x.riplay.utils.asPlaylist
 import it.fast4x.riplay.ui.styling.color
 import it.fast4x.riplay.utils.formatAsDuration
-import org.dailyislam.android.utilities.getHttpClient
-import org.dailyislam.android.utilities.isNetworkConnected
+import it.fast4x.riplay.utils.isNetworkConnected
 import it.fast4x.riplay.utils.languageDestination
 import it.fast4x.riplay.utils.mediaItemSetLiked
 import it.fast4x.riplay.commonutils.setLikeState
-import it.fast4x.riplay.data.models.Song
 import it.fast4x.riplay.ui.components.themed.FastPlayActionsBar
 import it.fast4x.riplay.ui.components.themed.LoaderScreen
+import it.fast4x.riplay.utils.httpClient
 import kotlinx.coroutines.flow.filterNotNull
 import me.bush.translator.Language
 import me.bush.translator.Translator
@@ -199,7 +197,7 @@ fun PlaylistSongList(
         mutableStateOf(false)
     }
 
-    val translator = Translator(getHttpClient())
+    val translator = Translator(httpClient())
     val languageDestination = languageDestination()
 
     var localPlaylist by remember { mutableStateOf<Playlist?>(null) }

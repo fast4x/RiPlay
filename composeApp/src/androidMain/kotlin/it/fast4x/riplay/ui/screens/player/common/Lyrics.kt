@@ -129,7 +129,6 @@ import it.fast4x.riplay.ui.styling.center
 import it.fast4x.riplay.ui.styling.color
 import it.fast4x.riplay.extensions.preferences.colorPaletteModeKey
 import it.fast4x.riplay.extensions.preferences.expandedplayerKey
-import org.dailyislam.android.utilities.getHttpClient
 import it.fast4x.riplay.extensions.preferences.isShowingSynchronizedLyricsKey
 import it.fast4x.riplay.utils.languageDestination
 import it.fast4x.riplay.utils.languageDestinationName
@@ -171,6 +170,8 @@ import it.fast4x.riplay.extensions.preferences.landscapeControlsKey
 import it.fast4x.riplay.extensions.preferences.lyricsSizeAnimateKey
 import it.fast4x.riplay.extensions.preferences.lyricsSizeKey
 import it.fast4x.riplay.extensions.preferences.lyricsSizeLKey
+import it.fast4x.riplay.utils.httpClient
+import it.fast4x.riplay.utils.okHttpClient
 import it.fast4x.riplay.utils.playNext
 import it.fast4x.riplay.utils.playPrevious
 import timber.log.Timber
@@ -322,7 +323,7 @@ fun Lyrics(
 
         var languageDestination = languageDestination(otherLanguageApp)
 
-        val translator = Translator(getHttpClient())
+        val translator = Translator(httpClient())
 
         var copyToClipboard by remember {
             mutableStateOf(false)

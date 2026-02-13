@@ -52,7 +52,7 @@ import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.putJsonArray
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import org.dailyislam.android.utilities.isNetworkConnected
+import it.fast4x.riplay.utils.isNetworkConnected
 import org.jetbrains.annotations.Contract
 import timber.log.Timber
 import java.io.IOException

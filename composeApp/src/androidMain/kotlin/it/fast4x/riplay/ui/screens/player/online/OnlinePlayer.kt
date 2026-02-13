@@ -126,7 +126,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.times
 import androidx.compose.ui.util.lerp
 import androidx.compose.ui.zIndex
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackException
@@ -215,8 +214,6 @@ import it.fast4x.riplay.extensions.preferences.expandedplayertoggleKey
 import it.fast4x.riplay.extensions.preferences.extraspaceKey
 import it.fast4x.riplay.extensions.preferences.fadingedgeKey
 import it.fast4x.riplay.extensions.preferences.jumpPreviousKey
-import it.fast4x.riplay.extensions.preferences.lastVideoIdKey
-import it.fast4x.riplay.extensions.preferences.lastVideoSecondsKey
 import it.fast4x.riplay.extensions.preferences.miniQueueExpandedKey
 import it.fast4x.riplay.extensions.preferences.noblurKey
 import it.fast4x.riplay.extensions.preferences.playerBackgroundColorsKey
@@ -346,7 +343,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.dailyislam.android.utilities.isNetworkConnected
+import it.fast4x.riplay.utils.isNetworkConnected
 import timber.log.Timber
 import kotlin.Float.Companion.POSITIVE_INFINITY
 import kotlin.math.absoluteValue

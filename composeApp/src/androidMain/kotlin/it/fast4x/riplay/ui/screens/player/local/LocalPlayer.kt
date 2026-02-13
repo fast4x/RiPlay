@@ -323,7 +323,7 @@ import it.fast4x.riplay.utils.mediaItemToggleLike
 import it.fast4x.riplay.commonutils.setDisLikeState
 import it.fast4x.riplay.utils.removeFromOnlineLikedSong
 import kotlinx.coroutines.CoroutineScope
-import org.dailyislam.android.utilities.isNetworkConnected
+import it.fast4x.riplay.utils.isNetworkConnected
 import kotlin.math.sqrt
 import it.fast4x.riplay.utils.PlayerViewModel
 import it.fast4x.riplay.utils.PlayerViewModelFactory

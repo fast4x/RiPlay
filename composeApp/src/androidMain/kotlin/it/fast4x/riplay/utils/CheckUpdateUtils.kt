@@ -1,17 +1,10 @@
 package it.fast4x.riplay.utils
 
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.ui.platform.LocalContext
-import androidx.lifecycle.compose.LocalLifecycleOwner
-import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.io.IOException
-import okhttp3.OkHttpClient
 import okhttp3.Request
 import timber.log.Timber
 import java.io.File
@@ -21,7 +14,7 @@ suspend fun checkAndDownloadNewVersionCode() {
     CoroutineScope(Dispatchers.Default).launch {
         val url =
             "https://raw.githubusercontent.com/fast4x/RiPlay/main/updatedVersion/updatedVersionCode.ver"
-        val client = OkHttpClient()
+        val client = okHttpClient() //OkHttpClient()
 
         try {
             val response =

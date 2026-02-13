@@ -137,7 +137,6 @@ import it.fast4x.riplay.ui.components.themed.PeriodMenu
 import it.fast4x.riplay.ui.components.themed.PlaylistsItemMenu
 import it.fast4x.riplay.ui.components.themed.SecondaryTextButton
 import it.fast4x.riplay.ui.components.themed.SmartMessage
-import it.fast4x.riplay.ui.components.themed.SortMenu
 import it.fast4x.riplay.ui.components.themed.TitleSection
 import it.fast4x.riplay.ui.items.FolderItem
 import it.fast4x.riplay.ui.items.SongItem
@@ -157,7 +156,6 @@ import it.fast4x.riplay.ui.styling.color
 import it.fast4x.riplay.extensions.preferences.defaultFolderKey
 import it.fast4x.riplay.extensions.preferences.disableScrollingTextKey
 import it.fast4x.riplay.commonutils.durationTextToMillis
-import it.fast4x.riplay.enums.ArtistSortBy
 import it.fast4x.riplay.enums.BlacklistType
 import it.fast4x.riplay.utils.enqueue
 import it.fast4x.riplay.extensions.preferences.excludeSongsWithDurationLimitKey
@@ -197,7 +195,7 @@ import it.fast4x.riplay.utils.addToYtLikedSongs
 import it.fast4x.riplay.utils.addToYtPlaylist
 import it.fast4x.riplay.utils.asSong
 import it.fast4x.riplay.utils.formatAsDuration
-import org.dailyislam.android.utilities.isNetworkConnected
+import it.fast4x.riplay.utils.isNetworkConnected
 import it.fast4x.riplay.extensions.preferences.showDislikedPlaylistKey
 import it.fast4x.riplay.ui.components.themed.EnumsMenu
 import it.fast4x.riplay.utils.insertOrUpdateBlacklist

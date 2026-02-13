@@ -101,7 +101,7 @@ import it.fast4x.riplay.extensions.preferences.effectRotationKey
 import it.fast4x.riplay.utils.getLikeState
 import it.fast4x.riplay.utils.intent
 import it.fast4x.riplay.utils.isExplicit
-import org.dailyislam.android.utilities.isNetworkConnected
+import it.fast4x.riplay.utils.isNetworkConnected
 import it.fast4x.riplay.utils.mediaItemToggleLike
 import it.fast4x.riplay.extensions.preferences.miniPlayerTypeKey
 import it.fast4x.riplay.utils.playNext
