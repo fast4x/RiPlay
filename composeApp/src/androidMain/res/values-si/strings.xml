@@ -1255,4 +1255,7 @@ CC-BY-SA 3.0</string>
     <string name="equalizer_dance">Dance</string>
     <string name="equalizer_acoustic">Acoustic</string>
     <string name="equalizer_reset">Reset</string>
+    <string name="homepage_classic">Classic</string>
+    <string name="homepage_extended">Extended</string>
+    <string name="homepage_type">Homepage type</string>
 </resources>

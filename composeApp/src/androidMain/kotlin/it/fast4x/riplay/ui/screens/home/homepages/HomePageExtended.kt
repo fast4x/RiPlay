@@ -1,4 +1,4 @@
-package it.fast4x.riplay.ui.screens.home.old
+package it.fast4x.riplay.ui.screens.home.homepages
 
 import android.annotation.SuppressLint
 import androidx.compose.animation.AnimatedVisibility
@@ -59,7 +59,7 @@ import it.fast4x.riplay.data.models.Artist
 import it.fast4x.riplay.data.models.PlaylistPreview
 import it.fast4x.riplay.data.models.Song
 import it.fast4x.riplay.enums.BlacklistType
-import it.fast4x.riplay.enums.HomeSection
+import it.fast4x.riplay.enums.HomePageSection
 import it.fast4x.riplay.enums.HomeType
 import it.fast4x.riplay.ui.components.LocalGlobalSheetState
 import it.fast4x.riplay.ui.components.PullToRefreshBox
@@ -114,7 +114,7 @@ import timber.log.Timber
 @ExperimentalComposeUiApi
 @UnstableApi
 @Composable
-fun HomePage_OLD(
+fun HomePageExtended(
     navController: NavController,
     onAlbumClick: (String) -> Unit,
     onArtistClick: (String) -> Unit,
@@ -303,14 +303,14 @@ fun HomePage_OLD(
     val disableScrollingText by rememberPreference(disableScrollingTextKey, false)
 
     val buttonsList = listOf(
-        HomeSection.Home to HomeSection.Home.textName
+        HomePageSection.Home to HomePageSection.Home.textName
     ).toMutableList().apply {
-        add(HomeSection.ForYou to HomeSection.ForYou.textName)
-        add(HomeSection.Other to HomeSection.Other.textName)
+        add(HomePageSection.ForYou to HomePageSection.ForYou.textName)
+        add(HomePageSection.Other to HomePageSection.Other.textName)
     }
 
 
-    var homeSection by rememberSaveable { mutableStateOf(HomeSection.Home) }
+    var homePageSection by rememberSaveable { mutableStateOf(HomePageSection.Home) }
     var homeType by rememberPreference(homeTypeKey, HomeType.Tabbed)
 
 
@@ -453,9 +453,9 @@ fun HomePage_OLD(
                 if (homeType == HomeType.Tabbed) {
                     ButtonsRow(
                         buttons = buttonsList,
-                        currentValue = homeSection,
+                        currentValue = homePageSection,
                         onValueUpdate = {
-                            homeSection = it
+                            homePageSection = it
                         },
                         modifier = Modifier.padding(all = 12.dp)
                     )
@@ -466,9 +466,9 @@ fun HomePage_OLD(
 
 
     AnimatedVisibility(
-        visible = homeSection == HomeSection.Home || homeType == HomeType.Classic
+        visible = homePageSection == HomePageSection.Home || homeType == HomeType.Classic
     ) {
-        HomeSectionPart(
+        HomePageExtendedSections(
             navController = navController,
             showListenerLevels = showListenerLevels,
             showTips = showTips,
@@ -511,7 +511,7 @@ fun HomePage_OLD(
 //START SECTION MOOD AND GENRES
 
     AnimatedVisibility(
-        visible = homeSection == HomeSection.Other || homeType == HomeType.Classic
+        visible = homePageSection == HomePageSection.Other || homeType == HomeType.Classic
     ) {
         MoodAndGenresPart(
             homePageInit = homePageInit,
@@ -552,7 +552,7 @@ fun HomePage_OLD(
 // START SECTION FOR YOU
 
                 AnimatedVisibility(
-                    visible = homeSection == HomeSection.ForYou || homeType == HomeType.Classic
+                    visible = homePageSection == HomePageSection.ForYou || homeType == HomeType.Classic
                 ) {
                     ForYouPart(
                         homePageInit = homePageInit,

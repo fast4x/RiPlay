@@ -1,4 +1,4 @@
-package it.fast4x.riplay.ui.screens.home
+package it.fast4x.riplay.ui.screens.home.homepages
 
 import android.annotation.SuppressLint
 import androidx.compose.animation.ExperimentalAnimationApi
@@ -54,7 +54,6 @@ import it.fast4x.environment.Environment
 import it.fast4x.environment.EnvironmentExt
 import it.fast4x.environment.models.NavigationEndpoint
 import it.fast4x.environment.models.bodies.NextBody
-import it.fast4x.environment.requests.HomePage
 import it.fast4x.environment.requests.discoverPage
 import it.fast4x.environment.requests.relatedPage
 import it.fast4x.riplay.data.Database
@@ -66,8 +65,6 @@ import it.fast4x.riplay.enums.NavigationBarPosition
 import it.fast4x.riplay.enums.PlayEventsType
 import it.fast4x.riplay.enums.UiType
 import it.fast4x.riplay.data.models.Artist
-import it.fast4x.riplay.data.models.PlaylistPreview
-import it.fast4x.riplay.data.models.Song
 import it.fast4x.riplay.enums.BlacklistType
 import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.extensions.listenerlevel.HomepageListenerLevelBadges
@@ -80,21 +77,14 @@ import it.fast4x.riplay.ui.styling.px
 import it.fast4x.riplay.ui.screens.welcome.WelcomeMessage
 import it.fast4x.riplay.extensions.preferences.disableScrollingTextKey
 import it.fast4x.riplay.utils.isLandscape
-import it.fast4x.riplay.extensions.preferences.loadedDataKey
-import it.fast4x.riplay.extensions.preferences.parentalControlEnabledKey
 import it.fast4x.riplay.extensions.preferences.playEventsTypeKey
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.extensions.preferences.selectedCountryCodeKey
-import it.fast4x.riplay.extensions.preferences.showChartsKey
 import it.fast4x.riplay.extensions.preferences.showFloatingIconKey
-import it.fast4x.riplay.extensions.preferences.showMonthlyPlaylistInQuickPicksKey
 import it.fast4x.riplay.extensions.preferences.showMoodsAndGenresKey
 import it.fast4x.riplay.extensions.preferences.showNewAlbumsArtistsKey
 import it.fast4x.riplay.extensions.preferences.showNewAlbumsKey
-import it.fast4x.riplay.extensions.preferences.showPlaylistMightLikeKey
-import it.fast4x.riplay.extensions.preferences.showRelatedAlbumsKey
 import it.fast4x.riplay.extensions.preferences.showSearchTabKey
-import it.fast4x.riplay.extensions.preferences.showSimilarArtistsKey
 import it.fast4x.riplay.extensions.preferences.showTipsKey
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -102,7 +92,6 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.ui.screens.settings.isYtLoggedIn
-import it.fast4x.riplay.extensions.preferences.quickPicsHomePageKey
 import it.fast4x.riplay.extensions.preferences.showListenerLevelsKey
 import it.fast4x.riplay.extensions.rewind.HomepageRewind
 import it.fast4x.riplay.ui.components.themed.ChipItemColored

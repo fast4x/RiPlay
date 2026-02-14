@@ -1,4 +1,4 @@
-package it.fast4x.riplay.ui.screens.home.old
+package it.fast4x.riplay.ui.screens.home.homepages
 
 import androidx.annotation.OptIn
 import androidx.compose.animation.ExperimentalAnimationApi
@@ -91,7 +91,7 @@ import timber.log.Timber
 @OptIn(UnstableApi::class)
 @kotlin.OptIn(ExperimentalAnimationApi::class, ExperimentalTextApi::class)
 @Composable
-fun HomeSectionPart(
+fun HomePageExtendedSections(
     navController: NavController,
     showListenerLevels: Boolean,
     showTips: Boolean,

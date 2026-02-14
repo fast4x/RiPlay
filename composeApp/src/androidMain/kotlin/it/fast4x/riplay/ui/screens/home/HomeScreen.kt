@@ -29,21 +29,26 @@ import it.fast4x.riplay.enums.CheckUpdateState
 import it.fast4x.riplay.enums.HomeScreenTabs
 import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.data.models.toUiMood
+import it.fast4x.riplay.enums.HomePagetype
 import it.fast4x.riplay.ui.components.themed.ConfirmationDialog
 import it.fast4x.riplay.ui.components.themed.SmartMessage
 import it.fast4x.riplay.utils.CheckAvailableNewVersion
 import it.fast4x.riplay.extensions.preferences.checkUpdateStateKey
 import it.fast4x.riplay.extensions.preferences.enableMusicIdentifierKey
 import it.fast4x.riplay.extensions.preferences.getEnum
+import it.fast4x.riplay.extensions.preferences.homePageTypeKey
 import it.fast4x.riplay.extensions.preferences.homeScreenTabIndexKey
 import it.fast4x.riplay.extensions.preferences.indexNavigationTabKey
 import it.fast4x.riplay.extensions.preferences.preferences
+import it.fast4x.riplay.extensions.preferences.rememberObservedPreference
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import it.fast4x.riplay.ui.components.ScreenContainer
+import it.fast4x.riplay.ui.screens.home.homepages.HomePage
+import it.fast4x.riplay.ui.screens.home.homepages.HomePageExtended
 import kotlin.system.exitProcess
 
 
@@ -91,6 +96,8 @@ fun HomeScreen(
         false
     )
 
+    val homePageType by rememberObservedPreference(homePageTypeKey, HomePagetype.Classic)
+
     if (tabIndex == -2) navController.navigate(NavRoutes.search.name)
     if (tabIndex == -3) {
         if (isEnabledMusicIdentifier)
@@ -119,32 +126,73 @@ fun HomeScreen(
     ) { currentTabIndex ->
         saveableStateHolder.SaveableStateProvider(key = currentTabIndex) {
             when (currentTabIndex) {
-                0 -> HomePage(
-                    onAlbumClick = {
-                        navController.navigate(route = "${NavRoutes.album.name}/$it")
-                    },
-                    onArtistClick = {
-                        navController.navigate(route = "${NavRoutes.artist.name}/$it")
-                    },
-                    onPlaylistClick = {
-                        navController.navigate(route = "${NavRoutes.playlist.name}/$it")
-                    },
-                    onSearchClick = {
-                        navController.navigate(NavRoutes.search.name)
-                    },
-                    onMoodAndGenresClick = { mood ->
-                        navController.currentBackStackEntry?.savedStateHandle?.set("mood", mood.toUiMood())
-                        navController.navigate(NavRoutes.mood.name)
-                    },
-                    onChipClick = { chip ->
-                        navController.currentBackStackEntry?.savedStateHandle?.set("chip", chip.toUiChip())
-                        navController.navigate(route = NavRoutes.chip.name)
-                    },
-                    onSettingsClick = {
-                        navController.navigate(NavRoutes.settings.name)
-                    },
-                    navController = navController
-                )
+                0 -> when(homePageType) {
+                    HomePagetype.Extended -> HomePageExtended(
+                        onAlbumClick = {
+                            navController.navigate(route = "${NavRoutes.album.name}/$it")
+                        },
+                        onArtistClick = {
+                            navController.navigate(route = "${NavRoutes.artist.name}/$it")
+                        },
+                        onPlaylistClick = {
+                            navController.navigate(route = "${NavRoutes.playlist.name}/$it")
+                        },
+                        onSearchClick = {
+                            navController.navigate(NavRoutes.search.name)
+                        },
+                        onMoodAndGenresClick = { mood ->
+                            navController.currentBackStackEntry?.savedStateHandle?.set(
+                                "mood",
+                                mood.toUiMood()
+                            )
+                            navController.navigate(NavRoutes.mood.name)
+                        },
+                        onChipClick = { chip ->
+                            navController.currentBackStackEntry?.savedStateHandle?.set(
+                                "chip",
+                                chip.toUiChip()
+                            )
+                            navController.navigate(route = NavRoutes.chip.name)
+                        },
+                        onSettingsClick = {
+                            navController.navigate(NavRoutes.settings.name)
+                        },
+                        navController = navController
+                    )
+
+                    HomePagetype.Classic -> HomePage(
+                        onAlbumClick = {
+                            navController.navigate(route = "${NavRoutes.album.name}/$it")
+                        },
+                        onArtistClick = {
+                            navController.navigate(route = "${NavRoutes.artist.name}/$it")
+                        },
+                        onPlaylistClick = {
+                            navController.navigate(route = "${NavRoutes.playlist.name}/$it")
+                        },
+                        onSearchClick = {
+                            navController.navigate(NavRoutes.search.name)
+                        },
+                        onMoodAndGenresClick = { mood ->
+                            navController.currentBackStackEntry?.savedStateHandle?.set(
+                                "mood",
+                                mood.toUiMood()
+                            )
+                            navController.navigate(NavRoutes.mood.name)
+                        },
+                        onChipClick = { chip ->
+                            navController.currentBackStackEntry?.savedStateHandle?.set(
+                                "chip",
+                                chip.toUiChip()
+                            )
+                            navController.navigate(route = NavRoutes.chip.name)
+                        },
+                        onSettingsClick = {
+                            navController.navigate(NavRoutes.settings.name)
+                        },
+                        navController = navController
+                    )
+                }
 
                 1 -> HomeSongs(
                     navController = navController,

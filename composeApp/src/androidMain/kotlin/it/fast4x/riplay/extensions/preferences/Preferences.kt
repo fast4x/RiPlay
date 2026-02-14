@@ -424,6 +424,8 @@ const val eqBandsKey = "eqBands"
 
 const val equalizerTypeKey = "equalizerType"
 
+const val homePageTypeKey = "homePageType"
+
 
 inline fun <reified T : Enum<T>> SharedPreferences.getEnum(
     key: String,

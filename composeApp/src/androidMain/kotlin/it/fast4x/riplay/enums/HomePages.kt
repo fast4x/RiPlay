@@ -4,7 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import it.fast4x.riplay.R
 
-enum class HomeSection {
+enum class HomePageSection {
     Home,
     ForYou,
     Other;
@@ -16,4 +16,16 @@ enum class HomeSection {
             ForYou -> stringResource(R.string.home_section_for_you)
             Other -> stringResource(R.string.home_section_other)
         }
+}
+
+enum class HomePagetype {
+    Classic,
+    Extended;
+
+    val textName: String
+    @Composable
+    get() = when(this) {
+        Classic -> stringResource(R.string.homepage_classic)
+        Extended -> stringResource(R.string.homepage_extended)
+    }
 }
