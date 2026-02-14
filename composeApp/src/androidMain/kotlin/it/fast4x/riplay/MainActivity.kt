@@ -261,7 +261,9 @@ import it.fast4x.riplay.service.experimental.AppSharedScope
 import it.fast4x.riplay.service.experimental.GlobalQueueViewModel
 import it.fast4x.riplay.ui.components.Snowfall
 import it.fast4x.riplay.utils.GlobalSharedData.riTuneDevices
+import it.fast4x.riplay.utils.WebViewInfo
 import it.fast4x.riplay.utils.checkAndDownloadNewVersionCode
+import it.fast4x.riplay.utils.getWebViewInfo
 import it.fast4x.riplay.utils.isAtLeastAndroid12
 import it.fast4x.riplay.utils.isManufacturerWithAutostart
 import kotlinx.coroutines.Dispatchers
@@ -768,24 +770,27 @@ class MainActivity :
 
         setContent {
 
+            //Check if webview component exists
+            var webViewInfo by remember { mutableStateOf<WebViewInfo>(WebViewInfo()) }
+            LaunchedEffect(Unit) {
+                webViewInfo = getWebViewInfo(this@MainActivity)
+                if (webViewInfo.isWebViewAvailable)
+                    SmartMessage(
+                        "Android WebView is not available but required, please install!",
+                        PopupType.Error,
+                        durationLong = true,
+                        context = this@MainActivity
+                    )
+            }
+
+
             // Binder observer
             val binder = this@MainActivity.binder
             LaunchedEffect(binder) {
                 val serviceBinder = binder ?: return@LaunchedEffect
 
-//                serviceBinder.onlinePlayerView.collect { onlinePlayerView ->
-//                    this@MainActivity.onlinePlayerView = onlinePlayerView
-//                }
-
                 serviceBinder.onlinePlayerState.collect { newState ->
                     Timber.d("MainActivity: onlinePlayerState new state from Service: $newState")
-
-                    //this@MainActivity.onlinePlayerPlayingState = (newState == PlayerConstants.PlayerState.PLAYING)
-
-                    // Se vuoi gestire lo stato UNSTARTED specificamente nella UI:
-//                    if (newState == PlayerConstants.PlayerState.UNSTARTED) {
-//                        // Puoi mostrare un messaggio o aggiornare la UI di conseguenza
-//                    }
                 }
             }
 
