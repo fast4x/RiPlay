@@ -192,6 +192,7 @@ fun HomeScreen(
                         },
                         navController = navController
                     )
+
                 }
 
                 1 -> HomeSongs(
