@@ -774,9 +774,9 @@ class MainActivity :
             var webViewInfo by remember { mutableStateOf<WebViewInfo>(WebViewInfo()) }
             LaunchedEffect(Unit) {
                 webViewInfo = getWebViewInfo(this@MainActivity)
-                if (webViewInfo.isWebViewAvailable)
+                if (!webViewInfo.isWebViewAvailable)
                     SmartMessage(
-                        "Android WebView is not available but required, please install!",
+                        "Android WebView not available, please install or update system",
                         PopupType.Error,
                         durationLong = true,
                         context = this@MainActivity
