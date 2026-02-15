@@ -60,6 +60,7 @@ import androidx.compose.foundation.text.BasicText
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
@@ -334,6 +335,7 @@ import it.fast4x.riplay.ui.components.SheetBody
 import it.fast4x.riplay.utils.LandscapeToSquareTransformation
 import it.fast4x.riplay.utils.applyIf
 import it.fast4x.riplay.utils.conditional
+import it.fast4x.riplay.utils.isLocal
 import it.fast4x.riplay.utils.saturate
 
 @ExperimentalPermissionsApi
@@ -1480,7 +1482,11 @@ fun LocalPlayer(
                                     modifier = Modifier
                                         .padding(vertical = 7.5.dp)
                                         .weight(0.07f)
-                                        .conditional(pagerStateQueue.currentPage == binder.player.currentMediaItemIndex){padding(horizontal = 3.dp)}
+                                        .conditional(pagerStateQueue.currentPage == binder.player.currentMediaItemIndex) {
+                                            padding(
+                                                horizontal = 3.dp
+                                            )
+                                        }
                                 ) {
                                     Icon(
                                         painter = painterResource(id = if (pagerStateQueue.currentPage > binder.player.currentMediaItemIndex) R.drawable.chevron_forward
@@ -1496,7 +1502,9 @@ fun LocalPlayer(
                                                 onClick = {
                                                     scope.launch {
                                                         if (!appRunningInBackground) {
-                                                            pagerStateQueue.animateScrollToPage(binder.player.currentMediaItemIndex + 1)
+                                                            pagerStateQueue.animateScrollToPage(
+                                                                binder.player.currentMediaItemIndex + 1
+                                                            )
                                                         } else {
                                                             pagerStateQueue.scrollToPage(binder.player.currentMediaItemIndex + 1)
                                                         }
@@ -2127,9 +2135,12 @@ fun LocalPlayer(
                              .zIndex(if (it == pagerStateFS.currentPage) 1f else 0.9f)
                              .conditional(albumCoverRotation || (animatedGradient == AnimatedGradient.Random && tempGradient == gradients[14])) {
                                  graphicsLayer {
-                                     scaleX = if (isShowingLyrics || showthumbnail) (screenWidth/screenHeight) + 0.5f else 1f
-                                     scaleY = if (isShowingLyrics || showthumbnail) (screenWidth/screenHeight) + 0.5f else 1f
-                                     rotationZ = if ((it == pagerStateFS.settledPage) && (isShowingLyrics || showthumbnail)) rotation.value else 0f
+                                     scaleX =
+                                         if (isShowingLyrics || showthumbnail) (screenWidth / screenHeight) + 0.5f else 1f
+                                     scaleY =
+                                         if (isShowingLyrics || showthumbnail) (screenWidth / screenHeight) + 0.5f else 1f
+                                     rotationZ =
+                                         if ((it == pagerStateFS.settledPage) && (isShowingLyrics || showthumbnail)) rotation.value else 0f
                                  }
                              }
                              .combinedClickable(
@@ -2336,7 +2347,7 @@ fun LocalPlayer(
                                                      0.dp
                                                  )
                                              )
-                                             .conditional(fadingedge) {horizontalFadingEdge()}
+                                             .conditional(fadingedge) { horizontalFadingEdge() }
                                          ) {
                                          it ->
 
@@ -2351,7 +2362,7 @@ fun LocalPlayer(
                                          )
 
                                          val coverModifier = Modifier
-                                             .applyIf(!isLandscape){
+                                             .applyIf(!isLandscape) {
                                                  fillMaxSize()
                                              }
                                              .aspectRatio(1f)
@@ -2362,17 +2373,17 @@ fun LocalPlayer(
                                                  alpha = lerp(
                                                      start = 0.9f,
                                                      stop = 1f,
-                                                     fraction = 1f - pageOffSet.coerceIn(0f,1f)
+                                                     fraction = 1f - pageOffSet.coerceIn(0f, 1f)
                                                  )
                                                  scaleY = lerp(
                                                      start = 0.85f,
                                                      stop = 1f,
-                                                     fraction = 1f - pageOffSet.coerceIn(0f,5f)
+                                                     fraction = 1f - pageOffSet.coerceIn(0f, 5f)
                                                  )
                                                  scaleX = lerp(
                                                      start = 0.85f,
                                                      stop = 1f,
-                                                     fraction = 1f - pageOffSet.coerceIn(0f,5f)
+                                                     fraction = 1f - pageOffSet.coerceIn(0f, 5f)
                                                  )
                                              }
                                              .conditional(thumbnailType == ThumbnailType.Modern) {
@@ -2666,90 +2677,99 @@ fun LocalPlayer(
                                contentDescription = "",
                                contentScale = if ((albumCoverRotation || (animatedGradient == AnimatedGradient.Random && tempGradient == gradients[14])) && (isShowingLyrics || showthumbnail)) ContentScale.Fit else ContentScale.Crop,
                                modifier = Modifier
-                                .fillMaxHeight()
-                                .conditional(albumCoverRotation || (animatedGradient == AnimatedGradient.Random && tempGradient == gradients[14])) {
-                                    graphicsLayer {
-                                        scaleX = if (isShowingLyrics || showthumbnail) (screenHeight / screenWidth) + 0.5f else 1f
-                                        scaleY = if (isShowingLyrics || showthumbnail) (screenHeight / screenWidth) + 0.5f else 1f
-                                        rotationZ = if ((it == pagerStateFS.settledPage) && (isShowingLyrics || showthumbnail)) rotation.value else 0f
-                                    }
-                                }
-                                .conditional(swipeAnimationNoThumbnail == SwipeAnimationNoThumbnail.Fade && !showthumbnail){
-                                    graphicsLayer {
-                                        val pageOffset = pagerStateFS.currentPageOffsetFraction
-                                        translationX = pageOffset * size.width
-                                        alpha = 1 - pageOffset.absoluteValue
-                                    }
-                                }
-                                .conditional(swipeAnimationNoThumbnail == SwipeAnimationNoThumbnail.Carousel && isDraggedFS) { //by sinasamaki
-                                    graphicsLayer {
-                                        val startOffset = pagerStateFS.startOffsetForPage(it)
-                                        translationX = size.width * (startOffset * .99f)
-                                        alpha = (2f - startOffset) / 2f
-                                        val blur = (startOffset * 20f).coerceAtLeast(0.1f)
-                                        renderEffect = RenderEffect
-                                            .createBlurEffect(
-                                                blur, blur, Shader.TileMode.DECAL
-                                            ).asComposeRenderEffect()
-                                        val scale = 1f - (startOffset * .1f)
-                                        scaleX = scale
-                                        scaleY = scale
-                                    }
-                                }
-                                .conditional(swipeAnimationNoThumbnail == SwipeAnimationNoThumbnail.Circle && !showthumbnail){ //by sinasamaki
-                                    graphicsLayer {
-                                        val pageOffset = pagerStateFS.offsetForPage(it)
-                                        translationX = size.width * pageOffset
+                                   .fillMaxHeight()
+                                   .conditional(albumCoverRotation || (animatedGradient == AnimatedGradient.Random && tempGradient == gradients[14])) {
+                                       graphicsLayer {
+                                           scaleX =
+                                               if (isShowingLyrics || showthumbnail) (screenHeight / screenWidth) + 0.5f else 1f
+                                           scaleY =
+                                               if (isShowingLyrics || showthumbnail) (screenHeight / screenWidth) + 0.5f else 1f
+                                           rotationZ =
+                                               if ((it == pagerStateFS.settledPage) && (isShowingLyrics || showthumbnail)) rotation.value else 0f
+                                       }
+                                   }
+                                   .conditional(swipeAnimationNoThumbnail == SwipeAnimationNoThumbnail.Fade && !showthumbnail) {
+                                       graphicsLayer {
+                                           val pageOffset = pagerStateFS.currentPageOffsetFraction
+                                           translationX = pageOffset * size.width
+                                           alpha = 1 - pageOffset.absoluteValue
+                                       }
+                                   }
+                                   .conditional(swipeAnimationNoThumbnail == SwipeAnimationNoThumbnail.Carousel && isDraggedFS) { //by sinasamaki
+                                       graphicsLayer {
+                                           val startOffset = pagerStateFS.startOffsetForPage(it)
+                                           translationX = size.width * (startOffset * .99f)
+                                           alpha = (2f - startOffset) / 2f
+                                           val blur = (startOffset * 20f).coerceAtLeast(0.1f)
+                                           renderEffect = RenderEffect
+                                               .createBlurEffect(
+                                                   blur, blur, Shader.TileMode.DECAL
+                                               ).asComposeRenderEffect()
+                                           val scale = 1f - (startOffset * .1f)
+                                           scaleX = scale
+                                           scaleY = scale
+                                       }
+                                   }
+                                   .conditional(swipeAnimationNoThumbnail == SwipeAnimationNoThumbnail.Circle && !showthumbnail) { //by sinasamaki
+                                       graphicsLayer {
+                                           val pageOffset = pagerStateFS.offsetForPage(it)
+                                           translationX = size.width * pageOffset
 
-                                        val endOffset = pagerStateFS.endOffsetForPage(it)
-                                        shadowElevation = 20f
+                                           val endOffset = pagerStateFS.endOffsetForPage(it)
+                                           shadowElevation = 20f
 
-                                        shape = CirclePath(
-                                            progress = 1f - endOffset.absoluteValue,
-                                            origin = Offset(
-                                                size.width,
-                                                circleOffsetY,
-                                            )
-                                        )
+                                           shape = CirclePath(
+                                               progress = 1f - endOffset.absoluteValue,
+                                               origin = Offset(
+                                                   size.width,
+                                                   circleOffsetY,
+                                               )
+                                           )
 
-                                        clip = true
+                                           clip = true
 
-                                        val absoluteOffset = pagerStateFS.offsetForPage(it).absoluteValue
-                                        val scale = 1f + (absoluteOffset.absoluteValue * .4f)
+                                           val absoluteOffset =
+                                               pagerStateFS.offsetForPage(it).absoluteValue
+                                           val scale = 1f + (absoluteOffset.absoluteValue * .4f)
 
-                                        scaleX = scale
-                                        scaleY = scale
+                                           scaleX = scale
+                                           scaleY = scale
 
-                                        val startOffset = pagerStateFS.startOffsetForPage(it)
-                                        alpha = (2f - startOffset) / 2f
-                                    }
-                                }
-                                .clip(RoundedCornerShape(20.dp))
-                                .combinedClickable(
-                                    interactionSource = remember { MutableInteractionSource() },
-                                    indication = null,
-                                    onClick = {
-                                        if (thumbnailTapEnabled && !showthumbnail) {
-                                            if (isShowingVisualizer) isShowingVisualizer = false
-                                            isShowingLyrics = !isShowingLyrics
-                                        }
-                                    },
-                                    onDoubleClick = {
-                                        if (!showlyricsthumbnail && !showvisthumbnail)
-                                            showthumbnail = !showthumbnail
-                                    },
-                                    onLongClick = {
-                                        if (showthumbnail || (isShowingLyrics && !isShowingVisualizer) || !noblur)
-                                            showBlurPlayerDialog = true
-                                    }
-                                )
+                                           val startOffset = pagerStateFS.startOffsetForPage(it)
+                                           alpha = (2f - startOffset) / 2f
+                                       }
+                                   }
+                                   .clip(RoundedCornerShape(20.dp))
+                                   .combinedClickable(
+                                       interactionSource = remember { MutableInteractionSource() },
+                                       indication = null,
+                                       onClick = {
+                                           if (thumbnailTapEnabled && !showthumbnail) {
+                                               if (isShowingVisualizer) isShowingVisualizer = false
+                                               isShowingLyrics = !isShowingLyrics
+                                           }
+                                       },
+                                       onDoubleClick = {
+                                           if (!showlyricsthumbnail && !showvisthumbnail)
+                                               showthumbnail = !showthumbnail
+                                       },
+                                       onLongClick = {
+                                           if (showthumbnail || (isShowingLyrics && !isShowingVisualizer) || !noblur)
+                                               showBlurPlayerDialog = true
+                                       }
+                                   )
                             )
                             if ((swipeAnimationNoThumbnail == SwipeAnimationNoThumbnail.Scale) && isDraggedFS){
                                 Column {
                                     Spacer(modifier = Modifier
                                         .conditional((screenWidth <= (screenHeight / 2)) && (showlyricsthumbnail || (!expandedplayer && !isShowingLyrics))) {
-                                            height(screenWidth)}
-                                        .conditional((screenWidth > (screenHeight / 2)) || expandedplayer || (isShowingLyrics && !showlyricsthumbnail)) {weight(1f)})
+                                            height(screenWidth)
+                                        }
+                                        .conditional((screenWidth > (screenHeight / 2)) || expandedplayer || (isShowingLyrics && !showlyricsthumbnail)) {
+                                            weight(
+                                                1f
+                                            )
+                                        })
 
                                     Box(modifier = Modifier
                                         .conditional(!expandedplayer && (!isShowingLyrics || showlyricsthumbnail)) {weight(1f)}
@@ -2849,7 +2869,30 @@ fun LocalPlayer(
                                     .size(24.dp)
                             )
 
+                        Column(
+                            verticalArrangement = Arrangement.Center,
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                        ) {
+                            Text(
+                                stringResource(R.string.now_playing_title),
+                                style = typography().xs,
+                                color = colorPalette().text,
+                                modifier = Modifier
+                                    .clickable {
+                                        onDismiss()
+                                        navController.navigate(NavRoutes.home.name)
+                                    }
+                            )
+                            Text(
+                                if (mediaItem.isLocal)
+                                    stringResource(R.string.local_now_playing_title)
+                                else stringResource(R.string.online_now_playing_title),
+                                color = colorPalette().text,
+                                style = typography().xxs,
+                            )
+                        }
 
+                        /*
                             Image(
                                 painter = painterResource(R.drawable.app_icon),
                                 contentDescription = null,
@@ -2864,6 +2907,7 @@ fun LocalPlayer(
                                     .size(24.dp)
 
                             )
+                         */
 
                             if (!showButtonPlayerMenu)
                                 Image(
@@ -2895,6 +2939,8 @@ fun LocalPlayer(
                                 )
 
                     }
+
+                    /*
                     Spacer(
                         modifier = Modifier
                             .height(5.dp)
@@ -2904,6 +2950,7 @@ fun LocalPlayer(
                                     .asPaddingValues()
                             )
                     )
+                     */
                 }
 
                 if (topPadding && !showTopActionsBar) {
@@ -2921,8 +2968,16 @@ fun LocalPlayer(
                 BoxWithConstraints(
                     contentAlignment = Alignment.Center,
                     modifier = Modifier
-                        .conditional((screenWidth <= (screenHeight / 2)) && (showlyricsthumbnail || (!expandedplayer && !isShowingLyrics))) {height(screenWidth)}
-                        .conditional((screenWidth > (screenHeight / 2)) || expandedplayer || (isShowingLyrics && !showlyricsthumbnail)) {weight(1f)}
+                        .conditional((screenWidth <= (screenHeight / 2)) && (showlyricsthumbnail || (!expandedplayer && !isShowingLyrics))) {
+                            height(
+                                screenWidth
+                            )
+                        }
+                        .conditional((screenWidth > (screenHeight / 2)) || expandedplayer || (isShowingLyrics && !showlyricsthumbnail)) {
+                            weight(
+                                1f
+                            )
+                        }
                 ) {
 
                       if (showthumbnail) {
@@ -2971,7 +3026,12 @@ fun LocalPlayer(
                                              )
                                          )
                                          .conditional(fadingedge) {
-                                             verticalfadingEdge2(fade = (if (expandedplayer) thumbnailFadeEx else thumbnailFade)*0.05f,showTopActionsBar,topPadding,expandedplayer)
+                                             verticalfadingEdge2(
+                                                 fade = (if (expandedplayer) thumbnailFadeEx else thumbnailFade) * 0.05f,
+                                                 showTopActionsBar,
+                                                 topPadding,
+                                                 expandedplayer
+                                             )
                                          }
                                  ){ index ->
 
@@ -2984,7 +3044,7 @@ fun LocalPlayer(
                                      )
 
                                      val coverModifier = Modifier
-                                         .applyIf(!isLandscape){
+                                         .applyIf(!isLandscape) {
                                              fillMaxSize()
                                          }
                                          .aspectRatio(1f)
@@ -3150,25 +3210,29 @@ fun LocalPlayer(
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier
-                    .conditional(!expandedplayer && (!isShowingLyrics || showlyricsthumbnail)){weight(1f)}
-                    .conditional(playerBackgroundColors == PlayerBackgroundColors.MidnightOdyssey){
-                        background(
-                        Brush.verticalGradient(
-                            0.0f to Color(0xff141414),
-                            1.0f to Color.Black,
-                            startY = 0f,
-                            endY = POSITIVE_INFINITY
-                            ),
-                            RoundedCornerShape(topStart = 30.dp, topEnd = 30.dp)
-                        )
-                    }
+                        .conditional(!expandedplayer && (!isShowingLyrics || showlyricsthumbnail)) {
+                            weight(
+                                1f
+                            )
+                        }
+                        .conditional(playerBackgroundColors == PlayerBackgroundColors.MidnightOdyssey) {
+                            background(
+                                Brush.verticalGradient(
+                                    0.0f to Color(0xff141414),
+                                    1.0f to Color.Black,
+                                    startY = 0f,
+                                    endY = POSITIVE_INFINITY
+                                ),
+                                RoundedCornerShape(topStart = 30.dp, topEnd = 30.dp)
+                            )
+                        }
                 ){
                   if (playerBackgroundColors == PlayerBackgroundColors.MidnightOdyssey && !isShowingLyrics){
                     Box{
                         Box(
                             modifier = Modifier
                                 .align(Alignment.Center)
-                                .offset(0.dp,(-15).dp)
+                                .offset(0.dp, (-15).dp)
                                 .size(30.dp)
                                 .background(Color.DarkGray.copy(0.5f), CircleShape)
                         ){
@@ -3344,7 +3408,7 @@ fun LocalPlayer(
             contentColor = if (queueType == QueueType.Modern) Color.Transparent else colorPalette().background2,
             modifier = Modifier
                 .fillMaxWidth()
-                .conditional(queueType == QueueType.Modern) {hazeChild(state = hazeState)},
+                .conditional(queueType == QueueType.Modern) { hazeChild(state = hazeState) },
             sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
             dragHandle = {
                 Surface(
@@ -3380,7 +3444,7 @@ fun LocalPlayer(
             contentColor = if (playerType == PlayerType.Modern) Color.Transparent else colorPalette().background2,
             modifier = Modifier
                 .fillMaxWidth()
-                .conditional(queueType == QueueType.Modern) {hazeChild(state = hazeState)},
+                .conditional(queueType == QueueType.Modern) { hazeChild(state = hazeState) },
             sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
             dragHandle = {
                 Surface(

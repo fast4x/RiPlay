@@ -65,6 +65,7 @@ import androidx.compose.foundation.text.BasicText
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
@@ -322,6 +323,7 @@ import it.fast4x.riplay.utils.hide
 import it.fast4x.riplay.utils.horizontalFadingEdge
 import it.fast4x.riplay.utils.isExplicit
 import it.fast4x.riplay.utils.isLandscape
+import it.fast4x.riplay.utils.isLocal
 import it.fast4x.riplay.utils.isVideo
 import it.fast4x.riplay.utils.mediaItemToggleLike
 import it.fast4x.riplay.utils.mediaItems
@@ -1479,7 +1481,9 @@ fun OnlinePlayer(
                                 }
                             )
                     ) {
-                        controlsContent(Modifier.padding(top = 20.dp).align(Alignment.Center))
+                        controlsContent(Modifier
+                            .padding(top = 20.dp)
+                            .align(Alignment.Center))
                         if (showButtonPlayerVideo)
                             Image(
                                 painter = painterResource(R.drawable.left_and_right_arrows),
@@ -2594,7 +2598,7 @@ fun OnlinePlayer(
                                                 )
 
                                                 val coverModifier = Modifier
-                                                    .applyIf(!isLandscape){
+                                                    .applyIf(!isLandscape) {
                                                         fillMaxSize()
                                                     }
                                                     .aspectRatio(1f)
@@ -3186,7 +3190,30 @@ fun OnlinePlayer(
                                     .size(24.dp)
                             )
 
+                            Column(
+                                verticalArrangement = Arrangement.Center,
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                            ) {
+                                Text(
+                                    stringResource(R.string.now_playing_title),
+                                    style = typography().xs,
+                                    color = colorPalette().text,
+                                    modifier = Modifier
+                                        .clickable {
+                                            onDismiss()
+                                            navController.navigate(NavRoutes.home.name)
+                                        }
+                                )
+                                Text(
+                                    if (mediaItem.isLocal)
+                                        stringResource(R.string.local_now_playing_title)
+                                    else stringResource(R.string.online_now_playing_title),
+                                    color = colorPalette().text,
+                                    style = typography().xxs,
+                                )
+                            }
 
+                            /*
                             Image(
                                 painter = painterResource(R.drawable.app_icon),
                                 contentDescription = null,
@@ -3201,6 +3228,7 @@ fun OnlinePlayer(
                                     .size(24.dp)
 
                             )
+                             */
 
                             if (!showButtonPlayerMenu)
                                 Image(
@@ -3232,15 +3260,16 @@ fun OnlinePlayer(
                                 )
 
                         }
-                        Spacer(
-                            modifier = Modifier
-                                .height(5.dp)
-                                .padding(
-                                    windowInsets
-                                        .only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)
-                                        .asPaddingValues()
-                                )
-                        )
+
+//                        Spacer(
+//                            modifier = Modifier
+//                                .height(5.dp)
+//                                .padding(
+//                                    windowInsets
+//                                        .only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)
+//                                        .asPaddingValues()
+//                                )
+//                        )
                     }
 
                     if (topPadding && !showTopActionsBar) {
@@ -3251,7 +3280,7 @@ fun OnlinePlayer(
                                         .only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)
                                         .asPaddingValues()
                                 )
-                                .height(35.dp)
+                                .height(30.dp)
                         )
                     }
 
@@ -3356,7 +3385,7 @@ fun OnlinePlayer(
                                         )
 
                                         val coverModifier = Modifier
-                                            .applyIf(!isLandscape){
+                                            .applyIf(!isLandscape) {
                                                 fillMaxSize()
                                             }
                                             .aspectRatio(1f)
@@ -3494,7 +3523,7 @@ fun OnlinePlayer(
                                    )
 
                                      val coverModifier = Modifier
-                                         .applyIf(!it.fast4x.riplay.utils.isLandscape){
+                                         .applyIf(!it.fast4x.riplay.utils.isLandscape) {
                                              fillMaxSize()
                                          }
                                          .conditional(thumbnailType == ThumbnailType.Modern) {
@@ -3578,7 +3607,7 @@ fun OnlinePlayer(
                         )
 
                         val coverModifier = Modifier
-                            .applyIf(!it.fast4x.riplay.utils.isLandscape){
+                            .applyIf(!it.fast4x.riplay.utils.isLandscape) {
                                 fillMaxSize()
                             }
                             .conditional(!it.fast4x.riplay.utils.isLandscape && !mediaItem.isVideo) {

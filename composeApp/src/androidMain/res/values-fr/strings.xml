@@ -1260,4 +1260,13 @@ Volume BAS : titre précédent</string>
     <string name="homepage_classic">Classic</string>
     <string name="homepage_extended">Extended</string>
     <string name="homepage_type">Homepage type</string>
+    <string name="set_as_ringtone">Set as ringtone</string>
+    <string name="ringtone_successfully_set">Ringtone successfully set</string>
+    <string name="failed_to_set_ringtone">Failed to set ringtone</string>
+    <string name="permission_granted">Permission granted</string>
+    <string name="permission_denied">Permission denied</string>
+    <string name="permission_required">Permission required</string>
+    <string name="now_playing_title">NOW PLAYING</string>
+    <string name="local_now_playing_title">LOCAL</string>
+    <string name="online_now_playing_title">ONLINE</string>
 </resources>
