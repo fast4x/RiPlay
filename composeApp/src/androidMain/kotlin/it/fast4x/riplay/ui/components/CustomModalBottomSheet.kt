@@ -49,7 +49,7 @@ fun CustomModalBottomSheet(
     contentWindowInsets: @Composable () -> WindowInsets = { WindowInsets.ime },
     content: @Composable ColumnScope.() -> Unit,
 ) {
-    val bottomPadding = if(isLandscape) 0.dp else WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+    val bottomPadding = 0.dp //if(isLandscape) 0.dp else WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
 
     //NEW SHEET
 //    val mbSheetState: ModalBottomSheetState = androidx.compose.material.rememberModalBottomSheetState(

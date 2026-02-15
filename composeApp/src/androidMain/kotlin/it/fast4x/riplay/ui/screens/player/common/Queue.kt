@@ -33,6 +33,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.requiredHeight
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.width
@@ -449,7 +450,7 @@ fun Queue(
         modifier = Modifier
             .padding(
                 windowInsets
-                    .only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top)
+                    .only(WindowInsetsSides.Horizontal)
                     .asPaddingValues()
             )
             .background(if (queueType == QueueType.Modern) Color.Transparent else colorPalette().background1)
@@ -499,8 +500,6 @@ fun Queue(
     LazyColumn(
         state = lazyListState,
         modifier = Modifier
-
-
     ) {
 
             stickyHeader {
@@ -550,6 +549,9 @@ fun Queue(
                     modifier = Modifier
                         .fillMaxWidth()
                         .background(colorPalette().background1)
+                        .padding(windowInsets
+                        .only(WindowInsetsSides.Top )
+                        .asPaddingValues())
                 )
 
                 if (showQueues)
@@ -937,7 +939,7 @@ fun Queue(
                     .background(colorPalette().background1)
                     .fillMaxWidth()
                     .align(Alignment.BottomCenter)
-                    .height(60.dp) //bottom bar queue
+                    .requiredHeight(64.dp) //bottom bar queue
 //                    .drawBehind {
 //                        if (backgroundProgress == BackgroundProgress.Both || backgroundProgress == BackgroundProgress.MiniPlayer) {
 //                            drawRect(
@@ -974,24 +976,20 @@ fun Queue(
                                 },
                                 hidePlayer = { hidePlayer() },
                                 navController = navController,
-                                //player = player,
-                                //playerState = playerState,
-                                //currentDuration = currentDuration,
-                                //currentSecond = currentSecond,
                             )
                     }
 
 
-                if (!showButtonPlayerArrow)
-                    Image(
-                        painter = painterResource(R.drawable.horizontal_bold_line_rounded),
-                        contentDescription = null,
-                        colorFilter = ColorFilter.tint(colorPalette().text),
-                        modifier = Modifier
-                            .absoluteOffset(0.dp, -10.dp)
-                            .align(Alignment.TopCenter)
-                            .size(30.dp)
-                    )
+//                if (!showButtonPlayerArrow)
+//                    Image(
+//                        painter = painterResource(R.drawable.horizontal_bold_line_rounded),
+//                        contentDescription = null,
+//                        colorFilter = ColorFilter.tint(colorPalette().text),
+//                        modifier = Modifier
+//                            .absoluteOffset(0.dp, -10.dp)
+//                            .align(Alignment.TopCenter)
+//                            .size(30.dp)
+//                    )
 
 
                 Row(
@@ -999,6 +997,7 @@ fun Queue(
                     horizontalArrangement = Arrangement.Start,
                     modifier = Modifier
                         .padding(horizontal = 4.dp)
+                        .padding(bottom = 5.dp)
                         .align(Alignment.CenterStart)
 
                 ) {
@@ -1027,6 +1026,7 @@ fun Queue(
                     modifier = Modifier
                         .align(Alignment.CenterEnd)
                         .padding(horizontal = 4.dp)
+                        .padding(bottom = 5.dp)
 
                 ) {
                     IconButton(

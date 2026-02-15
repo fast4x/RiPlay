@@ -3874,10 +3874,6 @@ fun OnlinePlayer(
                 navController = navController,
                 showPlayer = {},
                 hidePlayer = {},
-                //player = binder.onlinePlayer,
-                //playerState = playerState,
-                //currentDuration = currentDuration,
-                //currentSecond = currentSecond,
                 onDismiss = {
                     queueLoopType = it
                     showQueue = false
