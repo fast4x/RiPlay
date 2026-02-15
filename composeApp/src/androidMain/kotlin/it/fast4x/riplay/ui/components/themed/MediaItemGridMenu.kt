@@ -116,7 +116,7 @@ fun NonQueuedMediaItemGridMenu(
     onHideFromDatabase: (() -> Unit)? = null,
     onRemoveFromQuickPicks: (() -> Unit)? = null,
     disableScrollingText: Boolean,
-    onBlacklist: (() -> Unit)? = null
+    onBlacklist: (() -> Unit)? = null,
 ) {
     val binder = LocalPlayerServiceBinder.current
     val context = LocalContext.current
@@ -143,7 +143,7 @@ fun NonQueuedMediaItemGridMenu(
         onHideFromDatabase = onHideFromDatabase,
         onRemoveFromQuickPicks = onRemoveFromQuickPicks,
         disableScrollingText = disableScrollingText,
-        onBlacklist = onBlacklist
+        onBlacklist = onBlacklist,
     )
 }
 
@@ -241,7 +241,7 @@ fun BaseMediaItemGridMenu(
         onSelectUnselect = onSelectUnselect,
         modifier = modifier,
         disableScrollingText = disableScrollingText,
-        onBlacklist = onBlacklist
+        onBlacklist = onBlacklist,
     )
 }
 
@@ -253,7 +253,7 @@ fun MiniMediaItemGridMenu(
     onGoToPlaylist: ((Long) -> Unit)? = null,
     onAddToPreferites: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
-    disableScrollingText: Boolean
+    disableScrollingText: Boolean,
 ) {
 
     MediaItemGridMenu(
@@ -1175,6 +1175,18 @@ fun MediaItemGridMenu (
                         }
                     )
                 }
+
+//                if (isLocal) {
+//                    GridMenuItem(
+//                        icon = R.drawable.ringtone,
+//                        title = R.string.set_as_ringtone,
+//                        colorIcon = colorPalette.text,
+//                        colorText = colorPalette.text,
+//                        onClick = {
+//                            onDismiss()
+//                        }
+//                    )
+//                }
 
             }
 

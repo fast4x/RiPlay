@@ -1,8 +1,10 @@
 package it.fast4x.riplay.utils
 
+import android.content.ContentUris
 import android.content.Context
 import android.net.Uri
 import android.os.Build
+import android.provider.MediaStore
 import androidx.annotation.RequiresApi
 import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.LogType
@@ -154,4 +156,18 @@ fun saveFileToInternalStorage(context: Context, fileName: String, fileContent: S
     }
 
 
+}
+
+fun getLocalFileUri(mediaId: String): Uri? {
+    // Assicurati che l'ID sia un numero valido Long
+    val id = mediaId.removePrefix(LOCAL_KEY_PREFIX).toLongOrNull() ?: return null
+
+    val contentUriBase = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+        MediaStore.Audio.Media.getContentUri(MediaStore.VOLUME_EXTERNAL)
+    } else {
+        MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
+    }
+
+    // Costruisce l'URI in modo standard (es: content://media/external/audio/media/123)
+    return ContentUris.withAppendedId(contentUriBase, id)
 }

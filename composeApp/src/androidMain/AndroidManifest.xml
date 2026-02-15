@@ -21,15 +21,26 @@
         android:maxSdkVersion="32" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
         android:maxSdkVersion="32" />
+
+    <!-- Required for audio visualizer graphic effect -->
     <uses-permission android:name = "android.permission.RECORD_AUDIO"/>
     <uses-permission android:name = "android.permission.MODIFY_AUDIO_SETTINGS"/>
+
+    <!-- Required to get state of data connection -->
     <uses-permission android:name = "android.permission.ACCESS_NETWORK_STATE" />
+
+    <!-- Required to set cover as wallpaper -->
     <uses-permission android:name ="android.permission.SET_WALLPAPER" />
+
     <!-- Required only to get installed app for direct share intent -->
     <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" />
 
+    <!-- Required to get bluetooth device connected/disconnected -->
     <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
+
+    <!-- Required to set local song as ringtone -->
+    <uses-permission android:name="android.permission.WRITE_SETTINGS" tools:ignore="ProtectedPermissions" />
 
     <uses-feature    android:name="android.software.leanback" android:required="false" />
     <uses-feature    android:name="android.hardware.touchscreen" android:required="false" />
