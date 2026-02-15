@@ -217,7 +217,9 @@ fun ActionBar(
     }
 
     // Search Icon
-    HeaderIcon( R.drawable.search) { navController.navigate(NavRoutes.search.name) }
+    HeaderIcon( R.drawable.search, tint = colorPalette().accent) {
+        navController.navigate(NavRoutes.search.name)
+    }
 
     if (isYtLoggedIn()) {
         if (ytAccountThumbnail() != "")
@@ -230,8 +232,8 @@ fun ActionBar(
                     .clip(thumbnailShape())
                     .clickable { expanded = !expanded }
             )
-        else HeaderIcon( R.drawable.internet, size = 30.dp ) { expanded = !expanded }
-    } else HeaderIcon( R.drawable.burger ) { expanded = !expanded }
+        else HeaderIcon( R.drawable.internet, tint = colorPalette().accent, size = 30.dp ) { expanded = !expanded }
+    } else HeaderIcon( R.drawable.burger, tint = colorPalette().accent ) { expanded = !expanded }
 
     // Define actions for when item inside menu clicked,
     // and when user clicks on places other than the menu (dismiss)
