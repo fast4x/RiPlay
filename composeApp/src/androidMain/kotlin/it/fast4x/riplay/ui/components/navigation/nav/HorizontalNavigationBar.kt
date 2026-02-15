@@ -78,12 +78,13 @@ class HorizontalNavigationBar(
 
     @Composable
     private fun bottomPadding(): Dp {
-        return if ( NavigationBarPosition.Bottom.isCurrent() )
-            with( LocalDensity.current ) {
-                WindowInsets.systemBars.getBottom( this ).toDp()
-            }
-        else
-            5.dp
+        return 0.dp
+//        return if ( NavigationBarPosition.Bottom.isCurrent() )
+//            with( LocalDensity.current ) {
+//                WindowInsets.systemBars.getBottom( this ).toDp()
+//            }
+//        else
+//            5.dp
     }
 
     private fun topPadding(): Dp = 0.dp
@@ -152,7 +153,8 @@ class HorizontalNavigationBar(
                 verticalArrangement = Arrangement.SpaceAround,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(Dimensions.navigationBarHeight - 10.dp)
+                    .height(Dimensions.navigationBarHeight + 5.dp)
+                    //.padding(bottom = 5.dp)
             ) {
 
                 val scrollState = rememberScrollState()
@@ -177,6 +179,7 @@ class HorizontalNavigationBar(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceEvenly,
                         modifier = Modifier
+                            .padding(bottom = 10.dp)
                             .fillMaxWidth()
                             .fillMaxSize()
                             .horizontalScroll(scrollState),
