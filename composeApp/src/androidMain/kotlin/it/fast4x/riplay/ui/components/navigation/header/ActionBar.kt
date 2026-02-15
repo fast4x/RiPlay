@@ -34,13 +34,237 @@ import it.fast4x.riplay.ui.components.LocalGlobalSheetState
 import it.fast4x.riplay.ui.components.SheetBody
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.utils.thumbnailShape
-import it.fast4x.riplay.ui.components.themed.DropdownMenu
 import it.fast4x.riplay.ui.screens.events.EventsScreen
 import it.fast4x.riplay.ui.screens.settings.isYtLoggedIn
 import it.fast4x.riplay.utils.MusicIdentifier
 import it.fast4x.riplay.utils.ytAccountThumbnail
 import timber.log.Timber
+import androidx.compose.animation.core.*
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.window.PopupProperties
+import it.fast4x.riplay.utils.typography
 
+@Composable
+private fun HamburgerMenu(
+    expanded: Boolean,
+    onItemClick: (NavRoutes) -> Unit,
+    onDismissRequest: () -> Unit
+) {
+
+    val enablePictureInPicture by rememberPreference(enablePictureInPictureKey, false)
+    val pipHandler = rememberPipHandler()
+    val sheet = LocalGlobalSheetState.current
+    val equalizerType by rememberObservedPreference(equalizerTypeKey, EqualizerType.Internal)
+    val internalEqualizer = LocalPlayerServiceBinder.current?.equalizer
+    val launchSystemEqualizer by rememberSystemEqualizerLauncher(audioSessionId = {0})
+
+    DropdownMenu(
+        expanded = expanded,
+        onDismissRequest = onDismissRequest,
+        properties = PopupProperties(focusable = true),
+        containerColor = Color.Transparent,
+        modifier = Modifier
+            .width(280.dp)
+            .padding(top = 8.dp)
+    ) {
+
+        Box(
+            modifier = Modifier
+                .clip(RoundedCornerShape(24.dp))
+                .background(
+                    color = colorPalette().background1.copy(alpha = 0.90f),
+                )
+                .padding(vertical = 8.dp)
+        ) {
+            Column(modifier = Modifier.padding(horizontal = 8.dp)) {
+
+
+                ModernMenuItem(
+                    index = 0,
+                    iconRes = R.drawable.music_equalizer,
+                    textRes = R.string.equalizer,
+                    onClick = {
+                        if (equalizerType == EqualizerType.Internal) {
+                            internalEqualizer?.let {
+                                sheet.display {
+                                    SheetBody { InternalEqualizerScreen(it) }
+                                }
+                            }
+                        } else {
+                            launchSystemEqualizer()
+                        }
+                        onDismissRequest()
+                    }
+                )
+
+
+                ModernMenuItem(
+                    index = 1,
+                    iconRes = R.drawable.alarm,
+                    textRes = R.string.events,
+                    onClick = {
+                        sheet.display { SheetBody { EventsScreen() } }
+                    }
+                )
+
+
+                ModernMenuItem(
+                    index = 2,
+                    iconRes = R.drawable.alert_circle,
+                    textRes = R.string.blacklist,
+                    onClick = { onItemClick(NavRoutes.blacklist) }
+                )
+
+
+                ModernMenuItem(
+                    index = 3,
+                    iconRes = R.drawable.history,
+                    textRes = R.string.history,
+                    onClick = { onItemClick(NavRoutes.history) }
+                )
+
+
+                ModernMenuItem(
+                    index = 4,
+                    iconRes = R.drawable.stats_chart,
+                    textRes = R.string.statistics,
+                    onClick = { onItemClick(NavRoutes.statistics) }
+                )
+
+
+                ModernMenuItem(
+                    index = 5,
+                    iconRes = R.drawable.trophy,
+                    textRes = R.string.listener_levels,
+                    onClick = { onItemClick(NavRoutes.listenerLevel) }
+                )
+
+
+                ModernMenuItem(
+                    index = 6,
+                    iconRes = R.drawable.stat_year,
+                    textRes = R.string.rewinds,
+                    onClick = { onItemClick(NavRoutes.rewind) }
+                )
+
+
+                if (isPipSupported && enablePictureInPicture) {
+                    ModernMenuItem(
+                        index = 7,
+                        iconRes = R.drawable.picture,
+                        textRes = R.string.menu_go_to_picture_in_picture,
+                        onClick = { pipHandler.enterPictureInPictureMode() }
+                    )
+                }
+
+
+                HorizontalDivider(
+                    modifier = Modifier.padding(vertical = 8.dp, horizontal = 12.dp),
+                    color = colorPalette().accent.copy(alpha = 0.7f)
+                )
+
+
+                ModernMenuItem(
+                    index = 8,
+                    iconRes = R.drawable.settings,
+                    textRes = R.string.settings,
+                    onClick = { onItemClick(NavRoutes.settings) },
+                    isLast = true
+                )
+            }
+        }
+    }
+}
+
+
+@Composable
+private fun ModernMenuItem(
+    index: Int,
+    @androidx.annotation.DrawableRes iconRes: Int,
+    @androidx.annotation.StringRes textRes: Int,
+    onClick: () -> Unit,
+    isLast: Boolean = false
+) {
+
+    var isVisible by remember { mutableStateOf(false) }
+
+    val alpha by animateFloatAsState(
+        targetValue = if (isVisible) 1f else 0f,
+        animationSpec = tween(
+            durationMillis = 300,
+            delayMillis = index * 30, // Ritardo cascata (30ms per voce)
+            easing = FastOutSlowInEasing
+        ), label = "alpha"
+    )
+
+    val offsetX by animateIntAsState(
+        targetValue = if (isVisible) 0 else -20,
+        animationSpec = tween(
+            durationMillis = 300,
+            delayMillis = index * 30
+        ), label = "offsetX"
+    )
+
+    LaunchedEffect(Unit) { isVisible = true }
+
+    Button(
+        onClick = onClick,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(bottom = if (isLast) 0.dp else 4.dp) // Spaziatura tra le voci
+            .offset { IntOffset(offsetX, 0) }
+            .alpha(alpha),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = Color.Transparent, // Sfondo trasparente per usare il nostro
+            contentColor = MaterialTheme.colorScheme.onSurface
+        ),
+        shape = RoundedCornerShape(16.dp), // Bottoni con angoli smussati
+        elevation = null, // Niente ombra standard
+        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp)
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Start,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+
+            Surface(
+                shape = CircleShape,
+                color = colorPalette().accent.copy(alpha = 0.5f),
+                modifier = Modifier.size(36.dp)
+            ) {
+                Icon(
+                    painter = painterResource(id = iconRes),
+                    contentDescription = null,
+                    tint = colorPalette().text,
+                    modifier = Modifier
+                        .padding(8.dp)
+                        .size(20.dp)
+                )
+            }
+
+            Spacer(modifier = Modifier.width(12.dp))
+
+            Text(
+                text = stringResource(id = textRes),
+                style = typography().s,
+                color = colorPalette().text
+            )
+        }
+    }
+}
+
+/*
 @Composable
 private fun HamburgerMenu(
     expanded: Boolean,
@@ -158,6 +382,8 @@ private fun HamburgerMenu(
 
     menu.Draw()
 }
+
+ */
 
 // START
 @Composable
