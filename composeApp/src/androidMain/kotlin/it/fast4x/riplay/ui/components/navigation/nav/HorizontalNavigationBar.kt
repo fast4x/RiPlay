@@ -1,5 +1,6 @@
 package it.fast4x.riplay.ui.components.navigation.nav
 
+
 import android.annotation.SuppressLint
 import androidx.compose.animation.animateColor
 import androidx.compose.animation.core.updateTransition
@@ -9,14 +10,18 @@ import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -25,6 +30,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
@@ -41,6 +47,159 @@ import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.utils.showSearchIconInNav
 import it.fast4x.riplay.utils.showStatsIconInNav
 
+
+// Shown when "Navigation bar position" is set to "top" or "bottom"
+class HorizontalNavigationBar(
+    val tabIndex: Int,
+    val onTabChanged: (Int) -> Unit,
+    navController: NavController,
+    modifier: Modifier = Modifier
+) : AbstractNavigationBar(navController, modifier) {
+
+    private fun navButtonProperties(): Modifier {
+        val padding: Dp = 4.dp
+        val size: Dp = 24.dp
+        val border: Shape = CircleShape
+
+        return Modifier.padding(all = padding)
+            .size(size)
+            .clip(shape = border)
+    }
+
+    @Composable
+    private fun addButton(button: Button, modifier: Modifier = Modifier) =
+        buttonList.add {
+            Box(modifier) { button.Draw() }
+        }
+
+    @SuppressLint("ComposableNaming")
+    @Composable
+    private fun addButton(index: Int, button: Button, modifier: Modifier = Modifier) =
+        buttonList.add(index) {
+            Box(modifier) { button.Draw() }
+        }
+
+    @Composable
+    private fun bottomPadding(): Dp = 0.dp
+
+    private fun topPadding(): Dp = 0.dp
+
+    @Composable
+    override fun add(buttons: @Composable (@Composable (Int, String, Int) -> Unit) -> Unit) {
+        val transition = updateTransition(targetState = tabIndex, label = null)
+
+        buttons { index, text, iconId ->
+
+            val color by transition.animateColor(label = "") {
+                if (it == index) colorPalette().text else colorPalette().textDisabled
+            }
+
+            val button: Button =
+                if (NavigationBarType.IconOnly.isCurrent())
+                    Button(iconId, color, 12.dp, 20.dp)
+                else
+                    TextIconButton(text, iconId, color, 0.dp, Dimensions.navigationRailIconOffset * 3)
+
+            val contentModifier = Modifier
+                .clip(RoundedCornerShape(12.dp))
+                .clickable(onClick = { onTabChanged(index) })
+
+            addButton(button, contentModifier)
+        }
+    }
+
+    @Composable
+    override fun BackButton(): NavigationButton {
+        val button = super.BackButton()
+        button.modifier = this.navButtonProperties()
+        return button
+    }
+
+    @Composable
+    override fun SettingsButton(): NavigationButton {
+        val button = super.SettingsButton()
+        button.modifier = this.navButtonProperties()
+        return button
+    }
+
+    @Composable
+    override fun StatsButton(): NavigationButton {
+        val button = super.StatsButton()
+        button.modifier = this.navButtonProperties()
+        return button
+    }
+
+    @Composable
+    override fun SearchButton(): NavigationButton {
+        val button = super.SearchButton()
+        button.modifier = this.navButtonProperties()
+        return button
+    }
+
+    @Composable
+    override fun Draw() {
+        val density = LocalDensity.current
+        val bottomInset = with(density) { WindowInsets.navigationBars.getBottom(density).toDp() }
+        val topInset = with(density) { WindowInsets.statusBars.getTop(density).toDp() }
+
+        val contentPadding = if (NavigationBarPosition.Bottom.isCurrent()) {
+            PaddingValues(bottom = bottomInset)
+        } else {
+            PaddingValues(top = topInset)
+        }
+
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = if (NavigationBarPosition.Bottom.isCurrent()) Arrangement.Bottom else Arrangement.Top,
+            modifier = modifier
+                .fillMaxWidth()
+                .background(colorPalette().background1)
+        ) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.SpaceAround,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(Dimensions.navigationBarHeight+5.dp)
+                    .padding(contentPadding)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(colorPalette().background1)
+            ) {
+                val scrollState = rememberScrollState()
+
+                if (UiType.ViMusic.isCurrent() && NavRoutes.home.isNotHere(navController))
+                    BackButton().Draw()
+
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(Color.Transparent)
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceEvenly,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .fillMaxSize()
+                            .horizontalScroll(scrollState),
+                        content = { buttonList().forEach { it() } }
+                    )
+                }
+
+                if (UiType.ViMusic.isCurrent() && showSearchIconInNav())
+                    SearchButton()
+
+                if (UiType.ViMusic.isCurrent())
+                    SettingsButton().Draw()
+
+                if (UiType.ViMusic.isCurrent() && showStatsIconInNav())
+                    StatsButton()
+            }
+        }
+    }
+}
+
+/*
 // Shown when "Navigation bar position" is set to "top" or "bottom"
 class HorizontalNavigationBar(
     val tabIndex: Int,
@@ -153,7 +312,7 @@ class HorizontalNavigationBar(
                 verticalArrangement = Arrangement.SpaceAround,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(Dimensions.navigationBarHeight + 5.dp)
+                    .height(Dimensions.navigationBarHeight + WindowInsets.systemBars.getBottom(LocalDensity.current).dp)
                     //.padding(bottom = 5.dp)
             ) {
 
@@ -179,7 +338,8 @@ class HorizontalNavigationBar(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceEvenly,
                         modifier = Modifier
-                            .padding(bottom = 10.dp)
+                            //.padding(bottom = 10.dp)
+                            .padding(bottom = WindowInsets.systemBars.getBottom(LocalDensity.current).dp)
                             .fillMaxWidth()
                             .fillMaxSize()
                             .horizontalScroll(scrollState),
@@ -205,3 +365,4 @@ class HorizontalNavigationBar(
         }
     }
 }
+*/
