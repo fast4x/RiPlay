@@ -1266,4 +1266,8 @@
     <string name="now_playing_title">NOW PLAYING</string>
     <string name="local_now_playing_title">LOCAL</string>
     <string name="online_now_playing_title">ONLINE</string>
+    <string name="no_artists">No artists</string>
+    <string name="no_albums">No albums</string>
+    <string name="no_plaulists">No playlists</string>
+    <string name="no_songs">No songs</string>
 </resources>

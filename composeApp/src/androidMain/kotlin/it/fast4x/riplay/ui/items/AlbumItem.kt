@@ -148,6 +148,8 @@ fun AlbumItem(
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier
                     .applyIf(!disableScrollingText) { basicMarquee(iterations = Int.MAX_VALUE) }
+                    .align(
+                        if (yearCentered == true) Alignment.CenterHorizontally else Alignment.Start)
             )
 
             if (!alternative || showAuthors == true) {
