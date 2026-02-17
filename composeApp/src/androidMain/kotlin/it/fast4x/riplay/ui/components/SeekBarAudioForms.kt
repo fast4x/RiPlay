@@ -1,5 +1,6 @@
 package it.fast4x.riplay.ui.components
 
+import kotlin.random.Random
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.animation.core.animateDp
@@ -17,6 +18,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
@@ -29,7 +32,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shape
@@ -48,7 +56,7 @@ import kotlin.math.roundToInt
 import kotlin.math.roundToLong
 
 @Composable
-fun SeekBar(
+fun SeekBarAudioForms(
     value: Long,
     minimumValue: Long,
     maximumValue: Long,
@@ -90,8 +98,15 @@ fun SeekBar(
     val timeText = remember(draggingValue) { formatMillis(if (mediaItem?.isLocal == true) draggingValue  else draggingValue * 1000) }
     val colorPalette = colorPalette()
 
+    val waveformSeed = remember(mediaItem?.mediaId) { mediaItem?.mediaId }
+    val waveData = remember(waveformSeed) { generateWaveform(waveformSeed ?: "", 100) }
+    //personalize numBars
+    // val numBars = (seekBarWidth / 4.dp.toPx()).toInt().coerceAtLeast(20)
+    // val waveData = remember(waveformSeed, numBars) { generateWaveform(waveformSeed, numBars) }
+
     Box(
         modifier = modifier
+            .fillMaxWidth()
             .onGloballyPositioned { coordinates -> seekBarWidth = coordinates.size.width }
             .pointerInput(minimumValue, maximumValue) {
                 if (maximumValue < minimumValue) return@pointerInput
@@ -144,51 +159,73 @@ fun SeekBar(
                 )
             }
             .padding(horizontal = scrubberRadius)
-            .drawWithContent {
-                drawContent()
+            .drawBehind {
+                val width = size.width
+                val height = size.height
+                val centerY = height / 2f
 
-                val scrubberPosition = if (maximumValue < minimumValue) {
-                    0f
-                } else {
-                    ((draggingValue.toFloat() - minimumValue) / (maximumValue - minimumValue) * size.width).coerceIn(0f, size.width)
-                }
+                if (width > 0 && waveData.isNotEmpty()) {
+                    val barWidth = width / waveData.size
+                    val gap = barWidth * 0.25f
+                    val drawWidth = barWidth - gap
 
-                drawCircle(
-                    color = scrubberColor,
-                    radius = currentScrubberRadius.toPx(),
-                    center = center.copy(x = scrubberPosition)
-                )
+                    val fraction = if (maximumValue > minimumValue) {
+                        ((draggingValue.toFloat() - minimumValue) / (maximumValue - minimumValue)).coerceIn(0f, 1f)
+                    } else 0f
 
-                if (drawSteps) {
-                    for (i in draggingValue + 1..maximumValue) {
-                        val stepPosition =
-                            ((i.toFloat() - minimumValue) / (maximumValue - minimumValue) * size.width).coerceIn(0f, size.width)
-                        drawCircle(
-                            color = scrubberColor,
-                            radius = scrubberRadius.toPx() / 2,
-                            center = center.copy(x = stepPosition),
+                    waveData.forEachIndexed { index, amplitude ->
+                        val barFraction = index.toFloat() / waveData.size
+
+                        val isPlayed = barFraction <= fraction
+                        //val isBuffered = barFraction <= (bufferedValue / (maximumValue - minimumValue + minimumValue)) // Semplificato, adatta se usi il buffer
+
+
+                        val color = when {
+                            isPlayed -> color
+                            // isBuffered -> backgroundColor.copy(alpha = 0.5f)
+                            else -> backgroundColor
+                        }
+
+                        val barHeight = (height * 0.8f * amplitude).coerceAtLeast(2.dp.toPx())
+
+                        drawRoundRect(
+                            color = color,
+                            topLeft = Offset(
+                                x = index * barWidth + gap / 2,
+                                y = centerY - barHeight / 2
+                            ),
+                            size = Size(drawWidth, barHeight),
+                            cornerRadius = CornerRadius(drawWidth / 2, drawWidth / 2) // Barre tonde
                         )
                     }
                 }
             }
-            .height(scrubberRadius+44.dp)
+            .height(scrubberRadius + 44.dp)
     ) {
 
-        Spacer(
-            modifier = Modifier
-                .height(currentBarHeight)
-                .fillMaxWidth()
-                .background(color = backgroundColor, shape = shape)
-                .align(Alignment.Center)
-        )
 
-        Spacer(
-            modifier = Modifier
-                .height(currentBarHeight)
-                .fillMaxWidth(((draggingValue.toFloat() - minimumValue) / (maximumValue - minimumValue)).coerceIn(0f, 1f))
-                .background(color = color, shape = shape)
-                .align(Alignment.CenterStart)
-        )
+        AnimatedVisibility(
+            visible = isDragging.targetState && showTooltip,
+            enter = fadeIn(), exit = fadeOut()
+        ) {
+
+            Box(
+                modifier = Modifier
+                    .align(Alignment.CenterStart)
+                    .offset {
+                        val fraction = if (maximumValue > minimumValue) {
+                            ((draggingValue.toFloat() - minimumValue) / (maximumValue - minimumValue)).coerceIn(0f, 1f)
+                        } else 0f
+                        val xPos = if (seekBarWidth > 0) {
+                            (seekBarWidth * fraction) - (scrubberRadius.toPx())
+                        } else 0
+                        IntOffset(x = xPos.toInt(), y = 0)
+                    }
+                    .size(scrubberRadius * 2)
+                    .clip(CircleShape)
+                    .background(scrubberColor)
+            )
+        }
 
         AnimatedVisibility(
             visible = isDragging.targetState && showTooltip,
@@ -234,104 +271,13 @@ fun SeekBar(
     }
 }
 
-@Composable
-fun SeekBarThin(
-    value: Long,
-    minimumValue: Long,
-    maximumValue: Long,
-    onDragStart: (Long) -> Unit,
-    onDrag: (Long) -> Unit,
-    onDragEnd: () -> Unit,
-    color: Color,
-    backgroundColor: Color,
-    modifier: Modifier = Modifier,
-    barHeight: Dp = 4.dp,
-    scrubberColor: Color = color,
-    scrubberRadius: Dp = 6.dp,
-    shape: Shape = RectangleShape,
-    drawSteps: Boolean = false,
-) {
-    val isDragging = remember {
-        MutableTransitionState(false)
-    }
 
 
-    Box(
-        modifier = modifier
-            .pointerInput(minimumValue, maximumValue) {
-                if (maximumValue < minimumValue) return@pointerInput
 
-                var acc = 0f
 
-                detectHorizontalDragGestures(
-                    onDragStart = {
-                        isDragging.targetState = true
-                    },
-                    onHorizontalDrag = { _, delta ->
-                        acc += delta / size.width * (maximumValue - minimumValue)
-
-                        if (acc !in -1f..1f) {
-                            onDrag(acc.toLong())
-                            acc -= acc.toLong()
-                        }
-                    },
-                    onDragEnd = {
-                        isDragging.targetState = false
-                        acc = 0f
-                        onDragEnd()
-                    },
-                    onDragCancel = {
-                        isDragging.targetState = false
-                        acc = 0f
-                        onDragEnd()
-                    }
-                )
-            }
-            .pointerInput(minimumValue, maximumValue) {
-                if (maximumValue < minimumValue) return@pointerInput
-
-                detectTapGestures(
-                    onPress = { offset ->
-                        onDragStart((offset.x / size.width * (maximumValue - minimumValue) + minimumValue).roundToLong())
-                    },
-                    onTap = {
-                        onDragEnd()
-                    }
-                )
-            }
-            .padding(horizontal = scrubberRadius)
-            .drawWithContent {
-                drawContent()
-
-                if (drawSteps) {
-                    for (i in value + 1..maximumValue) {
-                        val stepPosition =
-                            (i.toFloat() - minimumValue) / (maximumValue - minimumValue) * size.width
-                        drawCircle(
-                            color = scrubberColor,
-                            radius = scrubberRadius.toPx() / 2,
-                            center = center.copy(x = stepPosition),
-                        )
-                    }
-                }
-            }
-            .height(scrubberRadius)
-    ) {
-
-        Spacer(
-            modifier = Modifier
-                .height(barHeight)
-                .fillMaxWidth()
-                .background(color = backgroundColor, shape = shape)
-                .align(Alignment.Center)
-        )
-
-        Spacer(
-            modifier = Modifier
-                .height(barHeight)
-                .fillMaxWidth((value.toFloat() - minimumValue) / (maximumValue - minimumValue))
-                .background(color = color, shape = shape)
-                .align(Alignment.CenterStart)
-        )
+fun generateWaveform(seed: String, barCount: Int): List<Float> {
+    val random = Random(seed.hashCode())
+    return List(barCount) {
+        random.nextFloat() * 0.8f + 0.2f
     }
 }

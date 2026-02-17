@@ -96,38 +96,9 @@ fun Controls(
     val binder = LocalPlayerServiceBinder.current
     binder?.player ?: return
 
-    var currentSong by remember { mutableStateOf<Song?>(null) }
-    LaunchedEffect(mediaId) {
-        Database.song(mediaId).distinctUntilChanged().collect {
-            currentSong = it
-        }
-    }
-
-    //println("Controls currentSong: ${currentSong?.title}")
-
-    /*
-    var scrubbingPosition by remember(mediaId) {
-        mutableStateOf<Long?>(null)
-    }
-
-     */
-
-    //val onGoToArtist = artistRoute::global
-    //val onGoToAlbum = albumRoute::global
-
-
     var likedAt by rememberSaveable {
         mutableStateOf<Long?>(null)
     }
-
-    /*
-    var nextmediaItemIndex = binder.player.nextMediaItemIndex ?: -1
-    var nextmediaItemtitle = ""
-
-
-    if (nextmediaItemIndex.toShort() > -1)
-        nextmediaItemtitle = binder.player.getMediaItemAt(nextmediaItemIndex).mediaMetadata.title.toString()
-    */
 
     var disableScrollingText by rememberPreference(disableScrollingTextKey, false)
 
@@ -148,52 +119,16 @@ fun Controls(
                 )
             )
     }
-    //val durationVisible by remember(isSeeking) { derivedStateOf { isSeeking } }
-
 
     LaunchedEffect(mediaId) {
         Database.likedAt(mediaId).distinctUntilChanged().collect { likedAt = it }
     }
-
-
-
-
-    var showSelectDialog by remember { mutableStateOf(false) }
 
     var playerTimelineSize by rememberPreference(
         playerTimelineSizeKey,
         PlayerTimelineSize.Biggest
     )
 
-
-    /*
-    var windows by remember {
-        mutableStateOf(binder.player.currentTimeline.windows)
-    }
-    var queuedSongs by remember {
-        mutableStateOf<List<Song>>(emptyList())
-    }
-    LaunchedEffect(mediaId, windows) {
-        Database.getSongsList(
-            windows.map {
-                it.mediaItem.mediaId
-            }
-        ).collect{ queuedSongs = it}
-    }
-
-    var totalPlayTimes = 0L
-    queuedSongs.forEach {
-        totalPlayTimes += it.durationText?.let { it1 ->
-            durationTextToMillis(it1)
-        }?.toLong() ?: 0
-    }
-     */
-
-    /*
-    var showLyrics by rememberSaveable {
-        mutableStateOf(false)
-    }
-     */
     val playerInfoType by rememberPreference(playerInfoTypeKey, PlayerInfoType.Essential)
     var playerSwapControlsWithTimeline by rememberPreference(
         playerSwapControlsWithTimelineKey,
@@ -263,7 +198,6 @@ fun Controls(
                     GetSeekBar(
                         position = position,
                         duration = duration,
-                        media = media,
                         mediaId = mediaId
                     )
                     Spacer(
@@ -341,7 +275,6 @@ fun Controls(
                     GetSeekBar(
                         position = position,
                         duration = duration,
-                        media = media,
                         mediaId = mediaId
                     )
                     Spacer(
@@ -376,7 +309,6 @@ fun Controls(
                     GetSeekBar(
                         position = position,
                         duration = duration,
-                        media = media,
                         mediaId = mediaId
                     )
                     Spacer(
@@ -438,7 +370,6 @@ fun Controls(
                 GetSeekBar(
                     position = position,
                     duration = duration,
-                    media = media,
                     mediaId = mediaId
                 )
                 Spacer(
@@ -479,7 +410,6 @@ fun Controls(
                 GetSeekBar(
                     position = position,
                     duration = duration,
-                    media = media,
                     mediaId = mediaId
                 )
                 Spacer(
@@ -492,96 +422,3 @@ fun Controls(
         }
 }
 
-fun Modifier.bounceClick() = composed {
-    var buttonState by remember { mutableStateOf(ButtonState.Idle) }
-    var buttonzoomout by rememberPreference(buttonzoomoutKey,false)
-    val scale by animateFloatAsState(if ((buttonState == ButtonState.Pressed) && (buttonzoomout)) 0.8f else 1f)
-
-    this
-        .graphicsLayer {
-            scaleX = scale
-            scaleY = scale
-        }
-        .pointerInput(buttonState) {
-            awaitPointerEventScope {
-                buttonState = if (buttonState == ButtonState.Pressed) {
-                    waitForUpOrCancellation()
-                    ButtonState.Idle
-                } else {
-                    awaitFirstDown(false)
-                    ButtonState.Pressed
-                }
-            }
-        }
-}
-
-
-/*
-@ExperimentalTextApi
-@ExperimentalAnimationApi
-@UnstableApi
-@Composable
-private fun PlayerMenu(
-    binder: PlayerService.Binder,
-    mediaItem: MediaItem,
-    onDismiss: () -> Unit
-) {
-    val context = LocalContext.current
-
-    val activityResultLauncher =
-        rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { }
-
-    BaseMediaItemMenu(
-        mediaItem = mediaItem,
-        onStartRadio = {
-            binder.stopRadio()
-            binder.player.seamlessPlay(mediaItem)
-            binder.setupRadio(NavigationEndpoint.Endpoint.Watch(videoId = mediaItem.mediaId))
-        },
-        onGoToEqualizer = {
-            try {
-                activityResultLauncher.launch(
-                    Intent(AudioEffect.ACTION_DISPLAY_AUDIO_EFFECT_CONTROL_PANEL).apply {
-                        putExtra(AudioEffect.EXTRA_AUDIO_SESSION, binder.player.audioSessionId)
-                        putExtra(AudioEffect.EXTRA_PACKAGE_NAME, context.packageName)
-                        putExtra(AudioEffect.EXTRA_CONTENT_TYPE, AudioEffect.CONTENT_TYPE_MUSIC)
-                    }
-                )
-            } catch (e: ActivityNotFoundException) {
-                context.toast("Couldn't find an application to equalize audio")
-            }
-        },
-        onShowSleepTimer = {},
-        onDismiss = onDismiss
-    )
-}
-
-@Composable
-private fun Duration(
-    position: Float,
-    duration: Long,
-) {
-    val typography = LocalAppearance.current.typography
-    Row(
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        BasicText(
-            text = formatAsDuration(position.toLong()),
-            style = typography.xxs.semiBold,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-        )
-
-        if (duration != C.TIME_UNSET) {
-            BasicText(
-                text = formatAsDuration(duration),
-                style = typography.xxs.semiBold,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-            )
-        }
-    }
-}
-*/

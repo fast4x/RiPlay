@@ -6,12 +6,15 @@ import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutLinearInEasing
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.gestures.waitForUpOrCancellation
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -44,8 +47,11 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.util.UnstableApi
+import it.fast4x.riplay.enums.ButtonState
+import it.fast4x.riplay.extensions.preferences.buttonzoomoutKey
 import it.fast4x.riplay.extensions.preferences.disablePlayerHorizontalSwipeKey
 import it.fast4x.riplay.extensions.preferences.rememberObservedPreference
+import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.ui.styling.shimmer
 import kotlin.math.sqrt
 
@@ -473,4 +479,27 @@ fun Modifier.applyIf(condition : Boolean, modifier : Modifier.() -> Modifier) : 
     } else {
         this
     }
+}
+
+fun Modifier.bounceClick() = composed {
+    var buttonState by remember { mutableStateOf(ButtonState.Idle) }
+    var buttonzoomout by rememberPreference(buttonzoomoutKey,false)
+    val scale by animateFloatAsState(if ((buttonState == ButtonState.Pressed) && (buttonzoomout)) 0.8f else 1f)
+
+    this
+        .graphicsLayer {
+            scaleX = scale
+            scaleY = scale
+        }
+        .pointerInput(buttonState) {
+            awaitPointerEventScope {
+                buttonState = if (buttonState == ButtonState.Pressed) {
+                    waitForUpOrCancellation()
+                    ButtonState.Idle
+                } else {
+                    awaitFirstDown(false)
+                    ButtonState.Pressed
+                }
+            }
+        }
 }

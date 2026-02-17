@@ -1,5 +1,6 @@
 package it.fast4x.riplay.ui.components
 
+import kotlin.random.Random
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.animation.core.animateDp
@@ -17,6 +18,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
@@ -29,10 +32,19 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.text.font.FontWeight
@@ -44,11 +56,13 @@ import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.utils.formatMillis
 import it.fast4x.riplay.utils.isLocal
 import it.fast4x.riplay.utils.typography
+import kotlin.math.PI
 import kotlin.math.roundToInt
 import kotlin.math.roundToLong
+import kotlin.math.sin
 
 @Composable
-fun SeekBar(
+fun SeekBarSinusoidalWave(
     value: Long,
     minimumValue: Long,
     maximumValue: Long,
@@ -90,8 +104,12 @@ fun SeekBar(
     val timeText = remember(draggingValue) { formatMillis(if (mediaItem?.isLocal == true) draggingValue  else draggingValue * 1000) }
     val colorPalette = colorPalette()
 
+    val waveParams = remember(mediaItem?.mediaId) { generateSinusoidalParams(mediaItem?.mediaId ?: "") }
+
+
     Box(
         modifier = modifier
+            .fillMaxWidth()
             .onGloballyPositioned { coordinates -> seekBarWidth = coordinates.size.width }
             .pointerInput(minimumValue, maximumValue) {
                 if (maximumValue < minimumValue) return@pointerInput
@@ -144,51 +162,82 @@ fun SeekBar(
                 )
             }
             .padding(horizontal = scrubberRadius)
-            .drawWithContent {
-                drawContent()
+            .drawBehind {
+                val width = size.width
+                val height = size.height
+                val centerY = height / 2f
 
-                val scrubberPosition = if (maximumValue < minimumValue) {
-                    0f
-                } else {
-                    ((draggingValue.toFloat() - minimumValue) / (maximumValue - minimumValue) * size.width).coerceIn(0f, size.width)
-                }
+                if (width > 0) {
+                    // 1. Crea il tracciato (Path) dell'onda sinusoidale
+                    val path = Path()
+                    val step = 2f // Risoluzione del disegno (più basso = più curva ma più pesante)
 
-                drawCircle(
-                    color = scrubberColor,
-                    radius = currentScrubberRadius.toPx(),
-                    center = center.copy(x = scrubberPosition)
-                )
+                    for (x in 0..width.toInt() step step.toInt()) {
+                        // Formula: Y = Centro + (AmpiezzaMax * AmpiezzaRandom * sin(x * Freq + Fase))
+                        val y = centerY + (height * 0.5f * waveParams.amplitude *
+                                sin(x * 0.02f * waveParams.frequency + waveParams.phase))
 
-                if (drawSteps) {
-                    for (i in draggingValue + 1..maximumValue) {
-                        val stepPosition =
-                            ((i.toFloat() - minimumValue) / (maximumValue - minimumValue) * size.width).coerceIn(0f, size.width)
-                        drawCircle(
-                            color = scrubberColor,
-                            radius = scrubberRadius.toPx() / 2,
-                            center = center.copy(x = stepPosition),
+                        if (x == 0) path.moveTo(x.toFloat(), y)
+                        else path.lineTo(x.toFloat(), y)
+                    }
+
+                    // Calcola la posizione del progresso (larghezza colorata)
+                    val fraction = if (maximumValue > minimumValue) {
+                        ((draggingValue.toFloat() - minimumValue) / (maximumValue - minimumValue)).coerceIn(0f, 1f)
+                    } else 0f
+                    val progressWidth = width * fraction
+
+                    // 2. Disegna l'onda di sfondo (Grigia) su tutta la larghezza
+                    drawPath(
+                        path = path,
+                        color = backgroundColor,
+                        style = Stroke(
+                            width = 4.dp.toPx(), // Spessore linea
+                            pathEffect = null,
+                            cap = StrokeCap.Round // Puntonde alle estremità
+                        )
+                    )
+
+                    // 3. Disegna l'onda di progresso (Colorata) ritagliandola
+                    // Usiamo clipRect per disegnare solo la parte a sinistra del cursore
+                    clipRect(left = 0f, top = 0f, right = progressWidth, bottom = height) {
+                        drawPath(
+                            path = path,
+                            color = color, // Il colore attivo (accent)
+                            style = Stroke(
+                                width = 4.dp.toPx(),
+                                cap = StrokeCap.Round
+                            )
                         )
                     }
                 }
             }
-            .height(scrubberRadius+44.dp)
+            .height(scrubberRadius + 44.dp)
     ) {
 
-        Spacer(
-            modifier = Modifier
-                .height(currentBarHeight)
-                .fillMaxWidth()
-                .background(color = backgroundColor, shape = shape)
-                .align(Alignment.Center)
-        )
 
-        Spacer(
-            modifier = Modifier
-                .height(currentBarHeight)
-                .fillMaxWidth(((draggingValue.toFloat() - minimumValue) / (maximumValue - minimumValue)).coerceIn(0f, 1f))
-                .background(color = color, shape = shape)
-                .align(Alignment.CenterStart)
-        )
+        AnimatedVisibility(
+            visible = isDragging.targetState && showTooltip,
+            enter = fadeIn(), exit = fadeOut()
+        ) {
+
+            Box(
+                modifier = Modifier
+                    .align(Alignment.CenterStart)
+                    .offset {
+                        val fraction = if (maximumValue > minimumValue) {
+                            ((draggingValue.toFloat() - minimumValue) / (maximumValue - minimumValue)).coerceIn(0f, 1f)
+                        } else 0f
+                        val xPos = if (seekBarWidth > 0) {
+                            (seekBarWidth * fraction) - (scrubberRadius.toPx())
+                        } else 0
+                        IntOffset(x = xPos.toInt(), y = 0)
+                    }
+                    .size(scrubberRadius * 2)
+                    .clip(CircleShape)
+                    .background(scrubberColor)
+            )
+        }
 
         AnimatedVisibility(
             visible = isDragging.targetState && showTooltip,
@@ -234,104 +283,19 @@ fun SeekBar(
     }
 }
 
-@Composable
-fun SeekBarThin(
-    value: Long,
-    minimumValue: Long,
-    maximumValue: Long,
-    onDragStart: (Long) -> Unit,
-    onDrag: (Long) -> Unit,
-    onDragEnd: () -> Unit,
-    color: Color,
-    backgroundColor: Color,
-    modifier: Modifier = Modifier,
-    barHeight: Dp = 4.dp,
-    scrubberColor: Color = color,
-    scrubberRadius: Dp = 6.dp,
-    shape: Shape = RectangleShape,
-    drawSteps: Boolean = false,
-) {
-    val isDragging = remember {
-        MutableTransitionState(false)
-    }
+
+data class SinusoidalWaveParams(
+    val frequency: Float,
+    val amplitude: Float,
+    val phase: Float
+)
 
 
-    Box(
-        modifier = modifier
-            .pointerInput(minimumValue, maximumValue) {
-                if (maximumValue < minimumValue) return@pointerInput
-
-                var acc = 0f
-
-                detectHorizontalDragGestures(
-                    onDragStart = {
-                        isDragging.targetState = true
-                    },
-                    onHorizontalDrag = { _, delta ->
-                        acc += delta / size.width * (maximumValue - minimumValue)
-
-                        if (acc !in -1f..1f) {
-                            onDrag(acc.toLong())
-                            acc -= acc.toLong()
-                        }
-                    },
-                    onDragEnd = {
-                        isDragging.targetState = false
-                        acc = 0f
-                        onDragEnd()
-                    },
-                    onDragCancel = {
-                        isDragging.targetState = false
-                        acc = 0f
-                        onDragEnd()
-                    }
-                )
-            }
-            .pointerInput(minimumValue, maximumValue) {
-                if (maximumValue < minimumValue) return@pointerInput
-
-                detectTapGestures(
-                    onPress = { offset ->
-                        onDragStart((offset.x / size.width * (maximumValue - minimumValue) + minimumValue).roundToLong())
-                    },
-                    onTap = {
-                        onDragEnd()
-                    }
-                )
-            }
-            .padding(horizontal = scrubberRadius)
-            .drawWithContent {
-                drawContent()
-
-                if (drawSteps) {
-                    for (i in value + 1..maximumValue) {
-                        val stepPosition =
-                            (i.toFloat() - minimumValue) / (maximumValue - minimumValue) * size.width
-                        drawCircle(
-                            color = scrubberColor,
-                            radius = scrubberRadius.toPx() / 2,
-                            center = center.copy(x = stepPosition),
-                        )
-                    }
-                }
-            }
-            .height(scrubberRadius)
-    ) {
-
-        Spacer(
-            modifier = Modifier
-                .height(barHeight)
-                .fillMaxWidth()
-                .background(color = backgroundColor, shape = shape)
-                .align(Alignment.Center)
-        )
-
-        Spacer(
-            modifier = Modifier
-                .height(barHeight)
-                .fillMaxWidth((value.toFloat() - minimumValue) / (maximumValue - minimumValue))
-                .background(color = color, shape = shape)
-                .align(Alignment.CenterStart)
-        )
-    }
+fun generateSinusoidalParams(seed: String): SinusoidalWaveParams {
+    val random = Random(seed.hashCode())
+    return SinusoidalWaveParams(
+        frequency = random.nextFloat() * 4f + 2f,
+        amplitude = random.nextFloat() * 0.6f + 0.3f,
+        phase = random.nextFloat() * PI.toFloat() * 2
+    )
 }

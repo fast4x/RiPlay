@@ -46,14 +46,7 @@ import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.enums.ColorPaletteMode
 import it.fast4x.riplay.enums.PauseBetweenSongs
 import it.fast4x.riplay.enums.PlayerTimelineType
-import it.fast4x.riplay.data.models.UiMedia
-import it.fast4x.riplay.ui.components.ProgressPercentage
 import it.fast4x.riplay.ui.components.SeekBar
-import it.fast4x.riplay.ui.components.SeekBarAudioWaves
-import it.fast4x.riplay.ui.components.SeekBarColored
-import it.fast4x.riplay.ui.components.SeekBarCustom
-import it.fast4x.riplay.ui.components.SeekBarThin
-import it.fast4x.riplay.ui.components.SeekBarWaved
 import it.fast4x.riplay.ui.styling.collapsedPlayerProgressBar
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -68,6 +61,8 @@ import it.fast4x.riplay.extensions.preferences.showRemainingSongTimeKey
 import it.fast4x.riplay.extensions.preferences.textoutlineKey
 import it.fast4x.riplay.extensions.preferences.transparentbarKey
 import it.fast4x.riplay.ui.components.ModernSeekbar
+import it.fast4x.riplay.ui.components.SeekBarAudioForms
+import it.fast4x.riplay.ui.components.SeekBarSinusoidalWave
 import it.fast4x.riplay.utils.typography
 import it.fast4x.riplay.utils.formatAsDuration
 import it.fast4x.riplay.utils.isCompositionLaunched
@@ -84,7 +79,6 @@ fun GetSeekBar(
     position: Long,
     duration: Long,
     mediaId: String,
-    media: UiMedia
     ) {
 
     val binder = LocalPlayerServiceBinder.current
@@ -97,7 +91,6 @@ fun GetSeekBar(
         mutableStateOf<Long?>(null)
     }
     var transparentbar by rememberPreference(transparentbarKey, true)
-    val scope = rememberCoroutineScope()
     val animatedPosition = remember { Animatable(position.toFloat()) }
     var isSeeking by remember { mutableStateOf(false) }
     val showRemainingSongTime by rememberPreference(showRemainingSongTimeKey, true)
@@ -128,11 +121,11 @@ fun GetSeekBar(
             .fillMaxWidth()
     ) {
 
-        if (duration == C.TIME_UNSET)
-            LinearProgressIndicator(
-                modifier = Modifier.fillMaxWidth(),
-                color = colorPalette().collapsedPlayerProgressBar
-            )
+//        if (duration == C.TIME_UNSET)
+//            LinearProgressIndicator(
+//                modifier = Modifier.fillMaxWidth(),
+//                color = colorPalette().collapsedPlayerProgressBar
+//            )
 
         if (playerTimelineType != PlayerTimelineType.Default
             && playerTimelineType != PlayerTimelineType.Wavy
@@ -140,8 +133,7 @@ fun GetSeekBar(
             && playerTimelineType != PlayerTimelineType.ThinBar
             && playerTimelineType != PlayerTimelineType.ColoredBar
             )
-            SeekBarCustom(
-                type = playerTimelineType,
+            SeekBar(
                 value = scrubbingPosition ?: position,
                 minimumValue = 0,
                 maximumValue = duration,
@@ -162,8 +154,9 @@ fun GetSeekBar(
                 color = colorPalette().collapsedPlayerProgressBar,
                 backgroundColor = if (transparentbar) Color.Transparent else colorPalette().textSecondary,
                 shape = RoundedCornerShape(8.dp),
-                //modifier = Modifier.pulsatingEffect(currentValue = scrubbingPosition?.toFloat() ?: position.toFloat(), isVisible = true)
+                barHeight = 14.dp
             )
+
 
         if (playerTimelineType == PlayerTimelineType.Default)
             /*
@@ -204,11 +197,10 @@ fun GetSeekBar(
                 color = colorPalette().collapsedPlayerProgressBar,
                 backgroundColor = if (transparentbar) Color.Transparent else colorPalette().textSecondary,
                 shape = RoundedCornerShape(8.dp),
-                //modifier = Modifier.pulsatingEffect(currentValue = scrubbingPosition?.toFloat() ?: position.toFloat(), isVisible = true)
             )
 
         if (playerTimelineType == PlayerTimelineType.ThinBar)
-            SeekBarThin(
+            SeekBar(
                 value = scrubbingPosition ?: position,
                 minimumValue = 0,
                 maximumValue = duration,
@@ -229,78 +221,66 @@ fun GetSeekBar(
                 color = colorPalette().collapsedPlayerProgressBar,
                 backgroundColor = if (transparentbar) Color.Transparent else colorPalette().textSecondary,
                 shape = RoundedCornerShape(8.dp),
-                //modifier = Modifier.pulsatingEffect(currentValue = scrubbingPosition?.toFloat() ?: position.toFloat(), isVisible = true)
+                barHeight = 1.dp,
+                scrubberRadius = 4.dp
             )
 
+
         if (playerTimelineType == PlayerTimelineType.Wavy) {
-            SeekBarWaved(
-                position = { animatedPosition.value },
-                range = 0f..media.duration.toFloat(),
-                onSeekStarted = {
-                    scrubbingPosition = it.toLong()
-
-                    //isSeeking = true
-                    scope.launch {
-                        animatedPosition.animateTo(it)
-                    }
-
+            SeekBarSinusoidalWave(
+                value = scrubbingPosition ?: position,
+                minimumValue = 0,
+                maximumValue = duration,
+                onDragStart = {
+                    scrubbingPosition = it
                 },
-                onSeek = { delta ->
+                onDrag = { delta ->
                     scrubbingPosition = if (duration != C.TIME_UNSET) {
-                        scrubbingPosition?.plus(delta)?.coerceIn(0F, duration.toFloat())
-                            ?.toLong()
+                        scrubbingPosition?.plus(delta)?.coerceIn(0, duration)
                     } else {
                         null
                     }
-
-                    if (media.duration != C.TIME_UNSET) {
-                        //isSeeking = true
-                        scope.launch {
-                            animatedPosition.snapTo(
-                                animatedPosition.value.plus(delta)
-                                    .coerceIn(0f, media.duration.toFloat())
-                            )
-                        }
-                    }
-
                 },
-                onSeekFinished = {
+                onDragEnd = {
                     scrubbingPosition?.let(binder.player::seekTo)
                     scrubbingPosition = null
-                    /*
-                isSeeking = false
-                animatedPosition.let {
-                    binder.player.seekTo(it.targetValue.toLong())
-                }
-                 */
                 },
                 color = colorPalette().collapsedPlayerProgressBar,
-                isActive = binder.player.isPlaying,
-                backgroundColor = if (transparentbar) Color.Transparent else colorPalette().textSecondary,
+                backgroundColor = if (transparentbar) Color.Transparent else colorPalette().textDisabled,
                 shape = RoundedCornerShape(8.dp),
-                //modifier = Modifier.pulsatingEffect(currentValue = scrubbingPosition?.toFloat() ?: position.toFloat(), isVisible = true)
             )
+
         }
 
         if (playerTimelineType == PlayerTimelineType.FakeAudioBar) {
-            SeekBarAudioWaves(
-                progressPercentage = ProgressPercentage((position.toFloat() / duration.toFloat()).coerceIn(0f, 1f) ),
-                playedColor = colorPalette().accent,
-                notPlayedColor = if (transparentbar) Color.Transparent else colorPalette().textSecondary,
-                waveInteraction = {
-                    scrubbingPosition = (it.value * duration.toFloat()).toLong()
-                    binder.player.seekTo(scrubbingPosition!!)
+            SeekBarAudioForms(
+                value = scrubbingPosition ?: position,
+                minimumValue = 0,
+                maximumValue = duration,
+                onDragStart = {
+                    scrubbingPosition = it
+                },
+                onDrag = { delta ->
+                    scrubbingPosition = if (duration != C.TIME_UNSET) {
+                        scrubbingPosition?.plus(delta)?.coerceIn(0, duration)
+                    } else {
+                        null
+                    }
+                },
+                onDragEnd = {
+                    scrubbingPosition?.let(binder.player::seekTo)
                     scrubbingPosition = null
                 },
-                modifier = Modifier
-                    .height(40.dp)
-                //.pulsatingEffect(currentValue = position.toFloat() / duration.toFloat(), isVisible = true)
+                color = colorPalette().collapsedPlayerProgressBar,
+                backgroundColor = if (transparentbar) Color.Transparent else colorPalette().textSecondary,
+                shape = RoundedCornerShape(8.dp),
             )
+
         }
 
 
         if (playerTimelineType == PlayerTimelineType.ColoredBar)
-            SeekBarColored(
+            SeekBar(
                 value = scrubbingPosition ?: position,
                 minimumValue = 0,
                 maximumValue = duration,
@@ -319,10 +299,11 @@ fun GetSeekBar(
                     scrubbingPosition = null
                 },
                 color = colorPalette().collapsedPlayerProgressBar,
-                backgroundColor = colorPalette().textSecondary,
-                shape = RoundedCornerShape(8.dp)
+                backgroundColor = if (transparentbar) Color.Transparent else colorPalette().textSecondary,
+                shape = RoundedCornerShape(8.dp),
+                barHeight = 1.dp,
+                scrubberRadius = 4.dp
             )
-
 
     }
 
