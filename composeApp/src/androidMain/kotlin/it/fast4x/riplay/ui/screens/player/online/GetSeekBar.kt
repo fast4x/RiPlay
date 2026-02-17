@@ -9,6 +9,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -68,6 +69,7 @@ import it.fast4x.riplay.ui.styling.semiBold
 import it.fast4x.riplay.extensions.preferences.showRemainingSongTimeKey
 import it.fast4x.riplay.extensions.preferences.textoutlineKey
 import it.fast4x.riplay.extensions.preferences.transparentbarKey
+import it.fast4x.riplay.ui.components.ModernSeekbar
 import kotlinx.coroutines.delay
 import org.jetbrains.compose.resources.painterResource
 import riplay.composeapp.generated.resources.Res
@@ -169,6 +171,23 @@ fun GetSeekBar(
             )
 
         if (playerTimelineType == PlayerTimelineType.Default)
+            /*
+            ModernSeekbar(
+                value = (scrubbingPosition ?: position) / duration.toFloat(),
+                onValueChange = {
+                    val newPosition = (it * duration).toLong()
+                    scrubbingPosition = newPosition
+                },
+                onDragEnd = {
+                    scrubbingPosition = null
+                },
+                totalDurationMs = duration * 1000,
+//                trackHeight = 8.dp,
+//                thumbRadius = 10.dp,
+//                thumbRadiusExpanded = 12.dp,
+//                backgroundColor = if (transparentbar) Color.Transparent else colorPalette().textSecondary,
+            )
+        */
             SeekBar(
                 value = scrubbingPosition ?: position,
                 minimumValue = 0,

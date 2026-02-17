@@ -65,6 +65,7 @@ fun VerticalSlider(
                     placeable.place(-placeable.width, 0)
                 }
             }
-            .then(modifier)
+            .then(modifier),
+        showTooltip = false
     )
 }

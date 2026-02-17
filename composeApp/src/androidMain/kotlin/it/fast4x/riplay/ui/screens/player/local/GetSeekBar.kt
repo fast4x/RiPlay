@@ -67,6 +67,7 @@ import it.fast4x.riplay.extensions.preferences.seekWithTapKey
 import it.fast4x.riplay.extensions.preferences.showRemainingSongTimeKey
 import it.fast4x.riplay.extensions.preferences.textoutlineKey
 import it.fast4x.riplay.extensions.preferences.transparentbarKey
+import it.fast4x.riplay.ui.components.ModernSeekbar
 import it.fast4x.riplay.utils.typography
 import it.fast4x.riplay.utils.formatAsDuration
 import it.fast4x.riplay.utils.isCompositionLaunched
@@ -88,7 +89,7 @@ fun GetSeekBar(
 
     val binder = LocalPlayerServiceBinder.current
     binder?.player ?: return
-    val playerTimelineType by rememberPreference(
+    val playerTimelineType by rememberObservedPreference(
         playerTimelineTypeKey,
         PlayerTimelineType.FakeAudioBar
     )
@@ -165,6 +166,23 @@ fun GetSeekBar(
             )
 
         if (playerTimelineType == PlayerTimelineType.Default)
+            /*
+            ModernSeekbar(
+                value = (scrubbingPosition ?: position) / duration.toFloat(),
+                onValueChange = {
+                    val newPosition = (it * duration).toLong()
+                    newPosition.let(binder.player::seekTo)
+                },
+                onDragEnd = {
+                    scrubbingPosition = null
+                },
+                totalDurationMs = duration,
+//                trackHeight = 8.dp,
+//                thumbRadius = 10.dp,
+//                thumbRadiusExpanded = 12.dp,
+//                backgroundColor = if (transparentbar) Color.Transparent else colorPalette().textSecondary,
+            )
+             */
             SeekBar(
                 value = scrubbingPosition ?: position,
                 minimumValue = 0,
