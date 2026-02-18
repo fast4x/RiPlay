@@ -185,17 +185,17 @@ fun Player.forceSeekToNext() {
 }
 
 fun Player.playNext() {
+    forceSeekToNext()
     CoroutineScope(Dispatchers.Main).launch {
         restoreGlobalVolume()
     }
-    forceSeekToNext()
 }
 
 fun Player.playPrevious() {
+    forceSeekToPrevious()
     CoroutineScope(Dispatchers.Main).launch {
         restoreGlobalVolume()
     }
-    forceSeekToPrevious()
 }
 
 @UnstableApi
