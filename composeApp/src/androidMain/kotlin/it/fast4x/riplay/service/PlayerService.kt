@@ -14,6 +14,7 @@ import android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK
 import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.content.IntentFilter
 import android.content.SharedPreferences
+import android.content.pm.ServiceInfo
 import android.database.SQLException
 import android.graphics.Bitmap
 import android.hardware.Sensor
@@ -39,6 +40,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import androidx.core.app.ServiceCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.edit
 import androidx.core.content.getSystemService
@@ -197,9 +199,10 @@ import it.fast4x.riplay.service.helpers.BluetoothConnectReceiver
 import it.fast4x.riplay.service.helpers.EqualizerHelper
 import it.fast4x.riplay.service.helpers.NoisyAudioReceiver
 import it.fast4x.riplay.utils.GlobalSharedData
+import it.fast4x.riplay.utils.isAtLeastAndroid11
+
 import it.fast4x.riplay.utils.isExplicit
 import it.fast4x.riplay.utils.isLocal
-import it.fast4x.riplay.utils.isManufacturerWithAutostart
 import it.fast4x.riplay.utils.isVideo
 import it.fast4x.riplay.utils.playAtIndex
 import it.fast4x.riplay.utils.playNext
@@ -290,8 +293,6 @@ class PlayerService : Service(),
 
     var legacyNotificationActionReceiver: LegacyNotificationActionReceiver? = null
 
-    var serviceRestartReceiver: ServiceRestartReceiver? = null
-
     private val playerVerticalWidget = PlayerVerticalWidget()
     private val playerHorizontalWidget = PlayerHorizontalWidget()
 
@@ -325,11 +326,12 @@ class PlayerService : Service(),
     private val _internalOnlinePlayer = MutableStateFlow<YouTubePlayer?>(null)
     val internalOnlinePlayer: StateFlow<YouTubePlayer?> = _internalOnlinePlayer
 
-    //var internalOnlinePlayer: MutableState<YouTubePlayer?> = mutableStateOf(null)
-
     private val _internalOnlinePlayerState = MutableStateFlow<PlayerConstants.PlayerState>(PlayerConstants.PlayerState.UNSTARTED)
     val internalOnlinePlayerState: StateFlow<PlayerConstants.PlayerState> = _internalOnlinePlayerState
-    //var internalOnlinePlayerState by mutableStateOf(PlayerConstants.PlayerState.UNSTARTED)
+
+    private val _internalOnlineBufferedFraction = MutableStateFlow(0f)
+    val internalOnlineBufferedFraction: StateFlow<Float> = _internalOnlineBufferedFraction
+
 
     var load = true
     var playFromSecond by mutableFloatStateOf(0f)
@@ -406,7 +408,6 @@ class PlayerService : Service(),
         super.onCreate()
 
         createNotificationChannel()
-        //startForeground()
 
         /**
          * Online initialization
@@ -620,23 +621,24 @@ class PlayerService : Service(),
     }
 
     private fun startForeground() {
-        startForeground(NOTIFICATION_ID,notification())
-        //runCatching {
-//            notification().let {
-//                ServiceCompat.startForeground(
-//                    this@PlayerService,
-//                    NOTIFICATION_ID,
-//                    it,
-//                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-//                        ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK
-//                    } else {
-//                        0
-//                    }
-//                )
-//            }
-//        }.onFailure {
-//            Timber.e("PlayerService oncreate startForeground ${it.stackTraceToString()}")
-//        }
+        runCatching {
+            notification().let {
+                ServiceCompat.startForeground(
+                    this@PlayerService,
+                    NOTIFICATION_ID,
+                    it,
+                    if (isAtLeastAndroid11) {
+                        ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK
+                    } else {
+                        0
+                    }
+                )
+            }
+        }.onFailure {
+            Timber.e("PlayerService oncreate startForeground ${it.stackTraceToString()}")
+            stopSelf()
+            SmartMessage("Error starting service, maybe permission denied?", context = this)
+        }
     }
 
     private fun initializeVariables() {
@@ -1163,6 +1165,14 @@ class PlayerService : Service(),
                         context = this@PlayerService,
                     )
 
+                }
+
+                override fun onVideoLoadedFraction(
+                    youTubePlayer: YouTubePlayer,
+                    loadedFraction: Float
+                ) {
+                    _internalOnlineBufferedFraction.value = loadedFraction
+                    Timber.d("PlayerService: initializeOnlinePlayer onVideoLoadedFraction $loadedFraction")
                 }
 
             }
@@ -2065,11 +2075,11 @@ class PlayerService : Service(),
 
         if ((player.isPlaying || isPlayingNow) && !isNotificationStarted) {
             isNotificationStarted = true
-            runCatching {
-                startForegroundService( intent<PlayerService>())
-            }.onFailure {
-                Timber.e("PlayerServiceFailed startForegroundService onEvents ${it.stackTraceToString()}")
-            }
+//            runCatching {
+//                startForegroundService( intent<PlayerService>())
+//            }.onFailure {
+//                Timber.e("PlayerServiceFailed startForegroundService onEvents ${it.stackTraceToString()}")
+//            }
             startForeground()
 
             sendOpenEqualizerIntent()
@@ -2619,6 +2629,9 @@ class PlayerService : Service(),
         val onlinePlayerState: StateFlow<PlayerConstants.PlayerState>
             get() = this@PlayerService.internalOnlinePlayerState
 
+        val onlinePlayerBufferedFraction: StateFlow<Float>
+            get() = this@PlayerService.internalOnlineBufferedFraction
+
         val onlinePlayerCurrentDuration: Float
             get() = this@PlayerService.currentDuration.value
 
@@ -2838,21 +2851,6 @@ class PlayerService : Service(),
                 context.stopService(context.intent<PlayerService>())
             }.onFailure {
                 Timber.e("Failed NotificationDismissReceiver stopService in PlayerService ${it.stackTraceToString()}")
-            }
-        }
-    }
-
-    class ServiceRestartReceiver : BroadcastReceiver() {
-        override fun onReceive(context: Context, intent: Intent) {
-            Timber.d("PlayerService ServiceRestartReceiver onReceive")
-            runCatching {
-                val intent = context.intent<PlayerService>()
-                if (isAtLeastAndroid8)
-                    context.startForegroundService(intent)
-                else
-                    context.startService(intent)
-            }.onFailure {
-                Timber.e("Failed ServiceRestartReceiver stopService in PlayerService ${it.stackTraceToString()}")
             }
         }
     }
