@@ -1,5 +1,6 @@
 package it.fast4x.riplay.ui.components
 
+import androidx.annotation.OptIn
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.animation.core.animateDp
@@ -40,6 +41,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import androidx.media3.common.util.UnstableApi
 import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.utils.formatMillis
@@ -49,6 +51,7 @@ import timber.log.Timber
 import kotlin.math.roundToInt
 import kotlin.math.roundToLong
 
+@OptIn(UnstableApi::class)
 @Composable
 fun SeekBar(
     value: Long,

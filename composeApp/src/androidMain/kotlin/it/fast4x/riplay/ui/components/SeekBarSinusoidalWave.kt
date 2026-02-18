@@ -1,5 +1,6 @@
 package it.fast4x.riplay.ui.components
 
+import androidx.annotation.OptIn
 import kotlin.random.Random
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.MutableTransitionState
@@ -52,6 +53,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import androidx.media3.common.util.UnstableApi
 import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.utils.formatMillis
@@ -62,6 +64,7 @@ import kotlin.math.roundToInt
 import kotlin.math.roundToLong
 import kotlin.math.sin
 
+@OptIn(UnstableApi::class)
 @Composable
 fun SeekBarSinusoidalWave(
     value: Long,
