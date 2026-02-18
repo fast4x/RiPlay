@@ -23,7 +23,7 @@ class AudioFocusHelper(
 
     private val audioFocusChangeListener = AudioManager.OnAudioFocusChangeListener { focusChange ->
         when (focusChange) {
-            AudioManager.AUDIOFOCUS_GAIN -> {
+            AudioManager.AUDIOFOCUS_GAIN, AudioManager.AUDIOFOCUS_GAIN_TRANSIENT -> {
                 // resume audio playback
                 listener.onAudioGained()
             }

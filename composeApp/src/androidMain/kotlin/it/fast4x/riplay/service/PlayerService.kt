@@ -195,6 +195,7 @@ import it.fast4x.riplay.extensions.ritune.improved.models.RiTunePlayerState
 import it.fast4x.riplay.extensions.ritune.improved.models.RiTuneRemoteCommand
 import it.fast4x.riplay.service.experimental.AppSharedScope
 import it.fast4x.riplay.service.experimental.GlobalQueueViewModel
+import it.fast4x.riplay.service.helpers.AudioFocusHelper
 import it.fast4x.riplay.service.helpers.BluetoothConnectReceiver
 import it.fast4x.riplay.service.helpers.EqualizerHelper
 import it.fast4x.riplay.service.helpers.NoisyAudioReceiver
@@ -379,6 +380,7 @@ class PlayerService : Service(),
 
     private var noisyReceiver: NoisyAudioReceiver? = null
     private var bluetoothReceiver: BluetoothConnectReceiver? = null
+    private lateinit var audioFocusHelper: AudioFocusHelper
 
     private val riTuneClient: RiTuneClient = RiTuneClient()
     private var riTuneObserverJob: Job? = null
@@ -516,8 +518,6 @@ class PlayerService : Service(),
         currentSong.debounce(1000).collect(coroutineScope) { song ->
             if (song == null) return@collect
 
-            currentSecond.value = 0F
-
             var currentMediaId = song.id
 
             if (lastOnlineMediaId != currentMediaId) {
@@ -574,6 +574,7 @@ class PlayerService : Service(),
         initializeMedleyMode()
         initializePlaybackParameters()
         initializeNoisyReceiver()
+        initializeAudioFocusHelper()
 
         initializeRiTune()
         initializeDiscordPresence()
@@ -1311,6 +1312,8 @@ class PlayerService : Service(),
 
         player.saveMasterQueue(currentSecond.value.toInt())
 
+        audioFocusHelper.abandonAudioFocus()
+
         try {
             unregisterReceiver(legacyNotificationActionReceiver)
         } catch (e: Exception) {
@@ -1813,6 +1816,34 @@ class PlayerService : Service(),
         noisyReceiver?.register()
     }
 
+    private fun initializeAudioFocusHelper() {
+        audioFocusHelper = AudioFocusHelper(this, object : AudioFocusHelper.OnAudioFocusListener {
+
+            override fun onAudioGained() {
+                // call ended, resume playback
+
+                Timber.d("PlayerService initializeAudioFocusHelper Focus Gained -> Resume")
+            }
+
+            override fun onAudioLossTransient() {
+                // in call, pause playback
+
+                Timber.d("PlayerService initializeAudioFocusHelper Focus Transient -> Pause")
+            }
+
+            override fun onAudioLossTransientCanDuck() {
+                // Notification, decrease playback volume
+                Timber.d("PlayerService initializeAudioFocusHelper Focus Duck -> Lower Volume")
+            }
+
+            override fun onAudioLoss() {
+                // Lost control stop playback
+
+                Timber.d("PlayerService initializeAudioFocusHelper Focus Loss -> Stop")
+            }
+        })
+    }
+
     private fun initializeBluetoothConnect() {
         if (!preferences.getBoolean(resumeOrPausePlaybackWhenDeviceKey, false)) return
 
@@ -2062,7 +2093,7 @@ class PlayerService : Service(),
 
         if (notification == null) {
             isNotificationStarted = false
-            //makeInvincible(false)
+
             runCatching {
                 stopForeground(false)
             }.onFailure {
