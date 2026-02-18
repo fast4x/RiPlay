@@ -1270,4 +1270,6 @@
     <string name="no_albums">No albums</string>
     <string name="no_plaulists">No playlists</string>
     <string name="no_songs">No songs</string>
+    <string name="crash_title_ops_riplay_is_in_error_state">Ops! RiPlay is in error state</string>
+    <string name="crash_subtitle_the_application_crashed_unexpectedly_you_can_help_us_by_sending_this_log">The application crashed unexpectedly, you can help us by sending this log.</string>
 </resources>
