@@ -12,7 +12,6 @@ import coil.memory.MemoryCache
 import coil.request.CachePolicy
 import it.fast4x.riplay.data.DatabaseInitializer
 import it.fast4x.riplay.enums.CoilDiskCacheMaxSize
-import it.fast4x.riplay.utils.CaptureCrash
 import it.fast4x.riplay.utils.FileLoggingTree
 import it.fast4x.riplay.extensions.preferences.coilCustomDiskCacheKey
 import it.fast4x.riplay.extensions.preferences.coilDiskCacheMaxSizeKey
@@ -21,6 +20,7 @@ import it.fast4x.riplay.extensions.preferences.logDebugEnabledKey
 import it.fast4x.riplay.extensions.preferences.preferences
 import it.fast4x.riplay.extensions.preferences.usePlaceholderInImageLoaderKey
 import it.fast4x.riplay.commonutils.initializeEnvironment
+import it.fast4x.riplay.extensions.crashreporter.CrashReporter
 import it.fast4x.riplay.service.PlayerService
 import timber.log.Timber
 import java.io.File
@@ -47,7 +47,7 @@ class MainApplication : MultiDexApplication(), ImageLoaderFactory {
             if (it.exists()) return@also
             it.mkdir()
         }
-        Thread.setDefaultUncaughtExceptionHandler(CaptureCrash(dir.absolutePath))
+        Thread.setDefaultUncaughtExceptionHandler(CrashReporter(dir.absolutePath))
         /***** CRASH LOG ALWAYS ENABLED *****/
 
         /**** LOG *********/

@@ -170,6 +170,13 @@
                 android:resource="@xml/shortcuts" />
         </activity>
 
+        <activity
+            android:name=".extensions.crashreporter.CrashReporterActivity"
+            android:process=":crash_reporter"
+            android:exported="false"
+            android:theme="@style/Theme.RiPlay"
+            android:excludeFromRecents="true" />
+
         <receiver android:name=".ui.widgets.PlayerVerticalWidgetReceiver"
             android:exported="true">
             <intent-filter>
