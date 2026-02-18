@@ -21,6 +21,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
@@ -44,6 +45,7 @@ import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.utils.formatMillis
 import it.fast4x.riplay.utils.isLocal
 import it.fast4x.riplay.utils.typography
+import timber.log.Timber
 import kotlin.math.roundToInt
 import kotlin.math.roundToLong
 
@@ -85,7 +87,10 @@ fun SeekBar(
         }
     }
 
-    val mediaItem = LocalPlayerServiceBinder.current?.player?.currentMediaItem
+    val binder = LocalPlayerServiceBinder.current
+    val mediaItem = binder?.player?.currentMediaItem
+    val buffered = binder?.onlinePlayerBufferedFraction?.collectAsState()
+//    Timber.d("Seekbar buffered $buffered")
 
     val timeText = remember(draggingValue) { formatMillis(if (mediaItem?.isLocal == true) draggingValue  else draggingValue * 1000) }
     val colorPalette = colorPalette()
@@ -180,6 +185,14 @@ fun SeekBar(
                 .fillMaxWidth()
                 .background(color = backgroundColor, shape = shape)
                 .align(Alignment.Center)
+        )
+
+        Spacer(
+            modifier = Modifier
+                .height(currentBarHeight)
+                .fillMaxWidth(buffered?.value?.coerceIn(0f, 1f) ?: 0f)
+                .background(color = color.copy(alpha = .5f), shape = shape)
+                .align(Alignment.CenterStart)
         )
 
         Spacer(

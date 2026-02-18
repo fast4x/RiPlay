@@ -24,6 +24,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
@@ -83,11 +84,6 @@ fun SeekBarSinusoidalWave(
         MutableTransitionState(false)
     }
 
-    val transition = rememberTransition(transitionState = isDragging, label = null)
-
-    val currentBarHeight by transition.animateDp(label = "") { if (it) scrubberRadius else barHeight }
-    val currentScrubberRadius by transition.animateDp(label = "") { if (it) 0.dp else scrubberRadius }
-
     var seekBarWidth by remember { mutableIntStateOf(0) }
     var tooltipWidth by remember { mutableIntStateOf(0) }
 
@@ -99,7 +95,10 @@ fun SeekBarSinusoidalWave(
         }
     }
 
-    val mediaItem = LocalPlayerServiceBinder.current?.player?.currentMediaItem
+    val binder = LocalPlayerServiceBinder.current
+    val mediaItem = binder?.player?.currentMediaItem
+    val buffered = binder?.onlinePlayerBufferedFraction?.collectAsState()
+//    Timber.d("Seekbar buffered $buffered")
 
     val timeText = remember(draggingValue) { formatMillis(if (mediaItem?.isLocal == true) draggingValue  else draggingValue * 1000) }
     val colorPalette = colorPalette()
@@ -168,12 +167,11 @@ fun SeekBarSinusoidalWave(
                 val centerY = height / 2f
 
                 if (width > 0) {
-                    // 1. Crea il tracciato (Path) dell'onda sinusoidale
+
                     val path = Path()
-                    val step = 2f // Risoluzione del disegno (più basso = più curva ma più pesante)
+                    val step = 2f
 
                     for (x in 0..width.toInt() step step.toInt()) {
-                        // Formula: Y = Centro + (AmpiezzaMax * AmpiezzaRandom * sin(x * Freq + Fase))
                         val y = centerY + (height * 0.5f * waveParams.amplitude *
                                 sin(x * 0.02f * waveParams.frequency + waveParams.phase))
 
@@ -181,13 +179,13 @@ fun SeekBarSinusoidalWave(
                         else path.lineTo(x.toFloat(), y)
                     }
 
-                    // Calcola la posizione del progresso (larghezza colorata)
                     val fraction = if (maximumValue > minimumValue) {
                         ((draggingValue.toFloat() - minimumValue) / (maximumValue - minimumValue)).coerceIn(0f, 1f)
                     } else 0f
                     val progressWidth = width * fraction
 
-                    // 2. Disegna l'onda di sfondo (Grigia) su tutta la larghezza
+                    val bufferedWidth = width * (buffered?.value ?: 0f)
+
                     drawPath(
                         path = path,
                         color = backgroundColor,
@@ -198,12 +196,21 @@ fun SeekBarSinusoidalWave(
                         )
                     )
 
-                    // 3. Disegna l'onda di progresso (Colorata) ritagliandola
-                    // Usiamo clipRect per disegnare solo la parte a sinistra del cursore
+                    clipRect(left = 0f, top = 0f, right = bufferedWidth, bottom = height) {
+                        drawPath(
+                            path = path,
+                            color = color.copy(alpha = .5f),
+                            style = Stroke(
+                                width = 4.dp.toPx(),
+                                cap = StrokeCap.Round
+                            )
+                        )
+                    }
+
                     clipRect(left = 0f, top = 0f, right = progressWidth, bottom = height) {
                         drawPath(
                             path = path,
-                            color = color, // Il colore attivo (accent)
+                            color = color,
                             style = Stroke(
                                 width = 4.dp.toPx(),
                                 cap = StrokeCap.Round

@@ -24,6 +24,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
@@ -79,11 +80,6 @@ fun SeekBarSegmentColored(
         MutableTransitionState(false)
     }
 
-    val transition = rememberTransition(transitionState = isDragging, label = null)
-
-    val currentBarHeight by transition.animateDp(label = "") { if (it) scrubberRadius else barHeight }
-    val currentScrubberRadius by transition.animateDp(label = "") { if (it) 0.dp else scrubberRadius }
-
     var seekBarWidth by remember { mutableIntStateOf(0) }
     var tooltipWidth by remember { mutableIntStateOf(0) }
 
@@ -95,7 +91,9 @@ fun SeekBarSegmentColored(
         }
     }
 
-    val mediaItem = LocalPlayerServiceBinder.current?.player?.currentMediaItem
+    val binder = LocalPlayerServiceBinder.current
+    val mediaItem = binder?.player?.currentMediaItem
+    val buffered = binder?.onlinePlayerBufferedFraction?.collectAsState()
 
     val timeText = remember(draggingValue) { formatMillis(if (mediaItem?.isLocal == true) draggingValue  else draggingValue * 1000) }
     val colorPalette = colorPalette()
@@ -169,10 +167,14 @@ fun SeekBarSegmentColored(
                     val segmentWidth = (width - (gap * (numSegments - 1))) / numSegments
                     val pieceHeight = height * 0.6f
 
+                    // Posizione cursore riproduzione
                     val fraction = if (maximumValue > minimumValue) {
                         ((draggingValue.toFloat() - minimumValue) / (maximumValue - minimumValue)).coerceIn(0f, 1f)
                     } else 0f
                     val progressWidth = width * fraction
+
+                    // Posizione buffer (scaricamento)
+                    val bufferedWidth = width * (buffered?.value ?: 0f)
 
                     segmentColors.forEachIndexed { index, color ->
                         val xPos = index * (segmentWidth + gap)
@@ -184,14 +186,16 @@ fun SeekBarSegmentColored(
                             centerY + pieceHeight / 2
                         )
 
+                        // 1. SEZIONE RIPRODOTTA (Priorità massima)
                         if (rect.right <= progressWidth) {
                             drawRoundRect(
                                 color = color,
                                 topLeft = androidx.compose.ui.geometry.Offset(rect.left, rect.top),
                                 size = androidx.compose.ui.geometry.Size(rect.width(), rect.height()),
-                                cornerRadius = CornerRadius(segmentWidth / 2, segmentWidth / 2) // Angoli tondi
+                                cornerRadius = CornerRadius(segmentWidth / 2, segmentWidth / 2)
                             )
                         } else if (rect.left < progressWidth) {
+                            // Pezzo parzialmente riprodotto
                             clipRect(
                                 left = rect.left,
                                 top = rect.top,
@@ -206,12 +210,44 @@ fun SeekBarSegmentColored(
                                 )
                             }
                         } else {
-                            drawRoundRect(
-                                color = color.copy(alpha = 0.2f), // 20% di opacità
-                                topLeft = androidx.compose.ui.geometry.Offset(rect.left, rect.top),
-                                size = androidx.compose.ui.geometry.Size(rect.width(), rect.height()),
-                                cornerRadius = CornerRadius(segmentWidth / 2, segmentWidth / 2)
-                            )
+                            // 2. SEZIONE NON RIPRODOTTA: Controlliamo il BUFFER
+
+                            // Colore per il buffer (solitamente grigio chiaro)
+                            // Puoi usare anche color.copy(alpha = 0.3f) se vuoi mantenere l'arcobaleno sbiadito
+                            val bufferColor = backgroundColor.copy(alpha = 0.5f)
+
+                            if (rect.right <= bufferedWidth) {
+                                // Pezzo completamente bufferizzato
+                                drawRoundRect(
+                                    color = bufferColor,
+                                    topLeft = androidx.compose.ui.geometry.Offset(rect.left, rect.top),
+                                    size = androidx.compose.ui.geometry.Size(rect.width(), rect.height()),
+                                    cornerRadius = CornerRadius(segmentWidth / 2, segmentWidth / 2)
+                                )
+                            } else if (rect.left < bufferedWidth) {
+                                // Pezzo parzialmente bufferizzato
+                                clipRect(
+                                    left = rect.left,
+                                    top = rect.top,
+                                    right = bufferedWidth,
+                                    bottom = rect.bottom
+                                ) {
+                                    drawRoundRect(
+                                        color = bufferColor,
+                                        topLeft = androidx.compose.ui.geometry.Offset(rect.left, rect.top),
+                                        size = androidx.compose.ui.geometry.Size(rect.width(), rect.height()),
+                                        cornerRadius = CornerRadius(segmentWidth / 2, segmentWidth / 2)
+                                    )
+                                }
+                            } else {
+                                // 3. Pezzo neanche scaricato (Sfondo/Scuro)
+                                drawRoundRect(
+                                    color = color.copy(alpha = 0.2f), // Molto scuro/trasparente
+                                    topLeft = androidx.compose.ui.geometry.Offset(rect.left, rect.top),
+                                    size = androidx.compose.ui.geometry.Size(rect.width(), rect.height()),
+                                    cornerRadius = CornerRadius(segmentWidth / 2, segmentWidth / 2)
+                                )
+                            }
                         }
                     }
                 }
