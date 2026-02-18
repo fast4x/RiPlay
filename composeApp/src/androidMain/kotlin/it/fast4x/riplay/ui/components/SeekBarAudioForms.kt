@@ -70,11 +70,9 @@ fun SeekBarAudioForms(
     color: Color,
     backgroundColor: Color,
     modifier: Modifier = Modifier,
-    barHeight: Dp = 3.dp,
     scrubberColor: Color = color,
     scrubberRadius: Dp = 6.dp,
-    shape: Shape = RectangleShape,
-    drawSteps: Boolean = false,
+
     showTooltip: Boolean = true
 ) {
     val isDragging = remember {

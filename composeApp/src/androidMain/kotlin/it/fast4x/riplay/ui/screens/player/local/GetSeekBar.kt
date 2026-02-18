@@ -247,7 +247,6 @@ fun GetSeekBar(
                 },
                 color = colorPalette().collapsedPlayerProgressBar,
                 backgroundColor = if (transparentbar) Color.Transparent else colorPalette().textDisabled,
-                shape = RoundedCornerShape(8.dp),
             )
 
         }
@@ -273,7 +272,6 @@ fun GetSeekBar(
                 },
                 color = colorPalette().collapsedPlayerProgressBar,
                 backgroundColor = if (transparentbar) Color.Transparent else colorPalette().textSecondary,
-                shape = RoundedCornerShape(8.dp),
             )
 
         }
