@@ -1316,17 +1316,9 @@ fun OnlinePlayer(
 
     /***** NEW PLAYER *****/
 
-//    var lastYTVideoId by rememberPreference(key = lastVideoIdKey, defaultValue = "")
-//    var lastYTVideoSeconds by rememberPreference(key = lastVideoSecondsKey, defaultValue = 0f)
-
-//    var updateStatisticsEverySeconds by rememberSaveable { mutableIntStateOf(0) }
-//    val steps by rememberSaveable { mutableIntStateOf(5) }
-//    var stepToUpdateStats by rememberSaveable { mutableIntStateOf(1) }
-
     val isLandscape = isLandscape
 
     LaunchedEffect(mediaItem) {
-        //positionAndDuration = 0f to 0f
 
         // Ensure that the song is in database
         CoroutineScope(Dispatchers.IO).launch {
@@ -1343,56 +1335,8 @@ fun OnlinePlayer(
         }
         updateBrush = true
 
-        //stepToUpdateStats = 1
-
     }
 
-    /*
-    LaunchedEffect(positionAndDuration) {
-
-        //positionAndDuration = currentSecond to currentDuration
-        timeRemaining = positionAndDuration.second.toInt() - positionAndDuration.first.toInt()
-
-        updateStatisticsEverySeconds = (positionAndDuration.second / steps).toInt()
-
-        if (getPauseListenHistory()) return@LaunchedEffect
-
-        if (positionAndDuration.first.toInt() == updateStatisticsEverySeconds * stepToUpdateStats) {
-            stepToUpdateStats++
-            val totalPlayTimeMs = (positionAndDuration.first * 1000).toLong()
-            Database.asyncTransaction {
-                incrementTotalPlayTimeMs(mediaItem.mediaId, totalPlayTimeMs)
-            }
-
-            val minTimeForEvent = getMinTimeForEvent().ms
-
-            if (totalPlayTimeMs > minTimeForEvent) {
-
-                Database.asyncTransaction {
-                    try {
-                        insert(
-                            Event(
-                                songId = mediaItem.mediaId,
-                                timestamp = System.currentTimeMillis(),
-                                playTime = totalPlayTimeMs
-                            )
-                        )
-                    } catch (e: SQLException) {
-                        Timber.e("PlayerServiceModern onPlaybackStatsReady SQLException ${e.stackTraceToString()}")
-                    }
-                }
-            }
-        }
-
-    }
-
-     */
-
-//    LaunchedEffect(playerState) {
-//
-//        shouldBePlaying = playerState == PlayerConstants.PlayerState.PLAYING
-//
-//    }
 
     val thumbnailRoundness by rememberObservedPreference(
         thumbnailRoundnessKey,
