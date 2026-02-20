@@ -34,7 +34,7 @@ fun RestartPlayerService(
     restartService: Boolean = false,
     onRestart: () -> Unit
 ) {
-    val context = LocalContext.current
+    //val context = LocalContext.current
     AnimatedVisibility(visible = restartService) {
         Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
             SettingsDescription(
@@ -45,18 +45,18 @@ fun RestartPlayerService(
             SecondaryTextButton(
                 text = stringResource(R.string.restart_service),
                 onClick = {
-                    val intent = Intent(context, PlayerService::class.java)
-                    context.stopService(intent)
+                    val intent = Intent(globalContext(), PlayerService::class.java)
+                    globalContext().stopService(intent)
                     if (isAtLeastAndroid8)
-                        context.startForegroundService(intent)
+                        globalContext().startForegroundService(intent)
                     else
-                        context.startService(intent)
+                        globalContext().startService(intent)
 
                     CoroutineScope(Dispatchers.IO).launch {
                         delay(1000)
                     }.invokeOnCompletion { onRestart() }
 
-                    SmartMessage(context.resources.getString(R.string.done), context = context )
+                    SmartMessage(globalContext().resources.getString(R.string.done), context = globalContext() )
                 },
                 modifier = Modifier
                     .weight(1f)
@@ -94,4 +94,11 @@ fun RestartActivity(
             )
         }
     }
+}
+
+fun sendCommandToPlayerService(intent: Intent) {
+    if (isAtLeastAndroid8)
+        globalContext().startForegroundService(intent)
+    else
+        globalContext().startService(intent)
 }

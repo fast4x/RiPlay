@@ -1,5 +1,6 @@
 package it.fast4x.riplay.service
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Notification
 import android.app.NotificationChannel
@@ -14,6 +15,7 @@ import android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK
 import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.content.IntentFilter
 import android.content.SharedPreferences
+import android.content.pm.PackageManager
 import android.content.pm.ServiceInfo
 import android.database.SQLException
 import android.graphics.Bitmap
@@ -31,6 +33,9 @@ import android.support.v4.media.MediaDescriptionCompat
 import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
+import android.telephony.PhoneStateListener
+import android.telephony.TelephonyCallback
+import android.telephony.TelephonyManager
 import android.view.LayoutInflater
 import androidx.annotation.RequiresApi
 import androidx.compose.runtime.MutableState
@@ -189,6 +194,7 @@ import it.fast4x.riplay.extensions.preferences.isEnabledLastfmKey
 import it.fast4x.riplay.extensions.preferences.lastfmScrobbleTypeKey
 import it.fast4x.riplay.extensions.preferences.lastfmSessionTokenKey
 import it.fast4x.riplay.extensions.preferences.parentalControlEnabledKey
+import it.fast4x.riplay.extensions.preferences.resumeOrPausePlaybackWhenCallKey
 import it.fast4x.riplay.extensions.ritune.improved.RiTuneClient
 import it.fast4x.riplay.extensions.ritune.improved.models.RiTuneConnectionStatus
 import it.fast4x.riplay.extensions.ritune.improved.models.RiTunePlayerState
@@ -380,7 +386,6 @@ class PlayerService : Service(),
 
     private var noisyReceiver: NoisyAudioReceiver? = null
     private var bluetoothReceiver: BluetoothConnectReceiver? = null
-    private lateinit var audioFocusHelper: AudioFocusHelper
 
     private val riTuneClient: RiTuneClient = RiTuneClient()
     private var riTuneObserverJob: Job? = null
@@ -394,6 +399,22 @@ class PlayerService : Service(),
 
     private var unstartedWatchdogJob: Job? = null
 
+    private var telephonyManager: TelephonyManager? = null
+    private var wasPlayingBeforeCall = false
+    // Listener per Android 12 e superiori (Nuova API)
+    private val telephonyCallback = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        object : TelephonyCallback(), TelephonyCallback.CallStateListener {
+            override fun onCallStateChanged(state: Int) {
+                handleCallStateChange(state)
+            }
+        }
+    } else null
+    // Listener per Android 11 e inferiori (Vecchia API, non deprecata per loro)
+    private val phoneStateListener = object : PhoneStateListener() {
+        override fun onCallStateChanged(state: Int, phoneNumber: String?) {
+            handleCallStateChange(state)
+        }
+    }
     //private var checkVolumeLevel: Boolean = true
 
 
@@ -574,7 +595,7 @@ class PlayerService : Service(),
         initializeMedleyMode()
         initializePlaybackParameters()
         initializeNoisyReceiver()
-        initializeAudioFocusHelper()
+        initializeTelephonyManager(true)
 
         initializeRiTune()
         initializeDiscordPresence()
@@ -605,7 +626,7 @@ class PlayerService : Service(),
                             }
                         }
                     }
-                    Timber.d("PlayerService onCreate onlineListenedDurationMs $onlineListenedDurationMs")
+                    //Timber.d("PlayerService onCreate onlineListenedDurationMs $onlineListenedDurationMs")
                 }
                 delay(1000)
             }
@@ -618,6 +639,14 @@ class PlayerService : Service(),
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         startForeground()
+        Timber.d("PlayerService onStartCommand action ${intent?.action} enable ${intent?.getBooleanExtra(EXTRA_ENABLE_LISTENER, false)}")
+        when (intent?.action) {
+            ACTION_UPDATE_PHONE_LISTENER -> {
+                val shouldEnable = intent.getBooleanExtra(EXTRA_ENABLE_LISTENER, false)
+                initializeTelephonyManager(shouldEnable)
+            }
+        }
+        recreateOnlinePlayerView()
         return START_STICKY
     }
 
@@ -684,6 +713,45 @@ class PlayerService : Service(),
             }
         }
 
+    }
+
+    private fun handleCallStateChange(state: Int) {
+        when (state) {
+            TelephonyManager.CALL_STATE_RINGING, TelephonyManager.CALL_STATE_OFFHOOK -> {
+                // Sta squillando o sei in chiamata
+                Timber.d("PhoneState: Chiamata in corso/Ricevuta -> Pause")
+                wasPlayingBeforeCall = isPlayingNow || player.isPlaying
+                if (wasPlayingBeforeCall) {
+                    pausePlayback()
+                }
+            }
+            TelephonyManager.CALL_STATE_IDLE -> {
+                // Chiamata terminata
+                Timber.d("PhoneState: Chiamata terminata -> Resume")
+                if (wasPlayingBeforeCall) {
+                    // Ritardo per sicurezza
+                    CoroutineScope(Dispatchers.Main).launch {
+                        delay(500) // Ritardo di 500ms
+                        playPlayback()
+                    }
+                }
+                wasPlayingBeforeCall = false
+            }
+        }
+    }
+
+    private fun pausePlayback() {
+        if (localMediaItem?.isLocal == true)
+            player.pause()
+        else
+            _internalOnlinePlayer.value?.pause()
+    }
+
+    private fun playPlayback() {
+        if (localMediaItem?.isLocal == true)
+            player.play()
+        else
+            _internalOnlinePlayer.value?.play()
     }
 
     private fun initializeMedleyMode() {
@@ -1312,7 +1380,7 @@ class PlayerService : Service(),
 
         player.saveMasterQueue(currentSecond.value.toInt())
 
-        audioFocusHelper.abandonAudioFocus()
+        initializeTelephonyManager(false)
 
         try {
             unregisterReceiver(legacyNotificationActionReceiver)
@@ -1802,6 +1870,37 @@ class PlayerService : Service(),
         unifiedMediaSession.setMetadata(metadataBuilder.build())
     }
 
+    private fun initializeTelephonyManager(enable: Boolean) {
+        val hasPermission = ContextCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE) == PackageManager.PERMISSION_GRANTED
+        if (enable && (!hasPermission || !preferences.getBoolean(resumeOrPausePlaybackWhenCallKey, false))) return
+
+        telephonyManager = getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
+
+        if (enable) {
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                telephonyManager?.registerTelephonyCallback(
+                    ContextCompat.getMainExecutor(this),
+                    telephonyCallback!!
+                )
+            } else {
+                @Suppress("DEPRECATION")
+                telephonyManager?.listen(phoneStateListener, PhoneStateListener.LISTEN_CALL_STATE)
+            }
+            Timber.d("PlayerService: TelephonyManager registered")
+
+        } else {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                telephonyManager?.unregisterTelephonyCallback(telephonyCallback!!)
+            } else {
+                @Suppress("DEPRECATION")
+                telephonyManager?.listen(phoneStateListener, PhoneStateListener.LISTEN_NONE)
+            }
+            Timber.w("PlayerService: TelephonyManager unregistered")
+        }
+
+    }
+
     private fun initializeNoisyReceiver() {
         if (!preferences.getBoolean(resumeOrPausePlaybackWhenDeviceKey, false)) return
 
@@ -1814,34 +1913,6 @@ class PlayerService : Service(),
         }
 
         noisyReceiver?.register()
-    }
-
-    private fun initializeAudioFocusHelper() {
-        audioFocusHelper = AudioFocusHelper(this, object : AudioFocusHelper.OnAudioFocusListener {
-
-            override fun onAudioGained() {
-                // call ended, resume playback
-
-                Timber.d("PlayerService initializeAudioFocusHelper Focus Gained -> Resume")
-            }
-
-            override fun onAudioLossTransient() {
-                // in call, pause playback
-
-                Timber.d("PlayerService initializeAudioFocusHelper Focus Transient -> Pause")
-            }
-
-            override fun onAudioLossTransientCanDuck() {
-                // Notification, decrease playback volume
-                Timber.d("PlayerService initializeAudioFocusHelper Focus Duck -> Lower Volume")
-            }
-
-            override fun onAudioLoss() {
-                // Lost control stop playback
-
-                Timber.d("PlayerService initializeAudioFocusHelper Focus Loss -> Stop")
-            }
-        })
     }
 
     private fun initializeBluetoothConnect() {
@@ -3031,12 +3102,15 @@ class PlayerService : Service(),
         }
     }
 
-    private companion object {
+    companion object {
         const val NOTIFICATION_ID = 1001
         val NOTIFICATION_CHANNEL_ID = globalContext().resources.getString(R.string.player_notification_channel_id)  //"Player Notification"
 
         const val SLEEPTIMER_NOTIFICATION_ID = 1002
         val SLEEPTIMER_NOTIFICATION_CHANNEL_ID = globalContext().resources.getString(R.string.sleep_timer_notification_channel_id) //"Sleep Timer Notification"
+
+        const val ACTION_UPDATE_PHONE_LISTENER = "it.fast4x.riplay.action.UPDATE_PHONE_LISTENER"
+        const val EXTRA_ENABLE_LISTENER = "enable_listener"
 
 
     }

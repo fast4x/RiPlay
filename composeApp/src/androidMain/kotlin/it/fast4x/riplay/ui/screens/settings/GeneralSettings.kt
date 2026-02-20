@@ -1,5 +1,6 @@
 package it.fast4x.riplay.ui.screens.settings
 
+import android.Manifest
 import android.content.ActivityNotFoundException
 import android.content.ComponentName
 import android.content.Intent
@@ -42,6 +43,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import androidx.core.os.LocaleListCompat
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
@@ -156,6 +158,7 @@ import it.fast4x.riplay.extensions.preferences.excludeSongIfIsVideoKey
 import it.fast4x.riplay.extensions.preferences.filterContentTypeKey
 import it.fast4x.riplay.extensions.preferences.parentalControlEnabledKey
 import it.fast4x.riplay.extensions.preferences.pauseSearchHistoryKey
+import it.fast4x.riplay.extensions.preferences.resumeOrPausePlaybackWhenCallKey
 import it.fast4x.riplay.extensions.preferences.resumeOrPausePlaybackWhenDeviceKey
 import it.fast4x.riplay.extensions.preferences.showFavoritesPlaylistsAAKey
 import it.fast4x.riplay.extensions.preferences.showGridAAKey
@@ -165,6 +168,7 @@ import it.fast4x.riplay.extensions.preferences.showOnDeviceAAKey
 import it.fast4x.riplay.extensions.preferences.showShuffleSongsAAKey
 import it.fast4x.riplay.extensions.preferences.showTopPlaylistAAKey
 import it.fast4x.riplay.service.PlayerMediaBrowserService
+import it.fast4x.riplay.service.PlayerService
 import it.fast4x.riplay.ui.components.themed.ConfirmationDialog
 import it.fast4x.riplay.ui.components.themed.SecondaryTextButton
 import it.fast4x.riplay.ui.components.themed.settingsItem
@@ -173,6 +177,7 @@ import it.fast4x.riplay.utils.CheckAvailableNewVersion
 import it.fast4x.riplay.utils.LazyListContainer
 import it.fast4x.riplay.utils.checkAndDownloadNewVersionCode
 import it.fast4x.riplay.utils.loadMasterQueue
+import it.fast4x.riplay.utils.sendCommandToPlayerService
 import kotlinx.coroutines.flow.distinctUntilChanged
 
 
@@ -186,6 +191,9 @@ fun GeneralSettings(
 
     val systemLocale = LocaleListCompat.getDefault().get(0).toString()
     var languageApp  by rememberPreference(languageAppKey, getSystemlanguage())
+
+    var restartService by rememberSaveable { mutableStateOf(false) }
+    var restartActivity by rememberSaveable { mutableStateOf(false) }
 
     var minTimeForEvent by rememberPreference(
         exoPlayerMinTimeForEventKey,
@@ -209,6 +217,21 @@ fun GeneralSettings(
         resumeOrPausePlaybackWhenDeviceKey,
         false
     )
+
+    var resumeOrPausePlaybackWhenCall by rememberPreference(
+        resumeOrPausePlaybackWhenCallKey,
+        false
+    )
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            resumeOrPausePlaybackWhenCall = true
+            restartService = true
+        } else {
+            resumeOrPausePlaybackWhenCall = false
+        }
+    }
 
     var skipSilence by rememberPreference(skipSilenceKey, false)
     var skipMediaOnError by rememberPreference(skipMediaOnErrorKey, false)
@@ -275,8 +298,7 @@ fun GeneralSettings(
     var minimumSilenceDuration by rememberPreference(minimumSilenceDurationKey, 2_000_000L)
 
     var pauseListenHistory by rememberPreference(pauseListenHistoryKey, false)
-    var restartService by rememberSaveable { mutableStateOf(false) }
-    var restartActivity by rememberSaveable { mutableStateOf(false) }
+
 
     var loudnessBaseGain by rememberPreference(loudnessBaseGainKey, 5.00f)
     var autoLoadSongsInQueue by rememberPreference(autoLoadSongsInQueueKey, true)
@@ -1209,27 +1231,6 @@ fun GeneralSettings(
                             }
                         )
 
-                    if (search.input.isBlank() || stringResource(R.string.resume_or_pause_playback).contains(
-                            search.input,
-                            true
-                        )
-                    ) {
-                        if (isAtLeastAndroid6) {
-                            SwitchSettingEntry(
-                                title = stringResource(R.string.resume_or_pause_playback),
-                                text = stringResource(R.string.play_or_pause_when_device_is_connected_or_disconnected),
-                                isChecked = resumeOrPausePlaybackWhenDevice,
-                                onCheckedChange = {
-                                    resumeOrPausePlaybackWhenDevice = it
-                                    restartService = true
-                                }
-                            )
-                            RestartPlayerService(
-                                restartService,
-                                onRestart = { restartService = false })
-                        }
-                    }
-
                     if (search.input.isBlank() || stringResource(R.string.persistent_queue).contains(
                             search.input,
                             true
@@ -1713,6 +1714,58 @@ fun GeneralSettings(
                     SettingsEntryGroupText(title = stringResource(R.string.playback_events))
                 }
                 settingsItem {
+                    if (search.input.isBlank() || stringResource(R.string.resume_or_pause_playback).contains(
+                            search.input,
+                            true
+                        )
+                    ) {
+                        if (isAtLeastAndroid6) {
+                            SwitchSettingEntry(
+                                title = stringResource(R.string.play_or_pause_when_device_is_connected_or_disconnected),
+                                text = "", //stringResource(R.string.resume_or_pause_playback),
+                                isChecked = resumeOrPausePlaybackWhenDevice,
+                                onCheckedChange = {
+                                    resumeOrPausePlaybackWhenDevice = it
+                                    restartService = true
+                                }
+                            )
+                            RestartPlayerService(
+                                restartService,
+                                onRestart = { restartService = false })
+                        }
+
+                        SwitchSettingEntry(
+                            title = stringResource(R.string.play_or_pause_when_receiving_a_call),
+                            text = "", //stringResource(R.string.resume_or_pause_playback),
+                            isChecked = resumeOrPausePlaybackWhenCall,
+                            onCheckedChange = {
+                                if (it) {
+                                    if (ContextCompat.checkSelfPermission(context,
+                                            Manifest.permission.READ_PHONE_STATE) == PackageManager.PERMISSION_GRANTED) {
+                                        resumeOrPausePlaybackWhenCall = true
+                                        val intent = Intent(context, PlayerService::class.java).apply {
+                                            action = PlayerService.ACTION_UPDATE_PHONE_LISTENER
+                                            putExtra(PlayerService.EXTRA_ENABLE_LISTENER, true)
+                                        }
+                                        sendCommandToPlayerService(intent)
+                                    } else
+                                        permissionLauncher.launch(Manifest.permission.READ_PHONE_STATE)
+                                } else {
+                                    val intent = Intent(context, PlayerService::class.java).apply {
+                                        action = PlayerService.ACTION_UPDATE_PHONE_LISTENER
+                                        putExtra(PlayerService.EXTRA_ENABLE_LISTENER, false)
+                                    }
+                                    sendCommandToPlayerService(intent)
+                                    resumeOrPausePlaybackWhenCall = false
+                                }
+
+                            }
+                        )
+                        RestartPlayerService(
+                            restartService,
+                            onRestart = { restartService = false })
+                    }
+
                     if (search.input.isBlank() || stringResource(R.string.player_pause_listen_history).contains(
                             search.input,
                             true

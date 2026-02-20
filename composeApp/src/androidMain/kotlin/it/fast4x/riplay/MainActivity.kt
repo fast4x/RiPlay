@@ -392,6 +392,7 @@ class MainActivity :
         if (isAtLeastAndroid12 && preferences.getBoolean(resumeOrPausePlaybackWhenDeviceKey, false))
             permissionsToRequest.add(Manifest.permission.BLUETOOTH_CONNECT)
 
+
         val permissionsNotGranted = permissionsToRequest.filter {
             ContextCompat.checkSelfPermission(this, it) != PackageManager.PERMISSION_GRANTED
         }

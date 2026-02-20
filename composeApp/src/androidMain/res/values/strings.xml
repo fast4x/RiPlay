@@ -1272,4 +1272,5 @@
     <string name="no_songs">No songs</string>
     <string name="crash_title_ops_riplay_is_in_error_state">Ops! RiPlay is in error state</string>
     <string name="crash_subtitle_the_application_crashed_unexpectedly_you_can_help_us_by_sending_this_log">The application crashed unexpectedly, you can help us by sending this log.</string>
+    <string name="play_or_pause_when_receiving_a_call">Play or pause when receiving a call</string>
 </resources>

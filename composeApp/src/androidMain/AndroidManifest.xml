@@ -42,6 +42,9 @@
     <!-- Required to set local song as ringtone -->
     <uses-permission android:name="android.permission.WRITE_SETTINGS" tools:ignore="ProtectedPermissions" />
 
+    <!-- Required to resume playback after received call, alternative to audioFocus issue in webview -->
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+
     <uses-feature    android:name="android.software.leanback" android:required="false" />
     <uses-feature    android:name="android.hardware.touchscreen" android:required="false" />
     <uses-feature    android:name="android.hardware.microphone" android:required="false" />
