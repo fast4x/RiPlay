@@ -1734,6 +1734,7 @@ fun GeneralSettings(
                                 onRestart = { restartService = false })
                         }
 
+                        /*
                         SwitchSettingEntry(
                             title = stringResource(R.string.play_or_pause_when_receiving_a_call),
                             text = "", //stringResource(R.string.resume_or_pause_playback),
@@ -1761,9 +1762,13 @@ fun GeneralSettings(
 
                             }
                         )
+
+
                         RestartPlayerService(
                             restartService,
                             onRestart = { restartService = false })
+
+                         */
                     }
 
                     if (search.input.isBlank() || stringResource(R.string.player_pause_listen_history).contains(

@@ -19,6 +19,7 @@ class AudioFocusHelper(
         fun onAudioLossTransient()
         fun onAudioLossTransientCanDuck()
         fun onAudioLoss()
+        fun onAudioGainedTransientMayDuck()
     }
 
     private val audioFocusChangeListener = AudioManager.OnAudioFocusChangeListener { focusChange ->
@@ -39,6 +40,10 @@ class AudioFocusHelper(
                 // Lost focus for a short time, but it's ok to keep playing at an attenuated level
                 listener.onAudioLossTransientCanDuck()
             }
+            AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK -> {
+                // Return focus after loss of transient focus
+                listener.onAudioGainedTransientMayDuck()
+            }
         }
     }
 
@@ -51,7 +56,7 @@ class AudioFocusHelper(
 
             focusRequest = AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN)
                 .setAudioAttributes(playbackAttributes)
-                .setAcceptsDelayedFocusGain(true)
+                //.setAcceptsDelayedFocusGain(true)
                 .setOnAudioFocusChangeListener(audioFocusChangeListener)
                 .build()
 

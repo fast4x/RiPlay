@@ -126,7 +126,7 @@ kotlinx-coroutines-swing = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-
 hypnoticcanvas = {group = "com.mikepenz.hypnoticcanvas", name = "hypnoticcanvas", version.ref = "hypnoticcanvas"}
 hypnoticcanvas-shaders = {group = "com.mikepenz.hypnoticcanvas", name = "hypnoticcanvas-shaders", version.ref = "hypnoticcanvas"}
 
-androidx-webkit = { group = "androidx.webkit", name = "webkit", version = "1.14.0" }
+androidx-webkit = { group = "androidx.webkit", name = "webkit", version = "1.15.0" }
 okhttp-dnsoverhttps = { group = "com.squareup.okhttp3", name = "okhttp-dnsoverhttps", version.ref = "okhttpDnsOverHttps" }
 #room-backup = { group = "de.raphaelebner", name = "roomdatabasebackup", version = "1.1.0" }
 reorderable = { module = "sh.calvin.reorderable:reorderable", version.ref = "reorderable" }

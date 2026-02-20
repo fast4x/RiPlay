@@ -386,6 +386,7 @@ class PlayerService : Service(),
 
     private var noisyReceiver: NoisyAudioReceiver? = null
     private var bluetoothReceiver: BluetoothConnectReceiver? = null
+    //private lateinit var audioFocusHelper: AudioFocusHelper
 
     private val riTuneClient: RiTuneClient = RiTuneClient()
     private var riTuneObserverJob: Job? = null
@@ -399,6 +400,7 @@ class PlayerService : Service(),
 
     private var unstartedWatchdogJob: Job? = null
 
+    /*
     private var telephonyManager: TelephonyManager? = null
     private var wasPlayingBeforeCall = false
     // Listener per Android 12 e superiori (Nuova API)
@@ -415,6 +417,8 @@ class PlayerService : Service(),
             handleCallStateChange(state)
         }
     }
+
+     */
     //private var checkVolumeLevel: Boolean = true
 
 
@@ -595,7 +599,8 @@ class PlayerService : Service(),
         initializeMedleyMode()
         initializePlaybackParameters()
         initializeNoisyReceiver()
-        initializeTelephonyManager(true)
+        //initializeAudioFocusHelper()
+        //initializeTelephonyManager(true)
 
         initializeRiTune()
         initializeDiscordPresence()
@@ -640,13 +645,15 @@ class PlayerService : Service(),
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         startForeground()
         Timber.d("PlayerService onStartCommand action ${intent?.action} enable ${intent?.getBooleanExtra(EXTRA_ENABLE_LISTENER, false)}")
+        /*
         when (intent?.action) {
             ACTION_UPDATE_PHONE_LISTENER -> {
                 val shouldEnable = intent.getBooleanExtra(EXTRA_ENABLE_LISTENER, false)
                 initializeTelephonyManager(shouldEnable)
             }
         }
-        recreateOnlinePlayerView()
+         */
+
         return START_STICKY
     }
 
@@ -715,6 +722,7 @@ class PlayerService : Service(),
 
     }
 
+    /*
     private fun handleCallStateChange(state: Int) {
         when (state) {
             TelephonyManager.CALL_STATE_RINGING, TelephonyManager.CALL_STATE_OFFHOOK -> {
@@ -739,6 +747,7 @@ class PlayerService : Service(),
             }
         }
     }
+     */
 
     private fun pausePlayback() {
         if (localMediaItem?.isLocal == true)
@@ -1113,7 +1122,7 @@ class PlayerService : Service(),
 
                         PlayerConstants.PlayerState.VIDEO_CUED -> {
                             Timber.d("PlayerService onlinePlayerView: onStateChange VIDEO_CUED regular play()")
-
+                            //audioFocusHelper.requestAudioFocus()
                             if (!firstTimeStarted) {
                                 if (!GlobalSharedData.riTuneCastActive)
                                     youTubePlayer.play()
@@ -1380,7 +1389,9 @@ class PlayerService : Service(),
 
         player.saveMasterQueue(currentSecond.value.toInt())
 
-        initializeTelephonyManager(false)
+        //audioFocusHelper.abandonAudioFocus()
+
+        //initializeTelephonyManager(false)
 
         try {
             unregisterReceiver(legacyNotificationActionReceiver)
@@ -1870,6 +1881,7 @@ class PlayerService : Service(),
         unifiedMediaSession.setMetadata(metadataBuilder.build())
     }
 
+    /*
     private fun initializeTelephonyManager(enable: Boolean) {
         val hasPermission = ContextCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE) == PackageManager.PERMISSION_GRANTED
         if (enable && (!hasPermission || !preferences.getBoolean(resumeOrPausePlaybackWhenCallKey, false))) return
@@ -1900,6 +1912,7 @@ class PlayerService : Service(),
         }
 
     }
+     */
 
     private fun initializeNoisyReceiver() {
         if (!preferences.getBoolean(resumeOrPausePlaybackWhenDeviceKey, false)) return
@@ -1914,6 +1927,52 @@ class PlayerService : Service(),
 
         noisyReceiver?.register()
     }
+
+    /*
+    private fun initializeAudioFocusHelper() {
+        audioFocusHelper = AudioFocusHelper(this, object : AudioFocusHelper.OnAudioFocusListener {
+
+            override fun onAudioGained() {
+                // call ended, resume playback
+                Timber.d("PlayerService initializeAudioFocusHelper Focus Gained -> Resume")
+            }
+
+            override fun onAudioLossTransient() {
+                // in call, pause playback
+                Timber.d("PlayerService initializeAudioFocusHelper Focus Transient -> Pause")
+            }
+
+            override fun onAudioLossTransientCanDuck() {
+                // Notification, decrease playback volume
+                player.volume = 0.20f
+                _internalOnlinePlayer.value?.setVolume(20)
+                Timber.d("PlayerService initializeAudioFocusHelper Focus Duck -> Lower Volume")
+            }
+
+            override fun onAudioGainedTransientMayDuck() {
+                // Resume volume after loss transient can duck
+                player.volume = 1f
+                _internalOnlinePlayer.value?.setVolume(100)
+                Timber.d("PlayerService initializeAudioFocusHelper Focus Gained May Duck -> Resume Volume")
+            }
+
+            override fun onAudioLoss() {
+                // Lost control stop playback
+//                val isActuallyPlaying = isPlayingNow || player.isPlaying
+//                if (isActuallyPlaying) {
+//                    if (localMediaItem?.isLocal == true)
+//                        player.volume = 0.2f
+//                    else
+//                        CoroutineScope(Dispatchers.Main).launch {
+//                            _internalOnlinePlayer.value?.setVolume(20)
+//                        }
+//                }
+                Timber.d("PlayerService initializeAudioFocusHelper Focus Loss -> Stop")
+            }
+        })
+    }
+     */
+
 
     private fun initializeBluetoothConnect() {
         if (!preferences.getBoolean(resumeOrPausePlaybackWhenDeviceKey, false)) return
