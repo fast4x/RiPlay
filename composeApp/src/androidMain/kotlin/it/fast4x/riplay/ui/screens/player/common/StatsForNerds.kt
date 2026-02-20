@@ -1,7 +1,9 @@
 package it.fast4x.riplay.ui.screens.player.common
 
 import android.annotation.SuppressLint
+import android.os.Build
 import android.text.format.Formatter
+import androidx.annotation.RequiresApi
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -61,6 +63,7 @@ import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.utils.typography
 import it.fast4x.riplay.ui.components.themed.IconButton
 
+@RequiresApi(Build.VERSION_CODES.ECLAIR)
 @SuppressLint("LongLogTag")
 @UnstableApi
 @Composable
@@ -71,25 +74,12 @@ fun StatsForNerds(
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
-    val binder = LocalPlayerServiceBinder.current ?: return
-
-//
-//    val connectivityManager = getSystemService(context, ConnectivityManager::class.java) as ConnectivityManager
 
     AnimatedVisibility(
         visible = isDisplayed,
         enter = fadeIn(),
         exit = fadeOut(),
     ) {
-        var cachedBytes by remember(mediaId) {
-            mutableStateOf(
-                try {
-                    binder.cache.getCachedBytes(mediaId, 0, -1)
-                } catch (e: Exception) {
-                    0L
-                }
-            )
-        }
 
         var format by remember {
             mutableStateOf<Format?>(null)
@@ -117,28 +107,6 @@ fun StatsForNerds(
             }
         }
 
-        DisposableEffect(mediaId) {
-            val listener = object : Cache.Listener {
-                override fun onSpanAdded(cache: Cache, span: CacheSpan) {
-                    cachedBytes += span.length
-                }
-
-                override fun onSpanRemoved(cache: Cache, span: CacheSpan) {
-                    cachedBytes -= span.length
-                }
-
-                override fun onSpanTouched(cache: Cache, oldSpan: CacheSpan, newSpan: CacheSpan) {
-                    Unit
-                    //cachedBytes -= newSpan.length
-                }
-            }
-
-            binder.cache.addListener(mediaId, listener)
-
-            onDispose {
-                binder.cache.removeListener(mediaId, listener)
-            }
-        }
 
     if (showThumbnail && (!statsForNerds || playerType == PlayerType.Essential)) {
         Box(
