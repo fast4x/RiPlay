@@ -654,7 +654,7 @@ fun getUpdateDownloadUrl(): String {
     } else {
         updatedVersionName = BuildConfig.VERSION_NAME
     }
-    return "https://github.com/fast4x/RiPlay/releases/download/$updatedVersionName/riplay-full-release-$updatedVersionName.apk"
+    return "https://github.com/fast4x/RiPlay/releases/download/v$updatedVersionName/RiPlay-${BuildConfig.BUILD_VARIANT}-release-$updatedVersionName.apk"
 }
 
 @Composable
