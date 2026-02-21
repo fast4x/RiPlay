@@ -35,7 +35,7 @@
     <!-- Required only to get installed app for direct share intent -->
     <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" />
 
-    <!-- Required to get bluetooth device connected/disconnected -->
+    <!-- Required to get bluetooth device connected/disconnected like headset-->
     <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
 
@@ -43,7 +43,7 @@
     <uses-permission android:name="android.permission.WRITE_SETTINGS" tools:ignore="ProtectedPermissions" />
 
     <!-- Required to resume playback after received call, alternative to audioFocus issue in webview -->
-    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <!-- <uses-permission android:name="android.permission.READ_PHONE_STATE" /> -->
 
     <uses-feature    android:name="android.software.leanback" android:required="false" />
     <uses-feature    android:name="android.hardware.touchscreen" android:required="false" />
