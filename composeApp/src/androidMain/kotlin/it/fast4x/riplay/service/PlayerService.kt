@@ -1,6 +1,5 @@
 package it.fast4x.riplay.service
 
-import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Notification
 import android.app.NotificationChannel
@@ -15,7 +14,6 @@ import android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK
 import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.content.IntentFilter
 import android.content.SharedPreferences
-import android.content.pm.PackageManager
 import android.content.pm.ServiceInfo
 import android.database.SQLException
 import android.graphics.Bitmap
@@ -33,9 +31,6 @@ import android.support.v4.media.MediaDescriptionCompat
 import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
-import android.telephony.PhoneStateListener
-import android.telephony.TelephonyCallback
-import android.telephony.TelephonyManager
 import android.view.LayoutInflater
 import androidx.annotation.RequiresApi
 import androidx.compose.runtime.MutableState
@@ -48,8 +43,6 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.core.app.ServiceCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.edit
-import androidx.core.content.getSystemService
-import androidx.core.view.isGone
 import androidx.lifecycle.ViewModelProvider
 import androidx.media.VolumeProviderCompat
 import androidx.media3.common.AudioAttributes
@@ -194,14 +187,12 @@ import it.fast4x.riplay.extensions.preferences.isEnabledLastfmKey
 import it.fast4x.riplay.extensions.preferences.lastfmScrobbleTypeKey
 import it.fast4x.riplay.extensions.preferences.lastfmSessionTokenKey
 import it.fast4x.riplay.extensions.preferences.parentalControlEnabledKey
-import it.fast4x.riplay.extensions.preferences.resumeOrPausePlaybackWhenCallKey
 import it.fast4x.riplay.extensions.ritune.improved.RiTuneClient
 import it.fast4x.riplay.extensions.ritune.improved.models.RiTuneConnectionStatus
 import it.fast4x.riplay.extensions.ritune.improved.models.RiTunePlayerState
 import it.fast4x.riplay.extensions.ritune.improved.models.RiTuneRemoteCommand
 import it.fast4x.riplay.service.experimental.AppSharedScope
 import it.fast4x.riplay.service.experimental.GlobalQueueViewModel
-import it.fast4x.riplay.service.helpers.AudioFocusHelper
 import it.fast4x.riplay.service.helpers.BluetoothConnectReceiver
 import it.fast4x.riplay.service.helpers.EqualizerHelper
 import it.fast4x.riplay.service.helpers.NoisyAudioReceiver
@@ -257,7 +248,9 @@ class PlayerService : Service(),
     Player.Listener,
     PlaybackStatsListener.Callback,
     SharedPreferences.OnSharedPreferenceChangeListener,
-    OnAudioVolumeChangedListener {
+    OnAudioVolumeChangedListener
+    //AudioManager.OnAudioFocusChangeListener // todo check if is needed in the future with new webview
+{
     private val coroutineScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
     private lateinit var unifiedMediaSession: MediaSessionCompat
     val cache: SimpleCache by lazy {
@@ -289,7 +282,9 @@ class PlayerService : Service(),
     private var isShowingThumbnailInLockscreen = true
     private var medleyDuration by mutableFloatStateOf(0f)
 
-//    private var audioManager: AudioManager? = null
+    private lateinit var audioManager: AudioManager
+    //private var focusRequest: AudioFocusRequest? = null
+
 //    private var audioDeviceCallback: AudioDeviceCallback? = null
 
     private var loudnessEnhancer: LoudnessEnhancer? = null
@@ -387,6 +382,7 @@ class PlayerService : Service(),
     private var noisyReceiver: NoisyAudioReceiver? = null
     private var bluetoothReceiver: BluetoothConnectReceiver? = null
     //private lateinit var audioFocusHelper: AudioFocusHelper
+    private var hasAudioFocus = false
 
     private val riTuneClient: RiTuneClient = RiTuneClient()
     private var riTuneObserverJob: Job? = null
@@ -435,6 +431,7 @@ class PlayerService : Service(),
         super.onCreate()
 
         createNotificationChannel()
+        startForeground()
 
         /**
          * Online initialization
@@ -599,6 +596,7 @@ class PlayerService : Service(),
         initializeMedleyMode()
         initializePlaybackParameters()
         initializeNoisyReceiver()
+        initializeAudioManager()
         //initializeAudioFocusHelper()
         //initializeTelephonyManager(true)
 
@@ -1020,6 +1018,8 @@ class PlayerService : Service(),
             val iFramePlayerOptions = IFramePlayerOptions.Builder(appContext())
                 .controls(0) // show/hide controls
                 .listType("playlist")
+                .autoplay(0)
+                .mute(1)
                 .origin(resources.getString(R.string.env_fqqhBZd0cf))
                 .build()
 
@@ -1122,7 +1122,9 @@ class PlayerService : Service(),
 
                         PlayerConstants.PlayerState.VIDEO_CUED -> {
                             Timber.d("PlayerService onlinePlayerView: onStateChange VIDEO_CUED regular play()")
-                            //audioFocusHelper.requestAudioFocus()
+//                            if (!hasAudioFocus)
+//                                hasAudioFocus = requestAudioFocus()
+
                             if (!firstTimeStarted) {
                                 if (!GlobalSharedData.riTuneCastActive)
                                     youTubePlayer.play()
@@ -1311,16 +1313,15 @@ class PlayerService : Service(),
     }
 
     private fun getVolumeProvider(): VolumeProviderCompat {
-        val audio = getSystemService(AUDIO_SERVICE) as AudioManager?
 
         val STREAM_TYPE = AudioManager.STREAM_MUSIC
-        val currentVolume = audio?.getStreamVolume(STREAM_TYPE)
-        val maxVolume = audio?.getStreamMaxVolume(STREAM_TYPE)
+        val currentVolume = audioManager.getStreamVolume(STREAM_TYPE)
+        val maxVolume = audioManager.getStreamMaxVolume(STREAM_TYPE)
         val VOLUME_UP = 1
         val VOLUME_DOWN = -1
 
         return object :
-            VolumeProviderCompat(VOLUME_CONTROL_RELATIVE, maxVolume!!, currentVolume!!) {
+            VolumeProviderCompat(VOLUME_CONTROL_RELATIVE, maxVolume, currentVolume) {
 
                 override fun onAdjustVolume(direction: Int) {
                         val useVolumeKeysToChangeSong = preferences.getBoolean(useVolumeKeysToChangeSongKey, false)
@@ -1329,25 +1330,21 @@ class PlayerService : Service(),
                             if (binder.player.isPlaying && useVolumeKeysToChangeSong) {
                                 binder.player.forceSeekToNext()
                             } else {
-                                audio?.adjustStreamVolume(
+                                audioManager.adjustStreamVolume(
                                     STREAM_TYPE,
                                     AudioManager.ADJUST_RAISE, AudioManager.FLAG_REMOVE_SOUND_AND_VIBRATE
                                 )
-                                if (audio != null) {
-                                    setCurrentVolume(audio.getStreamVolume(STREAM_TYPE))
-                                }
+                                setCurrentVolume(audioManager.getStreamVolume(STREAM_TYPE))
                             }
                         } else if (direction == VOLUME_DOWN) {
                             if (binder.player.isPlaying && useVolumeKeysToChangeSong) {
                                 binder.player.forceSeekToPrevious()
                             } else {
-                                audio?.adjustStreamVolume(
+                                audioManager.adjustStreamVolume(
                                     STREAM_TYPE,
                                     AudioManager.ADJUST_LOWER, AudioManager.FLAG_REMOVE_SOUND_AND_VIBRATE
                                 )
-                                if (audio != null) {
-                                    setCurrentVolume(audio.getStreamVolume(STREAM_TYPE))
-                                }
+                                setCurrentVolume(audioManager.getStreamVolume(STREAM_TYPE))
                             }
                         }
                 }
@@ -1389,7 +1386,7 @@ class PlayerService : Service(),
 
         player.saveMasterQueue(currentSecond.value.toInt())
 
-        //audioFocusHelper.abandonAudioFocus()
+        //abandonAudioFocus()
 
         //initializeTelephonyManager(false)
 
@@ -1914,6 +1911,10 @@ class PlayerService : Service(),
     }
      */
 
+    private fun initializeAudioManager() {
+        audioManager = getSystemService(AUDIO_SERVICE) as AudioManager
+    }
+
     private fun initializeNoisyReceiver() {
         if (!preferences.getBoolean(resumeOrPausePlaybackWhenDeviceKey, false)) return
 
@@ -1929,21 +1930,111 @@ class PlayerService : Service(),
     }
 
     /*
+    fun requestAudioFocus(): Boolean {
+
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val playbackAttributes = android.media.AudioAttributes.Builder()
+                .setUsage(android.media.AudioAttributes.USAGE_MEDIA)
+                .setContentType(android.media.AudioAttributes.CONTENT_TYPE_MUSIC)
+                .build()
+
+            focusRequest = AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN)
+                .setAudioAttributes(playbackAttributes)
+                .setAcceptsDelayedFocusGain(true)
+                .setOnAudioFocusChangeListener(this)
+                .build()
+
+            val result = audioManager.requestAudioFocus(focusRequest!!)
+            result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED
+        } else {
+            @Suppress("DEPRECATION")
+            val result = audioManager.requestAudioFocus(
+                this,
+                AudioManager.STREAM_MUSIC,
+                AudioManager.AUDIOFOCUS_GAIN
+            )
+            result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED
+        }
+    }
+
+    private fun abandonAudioFocus() {
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            focusRequest?.let {
+                audioManager.abandonAudioFocusRequest(it)
+            }
+        } else {
+            @Suppress("DEPRECATION")
+            audioManager.abandonAudioFocus(this)
+        }
+    }
+     */
+
+    /*
+    override fun onAudioFocusChange(focusChange: Int) {
+        when (focusChange) {
+            AudioManager.AUDIOFOCUS_GAIN, AudioManager.AUDIOFOCUS_GAIN_TRANSIENT -> {
+                // resume audio playback
+                hasAudioFocus = true
+                Timber.d("PlayerService initializeAudioFocusHelper Focus Gained -> Resume")
+            }
+            AudioManager.AUDIOFOCUS_LOSS -> {
+                // Lost focus for an unbounded amount of time: stop playback and release media resources
+                val isAudioActuallyPlaying = audioManager.isMusicActive
+                if (localMediaItem?.isLocal == false && isAudioActuallyPlaying) {
+                    hasAudioFocus = true
+                    Timber.w("PlayerService initializeAudioFocusHelper LOSS intercettato, ma isMusicActive = TRUE. Ignoro (La Webview ha il controllo).")
+                    return
+                }
+                Timber.d("PlayerService initializeAudioFocusHelper LOSS REALE (Nessun audio attivo o locale). Fermo tutto.")
+                hasAudioFocus = false
+                //isPlayingBeforeLossOfFocus = (isPlayingNow || player.isPlaying)
+
+                if (localMediaItem?.isLocal == true)
+                    player.pause()
+                else
+                    _internalOnlinePlayer.value?.pause()
+                //abandonAudioFocus()
+                Timber.d("PlayerService initializeAudioFocusHelper Focus Loss -> Stop")
+            }
+            AudioManager.AUDIOFOCUS_LOSS_TRANSIENT -> {
+                // Lost focus for a short time, but we have to stop playback.
+                hasAudioFocus = false
+                Timber.d("PlayerService initializeAudioFocusHelper Focus Transient -> Pause")
+            }
+            AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK -> {
+                // Lost focus for a short time, but it's ok to keep playing at an attenuated level
+                hasAudioFocus = false
+                Timber.d("PlayerService initializeAudioFocusHelper Focus Duck -> Lower Volume")
+            }
+            AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK -> {
+                // Return focus after loss of transient focus
+                hasAudioFocus = true
+                Timber.d("PlayerService initializeAudioFocusHelper Focus Gained May Duck -> Resume Volume")
+            }
+        }
+    }
+     */
+
+    /*
     private fun initializeAudioFocusHelper() {
         audioFocusHelper = AudioFocusHelper(this, object : AudioFocusHelper.OnAudioFocusListener {
 
             override fun onAudioGained() {
                 // call ended, resume playback
+                hasAudioFocus = true
                 Timber.d("PlayerService initializeAudioFocusHelper Focus Gained -> Resume")
             }
 
             override fun onAudioLossTransient() {
                 // in call, pause playback
+                hasAudioFocus = false
                 Timber.d("PlayerService initializeAudioFocusHelper Focus Transient -> Pause")
             }
 
             override fun onAudioLossTransientCanDuck() {
                 // Notification, decrease playback volume
+                hasAudioFocus = true
                 player.volume = 0.20f
                 _internalOnlinePlayer.value?.setVolume(20)
                 Timber.d("PlayerService initializeAudioFocusHelper Focus Duck -> Lower Volume")
@@ -1951,12 +2042,14 @@ class PlayerService : Service(),
 
             override fun onAudioGainedTransientMayDuck() {
                 // Resume volume after loss transient can duck
+                hasAudioFocus = true
                 player.volume = 1f
                 _internalOnlinePlayer.value?.setVolume(100)
                 Timber.d("PlayerService initializeAudioFocusHelper Focus Gained May Duck -> Resume Volume")
             }
 
             override fun onAudioLoss() {
+                hasAudioFocus = false
                 // Lost control stop playback
 //                val isActuallyPlaying = isPlayingNow || player.isPlaying
 //                if (isActuallyPlaying) {
@@ -1971,8 +2064,8 @@ class PlayerService : Service(),
             }
         })
     }
-     */
 
+     */
 
     private fun initializeBluetoothConnect() {
         if (!preferences.getBoolean(resumeOrPausePlaybackWhenDeviceKey, false)) return
@@ -2767,7 +2860,6 @@ class PlayerService : Service(),
 
     private fun getSystemMediaVolume(): Int {
         return 100 // set to max
-//        val audioManager = getSystemService(AUDIO_SERVICE) as? AudioManager
 //        val maxMediaVolume = audioManager?.getStreamMaxVolume(AudioManager.STREAM_MUSIC) ?: 15
 //        val minVolume = maxMediaVolume.div(3)
 //        val volumeOnlinePlayer =  (((audioManager?.getStreamVolume(AudioManager.STREAM_MUSIC) ?: minVolume) * 100) / maxMediaVolume)
