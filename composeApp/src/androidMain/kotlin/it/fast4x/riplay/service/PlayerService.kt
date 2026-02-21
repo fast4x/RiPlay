@@ -275,6 +275,7 @@ class PlayerService : Service(),
 
     private var isPersistentQueueEnabled = false
     private var isResumePlaybackOnStart = false
+
     //private var isclosebackgroundPlayerEnabled = false
     private var closeServiceAfterMinutes by mutableStateOf(DurationInMinutes.Disabled)
     private var closeServiceWhenPlayerPausedAfterMinutes by mutableStateOf(DurationInMinutes.Disabled)
@@ -328,8 +329,10 @@ class PlayerService : Service(),
     private val _internalOnlinePlayer = MutableStateFlow<YouTubePlayer?>(null)
     val internalOnlinePlayer: StateFlow<YouTubePlayer?> = _internalOnlinePlayer
 
-    private val _internalOnlinePlayerState = MutableStateFlow<PlayerConstants.PlayerState>(PlayerConstants.PlayerState.UNSTARTED)
-    val internalOnlinePlayerState: StateFlow<PlayerConstants.PlayerState> = _internalOnlinePlayerState
+    private val _internalOnlinePlayerState =
+        MutableStateFlow<PlayerConstants.PlayerState>(PlayerConstants.PlayerState.UNSTARTED)
+    val internalOnlinePlayerState: StateFlow<PlayerConstants.PlayerState> =
+        _internalOnlinePlayerState
 
     private val _internalOnlineBufferedFraction = MutableStateFlow(0f)
     val internalOnlineBufferedFraction: StateFlow<Float> = _internalOnlineBufferedFraction
@@ -381,6 +384,7 @@ class PlayerService : Service(),
 
     private var noisyReceiver: NoisyAudioReceiver? = null
     private var bluetoothReceiver: BluetoothConnectReceiver? = null
+
     //private lateinit var audioFocusHelper: AudioFocusHelper
     private var hasAudioFocus = false
 
@@ -431,66 +435,39 @@ class PlayerService : Service(),
         super.onCreate()
 
         createNotificationChannel()
-        startForeground()
-
-        /**
-         * Online initialization
-         */
-
-
-        preferences.registerOnSharedPreferenceChangeListener(this)
-
-        //val preferences = preferences
-        isPersistentQueueEnabled = preferences.getBoolean(persistentQueueKey, true)
-        isResumePlaybackOnStart = preferences.getBoolean(resumePlaybackOnStartKey, false)
-        isShowingThumbnailInLockscreen =
-            preferences.getBoolean(isShowingThumbnailInLockscreenKey, false)
-        medleyDuration = preferences.getFloat(playbackDurationKey, 0f)
-
-        player = ExoPlayer.Builder(this)
-            .setMediaSourceFactory(createMediaSourceFactory())
-            .setRenderersFactory(createRendersFactory())
-            .setHandleAudioBecomingNoisy(true)
-            .setWakeMode(C.WAKE_MODE_LOCAL)
-            .setAudioAttributes(
-                AudioAttributes.Builder()
-                    .setUsage(C.USAGE_MEDIA)
-                    .setContentType(C.AUDIO_CONTENT_TYPE_MUSIC)
-                    .build(),
-                isHandleAudioFocusEnabled()
-            )
-            //.setUsePlatformDiagnostics(false)
-            .setSeekBackIncrementMs(5000)
-            .setSeekForwardIncrementMs(5000)
-//            .setLoadControl(
-//                DefaultLoadControl.Builder()
-//                    .setBufferDurationsMs(
-//                        DefaultLoadControl.DEFAULT_MIN_BUFFER_MS, // 50000
-//                        DefaultLoadControl.DEFAULT_MAX_BUFFER_MS, // 50000
-//                        5000,
-//                        10000
-//                    ).build()
-//            )
-            .build()
-            .apply {
-                addListener(this@PlayerService)
-                sleepTimerListener = SleepTimerListener(coroutineScope, this)
-                addListener(sleepTimerListener)
-                addAnalyticsListener(PlaybackStatsListener(false, this@PlayerService))
-            }
-
-        player.repeatMode = preferences.getEnum(queueLoopTypeKey, QueueLoopType.Default).type
-
-        player.skipSilenceEnabled = preferences.getBoolean(skipSilenceKey, false)
-        player.pauseAtEndOfMediaItems = true
-
-        audioVolumeObserver = AudioVolumeObserver(this)
-        audioVolumeObserver.register(AudioManager.STREAM_MUSIC, this)
-
-        equalizerHelper = EqualizerHelper(this)
-        equalizerHelper.setup(0)
 
         //connectivityManager = getSystemService()!!
+
+        // INITIALIZATION
+        preferences.registerOnSharedPreferenceChangeListener(this)
+        initializeLocalPlayer()
+        initializeVariables()
+        initializeOnlinePlayer()
+        initializeUnifiedMediaSession()
+
+        startForeground()
+
+        initializeBitmapProvider()
+        initializeAudioVolumeObserver()
+        initializeAudioEqualizer()
+        initializeLegacyNotificationActionReceiver()
+        initializePositionObserver()
+        initializeBluetoothConnect()
+        initializeNormalizeVolume()
+        initializeBassBoost()
+        initializeReverb()
+        initializeSensorListener()
+        initializeSongCoverInLockScreen()
+        initializeMedleyMode()
+        initializePlaybackParameters()
+        initializeNoisyReceiver()
+        initializeAudioManager()
+        //initializeAudioFocusHelper()
+        //initializeTelephonyManager(true)
+
+        initializeRiTune()
+        initializeDiscordPresence()
+        // INITIALIZATION
 
         coroutineScope.launch {
             withContext(Dispatchers.Main) {
@@ -543,7 +520,7 @@ class PlayerService : Service(),
             var currentMediaId = song.id
 
             if (lastOnlineMediaId != currentMediaId) {
-                if(onlineListenedDurationMs > 0) incrementOnlineListenedPlaytimeMs()
+                if (onlineListenedDurationMs > 0) incrementOnlineListenedPlaytimeMs()
                 delay(200)
                 onlineListenedDurationMs = 0L
                 lastOnlineMediaId = currentMediaId
@@ -564,13 +541,15 @@ class PlayerService : Service(),
                     ?.let {
                         Timber.d("PlayerService onCreate update currentSong onlinemetadata it $it")
                         try {
-                            Database.upsert(Format(
-                                songId = currentMediaId,
-                                contentLength = it.videoDetails?.lengthSeconds?.toLong(),
-                                loudnessDb = it.playerConfig?.audioConfig?.loudnessDb
-                                    ?: it.playerConfig?.audioConfig?.perceptualLoudnessDb?.toFloat(),
-                                playbackUrl = it.playbackTracking?.videostatsPlaybackUrl?.baseUrl
-                            ))
+                            Database.upsert(
+                                Format(
+                                    songId = currentMediaId,
+                                    contentLength = it.videoDetails?.lengthSeconds?.toLong(),
+                                    loudnessDb = it.playerConfig?.audioConfig?.loudnessDb
+                                        ?: it.playerConfig?.audioConfig?.perceptualLoudnessDb?.toFloat(),
+                                    playbackUrl = it.playbackTracking?.videostatsPlaybackUrl?.baseUrl
+                                )
+                            )
                         } catch (e: Exception) {
                             Timber.e("PlayerService onCreate update currentSong exception ${e.stackTraceToString()}")
                         }
@@ -578,30 +557,6 @@ class PlayerService : Service(),
                     }
             }
         }
-
-        initializeVariables()
-
-        initializeLegacyNotificationActionReceiver()
-        initializeUnifiedMediaSession()
-        initializeBitmapProvider()
-        initializeOnlinePlayer()
-
-        initializePositionObserver()
-        initializeBluetoothConnect()
-        initializeNormalizeVolume()
-        initializeBassBoost()
-        initializeReverb()
-        initializeSensorListener()
-        initializeSongCoverInLockScreen()
-        initializeMedleyMode()
-        initializePlaybackParameters()
-        initializeNoisyReceiver()
-        initializeAudioManager()
-        //initializeAudioFocusHelper()
-        //initializeTelephonyManager(true)
-
-        initializeRiTune()
-        initializeDiscordPresence()
 
         globalQueue.linkController(binder)
 
@@ -642,7 +597,14 @@ class PlayerService : Service(),
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         startForeground()
-        Timber.d("PlayerService onStartCommand action ${intent?.action} enable ${intent?.getBooleanExtra(EXTRA_ENABLE_LISTENER, false)}")
+        Timber.d(
+            "PlayerService onStartCommand action ${intent?.action} enable ${
+                intent?.getBooleanExtra(
+                    EXTRA_ENABLE_LISTENER,
+                    false
+                )
+            }"
+        )
         /*
         when (intent?.action) {
             ACTION_UPDATE_PHONE_LISTENER -> {
@@ -656,27 +618,34 @@ class PlayerService : Service(),
     }
 
     private fun startForeground() {
-        runCatching {
-            notification().let {
-                ServiceCompat.startForeground(
-                    this@PlayerService,
-                    NOTIFICATION_ID,
-                    it,
-                    if (isAtLeastAndroid11) {
-                        ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK
-                    } else {
-                        0
-                    }
-                )
-            }
-        }.onFailure {
-            Timber.e("PlayerService oncreate startForeground ${it.stackTraceToString()}")
-            stopSelf()
-            SmartMessage("Error starting service, maybe permission denied?", context = this)
+        //runCatching {
+        notification().let {
+            ServiceCompat.startForeground(
+                this@PlayerService,
+                NOTIFICATION_ID,
+                it,
+                if (isAtLeastAndroid11) {
+                    ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK
+                } else {
+                    0
+                }
+            )
         }
+//        }.onFailure {
+//            Timber.e("PlayerService oncreate startForeground ${it.stackTraceToString()}")
+//            stopSelf()
+//            SmartMessage("Error starting service, maybe permission denied?", context = this)
+//        }
     }
 
     private fun initializeVariables() {
+
+        //val preferences = preferences
+        isPersistentQueueEnabled = preferences.getBoolean(persistentQueueKey, true)
+        isResumePlaybackOnStart = preferences.getBoolean(resumePlaybackOnStartKey, false)
+        isShowingThumbnailInLockscreen =
+            preferences.getBoolean(isShowingThumbnailInLockscreenKey, false)
+        medleyDuration = preferences.getFloat(playbackDurationKey, 0f)
 
         _internalOnlinePlayerView.value = LayoutInflater.from(appContext())
             .inflate(R.layout.youtube_player, null, false) as YouTubePlayerView
@@ -688,9 +657,11 @@ class PlayerService : Service(),
         currentMediaItemState.value = player.currentMediaItem
 
         //isclosebackgroundPlayerEnabled = preferences.getBoolean(closebackgroundPlayerKey, false)
-        closeServiceAfterMinutes = preferences.getEnum(closePlayerServiceAfterMinutesKey, DurationInMinutes.Disabled)
+        closeServiceAfterMinutes =
+            preferences.getEnum(closePlayerServiceAfterMinutesKey, DurationInMinutes.Disabled)
         closeServiceWhenPlayerPausedAfterMinutes = preferences.getEnum(
-            closePlayerServiceWhenPausedAfterMinutesKey, DurationInMinutes.Disabled)
+            closePlayerServiceWhenPausedAfterMinutesKey, DurationInMinutes.Disabled
+        )
     }
 
     private fun initializePlaybackParameters() {
@@ -698,18 +669,19 @@ class PlayerService : Service(),
             false -> {
                 val playbackSpeed = preferences.getFloat(playbackSpeedKey, 1f)
                 val onlinePlabackRate = when {
-                    (playbackSpeed.toDouble() in 0.0..0.25)     -> PlayerConstants.PlaybackRate.RATE_0_25
-                    (playbackSpeed.toDouble() in 0.26..0.5)     -> PlayerConstants.PlaybackRate.RATE_0_5
-                    (playbackSpeed.toDouble() in 0.51..0.75)    -> PlayerConstants.PlaybackRate.RATE_0_75
-                    (playbackSpeed.toDouble() in 0.76..1.0)     -> PlayerConstants.PlaybackRate.RATE_1
-                    (playbackSpeed.toDouble() in 1.01..1.25)    -> PlayerConstants.PlaybackRate.RATE_1_25
-                    (playbackSpeed.toDouble() in 1.26..1.5)     -> PlayerConstants.PlaybackRate.RATE_1_5
-                    (playbackSpeed.toDouble() in 1.51..1.75)    -> PlayerConstants.PlaybackRate.RATE_1_75
+                    (playbackSpeed.toDouble() in 0.0..0.25) -> PlayerConstants.PlaybackRate.RATE_0_25
+                    (playbackSpeed.toDouble() in 0.26..0.5) -> PlayerConstants.PlaybackRate.RATE_0_5
+                    (playbackSpeed.toDouble() in 0.51..0.75) -> PlayerConstants.PlaybackRate.RATE_0_75
+                    (playbackSpeed.toDouble() in 0.76..1.0) -> PlayerConstants.PlaybackRate.RATE_1
+                    (playbackSpeed.toDouble() in 1.01..1.25) -> PlayerConstants.PlaybackRate.RATE_1_25
+                    (playbackSpeed.toDouble() in 1.26..1.5) -> PlayerConstants.PlaybackRate.RATE_1_5
+                    (playbackSpeed.toDouble() in 1.51..1.75) -> PlayerConstants.PlaybackRate.RATE_1_75
                     (playbackSpeed.toDouble() > 1.76) -> PlayerConstants.PlaybackRate.RATE_2
                     else -> PlayerConstants.PlaybackRate.RATE_1
                 }
                 _internalOnlinePlayer.value?.setPlaybackRate(onlinePlabackRate)
             }
+
             else -> {
                 player.playbackParameters = PlaybackParameters(
                     preferences.getFloat(playbackSpeedKey, 1f),
@@ -766,7 +738,9 @@ class PlayerService : Service(),
             while (medleyDuration > 0) {
                 withContext(Dispatchers.Main) {
                     Timber.d("PlayerService initializeMedleyMode medleyDuration $medleyDuration player.isPlaying ${player.isPlaying} internalOnlinePlayerState ${_internalOnlinePlayerState.value == PlayerConstants.PlayerState.PLAYING}")
-                    val seconds = if (localMediaItem?.isLocal == true) player.currentPosition.div(1000).toInt() else currentSecond.value.toInt()
+                    val seconds =
+                        if (localMediaItem?.isLocal == true) player.currentPosition.div(1000)
+                            .toInt() else currentSecond.value.toInt()
                     if (medleyDuration.toInt() <= seconds) {
                         //delay(1.seconds * (medleyDuration.toInt() + 2))
                         //handleSkipToNext()
@@ -946,10 +920,13 @@ class PlayerService : Service(),
     }
 
     private fun resumePlaybackOnStart() {
-        if(!isPersistentQueueEnabled && !isResumePlaybackOnStart) return
+        if (!isPersistentQueueEnabled && !isResumePlaybackOnStart) return
 
         when (player.currentMediaItem?.isLocal) {
-            true -> { if (!player.isPlaying) player.play() }
+            true -> {
+                if (!player.isPlaying) player.play()
+            }
+
             else -> {}
         }
 
@@ -1005,6 +982,46 @@ class PlayerService : Service(),
 
         initializeOnlinePlayer()
     }
+
+    private fun initializeLocalPlayer() {
+        player = ExoPlayer.Builder(this)
+            .setMediaSourceFactory(createMediaSourceFactory())
+            .setRenderersFactory(createRendersFactory())
+            .setHandleAudioBecomingNoisy(true)
+            .setWakeMode(C.WAKE_MODE_LOCAL)
+            .setAudioAttributes(
+                AudioAttributes.Builder()
+                    .setUsage(C.USAGE_MEDIA)
+                    .setContentType(C.AUDIO_CONTENT_TYPE_MUSIC)
+                    .build(),
+                isHandleAudioFocusEnabled()
+            )
+            //.setUsePlatformDiagnostics(false)
+            .setSeekBackIncrementMs(5000)
+            .setSeekForwardIncrementMs(5000)
+//            .setLoadControl(
+//                DefaultLoadControl.Builder()
+//                    .setBufferDurationsMs(
+//                        DefaultLoadControl.DEFAULT_MIN_BUFFER_MS, // 50000
+//                        DefaultLoadControl.DEFAULT_MAX_BUFFER_MS, // 50000
+//                        5000,
+//                        10000
+//                    ).build()
+//            )
+            .build()
+            .apply {
+                addListener(this@PlayerService)
+                sleepTimerListener = SleepTimerListener(coroutineScope, this)
+                addListener(sleepTimerListener)
+                addAnalyticsListener(PlaybackStatsListener(false, this@PlayerService))
+            }
+
+        player.repeatMode = preferences.getEnum(queueLoopTypeKey, QueueLoopType.Default).type
+
+        player.skipSilenceEnabled = preferences.getBoolean(skipSilenceKey, false)
+        player.pauseAtEndOfMediaItems = true
+    }
+
 
     private fun initializeOnlinePlayer() {
 
@@ -1261,6 +1278,16 @@ class PlayerService : Service(),
 
         }
 
+    }
+
+    private fun initializeAudioVolumeObserver() {
+        audioVolumeObserver = AudioVolumeObserver(this)
+        audioVolumeObserver.register(AudioManager.STREAM_MUSIC, this)
+    }
+
+    private fun initializeAudioEqualizer() {
+        equalizerHelper = EqualizerHelper(this)
+        equalizerHelper.setup(0)
     }
 
     private fun initializeLegacyNotificationActionReceiver() {
