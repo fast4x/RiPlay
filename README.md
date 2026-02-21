@@ -161,7 +161,7 @@ RiPlay is a powerful, open-source music player designed for music lovers who wan
 
 RiPlay wouldn't be possible without the amazing work of these projects and contributors:
 
-- [RiMusic](https://github.com/fast4x/RiMusic) – project maintainer & contributors  
+- [RiMusic](https://github.com/fast4x/RiMusic) – Me & contributors  
 - [ViMusic](https://github.com/vfsfitvnm/ViMusic) – foundation  
 - [Android YouTube Player](https://github.com/PierfrancescoSoffritti/android-youtube-player) – YouTube Player wrapper  
 - [Ionicons](https://github.com/ionic-team/ionicons) – icons  
