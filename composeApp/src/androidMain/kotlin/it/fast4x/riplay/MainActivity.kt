@@ -295,8 +295,8 @@ class MainActivity :
         override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
             if (service is PlayerService.Binder) {
                 this@MainActivity.binder = service
-                //this@MainActivity.onlinePlayerPlayingState = service.onlinePlayerPlayingState
-                //this@MainActivity.onlinePlayerView = service.onlinePlayerView
+                service.cancelSleepTimer() // cancel sleep timer when service is connected, before app was closed
+
             }
 
 
