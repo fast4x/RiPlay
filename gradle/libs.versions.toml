@@ -13,7 +13,7 @@ coil = "2.7.0"
 coil3 = "3.3.0"
 room = "2.7.2"
 sqlite = "2.5.2"
-media3 = "1.8.0"
+media3 = "1.9.2"
 ktor = "3.2.3"
 brotli = "0.1.2"
 palette = "1.0.0"
@@ -54,6 +54,7 @@ workmanager = "2.10.5"
 accompanist = "0.37.3"
 jsoup = "1.15.3"
 newpipeExt = "c1336db"
+webkit = "1.15.0"
 
 
 [libraries]
@@ -126,7 +127,7 @@ kotlinx-coroutines-swing = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-
 hypnoticcanvas = {group = "com.mikepenz.hypnoticcanvas", name = "hypnoticcanvas", version.ref = "hypnoticcanvas"}
 hypnoticcanvas-shaders = {group = "com.mikepenz.hypnoticcanvas", name = "hypnoticcanvas-shaders", version.ref = "hypnoticcanvas"}
 
-androidx-webkit = { group = "androidx.webkit", name = "webkit", version = "1.15.0" }
+androidx-webkit = { group = "androidx.webkit", name = "webkit", version.ref = "webkit" }
 okhttp-dnsoverhttps = { group = "com.squareup.okhttp3", name = "okhttp-dnsoverhttps", version.ref = "okhttpDnsOverHttps" }
 #room-backup = { group = "de.raphaelebner", name = "roomdatabasebackup", version = "1.1.0" }
 reorderable = { module = "sh.calvin.reorderable:reorderable", version.ref = "reorderable" }
