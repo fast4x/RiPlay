@@ -1574,7 +1574,7 @@ fun OnlinePlayer(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Column(
-                        verticalArrangement = Arrangement.SpaceAround,
+                        verticalArrangement = Arrangement.Center,
                         horizontalAlignment = Alignment.CenterHorizontally,
                         modifier = Modifier.fillMaxSize()
                     ) {
@@ -1841,6 +1841,8 @@ fun OnlinePlayer(
                             horizontalArrangement = if (actionspacedevenly) Arrangement.SpaceEvenly else Arrangement.SpaceBetween,
                             modifier = Modifier
                                 .padding(horizontal = 12.dp)
+                                .padding(bottom = 5.dp)
+                                .requiredHeight(32.dp)
                                 .fillMaxWidth()
                         ) {
                             if (showButtonPlayerVideo)

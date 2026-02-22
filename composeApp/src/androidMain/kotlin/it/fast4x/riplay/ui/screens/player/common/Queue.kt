@@ -939,7 +939,7 @@ fun Queue(
                     .background(colorPalette().background1)
                     .fillMaxWidth()
                     .align(Alignment.BottomCenter)
-                    .requiredHeight(64.dp) //bottom bar queue
+                    .requiredHeight(70.dp) //bottom bar queue
 //                    .drawBehind {
 //                        if (backgroundProgress == BackgroundProgress.Both || backgroundProgress == BackgroundProgress.MiniPlayer) {
 //                            drawRect(

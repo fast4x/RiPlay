@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.requiredHeight
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.systemBars
@@ -160,7 +161,7 @@ class HorizontalNavigationBar(
                 verticalArrangement = Arrangement.SpaceAround,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(Dimensions.navigationBarHeight+5.dp)
+                    .requiredHeight(Dimensions.navigationBarHeight+15.dp)
                     .padding(contentPadding)
                     .clip(RoundedCornerShape(12.dp))
                     .background(colorPalette().background1)
