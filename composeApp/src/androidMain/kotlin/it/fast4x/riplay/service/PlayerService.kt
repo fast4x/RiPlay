@@ -600,8 +600,7 @@ class PlayerService : Service(),
 
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-
-        //startForeground() not needed
+        //startForeground() not needed called in oncraete before... it's ok for all devices?
         updateUnifiedNotification()
 
         /*
