@@ -435,42 +435,40 @@ class PlayerService : Service(),
         super.onCreate()
 
         createNotificationChannel()
-        startForeground(loading = true)
 
         //connectivityManager = getSystemService()!!
 
         // INITIALIZATION
         preferences.registerOnSharedPreferenceChangeListener(this)
-        try {
-            initializeLocalPlayer()
-            initializeVariables()
-            initializeOnlinePlayer()
-            initializeUnifiedMediaSession()
 
-            initializeBitmapProvider()
-            initializeAudioVolumeObserver()
-            initializeAudioEqualizer()
-            initializeLegacyNotificationActionReceiver()
-            initializePositionObserver()
-            initializeBluetoothConnect()
-            initializeNormalizeVolume()
-            initializeBassBoost()
-            initializeReverb()
-            initializeSensorListener()
-            initializeSongCoverInLockScreen()
-            initializeMedleyMode()
-            initializePlaybackParameters()
-            initializeNoisyReceiver()
-            initializeAudioManager()
-            //initializeAudioFocusHelper()
-            //initializeTelephonyManager(true)
+        initializeLocalPlayer()
+        initializeVariables()
+        initializeOnlinePlayer()
+        initializeUnifiedMediaSession()
 
-            initializeRiTune()
-            initializeDiscordPresence()
-        } catch (e: Exception) {
-            Timber.e("PlayerService onCreate initialization error ${e.stackTraceToString()}")
-            stopSelf()
-        }
+        startForeground()
+
+        initializeBitmapProvider()
+        initializeAudioVolumeObserver()
+        initializeAudioEqualizer()
+        initializeLegacyNotificationActionReceiver()
+        initializePositionObserver()
+        initializeBluetoothConnect()
+        initializeNormalizeVolume()
+        initializeBassBoost()
+        initializeReverb()
+        initializeSensorListener()
+        initializeSongCoverInLockScreen()
+        initializeMedleyMode()
+        initializePlaybackParameters()
+        initializeNoisyReceiver()
+        initializeAudioManager()
+        //initializeAudioFocusHelper()
+        //initializeTelephonyManager(true)
+
+        initializeRiTune()
+        initializeDiscordPresence()
+
         // INITIALIZATION
 
         coroutineScope.launch {
@@ -600,8 +598,8 @@ class PlayerService : Service(),
 
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        //startForeground() not needed called in oncraete before... it's ok for all devices?
-        updateUnifiedNotification()
+        startForeground() //not needed called in oncraete before... it's ok for all devices?
+        //updateUnifiedNotification()
 
         /*
         Timber.d(
@@ -625,26 +623,41 @@ class PlayerService : Service(),
     }
 
     private fun startForeground(loading: Boolean = false) {
-        //runCatching {
 
-        val notification = if (loading) {
-            NotificationCompat
-                .Builder(this@PlayerService, NOTIFICATION_CHANNEL_ID)
-                .setContentTitle("Loading...")
-                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-                .setAutoCancel(true)
-                .setOnlyAlertOnce(true)
-                .setShowWhen(true)
-                .setSmallIcon(R.drawable.app_icon)
-                .build()
-        } else {
-            notification()
-        }
+            /*
+            val notification = if (loading) {
+                NotificationCompat
+                    .Builder(this@PlayerService, NOTIFICATION_CHANNEL_ID)
+                    .setContentTitle("Loading...")
+                    .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                    .setAutoCancel(true)
+                    .setOnlyAlertOnce(true)
+                    .setShowWhen(true)
+                    .setSmallIcon(R.drawable.app_icon)
+                    .build()
+            } else {
+                notification()
+            }
+
+            val notification =
+                NotificationCompat
+                    .Builder(this@PlayerService, NOTIFICATION_CHANNEL_ID)
+                    .setContentTitle(resources.getString(R.string.loading_please_wait))
+                    .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                    .setAutoCancel(true)
+                    .setOnlyAlertOnce(true)
+                    .setShowWhen(true)
+                    .setSmallIcon(R.drawable.app_icon)
+                    .build()
+
+             */
+
+        //startForeground(NOTIFICATION_ID,notification())
 
         ServiceCompat.startForeground(
             this@PlayerService,
             NOTIFICATION_ID,
-            notification,
+            notification(),
             if (isAtLeastAndroid11) {
                 ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK
             } else {
@@ -652,11 +665,6 @@ class PlayerService : Service(),
             }
         )
 
-//        }.onFailure {
-//            Timber.e("PlayerService oncreate startForeground ${it.stackTraceToString()}")
-//            stopSelf()
-//            SmartMessage("Error starting service, maybe permission denied?", context = this)
-//        }
     }
 
     private fun initializeVariables() {
@@ -1439,7 +1447,11 @@ class PlayerService : Service(),
     override fun onDestroy() {
         Timber.d("PlayerService onDestroy")
 
-        player.saveMasterQueue(currentSecond.value.toInt())
+        coroutineScope.launch {
+            withContext(Dispatchers.Main) {
+                player.saveMasterQueue(currentSecond.value.toInt())
+            }
+        }
 
         //abandonAudioFocus()
 
@@ -1461,8 +1473,12 @@ class PlayerService : Service(),
         }
 
         try {
-            player.removeListener(this)
-            player.release()
+            coroutineScope.launch {
+                withContext(Dispatchers.Main) {
+                    player.removeListener(this@PlayerService)
+                    player.release()
+                }
+            }
         } catch (e: Exception) {
             Timber.e("PlayerService Error in local player release: ${e.message}")
         }
@@ -1618,7 +1634,7 @@ class PlayerService : Service(),
 
         //Timber.d("PlayerService onMediaItemTransition RiTune Devices ${GlobalSharedData.riTuneDevices}")
 
-        //startForeground()
+        startForeground()
 
 
 
