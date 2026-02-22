@@ -45,6 +45,7 @@ include(":audiotaginfo")
 project(":audiotaginfo").projectDir = file("extensions/audiotaginfo")
 include(":lastfm")
 project(":lastfm").projectDir = file("extensions/lastfm")
-
-
-
+include(":ayp")
+project(":ayp").projectDir = file("extensions/ayp")
+include(":aypui")
+project(":aypui").projectDir = file("extensions/aypui")

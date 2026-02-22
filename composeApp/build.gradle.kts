@@ -258,8 +258,10 @@ kotlin {
             implementation(libs.math3)
             implementation(libs.toasty)
             implementation(libs.haze)
-            implementation(libs.androidyoutubeplayer)
-            implementation(libs.androidyoutubeplayer.custom.ui)
+            //implementation(libs.androidyoutubeplayer) // replaced by project ayp
+            //implementation(libs.androidyoutubeplayer.custom.ui) // replaced by project aypui
+            implementation(project(":ayp"))
+            implementation(project(":aypui"))
             implementation(libs.glance.widgets)
             implementation(libs.kizzy.rpc)
             implementation(libs.gson)
