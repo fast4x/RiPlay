@@ -435,6 +435,7 @@ class PlayerService : Service(),
         super.onCreate()
 
         createNotificationChannel()
+        startForeground(loading = true)
 
         //connectivityManager = getSystemService()!!
 
@@ -444,8 +445,6 @@ class PlayerService : Service(),
         initializeVariables()
         initializeOnlinePlayer()
         initializeUnifiedMediaSession()
-
-        startForeground()
 
         initializeBitmapProvider()
         initializeAudioVolumeObserver()
@@ -596,7 +595,11 @@ class PlayerService : Service(),
 
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        startForeground()
+
+        //startForeground() not needed
+        updateUnifiedNotification()
+
+        /*
         Timber.d(
             "PlayerService onStartCommand action ${intent?.action} enable ${
                 intent?.getBooleanExtra(
@@ -605,7 +608,7 @@ class PlayerService : Service(),
                 )
             }"
         )
-        /*
+
         when (intent?.action) {
             ACTION_UPDATE_PHONE_LISTENER -> {
                 val shouldEnable = intent.getBooleanExtra(EXTRA_ENABLE_LISTENER, false)
@@ -617,20 +620,34 @@ class PlayerService : Service(),
         return START_STICKY
     }
 
-    private fun startForeground() {
+    private fun startForeground(loading: Boolean = false) {
         //runCatching {
-        notification().let {
-            ServiceCompat.startForeground(
-                this@PlayerService,
-                NOTIFICATION_ID,
-                it,
-                if (isAtLeastAndroid11) {
-                    ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK
-                } else {
-                    0
-                }
-            )
+
+        val notification = if (loading) {
+            NotificationCompat
+                .Builder(this@PlayerService, NOTIFICATION_CHANNEL_ID)
+                .setContentTitle("Loading...")
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                .setAutoCancel(true)
+                .setOnlyAlertOnce(true)
+                .setShowWhen(true)
+                .setSmallIcon(R.drawable.app_icon)
+                .build()
+        } else {
+            notification()
         }
+
+        ServiceCompat.startForeground(
+            this@PlayerService,
+            NOTIFICATION_ID,
+            notification,
+            if (isAtLeastAndroid11) {
+                ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK
+            } else {
+                0
+            }
+        )
+
 //        }.onFailure {
 //            Timber.e("PlayerService oncreate startForeground ${it.stackTraceToString()}")
 //            stopSelf()
@@ -1597,7 +1614,7 @@ class PlayerService : Service(),
 
         //Timber.d("PlayerService onMediaItemTransition RiTune Devices ${GlobalSharedData.riTuneDevices}")
 
-        startForeground()
+        //startForeground()
 
 
 
@@ -2348,26 +2365,26 @@ class PlayerService : Service(),
 
         val notification = notification()
 
-        if (notification == null) {
-            isNotificationStarted = false
+        //if (notification == null) {
+        isNotificationStarted = false
 
-            runCatching {
-                stopForeground(false)
-            }.onFailure {
-                Timber.e("PlayerService Failed stopForeground onEvents ${it.stackTraceToString()}")
-            }
-            sendCloseEqualizerIntent()
-            notificationManager?.cancel(NOTIFICATION_ID)
-            return
+        runCatching {
+            stopForeground(false)
+        }.onFailure {
+            Timber.e("PlayerService Failed stopForeground onEvents ${it.stackTraceToString()}")
         }
+        sendCloseEqualizerIntent()
+        //notificationManager?.cancel(NOTIFICATION_ID)
+            //return
+        //}
 
         if ((player.isPlaying || isPlayingNow) && !isNotificationStarted) {
             isNotificationStarted = true
-//            runCatching {
-//                startForegroundService( intent<PlayerService>())
-//            }.onFailure {
-//                Timber.e("PlayerServiceFailed startForegroundService onEvents ${it.stackTraceToString()}")
-//            }
+            runCatching {
+                startForegroundService( intent<PlayerService>())
+            }.onFailure {
+                Timber.e("PlayerServiceFailed startForegroundService onEvents ${it.stackTraceToString()}")
+            }
             startForeground()
 
             sendOpenEqualizerIntent()
