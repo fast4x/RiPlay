@@ -1,7 +1,12 @@
 #-dontshrink
-#-dontobfuscate
+-dontobfuscate
 #-dontoptimize
 #-repackageclasses 'defpackage'
+
+-keep public class * extends android.app.Service
+-keep public class * extends android.app.Activity
+-keep public class * extends android.content.BroadcastReceiver
+-keep public class * extends android.content.ContentProvider
 
 -keep,allowobfuscation,allowshrinking class kotlin.coroutines.Continuation
 

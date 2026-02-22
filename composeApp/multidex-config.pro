@@ -1,0 +1,1 @@
+-keep class it.fast4x.riplay.service.PlayerService

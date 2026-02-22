@@ -258,10 +258,10 @@ kotlin {
             implementation(libs.math3)
             implementation(libs.toasty)
             implementation(libs.haze)
-            //implementation(libs.androidyoutubeplayer) // replaced by project ayp
-            //implementation(libs.androidyoutubeplayer.custom.ui) // replaced by project aypui
-            implementation(project(":ayp"))
-            implementation(project(":aypui"))
+            implementation(libs.androidyoutubeplayer) // replaced by project ayp
+            implementation(libs.androidyoutubeplayer.custom.ui) // replaced by project aypui
+            //implementation(project(":ayp"))
+            //implementation(project(":aypui"))
             implementation(libs.glance.widgets)
             implementation(libs.kizzy.rpc)
             implementation(libs.gson)
@@ -602,7 +602,7 @@ android {
             manifestPlaceholders["appName"] = "RiPlay"
             signingConfig = signingConfigs.getByName("release")
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-            multiDexKeepProguard = File("multidex-config.txt")
+            multiDexKeepProguard = File("multidex-config.pro")
         }
     }
 

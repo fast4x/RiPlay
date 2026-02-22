@@ -113,8 +113,8 @@ logging-interceptor = { module = "com.squareup.okhttp3:logging-interceptor", ver
 math3 = {group = "org.apache.commons", name = "commons-math3", version.ref = "math3"}
 toasty = {group = "com.github.GrenderG", name = "Toasty", version.ref = "toasty"}
 haze = {group = "dev.chrisbanes.haze", name = "haze", version.ref = "haze"}
-#androidyoutubeplayer = {group = "com.pierfrancescosoffritti.androidyoutubeplayer", name = "core", version.ref = "androidyoutubeplayer"}
-#androidyoutubeplayer-custom-ui = {group = "com.pierfrancescosoffritti.androidyoutubeplayer", name = "custom-ui", version.ref = "androidyoutubeplayer"}
+androidyoutubeplayer = {group = "com.pierfrancescosoffritti.androidyoutubeplayer", name = "core", version.ref = "androidyoutubeplayer"}
+androidyoutubeplayer-custom-ui = {group = "com.pierfrancescosoffritti.androidyoutubeplayer", name = "custom-ui", version.ref = "androidyoutubeplayer"}
 glance-widgets = {group = "androidx.glance", name = "glance-appwidget", version.ref = "glance"}
 kizzy-rpc = {group = "com.github.dead8309", name = "KizzyRPC", version.ref = "kizzyrpc"}
 gson = {group = "com.google.code.gson", name = "gson", version.ref = "gson"}
@@ -128,7 +128,6 @@ coil-mp = { module = "io.coil-kt.coil3:coil", version.ref = "coil3" }
 kotlinx-coroutines-swing = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-swing", version.ref = "kotlinxCoroutinesSwing" }
 hypnoticcanvas = {group = "com.mikepenz.hypnoticcanvas", name = "hypnoticcanvas", version.ref = "hypnoticcanvas"}
 hypnoticcanvas-shaders = {group = "com.mikepenz.hypnoticcanvas", name = "hypnoticcanvas-shaders", version.ref = "hypnoticcanvas"}
-
 androidx-webkit = { group = "androidx.webkit", name = "webkit", version.ref = "webkit" }
 okhttp-dnsoverhttps = { group = "com.squareup.okhttp3", name = "okhttp-dnsoverhttps", version.ref = "okhttpDnsOverHttps" }
 #room-backup = { group = "de.raphaelebner", name = "roomdatabasebackup", version = "1.1.0" }

@@ -1272,12 +1272,12 @@ class PlayerService : Service(),
                     Timber.d("PlayerService: initializeOnlinePlayer onVideoLoadedFraction $loadedFraction")
                 }
 
-                override fun onPlaybackQualityChange(
-                    youTubePlayer: YouTubePlayer,
-                    playbackQuality: PlayerConstants.PlaybackQuality
-                ) {
-                    Timber.d("PlayerService: initializeOnlinePlayer onPlaybackQualityChange $playbackQuality")
-                }
+//                override fun onPlaybackQualityChange(
+//                    youTubePlayer: YouTubePlayer,
+//                    playbackQuality: PlayerConstants.PlaybackQuality
+//                ) {
+//                    Timber.d("PlayerService: initializeOnlinePlayer onPlaybackQualityChange $playbackQuality")
+//                }
 
             }
 
