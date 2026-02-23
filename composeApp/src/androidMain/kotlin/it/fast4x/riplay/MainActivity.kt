@@ -399,11 +399,12 @@ class MainActivity :
 
         if (permissionsNotGranted.isNotEmpty()) {
             permissionLauncher.launch(permissionsNotGranted.toTypedArray())
-        } else {
-            Timber.d("MainActivity Standard permissions already granted.")
-            if (showAutostartPermissionDialog)
-                checkAndRequestAutostartPermission()
         }
+//        else {
+//            Timber.d("MainActivity Standard permissions already granted.")
+//            if (showAutostartPermissionDialog)
+//                checkAndRequestAutostartPermission()
+//        }
     }
 
     private fun checkAndRequestAutostartPermission() {
@@ -427,11 +428,6 @@ class MainActivity :
             .setNegativeButton(getString(R.string.later), null)
             .setCancelable(false)
             .show()
-
-        // Hide autostart permission dialog after showing the dialog
-        preferences.edit(commit = true) {
-            putBoolean(showAutostartPermissionDialogKey, false)
-        }
     }
 
     private fun openAutostartSettings() {
@@ -482,10 +478,14 @@ class MainActivity :
 
         val intent = Intent(this, PlayerService::class.java)
 
-        if (isAtLeastAndroid8)
-            startForegroundService(intent)
-        else
-            startService(intent)
+        try {
+            if (isAtLeastAndroid8)
+                startForegroundService(intent)
+            else
+                startService(intent)
+        } catch (e: Exception) {
+            Timber.e("MainActivity onStart startService PlayerService Exception: $e")
+        }
 
         bindService(intent, serviceConnection, BIND_AUTO_CREATE)
 
@@ -719,6 +719,9 @@ class MainActivity :
     )
     @ExperimentalPermissionsApi
     fun startApp() {
+
+        // Hide autostart permission dialog after showing the dialog
+        preferences.edit(commit = true) { putBoolean(showAutostartPermissionDialogKey, false) }
 
         // Used in QuickPics for load data from remote instead of last saved in SharedPreferences
         preferences.edit(commit = true) { putBoolean(loadedDataKey, false) }

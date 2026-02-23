@@ -44,6 +44,7 @@ import it.fast4x.riplay.enums.UiType
 import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.ui.components.themed.Button
 import it.fast4x.riplay.ui.components.themed.TextIconButton
+import it.fast4x.riplay.utils.applyIf
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.utils.showSearchIconInNav
 import it.fast4x.riplay.utils.showStatsIconInNav
@@ -139,11 +140,13 @@ class HorizontalNavigationBar(
 
     @Composable
     override fun Draw() {
+
+        val isNavbarBottom = NavigationBarPosition.Bottom.isCurrent()
         val density = LocalDensity.current
         val bottomInset = with(density) { WindowInsets.navigationBars.getBottom(density).toDp() }
         val topInset = with(density) { WindowInsets.statusBars.getTop(density).toDp() }
 
-        val contentPadding = if (NavigationBarPosition.Bottom.isCurrent()) {
+        val contentPadding = if (isNavbarBottom) {
             PaddingValues(bottom = bottomInset)
         } else {
             PaddingValues(top = topInset)
@@ -161,8 +164,10 @@ class HorizontalNavigationBar(
                 verticalArrangement = Arrangement.SpaceAround,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .requiredHeight(Dimensions.navigationBarHeight+15.dp)
-                    .padding(contentPadding)
+                    .height( if (isNavbarBottom) Dimensions.navigationBarHeight + bottomInset else 40.dp + topInset)
+                    .applyIf(isNavbarBottom) {
+                        padding(contentPadding)
+                    }
                     .clip(RoundedCornerShape(12.dp))
                     .background(colorPalette().background1)
             ) {

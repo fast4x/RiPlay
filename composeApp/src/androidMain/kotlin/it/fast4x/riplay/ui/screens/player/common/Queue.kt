@@ -21,6 +21,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
@@ -30,6 +31,7 @@ import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
@@ -63,15 +65,19 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
@@ -82,6 +88,8 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.common.Timeline
@@ -154,7 +162,9 @@ import java.util.Date
 import it.fast4x.riplay.data.models.Queues
 import it.fast4x.riplay.data.models.defaultQueue
 import it.fast4x.riplay.data.models.defaultQueueId
+import it.fast4x.riplay.enums.BackgroundProgress
 import it.fast4x.riplay.enums.BlacklistType
+import it.fast4x.riplay.extensions.preferences.backgroundProgressKey
 import it.fast4x.riplay.extensions.preferences.excludeSongIfIsVideoKey
 import it.fast4x.riplay.ui.components.themed.EditQueueDialog
 import it.fast4x.riplay.ui.components.themed.QueueItemMenu
@@ -163,12 +173,17 @@ import it.fast4x.riplay.ui.components.themed.Title2Actions
 import it.fast4x.riplay.ui.items.QueueItem
 import it.fast4x.riplay.ui.screens.player.local.LocalMiniPlayer
 import it.fast4x.riplay.ui.screens.player.online.OnlineMiniPlayer
+import it.fast4x.riplay.ui.styling.favoritesOverlay
 import it.fast4x.riplay.ui.styling.secondary
+import it.fast4x.riplay.utils.PlayerViewModel
+import it.fast4x.riplay.utils.PlayerViewModelFactory
+import it.fast4x.riplay.utils.applyIf
 import it.fast4x.riplay.utils.getScreenDimensions
 import it.fast4x.riplay.utils.insertOrUpdateBlacklist
 import it.fast4x.riplay.utils.isVideo
 import it.fast4x.riplay.utils.move
 import kotlinx.coroutines.withContext
+import kotlin.math.absoluteValue
 
 @ExperimentalMaterial3Api
 @ExperimentalTextApi
@@ -931,28 +946,41 @@ fun Queue(
             )
     }
 
-//    val backgroundProgress by rememberPreference(backgroundProgressKey, BackgroundProgress.MiniPlayer)
-//    val positionAndDuration by binder.player.positionAndDurationState()
+//        val backgroundProgress by rememberPreference(backgroundProgressKey, BackgroundProgress.MiniPlayer)
+//        val factory = remember(binder) {
+//            PlayerViewModelFactory(binder)
+//        }
+//        val playerViewModel: PlayerViewModel = viewModel(factory = factory)
+//        val positionAndDuration by playerViewModel.positionAndDuration.collectAsStateWithLifecycle()
+//        val colorPalette = colorPalette()
+        val density = LocalDensity.current
+        val bottomInset = with(density) { WindowInsets.navigationBars.getBottom(density).toDp() }
+        val contentPadding = PaddingValues(bottom = bottomInset)
+        
             Box(
                 modifier = Modifier
                     .clickable(onClick = { onDismiss(queueLoopType) })
                     .background(colorPalette().background1)
                     .fillMaxWidth()
                     .align(Alignment.BottomCenter)
-                    .requiredHeight(70.dp) //bottom bar queue
-//                    .drawBehind {
-//                        if (backgroundProgress == BackgroundProgress.Both || backgroundProgress == BackgroundProgress.MiniPlayer) {
-//                            drawRect(
-//                                color = colorPalette().favoritesOverlay,
-//                                topLeft = Offset.Zero,
-//                                size = Size(
-//                                    width = positionAndDuration.first.toFloat() /
-//                                            positionAndDuration.second.absoluteValue * size.width,
-//                                    height = size.maxDimension
-//                                )
-//                            )
-//                        }
-//                    }
+                    .height( Dimensions.navigationBarHeight + bottomInset )
+                    .padding(contentPadding)
+                    //.requiredHeight(70.dp) //bottom bar queue
+                    /*
+                    .drawBehind {
+                        if (backgroundProgress == BackgroundProgress.Both || backgroundProgress == BackgroundProgress.MiniPlayer) {
+                            drawRect(
+                                color = colorPalette.favoritesOverlay,
+                                topLeft = Offset.Zero,
+                                size = Size(
+                                    width = positionAndDuration.first.toFloat() /
+                                            positionAndDuration.second.absoluteValue * size.width,
+                                    height = size.maxDimension
+                                )
+                            )
+                        }
+                    }
+                     */
 
             ) {
 

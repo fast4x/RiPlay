@@ -428,6 +428,12 @@ const val homePageTypeKey = "homePageType"
 
 const val resumeOrPausePlaybackWhenCallKey = "resumeOrPausePlaybackWhenCall"
 
+const val stateMediaIdKey = "stateMediaId"
+const val statePositionKey = "statePosition"
+const val stateIsPlaying = "stateIsPlaying"
+
+
+
 inline fun <reified T : Enum<T>> SharedPreferences.getEnum(
     key: String,
     defaultValue: T

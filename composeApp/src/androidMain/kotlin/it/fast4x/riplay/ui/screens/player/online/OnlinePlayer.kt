@@ -44,6 +44,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.only
@@ -114,6 +115,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.ExperimentalTextApi
@@ -1528,6 +1530,10 @@ fun OnlinePlayer(
 
     val equalizer = LocalPlayerServiceBinder.current?.equalizer
 
+    val density = LocalDensity.current
+    val bottomInset = with(density) { WindowInsets.navigationBars.getBottom(density).toDp() }
+    val contentPadding = PaddingValues(bottom = bottomInset)
+
     Box(
         modifier = Modifier
             //.padding(windowInsets.only(WindowInsetsSides.Bottom).asPaddingValues())
@@ -1552,10 +1558,13 @@ fun OnlinePlayer(
             ) {
                 Row {}
             } else
+
                 Row(
                     modifier = Modifier
                         .align(if (isLandscape) Alignment.BottomEnd else Alignment.BottomCenter)
-                        .requiredHeight(if (showNextSongsInPlayer && (showlyricsthumbnail || (!isShowingLyrics || miniQueueExpanded))) 100.dp else 60.dp)
+                        //.requiredHeight(if (showNextSongsInPlayer && (showlyricsthumbnail || (!isShowingLyrics || miniQueueExpanded))) 100.dp else 60.dp)
+                        .height( Dimensions.navigationBarHeight + bottomInset )
+                        .padding(contentPadding)
                         .fillMaxWidth(if (isLandscape) 0.8f else 1f)
                         .conditional(tapqueue) { clickable { showQueue = true } }
                         .background(
