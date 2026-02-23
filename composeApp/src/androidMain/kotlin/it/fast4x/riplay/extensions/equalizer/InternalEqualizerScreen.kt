@@ -33,6 +33,7 @@ import kotlin.math.abs
 import kotlin.math.roundToInt
 import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.EqualizerPreset
+import timber.log.Timber
 
 @Composable
 fun InternalEqualizerScreen(equalizerHelper: EqualizerHelper) {
@@ -46,6 +47,7 @@ fun InternalEqualizerScreen(equalizerHelper: EqualizerHelper) {
 
     LaunchedEffect(Unit) {
         config = equalizerHelper.getEqualizerConfig()
+        //Timber.d("EqualizerScreen: LaunchedEffect config $config")
         val savedData = equalizerHelper.loadSettings()
 
         config?.let { cfg ->

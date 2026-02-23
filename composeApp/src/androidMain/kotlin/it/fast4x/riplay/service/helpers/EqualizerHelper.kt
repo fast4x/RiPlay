@@ -80,12 +80,6 @@ class EqualizerHelper(private val context: Context) {
         try {
 
             val isEnabled = prefs.getBoolean(eqEnabledKey, false) // Default false
-            if (!isEnabled) {
-                eq.enabled = false
-                eq.release()
-                equalizer = null
-                return
-            }
 
             val bandsString = prefs.getString(eqBandsKey, null)
 
