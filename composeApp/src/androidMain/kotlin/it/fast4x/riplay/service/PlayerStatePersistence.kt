@@ -19,7 +19,7 @@ class PlayerStatePersistence(context: Context) {
             putBoolean(stateIsPlaying, isPlaying)
             apply()
         }
-        Timber.d("PlayerService > PlayerStatePersistence saveState mediaId $mediaId position $position isPlaying $isPlaying")
+        //Timber.d("PlayerService > PlayerStatePersistence saveState mediaId $mediaId position $position isPlaying $isPlaying")
     }
 
     fun clearState() {
