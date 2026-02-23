@@ -23,7 +23,12 @@ class PlayerStatePersistence(context: Context) {
     }
 
     fun clearState() {
-        prefs.edit { clear() }
+        prefs.edit().apply {
+            putString(stateMediaIdKey, "")
+            putLong(statePositionKey, 0)
+            putBoolean(stateIsPlaying, false)
+            apply()
+        }
     }
 
     fun getSavedMediaId(): String? = prefs.getString(stateMediaIdKey, null)
