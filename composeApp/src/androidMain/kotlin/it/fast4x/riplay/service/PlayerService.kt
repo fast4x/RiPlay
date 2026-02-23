@@ -1118,13 +1118,15 @@ class PlayerService : Service(),
                     Timber.d("PlayerService onlinePlayer onReady localmediaItem ${localMediaItem?.mediaId} queue index ${binder.player.currentMediaItemIndex}")
                     Timber.d("PlayerService onlinePlayer onReady isPersistentQueueEnabled $isPersistentQueueEnabled isResumePlaybackOnStart $isResumePlaybackOnStart")
 
+                    youTubePlayer.setVolume(getSystemMediaVolume())
+
                     localMediaItem?.let{
                         if (isPersistentQueueEnabled && isResumePlaybackOnStart && firstTimeStarted) {
                             youTubePlayer.loadVideo(it.mediaId, playFromSecond)
                             Timber.d("PlayerService onlinePlayer onReady loadVideo ${it.mediaId}")
                         }
                     }
-                    youTubePlayer.setVolume(getSystemMediaVolume())
+
                     firstTimeStarted = false
 
                     restoreStateIfNeeded()
@@ -1194,6 +1196,7 @@ class PlayerService : Service(),
                             if (!firstTimeStarted) {
                                 if (!GlobalSharedData.riTuneCastActive) {
                                     youTubePlayer.unMute()
+                                    youTubePlayer.setVolume(getSystemMediaVolume())
                                     youTubePlayer.play()
                                 } else
                                     coroutineScope.launch {
@@ -2879,12 +2882,12 @@ class PlayerService : Service(),
 
                 withContext(Dispatchers.Main) {
 
-                    if (player.isPlaying || isPlayingNow)
-                        statePersistence.saveState(
-                            mediaId = player.currentMediaItem?.mediaId ?: "",
-                            position = if (player.currentMediaItem?.isLocal == true) player.currentPosition else currentSecond.value.toLong().times(1000),
-                            isPlaying = true
-                        )
+
+                    statePersistence.saveState(
+                        mediaId = player.currentMediaItem?.mediaId ?: "",
+                        position = if (player.currentMediaItem?.isLocal == true) player.currentPosition else currentSecond.value.toLong().times(1000),
+                        isPlaying = player.isPlaying || isPlayingNow
+                    )
 
                     //updateWidgets()
 
