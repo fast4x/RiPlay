@@ -399,12 +399,11 @@ class MainActivity :
 
         if (permissionsNotGranted.isNotEmpty()) {
             permissionLauncher.launch(permissionsNotGranted.toTypedArray())
+        } else {
+            Timber.d("MainActivity Standard permissions already granted.")
+            if (showAutostartPermissionDialog)
+                checkAndRequestAutostartPermission()
         }
-//        else {
-//            Timber.d("MainActivity Standard permissions already granted.")
-//            if (showAutostartPermissionDialog)
-//                checkAndRequestAutostartPermission()
-//        }
     }
 
     private fun checkAndRequestAutostartPermission() {

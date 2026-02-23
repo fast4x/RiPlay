@@ -439,6 +439,7 @@ class PlayerService : Service(),
         super.onCreate()
 
         createNotificationChannel()
+        startForeground(loading = true)
 
         statePersistence = PlayerStatePersistence(this)
 
@@ -605,7 +606,6 @@ class PlayerService : Service(),
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         startForeground() //not needed called in oncraete before... it's ok for all devices?
-        //updateUnifiedNotification()
 
         /*
         Timber.d(
@@ -630,11 +630,11 @@ class PlayerService : Service(),
 
     private fun startForeground(loading: Boolean = false) {
 
-            /*
+
             val notification = if (loading) {
                 NotificationCompat
                     .Builder(this@PlayerService, NOTIFICATION_CHANNEL_ID)
-                    .setContentTitle("Loading...")
+                    .setContentTitle(resources.getString(R.string.loading_please_wait))
                     .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                     .setAutoCancel(true)
                     .setOnlyAlertOnce(true)
@@ -645,25 +645,12 @@ class PlayerService : Service(),
                 notification()
             }
 
-            val notification =
-                NotificationCompat
-                    .Builder(this@PlayerService, NOTIFICATION_CHANNEL_ID)
-                    .setContentTitle(resources.getString(R.string.loading_please_wait))
-                    .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-                    .setAutoCancel(true)
-                    .setOnlyAlertOnce(true)
-                    .setShowWhen(true)
-                    .setSmallIcon(R.drawable.app_icon)
-                    .build()
-
-             */
-
         //startForeground(NOTIFICATION_ID,notification())
 
         ServiceCompat.startForeground(
-            this@PlayerService,
+            this,
             NOTIFICATION_ID,
-            notification(),
+            notification,
             if (isAtLeastAndroid11) {
                 ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK
             } else {
@@ -2400,7 +2387,7 @@ class PlayerService : Service(),
     }
 
 
-    // legacy behavior may cause inconsistencies, but not available on sdk 24 or lower
+    /*
     @RequiresApi(Build.VERSION_CODES.O)
     @ExperimentalCoroutinesApi
     @FlowPreview
@@ -2445,8 +2432,6 @@ class PlayerService : Service(),
                 Timber.e("PlayerServiceFailed startForegroundService onEvents ${it.stackTraceToString()}")
             }
 
-
-
             sendOpenEqualizerIntent()
         } else {
             if (player.isPlaying || isPlayingNow) {
@@ -2467,21 +2452,7 @@ class PlayerService : Service(),
         }
 
     }
-
-
-    private fun showSmartMessage(message: String) {
-        coroutineScope.launch(Dispatchers.Main) {
-            withContext(Dispatchers.Main) {
-                SmartMessage(
-                    message,
-                    type = PopupType.Info,
-                    durationLong = true,
-                    context = this@PlayerService
-                )
-            }
-        }
-    }
-
+    */
 
 
     @UnstableApi
