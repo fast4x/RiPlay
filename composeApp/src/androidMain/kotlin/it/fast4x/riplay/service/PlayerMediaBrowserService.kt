@@ -288,7 +288,6 @@ class PlayerMediaBrowserService : MediaBrowserServiceCompat(),
                     MediaId.SONGS -> {
 
                         Database
-                            //.songsByPlayTimeDesc()
                             .songs(songsSortBy, songSortOrder, 0)
                             .first()
                             .take(500)
