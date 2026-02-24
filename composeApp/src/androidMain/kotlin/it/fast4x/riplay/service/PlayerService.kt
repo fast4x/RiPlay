@@ -384,7 +384,6 @@ class PlayerService : Service(),
 
     var firstTimeStarted by mutableStateOf(true)
 
-    private var noisyReceiver: NoisyAudioReceiver? = null
     private var bluetoothReceiver: BluetoothConnectReceiver? = null
 
     //private lateinit var audioFocusHelper: AudioFocusHelper
@@ -468,7 +467,6 @@ class PlayerService : Service(),
         initializeSongCoverInLockScreen()
         initializeMedleyMode()
         initializePlaybackParameters()
-        initializeNoisyReceiver()
         initializeAudioManager()
         //initializeAudioFocusHelper()
         //initializeTelephonyManager(true)
@@ -1525,7 +1523,6 @@ class PlayerService : Service(),
             loudnessEnhancer?.release()
             audioVolumeObserver.unregister()
             positionObserverJob?.cancel()
-            noisyReceiver?.unregister()
             bluetoothReceiver?.unregister()
 
             discordPresenceManager?.onStop()
@@ -2010,19 +2007,7 @@ class PlayerService : Service(),
         audioManager = getSystemService(AUDIO_SERVICE) as AudioManager
     }
 
-    private fun initializeNoisyReceiver() {
-        if (!preferences.getBoolean(resumeOrPausePlaybackWhenDeviceKey, false)) return
 
-        noisyReceiver = NoisyAudioReceiver(this) {
-            player.pause()
-            if (!GlobalSharedData.riTuneCastActive)
-                _internalOnlinePlayer.value?.pause()
-
-            SmartMessage(getString(R.string.music_paused_headphones_disconnected), context = this)
-        }
-
-        noisyReceiver?.register()
-    }
 
     /*
     fun requestAudioFocus(): Boolean {
@@ -2165,15 +2150,24 @@ class PlayerService : Service(),
     private fun initializeBluetoothConnect() {
         if (!preferences.getBoolean(resumeOrPausePlaybackWhenDeviceKey, false)) return
 
-        bluetoothReceiver = BluetoothConnectReceiver(this) {
-            if (currentSong.value?.isLocal == true) {
-                player.play()
-            } else {
-                _internalOnlinePlayer.value?.play()
+        bluetoothReceiver = BluetoothConnectReceiver(
+            context = this,
+            onDeviceConnected = {
+                if (currentSong.value?.isLocal == true) {
+                    player.play()
+                } else {
+                    _internalOnlinePlayer.value?.play()
+                }
+                SmartMessage(getString(R.string.music_resumed_headphones_connected), context = this)
+            },
+            onDeviceDisconnected = {
+                player.pause()
+                _internalOnlinePlayer.value?.pause()
+
+                SmartMessage(getString(R.string.music_paused_headphones_disconnected), context = this)
             }
 
-            SmartMessage(getString(R.string.music_resumed_headphones_connected), context = this)
-        }
+        )
         bluetoothReceiver?.register()
 
     }
