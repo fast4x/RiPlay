@@ -1,6 +1,7 @@
 package it.fast4x.riplay.utils
 
 import android.content.Context
+import androidx.annotation.OptIn
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -49,6 +50,7 @@ import it.fast4x.environment.models.bodies.ContinuationBody
 import it.fast4x.environment.models.bodies.NextBody
 import it.fast4x.environment.models.bodies.SearchBody
 import it.fast4x.environment.requests.AlbumPage
+import it.fast4x.environment.requests.albumPage
 import it.fast4x.environment.requests.artistPage
 import it.fast4x.environment.requests.nextPage
 import it.fast4x.environment.requests.searchPage
@@ -92,11 +94,23 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import timber.log.Timber
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
 
 @UnstableApi
 data class OnlineRadio (
@@ -399,156 +413,289 @@ fun SearchOnlineEntity (
     }
 }
 
-@Composable
-fun UpdateOnlineArtist(browseId: String) {
 
-    var artistPage by persist<Environment.ArtistInfoPage?>("artist/$browseId/artistPage")
-    var artist by persist<Artist?>("artist/$browseId/artist")
-    val tabIndex by rememberPreference(artistScreenTabIndexKey, defaultValue = 0)
 
-    LaunchedEffect(browseId) {
-        Database
-            .artist(browseId)
-            .combine(snapshotFlow { tabIndex }.map { it != 4 }) { artist, mustFetch -> artist to mustFetch }
-            .distinctUntilChanged()
-            .collect { (currentArtist, mustFetch) ->
-                artist = currentArtist
+suspend fun updateOnlineArtist(browseId: String) {
 
-                if (artistPage == null && (currentArtist?.timestamp == null || mustFetch)) {
-                    withContext(Dispatchers.IO) {
-                        Environment.artistPage(BrowseBody(browseId = browseId))
-                            ?.onSuccess { currentArtistPage ->
-                                artistPage = currentArtistPage
+    val currentArtist = Database.artist(browseId).first()
 
-                                Database.upsert(
-                                    Artist(
-                                        id = browseId,
-                                        name = currentArtistPage.name,
-                                        thumbnailUrl = currentArtistPage.thumbnail?.url,
-                                        timestamp = System.currentTimeMillis(),
-                                        bookmarkedAt = currentArtist?.bookmarkedAt
-                                    )
-                                )
-                            }
-                    }
+    val needsUpdate = currentArtist?.thumbnailUrl == null || currentArtist.thumbnailUrl == "null"
+
+    if (needsUpdate) {
+        withContext(Dispatchers.IO) {
+
+            Environment.artistPage(BrowseBody(browseId = browseId))
+                ?.onSuccess { page ->
+
+                    Database.upsert(
+                        Artist(
+                            id = browseId,
+                            name = page.name,
+                            thumbnailUrl = page.thumbnail?.url,
+                            timestamp = System.currentTimeMillis(),
+                            bookmarkedAt = currentArtist?.bookmarkedAt
+                        )
+                    )
                 }
-            }
+        }
     }
-
 }
+
+
+@OptIn(UnstableApi::class)
+suspend fun updateOnlineAlbum(albumId: String) {
+    val currentAlbum = Database.album(albumId).first()
+    val needsUpdate = currentAlbum?.thumbnailUrl == null || currentAlbum.thumbnailUrl == "null"
+
+    if (needsUpdate) {
+        withContext(Dispatchers.IO) {
+            EnvironmentExt.getAlbum(albumId)
+                .onSuccess { currentAlbumPage ->
+                    Database.upsert(
+                            Album(
+                                id = albumId,
+                                title = currentAlbum?.title ?: currentAlbumPage.album.title,
+                                thumbnailUrl = if (currentAlbum?.thumbnailUrl?.startsWith(
+                                        MODIFIED_PREFIX
+                                    ) == true
+                                ) currentAlbum.thumbnailUrl else currentAlbumPage.album.thumbnail?.url,
+                                year = currentAlbumPage.album.year,
+                                authorsText = if (currentAlbum?.authorsText?.startsWith(
+                                        MODIFIED_PREFIX
+                                    ) == true
+                                ) currentAlbum.authorsText else currentAlbumPage.album.authors
+                                    ?.joinToString(", ") { it.name ?: "" },
+                                shareUrl = currentAlbumPage.url,
+                                timestamp = System.currentTimeMillis(),
+                                bookmarkedAt = currentAlbum?.bookmarkedAt,
+                                isYoutubeAlbum = currentAlbum?.isYoutubeAlbum == true
+                            ),
+                            currentAlbumPage
+                                .songs.distinct()
+                                .map(Environment.SongItem::asMediaItem)
+                                .onEach(Database::insert)
+                                .mapIndexed { position, mediaItem ->
+                                    SongAlbumMap(
+                                        songId = mediaItem.mediaId,
+                                        albumId = albumId,
+                                        position = position
+                                    )
+                                }
+
+                    )
+                }
+        }
+    }
+}
+
+
 
 @UnstableApi
 @Composable
-fun UpdateOnlineAlbum (
-    browseId: String,
-    onFetch: ((album: Album?, albumPage: AlbumPage?) -> Unit)? = null
+fun ShowVideoOrSongInfo(
+    videoId: String,
 ) {
-    var album by persist<Album?>("album/$browseId/album")
-    var albumPage by persist<AlbumPage?>("album/$browseId/albumPage")
-    LaunchedEffect(browseId) {
-        Database
-            .album(browseId).collect { currentAlbum ->
-                Timber.d("UpdateYoutubeAlbum collect ${currentAlbum?.title}")
-                album = currentAlbum
-                CoroutineScope(Dispatchers.IO).launch {
-                    if (albumPage == null)
-                        EnvironmentExt.getAlbum(browseId)
-                            .onSuccess { currentAlbumPage ->
-                                albumPage = currentAlbumPage
+    if (videoId.isBlank()) return
 
-                                Timber.d("UpdateYoutubeAlbum otherVersion ${currentAlbumPage.otherVersions}")
-                                Database.upsert(
-                                    Album(
-                                        id = browseId,
-                                        title = album?.title ?: currentAlbumPage.album.title,
-                                        thumbnailUrl = if (album?.thumbnailUrl?.startsWith(
-                                                MODIFIED_PREFIX
-                                            ) == true
-                                        ) album?.thumbnailUrl else currentAlbumPage.album.thumbnail?.url,
-                                        year = currentAlbumPage.album.year,
-                                        authorsText = if (album?.authorsText?.startsWith(
-                                                MODIFIED_PREFIX
-                                            ) == true
-                                        ) album?.authorsText else currentAlbumPage.album.authors
-                                            ?.joinToString(", ") { it.name ?: "" },
-                                        shareUrl = currentAlbumPage.url,
-                                        timestamp = System.currentTimeMillis(),
-                                        bookmarkedAt = album?.bookmarkedAt,
-                                        isYoutubeAlbum = album?.isYoutubeAlbum == true
-                                    ),
-                                    currentAlbumPage
-                                        .songs.distinct()
-                                        .map(Environment.SongItem::asMediaItem)
-                                        .onEach(Database::insert)
-                                        .mapIndexed { position, mediaItem ->
-                                            SongAlbumMap(
-                                                songId = mediaItem.mediaId,
-                                                albumId = browseId,
-                                                position = position
-                                            )
-                                        }
-                                )
-                            }
-                            .onFailure {
-                                Timber.e("AlbumScreen error ${it.stackTraceToString()}")
-//                            if (it.message?.contains("NOT_FOUND") == true) {
-//                                // This album no longer exists in YouTube Music
-//                                Database.asyncTransaction {
-//                                    album?.let(::delete)
-//                                }
-//                            }
-                            }
-                }
-            }
-//        Database
-//            .album(browseId)
-//            .combine(snapshotFlow { tabIndex }) { album, tabIndex -> album to tabIndex }
-//            .collect { (currentAlbum, tabIndex) ->
-//                album = currentAlbum
-//
-//                if (albumPage == null && (currentAlbum?.timestamp == null || tabIndex == 1)) {
-//                    withContext(Dispatchers.IO) {
-//                        Environment.albumPage(BrowseBody(browseId = browseId))
-//                            ?.onSuccess { currentAlbumPage ->
-//                                albumPage = currentAlbumPage
-//
-//                                Database.clearAlbum(browseId)
-//
-//                                Database.upsert(
-//                                    Album(
-//                                        id = browseId,
-//                                        title = currentAlbumPage?.title,
-//                                        thumbnailUrl = currentAlbumPage?.thumbnail?.url,
-//                                        year = currentAlbumPage?.year,
-//                                        authorsText = currentAlbumPage?.authors
-//                                            ?.joinToString("") { it.name ?: "" },
-//                                        shareUrl = currentAlbumPage?.url,
-//                                        timestamp = System.currentTimeMillis(),
-//                                        bookmarkedAt = album?.bookmarkedAt
-//                                    ),
-//                                    currentAlbumPage
-//                                        ?.songsPage
-//                                        ?.items
-//                                        ?.map(Environment.SongItem::asMediaItem)
-//                                        ?.onEach(Database::insert)
-//                                        ?.mapIndexed { position, mediaItem ->
-//                                            SongAlbumMap(
-//                                                songId = mediaItem.mediaId,
-//                                                albumId = browseId,
-//                                                position = position
-//                                            )
-//                                        } ?: emptyList()
-//                                )
-//                            }
-//                    }
-//
-//                }
-//            }
-        onFetch?.invoke(album, albumPage)
+    val thumbnailRoundness by rememberPreference(thumbnailRoundnessKey, ThumbnailRoundness.Heavy)
+    val windowInsets = WindowInsets.systemBars
+
+    // Stato per gestire caricamento e dati
+    var info by remember { mutableStateOf<VideoOrSongInfo?>(null) }
+    var isLoading by remember { mutableStateOf(true) }
+
+    LaunchedEffect(videoId) {
+        isLoading = true
+        info = EnvironmentExt.getVideOrSongInfo(videoId).getOrNull()
+        isLoading = false
+        Timber.d("ShowVideoOrSongInfo: ${info?.authorThumbnail}")
     }
 
+    LazyColumn(
+        state = rememberLazyListState(),
+        modifier = Modifier
+            .background(colorPalette().background0)
+            .fillMaxSize(),
+        contentPadding = PaddingValues(
+            top = 16.dp,
+            start = 16.dp,
+            end = 16.dp,
+            bottom = 16.dp
+        )
+    ) {
+        // Header
+        item {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 16.dp, bottom = 24.dp)
+            ) {
+                Text(
+                    text = stringResource(R.string.information),
+                    style = typography().l,
+                    color = colorPalette().text,
+                    modifier = Modifier.weight(1f)
+                )
+
+                IconButton(onClick = {}) {
+                    Icon(
+                        painter = painterResource(R.drawable.chevron_down),
+                        contentDescription = null,
+                        tint = colorPalette().text
+                    )
+                }
+            }
+        }
+
+        if (isLoading) {
+            item {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(64.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Loader()
+                }
+            }
+        } else if (info != null) {
+
+            item {
+                InfoSection(title = stringResource(R.string.title)) {
+                    Text(
+                        text = info?.title ?: "",
+                        style = typography().xs,
+                        color = colorPalette().text
+                    )
+                }
+            }
+
+
+            item {
+                InfoSection(title = stringResource(R.string.artists)) {
+                    Text(
+                        text = info?.author ?: "",
+                        style = typography().xs,
+                        color = colorPalette().text
+                    )
+                }
+            }
+
+
+            item {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 16.dp),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = colorPalette().accent.copy(alpha = 0.2f)
+                    )
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        horizontalArrangement = Arrangement.SpaceEvenly
+                    ) {
+                        StatItem(
+                            label = stringResource(R.string.subscribers),
+                            value = info?.subscribers ?: "-"
+                        )
+                        StatItem(
+                            label = stringResource(R.string.views),
+                            value = info?.viewCount?.toInt()?.let { numberFormatter(it) } ?: "-"
+                        )
+                        StatItem(
+                            label = stringResource(R.string.likes),
+                            value = info?.like?.toInt()?.let { numberFormatter(it) } ?: "-"
+                        )
+                        StatItem(
+                            label = stringResource(R.string.dislikes),
+                            value = info?.dislike?.toInt()?.let { numberFormatter(it) } ?: "-"
+                        )
+                    }
+                }
+            }
+
+
+            item {
+                InfoSection(title = stringResource(R.string.description)) {
+                    Text(
+                        text = info?.description ?: "",
+                        style = typography().xs,
+                        color = colorPalette().text
+                    )
+                }
+            }
+        } else {
+
+            item {
+                Box(
+                    modifier = Modifier.fillMaxWidth().padding(32.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = stringResource(R.string.no_results_found),
+                        style = typography().m,
+                        color = colorPalette().red
+                    )
+                }
+            }
+        }
+    }
 }
 
+
+@Composable
+private fun InfoSection(
+    title: String,
+    modifier: Modifier = Modifier,
+    content: @Composable () -> Unit
+) {
+    Column(
+        modifier = modifier.padding(vertical = 8.dp)
+    ) {
+        Text(
+            text = title,
+            style = typography().m,
+            color = colorPalette().accent,
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
+        content()
+        HorizontalDivider(
+            modifier = Modifier.padding(top = 12.dp),
+            color = colorPalette().accent.copy(alpha = 0.2f)
+        )
+    }
+}
+
+@Composable
+private fun StatItem(
+    label: String,
+    value: String
+) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.padding(horizontal = 4.dp)
+    ) {
+        Text(
+            text = value,
+            style = typography().xxs,
+            color = colorPalette().text,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
+        Text(
+            text = label,
+            style = typography().xxs,
+            color = colorPalette().text,
+        )
+    }
+}
+
+/*
 @UnstableApi
 @Composable
 fun ShowVideoOrSongInfo(
@@ -747,5 +894,5 @@ fun ShowVideoOrSongInfo(
         }
     }
 
-
 }
+*/

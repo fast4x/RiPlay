@@ -111,36 +111,35 @@ fun HistoryList(
     val thumbnailSizeDp = Dimensions.thumbnails.song
     val thumbnailSizePx = thumbnailSizeDp.px
 
-    // Preferenze
+
     val parentalControlEnabled by rememberPreference(parentalControlEnabledKey, false)
     val disableScrollingText by rememberPreference(disableScrollingTextKey, false)
     val thumbnailRoundness by rememberPreference(thumbnailRoundnessKey, ThumbnailRoundness.Heavy)
 
-    // Stato della selezione
     var isSelectionMode by remember { mutableStateOf(false) }
     val selectedIds = remember { mutableStateSetOf<String>() }
     val selectedMediaItems = remember { mutableStateListOf<MediaItem>() }
 
-    // Sincronizza selectedMediaItems con selectedIds
+
     LaunchedEffect(selectedIds.size) {
-        // Logica di sincronizzazione se necessaria esternamente
+        // External sync?
     }
 
-    // Logica di ricerca
+
     val search = Search.init()
 
-    // Raggruppamento Date Logic (Usa la tua classe DateAgo esistente)
+
     val eventsState = Database.events()
         .map { events ->
             if (parentalControlEnabled) events.filter { !it.song.title.startsWith(EXPLICIT_PREFIX) }
             else events
         }
         .map { events ->
-            events.groupByDateAgo() // Chiama la funzione helper
+            events.groupByDateAgo()
         }
         .collectAsState(initial = emptyMap(), context = Dispatchers.IO)
 
-    // Setup Tabs
+
     val buttonsList = mutableListOf(HistoryType.History to stringResource(R.string.history))
     if (isYtLoggedIn()) buttonsList += HistoryType.OnlineHistory to stringResource(R.string.online_history)
 
@@ -293,7 +292,6 @@ fun HistoryList(
     }
 }
 
-// --- Helper Functions (Posizionale fuori dal Composable) ---
 
 @OptIn(ExperimentalFoundationApi::class)
 fun LazyListScope.renderHistoryGroup(
@@ -379,7 +377,7 @@ private fun matchesSearch(title: String?, artists: String?, query: String): Bool
             artists?.contains(q, ignoreCase = true) == true
 }
 
-// NOTA: Questa funzione usa 'DateAgo'. Assicurati che importi la tua classe esistente.
+
 private fun List<EventWithSong>.groupByDateAgo(): Map<DateAgo, List<EventWithSong>> {
     val today = LocalDate.now()
     val thisMonday = today.with(DayOfWeek.MONDAY)

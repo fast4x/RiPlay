@@ -48,8 +48,213 @@ import it.fast4x.riplay.utils.applyIf
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.utils.showSearchIconInNav
 import it.fast4x.riplay.utils.showStatsIconInNav
+import androidx.compose.animation.*
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalDensity
+import it.fast4x.riplay.utils.applyIf
+import it.fast4x.riplay.utils.colorPalette
+import it.fast4x.riplay.utils.showSearchIconInNav
+import it.fast4x.riplay.utils.showStatsIconInNav
 
+// Shown when "Navigation bar position" is set to "top" or "bottom"
+class HorizontalNavigationBar(
+    val tabIndex: Int,
+    val onTabChanged: (Int) -> Unit,
+    navController: NavController,
+    modifier: Modifier = Modifier
+) : AbstractNavigationBar(navController, modifier) {
 
+    private fun navButtonProperties(): Modifier {
+        val padding: Dp = 4.dp
+        val size: Dp = 24.dp
+        val border: Shape = CircleShape
+
+        return Modifier.padding(all = padding)
+            .size(size)
+            .clip(shape = border)
+    }
+
+    @Composable
+    private fun addButton(button: Button, modifier: Modifier = Modifier) =
+        buttonList.add {
+            Box(modifier) { button.Draw() }
+        }
+
+    @SuppressLint("ComposableNaming")
+    @Composable
+    private fun addButton(index: Int, button: Button, modifier: Modifier = Modifier) =
+        buttonList.add(index) {
+            Box(modifier) { button.Draw() }
+        }
+
+    @Composable
+    private fun bottomPadding(): Dp = 0.dp
+
+    private fun topPadding(): Dp = 0.dp
+
+    @Composable
+    override fun add(buttons: @Composable (@Composable (Int, String, Int) -> Unit) -> Unit) {
+        val transition = updateTransition(targetState = tabIndex, label = null)
+
+        buttons { index, text, iconId ->
+
+            val color by transition.animateColor(label = "") {
+                if (it == index) colorPalette().text else colorPalette().textDisabled
+            }
+
+            val button: Button =
+                if (NavigationBarType.IconOnly.isCurrent())
+                    Button(iconId, color, 12.dp, 20.dp)
+                else
+                    TextIconButton(text, iconId, color, 0.dp, Dimensions.navigationRailIconOffset * 3)
+
+            val contentModifier = Modifier
+                .clip(RoundedCornerShape(12.dp))
+                .clickable(onClick = { onTabChanged(index) })
+
+            addButton(button, contentModifier)
+        }
+    }
+
+    @Composable
+    override fun BackButton(): NavigationButton {
+        val button = super.BackButton()
+        button.modifier = this.navButtonProperties()
+        return button
+    }
+
+    @Composable
+    override fun SettingsButton(): NavigationButton {
+        val button = super.SettingsButton()
+        button.modifier = this.navButtonProperties()
+        return button
+    }
+
+    @Composable
+    override fun StatsButton(): NavigationButton {
+        val button = super.StatsButton()
+        button.modifier = this.navButtonProperties()
+        return button
+    }
+
+    @Composable
+    override fun SearchButton(): NavigationButton {
+        val button = super.SearchButton()
+        button.modifier = this.navButtonProperties()
+        return button
+    }
+
+    @Composable
+    override fun Draw() {
+
+        // Stato per l'animazione di entrata
+        var visible by remember { mutableStateOf(false) }
+
+        // Attiva l'animazione al primo avvio
+        LaunchedEffect(Unit) {
+            visible = true
+        }
+
+        val isNavbarBottom = NavigationBarPosition.Bottom.isCurrent()
+        val density = LocalDensity.current
+        val bottomInset = with(density) { WindowInsets.navigationBars.getBottom(density).toDp() }
+        val topInset = with(density) { WindowInsets.statusBars.getTop(density).toDp() }
+
+        val contentPadding = if (isNavbarBottom) {
+            PaddingValues(bottom = bottomInset)
+        } else {
+            PaddingValues(top = topInset)
+        }
+
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = if (NavigationBarPosition.Bottom.isCurrent()) Arrangement.Bottom else Arrangement.Top,
+            modifier = modifier
+                .fillMaxWidth()
+                .background(colorPalette().background1)
+        ) {
+
+            // Definizione delle transizioni
+            val enterTransition = if (isNavbarBottom) {
+                slideInVertically(
+                    initialOffsetY = { fullHeight -> fullHeight },
+                    animationSpec = tween(durationMillis = 300, easing = FastOutSlowInEasing)
+                ) + fadeIn(animationSpec = tween(300))
+            } else {
+                // Se è in alto, scende dall'alto
+                slideInVertically(
+                    initialOffsetY = { fullHeight -> -fullHeight },
+                    animationSpec = tween(durationMillis = 300, easing = FastOutSlowInEasing)
+                ) + fadeIn(animationSpec = tween(300))
+            }
+
+            AnimatedVisibility(
+                visible = visible,
+                enter = enterTransition,
+                // Opzionale: puoi aggiungere un'animazione di uscita se la barra viene nascosta
+                // exit = slideOutVertically() + fadeOut()
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.SpaceAround,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(if (isNavbarBottom) Dimensions.navigationBarHeight + bottomInset else 40.dp + topInset)
+                        .applyIf(isNavbarBottom) {
+                            padding(contentPadding)
+                        }
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(colorPalette().background1)
+                ) {
+                    val scrollState = rememberScrollState()
+
+                    if (UiType.ViMusic.isCurrent() && NavRoutes.home.isNotHere(navController))
+                        BackButton().Draw()
+
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(Color.Transparent)
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceEvenly,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .fillMaxSize()
+                                .horizontalScroll(scrollState),
+                            content = { buttonList().forEach { it() } }
+                        )
+                    }
+
+                    if (UiType.ViMusic.isCurrent() && showSearchIconInNav())
+                        SearchButton()
+
+                    if (UiType.ViMusic.isCurrent())
+                        SettingsButton().Draw()
+
+                    if (UiType.ViMusic.isCurrent() && showStatsIconInNav())
+                        StatsButton()
+                }
+            }
+        }
+    }
+}
+
+/*
 // Shown when "Navigation bar position" is set to "top" or "bottom"
 class HorizontalNavigationBar(
     val tabIndex: Int,
@@ -204,7 +409,7 @@ class HorizontalNavigationBar(
         }
     }
 }
-
+*/
 /*
 // Shown when "Navigation bar position" is set to "top" or "bottom"
 class HorizontalNavigationBar(

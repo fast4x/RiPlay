@@ -4,10 +4,11 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.add
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.navigationBars
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheet
@@ -22,13 +23,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogWindowProvider
 import androidx.core.view.WindowCompat
 import it.fast4x.riplay.enums.ColorPaletteMode
 import it.fast4x.riplay.extensions.preferences.colorPaletteModeKey
-import it.fast4x.riplay.utils.isLandscape
 import it.fast4x.riplay.extensions.preferences.rememberPreference
+import it.fast4x.riplay.utils.colorPalette
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -41,54 +41,16 @@ fun CustomModalBottomSheet(
     ),
     sheetGestureEnabled: Boolean = true,
     shape: Shape = BottomSheetDefaults.ExpandedShape,
-    containerColor: Color = BottomSheetDefaults.ContainerColor,
+    containerColor: Color = colorPalette().background0,
     contentColor: Color = contentColorFor(containerColor),
     tonalElevation: Dp = BottomSheetDefaults.Elevation,
     scrimColor: Color = BottomSheetDefaults.ScrimColor,
-    dragHandle: @Composable (() -> Unit)? = { BottomSheetDefaults.DragHandle() },
-    contentWindowInsets: @Composable () -> WindowInsets = { WindowInsets.ime },
+    dragHandle: @Composable (() -> Unit)? = {
+        BottomSheetDefaults.DragHandle()
+    },
     content: @Composable ColumnScope.() -> Unit,
 ) {
-    val bottomPadding = 0.dp //if(isLandscape) 0.dp else WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
-
-    //NEW SHEET
-//    val mbSheetState: ModalBottomSheetState = androidx.compose.material.rememberModalBottomSheetState(
-//        initialValue = androidx.compose.material.ModalBottomSheetValue.Expanded,
-//        skipHalfExpanded = true,
-//        confirmValueChange = {
-//            if (it == androidx.compose.material.ModalBottomSheetValue.Hidden) {
-//                onDismissRequest()
-//            }
-//            true
-//        }
-//    )
-
     if (showSheet) {
-
-        //NEW SHEET
-//        val scope = rememberCoroutineScope()
-//        SideEffect {
-//            scope.launch {
-//                mbSheetState.show()
-//            }
-//        }
-//        ModalBottomSheetLayout(
-//            sheetState =  mbSheetState,
-//            sheetContentColor = colorPalette().background0,
-//            sheetBackgroundColor = colorPalette().background0,
-//            sheetShape = shape,
-//            sheetElevation = tonalElevation,
-//            scrimColor = scrimColor,
-//            sheetContent = {
-//                Column(Modifier.padding(bottom = bottomPadding)) {
-//                    content()
-//                }
-//            },
-//            content = {}
-//        )
-        // NEW SHEET
-
-        //PREVIOUS SHEET
         ModalBottomSheet(
             onDismissRequest = onDismissRequest,
             modifier = modifier,
@@ -100,27 +62,36 @@ fun CustomModalBottomSheet(
             tonalElevation = tonalElevation,
             scrimColor = scrimColor,
             dragHandle = dragHandle,
-            contentWindowInsets = contentWindowInsets
+            contentWindowInsets = {
+                WindowInsets.ime.add(WindowInsets.navigationBars)
+            },
         ) {
-            val colorPaletteMode by rememberPreference(colorPaletteModeKey, ColorPaletteMode.Dark)
-            val isPicthBlack = colorPaletteMode == ColorPaletteMode.PitchBlack
-            val isDark =
-                colorPaletteMode == ColorPaletteMode.Dark || isPicthBlack || (colorPaletteMode == ColorPaletteMode.System && isSystemInDarkTheme())
+            SetupSystemBarsForSheet(containerColor)
 
-            Column(modifier = Modifier.padding(bottom = bottomPadding)) {
-
-                val view = LocalView.current
-                (view.parent as? DialogWindowProvider)?.window?.let { window ->
-                    SideEffect {
-                        WindowCompat.getInsetsController(window, view).isAppearanceLightNavigationBars = !isDark
-                        WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = !isDark
-                    }
-                }
-
-
+            Column(
+                modifier = Modifier.fillMaxWidth()
+            ) {
                 content()
             }
         }
-        //PREVIOUS SHEET
+    }
+}
+
+@Composable
+private fun SetupSystemBarsForSheet(sheetBackgroundColor: Color) {
+    val colorPaletteMode by rememberPreference(colorPaletteModeKey, ColorPaletteMode.Dark)
+    val isPitchBlack = colorPaletteMode == ColorPaletteMode.PitchBlack
+
+    val isDarkTheme = colorPaletteMode == ColorPaletteMode.Dark ||
+            isPitchBlack ||
+            (colorPaletteMode == ColorPaletteMode.System && isSystemInDarkTheme())
+
+    val view = LocalView.current
+    (view.parent as? DialogWindowProvider)?.window?.let { window ->
+        SideEffect {
+            val insetsController = WindowCompat.getInsetsController(window, view)
+            insetsController.isAppearanceLightNavigationBars = !isDarkTheme
+            insetsController.isAppearanceLightStatusBars = !isDarkTheme
+        }
     }
 }

@@ -106,19 +106,6 @@ fun AppNavigation(
     val transitionEffect by rememberPreference(transitionEffectKey, TransitionEffect.Scale)
 
     @Composable
-    fun customScaffold(content: @Composable () -> Unit) {
-        Scaffold(
-            bottomBar = {  }
-        ) { paddingValues ->
-            Surface(
-                modifier = Modifier.padding(paddingValues),
-                content = content
-            )
-        }
-    }
-
-
-    @Composable
     fun modalBottomSheetPage(
         showSheet: Boolean? = true,
         content: @Composable () -> Unit
@@ -132,7 +119,7 @@ fun AppNavigation(
         CustomModalBottomSheet(
             showSheet = showSheet == true,
             onDismissRequest = {
-                if (navController.currentBackStackEntry?.lifecycle?.currentState == Lifecycle.State.RESUMED)
+                //if (navController.currentBackStackEntry?.lifecycle?.currentState == Lifecycle.State.RESUMED)
                     navController.popBackStack()
             },
             containerColor = Color.Transparent,
@@ -207,6 +194,15 @@ fun AppNavigation(
             if (navController.currentBackStackEntry?.lifecycle?.currentState == Lifecycle.State.RESUMED) navController.popBackStack()
         }
 
+        composable(route = NavRoutes.home.name) {
+            HomeScreen(
+                navController = navController,
+                onPlaylistUrl = navigateToPlaylist,
+                miniPlayer = miniPlayer,
+                openTabFromShortcut = openTabFromShortcut
+            )
+        }
+
         composable(route = NavRoutes.ritunecontroller.name) {
             modalBottomSheetPage {
                 RiTuneControllerScreen()
@@ -245,15 +241,6 @@ fun AppNavigation(
             modalBottomSheetPage {
                 ListenerLevelCharts()
             }
-        }
-
-        composable(route = NavRoutes.home.name) {
-            HomeScreen(
-                navController = navController,
-                onPlaylistUrl = navigateToPlaylist,
-                miniPlayer = miniPlayer,
-                openTabFromShortcut = openTabFromShortcut
-            )
         }
 
         composable(
@@ -428,31 +415,8 @@ fun AppNavigation(
         }
 
         composable(route = NavRoutes.blacklist.name) {
-            //modalBottomSheetPage {
-                BlacklistScreen(navController, miniPlayer)
-            //}
+            BlacklistScreen(navController, miniPlayer)
         }
-
-        /*
-        composable(
-            route = "settingsPage/{index}",
-            arguments = listOf(
-                navArgument(
-                    name = "index",
-                    builder = { type = NavType.IntType }
-                )
-            )
-        ) { navBackStackEntry ->
-            val index = navBackStackEntry.arguments?.getInt("index") ?: 0
-
-            PlayerScaffold {
-                SettingsPage(
-                    section = SettingsSection.entries[index],
-                    pop = popDestination
-                )
-            }
-        }
-         */
 
         composable(
             route = "${NavRoutes.search.name}?text={text}",
@@ -565,13 +529,6 @@ fun AppNavigation(
         composable(
             route = NavRoutes.moodsPage.name
         ) { navBackStackEntry ->
-            /*
-            SimpleScaffold(navController = navController) {
-                MoodsPage(
-                    navController = navController
-                )
-            }
-             */
             MoodsPageScreen(
                 navController = navController,
                 miniPlayer = miniPlayer,

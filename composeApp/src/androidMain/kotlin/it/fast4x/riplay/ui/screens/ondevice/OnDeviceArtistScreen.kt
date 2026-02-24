@@ -11,6 +11,7 @@ import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import it.fast4x.riplay.extensions.preferences.disableScrollingTextKey
 import it.fast4x.riplay.extensions.preferences.rememberPreference
+import it.fast4x.riplay.ui.components.PageContainer
 import it.fast4x.riplay.ui.components.ScreenContainer
 
 @ExperimentalMaterialApi
@@ -28,22 +29,16 @@ fun OnDeviceArtistScreen(
 
     val disableScrollingText by rememberPreference(disableScrollingTextKey, false)
 
-    ScreenContainer(
-        navController,
-        0,
-        onTabChanged = {},
-        miniPlayer,
-        navBarContent = {}
-    ) { currentTabIndex ->
-                    when (currentTabIndex) {
-                        0 -> {
-                            OnDeviceArtistDetails(
-                                navController = navController,
-                                artistId = artistId,
-                                disableScrollingText = disableScrollingText
-                            )
-                        }
-                    }
-            }
+    PageContainer(
+        navController = navController,
+        miniPlayer = miniPlayer,
+    ) {
+        OnDeviceArtistDetails(
+            navController = navController,
+            artistId = artistId,
+            disableScrollingText = disableScrollingText
+        )
+
+    }
 
 }

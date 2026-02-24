@@ -43,7 +43,7 @@ class AppHeader(
         if ( NavRoutes.home.isNotHere( navController ) )
             androidx.compose.material3.IconButton(
                 onClick = {
-                    if (navController.currentBackStackEntry?.lifecycle?.currentState == Lifecycle.State.RESUMED)
+                    //if (navController.currentBackStackEntry?.lifecycle?.currentState == Lifecycle.State.RESUMED)
                         navController.popBackStack()
                 }
             ) {

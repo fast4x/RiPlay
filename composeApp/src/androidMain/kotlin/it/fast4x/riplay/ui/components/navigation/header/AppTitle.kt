@@ -56,7 +56,8 @@ private fun AppLogo(
 private fun AppLogoText( navController: NavController ) {
     val iconTextClick: () -> Unit = {
         if ( NavRoutes.home.isNotHere( navController ) )
-            navController.navigate(NavRoutes.home.name)
+            navController.popBackStack(route = NavRoutes.home.name, inclusive = false)
+            //navController.navigate(NavRoutes.home.name)
     }
 
 

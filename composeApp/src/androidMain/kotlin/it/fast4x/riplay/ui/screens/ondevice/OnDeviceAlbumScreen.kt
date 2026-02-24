@@ -54,6 +54,7 @@ import it.fast4x.riplay.extensions.preferences.disableScrollingTextKey
 import it.fast4x.riplay.extensions.preferences.playerPositionKey
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.extensions.preferences.transitionEffectKey
+import it.fast4x.riplay.ui.components.PageContainer
 
 
 @ExperimentalMaterialApi
@@ -71,218 +72,20 @@ fun OnDeviceAlbumScreen(
     miniPlayer: @Composable () -> Unit = {}
 ) {
 
-    val saveableStateHolder = rememberSaveableStateHolder()
-
-    var album by persist<Album?>("album/$albumId/album")
-
-    val disableScrollingText by rememberPreference(disableScrollingTextKey, false)
-
-    //PersistMapCleanup(tagPrefix = "album/$albumId/")
-
-    LaunchedEffect(Unit) {
-        Database
-            .album(albumId).collect { currentAlbum ->
-                println("AlbumScreen collect ${currentAlbum?.title}")
-                album = currentAlbum
-            }
-
-    }
-
-
-//    val headerContent: @Composable (textButton: (@Composable () -> Unit)?) -> Unit =
-//        { textButton ->
-//            if (album?.timestamp == null) {
-//                HeaderPlaceholder(
-//                    modifier = Modifier
-//                        .shimmer()
-//                )
-//            } else {
-//                val context = LocalContext.current
-//
-//                Header(
-//                    title = "",
-//                    modifier = Modifier.padding(horizontal = 12.dp),
-//                    actionsContent = {
-//                        textButton?.invoke()
-//
-//
-//                        Spacer(
-//                            modifier = Modifier
-//                                .weight(1f)
-//                        )
-//
-////                        HeaderIconButton(
-////                            icon = if (album?.bookmarkedAt == null) {
-////                                R.drawable.bookmark_outline
-////                            } else {
-////                                R.drawable.bookmark
-////                            },
-////                            color = colorPalette().accent,
-////                            onClick = {
-////                                val bookmarkedAt =
-////                                    if (album?.bookmarkedAt == null) System.currentTimeMillis() else null
-////
-////                                Database.asyncTransaction {
-////                                    album?.copy(bookmarkedAt = bookmarkedAt)
-////                                        ?.let(::update)
-////                                }
-////                            }
-////                        )
-////
-////                        HeaderIconButton(
-////                            icon = R.drawable.share_social,
-////                            color = colorPalette().text,
-////                            onClick = {
-////                                album?.shareUrl?.let { url ->
-////                                    val sendIntent = Intent().apply {
-////                                        Intent.setAction = Intent.ACTION_SEND
-////                                        Intent.setType = "text/plain"
-////                                        putExtra(Intent.EXTRA_TEXT, url)
-////                                    }
-////
-////                                    context.startActivity(
-////                                        Intent.createChooser(
-////                                            sendIntent,
-////                                            null
-////                                        )
-////                                    )
-////                                }
-////                            }
-////                        )
-//                    },
-//                    disableScrollingText = disableScrollingText
-//                )
-//            }
-//        }
-
-//    val thumbnailContent =
-//        adaptiveThumbnailContent(
-//            album?.timestamp == null,
-//            album?.thumbnailUrl,
-//            showIcon = false, //albumPage?.otherVersions?.isNotEmpty(),
-//            onOtherVersionAvailable = {
-//                //println("mediaItem Click other version")
-//            },
-//            //shape = thumbnailRoundness.shape()
-//            onClick = { changeShape = !changeShape },
-//            shape = if (changeShape) CircleShape else thumbnailRoundness.shape(),
-//        )
-
-    val transitionEffect by rememberPreference(transitionEffectKey, TransitionEffect.Scale)
-    val playerPosition by rememberPreference(playerPositionKey, PlayerPosition.Bottom)
-
-    Scaffold(
-        modifier = Modifier,
-        containerColor = colorPalette().background0,
-        topBar = {
-            if (UiType.RiPlay.isCurrent())
-                AppHeader(navController).Draw()
-        }
+    PageContainer(
+        navController = navController,
+        miniPlayer = miniPlayer,
     ) {
-        //**
-        Box(
-            modifier = Modifier
-                .padding(it)
-                .fillMaxSize()
-        ) {
-
-            Row(
-                modifier = Modifier
-                    .background(colorPalette().background0)
-                    .fillMaxSize()
-            ) {
-                val topPadding = if (UiType.ViMusic.isCurrent()) 30.dp else 0.dp
-
-                AnimatedContent(
-                    targetState = 0,
-                    transitionSpec = {
-                        when (transitionEffect) {
-                            TransitionEffect.None -> EnterTransition.None togetherWith ExitTransition.None
-                            TransitionEffect.Expand -> expandIn(
-                                animationSpec = tween(
-                                    350,
-                                    easing = LinearOutSlowInEasing
-                                ), expandFrom = Alignment.BottomStart
-                            ).togetherWith(
-                                shrinkOut(
-                                    animationSpec = tween(
-                                        350,
-                                        easing = FastOutSlowInEasing
-                                    ), shrinkTowards = Alignment.CenterStart
-                                )
-                            )
-
-                            TransitionEffect.Fade -> fadeIn(animationSpec = tween(350)).togetherWith(
-                                fadeOut(animationSpec = tween(350))
-                            )
-
-                            TransitionEffect.Scale -> scaleIn(animationSpec = tween(350)).togetherWith(
-                                scaleOut(animationSpec = tween(350))
-                            )
-
-                            TransitionEffect.SlideHorizontal, TransitionEffect.SlideVertical -> {
-                                val slideDirection = when (targetState > initialState) {
-                                    true -> {
-                                        if (transitionEffect == TransitionEffect.SlideHorizontal)
-                                            AnimatedContentTransitionScope.SlideDirection.Left
-                                        else AnimatedContentTransitionScope.SlideDirection.Up
-                                    }
-
-                                    false -> {
-                                        if (transitionEffect == TransitionEffect.SlideHorizontal)
-                                            AnimatedContentTransitionScope.SlideDirection.Right
-                                        else AnimatedContentTransitionScope.SlideDirection.Down
-                                    }
-                                }
-
-                                val animationSpec = spring(
-                                    dampingRatio = 0.9f,
-                                    stiffness = Spring.StiffnessLow,
-                                    visibilityThreshold = IntOffset.VisibilityThreshold
-                                )
-
-                                slideIntoContainer(
-                                    slideDirection,
-                                    animationSpec
-                                ) togetherWith
-                                        slideOutOfContainer(slideDirection, animationSpec)
-                            }
-                        }
-                    },
-                    label = "",
-                    modifier = Modifier
-                        .fillMaxHeight()
-                        .padding(top = topPadding)
-                ) { currentTabIndex ->
-                   // saveableStateHolder.SaveableStateProvider(key = currentTabIndex) {
-                        when (currentTabIndex) {
-                            0 -> OnDeviceAlbumDetails(
-                                navController = navController,
-                                albumId = albumId,
-                                onSearchClick = {
-                                    navController.navigate(NavRoutes.search.name)
-                                },
-                                onSettingsClick = {
-                                    navController.navigate(NavRoutes.settings.name)
-                                }
-                            )
-
-                        }
-                    //}
-                }
+        OnDeviceAlbumDetails(
+            navController = navController,
+            albumId = albumId,
+            onSearchClick = {
+                navController.navigate(NavRoutes.search.name)
+            },
+            onSettingsClick = {
+                navController.navigate(NavRoutes.settings.name)
             }
-
-            //**
-            Box(
-                modifier = modifier
-                    .padding(vertical = 5.dp)
-                    .align(
-                        if (playerPosition == PlayerPosition.Top) Alignment.TopCenter else Alignment.BottomCenter
-                    )
-            ) {
-                miniPlayer.invoke()
-            }
-        }
+        )
     }
 
 }
