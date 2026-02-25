@@ -216,7 +216,8 @@ class GlobalQueueViewModel() : ViewModel(), ViewModelProvider.Factory {
 
         println("LoadMasterQueue loadPersistentQueue is enabled, processing")
         Database.asyncQuery {
-            val queuedSong = queuedMediaItems()
+            clearOldEmptyQueuedMediaItems()
+            val queuedSong = try { queuedMediaItems() } catch (e: Exception) { emptyList() }
 
             if (queuedSong.isEmpty()) return@asyncQuery
 

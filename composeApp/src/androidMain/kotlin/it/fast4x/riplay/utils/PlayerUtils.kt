@@ -514,7 +514,8 @@ fun Player.loadMasterQueue(onLoaded: (Long) -> Unit) {
     if (!isPersistentQueueEnabled()) return
 
     Database.asyncQuery {
-        val queuedSong = queuedMediaItems()
+        clearOldEmptyQueuedMediaItems()
+        val queuedSong = try { queuedMediaItems() } catch (e: Exception) { emptyList() }
 
         if (queuedSong.isEmpty()) return@asyncQuery
 

@@ -1541,6 +1541,9 @@ interface Database {
     @Query("DELETE FROM QueuedMediaItem")
     fun clearQueuedMediaItems()
 
+    @Query("DELETE FROM QueuedMediaItem WHERE mediaItem IS NULL")
+    fun clearOldEmptyQueuedMediaItems()
+
     @Query("SELECT * FROM SearchQuery WHERE `query` LIKE :query ORDER BY id DESC")
     fun queries(query: String): Flow<List<SearchQuery>>
 
