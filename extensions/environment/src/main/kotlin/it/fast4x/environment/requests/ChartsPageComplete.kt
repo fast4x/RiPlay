@@ -127,7 +127,7 @@ fun parseChart(data: SectionListRenderer?): Environment.ChartsPage? {
         val listVideoItem: ArrayList<Environment.VideoItem> = arrayListOf()
         val listArtistItem: ArrayList<Environment.ArtistItem> = arrayListOf()
         var videoPlaylistId = ""
-        for (section in data.contents!!) {
+        for (section in data.contents) {
             if (section.musicCarouselShelfRenderer != null) {
                 val musicCarouselShelfRenderer = section.musicCarouselShelfRenderer
                 val pageType =
@@ -175,7 +175,7 @@ fun parseChart(data: SectionListRenderer?): Environment.ChartsPage? {
                                             )?.musicResponsiveListItemFlexColumnRenderer?.text?.runs
                                                 ?.map { Environment.Info(it) },
                                             durationText = "",
-                                            thumbnail = thumb.getBestQuality()!!.toThumbnail(),
+                                            thumbnail = thumb.getBestQuality()?.toThumbnail(),
                                             explicit = false
 
                                         )
@@ -202,7 +202,7 @@ fun parseChart(data: SectionListRenderer?): Environment.ChartsPage? {
                                             )?.musicResponsiveListItemFlexColumnRenderer?.text?.runs
                                                 ?.map { Environment.Info(it) },
                                             durationText = "",
-                                            thumbnail = thumb?.getBestQuality()!!.toThumbnail(),
+                                            thumbnail = thumb?.getBestQuality()?.toThumbnail(),
                                             explicit = false
 
                                         )

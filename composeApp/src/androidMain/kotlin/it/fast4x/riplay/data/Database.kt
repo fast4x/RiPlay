@@ -2917,7 +2917,7 @@ interface Database {
 
     @Transaction
     fun insert(mediaItem: MediaItem, block: (Song) -> Song = { it }) {
-        var title = mediaItem.mediaMetadata.title!!.toString()
+        var title = mediaItem.mediaMetadata.title.toString()
         if(!title.startsWith(EXPLICIT_PREFIX, true) && mediaItem.isExplicit){
             title = EXPLICIT_PREFIX + title
         }

@@ -412,8 +412,8 @@ fun ArtistOverview(
                                             artistPage?.artist?.channelId.let {
                                                 if (it != null) {
                                                     EnvironmentExt.unsubscribeChannel(it)
-                                                    if (artist != null) {
-                                                        Database.update(artist!!.copy(isYoutubeArtist = false))
+                                                    artist?.let {
+                                                        Database.update(it.copy(isYoutubeArtist = false))
                                                     }
                                                 }
                                             }
@@ -421,8 +421,8 @@ fun ArtistOverview(
                                             artistPage?.artist?.channelId.let {
                                                 if (it != null) {
                                                     EnvironmentExt.subscribeChannel(it)
-                                                    if (artist != null) {
-                                                        Database.update(artist!!.copy(isYoutubeArtist = true))
+                                                    artist?.let {
+                                                        Database.update(it.copy(isYoutubeArtist = true))
                                                     }
                                                 }
                                             }
@@ -581,8 +581,8 @@ fun ArtistOverview(
                             onClick = {
                                 //println("ArtistOverviewModern onClick: browseId: ${it.moreEndpoint?.browseId} params: ${it.moreEndpoint?.params}")
                                 if (it.moreEndpoint?.browseId != null) {
-                                    itemsBrowseId = it.moreEndpoint!!.browseId!!
-                                    itemsParams = it.moreEndpoint!!.params.toString()
+                                    itemsBrowseId = it.moreEndpoint?.browseId.toString()
+                                    itemsParams = it.moreEndpoint?.params.toString()
                                     itemsSectionName = it.title
                                     showArtistItems = true
                                 }
@@ -596,8 +596,8 @@ fun ArtistOverview(
                             onClick1 = {
                                 //println("ArtistOverviewModern onClick: browseId: ${it.moreEndpoint?.browseId} params: ${it.moreEndpoint?.params}")
                                 if (it.moreEndpoint?.browseId != null) {
-                                    itemsBrowseId = it.moreEndpoint!!.browseId!!
-                                    itemsParams = it.moreEndpoint!!.params.toString()
+                                    itemsBrowseId = it.moreEndpoint?.browseId.toString()
+                                    itemsParams = it.moreEndpoint?.params.toString()
                                     itemsSectionName = it.title
                                     showArtistItems = true
                                 }

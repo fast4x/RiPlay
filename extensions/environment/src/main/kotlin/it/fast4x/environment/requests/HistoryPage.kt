@@ -27,14 +27,14 @@ data class HistoryPage(
             }}")
 
             return HistorySection(
-                title = renderer.title?.runs?.firstOrNull()?.text!!,
+                title = renderer.title?.runs?.firstOrNull()?.text.toString(),
                 songs = renderer.contents?.mapNotNull {
                     it.musicResponsiveListItemRenderer?.let { it1 ->
                         fromMusicResponsiveListItemRenderer(
                             it1
                         )
                     }
-                }!!
+                } ?: emptyList()
             )
         }
 

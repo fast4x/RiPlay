@@ -16,6 +16,7 @@ import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.You
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.utils.YouTubePlayerTracker
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
 import it.fast4x.riplay.R
+import it.fast4x.riplay.utils.globalContext
 
 internal class CustomDefaultPlayerUiControllerAsListener (
     private val context: Context,
@@ -118,7 +119,7 @@ internal class CustomDefaultPlayerUiControllerAsListener (
 
     override fun onStateChange(youTubePlayer: YouTubePlayer, state: PlayerConstants.PlayerState) {
         if (state === PlayerConstants.PlayerState.PLAYING || state === PlayerConstants.PlayerState.PAUSED || state === PlayerConstants.PlayerState.VIDEO_CUED) {
-            panel?.setBackgroundColor(ContextCompat.getColor(panel!!.context, android.R.color.transparent))
+            panel?.setBackgroundColor(ContextCompat.getColor(panel?.context ?: globalContext(), android.R.color.transparent))
 //            progressbar?.visibility = View.GONE
 //
 //            playPauseButton?.visibility = View.VISIBLE
@@ -134,7 +135,7 @@ internal class CustomDefaultPlayerUiControllerAsListener (
                //progressbar?.visibility = View.VISIBLE
                 panel?.setBackgroundColor(
                     ContextCompat.getColor(
-                        panel!!.context,
+                        panel?.context ?: globalContext(),
                         android.R.color.transparent
                     )
                 )

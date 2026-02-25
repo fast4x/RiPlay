@@ -692,257 +692,257 @@ fun AppearanceSettings(
                                 println("Import appearance settings parameter ${row["Parameter"]}")
                                 when (row["Parameter"]) {
                                     "showthumbnail" -> {
-                                        showthumbnail = row["Value"]!!.toBoolean()
+                                        showthumbnail = row["Value"].toBoolean()
                                     }
                                     "playerBackgroundColors" -> {
-                                        playerBackgroundColors = PlayerBackgroundColors.entries.toTypedArray()[row["Value"]!!.toInt()]
+                                        playerBackgroundColors = PlayerBackgroundColors.entries.toTypedArray()[row["Value"]?.toInt() ?: 0]
                                     }
                                     "thumbnailRoundness" -> {
-                                        thumbnailRoundness = ThumbnailRoundness.entries.toTypedArray()[row["Value"]!!.toInt()]
+                                        thumbnailRoundness = ThumbnailRoundness.entries.toTypedArray()[row["Value"]?.toInt() ?: 0]
                                     }
                                     "playerType" -> {
-                                        playerType = PlayerType.entries.toTypedArray()[row["Value"]!!.toInt()]
+                                        playerType = PlayerType.entries.toTypedArray()[row["Value"]?.toInt() ?: 0]
                                     }
                                     "queueType" -> {
-                                        queueType = QueueType.entries.toTypedArray()[row["Value"]!!.toInt()]
+                                        queueType = QueueType.entries.toTypedArray()[row["Value"]?.toInt() ?: 0]
                                     }
                                     "noblur" -> {
-                                        noblur = row["Value"]!!.toBoolean()
+                                        noblur = row["Value"].toBoolean()
                                     }
                                     "fadingedge" -> {
-                                        fadingedge = row["Value"]!!.toBoolean()
+                                        fadingedge = row["Value"].toBoolean()
                                     }
                                     "carousel" -> {
-                                        carousel = row["Value"]!!.toBoolean()
+                                        carousel = row["Value"].toBoolean()
                                     }
                                     "carouselSize" -> {
                                         carouselSize =
-                                            CarouselSize.entries.toTypedArray()[row["Value"]!!.toInt()]
+                                            CarouselSize.entries.toTypedArray()[row["Value"]?.toInt() ?: 0]
                                     }
                                     "keepPlayerMinimized" -> {
-                                        keepPlayerMinimized = row["Value"]!!.toBoolean()
+                                        keepPlayerMinimized = row["Value"].toBoolean()
                                     }
                                     "playerInfoShowIcons" -> {
-                                        playerInfoShowIcons = row["Value"]!!.toBoolean()
+                                        playerInfoShowIcons = row["Value"].toBoolean()
                                     }
                                     "showTopActionsBar" -> {
-                                        showTopActionsBar = row["Value"]!!.toBoolean()
+                                        showTopActionsBar = row["Value"].toBoolean()
                                     }
                                     "playerControlsType" -> {
-                                        playerControlsType = PlayerControlsType.entries.toTypedArray()[row["Value"]!!.toInt()]
+                                        playerControlsType = PlayerControlsType.entries.toTypedArray()[row["Value"]?.toInt() ?: 0]
                                     }
                                     "playerInfoType" -> {
-                                        playerInfoType = PlayerInfoType.entries.toTypedArray()[row["Value"]!!.toInt()]
+                                        playerInfoType = PlayerInfoType.entries.toTypedArray()[row["Value"]?.toInt() ?: 0]
                                     }
                                     "transparentBackgroundActionBarPlayer" -> {
-                                        transparentBackgroundActionBarPlayer = row["Value"]!!.toBoolean()
+                                        transparentBackgroundActionBarPlayer = row["Value"].toBoolean()
                                     }
                                     "iconLikeType" -> {
-                                        iconLikeType = IconLikeType.entries.toTypedArray()[row["Value"]!!.toInt()]
+                                        iconLikeType = IconLikeType.entries.toTypedArray()[row["Value"]?.toInt() ?: 0]
                                     }
                                     "playerSwapControlsWithTimeline" -> {
-                                        playerSwapControlsWithTimeline = row["Value"]!!.toBoolean()
+                                        playerSwapControlsWithTimeline = row["Value"].toBoolean()
                                     }
                                     "playerEnableLyricsPopupMessage" -> {
-                                        playerEnableLyricsPopupMessage = row["Value"]!!.toBoolean()
+                                        playerEnableLyricsPopupMessage = row["Value"].toBoolean()
                                     }
                                     "actionspacedevenly" -> {
-                                        actionspacedevenly = row["Value"]!!.toBoolean()
+                                        actionspacedevenly = row["Value"].toBoolean()
                                     }
                                     "thumbnailType" -> {
-                                        thumbnailType = ThumbnailType.entries.toTypedArray()[row["Value"]!!.toInt()]
+                                        thumbnailType = ThumbnailType.entries.toTypedArray()[row["Value"]?.toInt() ?: 0]
                                     }
                                     "showvisthumbnail" -> {
-                                        showvisthumbnail = row["Value"]!!.toBoolean()
+                                        showvisthumbnail = row["Value"].toBoolean()
                                     }
                                     "buttonzoomout" -> {
-                                        buttonzoomout = row["Value"]!!.toBoolean()
+                                        buttonzoomout = row["Value"].toBoolean()
                                     }
                                     "thumbnailpause" -> {
-                                        thumbnailpause = row["Value"]!!.toBoolean()
+                                        thumbnailpause = row["Value"].toBoolean()
                                     }
                                     "showsongs" -> {
                                         showsongs = SongsNumber.entries.toTypedArray()[row["Value"]!!.toInt()]
                                     }
                                     "showalbumcover" -> {
-                                        showalbumcover = row["Value"]!!.toBoolean()
+                                        showalbumcover = row["Value"].toBoolean()
                                     }
                                     "prevNextSongs" -> {
-                                        prevNextSongs = PrevNextSongs.entries.toTypedArray()[row["Value"]!!.toInt()]
+                                        prevNextSongs = PrevNextSongs.entries.toTypedArray()[row["Value"]?.toInt() ?: 0]
                                     }
                                     "tapqueue" -> {
-                                        tapqueue = row["Value"]!!.toBoolean()
+                                        tapqueue = row["Value"].toBoolean()
                                     }
                                     "swipeUpQueue" -> {
-                                        swipeUpQueue = row["Value"]!!.toBoolean()
+                                        swipeUpQueue = row["Value"].toBoolean()
                                     }
                                     "statsfornerds" -> {
-                                        statsfornerds = row["Value"]!!.toBoolean()
+                                        statsfornerds = row["Value"].toBoolean()
                                     }
                                     "transparentbar" -> {
-                                        transparentbar = row["Value"]!!.toBoolean()
+                                        transparentbar = row["Value"].toBoolean()
                                     }
                                     "blackgradient" -> {
-                                        blackgradient = row["Value"]!!.toBoolean()
+                                        blackgradient = row["Value"].toBoolean()
                                     }
                                     "showlyricsthumbnail" -> {
-                                        showlyricsthumbnail = row["Value"]!!.toBoolean()
+                                        showlyricsthumbnail = row["Value"].toBoolean()
                                     }
                                     "expandedplayer" -> {
-                                        expandedplayer = row["Value"]!!.toBoolean()
+                                        expandedplayer = row["Value"].toBoolean()
                                     }
                                     "playerPlayButtonType" -> {
-                                        playerPlayButtonType = PlayerPlayButtonType.entries.toTypedArray()[row["Value"]!!.toInt()]
+                                        playerPlayButtonType = PlayerPlayButtonType.entries.toTypedArray()[row["Value"]?.toInt() ?: 0]
                                     }
                                     "bottomgradient" -> {
-                                        bottomgradient = row["Value"]!!.toBoolean()
+                                        bottomgradient = row["Value"].toBoolean()
                                     }
                                     "textoutline" -> {
-                                        textoutline = row["Value"]!!.toBoolean()
+                                        textoutline = row["Value"].toBoolean()
                                     }
                                     "effectRotationEnabled" -> {
-                                        effectRotationEnabled = row["Value"]!!.toBoolean()
+                                        effectRotationEnabled = row["Value"].toBoolean()
                                     }
                                     "thumbnailTapEnabled" -> {
-                                        thumbnailTapEnabled = row["Value"]!!.toBoolean()
+                                        thumbnailTapEnabled = row["Value"].toBoolean()
                                     }
                                     "showButtonPlayerAddToPlaylist" -> {
-                                        showButtonPlayerAddToPlaylist = row["Value"]!!.toBoolean()
+                                        showButtonPlayerAddToPlaylist = row["Value"].toBoolean()
                                     }
                                     "showButtonPlayerArrow" -> {
-                                        showButtonPlayerArrow = row["Value"]!!.toBoolean()
+                                        showButtonPlayerArrow = row["Value"].toBoolean()
                                     }
 //                                    "showButtonPlayerDownload" -> {
-//                                        showButtonPlayerDownload = row["Value"]!!.toBoolean()
+//                                        showButtonPlayerDownload = row["Value"].toBoolean()
 //                                    }
                                     "showButtonPlayerLoop" -> {
-                                        showButtonPlayerLoop = row["Value"]!!.toBoolean()
+                                        showButtonPlayerLoop = row["Value"].toBoolean()
                                     }
                                     "showButtonPlayerLyrics" -> {
-                                        showButtonPlayerLyrics = row["Value"]!!.toBoolean()
+                                        showButtonPlayerLyrics = row["Value"].toBoolean()
                                     }
                                     "expandedplayertoggle" -> {
-                                        expandedplayertoggle = row["Value"]!!.toBoolean()
+                                        expandedplayertoggle = row["Value"].toBoolean()
                                     }
                                     "showButtonPlayerShuffle" -> {
-                                        showButtonPlayerShuffle = row["Value"]!!.toBoolean()
+                                        showButtonPlayerShuffle = row["Value"].toBoolean()
                                     }
                                     "showButtonPlayerSleepTimer" -> {
-                                        showButtonPlayerSleepTimer = row["Value"]!!.toBoolean()
+                                        showButtonPlayerSleepTimer = row["Value"].toBoolean()
                                     }
                                     "showButtonPlayerMenu" -> {
-                                        showButtonPlayerMenu = row["Value"]!!.toBoolean()
+                                        showButtonPlayerMenu = row["Value"].toBoolean()
                                     }
                                     "showButtonPlayerStartradio" -> {
-                                        showButtonPlayerStartradio = row["Value"]!!.toBoolean()
+                                        showButtonPlayerStartradio = row["Value"].toBoolean()
                                     }
                                     "showButtonPlayerSystemEqualizer" -> {
-                                        showButtonPlayerSystemEqualizer = row["Value"]!!.toBoolean()
+                                        showButtonPlayerSystemEqualizer = row["Value"].toBoolean()
                                     }
                                     "showButtonPlayerDiscover" -> {
-                                        showButtonPlayerDiscover = row["Value"]!!.toBoolean()
+                                        showButtonPlayerDiscover = row["Value"].toBoolean()
                                     }
                                     "showButtonPlayerVideo" -> {
-                                        showButtonPlayerVideo = row["Value"]!!.toBoolean()
+                                        showButtonPlayerVideo = row["Value"].toBoolean()
                                     }
                                     "showBackgroundLyrics" -> {
-                                        showBackgroundLyrics = row["Value"]!!.toBoolean()
+                                        showBackgroundLyrics = row["Value"].toBoolean()
                                     }
                                     "showTotalTimeQueue" -> {
-                                        showTotalTimeQueue = row["Value"]!!.toBoolean()
+                                        showTotalTimeQueue = row["Value"].toBoolean()
                                     }
                                     "backgroundProgress" -> {
-                                        backgroundProgress = BackgroundProgress.entries.toTypedArray()[row["Value"]!!.toInt()]
+                                        backgroundProgress = BackgroundProgress.entries.toTypedArray()[row["Value"]?.toInt() ?: 0]
                                     }
                                     "showNextSongsInPlayer" -> {
-                                        showNextSongsInPlayer = row["Value"]!!.toBoolean()
+                                        showNextSongsInPlayer = row["Value"].toBoolean()
                                     }
                                     "showRemainingSongTime" -> {
-                                        showRemainingSongTime = row["Value"]!!.toBoolean()
+                                        showRemainingSongTime = row["Value"].toBoolean()
                                     }
                                     "clickLyricsText" -> {
-                                        clickLyricsText = row["Value"]!!.toBoolean()
+                                        clickLyricsText = row["Value"].toBoolean()
                                     }
                                     "queueDurationExpanded" -> {
-                                        queueDurationExpanded = row["Value"]!!.toBoolean()
+                                        queueDurationExpanded = row["Value"].toBoolean()
                                     }
                                     "titleExpanded" -> {
-                                        titleExpanded = row["Value"]!!.toBoolean()
+                                        titleExpanded = row["Value"].toBoolean()
                                     }
                                     "timelineExpanded" -> {
-                                        timelineExpanded = row["Value"]!!.toBoolean()
+                                        timelineExpanded = row["Value"].toBoolean()
                                     }
                                     "controlsExpanded" -> {
-                                        controlsExpanded = row["Value"]!!.toBoolean()
+                                        controlsExpanded = row["Value"].toBoolean()
                                     }
                                     "miniQueueExpanded" -> {
-                                        miniQueueExpanded = row["Value"]!!.toBoolean()
+                                        miniQueueExpanded = row["Value"].toBoolean()
                                     }
                                     "statsExpanded" -> {
-                                        statsExpanded = row["Value"]!!.toBoolean()
+                                        statsExpanded = row["Value"].toBoolean()
                                     }
                                     "actionExpanded" -> {
-                                        actionExpanded = row["Value"]!!.toBoolean()
+                                        actionExpanded = row["Value"].toBoolean()
                                     }
                                     "showCoverThumbnailAnimation" -> {
-                                        showCoverThumbnailAnimation = row["Value"]!!.toBoolean()
+                                        showCoverThumbnailAnimation = row["Value"].toBoolean()
                                     }
                                     "coverThumbnailAnimation" -> {
                                         coverThumbnailAnimation =
-                                            ThumbnailCoverType.entries.toTypedArray()[row["Value"]!!.toInt()]
+                                            ThumbnailCoverType.entries.toTypedArray()[row["Value"]?.toInt() ?: 0]
                                     }
                                     "notificationPlayerFirstIcon" -> {
                                         notificationPlayerFirstIcon =
-                                            NotificationButtons.entries.toTypedArray()[row["Value"]!!.toInt()]
+                                            NotificationButtons.entries.toTypedArray()[row["Value"]?.toInt() ?: 0]
                                     }
                                     "notificationPlayerSecondIcon" -> {
                                         notificationPlayerSecondIcon =
-                                            NotificationButtons.entries.toTypedArray()[row["Value"]!!.toInt()]
+                                            NotificationButtons.entries.toTypedArray()[row["Value"]?.toInt() ?: 0]
                                     }
                                     "enableWallpaper" -> {
-                                        enableWallpaper = row["Value"]!!.toBoolean()
+                                        enableWallpaper = row["Value"].toBoolean()
                                     }
                                     "wallpaperType" -> {
-                                        wallpaperType = WallpaperType.entries.toTypedArray()[row["Value"]!!.toInt()]
+                                        wallpaperType = WallpaperType.entries.toTypedArray()[row["Value"]?.toInt() ?: 0]
                                     }
                                     "topPadding" -> {
-                                        topPadding = row["Value"]!!.toBoolean()
+                                        topPadding = row["Value"].toBoolean()
                                     }
                                     "animatedGradient" -> {
-                                        animatedGradient = AnimatedGradient.entries.toTypedArray()[row["Value"]!!.toInt()]
+                                        animatedGradient = AnimatedGradient.entries.toTypedArray()[row["Value"]?.toInt() ?: 0]
                                     }
                                     "albumCoverRotation" -> {
-                                        albumCoverRotation = row["Value"]!!.toBoolean()
+                                        albumCoverRotation = row["Value"].toBoolean()
                                     }
                                     "blurStrength" -> {
-                                        blurStrength = row["Value"]!!.toFloat()
+                                        blurStrength = row["Value"]?.toFloat() ?: 0f
                                     }
                                     "thumbnailFadeEx" -> {
-                                        thumbnailFadeEx = row["Value"]!!.toFloat()
+                                        thumbnailFadeEx = row["Value"]?.toFloat() ?: 0f
                                     }
                                     "thumbnailFade" -> {
-                                        thumbnailFade = row["Value"]!!.toFloat()
+                                        thumbnailFade = row["Value"]?.toFloat() ?: 0f
                                     }
                                     "thumbnailSpacing" -> {
-                                        thumbnailSpacing = row["Value"]!!.toFloat()
+                                        thumbnailSpacing = row["Value"]?.toFloat() ?: 0f
                                     }
                                     "colorPaletteName" -> {
                                         colorPaletteName =
-                                            ColorPaletteName.entries.toTypedArray()[row["Value"]!!.toInt()]
+                                            ColorPaletteName.entries.toTypedArray()[row["Value"]?.toInt() ?: 0]
                                     }
                                     "colorPaletteMode" -> {
                                         colorPaletteMode =
-                                            ColorPaletteMode.entries.toTypedArray()[row["Value"]!!.toInt()]
+                                            ColorPaletteMode.entries.toTypedArray()[row["Value"]?.toInt() ?: 0]
                                     }
                                     "swipeAnimationNoThumbnail" -> {
                                         swipeAnimationNoThumbnail =
-                                            SwipeAnimationNoThumbnail.entries.toTypedArray()[row["Value"]!!.toInt()]
+                                            SwipeAnimationNoThumbnail.entries.toTypedArray()[row["Value"]?.toInt() ?: 0]
                                     }
                                     "showLikeButtonBackgroundPlayer" -> {
-                                        showLikeButtonBackgroundPlayer = row["Value"]!!.toBoolean()
+                                        showLikeButtonBackgroundPlayer = row["Value"].toBoolean()
                                     }
                                     "visualizerEnabled" -> {
-                                        visualizerEnabled = row["Value"]!!.toBoolean()
+                                        visualizerEnabled = row["Value"].toBoolean()
                                     }
 
 

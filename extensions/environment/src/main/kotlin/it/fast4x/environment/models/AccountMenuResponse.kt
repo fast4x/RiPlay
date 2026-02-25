@@ -13,7 +13,7 @@ data class AccountMenuResponse(
     ) {
         @Serializable
         data class OpenPopupAction(
-            val popup: Popup,
+            val popup: Popup?,
         ) {
             @Serializable
             data class Popup(
@@ -40,21 +40,6 @@ data class AccountMenuResponse(
                                 channelHandle = channelHandle?.runs?.first()?.text,
                                 thumbnailUrl = accountPhoto?.thumbnails?.firstOrNull()?.url?.substringBefore("=")
                             )
-
-                            fun toAccountInfoList(): List<AccountInfo> {
-                                val accountInfo = mutableListOf<AccountInfo>()
-                                accountName?.runs?.forEachIndexed { index, run ->
-                                    accountInfo.add(
-                                        AccountInfo(
-                                            name = run.text,
-                                            email = email?.runs?.get(index)?.text,
-                                            channelHandle = channelHandle?.runs?.get(index)?.text,
-                                            thumbnailUrl = accountPhoto?.thumbnails?.get(index)?.url?.substringBefore("=")
-                                        )
-                                    )
-                                }
-                                return accountInfo
-                            }
                         }
                     }
                 }

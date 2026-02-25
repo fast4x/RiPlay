@@ -2,8 +2,12 @@ package it.fast4x.riplay.extensions.lastfm
 
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
+import it.fast4x.riplay.LocalPlayerAwareWindowInsets
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import timber.log.Timber
@@ -15,6 +19,9 @@ fun LastFmAuthWebView(
     onAuthApproved: () -> Unit,
 ) {
     AndroidView(
+        modifier = Modifier
+            .windowInsetsPadding(LocalPlayerAwareWindowInsets.current)
+            .fillMaxSize(),
         factory = { context ->
             WebView(context).apply {
                 settings.javaScriptEnabled = true

@@ -622,8 +622,8 @@ fun MoodAndGenresPart(
                         .height(Dimensions.itemsVerticalPadding * 4 * 8)
                 ) {
                     items(
-                        items = homePageInit?.chips?.sortedBy { it.title } ?: emptyList(),
-                        key = { it.endpoint?.params!! }
+                        items = homePageInit.chips?.sortedBy { it.title } ?: emptyList(),
+                        key = { it.endpoint?.params.toString() }
                     ) {
                         ChipItemColored(
                             chip = it,

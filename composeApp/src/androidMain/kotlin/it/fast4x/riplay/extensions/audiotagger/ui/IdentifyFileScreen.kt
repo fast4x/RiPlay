@@ -85,12 +85,12 @@ fun IdentifyFileScreen(apiKey: String, viewModel: AudioTaggerViewModel = viewMod
             modifier = Modifier.fillMaxWidth()
         )
 
-        if (audioFile != null) {
+        audioFile?.let {
             Button(
                 onClick = {
                     val start = startTime.toIntOrNull() ?: 0
                     val len = timeLen.toIntOrNull()
-                    viewModel.identifyAudioFile(apiKey, audioFile!!, start, len)
+                    viewModel.identifyAudioFile(apiKey, it, start, len)
                 },
                 modifier = Modifier.fillMaxWidth()
             ) {

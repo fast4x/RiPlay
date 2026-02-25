@@ -1,5 +1,6 @@
 package it.fast4x.riplay.utils
 
+import android.content.Context
 import android.content.Intent
 import androidx.annotation.OptIn
 import androidx.compose.animation.AnimatedVisibility
@@ -94,6 +95,13 @@ fun RestartActivity(
             )
         }
     }
+}
+
+fun restartApp(context: Context) {
+    val intent = context.packageManager.getLaunchIntentForPackage(context.packageName)
+    intent?.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+    context.startActivity(intent)
+    Runtime.getRuntime().exit(0)
 }
 
 fun sendCommandToPlayerService(intent: Intent) {

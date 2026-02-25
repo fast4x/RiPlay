@@ -20,6 +20,7 @@ import it.fast4x.environment.requests.HomePage
 import it.fast4x.environment.requests.NewReleaseAlbumPage
 import it.fast4x.environment.requests.PlaylistContinuationPage
 import it.fast4x.environment.requests.PlaylistPage
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlin.random.Random
 
 object EnvironmentExt {
@@ -136,13 +137,13 @@ object EnvironmentExt {
         val sectionListRender = response.contents?.singleColumnBrowseResultsRenderer?.tabs?.firstOrNull()
             ?.tabRenderer?.content?.sectionListRenderer
 
-        val sections = sectionListRender?.contents!!
-            .mapNotNull { it.musicCarouselShelfRenderer }
-            .mapNotNull {
+        val sections = sectionListRender?.contents
+            ?.mapNotNull { it.musicCarouselShelfRenderer }
+            ?.mapNotNull {
                 HomePage.Section.fromMusicCarouselShelfRenderer(it)
-            }.toMutableList()
+            }?.toMutableList()
 
-        val chips = sectionListRender.header?.chipCloudRenderer?.chips?.mapNotNull {
+        val chips = sectionListRender?.header?.chipCloudRenderer?.chips?.mapNotNull {
             Environment.Chip.fromChipCloudChipRenderer(it)
         }
 
@@ -172,15 +173,17 @@ object EnvironmentExt {
 
             //println("EnvironmentExt getHomepage() continuation POST process cont $cont response $response" )
 
-            sections += response.continuationContents?.sectionListContinuation?.contents
+            sections?.plusAssign(
+                response.continuationContents?.sectionListContinuation?.contents
                 ?.mapNotNull { it.musicCarouselShelfRenderer }
                 ?.mapNotNull {
                     HomePage.Section.fromMusicCarouselShelfRenderer(it)
                 }.orEmpty()
+            )
 
             //cont += 1
         }
-        HomePage( sections = sections.distinctBy { it.title }, chips = chips, continuation = continuation)
+        HomePage( sections = sections?.distinctBy { it.title } ?: emptyList(), chips = chips, continuation = continuation)
     }
 
     suspend fun getHistory(setLogin: Boolean = false): Result<HistoryPage> = runCatching {
@@ -203,18 +206,19 @@ object EnvironmentExt {
 
     }
 
+    @OptIn(ExperimentalSerializationApi::class)
     suspend fun getArtistPage(browseId: String, setLogin: Boolean = false): Result<ArtistPage> = runCatching {
         val response = Environment.browse(browseId = browseId, setLogin = setLogin).body<BrowseResponse>()
         val sections = response.contents?.singleColumnBrowseResultsRenderer?.tabs?.firstOrNull()
             ?.tabRenderer?.content?.sectionListRenderer?.contents
-            ?.mapNotNull(ArtistPage::fromSectionListRendererContent)!!
+            ?.mapNotNull(ArtistPage::fromSectionListRendererContent)
 
         ArtistPage(
             artist = Environment.ArtistItem(
                 info = Environment.Info(
                     name = response.header?.musicImmersiveHeaderRenderer?.title?.runs?.firstOrNull()?.text
                         ?: response.header?.musicVisualHeaderRenderer?.title?.runs?.firstOrNull()?.text
-                        ?: response.header?.musicHeaderRenderer?.title?.runs?.firstOrNull()?.text!!,
+                        ?: response.header?.musicHeaderRenderer?.title?.runs?.firstOrNull()?.text,
                     endpoint = NavigationEndpoint.Endpoint.Browse(
                         browseId = browseId,
                         params = response.header?.musicImmersiveHeaderRenderer?.title?.runs?.firstOrNull()?.navigationEndpoint?.browseEndpoint?.params
@@ -226,7 +230,7 @@ object EnvironmentExt {
                 channelId = response.header?.musicImmersiveHeaderRenderer?.subscriptionButton?.subscribeButtonRenderer?.channelId,
                 subscribersCountText = response.header?.musicImmersiveHeaderRenderer?.subscriptionButton?.subscribeButtonRenderer?.subscriberCountText?.runs?.firstOrNull()?.text,
             ),
-            sections = sections,
+            sections = sections ?: emptyList(),
             description = response.header?.musicImmersiveHeaderRenderer?.description?.runs?.firstOrNull()?.text,
             subscribers = response.header?.musicImmersiveHeaderRenderer?.subscriptionButton?.subscribeButtonRenderer?.subscriberCountText?.text,
             shuffleEndpoint = response.header?.musicImmersiveHeaderRenderer?.playButton?.buttonRenderer?.navigationEndpoint?.watchEndpoint,
@@ -251,11 +255,11 @@ object EnvironmentExt {
         if (gridRenderer != null) {
             ArtistItemsPage(
                 title = gridRenderer.header?.gridHeaderRenderer?.title?.runs?.firstOrNull()?.text.orEmpty(),
-                items = gridRenderer.items!!.mapNotNull {
+                items = gridRenderer.items?.mapNotNull {
                     it.musicTwoRowItemRenderer?.let { renderer ->
                         ArtistItemsPage.fromMusicTwoRowItemRenderer(renderer)
                     }
-                },
+                } ?: emptyList(),
                 continuation = gridRenderer.continuations?.getContinuation()
             )
         } else {
@@ -269,11 +273,11 @@ object EnvironmentExt {
                                 it1
                             )
                         }
-                    }!!,
+                    } ?: emptyList(),
 //                continuation = response.contents.singleColumnBrowseResultsRenderer.tabs.firstOrNull()
 //                    ?.tabRenderer?.content?.sectionListRenderer?.contents?.firstOrNull()
 //                    ?.musicPlaylistShelfRenderer?.continuations?.getContinuation()
-                continuation = response.contents.singleColumnBrowseResultsRenderer.tabs.firstOrNull()
+                continuation = response.contents?.singleColumnBrowseResultsRenderer?.tabs?.firstOrNull()
                     ?.tabRenderer?.content?.sectionListRenderer?.contents?.firstOrNull()
                     ?.musicPlaylistShelfRenderer?.contents?.lastOrNull()
                     ?.continuationItemRenderer?.continuationEndpoint?.continuationCommand?.token
@@ -310,23 +314,23 @@ object EnvironmentExt {
         return PlaylistPage(
             playlist = Environment.PlaylistItem(
                 info = Environment.Info(
-                    name = header?.title?.runs?.firstOrNull()?.text!!,
+                    name = header?.title?.runs?.firstOrNull()?.text,
                     endpoint = NavigationEndpoint.Endpoint.Browse(
                         browseId = playlistId,
                     )
                 ),
                 songCount = 0, //header.secondSubtitle.runs?.firstOrNull()?.text,
-                thumbnail = header.thumbnail.croppedSquareThumbnailRenderer?.thumbnail?.thumbnails?.getBestQuality(),
+                thumbnail = header?.thumbnail?.croppedSquareThumbnailRenderer?.thumbnail?.thumbnails?.getBestQuality(),
                 channel = null,
                 isEditable = editable,
 //                playEndpoint = response.contents?.singleColumnBrowseResultsRenderer?.tabs?.firstOrNull()
 //                    ?.tabRenderer?.content?.sectionListRenderer?.contents?.firstOrNull()
 //                    ?.musicPlaylistShelfRenderer?.contents?.firstOrNull()?.musicResponsiveListItemRenderer
 //                    ?.overlay?.musicItemThumbnailOverlayRenderer?.content?.musicPlayButtonRenderer?.playNavigationEndpoint?.watchEndpoint,
-//                shuffleEndpoint = header.menu.menuRenderer.topLevelButtons?.firstOrNull()?.buttonRenderer?.navigationEndpoint?.watchPlaylistEndpoint!!,
+//                shuffleEndpoint = header.menu.menuRenderer.topLevelButtons?.firstOrNull()?.buttonRenderer?.navigationEndpoint?.watchPlaylistEndpoint,
 //                radioEndpoint = header.menu.menuRenderer.items?.find {
 //                    it.menuNavigationItemRenderer?.icon?.iconType == "MIX"
-//                }?.menuNavigationItemRenderer?.navigationEndpoint?.watchPlaylistEndpoint!!,
+//                }?.menuNavigationItemRenderer?.navigationEndpoint?.watchPlaylistEndpoint,
 
             ),
             description = response.contents?.twoColumnBrowseResultsRenderer?.tabs?.firstOrNull()
@@ -340,11 +344,11 @@ object EnvironmentExt {
                             it1
                         )
                     }
-                }!!,
-            songsContinuation = response.contents.singleColumnBrowseResultsRenderer.tabs.firstOrNull()
+                } ?: emptyList(),
+            songsContinuation = response.contents?.singleColumnBrowseResultsRenderer?.tabs?.firstOrNull()
                 ?.tabRenderer?.content?.sectionListRenderer?.contents?.firstOrNull()
                 ?.musicPlaylistShelfRenderer?.continuations?.getContinuation(),
-            continuation = response.contents.singleColumnBrowseResultsRenderer.tabs.firstOrNull()
+            continuation = response.contents?.singleColumnBrowseResultsRenderer?.tabs?.firstOrNull()
                 ?.tabRenderer?.content?.sectionListRenderer?.continuations?.getContinuation()
         )
     }
@@ -482,7 +486,7 @@ object EnvironmentExt {
 
     suspend fun getAlbum(browseId: String, withSongs: Boolean = true): Result<AlbumPage> = runCatching {
         val response = Environment.browse(browseId = browseId).body<BrowseResponse>()
-        val playlistId = response.microformat?.microformatDataRenderer?.urlCanonical?.substringAfterLast('=')!!
+        val playlistId = response.microformat?.microformatDataRenderer?.urlCanonical?.substringAfterLast('=')
 
         AlbumPage(
             album = Environment.AlbumItem(
@@ -499,18 +503,18 @@ object EnvironmentExt {
                             name = it.text,
                             endpoint = it.navigationEndpoint?.browseEndpoint,
                         )
-                    }!!,
+                    },
                 year = response.contents.twoColumnBrowseResultsRenderer.tabs.firstOrNull()?.tabRenderer?.content?.sectionListRenderer?.contents?.firstOrNull()?.musicResponsiveHeaderRenderer?.subtitle?.runs?.lastOrNull()?.text,
                 thumbnail = response.contents.twoColumnBrowseResultsRenderer.tabs.firstOrNull()?.tabRenderer?.content?.sectionListRenderer?.contents?.firstOrNull()?.musicResponsiveHeaderRenderer?.thumbnail?.musicThumbnailRenderer?.thumbnail?.thumbnails?.getBestQuality(),
             ),
-            songs = if (withSongs) getAlbumSongs(playlistId).getOrThrow() else emptyList(),
+            songs = playlistId?.let { if (withSongs) getAlbumSongs(it).getOrThrow() else emptyList() } ?: emptyList(),
             otherVersions = response.contents.twoColumnBrowseResultsRenderer.secondaryContents?.sectionListRenderer?.contents?.getOrNull(
                 1
             )?.musicCarouselShelfRenderer?.contents
                 ?.mapNotNull { it.musicTwoRowItemRenderer }
                 ?.map(NewReleaseAlbumPage::fromMusicTwoRowItemRenderer)
                 .orEmpty(),
-            url = response.microformat.microformatDataRenderer.urlCanonical,
+            url = response.microformat?.microformatDataRenderer?.urlCanonical,
             description = response.contents.twoColumnBrowseResultsRenderer.tabs
                 .firstOrNull()
                 ?.tabRenderer
@@ -539,7 +543,7 @@ object EnvironmentExt {
             it.musicResponsiveListItemRenderer?.let { it1 -> AlbumPage.getSong(it1) }
         }
         println("EnvironmentExt getAlbumSongs songs: $songs")
-        songs!!
+        songs ?: emptyList()
     }
 
     suspend fun getVideOrSongInfo(videoId: String): Result<VideoOrSongInfo> = runCatching {

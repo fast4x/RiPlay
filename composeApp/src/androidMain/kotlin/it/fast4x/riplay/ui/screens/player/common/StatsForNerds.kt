@@ -180,7 +180,7 @@ fun StatsForNerds(
                             style = typography().xs.medium.color(colorPalette().onOverlay)
                         )
                         BasicText(
-                            text = getQuality(format!!),
+                            text = format?.let { getQuality(it) } ?: "",
                             maxLines = 1,
                             style = typography().xs.medium.color(colorPalette().onOverlay)
                         )
@@ -224,7 +224,7 @@ fun StatsForNerds(
                     ) {
                         if (format?.songId?.startsWith(LOCAL_KEY_PREFIX) == false) {
                             BasicText(
-                                text = stringResource(R.string.quality) + " : " + getQuality(format!!),
+                                text = stringResource(R.string.quality) + " : " + format?.let{ getQuality(it) },
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis,
                                 style = typography().xs.medium.color(colorPalette().text)

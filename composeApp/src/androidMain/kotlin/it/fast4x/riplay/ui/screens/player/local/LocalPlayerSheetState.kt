@@ -25,6 +25,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.Velocity
+import androidx.compose.ui.unit.dp
 import androidx.media3.common.util.UnstableApi
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -38,15 +39,15 @@ class LocalPlayerSheetState(
     val collapsedBound: Dp,
 ) : DraggableState by draggableState {
     val dismissedBound: Dp
-        get() = animatable.lowerBound!!
+        get() = animatable.lowerBound ?: 0.dp
 
     val expandedBound: Dp
-        get() = animatable.upperBound!!
+        get() = animatable.upperBound ?: 0.dp
 
     val value by animatable.asState()
 
     val isDismissed by derivedStateOf {
-        value == animatable.lowerBound!!
+        value == animatable.lowerBound ?: 0.dp
     }
 
     val isCollapsed by derivedStateOf {
@@ -58,7 +59,7 @@ class LocalPlayerSheetState(
     }
 
     val progress by derivedStateOf {
-        1f - (animatable.upperBound!! - animatable.value) / (animatable.upperBound!! - collapsedBound)
+        1f - ((animatable.upperBound ?: 0.dp) - animatable.value) / ((animatable.upperBound ?: 0.dp) - collapsedBound)
     }
 
     fun collapse(animationSpec: AnimationSpec<Dp>) {
@@ -71,7 +72,7 @@ class LocalPlayerSheetState(
     fun expand(animationSpec: AnimationSpec<Dp>) {
         onAnchorChanged(expandedAnchor)
         coroutineScope.launch {
-            animatable.animateTo(animatable.upperBound!!, animationSpec)
+            animatable.animateTo((animatable.upperBound ?: 0.dp), animationSpec)
         }
     }
 
@@ -94,7 +95,7 @@ class LocalPlayerSheetState(
     fun dismiss(animationSpec: AnimationSpec<Dp> = SpringSpec()) {
         onAnchorChanged(dismissedAnchor)
         coroutineScope.launch {
-            animatable.animateTo(animatable.lowerBound!!, animationSpec)
+            animatable.animateTo((animatable.lowerBound ?: 0.dp), animationSpec)
         }
     }
 

@@ -251,7 +251,7 @@ fun PlaylistSongList(
                     filterCharSequence,
                     true
                 ) ?: false
-            }!!
+            } ?: emptyList()
     } else playlistPage?.songs = playlistSongs
 
     var playlistNotLikedSongs by persistList<Environment.SongItem>("")
@@ -395,7 +395,7 @@ fun PlaylistSongList(
                                 if (!isLandscape)
                                     Box {
                                         AsyncImage(
-                                            model = playlistPage!!.playlist.thumbnail?.url?.resize(
+                                            model = playlistPage?.playlist?.thumbnail?.url?.resize(
                                                 1200,
                                                 1200
                                             ),
@@ -441,7 +441,7 @@ fun PlaylistSongList(
                                 )
 
                                 BasicText(
-                                    text = playlistPage!!.songs?.size.toString() + " "
+                                    text = playlistPage?.songs?.size.toString() + " "
                                             + stringResource(R.string.songs)
                                             + " - " + formatAsTime(totalPlayTimes),
                                     style = typography().xs.medium,
@@ -692,7 +692,7 @@ fun PlaylistSongList(
                                                                     type = PopupType.Error
                                                                 )
                                                             } else if (!isYtSyncEnabled() || !playlistPreview.playlist.isYoutubePlaylist) {
-                                                                playlistPage!!.songs.forEachIndexed { index, song ->
+                                                                playlistPage?.songs?.forEachIndexed { index, song ->
                                                                     runCatching {
                                                                         coroutineScope.launch(
                                                                             Dispatchers.IO
@@ -764,12 +764,12 @@ fun PlaylistSongList(
                                                     )
                                                 } else if (!isYtSyncEnabled()) {
                                                     Database.asyncTransaction {
-                                                        playlistPage!!.songs.filter {
+                                                        playlistPage?.songs?.filter {
                                                             getLikedAt(it.asMediaItem.mediaId) in listOf(
                                                                 -1L,
                                                                 null
                                                             )
-                                                        }.forEachIndexed { _, song ->
+                                                        }?.forEachIndexed { _, song ->
                                                             mediaItemSetLiked(song.asMediaItem)
                                                         }
                                                         SmartMessage(

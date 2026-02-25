@@ -367,9 +367,9 @@ class MainActivity :
         BackupViewModel(DatabaseBackupManager(this, Database), this)
     }
 
-    private val globalQueueViewModel: GlobalQueueViewModel by lazy {
-        ViewModelProvider(AppSharedScope)[GlobalQueueViewModel::class.java]
-    }
+//    private val globalQueueViewModel: GlobalQueueViewModel by lazy {
+//        ViewModelProvider(AppSharedScope)[GlobalQueueViewModel::class.java]
+//    }
 
 
 
@@ -564,13 +564,14 @@ class MainActivity :
 
         checkIfAppIsRunningInBackground()
 
+        // todo ritune in the future add a try catch
         //registerNsdService()
-        discoverNsdServices(
-            onServiceFound = {
-                //riTuneDevices.value = it
-                riTuneDevices = it.map { it.toRiTuneDevice() }.toMutableStateList()
-            }
-        )
+//        discoverNsdServices(
+//            onServiceFound = {
+//                //riTuneDevices.value = it
+//                riTuneDevices = it.map { it.toRiTuneDevice() }.toMutableStateList()
+//            }
+//        )
 
         isclosebackgroundPlayerEnabled = preferences.getBoolean(closebackgroundPlayerKey, false)
 
@@ -1424,7 +1425,7 @@ class MainActivity :
                             LocalSelectedQueue provides selectedQueue.value,
                             LocalAudioTagger provides audioTaggerViewModel,
                             LocalBackupManager provides backupManagerViewModel,
-                            LocalGlobalQueue provides globalQueueViewModel,
+                            //LocalGlobalQueue provides globalQueueViewModel,
                             LocalOnDeviceViewModel provides onDeviceViewModel
                             //LocalInternetAvailable provides isInternetAvailable
                         ) {
@@ -1976,7 +1977,7 @@ val LocalAudioTagger = staticCompositionLocalOf<AudioTagViewModel> { error("No a
 
 val LocalBackupManager = staticCompositionLocalOf<BackupViewModel> { error("No backup manager provided") }
 
-val LocalGlobalQueue = staticCompositionLocalOf<GlobalQueueViewModel> { error("No player service queue provided") }
+//val LocalGlobalQueue = staticCompositionLocalOf<GlobalQueueViewModel> { error("No player service queue provided") }
 
 val LocalOnDeviceViewModel = staticCompositionLocalOf<OnDeviceViewModel> { error("No on device view model provided") }
 

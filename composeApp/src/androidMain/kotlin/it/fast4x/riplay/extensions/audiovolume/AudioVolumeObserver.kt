@@ -37,16 +37,18 @@ class AudioVolumeObserver(private val context: Context) {
             audioStreamType,
             listener
         )
-        context.contentResolver.registerContentObserver(
-            Settings.System.CONTENT_URI,
-            true,
-            contentObserver!!
-        )
+        contentObserver?.let {
+            context.contentResolver.registerContentObserver(
+                Settings.System.CONTENT_URI,
+                true,
+                it
+            )
+        }
     }
 
     fun unregister() {
-        if (contentObserver != null) {
-            context.contentResolver.unregisterContentObserver(contentObserver!!)
+        contentObserver?.let {
+            context.contentResolver.unregisterContentObserver(it)
             contentObserver = null
         }
     }

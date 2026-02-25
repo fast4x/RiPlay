@@ -91,7 +91,7 @@ fun GetSeekBar(
     }
     LaunchedEffect(scrubbingPosition) {
         if (scrubbingPosition != null) {
-            onSeekTo(scrubbingPosition!!.toFloat())
+            onSeekTo((scrubbingPosition ?: 0).toFloat())
         }
     }
 

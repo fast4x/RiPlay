@@ -131,7 +131,7 @@ object ImageProcessor {
             val targetWidth = (originalWidth * scale).roundToInt()
             val targetHeight = (originalHeight * scale).roundToInt()
 
-            val decodedBitmap = contentResolver.openInputStream( artworkUri )!!.use { inputStream ->
+            val decodedBitmap = contentResolver.openInputStream( artworkUri ).use { inputStream ->
                 // Calculate inSampleSize based on target dimensions for decoding
                 val decodeOptions = BitmapFactory.Options().apply {
                     inJustDecodeBounds = false

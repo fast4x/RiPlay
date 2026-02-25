@@ -1,26 +1,26 @@
 package it.fast4x.riplay.extensions.youtubelogin
 
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.webkit.CookieManager
 import android.webkit.JavascriptInterface
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.core.content.edit
 import it.fast4x.environment.Environment
 import it.fast4x.riplay.LocalPlayerAwareWindowInsets
-import it.fast4x.riplay.R
-import it.fast4x.riplay.ui.components.themed.Title
+import it.fast4x.riplay.extensions.preferences.preferences
 import it.fast4x.riplay.extensions.preferences.ytVisitorDataKey
 import it.fast4x.riplay.extensions.preferences.ytCookieKey
 import it.fast4x.riplay.extensions.preferences.ytAccountNameKey
@@ -29,7 +29,9 @@ import it.fast4x.riplay.extensions.preferences.ytAccountChannelHandleKey
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.extensions.preferences.ytAccountThumbnailKey
 import it.fast4x.riplay.extensions.preferences.ytDataSyncIdKey
+import it.fast4x.riplay.utils.restartApp
 import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
@@ -41,119 +43,117 @@ fun YouTubeLogin(
 ) {
 
     val scope = rememberCoroutineScope()
-
-    var visitorData by rememberPreference(key = ytVisitorDataKey, defaultValue = "") //Environment._uMYwa66ycM
-    var dataSyncId by rememberPreference(key = ytDataSyncIdKey, defaultValue = "")
-    var cookie by rememberPreference(key = ytCookieKey, defaultValue = "")
-    var accountName by rememberPreference(key = ytAccountNameKey, defaultValue = "")
-    var accountEmail by rememberPreference(key = ytAccountEmailKey, defaultValue = "")
-    var accountChannelHandle by rememberPreference(key = ytAccountChannelHandleKey, defaultValue = "")
-    var accountThumbnail by rememberPreference(key = ytAccountThumbnailKey, defaultValue = "")
-
     var webView: WebView? = null
 
-    Column (
-        verticalArrangement = Arrangement.Top,
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier.fillMaxSize().windowInsetsPadding(LocalPlayerAwareWindowInsets.current)
-    ) {
-        //Row(modifier = Modifier.fillMaxWidth()) {
-            Title("Login",
-                icon = R.drawable.chevron_down,
-                onClick = { onLogin(cookie) }
-            )
-        //}
 
-        AndroidView(
-            modifier = Modifier
-                .windowInsetsPadding(LocalPlayerAwareWindowInsets.current)
-                .fillMaxSize(),
-            factory = { context ->
-                WebView(context).apply {
-                    webViewClient = object : WebViewClient() {
-                        override fun doUpdateVisitedHistory(view: WebView, url: String, isReload: Boolean) {
-                            if (url.startsWith("https://music.youtube.com")) {
-                                val freshCookie = CookieManager.getInstance().getCookie(url)
-                                if (freshCookie != null && freshCookie.isNotEmpty()) {
-                                    cookie = freshCookie
-                                    println("YoutubeLogin update cookie: $cookie")
-                                }
+    AndroidView(
+        modifier = Modifier
+            .windowInsetsPadding(LocalPlayerAwareWindowInsets.current)
+            .fillMaxSize(),
+        factory = { context ->
+            var cookie = ""
+            var dataSyncId = ""
+            var visitorData = ""
+            var onPageFinished = false
 
-                                scope.launch {
-                                    Environment.accountInfo().onSuccess {
-                                        println("YoutubeLogin doUpdateVisitedHistory accountInfo() $it")
-                                        accountName = it?.name.orEmpty()
-                                        accountEmail = it?.email.orEmpty()
-                                        accountChannelHandle = it?.channelHandle.orEmpty()
-                                        accountThumbnail = it?.thumbnailUrl.orEmpty()
-                                    }.onFailure {
-                                        Timber.e("YoutubeLogin doUpdateVisitedHistory accountError YoutubeLogin: $it.stackTraceToString()")
+            WebView(context).apply {
+                webViewClient = object : WebViewClient() {
+                    override fun onPageFinished(view: WebView, url: String?) {
+                        loadUrl("javascript:Android.onRetrieveVisitorData(window.yt.config_.VISITOR_DATA)")
+                        loadUrl("javascript:Android.onRetrieveDataSyncId(window.yt.config_.DATASYNC_ID)")
+
+                        if (url?.startsWith("https://music.youtube.com") == true && !onPageFinished) {
+                            cookie = CookieManager.getInstance().getCookie(url)
+                            onPageFinished = true
+
+                            scope.launch {
+                                delay(200)
+
+                                Timber.d("YouTubeLogin: save login preferences")
+                                context.preferences.edit(commit = true) { putString(ytVisitorDataKey, visitorData) }
+                                context.preferences.edit(commit = true) { putString(ytDataSyncIdKey, dataSyncId) }
+                                context.preferences.edit(commit = true) { putString(ytCookieKey, cookie) }
+                                delay(200)
+
+                                Timber.d("YouTubeLogin: Initialize Environment")
+
+                                Environment.cookie = cookie
+                                Environment.dataSyncId = dataSyncId
+                                Environment.visitorData = visitorData
+
+                                Timber.d("YouTubeLogin: Initialized, get account info")
+
+                                Environment.accountInfo().onSuccess {
+                                    context.preferences.edit(commit = true) { putString(ytAccountNameKey, it?.name.orEmpty()) }
+                                    context.preferences.edit(commit = true) { putString(ytAccountEmailKey, it?.email.orEmpty()) }
+                                    context.preferences.edit(commit = true) { putString(ytAccountChannelHandleKey, it?.channelHandle.orEmpty()) }
+                                    context.preferences.edit(commit = true) { putString(ytAccountThumbnailKey, it?.thumbnailUrl.orEmpty()) }
+                                    delay(200)
+
+                                    Timber.d("YouTubeLogin: Logged in as ${it?.name}, restarting app...")
+
+                                    webView?.apply {
+                                        stopLoading()
+                                        clearHistory()
+                                        clearCache(true)
+                                        clearFormData()
                                     }
+
+                                    restartApp(context)
+
+                                }.onFailure {
+                                    Timber.e(it, "YouTubeLogin: Authentication error")
+                                    onPageFinished = false
                                 }
-                                println("YoutubeLogin doUpdateVisitedHistory cookie $cookie")
-                                onLogin(cookie)
                             }
                         }
-
-                        override fun onPageFinished(view: WebView, url: String?) {
-                            loadUrl("javascript:Android.onRetrieveVisitorData(window.yt.config_.VISITOR_DATA)")
-                            loadUrl("javascript:Android.onRetrieveDataSyncId(window.yt.config_.DATASYNC_ID)")
-                        }
-
-
-
                     }
-                    settings.apply {
-                        javaScriptEnabled = true
-                        setSupportZoom(true)
-                        builtInZoomControls = true
-                        displayZoomControls = false
-
-                        val userAgent = settings.userAgentString
-                        settings.userAgentString = userAgent.replace("; wv", "")
-                    }
-                    val cookieManager = CookieManager.getInstance()
-                    cookieManager.setAcceptCookie(true)
-                    cookieManager.setAcceptThirdPartyCookies(this, true)
-
-                    addJavascriptInterface(object {
-                        @JavascriptInterface
-                        fun onRetrieveVisitorData(newVisitorData: String?) {
-                            if (newVisitorData != null) {
-                                visitorData = newVisitorData
-                            }
-                        }
-                        @JavascriptInterface
-                        fun onRetrieveDataSyncId(newDataSyncId: String?) {
-                            if (newDataSyncId != null) {
-                                dataSyncId = newDataSyncId.substringBefore("||")
-                            }
-                        }
-                    }, "Android")
-                    webView = this
-
-                    val url = if (cookie.isNotEmpty()) {
-                        "https://music.youtube.com"
-                    } else {
-                        "https://accounts.google.com/ServiceLogin?continue=https%3A%2F%2Fmusic.youtube.com"
-                    }
-
-                    loadUrl(url)
-
-                    //loadUrl("https://accounts.google.com/ServiceLogin?ltmpl=music&service=youtube&passive=true&continue=https%3A%2F%2Fwww.youtube.com%2Fsignin%3Faction_handle_signin%3Dtrue%26next%3Dhttps%253A%252F%252Fmusic.youtube.com%252F")
-                    //loadUrl("https://accounts.google.com/ServiceLogin?continue=https%3A%2F%2Fmusic.youtube.com")
                 }
+
+                settings.apply {
+                    javaScriptEnabled = true
+                    setSupportZoom(true)
+                    builtInZoomControls = true
+                    displayZoomControls = false
+
+                    val userAgent = settings.userAgentString
+                    settings.userAgentString = userAgent.replace("; wv", "")
+                }
+                val cookieManager = CookieManager.getInstance()
+                cookieManager.setAcceptCookie(true)
+                cookieManager.setAcceptThirdPartyCookies(this, true)
+
+                addJavascriptInterface(object {
+                    @JavascriptInterface
+                    fun onRetrieveVisitorData(newVisitorData: String?) {
+                        if (newVisitorData != null) {
+                            visitorData = newVisitorData
+                        }
+                    }
+                    @JavascriptInterface
+                    fun onRetrieveDataSyncId(newDataSyncId: String?) {
+                        if (newDataSyncId != null) {
+                            dataSyncId = newDataSyncId.substringBefore("||")
+                        }
+                    }
+                }, "Android")
+                webView = this
+
+                val url = if (cookie.isNotEmpty()) {
+                    "https://music.youtube.com"
+                } else {
+                    "https://accounts.google.com/ServiceLogin?continue=https%3A%2F%2Fmusic.youtube.com"
+                }
+
+                loadUrl(url)
+
             }
-        )
-
-        BackHandler(enabled = webView?.canGoBack() == true) {
-            webView?.goBack()
         }
+    )
 
-
+    BackHandler(enabled = webView?.canGoBack() == true) {
+        webView?.goBack()
     }
-
-
 
 }
 

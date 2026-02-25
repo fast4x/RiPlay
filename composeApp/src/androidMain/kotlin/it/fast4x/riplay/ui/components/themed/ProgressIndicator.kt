@@ -22,7 +22,7 @@ fun ProgressIndicator(
         color = colorPalette.text,
         trackColor = colorPalette.textDisabled,
         strokeCap = strokeCap,
-        progress = { progress!! },
+        progress = { progress ?: 0f },
         gapSize = 2.dp
     )
 }
@@ -40,7 +40,7 @@ fun ProgressIndicatorCircular(
         color = colorPalette.text,
         trackColor = colorPalette.textDisabled,
         strokeCap = strokeCap,
-        progress = { progress!! },
+        progress = { progress ?: 0f },
         gapSize = 2.dp
    )
 }

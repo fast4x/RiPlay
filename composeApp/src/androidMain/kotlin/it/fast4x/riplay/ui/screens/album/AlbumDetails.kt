@@ -757,11 +757,7 @@ fun AlbumDetails(
                                                                             it
                                                                         )
                                                                         Database.asyncTransaction {
-                                                                            update(
-                                                                                album!!.copy(
-                                                                                    isYoutubeAlbum = false
-                                                                                )
-                                                                            )
+                                                                            album?.let { update(it.copy(isYoutubeAlbum = false)) }
                                                                         }
                                                                     }
                                                                 }
@@ -773,11 +769,7 @@ fun AlbumDetails(
                                                                         )
                                                                         if (album != null) {
                                                                             Database.asyncTransaction {
-                                                                                update(
-                                                                                    album!!.copy(
-                                                                                        isYoutubeAlbum = true
-                                                                                    )
-                                                                                )
+                                                                                album?.let { update(it.copy(isYoutubeAlbum = false)) }
                                                                             }
                                                                         }
                                                                     }

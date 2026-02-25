@@ -395,9 +395,9 @@ class PlayerService : Service(),
 
     private lateinit var equalizerHelper: EqualizerHelper
 
-    private val globalQueue: GlobalQueueViewModel by lazy {
-        ViewModelProvider(AppSharedScope)[GlobalQueueViewModel::class.java]
-    }
+//    private val globalQueue: GlobalQueueViewModel by lazy {
+//        ViewModelProvider(AppSharedScope)[GlobalQueueViewModel::class.java]
+//    }
 
     private var unstartedWatchdogJob: Job? = null
 
@@ -565,7 +565,8 @@ class PlayerService : Service(),
             }
         }
 
-        globalQueue.linkController(binder)
+        //todo in the future
+        //globalQueue.linkController(binder)
 
         coroutineScope.launch(Dispatchers.IO) {
             while (isActive) {

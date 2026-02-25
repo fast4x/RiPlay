@@ -94,82 +94,82 @@ fun DiscordLoginAndGetToken(
     val scope = rememberCoroutineScope()
     var webView: WebView? = null
 
-    Column(
-        verticalArrangement = Arrangement.Top,
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier.fillMaxSize().windowInsetsPadding(LocalPlayerAwareWindowInsets.current)
-    ) {
-        Title(
-            globalContext().resources.getString(R.string.discord_connect),
-            icon = R.drawable.chevron_down,
-            onClick = { navController.navigateUp() }
-        )
+//    Column(
+//        verticalArrangement = Arrangement.Top,
+//        horizontalAlignment = Alignment.CenterHorizontally,
+//        modifier = Modifier.fillMaxSize().windowInsetsPadding(LocalPlayerAwareWindowInsets.current)
+//    ) {
+//        Title(
+//            globalContext().resources.getString(R.string.discord_connect),
+//            icon = R.drawable.chevron_down,
+//            onClick = { navController.navigateUp() }
+//        )
 
-        AndroidView(
-            modifier = Modifier
-                .windowInsetsPadding(LocalPlayerAwareWindowInsets.current)
-                .fillMaxSize(),
-            factory = { context ->
-                WebView(context).apply {
-                    layoutParams = ViewGroup.LayoutParams(
-                        ViewGroup.LayoutParams.MATCH_PARENT,
-                        ViewGroup.LayoutParams.MATCH_PARENT
-                    )
-                    webViewClient = object : WebViewClient() {
-                        @Deprecated("Deprecated in Java")
-                        override fun shouldOverrideUrlLoading(webView: WebView, url: String): Boolean {
-                            webView.stopLoading()
-                            if (url.endsWith("/app")) {
-                                webView.loadUrl(JS_SNIPPET)
-                                webView.visibility = View.GONE
-                            }
-                            return false
+    AndroidView(
+        modifier = Modifier
+            .windowInsetsPadding(LocalPlayerAwareWindowInsets.current)
+            .fillMaxSize(),
+        factory = { context ->
+            WebView(context).apply {
+                layoutParams = ViewGroup.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.MATCH_PARENT
+                )
+                webViewClient = object : WebViewClient() {
+                    @Deprecated("Deprecated in Java")
+                    override fun shouldOverrideUrlLoading(webView: WebView, url: String): Boolean {
+                        webView.stopLoading()
+                        if (url.endsWith("/app")) {
+                            webView.loadUrl(JS_SNIPPET)
+                            webView.visibility = View.GONE
                         }
-                        override fun onPageFinished(view: WebView, url: String) {
-                            if (url.contains("/app")) {
-                                view.loadUrl(JS_SNIPPET)
-                            }
-                        }
+                        return false
                     }
-                    webChromeClient = object : WebChromeClient() {
-                        override fun onJsAlert(
-                            view: WebView,
-                            url: String,
-                            message: String,
-                            result: JsResult,
-                        ): Boolean {
-                            scope.launch(Dispatchers.Main) {
-                                val token = message
-                                val user = fetchDiscordUser(token)
-                                if (user != null) {
-                                    onGetToken(token, user.first, user.second)
-                                } else {
-                                    onGetToken(token, "", "")
-                                }
-                                navController.navigateUp()
-                            }
-                            this@apply.visibility = View.GONE
-                            result.confirm()
-                            return true
+                    override fun onPageFinished(view: WebView, url: String) {
+                        if (url.contains("/app")) {
+                            view.loadUrl(JS_SNIPPET)
                         }
                     }
-                    settings.javaScriptEnabled = true
-                    settings.domStorageEnabled = true
-                    if (Build.MANUFACTURER.equals(MOTOROLA, ignoreCase = true)) {
-                        settings.userAgentString = SAMSUNG_USER_AGENT
-                    }
-                    val cookieManager = CookieManager.getInstance()
-                    cookieManager.removeAllCookies(null)
-                    cookieManager.flush()
-                    WebStorage.getInstance().deleteAllData()
-                    webView = this
-                    loadUrl("https://discord.com/login")
                 }
+                webChromeClient = object : WebChromeClient() {
+                    override fun onJsAlert(
+                        view: WebView,
+                        url: String,
+                        message: String,
+                        result: JsResult,
+                    ): Boolean {
+                        scope.launch(Dispatchers.Main) {
+                            val token = message
+                            val user = fetchDiscordUser(token)
+                            if (user != null) {
+                                onGetToken(token, user.first, user.second)
+                            } else {
+                                onGetToken(token, "", "")
+                            }
+                            navController.navigateUp()
+                        }
+                        this@apply.visibility = View.GONE
+                        result.confirm()
+                        return true
+                    }
+                }
+                settings.javaScriptEnabled = true
+                settings.domStorageEnabled = true
+                if (Build.MANUFACTURER.equals(MOTOROLA, ignoreCase = true)) {
+                    settings.userAgentString = SAMSUNG_USER_AGENT
+                }
+                val cookieManager = CookieManager.getInstance()
+                cookieManager.removeAllCookies(null)
+                cookieManager.flush()
+                WebStorage.getInstance().deleteAllData()
+                webView = this
+                loadUrl("https://discord.com/login")
             }
-        )
-
-        BackHandler(enabled = webView?.canGoBack() == true) {
-            webView?.goBack()
         }
+    )
+
+    BackHandler(enabled = webView?.canGoBack() == true) {
+        webView?.goBack()
     }
+    //}
 }

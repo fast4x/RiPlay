@@ -13,10 +13,10 @@ data class Mood(
     val params: String?
 ) : Parcelable {
     constructor(parcel: Parcel) : this(
-        name = parcel.readString()!!,
+        name = parcel.readString().toString(),
         color = Color(parcel.readLong()),
-        browseId = parcel.readString()!!,
-        params = parcel.readString()!!
+        browseId = parcel.readString().toString(),
+        params = parcel.readString().toString()
     )
 
     override fun writeToParcel(parcel: Parcel, flags: Int) = with(parcel) {
@@ -47,9 +47,9 @@ data class Chip(
     val params: String?
 ) : Parcelable {
     constructor(parcel: Parcel) : this(
-        name = parcel.readString()!!,
-        browseId = parcel.readString()!!,
-        params = parcel.readString()!!
+        name = parcel.readString().toString(),
+        browseId = parcel.readString().toString(),
+        params = parcel.readString().toString()
     )
 
     override fun writeToParcel(parcel: Parcel, flags: Int) = with(parcel) {

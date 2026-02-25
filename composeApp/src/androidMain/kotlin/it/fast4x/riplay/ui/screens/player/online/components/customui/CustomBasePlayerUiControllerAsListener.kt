@@ -9,6 +9,7 @@ import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.Abs
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.utils.YouTubePlayerTracker
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
 import it.fast4x.riplay.R
+import it.fast4x.riplay.utils.globalContext
 
 internal class CustomBasePlayerUiControllerAsListener (
     private val context: Context,
@@ -42,12 +43,12 @@ internal class CustomBasePlayerUiControllerAsListener (
 
     override fun onStateChange(youTubePlayer: YouTubePlayer, state: PlayerConstants.PlayerState) {
         if (state === PlayerConstants.PlayerState.PLAYING || state === PlayerConstants.PlayerState.PAUSED || state === PlayerConstants.PlayerState.VIDEO_CUED) {
-            panel?.setBackgroundColor(ContextCompat.getColor(panel!!.context, android.R.color.transparent))
+            panel?.setBackgroundColor(ContextCompat.getColor(panel?.context ?: globalContext(), android.R.color.transparent))
         } else {
             if (state === PlayerConstants.PlayerState.BUFFERING) {
                 panel?.setBackgroundColor(
                     ContextCompat.getColor(
-                        panel!!.context,
+                        panel?.context ?: globalContext(),
                         android.R.color.transparent
                     )
                 )

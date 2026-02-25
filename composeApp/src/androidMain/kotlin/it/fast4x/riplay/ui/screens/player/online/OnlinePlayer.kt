@@ -576,7 +576,7 @@ fun OnlinePlayer(
 
 
     if (sleepTimerMillisLeft != null)
-        if (sleepTimerMillisLeft!! < timeRemaining.toLong() && !delayedSleepTimer) {
+        if ((sleepTimerMillisLeft ?: 0) < timeRemaining.toLong() && !delayedSleepTimer) {
             binder.cancelSleepTimer()
             binder.startSleepTimer(timeRemaining.toLong())
             delayedSleepTimer = true
@@ -2010,7 +2010,7 @@ fun OnlinePlayer(
                                     )
                                 } else {
                                     BasicText(
-                                        text = formatAsDuration(sleepTimerMillisLeft!!),
+                                        text = formatAsDuration(sleepTimerMillisLeft ?: 0),
                                         style = typography().l.semiBold,
                                         modifier = Modifier
                                             .clickable(onClick = {

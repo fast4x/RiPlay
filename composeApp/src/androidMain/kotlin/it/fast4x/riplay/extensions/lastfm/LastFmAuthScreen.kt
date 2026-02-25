@@ -50,16 +50,16 @@ fun LastFmAuthScreen(
                 Text("Generate Token...")
             }
             is AuthState.WebViewReady -> {
-                Column(
-                    verticalArrangement = Arrangement.Top,
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier.fillMaxSize().windowInsetsPadding(LocalPlayerAwareWindowInsets.current)
-                ) {
-                    Title(
-                        globalContext().resources.getString(it.fast4x.riplay.R.string.lastfm_connect),
-                        icon = R.drawable.chevron_down,
-                        onClick = { navController.navigateUp() }
-                    )
+//                Column(
+//                    verticalArrangement = Arrangement.Top,
+//                    horizontalAlignment = Alignment.CenterHorizontally,
+//                    modifier = Modifier.fillMaxSize().windowInsetsPadding(LocalPlayerAwareWindowInsets.current)
+//                ) {
+//                    Title(
+//                        globalContext().resources.getString(it.fast4x.riplay.R.string.lastfm_connect),
+//                        icon = R.drawable.chevron_down,
+//                        onClick = { navController.navigateUp() }
+//                    )
                     LastFmAuthWebView(
                         authUrl = state.authUrl,
                         scope = viewModel.viewModelScope,
@@ -67,7 +67,7 @@ fun LastFmAuthScreen(
                             viewModel.onUserApproved(state.token)
                         }
                     )
-                }
+                //}
 
             }
             is AuthState.FetchingSession -> {

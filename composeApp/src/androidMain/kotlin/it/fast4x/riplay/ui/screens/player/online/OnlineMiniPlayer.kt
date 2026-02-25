@@ -199,7 +199,7 @@ fun OnlineMiniPlayer(
                     if (like(mediaItem.mediaId, setDisLikeState(likedAt)) == 0)
                         insert(mediaItem, Song::toggleDislike)
                     }
-                if (likedAt == null || likedAt!! > 0L)
+                if (likedAt == null || (likedAt ?: 0) > 0L)
                     SmartMessage(context.resources.getString(R.string.added_to_disliked), context = context)
                 else
                     SmartMessage(context.resources.getString(R.string.removed_from_disliked), context = context)

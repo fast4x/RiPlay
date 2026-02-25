@@ -811,7 +811,7 @@ fun HomePage(
                             ) {
                                 items(
                                     items = homePage?.chips?.sortedBy { it.title } ?: emptyList(),
-                                    key = { it.endpoint?.params!! }
+                                    key = { it.endpoint?.params.toString() }
                                 ) {
                                     ChipItemColored(
                                         chip = it,

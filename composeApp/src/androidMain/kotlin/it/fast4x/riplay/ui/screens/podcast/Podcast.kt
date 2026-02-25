@@ -299,7 +299,7 @@ fun Podcast(
                             if (podcastPage != null) {
                                 if (!isLandscape)
                                     AsyncImage(
-                                        model = podcastPage!!.thumbnail.firstOrNull()?.url?.resize(
+                                        model = podcastPage?.thumbnail?.firstOrNull()?.url?.resize(
                                             1200,
                                             900
                                         ),
@@ -332,7 +332,7 @@ fun Podcast(
                                 )
 
                                 BasicText(
-                                    text = podcastPage!!.listEpisode.size.toString()
+                                    text = podcastPage?.listEpisode?.size.toString()
                                             + " " + stringResource(R.string.songs),
                                             //+ " - " + formatAsTime(totalPlayTimes),
                                     style = typography().xs.medium,
