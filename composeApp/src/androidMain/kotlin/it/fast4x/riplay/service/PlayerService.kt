@@ -1377,9 +1377,8 @@ class PlayerService : Service(),
     private fun updateDiscordPresence() {
         if (!isAtLeastAndroid81) return
 
-        Timber.d("PlayerService UpdateDiscordPresence")
         currentSong.value?.asMediaItem?.let{
-            Timber.d("PlayerService UpdateDiscordPresence inside isLocal ${it.isLocal}")
+
             if (!it.isLocal) {
                 updateDiscordPresenceWithOnlinePlayer(
                     discordPresenceManager,
@@ -1699,7 +1698,7 @@ class PlayerService : Service(),
 
             if (!it.isLocal){
 
-                Timber.d("PlayerService onMediaItemTransition system volume ${getSystemMediaVolume()}")
+                //Timber.d("PlayerService onMediaItemTransition system volume ${getSystemMediaVolume()}")
 
                 if (!GlobalSharedData.riTuneCastActive)
                     _internalOnlinePlayer.value?.cueVideo(it.mediaId, playFromSecond)
@@ -1984,7 +1983,7 @@ class PlayerService : Service(),
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                 telephonyManager?.registerTelephonyCallback(
                     ContextCompat.getMainExecutor(this),
-                    telephonyCallback!!
+                    telephonyCallback
                 )
             } else {
                 @Suppress("DEPRECATION")
@@ -1994,7 +1993,7 @@ class PlayerService : Service(),
 
         } else {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                telephonyManager?.unregisterTelephonyCallback(telephonyCallback!!)
+                telephonyManager?.unregisterTelephonyCallback(telephonyCallback)
             } else {
                 @Suppress("DEPRECATION")
                 telephonyManager?.listen(phoneStateListener, PhoneStateListener.LISTEN_NONE)
@@ -2026,7 +2025,7 @@ class PlayerService : Service(),
                 .setOnAudioFocusChangeListener(this)
                 .build()
 
-            val result = audioManager.requestAudioFocus(focusRequest!!)
+            val result = audioManager.requestAudioFocus(focusRequest)
             result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED
         } else {
             @Suppress("DEPRECATION")
@@ -2203,7 +2202,7 @@ class PlayerService : Service(),
     }
 
     private fun updateUnifiedMediasession() {
-        Timber.d("PlayerService updateUnifiedMediasessionData")
+
         val currentMediaItem = binder.player.currentMediaItem
 
         unifiedMediaSession.setMetadata(
