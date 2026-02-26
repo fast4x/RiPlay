@@ -364,6 +364,9 @@ class PlayerService : Service(),
     private var onlineListenedDurationMs = 0L
     private var lastOnlineMediaId: String? = null
 
+    private var lastPlayNextTime = 0L
+    private var debounceDelayMs = 2000L
+
     /**
      * end online configuration
      */
@@ -600,9 +603,10 @@ class PlayerService : Service(),
                         if (currentSecond.value >= currentDuration.value - 0.5f) {
                             if (_internalOnlinePlayerState.value == PlayerConstants.PlayerState.PLAYING) {
                                 Timber.d("PlayerService Watchdog: End of online track detected by time, forcing playNext()")
-                                withContext(Dispatchers.Main) {
-                                    player.playNext()
-                                }
+                                handlePlayNext()
+//                                withContext(Dispatchers.Main) {
+//                                    player.playNext()
+//                                }
 
                             }
                         }
@@ -807,9 +811,8 @@ class PlayerService : Service(),
                         if (localMediaItem?.isLocal == true) player.currentPosition.div(1000)
                             .toInt() else currentSecond.value.toInt()
                     if (medleyDuration.toInt() <= seconds) {
-                        //delay(1.seconds * (medleyDuration.toInt() + 2))
-                        //handleSkipToNext()
-                        player.playNext()
+                        handlePlayNext()
+                        //player.playNext()
                     }
                 }
             }
@@ -973,8 +976,8 @@ class PlayerService : Service(),
                 if (shakeCounter >= 1) {
                     //Toast.makeText(applicationContext, "Shaked $shakeCounter times", Toast.LENGTH_SHORT).show()
                     shakeCounter = 0
-                    //handleSkipToNext()
-                    player.playNext()
+                    handlePlayNext()
+                    //player.playNext()
                 }
 
             }
@@ -1086,7 +1089,6 @@ class PlayerService : Service(),
         player.skipSilenceEnabled = preferences.getBoolean(skipSilenceKey, false)
         player.pauseAtEndOfMediaItems = true
     }
-
 
     private fun initializeOnlinePlayer() {
 
@@ -1317,9 +1319,8 @@ class PlayerService : Service(),
                     if (!isSkipMediaOnErrorEnabled()) return
                     val prev = binder.player.currentMediaItem ?: return
 
-                    //binder.player.playNext()
-                    //handleSkipToNext()
-                    player.playNext()
+                    handlePlayNext()
+                    //player.playNext()
 
                     SmartMessage(
                         message = this@PlayerService.getString(
@@ -1661,7 +1662,8 @@ class PlayerService : Service(),
         if (lastOnlineMediaId == newMediaId) {
             Timber.d("PlayerService: Transition ignored, same MediaID ($newMediaId) skipped")
 
-            binder.player.playNext()
+            handlePlayNext()
+            //binder.player.playNext()
 
             //return
         }
@@ -1680,15 +1682,15 @@ class PlayerService : Service(),
 
 
         if (parentalControlEnabled && mediaItem.isExplicit) {
-            //handleSkipToNext()
-            player.playNext()
+            handlePlayNext()
+            //player.playNext()
             SmartMessage(resources.getString(R.string.error_message_parental_control_restricted), context = this@PlayerService)
             return
         }
 
         if (excludeIfIsVideoEnabled && mediaItem.isVideo) {
-            //handleSkipToNext()
-            player.playNext()
+            handlePlayNext()
+            //player.playNext()
             SmartMessage(getString(R.string.warning_skipped_video), context = this@PlayerService)
             return
         }
@@ -1698,8 +1700,8 @@ class PlayerService : Service(),
             blacklisted = Database.blacklisted(mediaItem.mediaId) > 0
         }
         if (blacklisted) {
-            //handleSkipToNext()
-            player.playNext()
+            handlePlayNext()
+            //player.playNext()
             SmartMessage(getString(R.string.warning_skipped_blacklisted_song), context = this@PlayerService)
             return
         }
@@ -1727,14 +1729,16 @@ class PlayerService : Service(),
                         )
                     }
                 //_internalOnlinePlayer.value?.loadVideo(it.mediaId, playFromSecond)
-                //startFadeAnimator(player = _internalOnlinePlayer, volumeDevice = getSystemMediaVolume(), duration = 5, fadeIn = true) {}
+                //startFadeAnimator(player = _internalOnlinePlayer, volumeDevice = getSystemMedifaVolume(), duration = 5, fadeIn = true) {}
                 //if (checkVolumeLevel)
                 _internalOnlinePlayer.value?.setVolume(getSystemMediaVolume())
 
             }
 
             bitmapProvider?.load(it.mediaMetadata.artworkUri) { bitmap ->
-                setWallpaper(this, bitmap)
+                coroutineScope.launch {
+                    setWallpaper(this@PlayerService, bitmap)
+                }
             }
         }
 
@@ -2355,8 +2359,8 @@ class PlayerService : Service(),
                                 }
                         }
                     }
-                    Action.next.value -> player.playNext() //handleSkipToNext() //it.player.playNext()
-                    Action.previous.value -> player.playPrevious() //handleSkipToPrevious()
+                    Action.next.value -> handlePlayNext() //player.playNext()
+                    Action.previous.value -> player.playPrevious()
                     Action.like.value -> {
                         it.toggleLike()
                     }
@@ -2929,7 +2933,8 @@ class PlayerService : Service(),
                                     Timber.d("PlayerService initializePositionObserver Repeat: Default fired")
                                     if (hasNext) {
                                         lastProcessedIndex = binder.player.currentMediaItemIndex
-                                        binder.player.playNext()
+                                        handlePlayNext()
+                                        //binder.player.playNext()
                                         firedNext = true
                                         Timber.d("PlayerService initializePositionObserver Repeat: Default fired next")
                                     }
@@ -2945,7 +2950,8 @@ class PlayerService : Service(),
                                         Timber.d("PlayerService initializePositionObserver Repeat: RepeatAll fired first")
                                     } else {
                                         lastProcessedIndex = player.currentMediaItemIndex
-                                        player.playNext()
+                                        handlePlayNext()
+                                        //player.playNext()
                                         Timber.d("PlayerService initializePositionObserver Repeat: RepeatAll fired next")
                                     }
                                 //}
@@ -2974,7 +2980,7 @@ class PlayerService : Service(),
 //        return volumeOnlinePlayer
     }
 
-    fun setWallpaper(context: Context, bitmap: Bitmap) {
+    suspend fun setWallpaper(context: Context, bitmap: Bitmap) {
         val enabled = preferences.getBoolean(enableWallpaperKey, false)
         //Timber.d("PlayerService setWallpaper enabled $enabled")
         if (!enabled) return
@@ -3307,12 +3313,10 @@ class PlayerService : Service(),
 
                     },
                     onPlayNext = {
-                        //it.player.playNext()
-                        //handleSkipToNext()
-                        player.playNext()
+                        handlePlayNext()
+                        //player.playNext()
                     },
                     onPlayPrevious = {
-                        //handleSkipToPrevious()
                         player.playPrevious()
                     },
                     onPlayQueueItem = { queueId ->
@@ -3364,6 +3368,21 @@ class PlayerService : Service(),
                     }
                 )
             )
+        }
+    }
+
+    fun handlePlayNext() {
+        val now = System.currentTimeMillis()
+        if (now - lastPlayNextTime < debounceDelayMs) {
+            Timber.d("PlayerService handlePlayNext ignored (too fast)")
+            return
+        }
+        lastPlayNextTime = now
+        Timber.d("PlayerService handlePlayNext executed")
+        coroutineScope.launch {
+            withContext(Dispatchers.Main) {
+                player.playNext()
+            }
         }
     }
 
