@@ -442,7 +442,7 @@ class PlayerService : Service(),
 
         statePersistence = PlayerStatePersistence(this)
 
-        //connectivityManager = getSystemService()!!
+        //connectivityManager = getSystemService()
 
         // INITIALIZATION
         preferences.registerOnSharedPreferenceChangeListener(this)
@@ -455,6 +455,7 @@ class PlayerService : Service(),
         startForeground()
 
         initializeBitmapProvider()
+        initializeAudioManager()
         initializeAudioVolumeObserver()
         initializeAudioEqualizer()
         initializeLegacyNotificationActionReceiver()
@@ -467,11 +468,11 @@ class PlayerService : Service(),
         initializeSongCoverInLockScreen()
         initializeMedleyMode()
         initializePlaybackParameters()
-        initializeAudioManager()
+
         //initializeAudioFocusHelper()
         //initializeTelephonyManager(true)
 
-        initializeRiTune()
+        //initializeRiTune()
         initializeDiscordPresence()
 
         // INITIALIZATION
@@ -581,7 +582,7 @@ class PlayerService : Service(),
                         }
                     }
                     //fallback if online player not fire state ended
-                    if (currentDuration.value > 0) {
+                    if (currentDuration.value > 0 && preferences.getEnum(queueLoopTypeKey, QueueLoopType.Default) == QueueLoopType.Default) {
                         if (currentSecond.value >= currentDuration.value - 0.5f) {
                             if (_internalOnlinePlayerState.value == PlayerConstants.PlayerState.PLAYING) {
                                 Timber.d("PlayerService Watchdog: End of online track detected by time, forcing playNext()")
@@ -926,8 +927,8 @@ class PlayerService : Service(),
             Objects.requireNonNull(sensorManager)
                 ?.registerListener(
                     sensorListener,
-                    sensorManager!!
-                        .getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
+                    sensorManager
+                        ?.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
                     SensorManager.SENSOR_DELAY_NORMAL
                 )
         }
@@ -1340,7 +1341,7 @@ class PlayerService : Service(),
     }
 
     private fun initializeAudioVolumeObserver() {
-        audioVolumeObserver = AudioVolumeObserver(this)
+        audioVolumeObserver = AudioVolumeObserver(this, audioManager)
         audioVolumeObserver.register(AudioManager.STREAM_MUSIC, this)
     }
 
