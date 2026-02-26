@@ -2976,14 +2976,12 @@ class PlayerService : Service(),
 
     fun setWallpaper(context: Context, bitmap: Bitmap) {
         val enabled = preferences.getBoolean(enableWallpaperKey, false)
-        Timber.d("PlayerService setWallpaper enabled $enabled")
+        //Timber.d("PlayerService setWallpaper enabled $enabled")
         if (!enabled) return
         val wallpaperTarget = preferences.getEnum(wallpaperTypeKey, WallpaperType.Lockscreen)
 
         CoroutineScope(Dispatchers.IO).launch {
             val wallpaperManager = WallpaperManager.getInstance(context) ?: return@launch
-
-            Timber.d("PlayerService setWallpaper get instance and target $wallpaperTarget bitmap width ${bitmap.width} height ${bitmap.height}")
 
             try {
 
