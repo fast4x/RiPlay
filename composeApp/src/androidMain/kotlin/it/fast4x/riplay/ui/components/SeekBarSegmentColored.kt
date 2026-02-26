@@ -29,6 +29,8 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -59,6 +61,15 @@ import it.fast4x.riplay.utils.isLocal
 import it.fast4x.riplay.utils.typography
 import kotlin.math.roundToInt
 import kotlin.math.roundToLong
+import androidx.compose.ui.graphics.lerp
+import androidx.media3.common.MediaItem
+import androidx.media3.common.Player
+import androidx.media3.common.Timeline
+import it.fast4x.riplay.ui.styling.collapsedPlayerProgressBar
+import it.fast4x.riplay.utils.DisposableListener
+import it.fast4x.riplay.utils.shouldBePlaying
+import it.fast4x.riplay.utils.windows
+import timber.log.Timber
 
 @OptIn(UnstableApi::class)
 @Composable
@@ -92,13 +103,30 @@ fun SeekBarSegmentColored(
     }
 
     val binder = LocalPlayerServiceBinder.current
-    val mediaItem = binder?.player?.currentMediaItem
+    var localMediaItem by remember { mutableStateOf<MediaItem?>(null) }
     val buffered = binder?.onlinePlayerBufferedFraction?.collectAsState()
-
-    val timeText = remember(draggingValue) { formatMillis(if (mediaItem?.isLocal == true) draggingValue  else draggingValue * 1000) }
     val colorPalette = colorPalette()
 
-    val segmentColors = remember(mediaItem?.mediaId) { generateGradientPalette(mediaItem?.mediaId ?: "", steps = 30) }
+    val baseColors = listOf(colorPalette.collapsedPlayerProgressBar, colorPalette.textSecondary, colorPalette.textDisabled,colorPalette.text)
+
+    val segmentColors = remember(localMediaItem?.mediaId, baseColors) {
+        generateGradientPalette(
+            localMediaItem?.mediaId ?: "",
+            steps = 30,
+            baseColors = baseColors
+        )
+    }
+
+    binder?.player?.DisposableListener {
+        object : Player.Listener {
+            override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
+               localMediaItem = mediaItem
+            }
+        }
+    }
+
+    val timeText = remember(draggingValue) { formatMillis(if (localMediaItem?.isLocal == true) draggingValue  else draggingValue * 1000) }
+
 
     val gap = 2.dp.px
     val numSegments = segmentColors.size
@@ -214,7 +242,7 @@ fun SeekBarSegmentColored(
 
                             // Colore per il buffer (solitamente grigio chiaro)
                             // Puoi usare anche color.copy(alpha = 0.3f) se vuoi mantenere l'arcobaleno sbiadito
-                            val bufferColor = backgroundColor.copy(alpha = 0.5f)
+                            val bufferColor = color.copy(alpha = 0.5f)
 
                             if (rect.right <= bufferedWidth) {
                                 // Pezzo completamente bufferizzato
@@ -323,15 +351,39 @@ fun SeekBarSegmentColored(
     }
 }
 
+fun generateGradientPalette(
+    seed: String,
+    steps: Int = 30,
+    baseColors: List<Color>? = null
+): List<Color> {
+    Timber.d("generateGradientPalette seed: $seed steps: $steps baseColors: $baseColors")
+    if (baseColors.isNullOrEmpty()) {
+        val random = Random(seed.hashCode())
+        val startHue = random.nextFloat() * 270f
+        val endHue = startHue + 90f
 
+        return (0 until steps).map { i ->
+            val hue = startHue + (i.toFloat() / steps) * (endHue - startHue)
+            Color.hsv(hue % 360f, 0.75f, 0.9f)
+        }
+    } else {
+        if (baseColors.size == 1) return List(steps) { baseColors[0] }
 
-fun generateGradientPalette(seed: String, steps: Int = 30): List<Color> {
-    val random = Random(seed.hashCode())
-    val startHue = random.nextFloat() * 270f
-    val endHue = startHue + 90f
+        val result = mutableListOf<Color>()
+        val segments = baseColors.size - 1
+        val stepsPerSegment = steps.toFloat() / segments
 
-    return (0 until steps).map { i ->
-        val hue = startHue + (i.toFloat() / steps) * (endHue - startHue)
-        Color.hsv(hue % 360f, 0.75f, 0.9f)
+        for (i in 0 until steps) {
+            val segmentIndex = (i / stepsPerSegment).toInt().coerceIn(0, segments - 1)
+
+            val segmentProgress = (i % stepsPerSegment) / stepsPerSegment
+
+            val startColor = baseColors[segmentIndex]
+            val endColor = baseColors[segmentIndex + 1]
+
+            val color = lerp(startColor, endColor, segmentProgress)
+            result.add(color)
+        }
+        return result
     }
 }
