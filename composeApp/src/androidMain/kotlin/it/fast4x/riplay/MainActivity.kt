@@ -1457,15 +1457,9 @@ class MainActivity :
                                                 showPlayer = { localPlayerSheetState.expandSoft() },
                                                 hidePlayer = { localPlayerSheetState.collapseSoft() },
                                                 navController = navController,
-                                                //player = onlinePlayer,
-                                                //playerState = onlinePlayerState,
-                                                //currentDuration = currentDuration.value,
-                                                //currentSecond = currentSecond.value,
                                             )
                                         }
                                     },
-                                    //player = onlinePlayer,
-                                    //playerState = onlinePlayerState,
                                     openTabFromShortcut = openTabFromShortcut
                                 )
 
@@ -1498,7 +1492,6 @@ class MainActivity :
                                 val onlinePlayer: @Composable () -> Unit = {
                                     OnlinePlayer(
                                         navController = navController,
-                                        //playFromSecond = currentSecond.value,
                                         onlineCore = {
                                             binder?.player?.currentMediaItem?.let{
                                                 OnlinePlayerView(
@@ -1839,6 +1832,8 @@ class MainActivity :
 
     override fun onResume() {
         super.onResume()
+
+        binder?.onlinePlayer?.setVolume(100) // maybe is needed when webview lost audiofocus
 
         preferences.edit(commit = true) { putBoolean(appIsRunningKey, true) }
 
