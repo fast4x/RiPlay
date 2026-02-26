@@ -558,7 +558,7 @@ object Environment {
 
         accountMenu()
             .body<AccountMenuResponse>()
-            .actions?.get(0)?.openPopupAction?.popup?.multiPageMenuRenderer
+            .actions?.firstOrNull()?.openPopupAction?.popup?.multiPageMenuRenderer
             ?.header?.activeAccountHeaderRenderer
             ?.toAccountInfo()
     }.onFailure {
@@ -570,10 +570,7 @@ object Environment {
         val response =
             client.post(_qkHMinedvm) {
                 setLogin(setLogin = true)
-                setBody(
-                    AccountMenuBody()
-                        //.copy(context = DefaultWeb.client.toContext(locale, visitorData, dataSyncId))
-                )
+                setBody(AccountMenuBody())
             }
 
         return response
