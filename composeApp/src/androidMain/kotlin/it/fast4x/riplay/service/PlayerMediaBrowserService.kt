@@ -375,7 +375,7 @@ class PlayerMediaBrowserService : MediaBrowserServiceCompat(),
                                                         EnvironmentExt.getArtistItemsPage(
                                                             BrowseEndpoint(
                                                                 browseId = moreEndPointBrowseId,
-                                                                params = moreEndPointParams!!
+                                                                params = moreEndPointParams
                                                             )
                                                         ).completed().getOrNull()
                                                             ?.items
@@ -456,7 +456,7 @@ class PlayerMediaBrowserService : MediaBrowserServiceCompat(),
                                                         EnvironmentExt.getArtistItemsPage(
                                                             BrowseEndpoint(
                                                                 browseId = moreEndPointBrowseId,
-                                                                params = moreEndPointParams!!
+                                                                params = moreEndPointParams
                                                             )
                                                         ).completed().getOrNull()
                                                             ?.items

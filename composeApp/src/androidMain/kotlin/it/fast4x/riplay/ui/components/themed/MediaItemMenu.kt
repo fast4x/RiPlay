@@ -1079,7 +1079,7 @@ fun MediaItemMenu(
             LaunchedEffect(Unit, filter, playlistPreviews) {
                 Timber.d("MediaItemMenu filter $filter")
                 playlistPreviewsFiltered = if (filter != null)
-                playlistPreviews.filter { it.playlist.name.contains(filter!!, true) }
+                playlistPreviews.filter { it.playlist.name.contains(filter.toString(), true) }
                 else playlistPreviews
             }
 

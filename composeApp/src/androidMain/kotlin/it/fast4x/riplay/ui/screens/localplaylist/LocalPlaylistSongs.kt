@@ -552,7 +552,7 @@ fun LocalPlaylistSongs(
         coroutineScope.launch {
             sync()
             Database.asyncTransaction {
-                updatePlaylistName(cleanPrefix(playlistPreview!!.playlist.name), playlistId)
+                updatePlaylistName(cleanPrefix(playlistPreview?.playlist?.name ?: ""), playlistId)
             }
         }
     }
@@ -692,7 +692,7 @@ fun LocalPlaylistSongs(
                                                 browseId = row["PlaylistBrowseId"]
                                             )
                                         )
-                                    }!!
+                                    } ?: 0L
                                 } else {
                                     /**/
                                     if (row["MediaId"] != null && row["Title"] != null) {

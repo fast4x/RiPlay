@@ -353,8 +353,8 @@ fun getVisualizers(): List<Painter> {
         }
     }
 
-    val background: Bitmap = bitmapCover //ContextCompat.getDrawable(context, R.drawable.app_logo)?.toBitmap()!!
-    val bitmap: Bitmap = bitmapCover //ContextCompat.getDrawable(context, R.drawable.app_logo)?.toBitmap()!!
+    val background: Bitmap = bitmapCover
+    val bitmap: Bitmap = bitmapCover
     circleBitmap = bitmap.let { Icon.getCircledBitmap(it) }
     return listOf(
         // Basic components
