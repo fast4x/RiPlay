@@ -60,7 +60,7 @@ class AudioFocusHelper(
                 .setOnAudioFocusChangeListener(audioFocusChangeListener)
                 .build()
 
-            val result = audioManager.requestAudioFocus(focusRequest!!)
+            val result = focusRequest?.let { audioManager.requestAudioFocus(it) }
             result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED
         } else {
             @Suppress("DEPRECATION")
