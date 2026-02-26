@@ -18,7 +18,7 @@ suspend fun getOnlineMetadata(
         client = Context.DefaultWeb.client,
         signatureTimestamp = signatureTimestamp
     ).getOrNull()
-    Timber.d("getOnlineMetadata $metaData")
+    //Timber.d("getOnlineMetadata $metaData")
     return metaData
 }
 

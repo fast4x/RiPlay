@@ -6,6 +6,7 @@ import android.content.res.Resources
 import android.os.Build
 import android.util.DisplayMetrics
 import android.view.Surface
+import android.view.WindowManager
 import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ReadOnlyComposable
@@ -65,4 +66,18 @@ fun getScreenDimensions(): ScreenDimensions {
     )
 
 
+}
+
+@Suppress("DEPRECATION")
+fun getScreenRealSize(context: Context): Pair<Int, Int> {
+    val windowManager = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
+
+    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+        val bounds = windowManager.maximumWindowMetrics.bounds
+        Pair(bounds.width(), bounds.height())
+    } else {
+        val displayMetrics = android.util.DisplayMetrics()
+        windowManager.defaultDisplay.getRealMetrics(displayMetrics)
+        Pair(displayMetrics.widthPixels, displayMetrics.heightPixels)
+    }
 }

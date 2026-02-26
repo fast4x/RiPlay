@@ -6,6 +6,7 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
+import android.app.WallpaperManager
 import android.content.BroadcastReceiver
 import android.content.ComponentCallbacks2
 import android.content.Context
@@ -17,6 +18,7 @@ import android.content.SharedPreferences
 import android.content.pm.ServiceInfo
 import android.database.SQLException
 import android.graphics.Bitmap
+import android.graphics.Rect
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
@@ -32,12 +34,18 @@ import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import android.view.LayoutInflater
+import android.view.WindowManager
 import androidx.annotation.RequiresApi
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Canvas
+import androidx.compose.ui.graphics.FilterQuality
+import androidx.compose.ui.graphics.Paint
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.app.ServiceCompat
@@ -177,16 +185,19 @@ import it.fast4x.riplay.utils.seamlessQueue
 import it.fast4x.riplay.commonutils.setLikeState
 import it.fast4x.riplay.data.models.Format
 import it.fast4x.riplay.enums.LastFmScrobbleType
+import it.fast4x.riplay.enums.WallpaperType
 import it.fast4x.riplay.extensions.encryptedpreferences.encryptedPreferences
 import it.fast4x.riplay.extensions.lastfm.sendNowPlaying
 import it.fast4x.riplay.extensions.lastfm.sendScrobble
 import it.fast4x.riplay.extensions.players.getOnlineMetadata
 import it.fast4x.riplay.extensions.preferences.castToRiTuneDeviceEnabledKey
+import it.fast4x.riplay.extensions.preferences.enableWallpaperKey
 import it.fast4x.riplay.extensions.preferences.excludeSongIfIsVideoKey
 import it.fast4x.riplay.extensions.preferences.isEnabledLastfmKey
 import it.fast4x.riplay.extensions.preferences.lastfmScrobbleTypeKey
 import it.fast4x.riplay.extensions.preferences.lastfmSessionTokenKey
 import it.fast4x.riplay.extensions.preferences.parentalControlEnabledKey
+import it.fast4x.riplay.extensions.preferences.wallpaperTypeKey
 import it.fast4x.riplay.extensions.ritune.improved.RiTuneClient
 import it.fast4x.riplay.extensions.ritune.improved.models.RiTuneConnectionStatus
 import it.fast4x.riplay.extensions.ritune.improved.models.RiTunePlayerState
@@ -242,6 +253,9 @@ import kotlin.math.sqrt
 import kotlin.system.exitProcess
 import kotlin.time.Duration.Companion.minutes
 import android.os.Binder as AndroidBinder
+import androidx.core.graphics.scale
+import it.fast4x.riplay.utils.getScreenRealSize
+import androidx.core.graphics.createBitmap
 
 
 @UnstableApi
@@ -1719,7 +1733,9 @@ class PlayerService : Service(),
 
             }
 
-            bitmapProvider?.load(it.mediaMetadata.artworkUri) {}
+            bitmapProvider?.load(it.mediaMetadata.artworkUri) { bitmap ->
+                setWallpaper(this, bitmap)
+            }
         }
 
 
@@ -2608,8 +2624,6 @@ class PlayerService : Service(),
 
         val currentMediaItem = binder.player.currentMediaItem
 
-        //bitmapProvider?.load(currentMediaItem?.mediaMetadata?.artworkUri) {}
-
         createNotificationChannel()
 
         val forwardAction = NotificationCompat.Action.Builder(
@@ -2960,6 +2974,39 @@ class PlayerService : Service(),
 //        return volumeOnlinePlayer
     }
 
+    fun setWallpaper(context: Context, bitmap: Bitmap) {
+        val enabled = preferences.getBoolean(enableWallpaperKey, false)
+        Timber.d("PlayerService setWallpaper enabled $enabled")
+        if (!enabled) return
+        val wallpaperTarget = preferences.getEnum(wallpaperTypeKey, WallpaperType.Lockscreen)
+
+        CoroutineScope(Dispatchers.IO).launch {
+            val wallpaperManager = WallpaperManager.getInstance(context) ?: return@launch
+
+            Timber.d("PlayerService setWallpaper get instance and target $wallpaperTarget bitmap width ${bitmap.width} height ${bitmap.height}")
+
+            try {
+
+                when (wallpaperTarget) {
+                    WallpaperType.Home -> {
+                        wallpaperManager.setBitmap(bitmap, null, true, WallpaperManager.FLAG_SYSTEM)
+                    }
+
+                    WallpaperType.Lockscreen -> {
+                        wallpaperManager.setBitmap(bitmap, null, true, WallpaperManager.FLAG_LOCK)
+                    }
+
+                    WallpaperType.Both -> {
+                        wallpaperManager.setBitmap(bitmap, null, true, WallpaperManager.FLAG_SYSTEM)
+                        wallpaperManager.setBitmap(bitmap, null, true, WallpaperManager.FLAG_LOCK)
+                    }
+                }
+
+            } catch (e: Exception) {
+                Timber.e("PlayerService setWallpaper error ${e.stackTraceToString()}")
+            }
+        }
+    }
 
 
     open inner class Binder : AndroidBinder() {
