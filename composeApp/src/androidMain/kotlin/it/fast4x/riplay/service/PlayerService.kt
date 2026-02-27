@@ -1290,7 +1290,7 @@ class PlayerService : Service(),
                         if (error != PlayerConstants.PlayerError.INVALID_PARAMETER_IN_REQUEST)
                             SmartMessage(
                                 errorString,
-                                PopupType.Error,
+                                PopupType.Warning,
                                 //durationLong = true,
                                 context = this@PlayerService
                             )
@@ -1298,8 +1298,7 @@ class PlayerService : Service(),
                         localMediaItem?.let {
                             if (!GlobalSharedData.riTuneCastActive)
                                 youTubePlayer.cueVideo(it.mediaId, playFromSecond)
-                            else
-                                coroutineScope.launch {
+                            else coroutineScope.launch {
                                     riTuneClient.sendCommand(
                                         RiTuneRemoteCommand(
                                             "load",
