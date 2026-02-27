@@ -276,6 +276,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 import java.net.Proxy
+import java.net.URLEncoder
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -1737,15 +1738,17 @@ class MainActivity :
                         }
 
                         "search" -> uri.getQueryParameter("q")?.let { query ->
-                            navController.navigate(route = "${NavRoutes.searchResults.name}/$query")
+                            val encodedQuery = URLEncoder.encode(query, "UTF-8")
+                            navController.navigate(route = "${NavRoutes.searchResults.name}/$encodedQuery")
                         }
 
                         else -> when {
                             path == "watch" -> uri.getQueryParameter("v")
                             uri.host == "youtu.be" -> path
                             path != "watch" && uri.host == null -> {
-                                path.let { query ->
-                                    navController.navigate(route = "${NavRoutes.searchResults.name}/$query")
+                                path?.let { query ->
+                                    val encodedQuery = URLEncoder.encode(query, "UTF-8")
+                                    navController.navigate(route = "${NavRoutes.searchResults.name}/$encodedQuery")
                                 }
                                 null
                             }

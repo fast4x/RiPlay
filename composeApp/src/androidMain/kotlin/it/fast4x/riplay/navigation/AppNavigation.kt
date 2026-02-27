@@ -91,6 +91,7 @@ import it.fast4x.riplay.ui.screens.onboarding.OnboardingScreen
 import it.fast4x.riplay.ui.screens.ondevice.OnDevicePlaylistScreen
 import it.fast4x.riplay.ui.screens.player.controller.PlayerScreen
 import it.fast4x.riplay.utils.MusicIdentifier
+import java.net.URLEncoder
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalAnimationApi::class,
     ExperimentalMaterialApi::class, ExperimentalTextApi::class, ExperimentalComposeUiApi::class,
@@ -577,15 +578,12 @@ fun AppNavigation(
                 initialTextInput = query ,
                 onViewPlaylist = {},
                 onSearch = { newQuery ->
-                    navController.navigate(route = "${NavRoutes.searchResults.name}/${
-                        cleanString(
-                            newQuery
-                        )
-                    }")
+                    val encodedQuery = URLEncoder.encode(newQuery, "UTF-8")
+                    navController.navigate(route = "${NavRoutes.searchResults.name}/${encodedQuery}")
 
                     if (!context.preferences.getBoolean(pauseSearchHistoryKey, false)) {
                         Database.asyncTransaction {
-                            insert(SearchQuery(query = newQuery))
+                            insert(SearchQuery(query = encodedQuery))
                         }
                     }
                 },
