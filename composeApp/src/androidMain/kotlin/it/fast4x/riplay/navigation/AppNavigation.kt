@@ -89,7 +89,6 @@ import it.fast4x.riplay.ui.screens.events.EventsScreen
 import it.fast4x.riplay.ui.screens.moodandchip.ChipListScreen
 import it.fast4x.riplay.ui.screens.onboarding.OnboardingScreen
 import it.fast4x.riplay.ui.screens.ondevice.OnDevicePlaylistScreen
-import it.fast4x.riplay.ui.screens.player.controller.PlayerScreen
 import it.fast4x.riplay.utils.MusicIdentifier
 import java.net.URLEncoder
 
@@ -215,12 +214,6 @@ fun AppNavigation(
         composable(route = NavRoutes.ritunecontroller.name) {
             modalBottomSheetPage {
                 RiTuneControllerScreen()
-            }
-        }
-
-        composable(route = NavRoutes.controller.name) {
-            modalBottomSheetPage {
-                PlayerScreen()
             }
         }
 

@@ -254,6 +254,7 @@ import it.fast4x.riplay.extensions.preferences.checkUpdateStateKey
 import it.fast4x.riplay.extensions.preferences.resumeOrPausePlaybackWhenDeviceKey
 import it.fast4x.riplay.extensions.preferences.showSnowfallEffectKey
 import it.fast4x.riplay.ui.components.Snowfall
+import it.fast4x.riplay.ui.screens.player.unified.UnifiedMiniPlayer
 import it.fast4x.riplay.utils.WebViewInfo
 import it.fast4x.riplay.utils.downloadNewVersionInfo
 import it.fast4x.riplay.utils.getWebViewInfo
@@ -1427,6 +1428,13 @@ class MainActivity :
                                 AppNavigation(
                                     navController = navController,
                                     miniPlayer = {
+                                        /*
+                                        UnifiedMiniPlayer(
+                                            showPlayer = { localPlayerSheetState.expandSoft() },
+                                            hidePlayer = { localPlayerSheetState.collapseSoft() },
+                                            navController = navController,
+                                        )
+                                         */
 
                                         if (binder?.currentMediaItemAsSong?.isLocal == true)
                                             LocalMiniPlayer(
@@ -1441,6 +1449,7 @@ class MainActivity :
                                                 navController = navController,
                                             )
                                         }
+
                                     },
                                     openTabFromShortcut = openTabFromShortcut
                                 )

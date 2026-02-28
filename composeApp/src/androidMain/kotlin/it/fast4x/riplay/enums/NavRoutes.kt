@@ -32,7 +32,6 @@ enum class NavRoutes {
     rewind,
     listenerLevel,
     chip,
-    controller,
     onDevicePlaylist,
     blacklist,
     ritunecontroller,

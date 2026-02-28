@@ -173,6 +173,7 @@ import it.fast4x.riplay.ui.components.themed.Title2Actions
 import it.fast4x.riplay.ui.items.QueueItem
 import it.fast4x.riplay.ui.screens.player.local.LocalMiniPlayer
 import it.fast4x.riplay.ui.screens.player.online.OnlineMiniPlayer
+import it.fast4x.riplay.ui.screens.player.unified.UnifiedMiniPlayer
 import it.fast4x.riplay.ui.styling.favoritesOverlay
 import it.fast4x.riplay.ui.styling.secondary
 import it.fast4x.riplay.utils.PlayerViewModel
@@ -990,6 +991,14 @@ fun Queue(
                             .absoluteOffset(0.dp, -65.dp)
                             .align(Alignment.TopCenter)
                     ) {
+                        /*
+                        UnifiedMiniPlayer(
+                            showPlayer = {
+                                onDismiss(queueLoopType)
+                            },
+                            hidePlayer = {}
+                        )
+                        */
                         if (binderPlayer.currentMediaItem?.isLocal == true)
                             LocalMiniPlayer(
                                 showPlayer = {
@@ -1005,6 +1014,7 @@ fun Queue(
                                 hidePlayer = { hidePlayer() },
                                 navController = navController,
                             )
+                        
                     }
 
 

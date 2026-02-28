@@ -131,10 +131,7 @@ fun OnlineMiniPlayer(
     showPlayer: () -> Unit,
     hidePlayer: () -> Unit,
     navController: NavController? = null,
-    //player: MutableState<YouTubePlayer?>,
-    //playerState: MutableState<PlayerConstants.PlayerState>,
-    //currentDuration: Float,
-    //currentSecond: Float
+
 ) {
 
     val context = LocalContext.current
