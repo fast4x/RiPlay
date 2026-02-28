@@ -9,9 +9,10 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
+import it.fast4x.riplay.BuildConfig
 import it.fast4x.riplay.R
+import it.fast4x.riplay.utils.downloadNewVersionInfo
 import it.fast4x.riplay.utils.getAvailableUpdateInfo
-import it.fast4x.riplay.utils.getVersionCode
 import timber.log.Timber
 import java.io.File
 import okhttp3.OkHttpClient
@@ -31,40 +32,44 @@ class CheckUpdateWorker(context: Context, params: WorkerParameters) : CoroutineW
         return try {
             Timber.d("CheckUpdateWorker: Start...")
 
-            val client = OkHttpClient()
-            val urlVersionCode =
-                "https://raw.githubusercontent.com/fast4x/RiPlay/main/updatedVersion/updatedVersionCode.ver"
+//            val client = OkHttpClient()
+//            val urlVersionCode =
+//                "https://raw.githubusercontent.com/fast4x/RiPlay/main/updatedVersion/updatedVersionCode.ver"
+//
+//            val request = Request.Builder().url(urlVersionCode).build()
+//            val response: Response = client.newCall(request).execute()
+//
+//            if (!response.isSuccessful) {
+//                Timber.e("CheckUpdateWorker: Download failed ${response.code}")
+//                return Result.retry()
+//            }
+//
+//            val responseData = response.body?.string()
 
-            val request = Request.Builder().url(urlVersionCode).build()
-            val response: Response = client.newCall(request).execute()
 
-            if (!response.isSuccessful) {
-                Timber.e("CheckUpdateWorker: Download failed ${response.code}")
-                return Result.retry()
-            }
+//            if (responseData != null) {
+//                try {
+//                    val file = File(context.filesDir, "UpdatedVersionCode.ver")
+//                    file.writeText(responseData)
+//                    Timber.d("CheckUpdateWorker: File updated successfully with new data")
+//                } catch (e: Exception) {
+//                    Timber.e(e, "CheckUpdateWorker: Error writing file")
+//                    return Result.failure()
+//                }
+//            } else {
+//                Timber.e("CheckUpdateWorker: Response body is null")
+//                return Result.retry()
+//            }
 
-            val responseData = response.body?.string()
-
-            if (responseData != null) {
-                try {
-                    val file = File(context.filesDir, "UpdatedVersionCode.ver")
-                    file.writeText(responseData)
-                    Timber.d("CheckUpdateWorker: File updated successfully with new data")
-                } catch (e: Exception) {
-                    Timber.e(e, "CheckUpdateWorker: Error writing file")
-                    return Result.failure()
-                }
-            } else {
-                Timber.e("CheckUpdateWorker: Response body is null")
-                return Result.retry()
-            }
+            downloadNewVersionInfo()
+            Timber.d("CheckUpdateWorker: New version info downloaded")
 
             val (updatedProductName, updatedVersionName, updatedVersionCode) = getAvailableUpdateInfo()
 
             Timber.d("CheckUpdateWorker: updatedVersionName $updatedVersionName updatedProductName $updatedProductName updatedVersionCode $updatedVersionCode")
 
 
-            if (updatedVersionCode <= getVersionCode()) {
+            if (updatedVersionCode <= BuildConfig.VERSION_CODE) {
                 Timber.d("CheckUpdateWorker: No new version available")
                 return Result.success()
             }

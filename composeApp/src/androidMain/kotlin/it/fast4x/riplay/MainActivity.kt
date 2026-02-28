@@ -71,7 +71,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.staticCompositionLocalOf
-import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -91,7 +90,6 @@ import androidx.core.os.LocaleListCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
@@ -132,7 +130,6 @@ import it.fast4x.riplay.enums.PipModule
 import it.fast4x.riplay.enums.PlayerBackgroundColors
 import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.enums.ThumbnailRoundness
-import it.fast4x.riplay.extensions.nsd.discoverNsdServices
 import it.fast4x.riplay.extensions.pip.PipModuleContainer
 import it.fast4x.riplay.extensions.pip.PipModuleCover
 import it.fast4x.riplay.extensions.pip.isInPip
@@ -256,13 +253,9 @@ import it.fast4x.riplay.extensions.ondevice.OnDeviceViewModel
 import it.fast4x.riplay.extensions.preferences.checkUpdateStateKey
 import it.fast4x.riplay.extensions.preferences.resumeOrPausePlaybackWhenDeviceKey
 import it.fast4x.riplay.extensions.preferences.showSnowfallEffectKey
-import it.fast4x.riplay.extensions.ritune.toRiTuneDevice
-import it.fast4x.riplay.service.experimental.AppSharedScope
-import it.fast4x.riplay.service.experimental.GlobalQueueViewModel
 import it.fast4x.riplay.ui.components.Snowfall
-import it.fast4x.riplay.utils.GlobalSharedData.riTuneDevices
 import it.fast4x.riplay.utils.WebViewInfo
-import it.fast4x.riplay.utils.checkAndDownloadNewVersionCode
+import it.fast4x.riplay.utils.downloadNewVersionInfo
 import it.fast4x.riplay.utils.getWebViewInfo
 import it.fast4x.riplay.utils.isAtLeastAndroid12
 import it.fast4x.riplay.utils.isManufacturerWithAutostart
@@ -789,15 +782,15 @@ class MainActivity :
             }
 
 
-            // Binder observer
-            val binder = this@MainActivity.binder
-            LaunchedEffect(binder) {
-                val serviceBinder = binder ?: return@LaunchedEffect
-
-                serviceBinder.onlinePlayerState.collect { newState ->
-                    Timber.d("MainActivity: onlinePlayerState new state from Service: $newState")
-                }
-            }
+            // Binder observer experimental
+//            val binder = this@MainActivity.binder
+//            LaunchedEffect(binder) {
+//                val serviceBinder = binder ?: return@LaunchedEffect
+//
+//                serviceBinder.onlinePlayerState.collect { newState ->
+//                    Timber.d("MainActivity: onlinePlayerState new state from Service: $newState")
+//                }
+//            }
 
             val backupLauncher = rememberLauncherForActivityResult(
                 contract = ActivityResultContracts.CreateDocument("application/octet-stream")
@@ -825,18 +818,6 @@ class MainActivity :
                 ColorPaletteMode.Dark
             )
             val isPicthBlack = colorPaletteMode == ColorPaletteMode.PitchBlack
-
-            if (preferences.getEnum(
-                    checkUpdateStateKey,
-                    CheckUpdateState.Enabled
-                ) == CheckUpdateState.Enabled
-                && BuildConfig.BUILD_VARIANT == "full"
-            ) {
-                LaunchedEffect(Unit) {
-                    checkAndDownloadNewVersionCode()
-                }
-            }
-
 
             val coroutineScope = rememberCoroutineScope()
             val isSystemInDarkTheme = isSystemInDarkTheme()
@@ -1789,6 +1770,14 @@ class MainActivity :
             }
 
         }
+
+
+        if (preferences.getEnum(
+                checkUpdateStateKey,
+                CheckUpdateState.Enabled
+            ) == CheckUpdateState.Enabled
+            && BuildConfig.BUILD_VARIANT == "full"
+        ) { downloadNewVersionInfo() }
 
     }
 

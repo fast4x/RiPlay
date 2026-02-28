@@ -1,11 +1,14 @@
 package it.fast4x.riplay.utils
 
 import android.app.ActivityManager
+import android.app.UiModeManager
+import android.content.Context
+import android.content.res.Configuration
 import android.os.Build
 import androidx.annotation.RequiresApi
-
-
-
+import timber.log.Timber
+import kotlin.math.pow
+import kotlin.math.sqrt
 
 
 fun getDeviceInfo() : DeviceInfo? {
@@ -70,10 +73,29 @@ data class DeviceInfo(
 )
 
 
-@RequiresApi(Build.VERSION_CODES.M)
-private fun getAvailableMemory(): ActivityManager.MemoryInfo {
-    val activityManager = globalContext().getSystemService(ActivityManager::class.java) as ActivityManager
-    return ActivityManager.MemoryInfo().also { memoryInfo ->
-        activityManager.getMemoryInfo(memoryInfo)
-    }
+fun isTVDevice(): Boolean {
+    val uiModeManager = globalContext().getSystemService(Context.UI_MODE_SERVICE) as UiModeManager
+    val isTv = uiModeManager.currentModeType == Configuration.UI_MODE_TYPE_TELEVISION
+    Timber.d("isTVDevice: $isTv")
+    return isTv
+}
+
+fun isWatchDevice(): Boolean {
+    val uiModeManager = globalContext().getSystemService(Context.UI_MODE_SERVICE) as UiModeManager
+    val isWatch = uiModeManager.currentModeType == Configuration.UI_MODE_TYPE_WATCH
+    Timber.d("isWatchDevice: $isWatch")
+    return isWatch
+}
+
+fun isTabletDevice(): Boolean {
+    // Tablet is a device with >= 7 inch diagonal
+    val screenDimensions = getScreenDimensions()
+    val metrics = screenDimensions.metrics
+
+    val widthInches = metrics.widthPixels / metrics.xdpi
+    val heightInches = metrics.heightPixels / metrics.ydpi
+    val diagonalInches = sqrt(widthInches.toDouble().pow(2.0) + heightInches.toDouble().pow(2.0))
+    val isTablet = diagonalInches >= 7.0
+    Timber.d("isTabletDevice: $isTablet")
+    return isTablet
 }

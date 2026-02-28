@@ -133,6 +133,9 @@ fun showGridAA() = appContext().preferences.getBoolean(showGridAAKey, true)
 
 
 object GlobalSharedData {
+    var versionCode: MutableState<Int> = mutableStateOf(0)
+    var versionName: MutableState<String> = mutableStateOf("")
+    var productName: MutableState<String> = mutableStateOf("")
     var riTuneDevices = mutableStateListOf<RiTuneDevice>()
     var riTuneConnected = mutableStateOf(false)
     var riTuneError: MutableState<String?> = mutableStateOf(null)

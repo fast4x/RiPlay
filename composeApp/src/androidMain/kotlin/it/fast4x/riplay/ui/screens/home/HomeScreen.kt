@@ -32,7 +32,7 @@ import it.fast4x.riplay.data.models.toUiMood
 import it.fast4x.riplay.enums.HomePagetype
 import it.fast4x.riplay.ui.components.themed.ConfirmationDialog
 import it.fast4x.riplay.ui.components.themed.SmartMessage
-import it.fast4x.riplay.utils.CheckAvailableNewVersion
+import it.fast4x.riplay.utils.CheckForNewVersion
 import it.fast4x.riplay.extensions.preferences.checkUpdateStateKey
 import it.fast4x.riplay.extensions.preferences.enableMusicIdentifierKey
 import it.fast4x.riplay.extensions.preferences.getEnum
@@ -259,7 +259,7 @@ fun HomeScreen(
 
     if(BuildConfig.BUILD_VARIANT == "full") {
         if (showNewversionDialog && checkUpdateState == CheckUpdateState.Enabled)
-            CheckAvailableNewVersion(
+            CheckForNewVersion(
                 onDismiss = { showNewversionDialog = false },
                 updateAvailable = {}
             )

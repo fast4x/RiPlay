@@ -1,6 +1,5 @@
 package it.fast4x.riplay.ui.screens.settings
 
-import android.Manifest
 import android.content.ActivityNotFoundException
 import android.content.ComponentName
 import android.content.Intent
@@ -43,7 +42,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import androidx.core.content.ContextCompat
 import androidx.core.os.LocaleListCompat
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
@@ -168,16 +166,14 @@ import it.fast4x.riplay.extensions.preferences.showOnDeviceAAKey
 import it.fast4x.riplay.extensions.preferences.showShuffleSongsAAKey
 import it.fast4x.riplay.extensions.preferences.showTopPlaylistAAKey
 import it.fast4x.riplay.service.PlayerMediaBrowserService
-import it.fast4x.riplay.service.PlayerService
 import it.fast4x.riplay.ui.components.themed.ConfirmationDialog
 import it.fast4x.riplay.ui.components.themed.SecondaryTextButton
 import it.fast4x.riplay.ui.components.themed.settingsItem
 import it.fast4x.riplay.ui.components.themed.settingsSearchBarItem
-import it.fast4x.riplay.utils.CheckAvailableNewVersion
+import it.fast4x.riplay.utils.CheckForNewVersion
 import it.fast4x.riplay.utils.LazyListContainer
-import it.fast4x.riplay.utils.checkAndDownloadNewVersionCode
+import it.fast4x.riplay.utils.downloadNewVersionInfo
 import it.fast4x.riplay.utils.loadMasterQueue
-import it.fast4x.riplay.utils.sendCommandToPlayerService
 import kotlinx.coroutines.flow.distinctUntilChanged
 
 
@@ -482,9 +478,9 @@ fun GeneralSettings(
                         var checkUpdateNow by remember { mutableStateOf(false) }
                         if (checkUpdateNow) {
                             LaunchedEffect(Unit) {
-                                checkAndDownloadNewVersionCode()
+                                downloadNewVersionInfo()
                             }
-                            CheckAvailableNewVersion(
+                            CheckForNewVersion(
                                 onDismiss = { checkUpdateNow = false },
                                 updateAvailable = {
                                     if (!it)
