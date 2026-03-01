@@ -500,8 +500,8 @@
     <string name="background_colors">Couleur d\'arrière-plan</string>
     <string name="bg_colors_background_from_cover">Arrière-plan à partir de la pochette d\'album</string>
     <string name="bg_colors_background_from_theme">Arrière-plan à partir du thème</string>
-    <string name="bg_colors_gradient_background_from_cover">Dégrader d\'arrière-plan à partir de la pochette d\'album</string>
-    <string name="bg_colors_gradient_background_from_theme">Dégrader d\'arrière-plan à partir du thème</string>
+    <string name="bg_colors_gradient_background_from_cover">Arrière-plan dégradé à partir de la pochette d\'album</string>
+    <string name="bg_colors_gradient_background_from_theme">Arrière-plan dégradé à partir du thème</string>
     <string name="vimusic_show_search_button_in_navigation_bar">Afficher le bouton de recherche dans la barre de navigation</string>
     <string name="vismusic_only_in_left_right_navigation_bar">Uniquement pour le mode ViMusic ui dans la barre de navigation gauche/droite</string>
     <string name="enable_monthly_playlists_creation">Activer la création de playlists mensuelles</string>
