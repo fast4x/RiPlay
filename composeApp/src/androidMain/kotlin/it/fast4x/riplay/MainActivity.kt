@@ -94,6 +94,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import androidx.palette.graphics.Palette
 import coil.imageLoader
@@ -203,7 +204,6 @@ import it.fast4x.riplay.extensions.preferences.closebackgroundPlayerKey
 import it.fast4x.riplay.extensions.preferences.showAutostartPermissionDialogKey
 import it.fast4x.riplay.navigation.AppNavigation
 import it.fast4x.riplay.service.PlayerService
-import it.fast4x.riplay.utils.isLocal
 import it.fast4x.riplay.ui.components.BottomSheet
 import it.fast4x.riplay.ui.components.BottomSheetState
 import it.fast4x.riplay.ui.components.CustomModalBottomSheet
@@ -211,11 +211,7 @@ import it.fast4x.riplay.ui.components.LocalGlobalSheetState
 import it.fast4x.riplay.ui.components.rememberBottomSheetState
 import it.fast4x.riplay.ui.components.themed.CrossfadeContainer
 import it.fast4x.riplay.ui.components.themed.SmartMessage
-import it.fast4x.riplay.ui.screens.player.local.LocalMiniPlayer
-import it.fast4x.riplay.ui.screens.player.local.LocalPlayer
 import it.fast4x.riplay.ui.screens.player.local.rememberLocalPlayerSheetState
-import it.fast4x.riplay.ui.screens.player.online.OnlineMiniPlayer
-import it.fast4x.riplay.ui.screens.player.online.OnlinePlayer
 import it.fast4x.riplay.ui.screens.player.online.components.core.OnlinePlayerView
 import it.fast4x.riplay.ui.screens.settings.isYtLoggedIn
 import it.fast4x.riplay.ui.styling.Appearance
@@ -253,8 +249,10 @@ import it.fast4x.riplay.extensions.ondevice.OnDeviceViewModel
 import it.fast4x.riplay.extensions.preferences.checkUpdateStateKey
 import it.fast4x.riplay.extensions.preferences.resumeOrPausePlaybackWhenDeviceKey
 import it.fast4x.riplay.extensions.preferences.showSnowfallEffectKey
+import it.fast4x.riplay.service.PlayerState
 import it.fast4x.riplay.ui.components.Snowfall
 import it.fast4x.riplay.ui.screens.player.unified.UnifiedMiniPlayer
+import it.fast4x.riplay.ui.screens.player.unified.UnifiedPlayer
 import it.fast4x.riplay.utils.WebViewInfo
 import it.fast4x.riplay.utils.downloadNewVersionInfo
 import it.fast4x.riplay.utils.getWebViewInfo
@@ -291,9 +289,7 @@ class MainActivity :
             if (service is PlayerService.Binder) {
                 this@MainActivity.binder = service
                 service.cancelSleepTimer() // cancel sleep timer when service is connected, before app was closed
-
             }
-
 
         }
 
@@ -324,8 +320,7 @@ class MainActivity :
 
     //var riTuneDevices: MutableState<List<NsdServiceInfo>> = mutableStateOf(emptyList())
 
-    //var onlinePlayerPlayingState by mutableStateOf(false)
-    var localPlayerPlayingState: MutableState<Boolean> = mutableStateOf(false)
+    var playerState: PlayerState = PlayerState()
 
     var selectedQueue: MutableState<Queues> = mutableStateOf(defaultQueue())
 
@@ -679,11 +674,11 @@ class MainActivity :
         ) maybeEnterPip()
     }
 
-    override fun onConfigurationChanged(newConfig: Configuration) {
-        super.onConfigurationChanged(newConfig)
-        //if (newConfig.orientation in intArrayOf(Configuration.ORIENTATION_LANDSCAPE, Configuration.ORIENTATION_PORTRAIT))
-        Timber.d("MainActivity.onConfigurationChanged newConfig.orientation ${newConfig.orientation}")
-    }
+//    override fun onConfigurationChanged(newConfig: Configuration) {
+//        super.onConfigurationChanged(newConfig)
+//        //if (newConfig.orientation in intArrayOf(Configuration.ORIENTATION_LANDSCAPE, Configuration.ORIENTATION_PORTRAIT))
+//        Timber.d("MainActivity.onConfigurationChanged newConfig.orientation ${newConfig.orientation}")
+//    }
 
 
     @Composable
@@ -769,6 +764,18 @@ class MainActivity :
 
         setContent {
 
+            //Update PlayerService parameters
+//            lifecycleScope.launch {
+//                binder?.playerState?.collect { state ->
+//                    playerState = state
+//                    Timber.d("MainActivity.onCreate playerState: $state")
+//                }
+//            }
+
+            val state = binder?.playerState?.collectAsState()
+            playerState = state?.value ?: PlayerState()
+            Timber.d("MainActivity onCreate playerState: $playerState")
+
             //Check if webview component exists
             var webViewInfo by remember { mutableStateOf<WebViewInfo>(WebViewInfo()) }
             LaunchedEffect(Unit) {
@@ -781,17 +788,6 @@ class MainActivity :
                         context = this@MainActivity
                     )
             }
-
-
-            // Binder observer experimental
-//            val binder = this@MainActivity.binder
-//            LaunchedEffect(binder) {
-//                val serviceBinder = binder ?: return@LaunchedEffect
-//
-//                serviceBinder.onlinePlayerState.collect { newState ->
-//                    Timber.d("MainActivity: onlinePlayerState new state from Service: $newState")
-//                }
-//            }
 
             val backupLauncher = rememberLauncherForActivityResult(
                 contract = ActivityResultContracts.CreateDocument("application/octet-stream")
@@ -822,7 +818,8 @@ class MainActivity :
 
             val coroutineScope = rememberCoroutineScope()
             val isSystemInDarkTheme = isSystemInDarkTheme()
-            val navController = rememberNavController()
+            var navController: NavHostController? = null
+
             var animatedGradient by rememberPreference(
                 animatedGradientKey,
                 AnimatedGradient.Linear
@@ -913,7 +910,6 @@ class MainActivity :
                 with(preferences) {
                     val colorPaletteName =
                         getEnum(colorPaletteNameKey, ColorPaletteName.Dynamic)
-                    //val colorPaletteMode = getEnum(colorPaletteModeKey, ColorPaletteMode.Dark)
                     val thumbnailRoundness =
                         getEnum(thumbnailRoundnessKey, ThumbnailRoundness.Heavy)
                     val useSystemFont = getBoolean(useSystemFontKey, false)
@@ -1347,14 +1343,13 @@ class MainActivity :
                     intent.action = null
                 }
 
-                val playerState = binder?.onlinePlayerState?.collectAsState()
-                val onlinePlayerPlayingState = playerState?.value == PlayerConstants.PlayerState.PLAYING
+                val isPlaying = playerState.isPlaying
                 val playerView = binder?.onlinePlayerView?.collectAsState()
                 onlinePlayerView = playerView?.value
 
                 val pip = isInPip(
                     onChange = {
-                        if (!it || (binder?.player?.isPlaying != true && !onlinePlayerPlayingState))
+                        if (!it || !isPlaying)
                             return@isInPip
 
                         localPlayerSheetState.expandSoft()
@@ -1399,6 +1394,7 @@ class MainActivity :
                             LocalRippleConfiguration provides rippleConfiguration,
                             LocalShimmerTheme provides shimmerTheme,
                             LocalPlayerServiceBinder provides binder,
+                            LocalPlayerServiceState provides playerState,
                             LocalPlayerAwareWindowInsets provides playerAwareWindowInsets,
                             LocalLayoutDirection provides LayoutDirection.Ltr,
                             LocalPlayerSheetState provides localPlayerSheetState,
@@ -1426,16 +1422,17 @@ class MainActivity :
                                 )
                             } else {
                                 AppNavigation(
-                                    navController = navController,
+                                    onNavControllerInit = { navController = it },
+                                    //navController = navController,
                                     miniPlayer = {
-                                        /*
+
                                         UnifiedMiniPlayer(
                                             showPlayer = { localPlayerSheetState.expandSoft() },
                                             hidePlayer = { localPlayerSheetState.collapseSoft() },
                                             navController = navController,
                                         )
-                                         */
 
+                                        /*
                                         if (binder?.currentMediaItemAsSong?.isLocal == true)
                                             LocalMiniPlayer(
                                                 showPlayer = { localPlayerSheetState.expandSoft() },
@@ -1449,6 +1446,7 @@ class MainActivity :
                                                 navController = navController,
                                             )
                                         }
+                                         */
 
                                     },
                                     openTabFromShortcut = openTabFromShortcut
@@ -1468,6 +1466,7 @@ class MainActivity :
                                     ThumbnailRoundness.Heavy
                                 )
 
+                                /*
                                 val localPlayer: @Composable () -> Unit = {
                                     LocalPlayer(
                                         navController = navController,
@@ -1498,7 +1497,7 @@ class MainActivity :
                                     )
                                 }
 
-
+                                */
 
                                 BottomSheet(
                                     state = localPlayerSheetState,
@@ -1509,10 +1508,30 @@ class MainActivity :
                                     },
                                     contentAlwaysAvailable = true
                                 ) {
+                                    navController?.let {
+                                        UnifiedPlayer(
+                                            navController = it,
+                                            onlineCore = {
+                                                binder?.player?.currentMediaItem?.let {
+                                                    OnlinePlayerView(
+                                                        onlinePlayerView = onlinePlayerView,
+                                                        mediaItem = it,
+                                                    )
+                                                }
+                                            },
+                                            playerSheetState = localPlayerSheetState,
+                                            onDismiss = {
+                                                localPlayerSheetState.collapseSoft()
+                                            },
+                                        )
+                                        /*
                                     if (binder?.currentMediaItemAsSong?.isLocal == true)
                                         localPlayer()
                                     else
                                         onlinePlayer()
+
+                                     */
+                                    }
                                 }
 
                                 val menuState = LocalGlobalSheetState.current
@@ -1638,10 +1657,7 @@ class MainActivity :
                     }
 
                     val listener = object : Player.Listener {
-                        override fun onIsPlayingChanged(isPlaying: Boolean) {
-                            Timber.d("MainActivity Player.Listener onIsPlayingChanged isPlaying $isPlaying")
-                            localPlayerPlayingState.value = isPlaying
-                        }
+
                         override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
                             Timber.d("MainActivity Player.Listener onMediaItemTransition mediaItem ${mediaItem?.mediaId} reason $reason foreground $appRunningInBackground")
 
@@ -1701,6 +1717,7 @@ class MainActivity :
                     context = this@MainActivity
                 )
 
+
                 lifecycleScope.launch(Dispatchers.Main) {
                     when (val path = uri.pathSegments.firstOrNull()) {
                         "playlist" -> uri.getQueryParameter("list")?.let { playlistId ->
@@ -1710,18 +1727,18 @@ class MainActivity :
                                 Environment.playlistPage(BrowseBody(browseId = browseId))
                                     ?.getOrNull()?.let {
                                         it.songsPage?.items?.firstOrNull()?.album?.endpoint?.browseId?.let { browseId ->
-                                            navController.navigate(route = "${NavRoutes.album.name}/$browseId")
+                                            navController?.navigate(route = "${NavRoutes.album.name}/$browseId")
 
                                         }
                                     }
                             } else {
-                                navController.navigate(route = "${NavRoutes.playlist.name}/$browseId")
+                                navController?.navigate(route = "${NavRoutes.playlist.name}/$browseId")
                             }
                         }
 
                         "channel", "c" -> uri.lastPathSegment?.let { channelId ->
                             try {
-                                navController.navigate(route = "${NavRoutes.artist.name}/$channelId")
+                                navController?.navigate(route = "${NavRoutes.artist.name}/$channelId")
                             } catch (e: Exception) {
                                 Timber.e("MainActivity.setContent intentUriData ${e.stackTraceToString()}")
                             }
@@ -1729,7 +1746,7 @@ class MainActivity :
 
                         "search" -> uri.getQueryParameter("q")?.let { query ->
                             val encodedQuery = URLEncoder.encode(query, "UTF-8")
-                            navController.navigate(route = "${NavRoutes.searchResults.name}/$encodedQuery")
+                            navController?.navigate(route = "${NavRoutes.searchResults.name}/$encodedQuery")
                         }
 
                         else -> when {
@@ -1738,7 +1755,7 @@ class MainActivity :
                             path != "watch" && uri.host == null -> {
                                 path?.let { query ->
                                     val encodedQuery = URLEncoder.encode(query, "UTF-8")
-                                    navController.navigate(route = "${NavRoutes.searchResults.name}/$encodedQuery")
+                                    navController?.navigate(route = "${NavRoutes.searchResults.name}/$encodedQuery")
                                 }
                                 null
                             }
@@ -1746,7 +1763,7 @@ class MainActivity :
                                 shazamSongInfoExtractor(uri.toString(), { artist, title, error ->
                                     Timber.d("MainActivity shazamSongInfoExtractor result $artist $title $error")
                                     if (title.isNotEmpty())
-                                        navController.navigate(route = "${NavRoutes.searchResults.name}/${title} ${artist}")
+                                        navController?.navigate(route = "${NavRoutes.searchResults.name}/${title} ${artist}")
 
                                 })
                                 null
@@ -1954,6 +1971,7 @@ class MainActivity :
 var appRunningInBackground: Boolean = false
 
 val LocalPlayerServiceBinder = staticCompositionLocalOf<PlayerService.Binder?> { null }
+val LocalPlayerServiceState = staticCompositionLocalOf<PlayerState> { PlayerState() }
 
 val LocalPlayerAwareWindowInsets = staticCompositionLocalOf<WindowInsets> { TODO() }
 

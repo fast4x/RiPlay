@@ -41,20 +41,10 @@ fun MusicAnimation(
     cornerRadius: Dp = 8.dp,
     show: Boolean = true
 ) {
-    //if (!show) return
 
     val binder = LocalPlayerServiceBinder.current
-    var isPlayRunning by remember { mutableStateOf(binder?.player?.isPlaying) }
-    binder?.player?.DisposableListener {
-        object : Player.Listener {
-            override fun onIsPlayingChanged(isPlaying: Boolean) {
-                isPlayRunning = isPlaying
-            }
-        }
-    }
-
-    val playerState = binder?.onlinePlayerState?.collectAsState()
-    val isOnlinePlayRunning = playerState?.value == PlayerConstants.PlayerState.PLAYING
+    val playerState = binder?.playerState?.collectAsState()
+    val isPlaying = playerState?.value?.isPlaying
 
     val nowPlayingIndicator by rememberPreference(nowPlayingIndicatorKey, MusicAnimationType.Bubbles)
     if (nowPlayingIndicator == MusicAnimationType.Disabled) return
@@ -148,8 +138,8 @@ fun MusicAnimation(
         )
     }
 
-    LaunchedEffect(Unit, isPlayRunning, isOnlinePlayRunning) {
-        if (isPlayRunning == true || isOnlinePlayRunning)
+    LaunchedEffect(Unit, isPlaying) {
+        if (isPlaying == true)
             animatablesWithSteps.forEach { (animatable, steps) ->
                 launch {
                     while (true) {
@@ -161,7 +151,7 @@ fun MusicAnimation(
             }
     }
 
-    AnimatedVisibility(isPlayRunning == true || isOnlinePlayRunning) {
+    AnimatedVisibility(isPlaying == true ) {
         Row(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.Bottom,

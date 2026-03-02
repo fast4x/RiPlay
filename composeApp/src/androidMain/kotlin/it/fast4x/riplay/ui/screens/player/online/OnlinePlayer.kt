@@ -398,8 +398,8 @@ fun OnlinePlayer(
     binder?.player ?: return
     if (binder.player.currentTimeline.windowCount == 0) return
 
-    val playerState = binder.onlinePlayerState.collectAsState()
-    val shouldBePlaying = playerState.value == PlayerConstants.PlayerState.PLAYING
+    val playerState = binder.playerState.collectAsState()
+    val shouldBePlaying = playerState.value.isPlaying
 
     var nullableMediaItem by remember {
         mutableStateOf(binder.player.currentMediaItem, neverEqualPolicy())
@@ -1383,7 +1383,7 @@ fun OnlinePlayer(
                 }
                 else binder.player.playPrevious()
             },
-            playerState = playerState.value,
+            playerState = PlayerConstants.PlayerState.PAUSED //playerState.value,
         )
     }
 
@@ -2773,7 +2773,7 @@ fun OnlinePlayer(
                                         }
                                         else binder.player.playPrevious()
                                     },
-                                    playerState = playerState.value,
+                                    playerState = PlayerConstants.PlayerState.PAUSED
                                 )
 
                             }
@@ -3069,7 +3069,7 @@ fun OnlinePlayer(
                                                 }
                                                 else binder.player.playPrevious()
                                             },
-                                            playerState = playerState.value,
+                                            playerState = PlayerConstants.PlayerState.PAUSED
                                         )
                                     }
                                 }
@@ -3813,7 +3813,7 @@ fun OnlinePlayer(
                                         }
                                         else binder.player.playPrevious()
                                     },
-                                    playerState = playerState.value,
+                                    playerState = PlayerConstants.PlayerState.PAUSED
                                 )
 
                             }

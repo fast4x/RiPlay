@@ -159,7 +159,6 @@ fun Player.playAtIndex(mediaItemIndex: Int) {
 @SuppressLint("Range")
 @UnstableApi
 fun Player.forcePlayAtIndex(mediaItems: List<MediaItem>, mediaItemIndex: Int) {
-    //val filteredMediaItems = excludeMediaItems(mediaItems, globalContext())
     val filteredMediaItems = mediaItems
     setMediaItems(filteredMediaItems, mediaItemIndex, C.TIME_UNSET)
 
@@ -177,7 +176,7 @@ fun Player.forceSeekToPrevious() {
     if (prevIndex != C.INDEX_UNSET) {
         seekToDefaultPosition(prevIndex)
     }
-    //seekToPrevious()
+
 }
 
 fun Player.forceSeekToNext() {
@@ -252,7 +251,6 @@ fun Player.enqueue(mediaItem: MediaItem, context: Context? = null, queue: Queues
 fun Player.enqueue(
     mediaItems: List<MediaItem>,
     context: Context? = null,
-    //queue: Queues
 ) {
     val filteredMediaItems = if (context != null) excludeMediaItems(mediaItems, context)
     else mediaItems
@@ -296,18 +294,12 @@ fun Player.findMediaItemIndexById(mediaId: String): Int {
 
 fun Player.excludeMediaItems(mediaItems: List<MediaItem>, context: Context): List<MediaItem> {
     var filteredMediaItems = mediaItems
-    //runCatching {
+
         val preferences = context.preferences
         val excludeIfIsVideo = preferences.getBoolean(excludeSongIfIsVideoKey, false)
         if (excludeIfIsVideo) {
             filteredMediaItems = mediaItems.filter { !it.isVideo }
         }
-//        val excludedVideos = mediaItems.size - filteredMediaItems.size
-//
-//        if (excludedVideos > 0)
-//            CoroutineScope(Dispatchers.Main).launch {
-//                SmartMessage(context.resources.getString(R.string.message_excluded_videos).format(excludedVideos), context = context)
-//            }
 
         val excludeSongWithDurationLimit =
             preferences.getEnum(excludeSongsWithDurationLimitKey, DurationInMinutes.Disabled)
@@ -319,11 +311,6 @@ fun Player.excludeMediaItems(mediaItems: List<MediaItem>, context: Context): Lis
                 }!! < excludeSongWithDurationLimit.minutesInMilliSeconds
             }
 
-//            val excludedSongs = mediaItems.size - filteredMediaItems.size
-//            if (excludedSongs > 0)
-//                CoroutineScope(Dispatchers.Main).launch {
-//                        SmartMessage(context.resources.getString(R.string.message_excluded_s_songs).format(excludedSongs), context = context)
-//                }
         }
 
         // CHECK il blacklisted
@@ -343,14 +330,10 @@ fun Player.excludeMediaItems(mediaItems: List<MediaItem>, context: Context): Lis
                     SmartMessage(context.resources.getString(R.string.message_excluded_s_songs).format(excludedSongs), context = context)
             }
 
-//    }.onFailure {
-//        Timber.e(it.message)
-//    }
-
     return filteredMediaItems
 }
 fun Player.excludeMediaItem(mediaItem: MediaItem, context: Context): Boolean {
-    //runCatching {
+
         val preferences = context.preferences
         val excludeIfIsVideo = preferences.getBoolean(excludeSongIfIsVideoKey, false)
         if (excludeIfIsVideo && mediaItem.isVideo) {
@@ -386,11 +369,6 @@ fun Player.excludeMediaItem(mediaItem: MediaItem, context: Context): Boolean {
             }
 
         return listed
-
-//    }.onFailure {
-//        Timber.e(it.message)
-//        return false
-//    }
 
 }
 
@@ -487,20 +465,22 @@ fun Player.saveMasterQueue(currentOnlineSecond: Int) {
                     mediaItem = mediaItem,
                     mediaId = mediaItem.mediaId,
                     position = if (index == mediaItemIndex) mediaItemPosition else -1,
-                    //position = if (index == mediaItemIndex) mediaItemIndex.toLong() else -1,
                     idQueue = mediaItem.mediaMetadata.extras?.getLong("idQueue", defaultQueueId())
                 )
             }.let { queuedMediaItems ->
                 if (queuedMediaItems.isEmpty()) return@let
 
-                Database.asyncTransaction {
-                    clearQueuedMediaItems()
-                    insert(queuedMediaItems)
-                    Timber.d("SaveMasterQueue QueuePersistentEnabled Saved mediaItems ${queuedMediaItems.size}")
-//                    queuedMediaItems.forEach {
-//                        insert(it)
-//                        Timber.d("SaveMasterQueue QueuePersistentEnabled Save mediaItem ${it.mediaId}")
-//                    }
+                try {
+                    Database.asyncTransaction {
+                        clearQueuedMediaItems()
+                        //insert(queuedMediaItems)
+                        //Timber.d("SaveMasterQueue QueuePersistentEnabled Saved mediaItems ${queuedMediaItems.size}")
+                        queuedMediaItems.forEach {
+                            insert(it)
+                        }
+                    }
+                } catch (e: Exception) {
+                    Timber.e("SaveMasterQueue QueuePersistentEnabled Error: ${e.message}")
                 }
 
             }
@@ -519,7 +499,6 @@ fun Player.loadMasterQueue(onLoaded: (Long) -> Unit) {
 
         if (queuedSong.isEmpty()) return@asyncQuery
 
-        //val index = queuedSong.indexOfFirst { it.position != null }.coerceAtLeast(0)
         val index = queuedSong.indexOfFirst { (it.position ?: 0L) >= 0L }.coerceAtLeast(0)
         val mediaItemPosition = queuedSong[index].position ?: C.TIME_UNSET
 
@@ -563,8 +542,8 @@ fun Player.positionAndDurationStateFlow(
     val initialValue = if (currentMediaItem?.isLocal == true) {
         currentPosition to duration
     } else {
-        (binder?.onlinePlayerCurrentSecond?.toLong() ?: 0L) to
-                (binder?.onlinePlayerCurrentDuration?.toLong() ?: 0L)
+        ((binder?.onlinePlayerCurrentSecond?.toLong() ?: 0L) * 1000) to
+                ((binder?.onlinePlayerCurrentDuration?.toLong() ?: 0L) * 1000)
     }
 
     return callbackFlow {
@@ -581,8 +560,8 @@ fun Player.positionAndDurationStateFlow(
                 val newValue = if (mediaItem?.isLocal == true) {
                     currentPosition to duration
                 } else {
-                    (binder?.onlinePlayerCurrentSecond?.toLong() ?: 0L) to
-                            (binder?.onlinePlayerCurrentDuration?.toLong() ?: 0L)
+                    ((binder?.onlinePlayerCurrentSecond?.toLong() ?: 0L) * 1000) to
+                            ((binder?.onlinePlayerCurrentDuration?.toLong() ?: 0L) * 1000)
                 }
                 trySend(newValue)
             }
@@ -609,8 +588,8 @@ fun Player.positionAndDurationStateFlow(
                     val newValue = if (currentMediaItem?.isLocal == true) {
                         currentPosition to duration
                     } else {
-                        (binder?.onlinePlayerCurrentSecond?.toLong() ?: 0L) to
-                                (binder?.onlinePlayerCurrentDuration?.toLong() ?: 0L)
+                        ((binder?.onlinePlayerCurrentSecond?.toLong() ?: 0L) * 1000) to
+                                ((binder?.onlinePlayerCurrentDuration?.toLong() ?: 0L) * 1000)
                     }
                     trySend(newValue)
                 }

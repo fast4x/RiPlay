@@ -125,7 +125,7 @@ fun SeekBarSegmentColored(
         }
     }
 
-    val timeText = remember(draggingValue) { formatMillis(if (localMediaItem?.isLocal == true) draggingValue  else draggingValue * 1000) }
+    val timeText = remember(draggingValue) { formatMillis( draggingValue) }
 
 
     val gap = 2.dp.px
@@ -195,13 +195,11 @@ fun SeekBarSegmentColored(
                     val segmentWidth = (width - (gap * (numSegments - 1))) / numSegments
                     val pieceHeight = height * 0.6f
 
-                    // Posizione cursore riproduzione
                     val fraction = if (maximumValue > minimumValue) {
                         ((draggingValue.toFloat() - minimumValue) / (maximumValue - minimumValue)).coerceIn(0f, 1f)
                     } else 0f
                     val progressWidth = width * fraction
 
-                    // Posizione buffer (scaricamento)
                     val bufferedWidth = width * (buffered?.value ?: 0f)
 
                     segmentColors.forEachIndexed { index, color ->
@@ -214,7 +212,6 @@ fun SeekBarSegmentColored(
                             centerY + pieceHeight / 2
                         )
 
-                        // 1. SEZIONE RIPRODOTTA (Priorità massima)
                         if (rect.right <= progressWidth) {
                             drawRoundRect(
                                 color = color,
@@ -223,7 +220,7 @@ fun SeekBarSegmentColored(
                                 cornerRadius = CornerRadius(segmentWidth / 2, segmentWidth / 2)
                             )
                         } else if (rect.left < progressWidth) {
-                            // Pezzo parzialmente riprodotto
+
                             clipRect(
                                 left = rect.left,
                                 top = rect.top,
@@ -238,10 +235,6 @@ fun SeekBarSegmentColored(
                                 )
                             }
                         } else {
-                            // 2. SEZIONE NON RIPRODOTTA: Controlliamo il BUFFER
-
-                            // Colore per il buffer (solitamente grigio chiaro)
-                            // Puoi usare anche color.copy(alpha = 0.3f) se vuoi mantenere l'arcobaleno sbiadito
                             val bufferColor = color.copy(alpha = 0.5f)
 
                             if (rect.right <= bufferedWidth) {

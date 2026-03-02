@@ -491,7 +491,7 @@ fun updateDiscordPresenceWithOfflinePlayer(
 fun updateDiscordPresenceWithOnlinePlayer(
     discordPresenceManager: DiscordPresenceManager?,
     mediaItem: MediaItem,
-    playerState: MutableState<PlayerConstants.PlayerState>,
+    isPlaying: Boolean,
     currentDuration: Float,
     currentSecond: Float,
 ) {
@@ -504,7 +504,6 @@ fun updateDiscordPresenceWithOnlinePlayer(
     val discordPersonalAccessToken = globalContext().encryptedPreferences.getString(
         discordPersonalAccessTokenKey, ""
     )
-    val isPlaying = playerState.value == PlayerConstants.PlayerState.PLAYING
     val currentPosition = (currentSecond * 1000).toLong()
     runCatching {
         if (!discordPersonalAccessToken.isNullOrEmpty()) {

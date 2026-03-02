@@ -31,7 +31,6 @@ import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.neverEqualPolicy
@@ -62,8 +61,8 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
-import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.PlayerConstants
 import it.fast4x.riplay.LocalPlayerServiceBinder
+import it.fast4x.riplay.LocalPlayerServiceState
 import it.fast4x.riplay.R
 import it.fast4x.riplay.commonutils.cleanPrefix
 import it.fast4x.riplay.commonutils.setDisLikeState
@@ -81,6 +80,7 @@ import it.fast4x.riplay.extensions.preferences.effectRotationKey
 import it.fast4x.riplay.extensions.preferences.miniPlayerTypeKey
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.extensions.ritune.improved.models.RiTuneRemoteCommand
+import it.fast4x.riplay.service.PlaybackState
 import it.fast4x.riplay.service.PlayerService
 import it.fast4x.riplay.ui.components.themed.IconButton
 import it.fast4x.riplay.ui.components.themed.NowPlayingSongIndicator
@@ -129,8 +129,8 @@ fun UnifiedMiniPlayer(
 
     binder?.player ?: return
     if (binder.player.currentTimeline.windowCount == 0) return
-    val playerState = binder.onlinePlayerState.collectAsState()
-    val shouldBePlaying = playerState.value == PlayerConstants.PlayerState.PLAYING
+    val playerState = LocalPlayerServiceState.current
+    val shouldBePlaying = playerState.isPlaying
 
     var nullableMediaItem by remember {
         mutableStateOf(binder.player.currentMediaItem, neverEqualPolicy())
@@ -199,7 +199,6 @@ fun UnifiedMiniPlayer(
                     SmartMessage(context.resources.getString(R.string.removed_from_disliked), context = context)
             } else {
                 CoroutineScope(Dispatchers.IO).launch {
-                    // can currently not implement dislike for sync, so unliking the song
                     removeFromOnlineLikedSong(mediaItem)
                 }
             }
@@ -432,7 +431,7 @@ fun UnifiedMiniPlayer(
                             .size(24.dp)
                     )
 
-                if (playerState.value != PlayerConstants.PlayerState.BUFFERING) {
+                if (playerState.playbackState != PlaybackState.BUFFERING) {
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(playPauseRoundness))

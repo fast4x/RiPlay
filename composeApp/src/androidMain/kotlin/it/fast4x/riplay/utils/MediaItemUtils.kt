@@ -12,6 +12,7 @@ import it.fast4x.riplay.commonutils.EXPLICIT_PREFIX
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.data.models.Song
 import it.fast4x.riplay.data.models.SongEntity
+import it.fast4x.riplay.service.MediaInfo
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -171,3 +172,7 @@ val MediaItem.asSong: Song
         isAudioOnly = if (mediaMetadata.extras?.getBoolean("isVideo") == true) 0 else 1
     )
 
+val Song.asMediaInfo: MediaInfo
+        get() = MediaInfo(
+            mediaItem = this.asMediaItem
+        )

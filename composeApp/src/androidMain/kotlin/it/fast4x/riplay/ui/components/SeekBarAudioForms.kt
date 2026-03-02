@@ -93,9 +93,8 @@ fun SeekBarAudioForms(
     val binder = LocalPlayerServiceBinder.current
     val mediaItem = binder?.player?.currentMediaItem
     val buffered = binder?.onlinePlayerBufferedFraction?.collectAsState()
-//    Timber.d("Seekbar buffered $buffered")
 
-    val timeText = remember(draggingValue) { formatMillis(if (mediaItem?.isLocal == true) draggingValue  else draggingValue * 1000) }
+    val timeText = remember(draggingValue) { formatMillis(draggingValue) }
     val colorPalette = colorPalette()
 
     val waveformSeed = remember(mediaItem?.mediaId) { mediaItem?.mediaId }

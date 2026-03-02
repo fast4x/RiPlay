@@ -114,6 +114,7 @@ import it.fast4x.riplay.utils.PlayerViewModelFactory
 import it.fast4x.riplay.commonutils.setDisLikeState
 import it.fast4x.riplay.commonutils.thumbnail
 import it.fast4x.riplay.extensions.ritune.improved.models.RiTuneRemoteCommand
+import it.fast4x.riplay.service.PlaybackState
 import it.fast4x.riplay.utils.GlobalSharedData
 import it.fast4x.riplay.utils.removeFromOnlineLikedSong
 import kotlinx.coroutines.CoroutineScope
@@ -142,8 +143,8 @@ fun OnlineMiniPlayer(
     binder?.player ?: return
     if (binder.player.currentTimeline.windowCount == 0) return
 
-    val playerState = binder.onlinePlayerState.collectAsState()
-    val shouldBePlaying = playerState.value == PlayerConstants.PlayerState.PLAYING
+    val playerState = binder.playerState.collectAsState()
+    val shouldBePlaying = playerState.value.isPlaying
 
     var nullableMediaItem by remember {
         mutableStateOf(binder.player.currentMediaItem, neverEqualPolicy())
@@ -458,7 +459,7 @@ fun OnlineMiniPlayer(
                            .size(24.dp)
                    )
 
-                if (playerState.value != PlayerConstants.PlayerState.BUFFERING) {
+                if (playerState.value.playbackState != PlaybackState.BUFFERING) {
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(playPauseRoundness))

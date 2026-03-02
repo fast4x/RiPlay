@@ -1,0 +1,322 @@
+package it.fast4x.riplay.ui.screens.player.unified
+
+import android.annotation.SuppressLint
+import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.ExperimentalTextApi
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.media3.common.MediaItem
+import androidx.media3.common.util.UnstableApi
+import androidx.navigation.NavController
+import it.fast4x.riplay.LocalPlayerServiceBinder
+import it.fast4x.riplay.data.Database
+import it.fast4x.riplay.data.models.Info
+import it.fast4x.riplay.data.models.UiMedia
+import it.fast4x.riplay.enums.PlayerControlsType
+import it.fast4x.riplay.enums.PlayerInfoType
+import it.fast4x.riplay.enums.PlayerPlayButtonType
+import it.fast4x.riplay.enums.PlayerTimelineSize
+import it.fast4x.riplay.enums.PlayerType
+import it.fast4x.riplay.extensions.preferences.disableScrollingTextKey
+import it.fast4x.riplay.extensions.preferences.playerControlsTypeKey
+import it.fast4x.riplay.extensions.preferences.playerInfoTypeKey
+import it.fast4x.riplay.extensions.preferences.playerPlayButtonTypeKey
+import it.fast4x.riplay.extensions.preferences.playerSwapControlsWithTimelineKey
+import it.fast4x.riplay.extensions.preferences.playerTimelineSizeKey
+import it.fast4x.riplay.extensions.preferences.playerTypeKey
+import it.fast4x.riplay.extensions.preferences.rememberPreference
+import it.fast4x.riplay.extensions.preferences.showlyricsthumbnailKey
+import it.fast4x.riplay.extensions.preferences.showthumbnailKey
+import it.fast4x.riplay.extensions.preferences.transparentBackgroundPlayerActionBarKey
+import it.fast4x.riplay.service.PlaybackState
+import it.fast4x.riplay.service.PlayerState
+import it.fast4x.riplay.ui.screens.player.online.GetControls
+import it.fast4x.riplay.ui.screens.player.online.GetSeekBar
+import it.fast4x.riplay.ui.screens.player.online.components.controls.InfoAlbumAndArtistEssential
+import it.fast4x.riplay.ui.screens.player.online.components.controls.InfoAlbumAndArtistModern
+import it.fast4x.riplay.ui.screens.player.unified.components.controls.UnifiedInfoAlbumAndArtistEssential
+import it.fast4x.riplay.ui.screens.player.unified.components.controls.UnifiedInfoAlbumAndArtistModern
+import it.fast4x.riplay.utils.PlayerViewModel
+import it.fast4x.riplay.utils.PlayerViewModelFactory
+import it.fast4x.riplay.utils.isCompositionLaunched
+import it.fast4x.riplay.utils.isLandscape
+import kotlinx.coroutines.flow.distinctUntilChanged
+
+@OptIn(ExperimentalMaterial3Api::class)
+@ExperimentalTextApi
+@SuppressLint("SuspiciousIndentation")
+@ExperimentalFoundationApi
+@ExperimentalAnimationApi
+@UnstableApi
+@Composable
+fun UnifiedControls(
+    navController: NavController,
+    onCollapse: () -> Unit,
+    onBlurScaleChange: (Float) -> Unit,
+    expandedplayer: Boolean,
+    titleExpanded: Boolean,
+    timelineExpanded: Boolean,
+    controlsExpanded: Boolean,
+    isShowingLyrics: Boolean,
+    media: UiMedia,
+    title: String?,
+    artist: String?,
+    artistIds: List<Info>?,
+    albumId: String?,
+    isExplicit: Boolean,
+    modifier: Modifier = Modifier,
+    onPlay: () -> Unit = {},
+    onPause: () -> Unit = {},
+    onSeekTo: (Float) -> Unit = {},
+    onNext: () -> Unit = {},
+    onPrevious: () -> Unit = {},
+    onToggleRepeatMode: () -> Unit = {},
+    onToggleShuffleMode: () -> Unit = {},
+    onToggleLike: () -> Unit = {},
+    playerState: PlayerState,
+) {
+    var likedAt by rememberSaveable {
+        mutableStateOf<Long?>(null)
+    }
+
+    var disableScrollingText by rememberPreference(disableScrollingTextKey, false)
+
+    val mediaItem = playerState.mediaInfo?.mediaItem ?: return
+
+    LaunchedEffect(mediaItem.mediaId) {
+        Database.likedAt(mediaItem.mediaId).distinctUntilChanged().collect { likedAt = it }
+    }
+
+
+    var playerTimelineSize by rememberPreference(
+        playerTimelineSizeKey,
+        PlayerTimelineSize.Biggest
+    )
+
+
+    val playerInfoType by rememberPreference(playerInfoTypeKey, PlayerInfoType.Essential)
+    var playerSwapControlsWithTimeline by rememberPreference(
+        playerSwapControlsWithTimelineKey,
+        false
+    )
+    var showlyricsthumbnail by rememberPreference(showlyricsthumbnailKey, false)
+    var transparentBackgroundActionBarPlayer by rememberPreference(
+        transparentBackgroundPlayerActionBarKey,
+        true
+    )
+    var playerControlsType by rememberPreference(playerControlsTypeKey, PlayerControlsType.Essential)
+    var playerPlayButtonType by rememberPreference(playerPlayButtonTypeKey, PlayerPlayButtonType.Disabled)
+    var showthumbnail by rememberPreference(showthumbnailKey, true)
+    var playerType by rememberPreference(playerTypeKey, PlayerType.Modern)
+    val expandedlandscape = (isLandscape && playerType == PlayerType.Modern) || (expandedplayer && !showthumbnail)
+
+    Box(
+        modifier = Modifier
+            .animateContentSize()
+    ) {
+        if ((!isLandscape) and ((expandedplayer || isShowingLyrics) && !showlyricsthumbnail))
+            Column(
+                horizontalAlignment = Alignment.Start,
+                verticalArrangement = Arrangement.Top,
+                modifier = Modifier
+                    .padding(horizontal = playerTimelineSize.size.dp)
+            ) {
+
+                if (!isShowingLyrics || titleExpanded) {
+                    if (playerInfoType == PlayerInfoType.Modern)
+                        UnifiedInfoAlbumAndArtistModern(
+                            navController = navController,
+                            media = media,
+                            title = title,
+                            albumId = albumId,
+                            mediaItem = mediaItem,
+                            likedAt = likedAt,
+                            onCollapse = onCollapse,
+                            disableScrollingText = disableScrollingText,
+                            artist = artist,
+                            artistIds = artistIds,
+                            isExplicit = isExplicit
+                        )
+
+                    if (playerInfoType == PlayerInfoType.Essential)
+                        UnifiedInfoAlbumAndArtistEssential(
+                            navController = navController,
+                            albumId = albumId,
+                            title = title,
+                            likedAt = likedAt,
+                            artistIds = artistIds,
+                            artist = artist,
+                            isExplicit = isExplicit,
+                            onCollapse = onCollapse,
+                            disableScrollingText = disableScrollingText,
+                            mediaItem = mediaItem
+                        )
+                    Spacer(
+                        modifier = Modifier
+                            .height(10.dp)
+                    )
+                }
+                if (!isShowingLyrics || timelineExpanded) {
+                    UnifiedGetSeekBar(
+                        mediaId = mediaItem.mediaId,
+                        onSeekTo = onSeekTo,
+                        onPlay = onPlay,
+                        onPause = onPause,
+                    )
+                    Spacer(
+                        modifier = Modifier
+                            .height(if (playerPlayButtonType != PlayerPlayButtonType.Disabled) 10.dp else 5.dp)
+                    )
+                }
+                if (!isShowingLyrics || controlsExpanded) {
+                    UnifiedGetControls(
+                        likedAt = likedAt,
+                        onBlurScaleChange = onBlurScaleChange,
+                        onPlay = onPlay,
+                        onPause = onPause,
+                        onSeekTo = onSeekTo,
+                        onNext = onNext,
+                        onPrevious = onPrevious,
+                        onToggleRepeatMode = onToggleRepeatMode,
+                        onToggleShuffleMode = onToggleShuffleMode,
+                        playerState = playerState
+                    )
+                    Spacer(
+                        modifier = Modifier
+                            .height(5.dp)
+                    )
+                }
+                if (((playerControlsType == PlayerControlsType.Modern) || (!transparentBackgroundActionBarPlayer)) && (playerPlayButtonType != PlayerPlayButtonType.Disabled)) {
+                    Spacer(
+                        modifier = Modifier
+                            .height(10.dp)
+                    )
+                }
+            }
+        else if (!isLandscape)
+            Column(
+                horizontalAlignment = Alignment.Start,
+                verticalArrangement = Arrangement.Top,
+                modifier = modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = playerTimelineSize.size.dp)
+
+            ) {
+
+                if (playerInfoType == PlayerInfoType.Modern)
+                    UnifiedInfoAlbumAndArtistModern(
+                        navController = navController,
+                        media = media,
+                        title = title,
+                        albumId = albumId,
+                        mediaItem = mediaItem,
+                        likedAt = likedAt,
+                        onCollapse = onCollapse,
+                        disableScrollingText = disableScrollingText,
+                        artist = artist,
+                        artistIds = artistIds,
+                        isExplicit = isExplicit
+                    )
+
+                if (playerInfoType == PlayerInfoType.Essential)
+                    UnifiedInfoAlbumAndArtistEssential(
+                        navController = navController,
+                        title = title,
+                        albumId = albumId,
+                        mediaItem = mediaItem,
+                        likedAt = likedAt,
+                        onCollapse = onCollapse,
+                        disableScrollingText = disableScrollingText,
+                        artist = artist,
+                        artistIds = artistIds,
+                        isExplicit = isExplicit
+                    )
+
+                Spacer(
+                    modifier = Modifier
+                        .height(25.dp)
+                )
+
+                if (!playerSwapControlsWithTimeline) {
+                    UnifiedGetSeekBar(
+                        mediaId = mediaItem.mediaId,
+                        onSeekTo = onSeekTo,
+                        onPlay = onPlay,
+                        onPause = onPause,
+                    )
+                    Spacer(
+                        modifier = Modifier
+                            .weight(0.4f)
+                    )
+                    UnifiedGetControls(
+                        likedAt = likedAt,
+                        onBlurScaleChange = onBlurScaleChange,
+                        onPlay = onPlay,
+                        onPause = onPause,
+                        onSeekTo = onSeekTo,
+                        onNext = onNext,
+                        onPrevious = onPrevious,
+                        onToggleRepeatMode = onToggleRepeatMode,
+                        onToggleShuffleMode = onToggleShuffleMode,
+                        playerState = playerState
+                    )
+                    Spacer(
+                        modifier = Modifier
+                            .weight(0.5f)
+                    )
+                } else {
+                    UnifiedGetControls(
+                        likedAt = likedAt,
+                        onBlurScaleChange = onBlurScaleChange,
+                        onPlay = onPlay,
+                        onPause = onPause,
+                        onSeekTo = onSeekTo,
+                        onNext = onNext,
+                        onPrevious = onPrevious,
+                        onToggleRepeatMode = onToggleRepeatMode,
+                        onToggleShuffleMode = onToggleShuffleMode,
+                        playerState = playerState
+                    )
+                    Spacer(
+                        modifier = Modifier
+                            .weight(0.5f)
+                    )
+                    UnifiedGetSeekBar(
+                        mediaId = mediaItem.mediaId,
+                        onSeekTo = onSeekTo,
+                        onPlay = onPlay,
+                        onPause = onPause,
+                    )
+                    Spacer(
+                        modifier = Modifier
+                            .weight(0.4f)
+                    )
+                }
+
+            }
+
+    }
+}

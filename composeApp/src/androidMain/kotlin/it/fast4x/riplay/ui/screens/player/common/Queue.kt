@@ -247,14 +247,13 @@ fun Queue(
     binderPlayer.DisposableListener {
         object : Player.Listener {
             override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
-                //mediaItemIndex = binderPlayer.currentMediaItemIndex
+
                 mediaItemIndex =
                     if (binder.player.mediaItemCount == 0) -1 else binder.player.currentMediaItemIndex
             }
 
             override fun onTimelineChanged(timeline: Timeline, reason: Int) {
                 windows = timeline.windows
-                //mediaItemIndex = binderPlayer.currentMediaItemIndex
                 mediaItemIndex =
                     if (binder.player.mediaItemCount == 0) -1 else binder.player.currentMediaItemIndex            }
 
@@ -312,10 +311,7 @@ fun Queue(
                         binderPlayer.clearMediaItems()
                     }
                 }
-//                val mediacount = binder.player.mediaItemCount - 1
-//                for (i in mediacount.downTo(0)) {
-//                    if (i == mediaItemIndex) null else binder.player.removeMediaItem(i)
-//                }
+
                 listMediaItems.clear()
                 listMediaItemsIndex.clear()
 
@@ -435,7 +431,7 @@ fun Queue(
     )
     var showQueues by rememberSaveable { mutableStateOf(false) }
     val maxHeightQueuesList by remember { derivedStateOf { getScreenDimensions().height.dp.div(8) } }
-    //println("maxHeightQueuesList: $maxHeightQueuesList")
+
     val heightQueues = animateDpAsState(if (showQueues) maxHeightQueuesList else 20.dp)
 
 
@@ -449,8 +445,7 @@ fun Queue(
                 .filter {
                     it.mediaItem.mediaMetadata.title?.contains(filterCharSequence, true) ?: false
                             || it.mediaItem.mediaMetadata.artist?.contains(filterCharSequence,true) ?: false
-                            //|| it.mediaItem.mediaMetadata.albumTitle?.contains(filterCharSequence,true) ?: false
-                            //|| it.mediaItem.mediaMetadata.albumArtist?.contains(filterCharSequence,true) ?: false
+
                 }
         val win = if (searching) windowsFiltered else windows
         windowsInQueue = if (selectedQueue == defaultQueue()) win else win.filter {
@@ -458,7 +453,6 @@ fun Queue(
                     ?.getLong("idQueue", defaultQueueId()) == selectedQueue?.id
         }
 
-        //binderPlayer.setMediaItems(windowsInQueue.map { it.mediaItem })
         println("windowsInQueue changed: ${windowsInQueue.size}")
     }
 
@@ -479,7 +473,6 @@ fun Queue(
         val lazyListState = rememberLazyListState()
         val reorderableLazyListState = rememberReorderableLazyListState(
             lazyListState = lazyListState,
-            //scrollThresholdPadding = WindowInsets.systemBars.asPaddingValues(),
         ) { from, to ->
             // based on uid as key
             if (to.key != binder.player.currentWindow?.uid.toString()) {
@@ -780,8 +773,6 @@ fun Queue(
                                 color = colorPalette().accent,
                                 indication = rippleIndication,
                                 onClick = {},
-//                                modifier = Modifier
-//                                    .draggableHandle()
                             )
                         }
                     }
@@ -798,7 +789,6 @@ fun Queue(
                         },
                         onRemoveFromQueue = {
                             binder.player.removeMediaItem(currentItem.firstPeriodIndex)
-                            //Timber.d("QueueItem: index ${currentItem.firstPeriodIndex}")
                             SmartMessage(
                                 "${context.resources.getString(R.string.deleted)} ${currentItem.mediaItem.mediaMetadata.title}",
                                 type = PopupType.Warning,
@@ -905,9 +895,7 @@ fun Queue(
                                     }
                                 )
                                 .background(color = if (queueType == QueueType.Modern) Color.Transparent else colorPalette().background0),
-                            //disableScrollingText = disableScrollingText,
-                            //isNowPlaying = binder.player.isNowPlaying(window.mediaItem.mediaId),
-                            //forceRecompose = forceRecompose
+
                         )
                     }
                 }
@@ -947,13 +935,6 @@ fun Queue(
             )
     }
 
-//        val backgroundProgress by rememberPreference(backgroundProgressKey, BackgroundProgress.MiniPlayer)
-//        val factory = remember(binder) {
-//            PlayerViewModelFactory(binder)
-//        }
-//        val playerViewModel: PlayerViewModel = viewModel(factory = factory)
-//        val positionAndDuration by playerViewModel.positionAndDuration.collectAsStateWithLifecycle()
-//        val colorPalette = colorPalette()
         val density = LocalDensity.current
         val bottomInset = with(density) { WindowInsets.navigationBars.getBottom(density).toDp() }
         val contentPadding = PaddingValues(bottom = bottomInset)
@@ -966,23 +947,6 @@ fun Queue(
                     .align(Alignment.BottomCenter)
                     .height( Dimensions.navigationBarHeight + bottomInset )
                     .padding(contentPadding)
-                    //.requiredHeight(70.dp) //bottom bar queue
-                    /*
-                    .drawBehind {
-                        if (backgroundProgress == BackgroundProgress.Both || backgroundProgress == BackgroundProgress.MiniPlayer) {
-                            drawRect(
-                                color = colorPalette.favoritesOverlay,
-                                topLeft = Offset.Zero,
-                                size = Size(
-                                    width = positionAndDuration.first.toFloat() /
-                                            positionAndDuration.second.absoluteValue * size.width,
-                                    height = size.maxDimension
-                                )
-                            )
-                        }
-                    }
-                     */
-
             ) {
 
                 if (!isLandscape)
@@ -991,14 +955,14 @@ fun Queue(
                             .absoluteOffset(0.dp, -65.dp)
                             .align(Alignment.TopCenter)
                     ) {
-                        /*
+
                         UnifiedMiniPlayer(
                             showPlayer = {
                                 onDismiss(queueLoopType)
                             },
                             hidePlayer = {}
                         )
-                        */
+                        /*
                         if (binderPlayer.currentMediaItem?.isLocal == true)
                             LocalMiniPlayer(
                                 showPlayer = {
@@ -1014,21 +978,10 @@ fun Queue(
                                 hidePlayer = { hidePlayer() },
                                 navController = navController,
                             )
-                        
+
+                         */
+
                     }
-
-
-//                if (!showButtonPlayerArrow)
-//                    Image(
-//                        painter = painterResource(R.drawable.horizontal_bold_line_rounded),
-//                        contentDescription = null,
-//                        colorFilter = ColorFilter.tint(colorPalette().text),
-//                        modifier = Modifier
-//                            .absoluteOffset(0.dp, -10.dp)
-//                            .align(Alignment.TopCenter)
-//                            .size(30.dp)
-//                    )
-
 
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -1187,7 +1140,6 @@ fun Queue(
                                      */
                                     onDelete = {
                                         if (listMediaItemsIndex.isNotEmpty())
-                                        //showSelectTypeClearQueue = true else
                                         {
                                             val mediacount = listMediaItemsIndex.size - 1
                                             listMediaItemsIndex.sort()
@@ -1205,9 +1157,7 @@ fun Queue(
                                     onAddToPlaylist = { playlistPreview ->
                                         position =
                                             playlistPreview.songCount.minus(1) ?: 0
-                                        //Log.d("mediaItem", " maxPos in Playlist $it ${position}")
                                         if (position > 0) position++ else position = 0
-                                        //Log.d("mediaItem", "next initial pos ${position}")
                                         if (listMediaItems.isEmpty()) {
                                             if (!isYtSyncEnabled() || !playlistPreview.playlist.isYoutubePlaylist) {
                                                 windows.forEachIndexed { index, song ->
@@ -1237,7 +1187,6 @@ fun Queue(
                                         } else {
                                             if (!isYtSyncEnabled() || !playlistPreview.playlist.isYoutubePlaylist) {
                                                 listMediaItems.forEachIndexed { index, song ->
-                                                    //Log.d("mediaItemMaxPos", position.toString())
                                                     Database.asyncTransaction {
                                                         insert(song)
                                                         insert(
@@ -1248,7 +1197,7 @@ fun Queue(
                                                             ).default()
                                                         )
                                                     }
-                                                    //Log.d("mediaItemPos", "add position $position")
+
                                                 }
                                             } else {
                                                 CoroutineScope(Dispatchers.IO).launch {
