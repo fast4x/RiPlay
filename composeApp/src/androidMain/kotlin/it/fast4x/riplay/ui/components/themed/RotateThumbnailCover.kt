@@ -86,20 +86,21 @@ fun RotateThumbnailCover(
                     .rotate(rotationDegrees)
                     .aspectRatio(1.0f),
                 painter = painterResource(id = when (type) {
-                    ThumbnailCoverType.Vinyl -> R.drawable.vinyl_background
-                    ThumbnailCoverType.CD, ThumbnailCoverType.CDwithCover -> R.drawable.cd
+                    ThumbnailCoverType.Vinyl, ThumbnailCoverType.AudioCassette, ThumbnailCoverType.AudioCassetteWithCover -> R.drawable.vinyl_background
+                    ThumbnailCoverType.CD, ThumbnailCoverType.CDWithCover -> R.drawable.cd
+
                 }),
                 contentDescription = "disc background"
             )
 
-        if (type in listOf(ThumbnailCoverType.Vinyl, ThumbnailCoverType.CDwithCover))
+        if (type in listOf(ThumbnailCoverType.Vinyl, ThumbnailCoverType.CDWithCover))
             Image(
                 modifier = Modifier
                     .fillMaxSize(
                         when (type) {
-                            ThumbnailCoverType.Vinyl -> imageCoverSize * 0.01f
+                            ThumbnailCoverType.Vinyl, ThumbnailCoverType.AudioCassette, ThumbnailCoverType.AudioCassetteWithCover -> imageCoverSize * 0.01f
                             ThumbnailCoverType.CD -> 1f
-                            ThumbnailCoverType.CDwithCover -> 0.85f
+                            ThumbnailCoverType.CDWithCover -> 0.85f
                         }
 
                     )
@@ -111,7 +112,7 @@ fun RotateThumbnailCover(
                 contentDescription = "song album cover"
             )
 
-        if (type == ThumbnailCoverType.CDwithCover) {
+        if (type == ThumbnailCoverType.CDWithCover) {
             Box(
                 modifier = Modifier
                     .clip(roundedShape)

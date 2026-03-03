@@ -276,6 +276,7 @@ import it.fast4x.riplay.ui.components.DelayedControls
 import it.fast4x.riplay.ui.components.LocalGlobalSheetState
 import it.fast4x.riplay.ui.components.SheetBody
 import it.fast4x.riplay.ui.components.themed.AddToPlaylistPlayerMenu
+import it.fast4x.riplay.ui.components.themed.AudioCassette
 import it.fast4x.riplay.ui.components.themed.BlurParamsDialog
 import it.fast4x.riplay.ui.components.themed.CircularSlider
 import it.fast4x.riplay.ui.components.themed.ConfirmationDialog
@@ -292,7 +293,6 @@ import it.fast4x.riplay.ui.screens.player.common.Lyrics
 import it.fast4x.riplay.ui.screens.player.common.NextVisualizer
 import it.fast4x.riplay.ui.screens.player.common.Queue
 import it.fast4x.riplay.ui.screens.player.common.StatsForNerds
-import it.fast4x.riplay.ui.screens.player.online.Controls
 import it.fast4x.riplay.ui.screens.settings.isYtSyncEnabled
 import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.ui.styling.collapsedPlayerProgressBar
@@ -1551,7 +1551,7 @@ fun UnifiedPlayer(
                     modifier = Modifier
                         .align(if (isLandscape) Alignment.BottomEnd else Alignment.BottomCenter)
                         //.requiredHeight(if (showNextSongsInPlayer && (showlyricsthumbnail || (!isShowingLyrics || miniQueueExpanded))) 100.dp else 60.dp)
-                        .height( Dimensions.navigationBarHeight + bottomInset )
+                        .height(Dimensions.navigationBarHeight + bottomInset)
                         .padding(contentPadding)
                         .fillMaxWidth(if (isLandscape) 0.8f else 1f)
                         .conditional(tapqueue) { clickable { showQueue = true } }
@@ -2578,7 +2578,10 @@ fun UnifiedPlayer(
                                                             all = 10.dp
                                                         )
                                                     }
-                                                    .conditional(thumbnailType == ThumbnailType.Modern) {
+                                                    .conditional(thumbnailType == ThumbnailType.Modern
+                                                        && coverThumbnailAnimation != ThumbnailCoverType.AudioCassette
+                                                        && coverThumbnailAnimation != ThumbnailCoverType.AudioCassetteWithCover
+                                                    ) {
                                                         doubleShadowDrop(
                                                             if (showCoverThumbnailAnimation && !binder.player.getMediaItemAt(
                                                                     it
@@ -2609,25 +2612,49 @@ fun UnifiedPlayer(
                                                     )
 
                                                 if (!binder.player.getMediaItemAt(it).isVideo) {
-                                                    if (showCoverThumbnailAnimation)
-                                                        RotateThumbnailCoverAnimationModern(
-                                                            painter = coverPainter,
-                                                            isSongPlaying = binderPlayer.isPlaying || shouldBePlaying,
-                                                            modifier = coverModifier
-                                                                .zIndex(
-                                                                    if (it == pagerState.currentPage) 1f
-                                                                    else if (it == (pagerState.currentPage + 1) || it == (pagerState.currentPage - 1)) 0.85f
-                                                                    else if (it == (pagerState.currentPage + 2) || it == (pagerState.currentPage - 2)) 0.78f
-                                                                    else if (it == (pagerState.currentPage + 3) || it == (pagerState.currentPage - 3)) 0.73f
-                                                                    else if (it == (pagerState.currentPage + 4) || it == (pagerState.currentPage - 4)) 0.68f
-                                                                    else if (it == (pagerState.currentPage + 5) || it == (pagerState.currentPage - 5)) 0.63f
-                                                                    else 0.57f
-                                                                ),
-                                                            state = pagerState,
-                                                            it = it,
-                                                            imageCoverSize = imageCoverSize,
-                                                            type = coverThumbnailAnimation
-                                                        )
+                                                    if (showCoverThumbnailAnimation) {
+                                                        when (coverThumbnailAnimation) {
+                                                            ThumbnailCoverType.CD, ThumbnailCoverType.Vinyl, ThumbnailCoverType.CDWithCover -> {
+                                                                RotateThumbnailCoverAnimationModern(
+                                                                    painter = coverPainter,
+                                                                    isSongPlaying = binderPlayer.isPlaying || shouldBePlaying,
+                                                                    modifier = coverModifier
+                                                                        .zIndex(
+                                                                            if (it == pagerState.currentPage) 1f
+                                                                            else if (it == (pagerState.currentPage + 1) || it == (pagerState.currentPage - 1)) 0.85f
+                                                                            else if (it == (pagerState.currentPage + 2) || it == (pagerState.currentPage - 2)) 0.78f
+                                                                            else if (it == (pagerState.currentPage + 3) || it == (pagerState.currentPage - 3)) 0.73f
+                                                                            else if (it == (pagerState.currentPage + 4) || it == (pagerState.currentPage - 4)) 0.68f
+                                                                            else if (it == (pagerState.currentPage + 5) || it == (pagerState.currentPage - 5)) 0.63f
+                                                                            else 0.57f
+                                                                        ),
+                                                                    state = pagerState,
+                                                                    it = it,
+                                                                    imageCoverSize = imageCoverSize,
+                                                                    type = coverThumbnailAnimation
+                                                                )
+                                                            }
+                                                            ThumbnailCoverType.AudioCassette, ThumbnailCoverType.AudioCassetteWithCover -> {
+                                                                AudioCassette(
+                                                                    modifier = coverModifier
+                                                                        .zIndex(
+                                                                            if (it == pagerState.currentPage) 1f
+                                                                            else if (it == (pagerState.currentPage + 1) || it == (pagerState.currentPage - 1)) 0.85f
+                                                                            else if (it == (pagerState.currentPage + 2) || it == (pagerState.currentPage - 2)) 0.78f
+                                                                            else if (it == (pagerState.currentPage + 3) || it == (pagerState.currentPage - 3)) 0.73f
+                                                                            else if (it == (pagerState.currentPage + 4) || it == (pagerState.currentPage - 4)) 0.68f
+                                                                            else if (it == (pagerState.currentPage + 5) || it == (pagerState.currentPage - 5)) 0.63f
+                                                                            else 0.57f
+                                                                        ),
+                                                                    isPlaying = binderPlayer.isPlaying || shouldBePlaying,
+                                                                    painter = coverPainter,
+                                                                    playerState = playerState,
+                                                                    withCover = coverThumbnailAnimation == ThumbnailCoverType.AudioCassetteWithCover
+                                                                )
+                                                            }
+                                                        }
+
+                                                    }
                                                     else
                                                         Box(
                                                             modifier = Modifier
@@ -3320,141 +3347,185 @@ fun UnifiedPlayer(
                                             }
                                     ) { index ->
 
-                                        val coverPainter = rememberAsyncImagePainter(
-                                            model = ImageRequest.Builder(LocalContext.current)
-                                                .data(
-                                                    binder.player.getMediaItemAt(index).mediaMetadata.artworkUri.toString().thumbnail(
-                                                        1200
+                                            val coverPainter = rememberAsyncImagePainter(
+                                                model = ImageRequest.Builder(LocalContext.current)
+                                                    .data(
+                                                        binder.player.getMediaItemAt(index).mediaMetadata.artworkUri.toString()
+                                                            .thumbnail(
+                                                                1200
+                                                            )
                                                     )
-                                                )
-                                                .size(1200, 1200)
-                                                .transformations(LandscapeToSquareTransformation(1200))
-                                                .build()
-                                        )
-
-                                        val coverModifier = Modifier
-                                            .applyIf(!isLandscape) {
-                                                fillMaxSize()
-                                            }
-                                            .aspectRatio(1f)
-                                            .padding(all = animatePadding)
-                                            .conditional(carousel)
-                                            {
-                                                graphicsLayer {
-                                                    val pageOffSet =
-                                                        ((pagerState.currentPage - index) + pagerState.currentPageOffsetFraction).absoluteValue
-                                                    alpha = lerp(
-                                                        start = 0.9f,
-                                                        stop = 1f,
-                                                        fraction = 1f - pageOffSet.coerceIn(0f, 1f)
+                                                    .size(1200, 1200)
+                                                    .transformations(
+                                                        LandscapeToSquareTransformation(
+                                                            1200
+                                                        )
                                                     )
-                                                    scaleY = lerp(
-                                                        start = 0.9f,
-                                                        stop = 1f,
-                                                        fraction = 1f - pageOffSet.coerceIn(0f, 5f)
-                                                    )
-                                                    scaleX = lerp(
-                                                        start = 0.9f,
-                                                        stop = 1f,
-                                                        fraction = 1f - pageOffSet.coerceIn(0f, 5f)
-                                                    )
-                                                }
-                                            }
-                                            .conditional(thumbnailType == ThumbnailType.Modern) {
-                                                padding(
-                                                    all = 10.dp
-                                                )
-                                            }
-                                            .conditional(thumbnailType == ThumbnailType.Modern) {
-                                                doubleShadowDrop(
-                                                    if (showCoverThumbnailAnimation && !binder.player.getMediaItemAt(
-                                                            index
-                                                        ).isVideo
-                                                    ) CircleShape else thumbnailRoundness.shape(),
-                                                    4.dp,
-                                                    8.dp
-                                                )
-                                            }
-                                            .clip(thumbnailRoundness.shape())
-                                            .combinedClickable(
-                                                interactionSource = remember { MutableInteractionSource() },
-                                                indication = null,
-                                                onClick = {
-                                                    if (index == pagerState.settledPage && thumbnailTapEnabled) {
-                                                        if (isShowingVisualizer) isShowingVisualizer =
-                                                            false
-                                                        isShowingLyrics = !isShowingLyrics
-                                                    }
-                                                    if (index != pagerState.settledPage) {
-                                                        binder.player.playAtIndex(index)
-                                                    }
-                                                },
-                                                onLongClick = {
-                                                    if (index == pagerState.settledPage && (expandedplayer || fadingedge))
-                                                        showThumbnailOffsetDialog = true
-                                                }
+                                                    .build()
                                             )
 
-                                        if (!binder.player.getMediaItemAt(index).isVideo ) {
-                                            if (showCoverThumbnailAnimation)
-                                                RotateThumbnailCoverAnimationModern(
-                                                    painter = coverPainter,
-                                                    isSongPlaying = binderPlayer.isPlaying || shouldBePlaying,
-                                                    modifier = coverModifier
-                                                        .zIndex(
-                                                            if (index == pagerState.currentPage) 1f
-                                                            else if (index == (pagerState.currentPage + 1) || index == (pagerState.currentPage - 1)) 0.85f
-                                                            else if (index == (pagerState.currentPage + 2) || index == (pagerState.currentPage - 2)) 0.78f
-                                                            else if (index == (pagerState.currentPage + 3) || index == (pagerState.currentPage - 3)) 0.73f
-                                                            else if (index == (pagerState.currentPage + 4) || index == (pagerState.currentPage - 4)) 0.68f
-                                                            else if (index == (pagerState.currentPage + 5) || index == (pagerState.currentPage - 5)) 0.63f
-                                                            else 0.57f
-                                                        ),
-                                                    state = pagerState,
-                                                    it = index,
-                                                    imageCoverSize = imageCoverSize,
-                                                    type = coverThumbnailAnimation
-                                                )
-                                            else
-                                                Box(
-                                                    modifier = Modifier
-                                                        .zIndex(
-                                                            if (index == pagerState.currentPage) 1f
-                                                            else if (index == (pagerState.currentPage + 1) || index == (pagerState.currentPage - 1)) 0.85f
-                                                            else if (index == (pagerState.currentPage + 2) || index == (pagerState.currentPage - 2)) 0.78f
-                                                            else if (index == (pagerState.currentPage + 3) || index == (pagerState.currentPage - 3)) 0.73f
-                                                            else if (index == (pagerState.currentPage + 4) || index == (pagerState.currentPage - 4)) 0.68f
-                                                            else if (index == (pagerState.currentPage + 5) || index == (pagerState.currentPage - 5)) 0.63f
-                                                            else 0.57f
+                                            val coverModifier = Modifier
+                                                .applyIf(!isLandscape) {
+                                                    fillMaxSize()
+                                                }
+                                                .aspectRatio(1f)
+                                                .padding(all = animatePadding)
+                                                .conditional(carousel) {
+                                                    graphicsLayer {
+                                                        val pageOffSet =
+                                                            ((pagerState.currentPage - index) + pagerState.currentPageOffsetFraction).absoluteValue
+                                                        alpha = lerp(
+                                                            start = 0.9f,
+                                                            stop = 1f,
+                                                            fraction = 1f - pageOffSet.coerceIn(
+                                                                0f,
+                                                                1f
+                                                            )
                                                         )
+                                                        scaleY = lerp(
+                                                            start = 0.9f,
+                                                            stop = 1f,
+                                                            fraction = 1f - pageOffSet.coerceIn(
+                                                                0f,
+                                                                5f
+                                                            )
+                                                        )
+                                                        scaleX = lerp(
+                                                            start = 0.9f,
+                                                            stop = 1f,
+                                                            fraction = 1f - pageOffSet.coerceIn(
+                                                                0f,
+                                                                5f
+                                                            )
+                                                        )
+                                                    }
+                                                }
+                                                .conditional(thumbnailType == ThumbnailType.Modern) {
+                                                    padding(
+                                                        all = 10.dp
+                                                    )
+                                                }
+                                                .conditional(thumbnailType == ThumbnailType.Modern
+                                                        && coverThumbnailAnimation != ThumbnailCoverType.AudioCassette
+                                                        && coverThumbnailAnimation != ThumbnailCoverType.AudioCassetteWithCover
                                                 ) {
+                                                    doubleShadowDrop(
+                                                        if (showCoverThumbnailAnimation && !binder.player.getMediaItemAt(
+                                                                index
+                                                            ).isVideo
+                                                        ) CircleShape else thumbnailRoundness.shape(),
+                                                        4.dp,
+                                                        8.dp
+                                                    )
+                                                }
+                                                .clip(thumbnailRoundness.shape())
+                                                .combinedClickable(
+                                                    interactionSource = remember { MutableInteractionSource() },
+                                                    indication = null,
+                                                    onClick = {
+                                                        if (index == pagerState.settledPage && thumbnailTapEnabled) {
+                                                            if (isShowingVisualizer) isShowingVisualizer =
+                                                                false
+                                                            isShowingLyrics = !isShowingLyrics
+                                                        }
+                                                        if (index != pagerState.settledPage) {
+                                                            binder.player.playAtIndex(index)
+                                                        }
+                                                    },
+                                                    onLongClick = {
+                                                        if (index == pagerState.settledPage && (expandedplayer || fadingedge))
+                                                            showThumbnailOffsetDialog = true
+                                                    }
+                                                )
 
-                                                    val isVideo =
-                                                        rememberSaveable { binder.player.getMediaItemAt(index).isVideo }
-                                                    if (!isVideo)
-                                                        Image(
-                                                            painter = coverPainter,
-                                                            contentDescription = "",
-                                                            contentScale = ContentScale.Fit,
-                                                            modifier = coverModifier
-                                                        )
+                                            if (!binder.player.getMediaItemAt(index).isVideo) {
+                                                if (showCoverThumbnailAnimation) {
+                                                    when (coverThumbnailAnimation) {
+                                                        ThumbnailCoverType.CD, ThumbnailCoverType.Vinyl, ThumbnailCoverType.CDWithCover -> {
+                                                            RotateThumbnailCoverAnimationModern(
+                                                                painter = coverPainter,
+                                                                isSongPlaying = binderPlayer.isPlaying || shouldBePlaying,
+                                                                modifier = coverModifier
+                                                                    .zIndex(
+                                                                        if (index == pagerState.currentPage) 1f
+                                                                        else if (index == (pagerState.currentPage + 1) || index == (pagerState.currentPage - 1)) 0.85f
+                                                                        else if (index == (pagerState.currentPage + 2) || index == (pagerState.currentPage - 2)) 0.78f
+                                                                        else if (index == (pagerState.currentPage + 3) || index == (pagerState.currentPage - 3)) 0.73f
+                                                                        else if (index == (pagerState.currentPage + 4) || index == (pagerState.currentPage - 4)) 0.68f
+                                                                        else if (index == (pagerState.currentPage + 5) || index == (pagerState.currentPage - 5)) 0.63f
+                                                                        else 0.57f
+                                                                    ),
+                                                                state = pagerState,
+                                                                it = index,
+                                                                imageCoverSize = imageCoverSize,
+                                                                type = coverThumbnailAnimation
+                                                            )
+                                                        }
 
-                                                    if (isDragged && expandedplayer && index == binder.player.currentMediaItemIndex) {
-                                                        Box(
-                                                            modifier = Modifier
-                                                                .align(Alignment.Center)
-                                                                .matchParentSize()
-                                                        ) {
-                                                            NowPlayingSongIndicator(
-                                                                binder.player.getMediaItemAt(
-                                                                    binder.player.currentMediaItemIndex
-                                                                ).mediaId, binder.player,
-                                                                Dimensions.thumbnails.album
+                                                        ThumbnailCoverType.AudioCassette, ThumbnailCoverType.AudioCassetteWithCover -> {
+                                                            AudioCassette(
+                                                                modifier = coverModifier
+                                                                .zIndex(
+                                                                    if (index == pagerState.currentPage) 1f
+                                                                    else if (index == (pagerState.currentPage + 1) || index == (pagerState.currentPage - 1)) 0.85f
+                                                                    else if (index == (pagerState.currentPage + 2) || index == (pagerState.currentPage - 2)) 0.78f
+                                                                    else if (index == (pagerState.currentPage + 3) || index == (pagerState.currentPage - 3)) 0.73f
+                                                                    else if (index == (pagerState.currentPage + 4) || index == (pagerState.currentPage - 4)) 0.68f
+                                                                    else if (index == (pagerState.currentPage + 5) || index == (pagerState.currentPage - 5)) 0.63f
+                                                                    else 0.57f
+                                                                ),
+                                                                isPlaying = binderPlayer.isPlaying || shouldBePlaying,
+                                                                painter = coverPainter,
+                                                                playerState = playerState,
+                                                                withCover = coverThumbnailAnimation == ThumbnailCoverType.AudioCassetteWithCover
                                                             )
                                                         }
                                                     }
-                                                }
-                                        }
+                                                } else
+                                                    Box(
+                                                        modifier = Modifier
+                                                            .zIndex(
+                                                                if (index == pagerState.currentPage) 1f
+                                                                else if (index == (pagerState.currentPage + 1) || index == (pagerState.currentPage - 1)) 0.85f
+                                                                else if (index == (pagerState.currentPage + 2) || index == (pagerState.currentPage - 2)) 0.78f
+                                                                else if (index == (pagerState.currentPage + 3) || index == (pagerState.currentPage - 3)) 0.73f
+                                                                else if (index == (pagerState.currentPage + 4) || index == (pagerState.currentPage - 4)) 0.68f
+                                                                else if (index == (pagerState.currentPage + 5) || index == (pagerState.currentPage - 5)) 0.63f
+                                                                else 0.57f
+                                                            )
+                                                    ) {
+
+                                                        val isVideo =
+                                                            rememberSaveable {
+                                                                binder.player.getMediaItemAt(
+                                                                    index
+                                                                ).isVideo
+                                                            }
+                                                        if (!isVideo)
+                                                            Image(
+                                                                painter = coverPainter,
+                                                                contentDescription = "",
+                                                                contentScale = ContentScale.Fit,
+                                                                modifier = coverModifier
+                                                            )
+
+                                                        if (isDragged && expandedplayer && index == binder.player.currentMediaItemIndex) {
+                                                            Box(
+                                                                modifier = Modifier
+                                                                    .align(Alignment.Center)
+                                                                    .matchParentSize()
+                                                            ) {
+                                                                NowPlayingSongIndicator(
+                                                                    binder.player.getMediaItemAt(
+                                                                        binder.player.currentMediaItemIndex
+                                                                    ).mediaId, binder.player,
+                                                                    Dimensions.thumbnails.album
+                                                                )
+                                                            }
+                                                        }
+                                                    }
+                                            }
+
                                     }
 
                                 } else {

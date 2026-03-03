@@ -1524,14 +1524,13 @@ class MainActivity :
                                                 localPlayerSheetState.collapseSoft()
                                             },
                                         )
-                                        /*
-                                    if (binder?.currentMediaItemAsSong?.isLocal == true)
-                                        localPlayer()
-                                    else
-                                        onlinePlayer()
-
-                                     */
                                     }
+
+//                                    if (binder?.currentMediaItemAsSong?.isLocal == true)
+//                                        localPlayer()
+//                                    else
+//                                        onlinePlayer()
+
                                 }
 
                                 val menuState = LocalGlobalSheetState.current

@@ -7,13 +7,17 @@ import it.fast4x.riplay.R
 enum class ThumbnailCoverType {
     Vinyl,
     CD,
-    CDwithCover;
+    CDWithCover,
+    AudioCassette,
+    AudioCassetteWithCover;
 
     val textName: String
         @Composable
         get() = when (this) {
             Vinyl -> stringResource(R.string.cover_type_vinyl)
             CD -> stringResource(R.string.cover_type_cd)
-            CDwithCover -> stringResource(R.string.cover_type_cd_with_cover)
+            CDWithCover -> stringResource(R.string.cover_type_cd_with_cover)
+            AudioCassette -> stringResource(R.string.cover_type_audio_cassette)
+            AudioCassetteWithCover -> stringResource(R.string.cover_type_audio_cassette_with_cover)
         }
 }
