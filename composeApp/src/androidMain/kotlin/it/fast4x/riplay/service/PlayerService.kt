@@ -496,7 +496,14 @@ class PlayerService : Service(),
         currentSong.debounce(1000).collect(coroutineScope) { song ->
             if (song == null) return@collect
 
-            var currentMediaId = song.id
+            Timber.d("PlayerService onCreate update currentSong $song mediaItemState ${currentMediaItemState.value}")
+
+            withContext(Dispatchers.Main) {
+                updateUnifiedMediasession()
+                updateUnifiedNotification()
+            }
+
+            val currentMediaId = if (!song.isLocal) song.id else song.mediaId.toString()
 
             if (lastOnlineMediaId != currentMediaId) {
                 if (onlineListenedDurationMs > 0) incrementOnlineListenedPlaytimeMs()
@@ -505,13 +512,7 @@ class PlayerService : Service(),
                 lastOnlineMediaId = currentMediaId
             }
 
-            withContext(Dispatchers.Main) {
-                updateUnifiedNotification()
-            }
-            Timber.d("PlayerService onCreate update currentSong $song mediaItemState ${currentMediaItemState.value}")
 
-            //Update online
-            currentMediaId = if (!song.isLocal) song.id else song.mediaId.toString()
 
             val format = Database.format(currentMediaId.toString()).first()
             Timber.d("PlayerService onCreate update currentSong $currentMediaId format $format")
@@ -2215,7 +2216,7 @@ class PlayerService : Service(),
                         else MediaSessionCompat.QueueItem.UNKNOWN_ID.toLong()
                     )
                     setState(
-                        if (_playerState.value.isPlaying || player.isPlaying)
+                        if (_playerState.value.isPlaying)
                             PlaybackStateCompat.STATE_PLAYING else PlaybackStateCompat.STATE_PAUSED,
                         if(player.currentMediaItem?.isLocal == false) (currentSecond.value * 1000).toLong() else player.currentPosition,
                         1f
