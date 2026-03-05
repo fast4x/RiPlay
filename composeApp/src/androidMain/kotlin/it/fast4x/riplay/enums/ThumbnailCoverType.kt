@@ -9,7 +9,8 @@ enum class ThumbnailCoverType {
     CD,
     CDWithCover,
     AudioCassette,
-    AudioCassetteWithCover;
+    AudioCassetteWithCover,
+    Turntable;
 
     val textName: String
         @Composable
@@ -19,5 +20,6 @@ enum class ThumbnailCoverType {
             CDWithCover -> stringResource(R.string.cover_type_cd_with_cover)
             AudioCassette -> stringResource(R.string.cover_type_audio_cassette)
             AudioCassetteWithCover -> stringResource(R.string.cover_type_audio_cassette_with_cover)
+            Turntable -> stringResource(R.string.cover_type_turntable)
         }
 }

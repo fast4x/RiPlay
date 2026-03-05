@@ -84,23 +84,28 @@ fun RotateThumbnailCover(
                 modifier = Modifier
                     .fillMaxSize()
                     .rotate(rotationDegrees)
-                    .aspectRatio(1.0f),
+                    .aspectRatio(1.0f)
+                    .align(Alignment.Center),
+
                 painter = painterResource(id = when (type) {
-                    ThumbnailCoverType.Vinyl, ThumbnailCoverType.AudioCassette, ThumbnailCoverType.AudioCassetteWithCover -> R.drawable.vinyl_background
+                    ThumbnailCoverType.Vinyl -> R.drawable.vinyl_background
                     ThumbnailCoverType.CD, ThumbnailCoverType.CDWithCover -> R.drawable.cd
+                    else -> R.drawable.vinyl_background
 
                 }),
                 contentDescription = "disc background"
             )
 
-        if (type in listOf(ThumbnailCoverType.Vinyl, ThumbnailCoverType.CDWithCover))
+        if (type in listOf(ThumbnailCoverType.Vinyl, ThumbnailCoverType.CDWithCover,
+                ThumbnailCoverType.Turntable))
             Image(
                 modifier = Modifier
                     .fillMaxSize(
                         when (type) {
-                            ThumbnailCoverType.Vinyl, ThumbnailCoverType.AudioCassette, ThumbnailCoverType.AudioCassetteWithCover -> imageCoverSize * 0.01f
+                            ThumbnailCoverType.Vinyl -> imageCoverSize * 0.01f
                             ThumbnailCoverType.CD -> 1f
                             ThumbnailCoverType.CDWithCover -> 0.85f
+                            else -> imageCoverSize * 0.01f
                         }
 
                     )

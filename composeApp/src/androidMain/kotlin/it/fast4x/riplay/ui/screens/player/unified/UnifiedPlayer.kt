@@ -288,6 +288,7 @@ import it.fast4x.riplay.ui.components.themed.RotateThumbnailCoverAnimationModern
 import it.fast4x.riplay.ui.components.themed.SecondaryTextButton
 import it.fast4x.riplay.ui.components.themed.SmartMessage
 import it.fast4x.riplay.ui.components.themed.ThumbnailOffsetDialog
+import it.fast4x.riplay.ui.components.themed.Turntable
 import it.fast4x.riplay.ui.components.themed.animateBrushRotation
 import it.fast4x.riplay.ui.screens.player.common.Lyrics
 import it.fast4x.riplay.ui.screens.player.common.NextVisualizer
@@ -2652,6 +2653,22 @@ fun UnifiedPlayer(
                                                                     withCover = coverThumbnailAnimation == ThumbnailCoverType.AudioCassetteWithCover
                                                                 )
                                                             }
+                                                            ThumbnailCoverType.Turntable -> {
+                                                                Turntable(
+                                                                    modifier = coverModifier
+                                                                        .zIndex(
+                                                                            if (it == pagerState.currentPage) 1f
+                                                                            else if (it == (pagerState.currentPage + 1) || it == (pagerState.currentPage - 1)) 0.85f
+                                                                            else if (it == (pagerState.currentPage + 2) || it == (pagerState.currentPage - 2)) 0.78f
+                                                                            else if (it == (pagerState.currentPage + 3) || it == (pagerState.currentPage - 3)) 0.73f
+                                                                            else if (it == (pagerState.currentPage + 4) || it == (pagerState.currentPage - 4)) 0.68f
+                                                                            else if (it == (pagerState.currentPage + 5) || it == (pagerState.currentPage - 5)) 0.63f
+                                                                            else 0.57f
+                                                                        ),
+                                                                    isPlaying = binderPlayer.isPlaying || shouldBePlaying,
+                                                                    painter = coverPainter,
+                                                                )
+                                                            }
                                                         }
 
                                                     }
@@ -3478,6 +3495,22 @@ fun UnifiedPlayer(
                                                                 painter = coverPainter,
                                                                 playerState = playerState,
                                                                 withCover = coverThumbnailAnimation == ThumbnailCoverType.AudioCassetteWithCover
+                                                            )
+                                                        }
+                                                        ThumbnailCoverType.Turntable -> {
+                                                            Turntable(
+                                                                modifier = coverModifier
+                                                                    .zIndex(
+                                                                        if (index == pagerState.currentPage) 1f
+                                                                        else if (index == (pagerState.currentPage + 1) || index == (pagerState.currentPage - 1)) 0.85f
+                                                                        else if (index == (pagerState.currentPage + 2) || index == (pagerState.currentPage - 2)) 0.78f
+                                                                        else if (index == (pagerState.currentPage + 3) || index == (pagerState.currentPage - 3)) 0.73f
+                                                                        else if (index == (pagerState.currentPage + 4) || index == (pagerState.currentPage - 4)) 0.68f
+                                                                        else if (index == (pagerState.currentPage + 5) || index == (pagerState.currentPage - 5)) 0.63f
+                                                                        else 0.57f
+                                                                    ),
+                                                                isPlaying = binderPlayer.isPlaying || shouldBePlaying,
+                                                                painter = coverPainter,
                                                             )
                                                         }
                                                     }
