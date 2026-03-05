@@ -948,7 +948,7 @@
     <string name="restore_from_other_backup">Ripristina da altro backup</string>
     <string name="import_the_database_be_carefull">Importa il database da altri backup. Fai attenzione, potresti dover reinstallare l\'app.</string>
     <string name="enable_fullscreen">Abilita modalità schermo intero</string>
-    <string name="enable_fullscreen_info"></string>
+    <string name="enable_fullscreen_info">Fullscreen hide system bars</string>
     <string name="invalid_token">Token non valido</string>
     <string name="unknown_title">Titolo sconosciuto</string>
     <string name="unknown_artist">Artista sconosciuto</string>
@@ -1273,4 +1273,7 @@
     <string name="crash_title_ops_riplay_is_in_error_state">Ops! RiPlay is in error state</string>
     <string name="crash_subtitle_the_application_crashed_unexpectedly_you_can_help_us_by_sending_this_log">The application crashed unexpectedly, you can help us by sending this log.</string>
     <string name="play_or_pause_when_receiving_a_call">Play or pause when receiving a call</string>
+    <string name="cover_type_audio_cassette">Audio cassette</string>
+    <string name="cover_type_audio_cassette_with_cover">Audio cassette with cover</string>
+    <string name="cover_type_turntable">Turntable</string>
 </resources>

@@ -46,7 +46,7 @@
     <string name="search_lyrics_online">Şarkı sözlerini çevrimiçi ara</string>
     <string name="fetch_lyrics_again">Şarkı sözlerini yeniden indir</string>
     <string name="id">Kimlik</string>
-    <string name="itag"></string>
+    <string name="itag">Itag</string>
     <string name="bitrate">Bit hızı</string>
     <string name="size">Boyut</string>
     <string name="cached">Önbellektekiler</string>
@@ -1273,4 +1273,7 @@
     <string name="crash_title_ops_riplay_is_in_error_state">Ops! RiPlay is in error state</string>
     <string name="crash_subtitle_the_application_crashed_unexpectedly_you_can_help_us_by_sending_this_log">The application crashed unexpectedly, you can help us by sending this log.</string>
     <string name="play_or_pause_when_receiving_a_call">Play or pause when receiving a call</string>
+    <string name="cover_type_audio_cassette">Audio cassette</string>
+    <string name="cover_type_audio_cassette_with_cover">Audio cassette with cover</string>
+    <string name="cover_type_turntable">Turntable</string>
 </resources>
