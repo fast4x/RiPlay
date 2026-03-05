@@ -2440,7 +2440,7 @@ fun LocalPlayer(
                                                          else 0.57f
                                                      ),
                                                  state = pagerState,
-                                                 it = it,
+                                                 pageIndex = it,
                                                  imageCoverSize = imageCoverSize,
                                                  type = coverThumbnailAnimation
                                              )
@@ -3125,7 +3125,7 @@ fun LocalPlayer(
                                                      else 0.57f
                                                  ),
                                              state = pagerState,
-                                             it = index,
+                                             pageIndex = index,
                                              imageCoverSize = imageCoverSize,
                                              type = coverThumbnailAnimation
                                          )

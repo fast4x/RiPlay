@@ -2528,12 +2528,12 @@ fun UnifiedPlayer(
                                                         )
                                                     )
                                                     .conditional(fadingedge) { horizontalFadingEdge() }
-                                            ) { it ->
+                                            ) { index ->
 
                                                 val coverPainter = rememberAsyncImagePainter(
                                                     model = ImageRequest.Builder(LocalContext.current)
                                                         .data(
-                                                            binder.player.getMediaItemAt(it).mediaMetadata.artworkUri.toString().thumbnail(
+                                                            binder.player.getMediaItemAt(index).mediaMetadata.artworkUri.toString().thumbnail(
                                                                 1200
                                                             )
                                                         )
@@ -2550,7 +2550,7 @@ fun UnifiedPlayer(
                                                     .padding(all = playerThumbnailSizeL.padding.dp)
                                                     .graphicsLayer {
                                                         val pageOffSet =
-                                                            ((pagerState.currentPage - it) + pagerState.currentPageOffsetFraction).absoluteValue
+                                                            ((pagerState.currentPage - index) + pagerState.currentPageOffsetFraction).absoluteValue
                                                         alpha = lerp(
                                                             start = 0.9f,
                                                             stop = 1f,
@@ -2587,7 +2587,7 @@ fun UnifiedPlayer(
                                                     ) {
                                                         doubleShadowDrop(
                                                             if (showCoverThumbnailAnimation && !binder.player.getMediaItemAt(
-                                                                    it
+                                                                    index
                                                                 ).isVideo
                                                             ) CircleShape else thumbnailRoundness.shape(),
                                                             4.dp,
@@ -2599,22 +2599,22 @@ fun UnifiedPlayer(
                                                         interactionSource = remember { MutableInteractionSource() },
                                                         indication = null,
                                                         onClick = {
-                                                            if (it == pagerState.settledPage && thumbnailTapEnabled) {
+                                                            if (index == pagerState.settledPage && thumbnailTapEnabled) {
                                                                 if (isShowingVisualizer) isShowingVisualizer =
                                                                     false
                                                                 isShowingLyrics = !isShowingLyrics
                                                             }
-                                                            if (it != pagerState.settledPage) {
-                                                                binder.player.playAtIndex(it)
+                                                            if (index != pagerState.settledPage) {
+                                                                binder.player.playAtIndex(index)
                                                             }
                                                         },
                                                         onLongClick = {
-                                                            if (it == pagerState.settledPage)
+                                                            if (index == pagerState.settledPage)
                                                                 showThumbnailOffsetDialog = true
                                                         }
                                                     )
 
-                                                if (!binder.player.getMediaItemAt(it).isVideo) {
+                                                if (!binder.player.getMediaItemAt(index).isVideo) {
                                                     if (showCoverThumbnailAnimation) {
                                                         when (coverThumbnailAnimation) {
                                                             ThumbnailCoverType.CD, ThumbnailCoverType.Vinyl, ThumbnailCoverType.CDWithCover -> {
@@ -2623,16 +2623,16 @@ fun UnifiedPlayer(
                                                                     isSongPlaying = binderPlayer.isPlaying || shouldBePlaying,
                                                                     modifier = coverModifier
                                                                         .zIndex(
-                                                                            if (it == pagerState.currentPage) 1f
-                                                                            else if (it == (pagerState.currentPage + 1) || it == (pagerState.currentPage - 1)) 0.85f
-                                                                            else if (it == (pagerState.currentPage + 2) || it == (pagerState.currentPage - 2)) 0.78f
-                                                                            else if (it == (pagerState.currentPage + 3) || it == (pagerState.currentPage - 3)) 0.73f
-                                                                            else if (it == (pagerState.currentPage + 4) || it == (pagerState.currentPage - 4)) 0.68f
-                                                                            else if (it == (pagerState.currentPage + 5) || it == (pagerState.currentPage - 5)) 0.63f
+                                                                            if (index == pagerState.currentPage) 1f
+                                                                            else if (index == (pagerState.currentPage + 1) || index == (pagerState.currentPage - 1)) 0.85f
+                                                                            else if (index == (pagerState.currentPage + 2) || index == (pagerState.currentPage - 2)) 0.78f
+                                                                            else if (index == (pagerState.currentPage + 3) || index == (pagerState.currentPage - 3)) 0.73f
+                                                                            else if (index == (pagerState.currentPage + 4) || index == (pagerState.currentPage - 4)) 0.68f
+                                                                            else if (index == (pagerState.currentPage + 5) || index == (pagerState.currentPage - 5)) 0.63f
                                                                             else 0.57f
                                                                         ),
                                                                     state = pagerState,
-                                                                    it = it,
+                                                                    pageIndex = index,
                                                                     imageCoverSize = imageCoverSize,
                                                                     type = coverThumbnailAnimation
                                                                 )
@@ -2641,15 +2641,15 @@ fun UnifiedPlayer(
                                                                 AudioCassette(
                                                                     modifier = coverModifier
                                                                         .zIndex(
-                                                                            if (it == pagerState.currentPage) 1f
-                                                                            else if (it == (pagerState.currentPage + 1) || it == (pagerState.currentPage - 1)) 0.85f
-                                                                            else if (it == (pagerState.currentPage + 2) || it == (pagerState.currentPage - 2)) 0.78f
-                                                                            else if (it == (pagerState.currentPage + 3) || it == (pagerState.currentPage - 3)) 0.73f
-                                                                            else if (it == (pagerState.currentPage + 4) || it == (pagerState.currentPage - 4)) 0.68f
-                                                                            else if (it == (pagerState.currentPage + 5) || it == (pagerState.currentPage - 5)) 0.63f
+                                                                            if (index == pagerState.currentPage) 1f
+                                                                            else if (index == (pagerState.currentPage + 1) || index == (pagerState.currentPage - 1)) 0.85f
+                                                                            else if (index == (pagerState.currentPage + 2) || index == (pagerState.currentPage - 2)) 0.78f
+                                                                            else if (index == (pagerState.currentPage + 3) || index == (pagerState.currentPage - 3)) 0.73f
+                                                                            else if (index == (pagerState.currentPage + 4) || index == (pagerState.currentPage - 4)) 0.68f
+                                                                            else if (index == (pagerState.currentPage + 5) || index == (pagerState.currentPage - 5)) 0.63f
                                                                             else 0.57f
                                                                         ),
-                                                                    isPlaying = binderPlayer.isPlaying || shouldBePlaying,
+                                                                    isPlaying = (binderPlayer.isPlaying || shouldBePlaying) && (index == pagerState.settledPage),
                                                                     painter = coverPainter,
                                                                     playerState = playerState,
                                                                     withCover = coverThumbnailAnimation == ThumbnailCoverType.AudioCassetteWithCover
@@ -2659,15 +2659,15 @@ fun UnifiedPlayer(
                                                                 Turntable(
                                                                     modifier = coverModifier
                                                                         .zIndex(
-                                                                            if (it == pagerState.currentPage) 1f
-                                                                            else if (it == (pagerState.currentPage + 1) || it == (pagerState.currentPage - 1)) 0.85f
-                                                                            else if (it == (pagerState.currentPage + 2) || it == (pagerState.currentPage - 2)) 0.78f
-                                                                            else if (it == (pagerState.currentPage + 3) || it == (pagerState.currentPage - 3)) 0.73f
-                                                                            else if (it == (pagerState.currentPage + 4) || it == (pagerState.currentPage - 4)) 0.68f
-                                                                            else if (it == (pagerState.currentPage + 5) || it == (pagerState.currentPage - 5)) 0.63f
+                                                                            if (index == pagerState.currentPage) 1f
+                                                                            else if (index == (pagerState.currentPage + 1) || index == (pagerState.currentPage - 1)) 0.85f
+                                                                            else if (index == (pagerState.currentPage + 2) || index == (pagerState.currentPage - 2)) 0.78f
+                                                                            else if (index == (pagerState.currentPage + 3) || index == (pagerState.currentPage - 3)) 0.73f
+                                                                            else if (index == (pagerState.currentPage + 4) || index == (pagerState.currentPage - 4)) 0.68f
+                                                                            else if (index == (pagerState.currentPage + 5) || index == (pagerState.currentPage - 5)) 0.63f
                                                                             else 0.57f
                                                                         ),
-                                                                    isPlaying = binderPlayer.isPlaying || shouldBePlaying,
+                                                                    isPlaying = (binderPlayer.isPlaying || shouldBePlaying) && (index == pagerState.settledPage),
                                                                     painter = coverPainter,
                                                                 )
                                                             }
@@ -2678,12 +2678,12 @@ fun UnifiedPlayer(
                                                         Box(
                                                             modifier = Modifier
                                                                 .zIndex(
-                                                                    if (it == pagerState.currentPage) 1f
-                                                                    else if (it == (pagerState.currentPage + 1) || it == (pagerState.currentPage - 1)) 0.85f
-                                                                    else if (it == (pagerState.currentPage + 2) || it == (pagerState.currentPage - 2)) 0.78f
-                                                                    else if (it == (pagerState.currentPage + 3) || it == (pagerState.currentPage - 3)) 0.73f
-                                                                    else if (it == (pagerState.currentPage + 4) || it == (pagerState.currentPage - 4)) 0.68f
-                                                                    else if (it == (pagerState.currentPage + 5) || it == (pagerState.currentPage - 5)) 0.63f
+                                                                    if (index == pagerState.currentPage) 1f
+                                                                    else if (index == (pagerState.currentPage + 1) || index == (pagerState.currentPage - 1)) 0.85f
+                                                                    else if (index == (pagerState.currentPage + 2) || index == (pagerState.currentPage - 2)) 0.78f
+                                                                    else if (index == (pagerState.currentPage + 3) || index == (pagerState.currentPage - 3)) 0.73f
+                                                                    else if (index == (pagerState.currentPage + 4) || index == (pagerState.currentPage - 4)) 0.68f
+                                                                    else if (index == (pagerState.currentPage + 5) || index == (pagerState.currentPage - 5)) 0.63f
                                                                     else 0.57f
                                                                 )
                                                         ) {
@@ -2693,7 +2693,7 @@ fun UnifiedPlayer(
                                                                 contentScale = ContentScale.Fit,
                                                                 modifier = coverModifier
                                                             )
-                                                            if (isDragged && it == binder.player.currentMediaItemIndex) {
+                                                            if (isDragged && index == binder.player.currentMediaItemIndex) {
                                                                 Box(
                                                                     modifier = Modifier
                                                                         .align(Alignment.Center)
@@ -3475,7 +3475,7 @@ fun UnifiedPlayer(
                                                                         else 0.57f
                                                                     ),
                                                                 state = pagerState,
-                                                                it = index,
+                                                                pageIndex = index,
                                                                 imageCoverSize = imageCoverSize,
                                                                 type = coverThumbnailAnimation
                                                             )
@@ -3493,7 +3493,7 @@ fun UnifiedPlayer(
                                                                     else if (index == (pagerState.currentPage + 5) || index == (pagerState.currentPage - 5)) 0.63f
                                                                     else 0.57f
                                                                 ),
-                                                                isPlaying = binderPlayer.isPlaying || shouldBePlaying,
+                                                                isPlaying = (binderPlayer.isPlaying || shouldBePlaying) && (index == pagerState.settledPage),
                                                                 painter = coverPainter,
                                                                 playerState = playerState,
                                                                 withCover = coverThumbnailAnimation == ThumbnailCoverType.AudioCassetteWithCover
@@ -3511,7 +3511,7 @@ fun UnifiedPlayer(
                                                                         else if (index == (pagerState.currentPage + 5) || index == (pagerState.currentPage - 5)) 0.63f
                                                                         else 0.57f
                                                                     ),
-                                                                isPlaying = binderPlayer.isPlaying || shouldBePlaying,
+                                                                isPlaying = (binderPlayer.isPlaying || shouldBePlaying) && (index == pagerState.settledPage),
                                                                 painter = coverPainter,
                                                             )
                                                         }

@@ -199,7 +199,7 @@ fun RotateThumbnailCoverAnimationModern(
     isSongPlaying: Boolean = true,
     painter: Painter,
     state : PagerState,
-    it : Int,
+    pageIndex : Int,
     imageCoverSize : Float
 ) {
     var currentRotation by remember {
@@ -211,7 +211,7 @@ fun RotateThumbnailCoverAnimationModern(
     }
 
     LaunchedEffect(isSongPlaying, state.settledPage) {
-        if (isSongPlaying && it == state.settledPage) {
+        if (isSongPlaying && pageIndex == state.settledPage) {
             rotation.animateTo(
                 targetValue = currentRotation + 360f,
                 animationSpec = infiniteRepeatable(
@@ -222,7 +222,7 @@ fun RotateThumbnailCoverAnimationModern(
                 currentRotation = value
             }
         } else {
-            if (currentRotation > 0f && it == state.settledPage) {
+            if (currentRotation > 0f && pageIndex == state.settledPage) {
                 rotation.animateTo(
                     targetValue = currentRotation + 50,
                     animationSpec = tween(
