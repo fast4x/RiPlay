@@ -2708,6 +2708,27 @@ fun UnifiedPlayer(
                                                                 }
                                                             }
                                                         }
+                                                } else {
+                                                    // if isVideo
+                                                    Box(
+                                                        modifier = Modifier
+                                                            .zIndex(
+                                                                if (index == pagerState.currentPage) 1f
+                                                                else if (index == (pagerState.currentPage + 1) || index == (pagerState.currentPage - 1)) 0.85f
+                                                                else if (index == (pagerState.currentPage + 2) || index == (pagerState.currentPage - 2)) 0.78f
+                                                                else if (index == (pagerState.currentPage + 3) || index == (pagerState.currentPage - 3)) 0.73f
+                                                                else if (index == (pagerState.currentPage + 4) || index == (pagerState.currentPage - 4)) 0.68f
+                                                                else if (index == (pagerState.currentPage + 5) || index == (pagerState.currentPage - 5)) 0.63f
+                                                                else 0.57f
+                                                            )
+                                                    ) {
+                                                        Image(
+                                                            painter = coverPainter,
+                                                            contentDescription = "",
+                                                            contentScale = ContentScale.Fit,
+                                                            modifier = Modifier.fillMaxSize(.5f).align(Alignment.Center)
+                                                        )
+                                                    }
                                                 }
                                             }
 
@@ -3559,6 +3580,27 @@ fun UnifiedPlayer(
                                                             }
                                                         }
                                                     }
+                                            } else {
+                                                // if isVideo
+                                                Box(
+                                                    modifier = coverModifier
+                                                        .zIndex(
+                                                            if (index == pagerState.currentPage) 1f
+                                                            else if (index == (pagerState.currentPage + 1) || index == (pagerState.currentPage - 1)) 0.85f
+                                                            else if (index == (pagerState.currentPage + 2) || index == (pagerState.currentPage - 2)) 0.78f
+                                                            else if (index == (pagerState.currentPage + 3) || index == (pagerState.currentPage - 3)) 0.73f
+                                                            else if (index == (pagerState.currentPage + 4) || index == (pagerState.currentPage - 4)) 0.68f
+                                                            else if (index == (pagerState.currentPage + 5) || index == (pagerState.currentPage - 5)) 0.63f
+                                                            else 0.57f
+                                                        )
+                                                ) {
+                                                    Image(
+                                                        painter = coverPainter,
+                                                        contentDescription = "",
+                                                        contentScale = ContentScale.Fit,
+                                                        modifier = Modifier.fillMaxSize(.5f).align(Alignment.Center)
+                                                    )
+                                                }
                                             }
 
                                     }
