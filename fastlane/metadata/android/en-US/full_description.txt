@@ -2,39 +2,50 @@
 
 RiPlay is a powerful, open-source music player designed for music lovers who want complete control over their listening experience. With support for both online and offline content, extensive customization options, and a beautiful interface, RiPlay transforms how you interact with your music collection.
 
----
+<hr>
 
 <h2>⚠️ Important Notice</h2>
 
-### 🛡️ RiPlay respects your privacy and operates transparently
-* No data collection, your data stays on your device
-* No download or caching online content
-* For playing online content, it uses the YouTube Player library as a wrapper around the official [IFrame Player API](https://developers.google.com/youtube/iframe_api_reference) inside a WebView
+<h3>🛡️ RiPlay respects your privacy and operates transparently</h3>
+<ul>
+  <li>No data collection, your data stays on your device</li>
+  <li>No download or caching online content</li>
+  <li>For playing online content, it uses the YouTube Player library as a wrapper around the official [IFrame Player API](https://developers.google.com/youtube/iframe_api_reference) inside a WebView</li>
+</ul>
 
----
+<hr>
 
 <h2>✨ Key Features</h2>
 
 <h3>🎧 Music Experience</h3>
-- Play songs, videos, artists, albums, playlists, and podcasts
-- Smart queues (audio/video mixed)
-- Listening statistics
-- Lyrics support: fetch, display, edit, translate
-- Listener level ranking with personal monthly and annual badge
-- Blacklist, can ignore artist, album, Song, Playlist, Device folder
-- Rewind, your year in music
+<ul>
+<li>Play songs, videos, artists, albums, playlists, and podcasts</li>
+<li>Smart queues (audio/video mixed)</li>
+<li>Listening statistics</li>
+<li>Lyrics support: fetch, display, edit, translate</li>
+<li>Listener level ranking with personal monthly and annual badge</li>
+<li>Blacklist, can ignore artist, album, Song, Playlist, Device folder</li>
+<li>Rewind, your year in music</li>
+</ul>
 
 <h3>⏰ Smart Features</h3>
-- Music Recognize (title & artist)
-- Sleep timer
-- Visualizer (microphone permission required)
-- Fast Share (direct sharing with installed apps)
-- Cast to another Android device / TV via [RiLink](https://github.com/fast4x/RiLink) (experimental)
-- Self-closing app scheduling
-- Events daily/weekly, new releases from your artists, auto backup and check update
-- Android Auto support
-- Android TV support (experimental)
-- Widget support (experimental)
+<ul>
+<li>Music Recognize (title & artist)</li>
+<li>Sleep timer</li>
+<li>Visualizer (microphone permission required)</li>
+<li>Fast Share (direct sharing with installed apps)</li>
+<li>Cast to another Android device / TV via [RiLink](https://github.com/fast4x/RiLink) (experimental)</li>
+<li>Self-closing app scheduling</li>
+<li>Events daily/weekly, new releases from your artists, auto backup and check update</li>
+<li>Android Auto support</li>
+<li>Android TV support (experimental)</li>
+<li>Widget support (experimental)</li>
+</ul>
+<hr>
 
 Visit it on Github
 https://github.com/fast4x/RiPlay
+
+<div align="center">
+  <i>Made with ❤️ by the RiPlay community</i>
+</div>
