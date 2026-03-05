@@ -1,10 +1,7 @@
-package it.fast4x.riplay.extensions.ondevice
+package it.fast4x.riplay.data.models
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-
-const val blackListedPathsFilename = "Blacklisted_paths.txt"
-
 
 @Entity("OnDeviceBlacklist")
 data class OnDeviceBlacklistPath(

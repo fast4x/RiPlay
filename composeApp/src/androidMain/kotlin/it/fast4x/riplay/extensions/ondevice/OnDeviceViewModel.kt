@@ -14,7 +14,6 @@ import androidx.lifecycle.viewModelScope
 import it.fast4x.riplay.enums.OnDeviceSongSortBy
 import it.fast4x.riplay.enums.SortOrder
 import it.fast4x.riplay.utils.OnDeviceBlacklist
-import it.fast4x.riplay.utils.globalContext
 import it.fast4x.riplay.utils.isAtLeastAndroid10
 import it.fast4x.riplay.utils.isAtLeastAndroid11
 import kotlinx.coroutines.Dispatchers
@@ -191,7 +190,7 @@ class OnDeviceViewModel(application: Application) : AndroidViewModel(application
                             val dateModifiedIdx = cursor.getColumnIndex(MediaStore.Audio.Media.DATE_MODIFIED)
                             //Timber.i(" OnDeviceViewModel colums dateModifiedIdx $dateModifiedIdx")
 
-                            val blacklist = OnDeviceBlacklist(context = globalContext())
+                            val blacklist = OnDeviceBlacklist()
 
                             //Timber.i(" OnDeviceViewModel SDK ${Build.VERSION.SDK_INT} initialize columns complete")
 
@@ -223,11 +222,11 @@ class OnDeviceViewModel(application: Application) : AndroidViewModel(application
                             } else {
                                 cursor.getString(relativePathIdx).substringBeforeLast("/")
                             }
-                            val exclude = blacklist.startWith(relativePath) || blacklist.startWith("/$relativePath")
-                                    || blacklist.startWith(mediaId ?: "")
+                            val exclude = blacklist.checkIf(relativePath) || blacklist.checkIf("/$relativePath")
+                                    || blacklist.checkIf(mediaId ?: "")
                                     || relativePath.contains("WhatsApp")
 
-                            Timber.d("OnDeviceViewModel trackname $trackName exclude $exclude relativePath ${relativePath}")
+                            Timber.d("OnDeviceViewModel trackname $trackName exclude $exclude relativePath $relativePath")
 
                             if (!exclude) {
                                 runCatching {

@@ -1,17 +1,18 @@
 package it.fast4x.riplay.utils
 
-import android.content.Context
 import android.util.Log
 import it.fast4x.riplay.commonutils.durationToMillis
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.enums.OnDeviceFolderSortBy
 import it.fast4x.riplay.enums.SortOrder
 import it.fast4x.riplay.extensions.ondevice.Folder
-import it.fast4x.riplay.extensions.ondevice.OnDeviceBlacklistPath
+import it.fast4x.riplay.data.models.OnDeviceBlacklistPath
 import it.fast4x.riplay.data.models.Song
 import it.fast4x.riplay.data.models.SongEntity
 import it.fast4x.riplay.enums.BlacklistType
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import timber.log.Timber
 
 class OnDeviceOrganize {
@@ -61,7 +62,7 @@ class OnDeviceOrganize {
                             currentFolder = if (existingFolder != null) {
                                 existingFolder
                             } else {
-                                val newFolder = Folder(name = segment, parent = currentFolder, fullPath = currentFullPath + "/")
+                                val newFolder = Folder(name = segment, parent = currentFolder, fullPath = "$currentFullPath/")
                                 currentFolder.addSubFolder(newFolder)
                                 newFolder
                             }
@@ -77,7 +78,7 @@ class OnDeviceOrganize {
 
         fun getFolderByPath(rootFolder: Folder, path: String): Folder? {
             if (path == "/") {
-                return rootFolder;
+                return rootFolder
             }
 
             val pathSegments = path.trim('/').split('/')
@@ -112,18 +113,31 @@ class OnDeviceOrganize {
     }
 }
 
-class OnDeviceBlacklist(context: Context) {
+class OnDeviceBlacklist() {
     var paths: List<OnDeviceBlacklistPath> = emptyList()
 
     init {
-        paths = runBlocking {
-            Database.blacklistedN(listOf(BlacklistType.Song.name, BlacklistType.Video.name, BlacklistType.Folder.name))
-                .map { OnDeviceBlacklistPath(path = it.path) }
-        }
+
+            CoroutineScope(Dispatchers.IO).launch {
+                paths = try {
+                    Database.blacklistedN(
+                        listOf(
+                            BlacklistType.Song.name,
+                            BlacklistType.Video.name,
+                            BlacklistType.Folder.name
+                        )
+                    )
+                        .map { OnDeviceBlacklistPath(path = it.path) }
+                } catch (e: Exception) {
+                    Timber.e("OnDeviceBlacklist error ${e.stackTraceToString()}")
+                    emptyList()
+                }
+            }
+
 
     }
 
-    fun startWith(path: String): Boolean {
+    fun checkIf(path: String): Boolean {
         Timber.d("OnDeviceBlacklist paths ${paths.map { it.path }} contains path $path")
         return paths.any { path.startsWith(it.path) }
     }
