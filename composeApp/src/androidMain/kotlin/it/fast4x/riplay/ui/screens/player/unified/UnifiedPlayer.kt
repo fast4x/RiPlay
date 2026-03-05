@@ -1417,7 +1417,9 @@ fun UnifiedPlayer(
                 ) {
                     controlsContent(Modifier
                         .padding(top = 20.dp)
-                        .align(Alignment.Center))
+                        .align(Alignment.Center)
+                    )
+
                     if (showButtonPlayerVideo)
                         Image(
                             painter = painterResource(R.drawable.left_and_right_arrows),

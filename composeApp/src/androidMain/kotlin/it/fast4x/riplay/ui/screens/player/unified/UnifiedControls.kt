@@ -61,6 +61,7 @@ import it.fast4x.riplay.ui.screens.player.unified.components.controls.UnifiedInf
 import it.fast4x.riplay.ui.screens.player.unified.components.controls.UnifiedInfoAlbumAndArtistModern
 import it.fast4x.riplay.utils.PlayerViewModel
 import it.fast4x.riplay.utils.PlayerViewModelFactory
+import it.fast4x.riplay.utils.applyIf
 import it.fast4x.riplay.utils.isCompositionLaunched
 import it.fast4x.riplay.utils.isLandscape
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -319,4 +320,112 @@ fun UnifiedControls(
             }
 
     }
+
+    if (isLandscape)
+        Column(
+            horizontalAlignment = Alignment.Start,
+            verticalArrangement = Arrangement.Bottom,
+            modifier = modifier
+                .fillMaxWidth()
+                .padding(horizontal = playerTimelineSize.size.dp)
+        ) {
+
+            if (playerInfoType == PlayerInfoType.Modern)
+                UnifiedInfoAlbumAndArtistModern(
+                    navController = navController,
+                    media = media,
+                    title = title,
+                    albumId = albumId,
+                    mediaItem = mediaItem,
+                    likedAt = likedAt,
+                    onCollapse = onCollapse,
+                    disableScrollingText = disableScrollingText,
+                    artist = artist,
+                    artistIds = artistIds,
+                    isExplicit = isExplicit
+                )
+
+            if (playerInfoType == PlayerInfoType.Essential)
+                UnifiedInfoAlbumAndArtistEssential(
+                    navController = navController,
+                    title = title,
+                    albumId = albumId,
+                    mediaItem = mediaItem,
+                    likedAt = likedAt,
+                    onCollapse = onCollapse,
+                    disableScrollingText = disableScrollingText,
+                    artist = artist,
+                    artistIds = artistIds,
+                    isExplicit = isExplicit
+                )
+
+            Spacer(
+                modifier = Modifier
+                    .height(if (expandedlandscape) 10.dp else 25.dp)
+            )
+
+            if (!playerSwapControlsWithTimeline) {
+                UnifiedGetSeekBar(
+                    mediaId = mediaItem.mediaId,
+                    onSeekTo = onSeekTo,
+                    onPlay = onPlay,
+                    onPause = onPause,
+                )
+                Spacer(
+                    modifier = Modifier
+                        .animateContentSize()
+                        .applyIf(!expandedlandscape) { weight(0.4f) }
+                        .applyIf(expandedlandscape) { height(15.dp) }
+                )
+                UnifiedGetControls(
+                    likedAt = likedAt,
+                    onBlurScaleChange = onBlurScaleChange,
+                    onPlay = onPlay,
+                    onPause = onPause,
+                    onSeekTo = onSeekTo,
+                    onNext = onNext,
+                    onPrevious = onPrevious,
+                    onToggleRepeatMode = onToggleRepeatMode,
+                    onToggleShuffleMode = onToggleShuffleMode,
+                    playerState = playerState
+                )
+                Spacer(
+                    modifier = Modifier
+                        .animateContentSize()
+                        .applyIf(!expandedlandscape) { weight(0.5f) }
+                        .applyIf(expandedlandscape) { height(15.dp) }
+                )
+            } else {
+                UnifiedGetControls(
+                    likedAt = likedAt,
+                    onBlurScaleChange = onBlurScaleChange,
+                    onPlay = onPlay,
+                    onPause = onPause,
+                    onSeekTo = onSeekTo,
+                    onNext = onNext,
+                    onPrevious = onPrevious,
+                    onToggleRepeatMode = onToggleRepeatMode,
+                    onToggleShuffleMode = onToggleShuffleMode,
+                    playerState = playerState,
+                )
+                Spacer(
+                    modifier = Modifier
+                        .animateContentSize()
+                        .applyIf(!expandedlandscape) { weight(0.5f) }
+                        .applyIf(expandedlandscape) { height(15.dp) }
+                )
+                UnifiedGetSeekBar(
+                    mediaId = mediaItem.mediaId,
+                    onSeekTo = onSeekTo,
+                    onPlay = onPlay,
+                    onPause = onPause,
+                )
+                Spacer(
+                    modifier = Modifier
+                        .animateContentSize()
+                        .applyIf(!expandedlandscape) { weight(0.4f) }
+                        .applyIf(expandedlandscape) { height(15.dp) }
+                )
+            }
+        }
 }
