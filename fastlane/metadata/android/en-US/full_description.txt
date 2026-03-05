@@ -1,21 +1,21 @@
-## 🎵 About RiPlay
+<h2>🎵 About RiPlay</h2>
 
 RiPlay is a powerful, open-source music player designed for music lovers who want complete control over their listening experience. With support for both online and offline content, extensive customization options, and a beautiful interface, RiPlay transforms how you interact with your music collection.
 
 ---
 
-## ⚠️ Important Notice
+<h2>⚠️ Important Notice</h2>
 
 ### 🛡️ RiPlay respects your privacy and operates transparently
-- No data collection, your data stays on your device
-- No download or caching online content
-- For playing online content, it uses the YouTube Player library as a wrapper around the official [IFrame Player API](https://developers.google.com/youtube/iframe_api_reference) inside a WebView
+* No data collection, your data stays on your device
+* No download or caching online content
+* For playing online content, it uses the YouTube Player library as a wrapper around the official [IFrame Player API](https://developers.google.com/youtube/iframe_api_reference) inside a WebView
 
 ---
 
-## ✨ Key Features
+<h2>✨ Key Features</h2>
 
-### 🎧 Music Experience
+<h3>🎧 Music Experience</h3>
 - Play songs, videos, artists, albums, playlists, and podcasts
 - Smart queues (audio/video mixed)
 - Listening statistics
@@ -24,7 +24,7 @@ RiPlay is a powerful, open-source music player designed for music lovers who wan
 - Blacklist, can ignore artist, album, Song, Playlist, Device folder
 - Rewind, your year in music
 
-### ⏰ Smart Features
+<h3>⏰ Smart Features</h3>
 - Music Recognize (title & artist)
 - Sleep timer
 - Visualizer (microphone permission required)
