@@ -227,8 +227,6 @@ fun LocalPlaylistSongs(
 
     var playlistAllSongs by persistList<SongEntity>("localPlaylist/$playlistId/songs")
     var songsInTheToPlaylist by persistList<SongEntity>("")
-    var downloadedPlaylistSongs by persistList<SongEntity>("localPlaylist/$playlistId/songs")
-    var cachedPlaylistSongs by persistList<SongEntity>("localPlaylist/$playlistId/songs")
     var playlistSongs by persistList<SongEntity>("localPlaylist/$playlistId/songs")
     var playlistSongsSortByPosition by persistList<SongEntity>("localPlaylist/$playlistId/songs")
     var playlistPreview by persist<PlaylistPreview?>("localPlaylist/playlist")

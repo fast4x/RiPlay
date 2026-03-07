@@ -80,6 +80,7 @@ import it.fast4x.riplay.ui.styling.semiBold
 import it.fast4x.riplay.utils.forcePlay
 import it.fast4x.riplay.utils.shimmerEffect
 import it.fast4x.riplay.commonutils.thumbnail
+import it.fast4x.riplay.utils.isRelated
 
 
 @UnstableApi
@@ -110,10 +111,6 @@ fun SongItem(
     onThumbnailContent: (@Composable BoxScope.() -> Unit)? = null,
     trailingContent: (@Composable () -> Unit)? = null,
     isRecommended: Boolean = false,
-    //disableScrollingText: Boolean,
-    //isNowPlaying: Boolean = false,
-    //isLocal: Boolean = false,
-    //forceRecompose: Boolean = false
 ) {
     SongItem(
         thumbnailUrl = song.mediaMetadata.artworkUri.toString().thumbnail(thumbnailSizePx)?.toString(),
@@ -123,10 +120,6 @@ fun SongItem(
         modifier = modifier,
         isRecommended = isRecommended,
         mediaItem = song,
-        //disableScrollingText = disableScrollingText,
-        //isNowPlaying = isNowPlaying,
-        //isLocal = isLocal,
-        //forceRecompose = forceRecompose
     )
 }
 
@@ -204,7 +197,6 @@ fun SongItem(
     mediaItem: MediaItem,
 ) {
 
-    val mediaId = mediaItem.mediaMetadata.extras?.getString("mediaId") // is online id used to identify source from local songs
     val title = mediaItem.mediaMetadata.title.toString()
     val authors = mediaItem.mediaMetadata.artist.toString()
     val duration = mediaItem.mediaMetadata.extras?.getString("durationText")
@@ -317,6 +309,17 @@ fun SongItem(
                                 .size(18.dp)
                         )
 
+                    if (mediaItem.isRelated)
+                        IconButton(
+                            icon = R.drawable.circle_arrow,
+                            color = colorPalette().accent,
+                            enabled = true,
+                            onClick = {},
+                            modifier = Modifier
+                                .size(14.dp)
+                        )
+
+
                     if (playlistindicator && (songPlaylist.value > 0)) {
                         IconButton(
                             icon = R.drawable.add_in_playlist,
@@ -414,6 +417,16 @@ fun SongItem(
                         onClick = {},
                         modifier = Modifier
                             .size(18.dp)
+                    )
+
+                if (mediaItem.isRelated)
+                    IconButton(
+                        icon = R.drawable.circle_arrow,
+                        color = colorPalette().accent,
+                        enabled = true,
+                        onClick = {},
+                        modifier = Modifier
+                            .size(14.dp)
                     )
 
                 if ( mediaItem.isExplicit )

@@ -150,6 +150,7 @@ data class OnlineRadio (
                 Environment.nextPage(ContinuationBody(continuation = continuation))
             }?.getOrNull()?.let { songsPage ->
                 mediaItems = songsPage.items?.map(Environment.SongItem::asMediaItem)
+                    ?.map { it.asRelated }
                 songsPage.continuation?.takeUnless { nextContinuation == it }
             }
 
