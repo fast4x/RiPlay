@@ -453,7 +453,7 @@ fun Queue(
                     ?.getLong("idQueue", defaultQueueId()) == selectedQueue?.id
         }
 
-        println("windowsInQueue changed: ${windowsInQueue.size}")
+        //println("windowsInQueue changed: ${windowsInQueue.size}")
     }
 
     Box(
