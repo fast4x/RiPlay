@@ -2426,8 +2426,8 @@ fun UnifiedPlayer(
                                         ensureSongInserted = { Database.insert(mediaItem) },
                                         size = 1000.dp,
                                         mediaMetadataProvider = mediaItem::mediaMetadata,
-                                        durationProvider = { positionAndDuration.second.toLong() * 1000 },
-                                        positionProvider = { positionAndDuration.first.toLong() * 1000 },
+                                        durationProvider = { positionAndDuration.second },
+                                        positionProvider = { positionAndDuration.first },
                                         isLandscape = isLandscape,
                                         clickLyricsText = clickLyricsText,
                                         modifier = Modifier
@@ -3687,8 +3687,8 @@ fun UnifiedPlayer(
                                     ensureSongInserted = { Database.insert(mediaItem) },
                                     size = 1000.dp,
                                     mediaMetadataProvider = mediaItem::mediaMetadata,
-                                    durationProvider = { positionAndDuration.second.toLong() * 1000 },
-                                    positionProvider = { positionAndDuration.first.toLong() * 1000 },
+                                    durationProvider = { positionAndDuration.second },
+                                    positionProvider = { positionAndDuration.first },
                                     isLandscape = isLandscape,
                                     clickLyricsText = clickLyricsText,
                                 )

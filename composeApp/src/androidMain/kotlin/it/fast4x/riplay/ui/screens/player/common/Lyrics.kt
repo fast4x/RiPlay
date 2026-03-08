@@ -921,9 +921,7 @@ fun Lyrics(
                         run {
                             invalidLrc = false
                             SynchronizedLyrics(sentences) {
-                                if (player.currentMediaItem?.isLocal ?: false)
-                                    player.currentPosition + 50L //- (lyrics?.startTime ?: 0L)
-                                else positionProvider()
+                                positionProvider()
                             }
                         }
                     }
