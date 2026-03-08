@@ -1,15 +1,18 @@
 package it.fast4x.riplay.extensions.ondevice
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Application
 import android.content.ContentResolver
 import android.content.ContentUris
 import android.content.Context
+import android.content.pm.PackageManager
 import android.database.ContentObserver
 import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
 import androidx.compose.runtime.mutableStateOf
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewModelScope
 import it.fast4x.riplay.enums.OnDeviceSongSortBy
 import it.fast4x.riplay.enums.SortOrder
@@ -27,6 +30,8 @@ import androidx.core.net.toUri
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.application
+import it.fast4x.riplay.R
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.data.models.Album
 import it.fast4x.riplay.data.models.Artist
@@ -37,7 +42,11 @@ import it.fast4x.riplay.data.models.Song
 import it.fast4x.riplay.data.models.SongAlbumMap
 import it.fast4x.riplay.data.models.SongArtistMap
 import it.fast4x.riplay.data.models.SongEntity
+import it.fast4x.riplay.enums.PopupType
+import it.fast4x.riplay.ui.components.themed.SmartMessage
 import it.fast4x.riplay.utils.LOCAL_KEY_PREFIX
+import it.fast4x.riplay.utils.appContext
+import it.fast4x.riplay.utils.isAtLeastAndroid13
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
@@ -98,6 +107,17 @@ class OnDeviceViewModel(application: Application) : AndroidViewModel(application
 
         @SuppressLint("Range")
         fun loadAudioFiles() {
+            val hasPermission = ContextCompat
+                .checkSelfPermission(appContext(),
+                    if (isAtLeastAndroid13) Manifest.permission.READ_MEDIA_AUDIO
+                        else Manifest.permission.READ_EXTERNAL_STORAGE
+                ) == PackageManager.PERMISSION_GRANTED
+            if (!hasPermission) {
+                SmartMessage(appContext().resources.getString(R.string.media_permission_required_please_grant),
+                    PopupType.Error, durationLong = true, context = appContext())
+                return
+            }
+
             try {
                 viewModelScope.launch {
                     withContext(Dispatchers.IO) {
