@@ -583,7 +583,7 @@ class PlayerService : Service(),
                     if (whatchDogVolume > 2) {
                         _internalOnlinePlayer.value?.setVolume(getSystemMediaVolume())
                         whatchDogVolume = 0
-                        Timber.d("PlayerService onCreate whatchDogVolume fired")
+                        //Timber.d("PlayerService onCreate whatchDogVolume fired")
                     }
                 }
                 delay(1000)
