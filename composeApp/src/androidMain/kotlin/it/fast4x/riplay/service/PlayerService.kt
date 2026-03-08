@@ -334,6 +334,7 @@ class PlayerService : Service(),
 
     private var onlineListenedDurationMs = 0L
     private var lastOnlineMediaId: String? = null
+    private var whatchDogVolume = 0L
 
     private var lastPlayNextTime = 0L
     private var debounceDelayMs = 2000L
@@ -576,6 +577,14 @@ class PlayerService : Service(),
                         }
                     }
                     //Timber.d("PlayerService onCreate onlineListenedDurationMs $onlineListenedDurationMs")
+
+                    //Workaround to fix volume bug in webview in some devices. Same for youtube music app
+                    whatchDogVolume += 1
+                    if (whatchDogVolume > 2) {
+                        _internalOnlinePlayer.value?.setVolume(getSystemMediaVolume())
+                        whatchDogVolume = 0
+                        Timber.d("PlayerService onCreate whatchDogVolume fired")
+                    }
                 }
                 delay(1000)
             }
@@ -2806,6 +2815,8 @@ class PlayerService : Service(),
         endedObserverJob = coroutineScope.launch(Dispatchers.Main) {
 
             var lastProcessedIndex: Int? = null
+
+            var timeToSetOnlineVolume = 0
 
             while (isActive) {
 
