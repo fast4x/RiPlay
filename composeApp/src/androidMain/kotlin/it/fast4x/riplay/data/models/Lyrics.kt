@@ -20,4 +20,5 @@ class Lyrics(
     @PrimaryKey val songId: String,
     val fixed: String?,
     val synced: String?,
+    val lrcSynced: String? = null
 )

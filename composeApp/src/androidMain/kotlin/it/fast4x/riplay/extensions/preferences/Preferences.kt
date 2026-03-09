@@ -432,6 +432,7 @@ const val stateMediaIdKey = "stateMediaId"
 const val statePositionKey = "statePosition"
 const val stateIsPlaying = "stateIsPlaying"
 
+const val isShowingSynchronizedWordByWordLyricsKey = "isShowingSynchronizedWordByWorkLyrics"
 
 
 inline fun <reified T : Enum<T>> SharedPreferences.getEnum(

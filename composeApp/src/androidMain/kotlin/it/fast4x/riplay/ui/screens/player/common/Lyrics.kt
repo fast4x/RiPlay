@@ -7,10 +7,12 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -42,6 +44,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.TextField
 import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Text
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -59,6 +62,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
@@ -80,11 +84,16 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.media3.common.C
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.util.UnstableApi
@@ -95,6 +104,7 @@ import it.fast4x.environment.requests.lyrics
 import it.fast4x.kugou.KuGou
 import it.fast4x.lrclib.LrcLib
 import it.fast4x.lrclib.models.Track
+import it.fast4x.riplay.extensions.lyricsparser.LyricsLrcParser
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.R
@@ -124,7 +134,6 @@ import it.fast4x.riplay.ui.styling.DefaultDarkColorPalette
 import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.ui.styling.PureBlackColorPalette
 import it.fast4x.riplay.ui.styling.onOverlayShimmer
-import it.fast4x.riplay.utils.SynchronizedLyrics
 import it.fast4x.riplay.ui.styling.center
 import it.fast4x.riplay.ui.styling.color
 import it.fast4x.riplay.extensions.preferences.colorPaletteModeKey
@@ -158,6 +167,7 @@ import me.bush.translator.Language
 import me.bush.translator.Translator
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.enums.ColorPaletteName
+import it.fast4x.riplay.extensions.lyricsparser.LyricLine
 import it.fast4x.riplay.utils.isLocal
 import it.fast4x.riplay.utils.thumbnailShape
 import it.fast4x.riplay.utils.typography
@@ -165,15 +175,19 @@ import it.fast4x.riplay.ui.components.themed.LyricsSizeDialog
 import it.fast4x.riplay.extensions.preferences.colorPaletteNameKey
 import it.fast4x.riplay.utils.applyIf
 import it.fast4x.riplay.extensions.preferences.effectRotationKey
+import it.fast4x.riplay.extensions.preferences.isShowingSynchronizedWordByWordLyricsKey
 import it.fast4x.riplay.extensions.preferences.jumpPreviousKey
 import it.fast4x.riplay.extensions.preferences.landscapeControlsKey
 import it.fast4x.riplay.extensions.preferences.lyricsSizeAnimateKey
 import it.fast4x.riplay.extensions.preferences.lyricsSizeKey
 import it.fast4x.riplay.extensions.preferences.lyricsSizeLKey
+import it.fast4x.riplay.utils.PlayerViewModel
+import it.fast4x.riplay.utils.PlayerViewModelFactory
+import it.fast4x.riplay.utils.SynchronizedLyricsLines
 import it.fast4x.riplay.utils.httpClient
-import it.fast4x.riplay.utils.okHttpClient
 import it.fast4x.riplay.utils.playNext
 import it.fast4x.riplay.utils.playPrevious
+import it.fast4x.riplay.utils.toLyricLine
 import timber.log.Timber
 import kotlin.Float.Companion.POSITIVE_INFINITY
 import kotlin.time.Duration.Companion.milliseconds
@@ -209,6 +223,7 @@ fun Lyrics(
 
         var showlyricsthumbnail by rememberPreference(showlyricsthumbnailKey, false)
         var isShowingSynchronizedLyrics by rememberPreference(isShowingSynchronizedLyricsKey, false)
+        var isShowingSynchronizedWordByWordLyrics by rememberPreference(isShowingSynchronizedWordByWordLyricsKey, false)
         var invalidLrc by remember(mediaId, isShowingSynchronizedLyrics) { mutableStateOf(false) }
         var isPicking by remember(mediaId, isShowingSynchronizedLyrics) { mutableStateOf(false) }
         var lyricsColor by rememberPreference(
@@ -915,12 +930,14 @@ fun Lyrics(
 
 
 
-                    val synchronizedLyrics = remember(text) {
-                        val sentences = LrcLib.Lyrics(text).sentences
+                    val synchronizedLyrics = remember(isShowingSynchronizedLyrics, isShowingSynchronizedWordByWordLyrics, text) {
+                        val sentences = if (!isShowingSynchronizedWordByWordLyrics)
+                            LrcLib.Lyrics(text).sentences.toLyricLine()
+                        else LyricsLrcParser.parse(text)
 
                         run {
                             invalidLrc = false
-                            SynchronizedLyrics(sentences) {
+                            SynchronizedLyricsLines(sentences) {
                                 positionProvider()
                             }
                         }
@@ -975,8 +992,14 @@ fun Lyrics(
                         itemsIndexed(
                             items = synchronizedLyrics.sentences
                         ) { index, sentence ->
+
+                            val isActive = index == synchronizedLyrics.index
+                            val progressInsideLine = if (isActive) {
+                                (positionProvider() - sentence.timeMs).toFloat()
+                            } else -1f
+
                             var translatedText by remember { mutableStateOf("") }
-                            val trimmedSentence = sentence.second.trim()
+                            val trimmedSentence = sentence.text.trim()
                             if (showSecondLine || translateEnabled || romanization != Romanization.Off) {
                                 val mutState = remember { mutableStateOf("") }
                                 translateLyricsWithRomanization(mutState, trimmedSentence, true, languageDestination)()
@@ -1115,239 +1138,61 @@ fun Lyrics(
                                 if (!showlyricsthumbnail) {
                                     if (lyricsOutline == LyricsOutline.None) {
 
-                                    } else if ((lyricsOutline == LyricsOutline.White) || (lyricsOutline == LyricsOutline.Black) || (lyricsOutline == LyricsOutline.Thememode))
-                                        BasicText(
-                                            text = translatedText,
-                                            style = TextStyle(
-                                                fontWeight = FontWeight.Medium,
-                                                color = if (lyricsOutline == LyricsOutline.White) Color.White
-                                                else if (lyricsOutline == LyricsOutline.Black) Color.Black
-                                                else if (lyricsOutline == LyricsOutline.Thememode)
-                                                    if (colorPaletteMode == ColorPaletteMode.Light) Color.White
-                                                    else Color.Black
-                                                else Color.Transparent,
-                                                fontSize = if (fontSize == LyricsFontSize.Light) typography().m.fontSize
-                                                else if (fontSize == LyricsFontSize.Medium) typography().l.fontSize
-                                                else if (fontSize == LyricsFontSize.Heavy) typography().xl.fontSize
-                                                else if (fontSize == LyricsFontSize.Large) typography().xlxl.fontSize
-                                                else customSize.sp,
-                                                textAlign = lyricsAlignment.selected,
-                                                drawStyle = Stroke(
-                                                    width = if (fontSize == LyricsFontSize.Large)
-                                                        if (lyricsOutline == LyricsOutline.White) 6.0f
-                                                        else if (lyricsOutline == LyricsOutline.Black) 10.0f
-                                                        else if (lyricsOutline == LyricsOutline.Thememode)
-                                                            if (colorPaletteMode == ColorPaletteMode.Light) 6.0f
-                                                            else 10.0f
-                                                        else 0f
-                                                    else if (fontSize == LyricsFontSize.Heavy)
-                                                        if (lyricsOutline == LyricsOutline.White) 3f
-                                                        else if (lyricsOutline == LyricsOutline.Black) 7f
-                                                        else if (lyricsOutline == LyricsOutline.Thememode)
-                                                            if (colorPaletteMode == ColorPaletteMode.Light) 3f
-                                                            else 7f
-                                                        else 0f
-                                                    else if (fontSize == LyricsFontSize.Medium)
-                                                        if (lyricsOutline == LyricsOutline.White) 2f
-                                                        else if (lyricsOutline == LyricsOutline.Black) 6f
-                                                        else if (lyricsOutline == LyricsOutline.Thememode)
-                                                            if (colorPaletteMode == ColorPaletteMode.Light) 2f
-                                                            else 6f
-                                                        else 0f
-                                                    else if (fontSize == LyricsFontSize.Light)
-                                                        if (lyricsOutline == LyricsOutline.White) 1.3f
-                                                        else if (lyricsOutline == LyricsOutline.Black) 5.3f
-                                                        else if (lyricsOutline == LyricsOutline.Thememode)
-                                                            if (colorPaletteMode == ColorPaletteMode.Light) 1.3f
-                                                            else 5.3f
-                                                        else 0f
-                                                    else
-                                                        if (lyricsOutline == LyricsOutline.White) (customSize/5.6f)
-                                                        else if (lyricsOutline == LyricsOutline.Black) (customSize/3.4f)
-                                                        else if (lyricsOutline == LyricsOutline.Thememode)
-                                                            if (colorPaletteMode == ColorPaletteMode.Light) (customSize/5.6f)
-                                                            else (customSize/3.4f)
-                                                        else 0f,
-                                                    join = StrokeJoin.Round
-                                                )
-                                            ),
-                                            modifier = Modifier
-                                                .padding(vertical = 4.dp, horizontal = 32.dp)
-                                                .applyIf(lyricsSizeAnimate) { padding(vertical = 4.dp) }
-                                                .align(if (lyricsAlignment == LyricsAlignment.Left) Alignment.CenterStart else if (lyricsAlignment == LyricsAlignment.Right) Alignment.CenterEnd else Alignment.Center)
-                                                .applyIf(lyricsSizeAnimate) {
-                                                    graphicsLayer {
-                                                        transformOrigin =
-                                                            if (lyricsAlignment == LyricsAlignment.Center) TransformOrigin(
-                                                                0.5f,
-                                                                0.5f
-                                                            )
-                                                            else if (lyricsAlignment == LyricsAlignment.Left) TransformOrigin(
-                                                                0f,
-                                                                0.5f
-                                                            )
-                                                            else TransformOrigin(1f, 0.5f)
-                                                        scaleY = animateSizeText
-                                                        scaleX = animateSizeText
-                                                    }
-                                                }
-                                                .graphicsLayer {
-                                                    alpha = animateOpacity
-                                                }
-                                        )
-                                    else if (lyricsOutline == LyricsOutline.Rainbow)
-                                        BasicText(
-                                            text = translatedText,
-                                            style = TextStyle(
-                                                textAlign = lyricsAlignment.selected,
-                                                brush = if (lightTheme) brushrainbow else brushrainbowdark,
-                                                fontSize = if (fontSize == LyricsFontSize.Light) typography().m.fontSize
-                                                else if (fontSize == LyricsFontSize.Medium) typography().l.fontSize
-                                                else if (fontSize == LyricsFontSize.Heavy) typography().xl.fontSize
-                                                else if (fontSize == LyricsFontSize.Large) typography().xlxl.fontSize
-                                                else customSize.sp,
-                                                fontWeight = FontWeight.Medium,
-                                                drawStyle = Stroke(
-                                                    width = if (fontSize == LyricsFontSize.Large) if (index == synchronizedLyrics.index) 10.0f else 6f
-                                                    else if (fontSize == LyricsFontSize.Heavy) if (index == synchronizedLyrics.index) 7f else 5f
-                                                    else if (fontSize == LyricsFontSize.Medium) if (index == synchronizedLyrics.index) 6f else 4f
-                                                    else if (fontSize == LyricsFontSize.Light) if (index == synchronizedLyrics.index) 5.3f else 3.3f
-                                                    else if (index == synchronizedLyrics.index) (customSize/3.4f) else (customSize/5.6f),
-                                                    join = StrokeJoin.Round
-                                                )
-                                            ),
-                                            modifier = Modifier
-                                                .padding(vertical = 4.dp, horizontal = 32.dp)
-                                                .applyIf(lyricsSizeAnimate) { padding(vertical = 4.dp) }
-                                                .align(if (lyricsAlignment == LyricsAlignment.Left) Alignment.CenterStart else if (lyricsAlignment == LyricsAlignment.Right) Alignment.CenterEnd else Alignment.Center)
-                                                .applyIf(lyricsSizeAnimate) {
-                                                    graphicsLayer {
-                                                        transformOrigin =
-                                                            if (lyricsAlignment == LyricsAlignment.Center) TransformOrigin(
-                                                                0.5f,
-                                                                0.5f
-                                                            )
-                                                            else if (lyricsAlignment == LyricsAlignment.Left) TransformOrigin(
-                                                                0f,
-                                                                0.5f
-                                                            )
-                                                            else TransformOrigin(1f, 0.5f)
-                                                        scaleY = animateSizeText
-                                                        scaleX = animateSizeText
-                                                    }
-                                                }
-                                                .graphicsLayer {
-                                                    alpha = animateOpacity
-                                                }
-                                        )
-                                    else //For Glow Outline//
-                                        BasicText(
-                                            text = translatedText,
-                                            style = TextStyle(
-                                                fontSize = if (fontSize == LyricsFontSize.Light) typography().m.fontSize
-                                                else if (fontSize == LyricsFontSize.Medium) typography().l.fontSize
-                                                else if (fontSize == LyricsFontSize.Heavy) typography().xl.fontSize
-                                                else if (fontSize == LyricsFontSize.Large) typography().xlxl.fontSize
-                                                else customSize.sp,
-                                                fontWeight = FontWeight.Medium,
-                                                textAlign = lyricsAlignment.selected,
-                                                color = if ((lyricsColor == LyricsColor.Thememode || lyricsColor == LyricsColor.White || lyricsColor == LyricsColor.Black) || lyricsColor == LyricsColor.Accent)
-                                                    Color.White.copy(0.3f) else Color.Transparent,
-                                                shadow = Shadow(
-                                                    color = if (index == synchronizedLyrics.index)
-                                                        if (lyricsColor == LyricsColor.Thememode) Color.White.copy(
-                                                            0.3f
-                                                        ).compositeOver(colorPalette().text)
-                                                        else if (lyricsColor == LyricsColor.White) Color.White.copy(
-                                                            0.3f
-                                                        ).compositeOver(Color.White)
-                                                        else if (lyricsColor == LyricsColor.Black) Color.White.copy(
-                                                            0.3f
-                                                        ).compositeOver(Color.Black)
-                                                        else if (lyricsColor == LyricsColor.Accent) Color.White.copy(
-                                                            0.3f
-                                                        ).compositeOver(colorPalette().accent)
-                                                        else Color.Transparent
-                                                    else Color.Transparent,
-                                                    offset = Offset(0f, 0f), blurRadius = 25f
-                                                ),
-                                            ),
-                                            modifier = Modifier
-                                                .padding(vertical = 4.dp, horizontal = 32.dp)
-                                                .applyIf(lyricsSizeAnimate) { padding(vertical = 4.dp) }
-                                                .align(if (lyricsAlignment == LyricsAlignment.Left) Alignment.CenterStart else if (lyricsAlignment == LyricsAlignment.Right) Alignment.CenterEnd else Alignment.Center)
-                                                .applyIf(lyricsSizeAnimate) {
-                                                    graphicsLayer {
-                                                        transformOrigin =
-                                                            if (lyricsAlignment == LyricsAlignment.Center) TransformOrigin(
-                                                                0.5f,
-                                                                0.5f
-                                                            )
-                                                            else if (lyricsAlignment == LyricsAlignment.Left) TransformOrigin(
-                                                                0f,
-                                                                0.5f
-                                                            )
-                                                            else TransformOrigin(1f, 0.5f)
-                                                        scaleY = animateSizeText
-                                                        scaleX = animateSizeText
-                                                    }
-                                                }
-
-                                        )
-                                }
-                                if (showlyricsthumbnail) {
-                                    BasicText(
-                                        text = translatedText,
-                                        style = TextStyle(
+                                    } else if ((lyricsOutline == LyricsOutline.White) || (lyricsOutline == LyricsOutline.Black) || (lyricsOutline == LyricsOutline.Thememode)) {
+                                        val style = TextStyle(
                                             fontWeight = FontWeight.Medium,
-                                            color = if (index == synchronizedLyrics.index) PureBlackColorPalette.text else PureBlackColorPalette.textDisabled,
-                                            fontSize = if (fontSize == LyricsFontSize.Light) typography().m.fontSize
-                                                       else if (fontSize == LyricsFontSize.Medium) typography().l.fontSize
-                                                       else if (fontSize == LyricsFontSize.Heavy) typography().xl.fontSize
-                                                       else if (fontSize == LyricsFontSize.Large) typography().xlxl.fontSize
-                                                       else customSize.sp,
-                                            textAlign = lyricsAlignment.selected,
-                                        ),
-                                        modifier = Modifier
-                                            .padding(vertical = 4.dp, horizontal = 32.dp)
-                                            .align(if (lyricsAlignment == LyricsAlignment.Left) Alignment.CenterStart else if (lyricsAlignment == LyricsAlignment.Right) Alignment.CenterEnd else Alignment.Center)
-                                            .clickable(
-                                                interactionSource = remember { MutableInteractionSource() },
-                                                indication = if (clickLyricsText) ripple(true) else null,
-                                                onClick = {
-                                                    if (clickLyricsText) {
-                                                        Timber.d("Jump to lyric: position=${sentence.first}, text='${sentence.second}'")
-                                                        val positionMs = sentence.first
-                                                        if (binder?.player?.currentMediaItem?.isLocal == true) {
-                                                            Timber.d("Seeking local player to ${positionMs}ms")
-                                                            binder?.player?.seekTo(positionMs)
-                                                        } else {
-                                                            val positionSeconds = positionMs / 1000f
-                                                            Timber.d("Seeking online player to ${positionSeconds}s")
-                                                            binder?.onlinePlayer?.seekTo(positionSeconds)
-                                                        }
-                                                    } else onDismiss()
-                                                }
-                                            )
-                                    )
-                                }
-                                else if ((lyricsColor == LyricsColor.White) || (lyricsColor == LyricsColor.Black) || (lyricsColor == LyricsColor.Accent) || (lyricsColor == LyricsColor.Thememode)) {
-                                    BasicText(
-                                        text = translatedText,
-                                        style = TextStyle(
-                                            fontWeight = FontWeight.Medium,
-                                            color = if (lyricsColor == LyricsColor.White) Color.White
-                                            else if (lyricsColor == LyricsColor.Black) Color.Black
-                                            else if (lyricsColor == LyricsColor.Thememode) colorPalette().text
-                                            else colorPalette().accent,
+                                            color = if (lyricsOutline == LyricsOutline.White) Color.White
+                                            else if (lyricsOutline == LyricsOutline.Black) Color.Black
+                                            else if (lyricsOutline == LyricsOutline.Thememode)
+                                                if (colorPaletteMode == ColorPaletteMode.Light) Color.White
+                                                else Color.Black
+                                            else Color.Transparent,
                                             fontSize = if (fontSize == LyricsFontSize.Light) typography().m.fontSize
                                             else if (fontSize == LyricsFontSize.Medium) typography().l.fontSize
                                             else if (fontSize == LyricsFontSize.Heavy) typography().xl.fontSize
                                             else if (fontSize == LyricsFontSize.Large) typography().xlxl.fontSize
                                             else customSize.sp,
                                             textAlign = lyricsAlignment.selected,
-                                        ),
-                                        modifier = Modifier
+                                            drawStyle = Stroke(
+                                                width = if (fontSize == LyricsFontSize.Large)
+                                                    if (lyricsOutline == LyricsOutline.White) 6.0f
+                                                    else if (lyricsOutline == LyricsOutline.Black) 10.0f
+                                                    else if (lyricsOutline == LyricsOutline.Thememode)
+                                                        if (colorPaletteMode == ColorPaletteMode.Light) 6.0f
+                                                        else 10.0f
+                                                    else 0f
+                                                else if (fontSize == LyricsFontSize.Heavy)
+                                                    if (lyricsOutline == LyricsOutline.White) 3f
+                                                    else if (lyricsOutline == LyricsOutline.Black) 7f
+                                                    else if (lyricsOutline == LyricsOutline.Thememode)
+                                                        if (colorPaletteMode == ColorPaletteMode.Light) 3f
+                                                        else 7f
+                                                    else 0f
+                                                else if (fontSize == LyricsFontSize.Medium)
+                                                    if (lyricsOutline == LyricsOutline.White) 2f
+                                                    else if (lyricsOutline == LyricsOutline.Black) 6f
+                                                    else if (lyricsOutline == LyricsOutline.Thememode)
+                                                        if (colorPaletteMode == ColorPaletteMode.Light) 2f
+                                                        else 6f
+                                                    else 0f
+                                                else if (fontSize == LyricsFontSize.Light)
+                                                    if (lyricsOutline == LyricsOutline.White) 1.3f
+                                                    else if (lyricsOutline == LyricsOutline.Black) 5.3f
+                                                    else if (lyricsOutline == LyricsOutline.Thememode)
+                                                        if (colorPaletteMode == ColorPaletteMode.Light) 1.3f
+                                                        else 5.3f
+                                                    else 0f
+                                                else
+                                                    if (lyricsOutline == LyricsOutline.White) (customSize/5.6f)
+                                                    else if (lyricsOutline == LyricsOutline.Black) (customSize/3.4f)
+                                                    else if (lyricsOutline == LyricsOutline.Thememode)
+                                                        if (colorPaletteMode == ColorPaletteMode.Light) (customSize/5.6f)
+                                                        else (customSize/3.4f)
+                                                    else 0f,
+                                                join = StrokeJoin.Round
+                                            )
+                                        )
+                                        val modifier = Modifier
                                             .padding(vertical = 4.dp, horizontal = 32.dp)
                                             .applyIf(lyricsSizeAnimate) { padding(vertical = 4.dp) }
                                             .align(if (lyricsAlignment == LyricsAlignment.Left) Alignment.CenterStart else if (lyricsAlignment == LyricsAlignment.Right) Alignment.CenterEnd else Alignment.Center)
@@ -1370,49 +1215,35 @@ fun Lyrics(
                                             .graphicsLayer {
                                                 alpha = animateOpacity
                                             }
-                                            .clickable(
-                                                interactionSource = remember { MutableInteractionSource() },
-                                                indication = if (clickLyricsText) ripple(true) else null,
-                                                onClick = {
-                                                    if (clickLyricsText) {
-                                                        Timber.d("Jump to lyric: position=${sentence.first}, text='${sentence.second}'")
-                                                        val positionMs = sentence.first
-                                                        if (binder?.player?.currentMediaItem?.isLocal == true) {
-                                                            Timber.d("Seeking local player to ${positionMs}ms")
-                                                            binder?.player?.seekTo(positionMs)
-                                                        } else {
-                                                            val positionSeconds = positionMs / 1000f
-                                                            Timber.d("Seeking online player to ${positionSeconds}s")
-                                                            binder?.onlinePlayer?.seekTo(positionSeconds)
-                                                        }
-                                                    } else onDismiss()
-                                                }
+                                        if (isShowingSynchronizedWordByWordLyrics)
+                                            LyricRow(sentence, isActive, progressInsideLine, style, modifier)
+                                        else
+                                            BasicText(
+                                                text = translatedText,
+                                                style = style,
+                                                modifier = modifier
                                             )
-                                            .background(
-                                                if (index == synchronizedLyrics.index) if (lyricsHighlight == LyricsHighlight.White) Color.White.copy(
-                                                    0.5f
-                                                ) else if (lyricsHighlight == LyricsHighlight.Black) Color.Black.copy(
-                                                    0.5f
-                                                ) else Color.Transparent else Color.Transparent,
-                                                RoundedCornerShape(6.dp)
-                                            )
-                                            .applyIf(lyricsHighlight != LyricsHighlight.None) { fillMaxWidth() }
-                                    )
-                                }
-                                else
-                                    BasicText(
-                                        text = translatedText,
-                                        style = TextStyle(
+                                    }
+                                    else if (lyricsOutline == LyricsOutline.Rainbow) {
+                                        val style = TextStyle(
+                                            textAlign = lyricsAlignment.selected,
                                             brush = if (lightTheme) brushrainbow else brushrainbowdark,
                                             fontSize = if (fontSize == LyricsFontSize.Light) typography().m.fontSize
-                                                       else if (fontSize == LyricsFontSize.Medium) typography().l.fontSize
-                                                       else if (fontSize == LyricsFontSize.Heavy) typography().xl.fontSize
-                                                       else if (fontSize == LyricsFontSize.Large) typography().xlxl.fontSize
-                                                       else customSize.sp,
+                                            else if (fontSize == LyricsFontSize.Medium) typography().l.fontSize
+                                            else if (fontSize == LyricsFontSize.Heavy) typography().xl.fontSize
+                                            else if (fontSize == LyricsFontSize.Large) typography().xlxl.fontSize
+                                            else customSize.sp,
                                             fontWeight = FontWeight.Medium,
-                                            textAlign = lyricsAlignment.selected
-                                        ),
-                                        modifier = Modifier
+                                            drawStyle = Stroke(
+                                                width = if (fontSize == LyricsFontSize.Large) if (index == synchronizedLyrics.index) 10.0f else 6f
+                                                else if (fontSize == LyricsFontSize.Heavy) if (index == synchronizedLyrics.index) 7f else 5f
+                                                else if (fontSize == LyricsFontSize.Medium) if (index == synchronizedLyrics.index) 6f else 4f
+                                                else if (fontSize == LyricsFontSize.Light) if (index == synchronizedLyrics.index) 5.3f else 3.3f
+                                                else if (index == synchronizedLyrics.index) (customSize/3.4f) else (customSize/5.6f),
+                                                join = StrokeJoin.Round
+                                            )
+                                        )
+                                        val modifier = Modifier
                                             .padding(vertical = 4.dp, horizontal = 32.dp)
                                             .applyIf(lyricsSizeAnimate) { padding(vertical = 4.dp) }
                                             .align(if (lyricsAlignment == LyricsAlignment.Left) Alignment.CenterStart else if (lyricsAlignment == LyricsAlignment.Right) Alignment.CenterEnd else Alignment.Center)
@@ -1428,34 +1259,267 @@ fun Lyrics(
                                                             0.5f
                                                         )
                                                         else TransformOrigin(1f, 0.5f)
-                                                    scaleY =
-                                                        if (index == synchronizedLyrics.index) 1.1f else 0.9f
-                                                    scaleX =
-                                                        if (index == synchronizedLyrics.index) 1.1f else 0.9f
+                                                    scaleY = animateSizeText
+                                                    scaleX = animateSizeText
                                                 }
                                             }
                                             .graphicsLayer {
                                                 alpha = animateOpacity
                                             }
-                                            .clickable(
-                                                interactionSource = remember { MutableInteractionSource() },
-                                                indication = if (clickLyricsText) ripple(true) else null,
-                                                onClick = {
-                                                    if (clickLyricsText) {
-                                                        Timber.d("Jump to lyric: position=${sentence.first}, text='${sentence.second}'")
-                                                        val positionMs = sentence.first
-                                                        if (binder?.player?.currentMediaItem?.isLocal == true) {
-                                                            Timber.d("Seeking local player to ${positionMs}ms")
-                                                            binder?.player?.seekTo(positionMs)
-                                                        } else {
-                                                            val positionSeconds = positionMs / 1000f
-                                                            Timber.d("Seeking online player to ${positionSeconds}s")
-                                                            binder?.onlinePlayer?.seekTo(positionSeconds)
-                                                        }
-                                                    } else onDismiss()
-                                                }
+                                        if (isShowingSynchronizedWordByWordLyrics)
+                                            LyricRow(sentence, isActive, progressInsideLine, style, modifier)
+                                        else
+                                            BasicText(
+                                                text = translatedText,
+                                                style = style,
+                                                modifier = modifier
                                             )
+                                    }
+                                    else {//For Glow Outline//
+                                        val style = TextStyle(
+                                            fontSize = if (fontSize == LyricsFontSize.Light) typography().m.fontSize
+                                            else if (fontSize == LyricsFontSize.Medium) typography().l.fontSize
+                                            else if (fontSize == LyricsFontSize.Heavy) typography().xl.fontSize
+                                            else if (fontSize == LyricsFontSize.Large) typography().xlxl.fontSize
+                                            else customSize.sp,
+                                            fontWeight = FontWeight.Medium,
+                                            textAlign = lyricsAlignment.selected,
+                                            color = if ((lyricsColor == LyricsColor.Thememode || lyricsColor == LyricsColor.White || lyricsColor == LyricsColor.Black) || lyricsColor == LyricsColor.Accent)
+                                                Color.White.copy(0.3f) else Color.Transparent,
+                                            shadow = Shadow(
+                                                color = if (index == synchronizedLyrics.index)
+                                                    if (lyricsColor == LyricsColor.Thememode) Color.White.copy(
+                                                        0.3f
+                                                    ).compositeOver(colorPalette().text)
+                                                    else if (lyricsColor == LyricsColor.White) Color.White.copy(
+                                                        0.3f
+                                                    ).compositeOver(Color.White)
+                                                    else if (lyricsColor == LyricsColor.Black) Color.White.copy(
+                                                        0.3f
+                                                    ).compositeOver(Color.Black)
+                                                    else if (lyricsColor == LyricsColor.Accent) Color.White.copy(
+                                                        0.3f
+                                                    ).compositeOver(colorPalette().accent)
+                                                    else Color.Transparent
+                                                else Color.Transparent,
+                                                offset = Offset(0f, 0f), blurRadius = 25f
+                                            ),
+                                        )
+                                        val modifier = Modifier
+                                            .padding(vertical = 4.dp, horizontal = 32.dp)
+                                            .applyIf(lyricsSizeAnimate) { padding(vertical = 4.dp) }
+                                            .align(if (lyricsAlignment == LyricsAlignment.Left) Alignment.CenterStart else if (lyricsAlignment == LyricsAlignment.Right) Alignment.CenterEnd else Alignment.Center)
+                                            .applyIf(lyricsSizeAnimate) {
+                                                graphicsLayer {
+                                                    transformOrigin =
+                                                        if (lyricsAlignment == LyricsAlignment.Center) TransformOrigin(
+                                                            0.5f,
+                                                            0.5f
+                                                        )
+                                                        else if (lyricsAlignment == LyricsAlignment.Left) TransformOrigin(
+                                                            0f,
+                                                            0.5f
+                                                        )
+                                                        else TransformOrigin(1f, 0.5f)
+                                                    scaleY = animateSizeText
+                                                    scaleX = animateSizeText
+                                                }
+                                            }
+                                        if (isShowingSynchronizedWordByWordLyrics)
+                                            LyricRow(sentence, isActive, progressInsideLine, style, modifier)
+                                        else
+                                            BasicText(
+                                                text = translatedText,
+                                                style = style,
+                                                modifier = modifier
+                                            )
+                                    }
+                                }
+                                if (showlyricsthumbnail) {
+                                    val style = TextStyle(
+                                        fontWeight = FontWeight.Medium,
+                                        color = if (index == synchronizedLyrics.index) PureBlackColorPalette.text else PureBlackColorPalette.textDisabled,
+                                        fontSize = if (fontSize == LyricsFontSize.Light) typography().m.fontSize
+                                        else if (fontSize == LyricsFontSize.Medium) typography().l.fontSize
+                                        else if (fontSize == LyricsFontSize.Heavy) typography().xl.fontSize
+                                        else if (fontSize == LyricsFontSize.Large) typography().xlxl.fontSize
+                                        else customSize.sp,
+                                        textAlign = lyricsAlignment.selected,
                                     )
+                                    val modifier = Modifier
+                                        .padding(vertical = 4.dp, horizontal = 32.dp)
+                                        .align(if (lyricsAlignment == LyricsAlignment.Left) Alignment.CenterStart else if (lyricsAlignment == LyricsAlignment.Right) Alignment.CenterEnd else Alignment.Center)
+                                        .clickable(
+                                            interactionSource = remember { MutableInteractionSource() },
+                                            indication = if (clickLyricsText) ripple(true) else null,
+                                            onClick = {
+                                                if (clickLyricsText) {
+                                                    Timber.d("Jump to lyric: position=${sentence.timeMs}, text='${sentence.text}'")
+                                                    val positionMs = sentence.timeMs
+                                                    if (binder?.player?.currentMediaItem?.isLocal == true) {
+                                                        Timber.d("Seeking local player to ${positionMs}ms")
+                                                        binder?.player?.seekTo(positionMs)
+                                                    } else {
+                                                        val positionSeconds = positionMs / 1000f
+                                                        Timber.d("Seeking online player to ${positionSeconds}s")
+                                                        binder?.onlinePlayer?.seekTo(
+                                                            positionSeconds
+                                                        )
+                                                    }
+                                                } else onDismiss()
+                                            }
+                                        )
+                                    if (isShowingSynchronizedWordByWordLyrics)
+                                        LyricRow(sentence, isActive, progressInsideLine, style, modifier)
+                                    else
+                                        BasicText(
+                                            text = translatedText,
+                                            style = style,
+                                            modifier = modifier
+                                        )
+                                }
+                                else if ((lyricsColor == LyricsColor.White) || (lyricsColor == LyricsColor.Black) || (lyricsColor == LyricsColor.Accent) || (lyricsColor == LyricsColor.Thememode)) {
+                                    val style = TextStyle(
+                                        fontWeight = FontWeight.Medium,
+                                        color = if (lyricsColor == LyricsColor.White) Color.White
+                                        else if (lyricsColor == LyricsColor.Black) Color.Black
+                                        else if (lyricsColor == LyricsColor.Thememode) colorPalette().text
+                                        else colorPalette().accent,
+                                        fontSize = if (fontSize == LyricsFontSize.Light) typography().m.fontSize
+                                        else if (fontSize == LyricsFontSize.Medium) typography().l.fontSize
+                                        else if (fontSize == LyricsFontSize.Heavy) typography().xl.fontSize
+                                        else if (fontSize == LyricsFontSize.Large) typography().xlxl.fontSize
+                                        else customSize.sp,
+                                        textAlign = lyricsAlignment.selected,
+                                    )
+                                    val modifier = Modifier
+                                        .padding(vertical = 4.dp, horizontal = 32.dp)
+                                        .applyIf(lyricsSizeAnimate) { padding(vertical = 4.dp) }
+                                        .align(if (lyricsAlignment == LyricsAlignment.Left) Alignment.CenterStart else if (lyricsAlignment == LyricsAlignment.Right) Alignment.CenterEnd else Alignment.Center)
+                                        .applyIf(lyricsSizeAnimate) {
+                                            graphicsLayer {
+                                                transformOrigin =
+                                                    if (lyricsAlignment == LyricsAlignment.Center) TransformOrigin(
+                                                        0.5f,
+                                                        0.5f
+                                                    )
+                                                    else if (lyricsAlignment == LyricsAlignment.Left) TransformOrigin(
+                                                        0f,
+                                                        0.5f
+                                                    )
+                                                    else TransformOrigin(1f, 0.5f)
+                                                scaleY = animateSizeText
+                                                scaleX = animateSizeText
+                                            }
+                                        }
+                                        .graphicsLayer {
+                                            alpha = animateOpacity
+                                        }
+                                        .clickable(
+                                            interactionSource = remember { MutableInteractionSource() },
+                                            indication = if (clickLyricsText) ripple(true) else null,
+                                            onClick = {
+                                                if (clickLyricsText) {
+                                                    Timber.d("Jump to lyric: position=${sentence.timeMs}, text='${sentence.text}'")
+                                                    val positionMs = sentence.timeMs
+                                                    if (binder?.player?.currentMediaItem?.isLocal == true) {
+                                                        Timber.d("Seeking local player to ${positionMs}ms")
+                                                        binder?.player?.seekTo(positionMs)
+                                                    } else {
+                                                        val positionSeconds = positionMs / 1000f
+                                                        Timber.d("Seeking online player to ${positionSeconds}s")
+                                                        binder?.onlinePlayer?.seekTo(
+                                                            positionSeconds
+                                                        )
+                                                    }
+                                                } else onDismiss()
+                                            }
+                                        )
+                                        .background(
+                                            if (index == synchronizedLyrics.index) if (lyricsHighlight == LyricsHighlight.White) Color.White.copy(
+                                                0.5f
+                                            ) else if (lyricsHighlight == LyricsHighlight.Black) Color.Black.copy(
+                                                0.5f
+                                            ) else Color.Transparent else Color.Transparent,
+                                            RoundedCornerShape(6.dp)
+                                        )
+                                        .applyIf(lyricsHighlight != LyricsHighlight.None) { fillMaxWidth() }
+
+                                    if (isShowingSynchronizedWordByWordLyrics)
+                                        LyricRow(sentence, isActive, progressInsideLine, style, modifier)
+                                    else
+                                        BasicText(
+                                            text = translatedText,
+                                            style = style,
+                                            modifier = modifier
+                                        )
+                                }
+                                else {
+                                    val style = TextStyle(
+                                        brush = if (lightTheme) brushrainbow else brushrainbowdark,
+                                        fontSize = if (fontSize == LyricsFontSize.Light) typography().m.fontSize
+                                        else if (fontSize == LyricsFontSize.Medium) typography().l.fontSize
+                                        else if (fontSize == LyricsFontSize.Heavy) typography().xl.fontSize
+                                        else if (fontSize == LyricsFontSize.Large) typography().xlxl.fontSize
+                                        else customSize.sp,
+                                        fontWeight = FontWeight.Medium,
+                                        textAlign = lyricsAlignment.selected
+                                    )
+                                    val modifier = Modifier
+                                        .padding(vertical = 4.dp, horizontal = 32.dp)
+                                        .applyIf(lyricsSizeAnimate) { padding(vertical = 4.dp) }
+                                        .align(if (lyricsAlignment == LyricsAlignment.Left) Alignment.CenterStart else if (lyricsAlignment == LyricsAlignment.Right) Alignment.CenterEnd else Alignment.Center)
+                                        .applyIf(lyricsSizeAnimate) {
+                                            graphicsLayer {
+                                                transformOrigin =
+                                                    if (lyricsAlignment == LyricsAlignment.Center) TransformOrigin(
+                                                        0.5f,
+                                                        0.5f
+                                                    )
+                                                    else if (lyricsAlignment == LyricsAlignment.Left) TransformOrigin(
+                                                        0f,
+                                                        0.5f
+                                                    )
+                                                    else TransformOrigin(1f, 0.5f)
+                                                scaleY =
+                                                    if (index == synchronizedLyrics.index) 1.1f else 0.9f
+                                                scaleX =
+                                                    if (index == synchronizedLyrics.index) 1.1f else 0.9f
+                                            }
+                                        }
+                                        .graphicsLayer {
+                                            alpha = animateOpacity
+                                        }
+                                        .clickable(
+                                            interactionSource = remember { MutableInteractionSource() },
+                                            indication = if (clickLyricsText) ripple(true) else null,
+                                            onClick = {
+                                                if (clickLyricsText) {
+                                                    Timber.d("Jump to lyric: position=${sentence.timeMs}, text='${sentence.text}'")
+                                                    val positionMs = sentence.timeMs
+                                                    if (binder?.player?.currentMediaItem?.isLocal == true) {
+                                                        Timber.d("Seeking local player to ${positionMs}ms")
+                                                        binder?.player?.seekTo(positionMs)
+                                                    } else {
+                                                        val positionSeconds = positionMs / 1000f
+                                                        Timber.d("Seeking online player to ${positionSeconds}s")
+                                                        binder?.onlinePlayer?.seekTo(
+                                                            positionSeconds
+                                                        )
+                                                    }
+                                                } else onDismiss()
+                                            }
+                                        )
+
+                                    if (isShowingSynchronizedWordByWordLyrics)
+                                        LyricRow(sentence, isActive, progressInsideLine, style, modifier)
+                                    else
+                                        BasicText(
+                                            text = translatedText,
+                                            style = style,
+                                            modifier = modifier
+                                        )
+                                }
                                 /*else
                                   BasicText(
                                      text = translatedText,
@@ -2427,19 +2491,77 @@ fun Lyrics(
                                             )
 
                                         MenuEntry(
-                                            icon = R.drawable.time,
-                                            text = stringResource(R.string.show) + " ${
-                                                if (isShowingSynchronizedLyrics) stringResource(
-                                                    R.string.unsynchronized_lyrics
-                                                ) else stringResource(R.string.synchronized_lyrics)
-                                            }",
-                                            secondaryText = if (isShowingSynchronizedLyrics) null else stringResource(
-                                                R.string.provided_by
-                                            ) + " kugou.com and LrcLib.net",
+                                            icon = R.drawable.song_lyrics,
+                                            text = stringResource(R.string.lyrics_type),
                                             onClick = {
-                                                menuState.hide()
-                                                isShowingSynchronizedLyrics =
-                                                    !isShowingSynchronizedLyrics
+                                                menuState.display {
+                                                    Menu {
+                                                        MenuEntry(
+                                                            icon = R.drawable.text,
+                                                            text = stringResource(R.string.unsynchronized_lyrics),
+                                                            secondaryText = "",
+                                                            trailingContent = {
+                                                                if (!isShowingSynchronizedLyrics && !isShowingSynchronizedWordByWordLyrics)
+                                                                    Image(
+                                                                        painter = painterResource(R.drawable.checkmark),
+                                                                        contentDescription = null,
+                                                                        colorFilter = ColorFilter.tint(
+                                                                            colorPalette().text
+                                                                        )
+                                                                    )
+                                                            },
+                                                            onClick = {
+                                                                isShowingSynchronizedLyrics = false
+                                                                isShowingSynchronizedWordByWordLyrics =
+                                                                    false
+                                                            }
+                                                        )
+                                                        MenuEntry(
+                                                            icon = R.drawable.time,
+                                                            text = stringResource(R.string.synchronized_lyrics),
+                                                            secondaryText = stringResource(
+                                                                R.string.provided_by
+                                                            ) + " kugou.com and LrcLib.net",
+                                                            trailingContent = {
+                                                                if (isShowingSynchronizedLyrics && !isShowingSynchronizedWordByWordLyrics)
+                                                                    Image(
+                                                                        painter = painterResource(R.drawable.checkmark),
+                                                                        contentDescription = null,
+                                                                        colorFilter = ColorFilter.tint(
+                                                                            colorPalette().text
+                                                                        )
+                                                                    )
+                                                            },
+                                                            onClick = {
+                                                                isShowingSynchronizedLyrics = true
+                                                                isShowingSynchronizedWordByWordLyrics =
+                                                                    false
+                                                            }
+                                                        )
+                                                        MenuEntry(
+                                                            icon = R.drawable.time,
+                                                            text = stringResource(R.string.synchronized_word_by_word_lyrics),
+                                                            secondaryText = stringResource(
+                                                                R.string.provided_by
+                                                            ) + " Boidu.dev",
+                                                            trailingContent = {
+                                                                if (isShowingSynchronizedWordByWordLyrics)
+                                                                    Image(
+                                                                        painter = painterResource(R.drawable.checkmark),
+                                                                        contentDescription = null,
+                                                                        colorFilter = ColorFilter.tint(
+                                                                            colorPalette().text
+                                                                        )
+                                                                    )
+                                                            },
+                                                            onClick = {
+                                                                isShowingSynchronizedWordByWordLyrics =
+                                                                    true
+                                                                isShowingSynchronizedLyrics = true
+                                                            }
+                                                        )
+                                                    }
+                                                }
                                             }
                                         )
 
@@ -2475,7 +2597,7 @@ fun Lyrics(
                                             text = stringResource(R.string.search_lyrics_online),
                                             onClick = {
                                                 menuState.hide()
-                                                val mediaMetadata = mediaMetadataProvider()
+                                                val mediaMetadata = binder?.player?.currentMediaItem?.mediaMetadata ?: return@MenuEntry
 
                                                 try {
                                                     context.startActivity(
@@ -2536,6 +2658,64 @@ fun Lyrics(
     }
 }
 
+@Composable
+fun LyricRow(
+    line: LyricLine,
+    isActive: Boolean,
+    progressMs: Float,
+    style1: TextStyle,
+    modifier: Modifier
+) {
+
+    Timber.d("Lyrics LyricRow isActive: $isActive progressMs: $progressMs, line $line")
+
+    val safeProgressMs = if (isActive) maxOf(0f, progressMs) else 0f
+
+    val annotatedString = buildAnnotatedString {
+        line.words.forEach { word ->
+
+            val isWordPassed = isActive && (safeProgressMs > (word.startTimeLineMs + word.durationMs))
+
+            val isWordActive = isActive &&
+                    (safeProgressMs >= word.startTimeLineMs) &&
+                    !isWordPassed
+
+            val style = when {
+                isWordActive -> SpanStyle(
+                    color = Color.White,
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold
+                )
+
+                isWordPassed -> SpanStyle(
+                    color = Color.Gray.copy(alpha = 0.6f),
+                    fontSize = 24.sp
+                )
+
+                isActive -> SpanStyle(
+                    color = Color.Gray.copy(alpha = 0.5f),
+                    fontSize = 24.sp
+                )
+
+                else -> SpanStyle(
+                    color = Color.DarkGray,
+                    fontSize = 20.sp
+                )
+            }
+
+            withStyle(style) {
+                append(word.text)
+                append(" ")
+            }
+        }
+    }
+
+    Text(
+        text = annotatedString,
+        style = style1,
+        modifier = modifier
+    )
+}
 
 /*@Composable
 fun SelectLyricFromTrack(

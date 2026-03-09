@@ -5,6 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import it.fast4x.kugou.KuGou
 import it.fast4x.lrclib.LrcLib
+import it.fast4x.riplay.extensions.lyricsparser.LyricLine
 import it.fast4x.riplay.commonutils.cleanPrefix
 import it.fast4x.riplay.commonutils.durationTextToMillis
 import it.fast4x.riplay.data.Database
@@ -15,6 +16,42 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlin.time.Duration.Companion.milliseconds
+
+class SynchronizedLyricsLines(val sentences: List<LyricLine>, private val positionProvider: () -> Long) {
+    var index by mutableStateOf(currentIndex)
+        private set
+
+    private val currentIndex: Int
+        get() {
+            //return sentences.indexOfLast { it.timeMs <= positionProvider() }
+            var index = -1
+            for (item in sentences) {
+                if (item.timeMs >= positionProvider()) break
+                index++
+            }
+            return if (index == -1) 0 else index
+        }
+
+    fun update(): Boolean {
+        val newIndex = currentIndex
+        return if (newIndex != index) {
+            index = newIndex
+            true
+        } else {
+            false
+        }
+    }
+}
+
+fun List<Pair<Long, String>>.toLyricLine(): List<LyricLine> {
+    return this.map { pair ->
+        LyricLine(
+            timeMs = pair.first,
+            text = pair.second
+        )
+    }
+
+}
 
 class SynchronizedLyrics(val sentences: List<Pair<Long, String>>, private val positionProvider: () -> Long) {
     var index by mutableStateOf(currentIndex)
