@@ -1261,19 +1261,20 @@
     <string name="ringtone_successfully_set">Ringtone successfully set</string>
     <string name="failed_to_set_ringtone">Failed to set ringtone</string>
     <string name="permission_granted">Permission granted</string>
-    <string name="permission_denied">Permission denied</string>
+    <string name="permission_denied">अनुमति अस्वीकृत।</string>
     <string name="permission_required">Permission required</string>
     <string name="now_playing_title">NOW PLAYING</string>
     <string name="local_now_playing_title">LOCAL</string>
     <string name="online_now_playing_title">ONLINE</string>
-    <string name="no_artists">No artists</string>
-    <string name="no_albums">No albums</string>
-    <string name="no_plaulists">No playlists</string>
-    <string name="no_songs">No songs</string>
-    <string name="crash_title_ops_riplay_is_in_error_state">Ops! RiPlay is in error state</string>
+    <string name="no_artists">कोई कलाकार नहीं।</string>
+    <string name="no_albums">कोई एल्बम नहीं।</string>
+    <string name="no_playlists">कोई प्लेलिस्ट नहीं।</string>
+    <string name="no_songs">कोई गानें नहीं।</string>
+    <string name="crash_title_ops_riplay_is_in_error_state">ओह! RiPlay में त्रुटि आ गई है।</string>
     <string name="crash_subtitle_the_application_crashed_unexpectedly_you_can_help_us_by_sending_this_log">The application crashed unexpectedly, you can help us by sending this log.</string>
     <string name="play_or_pause_when_receiving_a_call">Play or pause when receiving a call</string>
     <string name="cover_type_audio_cassette">Audio cassette</string>
     <string name="cover_type_audio_cassette_with_cover">Audio cassette with cover</string>
     <string name="cover_type_turntable">Turntable</string>
 </resources>
+
