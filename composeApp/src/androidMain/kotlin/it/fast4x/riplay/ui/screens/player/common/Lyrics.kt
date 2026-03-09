@@ -7,12 +7,10 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -62,7 +60,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
-import androidx.compose.ui.draw.scale
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
@@ -92,8 +89,6 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.media3.common.C
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.util.UnstableApi
@@ -181,8 +176,6 @@ import it.fast4x.riplay.extensions.preferences.landscapeControlsKey
 import it.fast4x.riplay.extensions.preferences.lyricsSizeAnimateKey
 import it.fast4x.riplay.extensions.preferences.lyricsSizeKey
 import it.fast4x.riplay.extensions.preferences.lyricsSizeLKey
-import it.fast4x.riplay.utils.PlayerViewModel
-import it.fast4x.riplay.utils.PlayerViewModelFactory
 import it.fast4x.riplay.utils.SynchronizedLyricsLines
 import it.fast4x.riplay.utils.httpClient
 import it.fast4x.riplay.utils.playNext
@@ -2540,10 +2533,7 @@ fun Lyrics(
                                                         )
                                                         MenuEntry(
                                                             icon = R.drawable.time,
-                                                            text = stringResource(R.string.synchronized_word_by_word_lyrics),
-                                                            secondaryText = stringResource(
-                                                                R.string.provided_by
-                                                            ) + " Boidu.dev",
+                                                            text = stringResource(R.string.synchronized_alternative_word_by_word_lyrics),
                                                             trailingContent = {
                                                                 if (isShowingSynchronizedWordByWordLyrics)
                                                                     Image(
@@ -2667,7 +2657,7 @@ fun LyricRow(
     modifier: Modifier
 ) {
 
-    Timber.d("Lyrics LyricRow isActive: $isActive progressMs: $progressMs, line $line")
+    //Timber.d("Lyrics LyricRow isActive: $isActive progressMs: $progressMs, line $line")
 
     val safeProgressMs = if (isActive) maxOf(0f, progressMs) else 0f
 
