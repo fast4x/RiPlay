@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="cancel">Annuler</string>
-    <string name="done">Fait</string>
+    <string name="done">Terminé</string>
     <string name="hidesong">Voulez-vous vraiment masquer ce titre ? Son temps de lecture et son cache seront effacés. Cette action est irréversible.</string>
     <string name="new_playlist">Nouvelle playlist</string>
     <string name="start_radio">Démarrer la radio</string>
@@ -807,7 +807,7 @@ Volume BAS : titre précédent</string>
     <string name="set_custom_value">Valeur personnalisée</string>
     <string name="title_youtube_music">YOUTUBE MUSIC</string>
     <string name="enable_youtube_music_login">Activer la connexion à YouTube Music </string>
-    <string name="show_cover_thumbnail_animation">Afficher l\'animation de la vignette de couverture</string>
+    <string name="show_cover_thumbnail_animation">Afficher l\'animation de la miniature de couverture</string>
     <string name="cover_thumbnail_animation_type">Type d\'animation de couverture</string>
     <string name="jump_previous">Le bouton Précédent redémarrera le titre en cours une fois les secondes suivantes écoulées</string>
     <string name="jump_previous_blank">Laissez-le vide ou 0 pour le bouton Précédent pour toujours lire le titre précédent</string>
@@ -1276,9 +1276,9 @@ Volume BAS : titre précédent</string>
     <string name="crash_title_ops_riplay_is_in_error_state">Oups ! RiPlay présente une erreur.</string>
     <string name="crash_subtitle_the_application_crashed_unexpectedly_you_can_help_us_by_sending_this_log">L\'application a planté de manière inattendue. Vous pouvez nous aider en nous envoyant ce journal.</string>
     <string name="play_or_pause_when_receiving_a_call">Lire ou mettre en pause lors de la réception d’un appel</string>
-    <string name="cover_type_audio_cassette">Audio cassette</string>
-    <string name="cover_type_audio_cassette_with_cover">Audio cassette with cover</string>
-    <string name="cover_type_turntable">Turntable</string>
+    <string name="cover_type_audio_cassette">Cassette audio</string>
+    <string name="cover_type_audio_cassette_with_cover">Cassette audio avec pochette</string>
+    <string name="cover_type_turntable">Platine vinyle</string>
     <string name="synchronized_alternative_word_by_word_lyrics">alternative synced word by word lyrics</string>
     <string name="lyrics_type">Lyrics type</string>
 </resources>
