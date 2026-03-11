@@ -128,9 +128,10 @@ import it.fast4x.riplay.ui.screens.settings.isYtSyncEnabled
 import it.fast4x.riplay.utils.LazyListContainer
 import it.fast4x.riplay.utils.addToYtPlaylist
 import it.fast4x.riplay.utils.toPlaylist
+import kotlinx.serialization.ExperimentalSerializationApi
 import timber.log.Timber
 
-
+@ExperimentalSerializationApi
 @ExperimentalTextApi
 @SuppressLint("SuspiciousIndentation")
 @ExperimentalFoundationApi

@@ -67,8 +67,10 @@ import it.fast4x.riplay.utils.typography
 import it.fast4x.riplay.utils.LazyListContainer
 import it.fast4x.riplay.utils.asMediaItem
 import it.fast4x.riplay.utils.forcePlay
+import kotlinx.serialization.ExperimentalSerializationApi
 import timber.log.Timber
 
+@ExperimentalSerializationApi
 @OptIn(UnstableApi::class)
 @ExperimentalFoundationApi
 @ExperimentalAnimationApi

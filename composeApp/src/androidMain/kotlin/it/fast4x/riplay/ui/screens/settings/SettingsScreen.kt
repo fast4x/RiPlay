@@ -63,7 +63,9 @@ import it.fast4x.riplay.ui.components.ScreenContainer
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.ui.components.themed.IDialog
 import it.fast4x.riplay.utils.typography
+import kotlinx.coroutines.DelicateCoroutinesApi
 
+@OptIn(DelicateCoroutinesApi::class)
 @ExperimentalMaterial3Api
 @ExperimentalMaterialApi
 @ExperimentalTextApi

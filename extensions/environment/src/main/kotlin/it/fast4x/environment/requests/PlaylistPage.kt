@@ -17,6 +17,7 @@ import it.fast4x.environment.models.oddElements
 import it.fast4x.environment.utils.from
 import it.fast4x.environment.utils.runCatchingCancellable
 import it.fast4x.environment.utils.runCatchingNonCancellable
+import kotlinx.serialization.ExperimentalSerializationApi
 
 data class PlaylistPage(
     val playlist: Environment.PlaylistItem,
@@ -65,6 +66,7 @@ data class PlaylistPage(
     }
 }
 
+@ExperimentalSerializationApi
 suspend fun Environment.playlistPage(body: BrowseBody) = runCatchingCancellable {
     val response = client.post(_3djbhqyLpE) {
         setLogin(setLogin = true)
@@ -234,6 +236,7 @@ suspend fun Environment.playlistPage(body: BrowseBody) = runCatchingCancellable 
     println("mediaItem ERROR IN Innertube playlistpage " + it.message)
 }
 
+@ExperimentalSerializationApi
 suspend fun Environment.playlistPage(body: ContinuationBody) = runCatchingNonCancellable {
     val call = Environment.browse(continuation = body.continuation)
     val callResponse = call.bodyAsText()
@@ -288,6 +291,8 @@ private fun MusicShelfRenderer?.toSongsPage() = Environment.ItemsPage(
         ?.nextContinuationData
         ?.continuation
 )
+
+@ExperimentalSerializationApi
 private fun BrowseResponse.ContinuationContents.MusicPlaylistShelfContinuation?.toSongsPage() = Environment.ItemsPage(
     items = this
         ?.contents

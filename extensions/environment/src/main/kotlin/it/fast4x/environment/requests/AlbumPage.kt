@@ -12,7 +12,9 @@ import it.fast4x.environment.models.bodies.BrowseBody
 import it.fast4x.environment.models.oddElements
 import it.fast4x.environment.models.splitBySeparator
 import it.fast4x.environment.utils.PageHelper
+import kotlinx.serialization.ExperimentalSerializationApi
 
+@ExperimentalSerializationApi
 data class AlbumPage(
     val album: Environment.AlbumItem,
     val songs: List<Environment.SongItem>,
@@ -133,6 +135,7 @@ data class AlbumPage(
     }
 }
 
+@ExperimentalSerializationApi
 suspend fun Environment.albumPage(body: BrowseBody) = playlistPage(body)?.map { album ->
     album.url?.let { Url(it).parameters["list"] }?.let { playlistId ->
         playlistPage(BrowseBody(browseId = "VL$playlistId"))?.getOrNull()?.let { playlist ->

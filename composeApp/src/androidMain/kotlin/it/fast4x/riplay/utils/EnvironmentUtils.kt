@@ -41,6 +41,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlin.math.absoluteValue
 import kotlin.random.Random
 
@@ -196,7 +197,7 @@ val Environment.VideoItem.asMediaItem: MediaItem
         )
         .build()
 
-
+@ExperimentalSerializationApi
 @JvmName("ResultInnertubeItemsPageCompleted")
 suspend fun Result<Environment.ItemsPage<Environment.SongItem>?>.completed(
     maxDepth: Int =  Int.MAX_VALUE
@@ -232,6 +233,7 @@ suspend fun Result<Environment.ItemsPage<Environment.SongItem>?>.completed(
     page?.copy(items = songs, continuation = null)
 }.also { it.exceptionOrNull()?.printStackTrace() }
 
+@ExperimentalSerializationApi
 @JvmName("ResultInnertubePlaylistOrAlbumPageCompleted")
 suspend fun Result<Environment.PlaylistOrAlbumPage>.completed(
     maxDepth: Int =  Int.MAX_VALUE
@@ -267,7 +269,7 @@ suspend fun Result<LibraryPage?>.completed(): Result<LibraryPage> = runCatching 
     )
 }
 
-
+@ExperimentalSerializationApi
 @OptIn(UnstableApi::class)
 suspend fun getAlbumVersionFromVideo(song: Song,playlistId : Long, position : Int, playlist : Playlist?) {
     val isExtPlaylist = (song.thumbnailUrl == "") && (song.durationText != "0:00")
@@ -473,7 +475,7 @@ suspend fun updateLocalPlaylist(song: Song){
     }
 }
 
-
+@ExperimentalSerializationApi
 suspend fun addToYtPlaylist(localPlaylistId: Long, position: Int, ytplaylistId: String, mediaItems: List<MediaItem>){
     val mediaItemsChunks = mediaItems.chunked(50)
     mediaItemsChunks.forEachIndexed { index, items ->
@@ -560,6 +562,7 @@ suspend fun addToYtPlaylist(localPlaylistId: Long, position: Int, ytplaylistId: 
     )
 }
 
+@ExperimentalSerializationApi
 suspend fun addSongToYtPlaylist(localPlaylistId: Long, position: Int, ytplaylistId: String, mediaItem: MediaItem){
     if (isYtSyncEnabled()) {
         addToPlaylist(ytplaylistId,mediaItem.mediaId)
@@ -593,7 +596,7 @@ suspend fun addSongToYtPlaylist(localPlaylistId: Long, position: Int, ytplaylist
     }
 }
 
-
+@ExperimentalSerializationApi
 @OptIn(UnstableApi::class)
 suspend fun addToOnlineLikedSong(mediaItem: MediaItem){
 
@@ -638,6 +641,7 @@ suspend fun addToOnlineLikedSong(mediaItem: MediaItem){
     }
 }
 
+@ExperimentalSerializationApi
 @OptIn(UnstableApi::class)
 suspend fun removeFromOnlineLikedSong(mediaItem: MediaItem){
 
@@ -678,6 +682,7 @@ suspend fun removeFromOnlineLikedSong(mediaItem: MediaItem){
     }
 }
 
+@ExperimentalSerializationApi
 @OptIn(UnstableApi::class)
 suspend fun addToYtLikedSongs(mediaItems: List<MediaItem>){
     if (isYtSyncEnabled()) {

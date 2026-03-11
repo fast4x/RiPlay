@@ -351,11 +351,13 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.ExperimentalSerializationApi
 import timber.log.Timber
 import kotlin.Float.Companion.POSITIVE_INFINITY
 import kotlin.math.absoluteValue
 import kotlin.math.sqrt
 
+@ExperimentalSerializationApi
 @ExperimentalPermissionsApi
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeUiApi::class)
 @ExperimentalTextApi

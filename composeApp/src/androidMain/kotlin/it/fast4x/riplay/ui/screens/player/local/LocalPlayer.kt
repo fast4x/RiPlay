@@ -339,7 +339,9 @@ import it.fast4x.riplay.utils.applyIf
 import it.fast4x.riplay.utils.conditional
 import it.fast4x.riplay.utils.isLocal
 import it.fast4x.riplay.utils.saturate
+import kotlinx.serialization.ExperimentalSerializationApi
 
+@ExperimentalSerializationApi
 @ExperimentalPermissionsApi
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeUiApi::class)
 @ExperimentalTextApi

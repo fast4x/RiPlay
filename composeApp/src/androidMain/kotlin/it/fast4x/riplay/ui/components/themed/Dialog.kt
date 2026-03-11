@@ -178,6 +178,7 @@ import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.ExperimentalSerializationApi
 
 
 @Composable
@@ -752,7 +753,7 @@ inline fun SelectorDialog(
 }
 
  */
-
+@ExperimentalSerializationApi
 @Composable
 fun SelectorArtistsDialog(
     onDismiss: () -> Unit,
@@ -2510,6 +2511,7 @@ fun InProgressDialog(
     }
 }
 
+@ExperimentalSerializationApi
 @androidx.annotation.OptIn(UnstableApi::class)
 @Composable
 fun SongMatchingDialog(

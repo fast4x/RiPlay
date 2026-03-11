@@ -4,6 +4,7 @@ import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonNames
 
+@ExperimentalSerializationApi
 @Serializable
 data class BrowseResponse(
     val contents: Contents?,

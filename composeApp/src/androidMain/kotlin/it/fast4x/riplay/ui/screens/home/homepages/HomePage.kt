@@ -120,9 +120,10 @@ import it.fast4x.riplay.utils.forcePlay
 import it.fast4x.riplay.utils.insertOrUpdateBlacklist
 import it.fast4x.riplay.utils.typography
 import kotlinx.coroutines.flow.first
+import kotlinx.serialization.ExperimentalSerializationApi
 import timber.log.Timber
 
-
+@ExperimentalSerializationApi
 @OptIn(ExperimentalMaterial3Api::class)
 @ExperimentalMaterialApi
 @ExperimentalTextApi

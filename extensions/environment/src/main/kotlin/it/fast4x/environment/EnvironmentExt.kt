@@ -23,9 +23,8 @@ import it.fast4x.environment.requests.PlaylistPage
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlin.random.Random
 
+@ExperimentalSerializationApi
 object EnvironmentExt {
-
-
 
     const val PLAYLIST_SIZE_LIMIT = 5000
 

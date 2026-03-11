@@ -75,6 +75,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.runBlocking
+import kotlinx.serialization.ExperimentalSerializationApi
 import timber.log.Timber
 import kotlin.also
 
@@ -266,7 +267,7 @@ class PlayerMediaBrowserService : MediaBrowserServiceCompat(),
         }
     }
 
-
+    @ExperimentalSerializationApi
     @OptIn(UnstableApi::class)
     override fun onLoadChildren(
         parentId: String,

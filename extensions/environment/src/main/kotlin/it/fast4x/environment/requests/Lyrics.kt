@@ -9,7 +9,9 @@ import it.fast4x.environment.models.NextResponse
 import it.fast4x.environment.models.bodies.BrowseBody
 import it.fast4x.environment.models.bodies.NextBody
 import it.fast4x.environment.utils.runCatchingNonCancellable
+import kotlinx.serialization.ExperimentalSerializationApi
 
+@ExperimentalSerializationApi
 suspend fun Environment.lyrics(body: NextBody): Result<String?>? = runCatchingNonCancellable {
     val nextResponse = client.post(_NXIvG4ve8N) {
         setBody(body)

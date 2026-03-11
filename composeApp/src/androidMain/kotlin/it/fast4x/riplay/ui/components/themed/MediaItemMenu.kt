@@ -150,8 +150,10 @@ import it.fast4x.riplay.utils.SetupWriteSettingsPermission
 import it.fast4x.riplay.utils.getLocalFileUri
 import it.fast4x.riplay.utils.removeFromOnlineLikedSong
 import it.fast4x.riplay.utils.setRingtoneSmart
+import kotlinx.serialization.ExperimentalSerializationApi
 import timber.log.Timber
 
+@ExperimentalSerializationApi
 @ExperimentalTextApi
 @ExperimentalAnimationApi
 @androidx.media3.common.util.UnstableApi
@@ -201,6 +203,7 @@ fun InHistoryMediaItemMenu(
     )
 }
 
+@ExperimentalSerializationApi
 @ExperimentalTextApi
 @UnstableApi
 @ExperimentalAnimationApi
@@ -280,6 +283,7 @@ fun InPlaylistMediaItemMenu(
     )
 }
 
+@ExperimentalSerializationApi
 @ExperimentalTextApi
 @UnstableApi
 @ExperimentalAnimationApi
@@ -529,6 +533,7 @@ fun NonQueuedMediaItemMenu(
     }
 }
 
+@ExperimentalSerializationApi
 @ExperimentalTextApi
 @UnstableApi
 @ExperimentalAnimationApi
@@ -648,7 +653,7 @@ fun QueuedMediaItemMenu(
     }
 }
 
-
+@ExperimentalSerializationApi
 @ExperimentalTextApi
 @UnstableApi
 @ExperimentalAnimationApi
@@ -766,6 +771,7 @@ fun BaseMediaItemMenu(
 
 }
 
+@ExperimentalSerializationApi
 @ExperimentalTextApi
 @UnstableApi
 @ExperimentalAnimationApi
@@ -898,6 +904,7 @@ fun FolderItemMenu(
     }
 }
 
+@ExperimentalSerializationApi
 @ExperimentalTextApi
 @SuppressLint("SuspiciousIndentation")
 @UnstableApi

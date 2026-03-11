@@ -9,7 +9,9 @@ import it.fast4x.environment.models.MusicTwoRowItemRenderer
 import it.fast4x.environment.models.bodies.BrowseBodyWithLocale
 import it.fast4x.environment.utils.from
 import it.fast4x.environment.utils.runCatchingNonCancellable
+import kotlinx.serialization.ExperimentalSerializationApi
 
+@ExperimentalSerializationApi
 suspend fun Environment.browse(body: BrowseBodyWithLocale) = runCatchingNonCancellable {
     val response = client.post(_3djbhqyLpE) {
         setBody(body)

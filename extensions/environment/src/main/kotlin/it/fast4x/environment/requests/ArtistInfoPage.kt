@@ -12,7 +12,9 @@ import it.fast4x.environment.models.bodies.BrowseBody
 import it.fast4x.environment.utils.findSectionByTitle
 import it.fast4x.environment.utils.from
 import it.fast4x.environment.utils.runCatchingNonCancellable
+import kotlinx.serialization.ExperimentalSerializationApi
 
+@ExperimentalSerializationApi
 suspend fun Environment.artistPage(body: BrowseBody): Result<Environment.ArtistInfoPage>? =
     runCatchingNonCancellable {
         val response = client.post(_3djbhqyLpE) {

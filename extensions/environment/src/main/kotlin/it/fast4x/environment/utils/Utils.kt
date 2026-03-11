@@ -6,8 +6,10 @@ import it.fast4x.environment.EnvironmentExt
 import it.fast4x.environment.models.SectionListRenderer
 import it.fast4x.environment.requests.ArtistItemsPage
 import it.fast4x.environment.requests.PlaylistPage
+import kotlinx.serialization.ExperimentalSerializationApi
 import java.security.MessageDigest
 
+@ExperimentalSerializationApi
 @JvmName("getPlaylistCompleted")
 suspend fun Result<PlaylistPage>.completed(): Result<PlaylistPage> = runCatching {
     val page = getOrThrow()
@@ -31,6 +33,7 @@ suspend fun Result<PlaylistPage>.completed(): Result<PlaylistPage> = runCatching
     )
 }
 
+@ExperimentalSerializationApi
 @JvmName("getArtistItemsPageCompleted")
 suspend fun Result<ArtistItemsPage>.completed(): Result<ArtistItemsPage> = runCatching {
     val page = getOrThrow()

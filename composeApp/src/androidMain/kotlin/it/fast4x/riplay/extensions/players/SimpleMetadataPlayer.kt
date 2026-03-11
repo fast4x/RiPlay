@@ -4,8 +4,10 @@ import it.fast4x.environment.EnvironmentExt
 import it.fast4x.environment.models.Context
 import it.fast4x.environment.models.PlayerResponse
 import it.fast4x.environment.utils.NewPipeUtils
+import kotlinx.serialization.ExperimentalSerializationApi
 import timber.log.Timber
 
+@ExperimentalSerializationApi
 suspend fun getOnlineMetadata(
     videoId: String,
     playlistId: String? = null,

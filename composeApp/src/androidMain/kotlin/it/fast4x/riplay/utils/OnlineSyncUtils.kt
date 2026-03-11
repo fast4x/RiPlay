@@ -32,8 +32,10 @@ import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.ExperimentalSerializationApi
 import timber.log.Timber
 
+@ExperimentalSerializationApi
 suspend fun importYTMPrivatePlaylists(): Boolean {
     if (isYtSyncEnabled()) {
 
@@ -120,6 +122,7 @@ suspend fun importYTMPrivatePlaylists(): Boolean {
         return false
 }
 
+@ExperimentalSerializationApi
 @OptIn(UnstableApi::class)
 fun ytmPrivatePlaylistSync(playlist: Playlist, playlistId: Long) {
     playlist.let { plist ->
@@ -292,6 +295,7 @@ suspend fun importYTMLikedAlbums(): Boolean {
         return false
 }
 
+@ExperimentalSerializationApi
 suspend fun removeYTSongFromPlaylist(
     songId: String,
     playlistBrowseId: String,

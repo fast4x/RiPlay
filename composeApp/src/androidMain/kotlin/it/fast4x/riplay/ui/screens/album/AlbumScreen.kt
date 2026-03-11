@@ -84,9 +84,10 @@ import it.fast4x.riplay.utils.asMediaItem
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.serialization.ExperimentalSerializationApi
 import timber.log.Timber
 
-
+@ExperimentalSerializationApi
 @ExperimentalMaterialApi
 @ExperimentalTextApi
 @SuppressLint("SuspiciousIndentation", "SimpleDateFormat")

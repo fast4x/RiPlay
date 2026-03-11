@@ -39,8 +39,10 @@ import it.fast4x.riplay.utils.seamlessPlay
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.serialization.ExperimentalSerializationApi
 import timber.log.Timber
 
+@ExperimentalSerializationApi
 @ExperimentalTextApi
 @ExperimentalAnimationApi
 @UnstableApi
@@ -188,6 +190,7 @@ fun PlayerMenu(
 }
 
 
+@ExperimentalSerializationApi
 @ExperimentalTextApi
 @ExperimentalAnimationApi
 @UnstableApi
@@ -266,6 +269,7 @@ fun MiniPlayerMenu(
 
 }
 
+@ExperimentalSerializationApi
 @ExperimentalTextApi
 @ExperimentalAnimationApi
 @UnstableApi
@@ -326,6 +330,7 @@ fun AddToPlaylistPlayerMenu(
     )
 }
 
+@ExperimentalSerializationApi
 @ExperimentalTextApi
 @ExperimentalAnimationApi
 @UnstableApi

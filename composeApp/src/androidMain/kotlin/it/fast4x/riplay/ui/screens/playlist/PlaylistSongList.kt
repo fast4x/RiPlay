@@ -154,11 +154,12 @@ import it.fast4x.riplay.ui.components.themed.FastPlayActionsBar
 import it.fast4x.riplay.ui.components.themed.LoaderScreen
 import it.fast4x.riplay.utils.httpClient
 import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.serialization.ExperimentalSerializationApi
 import me.bush.translator.Language
 import me.bush.translator.Translator
 import timber.log.Timber
 
-
+@ExperimentalSerializationApi
 @ExperimentalTextApi
 @SuppressLint("SuspiciousIndentation")
 @ExperimentalFoundationApi

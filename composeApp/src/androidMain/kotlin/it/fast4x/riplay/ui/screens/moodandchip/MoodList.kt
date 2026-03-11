@@ -59,10 +59,12 @@ import it.fast4x.riplay.ui.styling.semiBold
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.utils.typography
 import it.fast4x.riplay.utils.LazyListContainer
+import kotlinx.serialization.ExperimentalSerializationApi
 import timber.log.Timber
 
 internal const val defaultBrowseId = "FEmusic_moods_and_genres_category"
 
+@ExperimentalSerializationApi
 @ExperimentalFoundationApi
 @ExperimentalAnimationApi
 @Composable

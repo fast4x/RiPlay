@@ -4,7 +4,7 @@ import it.fast4x.environment.models.MusicResponsiveListItemRenderer
 import kotlinx.serialization.*
 import kotlinx.serialization.json.JsonNames
 
-
+@ExperimentalSerializationApi
 @Serializable
 data class BrowseResponsePodcasts (
     val contents: Contents? = null,
@@ -49,22 +49,26 @@ enum class ThumbnailScale(val value: String) {
     @SerialName("MUSIC_THUMBNAIL_SCALE_UNSPECIFIED") MusicThumbnailScaleUnspecified("MUSIC_THUMBNAIL_SCALE_UNSPECIFIED");
 }
 
+@ExperimentalSerializationApi
 @Serializable
 data class Contents (
     val twoColumnBrowseResultsRenderer: TwoColumnBrowseResultsRenderer? = null
 )
 
+@ExperimentalSerializationApi
 @Serializable
 data class TwoColumnBrowseResultsRenderer (
     val secondaryContents: SecondaryContents? = null,
     val tabs: List<Tab>? = null
 )
 
+@ExperimentalSerializationApi
 @Serializable
 data class SecondaryContents (
     val sectionListRenderer: SecondaryContentsSectionListRenderer? = null
 )
 
+@ExperimentalSerializationApi
 @Serializable
 data class SecondaryContentsSectionListRenderer (
     val contents: List<PurpleContent>? = null,
@@ -78,11 +82,13 @@ data class SecondaryContentsSectionListRenderer (
      */
 )
 
+@ExperimentalSerializationApi
 @Serializable
 data class PurpleContent (
     val musicShelfRenderer: MusicShelfRenderer? = null
 )
 
+@ExperimentalSerializationApi
 @Serializable
 data class MusicShelfRenderer (
     val contents: List<MusicShelfRendererContent>? = null,
@@ -472,11 +478,13 @@ data class MusicShelfDividerRenderer (
     val hidden: Boolean? = null
 )
 
+@ExperimentalSerializationApi
 @Serializable
 data class Header (
     val chipCloudRenderer: ChipCloudRenderer? = null
 )
 
+@ExperimentalSerializationApi
 @Serializable
 data class ChipCloudRenderer (
     val chips: List<Chip>? = null,
@@ -485,11 +493,13 @@ data class ChipCloudRenderer (
     val selectionBehavior: String? = null
 )
 
+@ExperimentalSerializationApi
 @Serializable
 data class Chip (
     val chipCloudChipRenderer: ChipCloudChipRenderer? = null
 )
 
+@ExperimentalSerializationApi
 @Serializable
 data class ChipCloudChipRenderer (
     val style: StyleClass? = null,
@@ -506,6 +516,7 @@ data class ChipCloudChipRenderer (
     val onDeselectedCommand: OnDeselectedCommand? = null
 )
 
+@ExperimentalSerializationApi
 @Serializable
 data class ChipCloudChipRendererNavigationEndpoint (
     val clickTrackingParams: String? = null,
@@ -513,6 +524,7 @@ data class ChipCloudChipRendererNavigationEndpoint (
     val browseSectionListReloadEndpoint: BrowseSectionListReloadEndpoint? = null
 )
 
+@ExperimentalSerializationApi
 @Serializable
 data class BrowseSectionListReloadEndpoint (
     val continuation: Continuation? = null,
@@ -524,6 +536,7 @@ data class BrowseSectionListReloadEndpoint (
      */
 )
 
+@ExperimentalSerializationApi
 @Serializable
 data class Continuation (
     val reloadContinuationData: ReloadContinuationData? = null,
@@ -546,6 +559,7 @@ enum class TargetID(val value: String) {
 
  */
 
+@ExperimentalSerializationApi
 @Serializable
 data class OpenPopupAction (
     val popup: Popup? = null,
@@ -553,21 +567,25 @@ data class OpenPopupAction (
     val reusePopup: Boolean? = null
 )
 
+@ExperimentalSerializationApi
 @Serializable
 data class Popup (
     val menuPopupRenderer: MenuPopupRenderer? = null
 )
 
+@ExperimentalSerializationApi
 @Serializable
 data class MenuPopupRenderer (
     val items: List<MenuPopupRendererItem>? = null
 )
 
+@ExperimentalSerializationApi
 @Serializable
 data class MenuPopupRendererItem (
     val menuNavigationItemRenderer: MenuNavigationItemRenderer? = null
 )
 
+@ExperimentalSerializationApi
 @Serializable
 data class MenuNavigationItemRenderer (
     val text: MenuNavigationItemRendererText? = null,
@@ -576,6 +594,7 @@ data class MenuNavigationItemRenderer (
     val trackingParams: String? = null
 )
 
+@ExperimentalSerializationApi
 @Serializable
 data class OnDeselectedCommand (
     val clickTrackingParams: String? = null,
@@ -793,6 +812,7 @@ class Subtitle()
 //****************
 //******************
 
+@ExperimentalSerializationApi
 @Serializable
 data class Welcome (
     val responseContext: ResponseContext? = null,
@@ -800,11 +820,13 @@ data class Welcome (
     val trackingParams: String? = null
 )
 
+@ExperimentalSerializationApi
 @Serializable
 data class ContinuationContents (
     val musicShelfContinuation: MusicShelfContinuation? = null
 )
 
+@ExperimentalSerializationApi
 @Serializable
 data class MusicShelfContinuation (
     val contents: List<Content>? = null,

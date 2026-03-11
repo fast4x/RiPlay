@@ -154,7 +154,9 @@ import it.fast4x.riplay.utils.isNetworkConnected
 import it.fast4x.riplay.utils.mediaItemSetLiked
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
+import kotlinx.serialization.ExperimentalSerializationApi
 
+@ExperimentalSerializationApi
 @OptIn(ExperimentalMaterial3Api::class)
 @ExperimentalTextApi
 @SuppressLint("SuspiciousIndentation")

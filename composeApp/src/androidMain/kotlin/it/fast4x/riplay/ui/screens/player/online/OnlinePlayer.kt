@@ -348,12 +348,14 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import it.fast4x.riplay.utils.isNetworkConnected
+import kotlinx.serialization.ExperimentalSerializationApi
 import timber.log.Timber
 import kotlin.Float.Companion.POSITIVE_INFINITY
 import kotlin.math.absoluteValue
 import kotlin.math.sqrt
 
 
+@ExperimentalSerializationApi
 @ExperimentalPermissionsApi
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeUiApi::class)
 @ExperimentalTextApi

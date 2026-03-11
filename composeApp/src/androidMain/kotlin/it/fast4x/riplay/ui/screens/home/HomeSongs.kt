@@ -210,8 +210,10 @@ import it.fast4x.riplay.ui.components.tab.TabHeader
 import it.fast4x.riplay.ui.components.themed.EnumsMenu
 import it.fast4x.riplay.utils.insertOrUpdateBlacklist
 import kotlinx.coroutines.delay
+import kotlinx.serialization.ExperimentalSerializationApi
 
 
+@ExperimentalSerializationApi
 @OptIn(ExperimentalMaterial3Api::class)
 @ExperimentalTextApi
 @SuppressLint("SuspiciousIndentation")

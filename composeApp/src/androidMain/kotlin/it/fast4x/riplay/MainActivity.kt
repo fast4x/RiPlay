@@ -265,6 +265,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.ExperimentalSerializationApi
 import timber.log.Timber
 import java.net.Proxy
 import java.net.URLEncoder
@@ -479,6 +480,7 @@ class MainActivity :
 
     }
 
+    @ExperimentalSerializationApi
     @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
     @ExperimentalMaterialApi
     @ExperimentalTextApi
@@ -706,6 +708,7 @@ class MainActivity :
         ExperimentalFoundationApi::class, ExperimentalAnimationApi::class,
         ExperimentalMaterial3Api::class, FlowPreview::class
     )
+    @ExperimentalSerializationApi
     @ExperimentalPermissionsApi
     fun startApp() {
 

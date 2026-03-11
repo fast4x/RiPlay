@@ -102,9 +102,10 @@ import it.fast4x.riplay.utils.isLocal
 import it.fast4x.riplay.ui.components.ButtonsRow
 import it.fast4x.riplay.ui.components.themed.IconButton
 import kotlinx.coroutines.flow.first
+import kotlinx.serialization.ExperimentalSerializationApi
 import timber.log.Timber
 
-
+@ExperimentalSerializationApi
 @OptIn(ExperimentalMaterial3Api::class)
 @ExperimentalMaterialApi
 @ExperimentalTextApi

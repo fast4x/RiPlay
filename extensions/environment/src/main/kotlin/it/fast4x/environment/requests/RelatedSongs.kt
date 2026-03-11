@@ -13,7 +13,9 @@ import it.fast4x.environment.models.bodies.NextBody
 import it.fast4x.environment.utils.findSectionByTitle
 import it.fast4x.environment.utils.from
 import it.fast4x.environment.utils.runCatchingNonCancellable
+import kotlinx.serialization.ExperimentalSerializationApi
 
+@ExperimentalSerializationApi
 suspend fun Environment.relatedSongs(body: NextBody) = runCatchingNonCancellable {
     val nextResponse = client.post(_NXIvG4ve8N) {
         setBody(body)

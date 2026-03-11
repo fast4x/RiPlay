@@ -16,9 +16,10 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlinx.serialization.ExperimentalSerializationApi
 import timber.log.Timber
 
-
+@ExperimentalSerializationApi
 fun updateOnlineHistory(mediaItem: MediaItem) {
     if (globalContext().preferences.getBoolean(pauseListenHistoryKey, false)) return
 

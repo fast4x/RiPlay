@@ -124,7 +124,9 @@ import it.fast4x.riplay.utils.updateOnlineAlbum
 import it.fast4x.riplay.utils.updateOnlineArtist
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.ExperimentalSerializationApi
 
+@ExperimentalSerializationApi
 @OptIn(ExperimentalAnimationApi::class, ExperimentalTextApi::class)
 @UnstableApi
 @Composable

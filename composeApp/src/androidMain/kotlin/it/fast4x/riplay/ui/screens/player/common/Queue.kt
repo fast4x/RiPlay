@@ -184,8 +184,10 @@ import it.fast4x.riplay.utils.insertOrUpdateBlacklist
 import it.fast4x.riplay.utils.isVideo
 import it.fast4x.riplay.utils.move
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlin.math.absoluteValue
 
+@ExperimentalSerializationApi
 @ExperimentalMaterial3Api
 @ExperimentalTextApi
 @SuppressLint("SuspiciousIndentation")

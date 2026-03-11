@@ -111,6 +111,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import kotlinx.serialization.ExperimentalSerializationApi
 
 @UnstableApi
 data class OnlineRadio (
@@ -416,6 +417,7 @@ fun SearchOnlineEntity (
 
 
 
+@ExperimentalSerializationApi
 suspend fun updateOnlineArtist(browseId: String) {
 
     val currentArtist = Database.artist(browseId).first()
@@ -442,7 +444,7 @@ suspend fun updateOnlineArtist(browseId: String) {
     }
 }
 
-
+@ExperimentalSerializationApi
 @OptIn(UnstableApi::class)
 suspend fun updateOnlineAlbum(albumId: String) {
     val currentAlbum = Database.album(albumId).first()
@@ -490,7 +492,7 @@ suspend fun updateOnlineAlbum(albumId: String) {
 }
 
 
-
+@ExperimentalSerializationApi
 @UnstableApi
 @Composable
 fun ShowVideoOrSongInfo(

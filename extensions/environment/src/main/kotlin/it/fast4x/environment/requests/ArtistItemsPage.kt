@@ -6,7 +6,9 @@ import it.fast4x.environment.models.MusicResponsiveListItemRenderer
 import it.fast4x.environment.models.MusicTwoRowItemRenderer
 import it.fast4x.environment.models.NavigationEndpoint
 import it.fast4x.environment.models.oddElements
+import kotlinx.serialization.ExperimentalSerializationApi
 
+@ExperimentalSerializationApi
 data class ArtistItemsPage(
     val title: String,
     val items: List<Environment.Item>,

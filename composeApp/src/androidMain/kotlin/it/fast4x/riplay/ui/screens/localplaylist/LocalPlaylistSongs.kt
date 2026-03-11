@@ -202,8 +202,10 @@ import kotlinx.coroutines.delay
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
 import it.fast4x.riplay.extensions.persist.persistList
+import kotlinx.serialization.ExperimentalSerializationApi
 import timber.log.Timber
 
+@ExperimentalSerializationApi
 @KotlinCsvExperimental
 @ExperimentalMaterialApi
 @ExperimentalTextApi

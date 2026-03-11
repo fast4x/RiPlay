@@ -59,8 +59,10 @@ import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.utils.typography
 import it.fast4x.riplay.utils.LazyListContainer
 import it.fast4x.riplay.utils.forcePlay
+import kotlinx.serialization.ExperimentalSerializationApi
 import java.net.URLEncoder
 
+@ExperimentalSerializationApi
 @ExperimentalTextApi
 @SuppressLint("SuspiciousIndentation")
 @ExperimentalFoundationApi

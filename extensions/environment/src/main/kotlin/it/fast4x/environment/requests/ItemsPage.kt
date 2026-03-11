@@ -13,7 +13,9 @@ import it.fast4x.environment.models.MusicTwoRowItemRenderer
 import it.fast4x.environment.models.bodies.BrowseBody
 import it.fast4x.environment.models.bodies.ContinuationBody
 import it.fast4x.environment.utils.runCatchingNonCancellable
+import kotlinx.serialization.ExperimentalSerializationApi
 
+@ExperimentalSerializationApi
 suspend fun <T : Environment.Item> Environment.itemsPage(
     body: BrowseBody,
     fromMusicResponsiveListItemRenderer: (MusicResponsiveListItemRenderer) -> T? = { null },

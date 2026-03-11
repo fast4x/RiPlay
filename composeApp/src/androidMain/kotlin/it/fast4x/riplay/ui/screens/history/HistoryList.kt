@@ -91,6 +91,7 @@ import it.fast4x.riplay.service.PlayerService
 import it.fast4x.riplay.ui.components.GlobalSheetState
 import it.fast4x.riplay.ui.screens.history.groupByDateAgo
 import kotlinx.coroutines.Dispatchers
+import kotlinx.serialization.ExperimentalSerializationApi
 import java.time.DayOfWeek
 import java.time.Instant
 import java.time.LocalDate
@@ -98,6 +99,7 @@ import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
+@ExperimentalSerializationApi
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @UnstableApi
 @Composable

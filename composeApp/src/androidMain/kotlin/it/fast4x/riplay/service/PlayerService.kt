@@ -229,6 +229,7 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.ExperimentalSerializationApi
 import okhttp3.OkHttpClient
 import timber.log.Timber
 import java.util.Objects
@@ -411,7 +412,7 @@ class PlayerService : Service(),
         return binder
     }
 
-
+    @ExperimentalSerializationApi
     @ExperimentalCoroutinesApi
     @FlowPreview
     @SuppressLint("Range")

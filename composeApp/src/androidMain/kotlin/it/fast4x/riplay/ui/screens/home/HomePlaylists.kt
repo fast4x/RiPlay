@@ -152,11 +152,12 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.ExperimentalSerializationApi
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import kotlin.collections.map
 
-
+@ExperimentalSerializationApi
 @OptIn(ExperimentalTextApi::class)
 @ExperimentalMaterial3Api
 @UnstableApi
