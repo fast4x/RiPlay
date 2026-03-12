@@ -981,7 +981,7 @@ fun Lyrics(
 
 
 
-                    val synchronizedLyrics = remember(isShowingSynchronizedLyrics, isShowingSynchronizedWordByWordLyrics) {
+                    val synchronizedLyrics = remember(isShowingSynchronizedLyrics, isShowingSynchronizedWordByWordLyrics, text) {
                         val sentences = if (!isShowingSynchronizedWordByWordLyrics)
                             LrcLib.Lyrics(lyrics?.synced ?: "").sentences.toLyricLine()
                         else LyricsKaraokeParser.parse(lyrics?.lrcSynced) //LyricsFakeKaraokeParser.parse(text)
