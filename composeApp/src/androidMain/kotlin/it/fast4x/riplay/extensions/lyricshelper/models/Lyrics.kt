@@ -1,4 +1,4 @@
-package it.fast4x.riplay.extensions.lyricsparser
+package it.fast4x.riplay.extensions.lyricshelper.models
 
 data class LyricLine(
     val timeMs: Long,

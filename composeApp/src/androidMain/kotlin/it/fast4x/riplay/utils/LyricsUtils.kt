@@ -5,7 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import it.fast4x.kugou.KuGou
 import it.fast4x.lrclib.LrcLib
-import it.fast4x.riplay.extensions.lyricsparser.LyricLine
+import it.fast4x.riplay.extensions.lyricshelper.models.LyricLine
 import it.fast4x.riplay.commonutils.cleanPrefix
 import it.fast4x.riplay.commonutils.durationTextToMillis
 import it.fast4x.riplay.data.Database
