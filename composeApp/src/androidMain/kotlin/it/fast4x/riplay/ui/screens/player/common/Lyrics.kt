@@ -99,7 +99,6 @@ import it.fast4x.environment.requests.lyrics
 import it.fast4x.kugou.KuGou
 import it.fast4x.lrclib.LrcLib
 import it.fast4x.lrclib.models.Track
-import it.fast4x.riplay.extensions.lyricsparser.LyricsLrcParser
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.R
@@ -162,7 +161,8 @@ import me.bush.translator.Language
 import me.bush.translator.Translator
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.enums.ColorPaletteName
-import it.fast4x.riplay.extensions.lyricsparser.LyricLine
+import it.fast4x.riplay.extensions.lyricshelper.models.LyricLine
+import it.fast4x.riplay.extensions.lyricshelper.parsers.LyricsKaraokeParser
 import it.fast4x.riplay.utils.isLocal
 import it.fast4x.riplay.utils.thumbnailShape
 import it.fast4x.riplay.utils.typography
@@ -181,12 +181,17 @@ import it.fast4x.riplay.utils.httpClient
 import it.fast4x.riplay.utils.playNext
 import it.fast4x.riplay.utils.playPrevious
 import it.fast4x.riplay.utils.toLyricLine
+import it.fast4x.synclrc.SyncLRC
+import it.fast4x.synclrc.models.SyncLRCType
+import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.serialization.ExperimentalSerializationApi
 import timber.log.Timber
 import kotlin.Float.Companion.POSITIVE_INFINITY
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 
 
+@OptIn(ExperimentalSerializationApi::class)
 @UnstableApi
 @Composable
 fun Lyrics(
@@ -249,6 +254,14 @@ fun Lyrics(
         }
 
         val text = if (isShowingSynchronizedLyrics) lyrics?.synced else lyrics?.fixed
+//        val text = when {
+//            isShowingSynchronizedLyrics && !isShowingSynchronizedWordByWordLyrics -> lyrics?.synced ?: ""
+//            isShowingSynchronizedWordByWordLyrics && isShowingSynchronizedLyrics -> lyrics?.lrcSynced ?: ""
+//            else -> lyrics?.fixed ?: ""
+//        }
+
+
+
         var textTranslated by remember {
             mutableStateOf("")
         }
@@ -478,8 +491,53 @@ fun Lyrics(
         LaunchedEffect(mediaId, isShowingSynchronizedLyrics, checkLyrics) {
             withContext(Dispatchers.IO) {
 
-                Database.lyrics(mediaId).collect { currentLyrics ->
-                    if (isShowingSynchronizedLyrics && currentLyrics?.synced == null) {
+                val currentLyrics = Database.lyrics(mediaId).firstOrNull()
+
+                //Timber.d("Lyrics ${currentLyrics?.lrcSynced}")
+                    /*
+                    if (isShowingSynchronizedWordByWordLyrics && currentLyrics?.lrcSynced == null) {
+                            SyncLRC.fetchLyrics(
+                                artist = artistName,
+                                title = title
+                            )?.let { syncLRClyrics ->
+                                //if (syncLRClyrics != null) {
+                                Timber.d("Lyrics Sync Karaoke $syncLRClyrics")
+
+                                if (syncLRClyrics.type != SyncLRCType.KARAOKE)
+                                    SmartMessage(
+                                        "Karaoke not available",
+                                        type = PopupType.Warning, context = context
+                                    )
+
+                                val lyricsToUpdate = when (syncLRClyrics.type) {
+                                    SyncLRCType.KARAOKE -> Lyrics(
+                                        songId = mediaId,
+                                        fixed = currentLyrics?.fixed,
+                                        synced = currentLyrics?.synced,
+                                        lrcSynced = syncLRClyrics.lyrics
+                                    )
+
+                                    SyncLRCType.SYNCED -> Lyrics(
+                                        songId = mediaId,
+                                        fixed = currentLyrics?.fixed,
+                                        synced = syncLRClyrics.lyrics,
+                                        lrcSynced = currentLyrics?.lrcSynced
+                                    )
+
+                                    SyncLRCType.PLAIN -> Lyrics(
+                                        songId = mediaId,
+                                        fixed = syncLRClyrics.lyrics,
+                                        synced = currentLyrics?.synced,
+                                        lrcSynced = currentLyrics?.lrcSynced
+                                    )
+                                }
+                                Database.upsert(lyricsToUpdate)
+                                //}
+                            }
+
+                    } else
+                        */
+                        if (isShowingSynchronizedLyrics && !isShowingSynchronizedWordByWordLyrics && currentLyrics?.synced == null) {
                         lyrics = null
                         var duration = withContext(Dispatchers.Main) {
                             durationProvider()
@@ -623,7 +681,7 @@ fun Lyrics(
                     } else {
                         lyrics = currentLyrics
                     }
-                }
+                //}
 
             }
 
@@ -923,10 +981,10 @@ fun Lyrics(
 
 
 
-                    val synchronizedLyrics = remember(isShowingSynchronizedLyrics, isShowingSynchronizedWordByWordLyrics, text) {
+                    val synchronizedLyrics = remember(isShowingSynchronizedLyrics, isShowingSynchronizedWordByWordLyrics) {
                         val sentences = if (!isShowingSynchronizedWordByWordLyrics)
-                            LrcLib.Lyrics(text).sentences.toLyricLine()
-                        else LyricsLrcParser.parse(text)
+                            LrcLib.Lyrics(lyrics?.synced ?: "").sentences.toLyricLine()
+                        else LyricsKaraokeParser.parse(lyrics?.lrcSynced) //LyricsFakeKaraokeParser.parse(text)
 
                         run {
                             invalidLrc = false
@@ -2587,7 +2645,9 @@ fun Lyrics(
                                             text = stringResource(R.string.search_lyrics_online),
                                             onClick = {
                                                 menuState.hide()
-                                                val mediaMetadata = binder?.player?.currentMediaItem?.mediaMetadata ?: return@MenuEntry
+                                                val mediaMetadata =
+                                                    binder?.player?.currentMediaItem?.mediaMetadata
+                                                        ?: return@MenuEntry
 
                                                 try {
                                                     context.startActivity(
