@@ -337,6 +337,7 @@ import it.fast4x.riplay.utils.mediaItems
 import it.fast4x.riplay.utils.playAtIndex
 import it.fast4x.riplay.utils.playNext
 import it.fast4x.riplay.utils.playPrevious
+import it.fast4x.riplay.utils.rememberSavableAnimatable
 import it.fast4x.riplay.utils.removeFromOnlineLikedSong
 import it.fast4x.riplay.utils.saturate
 import it.fast4x.riplay.utils.seamlessPlay
@@ -2242,9 +2243,7 @@ fun UnifiedPlayer(
                                 mutableFloatStateOf(0f)
                             }
 
-                            val rotation = remember {
-                                Animatable(currentRotation)
-                            }
+                            val rotation = rememberSavableAnimatable(currentRotation)
 
                             LaunchedEffect(playerState.isPlaying, pagerStateFS.settledPage) {
                                 if (playerState.isPlaying && index == pagerStateFS.settledPage) {
@@ -2917,9 +2916,7 @@ fun UnifiedPlayer(
                             mutableFloatStateOf(0f)
                         }
 
-                        val rotation = remember {
-                            Animatable(currentRotation)
-                        }
+                        val rotation = rememberSavableAnimatable(currentRotation)
 
                         LaunchedEffect(playerState.isPlaying, pagerStateFS.settledPage) {
                             if (playerState.isPlaying && index == pagerStateFS.settledPage) {

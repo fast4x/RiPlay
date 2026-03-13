@@ -4,11 +4,14 @@ package it.fast4x.riplay.utils
 import android.annotation.SuppressLint
 import android.os.Build
 import android.text.format.DateUtils
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.AnimationVector1D
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import it.fast4x.kugou.KuGou
 import it.fast4x.lrclib.LrcLib
@@ -31,6 +34,7 @@ import java.util.GregorianCalendar
 import java.util.Locale.getDefault
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.minutes
+import androidx.compose.runtime.saveable.Saver
 
 
 const val EXPLICIT_BUNDLE_TAG = "is_explicit"
@@ -159,4 +163,18 @@ fun String.cleanOnDeviceName(): String {
     val shortOnDeviceFolderName by rememberObservedPreference(shortOnDeviceFolderNameKey, false)
     return if (shortOnDeviceFolderName)
          this.substringAfterLast("/") else this
+}
+
+@Composable
+fun rememberSavableAnimatable(initialValue: Float): Animatable<Float, AnimationVector1D> {
+    val animatableSaver = Saver<Animatable<Float, AnimationVector1D>, Float>(
+        save = { it.value },
+        restore = { savedValue ->
+            Animatable(savedValue)
+        }
+    )
+
+    return rememberSaveable(saver = animatableSaver) {
+        Animatable(initialValue)
+    }
 }
