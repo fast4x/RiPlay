@@ -200,6 +200,7 @@ fun ConfirmationDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
+        containerColor = colorPalette().background1,
         modifier = modifier,
 
         text = {
@@ -232,40 +233,23 @@ fun ConfirmationDialog(
         },
 
         confirmButton = {
-            if (confirmBackgroundPrimary) {
-
-                Button(
-                    onClick = {
-                        onConfirm()
-                        onDismiss()
-                    }
-                ) {
-                    Text(confirmText)
+            DialogTextButton(
+                text = confirmText,
+                primary = confirmBackgroundPrimary,
+                onClick = {
+                    onConfirm()
+                    onDismiss()
                 }
-            } else {
-
-                TextButton(
-                    onClick = {
-                        onConfirm()
-                        onDismiss()
-                    }
-                ) {
-                    Text(confirmText)
-                }
-            }
+            )
         },
 
 
         dismissButton = {
-            if (cancelBackgroundPrimary) {
-                Button(onClick = onCancel) {
-                    Text(cancelText)
-                }
-            } else {
-                TextButton(onClick = onCancel) {
-                    Text(cancelText)
-                }
-            }
+            DialogTextButton(
+                text = cancelText,
+                primary = cancelBackgroundPrimary,
+                onClick = onCancel
+            )
         }
     )
 }
