@@ -19,7 +19,10 @@ import riplay.composeapp.generated.resources.month_september_s
 @Composable
 fun getTitleMonthlyPlaylist(playlist: String): String {
 
-    val y = playlist.substring(0,4)
+    if (playlist.length < 7)
+        return playlist
+
+    val y = playlist.take(4)
     val m = playlist.substring(5,7).toInt()
     return when (m) {
         1 -> stringResource(Res.string.month_january_s).format(y)
