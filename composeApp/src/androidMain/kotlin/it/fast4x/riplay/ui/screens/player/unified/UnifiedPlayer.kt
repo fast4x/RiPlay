@@ -291,6 +291,7 @@ import it.fast4x.riplay.ui.components.themed.ThumbnailOffsetDialog
 import it.fast4x.riplay.ui.components.themed.Turntable
 import it.fast4x.riplay.ui.components.themed.animateBrushRotation
 import it.fast4x.riplay.ui.screens.player.common.Lyrics
+import it.fast4x.riplay.ui.screens.player.common.LyricsNew
 import it.fast4x.riplay.ui.screens.player.common.NextVisualizer
 import it.fast4x.riplay.ui.screens.player.common.Queue
 import it.fast4x.riplay.ui.screens.player.common.StatsForNerds
@@ -2422,7 +2423,7 @@ fun UnifiedPlayer(
                                     .navigationBarsPadding()
                             ) {
                                 if (!showlyricsthumbnail) {
-                                    Lyrics(
+                                    LyricsNew(
                                         mediaId = mediaItem.mediaId,
                                         isDisplayed = isShowingLyrics,
                                         onDismiss = {
@@ -3687,7 +3688,7 @@ fun UnifiedPlayer(
                                 }
                         ) {
                             if (!showlyricsthumbnail)
-                                Lyrics(
+                                LyricsNew(
                                     mediaId = mediaItem.mediaId,
                                     isDisplayed = isShowingLyrics,
                                     onDismiss = {

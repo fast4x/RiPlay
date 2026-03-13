@@ -976,10 +976,6 @@ fun Lyrics(
             if (text?.isNotEmpty() == true) {
                 if (isShowingSynchronizedLyrics) {
                     val density = LocalDensity.current
-                    val player = LocalPlayerServiceBinder.current?.player
-                        ?: return@AnimatedVisibility
-
-
 
                     val synchronizedLyrics = remember(isShowingSynchronizedLyrics, isShowingSynchronizedWordByWordLyrics, text) {
                         val sentences = if (!isShowingSynchronizedWordByWordLyrics)
@@ -2591,7 +2587,10 @@ fun Lyrics(
                                                         )
                                                         MenuEntry(
                                                             icon = R.drawable.time,
-                                                            text = stringResource(R.string.synchronized_alternative_word_by_word_lyrics),
+                                                            text = stringResource(R.string.synchronized_karaoke_lyrics),
+                                                            secondaryText = stringResource(
+                                                                R.string.provided_by
+                                                            ) + " SyncLRC.tharuk.pro",
                                                             trailingContent = {
                                                                 if (isShowingSynchronizedWordByWordLyrics)
                                                                     Image(

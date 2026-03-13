@@ -19,10 +19,12 @@ import it.fast4x.synclrc.models.SyncLRCType
 import it.fast4x.synclrc.utils.ProxyPreferences
 import it.fast4x.synclrc.utils.getProxy
 import it.fast4x.synclrc.utils.runCatchingCancellable
+import kotlinx.coroutines.CancellationException
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import java.net.URLEncoder
 import java.util.concurrent.TimeUnit
+
 
 object SyncLRC {
     @OptIn(ExperimentalSerializationApi::class)
@@ -73,24 +75,17 @@ object SyncLRC {
         artist: String,
         title: String,
         type: SyncLRCType = SyncLRCType.KARAOKE,
-    ): SyncLRCLyrics? {
+    ) = runCatchingCancellable {
+        val response = client.get("/lyrics") {
+            parameter("track", URLEncoder.encode(title, "UTF-8"))
+            parameter("artist", URLEncoder.encode(artist, "UTF-8"))
+            parameter("type", type.type)
+        }.body<SyncLRCResponse>()
 
-        return try {
-            val response = client.get("/lyrics") {
-                parameter("track", URLEncoder.encode(title, "UTF-8"))
-                parameter("artist", URLEncoder.encode(artist, "UTF-8"))
-                parameter("type", type.type)
-            }.body<SyncLRCResponse>()
-
-            SyncLRCLyrics(
-                type = SyncLRCType.valueOf(response.type.toUpperCasePreservingASCIIRules()),
-                lyrics = response.lyrics
-            )
-
-        } catch (e: Exception) {
-            //println("SyncLRC fetchLyrics error: ${e.message}")
-            null
-        }
+        SyncLRCLyrics(
+            type = SyncLRCType.valueOf(response.type.toUpperCasePreservingASCIIRules()),
+            lyrics = response.lyrics
+        )
 
     }
 

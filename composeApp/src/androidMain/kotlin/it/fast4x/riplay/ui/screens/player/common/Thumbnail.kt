@@ -318,7 +318,7 @@ fun Thumbnail(
 
                 //if (!currentWindow.mediaItem.isLocal)
                 if (showlyricsthumbnail)
-                    Lyrics(
+                    LyricsNew(
                         mediaId = currentWindow.mediaItem.mediaId,
                         isDisplayed = isShowingLyrics && error == null,
                         onDismiss = {
