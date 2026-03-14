@@ -14,9 +14,9 @@ enum class ThumbnailRoundness {
     fun shape(): Shape {
         return when (this) {
             None -> RectangleShape
-            Light -> RoundedCornerShape(8.dp)
-            Medium -> RoundedCornerShape(12.dp)
-            Heavy -> RoundedCornerShape(16.dp)
+            Light -> RoundedCornerShape(4.dp)
+            Medium -> RoundedCornerShape(8.dp)
+            Heavy -> RoundedCornerShape(12.dp)
         }
     }
 
