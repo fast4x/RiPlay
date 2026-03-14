@@ -31,7 +31,7 @@ import it.fast4x.riplay.utils.typography
 fun Title(
     title: String,
     modifier: Modifier = Modifier,
-    verticalPadding: Dp = 12.dp,
+    verticalPadding: Dp = 8.dp,
     @DrawableRes icon: Int? = R.drawable.arrow_forward,
     enableClick: Boolean = true,
     onClick: (() -> Unit)? = null,
@@ -45,13 +45,14 @@ fun Title(
                 if (enableClick)
                     onClick?.invoke()
             }
-            .padding(horizontal = 12.dp, vertical = verticalPadding)
+            .padding(horizontal = 12.dp)
+            .padding(top = verticalPadding, bottom = 4.dp)
     ) {
         Text(
             text = title,
             style = TextStyle(
-                fontSize = typography().l.semiBold.fontSize,
-                fontWeight = typography().l.semiBold.fontWeight,
+                fontSize = typography().l.bold.fontSize,
+                fontWeight = typography().l.bold.fontWeight,
                 color = colorPalette().text,
                 textAlign = TextAlign.Start
             ),
@@ -89,13 +90,14 @@ fun Title2Actions(
                 if (enableClick)
                     onClick1?.invoke()
             }
-            .padding(horizontal = 12.dp, vertical = 12.dp)
+            .padding(horizontal = 12.dp)
+            .padding(top = 8.dp, bottom = 4.dp)
     ) {
         Text(
             text = title,
             style = TextStyle(
-                fontSize = typography().l.semiBold.fontSize,
-                fontWeight = typography().l.semiBold.fontWeight,
+                fontSize = typography().l.bold.fontSize,
+                fontWeight = typography().l.bold.fontWeight,
                 color = colorPalette().text,
                 textAlign = TextAlign.Start
             ),
@@ -140,8 +142,8 @@ fun TitleSection(
     Text(
         text = title,
         style = TextStyle(
-            fontSize = typography().xl.bold.fontSize,
-            fontWeight = typography().xl.bold.fontWeight,
+            fontSize = typography().l.bold.fontSize,
+            fontWeight = typography().l.bold.fontWeight,
             color = colorPalette().text,
             textAlign = TextAlign.Start
         ),
@@ -160,8 +162,8 @@ fun TitleMiniSection(
     Text(
         text = title,
         style = TextStyle(
-            fontSize = typography().xs.bold.fontSize,
-            fontWeight = typography().xs.bold.fontWeight,
+            fontSize = typography().xs.semiBold.fontSize,
+            fontWeight = typography().xs.semiBold.fontWeight,
             color = colorPalette().text,
             textAlign = TextAlign.Start
         ),

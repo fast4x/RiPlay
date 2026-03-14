@@ -109,6 +109,7 @@ import it.fast4x.riplay.ui.items.ArtistItem
 import it.fast4x.riplay.ui.items.PlaylistItem
 import it.fast4x.riplay.ui.items.SongItem
 import it.fast4x.riplay.ui.items.VideoItem
+import it.fast4x.riplay.ui.styling.bold
 import it.fast4x.riplay.ui.styling.color
 import it.fast4x.riplay.ui.styling.secondary
 import it.fast4x.riplay.ui.styling.semiBold
@@ -325,13 +326,13 @@ fun HomePage(
         Database.preferitesArtistsByName().collect { preferitesArtists = it }
     }
 
-    val songThumbnailSizeDp = Dimensions.thumbnails.song
+    val songThumbnailSizeDp = Dimensions.thumbnails.song - 10.dp
     val songThumbnailSizePx = songThumbnailSizeDp.px
-    val albumThumbnailSizeDp = 108.dp
+    val albumThumbnailSizeDp = Dimensions.thumbnails.album
     val albumThumbnailSizePx = albumThumbnailSizeDp.px
-    val artistThumbnailSizeDp = 92.dp
+    val artistThumbnailSizeDp = Dimensions.thumbnails.artist
     val artistThumbnailSizePx = artistThumbnailSizeDp.px
-    val playlistThumbnailSizeDp = 108.dp
+    val playlistThumbnailSizeDp = Dimensions.thumbnails.playlist
     val playlistThumbnailSizePx = playlistThumbnailSizeDp.px
 
     val scrollState = rememberScrollState()
@@ -478,13 +479,11 @@ fun HomePage(
                         contentPadding = endPaddingValues,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(if (relatedPage != null) Dimensions.itemsVerticalPadding * 3 * 9 else Dimensions.itemsVerticalPadding * 9)
-                        //.height((songThumbnailSizeDp + Dimensions.itemsVerticalPadding * 2) * 4)
+                            //.height(if (relatedPage != null) Dimensions.itemsVerticalPadding * 3 * 9 else Dimensions.itemsVerticalPadding * 9)
+                            .height((songThumbnailSizeDp + Dimensions.itemsVerticalPadding * 2) * 3)
                     ) {
                         trending?.let { song ->
                             item {
-                                //val isLocal by remember { derivedStateOf { song.asMediaItem.isLocal } }
-                                //var forceRecompose by remember { mutableStateOf(false) }
                                 SongItem(
                                     song = song,
                                     thumbnailSizePx = songThumbnailSizePx,
@@ -640,7 +639,7 @@ fun HomePage(
 
                             BasicText(
                                 text = stringResource(R.string.new_albums_of_your_artists),
-                                style = typography().l.semiBold,
+                                style = typography().xl.bold,
                                 modifier = sectionTextModifier
                             )
 
@@ -696,12 +695,12 @@ fun HomePage(
                         TitleMiniSection(
                             it.label ?: "", modifier = Modifier
                                 .padding(horizontal = 16.dp)
-                                .padding(top = 14.dp, bottom = 4.dp)
+                                .padding(top = 8.dp, bottom = 4.dp)
                         )
 
                         BasicText(
                             text = it.title,
-                            style = typography().l.semiBold.color(colorPalette().text),
+                            style = typography().l.bold.color(colorPalette().text),
                             modifier = Modifier
                                 .padding(horizontal = 16.dp)
                                 .padding(vertical = 4.dp)
@@ -807,8 +806,7 @@ fun HomePage(
                                 contentPadding = endPaddingValues,
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    //.height((thumbnailSizeDp + Dimensions.itemsVerticalPadding * 8) * 8)
-                                    .height(Dimensions.itemsVerticalPadding * 4 * 8)
+                                    .height((songThumbnailSizeDp + Dimensions.itemsVerticalPadding) * 4)
                             ) {
                                 items(
                                     items = homePage?.chips?.sortedBy { it.title } ?: emptyList(),
@@ -818,7 +816,6 @@ fun HomePage(
                                         chip = it,
                                         onClick = { it.endpoint?.browseId?.let { _ -> onChipClick(it) } },
                                         modifier = Modifier
-                                            //.width(itemWidth)
                                             .padding(4.dp)
                                     )
                                 }
@@ -835,7 +832,6 @@ fun HomePage(
                                 Title(
                                     title = stringResource(R.string.genres),
                                     onClick = { navController.navigate(NavRoutes.moodsPage.name) },
-                                    //modifier = Modifier.fillMaxWidth(0.7f)
                                 )
 
                                 LazyHorizontalGrid(
@@ -846,8 +842,7 @@ fun HomePage(
                                     contentPadding = endPaddingValues,
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        //.height((thumbnailSizeDp + Dimensions.itemsVerticalPadding * 8) * 8)
-                                        .height(Dimensions.itemsVerticalPadding * 4 * 8)
+                                        .height((songThumbnailSizeDp + Dimensions.itemsVerticalPadding) * 4)
                                 ) {
                                     items(
                                         items = page.moods.sortedBy { it.title },
