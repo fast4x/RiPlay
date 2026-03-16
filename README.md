@@ -45,7 +45,6 @@ RiPlay is a powerful, open-source music player designed for music lovers who wan
 - Sleep timer
 - Visualizer (microphone permission required)
 - Fast Share (direct sharing with installed apps)
-- Cast to another Android device / TV via [RiLink](https://github.com/fast4x/RiLink) (experimental)
 - Self-closing app scheduling
 - Events daily/weekly, new releases from your artists, auto backup and check update
 - Android Auto support
@@ -55,7 +54,7 @@ RiPlay is a powerful, open-source music player designed for music lovers who wan
 ### 🎨 Customization
 - Themes
 - Audio controls: volume, speed, pitch, normalization, skip silence, bassboost
-- More options via [RiEqualizer](https://github.com/fast4x/RiEqualizer)
+
 
 ### 🌐 Multilingual Support
 - Available in 50+ languages
