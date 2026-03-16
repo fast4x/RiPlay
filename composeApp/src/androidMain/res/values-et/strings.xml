@@ -491,7 +491,7 @@
     <string name="info_reorder_is_possible_only_in_ascending_sort">Ümberjärjestamine on võimalik ainult tõusvas järjestuses</string>
     <string name="information">Teave</string>
     <string name="info_lyrics_found_on_s">Laulusõnad leiti: %s</string>
-    <string name="info_lyrics_not_found_on_s_try_on_s">Laulusõnu ei leitud %s\'st, proovige %s\'st</string>
+    <string name="info_lyrics_not_found_on_s_try_on_s">Laulusõnu ei leitud %1$s\'st, proovige %2$s\'st</string>
     <string name="info_lyrics_not_found_on_s">Laulusõnu ei leitud %s\'st</string>
     <string name="info_lyrics_tracks_found_on_s">Laulusõnad leiti %s\'st</string>
     <string name="info_lyrics_tracks_not_found_on_s">Laulusõnu ei leitud %s\'st</string>
@@ -1268,7 +1268,7 @@
     <string name="online_now_playing_title">ONLINE</string>
     <string name="no_artists">No artists</string>
     <string name="no_albums">No albums</string>
-    <string name="no_plaulists">No playlists</string>
+    <string name="no_playlists">No playlists</string>
     <string name="no_songs">No songs</string>
     <string name="crash_title_ops_riplay_is_in_error_state">Ops! RiPlay is in error state</string>
     <string name="crash_subtitle_the_application_crashed_unexpectedly_you_can_help_us_by_sending_this_log">The application crashed unexpectedly, you can help us by sending this log.</string>
@@ -1278,4 +1278,5 @@
     <string name="cover_type_turntable">Turntable</string>
     <string name="synchronized_alternative_word_by_word_lyrics">alternative synced word by word lyrics</string>
     <string name="lyrics_type">Lyrics type</string>
+    <string name="synchronized_karaoke_lyrics">syncronized karaoke lyrics</string>
 </resources>

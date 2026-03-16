@@ -493,7 +493,7 @@
     <string name="info_reorder_is_possible_only_in_ascending_sort">La réorganisation est possible uniquement dans le tri ascendant</string>
     <string name="information">Information</string>
     <string name="info_lyrics_found_on_s">Paroles trouvées sur %s</string>
-    <string name="info_lyrics_not_found_on_s_try_on_s">Paroles introuvables sur %s, essayez sur %s</string>
+    <string name="info_lyrics_not_found_on_s_try_on_s">Paroles introuvables sur %1$s, essayez sur %2$s</string>
     <string name="info_lyrics_not_found_on_s">Paroles introuvables sur %s</string>
     <string name="info_lyrics_tracks_found_on_s">Paroles de chansons trouvées sur %s</string>
     <string name="info_lyrics_tracks_not_found_on_s">Paroles de chansons non trouvées sur %s</string>
@@ -1271,7 +1271,7 @@ Volume BAS : titre précédent</string>
     <string name="online_now_playing_title">EN LIGNE</string>
     <string name="no_artists">Aucun artiste</string>
     <string name="no_albums">Aucun album</string>
-    <string name="no_plaulists">Aucune playlist</string>
+    <string name="no_playlists">Aucune playlist</string>
     <string name="no_songs">Aucun titre</string>
     <string name="crash_title_ops_riplay_is_in_error_state">Oups ! RiPlay présente une erreur.</string>
     <string name="crash_subtitle_the_application_crashed_unexpectedly_you_can_help_us_by_sending_this_log">L\'application a planté de manière inattendue. Vous pouvez nous aider en nous envoyant ce journal.</string>
@@ -1281,4 +1281,5 @@ Volume BAS : titre précédent</string>
     <string name="cover_type_turntable">Platine vinyle</string>
     <string name="synchronized_alternative_word_by_word_lyrics">alternative synced word by word lyrics</string>
     <string name="lyrics_type">Lyrics type</string>
+    <string name="synchronized_karaoke_lyrics">syncronized karaoke lyrics</string>
 </resources>

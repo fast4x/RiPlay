@@ -13,26 +13,14 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import it.fast4x.kugou.KuGou
-import it.fast4x.lrclib.LrcLib
-import it.fast4x.riplay.commonutils.cleanPrefix
-import it.fast4x.riplay.commonutils.durationTextToMillis
-import it.fast4x.riplay.data.Database
-import it.fast4x.riplay.data.models.Lyrics
-import it.fast4x.riplay.data.models.SongEntity
 import it.fast4x.riplay.extensions.preferences.rememberObservedPreference
 import it.fast4x.riplay.extensions.preferences.shortOnDeviceFolderNameKey
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.text.DecimalFormat
 import java.text.SimpleDateFormat
 import java.time.Duration
 import java.util.Calendar
 import java.util.GregorianCalendar
 import java.util.Locale.getDefault
-import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.minutes
 import androidx.compose.runtime.saveable.Saver
 
@@ -163,6 +151,45 @@ fun String.cleanOnDeviceName(): String {
     val shortOnDeviceFolderName by rememberObservedPreference(shortOnDeviceFolderNameKey, false)
     return if (shortOnDeviceFolderName)
          this.substringAfterLast("/") else this
+}
+
+fun String.htmlToJson(): String {
+    var rawString = this.trim()
+
+    if (rawString.startsWith("\"") && rawString.endsWith("\""))
+        rawString = rawString.substring(1, this.length - 1)
+
+    if (rawString.endsWith("\\n"))
+        rawString = rawString.take(this.length - 3)
+
+    rawString = rawString.replace("\\", "").replace("n[", "\n[")
+
+    return rawString
+}
+
+fun String.decodeHtmlAndUnicode(): String {
+    var result = this
+
+    result = result
+        .replace("&lt;", "<")
+        .replace("&gt;", ">")
+        .replace("&amp;", "&")
+        .replace("&quot;", "\"")
+        .replace("&#39;", "'")
+
+    val unicodeRegex = """\\?u([0-9a-fA-F]{4})""".toRegex()
+
+    result = unicodeRegex.replace(result) { matchResult ->
+        val hexCode = matchResult.groupValues[1]
+        try {
+            val charCode = hexCode.toInt(16)
+            charCode.toChar().toString()
+        } catch (e: Exception) {
+            matchResult.value
+        }
+    }
+
+    return result
 }
 
 @Composable

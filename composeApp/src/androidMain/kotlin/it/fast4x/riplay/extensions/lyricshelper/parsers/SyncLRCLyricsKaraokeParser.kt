@@ -5,22 +5,18 @@ import it.fast4x.riplay.extensions.lyricshelper.models.LyricWord
 import timber.log.Timber
 import java.util.regex.Pattern
 
-object LyricsKaraokeParser {
+object SyncLRCLyricsKaraokeParser {
 
     // Regex per il tempo della riga: [00:10.53]
     private val lineTimePattern = Pattern.compile("^\\[(\\d{2}):(\\d{2})\\.(\\d{2,3})\\]")
 
-    // Regex per le parole: <00:10.53>Hello
-    // Cattura il tempo e il testo fino al prossimo tag <
+    // Regex per le parole
     private val wordPattern = Pattern.compile("<(\\d{2}):(\\d{2})\\.(\\d{2,3})>([^<]*)")
 
     fun parse(lrcString: String?): List<LyricLine> {
-        Timber.d("LyricsKaraokeParser parse lrcString? ${lrcString}")
         if (lrcString.isNullOrEmpty()) return emptyList()
 
         val lines = lrcString.lines()
-        Timber.d("LyricsKaraokeParser parse ${lines}")
-
         val parsedLines = mutableListOf<LyricLine>()
 
         for (i in lines.indices) {
@@ -30,82 +26,74 @@ object LyricsKaraokeParser {
             val lineMatcher = lineTimePattern.matcher(line)
             if (!lineMatcher.find()) continue
 
-            // 1. Ottieni tempo assoluto di inizio riga
+            // PASSAGGIO CHIAVE: Passiamo la stringa grezza per gestire centesimi/millisecondi
             val lineStartMs = toMs(
                 lineMatcher.group(1).toLong(),
                 lineMatcher.group(2).toLong(),
-                lineMatcher.group(3).toLong()
+                lineMatcher.group(3) // Passiamo la stringa, non il Long
             )
 
-            // 2. Estrai il contenuto dopo il timestamp della riga
             val contentStart = lineMatcher.end()
             val content = line.substring(contentStart)
 
-            // 3. Trova tutte le parole e i loro tempi assoluti
             val wordMatches = mutableListOf<WordMatch>()
             val wordMatcher = wordPattern.matcher(content)
 
             while (wordMatcher.find()) {
-                val wMin = wordMatcher.group(1).toLong()
-                val wSec = wordMatcher.group(2).toLong()
-                val wMs = wordMatcher.group(3).toLong()
                 val text = wordMatcher.group(4).trim()
 
-                // Ignoriamo i match vuoti (pause) o spazi bianchi
                 if (text.isNotEmpty()) {
                     wordMatches.add(
                         WordMatch(
-                            absoluteTimeMs = toMs(wMin, wSec, wMs),
+                            absoluteTimeMs = toMs(
+                                wordMatcher.group(1).toLong(),
+                                wordMatcher.group(2).toLong(),
+                                wordMatcher.group(3) // Stringa
+                            ),
                             text = text
                         )
                     )
                 }
             }
 
-            // Se non ci sono parole valide, salta la riga
             if (wordMatches.isEmpty()) continue
 
-            // 4. Calcola le durate convertendo i tempi assoluti in relativi
             val lyricsWords = mutableListOf<LyricWord>()
-
-            // Trova il tempo di inizio della PROSSIMA riga per calcolare la durata dell'ultima parola
+            // Cerca il tempo della prossima riga, ma con un fallback sicuro
             val nextLineStartMs = findNextLineTime(lines, i + 1)
+
+            // Se non c'è prossima riga, diamo un buffer di 3 secondi all'ultima parola
+            val fallbackEndTime = lineStartMs + 3000
 
             for (j in wordMatches.indices) {
                 val current = wordMatches[j]
 
-                // Calcola quando finisce questa parola
                 val endTimeMs = if (j + 1 < wordMatches.size) {
-                    // Finisce quando inizia la prossima parola
                     wordMatches[j + 1].absoluteTimeMs
                 } else {
-                    // Se è l'ultima parola, finisce quando inizia la prossima riga
-                    nextLineStartMs
+                    // Usa il tempo della prossima riga se valido, altrimenti il fallback
+                    if (nextLineStartMs > current.absoluteTimeMs) nextLineStartMs else fallbackEndTime
                 }
 
                 val duration = endTimeMs - current.absoluteTimeMs
 
-                // Evitiamo durate negative o zero dovute a glitch dell'API
                 if (duration > 0) {
-                    // Convertiamo il tempo assoluto della parola in tempo RELATIVO alla riga
                     val relativeStartTime = current.absoluteTimeMs - lineStartMs
-
                     lyricsWords.add(
                         LyricWord(
                             text = current.text,
-                            startTimeLineMs = relativeStartTime,
+                            startTimeInTheLineMs = relativeStartTime,
                             durationMs = duration
                         )
                     )
                 }
             }
-
+            Timber.d("LyricsKaraokeParser line index $i lineStartMs $lineStartMs")
             parsedLines.add(LyricLine(lineStartMs, "", lyricsWords))
         }
         return parsedLines
     }
 
-    // Helper per trovare l'inizio della riga successiva
     private fun findNextLineTime(lines: List<String>, startIndex: Int): Long {
         for (i in startIndex until lines.size) {
             val matcher = lineTimePattern.matcher(lines[i])
@@ -113,22 +101,22 @@ object LyricsKaraokeParser {
                 return toMs(
                     matcher.group(1).toLong(),
                     matcher.group(2).toLong(),
-                    matcher.group(3).toLong()
+                    matcher.group(3)
                 )
             }
         }
-        // Se non c'è una prossima riga, diamo un buffer di 3 secondi o MAX_VALUE
-        return Long.MAX_VALUE
+        return -1 // Indica che non c'è una prossima riga
     }
 
-    // Helper per conversione tempo -> millisecondi
-    private fun toMs(min: Long, sec: Long, ms: Long): Long {
-        return (min * 60 * 1000) + (sec * 1000) + ms
+    // Funzione corretta per gestire Centesimi (standard LRC) vs Millisecondi
+    private fun toMs(min: Long, sec: Long, msStr: String): Long {
+        val msValue = msStr.toLong()
+        // Se ha 2 cifre è in centesimi di secondo (es. 04 -> 40ms)
+        // Se ha 3 cifre è già in millisecondi (es. 040 -> 40ms o 400 -> 400ms)
+        val actualMs = if (msStr.length == 2) msValue * 10 else msValue
+
+        return (min * 60 * 1000) + (sec * 1000) + actualMs
     }
 
-    // Data class temporanea per il parsing
-    private data class WordMatch(
-        val absoluteTimeMs: Long,
-        val text: String
-    )
+    private data class WordMatch(val absoluteTimeMs: Long, val text: String)
 }

@@ -8,6 +8,6 @@ data class LyricLine(
 
 data class LyricWord(
     val text: String,
-    val startTimeLineMs: Long,
+    val startTimeInTheLineMs: Long,
     val durationMs: Long
 )

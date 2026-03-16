@@ -290,7 +290,6 @@ import it.fast4x.riplay.ui.components.themed.SmartMessage
 import it.fast4x.riplay.ui.components.themed.ThumbnailOffsetDialog
 import it.fast4x.riplay.ui.components.themed.Turntable
 import it.fast4x.riplay.ui.components.themed.animateBrushRotation
-import it.fast4x.riplay.ui.screens.player.common.Lyrics
 import it.fast4x.riplay.ui.screens.player.common.LyricsNew
 import it.fast4x.riplay.ui.screens.player.common.NextVisualizer
 import it.fast4x.riplay.ui.screens.player.common.Queue
@@ -2432,7 +2431,7 @@ fun UnifiedPlayer(
                                         size = 1000.dp,
                                         mediaMetadataProvider = mediaItem::mediaMetadata,
                                         durationProvider = { positionAndDuration.second },
-                                        positionProvider = { positionAndDuration.first },
+                                        //positionProvider = { positionAndDuration.first },
                                         isLandscape = isLandscape,
                                         clickLyricsText = clickLyricsText,
                                         modifier = Modifier
@@ -3695,7 +3694,7 @@ fun UnifiedPlayer(
                                     size = 1000.dp,
                                     mediaMetadataProvider = mediaItem::mediaMetadata,
                                     durationProvider = { positionAndDuration.second },
-                                    positionProvider = { positionAndDuration.first },
+                                    //positionProvider = { positionAndDuration.first },
                                     isLandscape = isLandscape,
                                     clickLyricsText = clickLyricsText,
                                 )

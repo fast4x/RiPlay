@@ -1,5 +1,6 @@
 package it.fast4x.riplay.utils
 
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
@@ -12,6 +13,9 @@ import okhttp3.Callback
 import okhttp3.Response
 import kotlin.coroutines.resumeWithException
 
+
+inline fun <T> runCatchingCancellable(block: () -> T) =
+    runCatching(block).takeIf { it.exceptionOrNull() !is CancellationException }
 
 suspend fun Call.executeAsync(): Response = suspendCancellableCoroutine { continuation ->
     enqueue(object : Callback {

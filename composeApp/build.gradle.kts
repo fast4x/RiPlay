@@ -156,7 +156,6 @@ kotlin {
                 implementation(project(":lrclib"))
                 implementation(project(":audiotaginfo"))
                 implementation(project(":lastfm"))
-                implementation(project(":synclrc"))
 
                 implementation(libs.room.ktx)
                 implementation(libs.room.runtime)

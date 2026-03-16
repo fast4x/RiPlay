@@ -162,7 +162,7 @@ import me.bush.translator.Translator
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.enums.ColorPaletteName
 import it.fast4x.riplay.extensions.lyricshelper.models.LyricLine
-import it.fast4x.riplay.extensions.lyricshelper.parsers.LyricsKaraokeParser
+import it.fast4x.riplay.extensions.lyricshelper.parsers.SyncLRCLyricsKaraokeParser
 import it.fast4x.riplay.utils.isLocal
 import it.fast4x.riplay.utils.thumbnailShape
 import it.fast4x.riplay.utils.typography
@@ -181,8 +181,6 @@ import it.fast4x.riplay.utils.httpClient
 import it.fast4x.riplay.utils.playNext
 import it.fast4x.riplay.utils.playPrevious
 import it.fast4x.riplay.utils.toLyricLine
-import it.fast4x.synclrc.SyncLRC
-import it.fast4x.synclrc.models.SyncLRCType
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.serialization.ExperimentalSerializationApi
 import timber.log.Timber
@@ -980,7 +978,7 @@ fun Lyrics(
                     val synchronizedLyrics = remember(isShowingSynchronizedLyrics, isShowingSynchronizedWordByWordLyrics, text) {
                         val sentences = if (!isShowingSynchronizedWordByWordLyrics)
                             LrcLib.Lyrics(lyrics?.synced ?: "").sentences.toLyricLine()
-                        else LyricsKaraokeParser.parse(lyrics?.lrcSynced) //LyricsFakeKaraokeParser.parse(text)
+                        else SyncLRCLyricsKaraokeParser.parse(lyrics?.lrcSynced) //LyricsFakeKaraokeParser.parse(text)
 
                         run {
                             invalidLrc = false
@@ -1042,8 +1040,8 @@ fun Lyrics(
 
                             val isActive = index == synchronizedLyrics.index
                             val progressInsideLine = if (isActive) {
-                                (positionProvider() - sentence.timeMs).toFloat()
-                            } else -1f
+                                (positionProvider() - sentence.timeMs)
+                            } else -1
 
                             var translatedText by remember { mutableStateOf("") }
                             val trimmedSentence = sentence.text.trim()
@@ -2707,108 +2705,4 @@ fun Lyrics(
     }
 }
 
-@Composable
-fun LyricRow(
-    line: LyricLine,
-    isActive: Boolean,
-    progressMs: Float,
-    style1: TextStyle,
-    modifier: Modifier
-) {
 
-    //Timber.d("Lyrics LyricRow isActive: $isActive progressMs: $progressMs, line $line")
-
-    val safeProgressMs = if (isActive) maxOf(0f, progressMs) else 0f
-
-    val annotatedString = buildAnnotatedString {
-        line.words.forEach { word ->
-
-            val isWordPassed = isActive && (safeProgressMs > (word.startTimeLineMs + word.durationMs))
-
-            val isWordActive = isActive &&
-                    (safeProgressMs >= word.startTimeLineMs) &&
-                    !isWordPassed
-
-            val style = when {
-                isWordActive -> SpanStyle(
-                    color = Color.White,
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.Bold
-                )
-
-                isWordPassed -> SpanStyle(
-                    color = Color.Gray.copy(alpha = 0.6f),
-                    fontSize = 24.sp
-                )
-
-                isActive -> SpanStyle(
-                    color = Color.Gray.copy(alpha = 0.5f),
-                    fontSize = 24.sp
-                )
-
-                else -> SpanStyle(
-                    color = Color.DarkGray,
-                    fontSize = 20.sp
-                )
-            }
-
-            withStyle(style) {
-                append(word.text)
-                append(" ")
-            }
-        }
-    }
-
-    Text(
-        text = annotatedString,
-        style = style1,
-        modifier = modifier
-    )
-}
-
-/*@Composable
-fun SelectLyricFromTrack(
-    tracks: List<Track>,
-    mediaId: String,
-    lyrics: Lyrics?
-) {
-    val menuState = LocalMenuState.current
-
-    menuState.display {
-        Menu {
-            MenuEntry(
-                icon = R.drawable.chevron_back,
-                text = stringResource(R.string.cancel),
-                onClick = { menuState.hide() }
-            )
-            tracks.forEach {
-                MenuEntry(
-                    icon = R.drawable.text,
-                    text = "${it.artistName} - ${it.trackName}",
-                    secondaryText = "(${stringResource(R.string.sort_duration)} ${
-                        it.duration.seconds.toComponents { minutes, seconds, _ ->
-                            "$minutes:${seconds.toString().padStart(2, '0')}"
-                        }
-                    } ${stringResource(R.string.id)} ${it.id}) ",
-                    onClick = {
-                        menuState.hide()
-                        Database.asyncTransaction {
-                            upsert(
-                                Lyrics(
-                                    songId = mediaId,
-                                    fixed = lyrics?.fixed,
-                                    synced = it.syncedLyrics.orEmpty()
-                                )
-                            )
-                        }
-                    }
-                )
-            }
-            MenuEntry(
-                icon = R.drawable.chevron_back,
-                text = stringResource(R.string.cancel),
-                onClick = { menuState.hide() }
-            )
-        }
-    }
-}*/

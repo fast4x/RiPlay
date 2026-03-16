@@ -311,7 +311,6 @@ import it.fast4x.riplay.utils.appContext
 import it.fast4x.riplay.extensions.preferences.showPlayerActionsBarKey
 import it.fast4x.riplay.data.models.defaultQueue
 import it.fast4x.riplay.ui.components.themed.AddToPlaylistPlayerMenu
-import it.fast4x.riplay.ui.screens.player.common.Lyrics
 import it.fast4x.riplay.ui.screens.player.common.NextVisualizer
 import it.fast4x.riplay.ui.screens.player.common.Queue
 import it.fast4x.riplay.ui.screens.player.common.StatsForNerds
@@ -334,6 +333,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import it.fast4x.riplay.extensions.equalizer.InternalEqualizerScreen
 import it.fast4x.riplay.ui.components.SheetBody
+import it.fast4x.riplay.ui.screens.player.common.LyricsNew
 import it.fast4x.riplay.utils.LandscapeToSquareTransformation
 import it.fast4x.riplay.utils.applyIf
 import it.fast4x.riplay.utils.conditional
@@ -2267,7 +2267,7 @@ fun LocalPlayer(
                             .navigationBarsPadding()
                     ){
                         if (!showlyricsthumbnail) {
-                            Lyrics(
+                            LyricsNew(
                                 mediaId = mediaItem.mediaId,
                                 isDisplayed = isShowingLyrics,
                                 onDismiss = {
@@ -3196,7 +3196,7 @@ fun LocalPlayer(
                             }
                     ) {
                         if (!showlyricsthumbnail)
-                            Lyrics(
+                            LyricsNew(
                                 mediaId = mediaItem.mediaId,
                                 isDisplayed = isShowingLyrics,
                                 onDismiss = {

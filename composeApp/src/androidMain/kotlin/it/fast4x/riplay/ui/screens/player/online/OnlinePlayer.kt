@@ -287,7 +287,7 @@ import it.fast4x.riplay.ui.components.themed.SecondaryTextButton
 import it.fast4x.riplay.ui.components.themed.SmartMessage
 import it.fast4x.riplay.ui.components.themed.ThumbnailOffsetDialog
 import it.fast4x.riplay.ui.components.themed.animateBrushRotation
-import it.fast4x.riplay.ui.screens.player.common.Lyrics
+import it.fast4x.riplay.ui.screens.player.common.LyricsNew
 import it.fast4x.riplay.ui.screens.player.common.NextVisualizer
 import it.fast4x.riplay.ui.screens.player.common.Queue
 import it.fast4x.riplay.ui.screens.player.common.StatsForNerds
@@ -2429,7 +2429,7 @@ fun OnlinePlayer(
                                     .navigationBarsPadding()
                             ) {
                                 if (!showlyricsthumbnail) {
-                                    Lyrics(
+                                    LyricsNew(
                                         mediaId = mediaItem.mediaId,
                                         isDisplayed = isShowingLyrics,
                                         onDismiss = {
@@ -2439,7 +2439,7 @@ fun OnlinePlayer(
                                         size = 1000.dp,
                                         mediaMetadataProvider = mediaItem::mediaMetadata,
                                         durationProvider = { positionAndDuration.second.toLong() * 1000 },
-                                        positionProvider = { positionAndDuration.first.toLong() * 1000 },
+                                        //positionProvider = { positionAndDuration.first.toLong() * 1000 },
                                         isLandscape = isLandscape,
                                         clickLyricsText = clickLyricsText,
                                         modifier = Modifier
@@ -3539,7 +3539,7 @@ fun OnlinePlayer(
                                 }
                         ) {
                             if (!showlyricsthumbnail)
-                                Lyrics(
+                                LyricsNew(
                                     mediaId = mediaItem.mediaId,
                                     isDisplayed = isShowingLyrics,
                                     onDismiss = {
@@ -3549,7 +3549,7 @@ fun OnlinePlayer(
                                     size = 1000.dp,
                                     mediaMetadataProvider = mediaItem::mediaMetadata,
                                     durationProvider = { positionAndDuration.second.toLong() * 1000 },
-                                    positionProvider = { positionAndDuration.first.toLong() * 1000 },
+                                    //positionProvider = { positionAndDuration.first.toLong() * 1000 },
                                     isLandscape = isLandscape,
                                     clickLyricsText = clickLyricsText,
                                 )

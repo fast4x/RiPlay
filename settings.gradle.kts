@@ -45,8 +45,6 @@ include(":audiotaginfo")
 project(":audiotaginfo").projectDir = file("extensions/audiotaginfo")
 include(":lastfm")
 project(":lastfm").projectDir = file("extensions/lastfm")
-include(":synclrc")
-project(":synclrc").projectDir = file("extensions/synclrc")
 
 //Custom android youtube player
 /*
