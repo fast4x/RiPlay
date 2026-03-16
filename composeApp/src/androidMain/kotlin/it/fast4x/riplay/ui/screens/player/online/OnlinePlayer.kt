@@ -1345,7 +1345,7 @@ fun OnlinePlayer(
 
     val thumbnailRoundness by rememberObservedPreference(
         thumbnailRoundnessKey,
-        ThumbnailRoundness.Heavy
+        ThumbnailRoundness.Light
     )
 
     val controlsContent: @Composable (

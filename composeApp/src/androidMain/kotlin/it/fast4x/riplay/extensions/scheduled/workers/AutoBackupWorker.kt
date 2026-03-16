@@ -166,7 +166,7 @@ class AutoBackupWorker(context: Context, params: WorkerParameters) : CoroutineWo
             val albumCoverRotation = context.preferences.getBoolean(albumCoverRotationKey, false)
             val showthumbnail = context.preferences.getBoolean(showthumbnailKey, true)
             val playerBackgroundColors = context.preferences.getEnum(playerBackgroundColorsKey, PlayerBackgroundColors.BlurredCoverColor)
-            val thumbnailRoundness = context.preferences.getEnum(thumbnailRoundnessKey, ThumbnailRoundness.Heavy)
+            val thumbnailRoundness = context.preferences.getEnum(thumbnailRoundnessKey, ThumbnailRoundness.Light)
             val playerType = context.preferences.getEnum(playerTypeKey, PlayerType.Modern)
             val queueType = context.preferences.getEnum(queueTypeKey, QueueType.Modern)
             val noblur = context.preferences.getBoolean(noblurKey, true)

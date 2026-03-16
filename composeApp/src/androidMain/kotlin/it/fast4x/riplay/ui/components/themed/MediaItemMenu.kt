@@ -1142,7 +1142,7 @@ fun MediaItemMenu(
 
             var thumbnailRoundness by rememberPreference(
                 thumbnailRoundnessKey,
-                ThumbnailRoundness.Heavy
+                ThumbnailRoundness.Light
             )
 
             Menu(

@@ -268,7 +268,7 @@ fun PlaylistSongList(
 
     var thumbnailRoundness by rememberPreference(
         thumbnailRoundnessKey,
-        ThumbnailRoundness.Heavy
+        ThumbnailRoundness.Light
     )
 
     var showYoutubeLikeConfirmDialog by remember {

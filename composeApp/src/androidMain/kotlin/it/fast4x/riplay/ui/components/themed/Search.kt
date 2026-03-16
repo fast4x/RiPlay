@@ -156,7 +156,7 @@ class Search private constructor(
     fun SearchBar( columnScope: ColumnScope ) {
         val thumbnailRoundness by rememberPreference(
             thumbnailRoundnessKey,
-            ThumbnailRoundness.Heavy
+            ThumbnailRoundness.Light
         )
 
         val focusRequester = remember { FocusRequester() }

@@ -114,7 +114,7 @@ fun AppNavigation(
 
         val thumbnailRoundness by rememberPreference(
             thumbnailRoundnessKey,
-            ThumbnailRoundness.Heavy
+            ThumbnailRoundness.Light
         )
 
         CustomModalBottomSheet(

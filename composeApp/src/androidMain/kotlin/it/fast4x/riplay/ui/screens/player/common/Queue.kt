@@ -429,7 +429,7 @@ fun Queue(
     var filter: String? by rememberSaveable { mutableStateOf(null) }
     val thumbnailRoundness by rememberPreference(
         thumbnailRoundnessKey,
-        ThumbnailRoundness.Heavy
+        ThumbnailRoundness.Light
     )
     var showQueues by rememberSaveable { mutableStateOf(false) }
     val maxHeightQueuesList by remember { derivedStateOf { getScreenDimensions().height.dp.div(8) } }

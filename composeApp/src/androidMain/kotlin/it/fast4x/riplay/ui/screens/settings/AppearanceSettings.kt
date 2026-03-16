@@ -286,9 +286,9 @@ fun DefaultAppearanceSettings() {
     showBackgroundLyrics = false
     var thumbnailRoundness by rememberPreference(
         thumbnailRoundnessKey,
-        ThumbnailRoundness.Heavy
+        ThumbnailRoundness.Light
     )
-    thumbnailRoundness = ThumbnailRoundness.Heavy
+    thumbnailRoundness = ThumbnailRoundness.Light
     var miniPlayerType by rememberPreference(
         miniPlayerTypeKey,
         MiniPlayerType.Modern
@@ -467,7 +467,7 @@ fun AppearanceSettings(
 
     var thumbnailRoundness by rememberPreference(
         thumbnailRoundnessKey,
-        ThumbnailRoundness.Heavy
+        ThumbnailRoundness.Light
     )
 
     var miniPlayerType by rememberPreference(
@@ -1198,7 +1198,7 @@ fun AppearanceSettings(
                     showRemainingSongTime = true
                     showlyricsthumbnail = false
                     thumbnailType = ThumbnailType.Modern
-                    thumbnailRoundness = ThumbnailRoundness.Heavy
+                    thumbnailRoundness = ThumbnailRoundness.Light
                     fadingedge = true
                     thumbnailFade = 0f
                     thumbnailFadeEx = 5f
@@ -1244,7 +1244,7 @@ fun AppearanceSettings(
                     showRemainingSongTime = true
                     showlyricsthumbnail = false
                     thumbnailType = ThumbnailType.Modern
-                    thumbnailRoundness = ThumbnailRoundness.Heavy
+                    thumbnailRoundness = ThumbnailRoundness.Light
                     showNextSongsInPlayer = false
                     ///////ACTION BAR BUTTONS////////////////
                     transparentBackgroundActionBarPlayer = true

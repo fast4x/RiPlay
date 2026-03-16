@@ -162,7 +162,7 @@ fun ArtistOverview(
 
     val endPaddingValues = windowInsets.only(WindowInsetsSides.End).asPaddingValues()
 
-    val thumbnailRoundness by rememberPreference(thumbnailRoundnessKey, ThumbnailRoundness.Heavy)
+    val thumbnailRoundness by rememberPreference(thumbnailRoundnessKey, ThumbnailRoundness.Light)
 
 
     val context = LocalContext.current

@@ -297,9 +297,9 @@ fun DefaultUiSettings() {
     maxSongsInQueue = MaxSongs.`500`
     var thumbnailRoundness by rememberPreference(
         thumbnailRoundnessKey,
-        ThumbnailRoundness.Heavy
+        ThumbnailRoundness.Light
     )
-    thumbnailRoundness = ThumbnailRoundness.Heavy
+    thumbnailRoundness = ThumbnailRoundness.Light
     var showFavoritesPlaylist by rememberPreference(showFavoritesPlaylistKey, true)
     showFavoritesPlaylist = true
     var showMyTopPlaylist by rememberPreference(showMyTopPlaylistKey, true)

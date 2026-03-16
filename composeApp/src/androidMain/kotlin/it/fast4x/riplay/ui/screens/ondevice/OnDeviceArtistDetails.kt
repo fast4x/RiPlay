@@ -128,7 +128,7 @@ fun OnDeviceArtistDetails(
 
     val endPaddingValues = windowInsets.only(WindowInsetsSides.End).asPaddingValues()
 
-    val thumbnailRoundness by rememberPreference(thumbnailRoundnessKey, ThumbnailRoundness.Heavy)
+    val thumbnailRoundness by rememberPreference(thumbnailRoundnessKey, ThumbnailRoundness.Light)
 
     var artistItem by rememberSaveable {
         mutableStateOf(ArtistItem.Songs)

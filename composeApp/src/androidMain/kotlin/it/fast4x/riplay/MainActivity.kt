@@ -913,7 +913,7 @@ class MainActivity :
                     val colorPaletteName =
                         getEnum(colorPaletteNameKey, ColorPaletteName.Dynamic)
                     val thumbnailRoundness =
-                        getEnum(thumbnailRoundnessKey, ThumbnailRoundness.Heavy)
+                        getEnum(thumbnailRoundnessKey, ThumbnailRoundness.Light)
                     val useSystemFont = getBoolean(useSystemFontKey, false)
                     val applyFontPadding = getBoolean(applyFontPaddingKey, false)
 
@@ -1175,7 +1175,7 @@ class MainActivity :
 
                             thumbnailRoundnessKey -> {
                                 val thumbnailRoundness =
-                                    sharedPreferences.getEnum(key, ThumbnailRoundness.Heavy)
+                                    sharedPreferences.getEnum(key, ThumbnailRoundness.Light)
 
                                 appearance = appearance.copy(
                                     thumbnailShape = thumbnailRoundness.shape()
@@ -1465,7 +1465,7 @@ class MainActivity :
 
                                 val thumbnailRoundness by rememberPreference(
                                     thumbnailRoundnessKey,
-                                    ThumbnailRoundness.Heavy
+                                    ThumbnailRoundness.Light
                                 )
 
                                 /*

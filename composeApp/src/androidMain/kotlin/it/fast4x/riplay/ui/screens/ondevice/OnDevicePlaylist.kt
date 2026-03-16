@@ -243,7 +243,7 @@ fun OnDevicePlaylist(
 
     val thumbnailRoundness by rememberPreference(
         thumbnailRoundnessKey,
-        ThumbnailRoundness.Heavy
+        ThumbnailRoundness.Light
     )
 
     val sortOrderIconRotation by animateFloatAsState(

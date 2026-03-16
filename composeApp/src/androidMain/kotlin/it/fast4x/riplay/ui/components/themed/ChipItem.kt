@@ -43,7 +43,7 @@ fun ChipItemColored(
 ) {
     var thumbnailRoundness by rememberPreference(
         thumbnailRoundnessKey,
-        ThumbnailRoundness.Heavy
+        ThumbnailRoundness.Light
     )
 
     val stripeColor = Color(255, Random.nextInt(256), Random.nextInt(256), Random.nextInt(256))
@@ -100,7 +100,7 @@ fun ChipGridItemColored(
 ) {
     var thumbnailRoundness by rememberPreference(
         thumbnailRoundnessKey,
-        ThumbnailRoundness.Heavy
+        ThumbnailRoundness.Light
     )
 
     val stripeColor = Color(255, Random.nextInt(256), Random.nextInt(256), Random.nextInt(256))

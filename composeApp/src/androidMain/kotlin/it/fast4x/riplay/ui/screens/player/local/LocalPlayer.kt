@@ -2034,7 +2034,7 @@ fun LocalPlayer(
             }
         }
 
-        val thumbnailRoundness by rememberPreference(thumbnailRoundnessKey, ThumbnailRoundness.Heavy)
+        val thumbnailRoundness by rememberPreference(thumbnailRoundnessKey, ThumbnailRoundness.Light)
         val thumbnailType by rememberPreference(thumbnailTypeKey, ThumbnailType.Modern)
         val statsfornerds by rememberPreference(statsfornerdsKey, false)
         val topPadding by rememberPreference(topPaddingKey, true)

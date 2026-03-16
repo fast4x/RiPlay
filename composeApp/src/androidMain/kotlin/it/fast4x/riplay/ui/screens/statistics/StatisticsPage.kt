@@ -151,7 +151,7 @@ fun StatisticsPage(
     val playlistThumbnailSizePx = playlistThumbnailSizeDp.px
 
 
-    val thumbnailRoundness by rememberPreference(thumbnailRoundnessKey, ThumbnailRoundness.Heavy)
+    val thumbnailRoundness by rememberPreference(thumbnailRoundnessKey, ThumbnailRoundness.Light)
     val showStatsListeningTime by rememberPreference(showStatsListeningTimeKey, true)
     val disableScrollingText by rememberPreference(disableScrollingTextKey, false)
     val navigationBarPosition by rememberPreference(navigationBarPositionKey, NavigationBarPosition.Bottom)

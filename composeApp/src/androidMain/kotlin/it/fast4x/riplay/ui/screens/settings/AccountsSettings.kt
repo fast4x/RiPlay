@@ -102,7 +102,7 @@ fun AccountsSettings() {
     val context = LocalContext.current
     val thumbnailRoundness by rememberPreference(
         thumbnailRoundnessKey,
-        ThumbnailRoundness.Heavy
+        ThumbnailRoundness.Light
     )
 
     var showUserInfoDialog by rememberSaveable { mutableStateOf(false) }

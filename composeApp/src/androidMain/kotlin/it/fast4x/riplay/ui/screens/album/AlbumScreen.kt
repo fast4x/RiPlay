@@ -111,7 +111,7 @@ fun AlbumScreen(
     }
     val thumbnailRoundness by rememberPreference(
         thumbnailRoundnessKey,
-        ThumbnailRoundness.Heavy
+        ThumbnailRoundness.Light
     )
     var changeShape by remember {
         mutableStateOf(false)

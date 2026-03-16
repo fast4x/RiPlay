@@ -44,7 +44,7 @@ fun MoodItemColored(
 ) {
     var thumbnailRoundness by rememberPreference(
         thumbnailRoundnessKey,
-        ThumbnailRoundness.Heavy
+        ThumbnailRoundness.Light
     )
 
     val moodColor by remember { derivedStateOf { Color(mood.stripeColor) } }
@@ -99,7 +99,7 @@ fun MoodGridItemColored(
 ) {
     var thumbnailRoundness by rememberPreference(
         thumbnailRoundnessKey,
-        ThumbnailRoundness.Heavy
+        ThumbnailRoundness.Light
     )
 
     val moodColor by remember { derivedStateOf { Color(mood.stripeColor) } }
@@ -160,7 +160,7 @@ fun MoodItem(
 ) {
     var thumbnailRoundness by rememberPreference(
         thumbnailRoundnessKey,
-        ThumbnailRoundness.Heavy
+        ThumbnailRoundness.Light
     )
 
 
@@ -206,7 +206,7 @@ fun MoodGridItem(
 ) {
     var thumbnailRoundness by rememberPreference(
         thumbnailRoundnessKey,
-        ThumbnailRoundness.Heavy
+        ThumbnailRoundness.Light
     )
 
 

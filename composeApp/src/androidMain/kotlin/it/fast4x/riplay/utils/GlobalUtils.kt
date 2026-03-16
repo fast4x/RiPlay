@@ -93,7 +93,7 @@ fun getDnsOverHttpsType() = appContext().preferences.getEnum(dnsOverHttpsTypeKey
 fun getUiType() = appContext().preferences.getEnum(UiTypeKey, UiType.RiPlay)
 fun getKeepPlayerMinimized() = appContext().preferences.getBoolean(keepPlayerMinimizedKey, false)
 fun getlastFmSessionKey() = appContext().preferences.getString(lastfmSessionTokenKey, "")
-fun getRoundnessShape() = appContext().preferences.getEnum(thumbnailRoundnessKey,ThumbnailRoundness.Heavy).shape()
+fun getRoundnessShape() = appContext().preferences.getEnum(thumbnailRoundnessKey,ThumbnailRoundness.Light).shape()
 
 
 fun ytAccountName() = appContext().preferences.getString(ytAccountNameKey, "")

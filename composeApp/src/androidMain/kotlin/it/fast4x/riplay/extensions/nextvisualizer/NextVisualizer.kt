@@ -195,7 +195,7 @@ fun NextVisualizer() {
 
             val thumbnailRoundness by rememberObservedPreference(
                 thumbnailRoundnessKey,
-                ThumbnailRoundness.Heavy
+                ThumbnailRoundness.Light
             )
 
             var showControls by remember { mutableStateOf(true) }

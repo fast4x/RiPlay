@@ -132,7 +132,7 @@ fun FastShare(
 
     val thumbnailRoundness by rememberObservedPreference(
         thumbnailRoundnessKey,
-        ThumbnailRoundness.Heavy
+        ThumbnailRoundness.Light
     )
 
     var showAppSelector by remember { mutableStateOf(false) }

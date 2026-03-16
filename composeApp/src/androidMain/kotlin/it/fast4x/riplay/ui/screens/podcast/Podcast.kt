@@ -199,7 +199,7 @@ fun Podcast(
 
     var thumbnailRoundness by rememberPreference(
         thumbnailRoundnessKey,
-        ThumbnailRoundness.Heavy
+        ThumbnailRoundness.Light
     )
 
     val disableScrollingText by rememberPreference(disableScrollingTextKey, false)
