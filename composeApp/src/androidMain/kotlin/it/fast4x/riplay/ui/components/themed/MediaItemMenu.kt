@@ -29,7 +29,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredHeight
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
@@ -148,6 +147,7 @@ import it.fast4x.riplay.extensions.preferences.thumbnailRoundnessKey
 import it.fast4x.riplay.ui.styling.secondary
 import it.fast4x.riplay.utils.SetupWriteSettingsPermission
 import it.fast4x.riplay.utils.getLocalFileUri
+import it.fast4x.riplay.utils.getRoundnessShape
 import it.fast4x.riplay.utils.removeFromOnlineLikedSong
 import it.fast4x.riplay.utils.setRingtoneSmart
 import kotlinx.serialization.ExperimentalSerializationApi
@@ -1936,7 +1936,7 @@ fun MediaItemMenu(
                                     modifier = modifier
                                         .background(
                                             color = colorPalette().background0,
-                                            shape = RoundedCornerShape(16.dp)
+                                            shape = getRoundnessShape()
                                         )
                                         .padding(horizontal = 16.dp, vertical = 8.dp)
                                         .animateContentSize()

@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -28,6 +27,7 @@ import it.fast4x.riplay.utils.applyIf
 import it.fast4x.riplay.extensions.preferences.disableScrollingTextKey
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.ui.styling.semiBold
+import it.fast4x.riplay.utils.getRoundnessShape
 
 @Composable
 fun QueueItem(
@@ -49,7 +49,7 @@ fun QueueItem(
         thumbnailSizeDp = thumbnailSizeDp,
         modifier = Modifier
             .padding(end = 8.dp)
-            .clip(RoundedCornerShape(10.dp))
+            .clip(getRoundnessShape())
             .applyIf(isSelected){
                 background(colorPalette.favoritesOverlay)
             }

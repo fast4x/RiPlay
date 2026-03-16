@@ -37,7 +37,6 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -100,19 +99,15 @@ import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.enums.ViewType
 import it.fast4x.riplay.utils.getViewType
 import it.fast4x.riplay.data.models.defaultQueue
-import it.fast4x.riplay.enums.ArtistSortBy
 import it.fast4x.riplay.enums.BlacklistType
 import it.fast4x.riplay.enums.SortOrder
 import it.fast4x.riplay.ui.components.themed.Search
 import it.fast4x.riplay.ui.components.navigation.header.TabToolBar
 import it.fast4x.riplay.ui.components.tab.ItemSize
-import it.fast4x.riplay.ui.components.tab.Sort
 import it.fast4x.riplay.ui.components.tab.TabHeader
 import it.fast4x.riplay.ui.components.tab.toolbar.Randomizer
 import it.fast4x.riplay.ui.components.tab.toolbar.SongsShuffle
 import it.fast4x.riplay.extensions.preferences.Preference.HOME_ALBUM_ITEM_SIZE
-import it.fast4x.riplay.extensions.preferences.artistSortByKey
-import it.fast4x.riplay.extensions.preferences.artistSortOrderKey
 import it.fast4x.riplay.utils.thumbnailShape
 import it.fast4x.riplay.ui.components.PullToRefreshBox
 import it.fast4x.riplay.ui.screens.settings.isYtSyncEnabled
@@ -122,6 +117,7 @@ import it.fast4x.riplay.extensions.preferences.autosyncKey
 import it.fast4x.riplay.ui.components.themed.EnumsMenu
 import it.fast4x.riplay.ui.components.themed.HeaderIconButton
 import it.fast4x.riplay.utils.LazyListContainer
+import it.fast4x.riplay.utils.getRoundnessShape
 import it.fast4x.riplay.utils.importYTMLikedAlbums
 import it.fast4x.riplay.utils.insertOrUpdateBlacklist
 import it.fast4x.riplay.utils.typography
@@ -320,7 +316,7 @@ fun HomeAlbums(
                         modifier = Modifier
                             // Animazione della larghezza quando si espande/contrae
                             .animateContentSize(animationSpec = tween(durationMillis = 300))
-                            .clip(RoundedCornerShape(12.dp))
+                            .clip(getRoundnessShape())
                             .background(colorPalette().background1.copy(alpha = 0.5f))
                             .clickable {
                                 // Se è espanso -> Apre il menu ordinamento

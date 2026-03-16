@@ -6,7 +6,6 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -17,13 +16,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.unit.dp
 import it.fast4x.riplay.utils.doubleShadowDrop
+import it.fast4x.riplay.utils.getRoundnessShape
 
 @Composable
 fun CustomElevatedButton(
     onClick: () -> Unit,
     backgroundColor: Color,
     modifier: Modifier = Modifier,
-    shape: Shape = RoundedCornerShape(8.dp),
+    shape: Shape = getRoundnessShape(),
     content: @Composable BoxScope.() -> Unit
 ) {
     val interSource = remember { MutableInteractionSource() }

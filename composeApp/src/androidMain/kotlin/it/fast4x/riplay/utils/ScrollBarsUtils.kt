@@ -4,7 +4,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.grid.LazyGridState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -55,7 +54,7 @@ fun defaultScrollbarStyle() = ScrollbarStyle(
     thickness = 4.dp,
     hoverDurationMillis = 300,
     thumbStyle = ThumbStyle(
-        shape = RoundedCornerShape(2.dp),
+        shape = getRoundnessShape(),
         unhoverColor = colorPalette().accent,
         hoverColor = colorPalette().accent,
     ),

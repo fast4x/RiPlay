@@ -17,7 +17,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -80,6 +79,7 @@ import it.fast4x.riplay.ui.styling.semiBold
 import it.fast4x.riplay.utils.forcePlay
 import it.fast4x.riplay.utils.shimmerEffect
 import it.fast4x.riplay.commonutils.thumbnail
+import it.fast4x.riplay.utils.getRoundnessShape
 import it.fast4x.riplay.utils.isRelated
 
 
@@ -223,7 +223,7 @@ fun SongItem(
         thumbnailSizeDp = thumbnailSizeDp,
         modifier = modifier
             .padding(end = 8.dp)
-            .clip(RoundedCornerShape(10.dp))
+            .clip(getRoundnessShape())
             .applyIf(isNowPlaying == true) {
                 background(colorPalette.favoritesOverlay)
             }
@@ -580,7 +580,7 @@ fun SongItemPlaceholder( thumbnailSizeDp: Dp ) {
     ) {
         Box(
             Modifier.size( thumbnailSizeDp )
-                    .clip( RoundedCornerShape(12.dp) )
+                    .clip( getRoundnessShape() )
                     .shimmerEffect()
         )
 

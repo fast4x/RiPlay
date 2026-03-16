@@ -208,6 +208,7 @@ import it.fast4x.riplay.utils.isNetworkConnected
 import it.fast4x.riplay.extensions.preferences.showDislikedPlaylistKey
 import it.fast4x.riplay.ui.components.tab.TabHeader
 import it.fast4x.riplay.ui.components.themed.EnumsMenu
+import it.fast4x.riplay.utils.getRoundnessShape
 import it.fast4x.riplay.utils.insertOrUpdateBlacklist
 import kotlinx.coroutines.delay
 import kotlinx.serialization.ExperimentalSerializationApi
@@ -625,7 +626,7 @@ fun HomeSongs(
                                 verticalAlignment = Alignment.CenterVertically,
                                 modifier = Modifier
                                     .animateContentSize(animationSpec = tween(durationMillis = 300))
-                                    .clip(RoundedCornerShape(16.dp))
+                                    .clip(getRoundnessShape())
                                     .background(colorPalette().background1.copy(alpha = 0.8f))
                                     .clickable {
                                         // Ogni click (sia per aprire che per interagire) resetta il timer

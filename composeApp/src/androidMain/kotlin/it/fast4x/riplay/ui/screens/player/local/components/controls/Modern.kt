@@ -93,6 +93,7 @@ import it.fast4x.riplay.commonutils.setDisLikeState
 import it.fast4x.riplay.extensions.preferences.showthumbnailKey
 import it.fast4x.riplay.utils.copyTextToClipboard
 import it.fast4x.riplay.extensions.preferences.textoutlineKey
+import it.fast4x.riplay.utils.getRoundnessShape
 import it.fast4x.riplay.utils.removeFromOnlineLikedSong
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -445,8 +446,8 @@ fun ControlsModern(
           onClick = {},
           modifier = Modifier
               .size(55.dp)
-              .doubleShadowDrop(RoundedCornerShape(8.dp), 4.dp, 8.dp)
-              .clip(RoundedCornerShape(8.dp))
+              .doubleShadowDrop(getRoundnessShape(), 4.dp, 8.dp)
+              .clip(getRoundnessShape())
               .combinedClickable(
                   indication = ripple(bounded = true),
                   interactionSource = remember { MutableInteractionSource() },
@@ -624,8 +625,8 @@ fun ControlsModern(
         onClick = {},
         modifier = Modifier
             .size(55.dp)
-            .doubleShadowDrop(RoundedCornerShape(8.dp), 4.dp, 8.dp)
-            .clip(RoundedCornerShape(8.dp))
+            .doubleShadowDrop(getRoundnessShape(), 4.dp, 8.dp)
+            .clip(getRoundnessShape())
             .combinedClickable(
                 indication = ripple(bounded = true),
                 interactionSource = remember { MutableInteractionSource() },
@@ -636,7 +637,7 @@ fun ControlsModern(
                 },
                 onLongClick = {}
             )
-            .clip(RoundedCornerShape(8.dp))
+            .clip(getRoundnessShape())
 
       ) {
           Image(

@@ -1,5 +1,6 @@
 package it.fast4x.riplay.ui.screens.player.unified
 
+import androidx.annotation.OptIn
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateDp
 import androidx.compose.animation.core.animateFloatAsState
@@ -59,6 +60,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
+import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import it.fast4x.riplay.LocalPlayerServiceBinder
@@ -101,6 +103,7 @@ import it.fast4x.riplay.utils.appContext
 import it.fast4x.riplay.utils.applyIf
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.utils.getLikeState
+import it.fast4x.riplay.utils.getRoundnessShape
 import it.fast4x.riplay.utils.intent
 import it.fast4x.riplay.utils.isExplicit
 import it.fast4x.riplay.utils.isNetworkConnected
@@ -116,6 +119,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import kotlin.math.absoluteValue
 
+@OptIn(UnstableApi::class)
 @Composable
 fun UnifiedMiniPlayer(
     showPlayer: () -> Unit,
@@ -248,11 +252,10 @@ fun UnifiedMiniPlayer(
 
     val colorPalette = colorPalette()
 
-
     SwipeToDismissBox(
         modifier = Modifier
             .padding(horizontal = 16.dp)
-            .clip(RoundedCornerShape(12.dp)),
+            .clip(getRoundnessShape()),
         state = dismissState,
         backgroundContent = {
             Row(

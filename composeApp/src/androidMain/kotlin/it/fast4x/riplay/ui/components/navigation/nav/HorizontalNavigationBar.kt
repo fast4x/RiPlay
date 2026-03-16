@@ -18,14 +18,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.requiredHeight
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
-import androidx.compose.foundation.layout.systemBars
-import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -51,23 +47,11 @@ import it.fast4x.riplay.utils.showStatsIconInNav
 import androidx.compose.animation.*
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.platform.LocalDensity
-import it.fast4x.riplay.utils.applyIf
-import it.fast4x.riplay.utils.colorPalette
-import it.fast4x.riplay.utils.showSearchIconInNav
-import it.fast4x.riplay.utils.showStatsIconInNav
+import it.fast4x.riplay.utils.getRoundnessShape
 
 // Shown when "Navigation bar position" is set to "top" or "bottom"
 class HorizontalNavigationBar(
@@ -122,7 +106,7 @@ class HorizontalNavigationBar(
                     TextIconButton(text, iconId, color, 0.dp, Dimensions.navigationRailIconOffset * 3)
 
             val contentModifier = Modifier
-                .clip(RoundedCornerShape(12.dp))
+                .clip(getRoundnessShape())
                 .clickable(onClick = { onTabChanged(index) })
 
             addButton(button, contentModifier)
@@ -216,7 +200,7 @@ class HorizontalNavigationBar(
                         .applyIf(isNavbarBottom) {
                             padding(contentPadding)
                         }
-                        .clip(RoundedCornerShape(12.dp))
+                        .clip(getRoundnessShape())
                         .background(colorPalette().background1)
                 ) {
                     val scrollState = rememberScrollState()

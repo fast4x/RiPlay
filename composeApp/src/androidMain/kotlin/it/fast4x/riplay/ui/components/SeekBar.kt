@@ -18,7 +18,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -45,9 +44,8 @@ import androidx.media3.common.util.UnstableApi
 import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.utils.formatMillis
-import it.fast4x.riplay.utils.isLocal
+import it.fast4x.riplay.utils.getRoundnessShape
 import it.fast4x.riplay.utils.typography
-import timber.log.Timber
 import kotlin.math.roundToInt
 import kotlin.math.roundToLong
 
@@ -231,7 +229,7 @@ fun SeekBar(
                     .onGloballyPositioned { coordinates -> tooltipWidth = coordinates.size.width }
                     .background(
                         color = colorPalette.text,
-                        shape = RoundedCornerShape(6.dp)
+                        shape = getRoundnessShape()
                     )
                     .padding(horizontal = 8.dp, vertical = 4.dp)
                     .alpha(0.9f)

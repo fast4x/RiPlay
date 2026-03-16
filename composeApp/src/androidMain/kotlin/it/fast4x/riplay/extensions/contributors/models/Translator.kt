@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardColors
 import androidx.compose.material3.Icon
@@ -35,6 +34,7 @@ import com.google.gson.annotations.SerializedName
 import it.fast4x.riplay.R
 import it.fast4x.riplay.ui.styling.favoritesIcon
 import it.fast4x.riplay.utils.colorPalette
+import it.fast4x.riplay.utils.getRoundnessShape
 import it.fast4x.riplay.utils.typography
 
 data class Translator(
@@ -69,7 +69,7 @@ data class Translator(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 5.dp, horizontal = 15.dp)
-                    .background(backgroundColor, RoundedCornerShape( 12.dp )),
+                    .background(backgroundColor, getRoundnessShape()),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Image(
@@ -77,8 +77,8 @@ data class Translator(
                     contentDescription = null,
                     modifier = Modifier
                         .size(40.dp)
-                        .clip( RoundedCornerShape( 25.dp ) )
-                        .border( 1.dp, Color.White, RoundedCornerShape( 25.dp ) ),
+                        .clip( getRoundnessShape() )
+                        .border( 1.dp, Color.White, getRoundnessShape() ),
                     contentScale = ContentScale.Fit
                 )
 

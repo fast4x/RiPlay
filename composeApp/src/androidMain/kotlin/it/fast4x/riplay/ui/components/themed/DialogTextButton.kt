@@ -3,7 +3,6 @@ package it.fast4x.riplay.ui.components.themed
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -13,6 +12,7 @@ import androidx.compose.ui.unit.dp
 import it.fast4x.riplay.ui.styling.color
 import it.fast4x.riplay.ui.styling.medium
 import it.fast4x.riplay.utils.colorPalette
+import it.fast4x.riplay.utils.getRoundnessShape
 import it.fast4x.riplay.utils.typography
 
 @Composable
@@ -33,7 +33,7 @@ fun DialogTextButton(
         text = text,
         style = typography().xs.medium.color(textColor),
         modifier = modifier
-            .clip(RoundedCornerShape(36.dp))
+            .clip(getRoundnessShape())
             .background(if (primary) colorPalette().accent else Color.Transparent)
             //.background(if (primary) colorPalette.accent else colorPalette.background4)
             .clickable(enabled = enabled, onClick = onClick)

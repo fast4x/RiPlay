@@ -11,7 +11,6 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredSize
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -35,6 +34,7 @@ import androidx.compose.ui.graphics.ShaderBrush
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import it.fast4x.riplay.utils.getRoundnessShape
 
 @Composable
 fun FluidGradientBox() {
@@ -81,8 +81,8 @@ fun FluidGradientBox() {
                 .onSizeChanged {
                     size = Size(it.width.toFloat(), it.height.toFloat())
                 }
-                .clip(RoundedCornerShape(16.dp))
-                .border(1.dp, Color.White, RoundedCornerShape(16.dp))
+                .clip(getRoundnessShape())
+                .border(1.dp, Color.White, getRoundnessShape())
                 .drawBehind {
                     drawRect(brush = brushA)
                     drawRect(brush = brushMask, blendMode = BlendMode.DstOut)
@@ -91,7 +91,7 @@ fun FluidGradientBox() {
             contentAlignment = Alignment.Center
         ) {
             Text(
-                modifier = Modifier.border(1.dp, Color.White, RoundedCornerShape(4.dp))
+                modifier = Modifier.border(1.dp, Color.White, getRoundnessShape())
                     .padding(horizontal = 8.dp, vertical = 4.dp),
                 text = "FLUID",
                 style = MaterialTheme.typography.headlineLarge,

@@ -1,26 +1,18 @@
 package it.fast4x.riplay.extensions.rewind.slides
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.Checkbox
-import androidx.compose.material.CheckboxDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -31,35 +23,20 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalView
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.mikepenz.hypnoticcanvas.shaderBackground
-import com.mikepenz.hypnoticcanvas.shaders.GradientFlow
 import com.mikepenz.hypnoticcanvas.shaders.MeshGradient
-import it.fast4x.riplay.R
-import it.fast4x.riplay.commonutils.cleanPrefix
-import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.extensions.rewind.data.AnimatedContent
 import it.fast4x.riplay.extensions.rewind.data.AnimationType
 import it.fast4x.riplay.extensions.rewind.data.RewindSlide
 import it.fast4x.riplay.extensions.rewind.data.slideTitleFontSize
-import it.fast4x.riplay.extensions.visualbitmap.VisualBitmapCreator
-import it.fast4x.riplay.ui.components.themed.NonQueuedMediaItemMenuLibrary
-import it.fast4x.riplay.ui.components.themed.NowPlayingSongIndicator
-import it.fast4x.riplay.ui.components.themed.Playlist
 import it.fast4x.riplay.ui.items.ArtistItem
-import it.fast4x.riplay.ui.items.SongItem
 import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.ui.styling.px
-import it.fast4x.riplay.utils.asMediaItem
-import it.fast4x.riplay.utils.colorPalette
-import it.fast4x.riplay.utils.forcePlay
+import it.fast4x.riplay.utils.getRoundnessShape
 import kotlinx.coroutines.delay
 
 
@@ -123,7 +100,7 @@ fun TopArtistsSlide(slide: RewindSlide.TopArtists, isPageActive: Boolean = false
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clip(RoundedCornerShape(16.dp)),
+                            .clip(getRoundnessShape()),
                         colors = CardDefaults.cardColors(containerColor = Color.Black.copy(alpha = 0.5f))
                     ) {
                         Column(

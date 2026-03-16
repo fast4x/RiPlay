@@ -1,6 +1,7 @@
 package it.fast4x.riplay.ui.components.themed
 
 import androidx.compose.animation.Crossfade
+import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
@@ -8,6 +9,7 @@ import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -17,6 +19,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.ContainedLoadingIndicator
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.LoadingIndicatorDefaults
@@ -32,12 +35,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import it.fast4x.riplay.R
 import it.fast4x.riplay.utils.colorPalette
+import it.fast4x.riplay.utils.getRoundnessShape
 import it.fast4x.riplay.utils.typography
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
@@ -117,6 +122,27 @@ fun PoligonIndicatorScreen(
         mutableStateOf(LoadingIndicatorDefaults.IndeterminateIndicatorPolygons.random())
     }
 
+    // Animazione per il "respiro" dello sfondo
+    val infiniteTransition = rememberInfiniteTransition(label = "PulseAnimation")
+    val scale by infiniteTransition.animateFloat(
+        initialValue = 1f,
+        targetValue = 1.15f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1000, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "Scale"
+    )
+    val alpha by infiniteTransition.animateFloat(
+        initialValue = 0.05f,
+        targetValue = 0.15f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1000, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "Alpha"
+    )
+
     LaunchedEffect(Unit) {
         while (isActive) {
             containerShape = LoadingIndicatorDefaults.IndeterminateIndicatorPolygons.random()
@@ -125,34 +151,53 @@ fun PoligonIndicatorScreen(
     }
 
     Column(
-        modifier = if(!mini) Modifier.fillMaxSize() else Modifier.fillMaxWidth(),
+        modifier = if (!mini) Modifier.fillMaxSize() else Modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Crossfade(
-            containerShape,
-            modifier = Modifier
-                    .wrapContentSize(),
-        ) { shape ->
-            ContainedLoadingIndicator(
-                modifier =
-                    Modifier
-                        .size(if(mini) 48.dp else 96.dp),
-                polygons = LoadingIndicatorDefaults.IndeterminateIndicatorPolygons,
-                containerColor = colorPalette().background0,
-                indicatorColor = colorPalette().accent,
-                containerShape = shape.toShape(),
+        // Box contenitore per sovrapporre sfondo e indicatore
+        Box(
+            contentAlignment = Alignment.Center
+        ) {
+            // 1. Sfondo Pulsante (Background)
+            Spacer(
+                modifier = Modifier
+                    .size(if (mini) 64.dp else 128.dp)
+                    .graphicsLayer {
+                        scaleX = scale
+                        scaleY = scale
+                        this.alpha = alpha
+                    }
+                    .background(
+                        color = colorPalette().accent, // Usa il colore accent per coerenza
+                        shape = getRoundnessShape() // Forma circolare morbida
+                    )
             )
 
-            ContainedLoadingIndicator(
-                modifier =
-                    Modifier
-                        .size(if(mini) 32.dp else 64.dp),
-                polygons = LoadingIndicatorDefaults.IndeterminateIndicatorPolygons.shuffled(),
-                containerColor = colorPalette().background0,
-                indicatorColor = colorPalette().accent.copy(alpha = .6f),
-                containerShape = shape.toShape(),
-            )
+            // 2. Indicatore (Foreground)
+            Crossfade(
+                containerShape,
+                modifier = Modifier.wrapContentSize(),
+            ) { shape ->
+                // Wrappo in un Box per sovrapporre i due indicatori se necessario
+                //Box(contentAlignment = Alignment.Center) {
+                    ContainedLoadingIndicator(
+                        modifier = Modifier.size(if (mini) 48.dp else 96.dp),
+                        polygons = LoadingIndicatorDefaults.IndeterminateIndicatorPolygons,
+                        containerColor = colorPalette().background0,
+                        indicatorColor = colorPalette().accent,
+                        containerShape = shape.toShape(),
+                    )
+
+                    ContainedLoadingIndicator(
+                        modifier = Modifier.size(if (mini) 32.dp else 64.dp),
+                        polygons = LoadingIndicatorDefaults.IndeterminateIndicatorPolygons.shuffled(),
+                        containerColor = colorPalette().background0,
+                        indicatorColor = colorPalette().accent.copy(alpha = .6f),
+                        containerShape = shape.toShape(),
+                    )
+                //}
+            }
         }
 
         if (!mini) {
@@ -163,6 +208,5 @@ fun PoligonIndicatorScreen(
                 style = typography().xs
             )
         }
-
     }
 }

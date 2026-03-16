@@ -8,13 +8,13 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import it.fast4x.riplay.Dependencies
 import it.fast4x.riplay.LocalPlayerServiceBinder
-import it.fast4x.riplay.enums.AudioQualityFormat
 import it.fast4x.riplay.enums.ColorPaletteMode
 import it.fast4x.riplay.enums.DnsOverHttpsType
 import it.fast4x.riplay.enums.DurationInMilliseconds
 import it.fast4x.riplay.enums.MinTimeForEvent
 import it.fast4x.riplay.enums.PlayerTimelineType
 import it.fast4x.riplay.enums.QueueLoopType
+import it.fast4x.riplay.enums.ThumbnailRoundness
 import it.fast4x.riplay.enums.UiType
 import it.fast4x.riplay.enums.ViewType
 import it.fast4x.riplay.ui.styling.LocalAppearance
@@ -25,7 +25,6 @@ import it.fast4x.riplay.extensions.preferences.bassboostEnabledKey
 import it.fast4x.riplay.extensions.preferences.colorPaletteModeKey
 import it.fast4x.riplay.extensions.preferences.dnsOverHttpsTypeKey
 import it.fast4x.riplay.extensions.preferences.enablePictureInPictureAutoKey
-import it.fast4x.riplay.extensions.preferences.eqEnabledKey
 import it.fast4x.riplay.extensions.preferences.exoPlayerMinTimeForEventKey
 import it.fast4x.riplay.extensions.preferences.getEnum
 import it.fast4x.riplay.extensions.preferences.handleAudioFocusEnabledKey
@@ -60,6 +59,7 @@ import it.fast4x.riplay.extensions.preferences.showStatsInNavbarKey
 import it.fast4x.riplay.extensions.preferences.showShuffleSongsAAKey
 import it.fast4x.riplay.extensions.preferences.showTopPlaylistAAKey
 import it.fast4x.riplay.extensions.preferences.skipMediaOnErrorKey
+import it.fast4x.riplay.extensions.preferences.thumbnailRoundnessKey
 import it.fast4x.riplay.extensions.preferences.viewTypeKey
 import it.fast4x.riplay.extensions.preferences.ytAccountNameKey
 import it.fast4x.riplay.extensions.preferences.ytAccountThumbnailKey
@@ -91,34 +91,22 @@ fun getColorTheme() = appContext().preferences.getEnum(colorPaletteModeKey, Colo
 fun getViewType() = appContext().preferences.getEnum(viewTypeKey, ViewType.Grid)
 fun getDnsOverHttpsType() = appContext().preferences.getEnum(dnsOverHttpsTypeKey, DnsOverHttpsType.None)
 fun getUiType() = appContext().preferences.getEnum(UiTypeKey, UiType.RiPlay)
-fun getQueueLoopType() = appContext().preferences.getEnum(queueLoopTypeKey, QueueLoopType.Default)
-fun getPauseListenHistory() = appContext().preferences.getBoolean(pauseListenHistoryKey, false)
-fun getMinTimeForEvent() = appContext().preferences.getEnum(exoPlayerMinTimeForEventKey, MinTimeForEvent.`20s`)
-fun getLastYTVideoId() = appContext().preferences.getString(lastVideoIdKey, "")
-fun getLastYTVideoSeconds() = appContext().preferences.getFloat(lastVideoSecondsKey, 0f)
-fun getPlayerTimelineType() = appContext().preferences.getEnum(playerTimelineTypeKey, PlayerTimelineType.Default)
-fun getPlaybackFadeAudioDuration() = appContext().preferences.getEnum(playbackFadeAudioDurationKey, DurationInMilliseconds.Disabled)
 fun getKeepPlayerMinimized() = appContext().preferences.getBoolean(keepPlayerMinimizedKey, false)
 fun getlastFmSessionKey() = appContext().preferences.getString(lastfmSessionTokenKey, "")
+fun getRoundnessShape() = appContext().preferences.getEnum(thumbnailRoundnessKey,ThumbnailRoundness.Heavy).shape()
+
 
 fun ytAccountName() = appContext().preferences.getString(ytAccountNameKey, "")
 fun ytAccountThumbnail() = appContext().preferences.getString(ytAccountThumbnailKey, "")
 fun isAutoSyncEnabled() = appContext().preferences.getBoolean(autosyncKey, false)
 fun isHandleAudioFocusEnabled() = appContext().preferences.getBoolean(handleAudioFocusEnabledKey, true)
 fun isBassBoostEnabled() = appContext().preferences.getBoolean(bassboostEnabledKey, false)
-fun isDebugModeEnabled() = appContext().preferences.getBoolean(logDebugEnabledKey, false)
 fun isParentalControlEnabled() = appContext().preferences.getBoolean(parentalControlEnabledKey, false)
 fun isPersistentQueueEnabled() = appContext().preferences.getBoolean(persistentQueueKey, true)
 fun isPipModeAutoEnabled() = appContext().preferences.getBoolean(enablePictureInPictureAutoKey, false)
 fun isEnabledFullscreen() = appContext().preferences.getBoolean(isEnabledFullscreenKey, false)
-fun isAppRunning() = appContext().preferences.getBoolean(appIsRunningKey, false)
-fun lastMediaItemWasLocal() = appContext().preferences.getBoolean(lastMediaItemWasLocalKey, false)
-fun isInvincibleServiceEnabled() = appContext().preferences.getBoolean(isInvincibilityEnabledKey, false)
 fun isSkipMediaOnErrorEnabled() = appContext().preferences.getBoolean(skipMediaOnErrorKey, false)
-fun isNotifyTipsEnabled() = appContext().preferences.getBoolean(notifyTipsKey, false)
-fun isNotifyAndroidAutoTipsEnabled() = appContext().preferences.getBoolean(notifyAndroidAutoTipsKey, true)
 fun isKeepScreenOnEnabled() = appContext().preferences.getBoolean(isKeepScreenOnEnabledKey, false)
-fun isResumePlaybackOnStart() = appContext().preferences.getBoolean(resumePlaybackOnStartKey, false)
 fun isEnabledLastFm() = appContext().preferences.getBoolean(isEnabledLastfmKey, false)
         && getlastFmSessionKey()?.isNotEmpty() == true
 

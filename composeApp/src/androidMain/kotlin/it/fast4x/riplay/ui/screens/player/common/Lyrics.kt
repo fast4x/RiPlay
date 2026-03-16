@@ -36,13 +36,11 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.TextField
 import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Text
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -81,11 +79,8 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -161,7 +156,6 @@ import me.bush.translator.Language
 import me.bush.translator.Translator
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.enums.ColorPaletteName
-import it.fast4x.riplay.extensions.lyricshelper.models.LyricLine
 import it.fast4x.riplay.extensions.lyricshelper.parsers.SyncLRCLyricsKaraokeParser
 import it.fast4x.riplay.utils.isLocal
 import it.fast4x.riplay.utils.thumbnailShape
@@ -177,6 +171,7 @@ import it.fast4x.riplay.extensions.preferences.lyricsSizeAnimateKey
 import it.fast4x.riplay.extensions.preferences.lyricsSizeKey
 import it.fast4x.riplay.extensions.preferences.lyricsSizeLKey
 import it.fast4x.riplay.utils.SynchronizedLyricsLines
+import it.fast4x.riplay.utils.getRoundnessShape
 import it.fast4x.riplay.utils.httpClient
 import it.fast4x.riplay.utils.playNext
 import it.fast4x.riplay.utils.playPrevious
@@ -754,7 +749,7 @@ fun Lyrics(
                                 isPicking = true
                             },
                             modifier = Modifier
-                                .background(shape = RoundedCornerShape(4.dp), color = Color.White)
+                                .background(shape = getRoundnessShape(), color = Color.White)
                                 .padding(all = 4.dp)
                                 .size(24.dp)
                                 .align(Alignment.CenterVertically)
@@ -871,7 +866,7 @@ fun Lyrics(
                                             },
                                             modifier = Modifier
                                                 .background(
-                                                    shape = RoundedCornerShape(4.dp),
+                                                    shape = getRoundnessShape(),
                                                     color = Color.White
                                                 )
                                                 .padding(all = 4.dp)
@@ -1486,7 +1481,7 @@ fun Lyrics(
                                             ) else if (lyricsHighlight == LyricsHighlight.Black) Color.Black.copy(
                                                 0.5f
                                             ) else Color.Transparent else Color.Transparent,
-                                            RoundedCornerShape(6.dp)
+                                            getRoundnessShape()
                                         )
                                         .applyIf(lyricsHighlight != LyricsHighlight.None) { fillMaxWidth() }
 
@@ -2010,7 +2005,7 @@ fun Lyrics(
                         Box(modifier = Modifier
                             .align(Alignment.Center)
                             .size(45.dp)
-                            .background(colorPalette().accent, RoundedCornerShape(15.dp))
+                            .background(colorPalette().accent, getRoundnessShape())
                         ){}
                         Image(
                             painter = painterResource(if (binder?.player?.isPlaying == true) R.drawable.pause else R.drawable.play),

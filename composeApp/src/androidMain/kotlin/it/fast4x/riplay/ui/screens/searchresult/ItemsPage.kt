@@ -20,6 +20,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import it.fast4x.riplay.extensions.persist.persist
@@ -35,6 +36,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.enums.ContentType
+import it.fast4x.riplay.ui.components.themed.LoaderScreen
 import it.fast4x.riplay.utils.typography
 import it.fast4x.riplay.utils.LazyListContainer
 
@@ -148,7 +150,11 @@ inline fun <T : Environment.Item> ItemsPage(
 
                 if (!(itemsPage != null && itemsPage?.continuation == null)) {
                     item(key = "loading") {
-                        val isFirstLoad = itemsPage?.items.isNullOrEmpty()
+                        Box(contentAlignment = Alignment.Center, modifier = Modifier.fillParentMaxHeight(.6f)) {
+                            LoaderScreen()
+                        }
+                        //val isFirstLoad = itemsPage?.items.isNullOrEmpty()
+                        /*
                         ShimmerHost(
                             modifier = Modifier
                                 .run {
@@ -159,6 +165,7 @@ inline fun <T : Environment.Item> ItemsPage(
                                 itemPlaceholderContent()
                             }
                         }
+                        */
                     }
                 }
 

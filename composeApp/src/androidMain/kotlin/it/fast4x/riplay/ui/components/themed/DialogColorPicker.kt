@@ -24,7 +24,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -50,6 +49,7 @@ import kotlinx.coroutines.launch
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.enums.ValidationType
 import it.fast4x.riplay.ui.screens.settings.TextDialogSettingEntry
+import it.fast4x.riplay.utils.getRoundnessShape
 import android.graphics.Color as AndroidColor
 
 
@@ -167,7 +167,7 @@ fun SatValPanel(
         modifier = Modifier
             .size(300.dp)
             .emitDragGesture(interactionSource)
-            .clip(RoundedCornerShape(12.dp))
+            .clip(getRoundnessShape())
     ) {
         val cornerRadius = 12.dp.toPx()
         val satValSize = size
@@ -277,7 +277,7 @@ fun HueBar(
         modifier = Modifier
             .height(40.dp)
             .width(300.dp)
-            .clip(RoundedCornerShape(50))
+            .clip(getRoundnessShape())
             .emitDragGesture(interactionSource)
     ) {
         val drawScopeSize = size

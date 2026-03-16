@@ -42,7 +42,6 @@ import timber.log.Timber
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -52,6 +51,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.window.PopupProperties
+import it.fast4x.riplay.utils.getRoundnessShape
 import it.fast4x.riplay.utils.typography
 
 @Composable
@@ -80,7 +80,7 @@ private fun HamburgerMenu(
 
         Box(
             modifier = Modifier
-                .clip(RoundedCornerShape(24.dp))
+                .clip(getRoundnessShape())
                 .background(
                     color = colorPalette().background1.copy(alpha = 0.90f),
                 )
@@ -228,7 +228,7 @@ private fun ModernMenuItem(
             containerColor = Color.Transparent, // Sfondo trasparente per usare il nostro
             contentColor = MaterialTheme.colorScheme.onSurface
         ),
-        shape = RoundedCornerShape(16.dp), // Bottoni con angoli smussati
+        shape = getRoundnessShape(), // Bottoni con angoli smussati
         elevation = null, // Niente ombra standard
         contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp)
     ) {

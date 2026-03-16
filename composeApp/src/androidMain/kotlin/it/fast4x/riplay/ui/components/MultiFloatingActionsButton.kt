@@ -29,7 +29,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.SmallFloatingActionButton
 import androidx.compose.material3.Text
@@ -59,6 +58,7 @@ import it.fast4x.riplay.extensions.preferences.multiFloatActionIconOffsetXkey
 import it.fast4x.riplay.extensions.preferences.multiFloatActionIconOffsetYkey
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.utils.colorPalette
+import it.fast4x.riplay.utils.getRoundnessShape
 
 enum class MultiFabState {
     Collapsed, Expanded
@@ -179,7 +179,7 @@ fun MultiFloatingActionsButton (
 
                             }
                         }
-                        .clip(RoundedCornerShape(16.dp))
+                        .clip(getRoundnessShape())
                         //.background(colorPalette().favoritesIcon)
                         .background(colorPalette().background2)
                         //.padding(all = 20.dp)

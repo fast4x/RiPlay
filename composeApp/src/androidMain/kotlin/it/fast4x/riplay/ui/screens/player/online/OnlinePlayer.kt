@@ -321,6 +321,7 @@ import it.fast4x.riplay.utils.formatAsTime
 import it.fast4x.riplay.utils.getBitmapFromUrl
 import it.fast4x.riplay.utils.getIconQueueLoopState
 import it.fast4x.riplay.utils.getLikeState
+import it.fast4x.riplay.utils.getRoundnessShape
 import it.fast4x.riplay.utils.hide
 import it.fast4x.riplay.utils.horizontalFadingEdge
 import it.fast4x.riplay.utils.isExplicit
@@ -1729,7 +1730,7 @@ fun OnlinePlayer(
                                                         contentScale = ContentScale.Crop,
                                                         modifier = Modifier
                                                             .padding(end = 5.dp)
-                                                            .clip(RoundedCornerShape(5.dp))
+                                                            .clip(getRoundnessShape())
                                                             .size(30.dp)
                                                     )
                                                 }
@@ -2988,7 +2989,7 @@ fun OnlinePlayer(
                                             alpha = (2f - startOffset) / 2f
                                         }
                                     }
-                                    .clip(RoundedCornerShape(20.dp))
+                                    .clip(getRoundnessShape())
                                     .combinedClickable(
                                         interactionSource = remember { MutableInteractionSource() },
                                         indication = null,

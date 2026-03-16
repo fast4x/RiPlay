@@ -1,20 +1,15 @@
 package it.fast4x.riplay.extensions.rewind.slides
 
 import androidx.annotation.OptIn
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -29,7 +24,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -38,7 +32,6 @@ import androidx.compose.ui.unit.sp
 import androidx.media3.common.util.UnstableApi
 import coil.compose.AsyncImage
 import com.mikepenz.hypnoticcanvas.shaderBackground
-import com.mikepenz.hypnoticcanvas.shaders.Heat
 import com.mikepenz.hypnoticcanvas.shaders.Stage
 import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.extensions.rewind.data.AnimatedContent
@@ -47,13 +40,10 @@ import it.fast4x.riplay.extensions.rewind.data.RewindSlide
 import it.fast4x.riplay.extensions.rewind.data.slideTitleFontSize
 import it.fast4x.riplay.extensions.rewind.utils.rewindPauseMedia
 import it.fast4x.riplay.extensions.rewind.utils.rewindPlayMedia
-import it.fast4x.riplay.extensions.visualbitmap.VisualBitmapCreator
-import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.utils.colorPalette
-import it.fast4x.riplay.utils.fadingEdge
+import it.fast4x.riplay.utils.getRoundnessShape
 import it.fast4x.riplay.utils.resize
 import kotlinx.coroutines.delay
-import timber.log.Timber
 
 @OptIn(UnstableApi::class)
 @Composable
@@ -111,7 +101,7 @@ fun AlbumAchievementSlide(slide: RewindSlide.AlbumAchievement, isPageActive: Boo
                             modifier = Modifier
                                 .fillMaxWidth(.7f)
                                 .align(Alignment.Center)
-                                .clip(RoundedCornerShape(16.dp))
+                                .clip(getRoundnessShape())
                         )
 
                     }
@@ -149,7 +139,7 @@ fun AlbumAchievementSlide(slide: RewindSlide.AlbumAchievement, isPageActive: Boo
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clip(RoundedCornerShape(16.dp)),
+                            .clip(getRoundnessShape()),
                         colors = CardDefaults.cardColors(containerColor = Color.Black.copy(alpha = 0.5f))
                     ) {
                         Column(

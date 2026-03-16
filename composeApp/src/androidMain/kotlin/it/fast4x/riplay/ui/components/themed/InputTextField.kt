@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.Text
@@ -30,6 +29,7 @@ import it.fast4x.riplay.R
 import it.fast4x.riplay.ui.styling.semiBold
 import it.fast4x.riplay.utils.copyTextFromClipboard
 import it.fast4x.riplay.utils.colorPalette
+import it.fast4x.riplay.utils.getRoundnessShape
 import it.fast4x.riplay.utils.typography
 
 @Composable
@@ -57,7 +57,7 @@ inline fun InputTextField(
     Column(
         modifier = modifier
             .padding(all = 10.dp)
-            .background(color = colorPalette().background1, shape = RoundedCornerShape(8.dp))
+            .background(color = colorPalette().background1, shape = getRoundnessShape())
             .padding(vertical = 16.dp)
             .defaultMinSize(Dp.Unspecified, 190.dp)
     ) {

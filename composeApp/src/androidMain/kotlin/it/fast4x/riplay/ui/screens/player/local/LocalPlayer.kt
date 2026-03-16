@@ -337,6 +337,7 @@ import it.fast4x.riplay.ui.screens.player.common.LyricsNew
 import it.fast4x.riplay.utils.LandscapeToSquareTransformation
 import it.fast4x.riplay.utils.applyIf
 import it.fast4x.riplay.utils.conditional
+import it.fast4x.riplay.utils.getRoundnessShape
 import it.fast4x.riplay.utils.isLocal
 import it.fast4x.riplay.utils.saturate
 import kotlinx.serialization.ExperimentalSerializationApi
@@ -1586,7 +1587,7 @@ fun LocalPlayer(
                                                     contentScale = ContentScale.Crop,
                                                     modifier = Modifier
                                                         .padding(end = 5.dp)
-                                                        .clip(RoundedCornerShape(5.dp))
+                                                        .clip(getRoundnessShape())
                                                         .size(30.dp)
                                                 )
                                             }
@@ -2748,7 +2749,7 @@ fun LocalPlayer(
                                            alpha = (2f - startOffset) / 2f
                                        }
                                    }
-                                   .clip(RoundedCornerShape(20.dp))
+                                   .clip(getRoundnessShape())
                                    .combinedClickable(
                                        interactionSource = remember { MutableInteractionSource() },
                                        indication = null,

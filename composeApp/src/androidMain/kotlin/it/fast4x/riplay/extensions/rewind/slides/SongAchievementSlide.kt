@@ -1,10 +1,8 @@
 package it.fast4x.riplay.extensions.rewind.slides
 
 import androidx.annotation.OptIn
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -12,8 +10,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -21,20 +17,17 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.media3.common.util.UnstableApi
 import coil.compose.AsyncImage
-import coil.compose.rememberAsyncImagePainter
-import coil.request.ImageRequest
 import com.mikepenz.hypnoticcanvas.shaderBackground
 import com.mikepenz.hypnoticcanvas.shaders.Heat
 import it.fast4x.riplay.LocalPlayerServiceBinder
-import it.fast4x.riplay.commonutils.thumbnail
 import it.fast4x.riplay.extensions.rewind.data.AnimatedContent
 import it.fast4x.riplay.extensions.rewind.data.AnimationType
 import it.fast4x.riplay.extensions.rewind.data.RewindSlide
 import it.fast4x.riplay.extensions.rewind.data.slideTitleFontSize
 import it.fast4x.riplay.extensions.rewind.utils.rewindPauseMedia
 import it.fast4x.riplay.extensions.rewind.utils.rewindPlayMedia
-import it.fast4x.riplay.extensions.visualbitmap.VisualBitmapCreator
 import it.fast4x.riplay.utils.colorPalette
+import it.fast4x.riplay.utils.getRoundnessShape
 import it.fast4x.riplay.utils.resize
 import kotlinx.coroutines.delay
 
@@ -92,7 +85,7 @@ fun SongAchievementSlide(slide: RewindSlide.SongAchievement, isPageActive: Boole
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clip(RoundedCornerShape(16.dp)),
+                            .clip(getRoundnessShape()),
                         colors = CardDefaults.cardColors(containerColor = Color.Black.copy(alpha = 0.4f))
                     ) {
                         Column(
@@ -136,7 +129,7 @@ fun SongAchievementSlide(slide: RewindSlide.SongAchievement, isPageActive: Boole
                             modifier = Modifier
                                 .fillMaxWidth(.7f)
                                 .align(Alignment.Center)
-                                .clip(RoundedCornerShape(16.dp))
+                                .clip(getRoundnessShape())
                         )
 
                     }
