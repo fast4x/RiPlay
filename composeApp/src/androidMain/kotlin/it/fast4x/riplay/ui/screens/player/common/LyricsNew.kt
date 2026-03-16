@@ -535,8 +535,9 @@ fun LyricsNew(
                     val density = LocalDensity.current
 
                     val synchronizedLyrics = remember(isShowingSynchronizedLyrics, isShowingSynchronizedWordByWordLyrics, lyricsText) {
-                        val sentences = if (!isShowingSynchronizedWordByWordLyrics) LrcLib.Lyrics(lyricsText ?: "").sentences.toLyricLine()
-                        else SyncLRCLyricsKaraokeParser.parse(currentLyrics?.lrcSynced ?: "")
+                        val sentences = if (!isShowingSynchronizedWordByWordLyrics) LrcLib.Lyrics(lyricsText).sentences.toLyricLine()
+                        else SyncLRCLyricsKaraokeParser
+                            .parse(currentLyrics?.lrcSynced ?: "", isOnline = binder?.player?.currentMediaItem?.isLocal == true)
                         invalidLrc = false
                         SynchronizedLyricsLines(sentences) { positionProvider() }
                     }
