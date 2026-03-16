@@ -240,14 +240,6 @@ object EnvironmentExt {
     suspend fun getArtistItemsPage(endpoint: BrowseEndpoint): Result<ArtistItemsPage> = runCatching {
         val response = Environment.browse(browseId = endpoint.browseId, params = endpoint.params).body<BrowseResponse>()
 
-        println("EnvironmentExt getArtistItemsPage() response continuation: " +
-                "${
-                    response.contents?.singleColumnBrowseResultsRenderer?.tabs?.firstOrNull()
-                        ?.tabRenderer?.content?.sectionListRenderer?.contents?.firstOrNull()
-                        ?.musicPlaylistShelfRenderer?.contents?.lastOrNull()
-                        ?.continuationItemRenderer?.continuationEndpoint?.continuationCommand?.token
-        }")
-
         val gridRenderer = response.contents?.singleColumnBrowseResultsRenderer?.tabs?.firstOrNull()
             ?.tabRenderer?.content?.sectionListRenderer?.contents?.firstOrNull()
             ?.gridRenderer
