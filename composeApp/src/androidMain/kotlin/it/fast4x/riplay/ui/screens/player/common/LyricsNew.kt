@@ -235,7 +235,7 @@ fun LyricsNew(
     val playerViewModel: PlayerViewModel = viewModel(factory = factory)
     val positionAndDuration by playerViewModel.positionAndDuration.collectAsStateWithLifecycle()
     val positionProvider = { positionAndDuration.first }
-    Timber.d("LyricsNew positionAndDuration ${positionAndDuration.first}")
+    //Timber.d("LyricsNew positionAndDuration ${positionAndDuration.first}")
 
     var showlyricsthumbnail by rememberPreference(showlyricsthumbnailKey, false)
     var isShowingSynchronizedLyrics by rememberPreference(isShowingSynchronizedLyricsKey, false)

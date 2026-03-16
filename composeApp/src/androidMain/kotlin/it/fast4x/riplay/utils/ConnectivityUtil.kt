@@ -7,6 +7,7 @@ import io.ktor.client.HttpClient
 import io.ktor.client.plugins.UserAgent
 import it.fast4x.environment.utils.ProxyPreferences
 import it.fast4x.environment.utils.getProxy
+import it.fast4x.riplay.config.EnvironmentConfig
 import it.fast4x.riplay.enums.NetworkType
 
 
@@ -67,7 +68,7 @@ fun isNetworkConnected(context: Context): Boolean {
 
 fun httpClient() = HttpClient() {
     install(UserAgent) {
-        agent = "Mozilla/5.0 (Windows NT 10.0; rv:91.0) Gecko/20100101 Firefox/91.0"
+        agent = EnvironmentConfig.env_WkUFhXtC3G
     }
     engine {
         ProxyPreferences.preference?.let {
