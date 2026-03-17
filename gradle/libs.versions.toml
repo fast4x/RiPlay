@@ -53,7 +53,7 @@ fastscroller = "0.3.2"
 workmanager = "2.10.5"
 accompanist = "0.37.3"
 jsoup = "1.15.3"
-newpipeExt = "c1336db"
+newpipeExt = "v0.26.0"
 webkit = "1.15.0"
 recyclerview = "1.4.0"
 
