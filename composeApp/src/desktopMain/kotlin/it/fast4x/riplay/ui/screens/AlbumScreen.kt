@@ -44,6 +44,7 @@ import database.DB
 import database.entities.Album
 import database.entities.Song
 import database.entities.SongAlbumMap
+import dev.rebelonion.translator.Translator
 import it.fast4x.environment.Environment
 import it.fast4x.environment.models.bodies.BrowseBody
 import it.fast4x.environment.requests.albumPage

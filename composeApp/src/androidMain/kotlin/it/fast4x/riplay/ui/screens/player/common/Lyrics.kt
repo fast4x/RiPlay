@@ -88,6 +88,8 @@ import androidx.media3.common.C
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.util.UnstableApi
 import com.valentinilk.shimmer.shimmer
+import dev.rebelonion.translator.Language
+import dev.rebelonion.translator.Translator
 import it.fast4x.environment.Environment
 import it.fast4x.environment.models.bodies.NextBody
 import it.fast4x.environment.requests.lyrics
@@ -152,8 +154,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import me.bush.translator.Language
-import me.bush.translator.Translator
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.enums.ColorPaletteName
 import it.fast4x.riplay.extensions.lyricshelper.parsers.SyncLRCLyricsKaraokeParser
@@ -170,9 +170,9 @@ import it.fast4x.riplay.extensions.preferences.landscapeControlsKey
 import it.fast4x.riplay.extensions.preferences.lyricsSizeAnimateKey
 import it.fast4x.riplay.extensions.preferences.lyricsSizeKey
 import it.fast4x.riplay.extensions.preferences.lyricsSizeLKey
+import it.fast4x.riplay.utils.CustomHttpClient
 import it.fast4x.riplay.utils.SynchronizedLyricsLines
 import it.fast4x.riplay.utils.getRoundnessShape
-import it.fast4x.riplay.utils.httpClient
 import it.fast4x.riplay.utils.playNext
 import it.fast4x.riplay.utils.playPrevious
 import it.fast4x.riplay.utils.toLyricLine
@@ -337,7 +337,7 @@ fun Lyrics(
 
         var languageDestination = languageDestination(otherLanguageApp)
 
-        val translator = Translator(httpClient())
+        val translator =  Translator(CustomHttpClient.okHttpClient)
 
         var copyToClipboard by remember {
             mutableStateOf(false)

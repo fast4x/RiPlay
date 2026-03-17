@@ -16,7 +16,7 @@ fun downloadNewVersionInfo() {
     CoroutineScope(Dispatchers.IO).launch {
         val url =
             "https://raw.githubusercontent.com/fast4x/RiPlay/main/updatedVersion/updatedVersionCode.ver"
-        val client = okHttpClient() //OkHttpClient()
+        val client = CustomHttpClient.okHttpClient
 
         try {
             val response =

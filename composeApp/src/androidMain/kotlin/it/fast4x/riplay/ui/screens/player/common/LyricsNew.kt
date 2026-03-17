@@ -158,8 +158,8 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import me.bush.translator.Language
-import me.bush.translator.Translator
+import dev.rebelonion.translator.Language
+import dev.rebelonion.translator.Translator
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.enums.ColorPaletteName
 import it.fast4x.riplay.extensions.lyricshelper.models.LyricLine
@@ -179,7 +179,6 @@ import it.fast4x.riplay.extensions.preferences.lyricsSizeKey
 import it.fast4x.riplay.extensions.preferences.lyricsSizeLKey
 import it.fast4x.riplay.ui.styling.ColorPalette
 import it.fast4x.riplay.utils.SynchronizedLyricsLines
-import it.fast4x.riplay.utils.httpClient
 import it.fast4x.riplay.utils.playNext
 import it.fast4x.riplay.utils.playPrevious
 import it.fast4x.riplay.utils.toLyricLine
@@ -195,9 +194,10 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import it.fast4x.riplay.extensions.lyricshelper.providers.syncLRCfetchLyrics
 import it.fast4x.riplay.extensions.lyricshelper.models.SyncLRCType
 import it.fast4x.riplay.service.PlayerService
+import it.fast4x.riplay.utils.CustomHttpClient
 import it.fast4x.riplay.utils.PlayerViewModel
 import it.fast4x.riplay.utils.PlayerViewModelFactory
-
+import it.fast4x.riplay.utils.appContext
 
 
 val RainbowColors = listOf(Color.Red, Color.Magenta, Color.Blue, Color.Cyan, Color.Green, Color.Yellow, Color.Red)
@@ -301,7 +301,8 @@ fun LyricsNew(
     }
 
     val languageDestination = languageDestination(otherLanguageApp)
-    val translator = Translator(httpClient())
+
+    val translator =  Translator(CustomHttpClient.okHttpClient)
 
     var copyToClipboard by remember { mutableStateOf(false) }
     if (copyToClipboard) { lyricsText?.let { copyTextToClipboard(it, context) }; copyToClipboard = false }
@@ -350,8 +351,9 @@ fun LyricsNew(
     }
 
 
+    @Composable
     fun translateLyrics(output: MutableState<String>, textToTranslate: String, isSync: Boolean, destinationLanguage: Language = Language.AUTO) {
-        coroutineScope.launch {
+        LaunchedEffect(showSecondLine, romanization, textToTranslate, destinationLanguage){
             var destLanguage = destinationLanguage
             val result = withContext(Dispatchers.IO) {
                 try {
@@ -376,9 +378,10 @@ fun LyricsNew(
                         else mainTranslation.sourcePronunciation ?: mainTranslation.sourceText + "\\n[${mainTranslation.translatedPronunciation ?: mainTranslation.translatedText}]"
                     }
                     outputText?.replace("\\r", "\r")?.replace("\\n", "\n")
-                } catch (e: Exception) {
+                } catch (e: Exception) { 
                     Timber.e("Lyrics translation error ${e.stackTraceToString()}")
-                    null
+                    showPlaceholder = false
+                    output.value = appContext().resources.getString(R.string.an_error_has_occurred_while_fetching_the_lyrics)
                 }
             }
             val translatedText = if (result.toString() == "kotlin.Unit") "" else result.toString()
@@ -411,12 +414,15 @@ fun LyricsNew(
     }
 
 
+     // todo  To improve actually not stable
     if (isShowingSynchronizedLyrics && lyricsText.isNotEmpty()) {
         val mutState = remember { mutableStateOf("") }
-        translateLyrics(mutState, lyricsText, true, languageDestination)
+        if (translateEnabled)
+            translateLyrics(mutState, lyricsText, true, languageDestination)
     } else if (!isShowingSynchronizedLyrics && lyricsText.isNotEmpty()) {
         val mutState = remember { mutableStateOf("") }
-        translateLyrics(mutState, lyricsText, false, languageDestination)
+        if (translateEnabled)
+            translateLyrics(mutState, lyricsText, false, languageDestination)
     }
 
 
@@ -572,7 +578,9 @@ fun LyricsNew(
                             val trimmedSentence = sentence.text.trim()
                             if (showSecondLine || translateEnabled || romanization != Romanization.Off) {
                                 val mutState = remember { mutableStateOf("") }
-                                translateLyrics(mutState, trimmedSentence, true, languageDestination)
+                                // todo  To improve actually not stable
+                                if (translateEnabled)
+                                    translateLyrics(mutState, trimmedSentence, true, languageDestination)
                                 translatedText = mutState.value
                             } else {
                                 translatedText = trimmedSentence
@@ -698,7 +706,9 @@ fun LyricsNew(
                     var translatedText by remember { mutableStateOf("") }
                     if (showSecondLine || translateEnabled || romanization != Romanization.Off) {
                         val mutState = remember { mutableStateOf("") }
-                        translateLyrics(mutState, lyricsText, false, languageDestination)
+                        // todo  To improve actually not stable
+                        if (translateEnabled)
+                            translateLyrics(mutState, lyricsText, false, languageDestination)
                         translatedText = mutState.value
                     } else { translatedText = lyricsText }
 
@@ -928,7 +938,7 @@ fun LyricsNew(
                 if (showlyricsthumbnail)
                     IconButton(
                         icon = R.drawable.translate,
-                        color = if (translateEnabled == true) colorPalette().text else colorPalette().textDisabled,
+                        color = if (translateEnabled) colorPalette().text else colorPalette().textDisabled,
                         enabled = true,
                         onClick = {
                             translateEnabled = !translateEnabled

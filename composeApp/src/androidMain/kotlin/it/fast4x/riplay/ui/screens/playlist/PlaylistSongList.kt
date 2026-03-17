@@ -152,11 +152,11 @@ import it.fast4x.riplay.utils.mediaItemSetLiked
 import it.fast4x.riplay.commonutils.setLikeState
 import it.fast4x.riplay.ui.components.themed.FastPlayActionsBar
 import it.fast4x.riplay.ui.components.themed.LoaderScreen
-import it.fast4x.riplay.utils.httpClient
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.serialization.ExperimentalSerializationApi
-import me.bush.translator.Language
-import me.bush.translator.Translator
+import dev.rebelonion.translator.Language
+import dev.rebelonion.translator.Translator
+import it.fast4x.riplay.utils.CustomHttpClient
 import timber.log.Timber
 
 @ExperimentalSerializationApi
@@ -198,7 +198,7 @@ fun PlaylistSongList(
         mutableStateOf(false)
     }
 
-    val translator = Translator(httpClient())
+    val translator =  Translator(CustomHttpClient.okHttpClient)
     val languageDestination = languageDestination()
 
     var localPlaylist by remember { mutableStateOf<Playlist?>(null) }

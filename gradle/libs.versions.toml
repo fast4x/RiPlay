@@ -26,7 +26,7 @@ materialdesktop = "1.7.3"
 material3 = "1.5.0-alpha13"
 androidmaterial = "1.13.0"
 constraintlayout = "1.1.1"
-translator = "1.1.1"
+translator = "1.1.2"
 kotlin-csv = "1.10.0"
 monetcompat = "0.4.1"
 navigation = "2.9.5"
@@ -103,7 +103,8 @@ material-icon-desktop = {group = "org.jetbrains.compose.material", name = "mater
 material3 = {group = "androidx.compose.material3", name = "material3-android", version.ref = "material3"}
 androidmaterial = {group = "com.google.android.material", name = "material", version.ref = "androidmaterial"}
 constraintlayout = {group = "androidx.constraintlayout", name = "constraintlayout-compose", version.ref = "constraintlayout"}
-translator = { group = "com.github.therealbush", name = "translator", version.ref = "translator"}
+#translator = { group = "com.github.therealbush", name = "translator", version.ref = "translator"}
+translator = { group = "com.github.rebelonion", name = "translator", version.ref = "translator"}
 kotlin-csv = { group = "com.github.doyaaaaaken", name = "kotlin-csv-jvm", version.ref = "kotlin-csv"}
 monetcompat = { group = "com.github.KieronQuinn", name = "MonetCompat", version.ref = "monetcompat"}
 navigation = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigation"}

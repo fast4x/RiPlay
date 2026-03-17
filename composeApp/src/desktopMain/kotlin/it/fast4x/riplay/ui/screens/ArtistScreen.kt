@@ -64,8 +64,8 @@ import it.fast4x.riplay.utils.languageDestination
 import it.fast4x.riplay.utils.resize
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import me.bush.translator.Language
-import me.bush.translator.Translator
+import dev.rebelonion.translator.Language
+import dev.rebelonion.translator.Translator
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import riplay.composeapp.generated.resources.Res

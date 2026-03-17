@@ -151,6 +151,10 @@ kotlin {
                 implementation(compose.components.resources)
                 implementation(compose.components.uiToolingPreview)
 
+                implementation(libs.ktor.client.core)
+                implementation(libs.ktor.client.okhttp)
+                implementation(libs.ktor.client.websockets)
+
                 implementation(project(":environment"))
                 implementation(project(":kugou"))
                 implementation(project(":lrclib"))
@@ -267,9 +271,6 @@ kotlin {
             implementation(libs.gson)
             implementation(libs.hypnoticcanvas)
             implementation(libs.hypnoticcanvas.shaders)
-            implementation(libs.ktor.client.core)
-            implementation(libs.ktor.client.okhttp)
-            implementation(libs.ktor.client.websockets)
             implementation(libs.multidex)
             implementation(libs.jsoup)
 
@@ -729,18 +730,8 @@ room {
 
 dependencies {
 
-    listOf(
-        "kspAndroid",
-        "ksp",
-        //"kspIosSimulatorArm64",
-        //"kspIosX64",
-        //"kspIosArm64"
-    ).forEach {
-        add(it, libs.room.compiler)
-    }
-
     add("kspAndroid", libs.room.compiler)
-    add("ksp", libs.room.compiler)
+    add("kspDesktop", libs.room.compiler)
 
     coreLibraryDesugaring(libs.desugaring)
 }
