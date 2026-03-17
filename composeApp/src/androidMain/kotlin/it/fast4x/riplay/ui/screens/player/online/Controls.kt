@@ -64,6 +64,7 @@ import it.fast4x.riplay.extensions.preferences.showlyricsthumbnailKey
 import it.fast4x.riplay.extensions.preferences.showthumbnailKey
 import it.fast4x.riplay.extensions.preferences.transparentBackgroundPlayerActionBarKey
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.serialization.ExperimentalSerializationApi
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -71,6 +72,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 @SuppressLint("SuspiciousIndentation")
 @ExperimentalFoundationApi
 @ExperimentalAnimationApi
+@ExperimentalSerializationApi
 @UnstableApi
 @Composable
 fun Controls(

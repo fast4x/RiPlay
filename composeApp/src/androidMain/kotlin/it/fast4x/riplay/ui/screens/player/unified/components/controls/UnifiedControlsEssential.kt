@@ -409,6 +409,7 @@ fun UnifiedInfoAlbumAndArtistEssential(
 
 @androidx.annotation.OptIn(UnstableApi::class)
 @OptIn(ExperimentalFoundationApi::class)
+@ExperimentalSerializationApi
 @Composable
 fun UnifiedControlsEssential(
     playbackSpeed: Float,

@@ -63,8 +63,9 @@ import it.fast4x.riplay.ui.components.themed.TitleSection
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.utils.LazyListContainer
 import it.fast4x.riplay.utils.typography
+import kotlinx.serialization.ExperimentalSerializationApi
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalSerializationApi::class)
 @ExperimentalTextApi
 @SuppressLint("SuspiciousIndentation")
 @ExperimentalFoundationApi

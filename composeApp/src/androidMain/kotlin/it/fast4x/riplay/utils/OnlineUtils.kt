@@ -189,6 +189,7 @@ data class OnlineRadio (
 @ExperimentalAnimationApi
 @ExperimentalTextApi
 @ExperimentalFoundationApi
+@ExperimentalSerializationApi
 @UnstableApi
 @Composable
 fun SearchOnlineEntity (

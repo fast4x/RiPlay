@@ -65,11 +65,13 @@ import it.fast4x.riplay.utils.LazyListContainer
 import it.fast4x.riplay.utils.asSong
 import it.fast4x.riplay.utils.forcePlay
 import it.fast4x.riplay.utils.insertOrUpdateBlacklist
+import kotlinx.serialization.ExperimentalSerializationApi
 
 @ExperimentalTextApi
 @SuppressLint("SuspiciousIndentation")
 @ExperimentalFoundationApi
 @ExperimentalAnimationApi
+@ExperimentalSerializationApi
 @UnstableApi
 @Composable
 fun LocalSongSearch(

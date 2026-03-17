@@ -100,6 +100,7 @@ import it.fast4x.riplay.extensions.preferences.thumbnailRoundnessKey
 import it.fast4x.riplay.utils.LazyListContainer
 import it.fast4x.riplay.utils.forcePlay
 import kotlinx.coroutines.Dispatchers
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlin.random.Random
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -108,6 +109,7 @@ import kotlin.random.Random
 @UnstableApi
 @ExperimentalFoundationApi
 @ExperimentalAnimationApi
+@ExperimentalSerializationApi
 @Composable
 fun OnDeviceArtistDetails(
     navController: NavController,

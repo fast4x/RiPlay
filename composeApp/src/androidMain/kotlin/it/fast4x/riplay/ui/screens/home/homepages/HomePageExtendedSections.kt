@@ -86,10 +86,12 @@ import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.utils.forcePlay
 import it.fast4x.riplay.utils.insertOrUpdateBlacklist
 import it.fast4x.riplay.utils.typography
+import kotlinx.serialization.ExperimentalSerializationApi
 import timber.log.Timber
 
 @OptIn(UnstableApi::class)
 @kotlin.OptIn(ExperimentalAnimationApi::class, ExperimentalTextApi::class)
+@ExperimentalSerializationApi
 @Composable
 fun HomePageExtendedSections(
     navController: NavController,

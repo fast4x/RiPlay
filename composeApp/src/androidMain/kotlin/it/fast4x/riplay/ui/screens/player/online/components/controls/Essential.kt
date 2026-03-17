@@ -432,6 +432,7 @@ fun InfoAlbumAndArtistEssential(
 
 @androidx.annotation.OptIn(UnstableApi::class)
 @OptIn(ExperimentalFoundationApi::class)
+@ExperimentalSerializationApi
 @Composable
 fun ControlsEssential(
     position: Long,

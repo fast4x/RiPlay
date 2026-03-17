@@ -94,11 +94,13 @@ import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.utils.typography
 import it.fast4x.riplay.utils.LazyListContainer
 import it.fast4x.riplay.utils.forcePlay
+import kotlinx.serialization.ExperimentalSerializationApi
 
 @UnstableApi
 @ExperimentalFoundationApi
 @ExperimentalAnimationApi
 @ExperimentalTextApi
+@ExperimentalSerializationApi
 @Composable
 fun OnlineSearch(
     navController: NavController,

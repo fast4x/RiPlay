@@ -55,6 +55,7 @@ import it.fast4x.riplay.extensions.preferences.playerPositionKey
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.extensions.preferences.transitionEffectKey
 import it.fast4x.riplay.ui.components.PageContainer
+import kotlinx.serialization.ExperimentalSerializationApi
 
 
 @ExperimentalMaterialApi
@@ -63,6 +64,7 @@ import it.fast4x.riplay.ui.components.PageContainer
 @ExperimentalFoundationApi
 @ExperimentalAnimationApi
 @ExperimentalComposeUiApi
+@ExperimentalSerializationApi
 @UnstableApi
 @Composable
 fun OnDeviceAlbumScreen(

@@ -144,6 +144,7 @@ fun SongItem(
     )
 }
 
+@OptIn(ExperimentalSerializationApi::class)
 @UnstableApi
 @Composable
 fun SongItem(
