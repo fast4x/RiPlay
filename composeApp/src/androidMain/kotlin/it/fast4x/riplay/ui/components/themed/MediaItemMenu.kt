@@ -442,7 +442,6 @@ fun NonQueuedMediaItemMenuLibrary(
 @UnstableApi
 @ExperimentalAnimationApi
 @ExperimentalSerializationApi
-@ExperimentalSerializationApi
 @Composable
 fun NonQueuedMediaItemMenu(
     navController: NavController,
