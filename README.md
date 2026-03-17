@@ -168,11 +168,11 @@ RiPlay wouldn't be possible without the amazing work of these projects and contr
 
 - [RiMusic](https://github.com/fast4x/RiMusic) – Me & contributors  
 - [ViMusic](https://github.com/vfsfitvnm/ViMusic) – foundation  
-- [Android YouTube Player](https://github.com/PierfrancescoSoffritti/android-youtube-player) – YouTube Player wrapper  
+- [Android YouTube Player](https://github.com/PierfrancescoSoffritti/android-youtube-player) – YouTube Iframe Player API wrapper  
 - [Ionicons](https://github.com/ionic-team/ionicons) – icons  
 - [FlatIcon.com](https://www.flaticon.com/) – icons & stickers  
-- [Translator](https://github.com/therealbush/translator) – Google Translate library  
-- [KuGou](https://www.kugou.com), [LrcLib](https://lrclib.net), [SyncLRC](https://synclrc.tharuk.pro) – Lyrics  
+- [Translator](https://github.com/rebelonion/translator) – Translate library for Kotlin/JVM and Java 
+- [KuGou](https://www.kugou.com), [LrcLib](https://lrclib.net), [SyncLRC](https://synclrc.tharuk.pro) – Lyrics providers
 - [HypnoticCanvas](https://mikepenz.github.io/HypnoticCanvas/) – shaders for Compose  
 - [AudioTag.info](https://audiotag.info) – music recognition API
 
