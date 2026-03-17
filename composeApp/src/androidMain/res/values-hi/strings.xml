@@ -1276,5 +1276,10 @@
     <string name="cover_type_audio_cassette">Audio cassette</string>
     <string name="cover_type_audio_cassette_with_cover">Audio cassette with cover</string>
     <string name="cover_type_turntable">Turntable</string>
+    <string name="synchronized_alternative_word_by_word_lyrics">alternative synced word by word lyrics</string>
+    <string name="lyrics_type">Lyrics type</string>
+    <string name="synchronized_karaoke_lyrics">syncronized karaoke lyrics</string>
+    <string name="aa_show_top_songs">Show top songs</string>
+    <string name="aa_show_all_songs">Show all songs</string>
+    <string name="all_songs">Tutti i brani</string>
 </resources>
-
