@@ -107,6 +107,7 @@ import it.fast4x.riplay.utils.removeFromOnlineLikedSong
 import kotlinx.serialization.ExperimentalSerializationApi
 
 @OptIn(UnstableApi::class)
+@ExperimentalSerializationApi
 @Composable
 fun NonQueuedMediaItemGridMenu(
     navController: NavController,

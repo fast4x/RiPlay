@@ -81,6 +81,7 @@ import it.fast4x.riplay.utils.LazyListContainer
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.ExperimentalSerializationApi
 
 @OptIn(ExperimentalMaterial3Api::class)
 @ExperimentalTextApi
@@ -88,6 +89,7 @@ import kotlinx.coroutines.withContext
 @UnstableApi
 @ExperimentalFoundationApi
 @ExperimentalAnimationApi
+@ExperimentalSerializationApi
 @Composable
 fun OnDeviceArtistItems(
     navController: NavController,

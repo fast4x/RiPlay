@@ -117,11 +117,11 @@ import it.fast4x.riplay.utils.PlayerViewModelFactory
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import it.fast4x.riplay.utils.getRoundnessShape
+import kotlinx.serialization.ExperimentalSerializationApi
 
 @androidx.annotation.OptIn(UnstableApi::class)
-@OptIn(ExperimentalFoundationApi::class,
-    ExperimentalFoundationApi::class, ExperimentalFoundationApi::class,
-    ExperimentalFoundationApi::class)
+@OptIn(ExperimentalFoundationApi::class)
+@ExperimentalSerializationApi
 @Composable
 fun LocalMiniPlayer(
     showPlayer: () -> Unit,

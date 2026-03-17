@@ -134,7 +134,6 @@ import it.fast4x.riplay.extensions.preferences.navigationBarPositionKey
 import it.fast4x.riplay.extensions.preferences.navigationBarTypeKey
 import it.fast4x.riplay.extensions.preferences.pauseBetweenSongsKey
 import it.fast4x.riplay.extensions.preferences.pauseListenHistoryKey
-import it.fast4x.riplay.extensions.preferences.persistentQueueKey
 import it.fast4x.riplay.extensions.preferences.playbackFadeAudioDurationKey
 import it.fast4x.riplay.extensions.preferences.playerBackgroundColorsKey
 import it.fast4x.riplay.extensions.preferences.playerControlsTypeKey
@@ -184,7 +183,6 @@ import it.fast4x.riplay.extensions.preferences.showTopActionsBarKey
 import it.fast4x.riplay.extensions.preferences.showTotalTimeQueueKey
 import it.fast4x.riplay.extensions.preferences.showthumbnailKey
 import it.fast4x.riplay.extensions.preferences.skipMediaOnErrorKey
-import it.fast4x.riplay.extensions.preferences.skipSilenceKey
 import it.fast4x.riplay.extensions.preferences.swipeUpQueueKey
 import it.fast4x.riplay.extensions.preferences.tapqueueKey
 import it.fast4x.riplay.extensions.preferences.thumbnailRoundnessKey
@@ -202,16 +200,8 @@ import it.fast4x.riplay.ui.components.themed.settingsItem
 import it.fast4x.riplay.ui.components.themed.settingsSearchBarItem
 import it.fast4x.riplay.extensions.preferences.customColorKey
 import it.fast4x.riplay.extensions.preferences.isEnabledFullscreenKey
-import it.fast4x.riplay.extensions.preferences.notifyAndroidAutoTipsKey
 import it.fast4x.riplay.extensions.preferences.showDislikedPlaylistKey
-import it.fast4x.riplay.extensions.preferences.showFavoritesPlaylistsAAKey
-import it.fast4x.riplay.extensions.preferences.showGridAAKey
-import it.fast4x.riplay.extensions.preferences.showInLibraryAAKey
-import it.fast4x.riplay.extensions.preferences.showMonthlyPlaylistsAAKey
-import it.fast4x.riplay.extensions.preferences.showOnDeviceAAKey
-import it.fast4x.riplay.extensions.preferences.showShuffleSongsAAKey
 import it.fast4x.riplay.extensions.preferences.showSnowfallEffectKey
-import it.fast4x.riplay.extensions.preferences.showTopPlaylistAAKey
 import it.fast4x.riplay.extensions.preferences.usePlaceholderInImageLoaderKey
 import it.fast4x.riplay.utils.LazyListContainer
 

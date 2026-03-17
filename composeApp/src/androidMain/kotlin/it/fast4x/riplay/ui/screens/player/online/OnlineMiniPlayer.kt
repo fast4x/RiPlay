@@ -122,10 +122,12 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlin.math.absoluteValue
 
 @ExperimentalMaterial3Api
 @ExperimentalFoundationApi
+@ExperimentalSerializationApi
 @UnstableApi
 @Composable
 fun OnlineMiniPlayer(

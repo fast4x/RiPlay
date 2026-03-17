@@ -117,9 +117,11 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlin.math.absoluteValue
 
 @OptIn(UnstableApi::class)
+@ExperimentalSerializationApi
 @Composable
 fun UnifiedMiniPlayer(
     showPlayer: () -> Unit,

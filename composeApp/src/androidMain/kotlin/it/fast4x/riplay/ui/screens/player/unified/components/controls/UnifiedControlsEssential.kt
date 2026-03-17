@@ -108,7 +108,9 @@ import it.fast4x.riplay.utils.typography
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.serialization.ExperimentalSerializationApi
 
+@OptIn(ExperimentalSerializationApi::class)
 @SuppressLint("UnusedBoxWithConstraintsScope")
 @UnstableApi
 @ExperimentalFoundationApi

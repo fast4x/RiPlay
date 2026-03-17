@@ -158,13 +158,14 @@ import it.fast4x.riplay.extensions.preferences.parentalControlEnabledKey
 import it.fast4x.riplay.extensions.preferences.pauseSearchHistoryKey
 import it.fast4x.riplay.extensions.preferences.resumeOrPausePlaybackWhenCallKey
 import it.fast4x.riplay.extensions.preferences.resumeOrPausePlaybackWhenDeviceKey
-import it.fast4x.riplay.extensions.preferences.showFavoritesPlaylistsAAKey
+import it.fast4x.riplay.extensions.preferences.showAllSongsAAKey
+import it.fast4x.riplay.extensions.preferences.showFavoritesSongsAAKey
 import it.fast4x.riplay.extensions.preferences.showGridAAKey
 import it.fast4x.riplay.extensions.preferences.showInLibraryAAKey
 import it.fast4x.riplay.extensions.preferences.showMonthlyPlaylistsAAKey
 import it.fast4x.riplay.extensions.preferences.showOnDeviceAAKey
 import it.fast4x.riplay.extensions.preferences.showShuffleSongsAAKey
-import it.fast4x.riplay.extensions.preferences.showTopPlaylistAAKey
+import it.fast4x.riplay.extensions.preferences.showTopSongsAAKey
 import it.fast4x.riplay.service.PlayerMediaBrowserService
 import it.fast4x.riplay.ui.components.themed.ConfirmationDialog
 import it.fast4x.riplay.ui.components.themed.SecondaryTextButton
@@ -341,8 +342,9 @@ fun GeneralSettings(
     var showMonthlyPlaylistsAA by rememberPreference(showMonthlyPlaylistsAAKey, true)
     var showInLibraryAA by rememberPreference(showInLibraryAAKey, true)
     var showOnDeviceAA by rememberPreference(showOnDeviceAAKey, true)
-    var showFavoritesPlaylistsAA by rememberPreference(showFavoritesPlaylistsAAKey, true)
-    var showTopPlaylistAA by rememberPreference(showTopPlaylistAAKey, true)
+    var showFavoritesSongsAA by rememberPreference(showFavoritesSongsAAKey, true)
+    var showTopSongsAA by rememberPreference(showTopSongsAAKey, true)
+    var showAllSongsAA by rememberPreference(showAllSongsAAKey, true)
     var showGridAA by rememberPreference(showGridAAKey, true)
 
     var isEnabledVoiceInput by rememberPreference(
@@ -1871,6 +1873,66 @@ fun GeneralSettings(
                                 )
                             }
 
+                            if (search.input.isBlank() || stringResource(R.string.aa_show_monthly_playlists).contains(
+                                    search.input,
+                                    true
+                                )
+                            )
+                                SwitchSettingEntry(
+                                    title = stringResource(R.string.aa_show_monthly_playlists),
+                                    text = "", //stringResource(R.string.aa_info_show_monthly_playlists_in_playlists_screen),
+                                    isChecked = showMonthlyPlaylistsAA,
+                                    onCheckedChange = { showMonthlyPlaylistsAA = it }
+                                )
+
+                            if (search.input.isBlank() || stringResource(R.string.aa_show_in_library).contains(
+                                    search.input,
+                                    true
+                                )
+                            )
+                                SwitchSettingEntry(
+                                    title = stringResource(R.string.aa_show_in_library),
+                                    text = "", //stringResource(R.string.aa_info_show_in_library_in_artists_and_albums_screen),
+                                    isChecked = showInLibraryAA,
+                                    onCheckedChange = { showInLibraryAA = it }
+                                )
+
+                            if (search.input.isBlank() || stringResource(R.string.aa_show_on_device).contains(
+                                    search.input,
+                                    true
+                                )
+                            )
+                                SwitchSettingEntry(
+                                    title = stringResource(R.string.aa_show_on_device),
+                                    text = "", //stringResource(R.string.aa_info_show_on_device_in_artists_and_albums_screen),
+                                    isChecked = showOnDeviceAA,
+                                    onCheckedChange = { showOnDeviceAA = it }
+                                )
+
+                            if (search.input.isBlank() || stringResource(R.string.aa_show_top_songs).contains(
+                                    search.input,
+                                    true
+                                )
+                            )
+                                SwitchSettingEntry(
+                                    title = stringResource(R.string.aa_show_top_songs),
+                                    text = "", //stringResource(R.string.aa_info_show_top_playlist_in_playlists_screen),
+                                    isChecked = showTopSongsAA,
+                                    onCheckedChange = { showTopSongsAA = it }
+                                )
+
+                            if (search.input.isBlank() || stringResource(R.string.aa_show_all_songs).contains(
+                                    search.input,
+                                    true
+                                )
+                            )
+                                SwitchSettingEntry(
+                                    title = stringResource(R.string.aa_show_all_songs),
+                                    text = "", // stringResource(R.string.aa_info_show_favorites_playlists_in_playlists_screen),
+                                    isChecked = showAllSongsAA,
+                                    onCheckedChange = { showAllSongsAA = it }
+                                )
+
                             if (search.input.isBlank() || stringResource(R.string.aa_show_shuffle_in_songs).contains(
                                     search.input,
                                     true
@@ -1885,67 +1947,6 @@ fun GeneralSettings(
                                     }
                                 )
                             }
-
-                            if (search.input.isBlank() || stringResource(R.string.aa_show_monthly_playlists).contains(
-                                    search.input,
-                                    true
-                                )
-                            )
-                                SwitchSettingEntry(
-                                    title = stringResource(R.string.aa_show_monthly_playlists),
-                                    text = stringResource(R.string.aa_info_show_monthly_playlists_in_playlists_screen),
-                                    isChecked = showMonthlyPlaylistsAA,
-                                    onCheckedChange = { showMonthlyPlaylistsAA = it }
-                                )
-
-                            if (search.input.isBlank() || stringResource(R.string.aa_show_in_library).contains(
-                                    search.input,
-                                    true
-                                )
-                            )
-                                SwitchSettingEntry(
-                                    title = stringResource(R.string.aa_show_in_library),
-                                    text = stringResource(R.string.aa_info_show_in_library_in_artists_and_albums_screen),
-                                    isChecked = showInLibraryAA,
-                                    onCheckedChange = { showInLibraryAA = it }
-                                )
-
-                            if (search.input.isBlank() || stringResource(R.string.aa_show_on_device).contains(
-                                    search.input,
-                                    true
-                                )
-                            )
-                                SwitchSettingEntry(
-                                    title = stringResource(R.string.aa_show_on_device),
-                                    text = stringResource(R.string.aa_info_show_on_device_in_artists_and_albums_screen),
-                                    isChecked = showOnDeviceAA,
-                                    onCheckedChange = { showOnDeviceAA = it }
-                                )
-
-                            if (search.input.isBlank() || stringResource(R.string.aa_show_top_playlist).contains(
-                                    search.input,
-                                    true
-                                )
-                            )
-                                SwitchSettingEntry(
-                                    title = stringResource(R.string.aa_show_top_playlist),
-                                    text = stringResource(R.string.aa_info_show_top_playlist_in_playlists_screen),
-                                    isChecked = showTopPlaylistAA,
-                                    onCheckedChange = { showTopPlaylistAA = it }
-                                )
-
-                            if (search.input.isBlank() || stringResource(R.string.aa_show_favorites_playlists).contains(
-                                    search.input,
-                                    true
-                                )
-                            )
-                                SwitchSettingEntry(
-                                    title = stringResource(R.string.aa_show_favorites_playlists),
-                                    text = stringResource(R.string.aa_info_show_favorites_playlists_in_playlists_screen),
-                                    isChecked = showFavoritesPlaylistsAA,
-                                    onCheckedChange = { showFavoritesPlaylistsAA = it }
-                                )
-
 
                         }
                     }

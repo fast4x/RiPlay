@@ -14,8 +14,9 @@ import it.fast4x.riplay.extensions.preferences.disableScrollingTextKey
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.ui.components.PageContainer
 import it.fast4x.riplay.ui.components.ScreenContainer
+import kotlinx.serialization.ExperimentalSerializationApi
 
-@OptIn(KotlinCsvExperimental::class)
+@OptIn(KotlinCsvExperimental::class, ExperimentalSerializationApi::class)
 @ExperimentalMaterialApi
 @ExperimentalTextApi
 @ExperimentalFoundationApi

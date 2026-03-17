@@ -14,8 +14,10 @@ import androidx.navigation.NavController
 import it.fast4x.riplay.extensions.preferences.disableScrollingTextKey
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.ui.components.PageContainer
+import kotlinx.serialization.ExperimentalSerializationApi
 
 
+@OptIn(ExperimentalSerializationApi::class)
 @ExperimentalMaterialApi
 @ExperimentalTextApi
 @ExperimentalFoundationApi

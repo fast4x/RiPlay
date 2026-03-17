@@ -81,6 +81,7 @@ import it.fast4x.riplay.utils.shimmerEffect
 import it.fast4x.riplay.commonutils.thumbnail
 import it.fast4x.riplay.utils.getRoundnessShape
 import it.fast4x.riplay.utils.isRelated
+import kotlinx.serialization.ExperimentalSerializationApi
 
 
 @UnstableApi
@@ -187,6 +188,7 @@ fun SongItem(
     ExperimentalAnimationApi::class
 )
 @UnstableApi
+@ExperimentalSerializationApi
 @Composable
 fun SongItem(
     thumbnailContent: @Composable BoxScope.() -> Unit,

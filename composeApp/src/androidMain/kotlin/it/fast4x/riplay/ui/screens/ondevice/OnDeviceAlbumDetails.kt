@@ -126,12 +126,14 @@ import it.fast4x.riplay.utils.LazyListContainer
 import it.fast4x.riplay.utils.addToYtLikedSongs
 import it.fast4x.riplay.utils.isNetworkConnected
 import it.fast4x.riplay.utils.mediaItemSetLiked
+import kotlinx.serialization.ExperimentalSerializationApi
 
 @OptIn(ExperimentalMaterial3Api::class)
 @ExperimentalTextApi
 @SuppressLint("SuspiciousIndentation")
 @ExperimentalAnimationApi
 @ExperimentalFoundationApi
+@ExperimentalSerializationApi
 @UnstableApi
 @Composable
 fun OnDeviceAlbumDetails(

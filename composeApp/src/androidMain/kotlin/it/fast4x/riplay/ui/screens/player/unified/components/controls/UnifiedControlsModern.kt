@@ -98,6 +98,7 @@ import it.fast4x.riplay.utils.typography
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.serialization.ExperimentalSerializationApi
 
 @androidx.annotation.OptIn(UnstableApi::class)
 @OptIn(ExperimentalFoundationApi::class)
@@ -453,6 +454,7 @@ fun UnifiedControlsModern(
 }
 
 
+@OptIn(ExperimentalSerializationApi::class)
 @UnstableApi
 @ExperimentalFoundationApi
 @Composable

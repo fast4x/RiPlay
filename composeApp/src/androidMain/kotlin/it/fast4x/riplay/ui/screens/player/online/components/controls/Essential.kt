@@ -111,11 +111,13 @@ import it.fast4x.riplay.utils.removeFromOnlineLikedSong
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.serialization.ExperimentalSerializationApi
 
 
 @SuppressLint("UnusedBoxWithConstraintsScope")
 @UnstableApi
 @ExperimentalFoundationApi
+@ExperimentalSerializationApi
 @Composable
 fun InfoAlbumAndArtistEssential(
     navController: NavController,

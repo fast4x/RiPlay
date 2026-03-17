@@ -47,7 +47,9 @@ import it.fast4x.riplay.ui.components.ScreenContainer
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.utils.StartVoiceInput
 import it.fast4x.riplay.utils.typography
+import kotlinx.serialization.ExperimentalSerializationApi
 
+@OptIn(ExperimentalSerializationApi::class)
 @ExperimentalMaterialApi
 @ExperimentalTextApi
 @ExperimentalFoundationApi

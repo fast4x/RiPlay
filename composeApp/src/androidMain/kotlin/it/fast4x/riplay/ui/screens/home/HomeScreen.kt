@@ -49,6 +49,7 @@ import kotlinx.coroutines.launch
 import it.fast4x.riplay.ui.components.ScreenContainer
 import it.fast4x.riplay.ui.screens.home.homepages.HomePage
 import it.fast4x.riplay.ui.screens.home.homepages.HomePageExtended
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlin.system.exitProcess
 
 
@@ -58,6 +59,7 @@ import kotlin.system.exitProcess
 @ExperimentalFoundationApi
 @ExperimentalAnimationApi
 @ExperimentalComposeUiApi
+@ExperimentalSerializationApi
 @UnstableApi
 @Composable
 fun HomeScreen(

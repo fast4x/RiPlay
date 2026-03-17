@@ -312,6 +312,7 @@ fun LazyListScope.renderHistoryGroup(
 
 @kotlin.OptIn(ExperimentalAnimationApi::class, ExperimentalTextApi::class)
 @UnstableApi
+@ExperimentalSerializationApi
 @Composable
 fun HistoryItemRow(
     mediaItem: MediaItem,

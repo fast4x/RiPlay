@@ -98,10 +98,12 @@ import it.fast4x.riplay.utils.removeFromOnlineLikedSong
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.serialization.ExperimentalSerializationApi
 
 
 @UnstableApi
 @ExperimentalFoundationApi
+@ExperimentalSerializationApi
 @Composable
 fun InfoAlbumAndArtistModern(
     navController: NavController,

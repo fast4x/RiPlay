@@ -37,8 +37,10 @@ import it.fast4x.riplay.ui.styling.secondary
 import it.fast4x.riplay.ui.components.ScreenContainer
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.utils.typography
+import kotlinx.serialization.ExperimentalSerializationApi
 import java.net.URLEncoder
 
+@OptIn(ExperimentalSerializationApi::class)
 @ExperimentalMaterialApi
 @ExperimentalTextApi
 @ExperimentalFoundationApi

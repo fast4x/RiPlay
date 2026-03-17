@@ -15,7 +15,6 @@ import it.fast4x.environment.requests.HomePage
 import it.fast4x.riplay.extensions.ritune.RiTuneDevices
 import it.fast4x.riplay.data.models.Song
 import it.fast4x.riplay.enums.SongSortBy
-import it.fast4x.riplay.utils.PlaylistSongsSort
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
@@ -387,8 +386,8 @@ const val showShuffleSongsAAKey = "shuffleSongsAAEnabled"
 const val showMonthlyPlaylistsAAKey = "showMonthlyPlaylistsAA"
 const val showInLibraryAAKey = "showInLibraryAA"
 const val showOnDeviceAAKey = "showOnDeviceAA"
-const val showFavoritesPlaylistsAAKey = "showFavoritesPlaylistsAA"
-const val showTopPlaylistAAKey = "showTopPlaylistsAA"
+const val showFavoritesSongsAAKey = "showFavoritesSongsAA"
+const val showTopSongsAAKey = "showTopSongsAA"
 const val showGridAAKey = "showGridAA"
 
 const val showPlayerActionsBarKey = "showPlayerActionsBar"
@@ -434,6 +433,7 @@ const val stateIsPlaying = "stateIsPlaying"
 
 const val isShowingSynchronizedWordByWordLyricsKey = "isShowingSynchronizedWordByWorkLyrics"
 
+const val showAllSongsAAKey = "showAllSongsAA"
 
 inline fun <reified T : Enum<T>> SharedPreferences.getEnum(
     key: String,

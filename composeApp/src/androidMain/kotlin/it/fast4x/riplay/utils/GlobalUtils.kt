@@ -10,46 +10,29 @@ import it.fast4x.riplay.Dependencies
 import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.enums.ColorPaletteMode
 import it.fast4x.riplay.enums.DnsOverHttpsType
-import it.fast4x.riplay.enums.DurationInMilliseconds
-import it.fast4x.riplay.enums.MinTimeForEvent
-import it.fast4x.riplay.enums.PlayerTimelineType
-import it.fast4x.riplay.enums.QueueLoopType
 import it.fast4x.riplay.enums.ThumbnailRoundness
 import it.fast4x.riplay.enums.UiType
 import it.fast4x.riplay.enums.ViewType
 import it.fast4x.riplay.ui.styling.LocalAppearance
 import it.fast4x.riplay.extensions.preferences.UiTypeKey
-import it.fast4x.riplay.extensions.preferences.appIsRunningKey
 import it.fast4x.riplay.extensions.preferences.autosyncKey
 import it.fast4x.riplay.extensions.preferences.bassboostEnabledKey
 import it.fast4x.riplay.extensions.preferences.colorPaletteModeKey
 import it.fast4x.riplay.extensions.preferences.dnsOverHttpsTypeKey
 import it.fast4x.riplay.extensions.preferences.enablePictureInPictureAutoKey
-import it.fast4x.riplay.extensions.preferences.exoPlayerMinTimeForEventKey
 import it.fast4x.riplay.extensions.preferences.getEnum
 import it.fast4x.riplay.extensions.preferences.handleAudioFocusEnabledKey
 import it.fast4x.riplay.extensions.preferences.isEnabledFullscreenKey
 import it.fast4x.riplay.extensions.preferences.isEnabledLastfmKey
-import it.fast4x.riplay.extensions.preferences.isInvincibilityEnabledKey
 import it.fast4x.riplay.extensions.preferences.isKeepScreenOnEnabledKey
 import it.fast4x.riplay.extensions.preferences.keepPlayerMinimizedKey
-import it.fast4x.riplay.extensions.preferences.lastMediaItemWasLocalKey
-import it.fast4x.riplay.extensions.preferences.lastVideoIdKey
-import it.fast4x.riplay.extensions.preferences.lastVideoSecondsKey
 import it.fast4x.riplay.extensions.preferences.lastfmSessionTokenKey
-import it.fast4x.riplay.extensions.preferences.logDebugEnabledKey
-import it.fast4x.riplay.extensions.preferences.notifyAndroidAutoTipsKey
-import it.fast4x.riplay.extensions.preferences.notifyTipsKey
 import it.fast4x.riplay.extensions.preferences.parentalControlEnabledKey
-import it.fast4x.riplay.extensions.preferences.pauseListenHistoryKey
 import it.fast4x.riplay.extensions.preferences.persistentQueueKey
-import it.fast4x.riplay.extensions.preferences.playbackFadeAudioDurationKey
-import it.fast4x.riplay.extensions.preferences.playerTimelineTypeKey
 import it.fast4x.riplay.extensions.preferences.preferences
-import it.fast4x.riplay.extensions.preferences.queueLoopTypeKey
 import it.fast4x.riplay.extensions.preferences.rememberPreference
-import it.fast4x.riplay.extensions.preferences.resumePlaybackOnStartKey
-import it.fast4x.riplay.extensions.preferences.showFavoritesPlaylistsAAKey
+import it.fast4x.riplay.extensions.preferences.showAllSongsAAKey
+import it.fast4x.riplay.extensions.preferences.showFavoritesSongsAAKey
 import it.fast4x.riplay.extensions.preferences.showGridAAKey
 import it.fast4x.riplay.extensions.preferences.showInLibraryAAKey
 import it.fast4x.riplay.extensions.preferences.showMonthlyPlaylistsAAKey
@@ -57,7 +40,7 @@ import it.fast4x.riplay.extensions.preferences.showOnDeviceAAKey
 import it.fast4x.riplay.extensions.preferences.showSearchTabKey
 import it.fast4x.riplay.extensions.preferences.showStatsInNavbarKey
 import it.fast4x.riplay.extensions.preferences.showShuffleSongsAAKey
-import it.fast4x.riplay.extensions.preferences.showTopPlaylistAAKey
+import it.fast4x.riplay.extensions.preferences.showTopSongsAAKey
 import it.fast4x.riplay.extensions.preferences.skipMediaOnErrorKey
 import it.fast4x.riplay.extensions.preferences.thumbnailRoundnessKey
 import it.fast4x.riplay.extensions.preferences.viewTypeKey
@@ -115,8 +98,9 @@ fun shuffleSongsAAEnabled() = appContext().preferences.getBoolean(showShuffleSon
 fun showMonthlyPlaylistsAA() = appContext().preferences.getBoolean(showMonthlyPlaylistsAAKey, true)
 fun showOnDeviceAA() = appContext().preferences.getBoolean(showOnDeviceAAKey, true)
 fun showInLibraryAA() = appContext().preferences.getBoolean(showInLibraryAAKey, true)
-fun showFavoritesPlaylistsAA() = appContext().preferences.getBoolean(showFavoritesPlaylistsAAKey, true)
-fun showTopPlaylistAA() = appContext().preferences.getBoolean(showTopPlaylistAAKey, true)
+fun showFavoritesSongsAA() = appContext().preferences.getBoolean(showFavoritesSongsAAKey, true)
+fun showTopSongstAA() = appContext().preferences.getBoolean(showTopSongsAAKey, true)
+fun showAllSongstAA() = appContext().preferences.getBoolean(showAllSongsAAKey, true)
 fun showGridAA() = appContext().preferences.getBoolean(showGridAAKey, true)
 
 

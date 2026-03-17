@@ -44,7 +44,6 @@ import it.fast4x.riplay.extensions.preferences.getEnum
 import it.fast4x.riplay.extensions.preferences.preferences
 import it.fast4x.riplay.commonutils.removePrefix
 import it.fast4x.riplay.commonutils.thumbnail
-import it.fast4x.riplay.data.models.SongEntity
 import it.fast4x.riplay.enums.HomeItemSize
 import it.fast4x.riplay.enums.PlaylistSongSortBy
 import it.fast4x.riplay.enums.PlaylistSortBy
@@ -64,16 +63,16 @@ import it.fast4x.riplay.utils.asMediaItem
 import it.fast4x.riplay.utils.asSong
 import it.fast4x.riplay.utils.getTitleMonthlyPlaylist
 import it.fast4x.riplay.utils.intent
-import it.fast4x.riplay.utils.showFavoritesPlaylistsAA
+import it.fast4x.riplay.utils.showAllSongstAA
+import it.fast4x.riplay.utils.showFavoritesSongsAA
 import it.fast4x.riplay.utils.showGridAA
 import it.fast4x.riplay.utils.showInLibraryAA
 import it.fast4x.riplay.utils.showMonthlyPlaylistsAA
 import it.fast4x.riplay.utils.showOnDeviceAA
-import it.fast4x.riplay.utils.showTopPlaylistAA
+import it.fast4x.riplay.utils.showTopSongstAA
 import it.fast4x.riplay.utils.shuffleSongsAAEnabled
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.ExperimentalSerializationApi
 import timber.log.Timber
@@ -295,6 +294,24 @@ class PlayerMediaBrowserService : MediaBrowserServiceCompat(),
                     )
 
                     MediaId.SONGS -> {
+                        Database
+                            .songsFavorites(songsSortBy, songSortOrder)
+                            .first()
+                            .also { lastSongs = it.map { it.song }}
+                            .map { it.song.asBrowserMediaItem }
+                            .toMutableList()
+                            .apply {
+                                if (showAllSongstAA())
+                                    add(0, allBrowserMediaItem)
+                                if (showTopSongstAA())
+                                    add(1, topBrowserMediaItem)
+                                if (shuffleSongsAAEnabled())
+                                    add(2,shuffleBrowserMediaItem)
+                                if (showOnDeviceAA())
+                                    add(3, ondeviceBrowserMediaItem)
+
+                            }
+                        /*
                             Database
                                 .songs(songsSortBy, songSortOrder, 0)
                                 .first()
@@ -303,15 +320,17 @@ class PlayerMediaBrowserService : MediaBrowserServiceCompat(),
                                 .map { it.song.asBrowserMediaItem }
                                 .toMutableList()
                                 .apply {
-                                    if (showFavoritesPlaylistsAA())
+                                    if (showFavoritesSongsAA())
                                         add(0, favoritesBrowserMediaItem)
-                                    if (showTopPlaylistAA())
+                                    if (showTopSongstAA())
                                         add(1, topBrowserMediaItem)
                                     if (showOnDeviceAA())
                                         add(2, ondeviceBrowserMediaItem)
                                     if (shuffleSongsAAEnabled())
                                         add(3,shuffleBrowserMediaItem)
                                 }
+
+                         */
                     }
 
                     MediaId.SONGS_ONDEVICE -> {
@@ -325,6 +344,18 @@ class PlayerMediaBrowserService : MediaBrowserServiceCompat(),
 
                     MediaId.SONGS_SHUFFLE -> lastSongs.shuffled().map { it.asBrowserMediaItem }.toMutableList()
 
+                    MediaId.SONGS_ALL -> {
+
+                        Database
+                            .songs(songsSortBy, songSortOrder, 0)
+                            .first()
+                            .take(500)
+                            .also { lastSongs = it.map { it.song } }
+                            .map { it.song.asBrowserMediaItem }
+                            .toMutableList()
+
+                    }
+                    /*
                     MediaId.SONGS_FAVORITES -> {
 
                         Database
@@ -335,6 +366,8 @@ class PlayerMediaBrowserService : MediaBrowserServiceCompat(),
                             .map { it.song.asBrowserMediaItem }
                             .toMutableList()
                     }
+
+                     */
 
                     MediaId.SONGS_TOP -> {
                         val maxTopSongs = preferences.getEnum(MaxTopPlaylistItemsKey,
@@ -1083,6 +1116,17 @@ class PlayerMediaBrowserService : MediaBrowserServiceCompat(),
             MediaItem.FLAG_BROWSABLE
         )
 
+    private val allBrowserMediaItem
+        inline get() = MediaItem(
+            MediaDescriptionCompat.Builder()
+                .setMediaId(MediaId.SONGS_ALL)
+                .setTitle((this as Context).resources.getString(R.string.all_songs))
+                .setIconUri(uriFor(R.drawable.music))
+                .build(),
+            MediaItem.FLAG_BROWSABLE
+        )
+
+    /*
     private val favoritesBrowserMediaItem
         inline get() = MediaItem(
             MediaDescriptionCompat.Builder()
@@ -1092,6 +1136,8 @@ class PlayerMediaBrowserService : MediaBrowserServiceCompat(),
                 .build(),
             MediaItem.FLAG_BROWSABLE
         )
+
+     */
 
     private val topBrowserMediaItem
         inline get() = MediaItem(
@@ -1138,7 +1184,8 @@ class PlayerMediaBrowserService : MediaBrowserServiceCompat(),
 
         const val SEARCHED = "searched"
 
-        const val SONGS_FAVORITES = "favorites"
+        //const val SONGS_FAVORITES = "favorites"
+        const val SONGS_ALL = "all"
         const val SONGS_SHUFFLE = "shuffle"
         const val SONGS_ONDEVICE = "ondevice"
         const val SONGS_TOP = "top"

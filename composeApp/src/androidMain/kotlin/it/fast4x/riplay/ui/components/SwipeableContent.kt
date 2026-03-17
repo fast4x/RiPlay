@@ -58,6 +58,7 @@ import it.fast4x.riplay.utils.isNetworkConnected
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.serialization.ExperimentalSerializationApi
 
 @Composable
 fun SwipeableContent(
@@ -131,6 +132,7 @@ fun SwipeableContent(
 }
 
 @OptIn(UnstableApi::class)
+@ExperimentalSerializationApi
 @Composable
 fun SwipeableQueueItem(
     mediaItem: MediaItem,
@@ -218,6 +220,7 @@ fun SwipeableQueueItem(
 }
 
 @OptIn(UnstableApi::class)
+@ExperimentalSerializationApi
 @Composable
 fun SwipeablePlaylistItem(
     mediaItem: MediaItem,
