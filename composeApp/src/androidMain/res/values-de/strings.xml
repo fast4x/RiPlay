@@ -491,7 +491,7 @@
     <string name="info_reorder_is_possible_only_in_ascending_sort">Neuordnung ist nur in aufsteigender Sortierung möglich</string>
     <string name="information">Information</string>
     <string name="info_lyrics_found_on_s">Liedtext gefunden auf %s</string>
-    <string name="info_lyrics_not_found_on_s_try_on_s">Liedtext nicht auf %s gefunden, versuche es auf %s</string>
+    <string name="info_lyrics_not_found_on_s_try_on_s">Liedtext nicht auf %1$s gefunden, versuche es auf %2$s</string>
     <string name="info_lyrics_not_found_on_s">Liedtext nicht gefunden auf %s</string>
     <string name="info_lyrics_tracks_found_on_s">Liedtexte gefunden auf %s</string>
     <string name="info_lyrics_tracks_not_found_on_s">Liedtexte nicht gefunden auf %s</string>
@@ -1271,7 +1271,7 @@ Mach dich bereit, deine unvergesslichsten musikalischen Momente noch einmal zu e
     <string name="online_now_playing_title">ONLINE</string>
     <string name="no_artists">No artists</string>
     <string name="no_albums">No albums</string>
-    <string name="no_plaulists">No playlists</string>
+    <string name="no_playlists">No playlists</string>
     <string name="no_songs">No songs</string>
     <string name="crash_title_ops_riplay_is_in_error_state">Ops! RiPlay is in error state</string>
     <string name="crash_subtitle_the_application_crashed_unexpectedly_you_can_help_us_by_sending_this_log">The application crashed unexpectedly, you can help us by sending this log.</string>
@@ -1279,4 +1279,10 @@ Mach dich bereit, deine unvergesslichsten musikalischen Momente noch einmal zu e
     <string name="cover_type_audio_cassette">Audio cassette</string>
     <string name="cover_type_audio_cassette_with_cover">Audio cassette with cover</string>
     <string name="cover_type_turntable">Turntable</string>
+    <string name="synchronized_alternative_word_by_word_lyrics">alternative synced word by word lyrics</string>
+    <string name="lyrics_type">Lyrics type</string>
+    <string name="synchronized_karaoke_lyrics">syncronized karaoke lyrics</string>
+    <string name="aa_show_top_songs">Show top songs</string>
+    <string name="aa_show_all_songs">Show all songs</string>
+    <string name="all_songs">Tutti i brani</string>
 </resources>
