@@ -37,6 +37,8 @@ import it.fast4x.riplay.extensions.preferences.showGridAAKey
 import it.fast4x.riplay.extensions.preferences.showInLibraryAAKey
 import it.fast4x.riplay.extensions.preferences.showMonthlyPlaylistsAAKey
 import it.fast4x.riplay.extensions.preferences.showOnDeviceAAKey
+import it.fast4x.riplay.extensions.preferences.showPinnedAAKey
+import it.fast4x.riplay.extensions.preferences.showPodcastAAKey
 import it.fast4x.riplay.extensions.preferences.showSearchTabKey
 import it.fast4x.riplay.extensions.preferences.showStatsInNavbarKey
 import it.fast4x.riplay.extensions.preferences.showShuffleSongsAAKey
@@ -101,6 +103,8 @@ fun showInLibraryAA() = appContext().preferences.getBoolean(showInLibraryAAKey, 
 fun showFavoritesSongsAA() = appContext().preferences.getBoolean(showFavoritesSongsAAKey, true)
 fun showTopSongstAA() = appContext().preferences.getBoolean(showTopSongsAAKey, true)
 fun showAllSongstAA() = appContext().preferences.getBoolean(showAllSongsAAKey, true)
+fun showPodcastAA() = appContext().preferences.getBoolean(showPodcastAAKey, true)
+fun showPinnedAA() = appContext().preferences.getBoolean(showPinnedAAKey, true)
 fun showGridAA() = appContext().preferences.getBoolean(showGridAAKey, true)
 
 

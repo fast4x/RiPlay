@@ -5,6 +5,9 @@ import android.content.ContentResolver
 import android.content.Context
 import android.content.ServiceConnection
 import android.content.SharedPreferences
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
 import android.os.IBinder
@@ -13,6 +16,7 @@ import android.support.v4.media.MediaDescriptionCompat
 import androidx.annotation.DrawableRes
 import androidx.annotation.OptIn
 import androidx.compose.ui.util.fastFilter
+import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import androidx.core.os.bundleOf
 import androidx.media.MediaBrowserServiceCompat
@@ -64,11 +68,12 @@ import it.fast4x.riplay.utils.asSong
 import it.fast4x.riplay.utils.getTitleMonthlyPlaylist
 import it.fast4x.riplay.utils.intent
 import it.fast4x.riplay.utils.showAllSongstAA
-import it.fast4x.riplay.utils.showFavoritesSongsAA
 import it.fast4x.riplay.utils.showGridAA
 import it.fast4x.riplay.utils.showInLibraryAA
 import it.fast4x.riplay.utils.showMonthlyPlaylistsAA
 import it.fast4x.riplay.utils.showOnDeviceAA
+import it.fast4x.riplay.utils.showPinnedAA
+import it.fast4x.riplay.utils.showPodcastAA
 import it.fast4x.riplay.utils.showTopSongstAA
 import it.fast4x.riplay.utils.shuffleSongsAAEnabled
 import kotlinx.coroutines.Dispatchers
@@ -395,11 +400,16 @@ class PlayerMediaBrowserService : MediaBrowserServiceCompat(),
                                 .map { it.asCleanMediaItem }
                                 .toMutableList()
                                 .apply {
-                                    add(0, playlistsInLibraryBrowserMediaItem)
-                                    add(1, playlistsPodcastBrowserMediaItem)
-                                    add(2, playlistsPinnedBrowserMediaItem)
-                                    add(3, playlistsMonthlyBrowserMediaItem)
-                                    add(4, playlistsOnDeviceBrowserMediaItem)
+                                    if (showInLibraryAA())
+                                        add(0, playlistsInLibraryBrowserMediaItem)
+                                    if (showPodcastAA())
+                                        add(1, playlistsPodcastBrowserMediaItem)
+                                    if (showPinnedAA())
+                                        add(2, playlistsPinnedBrowserMediaItem)
+                                    if (showMonthlyPlaylistsAA())
+                                        add(3, playlistsMonthlyBrowserMediaItem)
+                                    if (showOnDeviceAA())
+                                        add(4, playlistsOnDeviceBrowserMediaItem)
                                 }
                         } else {
                             Database
@@ -826,14 +836,6 @@ class PlayerMediaBrowserService : MediaBrowserServiceCompat(),
         }
     }
 
-    private fun uriFor(@DrawableRes id: Int) = Uri.Builder()
-        .scheme(ContentResolver.SCHEME_ANDROID_RESOURCE)
-        .authority(resources.getResourcePackageName(id))
-        .appendPath(resources.getResourceTypeName(id))
-        .appendPath(resources.getResourceEntryName(id))
-        .build()
-
-
     private val Song.asBrowserMediaItem
         inline get() = MediaItem(
             MediaDescriptionCompat.Builder()
@@ -845,20 +847,39 @@ class PlayerMediaBrowserService : MediaBrowserServiceCompat(),
             MediaItem.FLAG_PLAYABLE
         )
 
-    private fun PlaylistPreview.asBrowserMediaItem(thumbnailUrls: List<String?>, onDevice: Boolean? = false) =
-        MediaItem(
+    private fun PlaylistPreview.asBrowserMediaItem(thumbnailUrls: List<String?>, onDevice: Boolean? = false): MediaItem {
+        return MediaItem(
             MediaDescriptionCompat.Builder()
-                .setMediaId(if (onDevice == false) MediaId.forPlaylist(playlist.id) else MediaId.forPlaylistOnDevice(folder ?: ""))
-                .setTitle(if (playlist.name.startsWith(PINNED_PREFIX)) playlist.name.replace(PINNED_PREFIX,"0:",true) else
-                    if (playlist.name.startsWith(MONTHLY_PREFIX)) playlist.name.replace(
-                        MONTHLY_PREFIX,"1:",true) else playlist.name.removePrefix())
-                .setSubtitle("$songCount ${(this@PlayerMediaBrowserService as Context).resources.getString(R.string.songs)}")
+                .setMediaId(
+                    if (onDevice == false) MediaId.forPlaylist(playlist.id) else MediaId.forPlaylistOnDevice(
+                        folder ?: ""
+                    )
+                )
+                .setTitle(
+                    if (playlist.name.startsWith(PINNED_PREFIX)) playlist.name.replace(
+                        PINNED_PREFIX,
+                        "0:",
+                        true
+                    ) else
+                        if (playlist.name.startsWith(MONTHLY_PREFIX)) playlist.name.replace(
+                            MONTHLY_PREFIX, "1:", true
+                        ) else playlist.name.removePrefix()
+                )
+                .setSubtitle(
+                    "$songCount ${
+                        (this@PlayerMediaBrowserService as Context).resources.getString(
+                            R.string.songs
+                        )
+                    }"
+                )
                 .setIconUri(
                     if (playlist.browseId?.trim() == "LM") "https://www.gstatic.com/youtube/media/ytm/images/pbg/liked-music-@1200.png".toUri()
                     else {
-                        uriFor(
-                            if (playlist.name.startsWith(PINNED_PREFIX)) R.drawable.pin else
-                                if (playlist.name.startsWith(MONTHLY_PREFIX)) R.drawable.stat_month else R.drawable.playlist
+                        uriFor(when {
+                                playlist.name.startsWith(PINNED_PREFIX) -> R.drawable.pin
+                                playlist.name.startsWith(MONTHLY_PREFIX) -> R.drawable.stat_month
+                                else -> R.drawable.playlist
+                            }
                         )
                     }
                 )
@@ -874,6 +895,7 @@ class PlayerMediaBrowserService : MediaBrowserServiceCompat(),
                 .build(),
             MediaItem.FLAG_BROWSABLE
         )
+    }
 
     private val PlaylistPreview.asBrowserMediaItem
         inline get() = MediaItem(
@@ -1160,6 +1182,34 @@ class PlayerMediaBrowserService : MediaBrowserServiceCompat(),
                 .build(),
             MediaItem.FLAG_BROWSABLE
         )
+
+    private fun uriFor(@DrawableRes id: Int) = Uri.Builder()
+        .scheme(ContentResolver.SCHEME_ANDROID_RESOURCE)
+        .authority(resources.getResourcePackageName(id))
+        .appendPath(resources.getResourceTypeName(id))
+        .appendPath(resources.getResourceEntryName(id))
+        .build()
+
+    // Maybe usefull for the future
+    private fun getTintedBitmapFromDrawable(context: Context, drawableResId: Int, color: Int): Bitmap? {
+
+        val drawable = ContextCompat.getDrawable(context, drawableResId) ?: return null
+
+        drawable.mutate()
+        drawable.setTint(color)
+
+        val bitmap = Bitmap.createBitmap(
+            drawable.intrinsicWidth,
+            drawable.intrinsicHeight,
+            Bitmap.Config.ARGB_8888
+        )
+
+        val canvas = Canvas(bitmap)
+        drawable.setBounds(0, 0, canvas.width, canvas.height)
+        drawable.draw(canvas)
+
+        return bitmap
+    }
 
     fun reloadPlaylist(){
         notifyChildrenChanged(MediaId.PLAYLISTS)

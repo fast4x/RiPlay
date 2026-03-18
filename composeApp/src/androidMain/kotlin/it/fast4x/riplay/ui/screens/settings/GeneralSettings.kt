@@ -164,6 +164,8 @@ import it.fast4x.riplay.extensions.preferences.showGridAAKey
 import it.fast4x.riplay.extensions.preferences.showInLibraryAAKey
 import it.fast4x.riplay.extensions.preferences.showMonthlyPlaylistsAAKey
 import it.fast4x.riplay.extensions.preferences.showOnDeviceAAKey
+import it.fast4x.riplay.extensions.preferences.showPinnedAAKey
+import it.fast4x.riplay.extensions.preferences.showPodcastAAKey
 import it.fast4x.riplay.extensions.preferences.showShuffleSongsAAKey
 import it.fast4x.riplay.extensions.preferences.showTopSongsAAKey
 import it.fast4x.riplay.service.PlayerMediaBrowserService
@@ -345,6 +347,8 @@ fun GeneralSettings(
     var showFavoritesSongsAA by rememberPreference(showFavoritesSongsAAKey, true)
     var showTopSongsAA by rememberPreference(showTopSongsAAKey, true)
     var showAllSongsAA by rememberPreference(showAllSongsAAKey, true)
+    var showPodcastAA by rememberPreference(showPodcastAAKey, true)
+    var showPinnedAA by rememberPreference(showPinnedAAKey, true)
     var showGridAA by rememberPreference(showGridAAKey, true)
 
     var isEnabledVoiceInput by rememberPreference(
@@ -1883,6 +1887,30 @@ fun GeneralSettings(
                                     text = "", //stringResource(R.string.aa_info_show_monthly_playlists_in_playlists_screen),
                                     isChecked = showMonthlyPlaylistsAA,
                                     onCheckedChange = { showMonthlyPlaylistsAA = it }
+                                )
+
+                            if (search.input.isBlank() || stringResource(R.string.aa_show_podcast_playlists).contains(
+                                    search.input,
+                                    true
+                                )
+                            )
+                                SwitchSettingEntry(
+                                    title = stringResource(R.string.aa_show_podcast_playlists),
+                                    text = "", //stringResource(R.string.aa_info_show_monthly_playlists_in_playlists_screen),
+                                    isChecked = showPodcastAA,
+                                    onCheckedChange = { showPodcastAA = it }
+                                )
+
+                            if (search.input.isBlank() || stringResource(R.string.aa_show_pinned_playlists).contains(
+                                    search.input,
+                                    true
+                                )
+                            )
+                                SwitchSettingEntry(
+                                    title = stringResource(R.string.aa_show_pinned_playlists),
+                                    text = "", //stringResource(R.string.aa_info_show_monthly_playlists_in_playlists_screen),
+                                    isChecked = showPinnedAA,
+                                    onCheckedChange = { showPinnedAA = it }
                                 )
 
                             if (search.input.isBlank() || stringResource(R.string.aa_show_in_library).contains(

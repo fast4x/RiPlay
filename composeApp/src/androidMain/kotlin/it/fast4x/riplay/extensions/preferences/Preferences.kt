@@ -434,6 +434,8 @@ const val stateIsPlaying = "stateIsPlaying"
 const val isShowingSynchronizedWordByWordLyricsKey = "isShowingSynchronizedWordByWorkLyrics"
 
 const val showAllSongsAAKey = "showAllSongsAA"
+const val showPodcastAAKey = "showPodcastAA"
+const val showPinnedAAKey = "showPinnedAA"
 
 inline fun <reified T : Enum<T>> SharedPreferences.getEnum(
     key: String,

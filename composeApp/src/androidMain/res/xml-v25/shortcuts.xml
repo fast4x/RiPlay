@@ -46,7 +46,7 @@
     <shortcut
         android:shortcutId="library"
         android:enabled="true"
-        android:icon="@drawable/music_library"
+        android:icon="@drawable/music_library_dynamic"
         android:shortcutShortLabel="@string/playlists">
         <intent
             android:targetClass="it.fast4x.riplay.MainActivity"
