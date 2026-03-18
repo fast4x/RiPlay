@@ -10,7 +10,7 @@ android {
         minSdk = 24
     }
 
-    namespace = "com.pierfrancescosoffritti.androidyoutubeplayer"
+    namespace = "it.fast4x.androidyoutubeplayer"
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_21
@@ -25,4 +25,5 @@ sourceSets.all {
 
 dependencies {
     implementation(libs.appcompat)
+    //implementation(libs.geckoView)
 }

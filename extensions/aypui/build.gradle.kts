@@ -10,7 +10,7 @@ android {
         minSdk = 24
     }
 
-    namespace = "com.pierfrancescosoffritti.androidyoutubeplayer.core.customui"
+    namespace = "it.fast4x.androidyoutubeplayer.core.customui"
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_21
