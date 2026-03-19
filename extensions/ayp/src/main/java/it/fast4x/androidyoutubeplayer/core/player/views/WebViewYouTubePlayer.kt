@@ -25,6 +25,7 @@ import it.fast4x.androidyoutubeplayer.core.player.toFloat
 import java.io.BufferedReader
 import java.io.InputStream
 import java.io.InputStreamReader
+import androidx.core.graphics.createBitmap
 
 
 private class YouTubePlayerImpl(
@@ -81,23 +82,25 @@ private class YouTubePlayerImpl(
   }
 }
 
+/*
 internal object FakeWebViewYouTubeListener : FullscreenListener {
   override fun onEnterFullscreen(fullscreenView: View, exitFullscreen: () -> Unit) {}
   override fun onExitFullscreen() {}
 }
+ */
 
 /**
  * WebView implementation of [YouTubePlayer]. The player runs inside the WebView, using the IFrame Player API.
  */
 internal class WebViewYouTubePlayer constructor(
   context: Context,
-  private val listener: FullscreenListener,
+  //private val listener: FullscreenListener,
   attrs: AttributeSet? = null,
   defStyleAttr: Int = 0
 ) : WebView(context, attrs, defStyleAttr), YouTubePlayerBridge.YouTubePlayerBridgeCallbacks {
 
   /** Constructor used by tools */
-  constructor(context: Context) : this(context, FakeWebViewYouTubeListener)
+  //constructor(context: Context) : this(context, FakeWebViewYouTubeListener)
 
   private val youTubePlayerCallbacks = YouTubePlayerCallbacks()
   private val _youTubePlayer = YouTubePlayerImpl(this, youTubePlayerCallbacks)
@@ -146,6 +149,7 @@ internal class WebViewYouTubePlayer constructor(
       /*
     webChromeClient = object : WebChromeClient() {
 
+        /*
       override fun onShowCustomView(view: View, callback: CustomViewCallback) {
         super.onShowCustomView(view, callback)
         listener.onEnterFullscreen(view) { callback.onCustomViewHidden() }
@@ -155,15 +159,17 @@ internal class WebViewYouTubePlayer constructor(
         super.onHideCustomView()
         listener.onExitFullscreen()
       }
+         */
 
-      override fun getDefaultVideoPoster(): Bitmap? {
+      override fun getDefaultVideoPoster(): Bitmap {
         val result = super.getDefaultVideoPoster()
         // if the video's thumbnail is not in memory, show a black screen
-        return result ?: Bitmap.createBitmap(1, 1, Bitmap.Config.RGB_565)
+        return result ?: createBitmap(1, 1, Bitmap.Config.RGB_565)
       }
 
     }
        */
+
 
   }
 

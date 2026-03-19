@@ -21,14 +21,16 @@ import it.fast4x.androidyoutubeplayer.core.player.utils.PlaybackResumer
  */
 internal class LegacyYouTubePlayerView(
   context: Context,
-  listener: FullscreenListener,
+  //listener: FullscreenListener,
   attrs: AttributeSet? = null,
   defStyleAttr: Int = 0
 ) : SixteenByNineFrameLayout(context, attrs, defStyleAttr) {
 
-  constructor(context: Context) : this(context, FakeWebViewYouTubeListener, null, 0)
+  //constructor(context: Context) : this(context, FakeWebViewYouTubeListener, null, 0)
+  constructor(context: Context) : this(context, null, 0)
 
-  internal val webViewYouTubePlayer = WebViewYouTubePlayer(context, listener)
+  //internal val webViewYouTubePlayer = WebViewYouTubePlayer(context, listener)
+  internal val webViewYouTubePlayer = WebViewYouTubePlayer(context)
 
   private val networkObserver = NetworkObserver(context.applicationContext)
   private val playbackResumer = PlaybackResumer()

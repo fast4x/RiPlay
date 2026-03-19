@@ -32,6 +32,7 @@ class YouTubePlayerView(
   constructor(context: Context) : this(context, null, 0)
   constructor(context: Context, attrs: AttributeSet? = null) : this(context, attrs, 0)
 
+  /*
   private val fullscreenListeners = mutableListOf<FullscreenListener>()
 
   /**
@@ -53,8 +54,10 @@ class YouTubePlayerView(
       fullscreenListeners.forEach { it.onExitFullscreen() }
     }
   }
+   */
 
-  private val legacyTubePlayerView = LegacyYouTubePlayerView(context, webViewFullscreenListener)
+  //private val legacyTubePlayerView = LegacyYouTubePlayerView(context, webViewFullscreenListener)
+  private val legacyTubePlayerView = LegacyYouTubePlayerView(context)
 
   // this is a publicly accessible API
   var enableAutomaticInitialization: Boolean
@@ -215,9 +218,9 @@ class YouTubePlayerView(
 
   fun removeYouTubePlayerListener(youTubePlayerListener: YouTubePlayerListener) = legacyTubePlayerView.webViewYouTubePlayer.removeListener(youTubePlayerListener)
 
-  fun addFullscreenListener(fullscreenListener: FullscreenListener) = fullscreenListeners.add(fullscreenListener)
+  //fun addFullscreenListener(fullscreenListener: FullscreenListener) = fullscreenListeners.add(fullscreenListener)
 
-  fun removeFullscreenListener(fullscreenListener: FullscreenListener) = fullscreenListeners.remove(fullscreenListener)
+  //fun removeFullscreenListener(fullscreenListener: FullscreenListener) = fullscreenListeners.remove(fullscreenListener)
 
   /**
    * Convenience method to set the [YouTubePlayerView] width and height to match parent.
