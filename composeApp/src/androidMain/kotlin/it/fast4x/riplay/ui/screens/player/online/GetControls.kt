@@ -16,7 +16,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.media3.common.MediaItem
 import androidx.media3.common.util.UnstableApi
-import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.PlayerConstants
+import it.fast4x.androidyoutubeplayer.core.player.PlayerConstants
 import it.fast4x.riplay.enums.PlayerBackgroundColors
 import it.fast4x.riplay.enums.PlayerControlsType
 import it.fast4x.riplay.enums.PlayerPlayButtonType

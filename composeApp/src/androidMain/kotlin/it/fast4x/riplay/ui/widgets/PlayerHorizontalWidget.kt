@@ -39,7 +39,6 @@ import androidx.glance.layout.height
 import androidx.glance.layout.padding
 import androidx.glance.layout.width
 import androidx.glance.text.Text
-import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.PlayerConstants
 import it.fast4x.riplay.MainActivity
 import it.fast4x.riplay.R
 import it.fast4x.riplay.service.PlayerService

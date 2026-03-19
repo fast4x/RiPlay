@@ -24,7 +24,6 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
-import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.PlayerConstants
 import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.enums.MusicAnimationType
 import it.fast4x.riplay.utils.DisposableListener

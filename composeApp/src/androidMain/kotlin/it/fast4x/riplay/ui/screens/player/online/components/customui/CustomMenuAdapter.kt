@@ -8,8 +8,8 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
-import com.pierfrancescosoffritti.androidyoutubeplayer.core.customui.R
-import com.pierfrancescosoffritti.androidyoutubeplayer.core.customui.menu.MenuItem
+import it.fast4x.androidyoutubeplayer.core.customui.R
+import it.fast4x.androidyoutubeplayer.core.customui.menu.MenuItem
 
 internal class CustomMenuAdapter(private val context: Context, private val menuItems: List<MenuItem>) :
     RecyclerView.Adapter<CustomMenuAdapter.ViewHolder>() {

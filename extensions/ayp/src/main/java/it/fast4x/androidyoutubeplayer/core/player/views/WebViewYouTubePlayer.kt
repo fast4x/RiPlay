@@ -142,6 +142,8 @@ internal class WebViewYouTubePlayer constructor(
 
     loadDataWithBaseURL(playerOptions.getOrigin(), htmlPage, "text/html", "utf-8", null)
 
+      // TODO MAYBE NOT NEEDED
+      /*
     webChromeClient = object : WebChromeClient() {
 
       override fun onShowCustomView(view: View, callback: CustomViewCallback) {
@@ -159,9 +161,9 @@ internal class WebViewYouTubePlayer constructor(
         // if the video's thumbnail is not in memory, show a black screen
         return result ?: Bitmap.createBitmap(1, 1, Bitmap.Config.RGB_565)
       }
+
     }
-
-
+       */
 
   }
 

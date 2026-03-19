@@ -1,6 +1,6 @@
 package it.fast4x.riplay.extensions.ritune.improved.models
 
-import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.PlayerConstants
+import it.fast4x.androidyoutubeplayer.core.player.PlayerConstants
 import kotlinx.serialization.Serializable
 
 @Serializable

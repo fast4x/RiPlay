@@ -10,9 +10,9 @@ import android.view.WindowManager
 import android.widget.PopupWindow
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.pierfrancescosoffritti.androidyoutubeplayer.core.customui.R
-import com.pierfrancescosoffritti.androidyoutubeplayer.core.customui.menu.MenuItem
-import com.pierfrancescosoffritti.androidyoutubeplayer.core.customui.menu.YouTubePlayerMenu
+import it.fast4x.androidyoutubeplayer.core.customui.R
+import it.fast4x.androidyoutubeplayer.core.customui.menu.MenuItem
+import it.fast4x.androidyoutubeplayer.core.customui.menu.YouTubePlayerMenu
 
 internal class CustomDefaultYouTubePlayerMenu(private val context: Context) : YouTubePlayerMenu {
     private val menuItems = ArrayList<MenuItem>()

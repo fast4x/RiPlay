@@ -35,7 +35,7 @@ import androidx.compose.ui.unit.dp
 import androidx.media3.common.MediaItem
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
-import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.PlayerConstants
+import it.fast4x.androidyoutubeplayer.core.player.PlayerConstants
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.enums.ButtonState
 import it.fast4x.riplay.enums.PlayerControlsType

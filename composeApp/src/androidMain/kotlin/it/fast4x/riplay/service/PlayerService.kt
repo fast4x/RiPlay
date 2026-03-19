@@ -72,11 +72,11 @@ import androidx.media3.exoplayer.audio.SilenceSkippingAudioProcessor
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import androidx.media3.exoplayer.source.ShuffleOrder.DefaultShuffleOrder
 import androidx.media3.extractor.DefaultExtractorsFactory
-import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.PlayerConstants
-import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
-import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.AbstractYouTubePlayerListener
-import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.options.IFramePlayerOptions
-import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
+import it.fast4x.androidyoutubeplayer.core.player.PlayerConstants
+import it.fast4x.androidyoutubeplayer.core.player.YouTubePlayer
+import it.fast4x.androidyoutubeplayer.core.player.listeners.AbstractYouTubePlayerListener
+import it.fast4x.androidyoutubeplayer.core.player.options.IFramePlayerOptions
+import it.fast4x.androidyoutubeplayer.core.player.views.YouTubePlayerView
 import it.fast4x.environment.Environment
 import it.fast4x.environment.models.NavigationEndpoint
 import it.fast4x.environment.models.bodies.SearchBody
@@ -580,6 +580,7 @@ class PlayerService : Service(),
                     //Timber.d("PlayerService onCreate onlineListenedDurationMs $onlineListenedDurationMs")
 
                     //Workaround to fix volume bug in webview in some devices. Same for youtube music app
+                    // todo maybe not works
                     whatchDogVolume += 1
                     if (whatchDogVolume > 2) {
                         _internalOnlinePlayer.value?.setVolume(getSystemMediaVolume())

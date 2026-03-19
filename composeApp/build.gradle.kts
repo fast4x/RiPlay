@@ -262,8 +262,8 @@ kotlin {
             implementation(libs.math3)
             implementation(libs.toasty)
             implementation(libs.haze)
-            implementation(libs.androidyoutubeplayer) // replaced by project ayp
-            implementation(libs.androidyoutubeplayer.custom.ui) // replaced by project aypui
+            //implementation(libs.androidyoutubeplayer) // replaced by project ayp
+            //implementation(libs.androidyoutubeplayer.custom.ui) // replaced by project aypui
             implementation(project(":ayp"))
             implementation(project(":aypui"))
             implementation(libs.glance.widgets)
@@ -637,12 +637,6 @@ android {
             buildConfigField("String", "BUILD_VARIANT", "\"foss\"")
         }
     }
-
-//    tasks.withType<KotlinCompile> {
-//        if (name.substringAfter("compile").lowercase().startsWith("fdroid")) {
-//            exclude("**/extensions/chromecast/**")
-//        }
-//    }
 
     applicationVariants.all {
         val variant = this

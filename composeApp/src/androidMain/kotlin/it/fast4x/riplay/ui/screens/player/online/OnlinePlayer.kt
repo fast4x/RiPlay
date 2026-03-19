@@ -153,7 +153,7 @@ import com.mikepenz.hypnoticcanvas.shaders.MesmerizingLens
 import com.mikepenz.hypnoticcanvas.shaders.OilFlow
 import com.mikepenz.hypnoticcanvas.shaders.PurpleLiquid
 import com.mikepenz.hypnoticcanvas.shaders.Stage
-import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.PlayerConstants
+import it.fast4x.androidyoutubeplayer.core.player.PlayerConstants
 import dev.chrisbanes.haze.HazeDefaults
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.haze

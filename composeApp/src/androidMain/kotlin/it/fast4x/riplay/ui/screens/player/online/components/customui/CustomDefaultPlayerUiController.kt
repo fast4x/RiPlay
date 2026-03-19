@@ -1,7 +1,7 @@
 package it.fast4x.riplay.ui.screens.player.online.components.customui
 
 import android.content.Context
-import com.pierfrancescosoffritti.androidyoutubeplayer.core.customui.PlayerUiController
+import it.fast4x.androidyoutubeplayer.core.customui.PlayerUiController
 
 import it.fast4x.riplay.R
 import android.content.Intent
@@ -14,14 +14,14 @@ import android.widget.LinearLayout
 import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.core.content.ContextCompat
-import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.PlayerConstants
-import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
-import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.AbstractYouTubePlayerListener
-import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
-import com.pierfrancescosoffritti.androidyoutubeplayer.core.customui.menu.YouTubePlayerMenu
-import com.pierfrancescosoffritti.androidyoutubeplayer.core.customui.utils.FadeViewHelper
-import com.pierfrancescosoffritti.androidyoutubeplayer.core.customui.views.YouTubePlayerSeekBar
-import com.pierfrancescosoffritti.androidyoutubeplayer.core.customui.views.YouTubePlayerSeekBarListener
+import it.fast4x.androidyoutubeplayer.core.player.PlayerConstants
+import it.fast4x.androidyoutubeplayer.core.player.YouTubePlayer
+import it.fast4x.androidyoutubeplayer.core.player.listeners.AbstractYouTubePlayerListener
+import it.fast4x.androidyoutubeplayer.core.player.views.YouTubePlayerView
+import it.fast4x.androidyoutubeplayer.core.customui.menu.YouTubePlayerMenu
+import it.fast4x.androidyoutubeplayer.core.customui.utils.FadeViewHelper
+import it.fast4x.androidyoutubeplayer.core.customui.views.YouTubePlayerSeekBar
+import it.fast4x.androidyoutubeplayer.core.customui.views.YouTubePlayerSeekBarListener
 
 class CustomDefaultPlayerUiController(
     context: Context,
