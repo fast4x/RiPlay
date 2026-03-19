@@ -658,6 +658,7 @@ class PlayerService : Service(),
             } else {
                 _internalOnlinePlayer.value?.pause()
                 _internalOnlinePlayer.value?.cueVideo(mediaId, position.div(1000).toFloat())
+                //_internalOnlinePlayer.value?.setVolume(getSystemMediaVolume())
                 Timber.d("PlayerService restoreStateIfNeeded ONLINE $mediaId position $position")
             }
             statePersistence.clearState()
@@ -1135,6 +1136,7 @@ class PlayerService : Service(),
                                         localMediaItem?.let { item ->
                                             if (currentPlayer != null) {
                                                 Timber.d("PlayerService onlinePlayerView: Try reload song/video")
+                                                currentPlayer.pause()
                                                 currentPlayer.cueVideo(item.mediaId, playFromSecond)
                                             } else {
                                                 Timber.w("PlayerService onlinePlayerView: Recovery - _internalOnlinePlayer is not defined, impossible to continue")
@@ -1247,8 +1249,10 @@ class PlayerService : Service(),
                             )
 
                         localMediaItem?.let {
-                            if (!GlobalSharedData.riTuneCastActive)
+                            if (!GlobalSharedData.riTuneCastActive) {
+                                youTubePlayer.pause()
                                 youTubePlayer.cueVideo(it.mediaId, playFromSecond)
+                            }
                             else coroutineScope.launch {
                                     riTuneClient.sendCommand(
                                         RiTuneRemoteCommand(
@@ -1644,8 +1648,10 @@ class PlayerService : Service(),
 
             if (!it.isLocal){
 
-                if (!GlobalSharedData.riTuneCastActive)
+                if (!GlobalSharedData.riTuneCastActive) {
+                    _internalOnlinePlayer.value?.pause()
                     _internalOnlinePlayer.value?.cueVideo(it.mediaId, playFromSecond)
+                }
                 else
                     coroutineScope.launch {
                         riTuneClient.sendCommand(
@@ -1789,9 +1795,10 @@ class PlayerService : Service(),
                     Timber.w("PlayerService maybeRecoverPlaybackError: try to recover player error")
                     localMediaItem?.let {
                         if (!GlobalSharedData.riTuneCastActive) {
+                            _internalOnlinePlayer.value?.pause()
                             _internalOnlinePlayer.value?.cueVideo(it.mediaId, playFromSecond)
 
-                            _internalOnlinePlayer.value?.setVolume(getSystemMediaVolume())
+                            //_internalOnlinePlayer.value?.setVolume(getSystemMediaVolume())
                         } else {
                             coroutineScope.launch {
                                 riTuneClient.sendCommand(
