@@ -1279,10 +1279,10 @@ Volume BAS : titre précédent</string>
     <string name="cover_type_audio_cassette">Cassette audio</string>
     <string name="cover_type_audio_cassette_with_cover">Cassette audio avec pochette</string>
     <string name="cover_type_turntable">Platine vinyle</string>
-    <string name="synchronized_alternative_word_by_word_lyrics">alternative synced word by word lyrics</string>
-    <string name="lyrics_type">Lyrics type</string>
-    <string name="synchronized_karaoke_lyrics">syncronized karaoke lyrics</string>
-    <string name="aa_show_top_songs">Show top songs</string>
-    <string name="aa_show_all_songs">Show all songs</string>
-    <string name="all_songs">Tutti i brani</string>
+    <string name="synchronized_alternative_word_by_word_lyrics">paroles alternatives synchronisées mot à mot</string>
+    <string name="lyrics_type">Type de paroles</string>
+    <string name="synchronized_karaoke_lyrics">paroles de karaoké synchronisées</string>
+    <string name="aa_show_top_songs">Afficher les titres les plus populaires</string>
+    <string name="aa_show_all_songs">Afficher tous les titres</string>
+    <string name="all_songs">Tous les titres</string>
 </resources>
