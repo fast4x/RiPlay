@@ -194,6 +194,7 @@ import it.fast4x.riplay.extensions.ritune.improved.models.RiTunePlayerState
 import it.fast4x.riplay.extensions.ritune.improved.models.RiTuneRemoteCommand
 import it.fast4x.riplay.service.helpers.BluetoothConnectReceiver
 import it.fast4x.riplay.service.helpers.EqualizerHelper
+import it.fast4x.riplay.ui.screens.settings.isYtLoggedIn
 import it.fast4x.riplay.utils.GlobalSharedData
 import it.fast4x.riplay.utils.LOCAL_KEY_PREFIX
 import it.fast4x.riplay.utils.isAtLeastAndroid11
@@ -1234,8 +1235,12 @@ class PlayerService : Service(),
 
                     Timber.e("PlayerService: onError $error")
                     val errorString = when (error) {
-                        PlayerConstants.PlayerError.VIDEO_NOT_PLAYABLE_IN_EMBEDDED_PLAYER -> "Content not playable, recovery in progress, try to click play but if the error persists try to log in"
-                        PlayerConstants.PlayerError.VIDEO_NOT_FOUND -> "Content not found, perhaps no longer available"
+                        PlayerConstants.PlayerError.VIDEO_NOT_PLAYABLE_IN_EMBEDDED_PLAYER -> when (isYtLoggedIn()) {
+                            false -> "Sorry, content unavailable, try to login next time"
+                            true -> "Sorry, content unavailable"
+                        }
+
+                        PlayerConstants.PlayerError.VIDEO_NOT_FOUND -> "Sorry, content no longer available"
                         PlayerConstants.PlayerError.INVALID_PARAMETER_IN_REQUEST -> "Invalid parameters in request"
                         else -> null
                     }
@@ -1247,10 +1252,12 @@ class PlayerService : Service(),
                                 PopupType.Warning,
                                 context = this@PlayerService
                             )
+                            handlePlayNext()
 
+                        //}
+                        /*
                         localMediaItem?.let {
                             if (!GlobalSharedData.riTuneCastActive) {
-                                youTubePlayer.pause()
                                 youTubePlayer.cueVideo(it.mediaId, playFromSecond)
                             }
                             else coroutineScope.launch {
@@ -1263,6 +1270,7 @@ class PlayerService : Service(),
                                     )
                                 }
                         }
+                         */
 
                         youTubePlayer.setVolume(getSystemMediaVolume())
                         return
