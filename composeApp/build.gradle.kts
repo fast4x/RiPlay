@@ -273,7 +273,7 @@ kotlin {
             implementation(libs.hypnoticcanvas.shaders)
             implementation(libs.multidex)
             implementation(libs.jsoup)
-
+            //implementation(libs.mediarouter)
         }
 
     }

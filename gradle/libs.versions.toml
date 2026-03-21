@@ -142,6 +142,7 @@ accompanist = { group = "com.google.accompanist", name = "accompanist-permission
 jsoup = { group = "org.jsoup", name = "jsoup", version.ref = "jsoup"}
 newpipeExt = { module = "com.github.TeamNewPipe:NewPipeExtractor", version.ref = "newpipeExt" }
 recyclerview = { group = "androidx.recyclerview", name = "recyclerview", version.ref = "recyclerview" }
+#mediarouter = { group = "androidx.mediarouter", name = "mediarouter", version.ref = "mediarouter" }
 #geckoView = { group = "org.mozilla.geckoview", name = "geckoview", version.ref = "geckoview" }
 
 [plugins]

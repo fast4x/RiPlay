@@ -2,7 +2,6 @@ package it.fast4x.riplay
 
 import android.Manifest
 import android.annotation.SuppressLint
-import android.app.Activity
 import android.app.ActivityManager
 import android.content.ComponentName
 import android.content.Intent
@@ -21,6 +20,7 @@ import android.os.Build
 import android.os.Bundle
 import android.os.IBinder
 import android.provider.Settings
+import android.view.View
 import android.view.WindowManager
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -55,12 +55,10 @@ import androidx.compose.material3.RippleConfiguration
 import androidx.compose.material3.Surface
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.ripple
-import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -77,7 +75,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
-import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.unit.LayoutDirection
@@ -95,7 +92,6 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavHostController
-import androidx.palette.graphics.Palette
 import coil.imageLoader
 import coil.request.ImageRequest
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
@@ -117,7 +113,6 @@ import it.fast4x.environment.utils.LocalePreferences
 import it.fast4x.environment.utils.ProxyPreferenceItem
 import it.fast4x.environment.utils.ProxyPreferences
 import it.fast4x.riplay.data.Database
-import it.fast4x.riplay.enums.AnimatedGradient
 import it.fast4x.riplay.enums.ColorPaletteMode
 import it.fast4x.riplay.enums.ColorPaletteName
 import it.fast4x.riplay.enums.DnsOverHttpsType
@@ -126,7 +121,6 @@ import it.fast4x.riplay.enums.HomeScreenTabs
 import it.fast4x.riplay.enums.Languages
 import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.enums.PipModule
-import it.fast4x.riplay.enums.PlayerBackgroundColors
 import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.enums.ThumbnailRoundness
 import it.fast4x.riplay.extensions.pip.PipModuleContainer
@@ -135,7 +129,6 @@ import it.fast4x.riplay.extensions.pip.isInPip
 import it.fast4x.riplay.extensions.pip.maybeEnterPip
 import it.fast4x.riplay.extensions.pip.maybeExitPip
 import it.fast4x.riplay.extensions.preferences.UiTypeKey
-import it.fast4x.riplay.extensions.preferences.animatedGradientKey
 import it.fast4x.riplay.extensions.preferences.appIsRunningKey
 import it.fast4x.riplay.extensions.preferences.applyFontPaddingKey
 import it.fast4x.riplay.extensions.preferences.backgroundProgressKey
@@ -239,6 +232,9 @@ import it.fast4x.riplay.utils.resize
 import it.fast4x.riplay.utils.setDefaultPalette
 import it.fast4x.riplay.commonutils.thumbnail
 import it.fast4x.riplay.enums.CheckUpdateState
+import it.fast4x.riplay.extensions.cast.CastScreen
+import it.fast4x.riplay.extensions.cast.MiracastPresentation
+import it.fast4x.riplay.extensions.cast.models.CastContent
 import it.fast4x.riplay.extensions.databasebackup.BackupViewModel
 import it.fast4x.riplay.extensions.databasebackup.DatabaseBackupManager
 import it.fast4x.riplay.extensions.htmlreader.shazamSongInfoExtractor
@@ -248,7 +244,6 @@ import it.fast4x.riplay.extensions.preferences.resumeOrPausePlaybackWhenDeviceKe
 import it.fast4x.riplay.extensions.preferences.showSnowfallEffectKey
 import it.fast4x.riplay.service.PlayerState
 import it.fast4x.riplay.ui.components.Snowfall
-import it.fast4x.riplay.ui.components.themed.Turntable
 import it.fast4x.riplay.ui.screens.player.online.components.core.OnlinePlayerView
 import it.fast4x.riplay.ui.screens.player.unified.UnifiedMiniPlayer
 import it.fast4x.riplay.ui.screens.player.unified.UnifiedPlayer
@@ -328,6 +323,33 @@ class MainActivity :
 
     private var isclosebackgroundPlayerEnabled = false
 
+    /*
+    private var mediaRouter: MediaRouter? = null
+    private var presentation: MiracastPresentation? = null
+    private val mediaRouteSelector = MediaRouteSelector.Builder()
+        .addControlCategory(MediaControlIntent.CATEGORY_LIVE_VIDEO) // Per Miracast
+        .addControlCategory(MediaControlIntent.CATEGORY_REMOTE_PLAYBACK) // Per Google Cast
+        .build()
+    // Stato del contenuto attualmente in casting
+    private val currentCastContent = mutableStateOf<CastContent?>(null)
+    */
+
+    private val audioTaggerViewModel: AudioTagViewModel by viewModels {
+        AudioTagViewModel()
+    }
+
+    private val backupManagerViewModel: BackupViewModel by viewModels {
+        BackupViewModel(DatabaseBackupManager(this, Database), this)
+    }
+
+//    private val globalQueueViewModel: GlobalQueueViewModel by lazy {
+//        ViewModelProvider(AppSharedScope)[GlobalQueueViewModel::class.java]
+//    }
+
+    private val onDeviceViewModel: OnDeviceViewModel by viewModels {
+        OnDeviceViewModel(application)
+    }
+
     private var showAutostartPermissionDialog = false
 
 
@@ -347,24 +369,6 @@ class MainActivity :
                 }
             }
         }
-    }
-
-    private val audioTaggerViewModel: AudioTagViewModel by viewModels {
-        AudioTagViewModel()
-    }
-
-    private val backupManagerViewModel: BackupViewModel by viewModels {
-        BackupViewModel(DatabaseBackupManager(this, Database), this)
-    }
-
-//    private val globalQueueViewModel: GlobalQueueViewModel by lazy {
-//        ViewModelProvider(AppSharedScope)[GlobalQueueViewModel::class.java]
-//    }
-
-
-
-    private val onDeviceViewModel: OnDeviceViewModel by viewModels {
-        OnDeviceViewModel(application)
     }
 
     private fun checkAndRequestStandardPermissions() {
@@ -570,6 +574,8 @@ class MainActivity :
 
         checkAndRequestStandardPermissions()
 
+        //mediaRouter = MediaRouter.getInstance(this)
+
     }
 
 
@@ -642,30 +648,15 @@ class MainActivity :
         Timber.d("MainActivity.onLowMemory")
     }
 
-    override fun onTrimMemory(level: Int) {
-        super.onTrimMemory(level)
-        if (level == TRIM_MEMORY_UI_HIDDEN) {
-            Timber.d("MainActivity.onTrimMemory TRIM_MEMORY_UI_HIDDEN")
-        }
-        if (level == TRIM_MEMORY_RUNNING_LOW) {
-            Timber.d("MainActivity.onTrimMemory TRIM_MEMORY_RUNNING_LOW")
-        }
-        if (level == TRIM_MEMORY_RUNNING_CRITICAL) {
-            Timber.d("MainActivity.onTrimMemory TRIM_MEMORY_RUNNING_CRITICAL")
-        }
-        if (level == TRIM_MEMORY_BACKGROUND) {
-            Timber.d("MainActivity.onTrimMemory TRIM_MEMORY_BACKGROUND")
-        }
-        if (level == TRIM_MEMORY_COMPLETE) {
-            Timber.d("MainActivity.onTrimMemory TRIM_MEMORY_COMPLETE")
-        }
-        if (level == TRIM_MEMORY_MODERATE) {
-            Timber.d("MainActivity.onTrimMemory TRIM_MEMORY_MODERATE")
-        }
-        if (level == TRIM_MEMORY_RUNNING_MODERATE) {
-            Timber.d("MainActivity.onTrimMemory TRIM_MEMORY_RUNNING_MODERATE")
-        }
-    }
+//    override fun onTrimMemory(level: Int) {
+//        super.onTrimMemory(level)
+//        if (level == TRIM_MEMORY_UI_HIDDEN) {
+//            Timber.d("MainActivity.onTrimMemory TRIM_MEMORY_UI_HIDDEN")
+//        }
+//        if (level == TRIM_MEMORY_BACKGROUND) {
+//            Timber.d("MainActivity.onTrimMemory TRIM_MEMORY_BACKGROUND")
+//        }
+//    }
 
 
     override fun onUserLeaveHint() {
@@ -673,33 +664,6 @@ class MainActivity :
         if (
             isPipModeAutoEnabled() && binder?.player?.isPlaying == true
         ) maybeEnterPip()
-    }
-
-//    override fun onConfigurationChanged(newConfig: Configuration) {
-//        super.onConfigurationChanged(newConfig)
-//        //if (newConfig.orientation in intArrayOf(Configuration.ORIENTATION_LANDSCAPE, Configuration.ORIENTATION_PORTRAIT))
-//        Timber.d("MainActivity.onConfigurationChanged newConfig.orientation ${newConfig.orientation}")
-//    }
-
-
-    @Composable
-    fun ThemeApp(
-        isDark: Boolean = false,
-        content: @Composable () -> Unit
-    ) {
-        val view = LocalView.current
-        if (!view.isInEditMode) {
-            SideEffect {
-                (view.context as Activity).window.let { window ->
-                    WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars =
-                        !isDark
-                    WindowCompat.getInsetsController(window, view).isAppearanceLightNavigationBars =
-                        !isDark
-                }
-            }
-
-        }
-        content()
     }
 
     @SuppressLint("UnusedBoxWithConstraintsScope")
@@ -816,16 +780,11 @@ class MainActivity :
                 colorPaletteModeKey,
                 ColorPaletteMode.Dark
             )
-            val isPicthBlack = colorPaletteMode == ColorPaletteMode.PitchBlack
 
             val coroutineScope = rememberCoroutineScope()
             val isSystemInDarkTheme = isSystemInDarkTheme()
             var navController: NavHostController? = null
 
-            var animatedGradient by rememberPreference(
-                animatedGradientKey,
-                AnimatedGradient.Linear
-            )
             var customColor by rememberPreference(customColorKey, Color.Green.hashCode())
             val lightTheme =
                 colorPaletteMode == ColorPaletteMode.Light || (colorPaletteMode == ColorPaletteMode.System && (!isSystemInDarkTheme()))
@@ -958,17 +917,10 @@ class MainActivity :
             }
 
             fun setDynamicPalette(url: String) {
-                val playerBackgroundColors = preferences.getEnum(
-                    playerBackgroundColorsKey,
-                    PlayerBackgroundColors.BlurredCoverColor
-                )
+
                 val colorPaletteName =
                     preferences.getEnum(colorPaletteNameKey, ColorPaletteName.Dynamic)
                 val isDynamicPalette = colorPaletteName == ColorPaletteName.Dynamic
-                val isCoverColor =
-                    playerBackgroundColors == PlayerBackgroundColors.CoverColorGradient ||
-                            playerBackgroundColors == PlayerBackgroundColors.CoverColor ||
-                            animatedGradient == AnimatedGradient.FluidCoverColorGradient
 
                 if (!isDynamicPalette) return
 
@@ -989,12 +941,6 @@ class MainActivity :
 
                     val bitmap = (result.drawable as? BitmapDrawable)?.bitmap
                     if (bitmap != null) {
-                        val palette = Palette
-                            .from(bitmap)
-                            .maximumColorCount(8)
-                            .addFilter(if (isDark) ({ _, hsl -> hsl[0] !in 36f..100f }) else null)
-                            .generate()
-
                         dynamicColorPaletteOf(bitmap, isDark)?.let {
                             withContext(Dispatchers.Main) {
                                 setSystemBarAppearance(it.isDark)
@@ -1008,7 +954,7 @@ class MainActivity :
                                     background4 = Color.Black,
                                     // text = Color.White
                                 ),
-                                typography = appearance.typography.copy(it.text)
+                                typography = appearance.typography.copy(color = it.text)
                             )
                         }
 
@@ -1108,7 +1054,7 @@ class MainActivity :
                                         (binder?.player?.currentMediaItem?.mediaMetadata?.artworkUri.toString().thumbnail(
                                             1200
                                         )
-                                            ?: "").toString()
+                                            ?: "")
                                     artworkUri.let {
                                         if (it.isNotEmpty())
                                             setDynamicPalette(it)
@@ -1228,7 +1174,7 @@ class MainActivity :
                             (binder?.player?.currentMediaItem?.mediaMetadata?.artworkUri.toString().thumbnail(
                                 1200
                             )
-                                ?: "").toString()
+                                ?: "")
                         )
                     }
 
@@ -1349,6 +1295,12 @@ class MainActivity :
                 val playerView = binder?.onlinePlayerView?.collectAsState()
                 onlinePlayerView = playerView?.value
 
+                val castSheetState = rememberBottomSheetState(
+                    dismissedBound = 0.dp,
+                    collapsedBound = 5.dp,
+                    expandedBound = maxHeight
+                )
+
                 val pip = isInPip(
                     onChange = {
                         if (!it || !isPlaying)
@@ -1401,13 +1353,14 @@ class MainActivity :
                             LocalLayoutDirection provides LayoutDirection.Ltr,
                             LocalPlayerSheetState provides localPlayerSheetState,
                             LocalMonetCompat provides localMonet,
-                            //LocalRiTuneDevices provides riTuneDevices.value,
-                            //LocalOnlinePlayerPlayingState provides onlinePlayerPlayingState,
                             LocalSelectedQueue provides selectedQueue.value,
                             LocalAudioTagger provides audioTaggerViewModel,
                             LocalBackupManager provides backupManagerViewModel,
+                            LocalOnDeviceViewModel provides onDeviceViewModel,
+                            LocalCastSheetState provides castSheetState,
+                            //LocalRiTuneDevices provides riTuneDevices.value,
+                            //LocalOnlinePlayerPlayingState provides onlinePlayerPlayingState,
                             //LocalGlobalQueue provides globalQueueViewModel,
-                            LocalOnDeviceViewModel provides onDeviceViewModel
                             //LocalInternetAvailable provides isInternetAvailable
                         ) {
 
@@ -1554,6 +1507,38 @@ class MainActivity :
                                 ) {
                                     menuState.content()
                                 }
+
+                                /* todo work in progress with cast
+                                BottomSheet(
+                                    state = castSheetState,
+                                    collapsedContent = {
+                                        Box(modifier = Modifier.fillMaxSize()) {
+                                            //Text(text = "BottomSheet", modifier = Modifier.align(Alignment.Center))
+                                        }
+                                    },
+                                    contentAlwaysAvailable = true
+                                ) {
+                                    CastScreen(
+                                        onCastVideo = {
+                                            currentCastContent.value = CastContent.Video(
+                                                "https://www.learningcontainer.com/wp-content/uploads/2020/05/sample-mp4-file.mp4"
+                                            )
+                                            updatePresentation()
+                                        },
+                                        onCastYouTube = { videoId ->
+                                            currentCastContent.value = CastContent.GenericView(
+                                                viewFactory = { context -> onlinePlayerView as View }
+                                            )
+                                            updatePresentation()
+                                        },
+                                        onDisconnect = {
+                                            currentCastContent.value = null
+                                            presentation?.dismiss()
+                                            presentation = null
+                                        }
+                                    )
+                                }
+                                 */
 
                                 /*
                                 if (showSelectorRiTuneDevices) {
@@ -1808,6 +1793,49 @@ class MainActivity :
 
     }
 
+    /*
+    private fun updatePresentation() {
+
+        val display = mediaRouter?.getSelectedRoute()?.presentationDisplay
+
+        if (display != null && currentCastContent.value != null) {
+            presentation?.dismiss()
+            presentation = MiracastPresentation(this, display, currentCastContent.value!!)
+            presentation?.show()
+        } else {
+
+            val dialog = MediaRouteChooserDialog(this)
+            dialog.routeSelector = mediaRouteSelector
+            dialog.show()
+//            presentation?.dismiss()
+//            presentation = null
+        }
+
+
+    }
+
+    private val mediaRouterCallback = object : MediaRouter.Callback() {
+        override fun onRouteSelected(
+            router: MediaRouter,
+            route: MediaRouter.RouteInfo,
+            reason: Int
+        ) {
+            updatePresentation()
+        }
+
+        override fun onRouteUnselected(router: MediaRouter, route: MediaRouter.RouteInfo) {
+            updatePresentation()
+        }
+
+        override fun onRoutePresentationDisplayChanged(
+            router: MediaRouter,
+            route: MediaRouter.RouteInfo
+        ) {
+            updatePresentation()
+        }
+    }
+     */
+
     fun updateSelectedQueue() {
         Database.asyncTransaction {
             selectedQueue.value = Database.selectedQueue() ?: defaultQueue()
@@ -1867,6 +1895,8 @@ class MainActivity :
         }
         appRunningInBackground = false
 
+        //mediaRouter?.addCallback(mediaRouteSelector, mediaRouterCallback)
+
         Timber.d("MainActivity.onResume $appRunningInBackground")
     }
 
@@ -1881,6 +1911,8 @@ class MainActivity :
             Timber.e("MainActivity.onPause unregisterListener sensorListener ${it.stackTraceToString()}")
         }
         appRunningInBackground = true
+
+        //mediaRouter?.removeCallback(mediaRouterCallback)
 
         Timber.d("MainActivity.onPause $appRunningInBackground")
     }
@@ -1974,17 +2006,11 @@ var appRunningInBackground: Boolean = false
 val LocalPlayerServiceBinder = staticCompositionLocalOf<PlayerService.Binder?> { null }
 val LocalPlayerServiceState = staticCompositionLocalOf<PlayerState> { PlayerState() }
 
-val LocalPlayerAwareWindowInsets = staticCompositionLocalOf<WindowInsets> { TODO() }
+val LocalPlayerAwareWindowInsets = staticCompositionLocalOf<WindowInsets> { error("No window insets provided") }
 
 @OptIn(ExperimentalMaterial3Api::class)
 val LocalPlayerSheetState =
     staticCompositionLocalOf<BottomSheetState> { error("No sheet state provided") }
-
-//val LocalOnlinePlayerPlayingState =
-//    staticCompositionLocalOf<Boolean> { error("No player sheet state provided") }
-
-//val LocalRiTuneDevices =
-//    staticCompositionLocalOf<List<NsdServiceInfo>> { error("No RiTune devices provided") }
 
 val LocalSelectedQueue = staticCompositionLocalOf<Queues?> { error("No selected queue provided") }
 
@@ -1992,9 +2018,16 @@ val LocalAudioTagger = staticCompositionLocalOf<AudioTagViewModel> { error("No a
 
 val LocalBackupManager = staticCompositionLocalOf<BackupViewModel> { error("No backup manager provided") }
 
-//val LocalGlobalQueue = staticCompositionLocalOf<GlobalQueueViewModel> { error("No player service queue provided") }
-
 val LocalOnDeviceViewModel = staticCompositionLocalOf<OnDeviceViewModel> { error("No on device view model provided") }
 
+val LocalCastSheetState = staticCompositionLocalOf<BottomSheetState> { error("No cast screen provided") }
 
+
+//val LocalGlobalQueue = staticCompositionLocalOf<GlobalQueueViewModel> { error("No player service queue provided") }
+
+//val LocalOnlinePlayerPlayingState =
+//    staticCompositionLocalOf<Boolean> { error("No player sheet state provided") }
+
+//val LocalRiTuneDevices =
+//    staticCompositionLocalOf<List<NsdServiceInfo>> { error("No RiTune devices provided") }
 

@@ -23,13 +23,11 @@ import it.fast4x.riplay.extensions.equalizer.InternalEqualizerScreen
 import it.fast4x.riplay.extensions.equalizer.rememberSystemEqualizerLauncher
 import it.fast4x.riplay.extensions.pip.isPipSupported
 import it.fast4x.riplay.extensions.pip.rememberPipHandler
-import it.fast4x.riplay.extensions.preferences.castToRiTuneDeviceEnabledKey
 import it.fast4x.riplay.extensions.preferences.enableMusicIdentifierKey
 import it.fast4x.riplay.extensions.preferences.enablePictureInPictureKey
 import it.fast4x.riplay.extensions.preferences.equalizerTypeKey
 import it.fast4x.riplay.extensions.preferences.rememberObservedPreference
 import it.fast4x.riplay.extensions.preferences.rememberPreference
-import it.fast4x.riplay.extensions.ritune.improved.RiTuneSelector
 import it.fast4x.riplay.ui.components.LocalGlobalSheetState
 import it.fast4x.riplay.ui.components.SheetBody
 import it.fast4x.riplay.utils.colorPalette
@@ -38,7 +36,6 @@ import it.fast4x.riplay.ui.screens.events.EventsScreen
 import it.fast4x.riplay.ui.screens.settings.isYtLoggedIn
 import it.fast4x.riplay.utils.MusicIdentifier
 import it.fast4x.riplay.utils.ytAccountThumbnail
-import timber.log.Timber
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -51,6 +48,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.window.PopupProperties
+import it.fast4x.riplay.LocalCastSheetState
 import it.fast4x.riplay.utils.getRoundnessShape
 import it.fast4x.riplay.utils.typography
 
@@ -393,6 +391,15 @@ fun ActionBar(
     var expanded by remember { mutableStateOf(false) }
     val sheet = LocalGlobalSheetState.current
 
+    //todo work in progress cast
+    /*
+    var showCastScreen = LocalCastSheetState.current
+    HeaderIcon(R.drawable.cast_connected) {
+        showCastScreen.expandSoft()
+    }
+     */
+
+    /* // todo cast to complete
     var castToRiTuneDeviceEnabled by rememberPreference(castToRiTuneDeviceEnabledKey, false )
     var showRiTuneSelector by remember { mutableStateOf(false) }
 
@@ -408,6 +415,14 @@ fun ActionBar(
         )
     }
 
+
+    if (castToRiTuneDeviceEnabled)
+        HeaderIcon(if (GlobalSharedData.riTuneCastActive) R.drawable.cast_connected else R.drawable.cast_disconnected) {
+            showRiTuneSelector = true
+            //navController.navigate(NavRoutes.ritunecontroller.name)
+        }
+    */
+
     /* todo maybe nor right place
     val equalizer = LocalPlayerServiceBinder.current?.equalizer
     equalizer?.let {
@@ -421,12 +436,6 @@ fun ActionBar(
     }
      */
 
-    // todo cast to complete
-//    if (castToRiTuneDeviceEnabled)
-//        HeaderIcon(if (GlobalSharedData.riTuneCastActive) R.drawable.cast_connected else R.drawable.cast_disconnected) {
-//            showRiTuneSelector = true
-//            //navController.navigate(NavRoutes.ritunecontroller.name)
-//        }
 
     val isEnabledMusicIdentifier by rememberPreference(
         enableMusicIdentifierKey,
