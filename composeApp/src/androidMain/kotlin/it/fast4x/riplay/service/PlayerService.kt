@@ -188,10 +188,10 @@ import it.fast4x.riplay.extensions.preferences.lastfmScrobbleTypeKey
 import it.fast4x.riplay.extensions.preferences.lastfmSessionTokenKey
 import it.fast4x.riplay.extensions.preferences.parentalControlEnabledKey
 import it.fast4x.riplay.extensions.preferences.wallpaperTypeKey
-import it.fast4x.riplay.extensions.ritune.improved.RiTuneClient
-import it.fast4x.riplay.extensions.ritune.improved.models.RiTuneConnectionStatus
-import it.fast4x.riplay.extensions.ritune.improved.models.RiTunePlayerState
-import it.fast4x.riplay.extensions.ritune.improved.models.RiTuneRemoteCommand
+import it.fast4x.riplay.extensions.ritune.RiTuneClient
+import it.fast4x.riplay.extensions.ritune.models.RiTuneConnectionStatus
+import it.fast4x.riplay.extensions.ritune.models.RiTunePlayerState
+import it.fast4x.riplay.extensions.ritune.models.RiTuneRemoteCommand
 import it.fast4x.riplay.service.helpers.BluetoothConnectReceiver
 import it.fast4x.riplay.service.helpers.EqualizerHelper
 import it.fast4x.riplay.ui.screens.settings.isYtLoggedIn
@@ -207,7 +207,6 @@ import it.fast4x.riplay.utils.playAtIndex
 import it.fast4x.riplay.utils.playNext
 import it.fast4x.riplay.utils.playPrevious
 import it.fast4x.riplay.utils.setQueueLoopState
-import it.fast4x.riplay.utils.toggleRepeatMode
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -776,11 +775,12 @@ class PlayerService : Service(),
 
     private fun initializeRiTune() {
 
+        riTuneObserverJob?.cancel()
+
         val isRiTuneEnabled = preferences.getBoolean(castToRiTuneDeviceEnabledKey, false)
         if (!isRiTuneEnabled) return
-        Timber.d("PlayerService initializeRiTune isRituneEnabled $isRiTuneEnabled")
-
-        riTuneObserverJob?.cancel()
+        //if (!isRiTuneEnabled || riTuneClient.connectionStatus.value != RiTuneConnectionStatus.Connected) return
+        //Timber.d("PlayerService initializeRiTune isRituneEnabled $isRiTuneEnabled")
 
         var isConnecting = false
 
@@ -810,6 +810,11 @@ class PlayerService : Service(),
 
                 if (isCastActive) {
                     withContext(Dispatchers.Main) {
+                        when (playerState) {
+                            PlayerConstants.PlayerState.PLAYING -> startEndedObserver()
+                            else -> stopEndedObserver()
+                        }
+
                         playerState?.let { updatePlayerState(it) }
 
                         if (duration != null) {
@@ -819,7 +824,7 @@ class PlayerService : Service(),
                         if (second != null) {
                             currentSecond.value = second
                         }
-                        Timber.d("PlayerService initializeRiTune Loop - CastActive PlayerState $playerState, duration $duration, second $second")
+                        //Timber.d("PlayerService initializeRiTune Loop - CastActive PlayerState $playerState, duration $duration, second $second")
                     }
                 }
 
@@ -827,7 +832,7 @@ class PlayerService : Service(),
 
                 if (!isCastActive) {
                     if (isConnecting) isConnecting = false
-                    Timber.d("PlayerService initializeRiTune CAST NOT ACTIVE - Status: $connectionStatus, isConnecting: $isConnecting")
+                    //Timber.d("PlayerService initializeRiTune CAST NOT ACTIVE - Status: $connectionStatus, isConnecting: $isConnecting")
                     if (connectionStatus == RiTuneConnectionStatus.Connected) {
                         riTuneClient.disconnect()
                         Timber.d("PlayerService initializeRiTune CAST NOT ACTIVE - Disconnected")
@@ -871,7 +876,7 @@ class PlayerService : Service(),
                         Timber.d("PlayerService initializeRiTune Connection already in progress, waiting...")
                     }
                 }
-                Timber.d("PlayerService initializeRiTune Loop Tick - Active: $isActive")
+                //Timber.d("PlayerService initializeRiTune Loop Tick - Active: $isActive")
                 delay(1000)
             }
             Timber.d("PlayerService initializeRiTune: JOB TERMINATO (end of loop)")
@@ -2520,7 +2525,7 @@ class PlayerService : Service(),
             audioReverbPresetKey -> initializeReverb()
             volumeNormalizationKey, loudnessBaseGainKey, volumeBoostLevelKey -> initializeNormalizeVolume()
             playbackPitchKey, playbackSpeedKey -> initializePlaybackParameters()
-
+            castToRiTuneDeviceEnabledKey -> initializeRiTune()
         }
     }
 

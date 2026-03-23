@@ -1187,7 +1187,7 @@
     <string name="warning_skipped_blacklisted_song">Brano saltato in blacklist</string>
     <string name="cast">Trasmetti</string>
     <string name="enable_ritune_cast">Abilita RiTune Cast</string>
-    <string name="ritune_cast_info">"Trasmetti a RiTune dispositivi, richiede RiTune installato in altri dispositivi "</string>
+    <string name="ritune_cast_info">"Trasmetti a dispositivi RiTune, assicurati che RiTune sia installato nell'altro dispositivo"</string>
     <string name="queue_create_new_queue">Crea una nuova coda</string>
     <string name="queue_list_of_media">Elenco dei media</string>
     <string name="queue_queue">Coda: %1$s</string>

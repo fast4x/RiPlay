@@ -8,7 +8,6 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.animateContentSize
-import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.RepeatMode
@@ -269,9 +268,7 @@ import it.fast4x.riplay.extensions.preferences.titleExpandedKey
 import it.fast4x.riplay.extensions.preferences.topPaddingKey
 import it.fast4x.riplay.extensions.preferences.transparentBackgroundPlayerActionBarKey
 import it.fast4x.riplay.extensions.preferences.visualizerEnabledKey
-import it.fast4x.riplay.extensions.ritune.improved.RiTuneClient
-import it.fast4x.riplay.extensions.ritune.improved.models.RiTuneRemoteCommand
-import it.fast4x.riplay.service.PlaybackState
+import it.fast4x.riplay.extensions.ritune.models.RiTuneRemoteCommand
 import it.fast4x.riplay.ui.components.BottomSheetState
 import it.fast4x.riplay.ui.components.CustomModalBottomSheet
 import it.fast4x.riplay.ui.components.DelayedControls

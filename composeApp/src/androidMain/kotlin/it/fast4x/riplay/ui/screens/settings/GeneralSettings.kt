@@ -1702,10 +1702,8 @@ fun GeneralSettings(
                             isChecked = castToRiTuneDeviceEnabled,
                             onCheckedChange = {
                                 castToRiTuneDeviceEnabled = it
-                                restartService = true
                             }
                         )
-                    RestartPlayerService(restartService, onRestart = { restartService = false })
                 }
 
 

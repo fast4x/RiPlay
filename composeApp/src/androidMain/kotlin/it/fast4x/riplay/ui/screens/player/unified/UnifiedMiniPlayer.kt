@@ -81,7 +81,7 @@ import it.fast4x.riplay.extensions.preferences.disableScrollingTextKey
 import it.fast4x.riplay.extensions.preferences.effectRotationKey
 import it.fast4x.riplay.extensions.preferences.miniPlayerTypeKey
 import it.fast4x.riplay.extensions.preferences.rememberPreference
-import it.fast4x.riplay.extensions.ritune.improved.models.RiTuneRemoteCommand
+import it.fast4x.riplay.extensions.ritune.models.RiTuneRemoteCommand
 import it.fast4x.riplay.service.PlaybackState
 import it.fast4x.riplay.service.PlayerService
 import it.fast4x.riplay.ui.components.themed.IconButton

@@ -4,7 +4,6 @@ import android.content.Context
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.ReadOnlyComposable
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import it.fast4x.riplay.Dependencies
 import it.fast4x.riplay.LocalPlayerServiceBinder
@@ -48,7 +47,7 @@ import it.fast4x.riplay.extensions.preferences.thumbnailRoundnessKey
 import it.fast4x.riplay.extensions.preferences.viewTypeKey
 import it.fast4x.riplay.extensions.preferences.ytAccountNameKey
 import it.fast4x.riplay.extensions.preferences.ytAccountThumbnailKey
-import it.fast4x.riplay.extensions.ritune.RiTuneDevice
+import it.fast4x.riplay.extensions.ritune.models.RiTuneDevice
 
 @Composable
 fun typography() = LocalAppearance.current.typography

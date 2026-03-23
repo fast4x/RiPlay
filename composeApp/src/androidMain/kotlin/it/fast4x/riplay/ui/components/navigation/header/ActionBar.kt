@@ -50,11 +50,9 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.window.PopupProperties
 import it.fast4x.riplay.LocalRiTuneSheetState
 import it.fast4x.riplay.extensions.preferences.castToRiTuneDeviceEnabledKey
-import it.fast4x.riplay.extensions.ritune.improved.RiTuneSelector
 import it.fast4x.riplay.utils.GlobalSharedData
 import it.fast4x.riplay.utils.getRoundnessShape
 import it.fast4x.riplay.utils.typography
-import timber.log.Timber
 
 @Composable
 private fun HamburgerMenu(

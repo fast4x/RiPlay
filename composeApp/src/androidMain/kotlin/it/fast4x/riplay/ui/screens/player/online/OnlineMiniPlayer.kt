@@ -112,7 +112,7 @@ import it.fast4x.riplay.utils.PlayerViewModel
 import it.fast4x.riplay.utils.PlayerViewModelFactory
 import it.fast4x.riplay.commonutils.setDisLikeState
 import it.fast4x.riplay.commonutils.thumbnail
-import it.fast4x.riplay.extensions.ritune.improved.models.RiTuneRemoteCommand
+import it.fast4x.riplay.extensions.ritune.models.RiTuneRemoteCommand
 import it.fast4x.riplay.service.PlaybackState
 import it.fast4x.riplay.utils.GlobalSharedData
 import it.fast4x.riplay.utils.getRoundnessShape

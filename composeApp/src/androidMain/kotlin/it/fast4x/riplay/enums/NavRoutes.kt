@@ -34,7 +34,6 @@ enum class NavRoutes {
     chip,
     onDevicePlaylist,
     blacklist,
-    ritunecontroller,
     onBoarding;
 
     companion object {

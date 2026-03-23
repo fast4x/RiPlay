@@ -1,4 +1,4 @@
-package it.fast4x.riplay.extensions.ritune.improved
+package it.fast4x.riplay.extensions.ritune
 
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.okhttp.OkHttp
@@ -11,9 +11,9 @@ import io.ktor.websocket.Frame
 import io.ktor.websocket.close
 import io.ktor.websocket.readText
 import io.ktor.websocket.send
-import it.fast4x.riplay.extensions.ritune.improved.models.RiTuneConnectionStatus
-import it.fast4x.riplay.extensions.ritune.improved.models.RiTunePlayerState
-import it.fast4x.riplay.extensions.ritune.improved.models.RiTuneRemoteCommand
+import it.fast4x.riplay.extensions.ritune.models.RiTuneConnectionStatus
+import it.fast4x.riplay.extensions.ritune.models.RiTunePlayerState
+import it.fast4x.riplay.extensions.ritune.models.RiTuneRemoteCommand
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -22,6 +22,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 import timber.log.Timber
+import java.security.SecureRandom
 import java.security.cert.X509Certificate
 import javax.net.ssl.SSLContext
 import javax.net.ssl.TrustManager
@@ -50,7 +51,7 @@ class RiTuneClient {
                     override fun getAcceptedIssuers(): Array<X509Certificate> = arrayOf()
                 })
                 val sslContext = SSLContext.getInstance("SSL")
-                sslContext.init(null, trustAllCerts, java.security.SecureRandom())
+                sslContext.init(null, trustAllCerts, SecureRandom())
                 sslSocketFactory(sslContext.socketFactory, trustAllCerts[0] as X509TrustManager)
 
                 hostnameVerifier { _, _ -> true }

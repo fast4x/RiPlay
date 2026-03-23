@@ -12,7 +12,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.edit
 import it.fast4x.environment.Environment
 import it.fast4x.environment.requests.HomePage
-import it.fast4x.riplay.extensions.ritune.RiTuneDevices
+import it.fast4x.riplay.extensions.ritune.models.RiTuneDevices
 import it.fast4x.riplay.data.models.Song
 import it.fast4x.riplay.enums.SongSortBy
 import kotlinx.coroutines.channels.awaitClose
