@@ -25,6 +25,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -34,6 +35,7 @@ import androidx.navigation.NavController
 import it.fast4x.riplay.R
 import it.fast4x.riplay.extensions.ritune.RiTuneDevice
 import it.fast4x.riplay.ui.components.themed.IconButton
+import it.fast4x.riplay.ui.components.themed.TitleSection
 import it.fast4x.riplay.utils.GlobalSharedData
 import it.fast4x.riplay.utils.colorPalette
 import timber.log.Timber
@@ -41,91 +43,76 @@ import timber.log.Timber
 @Composable
 fun RiTuneSelector(
     onDismiss: () -> Unit,
-    onSelect: (List<RiTuneDevice>) -> Unit
 ) {
-    val deviceList = GlobalSharedData.riTuneDevices.value.distinctBy { it.host }.distinctBy { it.port }
-
-//    LaunchedEffect(key1 = deviceList) {
-//        riTuneDevices = deviceList
-//    }
-
-    Dialog(
-        onDismissRequest = onDismiss,
+    val riTuneDevices = GlobalSharedData.riTuneDevices.value.distinctBy { it.host }.distinctBy { it.port }
+    Box(
+        modifier = Modifier
+            .background(colorPalette().background0)
+            .fillMaxHeight(.5f)
     ) {
-        Box(
+
+        LazyColumn(
+            state = rememberLazyListState(),
+            contentPadding = PaddingValues(all = 10.dp),
             modifier = Modifier
                 .background(colorPalette().background0)
-                .fillMaxWidth(.9f)
-                .fillMaxHeight(.5f)
         ) {
-
-            LazyColumn(
-                state = rememberLazyListState(),
-                contentPadding = PaddingValues(all = 10.dp),
-                modifier = Modifier
-                    .background(
-                        colorPalette().background0
-                    )
-                    .height(400.dp)
-            ) {
-                item {
-                    Text(
-                        text = "Available RiTune Devices",
-                        color = colorPalette().text,
-                        modifier = Modifier.padding(bottom = 10.dp)
-                    )
-
-
-                }
-                items(
-                    items = deviceList,
-                    key = { "${it.host}:${it.port}" }
-                ) { device ->
-
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(36.dp)
-                            .clickable {
-                                val index = deviceList.indexOf(device)
-
-                                if (index >= 0) {
-                                    val updatedDevice = device.copy(selected = !device.selected)
-
-                                    //GlobalSharedData.riTuneDevices.value[index] = updatedDevice
-
-                                    //onSelect(GlobalSharedData.riTuneDevices.toList())
-                                }
-                            },
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-
-                        IconButton(
-                            icon = if (device.selected) R.drawable.cast_connected else R.drawable.cast_disconnected,
-                            color = colorPalette().text,
-                            enabled = true,
-                            onClick = {},
-                            modifier = Modifier
-                                .size(32.dp),
-                        )
-                        Spacer(modifier = Modifier.width(16.dp))
-                        Text(
-                            text = device.name,
-                            color = colorPalette().text,
-                            modifier = Modifier.border(BorderStroke(1.dp, Color.Red))
-                        )
-                    }
-                }
+            item {
+                TitleSection("RiTune Cast")
+                Text(
+                    text = "Available devices:",
+                    color = colorPalette().text,
+                    modifier = Modifier.padding(bottom = 10.dp)
+                )
             }
 
-            LinearProgressIndicator(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(1.dp)
-                    .align(Alignment.BottomCenter),
-            )
+            items(
+                count = riTuneDevices.size,
+                key = { index -> riTuneDevices[index].name }
+            ) { index ->
 
+                val device = riTuneDevices[index]
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(36.dp)
+                        .clickable {
+                            val devices = riTuneDevices.toMutableList()
+
+                            val updatedDevice = device.copy(selected = !device.selected)
+
+                            devices[index] = updatedDevice
+
+                            GlobalSharedData.riTuneDevices.value = devices.toMutableStateList()
+
+                            onDismiss()
+                        },
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    IconButton(
+                        icon = if (device.selected) R.drawable.cast_connected else R.drawable.cast_disconnected,
+                        color = colorPalette().text,
+                        enabled = true,
+                        onClick = {},
+                        modifier = Modifier.size(22.dp),
+                    )
+                    Spacer(modifier = Modifier.width(16.dp))
+                    Text(
+                        text = device.name,
+                        color = colorPalette().text,
+                        //modifier = Modifier.border(BorderStroke(1.dp, Color.Red))
+                    )
+                }
+            }
         }
+
+        LinearProgressIndicator(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(1.dp)
+                .align(Alignment.BottomCenter),
+        )
 
     }
 

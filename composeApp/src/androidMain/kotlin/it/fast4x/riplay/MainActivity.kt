@@ -49,6 +49,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.add
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -256,11 +257,13 @@ import it.fast4x.riplay.extensions.preferences.checkUpdateStateKey
 import it.fast4x.riplay.extensions.preferences.resumeOrPausePlaybackWhenDeviceKey
 import it.fast4x.riplay.extensions.preferences.showSnowfallEffectKey
 import it.fast4x.riplay.extensions.ritune.RiTuneDevice
+import it.fast4x.riplay.extensions.ritune.improved.RiTuneSelector
 import it.fast4x.riplay.extensions.ritune.toRiTuneDevice
 import it.fast4x.riplay.service.PlayerState
 import it.fast4x.riplay.ui.components.SheetBody
 import it.fast4x.riplay.ui.components.Snowfall
 import it.fast4x.riplay.ui.components.themed.IconButton
+import it.fast4x.riplay.ui.components.themed.TitleSection
 import it.fast4x.riplay.ui.screens.player.online.components.core.OnlinePlayerView
 import it.fast4x.riplay.ui.screens.player.unified.UnifiedMiniPlayer
 import it.fast4x.riplay.ui.screens.player.unified.UnifiedPlayer
@@ -332,7 +335,7 @@ class MainActivity :
     var visitorData: MutableState<String> =
         mutableStateOf("")
 
-    var riTuneDevices: MutableState<List<RiTuneDevice>> = mutableStateOf(emptyList())
+    //var riTuneDevices: MutableState<List<RiTuneDevice>> = mutableStateOf(emptyList())
 
     var playerState: PlayerState = PlayerState()
 
@@ -578,12 +581,10 @@ class MainActivity :
 
         checkIfAppIsRunningInBackground()
 
-        // todo ritune in the future add a try catch
         //registerNsdService()
         discoverNsdServices(
-            onServiceFound = {
-                //riTuneDevices.value = it
-                riTuneDevices.value = it.map { it.toRiTuneDevice() }.toMutableStateList()
+            onServiceFound = { devices ->
+                GlobalSharedData.riTuneDevices.value = devices.map { device -> device.toRiTuneDevice() }.toMutableStateList()
             }
         )
 
@@ -1559,94 +1560,24 @@ class MainActivity :
                                 }
                                  */
 
-                                BottomSheet(
-                                    state = castSheetState,
-                                    collapsedContent = {
-                                        Box(modifier = Modifier.fillMaxSize()) {
-                                            //Text(text = "BottomSheet", modifier = Modifier.align(Alignment.Center))
-                                        }
+                                CustomModalBottomSheet(
+                                    showSheet = castSheetState.isExpanded,
+                                    onDismissRequest = castSheetState::collapseSoft,
+                                    containerColor = Color.Transparent,
+                                    sheetState = rememberModalBottomSheetState(
+                                        skipPartiallyExpanded = true
+                                    ),
+                                    dragHandle = {
+                                        Surface(
+                                            modifier = Modifier.padding(vertical = 0.dp),
+                                            color = Color.Transparent,
+                                            //shape = thumbnailShape
+                                        ) {}
                                     },
-                                    contentAlwaysAvailable = true
+                                    shape = thumbnailRoundness.shape()
                                 ) {
-
-                                    Box(
-                                        modifier = Modifier
-                                            .background(colorPalette().background0)
-                                            //.fillMaxSize()
-                                    ) {
-
-                                        LazyColumn(
-                                            state = rememberLazyListState(),
-                                            contentPadding = PaddingValues(all = 10.dp),
-                                            modifier = Modifier
-                                                .background(colorPalette().background0)
-                                                .height(400.dp)
-                                        ) {
-                                            item {
-                                                Text(
-                                                    text = "Available RiTune Devices",
-                                                    color = colorPalette().text,
-                                                    modifier = Modifier.padding(bottom = 10.dp)
-                                                )
-                                            }
-
-                                            items(
-                                                count = riTuneDevices.value.size,
-                                                key = { index -> riTuneDevices.value[index].name } // Usiamo 'name' come chiave univoca
-                                            ) { index ->
-                                                // CORREZIONE CRITICA:
-                                                // 1. Rimuoviamo 'remember'.
-                                                // 2. Leggiamo direttamente l'oggetto dalla lista usando l'indice.
-                                                // Così facendo, ogni volta che la lista cambia, 'device' viene aggiornato.
-                                                val device = riTuneDevices.value[index]
-
-                                                Row(
-                                                    modifier = Modifier
-                                                        .fillMaxWidth()
-                                                        .height(36.dp)
-                                                        .clickable {
-                                                            // Creiamo una nuova lista mutabile copiando quella attuale
-                                                            val devices = riTuneDevices.value.toMutableList()
-
-                                                            // Creiamo una nuova istanza del device con lo stato invertito
-                                                            val updatedDevice = device.copy(selected = !device.selected)
-
-                                                            // Aggiorniamo l'elemento alla posizione 'index'
-                                                            devices[index] = updatedDevice
-
-                                                            // Salviamo il nuovo stato
-                                                            riTuneDevices.value = devices
-                                                            GlobalSharedData.riTuneDevices.value = riTuneDevices.value.toMutableStateList()
-
-                                                            castSheetState.collapseSoft()
-                                                        },
-                                                    verticalAlignment = Alignment.CenterVertically
-                                                ) {
-                                                    IconButton(
-                                                        // Ora 'device' è sempre aggiornato, l'icona cambierà
-                                                        icon = if (device.selected) R.drawable.cast_connected else R.drawable.cast_disconnected,
-                                                        color = colorPalette().text,
-                                                        enabled = true,
-                                                        onClick = {}, // Il click è gestito dalla Row
-                                                        modifier = Modifier.size(32.dp),
-                                                    )
-                                                    Spacer(modifier = Modifier.width(16.dp))
-                                                    Text(
-                                                        text = device.name,
-                                                        color = colorPalette().text,
-                                                        modifier = Modifier.border(BorderStroke(1.dp, Color.Red))
-                                                    )
-                                                }
-                                            }
-                                        }
-
-                                        LinearProgressIndicator(
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .height(1.dp)
-                                                .align(Alignment.BottomCenter),
-                                        )
-
+                                    RiTuneSelector(){
+                                        //castSheetState.collapseSoft()
                                     }
                                 }
 
