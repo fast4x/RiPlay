@@ -112,11 +112,11 @@ object GlobalSharedData {
     var versionCode: MutableState<Int> = mutableStateOf(0)
     var versionName: MutableState<String> = mutableStateOf("")
     var productName: MutableState<String> = mutableStateOf("")
-    var riTuneDevices = mutableStateListOf<RiTuneDevice>()
+    var riTuneDevices: MutableState<List<RiTuneDevice>> = mutableStateOf(emptyList())
     var riTuneConnected = mutableStateOf(false)
     var riTuneError: MutableState<String?> = mutableStateOf(null)
     val riTuneCastActive: Boolean
-        get() = riTuneDevices.any { it.selected }
+        get() = riTuneDevices.value.any { it.selected }
 }
 
 

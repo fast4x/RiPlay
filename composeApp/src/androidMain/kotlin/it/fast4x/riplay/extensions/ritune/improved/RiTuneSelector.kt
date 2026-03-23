@@ -43,7 +43,7 @@ fun RiTuneSelector(
     onDismiss: () -> Unit,
     onSelect: (List<RiTuneDevice>) -> Unit
 ) {
-    val deviceList = GlobalSharedData.riTuneDevices.distinctBy { it.host }.distinctBy { it.port }
+    val deviceList = GlobalSharedData.riTuneDevices.value.distinctBy { it.host }.distinctBy { it.port }
 
 //    LaunchedEffect(key1 = deviceList) {
 //        riTuneDevices = deviceList
@@ -92,9 +92,9 @@ fun RiTuneSelector(
                                 if (index >= 0) {
                                     val updatedDevice = device.copy(selected = !device.selected)
 
-                                    GlobalSharedData.riTuneDevices[index] = updatedDevice
+                                    //GlobalSharedData.riTuneDevices.value[index] = updatedDevice
 
-                                    onSelect(GlobalSharedData.riTuneDevices.toList())
+                                    //onSelect(GlobalSharedData.riTuneDevices.toList())
                                 }
                             },
                         verticalAlignment = Alignment.CenterVertically

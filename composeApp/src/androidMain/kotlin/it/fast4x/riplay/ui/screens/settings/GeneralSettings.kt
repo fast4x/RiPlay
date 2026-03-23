@@ -1682,7 +1682,7 @@ fun GeneralSettings(
 
                 }
 
-                /* // cast to complete in the future
+                 // cast to complete in the future
                 settingsItem(
                     isHeader = true
                 ) {
@@ -1707,7 +1707,7 @@ fun GeneralSettings(
                         )
                     RestartPlayerService(restartService, onRestart = { restartService = false })
                 }
-                */
+
 
                 settingsItem(
                     isHeader = true

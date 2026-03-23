@@ -459,7 +459,7 @@ fun UnifiedMiniPlayer(
                                         CoroutineScope(Dispatchers.IO).launch {
                                             binder.riTuneClient.sendCommand(
                                                 RiTuneRemoteCommand(
-                                                    "play"
+                                                    "play", mediaId = mediaItem.mediaId
                                                 )
                                             )
                                         }

@@ -269,6 +269,8 @@ import it.fast4x.riplay.extensions.preferences.titleExpandedKey
 import it.fast4x.riplay.extensions.preferences.topPaddingKey
 import it.fast4x.riplay.extensions.preferences.transparentBackgroundPlayerActionBarKey
 import it.fast4x.riplay.extensions.preferences.visualizerEnabledKey
+import it.fast4x.riplay.extensions.ritune.improved.RiTuneClient
+import it.fast4x.riplay.extensions.ritune.improved.models.RiTuneRemoteCommand
 import it.fast4x.riplay.service.PlaybackState
 import it.fast4x.riplay.ui.components.BottomSheetState
 import it.fast4x.riplay.ui.components.CustomModalBottomSheet
@@ -304,6 +306,7 @@ import it.fast4x.riplay.ui.styling.px
 import it.fast4x.riplay.ui.styling.semiBold
 import it.fast4x.riplay.utils.BlurTransformation
 import it.fast4x.riplay.utils.DisposableListener
+import it.fast4x.riplay.utils.GlobalSharedData
 import it.fast4x.riplay.utils.LandscapeToSquareTransformation
 import it.fast4x.riplay.utils.PlayerViewModel
 import it.fast4x.riplay.utils.PlayerViewModelFactory
@@ -1308,6 +1311,8 @@ fun UnifiedPlayer(
 
     val isLandscape = isLandscape
 
+    val riTuneClient = binder.riTuneClient
+
     LaunchedEffect(mediaItem) {
 
         // Ensure that the song is in database
@@ -1353,22 +1358,43 @@ fun UnifiedPlayer(
             onBlurScaleChange = { blurStrength = it },
             isExplicit = mediaItem.isExplicit,
             onPlay = {
-                if (binder.player.currentMediaItem?.isLocal == true)
-                    binder.player.play()
-                else
-                    binder.onlinePlayer?.play()
+                if (!GlobalSharedData.riTuneCastActive) {
+                    if (binder.player.currentMediaItem?.isLocal == true)
+                        binder.player.play()
+                    else
+                        binder.onlinePlayer?.play()
+                } else
+                    CoroutineScope(Dispatchers.IO).launch {
+                        riTuneClient.sendCommand(
+                            RiTuneRemoteCommand("play", mediaId = mediaItem.mediaId)
+                        )
+                    }
             },
             onPause = {
-                if (binder.player.currentMediaItem?.isLocal == true)
-                    binder.player.pause()
-                else
-                    binder.onlinePlayer?.pause()
+                if (!GlobalSharedData.riTuneCastActive) {
+                    if (binder.player.currentMediaItem?.isLocal == true)
+                        binder.player.pause()
+                    else
+                        binder.onlinePlayer?.pause()
+                } else
+                    CoroutineScope(Dispatchers.IO).launch {
+                        riTuneClient.sendCommand(
+                            RiTuneRemoteCommand("pause")
+                        )
+                    }
             },
             onSeekTo = {
-                if (binder.player.currentMediaItem?.isLocal == true)
-                    binder.player.seekTo(it.toLong())
-                else
-                    binder.onlinePlayer?.seekTo(it.div(1000))
+                if (!GlobalSharedData.riTuneCastActive) {
+                    if (binder.player.currentMediaItem?.isLocal == true)
+                        binder.player.seekTo(it.toLong())
+                    else
+                        binder.onlinePlayer?.seekTo(it.div(1000))
+                } else
+                    CoroutineScope(Dispatchers.IO).launch {
+                        riTuneClient.sendCommand(
+                            RiTuneRemoteCommand("seek", position = it.div(1000))
+                        )
+                    }
             },
             onNext = { binder.player.playNext() },
             onPrevious = {
@@ -2586,9 +2612,10 @@ fun UnifiedPlayer(
                                                             all = 10.dp
                                                         )
                                                     }
-                                                    .conditional(thumbnailType == ThumbnailType.Modern
-                                                        && coverThumbnailAnimation != ThumbnailCoverType.AudioCassette
-                                                        && coverThumbnailAnimation != ThumbnailCoverType.AudioCassetteWithCover
+                                                    .conditional(
+                                                        thumbnailType == ThumbnailType.Modern
+                                                                && coverThumbnailAnimation != ThumbnailCoverType.AudioCassette
+                                                                && coverThumbnailAnimation != ThumbnailCoverType.AudioCassetteWithCover
                                                     ) {
                                                         doubleShadowDrop(
                                                             if (showCoverThumbnailAnimation && !binder.player.getMediaItemAt(
@@ -2731,7 +2758,9 @@ fun UnifiedPlayer(
                                                             painter = coverPainter,
                                                             contentDescription = "",
                                                             contentScale = ContentScale.Fit,
-                                                            modifier = Modifier.fillMaxSize(.5f).align(Alignment.Center)
+                                                            modifier = Modifier
+                                                                .fillMaxSize(.5f)
+                                                                .align(Alignment.Center)
                                                         )
                                                     }
                                                 }
@@ -2811,22 +2840,43 @@ fun UnifiedPlayer(
                                     modifier = Modifier
                                         .padding(vertical = 8.dp),
                                     onPlay = {
-                                        if (binder.player.currentMediaItem?.isLocal == true)
-                                            binder.player.play()
-                                        else
-                                            binder.onlinePlayer?.play()
+                                        if (!GlobalSharedData.riTuneCastActive) {
+                                            if (binder.player.currentMediaItem?.isLocal == true)
+                                                binder.player.play()
+                                            else
+                                                binder.onlinePlayer?.play()
+                                        } else
+                                            CoroutineScope(Dispatchers.IO).launch {
+                                                riTuneClient.sendCommand(
+                                                    RiTuneRemoteCommand("play", mediaId = binder.player.getMediaItemAt(index).mediaId)
+                                                )
+                                            }
                                     },
                                     onPause = {
-                                        if (binder.player.currentMediaItem?.isLocal == true)
-                                            binder.player.pause()
-                                        else
-                                            binder.onlinePlayer?.pause()
+                                        if (!GlobalSharedData.riTuneCastActive) {
+                                            if (binder.player.currentMediaItem?.isLocal == true)
+                                                binder.player.pause()
+                                            else
+                                                binder.onlinePlayer?.pause()
+                                        } else
+                                            CoroutineScope(Dispatchers.IO).launch {
+                                                riTuneClient.sendCommand(
+                                                    RiTuneRemoteCommand("pause")
+                                                )
+                                            }
                                     },
                                     onSeekTo = {
-                                        if (binder.player.currentMediaItem?.isLocal == true)
-                                            binder.player.seekTo(it.toLong())
-                                        else
-                                            binder.onlinePlayer?.seekTo(it.div(1000))
+                                        if (!GlobalSharedData.riTuneCastActive) {
+                                            if (binder.player.currentMediaItem?.isLocal == true)
+                                                binder.player.seekTo(it.toLong())
+                                            else
+                                                binder.onlinePlayer?.seekTo(it.div(1000))
+                                        } else
+                                            CoroutineScope(Dispatchers.IO).launch {
+                                                riTuneClient.sendCommand(
+                                                    RiTuneRemoteCommand("seek", position = it.div(1000))
+                                                )
+                                            }
                                     },
                                     onNext = { binder.player.playNext() },
                                     onPrevious = {
@@ -3109,22 +3159,43 @@ fun UnifiedPlayer(
                                                 .padding(vertical = 4.dp)
                                                 .fillMaxWidth(),
                                             onPlay = {
-                                                if (binder.player.currentMediaItem?.isLocal == true)
-                                                    binder.player.play()
-                                                else
-                                                    binder.onlinePlayer?.play()
+                                                if (!GlobalSharedData.riTuneCastActive) {
+                                                    if (binder.player.currentMediaItem?.isLocal == true)
+                                                        binder.player.play()
+                                                    else
+                                                        binder.onlinePlayer?.play()
+                                                } else
+                                                    CoroutineScope(Dispatchers.IO).launch {
+                                                        riTuneClient.sendCommand(
+                                                            RiTuneRemoteCommand("play", mediaId = binder.player.getMediaItemAt(index).mediaId)
+                                                        )
+                                                    }
                                             },
                                             onPause = {
-                                                if (binder.player.currentMediaItem?.isLocal == true)
-                                                    binder.player.pause()
-                                                else
-                                                    binder.onlinePlayer?.pause()
+                                                if (!GlobalSharedData.riTuneCastActive) {
+                                                    if (binder.player.currentMediaItem?.isLocal == true)
+                                                        binder.player.pause()
+                                                    else
+                                                        binder.onlinePlayer?.pause()
+                                                } else
+                                                    CoroutineScope(Dispatchers.IO).launch {
+                                                        riTuneClient.sendCommand(
+                                                            RiTuneRemoteCommand("pause")
+                                                        )
+                                                    }
                                             },
                                             onSeekTo = {
-                                                if (binder.player.currentMediaItem?.isLocal == true)
-                                                    binder.player.seekTo(it.toLong())
-                                                else
-                                                    binder.onlinePlayer?.seekTo(it.div(1000))
+                                                if (!GlobalSharedData.riTuneCastActive) {
+                                                    if (binder.player.currentMediaItem?.isLocal == true)
+                                                        binder.player.seekTo(it.toLong())
+                                                    else
+                                                        binder.onlinePlayer?.seekTo(it.div(1000))
+                                                } else
+                                                    CoroutineScope(Dispatchers.IO).launch {
+                                                        riTuneClient.sendCommand(
+                                                            RiTuneRemoteCommand("seek", position = it.div(1000))
+                                                        )
+                                                    }
                                             },
                                             onNext = { binder.player.playNext() },
                                             onPrevious = {
@@ -3451,9 +3522,10 @@ fun UnifiedPlayer(
                                                         all = 10.dp
                                                     )
                                                 }
-                                                .conditional(thumbnailType == ThumbnailType.Modern
-                                                        && coverThumbnailAnimation != ThumbnailCoverType.AudioCassette
-                                                        && coverThumbnailAnimation != ThumbnailCoverType.AudioCassetteWithCover
+                                                .conditional(
+                                                    thumbnailType == ThumbnailType.Modern
+                                                            && coverThumbnailAnimation != ThumbnailCoverType.AudioCassette
+                                                            && coverThumbnailAnimation != ThumbnailCoverType.AudioCassetteWithCover
                                                 ) {
                                                     doubleShadowDrop(
                                                         if (showCoverThumbnailAnimation && !binder.player.getMediaItemAt(
@@ -3604,7 +3676,9 @@ fun UnifiedPlayer(
                                                         painter = coverPainter,
                                                         contentDescription = "",
                                                         contentScale = ContentScale.Fit,
-                                                        modifier = Modifier.fillMaxSize(.5f).align(Alignment.Center)
+                                                        modifier = Modifier
+                                                            .fillMaxSize(.5f)
+                                                            .align(Alignment.Center)
                                                     )
                                                 }
                                             }
@@ -3936,22 +4010,50 @@ fun UnifiedPlayer(
                                         .padding(vertical = 4.dp)
                                         .fillMaxWidth(),
                                     onPlay = {
-                                        if (binder.player.currentMediaItem?.isLocal == true)
-                                            binder.player.play()
-                                        else
-                                            binder.onlinePlayer?.play()
+                                        if (!GlobalSharedData.riTuneCastActive) {
+                                            if (binder.player.currentMediaItem?.isLocal == true)
+                                                binder.player.play()
+                                            else
+                                                binder.onlinePlayer?.play()
+                                        } else
+                                            CoroutineScope(Dispatchers.IO).launch {
+                                                withContext(Dispatchers.Main) {
+                                                    riTuneClient.sendCommand(
+                                                        RiTuneRemoteCommand(
+                                                            "play",
+                                                            mediaId = binder.player.getMediaItemAt(
+                                                                index
+                                                            ).mediaId
+                                                        )
+                                                    )
+                                                }
+                                            }
                                     },
                                     onPause = {
-                                        if (binder.player.currentMediaItem?.isLocal == true)
-                                            binder.player.pause()
-                                        else
-                                            binder.onlinePlayer?.pause()
+                                        if (!GlobalSharedData.riTuneCastActive) {
+                                            if (binder.player.currentMediaItem?.isLocal == true)
+                                                binder.player.pause()
+                                            else
+                                                binder.onlinePlayer?.pause()
+                                        } else
+                                            CoroutineScope(Dispatchers.IO).launch {
+                                                riTuneClient.sendCommand(
+                                                    RiTuneRemoteCommand("pause")
+                                                )
+                                            }
                                     },
                                     onSeekTo = {
-                                        if (binder.player.currentMediaItem?.isLocal == true)
-                                            binder.player.seekTo(it.toLong())
-                                        else
-                                            binder.onlinePlayer?.seekTo(it.div(1000))
+                                        if (!GlobalSharedData.riTuneCastActive) {
+                                            if (binder.player.currentMediaItem?.isLocal == true)
+                                                binder.player.seekTo(it.toLong())
+                                            else
+                                                binder.onlinePlayer?.seekTo(it.div(1000))
+                                        } else
+                                            CoroutineScope(Dispatchers.IO).launch {
+                                                riTuneClient.sendCommand(
+                                                    RiTuneRemoteCommand("seek", position = it.div(1000))
+                                                )
+                                            }
                                     },
                                     onNext = { binder.player.playNext() },
                                     onPrevious = {

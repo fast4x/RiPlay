@@ -48,9 +48,13 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.window.PopupProperties
-import it.fast4x.riplay.LocalCastSheetState
+import it.fast4x.riplay.LocalRiTuneSheetState
+import it.fast4x.riplay.extensions.preferences.castToRiTuneDeviceEnabledKey
+import it.fast4x.riplay.extensions.ritune.improved.RiTuneSelector
+import it.fast4x.riplay.utils.GlobalSharedData
 import it.fast4x.riplay.utils.getRoundnessShape
 import it.fast4x.riplay.utils.typography
+import timber.log.Timber
 
 @Composable
 private fun HamburgerMenu(
@@ -399,29 +403,15 @@ fun ActionBar(
     }
      */
 
-    /* // todo cast to complete
+     // todo cast to complete
     var castToRiTuneDeviceEnabled by rememberPreference(castToRiTuneDeviceEnabledKey, false )
-    var showRiTuneSelector by remember { mutableStateOf(false) }
-
-    if (showRiTuneSelector) {
-        RiTuneSelector(
-            onDismiss = {
-                showRiTuneSelector = false
-            },
-            onSelect = {
-                Timber.d("RiTuneSelector: $it")
-                //castToRiTuneDeviceActive = it.any { device -> device.selected }
-            }
-        )
-    }
-
+    val showCastScreen = LocalRiTuneSheetState.current
 
     if (castToRiTuneDeviceEnabled)
-        HeaderIcon(if (GlobalSharedData.riTuneCastActive) R.drawable.cast_connected else R.drawable.cast_disconnected) {
-            showRiTuneSelector = true
-            //navController.navigate(NavRoutes.ritunecontroller.name)
+        HeaderIcon(if (GlobalSharedData.riTuneCastActive) R.drawable.cast_connected else R.drawable.cast_disconnected, tint = colorPalette().accent) {
+            showCastScreen.expandSoft()
         }
-    */
+
 
     /* todo maybe nor right place
     val equalizer = LocalPlayerServiceBinder.current?.equalizer

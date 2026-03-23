@@ -456,7 +456,7 @@ class PlayerService : Service(),
         //initializeAudioFocusHelper()
         //initializeTelephonyManager(true)
 
-        //initializeRiTune()
+        initializeRiTune()
         initializeDiscordPresence()
 
         // INITIALIZATION
@@ -810,6 +810,8 @@ class PlayerService : Service(),
 
                 if (isCastActive) {
                     withContext(Dispatchers.Main) {
+                        playerState?.let { updatePlayerState(it) }
+
                         if (duration != null) {
                             currentDuration.value = duration
                         }
@@ -843,7 +845,7 @@ class PlayerService : Service(),
 
                         Timber.d("PlayerService initializeRiTune CAST ACTIVE - Trying to connect...")
 
-                        val device = GlobalSharedData.riTuneDevices.firstOrNull { it.selected }
+                        val device = GlobalSharedData.riTuneDevices.value.firstOrNull { it.selected }
 
                         if (device != null) {
                             isConnecting = true
@@ -1159,15 +1161,19 @@ class PlayerService : Service(),
                                     youTubePlayer.unMute()
                                     youTubePlayer.setVolume(getSystemMediaVolume())
                                     youTubePlayer.play()
-                                } else
-                                    coroutineScope.launch {
-                                        riTuneClient.sendCommand(
-                                            RiTuneRemoteCommand(
-                                                "play",
-                                                position = playFromSecond
-                                            )
-                                        )
-                                    }
+                                }
+//                                else
+//                                    coroutineScope.launch {
+//                                        localMediaItem?.let { item ->
+//                                            riTuneClient.sendCommand(
+//                                                RiTuneRemoteCommand(
+//                                                    "load",
+//                                                    mediaId = item.mediaId,
+//                                                    position = playFromSecond
+//                                                )
+//                                            )
+//                                        }
+//                                    }
                             }
 
                         }
@@ -1252,7 +1258,8 @@ class PlayerService : Service(),
                                 PopupType.Warning,
                                 context = this@PlayerService
                             )
-                            handlePlayNext()
+
+                        handlePlayNext()
 
                         //}
                         /*
@@ -1497,6 +1504,8 @@ class PlayerService : Service(),
             audioVolumeObserver.unregister()
             endedObserverJob?.cancel()
             bluetoothReceiver?.unregister()
+
+            riTuneObserverJob?.cancel()
 
             discordPresenceManager?.onStop()
 
