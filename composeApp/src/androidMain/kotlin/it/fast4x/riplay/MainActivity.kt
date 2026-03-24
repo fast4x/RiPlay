@@ -237,6 +237,7 @@ import it.fast4x.riplay.extensions.databasebackup.DatabaseBackupManager
 import it.fast4x.riplay.extensions.htmlreader.shazamSongInfoExtractor
 import it.fast4x.riplay.extensions.nsd.discoverNsdServices
 import it.fast4x.riplay.extensions.ondevice.OnDeviceViewModel
+import it.fast4x.riplay.extensions.preferences.castToRiTuneDeviceEnabledKey
 import it.fast4x.riplay.extensions.preferences.checkUpdateStateKey
 import it.fast4x.riplay.extensions.preferences.resumeOrPausePlaybackWhenDeviceKey
 import it.fast4x.riplay.extensions.preferences.showSnowfallEffectKey
@@ -560,12 +561,15 @@ class MainActivity :
 
         checkIfAppIsRunningInBackground()
 
-        //registerNsdService()
-        discoverNsdServices(
-            onServiceFound = { devices ->
-                GlobalSharedData.riTuneDevices.value = devices.map { device -> device.toRiTuneDevice() }.toMutableStateList()
-            }
-        )
+        if (preferences.getBoolean(castToRiTuneDeviceEnabledKey, false)) {
+            //registerNsdService()
+            discoverNsdServices(
+                onServiceFound = { devices ->
+                    GlobalSharedData.riTuneDevices.value =
+                        devices.map { device -> device.toRiTuneDevice() }.toMutableStateList()
+                }
+            )
+        }
 
         isclosebackgroundPlayerEnabled = preferences.getBoolean(closebackgroundPlayerKey, false)
 
