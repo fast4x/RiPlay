@@ -34,6 +34,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.hapticfeedback.HapticFeedback
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.ExperimentalTextApi
@@ -224,7 +225,11 @@ fun HomePageExtendedSections(
             )
 
 
-
+            val density = LocalDensity.current
+            val fontSize = typography().xs.semiBold.fontSize
+            val textHeightDp = with(density) { fontSize.toDp() } * 2.5f
+            val singleRowHeight = songThumbnailSizeDp + (Dimensions.itemsVerticalPadding * 2) + (textHeightDp * .2f)
+            val totalGridHeight = singleRowHeight * (if (relatedInit != null) 3 else 1)
 
             LazyHorizontalGrid(
                 state = quickPicksLazyGridState,
@@ -233,8 +238,9 @@ fun HomePageExtendedSections(
                 contentPadding = endPaddingValues,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(if (relatedInit != null) Dimensions.itemsVerticalPadding * 3 * 9 else Dimensions.itemsVerticalPadding * 9)
-                //.height((songThumbnailSizeDp + Dimensions.itemsVerticalPadding * 2) * 4)
+                    .height(totalGridHeight)
+                    //.height(if (relatedInit != null) Dimensions.itemsVerticalPadding * 3 * 9 else Dimensions.itemsVerticalPadding * 9)
+                    //.height((songThumbnailSizeDp + Dimensions.itemsVerticalPadding * 2) * 4)
             ) {
                 trending?.let { song ->
                     item {
@@ -612,6 +618,8 @@ fun MoodAndGenresPart(
                     //modifier = Modifier.fillMaxWidth(0.7f)
                 )
 
+
+
                 LazyHorizontalGrid(
                     state = chipsLazyGridState,
                     rows = GridCells.Fixed(4),
@@ -621,7 +629,8 @@ fun MoodAndGenresPart(
                     modifier = Modifier
                         .fillMaxWidth()
                         //.height((thumbnailSizeDp + Dimensions.itemsVerticalPadding * 8) * 8)
-                        .height(Dimensions.itemsVerticalPadding * 4 * 8)
+                        //.height(Dimensions.itemsVerticalPadding * 4 * 8)
+                        .height((songThumbnailSizeDp + Dimensions.itemsVerticalPadding) * 4)
                 ) {
                     items(
                         items = homePageInit.chips?.sortedBy { it.title } ?: emptyList(),
@@ -660,7 +669,7 @@ fun MoodAndGenresPart(
                         modifier = Modifier
                             .fillMaxWidth()
                             //.height((thumbnailSizeDp + Dimensions.itemsVerticalPadding * 8) * 8)
-                            .height(Dimensions.itemsVerticalPadding * 4 * 8)
+                            .height((songThumbnailSizeDp + Dimensions.itemsVerticalPadding) * 4)
                     ) {
                         items(
                             items = page.moods.sortedBy { it.title },

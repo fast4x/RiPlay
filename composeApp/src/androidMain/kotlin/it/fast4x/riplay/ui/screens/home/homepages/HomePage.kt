@@ -43,6 +43,7 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -469,8 +470,11 @@ fun HomePage(
                             .padding(bottom = 8.dp)
                     )
 
-
-
+                    val density = LocalDensity.current
+                    val fontSize = typography().xs.semiBold.fontSize
+                    val textHeightDp = with(density) { fontSize.toDp() } * 2.5f
+                    val singleRowHeight = songThumbnailSizeDp + (Dimensions.itemsVerticalPadding * 2) + (textHeightDp * .2f)
+                    val totalGridHeight = singleRowHeight * (if (relatedPage != null) 3 else 1)
 
                     LazyHorizontalGrid (
                         state = quickPicksLazyGridState,
@@ -479,8 +483,9 @@ fun HomePage(
                         contentPadding = endPaddingValues,
                         modifier = Modifier
                             .fillMaxWidth()
+                            .height(totalGridHeight)
                             //.height(if (relatedPage != null) Dimensions.itemsVerticalPadding * 3 * 9 else Dimensions.itemsVerticalPadding * 9)
-                            .height((songThumbnailSizeDp + Dimensions.itemsVerticalPadding * 2) * 3)
+                            //.height((songThumbnailSizeDp + (Dimensions.itemsVerticalPadding * 2)) * 3)
                     ) {
                         trending?.let { song ->
                             item {
@@ -639,7 +644,7 @@ fun HomePage(
 
                             BasicText(
                                 text = stringResource(R.string.new_albums_of_your_artists),
-                                style = typography().xl.bold,
+                                style = typography().l.bold,
                                 modifier = sectionTextModifier
                             )
 
@@ -838,7 +843,6 @@ fun HomePage(
                                     state = moodAngGenresLazyGridState,
                                     rows = GridCells.Fixed(4),
                                     flingBehavior = ScrollableDefaults.flingBehavior(),
-                                    //flingBehavior = rememberSnapFlingBehavior(snapLayoutInfoProvider),
                                     contentPadding = endPaddingValues,
                                     modifier = Modifier
                                         .fillMaxWidth()
