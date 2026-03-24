@@ -7,7 +7,6 @@ import android.content.ServiceConnection
 import android.content.SharedPreferences
 import android.graphics.Bitmap
 import android.graphics.Canvas
-import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
 import android.os.IBinder
@@ -108,6 +107,8 @@ class PlayerMediaBrowserService : MediaBrowserServiceCompat(),
     private var albumSortOrder: SortOrder = SortOrder.Descending
 
     private var bound = false
+    private var playerServiceBinder: PlayerService.Binder? = null
+
 
 
     override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences?, key: String?) {
@@ -199,6 +200,8 @@ class PlayerMediaBrowserService : MediaBrowserServiceCompat(),
         if (service is PlayerService.Binder) {
             bound = true
             sessionToken = service.mediaSession.sessionToken
+            playerServiceBinder = service
+            service.cancelSleepTimer() // cancel sleeptimer if AA is started
             // IMPORTANT: Do not override the MediaSession callback here.
             // PlayerService owns the callback and implements the authoritative queue/skip logic.
         }
@@ -243,6 +246,8 @@ class PlayerMediaBrowserService : MediaBrowserServiceCompat(),
         extras: Bundle?,
         result: Result<List<MediaItem>>
     ) {
+        playerServiceBinder?.cancelSleepTimer()
+
         result.detach()
         runBlocking(Dispatchers.IO) {
             searchedSongs = Environment.searchPage(
@@ -277,6 +282,8 @@ class PlayerMediaBrowserService : MediaBrowserServiceCompat(),
         parentId: String,
         result: Result<List<MediaItem?>?>
     ) {
+        playerServiceBinder?.cancelSleepTimer()
+
         Timber.d("PlayerMediaBrowserService onLoadChildren original parentId $parentId")
         val data = parentId.split('/')
         val id = data.getOrNull(1) ?: ""
