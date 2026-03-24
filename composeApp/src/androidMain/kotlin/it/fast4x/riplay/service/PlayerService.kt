@@ -835,6 +835,11 @@ class PlayerService : Service(),
                     //Timber.d("PlayerService initializeRiTune CAST NOT ACTIVE - Status: $connectionStatus, isConnecting: $isConnecting")
                     if (connectionStatus == RiTuneConnectionStatus.Connected) {
                         riTuneClient.disconnect()
+                        withContext(Dispatchers.Main) {
+                            player.pause()
+                            _internalOnlinePlayer.value?.pause()
+                        }
+                        updatePlayerState(PlayerConstants.PlayerState.PAUSED)
                         Timber.d("PlayerService initializeRiTune CAST NOT ACTIVE - Disconnected")
                     }
 
@@ -843,6 +848,11 @@ class PlayerService : Service(),
                     if (connectionStatus == RiTuneConnectionStatus.Connected) {
                         if (isConnecting) {
                             isConnecting = false
+                            withContext(Dispatchers.Main) {
+                                player.pause()
+                                _internalOnlinePlayer.value?.pause()
+                            }
+
                             Timber.d("PlayerService initializeRiTune Connection established successfully")
                         }
 
@@ -1162,7 +1172,7 @@ class PlayerService : Service(),
 //                                hasAudioFocus = requestAudioFocus()
 
                             if (!firstTimeStarted) {
-                                if (!GlobalSharedData.riTuneCastActive) {
+                                if (!GlobalSharedData.riTuneCastActive || riTuneClient.connectionStatus != RiTuneConnectionStatus.Connected) {
                                     youTubePlayer.unMute()
                                     youTubePlayer.setVolume(getSystemMediaVolume())
                                     youTubePlayer.play()
@@ -1230,7 +1240,7 @@ class PlayerService : Service(),
                         player.saveMasterQueue(currentSecond.value.toInt())
 
 
-                    if (!GlobalSharedData.riTuneCastActive)
+                    if (!GlobalSharedData.riTuneCastActive || riTuneClient.connectionStatus != RiTuneConnectionStatus.Connected)
                         youTubePlayer.pause()
                     else
                         coroutineScope.launch {
@@ -1670,7 +1680,7 @@ class PlayerService : Service(),
 
             if (!it.isLocal){
 
-                if (!GlobalSharedData.riTuneCastActive) {
+                if (!GlobalSharedData.riTuneCastActive || riTuneClient.connectionStatus != RiTuneConnectionStatus.Connected) {
                     _internalOnlinePlayer.value?.pause()
                     _internalOnlinePlayer.value?.cueVideo(it.mediaId, playFromSecond)
                 }
@@ -1816,7 +1826,7 @@ class PlayerService : Service(),
                 if (lastError != null) {
                     Timber.w("PlayerService maybeRecoverPlaybackError: try to recover player error")
                     localMediaItem?.let {
-                        if (!GlobalSharedData.riTuneCastActive) {
+                        if (!GlobalSharedData.riTuneCastActive || riTuneClient.connectionStatus != RiTuneConnectionStatus.Connected) {
                             _internalOnlinePlayer.value?.pause()
                             _internalOnlinePlayer.value?.cueVideo(it.mediaId, playFromSecond)
 
@@ -2279,7 +2289,7 @@ class PlayerService : Service(),
                 when (intent.action) {
                     Action.pause.value -> {
                         player.pause()
-                        if (!GlobalSharedData.riTuneCastActive)
+                        if (!GlobalSharedData.riTuneCastActive || riTuneClient.connectionStatus != RiTuneConnectionStatus.Connected)
                             _internalOnlinePlayer.value?.pause()
                         else
                             coroutineScope.launch {
@@ -2295,7 +2305,7 @@ class PlayerService : Service(),
                         if (player.currentMediaItem?.isLocal == true)
                             it.player.play()
                         else {
-                            if (!GlobalSharedData.riTuneCastActive)
+                            if (!GlobalSharedData.riTuneCastActive || riTuneClient.connectionStatus != RiTuneConnectionStatus.Connected)
                                 _internalOnlinePlayer.value?.play()
                             else
                                 coroutineScope.launch {
@@ -3192,7 +3202,7 @@ class PlayerService : Service(),
                         if (player.currentMediaItem?.isLocal == true)
                             it.player.play()
                         else {
-                            if (!GlobalSharedData.riTuneCastActive)
+                            if (!GlobalSharedData.riTuneCastActive || riTuneClient.connectionStatus != RiTuneConnectionStatus.Connected)
                                 _internalOnlinePlayer.value?.play()
                             else
                                 coroutineScope.launch {
@@ -3208,7 +3218,7 @@ class PlayerService : Service(),
                     onPauseClick = {
                         Timber.d("PlayerService InitializeUnifiedSessionCallback onPauseClick")
                         it.player.pause()
-                        if (!GlobalSharedData.riTuneCastActive) {
+                        if (!GlobalSharedData.riTuneCastActive || riTuneClient.connectionStatus != RiTuneConnectionStatus.Connected) {
                             _internalOnlinePlayer.value?.pause()
                         } else {
                             coroutineScope.launch {
@@ -3223,7 +3233,7 @@ class PlayerService : Service(),
                     onSeekToPos = { second ->
                         val newPosition = (second / 1000).toFloat()
                         Timber.d("PlayerService InitializeUnifiedSessionCallback onSeekPosTo ${newPosition}")
-                        if (!GlobalSharedData.riTuneCastActive)
+                        if (!GlobalSharedData.riTuneCastActive || riTuneClient.connectionStatus != RiTuneConnectionStatus.Connected)
                             _internalOnlinePlayer.value?.seekTo(newPosition)
                         else
                             coroutineScope.launch {
