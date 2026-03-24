@@ -40,12 +40,10 @@ inline fun <reified T : Activity> Context.activityPendingIntent(
         (if (isAtLeastAndroid6) PendingIntent.FLAG_IMMUTABLE else 0) or flags
     )
 
-val Context.isIgnoringBatteryOptimizations: Boolean
-    get() = if (isAtLeastAndroid6) {
-        getSystemService<PowerManager>()?.isIgnoringBatteryOptimizations(packageName) ?: true
-    } else {
-        true
-    }
+fun Context.isIgnoringBatteryOptimizations(): Boolean {
+    val powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
+    return powerManager.isIgnoringBatteryOptimizations(packageName)
+}
 
 fun Context.toast(message: String) = Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
 fun Context.toastLong(message: String) = Toast.makeText(this, message, Toast.LENGTH_LONG).show()

@@ -437,6 +437,8 @@ const val showAllSongsAAKey = "showAllSongsAA"
 const val showPodcastAAKey = "showPodcastAA"
 const val showPinnedAAKey = "showPinnedAA"
 
+const val showOnBoardingScreenKey = "onBoardingScreen"
+
 inline fun <reified T : Enum<T>> SharedPreferences.getEnum(
     key: String,
     defaultValue: T

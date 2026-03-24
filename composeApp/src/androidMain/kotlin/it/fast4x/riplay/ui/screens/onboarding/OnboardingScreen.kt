@@ -1,39 +1,48 @@
 package it.fast4x.riplay.ui.screens.onboarding
 
 import android.Manifest
+import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.net.Uri
 import android.os.Build
 import android.provider.Settings
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
+import androidx.core.net.toUri
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import it.fast4x.riplay.R
-import org.jetbrains.compose.resources.vectorResource
+import it.fast4x.riplay.enums.PopupType
+import it.fast4x.riplay.ui.components.themed.SmartMessage
+import it.fast4x.riplay.utils.isAtLeastAndroid6
+import it.fast4x.riplay.utils.isIgnoringBatteryOptimizations
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun OnboardingScreen(
     modifier: Modifier = Modifier,
-    onAllPermissionsGranted: () -> Unit, // Callback quando l'utente clicca "Inizia"
+    onComplete: () -> Unit,
 ) {
     val context = LocalContext.current
-
-    // Stato per forzare la ricomposizione quando lo stato dei permessi cambia
-    // In un'app reale useresti un ViewModel, qui usiamo remember per semplicità
     var refreshTrigger by remember { mutableStateOf(0) }
+    val lifecycleOwner = LocalLifecycleOwner.current
 
     // Helper per controllare lo stato
     fun checkPermission(permission: String): Boolean {
@@ -43,148 +52,179 @@ fun OnboardingScreen(
         ) == PackageManager.PERMISSION_GRANTED
     }
 
-    // Definizione degli elementi (La lista viene ricalcolata quando refreshTrigger cambia)
-    val items by remember(refreshTrigger) {
-        derivedStateOf {
-            buildList {
+    // 1. Definiamo il launcher una sola volta
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            // Incrementiamo il trigger per far ridisegnare la lista
+            refreshTrigger++
+        }
+    }
 
-                add(
-                    OnboardingSection(
-                        title = "Permessi"
-                    )
-                )
+    val batteryLauncher =
+        rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.StartActivityForResult()
+        ) {
+            refreshTrigger++
+        }
 
-                // 1. Notifiche (Richiesto su Android 13+)
-                val notificationGranted = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                    checkPermission(Manifest.permission.POST_NOTIFICATIONS)
-                } else {
-                    true // Su Android < 13 è concesso di default col manifest
-                }
-
-                add(
-                    OnboardingItem(
-                        id = "notifications",
-                        title = "Notifiche",
-                        description = "Ricevi notifiche quando cambi canzone o controlli la musica in background.",
-                        icon = R.drawable.notifications,
-                        status = if (notificationGranted) PermissionStatus.GRANTED else PermissionStatus.NOT_REQUESTED,
-                        onRequest = {
-                            // Qui inietteresti il launcher: notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-                            // Per ora simuliamo il cambio stato
-                            refreshTrigger++
-                        }
-                    )
-                )
-
-                // 2. Memorizzazione (Storage / Lettura File)
-                // Nota: Su Android 13+ READ_MEDIA_AUDIO è preferito a READ_EXTERNAL_STORAGE
-                val storageGranted = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                    checkPermission(Manifest.permission.READ_MEDIA_AUDIO)
-                } else {
-                    checkPermission(Manifest.permission.READ_EXTERNAL_STORAGE)
-                }
-
-                add(
-                    OnboardingItem(
-                        id = "storage",
-                        title = "Accesso File Musicali",
-                        description = "Permetti all'app di leggere la libreria musicale dal tuo dispositivo.",
-                        icon = R.drawable.folder,
-                        status = if (storageGranted) PermissionStatus.GRANTED else PermissionStatus.NOT_REQUESTED,
-                        onRequest = {
-                            // storagePermissionLauncher.launch(...)
-                            refreshTrigger++
-                        }
-                    )
-                )
-
-                // 3. Bluetooth (Per la logica delle cuffie)
-                val btGranted = checkPermission(Manifest.permission.BLUETOOTH_CONNECT)
-
-                add(
-                    OnboardingItem(
-                        id = "bluetooth",
-                        title = "Bluetooth",
-                        description = "Permetti all'app di rilevare le cuffie per mettere in pausa/riprendere la musica.",
-                        icon = R.drawable.ui,
-                        status = if (btGranted) PermissionStatus.GRANTED else PermissionStatus.NOT_REQUESTED,
-                        onRequest = {
-                            // btPermissionLauncher.launch(Manifest.permission.BLUETOOTH_CONNECT)
-                            refreshTrigger++
-                        }
-                    )
-                )
-
-                // 4. Ottimizzazione Batteria (Non è un permesso, ma un intent)
-                // Verifichiamo se siamo nella lista delle eccezioni (semplificato)
-                val isIgnoringBattery = true // Qui servirebbe un PowerManager check reale
-
-                add(
-                    OnboardingItem(
-                        id = "battery",
-                        title = "Ottimizzazione Batteria",
-                        description = "Evita che il sistema arresti la musica quando lo schermo è spento.",
-                        icon = R.drawable.chevron_back,
-                        status = if (isIgnoringBattery) PermissionStatus.GRANTED else PermissionStatus.NOT_REQUESTED,
-                        onRequest = {
-                            val intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS).apply {
-                                data = Uri.parse("package:${context.packageName}")
-                            }
-                            context.startActivity(intent)
-                            // Nota: non possiamo sapere subito se l'utente ha cliccato "Permetti",
-                            // quindi in una app reale useresti un ActivityResultLauncher per controllare il risultato.
-                        }
-                    )
-                )
-
-                add(
-                    OnboardingItem(
-                        id = "battery",
-                        title = "Ottimizzazione Batteria",
-                        description = "Evita che il sistema arresti la musica quando lo schermo è spento.",
-                        icon = R.drawable.chevron_back,
-                        status = if (isIgnoringBattery) PermissionStatus.GRANTED else PermissionStatus.NOT_REQUESTED,
-                        onRequest = {
-                            val intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS).apply {
-                                data = Uri.parse("package:${context.packageName}")
-                            }
-                            context.startActivity(intent)
-                            // Nota: non possiamo sapere subito se l'utente ha cliccato "Permetti",
-                            // quindi in una app reale useresti un ActivityResultLauncher per controllare il risultato.
-                        }
-                    )
-                )
-
-                add(
-                    OnboardingItem(
-                        id = "battery",
-                        title = "Ottimizzazione Batteria",
-                        description = "Evita che il sistema arresti la musica quando lo schermo è spento.",
-                        icon = R.drawable.chevron_back,
-                        status = if (isIgnoringBattery) PermissionStatus.GRANTED else PermissionStatus.NOT_REQUESTED,
-                        onRequest = {
-                            val intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS).apply {
-                                data = Uri.parse("package:${context.packageName}")
-                            }
-                            context.startActivity(intent)
-                            // Nota: non possiamo sapere subito se l'utente ha cliccato "Permetti",
-                            // quindi in una app reale useresti un ActivityResultLauncher per controllare il risultato.
-                        }
-                    )
-                )
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                refreshTrigger++
             }
+        }
+
+        lifecycleOwner.lifecycle.addObserver(observer)
+
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
+    }
+
+    val msgNoBatteryOptim =
+        stringResource(R.string.not_find_battery_optimization_settings)
+
+    // 2. Calcoliamo gli item. Usiamo solo remember(refreshTrigger)
+    // Non serve derivedStateOf perché refreshTrigger è la nostra unica fonte di verità per l'aggiornamento manuale
+    val items = remember(refreshTrigger) {
+        buildList {
+            add(OnboardingSection(title = "Permessi"))
+
+            // 1. Notifiche
+            val notificationGranted = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                checkPermission(Manifest.permission.POST_NOTIFICATIONS)
+            } else {
+                true
+            }
+
+            add(
+                OnboardingItem(
+                    id = "notifications",
+                    title = "Notifiche",
+                    description = "Ricevi notifiche quando cambi canzone.",
+                    icon = R.drawable.notifications, // Assicurati che esista
+                    status = if (notificationGranted) PermissionStatus.GRANTED else PermissionStatus.NOT_REQUESTED,
+                    onRequest = {
+                        // Lanciamo il permesso specifico
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                            permissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                        }
+                    }
+                )
+            )
+
+
+            val storageGranted = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                checkPermission(Manifest.permission.READ_MEDIA_AUDIO)
+            } else {
+                checkPermission(Manifest.permission.READ_EXTERNAL_STORAGE)
+            }
+
+            add(
+                OnboardingItem(
+                    id = "storage",
+                    title = "Accesso File Audio",
+                    description = "Permetti all'app di leggere la libreria musicale.",
+                    icon = R.drawable.folder,
+                    status = if (storageGranted) PermissionStatus.GRANTED else PermissionStatus.NOT_REQUESTED,
+                    onRequest = {
+                        val perm = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                            Manifest.permission.READ_MEDIA_AUDIO
+                        } else {
+                            Manifest.permission.READ_EXTERNAL_STORAGE
+                        }
+                        permissionLauncher.launch(perm)
+                    }
+                )
+            )
+
+            // 3. Bluetooth
+            val btGranted = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                checkPermission(Manifest.permission.BLUETOOTH_CONNECT)
+            } else {
+                true
+            }
+
+            add(
+                OnboardingItem(
+                    id = "bluetooth",
+                    title = "Bluetooth",
+                    description = "Rileva le cuffie per mettere in pausa o riprendere la musica.",
+                    icon = R.drawable.bluetooth,
+                    status = if (btGranted) PermissionStatus.GRANTED else PermissionStatus.NOT_REQUESTED,
+                    onRequest = {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                            permissionLauncher.launch(Manifest.permission.BLUETOOTH_CONNECT)
+                        }
+                    }
+                )
+            )
+
+            val micGranted = checkPermission(Manifest.permission.RECORD_AUDIO)
+
+            add(
+                OnboardingItem(
+                    id = "mic",
+                    title = "Microfono",
+                    description = "Permette di usare il microfono per i comandi vocali, il visualizer e altre funzionalità",
+                    icon = R.drawable.mic,
+                    status = if (micGranted) PermissionStatus.GRANTED else PermissionStatus.NOT_REQUESTED,
+                    onRequest = {
+                        val perm = Manifest.permission.RECORD_AUDIO
+                        permissionLauncher.launch(perm)
+                    }
+                )
+            )
+
+            val isIgnoringBattery = context.isIgnoringBatteryOptimizations()
+            add(
+                OnboardingItem(
+                    id = "battery",
+                    title = "Ottimizzazione Batteria",
+                    description = "Evita che il sistema arresti la musica in background.",
+                    icon = R.drawable.battery_charging,
+                    status = if (isIgnoringBattery) PermissionStatus.GRANTED else PermissionStatus.NOT_REQUESTED,
+                    onRequest = {
+                        if (!isAtLeastAndroid6) return@OnboardingItem
+
+                        try {
+                            batteryLauncher.launch(
+                                Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS).apply {
+                                    data = "package:${context.packageName}".toUri()
+                                }
+                            )
+                        } catch (e: ActivityNotFoundException) {
+                            try {
+                                batteryLauncher.launch(
+                                    Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)
+                                )
+                            } catch (e: ActivityNotFoundException) {
+                                SmartMessage(
+                                    "$msgNoBatteryOptim RiPlay",
+                                    type = PopupType.Info,
+                                    context = context
+                                )
+                            }
+                        }
+                    }
+                )
+            )
         }
     }
 
     Scaffold(
         topBar = {
+            /*
             TopAppBar(
-                title = { Text("RiPlay") },
+                title = { Text("RiPlay", style = MaterialTheme.typography.titleSmall) },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.surface,
                     titleContentColor = MaterialTheme.colorScheme.onSurface
                 )
             )
+             */
         }
     ) { padding ->
         Column(
@@ -194,30 +234,19 @@ fun OnboardingScreen(
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Illustrazione o Icona grande
             Icon(
                 painter = painterResource(id = R.drawable.app_icon),
                 contentDescription = null,
-                modifier = Modifier.size(80.dp),
+                modifier = Modifier.size(60.dp),
                 tint = MaterialTheme.colorScheme.primary
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
             Text(
-                text = "Configura la tua esperienza musicale perfetta",
-                style = MaterialTheme.typography.headlineSmall,
-                textAlign = TextAlign.Center,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Text(
-                text = "Consenti queste opzioni per sfruttare al meglio tutte le funzionalità dell'app.",
-                style = MaterialTheme.typography.bodyMedium,
-                textAlign = TextAlign.Center,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                text = "Ciao, concedi i permessi utili per configurare la tua esperienza musicale perfetta.",
+                style = MaterialTheme.typography.titleSmall,
+                textAlign = TextAlign.Center
             )
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -236,13 +265,11 @@ fun OnboardingScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Pulsante finale
             Button(
-                onClick = { onAllPermissionsGranted() },
-                modifier = Modifier.fillMaxWidth(),
-                enabled = true //items.all { it.status == PermissionStatus.GRANTED }
+                onClick = { onComplete() },
+                modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Inizia")
+                Text("Avvia RiPlay")
             }
         }
     }

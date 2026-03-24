@@ -575,7 +575,7 @@ class MainActivity :
 
         showAutostartPermissionDialog = preferences.getBoolean(showAutostartPermissionDialogKey, true)
 
-        checkAndRequestStandardPermissions()
+        //checkAndRequestStandardPermissions()
 
         //mediaRouter = MediaRouter.getInstance(this)
 

@@ -76,7 +76,6 @@ import kotlin.compareTo
 @Composable
 fun DataSettings() {
     val context = LocalContext.current
-    val binder = LocalPlayerServiceBinder.current
 
     /*
     // single instance

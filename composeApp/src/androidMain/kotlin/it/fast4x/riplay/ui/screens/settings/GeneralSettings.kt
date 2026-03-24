@@ -677,11 +677,11 @@ fun GeneralSettings(
                     val context = LocalContext.current
                     var isKeepScreenOnEnabled by rememberPreference(isKeepScreenOnEnabledKey, false)
                     var isIgnoringBatteryOptimizations by remember {
-                        mutableStateOf(context.isIgnoringBatteryOptimizations)
+                        mutableStateOf(context.isIgnoringBatteryOptimizations())
                     }
                     val activityResultLauncher =
                         rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-                            isIgnoringBatteryOptimizations = context.isIgnoringBatteryOptimizations
+                            isIgnoringBatteryOptimizations = context.isIgnoringBatteryOptimizations()
                         }
 
                     if (search.input.isBlank() || stringResource(R.string.keep_screen_on).contains(

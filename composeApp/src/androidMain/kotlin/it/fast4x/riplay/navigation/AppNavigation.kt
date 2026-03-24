@@ -23,6 +23,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -77,6 +78,7 @@ import it.fast4x.riplay.extensions.preferences.homeScreenTabIndexKey
 import it.fast4x.riplay.extensions.preferences.pauseSearchHistoryKey
 import it.fast4x.riplay.extensions.preferences.preferences
 import it.fast4x.riplay.extensions.preferences.rememberPreference
+import it.fast4x.riplay.extensions.preferences.showOnBoardingScreenKey
 import it.fast4x.riplay.extensions.preferences.thumbnailRoundnessKey
 import it.fast4x.riplay.extensions.preferences.transitionEffectKey
 import it.fast4x.riplay.extensions.rewind.RewindListScreen
@@ -141,9 +143,12 @@ fun AppNavigation(
     val context = LocalContext.current
     clearPreference(context, homeScreenTabIndexKey)
 
+    var showOnBoardingScreen by rememberPreference(showOnBoardingScreenKey, true)
+
+
     NavHost(
         navController = navController,
-        startDestination = NavRoutes.home.name,
+        startDestination = if (showOnBoardingScreen) NavRoutes.onBoarding.name else NavRoutes.home.name,
         enterTransition = {
             when (transitionEffect) {
                 TransitionEffect.None -> EnterTransition.None
@@ -205,8 +210,9 @@ fun AppNavigation(
         }
 
         composable(route = NavRoutes.onBoarding.name) {
-            OnboardingScreen(){
-                SmartMessage("Permissions completed", context = context)
+            OnboardingScreen{
+                showOnBoardingScreen = false
+                navController.navigate(route = NavRoutes.home.name)
             }
         }
 
