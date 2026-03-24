@@ -1,5 +1,6 @@
 package it.fast4x.riplay.extensions.crashreporter
 
+import it.fast4x.riplay.BuildConfig
 import it.fast4x.riplay.utils.appContext
 import java.io.File
 import java.io.FileWriter
@@ -21,6 +22,7 @@ class CrashReporter (private val LOG_PATH: String) : Thread.UncaughtExceptionHan
         val stringWriter = StringWriter()
         val printWriter = PrintWriter(stringWriter)
         printWriter.append("------------------------------------------------- \n")
+        printWriter.append("--- RiPlay ${BuildConfig.VERSION_NAME} \n")
         printWriter.append("--- Crash Event ${LocalDateTime.now()} \n")
         printWriter.append("------------------------------------------------- \n")
         throwable.printStackTrace(printWriter)
