@@ -439,6 +439,8 @@ const val showPinnedAAKey = "showPinnedAA"
 
 const val showOnBoardingScreenKey = "onBoardingScreen"
 
+const val timerEndTimeKey = "timerEndTime"
+
 inline fun <reified T : Enum<T>> SharedPreferences.getEnum(
     key: String,
     defaultValue: T

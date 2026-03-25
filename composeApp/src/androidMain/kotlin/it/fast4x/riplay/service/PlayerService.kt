@@ -187,6 +187,7 @@ import it.fast4x.riplay.extensions.preferences.isEnabledLastfmKey
 import it.fast4x.riplay.extensions.preferences.lastfmScrobbleTypeKey
 import it.fast4x.riplay.extensions.preferences.lastfmSessionTokenKey
 import it.fast4x.riplay.extensions.preferences.parentalControlEnabledKey
+import it.fast4x.riplay.extensions.preferences.timerEndTimeKey
 import it.fast4x.riplay.extensions.preferences.wallpaperTypeKey
 import it.fast4x.riplay.extensions.ritune.RiTuneClient
 import it.fast4x.riplay.extensions.ritune.models.RiTuneConnectionStatus
@@ -236,7 +237,6 @@ import java.util.Objects
 import kotlin.collections.map
 import kotlin.math.roundToInt
 import kotlin.math.sqrt
-import kotlin.system.exitProcess
 import kotlin.time.Duration.Companion.minutes
 import android.os.Binder as AndroidBinder
 
@@ -437,6 +437,8 @@ class PlayerService : Service(),
 
         startForeground()
 
+        checkAndRestoreTimer()
+
         initializeBitmapProvider()
         initializeAudioManager()
         initializeAudioVolumeObserver()
@@ -604,7 +606,6 @@ class PlayerService : Service(),
     }
 
     private fun startForeground(loading: Boolean = false) {
-
 
             val notification = if (loading) {
                 NotificationCompat
@@ -2961,6 +2962,26 @@ class PlayerService : Service(),
         }
     }
 
+    private fun checkAndRestoreTimer() {
+        val savedEndTime = preferences.getLong(timerEndTimeKey, 0)
+
+        if (savedEndTime != 0L) {
+            val currentTime = System.currentTimeMillis()
+            val remainingMillis = savedEndTime - currentTime
+
+            if (remainingMillis > 0) {
+                Timber.d("PlayerService Timer restoration detected. Remaining: $remainingMillis ms")
+
+                timerJob = coroutineScope.timer(remainingMillis) {
+                    binder.executeStopServiceLogic()
+                }
+            } else {
+                Timber.d("PlayerService Timer expired while service was dead. Stopping now.")
+                binder.executeStopServiceLogic()
+            }
+        }
+    }
+
 
     open inner class Binder : AndroidBinder() {
         val player: ExoPlayer
@@ -3017,28 +3038,31 @@ class PlayerService : Service(),
         fun startSleepTimer(delayMillis: Long) {
             timerJob?.cancel()
 
-            Timber.d("PlayerService startSleepTimer delayMillis $delayMillis")
+            val endTime = System.currentTimeMillis() + delayMillis
+            preferences.edit { putLong(timerEndTimeKey, endTime) }
+
+            Timber.d("PlayerService startSleepTimer delayMillis $delayMillis, scheduled for $endTime")
 
             timerJob = coroutineScope.timer(delayMillis) {
-                Timber.d("PlayerService startSleepTimer stop delay close service")
-                val notification = NotificationCompat
-                    .Builder(this@PlayerService, SLEEPTIMER_NOTIFICATION_CHANNEL_ID)
-                    .setContentTitle("Self closing timer ended")
-                    .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-                    .setAutoCancel(true)
-                    .setOnlyAlertOnce(true)
-                    .setShowWhen(true)
-                    .setSmallIcon(R.drawable.app_icon)
-                    .build()
-
-                player.saveMasterQueue(currentSecond.value.toInt())
-
-                notificationManager?.notify(SLEEPTIMER_NOTIFICATION_ID, notification)
-
-                stopSelf()
-                onDestroy()
-                exitProcess(0)
+                Timber.d("PlayerService timer finished naturally")
+                executeStopServiceLogic()
             }
+        }
+
+        fun executeStopServiceLogic() {
+            preferences.edit { putLong(timerEndTimeKey, 0) }
+
+            player.saveMasterQueue(currentSecond.value.toInt())
+
+            val notification = NotificationCompat
+                .Builder(this@PlayerService, SLEEPTIMER_NOTIFICATION_CHANNEL_ID)
+                .setContentTitle("Self closing timer ended")
+                .setSmallIcon(R.drawable.app_icon)
+                .build()
+            notificationManager?.notify(SLEEPTIMER_NOTIFICATION_ID, notification)
+
+            stopSelf()
+            stopForeground(STOP_FOREGROUND_REMOVE)
         }
 
         fun cancelSleepTimer() {
