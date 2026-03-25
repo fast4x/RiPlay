@@ -2296,7 +2296,7 @@ class PlayerService : Service(),
         override fun onReceive(context: Context, intent: Intent) {
             Timber.d("MainActivity onReceive intent.action: ${intent.action}")
             val currentMediaItem = binder.player.currentMediaItem
-            val queueLoopType = preferences.getEnum(queueLoopTypeKey, defaultValue = QueueLoopType.Default)
+
             binder.let {
                 when (intent.action) {
                     Action.pause.value -> {
@@ -2336,7 +2336,7 @@ class PlayerService : Service(),
                         it.toggleLike()
                     }
                     Action.repeat.value -> {
-                        preferences.edit(commit = true) { putEnum(queueLoopTypeKey, setQueueLoopState(queueLoopType)) }
+                        it.toggleRepeat()
                     }
                    Action.shuffle.value -> {
                        it.toggleShuffle()
@@ -2512,19 +2512,19 @@ class PlayerService : Service(),
             }
             queueLoopTypeKey -> {
                 player.repeatMode =
-                    sharedPreferences.getEnum(queueLoopTypeKey, QueueLoopType.Default).type
+                    sharedPreferences.getEnum(key, QueueLoopType.Default).type
             }
 //            closebackgroundPlayerKey -> {
 //                    isclosebackgroundPlayerEnabled = sharedPreferences.getBoolean(key, false)
 //            }
             closePlayerServiceAfterMinutesKey -> {
                 closeServiceAfterMinutes =
-                    sharedPreferences.getEnum(closePlayerServiceAfterMinutesKey,
+                    sharedPreferences.getEnum(key,
                         DurationInMinutes.Disabled)
             }
             closePlayerServiceWhenPausedAfterMinutesKey -> {
                 closeServiceWhenPlayerPausedAfterMinutes =
-                    sharedPreferences.getEnum(closePlayerServiceWhenPausedAfterMinutesKey,
+                    sharedPreferences.getEnum(key,
                         DurationInMinutes.Disabled)
             }
             isShowingThumbnailInLockscreenKey -> {
@@ -2532,11 +2532,11 @@ class PlayerService : Service(),
                 initializeSongCoverInLockScreen()
             }
             playbackDurationKey -> {
-                medleyDuration = sharedPreferences.getFloat(playbackDurationKey, 0f)
+                medleyDuration = sharedPreferences.getFloat(key, 0f)
                 initializeMedleyMode()
             }
             exoPlayerMinTimeForEventKey -> {
-                minTimeForEvent = sharedPreferences.getEnum(exoPlayerMinTimeForEventKey,
+                minTimeForEvent = sharedPreferences.getEnum(key,
                     MinTimeForEvent.`20s`)
             }
 //            checkVolumeLevelKey -> {
@@ -3187,6 +3187,10 @@ class PlayerService : Service(),
 
         }
 
+        fun toggleRepeat() {
+            val queueLoopType = preferences.getEnum(queueLoopTypeKey, defaultValue = QueueLoopType.Default)
+            preferences.edit { putEnum(queueLoopTypeKey, setQueueLoopState(queueLoopType)) }
+        }
 
         fun callPause(onPause: () -> Unit) {
             val fadeDisabled = preferences.getEnum(playbackFadeAudioDurationKey, DurationInMilliseconds.Disabled) == DurationInMilliseconds.Disabled
@@ -3227,7 +3231,7 @@ class PlayerService : Service(),
     fun initializeUnifiedSessionCallback() {
         Timber.d("PlayerService InitializeUnifiedSessionCallback")
         val currentMediaItem = binder.player.currentMediaItem
-        val queueLoopType = preferences.getEnum(queueLoopTypeKey, defaultValue = QueueLoopType.Default)
+
         binder.let {
             unifiedMediaSession.setCallback(
                 PlayerMediaSessionCallback(
@@ -3302,7 +3306,7 @@ class PlayerService : Service(),
                                 it.toggleLike()
                             }
                             NotificationButtons.Repeat.action -> {
-                                preferences.edit(commit = true) { putEnum(queueLoopTypeKey, setQueueLoopState(queueLoopType)) }
+                                it.toggleRepeat()
                             }
                             NotificationButtons.Shuffle.action -> {
                                 it.toggleShuffle()
