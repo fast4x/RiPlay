@@ -1477,7 +1477,7 @@ class PlayerService : Service(),
         try {
             unregisterReceiver(legacyActionReceiver)
         } catch (e: Exception) {
-            Timber.e("PlayerService onDestroy unregisterReceiver ${e.stackTraceToString()}")
+            Timber.e("PlayerService onDestroy unregisterReceiver ${e.message}")
         }
 
         if (this::unifiedMediaSession.isInitialized) {
