@@ -1475,6 +1475,8 @@ class PlayerService : Service(),
 
         //initializeTelephonyManager(false)
 
+        coroutineScope.cancel()
+
         try {
             unregisterReceiver(legacyActionReceiver)
         } catch (e: Exception) {
@@ -1518,16 +1520,25 @@ class PlayerService : Service(),
             cache.release()
             loudnessEnhancer?.release()
             audioVolumeObserver.unregister()
-            endedObserverJob?.cancel()
             bluetoothReceiver?.unregister()
-
-            riTuneObserverJob?.cancel()
-
             discordPresenceManager?.onStop()
 
-            coroutineScope.launch { delay(500) }
+            endedObserverJob?.cancel()
+            endedObserverJob = null
+            riTuneObserverJob?.cancel()
+            riTuneObserverJob = null
+            timerJob?.cancel()
+            timerJob = null
+            unstartedWatchdogJob?.cancel()
+            unstartedWatchdogJob = null
+            volumeNormalizationJob?.cancel()
+            volumeNormalizationJob = null
 
-            coroutineScope.cancel()
+
+            notificationManager?.cancelAll()
+            //coroutineScope.launch { delay(500) }
+
+
 
         }.onFailure {
             Timber.e("Failed onDestroy in PlayerService ${it.stackTraceToString()}")
