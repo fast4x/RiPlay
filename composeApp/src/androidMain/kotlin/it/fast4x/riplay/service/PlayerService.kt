@@ -1274,25 +1274,25 @@ class PlayerService : Service(),
                                 context = this@PlayerService
                             )
 
-                        handlePlayNext()
+                        //handlePlayNext()
 
                         //}
-                        /*
-                        localMediaItem?.let {
-                            if (!GlobalSharedData.riTuneCastActive) {
-                                youTubePlayer.cueVideo(it.mediaId, playFromSecond)
-                            }
-                            else coroutineScope.launch {
-                                    riTuneClient.sendCommand(
-                                        RiTuneRemoteCommand(
-                                            "load",
-                                            mediaId = it.mediaId,
-                                            position = playFromSecond
-                                        )
-                                    )
+
+                        if (error == PlayerConstants.PlayerError.INVALID_PARAMETER_IN_REQUEST)
+                            localMediaItem?.let {
+                                if (!GlobalSharedData.riTuneCastActive || riTuneClient.connectionStatus != RiTuneConnectionStatus.Connected) {
+                                    youTubePlayer.cueVideo(it.mediaId, playFromSecond)
                                 }
-                        }
-                         */
+                                else coroutineScope.launch {
+                                        riTuneClient.sendCommand(
+                                            RiTuneRemoteCommand(
+                                                "load",
+                                                mediaId = it.mediaId,
+                                                position = playFromSecond
+                                            )
+                                        )
+                                    }
+                            }
 
                         youTubePlayer.setVolume(getSystemMediaVolume())
                         return
