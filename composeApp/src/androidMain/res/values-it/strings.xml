@@ -948,7 +948,7 @@
     <string name="restore_from_other_backup">Ripristina da altro backup</string>
     <string name="import_the_database_be_carefull">Importa il database da altri backup. Fai attenzione, potresti dover reinstallare l\'app.</string>
     <string name="enable_fullscreen">Abilita modalità schermo intero</string>
-    <string name="enable_fullscreen_info">Fullscreen hide system bars</string>
+    <string name="enable_fullscreen_info"></string>
     <string name="invalid_token">Token non valido</string>
     <string name="unknown_title">Titolo sconosciuto</string>
     <string name="unknown_artist">Artista sconosciuto</string>
@@ -1187,7 +1187,7 @@
     <string name="warning_skipped_blacklisted_song">Brano saltato in blacklist</string>
     <string name="cast">Trasmetti</string>
     <string name="enable_ritune_cast">Abilita RiTune Cast</string>
-    <string name="ritune_cast_info">"Trasmetti a dispositivi RiTune, assicurati che RiTune sia installato nell'altro dispositivo"</string>
+    <string name="ritune_cast_info">"Trasmetti a RiTune dispositivi, richiede RiTune installato in altri dispositivi "</string>
     <string name="queue_create_new_queue">Crea una nuova coda</string>
     <string name="queue_list_of_media">Elenco dei media</string>
     <string name="queue_queue">Coda: %1$s</string>
