@@ -1287,4 +1287,22 @@
     <string name="aa_show_podcast_playlists">Show podcast playlists</string>
     <string name="aa_show_pinned_playlists">Show pinned playlists</string>
     <string name="no_devices_found_install_ritune_on_tv_or_other_device_to_use_this_feature">No devices found, install RiTune on TV or other device to use this feature.</string>
+    <string name="onboard_title_permissions">Permissions</string>
+    <string name="onboard_perm_notifications">Notifications</string>
+    <string name="onboard_notifications_get_media_player_in_the_notifications">Get media player in the notifications</string>
+    <string name="onboard_perm_accessing_files_on_disk">Accessing files on disk</string>
+    <string name="onboard_storage_allow_the_app_to_read_the_music_library">Allow the app to read the music library.</string>
+    <string name="onboard_perm_bluetooth">Bluetooth</string>
+    <string name="onboard_bluetooth_detect_headphones_to_pause_or_resume_music">Detect headphones to pause or resume music.</string>
+    <string name="onboard_perm_microphone">Microphone</string>
+    <string name="onboard_mic_allows_you_to_use_the_microphone_for_voice_commands_the_visualizer_and_other_features">Allows you to use the microphone for voice commands, the visualizer and other features</string>
+    <string name="onboard_perm_battery_optimization">Battery Optimization</string>
+    <string name="onboard_battery_prevent_the_system_from_stopping_background_music">Prevent the system from stopping background music.</string>
+    <string name="onboard_hello_grant_the_useful_permissions_to_configure_your_perfect_music_experience">Hello, grant the useful permissions to configure your perfect music experience.</string>
+    <string name="onboard_start_riplay">Start RiPlay</string>
+    <string name="onboard_permission_granted">Granted</string>
+    <string name="onboard_permission_grant">Grant</string>
+    <string name="onboard_permission_settings">Settings</string>
+    <string name="ritune_cast">RiTune Cast</string>
+    <string name="ritune_available_devices">Available devices:</string>
 </resources>
