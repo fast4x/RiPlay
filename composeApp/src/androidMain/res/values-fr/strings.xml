@@ -791,7 +791,7 @@ Volume BAS : titre précédent</string>
     <string name="repeat">Répéter</string>
     <string name="original_lyrics">Paroles originales</string>
     <string name="translated_lyrics">Paroles traduites</string>
-    <string name="press_once_again_to_exit">Appuyer à nouveau pour quitter</string>
+    <string name="press_once_again_to_exit">Appuyez à nouveau pour quitter</string>
     <string name="random_sorting">Tri aléatoire</string>
     <string name="music_animations_bars">Barres</string>
     <string name="music_animations_crazy_bars">Barres Folles</string>
@@ -1285,7 +1285,7 @@ Volume BAS : titre précédent</string>
     <string name="aa_show_top_songs">Afficher les titres les plus populaires</string>
     <string name="aa_show_all_songs">Afficher tous les titres</string>
     <string name="all_songs">Tous les titres</string>
-    <string name="aa_show_podcast_playlists">Show podcast playlists</string>
-    <string name="aa_show_pinned_playlists">Show pinned playlists</string>
-    <string name="no_devices_found_install_ritune_on_tv_or_other_device_to_use_this_feature">No devices found, install RiTune on TV or other device to use this feature.</string>
+    <string name="aa_show_podcast_playlists">Afficher les playlists des podcasts</string>
+    <string name="aa_show_pinned_playlists">Afficher les playlists épinglées</string>
+    <string name="no_devices_found_install_ritune_on_tv_or_other_device_to_use_this_feature">Aucun appareil détecté. Installez RiTune sur votre téléviseur ou sur un autre appareil pour utiliser cette fonctionnalité.</string>
 </resources>
