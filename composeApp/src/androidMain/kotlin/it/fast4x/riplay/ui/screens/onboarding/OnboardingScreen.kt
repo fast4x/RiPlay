@@ -44,7 +44,7 @@ fun OnboardingScreen(
     var refreshTrigger by remember { mutableStateOf(0) }
     val lifecycleOwner = LocalLifecycleOwner.current
 
-    // Helper per controllare lo stato
+
     fun checkPermission(permission: String): Boolean {
         return ContextCompat.checkSelfPermission(
             context,
@@ -52,12 +52,11 @@ fun OnboardingScreen(
         ) == PackageManager.PERMISSION_GRANTED
     }
 
-    // 1. Definiamo il launcher una sola volta
+
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
     ) { isGranted ->
         if (isGranted) {
-            // Incrementiamo il trigger per far ridisegnare la lista
             refreshTrigger++
         }
     }
@@ -86,13 +85,12 @@ fun OnboardingScreen(
     val msgNoBatteryOptim =
         stringResource(R.string.not_find_battery_optimization_settings)
 
-    // 2. Calcoliamo gli item. Usiamo solo remember(refreshTrigger)
-    // Non serve derivedStateOf perché refreshTrigger è la nostra unica fonte di verità per l'aggiornamento manuale
+
     val items = remember(refreshTrigger) {
         buildList {
-            add(OnboardingSection(title = "Permessi"))
+            add(OnboardingSection(title = context.resources.getString(R.string.onboard_title_permissions)))
 
-            // 1. Notifiche
+
             val notificationGranted = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 checkPermission(Manifest.permission.POST_NOTIFICATIONS)
             } else {
@@ -102,12 +100,11 @@ fun OnboardingScreen(
             add(
                 OnboardingItem(
                     id = "notifications",
-                    title = "Notifiche",
-                    description = "Ricevi notifiche quando cambi canzone.",
-                    icon = R.drawable.notifications, // Assicurati che esista
+                    title = context.resources.getString(R.string.onboard_perm_notifications),
+                    description = context.resources.getString(R.string.onboard_notifications_get_media_player_in_the_notifications),
+                    icon = R.drawable.notifications,
                     status = if (notificationGranted) PermissionStatus.GRANTED else PermissionStatus.NOT_REQUESTED,
                     onRequest = {
-                        // Lanciamo il permesso specifico
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                             permissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
                         }
@@ -125,8 +122,8 @@ fun OnboardingScreen(
             add(
                 OnboardingItem(
                     id = "storage",
-                    title = "Accesso File Audio",
-                    description = "Permetti all'app di leggere la libreria musicale.",
+                    title = context.resources.getString(R.string.onboard_perm_accessing_files_on_disk),
+                    description = context.resources.getString(R.string.onboard_storage_allow_the_app_to_read_the_music_library),
                     icon = R.drawable.folder,
                     status = if (storageGranted) PermissionStatus.GRANTED else PermissionStatus.NOT_REQUESTED,
                     onRequest = {
@@ -140,7 +137,6 @@ fun OnboardingScreen(
                 )
             )
 
-            // 3. Bluetooth
             val btGranted = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                 checkPermission(Manifest.permission.BLUETOOTH_CONNECT)
             } else {
@@ -150,8 +146,8 @@ fun OnboardingScreen(
             add(
                 OnboardingItem(
                     id = "bluetooth",
-                    title = "Bluetooth",
-                    description = "Rileva le cuffie per mettere in pausa o riprendere la musica.",
+                    title = context.resources.getString(R.string.onboard_perm_bluetooth),
+                    description = context.resources.getString(R.string.onboard_bluetooth_detect_headphones_to_pause_or_resume_music),
                     icon = R.drawable.bluetooth,
                     status = if (btGranted) PermissionStatus.GRANTED else PermissionStatus.NOT_REQUESTED,
                     onRequest = {
@@ -167,8 +163,8 @@ fun OnboardingScreen(
             add(
                 OnboardingItem(
                     id = "mic",
-                    title = "Microfono",
-                    description = "Permette di usare il microfono per i comandi vocali, il visualizer e altre funzionalità",
+                    title = context.resources.getString(R.string.onboard_perm_microphone),
+                    description = context.resources.getString(R.string.onboard_mic_allows_you_to_use_the_microphone_for_voice_commands_the_visualizer_and_other_features),
                     icon = R.drawable.mic,
                     status = if (micGranted) PermissionStatus.GRANTED else PermissionStatus.NOT_REQUESTED,
                     onRequest = {
@@ -182,8 +178,8 @@ fun OnboardingScreen(
             add(
                 OnboardingItem(
                     id = "battery",
-                    title = "Ottimizzazione Batteria",
-                    description = "Evita che il sistema arresti la musica in background.",
+                    title = context.resources.getString(R.string.onboard_perm_battery_optimization),
+                    description = context.resources.getString(R.string.onboard_battery_prevent_the_system_from_stopping_background_music),
                     icon = R.drawable.battery_charging,
                     status = if (isIgnoringBattery) PermissionStatus.GRANTED else PermissionStatus.NOT_REQUESTED,
                     onRequest = {
@@ -214,19 +210,7 @@ fun OnboardingScreen(
         }
     }
 
-    Scaffold(
-        topBar = {
-            /*
-            TopAppBar(
-                title = { Text("RiPlay", style = MaterialTheme.typography.titleSmall) },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface,
-                    titleContentColor = MaterialTheme.colorScheme.onSurface
-                )
-            )
-             */
-        }
-    ) { padding ->
+    Scaffold { padding ->
         Column(
             modifier = modifier
                 .padding(padding)
@@ -244,7 +228,7 @@ fun OnboardingScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             Text(
-                text = "Ciao, concedi i permessi utili per configurare la tua esperienza musicale perfetta.",
+                text = stringResource(R.string.onboard_hello_grant_the_useful_permissions_to_configure_your_perfect_music_experience),
                 style = MaterialTheme.typography.titleSmall,
                 textAlign = TextAlign.Center
             )
@@ -269,7 +253,7 @@ fun OnboardingScreen(
                 onClick = { onComplete() },
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Avvia RiPlay")
+                Text(stringResource(R.string.onboard_start_riplay))
             }
         }
     }
@@ -316,7 +300,7 @@ fun PermissionCard(item: OnboardingItem) {
                 .fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Icona a sinistra
+
             Surface(
                 shape = MaterialTheme.shapes.small,
                 color = MaterialTheme.colorScheme.primaryContainer,
@@ -332,7 +316,7 @@ fun PermissionCard(item: OnboardingItem) {
 
             Spacer(modifier = Modifier.width(16.dp))
 
-            // Testo centrale
+
             Column(
                 modifier = Modifier.weight(1f)
             ) {
@@ -351,7 +335,7 @@ fun PermissionCard(item: OnboardingItem) {
 
             Spacer(modifier = Modifier.width(8.dp))
 
-            // Pulsante Azione a destra
+
             ActionButton(status = item.status, onClick = item.onRequest)
         }
     }
@@ -363,19 +347,19 @@ fun ActionButton(status: PermissionStatus, onClick: () -> Unit) {
         PermissionStatus.GRANTED -> {
             Icon(
                 painter = painterResource(id = R.drawable.checkmark),
-                contentDescription = "Concesso",
+                contentDescription = stringResource(R.string.onboard_permission_granted),
                 tint = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.size(28.dp)
             )
         }
         PermissionStatus.NOT_REQUESTED, PermissionStatus.DENIED -> {
             OutlinedButton(onClick = onClick) {
-                Text("Concedi")
+                Text(stringResource(R.string.onboard_permission_grant))
             }
         }
         PermissionStatus.PERMANENTLY_DENIED -> {
             TextButton(onClick = onClick) {
-                Text("Impostazioni")
+                Text(stringResource(R.string.onboard_permission_settings))
             }
         }
     }
