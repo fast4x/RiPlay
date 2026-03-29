@@ -50,9 +50,9 @@ fun RiTuneSelector(
                     .background(colorPalette().background0)
             ) {
                 item {
-                    TitleSection("RiTune Cast")
+                    TitleSection(stringResource(R.string.ritune_cast))
                     Text(
-                        text = "Available devices:",
+                        text = stringResource(R.string.ritune_available_devices),
                         color = colorPalette().text,
                         modifier = Modifier.padding(bottom = 10.dp)
                     )

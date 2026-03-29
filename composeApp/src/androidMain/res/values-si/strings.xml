@@ -1302,4 +1302,6 @@ CC-BY-SA 3.0</string>
     <string name="onboard_permission_granted">Granted</string>
     <string name="onboard_permission_grant">Grant</string>
     <string name="onboard_permission_settings">Settings</string>
+    <string name="ritune_cast">RiTune Cast</string>
+    <string name="ritune_available_devices">Available devices:</string>
 </resources>
