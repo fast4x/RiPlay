@@ -491,7 +491,7 @@
     <string name="info_reorder_is_possible_only_in_ascending_sort">Reorder is possible only in ascending sort</string>
     <string name="information">जानकारी</string>
     <string name="info_lyrics_found_on_s">% पर बोल मिले </string>
-    <string name="info_lyrics_not_found_on_s_try_on_s">Lyrics not found on %1$s, try on %2$s</string>
+    <string name="info_lyrics_not_found_on_s_try_on_s">Lyrics not found on %s, try on %s</string>
     <string name="info_lyrics_not_found_on_s">Lyrics not found on %s</string>
     <string name="info_lyrics_tracks_found_on_s">Lyrics tracks found on %s</string>
     <string name="info_lyrics_tracks_not_found_on_s">Lyrics tracks not found on %s</string>
@@ -1268,7 +1268,7 @@
     <string name="online_now_playing_title">ONLINE</string>
     <string name="no_artists">कोई कलाकार नहीं।</string>
     <string name="no_albums">कोई एल्बम नहीं।</string>
-    <string name="no_playlists">No playlists</string>
+    <string name="no_playlists">कोई प्लेलिस्ट नहीं।</string>
     <string name="no_songs">कोई गानें नहीं।</string>
     <string name="crash_title_ops_riplay_is_in_error_state">ओह! RiPlay में त्रुटि आ गई है।</string>
     <string name="crash_subtitle_the_application_crashed_unexpectedly_you_can_help_us_by_sending_this_log">The application crashed unexpectedly, you can help us by sending this log.</string>
