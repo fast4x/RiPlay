@@ -47,11 +47,19 @@ import it.fast4x.riplay.utils.showStatsIconInNav
 import androidx.compose.animation.*
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.res.painterResource
 import it.fast4x.riplay.utils.getRoundnessShape
+import org.jetbrains.compose.resources.painterResource
+import it.fast4x.riplay.R
 
 // Shown when "Navigation bar position" is set to "top" or "bottom"
 class HorizontalNavigationBar(
@@ -188,8 +196,6 @@ class HorizontalNavigationBar(
             AnimatedVisibility(
                 visible = visible,
                 enter = enterTransition,
-                // Opzionale: puoi aggiungere un'animazione di uscita se la barra viene nascosta
-                // exit = slideOutVertically() + fadeOut()
             ) {
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
@@ -222,6 +228,51 @@ class HorizontalNavigationBar(
                                 .horizontalScroll(scrollState),
                             content = { buttonList().forEach { it() } }
                         )
+
+                        // Sfumatura Sinistra
+                        if (scrollState.canScrollBackward) {
+                            Box(
+                                modifier = Modifier
+                                    .align(Alignment.CenterStart)
+                                    .fillMaxHeight()
+                                    .width(24.dp)
+                                    .background(
+                                        Brush.horizontalGradient(
+                                            colors = listOf(colorPalette().background1, Color.Transparent)
+                                        )
+                                    )
+                            ) {
+                                Image(
+                                    painter = painterResource(id = R.drawable.chevron_back),
+                                    contentDescription = "Scorri a sinistra",
+                                    colorFilter = ColorFilter.tint(colorPalette().text),
+                                    modifier = Modifier.size(24.dp)
+                                )
+                            }
+                        }
+
+                        // Sfumatura Destra
+                        if (scrollState.canScrollForward) {
+                            Box(
+                                modifier = Modifier
+                                    .align(Alignment.CenterEnd)
+                                    .fillMaxHeight()
+                                    .width(24.dp)
+                                    .background(
+                                        Brush.horizontalGradient(
+                                            colors = listOf(Color.Transparent, colorPalette().background1)
+                                        )
+                                    )
+                            ) {
+                                Image(
+                                    painter = painterResource(id = R.drawable.chevron_forward),
+                                    contentDescription = "Scorri a destra",
+                                    colorFilter = ColorFilter.tint(colorPalette().text),
+                                    modifier = Modifier.size(24.dp)
+                                )
+                            }
+                        }
+
                     }
 
                     if (UiType.ViMusic.isCurrent() && showSearchIconInNav())
@@ -238,326 +289,3 @@ class HorizontalNavigationBar(
     }
 }
 
-/*
-// Shown when "Navigation bar position" is set to "top" or "bottom"
-class HorizontalNavigationBar(
-    val tabIndex: Int,
-    val onTabChanged: (Int) -> Unit,
-    navController: NavController,
-    modifier: Modifier = Modifier
-) : AbstractNavigationBar(navController, modifier) {
-
-    private fun navButtonProperties(): Modifier {
-        val padding: Dp = 4.dp
-        val size: Dp = 24.dp
-        val border: Shape = CircleShape
-
-        return Modifier.padding(all = padding)
-            .size(size)
-            .clip(shape = border)
-    }
-
-    @Composable
-    private fun addButton(button: Button, modifier: Modifier = Modifier) =
-        buttonList.add {
-            Box(modifier) { button.Draw() }
-        }
-
-    @SuppressLint("ComposableNaming")
-    @Composable
-    private fun addButton(index: Int, button: Button, modifier: Modifier = Modifier) =
-        buttonList.add(index) {
-            Box(modifier) { button.Draw() }
-        }
-
-    @Composable
-    private fun bottomPadding(): Dp = 0.dp
-
-    private fun topPadding(): Dp = 0.dp
-
-    @Composable
-    override fun add(buttons: @Composable (@Composable (Int, String, Int) -> Unit) -> Unit) {
-        val transition = updateTransition(targetState = tabIndex, label = null)
-
-        buttons { index, text, iconId ->
-
-            val color by transition.animateColor(label = "") {
-                if (it == index) colorPalette().text else colorPalette().textDisabled
-            }
-
-            val button: Button =
-                if (NavigationBarType.IconOnly.isCurrent())
-                    Button(iconId, color, 12.dp, 20.dp)
-                else
-                    TextIconButton(text, iconId, color, 0.dp, Dimensions.navigationRailIconOffset * 3)
-
-            val contentModifier = Modifier
-                .clip(RoundedCornerShape(12.dp))
-                .clickable(onClick = { onTabChanged(index) })
-
-            addButton(button, contentModifier)
-        }
-    }
-
-    @Composable
-    override fun BackButton(): NavigationButton {
-        val button = super.BackButton()
-        button.modifier = this.navButtonProperties()
-        return button
-    }
-
-    @Composable
-    override fun SettingsButton(): NavigationButton {
-        val button = super.SettingsButton()
-        button.modifier = this.navButtonProperties()
-        return button
-    }
-
-    @Composable
-    override fun StatsButton(): NavigationButton {
-        val button = super.StatsButton()
-        button.modifier = this.navButtonProperties()
-        return button
-    }
-
-    @Composable
-    override fun SearchButton(): NavigationButton {
-        val button = super.SearchButton()
-        button.modifier = this.navButtonProperties()
-        return button
-    }
-
-    @Composable
-    override fun Draw() {
-
-        val isNavbarBottom = NavigationBarPosition.Bottom.isCurrent()
-        val density = LocalDensity.current
-        val bottomInset = with(density) { WindowInsets.navigationBars.getBottom(density).toDp() }
-        val topInset = with(density) { WindowInsets.statusBars.getTop(density).toDp() }
-
-        val contentPadding = if (isNavbarBottom) {
-            PaddingValues(bottom = bottomInset)
-        } else {
-            PaddingValues(top = topInset)
-        }
-
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = if (NavigationBarPosition.Bottom.isCurrent()) Arrangement.Bottom else Arrangement.Top,
-            modifier = modifier
-                .fillMaxWidth()
-                .background(colorPalette().background1)
-        ) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.SpaceAround,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height( if (isNavbarBottom) Dimensions.navigationBarHeight + bottomInset else 40.dp + topInset)
-                    .applyIf(isNavbarBottom) {
-                        padding(contentPadding)
-                    }
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(colorPalette().background1)
-            ) {
-                val scrollState = rememberScrollState()
-
-                if (UiType.ViMusic.isCurrent() && NavRoutes.home.isNotHere(navController))
-                    BackButton().Draw()
-
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(Color.Transparent)
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceEvenly,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .fillMaxSize()
-                            .horizontalScroll(scrollState),
-                        content = { buttonList().forEach { it() } }
-                    )
-                }
-
-                if (UiType.ViMusic.isCurrent() && showSearchIconInNav())
-                    SearchButton()
-
-                if (UiType.ViMusic.isCurrent())
-                    SettingsButton().Draw()
-
-                if (UiType.ViMusic.isCurrent() && showStatsIconInNav())
-                    StatsButton()
-            }
-        }
-    }
-}
-*/
-/*
-// Shown when "Navigation bar position" is set to "top" or "bottom"
-class HorizontalNavigationBar(
-    val tabIndex: Int,
-    val onTabChanged: (Int) -> Unit,
-    navController: NavController,
-    modifier: Modifier = Modifier
-): AbstractNavigationBar( navController, modifier ) {
-
-    private fun navButtonProperties(): Modifier {
-        val padding: Dp = 4.dp
-        val size: Dp = 24.dp
-        val border: Shape = CircleShape
-
-        return Modifier.padding( all = padding )
-                       .size( size )
-                       .clip( shape = border )
-    }
-
-    @Composable
-    private fun addButton(button: Button, modifier: Modifier = Modifier ) =
-        // buttonList() duplicates button instead of updating them.
-        // Do NOT use it
-        buttonList.add {
-            Box( modifier ) { button.Draw() }
-        }
-
-    @SuppressLint("ComposableNaming")
-    @Composable
-    private fun addButton(index: Int, button: Button, modifier: Modifier = Modifier ) =
-        // buttonList() duplicates button instead of updating them
-        // Do NOT use it
-        buttonList.add( index ) {
-            Box( modifier ) { button.Draw() }
-        }
-
-    @Composable
-    private fun bottomPadding(): Dp {
-        return 0.dp
-//        return if ( NavigationBarPosition.Bottom.isCurrent() )
-//            with( LocalDensity.current ) {
-//                WindowInsets.systemBars.getBottom( this ).toDp()
-//            }
-//        else
-//            5.dp
-    }
-
-    private fun topPadding(): Dp = 0.dp
-
-    @Composable
-    override fun add(buttons: @Composable (@Composable (Int, String, Int) -> Unit) -> Unit) {
-        val transition = updateTransition(targetState = tabIndex, label = null)
-
-        buttons { index, text, iconId ->
-
-            val color by transition.animateColor(label = "") {
-                if (it == index) colorPalette().text else colorPalette().textDisabled
-            }
-
-            val button: Button =
-                if ( NavigationBarType.IconOnly.isCurrent() )
-                    Button( iconId, color, 12.dp, 20.dp )
-                else
-                    TextIconButton( text, iconId, color, 0.dp, Dimensions.navigationRailIconOffset * 3 )
-
-            val contentModifier = Modifier
-                .clip(RoundedCornerShape(12.dp))
-                .clickable(onClick = { onTabChanged(index) })
-
-            addButton( button, contentModifier )
-        }
-    }
-
-    @Composable
-    override fun BackButton(): NavigationButton {
-        val button = super.BackButton()
-        button.modifier = this.navButtonProperties()
-        return button
-    }
-
-    @Composable
-    override fun SettingsButton(): NavigationButton {
-        val button = super.SettingsButton()
-        button.modifier = this.navButtonProperties()
-        return button
-    }
-
-    @Composable
-    override fun StatsButton(): NavigationButton {
-        val button = super.StatsButton()
-        button.modifier = this.navButtonProperties()
-        return button
-    }
-
-    @Composable
-    override fun SearchButton(): NavigationButton {
-        val button = super.SearchButton()
-        button.modifier = this.navButtonProperties()
-        return button
-    }
-
-    @Composable
-    override fun Draw() {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Bottom,
-            modifier = modifier.padding( top = topPadding(), bottom = bottomPadding() )
-        ) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.SpaceAround,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(Dimensions.navigationBarHeight + WindowInsets.systemBars.getBottom(LocalDensity.current).dp)
-                    //.padding(bottom = 5.dp)
-            ) {
-
-                val scrollState = rememberScrollState()
-                val roundedCornerShape =
-                    if ( NavigationBarPosition.Bottom.isCurrent() )
-                        RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp)
-                    else
-                        RoundedCornerShape(bottomStart = 12.dp, bottomEnd = 12.dp)
-
-                // Settings button only visible when
-                // UI is not RiPlay and current location isn't home screen
-                if( UiType.ViMusic.isCurrent() && NavRoutes.home.isNotHere( navController ) )
-                    BackButton().Draw()
-
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(roundedCornerShape)
-                        .background(colorPalette().background1)
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceEvenly,
-                        modifier = Modifier
-                            //.padding(bottom = 10.dp)
-                            .padding(bottom = WindowInsets.systemBars.getBottom(LocalDensity.current).dp)
-                            .fillMaxWidth()
-                            .fillMaxSize()
-                            .horizontalScroll(scrollState),
-                        content = { buttonList().forEach { it() } }
-                    )
-                }
-
-                // Search button only visible when
-                // UI is not RiPlay and must be explicitly turned on
-                if( UiType.ViMusic.isCurrent() && showSearchIconInNav() )
-                    SearchButton()
-
-                // Settings button only visible when
-                // UI is not RiPlay
-                if( UiType.ViMusic.isCurrent() )
-                    SettingsButton().Draw()
-
-                // Statistics button only visible when
-                // UI is not RiPlay and must be explicitly turned on
-                if( UiType.ViMusic.isCurrent() && showStatsIconInNav() )
-                    StatsButton()
-            }
-        }
-    }
-}
-*/
