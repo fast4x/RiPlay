@@ -10,6 +10,7 @@ import coil.ImageLoaderFactory
 import coil.disk.DiskCache
 import coil.memory.MemoryCache
 import coil.request.CachePolicy
+import it.fast4x.riplay.cast.CastHelper
 import it.fast4x.riplay.data.DatabaseInitializer
 import it.fast4x.riplay.enums.CoilDiskCacheMaxSize
 import it.fast4x.riplay.utils.FileLoggingTree
@@ -41,6 +42,8 @@ class MainApplication : MultiDexApplication(), ImageLoaderFactory {
         )
 
         Dependencies.init(this)
+
+        CastHelper.init(this)
 
         /***** CRASH LOG ALWAYS ENABLED *****/
         val dir = filesDir.resolve("logs").also {

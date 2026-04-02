@@ -101,6 +101,7 @@ import it.fast4x.riplay.utils.startFadeAnimator
 import it.fast4x.riplay.commonutils.thumbnail
 import it.fast4x.riplay.utils.timer
 import it.fast4x.riplay.R
+import it.fast4x.riplay.cast.CastHelper
 import it.fast4x.riplay.commonutils.cleanPrefix
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.enums.ContentType
@@ -199,7 +200,6 @@ import it.fast4x.riplay.ui.screens.settings.isYtLoggedIn
 import it.fast4x.riplay.utils.GlobalSharedData
 import it.fast4x.riplay.utils.LOCAL_KEY_PREFIX
 import it.fast4x.riplay.utils.isAtLeastAndroid11
-
 import it.fast4x.riplay.utils.isExplicit
 import it.fast4x.riplay.utils.isLocal
 import it.fast4x.riplay.utils.isVideo
@@ -248,7 +248,6 @@ class PlayerService : Service(),
     PlaybackStatsListener.Callback,
     SharedPreferences.OnSharedPreferenceChangeListener,
     OnAudioVolumeChangedListener
-    //AudioManager.OnAudioFocusChangeListener // todo check if is needed in the future with new webview
 {
     private val coroutineScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
     private lateinit var unifiedMediaSession: MediaSessionCompat
@@ -286,7 +285,6 @@ class PlayerService : Service(),
     private var medleyDuration by mutableFloatStateOf(0f)
 
     private lateinit var audioManager: AudioManager
-    //private var focusRequest: AudioFocusRequest? = null
 
     private var loudnessEnhancer: LoudnessEnhancer? = null
 
@@ -368,9 +366,6 @@ class PlayerService : Service(),
     var firstTimeStarted by mutableStateOf(true)
 
     private var bluetoothReceiver: BluetoothConnectReceiver? = null
-
-    //private lateinit var audioFocusHelper: AudioFocusHelper
-    private var hasAudioFocus = false
 
     private val riTuneClient: RiTuneClient = RiTuneClient()
     private var riTuneObserverJob: Job? = null
@@ -454,7 +449,6 @@ class PlayerService : Service(),
         initializeMedleyMode()
         initializePlaybackParameters()
 
-        //initializeAudioFocusHelper()
         //initializeTelephonyManager(true)
 
         initializeRiTune()
@@ -1065,6 +1059,11 @@ class PlayerService : Service(),
 
             keepScreenOn = isKeepScreenOnEnabled()
 
+
+            if (CastHelper.isCastAvailable)
+                CastHelper.initChromecastYouTubePlayerContext(this@PlayerService)
+
+
             val iFramePlayerOptions = IFramePlayerOptions.Builder(appContext())
                 .controls(0)
                 .listType("playlist")
@@ -1169,8 +1168,6 @@ class PlayerService : Service(),
 
                         PlayerConstants.PlayerState.VIDEO_CUED -> {
                             Timber.d("PlayerService onlinePlayerView: onStateChange VIDEO_CUED regular play()")
-//                            if (!hasAudioFocus)
-//                                hasAudioFocus = requestAudioFocus()
 
                             if (!firstTimeStarted) {
                                 if (!GlobalSharedData.riTuneCastActive || riTuneClient.connectionStatus != RiTuneConnectionStatus.Connected) {
@@ -1470,8 +1467,6 @@ class PlayerService : Service(),
                 player.saveMasterQueue(currentSecond.value.toInt())
             }
         }
-
-        //abandonAudioFocus()
 
         //initializeTelephonyManager(false)
 
@@ -1998,146 +1993,6 @@ class PlayerService : Service(),
     private fun initializeAudioManager() {
         audioManager = getSystemService(AUDIO_SERVICE) as AudioManager
     }
-
-
-
-    /*
-    fun requestAudioFocus(): Boolean {
-
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val playbackAttributes = android.media.AudioAttributes.Builder()
-                .setUsage(android.media.AudioAttributes.USAGE_MEDIA)
-                .setContentType(android.media.AudioAttributes.CONTENT_TYPE_MUSIC)
-                .build()
-
-            focusRequest = AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN)
-                .setAudioAttributes(playbackAttributes)
-                .setAcceptsDelayedFocusGain(true)
-                .setOnAudioFocusChangeListener(this)
-                .build()
-
-            val result = audioManager.requestAudioFocus(focusRequest)
-            result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED
-        } else {
-            @Suppress("DEPRECATION")
-            val result = audioManager.requestAudioFocus(
-                this,
-                AudioManager.STREAM_MUSIC,
-                AudioManager.AUDIOFOCUS_GAIN
-            )
-            result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED
-        }
-    }
-
-    private fun abandonAudioFocus() {
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            focusRequest?.let {
-                audioManager.abandonAudioFocusRequest(it)
-            }
-        } else {
-            @Suppress("DEPRECATION")
-            audioManager.abandonAudioFocus(this)
-        }
-    }
-     */
-
-    /*
-    override fun onAudioFocusChange(focusChange: Int) {
-        when (focusChange) {
-            AudioManager.AUDIOFOCUS_GAIN, AudioManager.AUDIOFOCUS_GAIN_TRANSIENT -> {
-                // resume audio playback
-                hasAudioFocus = true
-                Timber.d("PlayerService initializeAudioFocusHelper Focus Gained -> Resume")
-            }
-            AudioManager.AUDIOFOCUS_LOSS -> {
-                // Lost focus for an unbounded amount of time: stop playback and release media resources
-                val isAudioActuallyPlaying = audioManager.isMusicActive
-                if (localMediaItem?.isLocal == false && isAudioActuallyPlaying) {
-                    hasAudioFocus = true
-                    Timber.w("PlayerService initializeAudioFocusHelper LOSS intercettato, ma isMusicActive = TRUE. Ignoro (La Webview ha il controllo).")
-                    return
-                }
-                Timber.d("PlayerService initializeAudioFocusHelper LOSS REALE (Nessun audio attivo o locale). Fermo tutto.")
-                hasAudioFocus = false
-                //isPlayingBeforeLossOfFocus = (isPlayingNow || player.isPlaying)
-
-                if (localMediaItem?.isLocal == true)
-                    player.pause()
-                else
-                    _internalOnlinePlayer.value?.pause()
-                //abandonAudioFocus()
-                Timber.d("PlayerService initializeAudioFocusHelper Focus Loss -> Stop")
-            }
-            AudioManager.AUDIOFOCUS_LOSS_TRANSIENT -> {
-                // Lost focus for a short time, but we have to stop playback.
-                hasAudioFocus = false
-                Timber.d("PlayerService initializeAudioFocusHelper Focus Transient -> Pause")
-            }
-            AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK -> {
-                // Lost focus for a short time, but it's ok to keep playing at an attenuated level
-                hasAudioFocus = false
-                Timber.d("PlayerService initializeAudioFocusHelper Focus Duck -> Lower Volume")
-            }
-            AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK -> {
-                // Return focus after loss of transient focus
-                hasAudioFocus = true
-                Timber.d("PlayerService initializeAudioFocusHelper Focus Gained May Duck -> Resume Volume")
-            }
-        }
-    }
-     */
-
-    /*
-    private fun initializeAudioFocusHelper() {
-        audioFocusHelper = AudioFocusHelper(this, object : AudioFocusHelper.OnAudioFocusListener {
-
-            override fun onAudioGained() {
-                // call ended, resume playback
-                hasAudioFocus = true
-                Timber.d("PlayerService initializeAudioFocusHelper Focus Gained -> Resume")
-            }
-
-            override fun onAudioLossTransient() {
-                // in call, pause playback
-                hasAudioFocus = false
-                Timber.d("PlayerService initializeAudioFocusHelper Focus Transient -> Pause")
-            }
-
-            override fun onAudioLossTransientCanDuck() {
-                // Notification, decrease playback volume
-                hasAudioFocus = true
-                player.volume = 0.20f
-                _internalOnlinePlayer.value?.setVolume(20)
-                Timber.d("PlayerService initializeAudioFocusHelper Focus Duck -> Lower Volume")
-            }
-
-            override fun onAudioGainedTransientMayDuck() {
-                // Resume volume after loss transient can duck
-                hasAudioFocus = true
-                player.volume = 1f
-                _internalOnlinePlayer.value?.setVolume(100)
-                Timber.d("PlayerService initializeAudioFocusHelper Focus Gained May Duck -> Resume Volume")
-            }
-
-            override fun onAudioLoss() {
-                hasAudioFocus = false
-                // Lost control stop playback
-//                val isActuallyPlaying = isPlayingNow || player.isPlaying
-//                if (isActuallyPlaying) {
-//                    if (localMediaItem?.isLocal == true)
-//                        player.volume = 0.2f
-//                    else
-//                        CoroutineScope(Dispatchers.Main).launch {
-//                            _internalOnlinePlayer.value?.setVolume(20)
-//                        }
-//                }
-                Timber.d("PlayerService initializeAudioFocusHelper Focus Loss -> Stop")
-            }
-        })
-    }
-
-     */
 
     private fun initializeBluetoothConnect() {
         if (!preferences.getBoolean(resumeOrPausePlaybackWhenDeviceKey, false)) return

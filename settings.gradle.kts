@@ -48,8 +48,9 @@ include(":lastfm")
 project(":lastfm").projectDir = file("extensions/lastfm")
 
 //Custom android youtube player
-
 include(":ayp")
 project(":ayp").projectDir = file("extensions/ayp")
 include(":aypui")
 project(":aypui").projectDir = file("extensions/aypui")
+include(":aypcast")
+project(":aypcast").projectDir = file("extensions/aypcast")

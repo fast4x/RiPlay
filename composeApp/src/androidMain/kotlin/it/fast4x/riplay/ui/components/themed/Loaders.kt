@@ -8,6 +8,7 @@ import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -17,9 +18,10 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentSize
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ContainedLoadingIndicator
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.LoadingIndicatorDefaults
@@ -35,12 +37,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import it.fast4x.riplay.R
+import it.fast4x.riplay.ui.styling.collapsedPlayerProgressBar
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.utils.getRoundnessShape
 import it.fast4x.riplay.utils.typography
@@ -206,6 +212,62 @@ fun PoligonIndicatorScreen(
             Text(
                 text = stringResource(R.string.loading_please_wait),
                 style = typography().xs
+            )
+        }
+    }
+}
+
+@Composable
+fun PlayerCircularLoader(size: Dp = 42.dp) =
+    CircularProgressIndicator(
+        modifier = Modifier
+            .size(size)
+            .padding(4.dp),
+        color = colorPalette().collapsedPlayerProgressBar,
+        strokeWidth = 3.dp,
+        strokeCap = StrokeCap.Round,
+        trackColor = colorPalette().collapsedPlayerProgressBar.copy(alpha = 0.2f)
+    )
+
+@Composable
+fun PlayerRotatingLoader(
+    imgSize: Dp,
+) {
+    val infiniteTransition = rememberInfiniteTransition(label = "buffer_rotation")
+    val rotation by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = 360f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1000, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "rotation_angle"
+    )
+    val colorPalette = colorPalette()
+
+    Canvas(
+        modifier = Modifier
+            .size(imgSize)
+    ) {
+        val strokeWidth = 3.dp.toPx()
+        val arcRadius = size.width / 2 - strokeWidth / 2
+
+        drawCircle(
+            color = colorPalette.collapsedPlayerProgressBar.copy(alpha = 0.15f),
+            radius = arcRadius,
+            style = Stroke(width = strokeWidth)
+        )
+
+        rotate(rotation) {
+            drawArc(
+                color = colorPalette.collapsedPlayerProgressBar,
+                startAngle = 0f,
+                sweepAngle = 90f,
+                useCenter = false,
+                style = Stroke(
+                    width = strokeWidth,
+                    cap = StrokeCap.Round
+                )
             )
         }
     }
