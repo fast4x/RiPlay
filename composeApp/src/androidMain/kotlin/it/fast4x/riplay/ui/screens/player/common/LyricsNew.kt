@@ -222,6 +222,7 @@ fun LyricsNew(
     trailingContent: (@Composable () -> Unit)? = null,
     isLandscape: Boolean,
 ) {
+    if (!isDisplayed) return
 
     val context = LocalContext.current
     val menuState = LocalGlobalSheetState.current
