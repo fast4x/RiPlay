@@ -34,7 +34,7 @@ val generateEnvironmentConfig by tasks.registering {
         "i3BRhLrV1v", "MApdyHLMyJ", "hizI7yLjL4", "rLoZP7BF4c", "nza34sU88C", "dwbUvjWUl3",
         "fqqhBZd0cf", "9sZKrkMg8p", "aQpNCVOe2i", "XNl2TKXLlB", "yNjbjspY8v", "eZueG672lt",
         "WkUFhXtC3G", "z4Xe47r8Vs", "AudioTagInfo_API_KEY", "RiPlay_LASTFM_API_KEY",
-        "RiPlay_LASTFM_SECRET", "RiPlay_DISCORD_APPLICATION_ID"
+        "RiPlay_LASTFM_SECRET", "RiPlay_DISCORD_APPLICATION_ID", "RiPlay_CHROMECAST_APPLICATION_ID"
     )
     inputs.properties(environmentPropertyNames.associateWith { propertyOrEmpty(it) })
 
@@ -101,6 +101,7 @@ val generateEnvironmentConfig by tasks.registering {
                 const val RiPlay_LASTFM_API_KEY = "${props["RiPlay_LASTFM_API_KEY"]}"
                 const val RiPlay_LASTFM_SECRET = "${props["RiPlay_LASTFM_SECRET"]}"
                 const val RiPlay_DISCORD_APPLICATION_ID = "${props["RiPlay_DISCORD_APPLICATION_ID"]}"
+                const val RiPlay_CHROMECAST_APPLICATION_ID = "${props["RiPlay_CHROMECAST_APPLICATION_ID"]}"
             }
             """.trimIndent()
         )
@@ -454,7 +455,7 @@ android {
             isDefault = true
             dimension = "version"
             buildConfigField("String", "BUILD_VARIANT", "\"full\"")
-
+            resValue("string", "RiPlay_CHROMECAST_APPLICATION_ID", propertyOrEmpty("RiPlay_CHROMECAST_APPLICATION_ID"))
             /*
             resValue("string", "AudioTagInfo_API_KEY", propertyOrEmpty("AudioTagInfo_API_KEY"))
             resValue("string", "RiPlay_LASTFM_API_KEY", propertyOrEmpty("RiPlay_LASTFM_API_KEY"))
@@ -476,6 +477,7 @@ android {
             dimension = "version"
             //manifestPlaceholders["appName"] = "RiPlay"
             buildConfigField("String", "BUILD_VARIANT", "\"foss\"")
+            resValue("string", "RiPlay_CHROMECAST_APPLICATION_ID", "\"\"")
         }
     }
 

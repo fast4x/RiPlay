@@ -5,10 +5,13 @@ import com.google.android.gms.cast.framework.CastOptions
 import com.google.android.gms.cast.framework.OptionsProvider
 import com.google.android.gms.cast.framework.media.CastMediaOptions
 import com.google.android.gms.cast.framework.media.NotificationOptions
+import it.fast4x.riplay.R
+import it.fast4x.riplay.utils.SecureConfig
+import it.fast4x.riplay.utils.appContext
 
 class CastOptionsProvider : OptionsProvider {
     override fun getCastOptions(context: Context): CastOptions {
-        val youTubeReceiverAppId = "CC1AD845"
+        val youTubeReceiverAppId = SecureConfig.getApiKey(appContext().resources.getString(R.string.RiPlay_CHROMECAST_APPLICATION_ID)) // yt default "CC1AD845"
         return CastOptions.Builder()
             .setReceiverApplicationId(youTubeReceiverAppId)
             .setCastMediaOptions(
