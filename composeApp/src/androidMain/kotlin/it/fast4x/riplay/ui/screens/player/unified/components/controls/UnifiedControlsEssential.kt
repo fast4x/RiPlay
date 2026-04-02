@@ -82,6 +82,7 @@ import it.fast4x.riplay.extensions.preferences.textoutlineKey
 import it.fast4x.riplay.service.PlaybackState
 import it.fast4x.riplay.service.PlayerState
 import it.fast4x.riplay.ui.components.themed.IconButton
+import it.fast4x.riplay.ui.components.themed.PlayerCircularLoader
 import it.fast4x.riplay.ui.components.themed.SelectorArtistsDialog
 import it.fast4x.riplay.ui.components.themed.SmartMessage
 import it.fast4x.riplay.ui.screens.settings.isYtSyncEnabled
@@ -623,10 +624,7 @@ fun UnifiedControlsEssential(
                     .size(imgSize)
                     .bounceClick()
             )
-        } else CircularProgressIndicator(
-            modifier = Modifier.align(Alignment.Center).size(imgSize),
-            color = colorPalette().collapsedPlayerProgressBar
-        )
+        } else PlayerCircularLoader(64.dp)
 
         val fmtSpeed = "%.1fx".format(playbackSpeed).replace(",", ".")
         if (fmtSpeed != "1.0x")

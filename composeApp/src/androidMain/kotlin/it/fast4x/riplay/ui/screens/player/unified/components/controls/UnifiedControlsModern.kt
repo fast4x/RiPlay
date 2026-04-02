@@ -75,6 +75,8 @@ import it.fast4x.riplay.service.PlaybackState
 import it.fast4x.riplay.service.PlayerState
 import it.fast4x.riplay.ui.components.themed.CustomElevatedButton
 import it.fast4x.riplay.ui.components.themed.IconButton
+import it.fast4x.riplay.ui.components.themed.PlayerCircularLoader
+import it.fast4x.riplay.ui.components.themed.PlayerRotatingLoader
 import it.fast4x.riplay.ui.components.themed.SelectorArtistsDialog
 import it.fast4x.riplay.ui.components.themed.SmartMessage
 import it.fast4x.riplay.ui.screens.settings.isYtSyncEnabled
@@ -211,10 +213,7 @@ fun UnifiedControlsModern(
                             .align(Alignment.Center)
                             .size(30.dp)
                     )
-                } else CircularProgressIndicator(
-                    modifier = Modifier.align(Alignment.Center).size(30.dp),
-                    color = colorPalette().collapsedPlayerProgressBar
-                )
+                } else PlayerCircularLoader(64.dp)
             }
         }
         else {

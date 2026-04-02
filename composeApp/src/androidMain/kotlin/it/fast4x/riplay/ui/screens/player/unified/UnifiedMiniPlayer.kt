@@ -46,6 +46,7 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
@@ -86,6 +87,7 @@ import it.fast4x.riplay.service.PlaybackState
 import it.fast4x.riplay.service.PlayerService
 import it.fast4x.riplay.ui.components.themed.IconButton
 import it.fast4x.riplay.ui.components.themed.NowPlayingSongIndicator
+import it.fast4x.riplay.ui.components.themed.PlayerCircularLoader
 import it.fast4x.riplay.ui.components.themed.SmartMessage
 import it.fast4x.riplay.ui.screens.settings.isYtSyncEnabled
 import it.fast4x.riplay.ui.styling.Dimensions
@@ -479,10 +481,8 @@ fun UnifiedMiniPlayer(
                                 .size(24.dp)
                         )
                     }
-                } else CircularProgressIndicator(
-                    modifier = Modifier.size(24.dp),
-                    color = colorPalette().collapsedPlayerProgressBar
-                )
+                } else
+                    PlayerCircularLoader(42.dp)
 
                 if (miniPlayerType == MiniPlayerType.Essential)
                     IconButton(
