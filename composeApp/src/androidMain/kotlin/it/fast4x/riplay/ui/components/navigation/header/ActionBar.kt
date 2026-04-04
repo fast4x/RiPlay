@@ -396,14 +396,6 @@ fun ActionBar(
     var expanded by remember { mutableStateOf(false) }
     val sheet = LocalGlobalSheetState.current
 
-    //todo work in progress cast
-    /*
-    var showCastScreen = LocalCastSheetState.current
-    HeaderIcon(R.drawable.cast_connected) {
-        showCastScreen.expandSoft()
-    }
-     */
-
      // todo cast to complete
     var castToRiTuneDeviceEnabled by rememberPreference(castToRiTuneDeviceEnabledKey, false )
     val showCastScreen = LocalRiTuneSheetState.current
