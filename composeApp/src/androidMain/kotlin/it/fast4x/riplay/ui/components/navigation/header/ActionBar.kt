@@ -407,16 +407,16 @@ fun ActionBar(
      // todo cast to complete
     var castToRiTuneDeviceEnabled by rememberPreference(castToRiTuneDeviceEnabledKey, false )
     val showCastScreen = LocalRiTuneSheetState.current
-//    if (castToRiTuneDeviceEnabled)
-//        HeaderIcon(if (GlobalSharedData.riTuneCastActive) R.drawable.cast_connected else R.drawable.cast_disconnected, tint = colorPalette().accent) {
-//            showCastScreen.expandSoft()
-//        }
+    if (castToRiTuneDeviceEnabled)
+        HeaderIcon(if (GlobalSharedData.riTuneCastActive) R.drawable.cast_connected else R.drawable.cast_disconnected, tint = colorPalette().accent) {
+            showCastScreen.expandSoft()
+        }
 
 // TODO dev chromecast for full variant
-    Timber.d("CastHelper.isCastAvailable = ${CastHelper.isCastAvailable}")
-    if (CastHelper.isCastAvailable) {
-        CastButton()
-    }
+//    Timber.d("CastHelper.isCastAvailable = ${CastHelper.isCastAvailable}")
+//    if (CastHelper.isCastAvailable) {
+//        CastButton()
+//    }
 
     /* todo maybe nor right place
     val equalizer = LocalPlayerServiceBinder.current?.equalizer
