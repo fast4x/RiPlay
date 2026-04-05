@@ -1291,7 +1291,7 @@ Volume BAS : titre précédent</string>
     <string name="onboard_title_permissions">Autorisations</string>
     <string name="onboard_perm_notifications">Notifications</string>
     <string name="onboard_notifications_get_media_player_in_the_notifications">Accédez au lecteur multimédia depuis les notifications</string>
-    <string name="onboard_perm_accessing_files_on_disk">Accès aux Fichiers sur le Disque</string>
+    <string name="onboard_perm_accessing_files_on_disk">Accès aux fichiers sur votre smartphone</string>
     <string name="onboard_storage_allow_the_app_to_read_the_music_library">Autoriser l\'application à accéder à votre bibliothèque musicale.</string>
     <string name="onboard_perm_bluetooth">Bluetooth</string>
     <string name="onboard_bluetooth_detect_headphones_to_pause_or_resume_music">Détectez les écouteurs pour mettre la musique en pause ou la reprendre.</string>
