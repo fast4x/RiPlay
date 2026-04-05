@@ -12,7 +12,7 @@ import android.content.IntentFilter
 import android.content.pm.PackageManager
 import androidx.core.content.ContextCompat
 
-class BluetoothConnectReceiver(
+class BluetoothConnectHelper(
     private val context: Context,
     private val onDeviceConnected: () -> Unit,
     private val onDeviceDisconnected: () -> Unit = {}

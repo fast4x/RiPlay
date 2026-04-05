@@ -6,7 +6,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.media.AudioManager
 
-class NoisyAudioReceiver(
+class NoisyAudioHelper(
     private val context: Context,
     private val onAudioBecomingNoisy: () -> Unit
 ) {
