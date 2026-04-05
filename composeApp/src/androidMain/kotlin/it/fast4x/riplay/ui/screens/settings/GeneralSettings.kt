@@ -150,6 +150,7 @@ import it.fast4x.riplay.extensions.preferences.castToRiTuneDeviceEnabledKey
 import it.fast4x.riplay.extensions.preferences.checkUpdateStateKey
 import it.fast4x.riplay.extensions.preferences.closePlayerServiceAfterMinutesKey
 import it.fast4x.riplay.extensions.preferences.closePlayerServiceWhenPausedAfterMinutesKey
+import it.fast4x.riplay.extensions.preferences.disableAudioDRCKey
 import it.fast4x.riplay.extensions.preferences.enableVoiceInputKey
 import it.fast4x.riplay.extensions.preferences.equalizerTypeKey
 import it.fast4x.riplay.extensions.preferences.excludeSongIfIsVideoKey
@@ -360,6 +361,9 @@ fun GeneralSettings(
     var parentalControlEnabled by rememberPreference(parentalControlEnabledKey, false)
 
     var castToRiTuneDeviceEnabled by rememberPreference(castToRiTuneDeviceEnabledKey, false )
+
+    var disableAudioDRC by rememberPreference(disableAudioDRCKey, false)
+
 
     val eventsCount by remember {
         Database.eventsCount().distinctUntilChanged()
@@ -1371,146 +1375,6 @@ fun GeneralSettings(
                             onCheckedChange = { parentalControlEnabled = it }
                         )
 
-                    if (search.input.isBlank() || stringResource(R.string.loudness_normalization).contains(
-                            search.input,
-                            true
-                        )
-                    ) {
-                        SwitchSettingEntry(
-                            title = stringResource(R.string.loudness_normalization),
-                            text = stringResource(R.string.autoadjust_the_volume),
-                            isChecked = volumeNormalization,
-                            onCheckedChange = {
-                                volumeNormalization = it
-                            }
-                        )
-                        AnimatedVisibility(visible = volumeNormalization) {
-                            val initialValue by remember { derivedStateOf { loudnessBaseGain } }
-                            var newValue by remember(initialValue) {
-                                mutableFloatStateOf(
-                                    initialValue
-                                )
-                            }
-
-                            val initialValueVolume by remember { derivedStateOf { volumeBoostLevel } }
-                            var newValueVolume by remember(initialValue) {
-                                mutableFloatStateOf(
-                                    initialValueVolume
-                                )
-                            }
-
-
-                            Column(
-                                modifier = Modifier.padding(start = 12.dp)
-                            ) {
-                                SliderSettingsEntry(
-                                    title = stringResource(R.string.settings_loudness_base_gain),
-                                    text = stringResource(R.string.settings_target_gain_loudness_info),
-                                    state = newValue,
-                                    onSlide = { newValue = it },
-                                    onSlideComplete = {
-                                        loudnessBaseGain = newValue
-                                    },
-                                    toDisplay = {
-                                        "%.1f dB".format(loudnessBaseGain).replace(",", ".")
-                                    },
-                                    range = -20f..20f
-                                )
-
-                                SliderSettingsEntry(
-                                    title = stringResource(R.string.loudness_boost_level),
-                                    text = stringResource(R.string.loudness_boost_level_info),
-                                    state = newValueVolume,
-                                    onSlide = { newValueVolume = it },
-                                    onSlideComplete = {
-                                        volumeBoostLevel = newValueVolume
-                                    },
-                                    toDisplay = {
-                                        "%.2f dB".format(volumeBoostLevel).replace(",", ".")
-                                    },
-                                    range = -20f..20f
-                                )
-                            }
-                        }
-                    }
-
-                    if (search.input.isBlank() || stringResource(R.string.settings_audio_bass_boost).contains(
-                            search.input,
-                            true
-                        )
-                    ) {
-                        SwitchSettingEntry(
-                            title = stringResource(R.string.settings_audio_bass_boost),
-                            text = "",
-                            isChecked = bassboostEnabled,
-                            onCheckedChange = {
-                                bassboostEnabled = it
-                            }
-                        )
-                        AnimatedVisibility(visible = bassboostEnabled) {
-                            val initialValue by remember { derivedStateOf { bassboostLevel } }
-                            var newValue by remember(initialValue) {
-                                mutableFloatStateOf(
-                                    initialValue
-                                )
-                            }
-
-
-                            Column(
-                                modifier = Modifier.padding(start = 12.dp)
-                            ) {
-                                SliderSettingsEntry(
-                                    title = stringResource(R.string.settings_bass_boost_level),
-                                    text = "",
-                                    state = newValue,
-                                    onSlide = { newValue = it },
-                                    onSlideComplete = {
-                                        bassboostLevel = newValue
-                                    },
-                                    toDisplay = { "%.1f".format(bassboostLevel).replace(",", ".") },
-                                    range = 0f..1f
-                                )
-                            }
-                        }
-                    }
-
-                    if (search.input.isBlank() || stringResource(R.string.settings_audio_reverb).contains(
-                            search.input,
-                            true
-                        )
-                    ) {
-                        EnumValueSelectorSettingsEntry(
-                            online = false,
-                            title = stringResource(R.string.settings_audio_reverb),
-                            text = stringResource(R.string.settings_audio_reverb_info_apply_a_depth_effect_to_the_audio),
-                            selectedValue = audioReverb,
-                            onValueSelected = {
-                                audioReverb = it
-                                restartService = true
-                            },
-                            valueText = {
-                                it.textName
-                            }
-                        )
-                        RestartPlayerService(restartService, onRestart = { restartService = false })
-                    }
-
-                    if (search.input.isBlank() || stringResource(R.string.settings_audio_focus).contains(
-                            search.input,
-                            true
-                        )
-                    ) {
-                        SwitchSettingEntry(
-                            title = stringResource(R.string.settings_audio_focus),
-                            text = stringResource(R.string.settings_audio_focus_info),
-                            isChecked = audioFocusEnabled,
-                            onCheckedChange = {
-                                audioFocusEnabled = it
-                            }
-                        )
-                    }
-
-
 //                    if (search.input.isBlank() || stringResource(R.string.event_volumekeys).contains(
 //                            search.input,
 //                            true
@@ -1678,6 +1542,171 @@ fun GeneralSettings(
                         )
                         */
 
+                    }
+
+                }
+
+                settingsItem(
+                    isHeader = true
+                ) {
+                    SettingsGroupSpacer()
+                    SettingsEntryGroupText(title = stringResource(R.string.audio))
+                }
+
+                settingsItem {
+
+                    if (search.input.isBlank() || stringResource(R.string.loudness_normalization).contains(
+                            search.input,
+                            true
+                        )
+                    ) {
+                        SwitchSettingEntry(
+                            title = stringResource(R.string.loudness_normalization),
+                            text = stringResource(R.string.autoadjust_the_volume),
+                            isChecked = volumeNormalization,
+                            onCheckedChange = {
+                                volumeNormalization = it
+                            }
+                        )
+                        AnimatedVisibility(visible = volumeNormalization) {
+                            val initialValue by remember { derivedStateOf { loudnessBaseGain } }
+                            var newValue by remember(initialValue) {
+                                mutableFloatStateOf(
+                                    initialValue
+                                )
+                            }
+
+                            val initialValueVolume by remember { derivedStateOf { volumeBoostLevel } }
+                            var newValueVolume by remember(initialValue) {
+                                mutableFloatStateOf(
+                                    initialValueVolume
+                                )
+                            }
+
+
+                            Column(
+                                modifier = Modifier.padding(start = 12.dp)
+                            ) {
+                                SliderSettingsEntry(
+                                    title = stringResource(R.string.settings_loudness_base_gain),
+                                    text = stringResource(R.string.settings_target_gain_loudness_info),
+                                    state = newValue,
+                                    onSlide = { newValue = it },
+                                    onSlideComplete = {
+                                        loudnessBaseGain = newValue
+                                    },
+                                    toDisplay = {
+                                        "%.1f dB".format(loudnessBaseGain).replace(",", ".")
+                                    },
+                                    range = -20f..20f
+                                )
+
+                                SliderSettingsEntry(
+                                    title = stringResource(R.string.loudness_boost_level),
+                                    text = stringResource(R.string.loudness_boost_level_info),
+                                    state = newValueVolume,
+                                    onSlide = { newValueVolume = it },
+                                    onSlideComplete = {
+                                        volumeBoostLevel = newValueVolume
+                                    },
+                                    toDisplay = {
+                                        "%.2f dB".format(volumeBoostLevel).replace(",", ".")
+                                    },
+                                    range = -20f..20f
+                                )
+                            }
+                        }
+                    }
+
+                    if (search.input.isBlank() || stringResource(R.string.settings_audio_bass_boost).contains(
+                            search.input,
+                            true
+                        )
+                    ) {
+                        SwitchSettingEntry(
+                            title = stringResource(R.string.settings_audio_bass_boost),
+                            text = "",
+                            isChecked = bassboostEnabled,
+                            onCheckedChange = {
+                                bassboostEnabled = it
+                            }
+                        )
+                        AnimatedVisibility(visible = bassboostEnabled) {
+                            val initialValue by remember { derivedStateOf { bassboostLevel } }
+                            var newValue by remember(initialValue) {
+                                mutableFloatStateOf(
+                                    initialValue
+                                )
+                            }
+
+
+                            Column(
+                                modifier = Modifier.padding(start = 12.dp)
+                            ) {
+                                SliderSettingsEntry(
+                                    title = stringResource(R.string.settings_bass_boost_level),
+                                    text = "",
+                                    state = newValue,
+                                    onSlide = { newValue = it },
+                                    onSlideComplete = {
+                                        bassboostLevel = newValue
+                                    },
+                                    toDisplay = { "%.1f".format(bassboostLevel).replace(",", ".") },
+                                    range = 0f..1f
+                                )
+                            }
+                        }
+                    }
+
+                    if (search.input.isBlank() || stringResource(R.string.settings_audio_reverb).contains(
+                            search.input,
+                            true
+                        )
+                    ) {
+                        EnumValueSelectorSettingsEntry(
+                            online = false,
+                            title = stringResource(R.string.settings_audio_reverb),
+                            text = stringResource(R.string.settings_audio_reverb_info_apply_a_depth_effect_to_the_audio),
+                            selectedValue = audioReverb,
+                            onValueSelected = {
+                                audioReverb = it
+                                restartService = true
+                            },
+                            valueText = {
+                                it.textName
+                            }
+                        )
+                        RestartPlayerService(restartService, onRestart = { restartService = false })
+                    }
+
+                    if (search.input.isBlank() || stringResource(R.string.settings_audio_focus).contains(
+                            search.input,
+                            true
+                        )
+                    ) {
+                        SwitchSettingEntry(
+                            title = stringResource(R.string.settings_audio_focus),
+                            text = stringResource(R.string.settings_audio_focus_info),
+                            isChecked = audioFocusEnabled,
+                            onCheckedChange = {
+                                audioFocusEnabled = it
+                            }
+                        )
+                    }
+
+                    if (search.input.isBlank() || stringResource(R.string.settings_disable_audio_drc).contains(
+                            search.input,
+                            true
+                        )
+                    ) {
+                        SwitchSettingEntry(
+                            title = stringResource(R.string.settings_disable_audio_drc),
+                            text = "",
+                            isChecked = disableAudioDRC,
+                            onCheckedChange = {
+                                disableAudioDRC = it
+                            }
+                        )
                     }
 
                 }

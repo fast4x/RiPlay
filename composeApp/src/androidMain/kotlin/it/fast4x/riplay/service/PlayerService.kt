@@ -182,6 +182,7 @@ import it.fast4x.riplay.extensions.lastfm.sendNowPlaying
 import it.fast4x.riplay.extensions.lastfm.sendScrobble
 import it.fast4x.riplay.extensions.players.getOnlineMetadata
 import it.fast4x.riplay.extensions.preferences.castToRiTuneDeviceEnabledKey
+import it.fast4x.riplay.extensions.preferences.disableAudioDRCKey
 import it.fast4x.riplay.extensions.preferences.enableWallpaperKey
 import it.fast4x.riplay.extensions.preferences.excludeSongIfIsVideoKey
 import it.fast4x.riplay.extensions.preferences.isEnabledLastfmKey
@@ -194,7 +195,8 @@ import it.fast4x.riplay.extensions.ritune.RiTuneClient
 import it.fast4x.riplay.extensions.ritune.models.RiTuneConnectionStatus
 import it.fast4x.riplay.extensions.ritune.models.RiTunePlayerState
 import it.fast4x.riplay.extensions.ritune.models.RiTuneRemoteCommand
-import it.fast4x.riplay.service.helpers.BluetoothConnectReceiver
+import it.fast4x.riplay.service.helpers.AudioDRCHelper
+import it.fast4x.riplay.service.helpers.BluetoothConnectHelper
 import it.fast4x.riplay.service.helpers.EqualizerHelper
 import it.fast4x.riplay.ui.screens.settings.isYtLoggedIn
 import it.fast4x.riplay.utils.GlobalSharedData
@@ -365,7 +367,7 @@ class PlayerService : Service(),
 
     var firstTimeStarted by mutableStateOf(true)
 
-    private var bluetoothReceiver: BluetoothConnectReceiver? = null
+    private var bluetoothReceiver: BluetoothConnectHelper? = null
 
     private val riTuneClient: RiTuneClient = RiTuneClient()
     private var riTuneObserverJob: Job? = null
@@ -448,6 +450,7 @@ class PlayerService : Service(),
         initializeSongCoverInLockScreen()
         initializeMedleyMode()
         initializePlaybackParameters()
+        initializeAudioDRCHelper()
 
         //initializeTelephonyManager(true)
 
@@ -1529,6 +1532,7 @@ class PlayerService : Service(),
             volumeNormalizationJob?.cancel()
             volumeNormalizationJob = null
 
+            AudioDRCHelper.restoreDRC()
 
             notificationManager?.cancelAll()
             //coroutineScope.launch { delay(500) }
@@ -1937,6 +1941,14 @@ class PlayerService : Service(),
         }
     }
 
+    private fun initializeAudioDRCHelper() {
+       val disable = preferences.getBoolean(disableAudioDRCKey, false)
+
+        AudioDRCHelper.init(this)
+        if (disable) AudioDRCHelper.disableDRC()
+         else AudioDRCHelper.restoreDRC()
+    }
+
     private fun initializeSongCoverInLockScreen() {
         val bitmap =
             if (isAtLeastAndroid13 || isShowingThumbnailInLockscreen) bitmapProvider?.bitmap else null
@@ -1997,7 +2009,7 @@ class PlayerService : Service(),
     private fun initializeBluetoothConnect() {
         if (!preferences.getBoolean(resumeOrPausePlaybackWhenDeviceKey, false)) return
 
-        bluetoothReceiver = BluetoothConnectReceiver(
+        bluetoothReceiver = BluetoothConnectHelper(
             context = this,
             onDeviceConnected = {
                 if (currentSong.value?.isLocal == true) {
@@ -2394,15 +2406,13 @@ class PlayerService : Service(),
                 minTimeForEvent = sharedPreferences.getEnum(key,
                     MinTimeForEvent.`20s`)
             }
-//            checkVolumeLevelKey -> {
-//                checkVolumeLevel = sharedPreferences.getBoolean(key, false)
-//            }
             resumeOrPausePlaybackWhenDeviceKey -> initializeBluetoothConnect()
             bassboostLevelKey, bassboostEnabledKey -> initializeBassBoost()
             audioReverbPresetKey -> initializeReverb()
             volumeNormalizationKey, loudnessBaseGainKey, volumeBoostLevelKey -> initializeNormalizeVolume()
             playbackPitchKey, playbackSpeedKey -> initializePlaybackParameters()
             castToRiTuneDeviceEnabledKey -> initializeRiTune()
+            disableAudioDRCKey -> initializeAudioDRCHelper()
         }
     }
 

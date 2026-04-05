@@ -899,7 +899,7 @@
     <string name="settings_bass_boost_level">Livello aumento bassi</string>
     <string name="settings_audio_reverb">Riverbero audio</string>
     <string name="settings_audio_reverb_info_apply_a_depth_effect_to_the_audio">Applica un effetto di profondità all\'audio</string>
-    <string name="settings_audio_focus">Audio concentrazione</string>
+    <string name="settings_audio_focus">Audio focus</string>
     <string name="settings_audio_focus_info">Abilita pausa e ripresa automatica dopo una chiamata</string>
     <string name="please_wait">Per favore aspetta</string>
     <string name="songs_liked_yt">Messo like a canzone/i su YouTube</string>

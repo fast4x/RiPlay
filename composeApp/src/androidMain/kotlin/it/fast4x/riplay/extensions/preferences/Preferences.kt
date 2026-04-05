@@ -441,6 +441,8 @@ const val showOnBoardingScreenKey = "onBoardingScreen"
 
 const val timerEndTimeKey = "timerEndTime"
 
+const val disableAudioDRCKey = "disableAudioDRC"
+
 inline fun <reified T : Enum<T>> SharedPreferences.getEnum(
     key: String,
     defaultValue: T
