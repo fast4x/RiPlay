@@ -21,7 +21,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -36,32 +35,29 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.util.UnstableApi
-import androidx.media3.datasource.cache.Cache
-import androidx.media3.datasource.cache.CacheSpan
-import it.fast4x.riplay.data.Database
-import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.R
+import it.fast4x.riplay.data.Database
+import it.fast4x.riplay.data.models.Format
 import it.fast4x.riplay.enums.PlayerBackgroundColors
 import it.fast4x.riplay.enums.PlayerType
-import it.fast4x.riplay.data.models.Format
-import it.fast4x.riplay.utils.LOCAL_KEY_PREFIX
-import it.fast4x.riplay.ui.styling.onOverlay
-import it.fast4x.riplay.ui.styling.overlay
 import it.fast4x.riplay.extensions.preferences.blackgradientKey
-import it.fast4x.riplay.ui.styling.color
-import it.fast4x.riplay.utils.isLandscape
-import it.fast4x.riplay.ui.styling.medium
 import it.fast4x.riplay.extensions.preferences.playerBackgroundColorsKey
 import it.fast4x.riplay.extensions.preferences.playerTypeKey
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.extensions.preferences.showthumbnailKey
 import it.fast4x.riplay.extensions.preferences.statsfornerdsKey
 import it.fast4x.riplay.extensions.preferences.transparentBackgroundPlayerActionBarKey
+import it.fast4x.riplay.ui.components.themed.IconButton
+import it.fast4x.riplay.ui.styling.color
+import it.fast4x.riplay.ui.styling.medium
+import it.fast4x.riplay.ui.styling.onOverlay
+import it.fast4x.riplay.ui.styling.overlay
+import it.fast4x.riplay.utils.LOCAL_KEY_PREFIX
+import it.fast4x.riplay.utils.colorPalette
+import it.fast4x.riplay.utils.isLandscape
+import it.fast4x.riplay.utils.typography
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.distinctUntilChanged
-import it.fast4x.riplay.utils.colorPalette
-import it.fast4x.riplay.utils.typography
-import it.fast4x.riplay.ui.components.themed.IconButton
 
 @RequiresApi(Build.VERSION_CODES.ECLAIR)
 @SuppressLint("LongLogTag")

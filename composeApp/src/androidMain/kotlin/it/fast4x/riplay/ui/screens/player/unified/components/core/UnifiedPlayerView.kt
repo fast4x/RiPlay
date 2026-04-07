@@ -1,4 +1,4 @@
-package it.fast4x.riplay.ui.screens.player.online.components.core
+package it.fast4x.riplay.ui.screens.player.unified.components.core
 
 import android.view.View
 import android.view.ViewGroup
@@ -17,7 +17,7 @@ import it.fast4x.riplay.utils.isLandscape
 import it.fast4x.riplay.utils.isVideo
 
 @Composable
-fun OnlinePlayerView(
+fun UnifiedPlayerView(
     onlinePlayerView: YouTubePlayerView? = null,
     mediaItem: MediaItem,
     actAsMini: Boolean = false,

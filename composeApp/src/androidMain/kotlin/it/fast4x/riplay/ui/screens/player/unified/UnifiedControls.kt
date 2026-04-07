@@ -26,12 +26,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.media3.common.MediaItem
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
-import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.data.models.Info
 import it.fast4x.riplay.data.models.UiMedia
@@ -51,18 +47,10 @@ import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.extensions.preferences.showlyricsthumbnailKey
 import it.fast4x.riplay.extensions.preferences.showthumbnailKey
 import it.fast4x.riplay.extensions.preferences.transparentBackgroundPlayerActionBarKey
-import it.fast4x.riplay.service.PlaybackState
 import it.fast4x.riplay.service.PlayerState
-import it.fast4x.riplay.ui.screens.player.online.GetControls
-import it.fast4x.riplay.ui.screens.player.online.GetSeekBar
-import it.fast4x.riplay.ui.screens.player.online.components.controls.InfoAlbumAndArtistEssential
-import it.fast4x.riplay.ui.screens.player.online.components.controls.InfoAlbumAndArtistModern
 import it.fast4x.riplay.ui.screens.player.unified.components.controls.UnifiedInfoAlbumAndArtistEssential
 import it.fast4x.riplay.ui.screens.player.unified.components.controls.UnifiedInfoAlbumAndArtistModern
-import it.fast4x.riplay.utils.PlayerViewModel
-import it.fast4x.riplay.utils.PlayerViewModelFactory
 import it.fast4x.riplay.utils.applyIf
-import it.fast4x.riplay.utils.isCompositionLaunched
 import it.fast4x.riplay.utils.isLandscape
 import kotlinx.coroutines.flow.distinctUntilChanged
 

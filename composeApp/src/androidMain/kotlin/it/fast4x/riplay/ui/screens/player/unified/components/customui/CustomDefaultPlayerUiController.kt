@@ -1,4 +1,4 @@
-package it.fast4x.riplay.ui.screens.player.online.components.customui
+package it.fast4x.riplay.ui.screens.player.unified.components.customui
 
 import android.content.Context
 import it.fast4x.androidyoutubeplayer.core.customui.PlayerUiController

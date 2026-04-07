@@ -202,7 +202,7 @@ import it.fast4x.riplay.ui.components.LocalGlobalSheetState
 import it.fast4x.riplay.ui.components.rememberBottomSheetState
 import it.fast4x.riplay.ui.components.themed.CrossfadeContainer
 import it.fast4x.riplay.ui.components.themed.SmartMessage
-import it.fast4x.riplay.ui.screens.player.local.rememberLocalPlayerSheetState
+import it.fast4x.riplay.ui.screens.player.unified.components.rememberPlayerSheetState
 import it.fast4x.riplay.ui.screens.settings.isYtLoggedIn
 import it.fast4x.riplay.ui.styling.Appearance
 import it.fast4x.riplay.ui.styling.Dimensions
@@ -245,7 +245,7 @@ import it.fast4x.riplay.extensions.ritune.RiTuneSelector
 import it.fast4x.riplay.extensions.ritune.models.toRiTuneDevice
 import it.fast4x.riplay.service.PlayerState
 import it.fast4x.riplay.ui.components.Snowfall
-import it.fast4x.riplay.ui.screens.player.online.components.core.OnlinePlayerView
+import it.fast4x.riplay.ui.screens.player.unified.components.core.UnifiedPlayerView
 import it.fast4x.riplay.ui.screens.player.unified.UnifiedMiniPlayer
 import it.fast4x.riplay.ui.screens.player.unified.UnifiedPlayer
 import it.fast4x.riplay.utils.GlobalSharedData
@@ -1249,7 +1249,7 @@ class MainActivity :
                 )
 
                 // TODO remove in the future
-                val playerSheetState = rememberLocalPlayerSheetState(
+                val playerSheetState = rememberPlayerSheetState(
                     dismissedBound = 0.dp,
                     collapsedBound = Dimensions.collapsedPlayer + bottomDp,
                     expandedBound = maxHeight,
@@ -1471,7 +1471,7 @@ class MainActivity :
                                             navController = it,
                                             onlineCore = {
                                                 binder?.player?.currentMediaItem?.let {
-                                                    OnlinePlayerView(
+                                                    UnifiedPlayerView(
                                                         onlinePlayerView = onlinePlayerView,
                                                         mediaItem = it,
                                                     )

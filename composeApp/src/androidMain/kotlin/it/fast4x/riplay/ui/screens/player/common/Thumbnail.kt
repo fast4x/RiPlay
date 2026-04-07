@@ -45,12 +45,21 @@ import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
 import coil.size.Size
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
-import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.R
+import it.fast4x.riplay.commonutils.thumbnail
+import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.enums.ThumbnailCoverType
 import it.fast4x.riplay.enums.ThumbnailType
+import it.fast4x.riplay.extensions.preferences.clickOnLyricsTextKey
+import it.fast4x.riplay.extensions.preferences.coverThumbnailAnimationKey
+import it.fast4x.riplay.extensions.preferences.rememberPreference
+import it.fast4x.riplay.extensions.preferences.showCoverThumbnailAnimationKey
+import it.fast4x.riplay.extensions.preferences.showlyricsthumbnailKey
+import it.fast4x.riplay.extensions.preferences.showvisthumbnailKey
+import it.fast4x.riplay.extensions.preferences.thumbnailTypeKey
+import it.fast4x.riplay.extensions.preferences.thumbnailpauseKey
 import it.fast4x.riplay.service.LoginRequiredException
 import it.fast4x.riplay.service.NoInternetException
 import it.fast4x.riplay.service.PlayableFormatNonSupported
@@ -59,25 +68,16 @@ import it.fast4x.riplay.service.TimeoutException
 import it.fast4x.riplay.service.UnknownException
 import it.fast4x.riplay.service.UnplayableException
 import it.fast4x.riplay.service.VideoIdMismatchException
-import it.fast4x.riplay.utils.isLocal
-import it.fast4x.riplay.ui.components.themed.SmartMessage
 import it.fast4x.riplay.ui.components.themed.RotateThumbnailCoverAnimation
+import it.fast4x.riplay.ui.components.themed.SmartMessage
 import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.ui.styling.px
 import it.fast4x.riplay.utils.DisposableListener
-import it.fast4x.riplay.extensions.preferences.clickOnLyricsTextKey
-import it.fast4x.riplay.extensions.preferences.coverThumbnailAnimationKey
+import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.utils.currentWindow
 import it.fast4x.riplay.utils.doubleShadowDrop
 import it.fast4x.riplay.utils.isLandscape
-import it.fast4x.riplay.extensions.preferences.rememberPreference
-import it.fast4x.riplay.extensions.preferences.showCoverThumbnailAnimationKey
-import it.fast4x.riplay.extensions.preferences.showlyricsthumbnailKey
-import it.fast4x.riplay.extensions.preferences.showvisthumbnailKey
-import it.fast4x.riplay.commonutils.thumbnail
-import it.fast4x.riplay.extensions.preferences.thumbnailTypeKey
-import it.fast4x.riplay.extensions.preferences.thumbnailpauseKey
-import it.fast4x.riplay.utils.colorPalette
+import it.fast4x.riplay.utils.isLocal
 import it.fast4x.riplay.utils.thumbnailShape
 import timber.log.Timber
 import java.net.UnknownHostException
@@ -318,7 +318,7 @@ fun Thumbnail(
 
                 //if (!currentWindow.mediaItem.isLocal)
                 if (showlyricsthumbnail)
-                    LyricsNew(
+                    Lyrics(
                         mediaId = currentWindow.mediaItem.mediaId,
                         isDisplayed = isShowingLyrics && error == null,
                         onDismiss = {

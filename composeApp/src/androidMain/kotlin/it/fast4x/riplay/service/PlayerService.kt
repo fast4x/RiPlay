@@ -151,7 +151,7 @@ import it.fast4x.riplay.extensions.preferences.skipSilenceKey
 import it.fast4x.riplay.extensions.preferences.useVolumeKeysToChangeSongKey
 import it.fast4x.riplay.extensions.preferences.volumeBoostLevelKey
 import it.fast4x.riplay.extensions.preferences.volumeNormalizationKey
-import it.fast4x.riplay.ui.screens.player.online.components.customui.CustomDefaultPlayerUiController
+import it.fast4x.riplay.ui.screens.player.unified.components.customui.CustomDefaultPlayerUiController
 import it.fast4x.riplay.ui.widgets.PlayerHorizontalWidget
 import it.fast4x.riplay.ui.widgets.PlayerVerticalWidget
 import it.fast4x.riplay.utils.BitmapProvider

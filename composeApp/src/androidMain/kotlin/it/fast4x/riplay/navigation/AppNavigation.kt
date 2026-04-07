@@ -63,7 +63,6 @@ import it.fast4x.riplay.ui.screens.moodandchip.MoodListScreen
 import it.fast4x.riplay.ui.screens.moodandchip.MoodsPageScreen
 import it.fast4x.riplay.ui.screens.newreleases.NewreleasesScreen
 import it.fast4x.riplay.ui.screens.ondevice.OnDeviceArtistScreen
-import it.fast4x.riplay.ui.screens.player.local.LocalPlayer
 import it.fast4x.riplay.ui.screens.player.common.Queue
 import it.fast4x.riplay.ui.screens.playlist.PlaylistScreen
 import it.fast4x.riplay.ui.screens.podcast.PodcastScreen
@@ -271,15 +270,6 @@ fun AppNavigation(
                         navController.popBackStack()
                     },
                     onDiscoverClick = {}
-                )
-            }
-        }
-
-        composable(route = NavRoutes.player.name) {
-            modalBottomSheetPage {
-                LocalPlayer(
-                    navController = navController,
-                    onDismiss = {}
                 )
             }
         }

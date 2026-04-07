@@ -1,4 +1,4 @@
-package it.fast4x.riplay.ui.screens.player.local
+package it.fast4x.riplay.ui.screens.player.unified.components
 
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.Animatable
@@ -201,7 +201,7 @@ const val dismissedAnchor = 0
 @ExperimentalTextApi
 @UnstableApi
 @Composable
-fun rememberLocalPlayerSheetState(
+fun rememberPlayerSheetState(
     dismissedBound: Dp,
     expandedBound: Dp,
     collapsedBound: Dp = dismissedBound,
