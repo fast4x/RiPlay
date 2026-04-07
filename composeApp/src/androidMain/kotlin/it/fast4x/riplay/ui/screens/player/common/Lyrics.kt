@@ -87,6 +87,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -937,7 +938,7 @@ fun Lyrics(
             Box(
                 modifier = Modifier
                     .align(Alignment.BottomStart)
-                    .fillMaxWidth(0.2f)
+                    .fillMaxWidth(0.3f)
                     .padding(PaddingValues(start = 15.dp, bottom = 10.dp))
                     .background(colorPalette().accent.copy(alpha = 0.4f), getRoundnessShape())
             ) {
@@ -948,7 +949,11 @@ fun Lyrics(
                         else -> stringResource(R.string.lyrics_fulltext)
                     },
                     style = typography().xxs.medium.color(colorPalette().text),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
                     modifier = Modifier
+                        .height(24.dp)
+                        .padding(top = 5.dp)
                         .align(Alignment.Center)
                         .clickable {
                             when {
