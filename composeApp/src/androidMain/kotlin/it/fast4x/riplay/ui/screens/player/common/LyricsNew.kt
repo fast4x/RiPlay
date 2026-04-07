@@ -25,6 +25,7 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -198,6 +199,7 @@ import it.fast4x.riplay.utils.CustomHttpClient
 import it.fast4x.riplay.utils.PlayerViewModel
 import it.fast4x.riplay.utils.PlayerViewModelFactory
 import it.fast4x.riplay.utils.appContext
+import it.fast4x.riplay.utils.getRoundnessShape
 
 
 val RainbowColors = listOf(Color.Red, Color.Magenta, Color.Blue, Color.Cyan, Color.Green, Color.Yellow, Color.Red)
@@ -404,12 +406,14 @@ fun LyricsNew(
             durationProvider = durationProvider,
             playerEnableLyricsPopupMessage = playerEnableLyricsPopupMessage,
             context = context,
-            coroutineScope = coroutineScope,
             onCheckedLrc = { checkedLyricsLrc = it },
             onCheckedKugou = { checkedLyricsKugou = it },
             onCheckedInnertube = { checkedLyricsInnertube = it },
             onCheckedSyncLrc = { checkedLyricsSyncLrc = it },
-            onError = { isError = it }
+            onError = {
+                isError = it
+                Timber.e("Lyrics fetchLyricsIfNeeded onError $it")
+            }
         )
 
     }
@@ -929,6 +933,42 @@ fun LyricsNew(
                 }
 
             }
+
+            Box(
+                modifier = Modifier
+                    .align(Alignment.BottomStart)
+                    .fillMaxWidth(0.2f)
+                    .padding(PaddingValues(start = 15.dp, bottom = 10.dp))
+                    .background(colorPalette().accent.copy(alpha = 0.4f), getRoundnessShape())
+            ) {
+                Text(
+                    text = when {
+                        isShowingSynchronizedLyrics && isShowingSynchronizedWordByWordLyrics -> stringResource(R.string.lyrics_word_by_word)
+                        isShowingSynchronizedLyrics && !isShowingSynchronizedWordByWordLyrics -> stringResource(R.string.lyrics_line_by_line)
+                        else -> stringResource(R.string.lyrics_fulltext)
+                    },
+                    style = typography().xxs.medium.color(colorPalette().text),
+                    modifier = Modifier
+                        .align(Alignment.Center)
+                        .clickable {
+                            when {
+                                isShowingSynchronizedLyrics && isShowingSynchronizedWordByWordLyrics -> {
+                                    isShowingSynchronizedWordByWordLyrics = false
+                                }
+
+                                isShowingSynchronizedLyrics && !isShowingSynchronizedWordByWordLyrics -> {
+                                    isShowingSynchronizedLyrics = false
+                                }
+
+                                else -> {
+                                    isShowingSynchronizedLyrics = true
+                                    isShowingSynchronizedWordByWordLyrics = true
+                                }
+                            }
+                        }
+                )
+            }
+
             Box(
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
@@ -1673,7 +1713,7 @@ private suspend fun fetchLyricsIfNeeded(
     mediaId: String, artistName: String, title: String, currentLyrics: Lyrics?,
     isShowingSynchronizedWordByWordLyrics: Boolean, isShowingSynchronizedLyrics: Boolean,
     mediaMetadata: MediaMetadata, durationProvider: () -> Long, playerEnableLyricsPopupMessage: Boolean,
-    context: Context, coroutineScope: CoroutineScope,
+    context: Context,
     onCheckedLrc: (Boolean) -> Unit,
     onCheckedKugou: (Boolean) -> Unit,
     onCheckedInnertube: (Boolean) -> Unit,
@@ -1692,7 +1732,7 @@ private suspend fun fetchLyricsIfNeeded(
                         Timber.d("fetchLyricsIfNeeded success $syncLRClyrics")
                         if (syncLRClyrics.type != SyncLRCType.KARAOKE)
                             SmartMessage(
-                                "Karaoke not available",
+                                "Lyrics Karaoke not available",
                                 type = PopupType.Warning,
                                 context = context
                             )
@@ -1726,29 +1766,31 @@ private suspend fun fetchLyricsIfNeeded(
             runCatching {
                 LrcLib.lyrics(artist = artistName, title = title, duration = duration.milliseconds, album = mediaMetadata.albumTitle?.toString())?.onSuccess {
                     if ((it?.text?.isNotEmpty() == true || it?.sentences?.isNotEmpty() == true) && playerEnableLyricsPopupMessage)
-                        coroutineScope.launch { SmartMessage(context.resources.getString(R.string.info_lyrics_found_on_s).format("LrcLib.net"), type = PopupType.Success, context = context) }
+                        SmartMessage(context.resources.getString(R.string.info_lyrics_found_on_s).format("LrcLib.net"), type = PopupType.Success, context = context)
                     else if (playerEnableLyricsPopupMessage)
-                        coroutineScope.launch { SmartMessage(context.resources.getString(R.string.info_lyrics_not_found_on_s).format("LrcLib.net"), type = PopupType.Error, durationLong = true, context = context) }
+                        SmartMessage(context.resources.getString(R.string.info_lyrics_not_found_on_s).format("LrcLib.net"), type = PopupType.Error, durationLong = true, context = context)
 
                     onError(false)
                     Database.upsert(Lyrics(songId = mediaId, fixed = currentLyrics?.fixed, synced = it?.text.orEmpty()))
                     onCheckedLrc(true)
                 }?.onFailure {
-                    if (playerEnableLyricsPopupMessage) coroutineScope.launch { SmartMessage(context.resources.getString(R.string.info_lyrics_not_found_on_s_try_on_s).format("LrcLib.net", "KuGou.com"), type = PopupType.Error, durationLong = true, context = context) }
+                    if (playerEnableLyricsPopupMessage)
+                        SmartMessage(context.resources.getString(R.string.info_lyrics_not_found_on_s_try_on_s).format("LrcLib.net", "KuGou.com"), type = PopupType.Error, durationLong = true, context = context)
                     onCheckedLrc(true)
 
                     runCatching {
                         KuGou.lyrics(artist = mediaMetadata.artist?.toString() ?: "", title = cleanPrefix(mediaMetadata.title?.toString() ?: ""), duration = duration / 1000)?.onSuccess {
                             if ((it?.value?.isNotEmpty() == true || it?.sentences?.isNotEmpty() == true) && playerEnableLyricsPopupMessage)
-                                coroutineScope.launch { SmartMessage(context.resources.getString(R.string.info_lyrics_found_on_s).format("KuGou.com"), type = PopupType.Success, context = context) }
+                                SmartMessage(context.resources.getString(R.string.info_lyrics_found_on_s).format("KuGou.com"), type = PopupType.Success, context = context)
                             else if (playerEnableLyricsPopupMessage)
-                                coroutineScope.launch { SmartMessage(context.resources.getString(R.string.info_lyrics_not_found_on_s).format("KuGou.com"), type = PopupType.Error, durationLong = true, context = context) }
+                                SmartMessage(context.resources.getString(R.string.info_lyrics_not_found_on_s).format("KuGou.com"), type = PopupType.Error, durationLong = true, context = context)
 
                             onError(false)
                             Database.upsert(Lyrics(songId = mediaId, fixed = currentLyrics?.fixed, synced = it?.value.orEmpty()))
                             onCheckedKugou(true)
                         }?.onFailure {
-                            if (playerEnableLyricsPopupMessage) coroutineScope.launch { SmartMessage(context.resources.getString(R.string.info_lyrics_not_found_on_s).format("KuGou.com"), type = PopupType.Error, durationLong = true, context = context) }
+                            if (playerEnableLyricsPopupMessage)
+                                SmartMessage(context.resources.getString(R.string.info_lyrics_not_found_on_s).format("KuGou.com"), type = PopupType.Error, durationLong = true, context = context)
                             onError(true)
                         }
                     }.onFailure { Timber.e("Lyrics Kugou error ${it.stackTraceToString()}") }

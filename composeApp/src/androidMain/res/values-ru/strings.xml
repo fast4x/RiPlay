@@ -1305,4 +1305,9 @@
     <string name="onboard_permission_settings">Settings</string>
     <string name="ritune_cast">RiTune Cast</string>
     <string name="ritune_available_devices">Available devices:</string>
+    <string name="audio">Audio</string>
+    <string name="settings_disable_audio_drc">Disable audio DRC</string>
+    <string name="lyrics_word_by_word">Word by word</string>
+    <string name="lyrics_line_by_line">Line by line</string>
+    <string name="lyrics_fulltext">Full text</string>
 </resources>
