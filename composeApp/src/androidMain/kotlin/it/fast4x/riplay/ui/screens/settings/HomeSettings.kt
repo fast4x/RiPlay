@@ -109,7 +109,6 @@ fun  HomeSettings() {
                     ) {
 
                         EnumValueSelectorSettingsEntry(
-                            offline = false,
                             title = stringResource(R.string.homepage_type),
                             selectedValue = homePageType,
                             onValueSelected = { homePageType = it },
@@ -122,7 +121,6 @@ fun  HomeSettings() {
                         )
 
                         SwitchSettingEntry(
-                            offline = false,
                             title = "${stringResource(R.string.show)} ${stringResource(R.string.listener_levels)}",
                             text = stringResource(R.string.disable_if_you_do_not_want_to_see) + " " + stringResource(
                                 R.string.listener_levels
@@ -134,7 +132,6 @@ fun  HomeSettings() {
                         )
 
                         SwitchSettingEntry(
-                            offline = false,
                             title = "${stringResource(R.string.show)} ${stringResource(R.string.quick_picks)}",
                             text = stringResource(R.string.disable_if_you_do_not_want_to_see) + " " + stringResource(
                                 R.string.tips
@@ -146,7 +143,6 @@ fun  HomeSettings() {
                         )
 
                         SwitchSettingEntry(
-                            offline = false,
                             title = "${stringResource(R.string.show)} ${stringResource(R.string.new_albums_of_your_artists)}",
                             text = stringResource(R.string.disable_if_you_do_not_want_to_see) + " " + stringResource(
                                 R.string.new_albums_of_your_artists
@@ -169,7 +165,6 @@ fun  HomeSettings() {
                         )
 
                         SwitchSettingEntry(
-                            offline = false,
                             title = "${stringResource(R.string.show)} ${stringResource(R.string.moods_and_genres)}",
                             text = stringResource(R.string.disable_if_you_do_not_want_to_see) + " " + stringResource(
                                 R.string.moods_and_genres
@@ -185,7 +180,6 @@ fun  HomeSettings() {
                         ) {
                             Column {
                                 SwitchSettingEntry(
-                                    offline = false,
                                     title = "${stringResource(R.string.show)} ${stringResource(R.string.charts)}",
                                     text = stringResource(R.string.disable_if_you_do_not_want_to_see) + " " + stringResource(
                                         R.string.charts
@@ -197,7 +191,6 @@ fun  HomeSettings() {
                                 )
 
                                 SwitchSettingEntry(
-                                    offline = false,
                                     title = "${stringResource(R.string.show)} ${stringResource(R.string.related_albums)}",
                                     text = stringResource(R.string.disable_if_you_do_not_want_to_see) + " " + stringResource(
                                         R.string.related_albums
@@ -209,7 +202,6 @@ fun  HomeSettings() {
                                 )
 
                                 SwitchSettingEntry(
-                                    offline = false,
                                     title = "${stringResource(R.string.show)} ${stringResource(R.string.similar_artists)}",
                                     text = stringResource(R.string.disable_if_you_do_not_want_to_see) + " " + stringResource(
                                         R.string.similar_artists
@@ -221,7 +213,6 @@ fun  HomeSettings() {
                                 )
 
                                 SwitchSettingEntry(
-                                    offline = false,
                                     title = "${stringResource(R.string.show)} ${stringResource(R.string.playlists_you_might_like)}",
                                     text = stringResource(R.string.disable_if_you_do_not_want_to_see) + " " + stringResource(
                                         R.string.playlists_you_might_like
@@ -233,7 +224,6 @@ fun  HomeSettings() {
                                 )
 
                                 SwitchSettingEntry(
-                                    offline = false,
                                     title = "${stringResource(R.string.show)} ${stringResource(R.string.monthly_playlists)}",
                                     text = stringResource(R.string.disable_if_you_do_not_want_to_see) + " " + stringResource(
                                         R.string.monthly_playlists

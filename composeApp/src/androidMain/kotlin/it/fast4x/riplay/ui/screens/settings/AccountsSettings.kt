@@ -439,7 +439,6 @@ fun AccountsSettings() {
             onCheckedChange = {
                 isEnabledLastfm = it
             },
-            offline = false,
         )
 
         AnimatedVisibility(visible = isEnabledLastfm) {
@@ -497,7 +496,6 @@ fun AccountsSettings() {
                     selectedValue = lastfmScrobbleType,
                     onValueSelected = { lastfmScrobbleType = it },
                     valueText = { it.textName },
-                    offline = false
                 )
 
             }
@@ -516,7 +514,6 @@ fun AccountsSettings() {
             onCheckedChange = {
                 isEnabledMusicIdentifier = it
             },
-            offline = false
         )
 
         AnimatedVisibility(visible = isEnabledMusicIdentifier) {
@@ -529,11 +526,8 @@ fun AccountsSettings() {
                     selectedValue = musicIdentifierProvider,
                     onValueSelected = { musicIdentifierProvider = it },
                     valueText = { it.title },
-                    offline = false
                 )
                 SettingsEntry(
-                    online = false,
-                    offline = false,
                     title = musicIdentifierProvider.subtitle,
                     text = musicIdentifierProvider.website,
                     onClick = {
@@ -554,8 +548,6 @@ fun AccountsSettings() {
                                 musicIdentifierApi = it
                             },
                             validationType = ValidationType.None,
-                            offline = false,
-                            online = false
                         )
 
                         val localAudioTagger = LocalAudioTagger.current

@@ -81,8 +81,6 @@ fun About() {
         SettingsEntryGroupText(title = stringResource(R.string.social))
 
         SettingsEntry(
-            online = false,
-            offline = false,
             title = stringResource(R.string.social_telegram),
             text = stringResource(R.string.social_telegram_info),
             onClick = {
@@ -91,8 +89,6 @@ fun About() {
         )
 
         SettingsEntry(
-            online = false,
-            offline = false,
             title = stringResource(R.string.social_reddit),
             text = stringResource(R.string.social_reddit_info),
             onClick = {
@@ -105,8 +101,6 @@ fun About() {
         SettingsEntryGroupText(title = stringResource(R.string.title_official_project_page))
 
         SettingsEntry(
-            online = false,
-            offline = false,
             title = stringResource(R.string.social_github),
             text = stringResource(R.string.view_the_source_code),
             onClick = {
@@ -116,8 +110,6 @@ fun About() {
 
         if (BuildConfig.BUILD_VARIANT == "full")
             SettingsEntry(
-                online = false,
-                offline = false,
                 title = stringResource(R.string.social_github),
                 text = stringResource(R.string.download_latest_version_from_github_you_will_find_the_file_in_the_notification_area_and_you_can_install_by_clicking_on_it),
                 onClick = {

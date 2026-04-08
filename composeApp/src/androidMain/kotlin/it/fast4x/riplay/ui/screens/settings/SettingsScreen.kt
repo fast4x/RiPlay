@@ -132,8 +132,6 @@ inline fun StringListValueSelectorSettingsEntry(
     list: List<String>,
     crossinline add: (String) -> Unit,
     crossinline remove: (String) -> Unit,
-    online: Boolean = true,
-    offline: Boolean = true
 ) {
     var showStringListDialog by remember {
         mutableStateOf(false)
@@ -159,8 +157,6 @@ inline fun StringListValueSelectorSettingsEntry(
         onClick = {
             showStringListDialog = true
         },
-        online = online,
-        offline = offline
     )
 }
 
@@ -177,8 +173,6 @@ inline fun <reified T : Enum<T>> EnumValueSelectorSettingsEntry(
     isEnabled: Boolean = true,
     noinline valueText: @Composable (T) -> String  = { it.name },
     noinline trailingContent: (@Composable () -> Unit) = {},
-    online: Boolean = true,
-    offline: Boolean = true
 ) {
     ValueSelectorSettingsEntry(
         title = title,
@@ -191,8 +185,6 @@ inline fun <reified T : Enum<T>> EnumValueSelectorSettingsEntry(
         isEnabled = isEnabled,
         valueText = valueText,
         trailingContent = trailingContent,
-        online = online,
-        offline = offline
     )
 }
 
@@ -208,8 +200,6 @@ fun <T> ValueSelectorSettingsEntry(
     isEnabled: Boolean = true,
     valueText: @Composable (T) -> String = { it.toString() },
     trailingContent: (@Composable () -> Unit) = {},
-    online: Boolean = true,
-    offline: Boolean = true
 ) {
     var isShowingDialog by remember {
         mutableStateOf(false)
@@ -234,8 +224,6 @@ fun <T> ValueSelectorSettingsEntry(
         isEnabled = isEnabled,
         onClick = { isShowingDialog = true },
         trailingContent = trailingContent,
-        online = online,
-        offline = offline
     )
 
     text?.let {
@@ -256,8 +244,6 @@ fun SwitchSettingEntry(
     onCheckedChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
     isEnabled: Boolean = true,
-    online: Boolean = true,
-    offline: Boolean = true
 ) {
     SettingsEntry(
         title = title,
@@ -266,8 +252,6 @@ fun SwitchSettingEntry(
         onClick = { onCheckedChange(!isChecked) },
         trailingContent = { Switch(isChecked = isChecked) },
         modifier = modifier,
-        online = online,
-        offline = offline
     )
 }
 
@@ -280,8 +264,6 @@ fun SettingsEntry(
     onClick: () -> Unit,
     isEnabled: Boolean = true,
     trailingContent: (@Composable () -> Unit)? = null,
-    online: Boolean = true,
-    offline: Boolean = true
 ) {
     Row(
         horizontalArrangement = Arrangement.spacedBy(16.dp),
@@ -337,11 +319,6 @@ fun SettingsEntry(
                 )
 
                 Spacer(modifier = Modifier.weight(1f))
-//                SettingsContextIcons(
-//                    online = online,
-//                    offline = offline
-//                )
-
             }
 
             if (titleSecondary != null) {
@@ -368,8 +345,6 @@ fun SettingsEntry(
 
 @Composable
 fun SettingsEntryGroup(
-    online: Boolean = true,
-    offline: Boolean = true,
     content: @Composable () -> Unit,
 ) {
     Row(
@@ -387,41 +362,8 @@ fun SettingsEntryGroup(
             Column {
                 content()
             }
-//            SettingsContextIcons(
-//                modifier = Modifier
-//                    .align(Alignment.BottomEnd),
-//                online = online,
-//                offline = offline
-//            )
-        }
-    }
-}
 
-@Composable
-fun SettingsContextIcons(
-    modifier: Modifier = Modifier,
-    online: Boolean = true,
-    offline: Boolean = true
-) {
-    Row(
-        horizontalArrangement = Arrangement.spacedBy(5.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = modifier
-    ) {
-        if (online)
-            Image(
-                painter = painterResource(R.drawable.internet),
-                contentDescription = null,
-                colorFilter = ColorFilter.tint(colorPalette().text),
-                modifier = Modifier.size(12.dp)
-            )
-        if (offline)
-            Image(
-                painter = painterResource(R.drawable.no_internet),
-                contentDescription = null,
-                colorFilter = ColorFilter.tint(colorPalette().text),
-                modifier = Modifier.size(12.dp)
-            )
+        }
     }
 }
 
@@ -505,8 +447,6 @@ fun TextDialogSettingEntry(
     modifier: Modifier = Modifier,
     isEnabled: Boolean = true,
     validationType: ValidationType = ValidationType.None,
-    offline: Boolean = true,
-    online: Boolean = true
 ) {
     var showDialog by remember { mutableStateOf(false) }
     //val context = LocalContext.current
@@ -544,8 +484,6 @@ fun TextDialogSettingEntry(
         onClick = { showDialog = true },
         trailingContent = { },
         modifier = modifier,
-        online = online,
-        offline = offline
     )
 }
 
@@ -596,8 +534,6 @@ fun ButtonBarSettingEntry(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     isEnabled: Boolean = true,
-    online: Boolean = true,
-    offline: Boolean = true
 ) {
     SettingsEntry(
         title = title,
@@ -614,8 +550,6 @@ fun ButtonBarSettingEntry(
             )
         },
         modifier = modifier,
-        online = online,
-        offline = offline
     )
 
 }

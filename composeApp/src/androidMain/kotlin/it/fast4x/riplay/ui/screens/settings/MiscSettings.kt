@@ -481,8 +481,6 @@ fun MiscSettings() {
 
             settingsItem {
                 SwitchSettingEntry(
-                    online = false,
-                    offline = false,
                     title = stringResource(R.string.enable_log_debug),
                     text = stringResource(R.string.if_enabled_create_a_log_file_to_highlight_errors),
                     isChecked = logDebugEnabled,
@@ -508,8 +506,6 @@ fun MiscSettings() {
                 )
                 ImportantSettingsDescription(text = stringResource(R.string.restarting_riplay_is_required))
                 ButtonBarSettingEntry(
-                    online = false,
-                    offline = false,
                     isEnabled = logDebugEnabled,
                     title = stringResource(R.string.export_log),
                     text = "",
@@ -529,8 +525,6 @@ fun MiscSettings() {
                     }
                 )
                 ButtonBarSettingEntry(
-                    online = false,
-                    offline = false,
                     //isEnabled = logDebugEnabled,
                     title = stringResource(R.string.export_crash_log),
                     text = stringResource(R.string.is_always_enabled),
