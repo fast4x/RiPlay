@@ -170,6 +170,7 @@ import it.fast4x.riplay.extensions.preferences.showPodcastAAKey
 import it.fast4x.riplay.extensions.preferences.showShuffleSongsAAKey
 import it.fast4x.riplay.extensions.preferences.showTopSongsAAKey
 import it.fast4x.riplay.service.PlayerMediaBrowserService
+import it.fast4x.riplay.service.helpers.AudioDRCHelper
 import it.fast4x.riplay.ui.components.themed.ConfirmationDialog
 import it.fast4x.riplay.ui.components.themed.SecondaryTextButton
 import it.fast4x.riplay.ui.components.themed.settingsItem
@@ -387,6 +388,11 @@ fun GeneralSettings(
 
     val internalEqualizer = LocalPlayerServiceBinder.current?.equalizer
 
+    LaunchedEffect(Unit) {
+        AudioDRCHelper.init(context)
+    }
+
+
     Column(
         modifier = Modifier
             .background(colorPalette().background0)
@@ -504,8 +510,6 @@ fun GeneralSettings(
                         }
 
                         EnumValueSelectorSettingsEntry(
-                            online = false,
-                            offline = false,
                             title = stringResource(R.string.enable_check_for_update),
                             selectedValue = checkUpdateState,
                             onValueSelected = { checkUpdateState = it },
@@ -555,8 +559,6 @@ fun GeneralSettings(
                         )
                     )
                         EnumValueSelectorSettingsEntry(
-                            offline = false,
-                            online = false,
                             title = stringResource(R.string.app_language),
                             selectedValue = languageApp,
                             onValueSelected = { languageApp = it },
@@ -592,7 +594,6 @@ fun GeneralSettings(
                         )
                     ) {
                         EnumValueSelectorSettingsEntry(
-                            offline = false,
                             title = stringResource(R.string.use_dns_over_https_title),
                             selectedValue = useDnsOverHttpsType,
                             onValueSelected = {
@@ -636,7 +637,6 @@ fun GeneralSettings(
                         )
                     ) {
                         SwitchSettingEntry(
-                            offline = false,
                             title = stringResource(R.string.enable_proxy),
                             text = "",
                             isChecked = isProxyEnabled,
@@ -694,8 +694,6 @@ fun GeneralSettings(
                         )
                     ) {
                         SwitchSettingEntry(
-                            offline = false,
-                            online = false,
                             title = stringResource(R.string.keep_screen_on),
                             text = stringResource(R.string.prevents_screen_timeout),
                             isChecked = isKeepScreenOnEnabled,
@@ -1056,7 +1054,6 @@ fun GeneralSettings(
                         )
                     )
                         SwitchSettingEntry(
-                            online = false,
                             title = stringResource(R.string.player_pause_on_volume_zero),
                             text = stringResource(R.string.info_pauses_player_when_volume_zero),
                             isChecked = isPauseOnVolumeZeroEnabled,
@@ -1071,7 +1068,6 @@ fun GeneralSettings(
                         )
                     ) {
                         EnumValueSelectorSettingsEntry(
-                            online = false,
                             title = stringResource(R.string.effect_fade_audio),
                             selectedValue = playbackFadeAudioDuration,
                             onValueSelected = { playbackFadeAudioDuration = it },
@@ -1299,7 +1295,6 @@ fun GeneralSettings(
                         )
                     ) {
                         SwitchSettingEntry(
-                            online = false,
                             title = stringResource(R.string.skip_media_on_error),
                             text = stringResource(R.string.skip_media_on_error_description),
                             isChecked = skipMediaOnError,
@@ -1319,7 +1314,6 @@ fun GeneralSettings(
                         )
                     ) {
                         SwitchSettingEntry(
-                            online = false,
                             title = stringResource(R.string.skip_silence),
                             text = stringResource(R.string.skip_silent_parts_during_playback),
                             isChecked = skipSilence,
@@ -1367,8 +1361,6 @@ fun GeneralSettings(
                         )
                     )
                         SwitchSettingEntry(
-                            online = false,
-                            offline = false,
                             title = stringResource(R.string.parental_control),
                             text = stringResource(R.string.info_prevent_play_songs_with_age_limitation),
                             isChecked = parentalControlEnabled,
@@ -1400,7 +1392,6 @@ fun GeneralSettings(
                         )
                     ) {
                         SwitchSettingEntry(
-                            online = false,
                             title = stringResource(R.string.event_shake),
                             text = stringResource(R.string.shake_to_change_song),
                             isChecked = shakeEventEnabled,
@@ -1505,8 +1496,6 @@ fun GeneralSettings(
                         )
                     ) {
                         EnumValueSelectorSettingsEntry(
-                            online = false,
-                            offline = false,
                             title = stringResource(R.string.equalizer),
                             selectedValue = equalizerType,
                             onValueSelected = {
@@ -1664,7 +1653,6 @@ fun GeneralSettings(
                         )
                     ) {
                         EnumValueSelectorSettingsEntry(
-                            online = false,
                             title = stringResource(R.string.settings_audio_reverb),
                             text = stringResource(R.string.settings_audio_reverb_info_apply_a_depth_effect_to_the_audio),
                             selectedValue = audioReverb,
@@ -1700,8 +1688,9 @@ fun GeneralSettings(
                         )
                     ) {
                         SwitchSettingEntry(
+                            isEnabled = AudioDRCHelper.hasDRCSupport(),
                             title = stringResource(R.string.settings_disable_audio_drc),
-                            text = "",
+                            text = if (AudioDRCHelper.hasDRCSupport()) "" else "Not supported by device",
                             isChecked = disableAudioDRC,
                             onCheckedChange = {
                                 disableAudioDRC = it
@@ -1817,7 +1806,6 @@ fun GeneralSettings(
                         RestartPlayerService(restartService, onRestart = { restartService = false })
 
                         SettingsEntry(
-                            offline = false,
                             title = stringResource(R.string.reset_playback_events),
                             text = if (eventsCount > 0) {
                                 stringResource(R.string.delete_playback_events, eventsCount)
