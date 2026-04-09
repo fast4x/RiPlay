@@ -12,12 +12,7 @@ import androidx.work.WorkerParameters
 import it.fast4x.riplay.BuildConfig
 import it.fast4x.riplay.R
 import it.fast4x.riplay.utils.downloadNewVersionInfo
-import it.fast4x.riplay.utils.getAvailableUpdateInfo
 import timber.log.Timber
-import java.io.File
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import okhttp3.Response
 
 class CheckUpdateWorker(context: Context, params: WorkerParameters) : CoroutineWorker(context, params) {
 
@@ -64,7 +59,18 @@ class CheckUpdateWorker(context: Context, params: WorkerParameters) : CoroutineW
             downloadNewVersionInfo()
             Timber.d("CheckUpdateWorker: New version info downloaded")
 
-            val (updatedProductName, updatedVersionName, updatedVersionCode) = getAvailableUpdateInfo()
+            var (updatedVersionCode, updatedVersionName, updatedProductName) = Triple(0,"","")
+
+            downloadNewVersionInfo()
+                .onSuccess { (newVersionCode, newVersionName, newProductName) ->
+                    updatedVersionCode = newVersionCode
+                    updatedVersionName = newVersionName
+                    updatedProductName = newProductName
+                    Timber.d("CheckForNewVersion Success $newVersionCode $newVersionName $newProductName")
+                }
+                .onFailure {
+                    Timber.d("CheckForNewVersion Failure ${it.message}")
+                }
 
             Timber.d("CheckUpdateWorker: updatedVersionName $updatedVersionName updatedProductName $updatedProductName updatedVersionCode $updatedVersionCode")
 

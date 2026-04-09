@@ -76,22 +76,6 @@ import kotlin.compareTo
 @Composable
 fun DataSettings() {
     val context = LocalContext.current
-
-    /*
-    // single instance
-    val backupViewModel: BackupViewModel = viewModel(
-        factory = object : ViewModelProvider.Factory {
-            @Suppress("UNCHECKED_CAST")
-            override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                if (modelClass.isAssignableFrom(BackupViewModel::class.java)) {
-                    return BackupViewModel(DatabaseBackupManager(context, Database), context) as T
-                }
-                throw IllegalArgumentException("Unknown ViewModel class")
-            }
-        }
-    )
-    */
-
     val backupViewModel = LocalBackupManager.current
     val backupUiState by backupViewModel.uiState.collectAsState()
 

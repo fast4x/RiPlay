@@ -248,6 +248,7 @@ import it.fast4x.riplay.ui.components.Snowfall
 import it.fast4x.riplay.ui.screens.player.unified.components.core.UnifiedPlayerView
 import it.fast4x.riplay.ui.screens.player.unified.UnifiedMiniPlayer
 import it.fast4x.riplay.ui.screens.player.unified.UnifiedPlayer
+import it.fast4x.riplay.utils.CheckForNewVersion
 import it.fast4x.riplay.utils.GlobalSharedData
 import it.fast4x.riplay.utils.WebViewInfo
 import it.fast4x.riplay.utils.downloadNewVersionInfo
@@ -1730,13 +1731,6 @@ class MainActivity :
 
         }
 
-
-        if (preferences.getEnum(
-                checkUpdateStateKey,
-                CheckUpdateState.Enabled
-            ) == CheckUpdateState.Enabled
-            && BuildConfig.BUILD_VARIANT == "full"
-        ) { downloadNewVersionInfo() }
 
     }
 

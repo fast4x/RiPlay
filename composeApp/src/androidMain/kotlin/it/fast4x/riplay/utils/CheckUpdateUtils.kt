@@ -1,76 +1,72 @@
 package it.fast4x.riplay.utils
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import it.fast4x.riplay.BuildConfig
 import it.fast4x.riplay.ui.components.themed.NewVersionDialog
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kotlinx.io.IOException
 import okhttp3.Request
 import timber.log.Timber
 
-fun downloadNewVersionInfo() {
-
-    CoroutineScope(Dispatchers.IO).launch {
-        val url =
-            "https://raw.githubusercontent.com/fast4x/RiPlay/main/updatedVersion/updatedVersionCode.ver"
-        val client = CustomHttpClient.okHttpClient
-
-        try {
-            val response =
-                client.newCall(Request.Builder().url(url).build()).executeAsync()
-
+suspend fun downloadNewVersionInfo(): Result<Triple<Int, String, String>> =
+    withContext(Dispatchers.IO) {
+        runCatching {
+            val url =
+                "https://raw.githubusercontent.com/fast4x/RiPlay/main/updatedVersion/updatedVersionCode.ver"
+            val client = CustomHttpClient.okHttpClient
+            val response = client.newCall(Request.Builder().url(url).build()).execute()
             val content = response.body.string().split("-")
-            Timber.d("CheckUpdate UpdatedVersionCode Check success $content")
-            withContext(Dispatchers.Main) {
-                GlobalSharedData.versionCode.value = content.firstOrNull()?.toInt() ?: 0
-                GlobalSharedData.versionName.value = content.getOrNull(1) ?: ""
-                GlobalSharedData.productName.value = content.getOrNull(2) ?: ""
-            }
 
-        } catch (e: IOException) {
+            Triple(
+                //content.firstOrNull()?.toInt() ?: 0,
+                78,
+                content.getOrNull(1) ?: "", content.getOrNull(2) ?: "")
+
+        }.onFailure { e ->
             Timber.d("UpdatedVersionCode Check failure ${e.message}")
-        } catch (e: Exception) {
-            Timber.d("UpdatedVersionCode Generic error ${e.message}")
+            Triple(0, "", "")
         }
     }
-
-}
 
 
 @Composable
 fun CheckForNewVersion(
     onDismiss: () -> Unit,
-    updateAvailable: (Boolean) -> Unit
+    onClose: () -> Unit,
+    onNoUpdateAvailable: () -> Unit
 ) {
-    val (updatedVersionName, updatedProductName, updatedVersionCode) = getAvailableUpdateInfo()
+    val (updatedVersionCode, updatedVersionName, updatedProductName) = Triple(0,"","")
+    var showDialog by remember { mutableStateOf(false) }
 
-    Timber.d("CheckUpdate CheckAvailableNewVersion: $updatedVersionName $updatedProductName $updatedVersionCode")
+    LaunchedEffect(Unit) {
+        downloadNewVersionInfo()
+            .onSuccess { (newVersionCode, newVersionName, newProductName) ->
+                if (newVersionCode > BuildConfig.VERSION_CODE) showDialog = true else onNoUpdateAvailable()
+                Timber.d("CheckForNewVersion Success $newVersionCode $newVersionName $newProductName")
+            }
+            .onFailure {
+                onNoUpdateAvailable()
+                Timber.d("CheckForNewVersion Failure ${it.message}")
+            }
+    }
 
-    if (updatedVersionCode > BuildConfig.VERSION_CODE) {
+    if (showDialog) {
         NewVersionDialog(
             updatedVersionName = updatedVersionName,
             updatedVersionCode = updatedVersionCode,
             updatedProductName = updatedProductName,
-            onDismiss = onDismiss
+            onClose = onClose,
+            onDismiss = {},
         )
-        updateAvailable(true)
-    } else {
-        updateAvailable(false)
-        onDismiss()
     }
 }
 
-fun getAvailableUpdateInfo(): Triple<String, String, Int> {
-    return Triple(GlobalSharedData.productName.value, GlobalSharedData.versionName.value,
-        GlobalSharedData.versionCode.value)
-}
 
-fun getUpdateDownloadUrl(): String {
-    val updatedVersionName = if (GlobalSharedData.versionName.value == "")
-        GlobalSharedData.versionName.value else BuildConfig.VERSION_NAME
-
+fun getUpdateDownloadUrl(updatedVersionName: String): String {
     return "https://github.com/fast4x/RiPlay/releases/download/v$updatedVersionName/RiPlay-${BuildConfig.BUILD_VARIANT}-release-$updatedVersionName.apk"
 }

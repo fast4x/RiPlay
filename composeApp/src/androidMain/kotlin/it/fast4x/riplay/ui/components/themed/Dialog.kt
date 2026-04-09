@@ -247,90 +247,6 @@ fun ConfirmationDialog(
     )
 }
 
-/*
-@Composable
-fun ConfirmationDialog(
-    text: String,
-    onDismiss: () -> Unit,
-    onConfirm: () -> Unit,
-    onCheckBox: (Boolean) -> Unit = {},
-    modifier: Modifier = Modifier,
-    cancelText: String = stringResource(R.string.cancel),
-    confirmText: String = stringResource(R.string.confirm),
-    checkBoxText: String = "",
-    onCancel: () -> Unit = onDismiss,
-    cancelBackgroundPrimary: Boolean = false,
-    confirmBackgroundPrimary: Boolean = true
-) {
-    val checkedState = remember{
-        mutableStateOf(false)
-    }
-
-    DefaultDialog(
-        onDismiss = onDismiss,
-        modifier = modifier
-    ) {
-        BasicText(
-            text = text,
-            style = typography().xs.medium.center,
-            modifier = Modifier
-                .padding(all = 16.dp)
-        )
-
-        if (checkBoxText != "") {
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(5.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .fillMaxWidth()
-            ) {
-                Checkbox(
-                    checked = checkedState.value,
-                    onCheckedChange = {
-                        checkedState.value = it
-                        onCheckBox(it)
-                    },
-                    colors = CheckboxDefaults.colors(
-                        checkedColor = colorPalette().accent,
-                        uncheckedColor = colorPalette().text
-                    ),
-                    modifier = Modifier
-                        .scale(0.7f)
-                )
-                BasicText(
-                    text = checkBoxText, //stringResource(R.string.set_custom_value),
-                    style = typography().xs.medium,
-                    maxLines = 2,
-                    modifier = Modifier
-                )
-
-            }
-        }
-
-        Row(
-            horizontalArrangement = Arrangement.SpaceEvenly,
-            modifier = Modifier
-                .fillMaxWidth()
-        ) {
-            DialogTextButton(
-                text = cancelText,
-                primary = cancelBackgroundPrimary,
-                onClick = onCancel
-            )
-
-            DialogTextButton(
-                text = confirmText,
-                primary = confirmBackgroundPrimary,
-                onClick = {
-                    onConfirm()
-                    onDismiss()
-                }
-            )
-        }
-    }
-}
-*/
-
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 inline fun DefaultDialog(
@@ -1789,11 +1705,12 @@ fun NewVersionDialog (
     updatedProductName: String,
     updatedVersionName: String,
     updatedVersionCode: Int,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
+    onClose: () -> Unit
 ) {
     val uriHandler = LocalUriHandler.current
     DefaultDialog(
-        onDismiss = { onDismiss() },
+        onDismiss = onClose,
         content = {
             BasicText(
                 text = stringResource(R.string.update_available),
@@ -1859,7 +1776,7 @@ fun NewVersionDialog (
                         .size(30.dp)
                         .clickable {
                             onDismiss()
-                            uriHandler.openUri(getUpdateDownloadUrl())
+                            uriHandler.openUri(getUpdateDownloadUrl(updatedVersionName))
                         }
                 )
             }

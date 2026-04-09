@@ -177,7 +177,6 @@ import it.fast4x.riplay.ui.components.themed.settingsItem
 import it.fast4x.riplay.ui.components.themed.settingsSearchBarItem
 import it.fast4x.riplay.utils.CheckForNewVersion
 import it.fast4x.riplay.utils.LazyListContainer
-import it.fast4x.riplay.utils.downloadNewVersionInfo
 import it.fast4x.riplay.utils.loadMasterQueue
 import kotlinx.coroutines.flow.distinctUntilChanged
 
@@ -493,19 +492,16 @@ fun GeneralSettings(
                     settingsItem {
                         var checkUpdateNow by remember { mutableStateOf(false) }
                         if (checkUpdateNow) {
-                            LaunchedEffect(Unit) {
-                                downloadNewVersionInfo()
-                            }
                             CheckForNewVersion(
                                 onDismiss = { checkUpdateNow = false },
-                                updateAvailable = {
-                                    if (!it)
+                                onNoUpdateAvailable = {
                                         SmartMessage(
                                             context.resources.getString(R.string.info_no_update_available),
                                             type = PopupType.Info,
                                             context = context
                                         )
-                                }
+                                },
+                                onClose = { checkUpdateNow = false }
                             )
                         }
 

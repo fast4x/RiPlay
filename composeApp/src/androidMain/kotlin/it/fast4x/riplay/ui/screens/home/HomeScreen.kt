@@ -11,6 +11,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.ExperimentalComposeUiApi
@@ -50,6 +51,7 @@ import it.fast4x.riplay.ui.components.ScreenContainer
 import it.fast4x.riplay.ui.screens.home.homepages.HomePage
 import it.fast4x.riplay.ui.screens.home.homepages.HomePageExtended
 import kotlinx.serialization.ExperimentalSerializationApi
+import timber.log.Timber
 import kotlin.system.exitProcess
 
 
@@ -69,9 +71,7 @@ fun HomeScreen(
     openTabFromShortcut: Int
 ) {
 
-    var showNewversionDialog by remember {
-        mutableStateOf(true)
-    }
+    var showNewversionDialog by rememberSaveable { mutableStateOf(true) }
 
     var checkUpdateState by rememberPreference(checkUpdateStateKey, CheckUpdateState.Enabled)
 
@@ -260,10 +260,12 @@ fun HomeScreen(
 
 
     if(BuildConfig.BUILD_VARIANT == "full") {
+
         if (showNewversionDialog && checkUpdateState == CheckUpdateState.Enabled)
             CheckForNewVersion(
-                onDismiss = { showNewversionDialog = false },
-                updateAvailable = {}
+                onDismiss = {},
+                onClose = { showNewversionDialog = false },
+                onNoUpdateAvailable = {}
             )
 
         if (checkUpdateState == CheckUpdateState.Ask)
@@ -276,7 +278,7 @@ fun HomeScreen(
                 cancelText = stringResource(R.string.don_t_enable),
                 cancelBackgroundPrimary = true,
                 onCancel = { checkUpdateState = CheckUpdateState.Disabled },
-                onDismiss = { checkUpdateState = CheckUpdateState.Disabled },
+                onDismiss = {},
                 onConfirm = { checkUpdateState = CheckUpdateState.Enabled },
             )
     }

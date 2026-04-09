@@ -113,7 +113,7 @@ fun About() {
                 title = stringResource(R.string.social_github),
                 text = stringResource(R.string.download_latest_version_from_github_you_will_find_the_file_in_the_notification_area_and_you_can_install_by_clicking_on_it),
                 onClick = {
-                    uriHandler.openUri(getUpdateDownloadUrl())
+                    uriHandler.openUri("https://github.com/fast4x/RiPlay/releases/latest")
                 }
             )
 
