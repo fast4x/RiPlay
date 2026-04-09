@@ -23,9 +23,10 @@ suspend fun downloadNewVersionInfo(): Result<Triple<Int, String, String>> =
             val content = response.body.string().split("-")
 
             Triple(
-                //content.firstOrNull()?.toInt() ?: 0,
-                78,
-                content.getOrNull(1) ?: "", content.getOrNull(2) ?: "")
+                content.firstOrNull()?.toInt() ?: 0,
+                content.getOrNull(1) ?: "",
+                content.getOrNull(2) ?: ""
+            )
 
         }.onFailure { e ->
             Timber.d("UpdatedVersionCode Check failure ${e.message}")
