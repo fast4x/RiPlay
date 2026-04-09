@@ -464,24 +464,13 @@ class PlayerService : Service(),
             coroutineScope.launch {
 
                 withContext(Dispatchers.Main) {
-                    player.loadMasterQueue(
-                        onLoaded = {
-                            /* todo improve restore position from saved queue
-                            val seconds = it.div(1000)
-                            playFromSecond = seconds.toFloat()
-                            currentSecond.value = seconds.toFloat()
-                            Timber.d("PlayerService onCreate loadMasterQueue playFromSecond $playFromSecond currentSecond ${currentSecond.value} currentDuration ${currentDuration.value} durationText ${currentSong.value?.durationText}")
-
-                             */
-                        }
-                    )
-
+                    player.loadMasterQueue()
                     resumePlaybackOnStart()
                 }
 
                 while (isActive) {
                     delay(2.minutes)
-                    player.saveMasterQueue(currentSecond.value.toInt())
+                    player.saveMasterQueue()
 
                     if (currentSecond.value >= minTimeForEvent.seconds && lastMediaIdInHistory != currentSong.value?.id) {
                         currentSong.value?.let {
@@ -1238,7 +1227,7 @@ class PlayerService : Service(),
                     if (localMediaItem == null || localMediaItem?.isLocal == true) return
 
                     if (isPersistentQueueEnabled)
-                        player.saveMasterQueue(currentSecond.value.toInt())
+                        player.saveMasterQueue()
 
 
                     if (!GlobalSharedData.riTuneCastActive || riTuneClient.connectionStatus != RiTuneConnectionStatus.Connected)
@@ -1451,7 +1440,7 @@ class PlayerService : Service(),
             player.shuffleOrder = DefaultShuffleOrder(shuffledIndices, System.currentTimeMillis())
         }
         updateUnifiedNotification()
-        player.saveMasterQueue(currentSecond.value.toInt())
+        player.saveMasterQueue()
     }
 
     override fun onTaskRemoved(rootIntent: Intent?) {
@@ -1467,7 +1456,7 @@ class PlayerService : Service(),
 
         coroutineScope.launch {
             withContext(Dispatchers.Main) {
-                player.saveMasterQueue(currentSecond.value.toInt())
+                player.saveMasterQueue()
             }
         }
 
@@ -1730,7 +1719,7 @@ class PlayerService : Service(),
 
         updateDiscordPresence()
 
-        player.saveMasterQueue(currentSecond.value.toInt())
+        player.saveMasterQueue()
 
         if (preferences.getBoolean(isEnabledLastfmKey, false)) {
             preferences.getString(lastfmSessionTokenKey, "")?.let {
@@ -1774,7 +1763,7 @@ class PlayerService : Service(),
         val isLowMemory = level == ComponentCallbacks2.TRIM_MEMORY_RUNNING_CRITICAL
         Timber.d("PlayerService onTrimMemory level $level isLowMemory $isLowMemory")
         if (isLowMemory)
-            player.saveMasterQueue(currentSecond.value.toInt())
+            player.saveMasterQueue()
     }
 
 
@@ -2928,7 +2917,7 @@ class PlayerService : Service(),
         fun executeStopServiceLogic() {
             preferences.edit { putLong(timerEndTimeKey, 0) }
 
-            player.saveMasterQueue(currentSecond.value.toInt())
+            player.saveMasterQueue()
 
             val notification = NotificationCompat
                 .Builder(this@PlayerService, SLEEPTIMER_NOTIFICATION_CHANNEL_ID)

@@ -446,15 +446,15 @@ fun Player.getQueueWindows(): List<Timeline.Window> {
     return queue.toList()
 }
 
-fun Player.saveMasterQueue(currentOnlineSecond: Int) {
+fun Player.saveMasterQueue() {
     if (!isPersistentQueueEnabled()) return
 
     CoroutineScope(Dispatchers.Main).launch {
         val mediaItems = currentTimeline.mediaItems
-        val mediaItemIndex = currentMediaItemIndex
-        val mediaItemPosition = if (currentMediaItem?.isLocal == true) currentPosition else currentOnlineSecond * 1000L
+        //val mediaItemIndex = currentMediaItemIndex
+        //val mediaItemPosition = if (currentMediaItem?.isLocal == true) currentPosition else currentOnlineSecond * 1000L
 
-        Timber.d("SaveMasterQueue savePersistentQueue mediaItems ${mediaItems.size} mediaItemIndex $mediaItemIndex mediaItemPosition $mediaItemPosition")
+        //Timber.d("SaveMasterQueue savePersistentQueue mediaItems ${mediaItems.size} mediaItemIndex $mediaItemIndex mediaItemPosition $mediaItemPosition")
 
         if (mediaItems.isEmpty()) return@launch
 
@@ -464,7 +464,7 @@ fun Player.saveMasterQueue(currentOnlineSecond: Int) {
                 QueuedMediaItem(
                     mediaItem = mediaItem,
                     mediaId = mediaItem.mediaId,
-                    position = if (index == mediaItemIndex) mediaItemPosition else -1,
+                    position = -1, //if (index == mediaItemIndex) mediaItemPosition else -1,
                     idQueue = mediaItem.mediaMetadata.extras?.getLong("idQueue", defaultQueueId())
                 )
             }.let { queuedMediaItems ->
@@ -489,7 +489,7 @@ fun Player.saveMasterQueue(currentOnlineSecond: Int) {
 }
 
 @OptIn(UnstableApi::class)
-fun Player.loadMasterQueue(onLoaded: (Long) -> Unit) {
+fun Player.loadMasterQueue() {
     Timber.d("LoadMasterQueue loadPersistentQueue is enabled, called")
     if (!isPersistentQueueEnabled()) return
 
@@ -520,7 +520,6 @@ fun Player.loadMasterQueue(onLoaded: (Long) -> Unit) {
             )
             prepare()
         }
-        onLoaded(mediaItemPosition)
     }
 }
 
