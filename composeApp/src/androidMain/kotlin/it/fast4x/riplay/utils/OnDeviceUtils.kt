@@ -138,7 +138,8 @@ class OnDeviceBlacklist() {
     }
 
     fun checkIf(path: String): Boolean {
-        Timber.d("OnDeviceBlacklist paths ${paths.map { it.path }} contains path $path")
+        if (paths.isEmpty()) return false
+        //Timber.d("OnDeviceBlacklist paths ${paths.map { it.path }} contains path $path")
         return paths.any { path.startsWith(it.path) }
     }
 }
