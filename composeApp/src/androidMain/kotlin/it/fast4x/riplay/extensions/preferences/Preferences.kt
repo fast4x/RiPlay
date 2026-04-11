@@ -429,7 +429,8 @@ const val resumeOrPausePlaybackWhenCallKey = "resumeOrPausePlaybackWhenCall"
 
 const val stateMediaIdKey = "stateMediaId"
 const val statePositionKey = "statePosition"
-const val stateIsPlaying = "stateIsPlaying"
+const val stateDurationKey = "stateDuration"
+const val stateIsPlayingKey = "stateIsPlaying"
 
 const val isShowingSynchronizedWordByWordLyricsKey = "isShowingSynchronizedWordByWorkLyrics"
 

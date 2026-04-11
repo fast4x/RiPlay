@@ -67,6 +67,7 @@ val DataSpec.isLocalUri get() = uri.toString().startsWith("content://")
 
 val MediaItem.isLocal get() = mediaId.startsWith(LOCAL_KEY_PREFIX)
 val Song.isLocal get() = id.startsWith(LOCAL_KEY_PREFIX)
+val String.isLocal get() = this.startsWith(LOCAL_KEY_PREFIX)
 
 var GlobalVolume: Float = 0.5f
 
@@ -538,11 +539,20 @@ fun Player.positionAndDurationStateFlow(
     binder: PlayerService.Binder?
 ): StateFlow<Pair<Long, Long>> {
 
+    var onlinePlayerCurrentSecond = 0f
+    binder?.onlinePlayerCurrentSecond?.collectLatest(scope) {
+        onlinePlayerCurrentSecond = it
+    }
+    var onlinePlayerCurrentDuration = 0f
+    binder?.onlinePlayerCurrentDuration?.collectLatest(scope) {
+        onlinePlayerCurrentDuration = it
+    }
+
     val initialValue = if (currentMediaItem?.isLocal == true) {
         currentPosition to duration
     } else {
-        ((binder?.onlinePlayerCurrentSecond?.toLong() ?: 0L) * 1000) to
-                ((binder?.onlinePlayerCurrentDuration?.toLong() ?: 0L) * 1000)
+        ((onlinePlayerCurrentSecond.toLong() ?: 0L) * 1000) to
+                ((onlinePlayerCurrentDuration.toLong() ?: 0L) * 1000)
     }
 
     return callbackFlow {
@@ -556,11 +566,19 @@ fun Player.positionAndDurationStateFlow(
             }
 
             override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
+                var onlinePlayerCurrentSecond = 0f
+                binder?.onlinePlayerCurrentSecond?.collectLatest(scope) {
+                    onlinePlayerCurrentSecond = it
+                }
+                var onlinePlayerCurrentDuration = 0f
+                binder?.onlinePlayerCurrentDuration?.collectLatest(scope) {
+                    onlinePlayerCurrentDuration = it
+                }
                 val newValue = if (mediaItem?.isLocal == true) {
                     currentPosition to duration
                 } else {
-                    ((binder?.onlinePlayerCurrentSecond?.toLong() ?: 0L) * 1000) to
-                            ((binder?.onlinePlayerCurrentDuration?.toLong() ?: 0L) * 1000)
+                    ((onlinePlayerCurrentSecond.toLong() ?: 0L) * 1000) to
+                            ((onlinePlayerCurrentDuration.toLong() ?: 0L) * 1000)
                 }
                 trySend(newValue)
             }
@@ -582,13 +600,21 @@ fun Player.positionAndDurationStateFlow(
         // Job per il polling continuo della posizione
         val pollJob = launch {
             while (isActive) {
+                var onlinePlayerCurrentSecond = 0f
+                binder?.onlinePlayerCurrentSecond?.collectLatest(scope) {
+                    onlinePlayerCurrentSecond = it
+                }
+                var onlinePlayerCurrentDuration = 0f
+                binder?.onlinePlayerCurrentDuration?.collectLatest(scope) {
+                    onlinePlayerCurrentDuration = it
+                }
                 delay(500) // Aggiorna ogni 500ms
                 if (!isSeeking) {
                     val newValue = if (currentMediaItem?.isLocal == true) {
                         currentPosition to duration
                     } else {
-                        ((binder?.onlinePlayerCurrentSecond?.toLong() ?: 0L) * 1000) to
-                                ((binder?.onlinePlayerCurrentDuration?.toLong() ?: 0L) * 1000)
+                        ((onlinePlayerCurrentSecond.toLong() ?: 0L) * 1000) to
+                                ((onlinePlayerCurrentDuration.toLong() ?: 0L) * 1000)
                     }
                     trySend(newValue)
                 }
