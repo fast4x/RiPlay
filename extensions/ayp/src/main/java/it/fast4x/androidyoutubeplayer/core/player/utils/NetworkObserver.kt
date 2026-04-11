@@ -73,7 +73,12 @@ internal class NetworkObserver(private val context: Context) {
     networkCallback = callback
 
     val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-    connectivityManager.registerDefaultNetworkCallback(callback)
+    try {
+      connectivityManager.registerDefaultNetworkCallback(callback)
+    } catch (e: Exception) {
+      println("Error registering network callback")
+    }
+
   }
 
   private fun doObserveNetworkLegacy(context: Context) {
@@ -81,7 +86,12 @@ internal class NetworkObserver(private val context: Context) {
       onNetworkAvailable = { listeners.forEach { it.onNetworkAvailable() } },
       onNetworkUnavailable = { listeners.forEach { it.onNetworkUnavailable() } },
     )
-    context.registerReceiver(networkBroadcastReceiver, IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION))
+    try {
+      context.registerReceiver(networkBroadcastReceiver, IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION))
+    } catch (e: Exception) {
+      println("Error registering network broadcast receiver")
+    }
+
   }
 }
 
