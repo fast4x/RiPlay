@@ -649,7 +649,7 @@ class PlayerService : Service(),
                     player.mediaItems
                         .firstOrNull { it.mediaId == mediaId }
                 )
-            player.seekTo(index, position)
+            //player.seekTo(index, position)
 
             if (mediaId.isLocal) {
                 player.prepare()
@@ -1116,6 +1116,7 @@ class PlayerService : Service(),
                     localMediaItem?.let{
                         if (isPersistentQueueEnabled && isResumePlaybackOnStart && firstTimeStarted) {
                             youTubePlayer.loadVideo(it.mediaId, playFromSecond)
+                            playFromSecond = 0f
                             Timber.d("PlayerService onlinePlayer onReady loadVideo ${it.mediaId}")
                         }
                     }
@@ -1179,7 +1180,7 @@ class PlayerService : Service(),
 
                         PlayerConstants.PlayerState.VIDEO_CUED -> {
                             Timber.d("PlayerService onlinePlayerView: onStateChange VIDEO_CUED regular play()")
-
+                            playFromSecond = 0f
                             if (!firstTimeStarted) {
                                 if (!GlobalSharedData.riTuneCastActive || riTuneCastClient.connectionStatus != RiTuneConnectionStatus.Connected) {
                                     youTubePlayer.unMute()

@@ -531,26 +531,24 @@ fun Player.positionAndDurationStateFlow(
     binder: PlayerService.Binder?
 ): StateFlow<Pair<Long, Long>> {
 
-    var onlinePlayerCurrentSecond = 0f
-    binder?.onlinePlayerCurrentSecond?.collectLatest(scope) {
-        onlinePlayerCurrentSecond = it
-    }
-    var onlinePlayerCurrentDuration = 0f
-    binder?.onlinePlayerCurrentDuration?.collectLatest(scope) {
-        onlinePlayerCurrentDuration = it
-    }
+    var onlineCurrentSecond = 0f
+    var onlineCurrentDuration = 0f
 
-    val initialValue = if (currentMediaItem?.isLocal == true) {
-        currentPosition to duration
-    } else {
-        ((onlinePlayerCurrentSecond.toLong() ?: 0L) * 1000) to
-                ((onlinePlayerCurrentDuration.toLong() ?: 0L) * 1000)
-    }
+    binder?.onlinePlayerCurrentSecond?.collectLatest(scope) { onlineCurrentSecond = it }
+    binder?.onlinePlayerCurrentDuration?.collectLatest(scope) { onlineCurrentDuration = it }
+
+    fun currentPositionAndDuration(): Pair<Long, Long> =
+        if (currentMediaItem?.isLocal == true) {
+            currentPosition to duration
+        } else {
+            (onlineCurrentSecond.toLong() * 1000L) to (onlineCurrentDuration.toLong() * 1000L)
+        }
 
     return callbackFlow {
         var isSeeking = false
 
         val listener = object : Player.Listener {
+
             override fun onPlaybackStateChanged(playbackState: Int) {
                 if (playbackState == Player.STATE_READY) {
                     isSeeking = false
@@ -558,21 +556,8 @@ fun Player.positionAndDurationStateFlow(
             }
 
             override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
-                var onlinePlayerCurrentSecond = 0f
-                binder?.onlinePlayerCurrentSecond?.collectLatest(scope) {
-                    onlinePlayerCurrentSecond = it
-                }
-                var onlinePlayerCurrentDuration = 0f
-                binder?.onlinePlayerCurrentDuration?.collectLatest(scope) {
-                    onlinePlayerCurrentDuration = it
-                }
-                val newValue = if (mediaItem?.isLocal == true) {
-                    currentPosition to duration
-                } else {
-                    ((onlinePlayerCurrentSecond.toLong() ?: 0L) * 1000) to
-                            ((onlinePlayerCurrentDuration.toLong() ?: 0L) * 1000)
-                }
-                trySend(newValue)
+                isSeeking = false
+                trySend(currentPositionAndDuration())
             }
 
             override fun onPositionDiscontinuity(
@@ -589,30 +574,12 @@ fun Player.positionAndDurationStateFlow(
 
         addListener(listener)
 
-        // Job per il polling continuo della posizione
         val pollJob = launch {
             while (isActive) {
-                var onlinePlayerCurrentSecond = 0f
-                binder?.onlinePlayerCurrentSecond?.collectLatest(scope) {
-                    onlinePlayerCurrentSecond = it
-                }
-                var onlinePlayerCurrentDuration = 0f
-                binder?.onlinePlayerCurrentDuration?.collectLatest(scope) {
-                    onlinePlayerCurrentDuration = it
-                }
-                delay(500) // Aggiorna ogni 500ms
-                if (!isSeeking) {
-                    val newValue = if (currentMediaItem?.isLocal == true) {
-                        currentPosition to duration
-                    } else {
-                        ((onlinePlayerCurrentSecond.toLong() ?: 0L) * 1000) to
-                                ((onlinePlayerCurrentDuration.toLong() ?: 0L) * 1000)
-                    }
-                    trySend(newValue)
-                }
+                delay(if (isPlaying) 100L else 500L)
+                if (!isSeeking) trySend(currentPositionAndDuration())
             }
         }
-
 
         awaitClose {
             removeListener(listener)
@@ -621,7 +588,7 @@ fun Player.positionAndDurationStateFlow(
     }.stateIn(
         scope = scope,
         started = SharingStarted.Eagerly,
-        initialValue = initialValue
+        initialValue = currentPositionAndDuration()
     )
 }
 
