@@ -3,7 +3,7 @@ package it.fast4x.riplay.extensions.rewind.utils
 import androidx.annotation.OptIn
 import androidx.media3.common.util.UnstableApi
 import it.fast4x.riplay.data.models.Song
-import it.fast4x.riplay.service.PlayerService
+import it.fast4x.riplay.services.playback.PlayerService
 import it.fast4x.riplay.utils.isLocal
 import it.fast4x.riplay.utils.asMediaItem
 import it.fast4x.riplay.utils.forcePlay

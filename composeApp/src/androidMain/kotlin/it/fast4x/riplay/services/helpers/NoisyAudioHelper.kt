@@ -1,4 +1,4 @@
-package it.fast4x.riplay.service.helpers
+package it.fast4x.riplay.services.helpers
 
 import android.content.BroadcastReceiver
 import android.content.Context

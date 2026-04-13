@@ -71,12 +71,11 @@ import it.fast4x.riplay.extensions.preferences.playerInfoShowIconsKey
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.extensions.preferences.showthumbnailKey
 import it.fast4x.riplay.extensions.preferences.textoutlineKey
-import it.fast4x.riplay.service.PlaybackState
-import it.fast4x.riplay.service.PlayerState
+import it.fast4x.riplay.services.playback.PlaybackState
+import it.fast4x.riplay.services.playback.PlayerState
 import it.fast4x.riplay.ui.components.themed.CustomElevatedButton
 import it.fast4x.riplay.ui.components.themed.IconButton
 import it.fast4x.riplay.ui.components.themed.PlayerCircularLoader
-import it.fast4x.riplay.ui.components.themed.PlayerRotatingLoader
 import it.fast4x.riplay.ui.components.themed.SelectorArtistsDialog
 import it.fast4x.riplay.ui.components.themed.SmartMessage
 import it.fast4x.riplay.ui.screens.settings.isYtSyncEnabled

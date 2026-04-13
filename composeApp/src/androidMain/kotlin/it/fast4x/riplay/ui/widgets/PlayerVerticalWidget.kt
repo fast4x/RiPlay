@@ -3,7 +3,6 @@ package it.fast4x.riplay.ui.widgets
 import android.content.Context
 import android.graphics.Bitmap
 import androidx.annotation.OptIn
-import androidx.compose.runtime.Composable
 import androidx.compose.ui.unit.dp
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
@@ -17,7 +16,6 @@ import androidx.glance.appwidget.state.updateAppWidgetState
 import androidx.glance.state.GlanceStateDefinition
 import androidx.glance.state.PreferencesGlanceStateDefinition
 import androidx.media3.common.util.UnstableApi
-import androidx.media3.exoplayer.ExoPlayer
 import it.fast4x.riplay.commonutils.cleanPrefix
 import androidx.core.graphics.createBitmap
 import androidx.datastore.preferences.core.Preferences
@@ -36,15 +34,13 @@ import androidx.glance.layout.padding
 import androidx.glance.text.Text
 import it.fast4x.riplay.MainActivity
 import it.fast4x.riplay.R
-import it.fast4x.riplay.service.PlayerService
-import it.fast4x.riplay.ui.widgets.PlayerHorizontalWidget.Companion.widgetBinder
+import it.fast4x.riplay.services.playback.PlayerService
 import it.fast4x.riplay.utils.isLocal
 import it.fast4x.riplay.utils.playNext
 import it.fast4x.riplay.utils.playPrevious
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import timber.log.Timber
 
 @UnstableApi
 class PlayerVerticalWidgetReceiver : GlanceAppWidgetReceiver() {

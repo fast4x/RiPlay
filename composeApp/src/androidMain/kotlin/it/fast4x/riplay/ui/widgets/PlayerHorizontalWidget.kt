@@ -1,8 +1,6 @@
 package it.fast4x.riplay.ui.widgets
 
-import android.content.ComponentName
 import android.content.Context
-import android.content.Intent
 import android.graphics.Bitmap
 import androidx.annotation.OptIn
 import androidx.compose.ui.unit.dp
@@ -18,7 +16,6 @@ import androidx.glance.appwidget.state.updateAppWidgetState
 import androidx.glance.state.GlanceStateDefinition
 import androidx.glance.state.PreferencesGlanceStateDefinition
 import androidx.media3.common.util.UnstableApi
-import androidx.media3.exoplayer.ExoPlayer
 import it.fast4x.riplay.commonutils.cleanPrefix
 import androidx.core.graphics.createBitmap
 import androidx.datastore.preferences.core.Preferences
@@ -27,8 +24,6 @@ import androidx.glance.Image
 import androidx.glance.ImageProvider
 import androidx.glance.action.actionStartActivity
 import androidx.glance.action.clickable
-import androidx.glance.appwidget.action.actionSendBroadcast
-import androidx.glance.appwidget.action.actionStartService
 import androidx.glance.background
 import androidx.glance.currentState
 import androidx.glance.layout.Alignment
@@ -41,7 +36,7 @@ import androidx.glance.layout.width
 import androidx.glance.text.Text
 import it.fast4x.riplay.MainActivity
 import it.fast4x.riplay.R
-import it.fast4x.riplay.service.PlayerService
+import it.fast4x.riplay.services.playback.PlayerService
 import it.fast4x.riplay.utils.isLocal
 import it.fast4x.riplay.utils.playNext
 import it.fast4x.riplay.utils.playPrevious

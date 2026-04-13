@@ -1,4 +1,4 @@
-package it.fast4x.riplay.service
+package it.fast4x.riplay.services.playback
 
 import android.annotation.SuppressLint
 import android.app.Notification
@@ -8,7 +8,6 @@ import android.app.PendingIntent
 import android.app.Service
 import android.app.WallpaperManager
 import android.content.BroadcastReceiver
-import android.content.ComponentCallbacks2
 import android.content.Context
 import android.content.Intent
 import android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK
@@ -18,6 +17,7 @@ import android.content.SharedPreferences
 import android.content.pm.ServiceInfo
 import android.database.SQLException
 import android.graphics.Bitmap
+import android.graphics.Color
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
@@ -32,7 +32,6 @@ import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import android.view.LayoutInflater
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -195,9 +194,9 @@ import it.fast4x.riplay.extensions.ritune.RiTuneClient
 import it.fast4x.riplay.extensions.ritune.models.RiTuneConnectionStatus
 import it.fast4x.riplay.extensions.ritune.models.RiTunePlayerState
 import it.fast4x.riplay.extensions.ritune.models.RiTuneRemoteCommand
-import it.fast4x.riplay.service.helpers.AudioDRCHelper
-import it.fast4x.riplay.service.helpers.BluetoothConnectHelper
-import it.fast4x.riplay.service.helpers.EqualizerHelper
+import it.fast4x.riplay.services.helpers.AudioDRCHelper
+import it.fast4x.riplay.services.helpers.BluetoothConnectHelper
+import it.fast4x.riplay.services.helpers.EqualizerHelper
 import it.fast4x.riplay.ui.screens.settings.isYtLoggedIn
 import it.fast4x.riplay.utils.GlobalSharedData
 import it.fast4x.riplay.utils.isAtLeastAndroid11
@@ -298,7 +297,7 @@ class PlayerService : Service(),
 
     var currentMediaItemState = MutableStateFlow<MediaItem?>(null)
 
-    @kotlin.OptIn(ExperimentalCoroutinesApi::class)
+    @OptIn(ExperimentalCoroutinesApi::class)
     private val currentSong = currentMediaItemState.flatMapLatest { mediaItem ->
         Database.song(mediaItem?.mediaId)
     }.stateIn(coroutineScope, SharingStarted.Lazily, null)
@@ -988,7 +987,7 @@ class PlayerService : Service(),
             bitmapProvider = BitmapProvider(
                 bitmapSize = (512 * resources.displayMetrics.density).roundToInt(),
                 colorProvider = { isSystemInDarkMode ->
-                    if (isSystemInDarkMode) android.graphics.Color.BLACK else android.graphics.Color.WHITE
+                    if (isSystemInDarkMode) Color.BLACK else Color.WHITE
                 }
             )
         }.onFailure {
@@ -1647,7 +1646,7 @@ class PlayerService : Service(),
         }
     }
 
-    @kotlin.OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
+    @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
     @UnstableApi
     override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
 
@@ -1785,7 +1784,7 @@ class PlayerService : Service(),
     }
 
     override fun onTrimMemory(level: Int) {
-        val isLowMemory = level == ComponentCallbacks2.TRIM_MEMORY_RUNNING_CRITICAL
+        val isLowMemory = level == TRIM_MEMORY_RUNNING_CRITICAL
         Timber.d("PlayerService onTrimMemory level $level isLowMemory $isLowMemory")
         if (isLowMemory)
             player.saveMasterQueue()
@@ -3039,7 +3038,7 @@ class PlayerService : Service(),
             stopSelf()
         }
 
-        @kotlin.OptIn(FlowPreview::class)
+        @OptIn(FlowPreview::class)
         fun toggleLike() {
             Timber.d("PlayerService toggleLike currentSong ${currentSong.value}")
             Database.asyncTransaction {
@@ -3056,7 +3055,7 @@ class PlayerService : Service(),
 
         }
 
-        @kotlin.OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
+        @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
         fun toggleShuffle() {
             player.shuffleModeEnabled = !player.shuffleModeEnabled
 

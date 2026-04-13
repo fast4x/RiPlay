@@ -169,8 +169,8 @@ import it.fast4x.riplay.extensions.preferences.showPinnedAAKey
 import it.fast4x.riplay.extensions.preferences.showPodcastAAKey
 import it.fast4x.riplay.extensions.preferences.showShuffleSongsAAKey
 import it.fast4x.riplay.extensions.preferences.showTopSongsAAKey
-import it.fast4x.riplay.service.PlayerMediaBrowserService
-import it.fast4x.riplay.service.helpers.AudioDRCHelper
+import it.fast4x.riplay.services.playback.PlayerMediaBrowserService
+import it.fast4x.riplay.services.helpers.AudioDRCHelper
 import it.fast4x.riplay.ui.components.themed.ConfirmationDialog
 import it.fast4x.riplay.ui.components.themed.SecondaryTextButton
 import it.fast4x.riplay.ui.components.themed.settingsItem

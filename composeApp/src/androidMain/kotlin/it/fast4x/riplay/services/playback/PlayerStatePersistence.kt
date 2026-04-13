@@ -1,4 +1,4 @@
-package it.fast4x.riplay.service
+package it.fast4x.riplay.services.playback
 
 import android.content.Context
 import it.fast4x.riplay.extensions.preferences.preferences

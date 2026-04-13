@@ -1,4 +1,4 @@
-package it.fast4x.riplay.service.helpers
+package it.fast4x.riplay.services.helpers
 
 import android.Manifest
 import android.bluetooth.BluetoothA2dp

@@ -23,9 +23,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import it.fast4x.riplay.service.helpers.BandConfig
-import it.fast4x.riplay.service.helpers.EqualizerConfig
-import it.fast4x.riplay.service.helpers.EqualizerHelper
+import it.fast4x.riplay.services.helpers.BandConfig
+import it.fast4x.riplay.services.helpers.EqualizerConfig
+import it.fast4x.riplay.services.helpers.EqualizerHelper
 import it.fast4x.riplay.ui.components.themed.VerticalSlider
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.utils.typography
@@ -33,7 +33,6 @@ import kotlin.math.abs
 import kotlin.math.roundToInt
 import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.EqualizerPreset
-import timber.log.Timber
 
 @Composable
 fun InternalEqualizerScreen(equalizerHelper: EqualizerHelper) {

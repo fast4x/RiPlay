@@ -1,1 +1,1 @@
--keep class it.fast4x.riplay.service.PlayerService
+-keep class it.fast4x.riplay.services.playback.PlayerService

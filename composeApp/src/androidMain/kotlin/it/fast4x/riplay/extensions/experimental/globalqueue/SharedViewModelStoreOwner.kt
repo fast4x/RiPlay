@@ -1,4 +1,4 @@
-package it.fast4x.riplay.service.experimental
+package it.fast4x.riplay.extensions.experimental.globalqueue
 
 import androidx.lifecycle.ViewModelStore
 import androidx.lifecycle.ViewModelStoreOwner

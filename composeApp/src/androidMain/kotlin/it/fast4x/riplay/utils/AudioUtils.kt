@@ -17,7 +17,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.core.animation.doOnEnd
 import androidx.media3.common.util.UnstableApi
 import it.fast4x.androidyoutubeplayer.core.player.YouTubePlayer
-import it.fast4x.riplay.service.PlayerService
+import it.fast4x.riplay.services.playback.PlayerService
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive

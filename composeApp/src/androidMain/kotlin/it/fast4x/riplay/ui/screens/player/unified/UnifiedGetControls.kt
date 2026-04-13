@@ -22,7 +22,7 @@ import it.fast4x.riplay.extensions.preferences.playerBackgroundColorsKey
 import it.fast4x.riplay.extensions.preferences.playerControlsTypeKey
 import it.fast4x.riplay.extensions.preferences.playerPlayButtonTypeKey
 import it.fast4x.riplay.extensions.preferences.rememberPreference
-import it.fast4x.riplay.service.PlayerState
+import it.fast4x.riplay.services.playback.PlayerState
 import it.fast4x.riplay.ui.components.themed.PlaybackParamsDialog
 import it.fast4x.riplay.ui.screens.player.unified.components.controls.UnifiedControlsEssential
 import it.fast4x.riplay.ui.screens.player.unified.components.controls.UnifiedControlsModern

@@ -57,6 +57,8 @@ newpipeExt = "v0.26.0"
 webkit = "1.15.0"
 recyclerview = "1.4.0"
 geckoview = "136.0.20250317200840" # Compatible with sdk 24
+jupnp = "3.0.4"
+nano = "2.3.1"
 
 
 [libraries]
@@ -143,6 +145,10 @@ accompanist = { group = "com.google.accompanist", name = "accompanist-permission
 jsoup = { group = "org.jsoup", name = "jsoup", version.ref = "jsoup"}
 newpipeExt = { module = "com.github.TeamNewPipe:NewPipeExtractor", version.ref = "newpipeExt" }
 recyclerview = { group = "androidx.recyclerview", name = "recyclerview", version.ref = "recyclerview" }
+jupnp = { group = "org.jupnp", name = "org.jupnp", version.ref = "jupnp" }
+jupnp-support = { group = "org.jupnp", name = "org.jupnp.support", version.ref = "jupnp" }
+nano = { group = "org.nanohttpd", name = "nanohttpd", version.ref = "nano" }
+
 #mediarouter = { group = "androidx.mediarouter", name = "mediarouter", version.ref = "mediarouter" }
 #geckoView = { group = "org.mozilla.geckoview", name = "geckoview", version.ref = "geckoview" }
 

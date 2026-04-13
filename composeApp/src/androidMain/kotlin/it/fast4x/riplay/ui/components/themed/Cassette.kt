@@ -31,7 +31,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import it.fast4x.riplay.service.PlayerState
+import it.fast4x.riplay.services.playback.PlayerState
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.utils.doubleShadowDrop
 import kotlinx.coroutines.coroutineScope
