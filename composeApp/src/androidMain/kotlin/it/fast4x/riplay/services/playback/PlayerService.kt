@@ -1,6 +1,7 @@
 package it.fast4x.riplay.services.playback
 
 import android.annotation.SuppressLint
+import android.app.ActivityManager
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -27,6 +28,8 @@ import android.media.audiofx.AudioEffect
 import android.media.audiofx.BassBoost
 import android.media.audiofx.LoudnessEnhancer
 import android.media.audiofx.PresetReverb
+import android.os.Handler
+import android.os.Looper
 import android.support.v4.media.MediaDescriptionCompat
 import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaSessionCompat
@@ -237,6 +240,7 @@ import java.util.Objects
 import kotlin.collections.map
 import kotlin.math.roundToInt
 import kotlin.math.sqrt
+import kotlin.system.exitProcess
 import kotlin.time.Duration.Companion.minutes
 import android.os.Binder as AndroidBinder
 
@@ -2947,8 +2951,15 @@ class PlayerService : Service(),
                 .build()
             notificationManager?.notify(SLEEPTIMER_NOTIFICATION_ID, notification)
 
-            stopSelf()
             stopForeground(STOP_FOREGROUND_REMOVE)
+            stopSelf()
+
+            val activityManager = getSystemService(Context.ACTIVITY_SERVICE) as? ActivityManager
+            activityManager?.appTasks?.forEach { it.finishAndRemoveTask() }
+
+            Handler(Looper.getMainLooper()).postDelayed({
+                exitProcess(0)
+            }, 300L)
         }
 
         fun cancelSleepTimer() {

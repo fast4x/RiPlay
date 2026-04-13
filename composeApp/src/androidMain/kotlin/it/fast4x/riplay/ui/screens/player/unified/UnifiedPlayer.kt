@@ -574,16 +574,16 @@ fun UnifiedPlayer(
         }
     }
 
-    if (sleepTimerMillisLeft != null)
-        if ((sleepTimerMillisLeft ?: 0) < timeRemaining.toLong() && !delayedSleepTimer) {
-            binder.cancelSleepTimer()
-            binder.startSleepTimer(timeRemaining.toLong())
-            delayedSleepTimer = true
-            SmartMessage(
-                stringResource(R.string.info_sleep_timer_delayed_at_end_of_song),
-                context = context
-            )
-        }
+//    if (sleepTimerMillisLeft != null)
+//        if ((sleepTimerMillisLeft ?: 0) < timeRemaining.toLong() && !delayedSleepTimer) {
+//            binder.cancelSleepTimer()
+//            binder.startSleepTimer(timeRemaining.toLong())
+//            delayedSleepTimer = true
+//            SmartMessage(
+//                stringResource(R.string.info_sleep_timer_delayed_at_end_of_song),
+//                context = context
+//            )
+//        }
 
     val windowInsets = WindowInsets.systemBars
 

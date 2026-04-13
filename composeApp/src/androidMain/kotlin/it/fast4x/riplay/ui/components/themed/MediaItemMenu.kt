@@ -958,16 +958,11 @@ fun MediaItemMenu(
         mutableStateOf(0.dp)
     }
 
-    //println("mediaItem in MediaItemMenu albumId ${mediaItem.mediaMetadata.extras?.getString("albumId")}")
-
-
     var albumInfo by remember {
         mutableStateOf(mediaItem.mediaMetadata.extras?.getString("albumId")?.let { albumId ->
             Info(albumId, null)
         })
     }
-
-    //println("mediaItem in MediaItemMenu albumInfo albumId ${albumInfo?.id}")
 
     var artistsInfo by remember {
         mutableStateOf(
@@ -985,9 +980,6 @@ fun MediaItemMenu(
         mutableStateOf<Long?>(null)
     }
 
-    var downloadState by remember {
-        mutableStateOf(Download.STATE_STOPPED)
-    }
 
     var artistsList by persistList<Artist?>("home/artists")
     var artistIds = remember { mutableListOf("") }
@@ -1104,8 +1096,7 @@ fun MediaItemMenu(
             val unpinnedPlaylists = playlistPreviewsFiltered.filter {
                 !it.playlist.name.startsWith(PINNED_PREFIX, 0, true) &&
                 !it.playlist.name.startsWith(MONTHLY_PREFIX, 0, true) &&
-                        !it.playlist.isYoutubePlaylist //&&
-                //!it.playlist.name.startsWith(PIPED_PREFIX, 0, true)
+                        !it.playlist.isYoutubePlaylist
             }
 
             var isCreatingNewPlaylist by rememberSaveable {
@@ -1123,16 +1114,7 @@ fun MediaItemMenu(
                         onAddToPlaylist(Playlist(name = text), 0)
                     }
                 )
-                /*
-                TextFieldDialog(
-                    hintText = "Enter the playlist name",
-                    onDismiss = { isCreatingNewPlaylist = false },
-                    onDone = { text ->
-                        onDismiss()
-                        onAddToPlaylist(Playlist(name = text), 0)
-                    }
-                )
-                 */
+
             }
 
             BackHandler {
@@ -1148,7 +1130,6 @@ fun MediaItemMenu(
 
             Menu(
                 modifier = modifier
-                    //.requiredHeight(height)
             ) {
                 Row(
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -1475,11 +1456,8 @@ fun MediaItemMenu(
 
                     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                         IconButton(
-                            //icon = if (likedAt == null) R.drawable.heart_outline else R.drawable.heart,
                             icon = getLikeState(mediaItem.mediaId),
-                            //icon = R.drawable.heart,
                             color = colorPalette().favoritesIcon,
-                            //color = if (likedAt == null) colorPalette().textDisabled else colorPalette().text,
                             onClick = {
                                 if (!isNetworkConnected(appContext()) && isYtSyncEnabled()) {
                                     SmartMessage(appContext().resources.getString(R.string.no_connection), context = appContext(), type = PopupType.Error)
@@ -1768,6 +1746,8 @@ fun MediaItemMenu(
                     val positionAndDuration by playerViewModel.positionAndDuration.collectAsStateWithLifecycle()
                     val timeRemaining = positionAndDuration.second.toInt() - positionAndDuration.first.toInt()
 
+                    Timber.d("SleepTimer sleepTimerMillisLeft $sleepTimerMillisLeft timeRemaining $timeRemaining")
+
                     if (isShowingSleepTimerDialog) {
                         if (sleepTimerMillisLeft != null) {
                             ConfirmationDialog(
@@ -1872,10 +1852,10 @@ fun MediaItemMenu(
                                     ) {
                                         SecondaryTextButton(
                                             text = stringResource(R.string.set_to) + " "
-                                                    + formatAsDuration(if (mediaItem.isLocal) timeRemaining.toLong() else timeRemaining * 1000L)
+                                                    + formatAsDuration(timeRemaining.toLong() )
                                                     + " " + stringResource(R.string.end_of_song),
                                             onClick = {
-                                                binder?.startSleepTimer(if (mediaItem.isLocal) timeRemaining.toLong() else timeRemaining * 1000L)
+                                                binder?.startSleepTimer(timeRemaining.toLong() )
                                                 isShowingSleepTimerDialog = false
                                             }
                                         )

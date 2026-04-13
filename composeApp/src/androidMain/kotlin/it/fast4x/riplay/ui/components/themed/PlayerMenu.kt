@@ -64,15 +64,10 @@ fun PlayerMenu(
         MenuStyle.List
     )
 
-    //val context = LocalContext.current
 
     val launchEqualizer by rememberSystemEqualizerLauncher(audioSessionId = {
-        //binder.player.audioSessionId
         0
     })
-
-    val activityResultLauncher =
-        rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { }
 
     var isHiding by remember {
         mutableStateOf(false)
