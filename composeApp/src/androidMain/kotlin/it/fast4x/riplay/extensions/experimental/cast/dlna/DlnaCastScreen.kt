@@ -32,12 +32,13 @@ import it.fast4x.riplay.ui.components.themed.SmartMessage
 import it.fast4x.riplay.utils.findActivity
 
 @Composable
-fun CastScreen() {
+fun DlnaCastScreen() {
 
-    val viewModel: CastViewModel = viewModel()
+    val viewModel: DlnaCastViewModel = viewModel()
 
     val context = LocalContext.current
     val activity = context.findActivity()
+    val isServiceReady by viewModel.isServiceReady.collectAsState()
 
     // Registra il launcher per la MediaProjection
     val projectionLauncher = rememberLauncherForActivityResult(
@@ -91,7 +92,7 @@ fun CastScreen() {
 
             Button(
                 onClick = { viewModel.addRendererManually(manualIp) },
-                enabled = manualIp.isNotBlank()
+                enabled = manualIp.isNotBlank() && isServiceReady
             ) {
                 Text("Aggiungi manualmente")
             }

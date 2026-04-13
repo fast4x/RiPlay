@@ -9,15 +9,18 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.jupnp.model.meta.RemoteDevice
 import timber.log.Timber
 
-class CastViewModel : ViewModel() {
+class DlnaCastViewModel : ViewModel() {
 
     private val _devices = MutableStateFlow<List<RemoteDevice>>(emptyList())
     val devices: StateFlow<List<RemoteDevice>> = _devices.asStateFlow()
@@ -36,6 +39,13 @@ class CastViewModel : ViewModel() {
     private val _requestProjectionEvent = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
     val requestProjectionEvent: SharedFlow<Unit> = _requestProjectionEvent.asSharedFlow()
 
+    val isServiceReady: StateFlow<Boolean> = flow {
+        while (true) {
+            emit(dlnaController?.isServiceReady ?: false)
+            delay(500)
+        }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), false)
+
     // Chiamato dalla UI quando l'utente preme "Cast"
     fun onCastRequested(device: RemoteDevice) {
         _castingTo.value = device  // salva il device in attesa del grant
@@ -49,7 +59,7 @@ class CastViewModel : ViewModel() {
             try {
                 _error.value = null
 
-                val intent = Intent(context, CastService::class.java).apply {
+                val intent = Intent(context, DlnaCastService::class.java).apply {
                     putExtra("projection_data", data)
                     putExtra("projection_code", resultCode)
                 }
@@ -96,8 +106,9 @@ class CastViewModel : ViewModel() {
         }
     }
 
-    fun addRendererManually(ipAddress: String, port: Int = 1900) {
-        dlnaController?.addRendererManually(ipAddress, port) { device ->
+    // CastViewModel
+    fun addRendererManually(ipAddress: String) {
+        dlnaController?.addRendererManually(ipAddress) { device ->
             _devices.update { current ->
                 if (current.none { it.identity.udn == device.identity.udn })
                     current + device
@@ -114,7 +125,7 @@ class CastViewModel : ViewModel() {
                 _error.value = null
 
                 // Avvia il servizio foreground di cattura audio
-                val intent = Intent(context, CastService::class.java)
+                val intent = Intent(context, DlnaCastService::class.java)
                 context.startForegroundService(intent)
 
                 // Ottieni l'IP locale e costruisci l'URL

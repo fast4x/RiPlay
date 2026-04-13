@@ -22,11 +22,11 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
-class CastService : Service() {
+class DlnaCastService : Service() {
 
     private var mediaProjection: MediaProjection? = null
     private var audioRecord: AudioRecord? = null
-    private var httpServer: AudioStreamServer? = null
+    private var httpServer: DlnaAudioStreamServer? = null
     private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
     private val SAMPLE_RATE = 44100
@@ -76,7 +76,7 @@ class CastService : Service() {
             .build()
 
         // Avvia il server HTTP che servirà il PCM come WAV chunked
-        httpServer = AudioStreamServer(port = 8765).also { it.start() }
+        httpServer = DlnaAudioStreamServer(port = 8765).also { it.start() }
 
         audioRecord!!.startRecording()
 
@@ -123,7 +123,7 @@ class CastService : Service() {
         val stopIntent = PendingIntent.getService(
             this,
             0,
-            Intent(this, CastService::class.java).apply { action = ACTION_STOP },
+            Intent(this, DlnaCastService::class.java).apply { action = ACTION_STOP },
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 

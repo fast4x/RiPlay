@@ -1,7 +1,6 @@
 package it.fast4x.riplay.extensions.experimental.cast.dlna
 
 import android.app.Service
-import android.content.Context
 import android.content.Intent
 import android.net.wifi.WifiManager
 import android.os.Binder
@@ -11,7 +10,7 @@ import org.jupnp.UpnpServiceImpl
 import timber.log.Timber
 
 
-class LocalUpnpService : Service() {
+class DlnaUpnpService : Service() {
 
     private lateinit var upnpService: UpnpService
     private var wifiLock: WifiManager.WifiLock? = null

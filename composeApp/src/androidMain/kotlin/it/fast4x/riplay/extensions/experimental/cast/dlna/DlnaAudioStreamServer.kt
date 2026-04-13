@@ -9,7 +9,7 @@ import java.nio.ByteOrder
 import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.TimeUnit
 
-class AudioStreamServer(port: Int) : NanoHTTPD(port) {
+class DlnaAudioStreamServer(port: Int) : NanoHTTPD(port) {
 
     // Buffer thread-safe tra produttore (AudioRecord) e consumatori HTTP
     private val audioQueue = LinkedBlockingQueue<ByteArray>(200)

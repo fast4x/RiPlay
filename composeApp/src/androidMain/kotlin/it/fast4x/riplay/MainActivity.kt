@@ -233,6 +233,7 @@ import it.fast4x.riplay.utils.setDefaultPalette
 import it.fast4x.riplay.commonutils.thumbnail
 import it.fast4x.riplay.extensions.databasebackup.BackupViewModel
 import it.fast4x.riplay.extensions.databasebackup.DatabaseBackupManager
+import it.fast4x.riplay.extensions.experimental.cast.dlna.DlnaCastScreen
 import it.fast4x.riplay.extensions.htmlreader.shazamSongInfoExtractor
 import it.fast4x.riplay.extensions.nsd.discoverNsdServices
 import it.fast4x.riplay.extensions.ondevice.OnDeviceViewModel
@@ -240,7 +241,6 @@ import it.fast4x.riplay.extensions.preferences.castToRiTuneDeviceEnabledKey
 import it.fast4x.riplay.extensions.preferences.resumeOrPausePlaybackWhenDeviceKey
 import it.fast4x.riplay.extensions.preferences.showSnowfallEffectKey
 import it.fast4x.riplay.extensions.ritune.models.toRiTuneDevice
-import it.fast4x.riplay.extensions.experimental.cast.dlna.CastScreen
 import it.fast4x.riplay.extensions.ritune.RiTuneSelector
 import it.fast4x.riplay.services.playback.PlayerState
 import it.fast4x.riplay.ui.components.Snowfall
@@ -1557,9 +1557,10 @@ class MainActivity :
                                     },
                                     shape = thumbnailRoundness.shape()
                                 ) {
-                                    RiTuneSelector(){
-                                        //castSheetState.collapseSoft()
-                                    }
+                                    DlnaCastScreen()
+//                                    RiTuneSelector(){
+//                                        //castSheetState.collapseSoft()
+//                                    }
                                 }
 
                             }

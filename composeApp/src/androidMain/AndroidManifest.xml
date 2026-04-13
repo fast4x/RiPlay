@@ -207,11 +207,11 @@
         </service>
 
         <service
-            android:name=".extensions.experimental.cast.dlna.CastService"
+            android:name=".extensions.experimental.cast.dlna.DlnaCastService"
             android:foregroundServiceType="mediaProjection"
             android:exported="false"/>
 
-        <service android:name=".extensions.experimental.cast.dlna.LocalUpnpService"/>
+        <service android:name=".extensions.experimental.cast.dlna.DlnaUpnpService"/>
 
 
         <receiver android:name=".ui.widgets.PlayerVerticalWidgetReceiver"

@@ -13,22 +13,19 @@ import org.jupnp.model.action.ActionInvocation
 import org.jupnp.model.message.UpnpResponse
 import org.jupnp.model.message.header.UDADeviceTypeHeader
 import org.jupnp.model.meta.RemoteDevice
-import org.jupnp.model.meta.RemoteDeviceIdentity
 import org.jupnp.model.types.UDADeviceType
 import org.jupnp.model.types.UDAServiceType
-import org.jupnp.model.types.UDN
 import org.jupnp.model.types.UnsignedIntegerFourBytes
 import org.jupnp.registry.DefaultRegistryListener
 import org.jupnp.registry.Registry
 import org.jupnp.support.avtransport.callback.Play
 import org.jupnp.support.avtransport.callback.SetAVTransportURI
 import org.jupnp.support.avtransport.callback.Stop
-import org.xml.sax.InputSource
 import timber.log.Timber
-import java.io.StringReader
+import java.net.DatagramPacket
+import java.net.DatagramSocket
 import java.net.InetAddress
-import java.net.URL
-import javax.xml.parsers.DocumentBuilderFactory
+import java.net.SocketTimeoutException
 
 class DlnaController(private val context: Context) {
 
@@ -37,7 +34,7 @@ class DlnaController(private val context: Context) {
 
     private val serviceConnection = object : ServiceConnection {
         override fun onServiceConnected(name: ComponentName, binder: IBinder) {
-            upnpService = (binder as LocalUpnpService.LocalBinder).service
+            upnpService = (binder as DlnaUpnpService.LocalBinder).service
 
             // Ri-registra i listener aggiunti prima del bind
             listeners.forEach { upnpService?.registry?.addListener(it) }
@@ -53,9 +50,11 @@ class DlnaController(private val context: Context) {
         }
     }
 
+    val isServiceReady: Boolean get() = upnpService != null
+
     init {
         context.bindService(
-            Intent(context, LocalUpnpService::class.java),
+            Intent(context, DlnaUpnpService::class.java),
             serviceConnection,
             Context.BIND_AUTO_CREATE
         )
@@ -80,38 +79,58 @@ class DlnaController(private val context: Context) {
         upnpService?.registry?.addListener(listener)
     }
 
-    fun addRendererManually(ipAddress: String, port: Int = 1900, onFound: (RemoteDevice) -> Unit) {
+    fun addRendererManually(ipAddress: String, onFound: (RemoteDevice) -> Unit) {
         val service = upnpService ?: run {
-            Timber.e("DlnaController UPnP service non ancora connesso")
+            Timber.e( "DlnaController UPnP service non ancora connesso, riprova tra poco")
             return
         }
+
+        val listener = object : DefaultRegistryListener() {
+            override fun remoteDeviceAdded(registry: Registry, device: RemoteDevice) {
+                val deviceIp = device.identity.descriptorURL?.host
+                if (deviceIp == ipAddress) {
+                    onFound(device)
+                    registry.removeListener(this)
+                }
+            }
+        }
+        service.registry?.addListener(listener)
+
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                val url = URL("http://$ipAddress:$port/description.xml")
-                val xml = url.openStream().bufferedReader().readText()
+                val socket = DatagramSocket()
+                socket.soTimeout = 5000
 
-                val identity = RemoteDeviceIdentity(
-                    UDN.uniqueSystemIdentifier("manual-$ipAddress"),
-                    1800,
-                    url,
-                    null,
-                    InetAddress.getByName(ipAddress)
+                val msearch = "M-SEARCH * HTTP/1.1\r\n" +
+                        "HOST: $ipAddress:1900\r\n" +
+                        "MAN: \"ssdp:discover\"\r\n" +
+                        "MX: 3\r\n" +
+                        "ST: urn:schemas-upnp-org:device:MediaRenderer:1\r\n" +
+                        "\r\n"
+
+                val data = msearch.toByteArray()
+                val packet = DatagramPacket(
+                    data,
+                    data.size,
+                    InetAddress.getByName(ipAddress),
+                    1900
                 )
+                socket.send(packet)
 
-                val emptyDevice = RemoteDevice(identity)
+                val responseBuffer = ByteArray(1024)
+                val responsePacket = DatagramPacket(responseBuffer, responseBuffer.size)
+                socket.receive(responsePacket)
 
-                val document = DocumentBuilderFactory.newInstance()
-                    .newDocumentBuilder()
-                    .parse(InputSource(StringReader(xml)))
+                val response = String(responsePacket.data, 0, responsePacket.length)
+                Timber.d( "DlnaController Risposta SSDP: $response")
+                socket.close()
 
-                val device = service.configuration.deviceDescriptorBinderUDA10
-                    .describe(emptyDevice, document)
-
-                service.registry.addDevice(device)
-                onFound(device)
-
+            } catch (e: SocketTimeoutException) {
+                Timber.e("DlnaController Nessuna risposta da $ipAddress — dispositivo non raggiungibile o non è un renderer DLNA")
+                service.registry?.removeListener(listener)
             } catch (e: Exception) {
-                Timber.e( "DlnaController Errore aggiunta manuale: ${e.message}")
+                Timber.e( "DlnaController Errore M-SEARCH: ${e.message}")
+                service.registry?.removeListener(listener)
             }
         }
     }
@@ -123,14 +142,14 @@ class DlnaController(private val context: Context) {
         }
         val avTransport = renderer.findService(UDAServiceType("AVTransport")) ?: return
 
-        service.controlPoint.execute(object : SetAVTransportURI(
+        service.controlPoint?.execute(object : SetAVTransportURI(
             INSTANCE_ID,
             avTransport,
             audioUrl,
             buildDIDLMetadata(audioUrl)
         ) {
             override fun success(invocation: ActionInvocation<*>) {
-                service.controlPoint.execute(object : Play(INSTANCE_ID,avTransport,  "1") {
+                service.controlPoint?.execute(object : Play(INSTANCE_ID,avTransport,  "1") {
                     override fun failure(i: ActionInvocation<*>, o: UpnpResponse?, d: String?) {
                         Timber.e("DlnaController Play failed: $d")
                     }
@@ -145,7 +164,7 @@ class DlnaController(private val context: Context) {
     fun stop(renderer: RemoteDevice) {
         val service = upnpService ?: return
         val avTransport = renderer.findService(UDAServiceType("AVTransport")) ?: return
-        service.controlPoint.execute(object : Stop(INSTANCE_ID,avTransport) {
+        service.controlPoint?.execute(object : Stop(INSTANCE_ID,avTransport) {
             override fun failure(i: ActionInvocation<*>, o: UpnpResponse?, d: String?) {
                 Timber.e( "DlnaController Stop failed: $d")
             }
