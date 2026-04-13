@@ -1,4 +1,4 @@
-package it.fast4x.riplay.extensions.cast.models
+package it.fast4x.riplay.extensions.experimental.cast.miracast.models
 
 import android.content.Context
 import android.view.View

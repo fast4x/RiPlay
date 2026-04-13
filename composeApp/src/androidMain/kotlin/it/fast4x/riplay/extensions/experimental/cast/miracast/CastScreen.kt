@@ -1,4 +1,4 @@
-package it.fast4x.riplay.extensions.cast
+package it.fast4x.riplay.extensions.experimental.cast.miracast
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column

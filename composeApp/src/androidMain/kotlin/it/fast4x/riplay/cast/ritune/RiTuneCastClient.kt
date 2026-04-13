@@ -1,4 +1,4 @@
-package it.fast4x.riplay.extensions.ritune
+package it.fast4x.riplay.cast.ritune
 
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.okhttp.OkHttp
@@ -11,9 +11,9 @@ import io.ktor.websocket.Frame
 import io.ktor.websocket.close
 import io.ktor.websocket.readText
 import io.ktor.websocket.send
-import it.fast4x.riplay.extensions.ritune.models.RiTuneConnectionStatus
-import it.fast4x.riplay.extensions.ritune.models.RiTunePlayerState
-import it.fast4x.riplay.extensions.ritune.models.RiTuneRemoteCommand
+import it.fast4x.riplay.cast.ritune.models.RiTuneConnectionStatus
+import it.fast4x.riplay.cast.ritune.models.RiTunePlayerState
+import it.fast4x.riplay.cast.ritune.models.RiTuneRemoteCommand
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -28,7 +28,7 @@ import javax.net.ssl.SSLContext
 import javax.net.ssl.TrustManager
 import javax.net.ssl.X509TrustManager
 
-class RiTuneClient {
+class RiTuneCastClient {
     private val json = Json { ignoreUnknownKeys = true }
     private var session: DefaultClientWebSocketSession? = null
 

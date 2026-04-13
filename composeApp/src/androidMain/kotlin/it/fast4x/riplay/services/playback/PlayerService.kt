@@ -190,10 +190,10 @@ import it.fast4x.riplay.extensions.preferences.lastfmSessionTokenKey
 import it.fast4x.riplay.extensions.preferences.parentalControlEnabledKey
 import it.fast4x.riplay.extensions.preferences.timerEndTimeKey
 import it.fast4x.riplay.extensions.preferences.wallpaperTypeKey
-import it.fast4x.riplay.extensions.ritune.RiTuneClient
-import it.fast4x.riplay.extensions.ritune.models.RiTuneConnectionStatus
-import it.fast4x.riplay.extensions.ritune.models.RiTunePlayerState
-import it.fast4x.riplay.extensions.ritune.models.RiTuneRemoteCommand
+import it.fast4x.riplay.cast.ritune.RiTuneCastClient
+import it.fast4x.riplay.cast.ritune.models.RiTuneConnectionStatus
+import it.fast4x.riplay.cast.ritune.models.RiTunePlayerState
+import it.fast4x.riplay.cast.ritune.models.RiTuneRemoteCommand
 import it.fast4x.riplay.services.helpers.AudioDRCHelper
 import it.fast4x.riplay.services.helpers.BluetoothConnectHelper
 import it.fast4x.riplay.services.helpers.EqualizerHelper
@@ -370,7 +370,7 @@ class PlayerService : Service(),
 
     private var bluetoothReceiver: BluetoothConnectHelper? = null
 
-    private val riTuneClient: RiTuneClient = RiTuneClient()
+    private val riTuneCastClient: RiTuneCastClient = RiTuneCastClient()
     private var riTuneObserverJob: Job? = null
     private var riTunePlayerState: RiTunePlayerState? = null
 
@@ -793,7 +793,7 @@ class PlayerService : Service(),
 
             while (isActive) {
 
-                val connectionStatus = riTuneClient.connectionStatus.value
+                val connectionStatus = riTuneCastClient.connectionStatus.value
                 try {
                     withContext(Dispatchers.Main) {
                         GlobalSharedData.riTuneError.value = when (connectionStatus) {
@@ -809,9 +809,9 @@ class PlayerService : Service(),
                 val isCastActive = GlobalSharedData.riTuneCastActive
 
 
-                val playerState = riTuneClient.state.value?.state
-                val duration = riTuneClient.state.value?.duration
-                val second = riTuneClient.state.value?.currentTime
+                val playerState = riTuneCastClient.state.value?.state
+                val duration = riTuneCastClient.state.value?.duration
+                val second = riTuneCastClient.state.value?.currentTime
 
                 if (isCastActive) {
                     withContext(Dispatchers.Main) {
@@ -839,7 +839,7 @@ class PlayerService : Service(),
                     if (isConnecting) isConnecting = false
                     //Timber.d("PlayerService initializeRiTune CAST NOT ACTIVE - Status: $connectionStatus, isConnecting: $isConnecting")
                     if (connectionStatus == RiTuneConnectionStatus.Connected) {
-                        riTuneClient.disconnect()
+                        riTuneCastClient.disconnect()
                         withContext(Dispatchers.Main) {
                             player.pause()
                             _internalOnlinePlayer.value?.pause()
@@ -871,7 +871,7 @@ class PlayerService : Service(),
                             isConnecting = true
                             launch {
                                 try {
-                                    riTuneClient.startConnection(
+                                    riTuneCastClient.startConnection(
                                         device.host.substringAfter("/"),
                                         device.port
                                     )
@@ -1181,7 +1181,7 @@ class PlayerService : Service(),
                             Timber.d("PlayerService onlinePlayerView: onStateChange VIDEO_CUED regular play()")
 
                             if (!firstTimeStarted) {
-                                if (!GlobalSharedData.riTuneCastActive || riTuneClient.connectionStatus != RiTuneConnectionStatus.Connected) {
+                                if (!GlobalSharedData.riTuneCastActive || riTuneCastClient.connectionStatus != RiTuneConnectionStatus.Connected) {
                                     youTubePlayer.unMute()
                                     youTubePlayer.setVolume(getSystemMediaVolume())
                                     youTubePlayer.play()
@@ -1249,11 +1249,11 @@ class PlayerService : Service(),
                         player.saveMasterQueue()
 
 
-                    if (!GlobalSharedData.riTuneCastActive || riTuneClient.connectionStatus != RiTuneConnectionStatus.Connected)
+                    if (!GlobalSharedData.riTuneCastActive || riTuneCastClient.connectionStatus != RiTuneConnectionStatus.Connected)
                         youTubePlayer.pause()
                     else
                         coroutineScope.launch {
-                            riTuneClient.sendCommand(
+                            riTuneCastClient.sendCommand(
                                 RiTuneRemoteCommand(
                                     "pause",
                                     position = playFromSecond
@@ -1289,11 +1289,11 @@ class PlayerService : Service(),
 
                         if (error == PlayerConstants.PlayerError.INVALID_PARAMETER_IN_REQUEST)
                             localMediaItem?.let {
-                                if (!GlobalSharedData.riTuneCastActive || riTuneClient.connectionStatus != RiTuneConnectionStatus.Connected) {
+                                if (!GlobalSharedData.riTuneCastActive || riTuneCastClient.connectionStatus != RiTuneConnectionStatus.Connected) {
                                     youTubePlayer.cueVideo(it.mediaId, playFromSecond)
                                 }
                                 else coroutineScope.launch {
-                                        riTuneClient.sendCommand(
+                                        riTuneCastClient.sendCommand(
                                             RiTuneRemoteCommand(
                                                 "load",
                                                 mediaId = it.mediaId,
@@ -1704,13 +1704,13 @@ class PlayerService : Service(),
 
             if (!it.isLocal){
 
-                if (!GlobalSharedData.riTuneCastActive || riTuneClient.connectionStatus != RiTuneConnectionStatus.Connected) {
+                if (!GlobalSharedData.riTuneCastActive || riTuneCastClient.connectionStatus != RiTuneConnectionStatus.Connected) {
                     _internalOnlinePlayer.value?.pause()
                     _internalOnlinePlayer.value?.cueVideo(it.mediaId, playFromSecond)
                 }
                 else
                     coroutineScope.launch {
-                        riTuneClient.sendCommand(
+                        riTuneCastClient.sendCommand(
                             RiTuneRemoteCommand(
                                 "load",
                                 mediaId = it.mediaId,
@@ -1850,14 +1850,14 @@ class PlayerService : Service(),
                 if (lastError != null) {
                     Timber.w("PlayerService maybeRecoverPlaybackError: try to recover player error")
                     localMediaItem?.let {
-                        if (!GlobalSharedData.riTuneCastActive || riTuneClient.connectionStatus != RiTuneConnectionStatus.Connected) {
+                        if (!GlobalSharedData.riTuneCastActive || riTuneCastClient.connectionStatus != RiTuneConnectionStatus.Connected) {
                             _internalOnlinePlayer.value?.pause()
                             _internalOnlinePlayer.value?.cueVideo(it.mediaId, playFromSecond)
 
                             //_internalOnlinePlayer.value?.setVolume(getSystemMediaVolume())
                         } else {
                             coroutineScope.launch {
-                                riTuneClient.sendCommand(
+                                riTuneCastClient.sendCommand(
                                     RiTuneRemoteCommand(
                                         "load",
                                         mediaId = it.mediaId,
@@ -2184,11 +2184,11 @@ class PlayerService : Service(),
                 when (intent.action) {
                     Action.pause.value -> {
                         player.pause()
-                        if (!GlobalSharedData.riTuneCastActive || riTuneClient.connectionStatus != RiTuneConnectionStatus.Connected)
+                        if (!GlobalSharedData.riTuneCastActive || riTuneCastClient.connectionStatus != RiTuneConnectionStatus.Connected)
                             _internalOnlinePlayer.value?.pause()
                         else
                             coroutineScope.launch {
-                                riTuneClient.sendCommand(
+                                riTuneCastClient.sendCommand(
                                     RiTuneRemoteCommand(
                                         "pause",
                                         position = playFromSecond
@@ -2200,11 +2200,11 @@ class PlayerService : Service(),
                         if (player.currentMediaItem?.isLocal == true)
                             it.player.play()
                         else {
-                            if (!GlobalSharedData.riTuneCastActive || riTuneClient.connectionStatus != RiTuneConnectionStatus.Connected)
+                            if (!GlobalSharedData.riTuneCastActive || riTuneCastClient.connectionStatus != RiTuneConnectionStatus.Connected)
                                 _internalOnlinePlayer.value?.play()
                             else
                                 coroutineScope.launch {
-                                    riTuneClient.sendCommand(
+                                    riTuneCastClient.sendCommand(
                                         RiTuneRemoteCommand(
                                             "play",
                                             position = playFromSecond
@@ -2233,7 +2233,7 @@ class PlayerService : Service(),
                                 _internalOnlinePlayer.value?.play()
                             else
                                 coroutineScope.launch {
-                                    riTuneClient.sendCommand(
+                                    riTuneCastClient.sendCommand(
                                         RiTuneRemoteCommand(
                                             "play",
                                             position = playFromSecond
@@ -2902,9 +2902,9 @@ class PlayerService : Service(),
         val currentMediaItemAsSong: Song?
             get() = this@PlayerService.player.currentMediaItem?.asSong
 
-        val riTuneClient: RiTuneClient
+        val riTuneCastClient: RiTuneCastClient
             @Synchronized
-            get() = this@PlayerService.riTuneClient
+            get() = this@PlayerService.riTuneCastClient
 
         val equalizer: EqualizerHelper
             get() = this@PlayerService.equalizerHelper
@@ -3115,11 +3115,11 @@ class PlayerService : Service(),
                         if (player.currentMediaItem?.isLocal == true)
                             it.player.play()
                         else {
-                            if (!GlobalSharedData.riTuneCastActive || riTuneClient.connectionStatus != RiTuneConnectionStatus.Connected)
+                            if (!GlobalSharedData.riTuneCastActive || riTuneCastClient.connectionStatus != RiTuneConnectionStatus.Connected)
                                 _internalOnlinePlayer.value?.play()
                             else
                                 coroutineScope.launch {
-                                    riTuneClient.sendCommand(
+                                    riTuneCastClient.sendCommand(
                                         RiTuneRemoteCommand(
                                             "play",
                                             position = playFromSecond
@@ -3131,11 +3131,11 @@ class PlayerService : Service(),
                     onPauseClick = {
                         Timber.d("PlayerService InitializeUnifiedSessionCallback onPauseClick")
                         it.player.pause()
-                        if (!GlobalSharedData.riTuneCastActive || riTuneClient.connectionStatus != RiTuneConnectionStatus.Connected) {
+                        if (!GlobalSharedData.riTuneCastActive || riTuneCastClient.connectionStatus != RiTuneConnectionStatus.Connected) {
                             _internalOnlinePlayer.value?.pause()
                         } else {
                             coroutineScope.launch {
-                                riTuneClient.sendCommand(
+                                riTuneCastClient.sendCommand(
                                     RiTuneRemoteCommand(
                                         "pause",
                                     )
@@ -3146,11 +3146,11 @@ class PlayerService : Service(),
                     onSeekToPos = { second ->
                         val newPosition = (second / 1000).toFloat()
                         Timber.d("PlayerService InitializeUnifiedSessionCallback onSeekPosTo ${newPosition}")
-                        if (!GlobalSharedData.riTuneCastActive || riTuneClient.connectionStatus != RiTuneConnectionStatus.Connected)
+                        if (!GlobalSharedData.riTuneCastActive || riTuneCastClient.connectionStatus != RiTuneConnectionStatus.Connected)
                             _internalOnlinePlayer.value?.seekTo(newPosition)
                         else
                             coroutineScope.launch {
-                                riTuneClient.sendCommand(
+                                riTuneCastClient.sendCommand(
                                     RiTuneRemoteCommand(
                                         "seek",
                                         position = newPosition
@@ -3194,7 +3194,7 @@ class PlayerService : Service(),
                                         _internalOnlinePlayer.value?.play()
                                     else
                                         coroutineScope.launch {
-                                            riTuneClient.sendCommand(
+                                            riTuneCastClient.sendCommand(
                                                 RiTuneRemoteCommand(
                                                     "play",
                                                     position = playFromSecond

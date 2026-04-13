@@ -1,14 +1,10 @@
-package it.fast4x.riplay.extensions.cast
+package it.fast4x.riplay.extensions.experimental.cast.miracast
 
 import android.app.Presentation
 import android.content.Context
-import android.media.MediaRouter
 import android.os.Bundle
 import android.view.Display
 import android.view.View
-import android.webkit.WebChromeClient
-import android.webkit.WebView
-import android.webkit.WebViewClient
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -18,11 +14,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.media3.common.MediaItem
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.ui.PlayerView
-import it.fast4x.riplay.extensions.cast.models.CastContent
+import it.fast4x.riplay.extensions.experimental.cast.miracast.models.CastContent
 
 class MiracastPresentation(
     context: Context,
@@ -63,7 +60,7 @@ fun CastScreen(content: CastContent) {
 // Composable per ExoPlayer
 @Composable
 fun ExoPlayerView(url: String) {
-    val context = androidx.compose.ui.platform.LocalContext.current
+    val context = LocalContext.current
 
     val exoPlayer = remember {
         ExoPlayer.Builder(context).build().apply {
@@ -94,7 +91,7 @@ fun ExoPlayerView(url: String) {
 // Composable generico per qualunque View (WebView, Mappe, etc.)
 @Composable
 fun AndroidViewFactory(factory: (Context) -> View) {
-    val context = androidx.compose.ui.platform.LocalContext.current
+    val context = LocalContext.current
     AndroidView(
         factory = { factory(context) },
         modifier = Modifier.fillMaxSize()

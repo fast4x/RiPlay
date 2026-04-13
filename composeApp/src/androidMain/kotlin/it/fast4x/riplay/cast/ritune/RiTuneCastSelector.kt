@@ -1,4 +1,4 @@
-package it.fast4x.riplay.extensions.ritune
+package it.fast4x.riplay.cast.ritune
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -32,7 +32,7 @@ import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.utils.typography
 
 @Composable
-fun RiTuneSelector(
+fun RiTuneCastSelector(
     onDismiss: () -> Unit,
 ) {
     val uriHandler = LocalUriHandler.current

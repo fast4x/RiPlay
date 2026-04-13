@@ -47,7 +47,7 @@ import it.fast4x.riplay.extensions.preferences.thumbnailRoundnessKey
 import it.fast4x.riplay.extensions.preferences.viewTypeKey
 import it.fast4x.riplay.extensions.preferences.ytAccountNameKey
 import it.fast4x.riplay.extensions.preferences.ytAccountThumbnailKey
-import it.fast4x.riplay.extensions.ritune.models.RiTuneDevice
+import it.fast4x.riplay.cast.ritune.models.RiTuneDevice
 
 @Composable
 fun typography() = LocalAppearance.current.typography

@@ -80,7 +80,7 @@ import it.fast4x.riplay.extensions.preferences.disableScrollingTextKey
 import it.fast4x.riplay.extensions.preferences.effectRotationKey
 import it.fast4x.riplay.extensions.preferences.miniPlayerTypeKey
 import it.fast4x.riplay.extensions.preferences.rememberPreference
-import it.fast4x.riplay.extensions.ritune.models.RiTuneRemoteCommand
+import it.fast4x.riplay.cast.ritune.models.RiTuneRemoteCommand
 import it.fast4x.riplay.services.playback.PlaybackState
 import it.fast4x.riplay.services.playback.PlayerService
 import it.fast4x.riplay.ui.components.themed.IconButton
@@ -313,7 +313,7 @@ fun UnifiedMiniPlayer(
                                         binder.onlinePlayer?.pause()
                                     else
                                         CoroutineScope(Dispatchers.IO).launch {
-                                            binder.riTuneClient.sendCommand(
+                                            binder.riTuneCastClient.sendCommand(
                                                 RiTuneRemoteCommand(
                                                     "play"
                                                 )
@@ -445,7 +445,7 @@ fun UnifiedMiniPlayer(
                                         binder.onlinePlayer?.pause()
                                     else
                                         CoroutineScope(Dispatchers.IO).launch {
-                                            binder.riTuneClient.sendCommand(
+                                            binder.riTuneCastClient.sendCommand(
                                                 RiTuneRemoteCommand(
                                                     "pause"
                                                 )
@@ -456,7 +456,7 @@ fun UnifiedMiniPlayer(
                                         binder.onlinePlayer?.play()
                                     else
                                         CoroutineScope(Dispatchers.IO).launch {
-                                            binder.riTuneClient.sendCommand(
+                                            binder.riTuneCastClient.sendCommand(
                                                 RiTuneRemoteCommand(
                                                     "play", mediaId = mediaItem.mediaId
                                                 )

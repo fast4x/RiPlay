@@ -1,4 +1,4 @@
-package it.fast4x.riplay.extensions.ritune.models
+package it.fast4x.riplay.cast.ritune.models
 
 import android.net.nsd.NsdServiceInfo
 import it.fast4x.androidyoutubeplayer.core.player.PlayerConstants

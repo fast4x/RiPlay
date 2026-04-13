@@ -268,7 +268,7 @@ import it.fast4x.riplay.extensions.preferences.titleExpandedKey
 import it.fast4x.riplay.extensions.preferences.topPaddingKey
 import it.fast4x.riplay.extensions.preferences.transparentBackgroundPlayerActionBarKey
 import it.fast4x.riplay.extensions.preferences.visualizerEnabledKey
-import it.fast4x.riplay.extensions.ritune.models.RiTuneRemoteCommand
+import it.fast4x.riplay.cast.ritune.models.RiTuneRemoteCommand
 import it.fast4x.riplay.ui.components.BottomSheetState
 import it.fast4x.riplay.ui.components.CustomModalBottomSheet
 import it.fast4x.riplay.ui.components.DelayedControls
@@ -1308,7 +1308,7 @@ fun UnifiedPlayer(
 
     val isLandscape = isLandscape
 
-    val riTuneClient = binder.riTuneClient
+    val riTuneClient = binder.riTuneCastClient
 
     LaunchedEffect(mediaItem) {
 
