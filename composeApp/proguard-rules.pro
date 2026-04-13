@@ -144,3 +144,6 @@
 -dontwarn java.beans.IntrospectionException
 -dontwarn java.beans.Introspector
 -dontwarn java.beans.PropertyDescriptor
+
+-dontwarn org.osgi.service.component.annotations.Component
+-dontwarn org.osgi.service.metatype.annotations.Designate
