@@ -105,6 +105,7 @@ import it.fast4x.riplay.utils.getLikeState
 import it.fast4x.riplay.utils.getRoundnessShape
 import it.fast4x.riplay.utils.intent
 import it.fast4x.riplay.utils.isExplicit
+import it.fast4x.riplay.utils.isLocal
 import it.fast4x.riplay.utils.isNetworkConnected
 import it.fast4x.riplay.utils.mediaItemToggleLike
 import it.fast4x.riplay.utils.playNext
@@ -441,27 +442,35 @@ fun UnifiedMiniPlayer(
                             .clip(RoundedCornerShape(playPauseRoundness))
                             .clickable {
                                 if (shouldBePlaying) {
-                                    if (!GlobalSharedData.riTuneCastActive)
-                                        binder.onlinePlayer?.pause()
-                                    else
-                                        CoroutineScope(Dispatchers.IO).launch {
-                                            binder.riTuneCastClient.sendCommand(
-                                                RiTuneRemoteCommand(
-                                                    "pause"
+                                    if (mediaItem.isLocal) {
+                                        binder.player.pause()
+                                    } else {
+                                        if (!GlobalSharedData.riTuneCastActive)
+                                            binder.onlinePlayer?.pause()
+                                        else
+                                            CoroutineScope(Dispatchers.IO).launch {
+                                                binder.riTuneCastClient.sendCommand(
+                                                    RiTuneRemoteCommand(
+                                                        "pause"
+                                                    )
                                                 )
-                                            )
-                                        }
+                                            }
+                                    }
                                 } else {
-                                    if (!GlobalSharedData.riTuneCastActive)
-                                        binder.onlinePlayer?.play()
-                                    else
-                                        CoroutineScope(Dispatchers.IO).launch {
-                                            binder.riTuneCastClient.sendCommand(
-                                                RiTuneRemoteCommand(
-                                                    "play", mediaId = mediaItem.mediaId
+                                    if (mediaItem.isLocal) {
+                                        binder.player.play()
+                                    } else {
+                                        if (!GlobalSharedData.riTuneCastActive)
+                                            binder.onlinePlayer?.play()
+                                        else
+                                            CoroutineScope(Dispatchers.IO).launch {
+                                                binder.riTuneCastClient.sendCommand(
+                                                    RiTuneRemoteCommand(
+                                                        "play", mediaId = mediaItem.mediaId
+                                                    )
                                                 )
-                                            )
-                                        }
+                                            }
+                                    }
                                 }
                                 if (effectRotationEnabled) isRotated = !isRotated
                             }
