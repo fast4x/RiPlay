@@ -245,7 +245,6 @@ import kotlin.collections.map
 import kotlin.math.roundToInt
 import kotlin.math.sqrt
 import kotlin.system.exitProcess
-import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 import android.os.Binder as AndroidBinder
 
@@ -258,7 +257,7 @@ class PlayerService : Service(),
     SharedPreferences.OnSharedPreferenceChangeListener,
     OnAudioVolumeChangedListener
 {
-    private val coroutineScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+    private val serviceScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
     private lateinit var unifiedMediaSession: MediaSessionCompat
     val cache: SimpleCache by lazy {
         principalCache.getInstance(this)
@@ -309,7 +308,7 @@ class PlayerService : Service(),
     @OptIn(ExperimentalCoroutinesApi::class)
     private val currentSong = currentMediaItemState.flatMapLatest { mediaItem ->
         Database.song(mediaItem?.mediaId)
-    }.stateIn(coroutineScope, SharingStarted.Lazily, null)
+    }.stateIn(serviceScope, SharingStarted.Lazily, null)
 
     lateinit var sleepTimerListener: SleepTimerListener
 
@@ -467,7 +466,7 @@ class PlayerService : Service(),
 
         if (isPersistentQueueEnabled) {
 
-            coroutineScope.launch {
+            serviceScope.launch {
 
                 withContext(Dispatchers.Main) {
                     loadQueue()
@@ -491,7 +490,7 @@ class PlayerService : Service(),
                 }
             }
 
-            coroutineScope.launch {
+            serviceScope.launch {
                 while (isActive) {
                     delay(10.seconds)
                     if (_playerState.value.isPlaying) {
@@ -503,7 +502,7 @@ class PlayerService : Service(),
 
         }
 
-        currentSong.debounce(1000).collect(coroutineScope) { song ->
+        currentSong.debounce(1000).collect(serviceScope) { song ->
             if (song == null) return@collect
 
             Timber.d("PlayerService onCreate update currentSong $song mediaItemState ${currentMediaItemState.value}")
@@ -564,7 +563,7 @@ class PlayerService : Service(),
         //todo in the future
         //globalQueue.linkController(binder)
 
-        coroutineScope.launch(Dispatchers.IO) {
+        serviceScope.launch(Dispatchers.IO) {
             while (isActive) {
                 if (localMediaItem?.isLocal == false) {
                     if (_playerState.value.isPlaying) {
@@ -735,7 +734,7 @@ class PlayerService : Service(),
      */
 
     private fun initializeMedleyMode() {
-        coroutineScope.launch {
+        serviceScope.launch {
             while (medleyDuration > 0) {
                 withContext(Dispatchers.Main) {
                     Timber.d("PlayerService initializeMedleyMode medleyDuration $medleyDuration player.isPlaying ${player.isPlaying} internalOnlinePlayerState ${_playerState.value.isPlaying}")
@@ -761,7 +760,7 @@ class PlayerService : Service(),
 
         var isConnecting = false
 
-        riTuneObserverJob = coroutineScope.launch {
+        riTuneObserverJob = serviceScope.launch {
 
             while (isActive) {
 
@@ -1021,7 +1020,7 @@ class PlayerService : Service(),
             .build()
             .apply {
                 addListener(this@PlayerService)
-                sleepTimerListener = SleepTimerListener(coroutineScope, this)
+                sleepTimerListener = SleepTimerListener(serviceScope, this)
                 addListener(sleepTimerListener)
                 addAnalyticsListener(PlaybackStatsListener(false, this@PlayerService))
             }
@@ -1228,7 +1227,7 @@ class PlayerService : Service(),
                     if (!GlobalSharedData.riTuneCastActive || riTuneCastClient.connectionStatus != RiTuneConnectionStatus.Connected)
                         youTubePlayer.pause()
                     else
-                        coroutineScope.launch {
+                        serviceScope.launch {
                             riTuneCastClient.sendCommand(
                                 RiTuneRemoteCommand(
                                     "pause",
@@ -1268,7 +1267,7 @@ class PlayerService : Service(),
                                 if (!GlobalSharedData.riTuneCastActive || riTuneCastClient.connectionStatus != RiTuneConnectionStatus.Connected) {
                                     youTubePlayer.cueVideo(it.mediaId, playFromSecond)
                                 }
-                                else coroutineScope.launch {
+                                else serviceScope.launch {
                                         riTuneCastClient.sendCommand(
                                             RiTuneRemoteCommand(
                                                 "load",
@@ -1451,7 +1450,7 @@ class PlayerService : Service(),
 
 
 
-        coroutineScope.launch {
+        serviceScope.launch {
             withContext(Dispatchers.Main) {
                 saveQueue()
             }
@@ -1459,7 +1458,7 @@ class PlayerService : Service(),
 
         //initializeTelephonyManager(false)
 
-        coroutineScope.cancel()
+        serviceScope.cancel()
 
         try {
             unregisterReceiver(legacyActionReceiver)
@@ -1477,7 +1476,7 @@ class PlayerService : Service(),
         }
 
         try {
-            coroutineScope.launch {
+            serviceScope.launch {
                 withContext(Dispatchers.Main) {
                     player.removeListener(this@PlayerService)
                     player.release()
@@ -1682,7 +1681,7 @@ class PlayerService : Service(),
                     _internalOnlinePlayer.value?.cueVideo(it.mediaId, playFromSecond)
                 }
                 else
-                    coroutineScope.launch {
+                    serviceScope.launch {
                         riTuneCastClient.sendCommand(
                             RiTuneRemoteCommand(
                                 "load",
@@ -1697,7 +1696,7 @@ class PlayerService : Service(),
             }
 
             bitmapProvider?.load(it.mediaMetadata.artworkUri) { bitmap ->
-                coroutineScope.launch {
+                serviceScope.launch {
                     setWallpaper(this@PlayerService, bitmap)
                 }
             }
@@ -1765,7 +1764,7 @@ class PlayerService : Service(),
 
 
     fun updateUnifiedNotification() {
-        coroutineScope.launch {
+        serviceScope.launch {
             withContext(Dispatchers.Main){
                 if (player.mediaItemCount <= 0) return@withContext
                 updateUnifiedMediasession()
@@ -1829,7 +1828,7 @@ class PlayerService : Service(),
 
                             //_internalOnlinePlayer.value?.setVolume(getSystemMediaVolume())
                         } else {
-                            coroutineScope.launch {
+                            serviceScope.launch {
                                 riTuneCastClient.sendCommand(
                                     RiTuneRemoteCommand(
                                         "load",
@@ -1866,7 +1865,7 @@ class PlayerService : Service(),
                 )
             } else {
                 radio?.let { radio ->
-                    coroutineScope.launch(Dispatchers.Main) {
+                    serviceScope.launch(Dispatchers.Main) {
                         if (player.playbackState != STATE_IDLE)
                             player.addMediaItems(radio.process())
                     }
@@ -1902,7 +1901,7 @@ class PlayerService : Service(),
         if (currentSong.value?.isLocal == true && currentSong.value?.mediaId?.isEmpty() == true) return
 
         volumeNormalizationJob?.cancel()
-        volumeNormalizationJob = coroutineScope.launch(Dispatchers.Main) {
+        volumeNormalizationJob = serviceScope.launch(Dispatchers.Main) {
 
             fun Float?.toMb() = ((this ?: 0f) * 100).toInt()
 
@@ -2160,7 +2159,7 @@ class PlayerService : Service(),
                         if (!GlobalSharedData.riTuneCastActive || riTuneCastClient.connectionStatus != RiTuneConnectionStatus.Connected)
                             _internalOnlinePlayer.value?.pause()
                         else
-                            coroutineScope.launch {
+                            serviceScope.launch {
                                 riTuneCastClient.sendCommand(
                                     RiTuneRemoteCommand(
                                         "pause",
@@ -2176,7 +2175,7 @@ class PlayerService : Service(),
                             if (!GlobalSharedData.riTuneCastActive || riTuneCastClient.connectionStatus != RiTuneConnectionStatus.Connected)
                                 _internalOnlinePlayer.value?.play()
                             else
-                                coroutineScope.launch {
+                                serviceScope.launch {
                                     riTuneCastClient.sendCommand(
                                         RiTuneRemoteCommand(
                                             "play",
@@ -2205,7 +2204,7 @@ class PlayerService : Service(),
                             if(!GlobalSharedData.riTuneCastActive)
                                 _internalOnlinePlayer.value?.play()
                             else
-                                coroutineScope.launch {
+                                serviceScope.launch {
                                     riTuneCastClient.sendCommand(
                                         RiTuneRemoteCommand(
                                             "play",
@@ -2661,7 +2660,7 @@ class PlayerService : Service(),
 
     fun updateWidgets() {
         val isPlaying = (isPlayingNow || player.isPlaying)
-        coroutineScope.launch {
+        serviceScope.launch {
             playerVerticalWidget.updateInfo(
                 context = this@PlayerService,
                 isPlaying = isPlaying,
@@ -2719,7 +2718,7 @@ class PlayerService : Service(),
     private fun startEndedObserver() {
         endedObserverJob?.cancel()
 
-        endedObserverJob = coroutineScope.launch(Dispatchers.Main) {
+        endedObserverJob = serviceScope.launch(Dispatchers.Main) {
 
             var lastProcessedIndex: Int? = null
 
@@ -2823,7 +2822,7 @@ class PlayerService : Service(),
             if (remainingMillis > 0) {
                 Timber.d("PlayerService Timer restoration detected. Remaining: $remainingMillis ms")
 
-                timerJob = coroutineScope.timer(remainingMillis) {
+                timerJob = serviceScope.timer(remainingMillis) {
                     binder.executeStopServiceLogic()
                 }
             } else {
@@ -2991,7 +2990,7 @@ class PlayerService : Service(),
 
             Timber.d("PlayerService startSleepTimer delayMillis $delayMillis, scheduled for $endTime")
 
-            timerJob = coroutineScope.timer(delayMillis) {
+            timerJob = serviceScope.timer(delayMillis) {
                 Timber.d("PlayerService timer finished naturally")
                 executeStopServiceLogic()
             }
@@ -3051,10 +3050,10 @@ class PlayerService : Service(),
                 isDiscoverEnabled,
                 applicationContext,
                 binder,
-                coroutineScope
+                serviceScope
             ).let {
                 isLoadingRadio = true
-                radioJob = coroutineScope.launch(Dispatchers.Main) {
+                radioJob = serviceScope.launch(Dispatchers.Main) {
 
                     val songs =
                         (if (filterArtist.isEmpty()) it.process()
@@ -3089,7 +3088,7 @@ class PlayerService : Service(),
         }
 
         fun playFromSearch(query: String) {
-            coroutineScope.launch {
+            serviceScope.launch {
                 Environment.searchPage(
                     body = SearchBody(
                         query = query,
@@ -3119,7 +3118,7 @@ class PlayerService : Service(),
                         setLikeState(it.likedAt)
                     )
                 }.also {
-                    currentSong.debounce(1000).collect(coroutineScope) { updateUnifiedNotification() }
+                    currentSong.debounce(1000).collect(serviceScope) { updateUnifiedNotification() }
                 }
             }
 
@@ -3190,7 +3189,7 @@ class PlayerService : Service(),
                             if (!GlobalSharedData.riTuneCastActive || riTuneCastClient.connectionStatus != RiTuneConnectionStatus.Connected)
                                 _internalOnlinePlayer.value?.play()
                             else
-                                coroutineScope.launch {
+                                serviceScope.launch {
                                     riTuneCastClient.sendCommand(
                                         RiTuneRemoteCommand(
                                             "play",
@@ -3206,7 +3205,7 @@ class PlayerService : Service(),
                         if (!GlobalSharedData.riTuneCastActive || riTuneCastClient.connectionStatus != RiTuneConnectionStatus.Connected) {
                             _internalOnlinePlayer.value?.pause()
                         } else {
-                            coroutineScope.launch {
+                            serviceScope.launch {
                                 riTuneCastClient.sendCommand(
                                     RiTuneRemoteCommand(
                                         "pause",
@@ -3221,7 +3220,7 @@ class PlayerService : Service(),
                         if (!GlobalSharedData.riTuneCastActive || riTuneCastClient.connectionStatus != RiTuneConnectionStatus.Connected)
                             _internalOnlinePlayer.value?.seekTo(newPosition)
                         else
-                            coroutineScope.launch {
+                            serviceScope.launch {
                                 riTuneCastClient.sendCommand(
                                     RiTuneRemoteCommand(
                                         "seek",
@@ -3265,7 +3264,7 @@ class PlayerService : Service(),
                                     if(!GlobalSharedData.riTuneCastActive)
                                         _internalOnlinePlayer.value?.play()
                                     else
-                                        coroutineScope.launch {
+                                        serviceScope.launch {
                                             riTuneCastClient.sendCommand(
                                                 RiTuneRemoteCommand(
                                                     "play",
@@ -3298,7 +3297,7 @@ class PlayerService : Service(),
         }
         lastPlayNextTime = now
         Timber.d("PlayerService handlePlayNext executed")
-        coroutineScope.launch {
+        serviceScope.launch {
             withContext(Dispatchers.Main) {
                 player.playNext()
             }
