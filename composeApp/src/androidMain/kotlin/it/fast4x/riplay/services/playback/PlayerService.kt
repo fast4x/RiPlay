@@ -653,7 +653,7 @@ class PlayerService : Service(),
                     player.mediaItems
                         .firstOrNull { it.mediaId == mediaId }
                 )
-            //player.seekTo(index, position)
+            player.seekTo(index, position)
 
             if (mediaId.isLocal) {
                 player.prepare()
@@ -1117,6 +1117,8 @@ class PlayerService : Service(),
 
                     restoreStateIfNeeded()
 
+                    if (localMediaItem?.isLocal == true) return
+
                     localMediaItem?.let{
                         if (isPersistentQueueEnabled && isResumePlaybackOnStart && firstTimeStarted) {
                             youTubePlayer.loadVideo(it.mediaId, playFromSecond)
@@ -1146,7 +1148,7 @@ class PlayerService : Service(),
                     youTubePlayer: YouTubePlayer,
                     state: PlayerConstants.PlayerState
                 ) {
-
+                    if (localMediaItem?.isLocal == true) return
                     Timber.d("PlayerService onlinePlayerView: onStateChange $state")
 
                     unstartedWatchdogJob?.cancel()
