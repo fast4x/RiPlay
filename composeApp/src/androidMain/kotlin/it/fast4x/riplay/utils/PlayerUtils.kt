@@ -438,7 +438,7 @@ fun Player.getQueueWindows(): List<Timeline.Window> {
     }
     return queue.toList()
 }
-
+/*
 fun Player.saveMasterQueue() {
     if (!isPersistentQueueEnabled()) return
 
@@ -481,6 +481,7 @@ fun Player.saveMasterQueue() {
     }
 }
 
+
 @OptIn(UnstableApi::class)
 fun Player.loadMasterQueue() {
     Timber.d("LoadMasterQueue loadPersistentQueue is enabled, called")
@@ -515,6 +516,7 @@ fun Player.loadMasterQueue() {
         }
     }
 }
+ */
 
 @Composable
 inline fun Player.DisposableListener(crossinline listenerProvider: () -> Player.Listener) {

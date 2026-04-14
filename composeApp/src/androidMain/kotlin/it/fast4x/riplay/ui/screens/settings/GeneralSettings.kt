@@ -177,7 +177,6 @@ import it.fast4x.riplay.ui.components.themed.settingsItem
 import it.fast4x.riplay.ui.components.themed.settingsSearchBarItem
 import it.fast4x.riplay.utils.CheckForNewVersion
 import it.fast4x.riplay.utils.LazyListContainer
-import it.fast4x.riplay.utils.loadMasterQueue
 import kotlinx.coroutines.flow.distinctUntilChanged
 
 
@@ -1240,7 +1239,7 @@ fun GeneralSettings(
                             isChecked = persistentQueue,
                             onCheckedChange = {
                                 persistentQueue = it
-                                if(it) binder?.player?.loadMasterQueue() // try to load last known queue now
+                                if(it) binder?.loadQueue() // try to load last known queue now
                                 //restartService = true
                             }
                         )

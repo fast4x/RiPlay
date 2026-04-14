@@ -35,6 +35,7 @@ import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import android.view.LayoutInflater
+import androidx.annotation.OptIn
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -171,9 +172,7 @@ import it.fast4x.riplay.utils.isKeepScreenOnEnabled
 import it.fast4x.riplay.utils.isOfficialContent
 import it.fast4x.riplay.utils.isSkipMediaOnErrorEnabled
 import it.fast4x.riplay.utils.isUserGeneratedContent
-import it.fast4x.riplay.utils.loadMasterQueue
 import it.fast4x.riplay.utils.principalCache
-import it.fast4x.riplay.utils.saveMasterQueue
 import it.fast4x.riplay.utils.seamlessQueue
 import it.fast4x.riplay.commonutils.setLikeState
 import it.fast4x.riplay.data.models.Format
@@ -197,6 +196,10 @@ import it.fast4x.riplay.cast.ritune.RiTuneCastClient
 import it.fast4x.riplay.cast.ritune.models.RiTuneConnectionStatus
 import it.fast4x.riplay.cast.ritune.models.RiTunePlayerState
 import it.fast4x.riplay.cast.ritune.models.RiTuneRemoteCommand
+import it.fast4x.riplay.data.models.QueuedMediaItem
+import it.fast4x.riplay.data.models.defaultQueueId
+import it.fast4x.riplay.extensions.preferences.stateDurationKey
+import it.fast4x.riplay.extensions.preferences.stateMediaIdKey
 import it.fast4x.riplay.services.helpers.AudioDRCHelper
 import it.fast4x.riplay.services.helpers.BluetoothConnectHelper
 import it.fast4x.riplay.services.helpers.EqualizerHelper
@@ -205,6 +208,7 @@ import it.fast4x.riplay.utils.GlobalSharedData
 import it.fast4x.riplay.utils.isAtLeastAndroid11
 import it.fast4x.riplay.utils.isExplicit
 import it.fast4x.riplay.utils.isLocal
+import it.fast4x.riplay.utils.isPersistentQueueEnabled
 import it.fast4x.riplay.utils.isVideo
 import it.fast4x.riplay.utils.mediaItems
 import it.fast4x.riplay.utils.playAtIndex
@@ -242,6 +246,7 @@ import kotlin.math.roundToInt
 import kotlin.math.sqrt
 import kotlin.system.exitProcess
 import kotlin.time.Duration.Companion.minutes
+import kotlin.time.Duration.Companion.seconds
 import android.os.Binder as AndroidBinder
 
 
@@ -386,8 +391,6 @@ class PlayerService : Service(),
 
     private var unstartedWatchdogJob: Job? = null
 
-    private lateinit var statePersistence: PlayerStatePersistence
-
     /*
     private var telephonyManager: TelephonyManager? = null
     private var wasPlayingBeforeCall = false
@@ -424,8 +427,6 @@ class PlayerService : Service(),
 
         createNotificationChannel()
         startForeground(loading = true)
-
-        statePersistence = PlayerStatePersistence(this)
 
         //connectivityManager = getSystemService()
 
@@ -469,13 +470,16 @@ class PlayerService : Service(),
             coroutineScope.launch {
 
                 withContext(Dispatchers.Main) {
-                    player.loadMasterQueue()
+                    loadQueue()
                     resumePlaybackOnStart()
                 }
 
                 while (isActive) {
-                    delay(2.minutes)
-                    player.saveMasterQueue()
+                    delay(60.seconds)
+                    if (!_playerState.value.isPlaying) {
+                        saveQueue()
+                        Timber.d("PlayerService saveQueue periodic when not playing")
+                    }
 
                     if (_currentSecond.value >= minTimeForEvent.seconds && lastMediaIdInHistory != currentSong.value?.id) {
                         currentSong.value?.let {
@@ -486,6 +490,17 @@ class PlayerService : Service(),
 
                 }
             }
+
+            coroutineScope.launch {
+                while (isActive) {
+                    delay(10.seconds)
+                    if (_playerState.value.isPlaying) {
+                        saveQueue()
+                        Timber.d("PlayerService saveQueue when playing")
+                    }
+                }
+            }
+
         }
 
         currentSong.debounce(1000).collect(coroutineScope) { song ->
@@ -625,53 +640,6 @@ class PlayerService : Service(),
             }
         )
 
-    }
-
-    private fun saveStatePersistence(){
-        localMediaItem?.let {
-            statePersistence.saveState(
-                mediaId = it.mediaId,
-                position =  if(it.mediaId.isLocal) player.currentPosition else _currentSecond.value.toLong(),
-                duration = if(it.mediaId.isLocal) player.duration else _currentDuration.value.toLong(),
-                isPlaying = _playerState.value.isPlaying
-            )
-        }
-    }
-
-    private fun restoreStateIfNeeded() {
-        val mediaId = statePersistence.getSavedMediaId()
-        val position = statePersistence.getSavedPosition()
-        val duration = statePersistence.getSavedDuration()
-        val wasPlaying = statePersistence.getSavedIsPlaying()
-
-        Timber.d("PlayerService restoreStateIfNeeded PlayerStatePersistence mediaId $mediaId position $position wasPlaying $wasPlaying")
-
-        if (mediaId != null) {
-
-            val index = player.mediaItems
-                .indexOf(
-                    player.mediaItems
-                        .firstOrNull { it.mediaId == mediaId }
-                )
-            player.seekTo(index, position)
-
-            if (mediaId.isLocal) {
-                player.prepare()
-                if (wasPlaying)
-                    player.play()
-
-                Timber.d("PlayerService restoreStateIfNeeded PlayerStatePersistence LOCAL index $index position $position")
-            } else {
-                playFromSecond = position.toFloat()
-                _currentSecond.value = playFromSecond
-                _currentDuration.value = duration.toFloat()
-                _internalOnlinePlayer.value?.pause()
-                //_internalOnlinePlayer.value?.cueVideo(mediaId, playFromSecond)
-                //_internalOnlinePlayer.value?.setVolume(getSystemMediaVolume())
-                Timber.d("PlayerService restoreStateIfNeeded PlayerStatePersistence ONLINE $mediaId position ${playFromSecond}")
-            }
-            statePersistence.clearState()
-        }
     }
 
     private fun initializeVariables() {
@@ -1115,8 +1083,6 @@ class PlayerService : Service(),
 
                     youTubePlayer.setVolume(getSystemMediaVolume())
 
-                    restoreStateIfNeeded()
-
                     if (localMediaItem?.isLocal == true) return
 
                     localMediaItem?.let{
@@ -1139,6 +1105,9 @@ class PlayerService : Service(),
                     super.onVideoDuration(youTubePlayer, duration)
 
                     _currentDuration.value = duration
+
+                    preferences.edit { putFloat(stateDurationKey, duration) }
+                    preferences.edit { putString(stateMediaIdKey, localMediaItem?.mediaId) }
 
                     updateUnifiedNotification()
                     updateDiscordPresence()
@@ -1253,7 +1222,7 @@ class PlayerService : Service(),
                     if (localMediaItem == null || localMediaItem?.isLocal == true) return
 
                     if (isPersistentQueueEnabled)
-                        player.saveMasterQueue()
+                        saveQueue()
 
 
                     if (!GlobalSharedData.riTuneCastActive || riTuneCastClient.connectionStatus != RiTuneConnectionStatus.Connected)
@@ -1466,7 +1435,7 @@ class PlayerService : Service(),
             player.shuffleOrder = DefaultShuffleOrder(shuffledIndices, System.currentTimeMillis())
         }
         updateUnifiedNotification()
-        player.saveMasterQueue()
+        saveQueue()
     }
 
     override fun onTaskRemoved(rootIntent: Intent?) {
@@ -1484,10 +1453,7 @@ class PlayerService : Service(),
 
         coroutineScope.launch {
             withContext(Dispatchers.Main) {
-
-                saveStatePersistence()
-
-                player.saveMasterQueue()
+                saveQueue()
             }
         }
 
@@ -1750,7 +1716,7 @@ class PlayerService : Service(),
 
         updateDiscordPresence()
 
-        player.saveMasterQueue()
+        saveQueue()
 
         if (preferences.getBoolean(isEnabledLastfmKey, false)) {
             preferences.getString(lastfmSessionTokenKey, "")?.let {
@@ -1794,7 +1760,7 @@ class PlayerService : Service(),
         val isLowMemory = level == TRIM_MEMORY_RUNNING_CRITICAL
         Timber.d("PlayerService onTrimMemory level $level isLowMemory $isLowMemory")
         if (isLowMemory)
-            player.saveMasterQueue()
+            saveQueue()
     }
 
 
@@ -2757,8 +2723,6 @@ class PlayerService : Service(),
 
             var lastProcessedIndex: Int? = null
 
-            saveStatePersistence()
-
             while (isActive) {
 
                 val isLocal = player.currentMediaItem?.isLocal == true
@@ -2805,11 +2769,6 @@ class PlayerService : Service(),
     }
 
     private fun stopEndedObserver() {
-        coroutineScope.launch {
-            withContext(Dispatchers.Main){
-                saveStatePersistence()
-            }
-        }
         endedObserverJob?.cancel()
         endedObserverJob = null
     }
@@ -2870,6 +2829,103 @@ class PlayerService : Service(),
             } else {
                 Timber.d("PlayerService Timer expired while service was dead. Stopping now.")
                 binder.executeStopServiceLogic()
+            }
+        }
+    }
+
+
+    fun saveQueue() {
+        if (!isPersistentQueueEnabled()) return
+
+        CoroutineScope(Dispatchers.Main).launch {
+            val mediaItems = player.currentTimeline.mediaItems
+            val mediaItemIndex = player.currentMediaItemIndex
+            val mediaItemPosition = if (player.currentMediaItem?.isLocal == true) player.currentPosition else (currentSecond.value * 1000).toLong()
+
+            //Timber.d("SaveQueue savePersistentQueue mediaItems ${mediaItems.size} mediaItemIndex $mediaItemIndex mediaItemPosition $mediaItemPosition")
+
+            if (mediaItems.isEmpty()) return@launch
+
+            withContext(Dispatchers.IO) {
+
+                mediaItems.mapIndexed { index, mediaItem ->
+                    QueuedMediaItem(
+                        mediaItem = mediaItem,
+                        mediaId = mediaItem.mediaId,
+                        position = if (index == mediaItemIndex) mediaItemPosition else -1,
+                        idQueue = mediaItem.mediaMetadata.extras?.getLong("idQueue", defaultQueueId())
+                    )
+                }.let { queuedMediaItems ->
+                    if (queuedMediaItems.isEmpty()) return@let
+
+                    try {
+                        Database.asyncTransaction {
+                            clearQueuedMediaItems()
+                            //insert(queuedMediaItems)
+                            //Timber.d("SaveMasterQueue QueuePersistentEnabled Saved mediaItems ${queuedMediaItems.size}")
+                            queuedMediaItems.forEach {
+                                insert(it)
+                            }
+                        }
+                    } catch (e: Exception) {
+                        Timber.e("SaveQueue QueuePersistentEnabled Error: ${e.message}")
+                    }
+
+                }
+            }
+        }
+    }
+
+    @OptIn(UnstableApi::class)
+    fun loadQueue() {
+        Timber.d("LoadQueue loadPersistentQueue is enabled, called")
+        if (!isPersistentQueueEnabled()) return
+
+        Database.asyncQuery {
+            clearOldEmptyQueuedMediaItems()
+            val queuedSongs = try { queuedMediaItems() } catch (e: Exception) { emptyList() }
+
+            if (queuedSongs.isEmpty()) return@asyncQuery
+
+            val index = queuedSongs.indexOfFirst { (it.position ?: 0L) >= 0L }.coerceAtLeast(0)
+            val queuedSong = queuedSongs[index]
+            val position = if (queuedSong.mediaItem.isLocal) {
+                queuedSong.position ?: C.TIME_UNSET
+            } else {
+                (queuedSong.position ?: 0L) / 1000
+            }
+
+            Timber.d("LoadQueue loadPersistentQueue is enabled, processing, restored index: $index isLocal ${queuedSong.mediaItem.isLocal} and mediaItemPosition: $position")
+
+            runBlocking(Dispatchers.Main) {
+                player.setMediaItems(
+                    queuedSongs.map { mediaItem ->
+                        mediaItem.mediaItem.buildUpon()
+                            .setUri(mediaItem.mediaItem.mediaId)
+                            .setCustomCacheKey(mediaItem.mediaItem.mediaId)
+                            .build().apply {
+                                mediaMetadata.extras?.putBoolean("isFromPersistentQueue", true)
+                                mediaMetadata.extras?.putLong("idQueue", mediaItem.idQueue ?: defaultQueueId())
+                            }
+                    },
+                    index,
+                    if (queuedSong.mediaItem.isLocal) position else 0
+                )
+                player.prepare()
+
+                if (!queuedSong.mediaItem.isLocal) {
+                    val duration = try {
+                        preferences.getFloat(stateDurationKey, 0f)
+                    } catch (e: Exception) {
+                        0f
+                    }
+                    val mId = preferences.getString(stateMediaIdKey, null)
+                    playFromSecond = position.toFloat()
+                    _currentSecond.value = playFromSecond
+                    _currentDuration.value = if (queuedSong.mediaId == mId) duration else 0f
+                    _internalOnlinePlayer.value?.pause()
+                }
+
             }
         }
     }
@@ -2944,7 +3000,7 @@ class PlayerService : Service(),
         fun executeStopServiceLogic() {
             preferences.edit { putLong(timerEndTimeKey, 0) }
 
-            player.saveMasterQueue()
+            saveQueue()
 
             val notification = NotificationCompat
                 .Builder(this@PlayerService, SLEEPTIMER_NOTIFICATION_CHANNEL_ID)
@@ -3102,6 +3158,8 @@ class PlayerService : Service(),
                 .setAction(MainActivity.action_search)
                 .setFlags(FLAG_ACTIVITY_NEW_TASK + FLAG_ACTIVITY_CLEAR_TASK))
         }
+
+        fun loadQueue() = this@PlayerService.loadQueue()
 
     }
 
