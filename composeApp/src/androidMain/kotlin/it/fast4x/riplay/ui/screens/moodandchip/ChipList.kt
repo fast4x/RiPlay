@@ -262,27 +262,29 @@ fun ChipList(
 
                 }
             }
-        } ?: chipPage?.exceptionOrNull()?.let {
-            BasicText(
-                text = stringResource(R.string.page_not_been_loaded),
-                style = typography().s.secondary.center,
-                modifier = Modifier
-                    .align(Alignment.CenterHorizontally)
-                    .padding(all = 16.dp)
-            )
-        } ?: ShimmerHost {
-            HeaderPlaceholder(modifier = Modifier.shimmer())
-            repeat(4) {
-                TextPlaceholder(modifier = sectionTextModifier)
-                Row {
-                    repeat(6) {
-                        AlbumItemPlaceholder(
-                            thumbnailSizeDp = albumThumbnailSizeDp,
-                            alternative = true
-                        )
-                    }
-                }
-            }
-        }
+        } ?: LoaderScreen(true)
+//            ?: chipPage?.exceptionOrNull()?.let {
+//            BasicText(
+//                text = stringResource(R.string.page_not_been_loaded),
+//                style = typography().s.secondary.center,
+//                modifier = Modifier
+//                    .align(Alignment.CenterHorizontally)
+//                    .padding(all = 16.dp)
+//            )
+//        }
+//        ?: ShimmerHost {
+//            HeaderPlaceholder(modifier = Modifier.shimmer())
+//            repeat(4) {
+//                TextPlaceholder(modifier = sectionTextModifier)
+//                Row {
+//                    repeat(6) {
+//                        AlbumItemPlaceholder(
+//                            thumbnailSizeDp = albumThumbnailSizeDp,
+//                            alternative = true
+//                        )
+//                    }
+//                }
+//            }
+//        }
     }
 }
