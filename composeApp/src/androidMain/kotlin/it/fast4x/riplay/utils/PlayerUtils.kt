@@ -533,9 +533,11 @@ fun Player.positionAndDurationStateFlow(
 
     var onlineCurrentSecond = 0f
     var onlineCurrentDuration = 0f
+    var playerIsPlaying = false
 
     binder?.onlinePlayerCurrentSecond?.collectLatest(scope) { onlineCurrentSecond = it }
     binder?.onlinePlayerCurrentDuration?.collectLatest(scope) { onlineCurrentDuration = it }
+    binder?.playerState?.collectLatest(scope) { playerIsPlaying = it.isPlaying }
 
     fun currentPositionAndDuration(): Pair<Long, Long> =
         if (currentMediaItem?.isLocal == true) {
@@ -576,7 +578,7 @@ fun Player.positionAndDurationStateFlow(
 
         val pollJob = launch {
             while (isActive) {
-                delay(if (isPlaying) 100L else 500L)
+                delay(if (playerIsPlaying) 100L else 500L)
                 if (!isSeeking) trySend(currentPositionAndDuration())
             }
         }
