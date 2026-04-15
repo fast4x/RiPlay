@@ -47,7 +47,7 @@
     <string name="search_lyrics_online">Искать текст песни в Интернете</string>
     <string name="fetch_lyrics_again">Перезагрузить текст песни</string>
     <string name="id">ID</string>
-    <string name="itag">Itag</string>
+    <string name="itag">Тег</string>
     <string name="bitrate">Битрейт</string>
     <string name="size">Размер</string>
     <string name="cached">Кэш</string>
@@ -205,7 +205,7 @@
     <string name="play_next">Играть следующим</string>
     <string name="toggle_lyrics">Переключить текст</string>
     <string name="by_tapping_on_the_thumbnail">Нажав на миниатюру</string>
-    <string name="require_mic_permission">Require mic permission</string>
+    <string name="require_mic_permission">Требуется доступ к микрофону</string>
     <string name="vt_fancy">Стильный</string>
     <string name="vt_circular">Круглый</string>
     <string name="vt_disabled">Отключено</string>
@@ -460,8 +460,8 @@
     <string name="info_not_find_app_browse_internet">Не удалось найти браузер для выхода в Интернета</string>
     <string name="show_floating_icon">Показывать плавающую кнопку поиска</string>
     <string name="show_equalizer">Показывать кнопку эквалайзера</string>
-    <string name="theme_pure_black">Pure Black</string>
-    <string name="theme_modern_black">Modern Black</string>
+    <string name="theme_pure_black">Глубокий чёрный</string>
+    <string name="theme_modern_black">Современный чёрный</string>
     <string name="theme_mode_pitch_black"> Чёрный</string>
     <string name="show_actions_bar">Показать панель действий</string>
     <string name="transition_effect">Эффект перехода между страницами</string>
@@ -951,9 +951,9 @@
     <string name="import_the_database_be_carefull">Import the database from other backup. Be careful, you may need to reinstall the app.</string>
     <string name="enable_fullscreen">Enable fullscreen mode</string>
     <string name="enable_fullscreen_info">Fullscreen hide system bars</string>
-    <string name="invalid_token">Invalid token</string>
-    <string name="unknown_title">Unknow title</string>
-    <string name="unknown_artist">Unknow artist</string>
+    <string name="invalid_token">Неверный токен</string>
+    <string name="unknown_title">Неизвестный исполнитель</string>
+    <string name="unknown_artist">Без названия</string>
     <string name="share_with_external_app">Share with external app</string>
     <string name="play_now">Play now</string>
     <string name="shuffle_play">Shuffle play</string>
