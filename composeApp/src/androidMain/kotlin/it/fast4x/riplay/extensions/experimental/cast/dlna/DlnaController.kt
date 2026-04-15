@@ -66,17 +66,21 @@ class DlnaController(private val context: Context) {
     ) {
         val listener = object : DefaultRegistryListener() {
             override fun remoteDeviceAdded(registry: Registry, device: RemoteDevice) {
+                Timber.d( "DlnaController Dispositivo trovato: ${device.type.type} " +
+                        "— ${device.details?.friendlyName} " +
+                        "— ${device.identity.descriptorURL}")
                 if (device.type.type == "MediaRenderer") onFound(device)
             }
             override fun remoteDeviceRemoved(registry: Registry, device: RemoteDevice) {
+                Timber.d( "DlnaController Dispositivo perso: ${device.details?.friendlyName}")
                 onLost(device)
             }
         }
-
-        // Salva il listener — se il servizio non è ancora connesso
-        // verrà registrato in onServiceConnected
         listeners.add(listener)
         upnpService?.registry?.addListener(listener)
+        upnpService?.controlPoint?.search(
+            UDADeviceTypeHeader(UDADeviceType("MediaRenderer"))
+        )
     }
 
     fun addRendererManually(ipAddress: String, onFound: (RemoteDevice) -> Unit) {
