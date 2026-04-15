@@ -1178,9 +1178,11 @@ class PlayerService : Service(),
                         }
                         PlayerConstants.PlayerState.PLAYING -> {
                             startEndedObserver()
+                            sendOpenExternalEqualizerIntent()
                         }
                         PlayerConstants.PlayerState.PAUSED -> {
                             stopEndedObserver()
+                            sendCloseExternalEqualizerIntent()
                         }
 //                        PlayerConstants.PlayerState.ENDED -> {
 //                            Timber.d("PlayerService onlinePlayerView: onStateChange ENDED regular playNext()")
@@ -1448,7 +1450,7 @@ class PlayerService : Service(),
     override fun onDestroy() {
         Timber.d("PlayerService onDestroy")
 
-
+        sendCloseExternalEqualizerIntent()
 
         serviceScope.launch {
             withContext(Dispatchers.Main) {
@@ -2000,6 +2002,9 @@ class PlayerService : Service(),
                 if (currentSong.value?.isLocal == true) {
                     player.play()
                 } else {
+                    if (_internalOnlinePlayer.value == null)
+                        initializeOnlinePlayer()
+
                     _internalOnlinePlayer.value?.play()
                 }
                 SmartMessage(getString(R.string.music_resumed_headphones_connected), context = this)
@@ -2017,12 +2022,12 @@ class PlayerService : Service(),
     }
 
     @UnstableApi
-    private fun sendOpenEqualizerIntent() {
+    private fun sendOpenExternalEqualizerIntent() {
         sendBroadcast(
             Intent(AudioEffect.ACTION_OPEN_AUDIO_EFFECT_CONTROL_SESSION).apply {
                 putExtra(AudioEffect.EXTRA_AUDIO_SESSION,
-                    //player.audioSessionId
-                    0
+                    if (localMediaItem?.isLocal == true) player.audioSessionId
+                    else 0
                 )
                 putExtra(AudioEffect.EXTRA_PACKAGE_NAME, packageName)
                 putExtra(AudioEffect.EXTRA_CONTENT_TYPE, AudioEffect.CONTENT_TYPE_MUSIC)
@@ -2032,12 +2037,12 @@ class PlayerService : Service(),
 
 
     @UnstableApi
-    private fun sendCloseEqualizerIntent() {
+    private fun sendCloseExternalEqualizerIntent() {
         sendBroadcast(
             Intent(AudioEffect.ACTION_CLOSE_AUDIO_EFFECT_CONTROL_SESSION).apply {
                 putExtra(AudioEffect.EXTRA_AUDIO_SESSION,
-                    //player.audioSessionId
-                    0
+                    if (localMediaItem?.isLocal == true) player.audioSessionId
+                    else 0
                 )
                 putExtra(AudioEffect.EXTRA_PACKAGE_NAME, packageName)
             }
@@ -2338,6 +2343,10 @@ class PlayerService : Service(),
 
         if (currentMediaItemState.value?.isLocal == true)
             updateUnifiedNotification()
+
+        //notify external equalizer
+        if (!isPlaying) sendCloseExternalEqualizerIntent()
+        else sendOpenExternalEqualizerIntent()
 
         updateDiscordPresence()
 
