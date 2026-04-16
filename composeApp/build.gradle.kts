@@ -714,9 +714,6 @@ kotlin {
             implementation(libs.hypnoticcanvas.shaders)
             implementation(libs.multidex)
             implementation(libs.jsoup)
-            implementation(libs.jupnp)
-            implementation(libs.jupnp.support)
-            implementation(libs.nano)
             //implementation(libs.mediarouter)
         }
 

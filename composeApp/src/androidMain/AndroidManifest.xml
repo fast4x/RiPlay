@@ -206,14 +206,6 @@
             </intent-filter>
         </service>
 
-        <service
-            android:name=".extensions.experimental.cast.dlna.DlnaCastService"
-            android:foregroundServiceType="mediaProjection"
-            android:exported="false"/>
-
-        <service android:name=".extensions.experimental.cast.dlna.DlnaUpnpService"/>
-
-
         <receiver android:name=".ui.widgets.PlayerVerticalWidgetReceiver"
             android:exported="true">
             <intent-filter>
