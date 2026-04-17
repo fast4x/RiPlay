@@ -99,17 +99,17 @@ object CastHelper {
                     youTubePlayer: YouTubePlayer,
                     playbackRate: PlayerConstants.PlaybackRate
                 ) {
-                    Timber.d("CastHelper: onPlaybackRateChange $playbackRate")
+                    //Timber.d("CastHelper: onPlaybackRateChange $playbackRate")
                 }
 
                 override fun onCurrentSecond(youTubePlayer: YouTubePlayer, second: Float) {
                     _currentSecond.value = second
-                    Timber.d("CastHelper: onCurrentSecond $second")
+                    //Timber.d("CastHelper: onCurrentSecond $second")
                 }
 
                 override fun onVideoDuration(youTubePlayer: YouTubePlayer, duration: Float) {
                     _currentDuration.value = duration
-                    Timber.d("CastHelper: onVideoDuration $duration")
+                    //Timber.d("CastHelper: onVideoDuration $duration")
                 }
 
                 override fun onError(
