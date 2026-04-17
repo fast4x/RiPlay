@@ -53,6 +53,8 @@
     <uses-feature    android:name="android.hardware.touchscreen" android:required="false" />
     <uses-feature    android:name="android.hardware.microphone" android:required="false" />
     <uses-feature    android:name="android.hardware.type.automotive" android:required="false" />
+    <!-- Needed for multimedia routing -->
+    <uses-feature android:name="android.hardware.wifi.direct" android:required="false" />
 
 
 
