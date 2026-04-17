@@ -13,7 +13,7 @@ function YouTubePlayer(communicationConstants, communicationChannel) {
     let player
     let lastState
     let lastVideoId
-
+    
     function initialize() {
         YouTubePlayerBridge.sendYouTubeIframeAPIReady()
 

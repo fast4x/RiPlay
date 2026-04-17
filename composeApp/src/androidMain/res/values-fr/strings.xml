@@ -1307,10 +1307,10 @@ Volume BAS : titre précédent</string>
     <string name="ritune_cast">RiTune Cast</string>
     <string name="ritune_available_devices">Appareils disponibles :</string>
     <string name="audio">Audio</string>
-    <string name="settings_disable_audio_drc">Disable audio DRC</string>
-    <string name="lyrics_word_by_word">Word by word</string>
-    <string name="lyrics_line_by_line">Line by line</string>
-    <string name="lyrics_fulltext">Full text</string>
+    <string name="settings_disable_audio_drc">Désactiver le DRC audio</string>
+    <string name="lyrics_word_by_word">Mot par mot</string>
+    <string name="lyrics_line_by_line">Ligne par ligne</string>
+    <string name="lyrics_fulltext">Texte intégral</string>
     <string name="chrome_cast">Chromecast</string>
     <string name="chrome_cast_info">Cast to Chromecast devices, require compatible devices</string>
     <string name="cast_type">Cast type</string>
