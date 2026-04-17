@@ -43,6 +43,8 @@ import it.fast4x.riplay.data.models.SongAlbumMap
 import it.fast4x.riplay.data.models.SongArtistMap
 import it.fast4x.riplay.data.models.SongEntity
 import it.fast4x.riplay.enums.PopupType
+import it.fast4x.riplay.extensions.preferences.preferences
+import it.fast4x.riplay.extensions.preferences.showOnDevicePlaylistKey
 import it.fast4x.riplay.ui.components.themed.SmartMessage
 import it.fast4x.riplay.utils.LOCAL_KEY_PREFIX
 import it.fast4x.riplay.utils.appContext
@@ -107,6 +109,8 @@ class OnDeviceViewModel(application: Application) : AndroidViewModel(application
 
         @SuppressLint("Range")
         fun loadAudioFiles() {
+            if (!context.preferences.getBoolean(showOnDevicePlaylistKey, true)) return
+
             val hasPermission = ContextCompat
                 .checkSelfPermission(appContext(),
                     if (isAtLeastAndroid13) Manifest.permission.READ_MEDIA_AUDIO

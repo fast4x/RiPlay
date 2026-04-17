@@ -960,7 +960,11 @@ fun HomeSongs(
             if (builtInPlaylist == BuiltInPlaylist.OnDevice) {
                 if (!hasPermission) {
                     item(key = "OnDeviceSongsPermission") {
-                        LaunchedEffect(Unit, relaunchPermission) { launcher.launch(permission) }
+                        LaunchedEffect(Unit, relaunchPermission) {
+                            if (showOnDevicePlaylist) {
+                                launcher.launch(permission)
+                            }
+                        }
                         Column(modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(2.dp, Alignment.CenterVertically), horizontalAlignment = Alignment.CenterHorizontally) {
                             BasicText(text = stringResource(R.string.media_permission_required_please_grant), modifier = Modifier.fillMaxWidth(0.75f), style = typography().xs.semiBold)
                             Spacer(modifier = Modifier.height(20.dp))
