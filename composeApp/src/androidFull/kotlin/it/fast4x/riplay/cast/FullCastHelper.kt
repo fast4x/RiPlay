@@ -89,7 +89,6 @@ object CastHelper {
             chromecastYouTubePlayerContext.initialize(object : AbstractYouTubePlayerListener() {
                 override fun onReady(youTubePlayer: YouTubePlayer) {
                     _internalCastOnlinePlayer.value = youTubePlayer
-                    //youTubePlayer.loadVideo("0jHHuPWP--Y", 0f)
                     Timber.d("CastHelper: onReady")
                     if (continuation.isActive) {
                         continuation.resume(youTubePlayer) { cause, _, _ -> {} }
