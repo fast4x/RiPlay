@@ -182,7 +182,6 @@ import it.fast4x.riplay.extensions.encryptedpreferences.encryptedPreferences
 import it.fast4x.riplay.extensions.lastfm.sendNowPlaying
 import it.fast4x.riplay.extensions.lastfm.sendScrobble
 import it.fast4x.riplay.extensions.players.getOnlineMetadata
-import it.fast4x.riplay.extensions.preferences.castToRiTuneDeviceEnabledKey
 import it.fast4x.riplay.extensions.preferences.disableAudioDRCKey
 import it.fast4x.riplay.extensions.preferences.enableWallpaperKey
 import it.fast4x.riplay.extensions.preferences.excludeSongIfIsVideoKey
@@ -198,6 +197,8 @@ import it.fast4x.riplay.cast.ritune.models.RiTunePlayerState
 import it.fast4x.riplay.cast.ritune.models.RiTuneRemoteCommand
 import it.fast4x.riplay.data.models.QueuedMediaItem
 import it.fast4x.riplay.data.models.defaultQueueId
+import it.fast4x.riplay.enums.CastType
+import it.fast4x.riplay.extensions.preferences.castTypeKey
 import it.fast4x.riplay.extensions.preferences.stateDurationKey
 import it.fast4x.riplay.extensions.preferences.stateMediaIdKey
 import it.fast4x.riplay.services.helpers.AudioDRCHelper
@@ -590,7 +591,9 @@ class PlayerService : Service(),
                     // todo maybe not works
                     whatchDogVolume += 1
                     if (whatchDogVolume > 2) {
-                        _internalOnlinePlayer.value?.setVolume(getSystemMediaVolume())
+                        withContext(Dispatchers.Main) {
+                            _internalOnlinePlayer.value?.setVolume(getSystemMediaVolume())
+                        }
                         whatchDogVolume = 0
                         //Timber.d("PlayerService onCreate whatchDogVolume fired")
                     }
@@ -753,7 +756,7 @@ class PlayerService : Service(),
 
         riTuneObserverJob?.cancel()
 
-        val isRiTuneEnabled = preferences.getBoolean(castToRiTuneDeviceEnabledKey, false)
+        val isRiTuneEnabled = preferences.getEnum(castTypeKey, CastType.RITUNECAST) == CastType.RITUNECAST
         if (!isRiTuneEnabled) return
         //if (!isRiTuneEnabled || riTuneClient.connectionStatus.value != RiTuneConnectionStatus.Connected) return
         //Timber.d("PlayerService initializeRiTune isRituneEnabled $isRiTuneEnabled")
@@ -1033,134 +1036,116 @@ class PlayerService : Service(),
 
     private fun initializeOnlinePlayer() {
 
-        _internalOnlinePlayerView.value.apply {
-            enableAutomaticInitialization = false
+        val listener = object : AbstractYouTubePlayerListener() {
 
-            enableBackgroundPlayback(true)
+            override fun onReady(youTubePlayer: YouTubePlayer) {
+                super.onReady(youTubePlayer)
 
-            keepScreenOn = isKeepScreenOnEnabled()
+                _internalOnlinePlayer.value = youTubePlayer
 
+                val customUiController =
+                    CustomDefaultPlayerUiController(
+                        this@PlayerService,
+                        _internalOnlinePlayerView.value,
+                        youTubePlayer,
+                        onTap = {}
+                    )
+                customUiController.showUi(false) // disable all default controls and buttons
+                customUiController.showMenuButton(false)
+                customUiController.showVideoTitle(false)
+                customUiController.showPlayPauseButton(false)
+                customUiController.showDuration(false)
+                customUiController.showCurrentTime(false)
+                customUiController.showSeekBar(false)
+                customUiController.showBufferingProgress(false)
+                customUiController.showYouTubeButton(false)
+                customUiController.showFullscreenButton(false)
+                _internalOnlinePlayerView.value.setCustomPlayerUi(customUiController.rootView)
 
-            if (CastHelper.isCastAvailable)
-                CastHelper.initChromecastYouTubePlayerContext(this@PlayerService)
+                Timber.d("PlayerService onlinePlayer onReady localmediaItem ${localMediaItem?.mediaId} queue index ${binder.player.currentMediaItemIndex}")
+                Timber.d("PlayerService onlinePlayer onReady isPersistentQueueEnabled $isPersistentQueueEnabled isResumePlaybackOnStart $isResumePlaybackOnStart")
 
+                youTubePlayer.setVolume(getSystemMediaVolume())
 
-            val iFramePlayerOptions = IFramePlayerOptions.Builder(appContext())
-                .controls(0)
-                .listType("playlist")
-                .origin(resources.getString(R.string.env_fqqhBZd0cf))
-                .build()
+                if (localMediaItem?.isLocal == true) return
 
-            val listener = object : AbstractYouTubePlayerListener() {
-
-                override fun onReady(youTubePlayer: YouTubePlayer) {
-                    super.onReady(youTubePlayer)
-
-                    _internalOnlinePlayer.value = youTubePlayer
-
-                    val customUiController =
-                        CustomDefaultPlayerUiController(
-                            context,
-                            _internalOnlinePlayerView.value,
-                            youTubePlayer,
-                            onTap = {}
-                        )
-                    customUiController.showUi(false) // disable all default controls and buttons
-                    customUiController.showMenuButton(false)
-                    customUiController.showVideoTitle(false)
-                    customUiController.showPlayPauseButton(false)
-                    customUiController.showDuration(false)
-                    customUiController.showCurrentTime(false)
-                    customUiController.showSeekBar(false)
-                    customUiController.showBufferingProgress(false)
-                    customUiController.showYouTubeButton(false)
-                    customUiController.showFullscreenButton(false)
-                    _internalOnlinePlayerView.value.setCustomPlayerUi(customUiController.rootView)
-
-                    Timber.d("PlayerService onlinePlayer onReady localmediaItem ${localMediaItem?.mediaId} queue index ${binder.player.currentMediaItemIndex}")
-                    Timber.d("PlayerService onlinePlayer onReady isPersistentQueueEnabled $isPersistentQueueEnabled isResumePlaybackOnStart $isResumePlaybackOnStart")
-
-                    youTubePlayer.setVolume(getSystemMediaVolume())
-
-                    if (localMediaItem?.isLocal == true) return
-
-                    localMediaItem?.let{
-                        if (isPersistentQueueEnabled && isResumePlaybackOnStart && firstTimeStarted) {
-                            youTubePlayer.loadVideo(it.mediaId, playFromSecond)
-                            playFromSecond = 0f
-                            Timber.d("PlayerService onlinePlayer onReady loadVideo ${it.mediaId}")
-                        }
+                localMediaItem?.let{
+                    if (isPersistentQueueEnabled && isResumePlaybackOnStart && firstTimeStarted) {
+                        youTubePlayer.loadVideo(it.mediaId, playFromSecond)
+                        playFromSecond = 0f
+                        Timber.d("PlayerService onlinePlayer onReady loadVideo ${it.mediaId}")
                     }
-
-                    firstTimeStarted = false
-
                 }
 
-                override fun onCurrentSecond(youTubePlayer: YouTubePlayer, second: Float) {
-                    _currentSecond.value = second
-                }
+                firstTimeStarted = false
 
-                override fun onVideoDuration(youTubePlayer: YouTubePlayer, duration: Float) {
-                    super.onVideoDuration(youTubePlayer, duration)
+            }
 
-                    _currentDuration.value = duration
+            override fun onCurrentSecond(youTubePlayer: YouTubePlayer, second: Float) {
+                _currentSecond.value = second
+            }
 
-                    preferences.edit { putFloat(stateDurationKey, duration) }
-                    preferences.edit { putString(stateMediaIdKey, localMediaItem?.mediaId) }
+            override fun onVideoDuration(youTubePlayer: YouTubePlayer, duration: Float) {
+                super.onVideoDuration(youTubePlayer, duration)
 
-                    updateUnifiedNotification()
-                    updateDiscordPresence()
-                }
+                _currentDuration.value = duration
 
-                override fun onStateChange(
-                    youTubePlayer: YouTubePlayer,
-                    state: PlayerConstants.PlayerState
-                ) {
-                    if (localMediaItem?.isLocal == true) return
-                    Timber.d("PlayerService onlinePlayerView: onStateChange $state")
+                preferences.edit { putFloat(stateDurationKey, duration) }
+                preferences.edit { putString(stateMediaIdKey, localMediaItem?.mediaId) }
 
-                    unstartedWatchdogJob?.cancel()
+                updateUnifiedNotification()
+                updateDiscordPresence()
+            }
 
-                    updatePlayerState(state)
+            override fun onStateChange(
+                youTubePlayer: YouTubePlayer,
+                state: PlayerConstants.PlayerState
+            ) {
+                if (localMediaItem?.isLocal == true) return
+                Timber.d("PlayerService onlinePlayerView: onStateChange $state")
 
-                    when(state) {
-                        PlayerConstants.PlayerState.UNSTARTED -> {
-                            if (!firstTimeStarted) {
-                                unstartedWatchdogJob = CoroutineScope(Dispatchers.Main).launch {
-                                    Timber.d("PlayerService onlinePlayerView: onStateChange UNSTARTED watchdog")
-                                    delay(1000)
+                unstartedWatchdogJob?.cancel()
 
-                                    if (_playerState.value.playbackState == PlaybackState.UNSTARTED) {
-                                        Timber.e("PlayerService onlinePlayerView: Persistent UNSTARTED state. Probably webView killed. Force to re-initialize.")
+                updatePlayerState(state)
 
-                                        recreateOnlinePlayerView()
-                                        delay(500)
-                                        val currentPlayer = this@PlayerService._internalOnlinePlayer.value
+                when(state) {
+                    PlayerConstants.PlayerState.UNSTARTED -> {
+                        if (!firstTimeStarted) {
+                            unstartedWatchdogJob = CoroutineScope(Dispatchers.Main).launch {
+                                Timber.d("PlayerService onlinePlayerView: onStateChange UNSTARTED watchdog")
+                                delay(1000)
 
-                                        localMediaItem?.let { item ->
-                                            if (currentPlayer != null) {
-                                                Timber.d("PlayerService onlinePlayerView: Try reload song/video")
-                                                currentPlayer.pause()
-                                                currentPlayer.cueVideo(item.mediaId, playFromSecond)
-                                            } else {
-                                                Timber.w("PlayerService onlinePlayerView: Recovery - _internalOnlinePlayer is not defined, impossible to continue")
-                                            }
+                                if (_playerState.value.playbackState == PlaybackState.UNSTARTED) {
+                                    Timber.e("PlayerService onlinePlayerView: Persistent UNSTARTED state. Probably webView killed. Force to re-initialize.")
+
+                                    recreateOnlinePlayerView()
+                                    delay(500)
+                                    val currentPlayer = this@PlayerService._internalOnlinePlayer.value
+
+                                    localMediaItem?.let { item ->
+                                        if (currentPlayer != null) {
+                                            Timber.d("PlayerService onlinePlayerView: Try reload song/video")
+                                            currentPlayer.pause()
+                                            currentPlayer.cueVideo(item.mediaId, playFromSecond)
+                                        } else {
+                                            Timber.w("PlayerService onlinePlayerView: Recovery - _internalOnlinePlayer is not defined, impossible to continue")
                                         }
-
                                     }
+
                                 }
                             }
                         }
+                    }
 
-                        PlayerConstants.PlayerState.VIDEO_CUED -> {
-                            Timber.d("PlayerService onlinePlayerView: onStateChange VIDEO_CUED regular play()")
-                            playFromSecond = 0f
-                            if (!firstTimeStarted) {
-                                if (!GlobalSharedData.riTuneCastActive || riTuneCastClient.connectionStatus != RiTuneConnectionStatus.Connected) {
-                                    youTubePlayer.unMute()
-                                    youTubePlayer.setVolume(getSystemMediaVolume())
-                                    youTubePlayer.play()
-                                }
+                    PlayerConstants.PlayerState.VIDEO_CUED -> {
+                        Timber.d("PlayerService onlinePlayerView: onStateChange VIDEO_CUED regular play()")
+                        playFromSecond = 0f
+                        if (!firstTimeStarted) {
+                            if (!GlobalSharedData.riTuneCastActive || riTuneCastClient.connectionStatus != RiTuneConnectionStatus.Connected) {
+                                youTubePlayer.unMute()
+                                youTubePlayer.setVolume(getSystemMediaVolume())
+                                youTubePlayer.play()
+                            }
 //                                else
 //                                    coroutineScope.launch {
 //                                        localMediaItem?.let { item ->
@@ -1173,142 +1158,188 @@ class PlayerService : Service(),
 //                                            )
 //                                        }
 //                                    }
-                            }
+                        }
 
-                        }
-                        PlayerConstants.PlayerState.PLAYING -> {
-                            startEndedObserver()
-                            sendOpenExternalEqualizerIntent()
-                        }
-                        PlayerConstants.PlayerState.PAUSED -> {
-                            stopEndedObserver()
-                            sendCloseExternalEqualizerIntent()
-                        }
+                    }
+                    PlayerConstants.PlayerState.PLAYING -> {
+                        startEndedObserver()
+                        sendOpenExternalEqualizerIntent()
+                    }
+                    PlayerConstants.PlayerState.PAUSED -> {
+                        stopEndedObserver()
+                        sendCloseExternalEqualizerIntent()
+                    }
 //                        PlayerConstants.PlayerState.ENDED -> {
 //                            Timber.d("PlayerService onlinePlayerView: onStateChange ENDED regular playNext()")
 //                            player.playNext()
 //                        }
-                        else -> {}
-                    }
-
-                    if (closeServiceWhenPlayerPausedAfterMinutes != DurationInMinutes.Disabled) {
-                        if (state != PlayerConstants.PlayerState.PLAYING && closingTimerStarted == false) {
-                            Timber.d("PlayerService closingTimer started")
-                            binder.startSleepTimer(closeServiceWhenPlayerPausedAfterMinutes.minutesInMilliSeconds)
-                            closingTimerStarted = true
-                        }
-                        if (state == PlayerConstants.PlayerState.PLAYING && closingTimerStarted == true) {
-                            Timber.d("PlayerService closingTimer cancelled")
-                            binder.cancelSleepTimer()
-                            closingTimerStarted = false
-                        }
-                    }
-
-                    isPlayingNow = state == PlayerConstants.PlayerState.PLAYING
-                    updateUnifiedNotification()
-                    updateDiscordPresence()
-
+                    else -> {}
                 }
 
-                override fun onError(
-                    youTubePlayer: YouTubePlayer,
-                    error: PlayerConstants.PlayerError
-                ) {
-
-                    val currentState = _playerState.value
-                    _playerState.value = currentState.copy(
-                        playbackState = PlaybackState.ERROR
-                    )
-
-                    if (localMediaItem == null || localMediaItem?.isLocal == true) return
-
-                    if (isPersistentQueueEnabled)
-                        saveQueue()
-
-
-                    if (!GlobalSharedData.riTuneCastActive || riTuneCastClient.connectionStatus != RiTuneConnectionStatus.Connected)
-                        youTubePlayer.pause()
-                    else
-                        serviceScope.launch {
-                            riTuneCastClient.sendCommand(
-                                RiTuneRemoteCommand(
-                                    "pause",
-                                    position = playFromSecond
-                                )
-                            )
-                        }
-
-                    clearWebViewData()
-
-                    Timber.e("PlayerService: onError $error")
-                    val errorString = when (error) {
-                        PlayerConstants.PlayerError.VIDEO_NOT_PLAYABLE_IN_EMBEDDED_PLAYER -> when (isYtLoggedIn()) {
-                            false -> "Sorry, content unavailable, try to login next time"
-                            true -> "Sorry, content unavailable"
-                        }
-
-                        PlayerConstants.PlayerError.VIDEO_NOT_FOUND -> "Sorry, content no longer available"
-                        PlayerConstants.PlayerError.INVALID_PARAMETER_IN_REQUEST -> "Invalid parameters in request"
-                        else -> null
+                if (closeServiceWhenPlayerPausedAfterMinutes != DurationInMinutes.Disabled) {
+                    if (state != PlayerConstants.PlayerState.PLAYING && closingTimerStarted == false) {
+                        Timber.d("PlayerService closingTimer started")
+                        binder.startSleepTimer(closeServiceWhenPlayerPausedAfterMinutes.minutesInMilliSeconds)
+                        closingTimerStarted = true
                     }
-
-                    if (errorString != null && lastError != error) {
-                        if (error != PlayerConstants.PlayerError.INVALID_PARAMETER_IN_REQUEST)
-                            SmartMessage(
-                                errorString,
-                                PopupType.Warning,
-                                context = this@PlayerService
-                            )
-
-                        //handlePlayNext()
-
-                        //}
-
-                        if (error == PlayerConstants.PlayerError.INVALID_PARAMETER_IN_REQUEST)
-                            localMediaItem?.let {
-                                if (!GlobalSharedData.riTuneCastActive || riTuneCastClient.connectionStatus != RiTuneConnectionStatus.Connected) {
-                                    youTubePlayer.cueVideo(it.mediaId, playFromSecond)
-                                }
-                                else serviceScope.launch {
-                                        riTuneCastClient.sendCommand(
-                                            RiTuneRemoteCommand(
-                                                "load",
-                                                mediaId = it.mediaId,
-                                                position = playFromSecond
-                                            )
-                                        )
-                                    }
-                            }
-
-                        youTubePlayer.setVolume(getSystemMediaVolume())
-                        return
+                    if (state == PlayerConstants.PlayerState.PLAYING && closingTimerStarted == true) {
+                        Timber.d("PlayerService closingTimer cancelled")
+                        binder.cancelSleepTimer()
+                        closingTimerStarted = false
                     }
-
-                    lastError = error
-
-                    if (!isSkipMediaOnErrorEnabled()) return
-                    val prev = binder.player.currentMediaItem ?: return
-
-                    handlePlayNext()
-
-                    SmartMessage(
-                        message = this@PlayerService.getString(
-                            R.string.skip_media_on_error_message,
-                            cleanPrefix(prev.mediaMetadata.title.toString())
-                        ),
-                        context = this@PlayerService,
-                    )
-
                 }
 
-                override fun onVideoLoadedFraction(
-                    youTubePlayer: YouTubePlayer,
-                    loadedFraction: Float
-                ) {
-                    _internalBufferedFraction.value = loadedFraction
-                }
+                isPlayingNow = state == PlayerConstants.PlayerState.PLAYING
+                updateUnifiedNotification()
+                updateDiscordPresence()
 
             }
+
+            override fun onError(
+                youTubePlayer: YouTubePlayer,
+                error: PlayerConstants.PlayerError
+            ) {
+
+                val currentState = _playerState.value
+                _playerState.value = currentState.copy(
+                    playbackState = PlaybackState.ERROR
+                )
+
+                if (localMediaItem == null || localMediaItem?.isLocal == true) return
+
+                if (isPersistentQueueEnabled)
+                    saveQueue()
+
+
+                if (!GlobalSharedData.riTuneCastActive || riTuneCastClient.connectionStatus != RiTuneConnectionStatus.Connected)
+                    youTubePlayer.pause()
+                else
+                    serviceScope.launch {
+                        riTuneCastClient.sendCommand(
+                            RiTuneRemoteCommand(
+                                "pause",
+                                position = playFromSecond
+                            )
+                        )
+                    }
+
+                clearWebViewData()
+
+                Timber.e("PlayerService: onError $error")
+                val errorString = when (error) {
+                    PlayerConstants.PlayerError.VIDEO_NOT_PLAYABLE_IN_EMBEDDED_PLAYER -> when (isYtLoggedIn()) {
+                        false -> "Sorry, content unavailable, try to login next time"
+                        true -> "Sorry, content unavailable"
+                    }
+
+                    PlayerConstants.PlayerError.VIDEO_NOT_FOUND -> "Sorry, content no longer available"
+                    PlayerConstants.PlayerError.INVALID_PARAMETER_IN_REQUEST -> "Invalid parameters in request"
+                    else -> null
+                }
+
+                if (errorString != null && lastError != error) {
+                    if (error != PlayerConstants.PlayerError.INVALID_PARAMETER_IN_REQUEST)
+                        SmartMessage(
+                            errorString,
+                            PopupType.Warning,
+                            context = this@PlayerService
+                        )
+
+                    //handlePlayNext()
+
+                    //}
+
+                    if (error == PlayerConstants.PlayerError.INVALID_PARAMETER_IN_REQUEST)
+                        localMediaItem?.let {
+                            if (!GlobalSharedData.riTuneCastActive || riTuneCastClient.connectionStatus != RiTuneConnectionStatus.Connected) {
+                                youTubePlayer.cueVideo(it.mediaId, playFromSecond)
+                            }
+                            else serviceScope.launch {
+                                riTuneCastClient.sendCommand(
+                                    RiTuneRemoteCommand(
+                                        "load",
+                                        mediaId = it.mediaId,
+                                        position = playFromSecond
+                                    )
+                                )
+                            }
+                        }
+
+                    youTubePlayer.setVolume(getSystemMediaVolume())
+                    return
+                }
+
+                lastError = error
+
+                if (!isSkipMediaOnErrorEnabled()) return
+                val prev = binder.player.currentMediaItem ?: return
+
+                handlePlayNext()
+
+                SmartMessage(
+                    message = this@PlayerService.getString(
+                        R.string.skip_media_on_error_message,
+                        cleanPrefix(prev.mediaMetadata.title.toString())
+                    ),
+                    context = this@PlayerService,
+                )
+
+            }
+
+            override fun onVideoLoadedFraction(
+                youTubePlayer: YouTubePlayer,
+                loadedFraction: Float
+            ) {
+                _internalBufferedFraction.value = loadedFraction
+            }
+
+        }
+
+        //This initilize chromecast if available (available only on full build variant)
+        if (CastHelper.isCastAvailable && preferences.getEnum(castTypeKey, CastType.RITUNECAST) !in listOf(CastType.NONE, CastType.RITUNECAST)) {
+            serviceScope.launch {
+                CastHelper.initChromecastYouTubePlayerContext(this@PlayerService)
+                while (isActive) {
+                    delay(1.seconds)
+                    CastHelper.let {
+                        GlobalSharedData.chromecastConnected.value = it.connected.value
+                        if (!it.connected.value) {
+                            withContext(Dispatchers.Main) {
+                                _internalOnlinePlayer.value?.pause()
+                            }
+                            val currentState = _playerState.value
+                            _playerState.value = currentState.copy(
+                                playbackState = PlaybackState.PAUSED
+                            )
+                            return@let
+                        }
+                        _internalOnlinePlayer.value = it.internalCastOnlinePlayer.value
+                        //Timber.d("PlayerService: CastHelper connected ${it.connected.value}")
+                        _internalBufferedFraction.value = it.internalBufferedFraction.value
+                        _currentSecond.value = it.currentSecond.value
+                        _currentDuration.value = it.currentDuration.value
+                        updatePlayerState(it.playerState.value)
+                    }
+                }
+            }
+            return
+        }
+
+        //This initialize the online player view if chromcast isn't connected
+        _internalOnlinePlayerView.value.apply {
+            enableAutomaticInitialization = false
+
+            enableBackgroundPlayback(true)
+
+            keepScreenOn = isKeepScreenOnEnabled()
+
+            val iFramePlayerOptions = IFramePlayerOptions.Builder(appContext())
+                .controls(0)
+                .listType("playlist")
+                .origin(resources.getString(R.string.env_fqqhBZd0cf))
+                .build()
+
+
 
             initialize(listener, iFramePlayerOptions)
 
@@ -2408,7 +2439,7 @@ class PlayerService : Service(),
             audioReverbPresetKey -> initializeReverb()
             volumeNormalizationKey, loudnessBaseGainKey, volumeBoostLevelKey -> initializeNormalizeVolume()
             playbackPitchKey, playbackSpeedKey -> initializePlaybackParameters()
-            castToRiTuneDeviceEnabledKey -> initializeRiTune()
+            castTypeKey -> initializeRiTune()
             disableAudioDRCKey -> initializeAudioDRCHelper()
         }
     }

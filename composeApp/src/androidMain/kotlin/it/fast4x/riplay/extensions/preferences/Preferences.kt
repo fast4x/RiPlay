@@ -365,7 +365,7 @@ const val customDnsOverHttpsServerKey = "customDnsOverHttpsServer"
 const val enablePreCacheKey = "enablePreCache"
 const val streamingPlayerTypeKey = "streamingPlayerType"
 
-const val castToRiTuneDeviceEnabledKey = "castToRiTuneDeviceEnabled"
+//const val castToRiTuneDeviceEnabledKey = "castToRiTuneDeviceEnabled"
 const val usePlaceholderInImageLoaderKey = "usePlaceholderInImageLoader"
 
 const val seekWithTapKey = "seekWithTap"
@@ -443,6 +443,8 @@ const val showOnBoardingScreenKey = "onBoardingScreen"
 const val timerEndTimeKey = "timerEndTime"
 
 const val disableAudioDRCKey = "disableAudioDRC"
+
+const val castTypeKey = "castType"
 
 inline fun <reified T : Enum<T>> SharedPreferences.getEnum(
     key: String,

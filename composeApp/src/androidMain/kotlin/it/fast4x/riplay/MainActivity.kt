@@ -236,11 +236,12 @@ import it.fast4x.riplay.extensions.databasebackup.DatabaseBackupManager
 import it.fast4x.riplay.extensions.htmlreader.shazamSongInfoExtractor
 import it.fast4x.riplay.extensions.nsd.discoverNsdServices
 import it.fast4x.riplay.extensions.ondevice.OnDeviceViewModel
-import it.fast4x.riplay.extensions.preferences.castToRiTuneDeviceEnabledKey
 import it.fast4x.riplay.extensions.preferences.resumeOrPausePlaybackWhenDeviceKey
 import it.fast4x.riplay.extensions.preferences.showSnowfallEffectKey
 import it.fast4x.riplay.cast.ritune.models.toRiTuneDevice
 import it.fast4x.riplay.cast.ritune.RiTuneCastSelector
+import it.fast4x.riplay.enums.CastType
+import it.fast4x.riplay.extensions.preferences.castTypeKey
 import it.fast4x.riplay.services.playback.PlayerState
 import it.fast4x.riplay.ui.components.Snowfall
 import it.fast4x.riplay.ui.screens.player.unified.components.core.UnifiedPlayerView
@@ -558,7 +559,7 @@ class MainActivity :
 
         checkIfAppIsRunningInBackground()
 
-        if (preferences.getBoolean(castToRiTuneDeviceEnabledKey, false)) {
+        if (preferences.getEnum(castTypeKey, CastType.RITUNECAST) == CastType.RITUNECAST) {
             //registerNsdService()
             discoverNsdServices(
                 onServiceFound = { devices ->

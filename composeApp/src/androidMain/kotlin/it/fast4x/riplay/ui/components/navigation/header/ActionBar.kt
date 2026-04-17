@@ -48,10 +48,12 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.window.PopupProperties
+import it.fast4x.riplay.BuildConfig
 import it.fast4x.riplay.LocalRiTuneSheetState
 import it.fast4x.riplay.cast.CastButton
 import it.fast4x.riplay.cast.CastHelper
-import it.fast4x.riplay.extensions.preferences.castToRiTuneDeviceEnabledKey
+import it.fast4x.riplay.enums.CastType
+import it.fast4x.riplay.extensions.preferences.castTypeKey
 import it.fast4x.riplay.utils.GlobalSharedData
 import it.fast4x.riplay.utils.getRoundnessShape
 import it.fast4x.riplay.utils.typography
@@ -396,19 +398,21 @@ fun ActionBar(
     var expanded by remember { mutableStateOf(false) }
     val sheet = LocalGlobalSheetState.current
 
-     // todo cast to complete
-    var castToRiTuneDeviceEnabled by rememberPreference(castToRiTuneDeviceEnabledKey, false )
-    val showCastScreen = LocalRiTuneSheetState.current
-    if (castToRiTuneDeviceEnabled)
-        HeaderIcon(if (GlobalSharedData.riTuneCastActive) R.drawable.cast_connected else R.drawable.cast_disconnected, tint = colorPalette().accent) {
+    var castType by rememberPreference(castTypeKey, CastType.RITUNECAST )
+    if (castType == CastType.RITUNECAST) {
+        val showCastScreen = LocalRiTuneSheetState.current
+        HeaderIcon(
+            if (GlobalSharedData.riTuneCastActive) R.drawable.cast_connected else R.drawable.cast_disconnected,
+            tint = colorPalette().accent
+        ) {
             showCastScreen.expandSoft()
         }
+    }
 
-// TODO dev chromecast for full variant
-//    Timber.d("CastHelper.isCastAvailable = ${CastHelper.isCastAvailable}")
-//    if (CastHelper.isCastAvailable) {
-//        CastButton()
-//    }
+    if (CastHelper.isCastAvailable && castType !in listOf(CastType.NONE, CastType.RITUNECAST)) {
+        CastButton()
+    }
+
 
     /* todo maybe nor right place
     val equalizer = LocalPlayerServiceBinder.current?.equalizer

@@ -43,8 +43,6 @@ class MainApplication : MultiDexApplication(), ImageLoaderFactory {
 
         Dependencies.init(this)
 
-        CastHelper.init(this)
-
         /***** CRASH LOG ALWAYS ENABLED *****/
         val dir = filesDir.resolve("logs").also {
             if (it.exists()) return@also

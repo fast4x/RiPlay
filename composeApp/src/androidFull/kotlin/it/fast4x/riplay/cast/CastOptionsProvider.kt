@@ -10,8 +10,15 @@ import it.fast4x.riplay.utils.SecureConfig
 import it.fast4x.riplay.utils.appContext
 
 class CastOptionsProvider : OptionsProvider {
+//    override fun getCastOptions(appContext: Context): CastOptions {
+//        val youTubeReceiverAppId = SecureConfig.getApiKey(appContext().resources.getString(R.string.RiPlay_CHROMECAST_APPLICATION_ID))
+//        return CastOptions.Builder()
+//            .setReceiverApplicationId(youTubeReceiverAppId)
+//            .build()
+//    }
+
     override fun getCastOptions(context: Context): CastOptions {
-        val youTubeReceiverAppId = SecureConfig.getApiKey(appContext().resources.getString(R.string.RiPlay_CHROMECAST_APPLICATION_ID)) // yt default "CC1AD845"
+        val youTubeReceiverAppId = SecureConfig.getApiKey(appContext().resources.getString(R.string.RiPlay_CHROMECAST_APPLICATION_ID))
         return CastOptions.Builder()
             .setReceiverApplicationId(youTubeReceiverAppId)
             .setCastMediaOptions(
@@ -25,9 +32,7 @@ class CastOptionsProvider : OptionsProvider {
             )
             .setStopReceiverApplicationWhenEndingSession(true)
             .build()
-//        return CastOptions.Builder()
-//            .setReceiverApplicationId("CC1AD845") // YouTube Receiver ID
-//            .build()
     }
+
     override fun getAdditionalSessionProviders(context: Context) = null
 }

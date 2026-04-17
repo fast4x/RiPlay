@@ -1310,4 +1310,9 @@
     <string name="lyrics_word_by_word">Word by word</string>
     <string name="lyrics_line_by_line">Line by line</string>
     <string name="lyrics_fulltext">Full text</string>
+    <string name="chrome_cast">Chromecast</string>
+    <string name="chrome_cast_info">Cast to Chromecast devices, require compatible devices</string>
+    <string name="cast_type">Cast type</string>
+    <string name="none_info">Cast disabled</string>
+    <string name="app_must_be_restarted_to_apply_changes">App must be restarted to apply changes</string>
 </resources>

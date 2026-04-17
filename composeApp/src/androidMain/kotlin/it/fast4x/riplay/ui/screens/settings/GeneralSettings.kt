@@ -143,10 +143,11 @@ import androidx.core.net.toUri
 import androidx.core.text.isDigitsOnly
 import it.fast4x.riplay.BuildConfig
 import it.fast4x.riplay.data.Database
+import it.fast4x.riplay.enums.CastType
 import it.fast4x.riplay.enums.CheckUpdateState
 import it.fast4x.riplay.enums.ContentType
 import it.fast4x.riplay.enums.EqualizerType
-import it.fast4x.riplay.extensions.preferences.castToRiTuneDeviceEnabledKey
+import it.fast4x.riplay.extensions.preferences.castTypeKey
 import it.fast4x.riplay.extensions.preferences.checkUpdateStateKey
 import it.fast4x.riplay.extensions.preferences.closePlayerServiceAfterMinutesKey
 import it.fast4x.riplay.extensions.preferences.closePlayerServiceWhenPausedAfterMinutesKey
@@ -177,6 +178,7 @@ import it.fast4x.riplay.ui.components.themed.settingsItem
 import it.fast4x.riplay.ui.components.themed.settingsSearchBarItem
 import it.fast4x.riplay.utils.CheckForNewVersion
 import it.fast4x.riplay.utils.LazyListContainer
+import it.fast4x.riplay.utils.restartApp
 import kotlinx.coroutines.flow.distinctUntilChanged
 
 
@@ -359,7 +361,9 @@ fun GeneralSettings(
     //var checkVolumeLevel by rememberPreference(checkVolumeLevelKey, true)
     var parentalControlEnabled by rememberPreference(parentalControlEnabledKey, false)
 
-    var castToRiTuneDeviceEnabled by rememberPreference(castToRiTuneDeviceEnabledKey, false )
+    //var castToRiTuneDeviceEnabled by rememberPreference(castToRiTuneDeviceEnabledKey, false )
+
+    var castType by rememberPreference(castTypeKey, CastType.RITUNECAST)
 
     var disableAudioDRC by rememberPreference(disableAudioDRCKey, false)
 
@@ -1709,14 +1713,30 @@ fun GeneralSettings(
                             true
                         )
                     )
-                        SwitchSettingEntry(
-                            title = stringResource(R.string.enable_ritune_cast),
-                            text = stringResource(R.string.ritune_cast_info),
-                            isChecked = castToRiTuneDeviceEnabled,
-                            onCheckedChange = {
-                                castToRiTuneDeviceEnabled = it
-                            }
-                        )
+//                        SwitchSettingEntry(
+//                            title = stringResource(R.string.enable_ritune_cast),
+//                            text = stringResource(R.string.ritune_cast_info),
+//                            isChecked = castToRiTuneDeviceEnabled,
+//                            onCheckedChange = {
+//                                castToRiTuneDeviceEnabled = it
+//                            }
+//                        )
+
+                    EnumValueSelectorSettingsEntry(
+                        title = stringResource(R.string.cast_type),
+                        selectedValue = castType,
+                        onValueSelected = {
+                            castType = it
+                            restartActivity = true
+                        },
+                        valueText = {
+                            context.resources.getString(it.title)
+                        }
+                    )
+                    RestartActivity(
+                        restartActivity,
+                        onRestart = { restartActivity = false })
+
                 }
 
 
