@@ -65,14 +65,14 @@ jobs:
           echo "$KEYSTORE_BASE64" | base64 -d > ${{ runner.temp }}/keystore/RiPlayKeystore.jks
           chmod 600 ${{ runner.temp }}/keystore/RiPlayKeystore.jks
 
-      - name: Build Release APK - Full Flavor
+      - name: Build Release APK -  Flavor
         env:
           SIGNING_KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
           SIGNING_KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
           SIGNING_STORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
           SIGNING_STORE_FILE: ${{ runner.temp }}/keystore/RiPlayKeystore.jks
         run: |
-          ./gradlew :composeApp:assembleFullRelease -PBUILD_VARIANT=full
+          ./gradlew :composeApp:assembleRelease -PBUILD_VARIANT=
 
       - name: Build Release APK - FOSS Flavor
         env:
@@ -135,7 +135,7 @@ jobs:
             echo ""
             echo "### 📦 Downloads"
             echo "- **Full Flavor** (All features)"
-            echo "- **FOSS Flavor** (Open source only)"
+            echo "- **FOSS Flavor** (All features less chromecast and check for updates)"
             echo ""
             echo "### ✨ Build Information"
             echo "- **Build Date**: ${RELEASE_DATE}"
