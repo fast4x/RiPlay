@@ -157,8 +157,8 @@ android {
         applicationId = "it.fast4x.riplay"
         minSdk = 24
         targetSdk = 36
-        versionCode = 75
-        versionName = "0.7.75"
+        versionCode = 74
+        versionName = "0.7.74"
 
         multiDexEnabled = true
 
@@ -454,7 +454,7 @@ android {
         create("full") {
             isDefault = true
             dimension = "version"
-            buildConfigField("String", "BUILD_VARIANT", "\"full\"")
+            //buildConfigField("String", "BUILD_VARIANT", "\"full\"")
             resValue("string", "RiPlay_CHROMECAST_APPLICATION_ID", propertyOrEmpty("RiPlay_CHROMECAST_APPLICATION_ID"))
             /*
             resValue("string", "AudioTagInfo_API_KEY", propertyOrEmpty("AudioTagInfo_API_KEY"))
@@ -476,7 +476,7 @@ android {
         create("foss") {
             dimension = "version"
             //manifestPlaceholders["appName"] = "RiPlay"
-            buildConfigField("String", "BUILD_VARIANT", "\"foss\"")
+            //buildConfigField("String", "BUILD_VARIANT", "\"foss\"")
             resValue("string", "RiPlay_CHROMECAST_APPLICATION_ID", "\"\"")
         }
     }

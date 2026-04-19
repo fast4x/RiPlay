@@ -1315,4 +1315,8 @@
     <string name="cast_type">Cast type</string>
     <string name="none_info">Cast disabled</string>
     <string name="app_must_be_restarted_to_apply_changes">App must be restarted to apply changes</string>
+    <string name="update_downloading">Downloading...</string>
+    <string name="update_download_and_install">Download and install</string>
+    <string name="update_later">Later</string>
+    <string name="update_error">Update error</string>
 </resources>

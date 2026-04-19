@@ -170,6 +170,7 @@ import it.fast4x.riplay.extensions.preferences.showPinnedAAKey
 import it.fast4x.riplay.extensions.preferences.showPodcastAAKey
 import it.fast4x.riplay.extensions.preferences.showShuffleSongsAAKey
 import it.fast4x.riplay.extensions.preferences.showTopSongsAAKey
+import it.fast4x.riplay.extensions.updater.UpdateDialog
 import it.fast4x.riplay.services.playback.PlayerMediaBrowserService
 import it.fast4x.riplay.services.helpers.AudioDRCHelper
 import it.fast4x.riplay.ui.components.themed.ConfirmationDialog
@@ -485,7 +486,7 @@ fun GeneralSettings(
                     search.SearchBar(this)
                 }
 
-                if (BuildConfig.BUILD_VARIANT == "full") {
+                if (BuildConfig.FLAVOR == "full") {
                     settingsItem(
                         isHeader = true
                     ) {
@@ -495,17 +496,18 @@ fun GeneralSettings(
                     settingsItem {
                         var checkUpdateNow by remember { mutableStateOf(false) }
                         if (checkUpdateNow) {
-                            CheckForNewVersion(
-                                onDismiss = { checkUpdateNow = false },
-                                onNoUpdateAvailable = {
-                                        SmartMessage(
-                                            context.resources.getString(R.string.info_no_update_available),
-                                            type = PopupType.Info,
-                                            context = context
-                                        )
-                                },
-                                onClose = { checkUpdateNow = false }
-                            )
+                            UpdateDialog()
+//                            CheckForNewVersion(
+//                                onDismiss = { checkUpdateNow = false },
+//                                onNoUpdateAvailable = {
+//                                        SmartMessage(
+//                                            context.resources.getString(R.string.info_no_update_available),
+//                                            type = PopupType.Info,
+//                                            context = context
+//                                        )
+//                                },
+//                                onClose = { checkUpdateNow = false }
+//                            )
                         }
 
                         EnumValueSelectorSettingsEntry(
@@ -516,7 +518,7 @@ fun GeneralSettings(
                                 when (it) {
                                     CheckUpdateState.Disabled -> stringResource(R.string.vt_disabled)
                                     CheckUpdateState.Enabled -> stringResource(R.string.enabled)
-                                    CheckUpdateState.Ask -> stringResource(R.string.ask)
+                                    //CheckUpdateState.Ask -> stringResource(R.string.ask)
                                 }
 
                             }

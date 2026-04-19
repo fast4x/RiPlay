@@ -69,5 +69,5 @@ fun CheckForNewVersion(
 
 
 fun getUpdateDownloadUrl(updatedVersionName: String): String {
-    return "https://github.com/fast4x/RiPlay/releases/download/v$updatedVersionName/RiPlay-${BuildConfig.BUILD_VARIANT}-release-$updatedVersionName.apk"
+    return "https://github.com/fast4x/RiPlay/releases/download/v$updatedVersionName/RiPlay-${BuildConfig.FLAVOR}-release-$updatedVersionName.apk"
 }

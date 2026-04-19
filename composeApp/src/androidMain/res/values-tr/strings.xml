@@ -948,7 +948,7 @@
     <string name="restore_from_other_backup">Diğer yedeklemelerden geri yükle</string>
     <string name="import_the_database_be_carefull">Veritabanını diğer yedeklemelerden içe aktarın. Dikkatli olun, uygulamayı yeniden yüklemeniz gerekebilir.</string>
     <string name="enable_fullscreen">Tam ekran modunu etkinleştir</string>
-    <string name="enable_fullscreen_info">Tam ekran sistem çubuklarını gizle</string>
+    <string name="enable_fullscreen_info">Fullscreen hide system bars</string>
     <string name="invalid_token">Geçersiz token</string>
     <string name="unknown_title">Bilinmeyen başlık</string>
     <string name="unknown_artist">Bilinmeyen sanatçı</string>
@@ -1313,4 +1313,8 @@
     <string name="cast_type">Cast type</string>
     <string name="none_info">Cast disabled</string>
     <string name="app_must_be_restarted_to_apply_changes">App must be restarted to apply changes</string>
+    <string name="update_downloading">Downloading...</string>
+    <string name="update_download_and_install">Download and install</string>
+    <string name="update_later">Later</string>
+    <string name="update_error">Update error</string>
 </resources>

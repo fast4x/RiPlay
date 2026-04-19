@@ -43,6 +43,7 @@ import it.fast4x.riplay.extensions.preferences.indexNavigationTabKey
 import it.fast4x.riplay.extensions.preferences.preferences
 import it.fast4x.riplay.extensions.preferences.rememberObservedPreference
 import it.fast4x.riplay.extensions.preferences.rememberPreference
+import it.fast4x.riplay.extensions.updater.UpdateDialog
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -259,7 +260,12 @@ fun HomeScreen(
     }
 
 
-    if(BuildConfig.BUILD_VARIANT == "full") {
+    if (BuildConfig.FLAVOR == "full" && checkUpdateState == CheckUpdateState.Enabled) {
+        UpdateDialog()
+    }
+
+    /*
+    if(BuildConfig.FLAVOR == "full") {
 
         if (showNewversionDialog && checkUpdateState == CheckUpdateState.Enabled)
             CheckForNewVersion(
@@ -282,6 +288,7 @@ fun HomeScreen(
                 onConfirm = { checkUpdateState = CheckUpdateState.Enabled },
             )
     }
+    */
 
     // Exit app when user uses back
     val context = LocalContext.current

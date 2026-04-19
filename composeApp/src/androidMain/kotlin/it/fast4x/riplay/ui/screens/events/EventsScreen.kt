@@ -63,10 +63,11 @@ fun EventsScreen() {
     val buttonsList = mutableListOf(
         EventType.NewArtistsRelease to EventType.NewArtistsRelease.textName,
         EventType.AutoBackup to EventType.AutoBackup.textName
-    ).apply {
-        if(BuildConfig.BUILD_VARIANT == "full")
-            add(EventType.CheckUpdate to EventType.CheckUpdate.textName)
-    }
+    )
+//        .apply {
+//        if(BuildConfig.FLAVOR == "full")
+//            add(EventType.CheckUpdate to EventType.CheckUpdate.textName)
+//    }
     var eventType by remember { mutableStateOf(EventType.NewArtistsRelease) }
 
     val workInfoNewRelease by context.getWorkStatusFlow(workNameNewRelease).collectAsState(initial = null)

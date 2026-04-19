@@ -948,7 +948,7 @@
     <string name="restore_from_other_backup">Aus anderen Sicherungen wiederherstellen</string>
     <string name="import_the_database_be_carefull">Importieren Sie die Datenbank aus einem anderen Backup. Seien Sie vorsichtig, Sie müssen die App möglicherweise neu installieren.</string>
     <string name="enable_fullscreen">Vollbildmodus aktivieren</string>
-    <string name="enable_fullscreen_info">Systemleisten im Vollbild verstecken</string>
+    <string name="enable_fullscreen_info">Fullscreen hide system bars</string>
     <string name="invalid_token">Token ungültig</string>
     <string name="unknown_title">Unbekannter Titel</string>
     <string name="unknown_artist">Unbekannter Künstler</string>
@@ -1316,4 +1316,8 @@ Mach dich bereit, deine unvergesslichsten musikalischen Momente noch einmal zu e
     <string name="cast_type">Cast type</string>
     <string name="none_info">Cast disabled</string>
     <string name="app_must_be_restarted_to_apply_changes">App must be restarted to apply changes</string>
+    <string name="update_downloading">Downloading...</string>
+    <string name="update_download_and_install">Download and install</string>
+    <string name="update_later">Later</string>
+    <string name="update_error">Update error</string>
 </resources>

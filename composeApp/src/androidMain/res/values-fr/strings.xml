@@ -951,7 +951,7 @@ Volume BAS : titre précédent</string>
     <string name="restore_from_other_backup">Restaurer à partir d\'une autre sauvegarde</string>
     <string name="import_the_database_be_carefull">Importer la base de données à partir d\'une autre sauvegarde. Attention ! Vous devrez peut-être réinstaller l\'application.</string>
     <string name="enable_fullscreen">Activer le mode plein écran</string>
-    <string name="enable_fullscreen_info">Masquer les barres système en mode plein écran</string>
+    <string name="enable_fullscreen_info">Fullscreen hide system bars</string>
     <string name="invalid_token">Symbole invalide</string>
     <string name="unknown_title">Titre inconnu</string>
     <string name="unknown_artist">Artiste inconnu</string>
@@ -1316,4 +1316,8 @@ Volume BAS : titre précédent</string>
     <string name="cast_type">Cast type</string>
     <string name="none_info">Cast disabled</string>
     <string name="app_must_be_restarted_to_apply_changes">App must be restarted to apply changes</string>
+    <string name="update_downloading">Downloading...</string>
+    <string name="update_download_and_install">Download and install</string>
+    <string name="update_later">Later</string>
+    <string name="update_error">Update error</string>
 </resources>

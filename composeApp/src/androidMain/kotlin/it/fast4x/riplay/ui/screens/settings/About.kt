@@ -70,7 +70,7 @@ fun About() {
                 .fillMaxSize()
         ) {
             BasicText(
-                text = "RiPlay ${BuildConfig.VERSION_NAME} (${BuildConfig.BUILD_VARIANT}) by fast4x",
+                text = "RiPlay ${BuildConfig.VERSION_NAME} (${BuildConfig.FLAVOR}) by fast4x",
                 style = typography().s.secondary,
 
                 )
@@ -108,7 +108,7 @@ fun About() {
             }
         )
 
-        if (BuildConfig.BUILD_VARIANT == "full")
+        if (BuildConfig.FLAVOR == "full")
             SettingsEntry(
                 title = stringResource(R.string.social_github),
                 text = stringResource(R.string.download_latest_version_from_github_you_will_find_the_file_in_the_notification_area_and_you_can_install_by_clicking_on_it),

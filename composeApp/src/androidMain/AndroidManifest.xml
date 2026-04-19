@@ -46,6 +46,9 @@
     <uses-permission android:name="android.permission.CHANGE_WIFI_MULTICAST_STATE"/>
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PROJECTION"/>
 
+    <!-- Required to auto install update in the full flavor, removed in foss flavour-->
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+
     <!-- Required to resume playback after received call, alternative to audioFocus issue in webview -->
     <!-- <uses-permission android:name="android.permission.READ_PHONE_STATE" /> -->
 
@@ -250,7 +253,7 @@
 
         <provider
             android:name="androidx.core.content.FileProvider"
-            android:authorities="${applicationId}.fileprovider"
+            android:authorities="${applicationId}.provider"
             android:exported="false"
             android:grantUriPermissions="true">
             <meta-data
