@@ -47,7 +47,6 @@ import it.fast4x.riplay.extensions.preferences.preferences
 import it.fast4x.riplay.extensions.preferences.showOnDevicePlaylistKey
 import it.fast4x.riplay.ui.components.themed.SmartMessage
 import it.fast4x.riplay.utils.LOCAL_KEY_PREFIX
-import it.fast4x.riplay.utils.appContext
 import it.fast4x.riplay.utils.isAtLeastAndroid13
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.currentCoroutineContext
@@ -70,8 +69,6 @@ class OnDeviceViewModel(application: Application) : AndroidViewModel(application
         throw IllegalArgumentException("Unknown ViewModel class")
     }
 
-        private val context = getApplication<Application>().applicationContext
-
         var sortOrder: SortOrder = SortOrder.Descending
         var sortBy: OnDeviceSongSortBy = OnDeviceSongSortBy.DateAdded
 
@@ -81,14 +78,14 @@ class OnDeviceViewModel(application: Application) : AndroidViewModel(application
         private var _audioFolders = MutableStateFlow<List<String>>(emptyList())
         val audioFolders: StateFlow<List<String>> = _audioFolders.asStateFlow()
 
-        private val contentResolver: ContentResolver = context.contentResolver
+        private val contentResolver: ContentResolver = application.applicationContext.contentResolver
 
         private val contentObserver = object : ContentObserver(null) {
             override fun onChange(selfChange: Boolean, uri: Uri?) {
                 // Called when change some data in device storage, example of uri. Must be checked if exists to understand if removed or added
                 // example of uri content://media/external/audio/media/1000037024
                 Timber.d("OnDeviceViewModel onChange called with uri $uri and selfChange $selfChange")
-                removeObsoleteOndeviceMusic(context)
+                removeObsoleteOndeviceMusic(application.applicationContext)
                 loadAudioFiles()
             }
         }
@@ -109,16 +106,18 @@ class OnDeviceViewModel(application: Application) : AndroidViewModel(application
 
         @SuppressLint("Range")
         fun loadAudioFiles() {
-            if (!context.preferences.getBoolean(showOnDevicePlaylistKey, true)) return
+            val showOndevice = application.applicationContext.preferences.getBoolean(showOnDevicePlaylistKey, true)
+            Timber.d("OnDeviceViewModel loadAudioFiles called showOndevice $showOndevice")
+            if (!showOndevice) return
 
             val hasPermission = ContextCompat
-                .checkSelfPermission(appContext(),
+                .checkSelfPermission(application.applicationContext,
                     if (isAtLeastAndroid13) Manifest.permission.READ_MEDIA_AUDIO
                         else Manifest.permission.READ_EXTERNAL_STORAGE
                 ) == PackageManager.PERMISSION_GRANTED
             if (!hasPermission) {
-                SmartMessage(appContext().resources.getString(R.string.media_permission_required_please_grant),
-                    PopupType.Error, durationLong = true, context = appContext())
+                SmartMessage(application.applicationContext.resources.getString(R.string.media_permission_required_please_grant),
+                    PopupType.Error, durationLong = true, context = application.applicationContext)
                 return
             }
 
