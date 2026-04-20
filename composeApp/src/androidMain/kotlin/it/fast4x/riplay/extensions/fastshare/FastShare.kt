@@ -95,6 +95,8 @@ fun FastShare(
     var urlToShare by remember { mutableStateOf("") }
 
     LaunchedEffect(Unit, typeOfUrl) {
+        urlToShare = getShareUrl(content, typeOfUrl).toString()
+        /*
         urlToShare = when (typeOfUrl) {
             LinkType.Main -> {
                 when (content) {
@@ -125,6 +127,8 @@ fun FastShare(
             }
 
         }.toString()
+
+         */
     }
 
     if (urlToShare == "") return

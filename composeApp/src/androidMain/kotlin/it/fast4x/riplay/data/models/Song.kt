@@ -11,6 +11,7 @@ import it.fast4x.riplay.commonutils.cleanPrefix
 import it.fast4x.riplay.commonutils.durationTextToMillis
 import it.fast4x.riplay.commonutils.setDisLikeState
 import it.fast4x.riplay.commonutils.setLikeState
+import it.fast4x.riplay.enums.LinkType
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -31,6 +32,13 @@ data class Song(
     val isPodcast: Int = 0,
     val folder: String? = null,
 ) {
+
+    fun shareUrlByType(typeOfUrl: LinkType): String? {
+        return when(typeOfUrl) {
+            LinkType.Main -> this.shareYTUrl
+            LinkType.Alternative -> this.shareYTMUrl
+        }
+    }
 
     val shareYTUrl: String?
         get() = if(!id.startsWith(LOCAL_KEY_PREFIX))
