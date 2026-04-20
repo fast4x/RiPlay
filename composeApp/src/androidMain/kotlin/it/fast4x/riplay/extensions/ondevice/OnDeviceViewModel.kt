@@ -116,8 +116,8 @@ class OnDeviceViewModel(application: Application) : AndroidViewModel(application
                         else Manifest.permission.READ_EXTERNAL_STORAGE
                 ) == PackageManager.PERMISSION_GRANTED
             if (!hasPermission) {
-                SmartMessage(application.applicationContext.resources.getString(R.string.media_permission_required_please_grant),
-                    PopupType.Error, durationLong = true, context = application.applicationContext)
+//                SmartMessage(application.applicationContext.resources.getString(R.string.media_permission_required_please_grant),
+//                    PopupType.Error, durationLong = true, context = application.applicationContext)
                 return
             }
 
