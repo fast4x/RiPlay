@@ -425,7 +425,7 @@ class PlayerService : Service(),
     override fun onCreate() {
         super.onCreate()
 
-        createNotificationChannel()
+        createNotificationChannels()
         startForeground(loading = true)
 
         //connectivityManager = getSystemService()
@@ -617,7 +617,7 @@ class PlayerService : Service(),
 
             val notification = if (loading) {
                 NotificationCompat
-                    .Builder(this@PlayerService, NOTIFICATION_CHANNEL_ID)
+                    .Builder(this@PlayerService, SLEEPTIMER_NOTIFICATION_CHANNEL_ID)
                     .setContentTitle(resources.getString(R.string.loading_please_wait))
                     .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                     .setAutoCancel(true)
@@ -2503,7 +2503,7 @@ class PlayerService : Service(),
 
         val currentMediaItem = binder.player.currentMediaItem
 
-        createNotificationChannel()
+        createNotificationChannels()
 
         val forwardAction = NotificationCompat.Action.Builder(
             R.drawable.play_skip_forward,
@@ -2602,7 +2602,7 @@ class PlayerService : Service(),
 
     }
 
-    private fun createNotificationChannel() {
+    private fun createNotificationChannels() {
         if (!isAtLeastAndroid8) return
 
         notificationManager = getSystemService(NotificationManager::class.java)
