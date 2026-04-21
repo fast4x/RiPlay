@@ -1214,7 +1214,7 @@ fun Queue(
                     )
 
 
-                    if (showButtonPlayerArrow) {
+                    //if (showButtonPlayerArrow) {
                         Spacer(
                             modifier = Modifier
                                 .width(12.dp)
@@ -1227,7 +1227,7 @@ fun Queue(
                                 .padding(horizontal = 4.dp)
                                 .size(24.dp)
                         )
-                    }
+                    //}
 
 
                 }

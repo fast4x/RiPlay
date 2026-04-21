@@ -1553,7 +1553,7 @@ fun UnifiedPlayer(
                         !showButtonPlayerLyrics &&
                         !showButtonPlayerSleepTimer &&
                         !showButtonPlayerSystemEqualizer &&
-                        !showButtonPlayerArrow &&
+                        //!showButtonPlayerArrow &&
                         !showButtonPlayerMenu &&
                         !showButtonPlayerStartRadio &&
                         !expandedplayertoggle &&
@@ -2092,9 +2092,9 @@ fun UnifiedPlayer(
                                         .size(24.dp),
                                 )
 
-                            if (showButtonPlayerArrow)
+                            //if (showButtonPlayerArrow)
                                 IconButton(
-                                    icon = R.drawable.chevron_up,
+                                    icon = R.drawable.list,
                                     color = colorPalette().accent,
                                     enabled = true,
                                     onClick = {

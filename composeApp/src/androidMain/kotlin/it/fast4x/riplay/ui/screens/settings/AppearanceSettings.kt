@@ -2417,6 +2417,7 @@ fun AppearanceSettings(
                                     onCheckedChange = { showButtonPlayerSystemEqualizer = it }
                                 )
 
+                            /*
                             if (search.input.isBlank() || stringResource(R.string.action_bar_show_arrow_button_to_open_queue).contains(
                                     search.input,
                                     true
@@ -2428,6 +2429,7 @@ fun AppearanceSettings(
                                     isChecked = showButtonPlayerArrow,
                                     onCheckedChange = { showButtonPlayerArrow = it }
                                 )
+                            */
 
                             if (search.input.isBlank() || stringResource(R.string.action_bar_show_start_radio_button).contains(
                                     search.input,
