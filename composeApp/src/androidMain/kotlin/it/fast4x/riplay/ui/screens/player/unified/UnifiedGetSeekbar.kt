@@ -64,11 +64,13 @@ import it.fast4x.riplay.utils.PlayerViewModelFactory
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.utils.formatAsDuration
 import it.fast4x.riplay.utils.isCompositionLaunched
+import it.fast4x.riplay.utils.isLocal
 import it.fast4x.riplay.utils.typography
 import kotlinx.coroutines.delay
 import org.jetbrains.compose.resources.painterResource
 import riplay.composeapp.generated.resources.Res
 import riplay.composeapp.generated.resources.play
+import timber.log.Timber
 
 @OptIn(UnstableApi::class)
 @Composable
@@ -320,7 +322,9 @@ fun UnifiedGetSeekBar(
                     interactionSource = remember { MutableInteractionSource() },
                     indication = ripple(false),
                     onClick = {
-                        onSeekTo(( position - 5).toFloat())
+                        val skippedPosition = 5000
+                        Timber.d("UnifiedGetSeekbar fast seek position $position skippedPosition $skippedPosition")
+                        onSeekTo(( position - 5000).toFloat())
                     }
                 )
         ){
@@ -436,7 +440,7 @@ fun UnifiedGetSeekBar(
                             interactionSource = remember { MutableInteractionSource() },
                             indication = ripple(false),
                             onClick = {
-                                onSeekTo(( position + 5).toFloat())
+                                onSeekTo(( position + 5000).toFloat())
                             }
                         )
                 ){
