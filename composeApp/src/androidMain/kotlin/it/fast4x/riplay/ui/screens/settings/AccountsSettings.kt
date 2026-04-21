@@ -157,8 +157,10 @@ fun AccountsSettings() {
         )
         var accountThumbnail by rememberPreference(key = ytAccountThumbnailKey, defaultValue = "")
         var isLoggedIn = remember(cookie) {
-            "SAPISID" in parseCookieString(cookie)
+            "SID" in parseCookieString(cookie) ||
+                    "LOGIN_INFO" in parseCookieString(cookie)
         }
+
 
 
 
@@ -207,7 +209,7 @@ fun AccountsSettings() {
                                 title = if (isLoggedIn) stringResource(R.string.disconnect) else stringResource(
                                     R.string.connect
                                 ),
-                                text = "",
+                                text = stringResource(R.string.login_connect_or_disconnect_your_account),
                                 icon = R.drawable.internet,
                                 iconColor = colorPalette().text,
                                 onClick = {
@@ -227,18 +229,28 @@ fun AccountsSettings() {
                                 }
                             )
 
-                            if (isLoggedIn)
+                            if (isLoggedIn) {
+                                ButtonBarSettingEntry(
+                                    isEnabled = true,
+                                    title = stringResource(R.string.login_switch_account),
+                                    text = stringResource(R.string.login_info_you_can_switch_to_another_account_without_completely_disconnecting),
+                                    icon = R.drawable.switch_user,
+                                    iconColor = colorPalette().text,
+                                    onClick = {
+                                        loginYouTube = true
+                                    }
+                                )
+
                                 ButtonBarSettingEntry(
                                     isEnabled = true,
                                     title = stringResource(R.string.account_info),
-                                    text = "",
+                                    text = stringResource(R.string.login_info_you_can_quickly_check_which_account_you_are_connected_to),
                                     icon = R.drawable.person,
                                     iconColor = colorPalette().text,
                                     onClick = {
                                         if (accountThumbnail == "" || accountName == "" || accountEmail == "")
                                             GlobalScope.launch {
                                                 Environment.accountInfo().onSuccess {
-                                                    println("YoutubeLogin doUpdateVisitedHistory accountInfo() $it")
                                                     accountName = it?.name.orEmpty()
                                                     accountEmail = it?.email.orEmpty()
                                                     accountChannelHandle =
@@ -246,12 +258,21 @@ fun AccountsSettings() {
                                                     accountThumbnail = it?.thumbnailUrl.orEmpty()
                                                 }.onFailure {
                                                     Timber.e("Error YoutubeLogin: $it.stackTraceToString()")
-                                                    println("Error YoutubeLogin: ${it.stackTraceToString()}")
                                                 }
                                             }
                                         showUserInfoDialog = true
                                     }
                                 )
+
+                                SwitchSettingEntry(
+                                    title = stringResource(R.string.sync_data_with_ytm_account),
+                                    text = stringResource(R.string.sync_data_playlists_albums_artists_history_like_etc),
+                                    isChecked = isYouTubeSyncEnabled,
+                                    onCheckedChange = {
+                                        isYouTubeSyncEnabled = it
+                                    }
+                                )
+                            }
 
 
                             CustomModalBottomSheet(
@@ -272,6 +293,8 @@ fun AccountsSettings() {
                                 },
                                 shape = thumbnailRoundness.shape()
                             ) {
+                                YouTubeLogin(onLogin = {})
+                                /*
                                 YouTubeLogin(
                                     onLogin = { cookieRetrieved ->
                                         cookie = cookieRetrieved
@@ -288,20 +311,13 @@ fun AccountsSettings() {
 
                                     }
                                 )
+                                 */
                             }
 
                         }
 
                     }
 
-                SwitchSettingEntry(
-                    title = stringResource(R.string.sync_data_with_ytm_account),
-                    text = stringResource(R.string.sync_data_playlists_albums_artists_history_like_etc),
-                    isChecked = isYouTubeSyncEnabled,
-                    onCheckedChange = {
-                        isYouTubeSyncEnabled = it
-                    }
-                )
 
             }
         }

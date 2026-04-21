@@ -105,10 +105,17 @@ infix operator fun <T : Environment.Item> Environment.ItemsPage<T>?.plus(other: 
 fun parseCookieString(cookie: String): Map<String, String> =
     cookie.split("; ")
         .filter { it.isNotEmpty() }
-        .associate {
-            val (key, value) = it.split("=")
-            key to value
+        .mapNotNull {
+            val regex = "(.*?)=(.*)".toRegex()
+            val matchResult = regex.find(it)
+            if (matchResult != null && matchResult.groupValues.size >= 3) {
+                matchResult.groupValues[1] to matchResult.groupValues[2]
+            } else {
+                null
+            }
         }
+        .toMap()
+
 
 fun ByteArray.toHex(): String = joinToString(separator = "") { eachByte -> "%02x".format(eachByte) }
 fun sha1(str: String): String = MessageDigest.getInstance("SHA-1").digest(str.toByteArray()).toHex()
