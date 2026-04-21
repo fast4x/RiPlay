@@ -242,7 +242,6 @@ import it.fast4x.riplay.cast.ritune.models.toRiTuneDevice
 import it.fast4x.riplay.cast.ritune.RiTuneCastSelector
 import it.fast4x.riplay.enums.CastType
 import it.fast4x.riplay.extensions.preferences.castTypeKey
-import it.fast4x.riplay.extensions.updater.UpdateDialog
 import it.fast4x.riplay.services.playback.PlayerState
 import it.fast4x.riplay.ui.components.Snowfall
 import it.fast4x.riplay.ui.screens.player.unified.components.core.UnifiedPlayerView

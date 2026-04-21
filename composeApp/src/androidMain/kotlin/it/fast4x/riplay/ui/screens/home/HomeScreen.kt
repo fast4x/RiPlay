@@ -31,9 +31,7 @@ import it.fast4x.riplay.enums.HomeScreenTabs
 import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.data.models.toUiMood
 import it.fast4x.riplay.enums.HomePagetype
-import it.fast4x.riplay.ui.components.themed.ConfirmationDialog
 import it.fast4x.riplay.ui.components.themed.SmartMessage
-import it.fast4x.riplay.utils.CheckForNewVersion
 import it.fast4x.riplay.extensions.preferences.checkUpdateStateKey
 import it.fast4x.riplay.extensions.preferences.enableMusicIdentifierKey
 import it.fast4x.riplay.extensions.preferences.getEnum
@@ -52,7 +50,6 @@ import it.fast4x.riplay.ui.components.ScreenContainer
 import it.fast4x.riplay.ui.screens.home.homepages.HomePage
 import it.fast4x.riplay.ui.screens.home.homepages.HomePageExtended
 import kotlinx.serialization.ExperimentalSerializationApi
-import timber.log.Timber
 import kotlin.system.exitProcess
 
 
@@ -260,8 +257,8 @@ fun HomeScreen(
     }
 
 
-    if (BuildConfig.FLAVOR == "full" && checkUpdateState == CheckUpdateState.Enabled) {
-        UpdateDialog()
+    if (BuildConfig.FLAVOR == "full" && showNewversionDialog && checkUpdateState == CheckUpdateState.Enabled) {
+        UpdateDialog(onClose = { showNewversionDialog = false })
     }
 
     /*

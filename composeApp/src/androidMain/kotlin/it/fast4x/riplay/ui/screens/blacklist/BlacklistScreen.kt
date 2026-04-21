@@ -12,15 +12,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
-import it.fast4x.riplay.extensions.persist.PersistMapCleanup
-import it.fast4x.riplay.R
-import it.fast4x.riplay.extensions.preferences.disableScrollingTextKey
-import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.ui.components.PageContainer
-import it.fast4x.riplay.ui.components.ScreenContainer
-import it.fast4x.riplay.ui.components.SimpleScreenContainer
-import it.fast4x.riplay.ui.screens.artist.ArtistOverview
-import it.fast4x.riplay.ui.screens.history.HistoryList
 
 @ExperimentalMaterialApi
 @ExperimentalTextApi
@@ -35,7 +27,6 @@ fun BlacklistScreen(
 ) {
 
     PageContainer(
-        modifier = Modifier,
         navController = navController,
         miniPlayer = miniPlayer,
     ) {

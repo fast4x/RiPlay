@@ -33,7 +33,6 @@ fun ArtistScreen(
     val disableScrollingText by rememberPreference(disableScrollingTextKey, false)
 
     PageContainer(
-        modifier = Modifier,
         navController = navController,
         miniPlayer = miniPlayer,
     ) {

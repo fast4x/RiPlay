@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -17,9 +16,13 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import it.fast4x.riplay.R
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.utils.typography
+import timber.log.Timber
 
 @Composable
-fun UpdateDialog(viewModel: UpdateViewModel = viewModel()) {
+fun UpdateDialog(
+    viewModel: UpdateViewModel = viewModel(),
+    onClose: () -> Unit,
+) {
     val state by viewModel.updateState.collectAsState()
     val context = LocalContext.current
     var showDialog by remember { mutableStateOf(true) }
@@ -108,6 +111,7 @@ fun UpdateDialog(viewModel: UpdateViewModel = viewModel()) {
                         TextButton(
                             onClick = {
                             showDialog = false
+                            onClose()
                         }) {
                             Text(stringResource(R.string.update_later),
                                 fontStyle = typography().xs.fontStyle,
@@ -146,6 +150,8 @@ fun UpdateDialog(viewModel: UpdateViewModel = viewModel()) {
         }
 
         state.errorMessage != null -> {
+            Timber.e(state.errorMessage)
+            /*
             AlertDialog(
                 onDismissRequest = { },
                 containerColor = colorPalette().background1,
@@ -160,6 +166,7 @@ fun UpdateDialog(viewModel: UpdateViewModel = viewModel()) {
                     }
                 }
             )
+             */
         }
     }
 }

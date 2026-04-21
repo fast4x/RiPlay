@@ -168,7 +168,6 @@ fun AlbumDetails(
     navController: NavController,
     browseId: String,
     albumPage: AlbumPage?,
-    headerContent: @Composable (textButton: (@Composable () -> Unit)?) -> Unit,
     thumbnailContent: @Composable () -> Unit,
     onSearchClick: () -> Unit,
     onSettingsClick: () -> Unit
@@ -182,30 +181,10 @@ fun AlbumDetails(
     val selectedQueue = LocalSelectedQueue.current
     var songs by persistList<Song>("album/$browseId/songs")
     var album by persist<Album?>("album/$browseId")
-    //val albumPage by persist<Innertube.PlaylistOrAlbumPage?>("album/$browseId/albumPage")
     val parentalControlEnabled by rememberPreference(parentalControlEnabledKey, false)
     val disableScrollingText by rememberPreference(disableScrollingTextKey, false)
-    var songPlaylist by remember {
-        mutableIntStateOf(0)
-    }
-    var playlistsList by remember { mutableStateOf<List<Database.PlayListIdPosition>?>(null) }
-    var songExists by remember { mutableStateOf(false) }
-    var likedAt by remember {
-        mutableStateOf<Long?>(null)
-    }
-    var playTime by remember {
-        mutableStateOf<Long?>(null)
-    }
 
     LoaderScreen(show = songs.isEmpty())
-
-    data class AlbumSongsState(
-        val song : Song,
-        val likedAt : Long? = null,
-        val playtime : Long? = null,
-        val songExists : Boolean = false,
-        val playlistsList : List<Database.PlayListIdPosition>? = emptyList(),
-    )
 
     fun update() {
         if(!isNetworkConnected(context)) {
@@ -214,23 +193,6 @@ fun AlbumDetails(
         runBlocking(Dispatchers.IO) {
             withContext(Dispatchers.IO) {
                 Database.asyncTransaction {
-                    //todo maybe not needed
-//                    val albumSongsStateList = mutableListOf<AlbumSongsState>()
-//                    songs.forEach { song ->
-//                        CoroutineScope(Dispatchers.IO).launch {
-//                            Database.songUsedInPlaylistsAsFlow(song.id)
-//                                .collect { songPlaylist = it }
-//                        }
-//                        if (songPlaylist > 0) songExists = true
-//                        playlistsList = Database.playlistsUsedForSong(song.id)
-//                        likedAt = song.likedAt
-//                        playTime = song.totalPlayTimeMs
-//                        binder?.cache?.removeResource(song.id)
-//                        val songState =
-//                            AlbumSongsState(song, likedAt, playTime, songExists, playlistsList)
-//                        albumSongsStateList.add(songState)
-//                        Database.delete(song)
-//                    }
 
                     Database.upsert(
                         Album(
@@ -257,35 +219,6 @@ fun AlbumDetails(
                                 )
                             } ?: emptyList()
                     )
-
-                    //todo maybe not needed
-                    /*
-                    albumSongsStateList.forEach { albumSongsState ->
-                        if ((albumSongsState.songExists || albumSongsState.likedAt != null || albumSongsState.playtime != null)
-                            && songExist(albumSongsState.song.id) == 0
-                        ) {
-                            insert(albumSongsState.song)
-                        }
-                        if (albumSongsState.songExists) {
-                            albumSongsState.playlistsList?.forEach { item ->
-                                insert(
-                                    SongPlaylistMap(
-                                        songId = albumSongsState.song.id,
-                                        playlistId = item.playlistId,
-                                        position = item.position
-                                    ).default()
-                                )
-                            }
-                        }
-                        if (albumSongsState.likedAt != null) {
-                            Database.like(albumSongsState.song.id, albumSongsState.likedAt)
-                        }
-                        Database.incrementTotalPlayTimeMs(
-                            albumSongsState.song.id,
-                            albumSongsState.playtime ?: 0
-                        )
-                    }
-                    */
                 }
             }
         }
@@ -315,34 +248,12 @@ fun AlbumDetails(
         Database.album(browseId).collect { album = it }
     }
 
-    /*
-    val playlistPreviews by remember {
-        Database.playlistPreviews(PlaylistSortBy.Name, SortOrder.Ascending)
-    }.collectAsState(initial = emptyList(), context = Dispatchers.IO)
-
-    var showPlaylistSelectDialog by remember {
-        mutableStateOf(false)
-    }
-     */
-
-    var showConfirmDeleteDownloadDialog by remember {
-        mutableStateOf(false)
-    }
-
-    var showConfirmDownloadAllDialog by remember {
-        mutableStateOf(false)
-    }
-
     val thumbnailSizeDp = Dimensions.thumbnails.song
     val thumbnailAlbumSizeDp = Dimensions.thumbnails.album
 
     val thumbnailAlbumSizePx = thumbnailAlbumSizeDp.px
 
     val lazyListState = rememberLazyListState()
-
-    var downloadState by remember {
-        mutableStateOf(Download.STATE_STOPPED)
-    }
 
     var listMediaItems = remember {
         mutableListOf<MediaItem>()
@@ -356,15 +267,6 @@ fun AlbumDetails(
         mutableStateOf(false)
     }
 
-    /*
-    var showAddPlaylistSelectDialog by remember {
-        mutableStateOf(false)
-    }
-     */
-
-    var showSelectCustomizeAlbumDialog by remember {
-        mutableStateOf(false)
-    }
     var showDialogChangeAlbumTitle by remember {
         mutableStateOf(false)
     }
@@ -530,9 +432,7 @@ fun AlbumDetails(
                     .background(
                         colorPalette().background0
                     )
-                    //.fillMaxSize()
                     .fillMaxHeight()
-                    //.fillMaxWidth(if (navigationBarPosition == NavigationBarPosition.Left) 1f else contentWidth)
                     .fillMaxWidth()
             ) {
 
@@ -541,8 +441,6 @@ fun AlbumDetails(
                 ) {
                     LazyColumn(
                         state = lazyListState,
-                        //contentPadding = LocalPlayerAwareWindowInsets.current
-                        //    .only(WindowInsetsSides.Vertical + WindowInsetsSides.End).asPaddingValues(),
                         modifier = Modifier
                             .background(
                                 colorPalette().background0
@@ -621,20 +519,6 @@ fun AlbumDetails(
                                             .padding(top = 5.dp, end = 5.dp),
                                         onClick = {
                                             showFastShare = true
-//                                        album?.shareYTUrl?.let { url ->
-//                                            val sendIntent = Intent().apply {
-//                                                action = Intent.ACTION_SEND
-//                                                type = "text/plain"
-//                                                putExtra(Intent.EXTRA_TEXT, url)
-//                                            }
-//
-//                                            context.startActivity(
-//                                                Intent.createChooser(
-//                                                    sendIntent,
-//                                                    null
-//                                                )
-//                                            )
-//                                        }
                                         }
                                     )
 
@@ -675,7 +559,6 @@ fun AlbumDetails(
                                                 style = typography().xs.medium,
                                                 maxLines = 1,
                                                 modifier = Modifier
-                                                //.padding(top = 10.dp)
 
                                             )
                                         }
@@ -693,7 +576,6 @@ fun AlbumDetails(
                                     horizontalArrangement = Arrangement.Center,
                                     verticalAlignment = Alignment.CenterVertically,
                                     modifier = Modifier
-                                        //.padding(top = 10.dp)
                                         .fillMaxWidth()
                                 ) {
                                     BasicText(
@@ -717,7 +599,6 @@ fun AlbumDetails(
                                     .padding(top = 10.dp)
                                     .fillMaxWidth()
                             ) {
-                                //headerContent {
                                 HeaderIconButton(
                                     icon = if (album?.bookmarkedAt == null) {
                                         R.drawable.bookmark_outline
@@ -1136,42 +1017,11 @@ fun AlbumDetails(
                                     }
                                 )
 
-//                        BasicText(
-//                            text = stringResource(R.string.information),
-//                            style = typography().m.semiBold.align(TextAlign.Start),
-//                            modifier = sectionTextModifier
-//                                .fillMaxWidth()
-//                        )
-
                                 Row(
                                     modifier = Modifier
-                                        //.padding(top = 16.dp)
                                         .padding(vertical = 16.dp, horizontal = 8.dp)
-                                    //.padding(endPaddingValues)
-                                    //.padding(end = Dimensions.bottomSpacer)
                                 ) {
-//                            IconButton(
-//                                icon = R.drawable.translate,
-//                                color = if (translateEnabled == true) colorPalette()
-//                                    .text else colorPalette()
-//                                    .textDisabled,
-//                                enabled = true,
-//                                onClick = {},
-//                                modifier = Modifier
-//                                    .padding(all = 8.dp)
-//                                    .size(18.dp)
-//                                    .combinedClickable(
-//                                        onClick = {
-//                                            translateEnabled = !translateEnabled
-//                                        },
-//                                        onLongClick = {
-//                                            SmartMessage(
-//                                                context.resources.getString(R.string.info_translation),
-//                                                context = context
-//                                            )
-//                                        }
-//                                    )
-//                            )
+
                                     BasicText(
                                         text = "“",
                                         style = typography().xxl.semiBold,
@@ -1256,7 +1106,6 @@ fun AlbumDetails(
                                         modifier = Modifier
                                             .padding(horizontal = 16.dp)
                                             .padding(bottom = 16.dp)
-                                        //.padding(endPaddingValues)
                                     )
                                 }
 
@@ -1277,7 +1126,6 @@ fun AlbumDetails(
                             items = songs,
                             key = { _, song -> song.id }
                         ) { index, song ->
-                            //val isLocal by remember { derivedStateOf { song.asMediaItem.isLocal } }
 
                             SwipeablePlaylistItem(
                                 mediaItem = song.asMediaItem,
@@ -1292,21 +1140,10 @@ fun AlbumDetails(
                                 }
                             ) {
                                 val checkedState = rememberSaveable { mutableStateOf(false) }
-                                //var forceRecompose by remember { mutableStateOf(false) }
                                 SongItem(
                                     mediaItem = song.asMediaItem,
                                     thumbnailSizeDp = thumbnailSizeDp,
                                     thumbnailContent = {
-                                        /*
-                            AsyncImage(
-                                model = song.thumbnailUrl,
-                                contentDescription = null,
-                                contentScale = ContentScale.Crop,
-                                modifier = Modifier
-                                    .clip(LocalAppearance.current.thumbnailShape)
-                                    .fillMaxSize()
-                            )
-                             */
                                         BasicText(
                                             text = "${index + 1}",
                                             style = typography().s.semiBold.center.color(
@@ -1333,7 +1170,6 @@ fun AlbumDetails(
                                                         navController = navController,
                                                         onDismiss = {
                                                             menuState.hide()
-                                                            //forceRecompose = true
                                                         },
                                                         mediaItem = song.asMediaItem,
                                                         onInfo = {
@@ -1387,10 +1223,6 @@ fun AlbumDetails(
                                             )
                                         else checkedState.value = false
                                     },
-                                    //isLocal = isLocal,
-                                    //disableScrollingText = disableScrollingText,
-                                    //isNowPlaying = binder?.player?.isNowPlaying(song.id) ?: false,
-                                    //forceRecompose = forceRecompose
                                 )
                             }
                         }
@@ -1450,9 +1282,6 @@ fun AlbumDetails(
                                 }
                             )
 
-                            /**********/
-
-                            /**********/
                         }
 
                         item(key = "bottom") {
@@ -1502,23 +1331,6 @@ fun AlbumDetails(
                         onClickSettings = onSettingsClick,
                         onClickSearch = onSearchClick
                     )
-
-                /*
-            FloatingActionsContainerWithScrollToTop(
-                lazyListState = lazyListState,
-                iconId = R.drawable.shuffle,
-                onClick = {
-                    if (songs.isNotEmpty()) {
-                        binder?.stopRadio()
-                        binder?.player?.forcePlayFromBeginning(
-                            songs.shuffled().map(Song::asMediaItem)
-                        )
-                    }
-                }
-            )
-
-             */
-
 
             }
         }

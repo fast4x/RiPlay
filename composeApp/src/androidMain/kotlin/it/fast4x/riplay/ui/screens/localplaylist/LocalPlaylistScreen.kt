@@ -23,12 +23,10 @@ import it.fast4x.riplay.ui.components.PageContainer
 fun LocalPlaylistScreen(
     navController: NavController,
     playlistId: Long,
-    modifier: Modifier = Modifier,
     miniPlayer: @Composable () -> Unit = {}
 ) {
 
     PageContainer(
-        modifier = modifier,
         navController = navController,
         miniPlayer = miniPlayer,
     ) {

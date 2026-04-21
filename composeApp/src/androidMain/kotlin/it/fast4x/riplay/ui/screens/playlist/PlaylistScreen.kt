@@ -30,7 +30,6 @@ fun PlaylistScreen(
 ) {
 
     PageContainer(
-        modifier = Modifier,
         navController = navController,
         miniPlayer = miniPlayer,
     ) {

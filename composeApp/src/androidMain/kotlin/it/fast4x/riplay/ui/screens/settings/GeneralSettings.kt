@@ -177,9 +177,7 @@ import it.fast4x.riplay.ui.components.themed.ConfirmationDialog
 import it.fast4x.riplay.ui.components.themed.SecondaryTextButton
 import it.fast4x.riplay.ui.components.themed.settingsItem
 import it.fast4x.riplay.ui.components.themed.settingsSearchBarItem
-import it.fast4x.riplay.utils.CheckForNewVersion
 import it.fast4x.riplay.utils.LazyListContainer
-import it.fast4x.riplay.utils.restartApp
 import kotlinx.coroutines.flow.distinctUntilChanged
 
 
@@ -496,7 +494,7 @@ fun GeneralSettings(
                     settingsItem {
                         var checkUpdateNow by remember { mutableStateOf(false) }
                         if (checkUpdateNow) {
-                            UpdateDialog()
+                            UpdateDialog(onClose = { checkUpdateNow = false })
 //                            CheckForNewVersion(
 //                                onDismiss = { checkUpdateNow = false },
 //                                onNoUpdateAvailable = {
