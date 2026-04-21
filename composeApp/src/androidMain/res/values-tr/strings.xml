@@ -46,7 +46,7 @@
     <string name="search_lyrics_online">Şarkı sözlerini çevrimiçi ara</string>
     <string name="fetch_lyrics_again">Şarkı sözlerini yeniden indir</string>
     <string name="id">Kimlik</string>
-    <string name="itag"></string>
+    <string name="itag">Itag</string>
     <string name="bitrate">Bit hızı</string>
     <string name="size">Boyut</string>
     <string name="cached">Önbellektekiler</string>
@@ -1317,4 +1317,9 @@
     <string name="update_download_and_install">Download and install</string>
     <string name="update_later">Later</string>
     <string name="update_error">Update error</string>
+    <string name="login_select_your_preferred_account_or_profile_and_click_here_to_confirm_access">Select your preferred account or profile and click here to confirm access</string>
+    <string name="login_connect_or_disconnect_your_account">Connect or disconnect your account</string>
+    <string name="login_switch_account">Switch account</string>
+    <string name="login_info_you_can_switch_to_another_account_without_completely_disconnecting">You can switch to another account without completely disconnecting</string>
+    <string name="login_info_you_can_quickly_check_which_account_you_are_connected_to">You can quickly check which account you are connected to</string>
 </resources>
