@@ -207,10 +207,10 @@ fun GeneralSettings(
         DurationInMinutes.Disabled
     )
 
-    var closePlayerWhenPausedAfterMinutes by rememberPreference(
-        closePlayerServiceWhenPausedAfterMinutesKey,
-        DurationInMinutes.Disabled
-    )
+//    var closePlayerWhenPausedAfterMinutes by rememberPreference(
+//        closePlayerServiceWhenPausedAfterMinutesKey,
+//        DurationInMinutes.Disabled
+//    )
 
     var closeWithBackButton by rememberPreference(closeWithBackButtonKey, true)
     var resumeOrPausePlaybackWhenDevice by rememberPreference(
@@ -815,6 +815,7 @@ fun GeneralSettings(
                                 }
                             )
 
+                        /*
                             EnumValueSelectorSettingsEntry(
                                 title = stringResource(R.string.when_player_is_paused),
                                 selectedValue = closePlayerWhenPausedAfterMinutes,
@@ -842,8 +843,7 @@ fun GeneralSettings(
                                     }
                                 }
                             )
-
-
+                            */
                     }
                 }
 

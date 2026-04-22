@@ -288,7 +288,7 @@ class PlayerService : Service(),
 
     //private var isclosebackgroundPlayerEnabled = false
     private var closeServiceAfterMinutes by mutableStateOf(DurationInMinutes.Disabled)
-    private var closeServiceWhenPlayerPausedAfterMinutes by mutableStateOf(DurationInMinutes.Disabled)
+    //private var closeServiceWhenPlayerPausedAfterMinutes by mutableStateOf(DurationInMinutes.Disabled)
 
     private var isShowingThumbnailInLockscreen = true
     private var medleyDuration by mutableFloatStateOf(0f)
@@ -660,9 +660,10 @@ class PlayerService : Service(),
         //isclosebackgroundPlayerEnabled = preferences.getBoolean(closebackgroundPlayerKey, false)
         closeServiceAfterMinutes =
             preferences.getEnum(closePlayerServiceAfterMinutesKey, DurationInMinutes.Disabled)
-        closeServiceWhenPlayerPausedAfterMinutes = preferences.getEnum(
-            closePlayerServiceWhenPausedAfterMinutesKey, DurationInMinutes.Disabled
-        )
+
+//        closeServiceWhenPlayerPausedAfterMinutes = preferences.getEnum(
+//            closePlayerServiceWhenPausedAfterMinutesKey, DurationInMinutes.Disabled
+//        )
     }
 
     private fun initializePlaybackParameters() {
@@ -1176,6 +1177,7 @@ class PlayerService : Service(),
                     else -> {}
                 }
 
+                /*
                 if (closeServiceWhenPlayerPausedAfterMinutes != DurationInMinutes.Disabled) {
                     if (state != PlayerConstants.PlayerState.PLAYING && closingTimerStarted == false) {
                         Timber.d("PlayerService closingTimer started")
@@ -1188,6 +1190,7 @@ class PlayerService : Service(),
                         closingTimerStarted = false
                     }
                 }
+                 */
 
                 isPlayingNow = state == PlayerConstants.PlayerState.PLAYING
                 updateUnifiedNotification()
@@ -2349,6 +2352,7 @@ class PlayerService : Service(),
             _playerState.value = currentState.copy(playbackState = PlaybackState.PAUSED)
         }
 
+        /*
         if (closeServiceWhenPlayerPausedAfterMinutes != DurationInMinutes.Disabled) {
             if (!isPlaying && closingTimerStarted == false) {
                 Timber.d("PlayerService closingTimer started")
@@ -2361,6 +2365,7 @@ class PlayerService : Service(),
                 closingTimerStarted = false
             }
         }
+         */
 
         isPlayingNow = isPlaying
         val fadeDisabled = preferences.getEnum(playbackFadeAudioDurationKey, DurationInMilliseconds.Disabled) == DurationInMilliseconds.Disabled
@@ -2417,11 +2422,13 @@ class PlayerService : Service(),
                     sharedPreferences.getEnum(key,
                         DurationInMinutes.Disabled)
             }
+            /*
             closePlayerServiceWhenPausedAfterMinutesKey -> {
                 closeServiceWhenPlayerPausedAfterMinutes =
                     sharedPreferences.getEnum(key,
                         DurationInMinutes.Disabled)
             }
+             */
             isShowingThumbnailInLockscreenKey -> {
                 isShowingThumbnailInLockscreen = sharedPreferences.getBoolean(key, true)
                 initializeSongCoverInLockScreen()
