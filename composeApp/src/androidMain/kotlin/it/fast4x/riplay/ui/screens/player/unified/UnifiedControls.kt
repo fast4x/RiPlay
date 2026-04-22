@@ -39,6 +39,7 @@ import it.fast4x.riplay.extensions.preferences.playerPlayButtonTypeKey
 import it.fast4x.riplay.extensions.preferences.playerSwapControlsWithTimelineKey
 import it.fast4x.riplay.extensions.preferences.playerTimelineSizeKey
 import it.fast4x.riplay.extensions.preferences.playerTypeKey
+import it.fast4x.riplay.extensions.preferences.rememberObservedPreference
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.extensions.preferences.showlyricsthumbnailKey
 import it.fast4x.riplay.extensions.preferences.showthumbnailKey
@@ -113,7 +114,7 @@ fun UnifiedControls(
         true
     )
     var playerControlsType by rememberPreference(playerControlsTypeKey, PlayerControlsType.Essential)
-    var playerPlayButtonType by rememberPreference(playerPlayButtonTypeKey, PlayerPlayButtonType.Disabled)
+    var playerPlayButtonType by rememberObservedPreference(playerPlayButtonTypeKey, PlayerPlayButtonType.Disabled)
     var showthumbnail by rememberPreference(showthumbnailKey, true)
     var playerType by rememberPreference(playerTypeKey, PlayerType.Modern)
     val expandedlandscape = (isLandscape && playerType == PlayerType.Modern) || (expandedplayer && !showthumbnail)

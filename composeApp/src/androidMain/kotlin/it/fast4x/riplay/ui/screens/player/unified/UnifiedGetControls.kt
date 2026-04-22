@@ -21,6 +21,7 @@ import it.fast4x.riplay.extensions.preferences.playbackSpeedKey
 import it.fast4x.riplay.extensions.preferences.playerBackgroundColorsKey
 import it.fast4x.riplay.extensions.preferences.playerControlsTypeKey
 import it.fast4x.riplay.extensions.preferences.playerPlayButtonTypeKey
+import it.fast4x.riplay.extensions.preferences.rememberObservedPreference
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.services.playback.PlayerState
 import it.fast4x.riplay.ui.components.themed.PlaybackParamsDialog
@@ -45,7 +46,7 @@ fun UnifiedGetControls(
         playerControlsTypeKey,
         PlayerControlsType.Essential
     )
-    val playerPlayButtonType by rememberPreference(
+    val playerPlayButtonType by rememberObservedPreference(
         playerPlayButtonTypeKey,
         PlayerPlayButtonType.Disabled
     )
