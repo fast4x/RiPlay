@@ -61,8 +61,9 @@ val MediaItem.isLocal get() = mediaId.startsWith(LOCAL_KEY_PREFIX)
 val Song.isLocal get() = id.startsWith(LOCAL_KEY_PREFIX)
 val String.isLocal get() = this.startsWith(LOCAL_KEY_PREFIX)
 
-var GlobalVolume: Float = 0.5f
+//var GlobalVolume: Float = 0.5f
 
+/*
 fun Player.restoreGlobalVolume() {
     CoroutineScope(Dispatchers.Main).launch {
         volume = GlobalVolume
@@ -76,6 +77,8 @@ fun Player.setGlobalVolume(v: Float) {
 fun Player.getGlobalVolume(): Float {
     return GlobalVolume
 }
+
+ */
 
 fun Player.isNowPlaying(mediaId: String): Boolean {
     return mediaId == currentMediaItem?.mediaId
@@ -132,7 +135,7 @@ fun Player.forcePlay(mediaItem: MediaItem, replace: Boolean = false) {
     else
         replaceMediaItem(currentMediaItemIndex, mediaItem)
 
-    restoreGlobalVolume()
+    //restoreGlobalVolume()
     playWhenReady = true
     prepare()
     Timber.d("PlayerService-forcePlay withReplace $replace mediaItem: ${mediaItem.mediaId} currentMediaItemIndex: $currentMediaItemIndex shuffleModeEnabled $shuffleModeEnabled repeatMode $repeatMode")
@@ -143,7 +146,7 @@ fun Player.playAtIndex(mediaItemIndex: Int) {
 
     seekToDefaultPosition(mediaItemIndex)
 
-    restoreGlobalVolume()
+    //restoreGlobalVolume()
     playWhenReady = true
     prepare()
 
@@ -155,7 +158,7 @@ fun Player.forcePlayAtIndex(mediaItems: List<MediaItem>, mediaItemIndex: Int) {
     val filteredMediaItems = mediaItems
     setMediaItems(filteredMediaItems, mediaItemIndex, C.TIME_UNSET)
 
-    restoreGlobalVolume()
+    //restoreGlobalVolume()
     playWhenReady = true
     prepare()
 }
@@ -178,16 +181,16 @@ fun Player.forceSeekToNext() {
 
 fun Player.playNext() {
     forceSeekToNext()
-    CoroutineScope(Dispatchers.Main).launch {
-        restoreGlobalVolume()
-    }
+//    CoroutineScope(Dispatchers.Main).launch {
+//        restoreGlobalVolume()
+//    }
 }
 
 fun Player.playPrevious() {
     forceSeekToPrevious()
-    CoroutineScope(Dispatchers.Main).launch {
-        restoreGlobalVolume()
-    }
+//    CoroutineScope(Dispatchers.Main).launch {
+//        restoreGlobalVolume()
+//    }
 }
 
 @UnstableApi

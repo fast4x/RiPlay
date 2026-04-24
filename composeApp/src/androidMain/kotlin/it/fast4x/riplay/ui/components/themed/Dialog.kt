@@ -130,7 +130,6 @@ import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.utils.resize
 import it.fast4x.riplay.ui.styling.semiBold
 import it.fast4x.riplay.utils.setDeviceVolume
-import it.fast4x.riplay.utils.setGlobalVolume
 import it.fast4x.riplay.extensions.preferences.showCoverThumbnailAnimationKey
 import it.fast4x.riplay.extensions.preferences.thumbnailFadeKey
 import it.fast4x.riplay.extensions.preferences.thumbnailRoundnessKey
@@ -3205,7 +3204,7 @@ fun PlaybackParamsDialog(
                     onClick = {
                         playbackVolume = 0.5f
                         binder?.player?.volume = playbackVolume
-                        binder?.player?.setGlobalVolume(playbackVolume)
+                        //binder?.player?.setGlobalVolume(playbackVolume)
                     },
                     icon = R.drawable.volume_up,
                     color = colorPalette().favoritesIcon,
@@ -3218,7 +3217,7 @@ fun PlaybackParamsDialog(
                     onSlide = {
                         playbackVolume = it
                         binder?.player?.volume = playbackVolume
-                        binder?.player?.setGlobalVolume(playbackVolume)
+                        //binder?.player?.setGlobalVolume(playbackVolume)
                     },
                     onSlideComplete = {},
                     toDisplay = { "%.1f".format(playbackVolume) },
