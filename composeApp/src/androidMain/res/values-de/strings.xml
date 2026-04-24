@@ -948,7 +948,7 @@
     <string name="restore_from_other_backup">Aus anderen Sicherungen wiederherstellen</string>
     <string name="import_the_database_be_carefull">Importieren Sie die Datenbank aus einem anderen Backup. Seien Sie vorsichtig, Sie müssen die App möglicherweise neu installieren.</string>
     <string name="enable_fullscreen">Vollbildmodus aktivieren</string>
-    <string name="enable_fullscreen_info">Fullscreen hide system bars</string>
+    <string name="enable_fullscreen_info">Systemleisten im Vollbild verstecken</string>
     <string name="invalid_token">Token ungültig</string>
     <string name="unknown_title">Unbekannter Titel</string>
     <string name="unknown_artist">Unbekannter Künstler</string>
