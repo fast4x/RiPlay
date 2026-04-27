@@ -181,5 +181,5 @@ RiPlay wouldn't be possible without the amazing work of these projects and contr
 ---
 
 <div align="center">
-  <i>Made with ❤️ by the RiPlay community</i>
+  <i>Made with ❤️ by [Fast4x](https://github.com/fast4x)</i>
 </div>
