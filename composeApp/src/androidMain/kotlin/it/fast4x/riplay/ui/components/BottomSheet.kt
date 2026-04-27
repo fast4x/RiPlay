@@ -30,6 +30,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.util.VelocityTracker
 import androidx.compose.ui.input.pointer.util.addPointerInputChange
@@ -53,8 +54,33 @@ fun BottomSheet(
     contentAlwaysAvailable: Boolean = false,
     content: @Composable BoxScope.() -> Unit,
 ) {
+    val nestedScrollConnection = remember(state) {
+        object : NestedScrollConnection {
+            override fun onPostScroll(
+                consumed: Offset,
+                available: Offset,
+                source: NestedScrollSource
+            ): Offset {
+                if (available.y > 0 && !disableVerticalDrag && !disableDismiss) {
+                    state.dispatchRawDelta(-available.y)
+                    return available
+                }
+                return Offset.Zero
+            }
+
+            override suspend fun onPostFling(consumed: Velocity, available: Velocity): Velocity {
+                if (available.y > 0 && !disableVerticalDrag) {
+                    state.performFling(-available.y, if (!disableDismiss) onDismiss else null)
+                    return available
+                }
+                return Velocity.Zero
+            }
+        }
+    }
+
     Box(
         modifier = modifier
+            .nestedScroll(state.preUpPostDownNestedScrollConnection)
             .offset {
                 val y = (state.expandedBound - state.value)
                     .roundToPx()

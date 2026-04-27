@@ -113,6 +113,7 @@ fun AlbumScreen(
     }
 
     var album by persist<Album?>("album/$browseId/album")
+    /*
     var albumPage by persist<AlbumPage?>("album/$browseId/albumPage")
 
     LaunchedEffect(Unit) {
@@ -166,6 +167,7 @@ fun AlbumScreen(
             }
 
     }
+    */
 
     val thumbnailContent =
         adaptiveThumbnailContent(
@@ -185,14 +187,15 @@ fun AlbumScreen(
         AlbumDetails(
             navController = navController,
             browseId = browseId,
-            albumPage = albumPage,
+            //albumPage = albumPage,
             thumbnailContent = thumbnailContent,
             onSearchClick = {
                 navController.navigate(NavRoutes.search.name)
             },
             onSettingsClick = {
                 navController.navigate(NavRoutes.settings.name)
-            }
+            },
+            onNavigateTo = {}
         )
     }
 

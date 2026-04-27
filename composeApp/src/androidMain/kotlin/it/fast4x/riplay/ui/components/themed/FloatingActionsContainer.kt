@@ -45,6 +45,7 @@ import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.utils.scrollingInfo
 import it.fast4x.riplay.utils.smoothScrollToTop
 import kotlinx.coroutines.launch
+import timber.log.Timber
 
 @ExperimentalMaterial3Api
 @UnstableApi
@@ -170,9 +171,8 @@ fun BoxScope.FloatingActionsContainerWithScrollToTop(
     windowInsets: WindowInsets = LocalPlayerAwareWindowInsets.current
 ) {
     val transitionState = remember {
-        MutableTransitionState<ScrollingInfo?>(ScrollingInfo())
+        MutableTransitionState<ScrollingInfo?>(null)
     }.apply { targetState = if (visible) scrollState.scrollingInfo() else null }
-
 
     FloatingActions(
         transitionState = transitionState,
@@ -283,7 +283,8 @@ fun BoxScope.FloatingActions(
             onClick?.let {
                 transition.AnimatedVisibility(
                     visible = {
-                              true
+                        it != null
+                              //true
                         //it?.isScrollingDown == false
                               },
                     enter = slideInVertically(tween(500, 0)) { it },
@@ -292,7 +293,7 @@ fun BoxScope.FloatingActions(
                     PrimaryButton(
                         iconId = iconId,
                         onClick = onClick,
-                        enabled = true, //transition.targetState?.isScrollingDown == false,
+                        enabled = true,
                         modifier = modifierActions
                     )
                 }

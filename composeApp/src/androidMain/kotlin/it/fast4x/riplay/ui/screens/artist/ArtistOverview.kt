@@ -142,7 +142,8 @@ import kotlin.random.Random
 fun ArtistOverview(
     navController: NavController,
     browseId: String?,
-    disableScrollingText: Boolean
+    disableScrollingText: Boolean,
+    onNavigateTo: () -> Unit
 ) {
 
     if (browseId == null) return
@@ -613,6 +614,9 @@ fun ArtistOverview(
                                         Random(System.currentTimeMillis()).nextInt(0, it.items.size-1)
                                     else 0
                                 ).key
+
+                                onNavigateTo()
+
                                 navController.navigate(route = "${NavRoutes.album.name}/${idItem}")
                             }
                         )
@@ -655,6 +659,7 @@ fun ArtistOverview(
                                                             },
                                                             mediaItem = item.asMediaItem,
                                                             onInfo = {
+                                                                onNavigateTo()
                                                                 navController.navigate("${NavRoutes.videoOrSongInfo.name}/${item.key}")
                                                             },
                                                             disableScrollingText = disableScrollingText,
@@ -732,6 +737,7 @@ fun ArtistOverview(
                                             disableScrollingText = disableScrollingText,
                                             isYoutubeAlbum = albumById?.isYoutubeAlbum == true,
                                             modifier = Modifier.clickable(onClick = {
+                                                onNavigateTo()
                                                 navController.navigate("${NavRoutes.album.name}/${item.key}")
                                             })
 
@@ -753,6 +759,7 @@ fun ArtistOverview(
                                             disableScrollingText = disableScrollingText,
                                             isYoutubeArtist = artistById?.isYoutubeArtist == true,
                                             modifier = Modifier.clickable(onClick = {
+                                                onNavigateTo()
                                                 navController.navigate("${NavRoutes.artist.name}/${item.key}")
                                             })
                                         )
@@ -774,6 +781,7 @@ fun ArtistOverview(
                                             disableScrollingText = disableScrollingText,
                                             isYoutubePlaylist = playlistById?.isYoutubePlaylist == true,
                                             modifier = Modifier.clickable(onClick = {
+                                                onNavigateTo()
                                                 navController.navigate("${NavRoutes.playlist.name}/${item.key}")
                                             })
                                         )
@@ -812,8 +820,14 @@ fun ArtistOverview(
                         binder?.stopRadio()
                         binder?.playRadio(endpoint)
                     },
-                    onClickSettings = { navController.navigate(NavRoutes.search.name) },
-                    onClickSearch = { navController.navigate(NavRoutes.settings.name) }
+                    onClickSettings = {
+                        onNavigateTo()
+                        navController.navigate(NavRoutes.search.name)
+                    },
+                    onClickSearch = {
+                        onNavigateTo()
+                        navController.navigate(NavRoutes.settings.name)
+                    }
                 )
 
             }

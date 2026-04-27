@@ -155,6 +155,7 @@ import it.fast4x.riplay.utils.mediaItemSetLiked
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.ExperimentalSerializationApi
+import timber.log.Timber
 
 @ExperimentalSerializationApi
 @OptIn(ExperimentalMaterial3Api::class)
@@ -167,13 +168,14 @@ import kotlinx.serialization.ExperimentalSerializationApi
 fun AlbumDetails(
     navController: NavController,
     browseId: String,
-    albumPage: AlbumPage?,
+    //albumPage: AlbumPage?,
     thumbnailContent: @Composable () -> Unit,
     onSearchClick: () -> Unit,
-    onSettingsClick: () -> Unit
+    onSettingsClick: () -> Unit,
+    onNavigateTo: () -> Unit
 ) {
 
-    if (albumPage == null) return
+    //if (albumPage == null) return
 
     val binder = LocalPlayerServiceBinder.current
     val menuState = LocalGlobalSheetState.current
@@ -186,6 +188,61 @@ fun AlbumDetails(
 
     LoaderScreen(show = songs.isEmpty())
 
+    var albumPage by persist<AlbumPage?>("album/$browseId/albumPage")
+
+    LaunchedEffect(Unit) {
+        Database
+            .album(browseId).collect { currentAlbum ->
+                println("AlbumScreen collect ${currentAlbum?.title}")
+                album = currentAlbum
+                CoroutineScope(Dispatchers.IO).launch {
+                    if (albumPage == null)
+                        EnvironmentExt.getAlbum(browseId)
+                            .onSuccess { currentAlbumPage ->
+                                albumPage = currentAlbumPage
+
+                                println("AlbumScreen otherVersion ${currentAlbumPage.otherVersions}")
+                                Database.upsert(
+                                    Album(
+                                        id = browseId,
+                                        title = album?.title ?: currentAlbumPage.album.title,
+                                        thumbnailUrl = if (album?.thumbnailUrl?.startsWith(
+                                                MODIFIED_PREFIX
+                                            ) == true
+                                        ) album?.thumbnailUrl else currentAlbumPage.album.thumbnail?.url,
+                                        year = currentAlbumPage.album.year,
+                                        authorsText = if (album?.authorsText?.startsWith(
+                                                MODIFIED_PREFIX
+                                            ) == true
+                                        ) album?.authorsText else currentAlbumPage.album.authors
+                                            ?.joinToString(", ") { it.name ?: "" },
+                                        shareUrl = currentAlbumPage.url,
+                                        timestamp = System.currentTimeMillis(),
+                                        bookmarkedAt = album?.bookmarkedAt,
+                                        isYoutubeAlbum = album?.isYoutubeAlbum == true
+                                    ),
+                                    currentAlbumPage
+                                        .songs.distinct()
+                                        .map(Environment.SongItem::asMediaItem)
+                                        .onEach(Database::insert)
+                                        .mapIndexed { position, mediaItem ->
+                                            SongAlbumMap(
+                                                songId = mediaItem.mediaId,
+                                                albumId = browseId,
+                                                position = position
+                                            )
+                                        }
+                                )
+                            }
+                            .onFailure {
+                                Timber.e("AlbumScreen error ${it.stackTraceToString()}")
+                            }
+                }
+            }
+
+    }
+
+    /*
     fun update() {
         if(!isNetworkConnected(context)) {
             return
@@ -224,6 +281,7 @@ fun AlbumDetails(
         }
     }
 
+
     var refreshing by remember { mutableStateOf(false) }
     val refreshScope = rememberCoroutineScope()
 
@@ -236,6 +294,8 @@ fun AlbumDetails(
             refreshing = false
         }
     }
+
+     */
 
     LaunchedEffect(Unit) {
         Database.albumSongs(browseId).collect {
@@ -423,10 +483,10 @@ fun AlbumDetails(
 
 
     LayoutWithAdaptiveThumbnail(thumbnailContent = thumbnailContent) {
-        PullToRefreshBox(
-            refreshing = refreshing,
-            onRefresh = { refresh() }
-        ) {
+//        PullToRefreshBox(
+//            refreshing = refreshing,
+//            onRefresh = { refresh() }
+//        ) {
             Box(
                 modifier = Modifier
                     .background(
@@ -966,6 +1026,7 @@ fun AlbumDetails(
                                                         }
                                                     },
                                                     onGoToPlaylist = {
+                                                        onNavigateTo()
                                                         navController.navigate("${NavRoutes.localPlaylist.name}/$it")
                                                     },
                                                     onAddToFavourites = {
@@ -1173,6 +1234,7 @@ fun AlbumDetails(
                                                         },
                                                         mediaItem = song.asMediaItem,
                                                         onInfo = {
+                                                            onNavigateTo()
                                                             navController.navigate("${NavRoutes.videoOrSongInfo.name}/${song.id}")
                                                         },
                                                         disableScrollingText = disableScrollingText,
@@ -1250,7 +1312,7 @@ fun AlbumDetails(
                                     ({
                                         Result.success(
                                             Environment.ItemsPage(
-                                                items = albumPage.otherVersions,
+                                                items = albumPage?.otherVersions,
                                                 continuation = null
                                             )
                                         )
@@ -1271,7 +1333,7 @@ fun AlbumDetails(
                                         thumbnailSizeDp = thumbnailAlbumSizeDp,
                                         modifier = Modifier
                                             .clickable {
-                                                //albumRoute(album.key)
+                                                onNavigateTo()
                                                 navController.navigate(route = "${NavRoutes.album.name}/${album.key}")
                                             },
                                         disableScrollingText = disableScrollingText
@@ -1333,7 +1395,7 @@ fun AlbumDetails(
                     )
 
             }
-        }
+        //}
 
 
     }

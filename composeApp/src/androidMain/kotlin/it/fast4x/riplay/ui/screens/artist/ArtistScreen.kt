@@ -39,7 +39,8 @@ fun ArtistScreen(
         ArtistOverview(
             navController = navController,
             browseId = browseId,
-            disableScrollingText = disableScrollingText
+            disableScrollingText = disableScrollingText,
+            onNavigateTo = {}
         )
     }
 
