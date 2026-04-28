@@ -104,82 +104,6 @@ fun AlbumScreen(
     miniPlayer: @Composable () -> Unit = {}
 ) {
 
-    val thumbnailRoundness by rememberPreference(
-        thumbnailRoundnessKey,
-        ThumbnailRoundness.Light
-    )
-    var changeShape by remember {
-        mutableStateOf(false)
-    }
-
-    var album by persist<Album?>("album/$browseId/album")
-    /*
-    var albumPage by persist<AlbumPage?>("album/$browseId/albumPage")
-
-    LaunchedEffect(Unit) {
-        Database
-            .album(browseId).collect { currentAlbum ->
-                println("AlbumScreen collect ${currentAlbum?.title}")
-                album = currentAlbum
-                CoroutineScope(Dispatchers.IO).launch {
-                    if (albumPage == null)
-                        EnvironmentExt.getAlbum(browseId)
-                            .onSuccess { currentAlbumPage ->
-                                albumPage = currentAlbumPage
-
-                                println("AlbumScreen otherVersion ${currentAlbumPage.otherVersions}")
-                                Database.upsert(
-                                    Album(
-                                        id = browseId,
-                                        title = album?.title ?: currentAlbumPage.album.title,
-                                        thumbnailUrl = if (album?.thumbnailUrl?.startsWith(
-                                                MODIFIED_PREFIX
-                                            ) == true
-                                        ) album?.thumbnailUrl else currentAlbumPage.album.thumbnail?.url,
-                                        year = currentAlbumPage.album.year,
-                                        authorsText = if (album?.authorsText?.startsWith(
-                                                MODIFIED_PREFIX
-                                            ) == true
-                                        ) album?.authorsText else currentAlbumPage.album.authors
-                                            ?.joinToString(", ") { it.name ?: "" },
-                                        shareUrl = currentAlbumPage.url,
-                                        timestamp = System.currentTimeMillis(),
-                                        bookmarkedAt = album?.bookmarkedAt,
-                                        isYoutubeAlbum = album?.isYoutubeAlbum == true
-                                    ),
-                                    currentAlbumPage
-                                        .songs.distinct()
-                                        .map(Environment.SongItem::asMediaItem)
-                                        .onEach(Database::insert)
-                                        .mapIndexed { position, mediaItem ->
-                                            SongAlbumMap(
-                                                songId = mediaItem.mediaId,
-                                                albumId = browseId,
-                                                position = position
-                                            )
-                                        }
-                                )
-                            }
-                            .onFailure {
-                                Timber.e("AlbumScreen error ${it.stackTraceToString()}")
-                            }
-                }
-            }
-
-    }
-    */
-
-    val thumbnailContent =
-        adaptiveThumbnailContent(
-            album?.timestamp == null,
-            album?.thumbnailUrl,
-            showIcon = false,
-            onOtherVersionAvailable = {},
-            //shape = thumbnailRoundness.shape()
-            onClick = { changeShape = !changeShape },
-            shape = if (changeShape) CircleShape else thumbnailRoundness.shape(),
-        )
-
     PageContainer(
         navController = navController,
         miniPlayer = miniPlayer,
@@ -187,8 +111,6 @@ fun AlbumScreen(
         AlbumDetails(
             navController = navController,
             browseId = browseId,
-            //albumPage = albumPage,
-            thumbnailContent = thumbnailContent,
             onSearchClick = {
                 navController.navigate(NavRoutes.search.name)
             },

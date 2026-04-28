@@ -254,6 +254,7 @@ fun ArtistOverview(
                                     1200
                                 ),
                                 contentDescription = "loading...",
+                                contentScale = ContentScale.Crop,
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .align(Alignment.Center)

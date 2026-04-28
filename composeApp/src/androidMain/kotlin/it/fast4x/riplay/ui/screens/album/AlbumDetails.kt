@@ -6,6 +6,7 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
@@ -168,14 +169,10 @@ import timber.log.Timber
 fun AlbumDetails(
     navController: NavController,
     browseId: String,
-    //albumPage: AlbumPage?,
-    thumbnailContent: @Composable () -> Unit,
     onSearchClick: () -> Unit,
     onSettingsClick: () -> Unit,
     onNavigateTo: () -> Unit
 ) {
-
-    //if (albumPage == null) return
 
     val binder = LocalPlayerServiceBinder.current
     val menuState = LocalGlobalSheetState.current
@@ -482,7 +479,9 @@ fun AlbumDetails(
     )
 
 
-    LayoutWithAdaptiveThumbnail(thumbnailContent = thumbnailContent) {
+    LayoutWithAdaptiveThumbnail(
+        thumbnailContent = {} //thumbnailContent
+    ) {
 //        PullToRefreshBox(
 //            refreshing = refreshing,
 //            onRefresh = { refresh() }
@@ -522,6 +521,7 @@ fun AlbumDetails(
                                             AsyncImage(
                                                 model = album?.thumbnailUrl?.resize(1200, 1200),
                                                 contentDescription = "loading...",
+                                                contentScale = ContentScale.Crop,
                                                 modifier = Modifier
                                                     .fillMaxWidth()
                                                     .align(Alignment.Center)
