@@ -504,8 +504,8 @@ android {
                 //val outputFileName = "riplay-${variant.baseName}.apk"
                 output.outputFileName = outputFileName
 
-                println("GRADLE Variant: ${variant.name}")
-                println("GRADLE Manifests: ${variant.sourceSets.map { it.manifestFile }}")
+                //println("GRADLE Variant: ${variant.name}")
+                //println("GRADLE Manifests: ${variant.sourceSets.map { it.manifestFile }}")
             }
     }
 
