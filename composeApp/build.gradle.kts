@@ -157,8 +157,8 @@ android {
         applicationId = "it.fast4x.riplay"
         minSdk = 24
         targetSdk = 36
-        versionCode = 76
-        versionName = "0.7.76"
+        versionCode = 75
+        versionName = "0.7.75"
 
         multiDexEnabled = true
 
@@ -481,6 +481,20 @@ android {
         }
     }
 
+    sourceSets {
+        getByName("full") {
+            manifest.srcFile("src/androidFull/AndroidManifest.xml")
+            kotlin.srcDir("src/androidFull/kotlin")
+        }
+        getByName("foss") {
+            manifest.srcFile("src/androidFoss/AndroidManifest.xml")
+            kotlin.srcDir("src/androidFoss/kotlin")
+        }
+        all {
+            kotlin.srcDir("src/$name/kotlin")
+        }
+    }
+
     applicationVariants.all {
         val variant = this
         variant.outputs
@@ -489,12 +503,15 @@ android {
                 val outputFileName = "RiPlay-${output.baseName}-${variant.versionName}.apk"
                 //val outputFileName = "riplay-${variant.baseName}.apk"
                 output.outputFileName = outputFileName
+
+                println("GRADLE Variant: ${variant.name}")
+                println("GRADLE Manifests: ${variant.sourceSets.map { it.manifestFile }}")
             }
     }
 
-    sourceSets.all {
-        kotlin.srcDir("src/$name/kotlin")
-    }
+//    sourceSets.all {
+//        kotlin.srcDir("src/$name/kotlin")
+//    }
 
 
 
