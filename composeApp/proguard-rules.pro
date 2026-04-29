@@ -107,6 +107,17 @@
 -dontwarn org.mozilla.javascript.tools.**
 
 
+# Mantieni WebViewClient e i metodi override
+-keep class * extends android.webkit.WebViewClient {
+    public *;
+}
+
+# Mantieni i metodi annotati con @JavascriptInterface
+-keepclassmembers class * {
+    @android.webkit.JavascriptInterface <methods>;
+}
+
+
 -dontwarn com.google.re2j.Matcher
 -dontwarn com.google.re2j.Pattern
 -dontwarn javax.script.AbstractScriptEngine

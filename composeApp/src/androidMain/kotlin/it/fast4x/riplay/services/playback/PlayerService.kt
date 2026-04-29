@@ -614,22 +614,21 @@ class PlayerService : Service(),
     }
 
     private fun startForeground(loading: Boolean = false) {
-
-            val notification = if (loading) {
-                NotificationCompat
-                    .Builder(this@PlayerService, SLEEPTIMER_NOTIFICATION_CHANNEL_ID)
-                    .setContentTitle(resources.getString(R.string.loading_please_wait))
-                    .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-                    .setAutoCancel(true)
-                    .setOnlyAlertOnce(true)
-                    .setShowWhen(true)
-                    .setSmallIcon(R.drawable.app_icon)
-                    .build()
-            } else {
-                notification()
-            }
-
-        //startForeground(NOTIFICATION_ID,notification())
+        Timber.d("PlayerService startForeground called from: ${Thread.currentThread().stackTrace.joinToString("\n")}")
+        val notification = if (loading) {
+            NotificationCompat
+                .Builder(this@PlayerService, NOTIFICATION_CHANNEL_ID)
+                .setContentTitle(resources.getString(R.string.loading_please_wait))
+                .setPriority(NotificationCompat.PRIORITY_LOW)
+                .setAutoCancel(false)
+                .setOnlyAlertOnce(true)
+                .setShowWhen(false)
+                .setSmallIcon(R.drawable.app_icon)
+                .setSilent(true)
+                .build()
+        } else {
+            notification()
+        }
 
         ServiceCompat.startForeground(
             this,
@@ -641,7 +640,6 @@ class PlayerService : Service(),
                 0
             }
         )
-
     }
 
     private fun initializeVariables() {
@@ -988,6 +986,7 @@ class PlayerService : Service(),
         initializeUnifiedSessionCallback()
 
         unifiedMediaSession.isActive = true
+        unifiedMediaSession.setMediaButtonReceiver(null)
 
     }
 
@@ -1675,8 +1674,6 @@ class PlayerService : Service(),
             handlePlayNext()
         }
 
-        startForeground()
-
         Timber.d("PlayerService onMediaItemTransition mediaItem ${mediaItem.mediaId} reason $reason")
 
         currentQueuePosition = player.currentMediaItemIndex
@@ -1800,17 +1797,21 @@ class PlayerService : Service(),
 
 
     fun updateUnifiedNotification() {
+        Timber.d("PlayerService notify called from: ${Thread.currentThread().stackTrace.joinToString("\n")}")
         serviceScope.launch {
             withContext(Dispatchers.Main){
                 if (player.mediaItemCount <= 0) return@withContext
+
                 updateUnifiedMediasession()
-                val notifyInstance = notification()
-                notifyInstance.let {
-                    @Suppress("MissingPermission")
-                    NotificationManagerCompat
-                        .from(this@PlayerService)
-                        .notify(NOTIFICATION_ID, it)
-                }
+                startForeground()
+
+//                val notifyInstance = notification()
+//                notifyInstance.let {
+//                    @Suppress("MissingPermission")
+//                    NotificationManagerCompat
+//                        .from(this@PlayerService)
+//                        .notify(NOTIFICATION_ID, it)
+//                }
             }
         }
     }
@@ -2603,6 +2604,7 @@ class PlayerService : Service(),
             )
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
             .setCategory(NotificationCompat.CATEGORY_TRANSPORT)
+            .setPriority(NotificationCompat.PRIORITY_LOW)
             .build()
 
         return notification
@@ -2615,12 +2617,27 @@ class PlayerService : Service(),
         notificationManager = getSystemService(NotificationManager::class.java)
 
         notificationManager?.run {
+
+            // Migrazione canale player: elimina se importance errata
+            getNotificationChannel(NOTIFICATION_CHANNEL_ID)?.let { channel ->
+                if (channel.importance == NotificationManager.IMPORTANCE_HIGH) {
+                    deleteNotificationChannel(NOTIFICATION_CHANNEL_ID)
+                }
+            }
+
+            // Migrazione canale sleeptimer: elimina se importance errata
+            getNotificationChannel(SLEEPTIMER_NOTIFICATION_CHANNEL_ID)?.let { channel ->
+                if (channel.importance == NotificationManager.IMPORTANCE_HIGH) {
+                    deleteNotificationChannel(SLEEPTIMER_NOTIFICATION_CHANNEL_ID)
+                }
+            }
+
             if (getNotificationChannel(NOTIFICATION_CHANNEL_ID) == null) {
                 createNotificationChannel(
                     NotificationChannel(
                         NOTIFICATION_CHANNEL_ID,
                         NOTIFICATION_CHANNEL_ID,
-                        NotificationManager.IMPORTANCE_HIGH
+                        NotificationManager.IMPORTANCE_LOW
                     ).apply {
                         setSound(null, null)
                         enableLights(false)
@@ -2634,7 +2651,7 @@ class PlayerService : Service(),
                     NotificationChannel(
                         SLEEPTIMER_NOTIFICATION_CHANNEL_ID,
                         SLEEPTIMER_NOTIFICATION_CHANNEL_ID,
-                        NotificationManager.IMPORTANCE_HIGH
+                        NotificationManager.IMPORTANCE_DEFAULT
                     ).apply {
                         setSound(null, null)
                         enableLights(false)

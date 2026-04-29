@@ -51,7 +51,7 @@ import it.fast4x.riplay.utils.applyIf
 import it.fast4x.riplay.utils.isLandscape
 import kotlinx.coroutines.flow.distinctUntilChanged
 
-@OptIn(ExperimentalMaterial3Api::class)
+@ExperimentalMaterial3Api
 @ExperimentalTextApi
 @SuppressLint("SuspiciousIndentation")
 @ExperimentalFoundationApi

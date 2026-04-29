@@ -360,7 +360,8 @@ import kotlin.math.sqrt
 
 @ExperimentalSerializationApi
 @ExperimentalPermissionsApi
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeUiApi::class)
+@ExperimentalMaterial3Api
+@ExperimentalComposeUiApi
 @ExperimentalTextApi
 @SuppressLint(
     "SuspiciousIndentation", "RememberReturnType", "NewApi",

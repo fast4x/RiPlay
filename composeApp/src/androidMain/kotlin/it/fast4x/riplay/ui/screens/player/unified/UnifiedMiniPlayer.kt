@@ -120,7 +120,7 @@ import kotlinx.coroutines.launch
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlin.math.absoluteValue
 
-@OptIn(UnstableApi::class)
+@UnstableApi
 @ExperimentalSerializationApi
 @Composable
 fun UnifiedMiniPlayer(

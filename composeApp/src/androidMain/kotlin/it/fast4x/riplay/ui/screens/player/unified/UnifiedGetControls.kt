@@ -28,7 +28,7 @@ import it.fast4x.riplay.ui.components.themed.PlaybackParamsDialog
 import it.fast4x.riplay.ui.screens.player.unified.components.controls.UnifiedControlsEssential
 import it.fast4x.riplay.ui.screens.player.unified.components.controls.UnifiedControlsModern
 
-@OptIn(UnstableApi::class)
+@UnstableApi
 @Composable
 fun UnifiedGetControls(
     likedAt: Long?,
