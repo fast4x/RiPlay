@@ -196,6 +196,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import it.fast4x.riplay.extensions.lyricshelper.providers.syncLRCfetchLyrics
 import it.fast4x.riplay.extensions.lyricshelper.models.SyncLRCType
 import it.fast4x.riplay.services.playback.PlayerService
+import it.fast4x.riplay.ui.components.themed.Loader
 import it.fast4x.riplay.utils.CustomHttpClient
 import it.fast4x.riplay.utils.PlayerViewModel
 import it.fast4x.riplay.utils.PlayerViewModelFactory
@@ -260,7 +261,7 @@ fun Lyrics(
     val colorPaletteMode by rememberPreference(colorPaletteModeKey, ColorPaletteMode.Dark)
 
     var isEditing by remember(mediaId, isShowingSynchronizedLyrics) { mutableStateOf(false) }
-    var showPlaceholder by remember { mutableStateOf(false) }
+    //var showPlaceholder by remember { mutableStateOf(false) }
 
     val lyricsText = when {
         isShowingSynchronizedLyrics && !isShowingSynchronizedWordByWordLyrics -> currentLyrics?.synced ?: ""
@@ -385,12 +386,12 @@ fun Lyrics(
                     outputText?.replace("\\r", "\r")?.replace("\\n", "\n")
                 } catch (e: Exception) { 
                     Timber.e("Lyrics translation error ${e.stackTraceToString()}")
-                    showPlaceholder = false
+                    //showPlaceholder = false
                     output.value = appContext().resources.getString(R.string.an_error_has_occurred_while_fetching_the_lyrics)
                 }
             }
             val translatedText = if (result.toString() == "kotlin.Unit") "" else result.toString()
-            showPlaceholder = false
+            //showPlaceholder = false
             output.value = translatedText
             textTranslated = translatedText
         }
@@ -755,8 +756,20 @@ fun Lyrics(
             }
 
             // Placeholder
-            if ((lyricsText.isEmpty() && !isError) || showPlaceholder) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.shimmer()) { repeat(4) { TextPlaceholder(color = colorPalette().onOverlayShimmer, modifier = Modifier.alpha(1f - it * 0.1f)) } }
+            if ((lyricsText.isEmpty() && !isError)) {
+                Timber.d("Lyrics placeholder checkedLyricsLrc = $checkedLyricsLrc checkedLyricsKugou $checkedLyricsKugou")
+                //if (isShowingSynchronizedLyrics && (checkedLyricsLrc || checkedLyricsKugou)) return@Box
+                //Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.shimmer()) { repeat(4) { TextPlaceholder(color = colorPalette().onOverlayShimmer, modifier = Modifier.alpha(1f - it * 0.1f)) } }
+                Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
+                    Loader()
+                    if (checkedLyricsLrc || checkedLyricsKugou)
+                        Text(
+                            text = stringResource(R.string.loading_please_wait),
+                            fontStyle = typography().s.fontStyle,
+                            color = colorPalette().text,
+                            modifier = Modifier.padding(top = 20.dp)
+                        )
+                }
             }
 
 
@@ -1775,7 +1788,7 @@ private suspend fun fetchLyricsIfNeeded(
 
             runCatching {
                 LrcLib.lyrics(artist = artistName, title = title, duration = duration.milliseconds, album = mediaMetadata.albumTitle?.toString())?.onSuccess {
-                    Timber.d("fetchLyricsIfNeeded cercato su lrclib $it")
+                    Timber.d("fetchLyricsIfNeeded cercato su lrclib ${it?.text}")
                     if (it != null && (it.text.isNotEmpty() || it.sentences.isNotEmpty())) {
                         onError(false)
                         Database.upsert(Lyrics(songId = mediaId, fixed = currentLyrics?.fixed, synced = it?.text.orEmpty()))
@@ -1805,7 +1818,7 @@ private suspend fun fetchLyricsIfNeeded(
                 }?.onFailure {
                     Timber.d("fetchLyricsIfNeeded cercato su lrclib $it fallito ora cerco su kugou")
                     fetchFromKugou(mediaMetadata, duration, playerEnableLyricsPopupMessage, context, mediaId, currentLyrics, onError = onError, onCheckedKugou = onCheckedKugou)
-                    onCheckedLrc(true)
+                    //onCheckedLrc(true)
 //                    if (playerEnableLyricsPopupMessage)
 //                        SmartMessage(context.resources.getString(R.string.info_lyrics_not_found_on_s_try_on_s).format("LrcLib.net", "KuGou.com"), type = PopupType.Error, durationLong = true, context = context)
                 }
@@ -1837,17 +1850,17 @@ suspend fun fetchFromKugou(
 ) {
     runCatching {
         KuGou.lyrics(artist = mediaMetadata.artist?.toString() ?: "", title = cleanPrefix(mediaMetadata.title?.toString() ?: ""), duration = duration / 1000)?.onSuccess {
-            if ((it?.value?.isNotEmpty() == true || it?.sentences?.isNotEmpty() == true) && playerEnableLyricsPopupMessage)
-                SmartMessage(context.resources.getString(R.string.info_lyrics_found_on_s).format("KuGou.com"), type = PopupType.Success, context = context)
-            else if (playerEnableLyricsPopupMessage)
-                SmartMessage(context.resources.getString(R.string.info_lyrics_not_found_on_s).format("KuGou.com"), type = PopupType.Error, durationLong = true, context = context)
+//            if ((it?.value?.isNotEmpty() == true || it?.sentences?.isNotEmpty() == true) && playerEnableLyricsPopupMessage)
+//                SmartMessage(context.resources.getString(R.string.info_lyrics_found_on_s).format("KuGou.com"), type = PopupType.Success, context = context)
+//            else if (playerEnableLyricsPopupMessage)
+//                SmartMessage(context.resources.getString(R.string.info_lyrics_not_found_on_s).format("KuGou.com"), type = PopupType.Error, durationLong = true, context = context)
 
             onError(false)
             Database.upsert(Lyrics(songId = mediaId, fixed = currentLyrics?.fixed, synced = it?.value.orEmpty()))
             onCheckedKugou(true)
         }?.onFailure {
-            if (playerEnableLyricsPopupMessage)
-                SmartMessage(context.resources.getString(R.string.info_lyrics_not_found_on_s).format("KuGou.com"), type = PopupType.Error, durationLong = true, context = context)
+//            if (playerEnableLyricsPopupMessage)
+//                SmartMessage(context.resources.getString(R.string.info_lyrics_not_found_on_s).format("KuGou.com"), type = PopupType.Error, durationLong = true, context = context)
             onError(true)
         }
     }.onFailure { Timber.e("Lyrics Kugou error ${it.stackTraceToString()}") }
