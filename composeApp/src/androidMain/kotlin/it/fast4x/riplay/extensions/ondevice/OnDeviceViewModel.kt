@@ -366,114 +366,120 @@ class OnDeviceViewModel(application: Application) : AndroidViewModel(application
     fun removeObsoleteOndeviceMusic(
         context: Context
     ) {
-        var version: String? = null
+        try {
+            var version: String? = null
 
-        viewModelScope.launch {
-            while (currentCoroutineContext().isActive) {
-                val newVersion = MediaStore.getVersion(context)
-                if (version != newVersion) {
-                    version = newVersion
+            viewModelScope.launch {
+                while (currentCoroutineContext().isActive) {
+                    val newVersion = MediaStore.getVersion(context)
+                    if (version != newVersion) {
+                        version = newVersion
 
-                    val collection =
-                        if (isAtLeastAndroid10) MediaStore.Audio.Media.getContentUri(MediaStore.VOLUME_EXTERNAL)
-                        else MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
+                        val collection =
+                            if (isAtLeastAndroid10) MediaStore.Audio.Media.getContentUri(MediaStore.VOLUME_EXTERNAL)
+                            else MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
 
-                    val projection = arrayOf(
-                        MediaStore.Audio.Media._ID,
-                        MediaStore.Audio.Media.ARTIST,
-                        MediaStore.Audio.Media.ALBUM_ID,
-                        MediaStore.Audio.Media.IS_MUSIC
-                    )
-
-
-                    context.contentResolver.query(collection, projection, null, null, null)
-                        ?.use { cursor ->
-                            val idIdx = cursor.getColumnIndex(MediaStore.Audio.Media._ID)
-                            val artistIdx = cursor.getColumnIndex(MediaStore.Audio.Media.ARTIST)
-                            val albumIdIdx = cursor.getColumnIndex(MediaStore.Audio.Media.ALBUM_ID)
-                            val isMusicIdx = cursor.getColumnIndex(MediaStore.Audio.Media.IS_MUSIC)
-
-                            Timber.i(" DeviceListSongs SDK ${Build.VERSION.SDK_INT} initialize columns complete in removeObsoleteOndeviceMusic")
-
-                            val ondeviceSongsList = mutableListOf<String>()
-                            val ondeviceAlbumsList = mutableListOf<String>()
-                            val ondeviceArtistsList = mutableListOf<String>()
-
-                            Timber.i(" DeviceListSongs removeObsoleteOndeviceMusic start")
+                        val projection = arrayOf(
+                            MediaStore.Audio.Media._ID,
+                            MediaStore.Audio.Media.ARTIST,
+                            MediaStore.Audio.Media.ALBUM_ID,
+                            MediaStore.Audio.Media.IS_MUSIC
+                        )
 
 
-                            while (cursor.moveToNext()) {
-                                if (cursor.getInt(isMusicIdx) == 0) continue
-                                val songId = cursor.getLong(idIdx)
-                                val albumId = cursor.getLong(albumIdIdx)
-                                val artistId = cursor.getString(artistIdx)
+                        context.contentResolver.query(collection, projection, null, null, null)
+                            ?.use { cursor ->
+                                val idIdx = cursor.getColumnIndex(MediaStore.Audio.Media._ID)
+                                val artistIdx = cursor.getColumnIndex(MediaStore.Audio.Media.ARTIST)
+                                val albumIdIdx =
+                                    cursor.getColumnIndex(MediaStore.Audio.Media.ALBUM_ID)
+                                val isMusicIdx =
+                                    cursor.getColumnIndex(MediaStore.Audio.Media.IS_MUSIC)
 
-                                val ondeviceSongId = "$LOCAL_KEY_PREFIX$songId"
-                                val ondeviceAlbumId = "$LOCAL_KEY_PREFIX${albumId}"
-                                val ondeviceArtistId = "$LOCAL_KEY_PREFIX${artistId}"
+                                Timber.i(" DeviceListSongs SDK ${Build.VERSION.SDK_INT} initialize columns complete in removeObsoleteOndeviceMusic")
 
-                                if (!ondeviceSongsList.contains(ondeviceSongId))
-                                    ondeviceSongsList.add(ondeviceSongId)
-                                if (!ondeviceAlbumsList.contains(ondeviceAlbumId))
-                                    ondeviceAlbumsList.add(ondeviceAlbumId)
-                                if (!ondeviceArtistsList.contains(ondeviceArtistId))
-                                    ondeviceArtistsList.add(ondeviceArtistId)
-                            }
-                            Timber.i(" DeviceListSongs removeObsoleteOndeviceMusic cursor complete")
+                                val ondeviceSongsList = mutableListOf<String>()
+                                val ondeviceAlbumsList = mutableListOf<String>()
+                                val ondeviceArtistsList = mutableListOf<String>()
 
-                            Timber.d("DeviceListSongs removeObsoleteOndeviceMusic cursor complete ondeviceSongsList ${ondeviceSongsList.size}")
-                            Timber.d("DeviceListSongs removeObsoleteOndeviceMusic cursor complete ondeviceAlbumsList ${ondeviceAlbumsList.size}")
-                            Timber.d("DeviceListSongs removeObsoleteOndeviceMusic cursor complete ondeviceArtistsList ${ondeviceArtistsList.size}")
+                                Timber.i(" DeviceListSongs removeObsoleteOndeviceMusic start")
 
 
-                            runCatching {
-                                Database.songsOnDevice().collect { songs ->
-                                    songs.forEach {
-                                        if (!ondeviceSongsList.contains(it.id)) {
-                                            Database.deleteFormat(it.id)
-                                            Database.delete(it)
+                                while (cursor.moveToNext()) {
+                                    if (cursor.getInt(isMusicIdx) == 0) continue
+                                    val songId = cursor.getLong(idIdx)
+                                    val albumId = cursor.getLong(albumIdIdx)
+                                    val artistId = cursor.getString(artistIdx)
+
+                                    val ondeviceSongId = "$LOCAL_KEY_PREFIX$songId"
+                                    val ondeviceAlbumId = "$LOCAL_KEY_PREFIX${albumId}"
+                                    val ondeviceArtistId = "$LOCAL_KEY_PREFIX${artistId}"
+
+                                    if (!ondeviceSongsList.contains(ondeviceSongId))
+                                        ondeviceSongsList.add(ondeviceSongId)
+                                    if (!ondeviceAlbumsList.contains(ondeviceAlbumId))
+                                        ondeviceAlbumsList.add(ondeviceAlbumId)
+                                    if (!ondeviceArtistsList.contains(ondeviceArtistId))
+                                        ondeviceArtistsList.add(ondeviceArtistId)
+                                }
+                                Timber.i(" DeviceListSongs removeObsoleteOndeviceMusic cursor complete")
+
+                                Timber.d("DeviceListSongs removeObsoleteOndeviceMusic cursor complete ondeviceSongsList ${ondeviceSongsList.size}")
+                                Timber.d("DeviceListSongs removeObsoleteOndeviceMusic cursor complete ondeviceAlbumsList ${ondeviceAlbumsList.size}")
+                                Timber.d("DeviceListSongs removeObsoleteOndeviceMusic cursor complete ondeviceArtistsList ${ondeviceArtistsList.size}")
+
+
+                                runCatching {
+                                    Database.songsOnDevice().collect { songs ->
+                                        songs.forEach {
+                                            if (!ondeviceSongsList.contains(it.id)) {
+                                                Database.deleteFormat(it.id)
+                                                Database.delete(it)
+                                            }
                                         }
                                     }
+                                    Timber.d("DeviceListSongs removeObsoleteOndeviceMusic deleteSongs complete")
+                                }.onFailure {
+                                    Timber.e("DeviceListSongs removeObsoleteOndeviceMusic deleteSongs error ${it.stackTraceToString()}")
                                 }
-                                Timber.d("DeviceListSongs removeObsoleteOndeviceMusic deleteSongs complete")
-                            }.onFailure {
-                                Timber.e("DeviceListSongs removeObsoleteOndeviceMusic deleteSongs error ${it.stackTraceToString()}")
-                            }
-                            runCatching {
-                                Database.albumsOnDeviceByRowIdAsc().collect { albums ->
-                                    albums.forEach {
-                                        if (!ondeviceAlbumsList.contains(it.id)) {
-                                            Database.deleteAlbumMap(it.id)
-                                            Database.delete(it)
+                                runCatching {
+                                    Database.albumsOnDeviceByRowIdAsc().collect { albums ->
+                                        albums.forEach {
+                                            if (!ondeviceAlbumsList.contains(it.id)) {
+                                                Database.deleteAlbumMap(it.id)
+                                                Database.delete(it)
+                                            }
                                         }
                                     }
+                                    Timber.d("DeviceListSongs removeObsoleteOndeviceMusic deleteAlbums complete")
+                                }.onFailure {
+                                    Timber.e("DeviceListSongs removeObsoleteOndeviceMusic deleteAlbums error ${it.stackTraceToString()}")
                                 }
-                                Timber.d("DeviceListSongs removeObsoleteOndeviceMusic deleteAlbums complete")
-                            }.onFailure {
-                                Timber.e("DeviceListSongs removeObsoleteOndeviceMusic deleteAlbums error ${it.stackTraceToString()}")
-                            }
-                            runCatching {
-                                Database.artistsOnDeviceByRowIdAsc().collect { artists ->
-                                    artists.forEach {
-                                        if (!ondeviceArtistsList.contains(it.id)) {
-                                            Database.deleteArtistMap(it.id)
-                                            Database.delete(it)
+                                runCatching {
+                                    Database.artistsOnDeviceByRowIdAsc().collect { artists ->
+                                        artists.forEach {
+                                            if (!ondeviceArtistsList.contains(it.id)) {
+                                                Database.deleteArtistMap(it.id)
+                                                Database.delete(it)
+                                            }
                                         }
                                     }
+                                    Timber.d("DeviceListSongs removeObsoleteOndeviceMusic deleteArtists complete")
+                                }.onFailure {
+                                    Timber.e("DeviceListSongs removeObsoleteOndeviceMusic deleteArtists error ${it.stackTraceToString()}")
                                 }
-                                Timber.d("DeviceListSongs removeObsoleteOndeviceMusic deleteArtists complete")
-                            }.onFailure {
-                                Timber.e("DeviceListSongs removeObsoleteOndeviceMusic deleteArtists error ${it.stackTraceToString()}")
+
                             }
 
-                        }
+                    }
 
-                }
-
-                runCatching {
-                    delay(5.seconds)
+                    runCatching {
+                        delay(5.seconds)
+                    }
                 }
             }
+        } catch (e: Exception) {
+            Timber.e("OnDeviceViewModel removeObsoleteOndeviceMusic error: ${e.message}")
         }
     }
 
