@@ -69,38 +69,50 @@ import androidx.compose.ui.unit.sp
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
-import it.fast4x.riplay.extensions.persist.persist
-import it.fast4x.riplay.extensions.persist.persistList
+import dev.rebelonion.translator.Language
+import dev.rebelonion.translator.Translator
 import it.fast4x.environment.Environment
 import it.fast4x.environment.EnvironmentExt
 import it.fast4x.environment.models.NavigationEndpoint
 import it.fast4x.environment.requests.PlaylistPage
 import it.fast4x.environment.utils.completed
-import it.fast4x.riplay.data.Database
-import it.fast4x.riplay.data.Database.Companion.like
 import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.LocalSelectedQueue
 import it.fast4x.riplay.R
-import it.fast4x.riplay.utils.appContext
 import it.fast4x.riplay.commonutils.cleanPrefix
+import it.fast4x.riplay.commonutils.durationTextToMillis
+import it.fast4x.riplay.commonutils.setLikeState
+import it.fast4x.riplay.data.Database
+import it.fast4x.riplay.data.Database.Companion.like
+import it.fast4x.riplay.data.models.Playlist
+import it.fast4x.riplay.data.models.SongPlaylistMap
+import it.fast4x.riplay.data.models.defaultQueue
 import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.enums.NavigationBarPosition
 import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.enums.ThumbnailRoundness
 import it.fast4x.riplay.enums.UiType
-import it.fast4x.riplay.data.models.Playlist
-import it.fast4x.riplay.data.models.SongPlaylistMap
-import it.fast4x.riplay.utils.isLocal
+import it.fast4x.riplay.extensions.fastshare.FastShare
+import it.fast4x.riplay.extensions.persist.persist
+import it.fast4x.riplay.extensions.persist.persistList
+import it.fast4x.riplay.extensions.preferences.disableScrollingTextKey
+import it.fast4x.riplay.extensions.preferences.parentalControlEnabledKey
+import it.fast4x.riplay.extensions.preferences.rememberPreference
+import it.fast4x.riplay.extensions.preferences.showFloatingIconKey
+import it.fast4x.riplay.extensions.preferences.thumbnailRoundnessKey
 import it.fast4x.riplay.ui.components.LocalGlobalSheetState
 import it.fast4x.riplay.ui.components.ShimmerHost
 import it.fast4x.riplay.ui.components.SwipeablePlaylistItem
 import it.fast4x.riplay.ui.components.themed.AutoResizeText
+import it.fast4x.riplay.ui.components.themed.ConfirmationDialog
+import it.fast4x.riplay.ui.components.themed.FastPlayActionsBar
 import it.fast4x.riplay.ui.components.themed.FloatingActionsContainerWithScrollToTop
 import it.fast4x.riplay.ui.components.themed.FontSizeRange
 import it.fast4x.riplay.ui.components.themed.HeaderIconButton
 import it.fast4x.riplay.ui.components.themed.IconButton
 import it.fast4x.riplay.ui.components.themed.InputTextDialog
 import it.fast4x.riplay.ui.components.themed.LayoutWithAdaptiveThumbnail
+import it.fast4x.riplay.ui.components.themed.LoaderScreen
 import it.fast4x.riplay.ui.components.themed.NonQueuedMediaItemMenu
 import it.fast4x.riplay.ui.components.themed.PlaylistsItemMenu
 import it.fast4x.riplay.ui.components.themed.SmartMessage
@@ -108,55 +120,43 @@ import it.fast4x.riplay.ui.components.themed.adaptiveThumbnailContent
 import it.fast4x.riplay.ui.items.AlbumItemPlaceholder
 import it.fast4x.riplay.ui.items.SongItem
 import it.fast4x.riplay.ui.items.SongItemPlaceholder
+import it.fast4x.riplay.ui.screens.settings.isYtSyncEnabled
 import it.fast4x.riplay.ui.styling.Dimensions
+import it.fast4x.riplay.ui.styling.align
+import it.fast4x.riplay.ui.styling.color
 import it.fast4x.riplay.ui.styling.favoritesIcon
+import it.fast4x.riplay.ui.styling.medium
 import it.fast4x.riplay.ui.styling.px
+import it.fast4x.riplay.ui.styling.secondary
+import it.fast4x.riplay.ui.styling.semiBold
+import it.fast4x.riplay.utils.CustomHttpClient
+import it.fast4x.riplay.utils.LazyListContainer
 import it.fast4x.riplay.utils.addNext
+import it.fast4x.riplay.utils.addToYtLikedSongs
+import it.fast4x.riplay.utils.appContext
 import it.fast4x.riplay.utils.asMediaItem
+import it.fast4x.riplay.utils.asPlaylist
 import it.fast4x.riplay.utils.asSong
-import it.fast4x.riplay.extensions.preferences.disableScrollingTextKey
-import it.fast4x.riplay.commonutils.durationTextToMillis
+import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.utils.enqueue
 import it.fast4x.riplay.utils.fadingEdge
 import it.fast4x.riplay.utils.forcePlayAtIndex
 import it.fast4x.riplay.utils.forcePlayFromBeginning
+import it.fast4x.riplay.utils.formatAsDuration
 import it.fast4x.riplay.utils.formatAsTime
 import it.fast4x.riplay.utils.isLandscape
-import it.fast4x.riplay.ui.styling.medium
-import it.fast4x.riplay.extensions.preferences.parentalControlEnabledKey
-import it.fast4x.riplay.extensions.preferences.rememberPreference
-import it.fast4x.riplay.utils.resize
-import it.fast4x.riplay.ui.styling.secondary
-import it.fast4x.riplay.ui.styling.semiBold
-import it.fast4x.riplay.extensions.preferences.showFloatingIconKey
-import it.fast4x.riplay.extensions.preferences.thumbnailRoundnessKey
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import it.fast4x.riplay.utils.colorPalette
-import it.fast4x.riplay.extensions.fastshare.FastShare
-import it.fast4x.riplay.data.models.defaultQueue
-import it.fast4x.riplay.utils.typography
-import it.fast4x.riplay.ui.components.themed.ConfirmationDialog
-import it.fast4x.riplay.ui.screens.settings.isYtSyncEnabled
-import it.fast4x.riplay.utils.LazyListContainer
-import it.fast4x.riplay.utils.addToYtLikedSongs
-import it.fast4x.riplay.ui.styling.align
-import it.fast4x.riplay.utils.asPlaylist
-import it.fast4x.riplay.ui.styling.color
-import it.fast4x.riplay.utils.formatAsDuration
+import it.fast4x.riplay.utils.isLocal
 import it.fast4x.riplay.utils.isNetworkConnected
 import it.fast4x.riplay.utils.languageDestination
 import it.fast4x.riplay.utils.mediaItemSetLiked
-import it.fast4x.riplay.commonutils.setLikeState
-import it.fast4x.riplay.ui.components.themed.FastPlayActionsBar
-import it.fast4x.riplay.ui.components.themed.LoaderScreen
+import it.fast4x.riplay.utils.resize
+import it.fast4x.riplay.utils.typography
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.ExperimentalSerializationApi
-import dev.rebelonion.translator.Language
-import dev.rebelonion.translator.Translator
-import it.fast4x.riplay.utils.CustomHttpClient
 import timber.log.Timber
 
 @ExperimentalSerializationApi
@@ -326,8 +326,9 @@ fun PlaylistSongList(
                                         position = index
                                     ).default()
                                 }
+                                ?.onEach(::insert)
 
-                                //?.let( ::insertOrUpdateSongPlaylistMaps )
+
                 }
                 SmartMessage(context.resources.getString(R.string.done), PopupType.Success, context = context)
             }
