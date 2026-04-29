@@ -320,6 +320,7 @@ import it.fast4x.riplay.utils.LandscapeToSquareTransformation
 import it.fast4x.riplay.utils.PlayerViewModel
 import it.fast4x.riplay.utils.PlayerViewModelFactory
 import it.fast4x.riplay.utils.SearchOnlineEntity
+import it.fast4x.riplay.utils.ShowVideoOrSongInfo
 import it.fast4x.riplay.utils.addNext
 import it.fast4x.riplay.utils.addToOnlineLikedSong
 import it.fast4x.riplay.utils.animatedGradient
@@ -336,6 +337,7 @@ import it.fast4x.riplay.utils.formatAsTime
 import it.fast4x.riplay.utils.getBitmapFromUrl
 import it.fast4x.riplay.utils.getIconQueueLoopState
 import it.fast4x.riplay.utils.getLikeState
+import it.fast4x.riplay.utils.getRoundnessShape
 import it.fast4x.riplay.utils.hide
 import it.fast4x.riplay.utils.horizontalFadingEdge
 import it.fast4x.riplay.utils.isExplicit
@@ -1566,8 +1568,8 @@ fun UnifiedPlayerNew(
 
     Box {
         Column(
-            modifier = Modifier
-                .background(colorPalette().background0)
+            modifier = containerModifier
+                //.background(colorPalette().background0)
                 .verticalScroll(scrollState)
                 .fillMaxSize()
         ) {
@@ -4206,37 +4208,12 @@ fun UnifiedPlayerNew(
 //        Spacer(modifier = Modifier.height(20.dp))
 //        Text("Contenuto aggiuntivo", color = Color.White)
 //        Spacer(modifier = Modifier.height(100.dp))
-
-
-            Timber.d("UnifiedPlayerNew artistsInfo $artistsInfo")
-            key(artistsInfo?.firstOrNull()?.id) {
-                artistsInfo?.firstOrNull()?.id?.let { artistId ->
-                    Box(modifier = Modifier
-                        .fillMaxWidth()
-                        .height(screenHeight + 300.dp)
-                    ) {
-                        ArtistOverview(navController, artistId, disableScrollingText, onNavigateTo = { playerSheetState.collapseSoft() })
-                    }
-                }
-            }
-
-            Timber.d("UnifiedPlayerNew albumInfo $albumInfo")
-            key(albumInfo?.id) {
-                albumInfo?.id?.let { albumId ->
-                    Box(modifier = Modifier
-                        .height(screenHeight + 300.dp)
-                    ) {
-                        AlbumDetails(
-                            navController,
-                            albumId,
-                            {},
-                            onSearchClick = {},
-                            onSettingsClick = {},
-                            onNavigateTo = { playerSheetState.collapseSoft() }
-                        )
-                    }
-                }
-            }
+            PlayerArtistAlbumSections(
+                artistsInfo,
+                albumInfo,
+                navController,
+                onNavigateTo = { playerSheetState.collapseSoft() }
+            )
 
         }
 
