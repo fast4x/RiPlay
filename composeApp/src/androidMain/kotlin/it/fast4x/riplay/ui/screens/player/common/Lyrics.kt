@@ -243,7 +243,8 @@ fun Lyrics(
 
     var showlyricsthumbnail by rememberPreference(showlyricsthumbnailKey, false)
     var isShowingSynchronizedLyrics by rememberPreference(isShowingSynchronizedLyricsKey, false)
-    var isShowingSynchronizedWordByWordLyrics by rememberPreference(isShowingSynchronizedWordByWordLyricsKey, false)
+    //var isShowingSynchronizedWordByWordLyrics by rememberPreference(isShowingSynchronizedWordByWordLyricsKey, false)
+    val isShowingSynchronizedWordByWordLyrics by remember { mutableStateOf(false) } // removed temporaly word word lyrics suspended by owner
 
     val currentLyrics by Database.lyrics(mediaId).collectAsState(initial = null)
 
@@ -413,7 +414,7 @@ fun Lyrics(
             onCheckedSyncLrc = { checkedLyricsSyncLrc = it },
             onError = {
                 isError = it
-                Timber.e("Lyrics fetchLyricsIfNeeded onError $it")
+                //Timber.e("Lyrics fetchLyricsIfNeeded onError $it")
             }
         )
 
@@ -944,7 +945,7 @@ fun Lyrics(
             ) {
                 Text(
                     text = when {
-                        isShowingSynchronizedLyrics && isShowingSynchronizedWordByWordLyrics -> stringResource(R.string.lyrics_word_by_word)
+                        //isShowingSynchronizedLyrics && isShowingSynchronizedWordByWordLyrics -> stringResource(R.string.lyrics_word_by_word)
                         isShowingSynchronizedLyrics && !isShowingSynchronizedWordByWordLyrics -> stringResource(R.string.lyrics_line_by_line)
                         else -> stringResource(R.string.lyrics_fulltext)
                     },
@@ -957,9 +958,9 @@ fun Lyrics(
                         .align(Alignment.Center)
                         .clickable {
                             when {
-                                isShowingSynchronizedLyrics && isShowingSynchronizedWordByWordLyrics -> {
-                                    isShowingSynchronizedWordByWordLyrics = false
-                                }
+//                                isShowingSynchronizedLyrics && isShowingSynchronizedWordByWordLyrics -> {
+//                                    isShowingSynchronizedWordByWordLyrics = false
+//                                }
 
                                 isShowingSynchronizedLyrics && !isShowingSynchronizedWordByWordLyrics -> {
                                     isShowingSynchronizedLyrics = false
@@ -967,7 +968,7 @@ fun Lyrics(
 
                                 else -> {
                                     isShowingSynchronizedLyrics = true
-                                    isShowingSynchronizedWordByWordLyrics = true
+                                    //isShowingSynchronizedWordByWordLyrics = true
                                 }
                             }
                         }
@@ -1474,8 +1475,7 @@ fun Lyrics(
                                                             },
                                                             onClick = {
                                                                 isShowingSynchronizedLyrics = false
-                                                                isShowingSynchronizedWordByWordLyrics =
-                                                                    false
+                                                                //isShowingSynchronizedWordByWordLyrics = false
                                                             }
                                                         )
                                                         MenuEntry(
@@ -1496,10 +1496,10 @@ fun Lyrics(
                                                             },
                                                             onClick = {
                                                                 isShowingSynchronizedLyrics = true
-                                                                isShowingSynchronizedWordByWordLyrics =
-                                                                    false
+                                                                //isShowingSynchronizedWordByWordLyrics = false
                                                             }
                                                         )
+                                                        /*
                                                         MenuEntry(
                                                             icon = R.drawable.time,
                                                             text = stringResource(R.string.synchronized_karaoke_lyrics),
@@ -1517,11 +1517,11 @@ fun Lyrics(
                                                                     )
                                                             },
                                                             onClick = {
-                                                                isShowingSynchronizedWordByWordLyrics =
-                                                                    true
+                                                                //isShowingSynchronizedWordByWordLyrics = true
                                                                 isShowingSynchronizedLyrics = true
                                                             }
                                                         )
+                                                         */
                                                     }
                                                 }
                                             }
@@ -1727,6 +1727,7 @@ private suspend fun fetchLyricsIfNeeded(
 ) {
     withContext(Dispatchers.IO) {
 
+        /*
         if (isShowingSynchronizedWordByWordLyrics && currentLyrics?.lrcSynced == null) {
             launch(Dispatchers.Main) {
                 syncLRCfetchLyrics(
@@ -1763,6 +1764,10 @@ private suspend fun fetchLyricsIfNeeded(
 
             }
         } else if (isShowingSynchronizedLyrics && !isShowingSynchronizedWordByWordLyrics && currentLyrics?.synced == null) {
+            */
+        // removed word by word lyrics fetch for SyncLRCProvider because owner suspended service
+        if (isShowingSynchronizedLyrics && currentLyrics?.synced == null) {
+            Timber.d("fetchLyricsIfNeeded inizio ricerca lyrics")
             var duration = withContext(Dispatchers.Main) { durationProvider() }
             while (duration == C.TIME_UNSET) {
                 delay(100); duration = withContext(Dispatchers.Main) { durationProvider() }
@@ -1770,37 +1775,43 @@ private suspend fun fetchLyricsIfNeeded(
 
             runCatching {
                 LrcLib.lyrics(artist = artistName, title = title, duration = duration.milliseconds, album = mediaMetadata.albumTitle?.toString())?.onSuccess {
-                    if ((it?.text?.isNotEmpty() == true || it?.sentences?.isNotEmpty() == true) && playerEnableLyricsPopupMessage)
-                        SmartMessage(context.resources.getString(R.string.info_lyrics_found_on_s).format("LrcLib.net"), type = PopupType.Success, context = context)
-                    else if (playerEnableLyricsPopupMessage)
-                        SmartMessage(context.resources.getString(R.string.info_lyrics_not_found_on_s).format("LrcLib.net"), type = PopupType.Error, durationLong = true, context = context)
+                    Timber.d("fetchLyricsIfNeeded cercato su lrclib $it")
+                    if (it != null && (it.text.isNotEmpty() || it.sentences.isNotEmpty())) {
+                        onError(false)
+                        Database.upsert(Lyrics(songId = mediaId, fixed = currentLyrics?.fixed, synced = it?.text.orEmpty()))
+                        onCheckedLrc(true)
 
-                    onError(false)
-                    Database.upsert(Lyrics(songId = mediaId, fixed = currentLyrics?.fixed, synced = it?.text.orEmpty()))
-                    onCheckedLrc(true)
+//                        if (playerEnableLyricsPopupMessage)
+//                            SmartMessage(
+//                                context.resources.getString(R.string.info_lyrics_found_on_s)
+//                                    .format("LrcLib.net"), type = PopupType.Success, context = context
+//                            )
+                    } else {
+                        fetchFromKugou(mediaMetadata, duration, playerEnableLyricsPopupMessage, context, mediaId, currentLyrics, onError = onError, onCheckedKugou = onCheckedKugou)
+                        Timber.d("fetchLyricsIfNeeded cercato su kugou $it")
+//                        if (playerEnableLyricsPopupMessage)
+//                            SmartMessage(
+//                                context.resources.getString(R.string.info_lyrics_not_found_on_s)
+//                                    .format("LrcLib.net"),
+//                                type = PopupType.Error,
+//                                durationLong = true,
+//                                context = context
+//                            )
+
+                        onCheckedLrc(true)
+                    }
+
+
                 }?.onFailure {
-                    if (playerEnableLyricsPopupMessage)
-                        SmartMessage(context.resources.getString(R.string.info_lyrics_not_found_on_s_try_on_s).format("LrcLib.net", "KuGou.com"), type = PopupType.Error, durationLong = true, context = context)
+                    Timber.d("fetchLyricsIfNeeded cercato su lrclib $it fallito ora cerco su kugou")
+                    fetchFromKugou(mediaMetadata, duration, playerEnableLyricsPopupMessage, context, mediaId, currentLyrics, onError = onError, onCheckedKugou = onCheckedKugou)
                     onCheckedLrc(true)
-
-                    runCatching {
-                        KuGou.lyrics(artist = mediaMetadata.artist?.toString() ?: "", title = cleanPrefix(mediaMetadata.title?.toString() ?: ""), duration = duration / 1000)?.onSuccess {
-                            if ((it?.value?.isNotEmpty() == true || it?.sentences?.isNotEmpty() == true) && playerEnableLyricsPopupMessage)
-                                SmartMessage(context.resources.getString(R.string.info_lyrics_found_on_s).format("KuGou.com"), type = PopupType.Success, context = context)
-                            else if (playerEnableLyricsPopupMessage)
-                                SmartMessage(context.resources.getString(R.string.info_lyrics_not_found_on_s).format("KuGou.com"), type = PopupType.Error, durationLong = true, context = context)
-
-                            onError(false)
-                            Database.upsert(Lyrics(songId = mediaId, fixed = currentLyrics?.fixed, synced = it?.value.orEmpty()))
-                            onCheckedKugou(true)
-                        }?.onFailure {
-                            if (playerEnableLyricsPopupMessage)
-                                SmartMessage(context.resources.getString(R.string.info_lyrics_not_found_on_s).format("KuGou.com"), type = PopupType.Error, durationLong = true, context = context)
-                            onError(true)
-                        }
-                    }.onFailure { Timber.e("Lyrics Kugou error ${it.stackTraceToString()}") }
+//                    if (playerEnableLyricsPopupMessage)
+//                        SmartMessage(context.resources.getString(R.string.info_lyrics_not_found_on_s_try_on_s).format("LrcLib.net", "KuGou.com"), type = PopupType.Error, durationLong = true, context = context)
                 }
             }.onFailure { Timber.e("Lyrics get error ${it.stackTraceToString()}") }
+
+            onCheckedLrc(true)
 
         } else if (!isShowingSynchronizedLyrics && currentLyrics?.fixed == null) {
             onError(false)
@@ -1812,6 +1823,34 @@ private suspend fun fetchLyricsIfNeeded(
             onCheckedInnertube(true)
         }
     }
+}
+
+suspend fun fetchFromKugou(
+    mediaMetadata: MediaMetadata,
+    duration: Long,
+    playerEnableLyricsPopupMessage: Boolean,
+    context: Context,
+    mediaId: String,
+    currentLyrics: Lyrics?,
+    onError: (Boolean) -> Unit,
+    onCheckedKugou: (Boolean) -> Unit
+) {
+    runCatching {
+        KuGou.lyrics(artist = mediaMetadata.artist?.toString() ?: "", title = cleanPrefix(mediaMetadata.title?.toString() ?: ""), duration = duration / 1000)?.onSuccess {
+            if ((it?.value?.isNotEmpty() == true || it?.sentences?.isNotEmpty() == true) && playerEnableLyricsPopupMessage)
+                SmartMessage(context.resources.getString(R.string.info_lyrics_found_on_s).format("KuGou.com"), type = PopupType.Success, context = context)
+            else if (playerEnableLyricsPopupMessage)
+                SmartMessage(context.resources.getString(R.string.info_lyrics_not_found_on_s).format("KuGou.com"), type = PopupType.Error, durationLong = true, context = context)
+
+            onError(false)
+            Database.upsert(Lyrics(songId = mediaId, fixed = currentLyrics?.fixed, synced = it?.value.orEmpty()))
+            onCheckedKugou(true)
+        }?.onFailure {
+            if (playerEnableLyricsPopupMessage)
+                SmartMessage(context.resources.getString(R.string.info_lyrics_not_found_on_s).format("KuGou.com"), type = PopupType.Error, durationLong = true, context = context)
+            onError(true)
+        }
+    }.onFailure { Timber.e("Lyrics Kugou error ${it.stackTraceToString()}") }
 }
 
 fun getFontSize(fontSize: LyricsFontSize, customSize: Float): TextUnit {
