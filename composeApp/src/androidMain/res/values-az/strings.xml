@@ -204,7 +204,7 @@
     <string name="play_next">Sonra səsləndir</string>
     <string name="toggle_lyrics">Lirikanı tənzimlə</string>
     <string name="by_tapping_on_the_thumbnail">Miniatürə toxunaraq</string>
-    <string name="require_mic_permission">Require mic permission</string>
+    <string name="require_mic_permission">Mikrofon icazəsi tələb olunur</string>
     <string name="vt_fancy">Fantaziya</string>
     <string name="vt_circular">Dairəvi</string>
     <string name="vt_disabled">Qeyri-aktiv</string>
@@ -940,7 +940,7 @@
     <string name="streaming_player_type_default">Default</string>
     <string name="streaming_player_type_next">Next</string>
     <string name="streaming_player_type">Streaming player type</string>
-    <string name="streaming_player_type_advanced">Advanced</string>
+    <string name="streaming_player_type_advanced">Qabaqcıl</string>
     <string name="title_music">Music</string>
     <string name="use_placeholder_in_imageloader">Use placeholder for image loader</string>
     <string name="use_placeholder_in_imageloader_info">Show image loader while loading images</string>
