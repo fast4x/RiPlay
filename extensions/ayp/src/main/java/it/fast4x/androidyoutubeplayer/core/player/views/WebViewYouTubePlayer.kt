@@ -3,6 +3,7 @@ package it.fast4x.androidyoutubeplayer.core.player.views
 import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Bitmap
+import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.util.AttributeSet
@@ -10,6 +11,7 @@ import android.view.View
 import android.webkit.WebChromeClient
 import android.webkit.WebSettings
 import android.webkit.WebView
+import android.webkit.WebViewClient
 import androidx.annotation.GuardedBy
 import androidx.annotation.VisibleForTesting
 import it.fast4x.androidyoutubeplayer.R
@@ -144,6 +146,42 @@ internal class WebViewYouTubePlayer constructor(
       .replace("<<injectedPlayerVars>>", playerOptions.toString())
 
     loadDataWithBaseURL(playerOptions.getOrigin(), htmlPage, "text/html", "utf-8", null)
+
+    // Fix downgrade volume
+    webViewClient = object : WebViewClient() {
+      override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
+        super.onPageStarted(view, url, favicon)
+        view?.evaluateJavascript("""
+            (function() {
+                // Salva il costruttore originale
+                const OriginalAudioContext = window.AudioContext || window.webkitAudioContext;
+                
+                function PatchedAudioContext(options) {
+                    const ctx = new OriginalAudioContext(options);
+                    
+                    // Disabilita compressore
+                    const origCompressor = ctx.createDynamicsCompressor.bind(ctx);
+                    ctx.createDynamicsCompressor = function() {
+                        const c = origCompressor();
+                        c.threshold.value = 0;
+                        c.knee.value = 0;
+                        c.ratio.value = 1;
+                        c.attack.value = 0;
+                        c.release.value = 0;
+                        return c;
+                    };
+                    
+                    return ctx;
+                }
+                
+                // Sostituisci globalmente
+                PatchedAudioContext.prototype = OriginalAudioContext.prototype;
+                window.AudioContext = PatchedAudioContext;
+                window.webkitAudioContext = PatchedAudioContext;
+            })();
+        """, null)
+      }
+    }
 
       // TODO MAYBE NOT NEEDED
       /*
