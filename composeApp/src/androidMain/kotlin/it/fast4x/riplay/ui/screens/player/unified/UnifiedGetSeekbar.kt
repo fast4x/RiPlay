@@ -72,7 +72,7 @@ import riplay.composeapp.generated.resources.Res
 import riplay.composeapp.generated.resources.play
 import timber.log.Timber
 
-@OptIn(UnstableApi::class)
+@UnstableApi
 @Composable
 fun UnifiedGetSeekBar(
     mediaId: String,
