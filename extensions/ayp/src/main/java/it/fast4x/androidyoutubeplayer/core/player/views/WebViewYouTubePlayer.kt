@@ -134,6 +134,7 @@ internal class WebViewYouTubePlayer constructor(
   private fun initWebView(playerOptions: IFramePlayerOptions, videoId: String?) {
     settings.apply {
       javaScriptEnabled = true
+      domStorageEnabled = true
       mediaPlaybackRequiresUserGesture = false
       cacheMode = WebSettings.LOAD_DEFAULT
     }
@@ -147,6 +148,7 @@ internal class WebViewYouTubePlayer constructor(
 
     loadDataWithBaseURL(playerOptions.getOrigin(), htmlPage, "text/html", "utf-8", null)
 
+    /* iniettato direttamente nel file raw
     // Fix downgrade volume
     webViewClient = object : WebViewClient() {
       override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
@@ -182,6 +184,7 @@ internal class WebViewYouTubePlayer constructor(
         """, null)
       }
     }
+    */
 
       // TODO MAYBE NOT NEEDED
       /*

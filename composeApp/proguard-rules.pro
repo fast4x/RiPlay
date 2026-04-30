@@ -117,6 +117,11 @@
     @android.webkit.JavascriptInterface <methods>;
 }
 
+-keepclassmembers class * extends android.webkit.WebViewClient {
+    public *;
+}
+-keep class * extends android.webkit.WebChromeClient { *; }
+
 
 -dontwarn com.google.re2j.Matcher
 -dontwarn com.google.re2j.Pattern

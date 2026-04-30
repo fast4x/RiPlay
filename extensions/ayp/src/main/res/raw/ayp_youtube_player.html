@@ -1,19 +1,56 @@
 <!DOCTYPE html>
 <html>
-  <style type="text/css">
-        html, body {
-            height: 100%;
-            width: 100%;
-            margin: 0;
-            padding: 0;
-            background-color: #000000;
-            overflow: hidden;
-            position: fixed;
-        }
-    </style>
-
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <style type="text/css">
+      html, body {
+          height: 100%;
+          width: 100%;
+          margin: 0;
+          padding: 0;
+          background-color: #000000;
+          overflow: hidden;
+          position: fixed;
+      }
+    </style>
+
+    <script>
+      // Patch AudioContext - deve essere il PRIMO script eseguito
+      (function() {
+          const OriginalAudioContext = window.AudioContext || window.webkitAudioContext;
+          if (!OriginalAudioContext) return;
+
+          function PatchedAudioContext(options) {
+              const ctx = new OriginalAudioContext(options);
+
+              const origCompressor = ctx.createDynamicsCompressor.bind(ctx);
+              ctx.createDynamicsCompressor = function() {
+                  const c = origCompressor();
+                  c.threshold.value = 0;
+                  c.knee.value = 0;
+                  c.ratio.value = 1;
+                  c.attack.value = 0;
+                  c.release.value = 0;
+                  return c;
+              };
+
+              const origGain = ctx.createGain.bind(ctx);
+              ctx.createGain = function() {
+                  const g = origGain();
+                  g.gain.value = 1.0;
+                  return g;
+              };
+
+              return ctx;
+          }
+
+          PatchedAudioContext.prototype = OriginalAudioContext.prototype;
+          window.AudioContext = PatchedAudioContext;
+          window.webkitAudioContext = PatchedAudioContext;
+      })();
+    </script>
+
     <!-- defer forces the library to execute after the html page is fully parsed. -->
     <!-- This is needed to avoid race conditions, where the library executes and calls `onYouTubeIframeAPIReady` before the page is fully parsed. -->
     <!-- See #873 on GitHub -->
