@@ -4,10 +4,10 @@ plugins {
 }
 
 android {
-    compileSdk = 36
+    compileSdk = 37
 
     defaultConfig {
-        minSdk = 24
+        minSdk = 21
     }
 
     namespace = "it.fast4x.androidyoutubeplayer.core.customui"

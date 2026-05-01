@@ -306,7 +306,7 @@ class PlayerService : Service(),
 
     var currentMediaItemState = MutableStateFlow<MediaItem?>(null)
 
-    @OptIn(ExperimentalCoroutinesApi::class)
+    @ExperimentalCoroutinesApi
     private val currentSong = currentMediaItemState.flatMapLatest { mediaItem ->
         Database.song(mediaItem?.mediaId)
     }.stateIn(serviceScope, SharingStarted.Lazily, null)
@@ -349,6 +349,8 @@ class PlayerService : Service(),
 
     private var lastPlayNextTime = 0L
     private var debounceDelayMs = 2000L
+    private var onlineEndHandledMediaId: String? = null
+    private var onlineNearEndTicks = 0
 
     /**
      * end online configuration
@@ -577,14 +579,15 @@ class PlayerService : Service(),
                         }
                     }
                     //fallback if online player not fire state ended
-                    if (_currentDuration.value > 0 && preferences.getEnum(queueLoopTypeKey, QueueLoopType.Default) == QueueLoopType.Default) {
-                        if (_currentSecond.value >= _currentDuration.value - 0.5f) {
-                            if (_playerState.value.isPlaying) {
-                                Timber.d("PlayerService Watchdog: End of online track detected by time, forcing playNext()")
-                                handlePlayNext()
-                            }
-                        }
-                    }
+                    updateOnlineNearEndTicks()
+//                    if (_currentDuration.value > 0 && preferences.getEnum(queueLoopTypeKey, QueueLoopType.Default) == QueueLoopType.Default) {
+//                        if (_currentSecond.value >= _currentDuration.value - 0.5f) {
+//                            if (_playerState.value.isPlaying) {
+//                                Timber.d("PlayerService Watchdog: End of online track detected by time, forcing playNext()")
+//                                handlePlayNext()
+//                            }
+//                        }
+//                    }
                     //Timber.d("PlayerService onCreate onlineListenedDurationMs $onlineListenedDurationMs")
 
                     //Workaround to fix volume bug in webview in some devices. Same for youtube music app
@@ -613,6 +616,7 @@ class PlayerService : Service(),
         return START_STICKY
     }
 
+    @ExperimentalCoroutinesApi
     private fun startForeground(loading: Boolean = false) {
         Timber.d("PlayerService startForeground called from: ${Thread.currentThread().stackTrace.joinToString("\n")}")
         val notification = if (loading) {
@@ -1034,6 +1038,7 @@ class PlayerService : Service(),
         player.pauseAtEndOfMediaItems = true
     }
 
+    @ExperimentalCoroutinesApi
     private fun initializeOnlinePlayer() {
 
         val listener = object : AbstractYouTubePlayerListener() {
@@ -1162,10 +1167,12 @@ class PlayerService : Service(),
 
                     }
                     PlayerConstants.PlayerState.PLAYING -> {
+                        onlineNearEndTicks = 0
                         startEndedObserver()
                         sendOpenExternalEqualizerIntent()
                     }
                     PlayerConstants.PlayerState.PAUSED -> {
+                        onlineNearEndTicks = 0
                         stopEndedObserver()
                         sendCloseExternalEqualizerIntent()
                     }
@@ -1396,6 +1403,7 @@ class PlayerService : Service(),
         )
     }
 
+    @ExperimentalCoroutinesApi
     private fun updateDiscordPresence() {
         if (!isAtLeastAndroid81) return
 
@@ -1566,7 +1574,59 @@ class PlayerService : Service(),
         super.onDestroy()
     }
 
-    private var pausedByZeroVolume = false
+    private fun tryHandleOnlineTrackEnd(source: String) {
+    val mediaId = localMediaItem?.mediaId ?: return
+    val now = System.currentTimeMillis()
+    if (onlineEndHandledMediaId == mediaId && (now - lastPlayNextTime) < debounceDelayMs) {
+        Timber.d("PlayerService tryHandleOnlineTrackEnd ignored duplicate for $mediaId from $source")
+        return
+    }
+    onlineEndHandledMediaId = mediaId
+    lastPlayNextTime = now
+    onlineNearEndTicks = 0
+    Timber.d("PlayerService tryHandleOnlineTrackEnd accepted for $mediaId from $source")
+    handlePlayNext()
+}
+
+private fun resetOnlineEndGuardIfTrackChanged() {
+    //Timber.d("PlayerService Watchdog: resetOnlineEndGuardIfTrackChanged onlineNearEndTicks $onlineNearEndTicks")
+    val mediaId = localMediaItem?.mediaId
+    if (mediaId == null) {
+        onlineEndHandledMediaId = null
+        onlineNearEndTicks = 0
+        return
+    }
+    if (onlineEndHandledMediaId != null && onlineEndHandledMediaId != mediaId) {
+        onlineEndHandledMediaId = null
+        onlineNearEndTicks = 0
+        Timber.d("PlayerService Watchdog: resetOnlineEndGuardIfTrackChanged reset onlineNearEndTicks")
+    }
+}
+
+private fun updateOnlineNearEndTicks() {
+    resetOnlineEndGuardIfTrackChanged()
+
+    val shouldTrackNearEnd =
+        localMediaItem?.isLocal == false &&
+        preferences.getEnum(queueLoopTypeKey, QueueLoopType.Default) == QueueLoopType.Default &&
+        _playerState.value.isPlaying &&
+        _currentDuration.value > 0f &&
+        _currentSecond.value >= (_currentDuration.value - 0.5f)
+
+    //Timber.d("PlayerService Watchdog: updateOnlineNearEndTicks shouldTrackNearEnd $shouldTrackNearEnd")
+
+    if (shouldTrackNearEnd) {
+        onlineNearEndTicks += 1
+        if (onlineNearEndTicks >= 2) {
+            Timber.d("PlayerService Watchdog: End of online track detected by time, trying guarded playNext()")
+            tryHandleOnlineTrackEnd("watchdog_near_end")
+        }
+    } else {
+        onlineNearEndTicks = 0
+    }
+}
+
+private var pausedByZeroVolume = false
     override fun onAudioVolumeChanged(currentVolume: Int, maxVolume: Int) {
         if (preferences.getBoolean(isPauseOnVolumeZeroEnabledKey, false)) {
             if ((player.isPlaying || _playerState.value.isPlaying) && currentVolume < 1) {
@@ -1653,7 +1713,8 @@ class PlayerService : Service(),
         }
     }
 
-    @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
+    @ExperimentalCoroutinesApi
+    @FlowPreview
     @UnstableApi
     override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
 
@@ -1796,6 +1857,7 @@ class PlayerService : Service(),
     }
 
 
+    @ExperimentalCoroutinesApi
     fun updateUnifiedNotification() {
         Timber.d("PlayerService notify called from: ${Thread.currentThread().stackTrace.joinToString("\n")}")
         serviceScope.launch {
@@ -1912,7 +1974,7 @@ class PlayerService : Service(),
 
     }
 
-
+    @ExperimentalCoroutinesApi
     @UnstableApi
     private fun initializeNormalizeVolume() {
         if (!preferences.getBoolean(volumeNormalizationKey, false)) {
@@ -2028,6 +2090,7 @@ class PlayerService : Service(),
         audioManager = getSystemService(AUDIO_SERVICE) as AudioManager
     }
 
+    @ExperimentalCoroutinesApi
     private fun initializeBluetoothConnect() {
         if (!preferences.getBoolean(resumeOrPausePlaybackWhenDeviceKey, false)) return
 
@@ -2084,6 +2147,7 @@ class PlayerService : Service(),
         )
     }
 
+    @ExperimentalCoroutinesApi
     private fun updateUnifiedMediasession() {
 
         val currentMediaItem = binder.player.currentMediaItem
@@ -2337,7 +2401,7 @@ class PlayerService : Service(),
     }
     */
 
-
+    @ExperimentalCoroutinesApi
     @UnstableApi
     override fun onIsPlayingChanged(isPlaying: Boolean) {
 
@@ -2390,7 +2454,7 @@ class PlayerService : Service(),
         super.onIsPlayingChanged(isPlaying)
     }
 
-
+    @ExperimentalCoroutinesApi
     @UnstableApi
     override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences?, key: String?) {
         sharedPreferences ?: return
@@ -2452,7 +2516,7 @@ class PlayerService : Service(),
         }
     }
 
-
+    @ExperimentalCoroutinesApi
     private fun initializeBassBoost() {
         if (!preferences.getBoolean(bassboostEnabledKey, false)) {
             runCatching {
@@ -2506,7 +2570,7 @@ class PlayerService : Service(),
         }
     }
 
-
+    @ExperimentalCoroutinesApi
     fun notification(): Notification {
 
         val currentMediaItem = binder.player.currentMediaItem
@@ -2740,6 +2804,7 @@ class PlayerService : Service(),
         }
     }
 
+    @ExperimentalCoroutinesApi
     private fun incrementOnlineListenedPlaytimeMs() {
         if (currentSong.value?.isLocal == true
                 || preferences.getBoolean(pauseListenHistoryKey, false)
@@ -3166,12 +3231,14 @@ class PlayerService : Service(),
         /**
          * This method should ONLY be called when the application (sc. activity) is in the foreground!
          */
+        @ExperimentalCoroutinesApi
         fun restartForegroundOrStop() {
             player.pause()
             stopSelf()
         }
 
-        @OptIn(FlowPreview::class)
+        @ExperimentalCoroutinesApi
+        @FlowPreview
         fun toggleLike() {
             Timber.d("PlayerService toggleLike currentSong ${currentSong.value}")
             Database.asyncTransaction {
@@ -3237,6 +3304,7 @@ class PlayerService : Service(),
         }
     }
 
+    @ExperimentalCoroutinesApi
     fun initializeUnifiedSessionCallback() {
         Timber.d("PlayerService InitializeUnifiedSessionCallback")
         val currentMediaItem = binder.player.currentMediaItem

@@ -151,12 +151,13 @@ android {
         compose = true
     }
 
-    compileSdk = 36
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "it.fast4x.riplay"
-        minSdk = 24
-        targetSdk = 36
+        //minSdk = 24
+
+        //targetSdk = 36
         versionCode = 77
         versionName = "0.7.77"
 
@@ -452,6 +453,7 @@ android {
     flavorDimensions += "version"
     productFlavors {
         create("full") {
+            minSdk = 24
             isDefault = true
             dimension = "version"
             //buildConfigField("String", "BUILD_VARIANT", "\"full\"")
@@ -474,6 +476,7 @@ android {
 //    }
     productFlavors {
         create("foss") {
+            minSdk = 23
             dimension = "version"
             //manifestPlaceholders["appName"] = "RiPlay"
             //buildConfigField("String", "BUILD_VARIANT", "\"foss\"")
@@ -683,7 +686,7 @@ kotlin {
         androidMain.dependencies {
             implementation(libs.navigation)
             implementation(libs.media3.session)
-            implementation(libs.media3.ui)
+            //implementation(libs.media3.ui)
             implementation(libs.kotlin.coroutines.guava)
             implementation(libs.kotlin.concurrent.futures)
             implementation(libs.androidx.webkit)
@@ -744,6 +747,7 @@ room {
 
 dependencies {
 
+    "fullImplementation"(libs.media3.ui)
     "fullImplementation"(libs.media3.cast)
     "fullImplementation"(project(":aypcast"))
 
