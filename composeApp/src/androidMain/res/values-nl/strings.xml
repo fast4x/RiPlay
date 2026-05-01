@@ -450,7 +450,7 @@
     <string name="info_smart_recommendation">Slimme aanbevelingen</string>
     <string name="info_clean_cached_congs">Nummers uit cache verwijderen</string>
     <string name="info_pin_unpin_playlist">Afspeellijst vast-/losmaken</string>
-    <string name="info_lock_unlock_reorder_songs">Lock/Unlock reorder songs</string>
+    <string name="info_lock_unlock_reorder_songs">Vergrendel/Ontgrendelen nummers herschikken</string>
     <string name="info_add_in_playlist">Toevoegen aan afspeellijst</string>
     <string name="info_not_find_application_audio">Geen applicatie gevonden om audio gelijk te maken</string>
     <string name="info_error">Fout</string>
@@ -498,10 +498,10 @@
     <string name="background_colors">Achtergrondkleuren</string>
     <string name="bg_colors_background_from_cover">Achtergrond van hoes</string>
     <string name="bg_colors_background_from_theme">Achtergrond van thema</string>
-    <string name="bg_colors_gradient_background_from_cover">Gradient background from cover</string>
-    <string name="bg_colors_gradient_background_from_theme">Gradient background from theme</string>
-    <string name="vimusic_show_search_button_in_navigation_bar">Show search button in navigation bar</string>
-    <string name="vismusic_only_in_left_right_navigation_bar">Only for ViMusic ui mode in left/right navigation bar</string>
+    <string name="bg_colors_gradient_background_from_cover">Kleurovergang achtergrond van omslag</string>
+    <string name="bg_colors_gradient_background_from_theme">Kleurovergang achtergrond van thema</string>
+    <string name="vimusic_show_search_button_in_navigation_bar">Zoekknop in navigatiebalk tonen</string>
+    <string name="vismusic_only_in_left_right_navigation_bar">Alleen voor ViMusic ui-mode in de linker/rechter navigatiebalk</string>
     <string name="enable_monthly_playlists_creation">Enable monthly playlists creation</string>
     <string name="info_no_singles_yet">No singles yet</string>
     <string name="info_no_albums_yet">No albums yet</string>
