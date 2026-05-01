@@ -671,7 +671,7 @@ class MainActivity :
     @OptIn(
         ExperimentalTextApi::class,
         ExperimentalFoundationApi::class, ExperimentalAnimationApi::class,
-        ExperimentalMaterial3Api::class, FlowPreview::class
+        ExperimentalMaterial3Api::class, FlowPreview::class, ExperimentalComposeUiApi::class
     )
     @ExperimentalSerializationApi
     @ExperimentalPermissionsApi

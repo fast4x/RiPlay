@@ -1,5 +1,8 @@
 package it.fast4x.riplay.extensions.audiotag
 
+import android.Manifest
+import android.content.pm.PackageManager
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -44,7 +47,12 @@ class AudioTagViewModel() : ViewModel(), ViewModelProvider.Factory {
     private val _statsState = MutableStateFlow<StatResponse?>(null)
     val statsState: StateFlow<StatResponse?> = _statsState.asStateFlow()
 
-
+    fun checkPermission(permission: String): Boolean {
+        return ContextCompat.checkSelfPermission(
+            globalContext(),
+            permission
+        ) == PackageManager.PERMISSION_GRANTED
+    }
 
 
     fun info() {
@@ -66,9 +74,10 @@ class AudioTagViewModel() : ViewModel(), ViewModelProvider.Factory {
         }
     }
 
+    @androidx.annotation.RequiresPermission(android.Manifest.permission.RECORD_AUDIO)
     fun tryAudioRecorder() {
 
-        if (!checkApiKey()) return
+        if (!checkApiKey() || !checkPermission(Manifest.permission.RECORD_AUDIO)) return
 
         viewModelScope.launch {
             _uiState.value = UiState.Recording
@@ -86,9 +95,10 @@ class AudioTagViewModel() : ViewModel(), ViewModelProvider.Factory {
         }
     }
 
+    @androidx.annotation.RequiresPermission(android.Manifest.permission.RECORD_AUDIO)
     fun identifySong() {
 
-        if ((_uiState.value is UiState.Recording) || !checkApiKey()) return
+        if ((_uiState.value is UiState.Recording) || !checkApiKey() || !checkPermission(Manifest.permission.RECORD_AUDIO)) return
 
         viewModelScope.launch {
             _uiState.value = UiState.Recording

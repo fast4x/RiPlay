@@ -1,8 +1,13 @@
 package it.fast4x.riplay.extensions.recorders
 
+import android.Manifest
+import android.content.pm.PackageManager
 import android.media.AudioFormat
 import android.media.AudioRecord
 import android.media.MediaRecorder
+import android.os.Build
+import androidx.core.content.ContextCompat
+import it.fast4x.riplay.utils.globalContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.ByteArrayOutputStream
@@ -24,8 +29,18 @@ class AudioRecorder {
     private val audioFormat = AudioFormat.ENCODING_PCM_16BIT
     private val bufferSize = AudioRecord.getMinBufferSize(sampleRate, channelConfig, audioFormat) * 2
 
-    suspend fun startRecording(format: OutputFormat = OutputFormat.PCM): ByteArray? =
-        withContext(Dispatchers.IO) {
+    fun checkPermission(permission: String): Boolean {
+        return ContextCompat.checkSelfPermission(
+            globalContext(),
+            permission
+        ) == PackageManager.PERMISSION_GRANTED
+    }
+
+    @androidx.annotation.RequiresPermission(android.Manifest.permission.RECORD_AUDIO)
+    suspend fun startRecording(format: OutputFormat = OutputFormat.PCM): ByteArray? {
+        if (!checkPermission(Manifest.permission.RECORD_AUDIO)) return null
+
+        return withContext(Dispatchers.IO) {
             if (isRecording) return@withContext null
 
             try {
@@ -80,6 +95,7 @@ class AudioRecorder {
                 null
             }
         }
+    }
 
     fun stopRecording() {
         if (isRecording) {
