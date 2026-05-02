@@ -1,0 +1,557 @@
+package it.fast4x.riplay.utils
+
+
+import android.annotation.SuppressLint
+import android.content.Context
+import androidx.annotation.OptIn
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewModelScope
+import androidx.media3.common.C
+import androidx.media3.common.MediaItem
+import androidx.media3.common.Player
+import androidx.media3.common.Player.REPEAT_MODE_ALL
+import androidx.media3.common.Player.REPEAT_MODE_OFF
+import androidx.media3.common.Player.REPEAT_MODE_ONE
+import androidx.media3.common.Timeline
+import androidx.media3.common.util.UnstableApi
+import androidx.media3.datasource.DataSpec
+import it.fast4x.riplay.R
+import it.fast4x.riplay.commonutils.durationTextToMillis
+import it.fast4x.riplay.data.Database
+import it.fast4x.riplay.data.models.QueuedMediaItem
+import it.fast4x.riplay.data.models.Queues
+import it.fast4x.riplay.data.models.Song
+import it.fast4x.riplay.data.models.defaultQueueId
+import it.fast4x.riplay.enums.DurationInMinutes
+import it.fast4x.riplay.enums.PopupType
+import it.fast4x.riplay.extensions.preferences.excludeSongIfIsVideoKey
+import it.fast4x.riplay.extensions.preferences.excludeSongsWithDurationLimitKey
+import it.fast4x.riplay.extensions.preferences.getEnum
+import it.fast4x.riplay.extensions.preferences.preferences
+import it.fast4x.riplay.services.playback.PlayerService
+import it.fast4x.riplay.ui.components.themed.SmartMessage
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
+import timber.log.Timber
+import java.util.ArrayDeque
+
+
+const val LOCAL_KEY_PREFIX = "local:"
+
+@get:OptIn(UnstableApi::class)
+val DataSpec.isLocal get() = key?.startsWith(LOCAL_KEY_PREFIX) == true
+@get:OptIn(UnstableApi::class)
+val DataSpec.isLocalUri get() = uri.toString().startsWith("content://")
+
+val MediaItem.isLocal get() = mediaId.startsWith(LOCAL_KEY_PREFIX)
+val Song.isLocal get() = id.startsWith(LOCAL_KEY_PREFIX)
+val String.isLocal get() = this.startsWith(LOCAL_KEY_PREFIX)
+
+//var GlobalVolume: Float = 0.5f
+
+/*
+fun Player.restoreGlobalVolume() {
+    CoroutineScope(Dispatchers.Main).launch {
+        volume = GlobalVolume
+    }
+}
+
+fun Player.setGlobalVolume(v: Float) {
+    GlobalVolume = v
+}
+
+fun Player.getGlobalVolume(): Float {
+    return GlobalVolume
+}
+
+ */
+
+fun Player.isNowPlaying(mediaId: String): Boolean {
+    return mediaId == currentMediaItem?.mediaId
+}
+
+val Player.currentWindow: Timeline.Window?
+    get() = if (mediaItemCount == 0) null else currentTimeline.getWindow(currentMediaItemIndex, Timeline.Window())
+
+val Timeline.mediaItems: List<MediaItem>
+    get() = List(windowCount) {
+        getWindow(it, Timeline.Window()).mediaItem
+    }
+
+inline val Timeline.windows: List<Timeline.Window>
+    get() = List(windowCount) {
+        getWindow(it, Timeline.Window())
+    }
+
+val Player.shouldBePlaying: Boolean
+    get() = !(playbackState == Player.STATE_ENDED || !playWhenReady)
+
+fun Player.removeMediaItems(range: IntRange) = removeMediaItems(range.first, range.last + 1)
+
+fun Player.seamlessPlay(mediaItem: MediaItem) {
+    if (mediaItem.mediaId == currentMediaItem?.mediaId) {
+        if (currentMediaItemIndex > 0) removeMediaItems(0 until currentMediaItemIndex)
+        if (currentMediaItemIndex < mediaItemCount - 1)
+            removeMediaItems(currentMediaItemIndex + 1 until mediaItemCount)
+    } else forcePlay(mediaItem)
+    Timber.d("PlayerService-seamlessPlay mediaItem: ${mediaItem.mediaId}")
+}
+
+fun Player.seamlessQueue(mediaItem: MediaItem) {
+    if (mediaItem.mediaId == currentMediaItem?.mediaId) {
+        if (currentMediaItemIndex > 0) removeMediaItems(0 until currentMediaItemIndex)
+        if (currentMediaItemIndex < mediaItemCount - 1)
+            removeMediaItems(currentMediaItemIndex + 1 until mediaItemCount)
+    }
+}
+
+
+fun Player.shuffleQueue() {
+    val mediaItems = currentTimeline.mediaItems.toMutableList().apply { removeAt(currentMediaItemIndex) }
+    if (currentMediaItemIndex > 0) removeMediaItems(0, currentMediaItemIndex)
+    if (currentMediaItemIndex < mediaItemCount - 1) removeMediaItems(currentMediaItemIndex + 1, mediaItemCount)
+    addMediaItems(mediaItems.shuffled())
+}
+
+fun Player.forcePlay(mediaItem: MediaItem, replace: Boolean = false) {
+    if (excludeMediaItem(mediaItem, globalContext())) return
+
+    if (!replace)
+        setMediaItem(mediaItem, true)
+    else
+        replaceMediaItem(currentMediaItemIndex, mediaItem)
+
+    //restoreGlobalVolume()
+    playWhenReady = true
+    prepare()
+    Timber.d("PlayerService-forcePlay withReplace $replace mediaItem: ${mediaItem.mediaId} currentMediaItemIndex: $currentMediaItemIndex shuffleModeEnabled $shuffleModeEnabled repeatMode $repeatMode")
+}
+
+fun Player.playAtIndex(mediaItemIndex: Int) {
+    if (excludeMediaItem(getMediaItemAt(mediaItemIndex), globalContext())) return
+
+    seekToDefaultPosition(mediaItemIndex)
+
+    //restoreGlobalVolume()
+    playWhenReady = true
+    prepare()
+
+}
+
+@SuppressLint("Range")
+@UnstableApi
+fun Player.forcePlayAtIndex(mediaItems: List<MediaItem>, mediaItemIndex: Int) {
+    val filteredMediaItems = mediaItems
+    setMediaItems(filteredMediaItems, mediaItemIndex, C.TIME_UNSET)
+
+    //restoreGlobalVolume()
+    playWhenReady = true
+    prepare()
+}
+
+@UnstableApi
+fun Player.forcePlayFromBeginning(mediaItems: List<MediaItem>) =
+    forcePlayAtIndex(mediaItems, 0)
+
+fun Player.forceSeekToPrevious() {
+    val prevIndex = previousMediaItemIndex
+    if (prevIndex != C.INDEX_UNSET) {
+        seekToDefaultPosition(prevIndex)
+    }
+
+}
+
+fun Player.forceSeekToNext() {
+    seekToNext()
+}
+
+fun Player.playNext() {
+    forceSeekToNext()
+//    CoroutineScope(Dispatchers.Main).launch {
+//        restoreGlobalVolume()
+//    }
+}
+
+fun Player.playPrevious() {
+    forceSeekToPrevious()
+//    CoroutineScope(Dispatchers.Main).launch {
+//        restoreGlobalVolume()
+//    }
+}
+
+@UnstableApi
+fun Player.addNext(mediaItem: MediaItem, context: Context? = null, queue: Queues) {
+    if (context != null && excludeMediaItem(mediaItem, context)) return
+
+    val itemIndex = findMediaItemIndexById(mediaItem.mediaId)
+    if (itemIndex >= 0) removeMediaItem(itemIndex)
+
+    if (!canAddedToQueue(mediaItem, queue)) return
+
+    mediaItem.mediaMetadata.extras?.putLong("idQueue", queue.id)
+    println("mediaItem-addNext extras: ${mediaItem.mediaMetadata.extras}")
+
+    addMediaItem(currentMediaItemIndex + 1, mediaItem)
+    SmartMessage(globalContext().resources.getString(R.string.done), context = globalContext())
+}
+
+@UnstableApi
+fun Player.addNext(mediaItems: List<MediaItem>, context: Context? = null, queue: Queues) {
+    val filteredMediaItems = if (context != null) excludeMediaItems(mediaItems, context)
+    else mediaItems
+
+    filteredMediaItems.forEach { mediaItem ->
+        val itemIndex = findMediaItemIndexById(mediaItem.mediaId)
+        if (itemIndex >= 0) removeMediaItem(itemIndex)
+
+        if (canAddedToQueue(mediaItem, queue)) {
+            mediaItem.mediaMetadata.extras?.putLong("idQueue", queue.id)
+            println("mediaItems-addNext extras: ${mediaItem.mediaMetadata.extras}")
+        }
+    }
+
+    addMediaItems(currentMediaItemIndex + 1, filteredMediaItems)
+    SmartMessage(globalContext().resources.getString(R.string.done), context = globalContext())
+}
+
+
+fun Player.enqueue(mediaItem: MediaItem, context: Context? = null, queue: Queues) {
+     if (context != null && excludeMediaItem(mediaItem, context)) return
+
+    if (!canAddedToQueue(mediaItem, queue)) return
+
+    mediaItem.mediaMetadata.extras?.putLong("idQueue", queue.id)
+    println("mediaItem-enqueue extras: ${mediaItem.mediaMetadata.extras}")
+
+    addMediaItem(mediaItemCount, mediaItem)
+    SmartMessage(globalContext().resources.getString(R.string.done), context = globalContext())
+
+}
+
+
+@UnstableApi
+fun Player.enqueue(
+    mediaItems: List<MediaItem>,
+    context: Context? = null,
+) {
+    val filteredMediaItems = if (context != null) excludeMediaItems(mediaItems, context)
+    else mediaItems
+
+    addMediaItems(mediaItemCount, filteredMediaItems)
+    SmartMessage(globalContext().resources.getString(R.string.done), context = globalContext())
+}
+
+fun Player.canAddedToQueue(mediaItem: MediaItem, queue: Queues): Boolean {
+    if (mediaItem.isVideo && !queue.acceptVideo) {
+        SmartMessage("Queue not accept video", type = PopupType.Warning, context = globalContext())
+        return false
+    }
+    if (!mediaItem.isVideo && !queue.acceptSong) {
+        SmartMessage("Queue not accept song", type = PopupType.Warning, context = globalContext())
+        return false
+    }
+    if (mediaItem.isPodcast && !queue.acceptPodcast) {
+        SmartMessage("Queue not accept podcast", type = PopupType.Warning, context = globalContext())
+        return false
+    }
+
+    return true
+}
+
+fun Player.findNextMediaItemById(mediaId: String): MediaItem? = runCatching {
+    for (i in currentMediaItemIndex until mediaItemCount) {
+        if (getMediaItemAt(i).mediaId == mediaId) return getMediaItemAt(i)
+    }
+    return null
+}.getOrNull()
+
+fun Player.findMediaItemIndexById(mediaId: String): Int {
+    for (i in currentMediaItemIndex until mediaItemCount) {
+        if (getMediaItemAt(i).mediaId == mediaId) {
+            return i
+        }
+    }
+    return -1
+}
+
+fun Player.excludeMediaItems(mediaItems: List<MediaItem>, context: Context): List<MediaItem> {
+    var filteredMediaItems = mediaItems
+
+        val preferences = context.preferences
+        val excludeIfIsVideo = preferences.getBoolean(excludeSongIfIsVideoKey, false)
+        if (excludeIfIsVideo) {
+            filteredMediaItems = mediaItems.filter { !it.isVideo }
+        }
+
+        val excludeSongWithDurationLimit =
+            preferences.getEnum(excludeSongsWithDurationLimitKey, DurationInMinutes.Disabled)
+
+        if (excludeSongWithDurationLimit != DurationInMinutes.Disabled) {
+            filteredMediaItems = mediaItems.filter {
+                it.mediaMetadata.extras?.getString("durationText")?.let { it1 ->
+                    durationTextToMillis(it1)
+                }!! < excludeSongWithDurationLimit.minutesInMilliSeconds
+            }
+
+        }
+
+        // CHECK il blacklisted
+        filteredMediaItems = filteredMediaItems.filter { mediaItem ->
+            val listed = runBlocking(Dispatchers.IO) {
+                Database.blacklisted(mediaItem.mediaId)
+            }
+
+            val filtered = listed == 0L
+            Timber.d("ExcludeMediaitems: ${mediaItem.mediaId} listed: $listed filtered: $filtered")
+            filtered
+        }
+
+        val excludedSongs = mediaItems.size - filteredMediaItems.size
+        if (excludedSongs > 0)
+            CoroutineScope(Dispatchers.Main).launch {
+                    SmartMessage(context.resources.getString(R.string.message_excluded_s_songs).format(excludedSongs), context = context)
+            }
+
+    return filteredMediaItems
+}
+fun Player.excludeMediaItem(mediaItem: MediaItem, context: Context): Boolean {
+
+        val preferences = context.preferences
+        val excludeIfIsVideo = preferences.getBoolean(excludeSongIfIsVideoKey, false)
+        if (excludeIfIsVideo && mediaItem.isVideo) {
+            CoroutineScope(Dispatchers.Main).launch {
+                SmartMessage(context.resources.getString(R.string.message_excluded_videos).format(1), context = context)
+            }
+            return true
+        }
+
+        val excludeSongWithDurationLimit =
+            preferences.getEnum(excludeSongsWithDurationLimitKey, DurationInMinutes.Disabled)
+        if (excludeSongWithDurationLimit != DurationInMinutes.Disabled) {
+            val excludedSong = mediaItem.mediaMetadata.extras?.getString("durationText")?.let { it1 ->
+                durationTextToMillis(it1)
+                }!! <= excludeSongWithDurationLimit.minutesInMilliSeconds
+
+            if (excludedSong)
+                CoroutineScope(Dispatchers.Main).launch {
+                    SmartMessage(context.resources.getString(R.string.message_excluded_s_songs).format(1), context = context)
+                }
+
+            return excludedSong
+        }
+
+        // CHECK il blacklisted
+        val listed = runBlocking(Dispatchers.IO) {
+            Database.blacklisted(mediaItem.mediaId)
+        } != 0L
+
+        if (listed)
+            CoroutineScope(Dispatchers.Main).launch {
+                SmartMessage(context.resources.getString(R.string.message_excluded_s_songs).format(1), context = context)
+            }
+
+        return listed
+
+}
+
+val Player.mediaItems: List<MediaItem>
+    get() = object : AbstractList<MediaItem>() {
+        override val size: Int
+            get() = mediaItemCount
+
+        override fun get(index: Int): MediaItem = getMediaItemAt(index)
+    }
+
+fun Player.getCurrentQueueIndex(): Int {
+    if (currentTimeline.isEmpty) {
+        return -1
+    }
+    var index = 0
+    var currentMediaItemIndex = currentMediaItemIndex
+    while (currentMediaItemIndex != C.INDEX_UNSET) {
+        currentMediaItemIndex = currentTimeline.getPreviousWindowIndex(currentMediaItemIndex, REPEAT_MODE_OFF, shuffleModeEnabled)
+        if (currentMediaItemIndex != C.INDEX_UNSET) {
+            index++
+        }
+    }
+    return index
+}
+
+fun Player.togglePlayPause() {
+    if (!playWhenReady && playbackState == Player.STATE_IDLE) {
+        prepare()
+    }
+    playWhenReady = !playWhenReady
+}
+
+fun Player.toggleRepeatMode() {
+    repeatMode = when (repeatMode) {
+        REPEAT_MODE_OFF -> REPEAT_MODE_ALL
+        REPEAT_MODE_ALL -> REPEAT_MODE_ONE
+        REPEAT_MODE_ONE -> REPEAT_MODE_OFF
+        else -> throw IllegalStateException()
+    }
+}
+
+fun Player.toggleShuffleMode() {
+    shuffleModeEnabled = !shuffleModeEnabled
+}
+
+fun Player.getQueueWindows(): List<Timeline.Window> {
+    val timeline = currentTimeline
+    if (timeline.isEmpty) {
+        return emptyList()
+    }
+    val queue = ArrayDeque<Timeline.Window>()
+    val queueSize = timeline.windowCount
+
+    val currentMediaItemIndex: Int = currentMediaItemIndex
+    queue.add(timeline.getWindow(currentMediaItemIndex, Timeline.Window()))
+
+    var firstMediaItemIndex = currentMediaItemIndex
+    var lastMediaItemIndex = currentMediaItemIndex
+    val shuffleModeEnabled = shuffleModeEnabled
+    while ((firstMediaItemIndex != C.INDEX_UNSET || lastMediaItemIndex != C.INDEX_UNSET) && queue.size < queueSize) {
+        if (lastMediaItemIndex != C.INDEX_UNSET) {
+            lastMediaItemIndex = timeline.getNextWindowIndex(lastMediaItemIndex, REPEAT_MODE_OFF, shuffleModeEnabled)
+            if (lastMediaItemIndex != C.INDEX_UNSET) {
+                queue.add(timeline.getWindow(lastMediaItemIndex, Timeline.Window()))
+            }
+        }
+        if (firstMediaItemIndex != C.INDEX_UNSET && queue.size < queueSize) {
+            firstMediaItemIndex = timeline.getPreviousWindowIndex(firstMediaItemIndex, REPEAT_MODE_OFF, shuffleModeEnabled)
+            if (firstMediaItemIndex != C.INDEX_UNSET) {
+                queue.addFirst(timeline.getWindow(firstMediaItemIndex, Timeline.Window()))
+            }
+        }
+    }
+    return queue.toList()
+}
+
+@Composable
+inline fun Player.DisposableListener(crossinline listenerProvider: () -> Player.Listener) {
+    DisposableEffect(this) {
+        val listener = listenerProvider()
+        addListener(listener)
+        onDispose { removeListener(listener) }
+    }
+}
+
+@OptIn(UnstableApi::class)
+fun Player.positionAndDurationStateFlow(
+    scope: CoroutineScope,
+    binder: PlayerService.Binder?
+): StateFlow<Pair<Long, Long>> {
+
+    var onlineCurrentSecond = 0f
+    var onlineCurrentDuration = 0f
+    var playerIsPlaying = false
+
+    binder?.onlinePlayerCurrentSecond?.collectLatest(scope) { onlineCurrentSecond = it }
+    binder?.onlinePlayerCurrentDuration?.collectLatest(scope) { onlineCurrentDuration = it }
+    binder?.playerState?.collectLatest(scope) { playerIsPlaying = it.isPlaying }
+
+    fun currentPositionAndDuration(): Pair<Long, Long> =
+        if (currentMediaItem?.isLocal == true) {
+            currentPosition to duration
+        } else {
+            (onlineCurrentSecond.toLong() * 1000L) to (onlineCurrentDuration.toLong() * 1000L)
+        }
+
+    return callbackFlow {
+        var isSeeking = false
+
+        val listener = object : Player.Listener {
+
+            override fun onPlaybackStateChanged(playbackState: Int) {
+                if (playbackState == Player.STATE_READY) {
+                    isSeeking = false
+                }
+            }
+
+            override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
+                isSeeking = false
+                trySend(currentPositionAndDuration())
+            }
+
+            override fun onPositionDiscontinuity(
+                oldPosition: Player.PositionInfo,
+                newPosition: Player.PositionInfo,
+                reason: Int
+            ) {
+                if (reason == Player.DISCONTINUITY_REASON_SEEK && currentMediaItem?.isLocal == true) {
+                    isSeeking = true
+                    trySend(currentPosition to duration)
+                }
+            }
+        }
+
+        addListener(listener)
+
+        val pollJob = launch {
+            while (isActive) {
+                delay(if (playerIsPlaying) 100L else 500L)
+                if (!isSeeking) trySend(currentPositionAndDuration())
+            }
+        }
+
+        awaitClose {
+            removeListener(listener)
+            pollJob.cancel()
+        }
+    }.stateIn(
+        scope = scope,
+        started = SharingStarted.Eagerly,
+        initialValue = currentPositionAndDuration()
+    )
+}
+
+@UnstableApi
+class PlayerViewModel (
+    private val binder: PlayerService.Binder?
+) : ViewModel() {
+    val positionAndDuration: StateFlow<Pair<Long, Long>> =
+        binder?.player?.positionAndDurationStateFlow(viewModelScope, binder)
+            ?: flowOf(0L to 0L).stateIn(viewModelScope, SharingStarted.Eagerly, 0L to 0L)
+}
+
+@UnstableApi
+class PlayerViewModelFactory(
+    private val binder: PlayerService.Binder?
+) : ViewModelProvider.Factory {
+    @Suppress("UNCHECKED_CAST")
+    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+        if (modelClass.isAssignableFrom(PlayerViewModel::class.java)) {
+            return PlayerViewModel(binder) as T
+        }
+        throw IllegalArgumentException("Unknown ViewModel class")
+    }
+}
+
+
+fun formatMillis(millis: Long): String {
+    val totalSeconds = millis / 1000
+    val hours = totalSeconds / 3600
+    val minutes = (totalSeconds % 3600) / 60
+    val seconds = totalSeconds % 60
+
+    return if (hours > 0) {
+        String.format("%d:%02d:%02d", hours, minutes, seconds)
+    } else {
+        String.format("%02d:%02d", minutes, seconds)
+    }
+}

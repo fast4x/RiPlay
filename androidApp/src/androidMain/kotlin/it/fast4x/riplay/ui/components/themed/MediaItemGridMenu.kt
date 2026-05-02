@@ -1,0 +1,1201 @@
+package it.fast4x.riplay.ui.components.themed
+
+import androidx.activity.compose.BackHandler
+import androidx.annotation.OptIn
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.text.BasicText
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.ExperimentalTextApi
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.media3.common.MediaItem
+import androidx.media3.common.util.UnstableApi
+import androidx.media3.exoplayer.offline.Download
+import androidx.navigation.NavController
+import it.fast4x.environment.models.NavigationEndpoint
+import it.fast4x.riplay.data.Database
+import it.fast4x.riplay.LocalPlayerServiceBinder
+import it.fast4x.riplay.LocalSelectedQueue
+import it.fast4x.riplay.commonutils.MODIFIED_PREFIX
+import it.fast4x.riplay.commonutils.MONTHLY_PREFIX
+import it.fast4x.riplay.commonutils.PINNED_PREFIX
+import it.fast4x.riplay.commonutils.PIPED_PREFIX
+import it.fast4x.riplay.R
+import it.fast4x.riplay.utils.appContext
+import it.fast4x.riplay.enums.NavRoutes
+import it.fast4x.riplay.enums.PlaylistSortBy
+import it.fast4x.riplay.enums.SortOrder
+import it.fast4x.riplay.data.models.Artist
+import it.fast4x.riplay.data.models.Info
+import it.fast4x.riplay.data.models.Playlist
+import it.fast4x.riplay.data.models.SongPlaylistMap
+import it.fast4x.riplay.utils.isLocal
+import it.fast4x.riplay.ui.items.SongItem
+import it.fast4x.riplay.ui.styling.Dimensions
+import it.fast4x.riplay.ui.styling.favoritesIcon
+import it.fast4x.riplay.ui.styling.px
+import it.fast4x.riplay.utils.addNext
+import it.fast4x.riplay.utils.enqueue
+import it.fast4x.riplay.utils.formatAsDuration
+import it.fast4x.riplay.utils.mediaItemToggleLike
+import it.fast4x.riplay.extensions.preferences.playlistSortByKey
+import it.fast4x.riplay.extensions.preferences.playlistSortOrderKey
+import it.fast4x.riplay.extensions.preferences.rememberPreference
+import it.fast4x.riplay.ui.styling.semiBold
+import it.fast4x.riplay.commonutils.thumbnail
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import it.fast4x.riplay.utils.colorPalette
+import it.fast4x.riplay.enums.PopupType
+import it.fast4x.riplay.extensions.fastshare.FastShare
+import it.fast4x.riplay.data.models.Queues
+import it.fast4x.riplay.data.models.Song
+import it.fast4x.riplay.data.models.defaultQueue
+import it.fast4x.riplay.extensions.persist.persistList
+import it.fast4x.riplay.utils.typography
+import it.fast4x.riplay.ui.screens.settings.isYtSyncEnabled
+import it.fast4x.riplay.utils.PlayerViewModel
+import it.fast4x.riplay.utils.PlayerViewModelFactory
+import it.fast4x.riplay.utils.addSongToYtPlaylist
+import it.fast4x.riplay.utils.addToOnlineLikedSong
+import it.fast4x.riplay.utils.forcePlay
+import it.fast4x.riplay.utils.isNetworkConnected
+import it.fast4x.riplay.utils.getLikeState
+import it.fast4x.riplay.commonutils.setDisLikeState
+import it.fast4x.riplay.utils.removeFromOnlineLikedSong
+import kotlinx.serialization.ExperimentalSerializationApi
+
+@OptIn(UnstableApi::class)
+@ExperimentalSerializationApi
+@Composable
+fun NonQueuedMediaItemGridMenu(
+    navController: NavController,
+    onDismiss: () -> Unit,
+    mediaItem: MediaItem,
+    modifier: Modifier = Modifier,
+    onRemoveFromPlaylist: (() -> Unit)? = null,
+    onHideFromDatabase: (() -> Unit)? = null,
+    onRemoveFromQuickPicks: (() -> Unit)? = null,
+    disableScrollingText: Boolean,
+    onBlacklist: (() -> Unit)? = null,
+) {
+    val binder = LocalPlayerServiceBinder.current
+    val context = LocalContext.current
+    val selectedQueue = LocalSelectedQueue.current
+    BaseMediaItemGridMenu(
+        navController = navController,
+        onDismiss = onDismiss,
+        mediaItem = mediaItem,
+        modifier = modifier,
+        onStartRadio = {
+            binder?.stopRadio()
+            binder?.player?.forcePlay(mediaItem)
+            //fastPlay(mediaItem, binder)
+            binder?.setupRadio(
+                NavigationEndpoint.Endpoint.Watch(
+                    videoId = mediaItem.mediaId,
+                    playlistId = mediaItem.mediaMetadata.extras?.getString("playlistId")
+                )
+            )
+        },
+        onPlayNext = { binder?.player?.addNext(mediaItem, context, selectedQueue ?: defaultQueue()) },
+        onEnqueue = { binder?.player?.enqueue(mediaItem, context, it) },
+        onRemoveFromPlaylist = onRemoveFromPlaylist,
+        onHideFromDatabase = onHideFromDatabase,
+        onRemoveFromQuickPicks = onRemoveFromQuickPicks,
+        disableScrollingText = disableScrollingText,
+        onBlacklist = onBlacklist,
+    )
+}
+
+@ExperimentalSerializationApi
+@Composable
+fun BaseMediaItemGridMenu(
+    navController: NavController,
+    onDismiss: () -> Unit,
+    mediaItem: MediaItem,
+    modifier: Modifier = Modifier,
+    onGoToEqualizer: (() -> Unit)? = null,
+    onShowSleepTimer: (() -> Unit)? = null,
+    onStartRadio: (() -> Unit)? = null,
+    onPlayNext: (() -> Unit)? = null,
+    onEnqueue: ((Queues) -> Unit)? = null,
+    onRemoveFromQueue: (() -> Unit)? = null,
+    onRemoveFromPlaylist: (() -> Unit)? = null,
+    onHideFromDatabase: (() -> Unit)? = null,
+    onDeleteFromDatabase: (() -> Unit)? = null,
+    onRemoveFromQuickPicks: (() -> Unit)? = null,
+    onClosePlayer: (() -> Unit)? = null,
+    onGoToPlaylist: ((Long) -> Unit)? = null,
+    onAddToPreferites: (() -> Unit)? = null,
+    onMatchingSong: (() -> Unit)? = null,
+    onInfo: (() -> Unit)? = null,
+    onSelectUnselect: (() -> Unit)? = null,
+    disableScrollingText: Boolean,
+    onBlacklist: (() -> Unit)? = null,
+) {
+    //val context = LocalContext.current
+
+    MediaItemGridMenu(
+        navController = navController,
+        mediaItem = mediaItem,
+        onDismiss = onDismiss,
+        onGoToEqualizer = onGoToEqualizer,
+        onShowSleepTimer = onShowSleepTimer,
+        onStartRadio = onStartRadio,
+        onPlayNext = onPlayNext,
+        onEnqueue = onEnqueue,
+        onAddToPreferites = onAddToPreferites,
+        onMatchingSong =  onMatchingSong,
+        onAddToPlaylist = { playlist, position ->
+            if (!isYtSyncEnabled() || !playlist.isYoutubePlaylist){
+                Database.asyncTransaction {
+                    insert(mediaItem)
+                    insert(
+                        SongPlaylistMap(
+                            songId = mediaItem.mediaId,
+                            playlistId = insert(playlist).takeIf { it != -1L } ?: playlist.id,
+                            position = position
+                        ).default()
+                    )
+                }
+            } else {
+                CoroutineScope(Dispatchers.IO).launch {
+                    addSongToYtPlaylist(playlist.id, position, playlist.browseId ?: "", mediaItem)
+                }
+            }
+        },
+        onHideFromDatabase = onHideFromDatabase,
+        onDeleteFromDatabase = onDeleteFromDatabase,
+        onRemoveFromPlaylist = onRemoveFromPlaylist,
+        onRemoveFromQueue = onRemoveFromQueue,
+        onGoToAlbum =   {
+            navController.navigate(route = "${NavRoutes.album.name}/${it}")
+            if (onClosePlayer != null) {
+                onClosePlayer()
+            }
+        }, //albumRoute::global,
+        onGoToArtist = {
+            navController.navigate(route = "${NavRoutes.artist.name}/${it}")
+            if (onClosePlayer != null) {
+                onClosePlayer()
+            }
+        },
+        /*
+        onShare = {
+            val sendIntent = Intent().apply {
+                action = Intent.ACTION_SEND
+                type = "text/plain"
+                putExtra(
+                    Intent.EXTRA_TEXT,
+                    "https://music.youtube.com/watch?v=${mediaItem.mediaId}"
+                )
+            }
+
+            context.startActivity(Intent.createChooser(sendIntent, null))
+        },
+         */
+        onRemoveFromQuickPicks = onRemoveFromQuickPicks,
+        onGoToPlaylist = {
+            navController.navigate(route = "${NavRoutes.localPlaylist.name}/$it")
+        },
+        onInfo = onInfo,
+        onSelectUnselect = onSelectUnselect,
+        modifier = modifier,
+        disableScrollingText = disableScrollingText,
+        onBlacklist = onBlacklist,
+    )
+}
+
+@ExperimentalSerializationApi
+@Composable
+fun MiniMediaItemGridMenu(
+    navController: NavController,
+    onDismiss: () -> Unit,
+    mediaItem: MediaItem,
+    onGoToPlaylist: ((Long) -> Unit)? = null,
+    onAddToPreferites: (() -> Unit)? = null,
+    modifier: Modifier = Modifier,
+    disableScrollingText: Boolean,
+) {
+
+    MediaItemGridMenu(
+        navController = navController,
+        onDismiss = onDismiss,
+        mediaItem = mediaItem,
+        modifier = modifier,
+        onAddToPreferites = onAddToPreferites,
+        onAddToPlaylist = { playlist, position ->
+            if (!isYtSyncEnabled() || !playlist.isYoutubePlaylist){
+                Database.asyncTransaction {
+                    insert(mediaItem)
+                    insert(
+                        SongPlaylistMap(
+                            songId = mediaItem.mediaId,
+                            playlistId = insert(playlist).takeIf { it != -1L } ?: playlist.id,
+                            position = position
+                        ).default()
+                    )
+                }
+            } else {
+                CoroutineScope(Dispatchers.IO).launch {
+                    addSongToYtPlaylist(playlist.id, position, playlist.browseId ?: "", mediaItem)
+                }
+            }
+
+            onDismiss()
+        },
+        onGoToPlaylist = {
+            navController.navigate(route = "${NavRoutes.localPlaylist.name}/$it")
+            if (onGoToPlaylist != null) {
+                onGoToPlaylist(it)
+            }
+        },
+        disableScrollingText = disableScrollingText,
+    )
+}
+
+@ExperimentalSerializationApi
+@kotlin.OptIn(ExperimentalTextApi::class)
+@OptIn(UnstableApi::class)
+@Composable
+fun MediaItemGridMenu (
+    navController: NavController,
+    onDismiss: () -> Unit,
+    mediaItem: MediaItem,
+    modifier: Modifier = Modifier,
+    onGoToEqualizer: (() -> Unit)? = null,
+    onShowSleepTimer: (() -> Unit)? = null,
+    onStartRadio: (() -> Unit)? = null,
+    onPlayNext: (() -> Unit)? = null,
+    onEnqueue: ((Queues) -> Unit)? = null,
+    onHideFromDatabase: (() -> Unit)? = null,
+    onDeleteFromDatabase: (() -> Unit)? = null,
+    onRemoveFromQueue: (() -> Unit)? = null,
+    onRemoveFromPlaylist: (() -> Unit)? = null,
+    onAddToPreferites: (() -> Unit)?,
+    onMatchingSong: (() -> Unit)? = null,
+    onAddToPlaylist: ((Playlist, Int) -> Unit)? = null,
+    onGoToAlbum: ((String) -> Unit)? = null,
+    onGoToArtist: ((String) -> Unit)? = null,
+    onRemoveFromQuickPicks: (() -> Unit)? = null,
+    onGoToPlaylist: ((Long) -> Unit)?,
+    onInfo: (() -> Unit)? = null,
+    onSelectUnselect: (() -> Unit)? = null,
+    disableScrollingText: Boolean,
+    onBlacklist: (() -> Unit)? = null,
+) {
+    val binder = LocalPlayerServiceBinder.current
+    val uriHandler = LocalUriHandler.current
+    val context = LocalContext.current
+
+    val isLocal by remember { derivedStateOf { mediaItem.isLocal } }
+
+    var updateData by remember {
+        mutableStateOf(false)
+    }
+    var likedAt by remember {
+        mutableStateOf<Long?>(null)
+    }
+    LaunchedEffect(Unit, mediaItem.mediaId, updateData) {
+        Database.likedAt(mediaItem.mediaId).collect { likedAt = it }
+    }
+
+    var downloadState by remember {
+        mutableStateOf(Download.STATE_STOPPED)
+    }
+
+    val thumbnailSizeDp = Dimensions.thumbnails.song + 20.dp
+    val thumbnailSizePx = thumbnailSizeDp.px
+    val thumbnailArtistSizeDp = Dimensions.thumbnails.song + 10.dp
+
+    var albumInfo by remember {
+        mutableStateOf(mediaItem.mediaMetadata.extras?.getString("albumId")?.let { albumId ->
+            Info(albumId, null)
+        })
+    }
+
+
+    var artistsInfo by remember {
+        mutableStateOf(
+            mediaItem.mediaMetadata.extras?.getStringArrayList("artistNames")?.let { artistNames ->
+                mediaItem.mediaMetadata.extras?.getStringArrayList("artistIds")?.let { artistIds ->
+                    artistNames.zip(artistIds).map { (authorName, authorId) ->
+                        Info(authorId, authorName)
+                    }
+                }
+            }
+        )
+    }
+
+    var artistsList by persistList<Artist?>("home/artists")
+    var artistIds = remember { mutableListOf("") }
+
+    LaunchedEffect(Unit, mediaItem.mediaId) {
+        withContext(Dispatchers.IO) {
+            if (albumInfo == null)
+                albumInfo = Database.songAlbumInfo(mediaItem.mediaId)
+            if (artistsInfo == null)
+                artistsInfo = Database.songArtistInfo(mediaItem.mediaId)
+
+            artistsInfo?.forEach { info ->
+                if (info.id.isNotEmpty()) artistIds.add(info.id)
+            }
+            Database.getArtistsList(artistIds).collect { artistsList = it }
+        }
+    }
+
+
+    var showSelectDialogListenOn by remember {
+        mutableStateOf(false)
+    }
+
+    if (showSelectDialogListenOn)
+        SelectorDialog(
+            title = stringResource(R.string.listen_on),
+            onDismiss = { showSelectDialogListenOn = false },
+            values = listOf(
+                Info(
+                    "https://youtube.com/watch?v=${mediaItem.mediaId}",
+                    stringResource(R.string.listen_on_youtube)
+                ),
+                Info(
+                    "https://music.youtube.com/watch?v=${mediaItem.mediaId}",
+                    stringResource(R.string.listen_on_youtube_music)
+                ),
+                Info(
+                    "https://piped.kavin.rocks/watch?v=${mediaItem.mediaId}&playerAutoPlay=true",
+                    stringResource(R.string.listen_on_piped)
+                ),
+                Info(
+                    "https://yewtu.be/watch?v=${mediaItem.mediaId}&autoplay=1",
+                    stringResource(R.string.listen_on_invidious)
+                )
+            ),
+            onValueSelected = {
+                binder?.player?.pause()
+                showSelectDialogListenOn = false
+                uriHandler.openUri(it)
+            }
+        )
+
+    var isViewingPlaylists by remember {
+        mutableStateOf(false)
+    }
+
+    val height by remember {
+        mutableStateOf(0.dp)
+    }
+
+    val topContent = @Composable {
+        var showFastShare by remember { mutableStateOf(false) }
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .padding(end = 12.dp)
+        ) {
+            SongItem(
+                mediaItem = mediaItem,
+                thumbnailUrl = mediaItem.mediaMetadata.artworkUri.toString().thumbnail(thumbnailSizePx),
+                thumbnailSizeDp = thumbnailSizeDp,
+                modifier = Modifier
+                    .weight(1f),
+                //disableScrollingText = disableScrollingText
+            )
+
+
+            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                IconButton(
+                    icon = getLikeState(mediaItem.mediaId),
+                    color = colorPalette().favoritesIcon,
+                    onClick = {
+                        if (!isNetworkConnected(appContext()) && isYtSyncEnabled()) {
+                            SmartMessage(appContext().resources.getString(R.string.no_connection), context = appContext(), type = PopupType.Error)
+                        } else if (!isYtSyncEnabled()){
+                            mediaItemToggleLike(mediaItem)
+                            updateData = !updateData
+                        } else {
+                            CoroutineScope(Dispatchers.IO).launch {
+                                addToOnlineLikedSong(mediaItem)
+                            }
+                        }
+                    },
+                    onLongClick = {
+                        if (!isNetworkConnected(appContext()) && isYtSyncEnabled()) {
+                            SmartMessage(appContext().resources.getString(R.string.no_connection), context = appContext(), type = PopupType.Error)
+                        } else if (!isYtSyncEnabled()){
+                            Database.asyncTransaction {
+                                if (like(mediaItem.mediaId, setDisLikeState(likedAt)) == 0){
+                                    insert(mediaItem, Song::toggleDislike)
+                                }
+                                updateData = !updateData
+                            }
+                        } else {
+                            CoroutineScope(Dispatchers.IO).launch {
+                                // currently can not implement dislike for sync so only unliking song
+                                removeFromOnlineLikedSong(mediaItem)
+                                updateData = !updateData
+                            }
+                        }
+                    },
+                    modifier = Modifier
+                        .padding(all = 4.dp)
+                        .size(24.dp)
+                )
+
+                if (!isLocal)
+                    IconButton(
+                        icon = R.drawable.share_social,
+                        color = colorPalette().text,
+                        onClick = {
+                            showFastShare = true
+//                            val sendIntent = Intent().apply {
+//                                action = Intent.ACTION_SEND
+//                                type = "text/plain"
+//                                putExtra(
+//                                    Intent.EXTRA_TEXT,
+//                                    //"https://music.youtube.com/watch?v=${mediaItem.mediaId}"
+//                                    mediaItem.asSong.shareYTUrl
+//                                )
+//                            }
+//
+//                            context.startActivity(Intent.createChooser(sendIntent, null))
+                        },
+                        modifier = Modifier
+                            .padding(all = 4.dp)
+                            .size(24.dp)
+                    )
+
+
+            }
+
+        }
+        FastShare(
+            showFastShare = showFastShare,
+            content = mediaItem,
+            onDismissRequest = { showFastShare = false }
+        )
+    }
+
+    var showCircularSlider by remember {
+        mutableStateOf(false)
+    }
+    var isShowingSleepTimerDialog by remember {
+        mutableStateOf(false)
+    }
+
+    val sleepTimerMillisLeft by (binder?.sleepTimerMillisLeft
+        ?: flowOf(null))
+        .collectAsState(initial = null)
+
+    val factory = remember(binder) {
+        PlayerViewModelFactory(binder)
+    }
+    val playerViewModel: PlayerViewModel = viewModel(factory = factory)
+    val positionAndDuration by playerViewModel.positionAndDuration.collectAsStateWithLifecycle()
+    val timeRemaining = positionAndDuration.second.toInt() - positionAndDuration.first.toInt()
+
+    if (isShowingSleepTimerDialog) {
+        if (sleepTimerMillisLeft != null) {
+            ConfirmationDialog(
+                text = stringResource(R.string.stop_sleep_timer),
+                cancelText = stringResource(R.string.no),
+                confirmText = stringResource(R.string.stop),
+                onDismiss = { isShowingSleepTimerDialog = false },
+                onConfirm = {
+                    binder?.cancelSleepTimer()
+                    onDismiss()
+                }
+            )
+        } else {
+            DefaultDialog(
+                onDismiss = { isShowingSleepTimerDialog = false }
+            ) {
+                var amount by remember {
+                    mutableStateOf(1)
+                }
+
+                BasicText(
+                    text = stringResource(R.string.set_sleep_timer),
+                    style = typography().s.semiBold,
+                    modifier = Modifier
+                        .padding(vertical = 8.dp, horizontal = 24.dp)
+                )
+
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(
+                        space = 16.dp,
+                        alignment = Alignment.CenterHorizontally
+                    ),
+                    modifier = Modifier
+                        .padding(vertical = 10.dp)
+                ) {
+                    if (!showCircularSlider) {
+                        Box(
+                            contentAlignment = Alignment.Center,
+                            modifier = Modifier
+                                .alpha(if (amount <= 1) 0.5f else 1f)
+                                .clip(CircleShape)
+                                .clickable(enabled = amount > 1) { amount-- }
+                                .size(48.dp)
+                                .background(colorPalette().background0)
+                        ) {
+                            BasicText(
+                                text = "-",
+                                style = typography().xs.semiBold
+                            )
+                        }
+
+                        Box(contentAlignment = Alignment.Center) {
+                            BasicText(
+                                text = stringResource(
+                                    R.string.left,
+                                    formatAsDuration(amount * 5 * 60 * 1000L)
+                                ),
+                                style = typography().s.semiBold,
+                                modifier = Modifier
+                                    .clickable {
+                                        showCircularSlider = !showCircularSlider
+                                    }
+                            )
+                        }
+
+                        Box(
+                            contentAlignment = Alignment.Center,
+                            modifier = Modifier
+                                .alpha(if (amount >= 60) 0.5f else 1f)
+                                .clip(CircleShape)
+                                .clickable(enabled = amount < 60) { amount++ }
+                                .size(48.dp)
+                                .background(colorPalette().background0)
+                        ) {
+                            BasicText(
+                                text = "+",
+                                style = typography().xs.semiBold
+                            )
+                        }
+
+                    } else {
+                        CircularSlider(
+                            stroke = 40f,
+                            thumbColor = colorPalette().accent,
+                            text = formatAsDuration(amount * 5 * 60 * 1000L),
+                            modifier = Modifier
+                                .size(300.dp),
+                            onChange = {
+                                amount = (it * 120).toInt()
+                            }
+                        )
+                    }
+                }
+
+                Row(
+                    horizontalArrangement = Arrangement.SpaceEvenly,
+                    modifier = Modifier
+                        .padding(bottom = 20.dp)
+                        .fillMaxWidth()
+                ) {
+                    SecondaryTextButton(
+                        text = stringResource(R.string.set_to) + " "
+                                + formatAsDuration(timeRemaining.toLong())
+                                + " " + stringResource(R.string.end_of_song),
+                        onClick = {
+                            binder?.startSleepTimer(timeRemaining.toLong())
+                            isShowingSleepTimerDialog = false
+                        }
+                    )
+                }
+
+                Row(
+                    horizontalArrangement = Arrangement.SpaceEvenly,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                ) {
+
+                    IconButton(
+                        onClick = { showCircularSlider = !showCircularSlider },
+                        icon = R.drawable.time,
+                        color = colorPalette().text
+                    )
+                    IconButton(
+                        onClick = { isShowingSleepTimerDialog = false },
+                        icon = R.drawable.close,
+                        color = colorPalette().text
+                    )
+                    IconButton(
+                        enabled = amount > 0,
+                        onClick = {
+                            binder?.startSleepTimer(amount * 5 * 60 * 1000L)
+                            isShowingSleepTimerDialog = false
+                        },
+                        icon = R.drawable.checkmark,
+                        color = colorPalette().accent
+                    )
+                }
+            }
+        }
+    }
+
+    var showDialogChangeSongTitle by remember {
+        mutableStateOf(false)
+    }
+
+    var songSaved by remember {
+        mutableStateOf(0)
+    }
+    LaunchedEffect(Unit, mediaItem.mediaId) {
+        withContext(Dispatchers.IO) {
+            songSaved = Database.songExist(mediaItem.mediaId)
+        }
+    }
+
+    if (showDialogChangeSongTitle)
+        InputTextDialog(
+            onDismiss = { showDialogChangeSongTitle = false },
+            title = stringResource(R.string.update_title),
+            value = mediaItem.mediaMetadata.title.toString(),
+            placeholder = stringResource(R.string.title),
+            setValue = {
+                if (it.isNotEmpty()) {
+                    Database.asyncTransaction {
+                        updateSongTitle(mediaItem.mediaId, it)
+                    }
+                }
+            },
+            prefix = MODIFIED_PREFIX
+        )
+
+    AnimatedContent(
+        targetState = isViewingPlaylists,
+        transitionSpec = {
+            val animationSpec = tween<IntOffset>(400)
+            val slideDirection = if (targetState) AnimatedContentTransitionScope.SlideDirection.Left
+            else AnimatedContentTransitionScope.SlideDirection.Right
+
+            slideIntoContainer(slideDirection, animationSpec) togetherWith
+                    slideOutOfContainer(slideDirection, animationSpec)
+        }, label = ""
+    ) { currentIsViewingPlaylists ->
+        if (currentIsViewingPlaylists) {
+            val sortBy by rememberPreference(playlistSortByKey, PlaylistSortBy.DateAdded)
+            val sortOrder by rememberPreference(playlistSortOrderKey, SortOrder.Descending)
+            val playlistPreviews by remember {
+                Database.playlistPreviews(sortBy, sortOrder)
+            }.collectAsState(initial = emptyList(), context = Dispatchers.IO)
+
+            val playlistIds by remember {
+                Database.getPlaylistsWithSong(mediaItem.mediaId)
+            }.collectAsState(initial = emptyList(), context = Dispatchers.IO)
+
+            val pinnedPlaylists = playlistPreviews.filter {
+                it.playlist.name.startsWith(PINNED_PREFIX, 0, true)
+            }
+
+            val unpinnedPlaylists = playlistPreviews.filter {
+                !it.playlist.name.startsWith(PINNED_PREFIX, 0, true) &&
+                !it.playlist.name.startsWith(MONTHLY_PREFIX, 0, true) //&&
+                //!it.playlist.name.startsWith(PIPED_PREFIX, 0, true)
+            }
+
+            var isCreatingNewPlaylist by rememberSaveable {
+                mutableStateOf(false)
+            }
+
+            if (isCreatingNewPlaylist && onAddToPlaylist != null) {
+                InputTextDialog(
+                    onDismiss = { isCreatingNewPlaylist = false },
+                    title = stringResource(R.string.enter_the_playlist_name),
+                    value = "",
+                    placeholder = stringResource(R.string.enter_the_playlist_name),
+                    setValue = { text ->
+                        onDismiss()
+                        onAddToPlaylist(Playlist(name = text), 0)
+                    }
+                )
+            }
+
+            BackHandler {
+                isViewingPlaylists = false
+            }
+
+            Menu(
+                modifier = modifier
+                    .fillMaxWidth()
+                    .fillMaxHeight(0.5f)
+            ) {
+                Row(
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp, vertical = 8.dp)
+                        .fillMaxWidth()
+                ) {
+                    IconButton(
+                        onClick = { isViewingPlaylists = false },
+                        icon = R.drawable.chevron_back,
+                        color = colorPalette().textSecondary,
+                        modifier = Modifier
+                            .padding(all = 4.dp)
+                            .size(20.dp)
+                    )
+
+                    if (onAddToPlaylist != null) {
+                        SecondaryTextButton(
+                            text = stringResource(R.string.new_playlist),
+                            onClick = { isCreatingNewPlaylist = true },
+                            alternative = true
+                        )
+                    }
+                }
+
+                if (pinnedPlaylists.isNotEmpty()) {
+                    BasicText(
+                        text = stringResource(R.string.pinned_playlists),
+                        style = typography().m.semiBold,
+                        modifier = modifier.padding(start = 20.dp, top = 5.dp)
+                    )
+
+                    onAddToPlaylist?.let { onAddToPlaylist ->
+                        pinnedPlaylists.forEach { playlistPreview ->
+                            MenuEntry(
+                                icon = if (playlistIds.contains(playlistPreview.playlist.id)) R.drawable.checkmark else R.drawable.add_in_playlist,
+                                text = playlistPreview.playlist.name.substringAfter(PINNED_PREFIX),
+                                secondaryText = "${playlistPreview.songCount} " + stringResource(R.string.songs),
+                                onClick = {
+                                    onDismiss()
+                                    onAddToPlaylist(
+                                        playlistPreview.playlist,
+                                        playlistPreview.songCount
+                                    )
+                                },
+                                trailingContent = {
+                                    IconButton(
+                                        icon = R.drawable.open,
+                                        color = colorPalette().text,
+                                        onClick = {
+                                            if (onGoToPlaylist != null) {
+                                                onGoToPlaylist(playlistPreview.playlist.id)
+                                                onDismiss()
+                                            }
+                                            navController.navigate(route = "${NavRoutes.localPlaylist.name}/${playlistPreview.playlist.id}")
+                                        },
+                                        modifier = Modifier
+                                            .size(24.dp)
+                                    )
+                                }
+                            )
+                        }
+                    }
+                }
+
+                if (unpinnedPlaylists.isNotEmpty()) {
+                    BasicText(
+                        text = stringResource(R.string.playlists),
+                        style = typography().m.semiBold,
+                        modifier = modifier.padding(start = 20.dp, top = 5.dp)
+                    )
+
+                    onAddToPlaylist?.let { onAddToPlaylist ->
+                        unpinnedPlaylists.forEach { playlistPreview ->
+                            MenuEntry(
+                                icon = if (playlistIds.contains(playlistPreview.playlist.id)) R.drawable.checkmark else R.drawable.add_in_playlist,
+                                text = playlistPreview.playlist.name,
+                                secondaryText = "${playlistPreview.songCount} " + stringResource(R.string.songs),
+                                onClick = {
+                                    onDismiss()
+                                    onAddToPlaylist(
+                                        playlistPreview.playlist,
+                                        playlistPreview.songCount
+                                    )
+                                },
+                                trailingContent = {
+                                    if (playlistPreview.playlist.name.startsWith(PIPED_PREFIX, 0, true))
+                                        Image(
+                                            painter = painterResource(R.drawable.piped_logo),
+                                            contentDescription = null,
+                                            colorFilter = ColorFilter.tint(colorPalette().red),
+                                            modifier = Modifier
+                                                .size(18.dp)
+                                        )
+
+                                    IconButton(
+                                        icon = R.drawable.open,
+                                        color = colorPalette().text,
+                                        onClick = {
+                                            if (onGoToPlaylist != null) {
+                                                onGoToPlaylist(playlistPreview.playlist.id)
+                                                onDismiss()
+                                            }
+                                            navController.navigate(route = "${NavRoutes.localPlaylist.name}/${playlistPreview.playlist.id}")
+                                        },
+                                        modifier = Modifier
+                                            .size(24.dp)
+                                    )
+                                }
+                            )
+                        }
+                    }
+                }
+            }
+        } else {
+            val colorPalette = colorPalette()
+
+            //SHOW QUEUES DIALOG
+            var isViewingQueues by remember { mutableStateOf(false) }
+            if (isViewingQueues) {
+                QueuesDialog(
+                    onSelect = {
+                        onDismiss()
+                        onEnqueue?.invoke(it)
+                    },
+                    onDismiss = { isViewingQueues = false }
+                )
+            }
+
+            var showFastShare by remember { mutableStateOf(false) }
+            FastShare(
+                showFastShare,
+                showLinks = false,
+                showShareWith = false,
+                onDismissRequest = { showFastShare = false },
+                content = mediaItem
+            )
+
+            GridMenu(
+                contentPadding = PaddingValues(
+                    start = 8.dp,
+                    top = 8.dp,
+                    end = 8.dp,
+                    bottom = 8.dp + WindowInsets.systemBars.asPaddingValues()
+                        .calculateBottomPadding()
+                ),
+                topContent = {
+                    topContent()
+                }
+            ) {
+                onSelectUnselect?.let { onSelectUnselect ->
+                    GridMenuItem(
+                        icon = R.drawable.checked,
+                        title = R.string.item_select,
+                        colorIcon = colorPalette.text,
+                        colorText = colorPalette.text,
+                        onClick = {
+                            onDismiss()
+                            onSelectUnselect()
+                        }
+                    )
+                }
+
+                if (!isLocal) onInfo?.let { onInfo ->
+                    GridMenuItem(
+                        icon = R.drawable.information,
+                        title = R.string.information,
+                        colorIcon = colorPalette.text,
+                        colorText = colorPalette.text,
+                        onClick = {
+                            onDismiss()
+                            onInfo()
+                        }
+                    )
+                }
+
+                if (!isLocal) {
+                    GridMenuItem(
+                        icon = R.drawable.get_app,
+                        title = R.string.share_with_external_app,
+                        colorIcon = colorPalette.text,
+                        colorText = colorPalette.text,
+                        onClick = {
+                            showFastShare = true
+                        }
+                    )
+                }
+
+                if (!isLocal && songSaved > 0) {
+                    GridMenuItem(
+                        icon = R.drawable.title_edit,
+                        title = R.string.update_title,
+                        colorIcon = colorPalette.text,
+                        colorText = colorPalette.text,
+                        onClick = {
+                            showDialogChangeSongTitle = true
+                        }
+                    )
+                }
+
+                if (!isLocal) onStartRadio?.let { onStartRadio ->
+                    GridMenuItem(
+                        icon = R.drawable.radio,
+                        title = R.string.start_radio,
+                        colorIcon = colorPalette.text,
+                        colorText = colorPalette.text,
+                        onClick = {
+                            onDismiss()
+                            onStartRadio()
+                        }
+                    )
+                }
+                onPlayNext?.let { onPlayNext ->
+                    GridMenuItem(
+                        icon = R.drawable.play_skip_forward,
+                        title = R.string.play_next,
+                        colorIcon = colorPalette.text,
+                        colorText = colorPalette.text,
+                        onClick = {
+                            onDismiss()
+                            onPlayNext()
+                        }
+                    )
+                }
+
+                onEnqueue?.let { onEnqueue ->
+                    GridMenuItem(
+                        icon = R.drawable.enqueue,
+                        title = R.string.enqueue,
+                        colorIcon = colorPalette.text,
+                        colorText = colorPalette.text,
+                        onClick = {
+                            isViewingQueues = true
+                        }
+                    )
+                }
+
+                onGoToEqualizer?.let { onGoToEqualizer ->
+                    GridMenuItem(
+                        icon = R.drawable.equalizer,
+                        title = R.string.equalizer,
+                        colorIcon = colorPalette.text,
+                        colorText = colorPalette.text,
+                        onClick = {
+                            onDismiss()
+                            onGoToEqualizer()
+                        }
+                    )
+                }
+
+
+                GridMenuItem(
+                    icon = R.drawable.sleep,
+                    title = R.string.sleep_timer,
+                    titleString = sleepTimerMillisLeft?.let {
+                        formatAsDuration(it)
+                    } ?: "",
+                    colorIcon = colorPalette.text,
+                    colorText = colorPalette.text,
+                    onClick = {
+                        isShowingSleepTimerDialog = true
+                    }
+                )
+
+                if (onAddToPreferites != null)
+                    GridMenuItem(
+                        icon = R.drawable.heart,
+                        title = R.string.add_to_favorites,
+                        colorIcon = colorPalette.text,
+                        colorText = colorPalette.text,
+                        onClick = onAddToPreferites
+                    )
+
+                if (onMatchingSong != null)
+                    GridMenuItem(
+                        icon = R.drawable.random,
+                        title = R.string.match_song_grid,
+                        colorIcon = colorPalette.text,
+                        colorText = colorPalette.text,
+                        onClick = onMatchingSong
+                    )
+
+                onAddToPlaylist?.let { onAddToPlaylist ->
+                    GridMenuItem(
+                        icon = R.drawable.add_in_playlist,
+                        title = R.string.add_to_playlist,
+                        colorIcon = colorPalette.text,
+                        colorText = colorPalette.text,
+                        onClick = {
+                            isViewingPlaylists = true
+                        }
+                    )
+                }
+
+                if (!isLocal)
+                    onGoToAlbum?.let { onGoToAlbum ->
+                        albumInfo?.let { (albumId) ->
+                            GridMenuItem(
+                                icon = R.drawable.music_album,
+                                title = R.string.go_to_album,
+                                colorIcon = colorPalette.text,
+                                colorText = colorPalette.text,
+                                onClick = {
+                                    onDismiss()
+                                    onGoToAlbum(albumId)
+                                }
+                            )
+                        }
+                }
+
+                if (!isLocal)
+                    onGoToArtist?.let { onGoToArtist ->
+                        artistsInfo?.forEach { (authorId, authorName) ->
+                            GridMenuItem(
+                                icon = R.drawable.music_artist,
+                                title = R.string.more_of,
+                                titleString = authorName ?: "",
+                                colorIcon = colorPalette.text,
+                                colorText = colorPalette.text,
+                                onClick = {
+                                    onDismiss()
+                                    onGoToArtist(authorId)
+                                }
+                            )
+                        }
+                    }
+
+                if (!isLocal)
+                    GridMenuItem(
+                        icon = R.drawable.play,
+                        title = R.string.listen_on,
+                        colorIcon = colorPalette.text,
+                        colorText = colorPalette.text,
+                        onClick = {
+                            showSelectDialogListenOn = true
+                        }
+                    )
+
+                onRemoveFromQueue?.let { onRemoveFromQueue ->
+                    GridMenuItem(
+                        icon = R.drawable.trash,
+                        title = R.string.remove_from_queue,
+                        colorIcon = colorPalette.text,
+                        colorText = colorPalette.text,
+                        onClick = {
+                            onDismiss()
+                            onRemoveFromQueue()
+                        }
+                    )
+                }
+
+                onRemoveFromPlaylist?.let { onRemoveFromPlaylist ->
+                    GridMenuItem(
+                        icon = R.drawable.trash,
+                        title = R.string.remove_from_playlist,
+                        colorIcon = colorPalette.text,
+                        colorText = colorPalette.text,
+                        onClick = {
+                            onDismiss()
+                            onRemoveFromPlaylist()
+                        }
+                    )
+                }
+
+                if (!isLocal) onHideFromDatabase?.let { onHideFromDatabase ->
+                    GridMenuItem(
+                        icon = R.drawable.update,
+                        title = R.string.update,
+                        colorIcon = colorPalette.text,
+                        colorText = colorPalette.text,
+                        onClick = {
+                            //onDismiss()
+                            onHideFromDatabase()
+                        }
+                    )
+                }
+
+                onDeleteFromDatabase?.let { onDeleteFromDatabase ->
+                    GridMenuItem(
+                        icon = R.drawable.trash,
+                        title = R.string.delete,
+                        colorIcon = colorPalette.text,
+                        colorText = colorPalette.text,
+                        onClick = {
+                            //onDismiss()
+                            onDeleteFromDatabase()
+                        }
+                    )
+                }
+
+                if (!isLocal) onRemoveFromQuickPicks?.let { onRemoveFromQuickPicks ->
+                    GridMenuItem(
+                        icon = R.drawable.trash,
+                        title = R.string.hide_from_quick_picks,
+                        colorIcon = colorPalette.text,
+                        colorText = colorPalette.text,
+                        onClick = {
+                            onDismiss()
+                            onRemoveFromQuickPicks()
+                        }
+                    )
+                }
+
+                onBlacklist?.let {
+                    GridMenuItem(
+                        icon = R.drawable.alert_circle,
+                        title = R.string.add_to_blacklist,
+                        colorIcon = colorPalette.text,
+                        colorText = colorPalette.text,
+                        onClick = {
+                            onDismiss()
+                            onBlacklist()
+                        }
+                    )
+                }
+
+//                if (isLocal) {
+//                    GridMenuItem(
+//                        icon = R.drawable.ringtone,
+//                        title = R.string.set_as_ringtone,
+//                        colorIcon = colorPalette.text,
+//                        colorText = colorPalette.text,
+//                        onClick = {
+//                            onDismiss()
+//                        }
+//                    )
+//                }
+
+            }
+
+        }
+    }
+}
+

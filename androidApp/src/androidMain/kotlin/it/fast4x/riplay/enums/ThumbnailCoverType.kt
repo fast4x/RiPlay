@@ -1,0 +1,25 @@
+package it.fast4x.riplay.enums
+
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
+import it.fast4x.riplay.R
+
+enum class ThumbnailCoverType {
+    Vinyl,
+    CD,
+    CDWithCover,
+    AudioCassette,
+    AudioCassetteWithCover,
+    Turntable;
+
+    val textName: String
+        @Composable
+        get() = when (this) {
+            Vinyl -> stringResource(R.string.cover_type_vinyl)
+            CD -> stringResource(R.string.cover_type_cd)
+            CDWithCover -> stringResource(R.string.cover_type_cd_with_cover)
+            AudioCassette -> stringResource(R.string.cover_type_audio_cassette)
+            AudioCassetteWithCover -> stringResource(R.string.cover_type_audio_cassette_with_cover)
+            Turntable -> stringResource(R.string.cover_type_turntable)
+        }
+}

@@ -1,0 +1,1269 @@
+package it.fast4x.riplay.services.playback
+
+import android.content.ComponentName
+import android.content.ContentResolver
+import android.content.Context
+import android.content.ServiceConnection
+import android.content.SharedPreferences
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.net.Uri
+import android.os.Bundle
+import android.os.IBinder
+import android.support.v4.media.MediaBrowserCompat.MediaItem
+import android.support.v4.media.MediaDescriptionCompat
+import androidx.annotation.DrawableRes
+import androidx.annotation.OptIn
+import androidx.compose.ui.util.fastFilter
+import androidx.core.content.ContextCompat
+import androidx.core.net.toUri
+import androidx.core.os.bundleOf
+import androidx.media.MediaBrowserServiceCompat
+import androidx.media3.common.util.UnstableApi
+import it.fast4x.environment.Environment
+import it.fast4x.environment.EnvironmentExt
+import it.fast4x.environment.models.BrowseEndpoint
+import it.fast4x.environment.models.bodies.SearchBody
+import it.fast4x.environment.requests.searchPage
+import it.fast4x.environment.utils.completed
+import it.fast4x.environment.utils.from
+import it.fast4x.riplay.commonutils.MODIFIED_PREFIX
+import it.fast4x.riplay.commonutils.MONTHLY_PREFIX
+import it.fast4x.riplay.commonutils.PINNED_PREFIX
+import it.fast4x.riplay.R
+import it.fast4x.riplay.data.Database
+import it.fast4x.riplay.data.models.Album
+import it.fast4x.riplay.data.models.Artist
+import it.fast4x.riplay.data.models.PlaylistPreview
+import it.fast4x.riplay.data.models.Song
+import it.fast4x.riplay.data.models.SongAlbumMap
+import it.fast4x.riplay.data.models.SongArtistMap
+import it.fast4x.riplay.enums.AlbumSortBy
+import it.fast4x.riplay.enums.ArtistSortBy
+import it.fast4x.riplay.enums.MaxTopPlaylistItems
+import it.fast4x.riplay.enums.SortOrder
+import it.fast4x.riplay.extensions.preferences.MaxTopPlaylistItemsKey
+import it.fast4x.riplay.extensions.preferences.getEnum
+import it.fast4x.riplay.extensions.preferences.preferences
+import it.fast4x.riplay.commonutils.removePrefix
+import it.fast4x.riplay.commonutils.thumbnail
+import it.fast4x.riplay.enums.HomeItemSize
+import it.fast4x.riplay.enums.PlaylistSongSortBy
+import it.fast4x.riplay.enums.PlaylistSortBy
+import it.fast4x.riplay.enums.SongSortBy
+import it.fast4x.riplay.extensions.ondevice.OnDeviceViewModel
+import it.fast4x.riplay.extensions.preferences.albumSortByKey
+import it.fast4x.riplay.extensions.preferences.albumSortOrderKey
+import it.fast4x.riplay.extensions.preferences.albumsItemSizeKey
+import it.fast4x.riplay.extensions.preferences.artistSortByKey
+import it.fast4x.riplay.extensions.preferences.artistSortOrderKey
+import it.fast4x.riplay.extensions.preferences.artistsItemSizeKey
+import it.fast4x.riplay.extensions.preferences.playlistSongSortByKey
+import it.fast4x.riplay.extensions.preferences.playlistSortByKey
+import it.fast4x.riplay.extensions.preferences.songSortByKey
+import it.fast4x.riplay.extensions.preferences.songSortOrderKey
+import it.fast4x.riplay.utils.asMediaItem
+import it.fast4x.riplay.utils.asSong
+import it.fast4x.riplay.utils.getTitleMonthlyPlaylist
+import it.fast4x.riplay.utils.intent
+import it.fast4x.riplay.utils.showAllSongstAA
+import it.fast4x.riplay.utils.showGridAA
+import it.fast4x.riplay.utils.showInLibraryAA
+import it.fast4x.riplay.utils.showMonthlyPlaylistsAA
+import it.fast4x.riplay.utils.showOnDeviceAA
+import it.fast4x.riplay.utils.showPinnedAA
+import it.fast4x.riplay.utils.showPodcastAA
+import it.fast4x.riplay.utils.showTopSongstAA
+import it.fast4x.riplay.utils.shuffleSongsAAEnabled
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.runBlocking
+import kotlinx.serialization.ExperimentalSerializationApi
+import timber.log.Timber
+import kotlin.also
+
+@UnstableApi
+class PlayerMediaBrowserService : MediaBrowserServiceCompat(),
+    ServiceConnection,
+    SharedPreferences.OnSharedPreferenceChangeListener {
+
+    companion object {
+        var lastSongs = emptyList<Song>()
+        var searchedSongs = emptyList<Song>()
+    }
+
+    //val context = (this as Context)
+    //private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
+
+    private var playlistSongsSortBy: PlaylistSongSortBy = PlaylistSongSortBy.DateAdded
+    private var songsSortBy: SongSortBy = SongSortBy.DateAdded
+    private var playlistSortBy: PlaylistSortBy = PlaylistSortBy.DateAdded
+    private var artistSortBy: ArtistSortBy = ArtistSortBy.DateAdded
+    private var albumSortBy: AlbumSortBy = AlbumSortBy.DateAdded
+
+
+    private var songSortOrder: SortOrder = SortOrder.Descending
+    private var artistSortOrder: SortOrder = SortOrder.Descending
+    private var albumSortOrder: SortOrder = SortOrder.Descending
+
+    private var bound = false
+    private var playerServiceBinder: PlayerService.Binder? = null
+
+
+
+    override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences?, key: String?) {
+        sharedPreferences ?: return
+        Timber.d("PlayerMediaBrowserService onSharedPreferenceChanged $key")
+        when (key) {
+            songSortByKey -> {
+                songsSortBy = sharedPreferences.getEnum(songSortByKey, SongSortBy.DateAdded)
+                notifyChildrenChanged(MediaId.SONGS)
+            }
+
+            songSortOrderKey -> {
+                songSortOrder = sharedPreferences.getEnum(songSortOrderKey, SortOrder.Descending)
+                notifyChildrenChanged(MediaId.SONGS)
+            }
+
+            artistSortOrderKey -> {
+                artistSortOrder =
+                    sharedPreferences.getEnum(artistSortOrderKey, SortOrder.Descending)
+                notifyChildrenChanged(MediaId.ARTISTS_FAVORITES)
+            }
+            artistSortByKey -> {
+                artistSortBy =
+                    sharedPreferences.getEnum(artistSortByKey, ArtistSortBy.DateAdded)
+                notifyChildrenChanged(MediaId.ARTISTS_FAVORITES)
+            }
+
+            albumSortOrderKey -> {
+                albumSortOrder = sharedPreferences.getEnum(albumSortOrderKey, SortOrder.Descending)
+                notifyChildrenChanged(MediaId.ALBUMS_FAVORITES)
+            }
+
+            albumSortByKey -> {
+                albumSortBy =
+                    sharedPreferences.getEnum(albumSortByKey, AlbumSortBy.DateAdded)
+                notifyChildrenChanged(MediaId.ALBUMS_FAVORITES)
+            }
+
+            playlistSongSortByKey -> {
+                playlistSongsSortBy =
+                    sharedPreferences.getEnum(playlistSongSortByKey, PlaylistSongSortBy.DateAdded)
+                notifyChildrenChanged(MediaId.PLAYLISTS)
+            }
+
+            playlistSortByKey -> {
+                playlistSortBy =
+                    sharedPreferences.getEnum(playlistSortByKey, PlaylistSortBy.DateAdded)
+                notifyChildrenChanged(MediaId.PLAYLISTS)
+            }
+
+        }
+    }
+
+    private val onDeviceViewModel: OnDeviceViewModel by lazy {
+        OnDeviceViewModel(application)
+    }
+
+
+    override fun onCreate() {
+        super.onCreate()
+
+        songsSortBy = preferences.getEnum(songSortByKey, SongSortBy.DateAdded)
+        songSortOrder = preferences.getEnum(songSortOrderKey, SortOrder.Descending)
+        playlistSortBy = preferences.getEnum(playlistSortByKey, PlaylistSortBy.DateAdded)
+        playlistSongsSortBy = preferences.getEnum(playlistSongSortByKey, PlaylistSongSortBy.DateAdded)
+        artistSortBy = preferences.getEnum(artistSortByKey, ArtistSortBy.DateAdded)
+        artistSortOrder = preferences.getEnum(artistSortOrderKey, SortOrder.Descending)
+        albumSortBy = preferences.getEnum(albumSortByKey, AlbumSortBy.DateAdded)
+        albumSortOrder = preferences.getEnum(albumSortOrderKey, SortOrder.Descending)
+
+
+
+        preferences.registerOnSharedPreferenceChangeListener(this)
+
+        Timber.d("PlayerMediaBrowserService onCreate")
+    }
+
+
+    override fun onDestroy() {
+        if (bound) {
+            unbindService(this)
+        }
+        preferences.unregisterOnSharedPreferenceChangeListener(this)
+        super.onDestroy()
+    }
+
+    @UnstableApi
+    override fun onServiceConnected(className: ComponentName, service: IBinder) {
+        if (service is PlayerService.Binder) {
+            bound = true
+            sessionToken = service.mediaSession.sessionToken
+            playerServiceBinder = service
+            service.cancelSleepTimer() // cancel sleeptimer if AA is started
+            // IMPORTANT: Do not override the MediaSession callback here.
+            // PlayerService owns the callback and implements the authoritative queue/skip logic.
+        }
+    }
+
+    override fun onServiceDisconnected(name: ComponentName) = Unit
+
+    override fun onGetRoot(
+        clientPackageName: String,
+        clientUid: Int,
+        rootHints: Bundle?
+    ): BrowserRoot {
+        bindService(intent<PlayerService>(), this, BIND_AUTO_CREATE)
+        return BrowserRoot(
+            MediaId.ROOT,
+            Bundle().apply {
+                putBoolean(MEDIA_SEARCH_SUPPORTED, true)
+                putBoolean(CONTENT_STYLE_SUPPORTED, true)
+                putInt(CONTENT_STYLE_BROWSABLE_HINT, if (showGridAA()) CONTENT_STYLE_GRID else CONTENT_STYLE_LIST)
+                putInt(CONTENT_STYLE_PLAYABLE_HINT, CONTENT_STYLE_LIST)
+            }
+        )
+        /*
+        return if (clientUid == Process.myUid()
+            || clientUid == Process.SYSTEM_UID
+            || clientPackageName == "com.google.android.projection.gearhead"
+        ) {
+            bindService(intent<PlayerService>(), this, Context.BIND_AUTO_CREATE)
+            BrowserRoot(
+                MediaId.root,
+                bundleOf("android.media.browse.CONTENT_STYLE_BROWSABLE_HINT" to 1)
+            )
+        } else {
+            null
+        }
+         */
+    }
+
+    @OptIn(UnstableApi::class)
+    override fun onSearch(
+        query: String,
+        extras: Bundle?,
+        result: Result<List<MediaItem>>
+    ) {
+        playerServiceBinder?.cancelSleepTimer()
+
+        result.detach()
+        runBlocking(Dispatchers.IO) {
+            searchedSongs = Environment.searchPage(
+                body = SearchBody(
+                    query = query,
+                    params = Environment.SearchFilter.Song.value
+                ),
+                fromMusicShelfRendererContent = Environment.SongItem.Companion::from
+            )?.map {
+                it?.items?.map { it.asSong }
+            }?.getOrNull() ?: emptyList()
+
+            val resultList = searchedSongs.map {
+                MediaItem(
+                    MediaDescriptionCompat.Builder()
+                        .setMediaId(MediaId.forSearched(it.id))
+                        .setTitle(it.title.removePrefix())
+                        .setSubtitle(it.artistsText)
+                        .setIconUri(it.thumbnailUrl?.toUri())
+                        .build(),
+                    MediaItem.FLAG_PLAYABLE
+                )
+            }
+
+            result.sendResult(resultList)
+        }
+    }
+
+    @ExperimentalSerializationApi
+    @OptIn(UnstableApi::class)
+    override fun onLoadChildren(
+        parentId: String,
+        result: Result<List<MediaItem?>?>
+    ) {
+        playerServiceBinder?.cancelSleepTimer()
+
+        Timber.d("PlayerMediaBrowserService onLoadChildren original parentId $parentId")
+        val data = parentId.split('/')
+        val id = data.getOrNull(1) ?: ""
+        val idOnDeviceFolder = parentId.split(MediaId.PLAYLISTS_ONDEVICE).getOrNull(1)?.substringAfter('/') ?: ""
+        Timber.d("PlayerMediaBrowserService onLoadChildren $parentId data $data id $id idOnDeviceFolder $idOnDeviceFolder")
+        runBlocking(Dispatchers.IO) {
+            result.sendResult(
+                when (data.firstOrNull()) {
+
+                    MediaId.FAULT ->listOf(
+                        faultBrowserMediaItem
+                    )
+
+                    // Start Navigation items
+                    MediaId.ROOT -> listOf(
+                        songsBrowserMediaItem,
+                        artistsFavoritesBrowserMediaItem,
+                        albumsFavoritesBrowserMediaItem,
+                        playlistsBrowserMediaItem
+                    )
+
+                    MediaId.SONGS -> {
+                        Database
+                            .songsFavorites(songsSortBy, songSortOrder)
+                            .first()
+                            .also { lastSongs = it.map { it.song }}
+                            .map { it.song.asBrowserMediaItem }
+                            .toMutableList()
+                            .apply {
+                                if (showAllSongstAA())
+                                    add(0, allBrowserMediaItem)
+                                if (showTopSongstAA())
+                                    add(1, topBrowserMediaItem)
+                                if (shuffleSongsAAEnabled())
+                                    add(2,shuffleBrowserMediaItem)
+                                if (showOnDeviceAA())
+                                    add(3, ondeviceBrowserMediaItem)
+
+                            }
+                        /*
+                            Database
+                                .songs(songsSortBy, songSortOrder, 0)
+                                .first()
+                                .take(500)
+                                .also { lastSongs = it.map { it.song } }
+                                .map { it.song.asBrowserMediaItem }
+                                .toMutableList()
+                                .apply {
+                                    if (showFavoritesSongsAA())
+                                        add(0, favoritesBrowserMediaItem)
+                                    if (showTopSongstAA())
+                                        add(1, topBrowserMediaItem)
+                                    if (showOnDeviceAA())
+                                        add(2, ondeviceBrowserMediaItem)
+                                    if (shuffleSongsAAEnabled())
+                                        add(3,shuffleBrowserMediaItem)
+                                }
+
+                         */
+                    }
+
+                    MediaId.SONGS_ONDEVICE -> {
+                        Database
+                            .songsOnDevice()
+                            .first()
+                            .also { lastSongs = it }
+                            .map { it.asBrowserMediaItem }
+                            .toMutableList()
+                    }
+
+                    MediaId.SONGS_SHUFFLE -> lastSongs.shuffled().map { it.asBrowserMediaItem }.toMutableList()
+
+                    MediaId.SONGS_ALL -> {
+
+                        Database
+                            .songs(songsSortBy, songSortOrder, 0)
+                            .first()
+                            .take(500)
+                            .also { lastSongs = it.map { it.song } }
+                            .map { it.song.asBrowserMediaItem }
+                            .toMutableList()
+
+                    }
+                    /*
+                    MediaId.SONGS_FAVORITES -> {
+
+                        Database
+                            .songsFavorites(songsSortBy, songSortOrder)
+                            //.favorites()
+                            .first()
+                            .also { lastSongs = it.map { it.song }}
+                            .map { it.song.asBrowserMediaItem }
+                            .toMutableList()
+                    }
+
+                     */
+
+                    MediaId.SONGS_TOP -> {
+                        val maxTopSongs = preferences.getEnum(MaxTopPlaylistItemsKey,
+                            MaxTopPlaylistItems.`10`).number.toInt()
+
+                        Database.trending(maxTopSongs)
+                            .first()
+                            .also { lastSongs = it }
+                            .map { it.asBrowserMediaItem }.toMutableList()
+                    }
+
+                    MediaId.PLAYLISTS -> {
+
+                        if (id == "") {
+                            Database
+                                .playlistPreviews(playlistSortBy, songSortOrder)
+                                //.playlistPreviewsByNameAsc()
+                                .first()
+                                .fastFilter {
+                                    if (showMonthlyPlaylistsAA()) true
+                                    else !it.playlist.name.startsWith(MONTHLY_PREFIX)
+                                }
+                                .map { it.asBrowserMediaItem(Database.playlistThumbnailUrls(it.playlist.id).first().take(1)) }
+                                .sortedBy { it.description.title.toString() }
+                                .map { it.asCleanMediaItem }
+                                .toMutableList()
+                                .apply {
+                                    if (showInLibraryAA())
+                                        add(0, playlistsInLibraryBrowserMediaItem)
+                                    if (showPodcastAA())
+                                        add(1, playlistsPodcastBrowserMediaItem)
+                                    if (showPinnedAA())
+                                        add(2, playlistsPinnedBrowserMediaItem)
+                                    if (showMonthlyPlaylistsAA())
+                                        add(3, playlistsMonthlyBrowserMediaItem)
+                                    if (showOnDeviceAA())
+                                        add(4, playlistsOnDeviceBrowserMediaItem)
+                                }
+                        } else {
+                            Database
+                                .songsPlaylist(id.toLong(), playlistSongsSortBy, songSortOrder)
+                                //.playlistWithSongs(id.toLong())
+                                .first()
+                                //?.songs
+                                .also { lastSongs = it.map { it.song } }
+                                .map { it.song.asBrowserMediaItem }
+                                .toMutableList()
+                        }
+
+                    }
+
+                    MediaId.PLAYLISTS_IN_LIBRARY -> {
+                            Database
+                                .playlistPreviews(playlistSortBy, songSortOrder)
+                                .first()
+                                .fastFilter {
+                                    it.playlist.isYoutubePlaylist
+                                }
+                                .map { it.asBrowserMediaItem(Database.playlistThumbnailUrls(it.playlist.id).first().take(1)) }
+                                .sortedBy { it.description.title.toString() }
+                                .map { it.asCleanMediaItem }
+                                .toMutableList()
+                    }
+
+                    MediaId.PLAYLISTS_PODCAST -> {
+                        Database
+                            .playlistPreviews(playlistSortBy, songSortOrder)
+                            .first()
+                            .fastFilter {
+                                it.playlist.isPodcast
+                            }
+                            .map { it.asBrowserMediaItem(Database.playlistThumbnailUrls(it.playlist.id).first().take(1)) }
+                            .sortedBy { it.description.title.toString() }
+                            .map { it.asCleanMediaItem }
+                            .toMutableList()
+                    }
+
+                    MediaId.PLAYLISTS_PINNED -> {
+                        Database
+                            .playlistPreviews(playlistSortBy, songSortOrder)
+                            .first()
+                            .fastFilter {
+                                it.playlist.isPinned
+                            }
+                            .map { it.asBrowserMediaItem(Database.playlistThumbnailUrls(it.playlist.id).first().take(1)) }
+                            .sortedBy { it.description.title.toString() }
+                            .map { it.asCleanMediaItem }
+                            .toMutableList()
+                    }
+
+                    MediaId.PLAYLISTS_MONTHLY -> {
+                        Database
+                            .playlistPreviews(playlistSortBy, songSortOrder)
+                            .first()
+                            .fastFilter {
+                                it.playlist.isMonthly
+                            }
+                            .map { it.asBrowserMediaItem(Database.playlistThumbnailUrls(it.playlist.id).first().take(1)) }
+                            .sortedBy { it.description.title.toString() }
+                            .map { it.asCleanMediaItem }
+                            .toMutableList()
+                    }
+
+                    MediaId.PLAYLISTS_ONDEVICE -> {
+                        if (idOnDeviceFolder == "") {
+                            onDeviceViewModel.audioFoldersAsPlaylists().first()
+                                .let { folders ->
+                                    when (playlistSortBy) {
+                                        PlaylistSortBy.Name -> when (songSortOrder) {
+                                            SortOrder.Ascending -> folders.sortedBy { it.playlist.name }
+                                            SortOrder.Descending -> folders.sortedByDescending { it.playlist.name }
+                                        }
+
+                                        PlaylistSortBy.DateAdded -> when (songSortOrder) {
+                                            SortOrder.Ascending -> folders.sortedBy { it.totalPlayTimeMs }
+                                            SortOrder.Descending -> folders.sortedByDescending { it.totalPlayTimeMs }
+                                        }
+
+                                        PlaylistSortBy.SongCount -> when (songSortOrder) {
+                                            SortOrder.Ascending -> folders.sortedBy { it.songCount }
+                                            SortOrder.Descending -> folders.sortedByDescending { it.songCount }
+                                        }
+
+                                        PlaylistSortBy.MostPlayed -> when (songSortOrder) {
+                                            SortOrder.Ascending -> folders.sortedBy { it.totalPlayTimeMs }
+                                            SortOrder.Descending -> folders.sortedByDescending { it.totalPlayTimeMs }
+                                        }
+                                    }.map {
+                                        it.asBrowserMediaItem(
+                                            Database.playlistThumbnailUrls(it.playlist.id).first()
+                                                .take(1),
+                                            true
+                                        )
+                                    }
+                                        .sortedBy { it.description.title.toString() }
+                                        .map { it.asCleanMediaItem }
+                                        .toMutableList()
+                                }
+
+                        } else {
+                            onDeviceViewModel.audioFilesFromFolder(
+                                idOnDeviceFolder
+                            ).first()
+                                .map { it.song }
+                                .also { lastSongs = it}
+                                .map { it.asBrowserMediaItem }
+                                .toMutableList()
+                        }
+
+                    }
+
+                    MediaId.ARTISTS_FAVORITES -> {
+
+                        if (id == "") {
+                            Database
+                                .artists(artistSortBy, artistSortOrder)
+                                .first()
+                                .map { it.asBrowserMediaItem(MediaId.ARTISTS_FAVORITES) }
+                                .toMutableList()
+                                .apply {
+                                    if (showInLibraryAA())
+                                        add(0, artistsInLibraryBrowserMediaItem)
+                                    if (showOnDeviceAA())
+                                        add(1, artistsOnDeviceBrowserMediaItem)
+                                }
+                        } else {
+                            val artist = Database.artist(id).first()
+                            //var songs = Database.artistAllSongs(id).first()
+                            var songs = emptyList<Song>()
+                            //if (songs.isEmpty()) {
+                                EnvironmentExt.getArtistPage(browseId = id)
+                                    .onSuccess { currentArtistPage ->
+                                        var moreEndPointBrowseId: String? = null
+                                        var moreEndPointParams: String? = null
+                                        currentArtistPage.sections
+                                            .forEach {
+                                                if (it.items.firstOrNull() is Environment.SongItem) {
+                                                    moreEndPointBrowseId = it.moreEndpoint?.browseId
+                                                    moreEndPointParams = it.moreEndpoint?.params
+                                                    Timber.d("PlayerMediaBrowserService onGetchildren artist songs moreEndPointBrowseId $moreEndPointBrowseId")
+                                                }
+                                            }
+                                            .also {
+                                                if (moreEndPointBrowseId != null)
+                                                    if (artist != null) {
+                                                        EnvironmentExt.getArtistItemsPage(
+                                                            BrowseEndpoint(
+                                                                browseId = moreEndPointBrowseId,
+                                                                params = moreEndPointParams
+                                                            )
+                                                        ).completed().getOrNull()
+                                                            ?.items
+                                                            ?.map { it as Environment.SongItem }
+                                                            ?.map { it.asSong }
+                                                            .also {
+                                                                if (it != null) {
+                                                                    songs = it
+                                                                }
+                                                            }
+                                                            ?.onEach(Database::insert)
+                                                            ?.map {
+                                                                SongArtistMap(
+                                                                    songId = it.id,
+                                                                    artistId = artist.id
+                                                                )
+                                                            }
+                                                            ?.onEach(Database::insert)
+                                                    }
+
+                                            }
+
+                                    }
+                            //}
+                            songs
+                                .also { lastSongs = it }
+                                .map { it.asBrowserMediaItem }
+                                .toMutableList()
+                        }
+                    }
+
+                    MediaId.ARTISTS_ONDEVICE -> {
+
+                        if (id == "") {
+                            Database
+                                .artistsOnDevice(artistSortBy, artistSortOrder)
+                                .first()
+                                .map { it.asBrowserMediaItem(MediaId.ARTISTS_ONDEVICE) }
+                                .toMutableList()
+                        } else {
+                            Database.artistTopSongs(id, 100)
+                                .first()
+                                .also { lastSongs = it }
+                                .map { it.asBrowserMediaItem }
+                                .toMutableList()
+                        }
+                    }
+
+                    MediaId.ARTISTS_IN_LIBRARY -> {
+
+                        if (id == "") {
+                            Timber.d("PlayerMediaBrowserService onLoadChildren inside artists in library id $id")
+                            Database
+                                .artistsInLibrary(artistSortBy, artistSortOrder)
+                                .first()
+                                .map { it.asBrowserMediaItem(MediaId.ARTISTS_IN_LIBRARY) }
+                                .toMutableList()
+                        } else {
+                            Timber.d("PlayerMediaBrowserService onLoadChildren inside artist single in library id $id")
+                            val artist = Database.artist(id).first()
+                            var songs = Database.artistAllSongs(id).first()
+                            if (songs.isEmpty()) {
+                                EnvironmentExt.getArtistPage(browseId = id)
+                                    .onSuccess { currentArtistPage ->
+                                        var moreEndPointBrowseId: String? = null
+                                        var moreEndPointParams: String? = null
+                                        currentArtistPage.sections
+                                            .forEach {
+                                                if (it.items.firstOrNull() is Environment.SongItem) {
+                                                    moreEndPointBrowseId = it.moreEndpoint?.browseId
+                                                    moreEndPointParams = it.moreEndpoint?.params
+                                                    Timber.d("PlayerMediaBrowserService onLoadChildren artist in library songs moreEndPointBrowseId $moreEndPointBrowseId")
+                                                }
+                                            }
+                                            .also {
+                                                if (moreEndPointBrowseId != null)
+                                                    if (artist != null) {
+                                                        EnvironmentExt.getArtistItemsPage(
+                                                            BrowseEndpoint(
+                                                                browseId = moreEndPointBrowseId,
+                                                                params = moreEndPointParams
+                                                            )
+                                                        ).completed().getOrNull()
+                                                            ?.items
+                                                            ?.map { it as Environment.SongItem }
+                                                            ?.map { it.asSong }
+                                                            .also {
+                                                                if (it != null) {
+                                                                    songs = it
+                                                                }
+                                                            }
+                                                            ?.onEach(Database::insert)
+                                                            ?.map {
+                                                                SongArtistMap(
+                                                                    songId = it.id,
+                                                                    artistId = artist.id
+                                                                )
+                                                            }
+                                                            ?.onEach(Database::insert)
+                                                    }
+
+                                            }
+
+                                    }
+                            }
+                            Timber.d("PlayerMediaBrowserService onLoadChildren inside artist single in library id $id with songs size ${songs.size}")
+                            songs
+                                .also { lastSongs = it }
+                                .map { it.asBrowserMediaItem }
+                                .toMutableList()
+                        }
+                    }
+
+                    MediaId.ALBUMS_FAVORITES -> {
+
+                        if (id == "") {
+                            Timber.d("PlayerMediaBrowserService onLoadChildren inside albums id $id")
+                            Database
+                                .albums(albumSortBy, albumSortOrder)
+                                .first()
+                                .map { it.asBrowserMediaItem(MediaId.ALBUMS_FAVORITES) }
+                                .toMutableList()
+                                .apply {
+                                    if (showInLibraryAA())
+                                        add(0, albumsInLibraryBrowserMediaItem)
+                                    if (showOnDeviceAA())
+                                        add(1, albumsOnDeviceBrowserMediaItem)
+                                }
+                        } else {
+                            Timber.d("PlayerMediaBrowserService onLoadChildren inside albums SONGS id $id")
+                            val album = Database.album(id).first()
+                            var songs = Database.albumSongs(id).first()
+                            if (songs.isEmpty()) {
+                                EnvironmentExt.getAlbum(id)
+                                    .onSuccess { currentAlbumPage ->
+                                        val innerSongs = currentAlbumPage
+                                            .songs.distinct()
+                                            .also { songItems ->
+                                                songs = songItems
+                                                    .map(Environment.SongItem::asSong)
+                                            }
+
+                                        val innerSongsAlbumMap = innerSongs
+                                            .map(Environment.SongItem::asMediaItem)
+                                            .onEach(Database::insert)
+                                            .mapIndexed { position, mediaItem ->
+                                                SongAlbumMap(
+                                                    songId = mediaItem.mediaId,
+                                                    albumId = id,
+                                                    position = position
+                                                )
+                                            }
+                                        Database.upsert(
+                                            Album(
+                                                id = id,
+                                                title = album?.title ?: currentAlbumPage.album.title,
+                                                thumbnailUrl = if (album?.thumbnailUrl?.startsWith(
+                                                        MODIFIED_PREFIX
+                                                    ) == true
+                                                ) album.thumbnailUrl else currentAlbumPage.album.thumbnail?.url,
+                                                year = currentAlbumPage.album.year,
+                                                authorsText = if (album?.authorsText?.startsWith(
+                                                        MODIFIED_PREFIX
+                                                    ) == true
+                                                ) album.authorsText else currentAlbumPage.album.authors
+                                                    ?.joinToString(", ") { it.name ?: "" },
+                                                shareUrl = currentAlbumPage.url,
+                                                timestamp = System.currentTimeMillis(),
+                                                bookmarkedAt = album?.bookmarkedAt,
+                                                isYoutubeAlbum = album?.isYoutubeAlbum == true
+                                            ),
+                                            innerSongsAlbumMap
+                                        )
+                                    }
+                            }
+
+                            songs
+                                .also { lastSongs = it }
+                                .map { it.asBrowserMediaItem }
+                                .toMutableList()
+                        }
+                    }
+
+                    MediaId.ALBUMS_ON_DEVICE -> {
+
+                        if (id == "") {
+                            Timber.d("PlayerMediaBrowserService onLoadChildren inside albums on device id $id")
+                            Database
+                                .albumsOnDevice(albumSortBy, albumSortOrder)
+                                .first()
+                                .map { it.asBrowserMediaItem(MediaId.ALBUMS_ON_DEVICE) }
+                                .toMutableList()
+                        } else {
+                            Timber.d("PlayerMediaBrowserService onLoadChildren inside albums SONGS id $id")
+                            Database.albumSongs(id)
+                                .first()
+                                .also { lastSongs = it }
+                                .map { it.asBrowserMediaItem }
+                                .toMutableList()
+                        }
+                    }
+
+                    MediaId.ALBUMS_IN_LIBRARY -> {
+
+                        if (id == "") {
+                            Timber.d("PlayerMediaBrowserService onLoadChildren inside albums on device id $id")
+                            Database
+                                .albumsInLibrary(albumSortBy, albumSortOrder)
+                                .first()
+                                .map { it.asBrowserMediaItem(MediaId.ALBUMS_IN_LIBRARY) }
+                                .toMutableList()
+                        } else {
+                            Timber.d("PlayerMediaBrowserService onLoadChildren inside albums SONGS id $id")
+                            val album = Database.album(id).first()
+                            var songs = Database.albumSongs(id).first()
+                            if (songs.isEmpty()) {
+                                EnvironmentExt.getAlbum(id)
+                                    .onSuccess { currentAlbumPage ->
+                                        val innerSongs = currentAlbumPage
+                                            .songs.distinct()
+                                            .also { songItems ->
+                                                songs = songItems
+                                                    .map(Environment.SongItem::asSong)
+                                            }
+
+                                        val innerSongsAlbumMap = innerSongs
+                                            .map(Environment.SongItem::asMediaItem)
+                                            .onEach(Database::insert)
+                                            .mapIndexed { position, mediaItem ->
+                                                SongAlbumMap(
+                                                    songId = mediaItem.mediaId,
+                                                    albumId = id,
+                                                    position = position
+                                                )
+                                            }
+                                        Database.upsert(
+                                            Album(
+                                                id = id,
+                                                title = album?.title ?: currentAlbumPage.album.title,
+                                                thumbnailUrl = if (album?.thumbnailUrl?.startsWith(
+                                                        MODIFIED_PREFIX
+                                                    ) == true
+                                                ) album.thumbnailUrl else currentAlbumPage.album.thumbnail?.url,
+                                                year = currentAlbumPage.album.year,
+                                                authorsText = if (album?.authorsText?.startsWith(
+                                                        MODIFIED_PREFIX
+                                                    ) == true
+                                                ) album.authorsText else currentAlbumPage.album.authors
+                                                    ?.joinToString(", ") { it.name ?: "" },
+                                                shareUrl = currentAlbumPage.url,
+                                                timestamp = System.currentTimeMillis(),
+                                                bookmarkedAt = album?.bookmarkedAt,
+                                                isYoutubeAlbum = album?.isYoutubeAlbum == true
+                                            ),
+                                            innerSongsAlbumMap
+                                        )
+                                    }
+                            }
+
+                            songs
+                                .also { lastSongs = it }
+                                .map { it.asBrowserMediaItem }
+                                .toMutableList()
+                        }
+                    }
+
+                    // End Navigation items
+
+                    else -> mutableListOf()
+                }
+            )
+        }
+    }
+
+    private val Song.asBrowserMediaItem
+        inline get() = MediaItem(
+            MediaDescriptionCompat.Builder()
+                .setMediaId(MediaId.forSong(id))
+                .setTitle(title.removePrefix())
+                .setSubtitle(artistsText)
+                .setIconUri(thumbnailUrl?.toUri())
+                .build(),
+            MediaItem.FLAG_PLAYABLE
+        )
+
+    private fun PlaylistPreview.asBrowserMediaItem(thumbnailUrls: List<String?>, onDevice: Boolean? = false): MediaItem {
+        return MediaItem(
+            MediaDescriptionCompat.Builder()
+                .setMediaId(
+                    if (onDevice == false) MediaId.forPlaylist(playlist.id) else MediaId.forPlaylistOnDevice(
+                        folder ?: ""
+                    )
+                )
+                .setTitle(
+                    if (playlist.name.startsWith(PINNED_PREFIX)) playlist.name.replace(
+                        PINNED_PREFIX,
+                        "0:",
+                        true
+                    ) else
+                        if (playlist.name.startsWith(MONTHLY_PREFIX)) playlist.name.replace(
+                            MONTHLY_PREFIX, "1:", true
+                        ) else playlist.name.removePrefix()
+                )
+                .setSubtitle(
+                    "$songCount ${
+                        (this@PlayerMediaBrowserService as Context).resources.getString(
+                            R.string.songs
+                        )
+                    }"
+                )
+                .setIconUri(
+                    if (playlist.browseId?.trim() == "LM") "https://www.gstatic.com/youtube/media/ytm/images/pbg/liked-music-@1200.png".toUri()
+                    else {
+                        uriFor(when {
+                                playlist.name.startsWith(PINNED_PREFIX) -> R.drawable.pin
+                                playlist.name.startsWith(MONTHLY_PREFIX) -> R.drawable.stat_month
+                                else -> R.drawable.playlist
+                            }
+                        )
+                    }
+                )
+                .setExtras(
+                    bundleOf(
+                        "browseId" to playlist.browseId,
+                    ).apply {
+                        thumbnailUrls.forEachIndexed { index, url ->
+                            putString("thumbnailUrl$index", url)
+                        }
+                    }
+                )
+                .build(),
+            MediaItem.FLAG_BROWSABLE
+        )
+    }
+
+    private val PlaylistPreview.asBrowserMediaItem
+        inline get() = MediaItem(
+            MediaDescriptionCompat.Builder()
+                .setMediaId(MediaId.forPlaylist(playlist.id))
+                .setTitle(if (playlist.name.startsWith(PINNED_PREFIX)) playlist.name.replace(PINNED_PREFIX,"0:",true) else
+                    if (playlist.name.startsWith(MONTHLY_PREFIX)) playlist.name.replace(
+                        MONTHLY_PREFIX,"1:",true) else playlist.name.removePrefix())
+                .setSubtitle("$songCount ${(this@PlayerMediaBrowserService as Context).resources.getString(R.string.songs)}")
+                .setIconUri(
+                    if (playlist.browseId?.trim() == "LM") "https://www.gstatic.com/youtube/media/ytm/images/pbg/liked-music-@1200.png".toUri()
+                    else {
+                        uriFor(
+                            if (playlist.name.startsWith(PINNED_PREFIX)) R.drawable.pin else
+                                if (playlist.name.startsWith(MONTHLY_PREFIX)) R.drawable.stat_month else R.drawable.playlist
+                        )
+                    }
+                )
+                .setExtras(
+                    bundleOf(
+                        "browseId" to playlist.browseId
+                    )
+                )
+                .build(),
+            MediaItem.FLAG_BROWSABLE
+        )
+
+    private fun Album.asBrowserMediaItem(type: String) =
+        MediaItem(
+            MediaDescriptionCompat.Builder()
+                .setMediaId(
+                    when(type) {
+                        MediaId.ALBUMS_FAVORITES -> MediaId.forAlbumFavorites(id)
+                        MediaId.ALBUMS_ON_DEVICE -> MediaId.forAlbumOnDevice(id)
+                        MediaId.ALBUMS_IN_LIBRARY -> MediaId.forAlbumInLibrary(id)
+                        else -> MediaId.forAlbumFavorites(id)
+                    }
+                )
+                .setTitle(title?.removePrefix())
+                .setSubtitle(authorsText)
+                //.setIconUri(thumbnailUrl?.toUri())
+                .setIconUri(thumbnailUrl?.thumbnail(preferences.getEnum(albumsItemSizeKey,HomeItemSize.BIG).size)?.toUri())
+                .build(),
+            MediaItem.FLAG_BROWSABLE
+        )
+
+    private fun Artist.asBrowserMediaItem(type: String) =
+        MediaItem(
+            MediaDescriptionCompat.Builder()
+                .setMediaId(
+                    when(type) {
+                        MediaId.ARTISTS_FAVORITES -> MediaId.forArtistFavorites(id)
+                        MediaId.ARTISTS_ONDEVICE -> MediaId.forArtistOnDevice(id)
+                        MediaId.ARTISTS_IN_LIBRARY -> MediaId.forArtistInLibrary(id)
+                        else -> MediaId.forArtistFavorites(id)
+                    }
+                )
+                .setTitle(name?.removePrefix())
+                //.setSubtitle()
+                //.setIconUri(thumbnailUrl?.toUri())
+                .setIconUri(thumbnailUrl?.thumbnail(preferences.getEnum(artistsItemSizeKey,HomeItemSize.BIG).size)?.toUri())
+                .build(),
+            MediaItem.FLAG_BROWSABLE
+        )
+
+    private val MediaItem.asCleanMediaItem
+        inline get() = MediaItem(
+            MediaDescriptionCompat.Builder()
+                .setMediaId(mediaId)
+                .setTitle(if (description.title.toString().startsWith("0:")) description.title.toString().substringAfter("0:") else
+                    if (description.title.toString().startsWith("1:")) getTitleMonthlyPlaylist(description.title.toString().substringAfter("1:"), this@PlayerMediaBrowserService) else description.title.toString())
+                .setIconUri(
+                    when {
+                        description.extras?.getString("browseId") == "LM" -> "https://www.gstatic.com/youtube/media/ytm/images/pbg/liked-music-@1200.png".toUri()
+                        description.extras?.getString("browseId") != "LM"
+                                && description.extras?.getString("thumbnailUrl0") != null -> description.extras?.getString("thumbnailUrl0")?.toUri()
+                        else -> {
+                            uriFor(
+                                if (description.title.toString().startsWith("0:")) R.drawable.pin else
+                                    if (description.title.toString()
+                                            .startsWith("1:")
+                                    ) R.drawable.stat_month else R.drawable.playlist
+                            )
+                        }
+                    }
+
+                )
+                .build(),
+            MediaItem.FLAG_BROWSABLE
+        )
+
+    private val faultBrowserMediaItem
+        inline get() = MediaItem(
+            MediaDescriptionCompat.Builder()
+                .setMediaId(MediaId.FAULT)
+                //.setTitle((this as Context).resources.getString(R.string.songs))
+                .setTitle("Fault")
+                .setIconUri(uriFor(R.drawable.close))
+                .build(),
+            MediaItem.FLAG_BROWSABLE
+        )
+
+    private val songsBrowserMediaItem
+        inline get() = MediaItem(
+            MediaDescriptionCompat.Builder()
+                .setMediaId(MediaId.SONGS)
+                .setTitle((this as Context).resources.getString(R.string.songs))
+                .setIconUri(uriFor(R.drawable.musical_notes))
+                .build(),
+            MediaItem.FLAG_BROWSABLE
+        )
+
+    private val playlistsBrowserMediaItem
+        inline get() = MediaItem(
+            MediaDescriptionCompat.Builder()
+                .setMediaId(MediaId.PLAYLISTS)
+                .setTitle((this as Context).resources.getString(R.string.playlists))
+                .setIconUri(uriFor(R.drawable.music_library))
+                .build(),
+            MediaItem.FLAG_BROWSABLE
+        )
+
+    private val playlistsInLibraryBrowserMediaItem
+        inline get() = MediaItem(
+            MediaDescriptionCompat.Builder()
+                .setMediaId(MediaId.PLAYLISTS_IN_LIBRARY)
+                .setTitle((this as Context).resources.getString(R.string.library))
+                .setIconUri(uriFor(R.drawable.music_library))
+                .build(),
+            MediaItem.FLAG_BROWSABLE
+        )
+
+    private val playlistsPinnedBrowserMediaItem
+        inline get() = MediaItem(
+            MediaDescriptionCompat.Builder()
+                .setMediaId(MediaId.PLAYLISTS_PINNED)
+                .setTitle((this as Context).resources.getString(R.string.pinned_playlists))
+                .setIconUri(uriFor(R.drawable.pin))
+                .build(),
+            MediaItem.FLAG_BROWSABLE
+        )
+
+    private val playlistsMonthlyBrowserMediaItem
+        inline get() = MediaItem(
+            MediaDescriptionCompat.Builder()
+                .setMediaId(MediaId.PLAYLISTS_MONTHLY)
+                .setTitle((this as Context).resources.getString(R.string.monthly_playlists))
+                .setIconUri(uriFor(R.drawable.stat_month))
+                .build(),
+            MediaItem.FLAG_BROWSABLE
+        )
+
+    private val playlistsOnDeviceBrowserMediaItem
+        inline get() = MediaItem(
+            MediaDescriptionCompat.Builder()
+                .setMediaId(MediaId.PLAYLISTS_ONDEVICE)
+                .setTitle((this as Context).resources.getString(R.string.on_device))
+                .setIconUri(uriFor(R.drawable.folder))
+                .build(),
+            MediaItem.FLAG_BROWSABLE
+        )
+
+    private val playlistsPodcastBrowserMediaItem
+        inline get() = MediaItem(
+            MediaDescriptionCompat.Builder()
+                .setMediaId(MediaId.PLAYLISTS_PODCAST)
+                .setTitle((this as Context).resources.getString(R.string.podcasts))
+                .setIconUri(uriFor(R.drawable.podcast))
+                .build(),
+            MediaItem.FLAG_BROWSABLE
+        )
+
+    private val albumsFavoritesBrowserMediaItem
+        inline get() = MediaItem(
+            MediaDescriptionCompat.Builder()
+                .setMediaId(MediaId.ALBUMS_FAVORITES)
+                .setTitle((this as Context).resources.getString(R.string.albums))
+                .setIconUri(uriFor(R.drawable.music_album))
+                .build(),
+            MediaItem.FLAG_BROWSABLE
+        )
+
+    private val albumsInLibraryBrowserMediaItem
+        inline get() = MediaItem(
+            MediaDescriptionCompat.Builder()
+                .setMediaId(MediaId.ALBUMS_IN_LIBRARY)
+                .setTitle((this as Context).resources.getString(R.string.library))
+                .setIconUri(uriFor(R.drawable.music_album))
+                .build(),
+            MediaItem.FLAG_BROWSABLE
+        )
+
+    private val albumsOnDeviceBrowserMediaItem
+        inline get() = MediaItem(
+            MediaDescriptionCompat.Builder()
+                .setMediaId(MediaId.ALBUMS_ON_DEVICE)
+                .setTitle((this as Context).resources.getString(R.string.on_device))
+                .setIconUri(uriFor(R.drawable.music_album))
+                .build(),
+            MediaItem.FLAG_BROWSABLE
+        )
+
+    private val artistsFavoritesBrowserMediaItem
+        inline get() = MediaItem(
+            MediaDescriptionCompat.Builder()
+                .setMediaId(MediaId.ARTISTS_FAVORITES)
+                .setTitle((this as Context).resources.getString(R.string.artists))
+                .setIconUri(uriFor(R.drawable.music_artist))
+                .build(),
+            MediaItem.FLAG_BROWSABLE
+        )
+
+    private val artistsInLibraryBrowserMediaItem
+        inline get() = MediaItem(
+            MediaDescriptionCompat.Builder()
+                .setMediaId(MediaId.ARTISTS_IN_LIBRARY)
+                .setTitle((this as Context).resources.getString(R.string.library))
+                .setIconUri(uriFor(R.drawable.music_artist))
+                .build(),
+            MediaItem.FLAG_BROWSABLE
+        )
+
+    private val artistsOnDeviceBrowserMediaItem
+        inline get() = MediaItem(
+            MediaDescriptionCompat.Builder()
+                .setMediaId(MediaId.ARTISTS_ONDEVICE)
+                .setTitle((this as Context).resources.getString(R.string.on_device))
+                .setIconUri(uriFor(R.drawable.music_artist))
+                .build(),
+            MediaItem.FLAG_BROWSABLE
+        )
+
+    private val shuffleBrowserMediaItem
+        inline get() = MediaItem(
+            MediaDescriptionCompat.Builder()
+                .setMediaId(MediaId.SONGS_SHUFFLE)
+                .setTitle((this as Context).resources.getString(R.string.shuffle))
+                .setIconUri(uriFor(R.drawable.shuffle))
+                .build(),
+            MediaItem.FLAG_BROWSABLE
+        )
+
+    private val allBrowserMediaItem
+        inline get() = MediaItem(
+            MediaDescriptionCompat.Builder()
+                .setMediaId(MediaId.SONGS_ALL)
+                .setTitle((this as Context).resources.getString(R.string.all_songs))
+                .setIconUri(uriFor(R.drawable.music))
+                .build(),
+            MediaItem.FLAG_BROWSABLE
+        )
+
+    /*
+    private val favoritesBrowserMediaItem
+        inline get() = MediaItem(
+            MediaDescriptionCompat.Builder()
+                .setMediaId(MediaId.SONGS_FAVORITES)
+                .setTitle((this as Context).resources.getString(R.string.favorites))
+                .setIconUri(uriFor(R.drawable.heart))
+                .build(),
+            MediaItem.FLAG_BROWSABLE
+        )
+
+     */
+
+    private val topBrowserMediaItem
+        inline get() = MediaItem(
+            MediaDescriptionCompat.Builder()
+                .setMediaId(MediaId.SONGS_TOP)
+                .setTitle((this as Context).resources.getString(R.string.my_playlist_top)
+                    .format((this as Context).preferences.getEnum(MaxTopPlaylistItemsKey,
+                        MaxTopPlaylistItems.`10`).number))
+                .setIconUri(uriFor(R.drawable.trending))
+                .build(),
+            MediaItem.FLAG_BROWSABLE
+        )
+
+    private val ondeviceBrowserMediaItem
+        inline get() = MediaItem(
+            MediaDescriptionCompat.Builder()
+                .setMediaId(MediaId.SONGS_ONDEVICE)
+                .setTitle((this as Context).resources.getString(R.string.on_device))
+                .setIconUri(uriFor(R.drawable.musical_notes))
+                .build(),
+            MediaItem.FLAG_BROWSABLE
+        )
+
+    private fun uriFor(@DrawableRes id: Int) = Uri.Builder()
+        .scheme(ContentResolver.SCHEME_ANDROID_RESOURCE)
+        .authority(resources.getResourcePackageName(id))
+        .appendPath(resources.getResourceTypeName(id))
+        .appendPath(resources.getResourceEntryName(id))
+        .build()
+
+    // Maybe usefull for the future
+    private fun getTintedBitmapFromDrawable(context: Context, drawableResId: Int, color: Int): Bitmap? {
+
+        val drawable = ContextCompat.getDrawable(context, drawableResId) ?: return null
+
+        drawable.mutate()
+        drawable.setTint(color)
+
+        val bitmap = Bitmap.createBitmap(
+            drawable.intrinsicWidth,
+            drawable.intrinsicHeight,
+            Bitmap.Config.ARGB_8888
+        )
+
+        val canvas = Canvas(bitmap)
+        drawable.setBounds(0, 0, canvas.width, canvas.height)
+        drawable.draw(canvas)
+
+        return bitmap
+    }
+
+    fun reloadPlaylist(){
+        notifyChildrenChanged(MediaId.PLAYLISTS)
+    }
+
+    object MediaId {
+        const val FAULT = "fault"
+        const val ROOT = "root"
+        const val SONGS = "songs"
+        const val PLAYLISTS = "playlists"
+        const val PLAYLISTS_IN_LIBRARY = "playlistsInLibrary"
+        const val PLAYLISTS_PODCAST = "playlistsPodcast"
+        const val PLAYLISTS_PINNED = "playlistsPinned"
+        const val PLAYLISTS_MONTHLY = "playlistsMonthly"
+        const val PLAYLISTS_ONDEVICE = "playlistsOnDevice"
+        const val ALBUMS_FAVORITES = "albumsFavorites"
+        const val ALBUMS_IN_LIBRARY = "albumsInLibrary"
+        const val ALBUMS_ON_DEVICE = "albumsOnDevice"
+        const val ARTISTS_FAVORITES = "artistsFavorites"
+        const val ARTISTS_IN_LIBRARY = "artistsInLibrary"
+        const val ARTISTS_ONDEVICE = "artistsOnDevice"
+
+        const val SEARCHED = "searched"
+
+        //const val SONGS_FAVORITES = "favorites"
+        const val SONGS_ALL = "all"
+        const val SONGS_SHUFFLE = "shuffle"
+        const val SONGS_ONDEVICE = "ondevice"
+        const val SONGS_TOP = "top"
+
+        fun forSong(id: String) = "$SONGS/$id"
+        fun forPlaylist(id: Long) = "$PLAYLISTS/$id"
+        fun forPlaylistOnDevice(folder: String) = "$PLAYLISTS_ONDEVICE/$folder"
+        fun forAlbumFavorites(id: String) = "$ALBUMS_FAVORITES/$id"
+        fun forAlbumInLibrary(id: String) = "$ALBUMS_IN_LIBRARY/$id"
+        fun forAlbumOnDevice(id: String) = "$ALBUMS_ON_DEVICE/$id"
+        fun forArtistFavorites(id: String) = "$ARTISTS_FAVORITES/$id"
+        fun forArtistInLibrary(id: String) = "$ARTISTS_IN_LIBRARY/$id"
+        fun forArtistOnDevice(id: String) = "$ARTISTS_ONDEVICE/$id"
+
+        fun forSearched(id: String) = "$SEARCHED/$id"
+    }
+}
+
+private const val MEDIA_SEARCH_SUPPORTED = "android.media.browse.SEARCH_SUPPORTED"
+private const val CONTENT_STYLE_BROWSABLE_HINT = "android.media.browse.CONTENT_STYLE_BROWSABLE_HINT"
+private const val CONTENT_STYLE_PLAYABLE_HINT = "android.media.browse.CONTENT_STYLE_PLAYABLE_HINT"
+private const val CONTENT_STYLE_SUPPORTED = "android.media.browse.CONTENT_STYLE_SUPPORTED"
+private const val CONTENT_STYLE_LIST = 1
+private const val CONTENT_STYLE_GRID = 2

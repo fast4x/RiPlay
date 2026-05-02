@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut
+        android:shortcutId="search"
+        android:enabled="true"
+        android:icon="@drawable/search"
+        android:shortcutShortLabel="@string/search">
+        <intent
+            android:targetClass="it.fast4x.riplay.MainActivity"
+            android:targetPackage="it.fast4x.riplay"
+            android:action="it.fast4x.riplay.action.search" />
+    </shortcut>
+    <shortcut
+        android:shortcutId="musicidentifier"
+        android:enabled="true"
+        android:icon="@drawable/soundwave"
+        android:shortcutShortLabel="@string/music_identify">
+        <intent
+            android:targetClass="it.fast4x.riplay.MainActivity"
+            android:targetPackage="it.fast4x.riplay"
+            android:action="it.fast4x.riplay.action.musicidentifier" />
+    </shortcut>
+    <!--
+    <shortcut
+        android:shortcutId="songs"
+        android:enabled="true"
+        android:icon="@drawable/disc"
+        android:shortcutShortLabel="@string/songs">
+        <intent
+            android:targetClass="it.fast4x.riplay.MainActivity"
+            android:targetPackage="it.fast4x.riplay"
+            android:action="it.fast4x.riplay.action.songs" />
+    </shortcut>
+
+    <shortcut
+        android:shortcutId="albums"
+        android:enabled="true"
+        android:icon="@drawable/music_album"
+        android:shortcutShortLabel="@string/albums">
+        <intent
+            android:targetClass="it.fast4x.riplay.MainActivity"
+            android:targetPackage="it.fast4x.riplay"
+            android:action="it.fast4x.riplay.action.albums" />
+    </shortcut>
+    -->
+    <shortcut
+        android:shortcutId="library"
+        android:enabled="true"
+        android:icon="@drawable/music_library_dynamic"
+        android:shortcutShortLabel="@string/playlists">
+        <intent
+            android:targetClass="it.fast4x.riplay.MainActivity"
+            android:targetPackage="it.fast4x.riplay"
+            android:action="it.fast4x.riplay.action.library" />
+    </shortcut>
+    <shortcut
+        android:shortcutId="rescuecenter"
+        android:enabled="true"
+        android:icon="@drawable/rescue"
+        android:shortcutShortLabel="@string/rescue_center">
+        <intent
+            android:targetClass="it.fast4x.riplay.MainActivity"
+            android:targetPackage="it.fast4x.riplay"
+            android:action="it.fast4x.riplay.action.rescuecenter" />
+    </shortcut>
+</shortcuts>
