@@ -111,7 +111,7 @@ fun ArtistScreen(
         mutableStateOf(false)
     }
 
-    val translator = Translator(getHttpClient())
+    val translator = Translator()
     val languageDestination = languageDestination()
 
     Box(
