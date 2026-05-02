@@ -6,7 +6,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.util.Properties
 
 plugins {
-    alias(libs.plugins.android.application)
+    alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.multiplatform)
     alias(libs.plugins.kotlin.ksp)
     alias(libs.plugins.kotlin.compose)
@@ -121,6 +121,12 @@ repositories {
 }
  */
 
+android {
+    namespace = "it.fast4x.riplay.composeapp"
+    compileSdk = 37
+}
+
+/*
 val localProperties = Properties()
 val localPropertiesFile = rootProject.file("local.properties")
 if (localPropertiesFile.exists()) {
@@ -534,6 +540,8 @@ android {
 
 }
 
+ */
+
 
 
 java {
@@ -684,6 +692,7 @@ kotlin {
         }
 
         androidMain.dependencies {
+            /*
             implementation(libs.navigation)
             implementation(libs.media3.session)
             //implementation(libs.media3.ui)
@@ -735,6 +744,8 @@ kotlin {
             implementation(libs.multidex)
             implementation(libs.jsoup)
             //implementation(libs.mediarouter)
+
+             */
         }
 
     }
@@ -745,6 +756,7 @@ room {
     schemaDirectory("$projectDir/schemas")
 }
 
+/*
 dependencies {
 
     "fullImplementation"(libs.media3.ui)
@@ -756,5 +768,7 @@ dependencies {
 
     coreLibraryDesugaring(libs.desugaring)
 }
+
+ */
 
 

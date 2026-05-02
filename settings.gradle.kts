@@ -34,6 +34,7 @@ dependencyResolutionManagement {
 
 rootProject.name = "RiPlay"
 
+include(":androidApp")
 include(":composeApp")
 //include(":compose-persist")
 // Projects from extensions
