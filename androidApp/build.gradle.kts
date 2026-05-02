@@ -136,12 +136,12 @@ android {
         compose = true
     }
 
-    compileSdk = 37
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "it.fast4x.riplay"
         //minSdk = 24
-        targetSdk = 37
+        targetSdk = 36
 
         versionCode = 77
         versionName = "0.7.77"
