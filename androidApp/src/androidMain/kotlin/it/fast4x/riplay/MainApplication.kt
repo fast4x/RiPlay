@@ -1,10 +1,10 @@
 package it.fast4x.riplay
 
+import android.app.Application
 import android.content.ComponentName
 import android.content.pm.PackageManager
 import androidx.annotation.OptIn
 import androidx.media3.common.util.UnstableApi
-import androidx.multidex.MultiDexApplication
 import coil.ImageLoader
 import coil.ImageLoaderFactory
 import coil.disk.DiskCache
@@ -26,7 +26,7 @@ import it.fast4x.riplay.services.playback.PlayerService
 import timber.log.Timber
 import java.io.File
 
-class MainApplication : MultiDexApplication(), ImageLoaderFactory {
+class MainApplication : Application(), ImageLoaderFactory {
 
     @OptIn(UnstableApi::class)
     override fun onCreate() {

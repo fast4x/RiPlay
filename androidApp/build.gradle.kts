@@ -65,25 +65,25 @@ kotlin {
         implementation(libs.haze)
         //implementation(libs.androidyoutubeplayer) // replaced by project ayp
         //implementation(libs.androidyoutubeplayer.custom.ui) // replaced by project aypui
-        implementation(project(":ayp"))
-        implementation(project(":aypui"))
+        implementation(projects.ayp)
+        implementation(projects.aypui)
         implementation(libs.glance.widgets)
         implementation(libs.kizzy.rpc)
         implementation(libs.gson)
         implementation(libs.hypnoticcanvas)
         implementation(libs.hypnoticcanvas.shaders)
-        implementation(libs.multidex)
+        //implementation(libs.multidex)
         implementation(libs.jsoup)
 
         implementation(libs.ktor.client.core)
         implementation(libs.ktor.client.okhttp)
         implementation(libs.ktor.client.websockets)
 
-        implementation(project(":environment"))
-        implementation(project(":kugou"))
-        implementation(project(":lrclib"))
-        implementation(project(":audiotaginfo"))
-        implementation(project(":lastfm"))
+        implementation(projects.environment)
+        implementation(projects.kugou)
+        implementation(projects.lrclib)
+        implementation(projects.audiotaginfo)
+        implementation(projects.lastfm)
 
         implementation(libs.room.ktx)
         implementation(libs.room.runtime)
@@ -146,7 +146,6 @@ android {
         versionCode = 77
         versionName = "0.7.77"
 
-        multiDexEnabled = true
 
         // INIT ENVIRONMENT
         resValue(
@@ -431,7 +430,7 @@ android {
             manifestPlaceholders["appName"] = "RiPlay"
             signingConfig = signingConfigs.getByName("release")
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-            multiDexKeepProguard = File("multidex-config.pro")
+            //multiDexKeepProguard = File("multidex-config.pro")
         }
     }
 
@@ -526,7 +525,7 @@ room {
 dependencies {
     "fullImplementation"(libs.media3.ui)
     "fullImplementation"(libs.media3.cast)
-    "fullImplementation"(project(":aypcast"))
+    "fullImplementation"(projects.aypcast)
 
     add("kspAndroid", libs.room.compiler)
 //    add("kspDesktop", libs.room.compiler)

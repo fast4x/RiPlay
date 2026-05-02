@@ -590,6 +590,7 @@ compose.resources {
 }
 
 kotlin {
+    applyDefaultHierarchyTemplate()
     androidTarget {
         @OptIn(ExperimentalKotlinGradlePluginApi::class)
         compilerOptions {
@@ -598,7 +599,8 @@ kotlin {
         }
     }
 
-    jvm("desktop")
+    jvm()
+
 
 
 
@@ -624,13 +626,12 @@ kotlin {
                 implementation(libs.ktor.client.okhttp)
                 implementation(libs.ktor.client.websockets)
 
-                implementation(project(":environment"))
-                implementation(project(":kugou"))
-                implementation(project(":lrclib"))
-                implementation(project(":audiotaginfo"))
-                implementation(project(":lastfm"))
+                implementation(projects.environment)
+                implementation(projects.kugou)
+                implementation(projects.lrclib)
+                implementation(projects.audiotaginfo)
+                implementation(projects.lastfm)
 
-                implementation(libs.room.ktx)
                 implementation(libs.room.runtime)
                 implementation(libs.room.sqlite.bundled)
 
@@ -650,20 +651,11 @@ kotlin {
                 implementation(libs.fastscroller.material3)
                 implementation(libs.fastscroller.indicator)
 
-
-                implementation(
-                    fileTree(
-                        mapOf(
-                            "dir" to "libs",
-                            "include" to listOf("*.aar", "*.jar")
-                        )
-                    )
-                )
             }
         }
 
-        val desktopMain by getting
-        desktopMain.dependencies {
+        val jvmMain by getting
+        jvmMain.dependencies {
             implementation(compose.components.resources)
             implementation(compose.desktop.currentOs)
 
@@ -692,6 +684,15 @@ kotlin {
         }
 
         androidMain.dependencies {
+            implementation(libs.room.ktx)
+            implementation(
+                fileTree(
+                    mapOf(
+                        "dir" to "libs",
+                        "include" to listOf("*.aar", "*.jar")
+                    )
+                )
+            )
             /*
             implementation(libs.navigation)
             implementation(libs.media3.session)
@@ -754,6 +755,7 @@ kotlin {
 
 room {
     schemaDirectory("$projectDir/schemas")
+    generateKotlin = true
 }
 
 /*

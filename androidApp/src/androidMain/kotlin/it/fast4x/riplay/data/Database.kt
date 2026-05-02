@@ -85,7 +85,7 @@ import kotlin.collections.sortedBy
 
 @Dao
 interface Database {
-    companion object : Database by DatabaseInitializer.Instance.database
+    companion object : Database by DatabaseInitializer.createProxy()
 
     private val _internal: RoomDatabase
         get() = DatabaseInitializer.Instance
@@ -3196,6 +3196,13 @@ abstract class DatabaseInitializer protected constructor() : RoomDatabase() {
     companion object {
 
         lateinit var Instance: DatabaseInitializer
+
+        fun createProxy(): Database = java.lang.reflect.Proxy.newProxyInstance(
+            Database::class.java.classLoader,
+            arrayOf(Database::class.java)
+        ) { _, method, args ->
+            method.invoke(Instance.database, *(args ?: arrayOf()))
+        } as Database
 
         private fun getDatabase() = Room
             .databaseBuilder(appContext(), DatabaseInitializer::class.java, "data.db")
