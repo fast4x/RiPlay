@@ -1,3 +1,4 @@
+import com.android.build.api.dsl.ApplicationExtension
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import java.util.Properties
@@ -18,7 +19,7 @@ kotlin {
         @OptIn(ExperimentalKotlinGradlePluginApi::class)
         compilerOptions {
             jvmTarget.set(JvmTarget.JVM_21)
-            freeCompilerArgs.add("-Xcontext-receivers")
+            freeCompilerArgs.add("-Xcontext-parameters")
         }
     }
 
@@ -112,7 +113,7 @@ val localPropertiesFile = rootProject.file("local.properties")
 if (localPropertiesFile.exists()) {
     localProperties.load(localPropertiesFile.inputStream())
 }
-android {
+extensions.configure<ApplicationExtension> {
 
     lint {
         checkReleaseBuilds = false
@@ -471,29 +472,25 @@ android {
     sourceSets {
         getByName("full") {
             manifest.srcFile("src/androidFull/AndroidManifest.xml")
-            kotlin.srcDir("src/androidFull/kotlin")
+            kotlin.directories.add("src/androidFull/kotlin")
         }
         getByName("foss") {
             manifest.srcFile("src/androidFoss/AndroidManifest.xml")
-            kotlin.srcDir("src/androidFoss/kotlin")
+            kotlin.directories.add("src/androidFoss/kotlin")
         }
         all {
-            kotlin.srcDir("src/$name/kotlin")
+            kotlin.directories.add("src/$name/kotlin")
         }
     }
 
-    applicationVariants.all {
-        val variant = this
-        variant.outputs
-            .map { it as com.android.build.gradle.internal.api.BaseVariantOutputImpl }
-            .forEach { output ->
-                val outputFileName = "RiPlay-${output.baseName}-${variant.versionName}.apk"
-                //val outputFileName = "riplay-${variant.baseName}.apk"
-                output.outputFileName = outputFileName
-
-                //println("GRADLE Variant: ${variant.name}")
-                //println("GRADLE Manifests: ${variant.sourceSets.map { it.manifestFile }}")
+    androidComponents {
+        onVariants { variant ->
+            variant.outputs.forEach { output ->
+                if (output is com.android.build.api.variant.impl.VariantOutputImpl) {
+                    output.outputFileName = "RiPlay-${variant.name}-${variant.outputs.first().versionName.orNull}.apk"
+                }
             }
+        }
     }
 
 //    sourceSets.all {

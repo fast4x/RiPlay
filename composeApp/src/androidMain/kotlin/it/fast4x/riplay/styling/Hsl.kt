@@ -1,4 +1,4 @@
-package it.fast4x.riplay.ui.styling
+package it.fast4x.riplay.styling
 
 import androidx.compose.runtime.saveable.SaverScope
 import androidx.compose.ui.graphics.Color
@@ -34,7 +34,8 @@ value class Hsl(@PublishedApi internal val raw: FloatArray) {
 }
 
 val FloatArray.hsl get() = Hsl(raw = this)
+
 val Color.hsl
     get() = FloatArray(3)
-        .apply { ColorUtils.colorToHSL(this@Color.toArgb(), this) }
+        .also { array -> ColorUtils.colorToHSL(this.toArgb(), array) }
         .hsl

@@ -25,10 +25,10 @@ private inline fun <T> Bundle.bundleDelegate(
 
     object : ReadWriteProperty<BundleAccessor, T> {
         override fun getValue(thisRef: BundleAccessor, property: KProperty<*>) =
-            get(this@Bundle, actualName)
+            get(this@bundleDelegate, actualName)
 
         override fun setValue(thisRef: BundleAccessor, property: KProperty<*>, value: T) =
-            set(this@Bundle, actualName, value)
+            set(this@bundleDelegate, actualName, value)
     }
 }
 

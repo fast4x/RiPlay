@@ -540,7 +540,7 @@ class MainActivity :
 
         Timber.d("MainActivity.onCreate Before localMonet.invokeOnReady")
 
-        localMonet.invokeOnReady {
+        localMonet.invokeOnReady(this) {
             Timber.d("MainActivity.onCreate Inside localMonet.invokeOnReady")
 
             startApp()

@@ -10,6 +10,8 @@ import androidx.core.graphics.ColorUtils
 import androidx.palette.graphics.Palette
 import it.fast4x.riplay.enums.ColorPaletteMode
 import it.fast4x.riplay.enums.ColorPaletteName
+import it.fast4x.riplay.styling.Hsl
+import it.fast4x.riplay.styling.hsl
 
 
 @Immutable

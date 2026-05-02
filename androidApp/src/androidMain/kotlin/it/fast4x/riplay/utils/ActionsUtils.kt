@@ -23,12 +23,12 @@ abstract class ActionReceiver(private val base: String) : BroadcastReceiver() {
         val contentDescription: String?,
         internal val onReceive: (Context, Intent) -> Unit
     ) {
-        context(Context)
+
         val pendingIntent: PendingIntent
             get() = PendingIntent.getBroadcast(
-                /* context = */ this@Context,
+                /* context = */ appContext(),
                 /* requestCode = */ REQUEST_CODE,
-                /* intent = */ Intent(value).setPackage(packageName),
+                /* intent = */ Intent(value).setPackage(appContext().packageName),
                 /* flags = */ PendingIntent.FLAG_UPDATE_CURRENT or
                         (if (isAtLeastAndroid6) PendingIntent.FLAG_IMMUTABLE else 0)
             )
@@ -65,12 +65,12 @@ abstract class ActionReceiver(private val base: String) : BroadcastReceiver() {
         mutableActions[intent.action]?.onReceive?.let { it(context, intent) }
     }
 
-    context(Context)
+
     @JvmName("_register")
     fun register(
         @ContextCompat.RegisterReceiverFlags
         flags: Int = ContextCompat.RECEIVER_NOT_EXPORTED
-    ) = register(this@Context, flags)
+    ) = register(appContext(), flags)
 
     fun register(
         context: Context,
