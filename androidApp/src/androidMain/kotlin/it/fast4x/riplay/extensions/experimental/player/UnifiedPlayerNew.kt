@@ -161,8 +161,10 @@ import com.mikepenz.hypnoticcanvas.shaders.PurpleLiquid
 import com.mikepenz.hypnoticcanvas.shaders.Stage
 import dev.chrisbanes.haze.HazeDefaults
 import dev.chrisbanes.haze.HazeState
+import dev.chrisbanes.haze.HazeTint
 import dev.chrisbanes.haze.haze
 import dev.chrisbanes.haze.hazeChild
+import dev.chrisbanes.haze.hazeEffect
 import it.fast4x.environment.Environment
 import it.fast4x.environment.models.NavigationEndpoint
 import it.fast4x.riplay.LocalPlayerServiceBinder
@@ -2211,13 +2213,11 @@ fun UnifiedPlayerNew(
                     Box(
                         modifier = Modifier
                             .conditional(queueType == QueueType.Modern) {
-                                haze(
+                                hazeEffect(
                                     state = hazeState,
                                     style = HazeDefaults.style(
                                         backgroundColor = Color.Transparent,
-                                        tint = if (lightTheme) Color.White.copy(0.5f) else Color.Black.copy(
-                                            0.5f
-                                        ),
+                                        tint = HazeTint( if (lightTheme) Color.White.copy(0.5f) else Color.Black.copy(0.5f)),
                                         blurRadius = 8.dp
                                     )
                                 )
@@ -2933,13 +2933,11 @@ fun UnifiedPlayerNew(
                     Box(
                         modifier = Modifier
                             .conditional(queueType == QueueType.Modern) {
-                                haze(
+                                hazeEffect(
                                     state = hazeState,
                                     style = HazeDefaults.style(
                                         backgroundColor = Color.Transparent,
-                                        tint = if (lightTheme) Color.White.copy(0.5f) else Color.Black.copy(
-                                            0.5f
-                                        ),
+                                        tint = HazeTint(if (lightTheme) Color.White.copy(0.5f) else Color.Black.copy(0.5f)),
                                         blurRadius = 8.dp
                                     )
                                 )
