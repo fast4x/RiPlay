@@ -1,12 +1,12 @@
 package it.fast4x.riplay.ui.screens.player.common
 
-
 import android.annotation.SuppressLint
 import android.content.ActivityNotFoundException
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.core.updateTransition
@@ -41,6 +41,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
@@ -48,6 +49,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.Checkbox
 import androidx.compose.material.CheckboxDefaults.colors
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -68,6 +70,7 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.SolidColor
@@ -200,7 +203,6 @@ fun Queue(
 
     val binderPlayer = binder.player
 
-
     var queueLoopType by rememberPreference(queueLoopTypeKey, defaultValue = QueueLoopType.Default)
     var excludeSongsIfAreVideos by rememberPreference(excludeSongIfIsVideoKey, false)
 
@@ -233,7 +235,6 @@ fun Queue(
     binderPlayer.DisposableListener {
         object : Player.Listener {
             override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
-
                 mediaItemIndex =
                     if (binder.player.mediaItemCount == 0) -1 else binder.player.currentMediaItemIndex
             }
@@ -241,7 +242,8 @@ fun Queue(
             override fun onTimelineChanged(timeline: Timeline, reason: Int) {
                 windows = timeline.windows
                 mediaItemIndex =
-                    if (binder.player.mediaItemCount == 0) -1 else binder.player.currentMediaItemIndex            }
+                    if (binder.player.mediaItemCount == 0) -1 else binder.player.currentMediaItemIndex
+            }
 
             override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) {
                 shouldBePlaying = binder.player.shouldBePlaying
@@ -253,8 +255,8 @@ fun Queue(
         }
     }
 
-    val queueslist by Database.queues().collectAsState( emptyList())
-    val selectedQueue = Database.selectedQueueFlow().collectAsState( defaultQueue()).let {
+    val queueslist by Database.queues().collectAsState(emptyList())
+    val selectedQueue = Database.selectedQueueFlow().collectAsState(defaultQueue()).let {
         if (it.value == null) defaultQueue() else it.value
     }
 
@@ -297,10 +299,8 @@ fun Queue(
                         binderPlayer.clearMediaItems()
                     }
                 }
-
                 listMediaItems.clear()
                 listMediaItemsIndex.clear()
-
             }
         )
     }
@@ -370,7 +370,6 @@ fun Queue(
             }
         }
 
-
     var isExporting by rememberSaveable {
         mutableStateOf(false)
     }
@@ -390,9 +389,7 @@ fun Queue(
                     val dateFormat = SimpleDateFormat("yyyyMMddHHmmss")
                     exportLauncher.launch(
                         "RMPlaylist_${text.take(20)}_${
-                            dateFormat.format(
-                                Date()
-                            )
+                            dateFormat.format(Date())
                         }"
                     )
                 } catch (e: ActivityNotFoundException) {
@@ -420,8 +417,6 @@ fun Queue(
 
     val heightQueues = animateDpAsState(if (showQueues) maxHeightQueuesList else 20.dp)
 
-
-
     var windowsInQueue by remember { mutableStateOf(windows) }
     var updateWindowsList by remember { mutableStateOf(false) }
     LaunchedEffect(Unit, selectedQueue, updateWindowsList, filter) {
@@ -430,17 +425,20 @@ fun Queue(
             windowsFiltered = windows
                 .filter {
                     it.mediaItem.mediaMetadata.title?.contains(filterCharSequence, true) ?: false
-                            || it.mediaItem.mediaMetadata.artist?.contains(filterCharSequence,true) ?: false
-
+                            || it.mediaItem.mediaMetadata.artist?.contains(filterCharSequence, true) ?: false
                 }
         val win = if (searching) windowsFiltered else windows
         windowsInQueue = if (selectedQueue == defaultQueue()) win else win.filter {
-                it.mediaItem.mediaMetadata.extras
-                    ?.getLong("idQueue", defaultQueueId()) == selectedQueue?.id
+            it.mediaItem.mediaMetadata.extras
+                ?.getLong("idQueue", defaultQueueId()) == selectedQueue?.id
         }
-
-        //println("windowsInQueue changed: ${windowsInQueue.size}")
     }
+
+    // ─── filtered items count (reused in two places) ───────────────────────
+    val filteredItemsCount = windowsInQueue.filter { item ->
+        blacklisted.value?.map { it.path }?.contains(item.mediaItem.mediaId) == false
+                || item.mediaItem.isVideo == !excludeSongsIfAreVideos
+    }.size
 
     Box(
         modifier = Modifier
@@ -460,9 +458,7 @@ fun Queue(
         val reorderableLazyListState = rememberReorderableLazyListState(
             lazyListState = lazyListState,
         ) { from, to ->
-            // based on uid as key
             if (to.key != binder.player.currentWindow?.uid.toString()) {
-
                 windowsInQueue = windowsInQueue.toMutableList().apply {
                     val fromIndex = indexOfFirst { it.uid.toString() == from.key }
                     val toIndex = indexOfFirst { it.uid.toString() == to.key }
@@ -473,35 +469,31 @@ fun Queue(
                     else currentDragInfo.first to toIndex
 
                     move(fromIndex, toIndex)
-                    println("reorderableLazyListState dragInfo from ${fromIndex} to ${toIndex}")
                 }
-
             } else dragInfo = null
-
         }
 
         LaunchedEffect(reorderableLazyListState.isAnyItemDragging) {
             if (!reorderableLazyListState.isAnyItemDragging) {
                 dragInfo?.let { (from, to) ->
-                    val fromIndex = from
-                    val toIndex = to
-                    binderPlayer.moveMediaItem(fromIndex, toIndex)
-                    println("reorderableLazyListState.isAnyItemDragging moved from ${fromIndex} to ${toIndex}")
+                    binderPlayer.moveMediaItem(from, to)
                     dragInfo = null
                 }
             }
         }
 
-    LazyColumn(
-        state = lazyListState,
-        modifier = Modifier
-    ) {
+        // ─── Main list ──────────────────────────────────────────────────────
+        LazyColumn(
+            state = lazyListState,
+            modifier = Modifier
+        ) {
 
             stickyHeader {
 
                 var editQueue by remember { mutableStateOf(false) }
                 var addQueue by remember { mutableStateOf(false) }
                 var queueToEdit by remember { mutableStateOf<Queues?>(null) }
+
                 if (editQueue || addQueue) {
                     EditQueueDialog(
                         onDismiss = {
@@ -513,9 +505,7 @@ fun Queue(
                         setValue = { queue ->
                             CoroutineScope(Dispatchers.IO).launch {
                                 Database.asyncTransaction {
-                                    if (editQueue)
-                                        update(queue)
-                                    else insert(queue)
+                                    if (editQueue) update(queue) else insert(queue)
                                 }
                             }
                             editQueue = false
@@ -527,40 +517,54 @@ fun Queue(
                     )
                 }
 
-                Title2Actions(
-                    title = stringResource(
-                        R.string.queue_queue,
-                        selectedQueue?.title.toString()
-                    ),
-                    icon1 = if (showQueues) R.drawable.chevron_up else R.drawable.chevron_down,
-                    icon2 = R.drawable.addqueue,
-                    onClick1 = {
-                        showQueues = !showQueues
-                    },
-                    onClick2 = {
-                        editQueue = false
-                        addQueue = true
-                    },
+                // ── Sticky header wrapper ──────────────────────────────────
+                Column(
                     modifier = Modifier
                         .fillMaxWidth()
                         .background(colorPalette().background1)
-                        .padding(windowInsets
-                        .only(WindowInsetsSides.Top )
-                        .asPaddingValues())
-                )
-
-                if (showQueues)
-                    LazyColumn(
-                        state = rememberLazyListState(),
-                        contentPadding = windowInsets
-                            .only(WindowInsetsSides.Horizontal)
-                            .asPaddingValues(),
-                        horizontalAlignment = Alignment.CenterHorizontally,
+                        .animateContentSize(animationSpec = tween(200))
+                ) {
+                    Title2Actions(
+                        title = stringResource(
+                            R.string.queue_queue,
+                            selectedQueue?.title.toString()
+                        ),
+                        icon1 = if (showQueues) R.drawable.chevron_up else R.drawable.chevron_down,
+                        icon2 = R.drawable.addqueue,
+                        onClick1 = { showQueues = !showQueues },
+                        onClick2 = {
+                            editQueue = false
+                            addQueue = true
+                        },
                         modifier = Modifier
-                            .height(heightQueues.value)
-                            .background(colorPalette().background0)
-                    ) {
+                            .fillMaxWidth()
+                            .padding(
+                                windowInsets
+                                    .only(WindowInsetsSides.Top)
+                                    .asPaddingValues()
+                            )
+                    )
 
+                    // Thin accent divider under title
+                    HorizontalDivider(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp),
+                        thickness = 0.5.dp,
+                        color = colorPalette().accent.copy(alpha = 0.25f)
+                    )
+
+                    if (showQueues)
+                        LazyColumn(
+                            state = rememberLazyListState(),
+                            contentPadding = windowInsets
+                                .only(WindowInsetsSides.Horizontal)
+                                .asPaddingValues(),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier
+                                .height(heightQueues.value)
+                                .background(colorPalette().background0)
+                        ) {
                             items(
                                 items = queueslist,
                                 key = { it.id }
@@ -594,425 +598,443 @@ fun Queue(
                                                     }
                                                 }
                                             )
-
                                         }
                                     }
                                 )
                             }
+                        }
 
-                    }
-
-                Row(
-                    horizontalArrangement = Arrangement.Start,
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .background(colorPalette().background1)
-                        .fillMaxWidth()
-                ) {
-                    Title(stringResource(R.string.queue_list_of_media))
-                }
-
-                if (searching)
+                    // ── "List of media" sub-header ─────────────────────────
                     Row(
-                        horizontalArrangement = Arrangement.spacedBy(10.dp),
-                        verticalAlignment = Alignment.Bottom,
+                        horizontalArrangement = Arrangement.Start,
+                        verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier
                             .background(colorPalette().background1)
-                            .padding(all = 10.dp)
                             .fillMaxWidth()
                     ) {
-                        AnimatedVisibility(visible = searching) {
-                            val focusRequester = remember { FocusRequester() }
-                            val focusManager = LocalFocusManager.current
-                            val keyboardController = LocalSoftwareKeyboardController.current
-
-                            LaunchedEffect(searching) {
-                                focusRequester.requestFocus()
-                            }
-
-                            BasicTextField(
-                                value = filter ?: "",
-                                onValueChange = { filter = it },
-                                textStyle = typography().xs.semiBold,
-                                singleLine = true,
-                                maxLines = 1,
-                                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                                keyboardActions = KeyboardActions(onDone = {
-                                    if (filter.isNullOrBlank()) filter = ""
-                                    focusManager.clearFocus()
-                                }),
-                                cursorBrush = SolidColor(colorPalette().text),
-                                decorationBox = { innerTextField ->
-                                    Box(
-                                        contentAlignment = Alignment.CenterStart,
-                                        modifier = Modifier
-                                            .weight(1f)
-                                            .padding(horizontal = 10.dp)
-                                    ) {
-                                        IconButton(
-                                            onClick = {},
-                                            icon = R.drawable.search,
-                                            color = colorPalette().favoritesIcon,
-                                            modifier = Modifier
-                                                .align(Alignment.CenterStart)
-                                                .size(16.dp)
-                                        )
-                                    }
-                                    Box(
-                                        contentAlignment = Alignment.CenterStart,
-                                        modifier = Modifier
-                                            .weight(1f)
-                                            .padding(horizontal = 30.dp)
-                                    ) {
-                                        androidx.compose.animation.AnimatedVisibility(
-                                            visible = filter?.isEmpty() ?: true,
-                                            enter = fadeIn(tween(100)),
-                                            exit = fadeOut(tween(100)),
-                                        ) {
-                                            BasicText(
-                                                text = stringResource(R.string.search),
-                                                maxLines = 1,
-                                                overflow = TextOverflow.Ellipsis,
-                                                style = typography().xs.semiBold.secondary.copy(
-                                                    color = colorPalette().textDisabled
-                                                )
-                                            )
-                                        }
-
-                                        innerTextField()
-                                    }
-                                },
-                                modifier = Modifier
-                                    .height(30.dp)
-                                    .fillMaxWidth()
-                                    .background(
-                                        colorPalette().background4,
-                                        shape = thumbnailRoundness.shape()
-                                    )
-                                    .focusRequester(focusRequester)
-                                    .onFocusChanged {
-                                        if (!it.hasFocus) {
-                                            keyboardController?.hide()
-                                            if (filter?.isBlank() == true) {
-                                                filter = null
-                                                searching = false
-                                            }
-                                        }
-                                    }
-                            )
-                        }
+                        Title(stringResource(R.string.queue_list_of_media))
                     }
 
+                    // ── Search bar ─────────────────────────────────────────
+                    if (searching)
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(10.dp),
+                            verticalAlignment = Alignment.Bottom,
+                            modifier = Modifier
+                                .background(colorPalette().background1)
+                                .padding(all = 10.dp)
+                                .fillMaxWidth()
+                        ) {
+                            AnimatedVisibility(visible = searching) {
+                                val focusRequester = remember { FocusRequester() }
+                                val focusManager = LocalFocusManager.current
+                                val keyboardController = LocalSoftwareKeyboardController.current
 
+                                LaunchedEffect(searching) {
+                                    focusRequester.requestFocus()
+                                }
 
-            }
+                                BasicTextField(
+                                    value = filter ?: "",
+                                    onValueChange = { filter = it },
+                                    textStyle = typography().xs.semiBold,
+                                    singleLine = true,
+                                    maxLines = 1,
+                                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                                    keyboardActions = KeyboardActions(onDone = {
+                                        if (filter.isNullOrBlank()) filter = ""
+                                        focusManager.clearFocus()
+                                    }),
+                                    cursorBrush = SolidColor(colorPalette().text),
+                                    decorationBox = { innerTextField ->
+                                        Box(
+                                            contentAlignment = Alignment.CenterStart,
+                                            modifier = Modifier
+                                                .weight(1f)
+                                                .padding(horizontal = 10.dp)
+                                        ) {
+                                            IconButton(
+                                                onClick = {},
+                                                icon = R.drawable.search,
+                                                color = colorPalette().favoritesIcon,
+                                                modifier = Modifier
+                                                    .align(Alignment.CenterStart)
+                                                    .size(16.dp)
+                                            )
+                                        }
+                                        Box(
+                                            contentAlignment = Alignment.CenterStart,
+                                            modifier = Modifier
+                                                .weight(1f)
+                                                .padding(horizontal = 30.dp)
+                                        ) {
+                                            androidx.compose.animation.AnimatedVisibility(
+                                                visible = filter?.isEmpty() ?: true,
+                                                enter = fadeIn(tween(100)),
+                                                exit = fadeOut(tween(100)),
+                                            ) {
+                                                BasicText(
+                                                    text = stringResource(R.string.search),
+                                                    maxLines = 1,
+                                                    overflow = TextOverflow.Ellipsis,
+                                                    style = typography().xs.semiBold.secondary.copy(
+                                                        color = colorPalette().textDisabled
+                                                    )
+                                                )
+                                            }
+                                            innerTextField()
+                                        }
+                                    },
+                                    modifier = Modifier
+                                        .height(30.dp)
+                                        .fillMaxWidth()
+                                        .background(
+                                            colorPalette().background4,
+                                            shape = thumbnailRoundness.shape()
+                                        )
+                                        .focusRequester(focusRequester)
+                                        .onFocusChanged {
+                                            if (!it.hasFocus) {
+                                                keyboardController?.hide()
+                                                if (filter?.isBlank() == true) {
+                                                    filter = null
+                                                    searching = false
+                                                }
+                                            }
+                                        }
+                                )
+                            }
+                        }
 
+                    // Bottom divider of the whole sticky header block
+                    HorizontalDivider(
+                        modifier = Modifier.fillMaxWidth(),
+                        thickness = 0.5.dp,
+                        color = colorPalette().textDisabled.copy(alpha = 0.15f)
+                    )
+                }
+            } // end stickyHeader
 
-        items(
-            items = windowsInQueue
-                .filter {
-                    item -> blacklisted.value?.map { it.path }?.contains(item.mediaItem.mediaId) == false
-                        || item.mediaItem.isVideo == !excludeSongsIfAreVideos
-                },
-            key =  { window -> window.uid.toString() }
-        ) { window ->
-            ReorderableItem(
-                reorderableLazyListState,
-                key = window.uid.toString()
-            ) { isDragging ->
+            // ─── Song items ─────────────────────────────────────────────────
+            items(
+                items = windowsInQueue
+                    .filter { item ->
+                        blacklisted.value?.map { it.path }
+                            ?.contains(item.mediaItem.mediaId) == false
+                                || item.mediaItem.isVideo == !excludeSongsIfAreVideos
+                    },
+                key = { window -> window.uid.toString() }
+            ) { window ->
+                ReorderableItem(
+                    reorderableLazyListState,
+                    key = window.uid.toString()
+                ) { isDragging ->
 
-                val interactionSource = remember { MutableInteractionSource() }
+                    val interactionSource = remember { MutableInteractionSource() }
 
-                val currentItem by rememberUpdatedState(window)
-                val checkedState = rememberSaveable { mutableStateOf(false) }
+                    val currentItem by rememberUpdatedState(window)
+                    val checkedState = rememberSaveable { mutableStateOf(false) }
 
-                val isPlayingThisMediaItem =
-                    mediaItemIndex == window.firstPeriodIndex
+                    val isPlayingThisMediaItem =
+                        mediaItemIndex == window.firstPeriodIndex
 
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .animateItem()
-                ) {
                     Box(
                         modifier = Modifier
-                            .size(24.dp)
-                            .zIndex(10f)
-                            .align(Alignment.TopCenter)
-                            .offset(y = (-5).dp)
-                            .draggableHandle(
-                                enabled = !isReorderDisabled,
-                                interactionSource = interactionSource,
-                                onDragStarted = {
-                                    hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
-                                },
-                                onDragStopped = {
-                                    hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
-                                }
-                            )
-
+                            .fillMaxWidth()
+                            .animateItem()
                     ) {
-
-                        if (!isReorderDisabled) {
-                            IconButton(
-                                icon = R.drawable.reorder,
-                                color = colorPalette().accent,
-                                indication = rippleIndication,
-                                onClick = {},
-                            )
-                        }
-                    }
-
-                    SwipeableQueueItem (
-                        mediaItem = window.mediaItem,
-                        onPlayNext = {
-                            binder.player.addNext(
-                                window.mediaItem,
-                                context,
-                                selectedQueue ?: defaultQueue()
-                            )
-                            updateWindowsList = !updateWindowsList
-                        },
-                        onRemoveFromQueue = {
-                            binder.player.removeMediaItem(currentItem.firstPeriodIndex)
-                            SmartMessage(
-                                "${context.resources.getString(R.string.deleted)} ${currentItem.mediaItem.mediaMetadata.title}",
-                                type = PopupType.Warning,
-                                context = context
-                            )
-                            updateWindowsList = !updateWindowsList
-                        },
-                        onEnqueue = {
-                            binder.player.enqueue(
-                                window.mediaItem,
-                                context,
-                                it
-                            )
-                            updateWindowsList = !updateWindowsList
-                        }
-                    ) {
-                        SongItem(
-                            song = window.mediaItem,
-                            thumbnailSizePx = thumbnailSizePx,
-                            thumbnailSizeDp = thumbnailSizeDp,
-                            onThumbnailContent = {
-                                musicBarsTransition.AnimatedVisibility(
-                                    visible = { it == window.firstPeriodIndex },
-                                    enter = fadeIn(tween(800)),
-                                    exit = fadeOut(tween(800)),
-                                ) {
-                                    Box(
-                                        contentAlignment = Alignment.Center,
-                                        modifier = Modifier
-                                            .background(
-                                                color = Color.Black.copy(alpha = 0.25f),
-                                                shape = thumbnailShape()
+                        // ── Accent "now playing" bar on left edge ──────────
+                        if (isPlayingThisMediaItem) {
+                            Box(
+                                modifier = Modifier
+                                    .width(3.dp)
+                                    .height(48.dp)
+                                    .align(Alignment.CenterStart)
+                                    .zIndex(6f)
+                                    .background(
+                                        brush = Brush.verticalGradient(
+                                            colors = listOf(
+                                                colorPalette().accent.copy(alpha = 0.6f),
+                                                colorPalette().accent,
+                                                colorPalette().accent.copy(alpha = 0.6f)
                                             )
-                                            .size(Dimensions.thumbnails.song)
-                                    ) {
-                                        NowPlayingSongIndicator(
-                                            window.mediaItem.mediaId,
-                                            binder.player
-                                        )
-                                    }
-                                }
-                            },
-                            trailingContent = {
-                                if (selectQueueItems)
-                                    Checkbox(
-                                        checked = checkedState.value,
-                                        onCheckedChange = {
-                                            checkedState.value = it
-                                            if (it) {
-                                                listMediaItems.add(window.mediaItem)
-                                                listMediaItemsIndex.add(window.firstPeriodIndex)
-                                            } else {
-                                                listMediaItems.remove(window.mediaItem)
-                                                listMediaItemsIndex.remove(window.firstPeriodIndex)
-                                            }
-                                        },
-                                        colors = colors(
-                                            checkedColor = colorPalette().accent,
-                                            uncheckedColor = colorPalette().text
                                         ),
-                                        modifier = Modifier
-                                            .scale(0.7f)
-                                    )
-                                else checkedState.value = false
-
-                            },
-                            modifier = Modifier
-                                .combinedClickable(
-                                    onLongClick = {
-                                        menuState.display {
-                                            QueuedMediaItemMenu(
-                                                navController = navController,
-                                                mediaItem = window.mediaItem,
-                                                indexInQueue = if (isPlayingThisMediaItem) null else window.firstPeriodIndex,
-                                                onDismiss = {
-                                                    menuState.hide()
-                                                    updateWindowsList = !updateWindowsList
-                                                },
-                                                onInfo = {},
-                                                disableScrollingText = disableScrollingText,
-                                                onBlacklist = {
-                                                    insertOrUpdateBlacklist(window.mediaItem.asSong)
-                                                }
-                                            )
-                                        }
-                                        hapticFeedback.performHapticFeedback(
-                                            HapticFeedbackType.LongPress
+                                        shape = RoundedCornerShape(
+                                            topEnd = 2.dp,
+                                            bottomEnd = 2.dp
                                         )
+                                    )
+                            )
+                        }
+
+                        // ── Reorder drag handle ────────────────────────────
+                        Box(
+                            modifier = Modifier
+                                .size(24.dp)
+                                .zIndex(10f)
+                                .align(Alignment.TopCenter)
+                                .offset(y = (-5).dp)
+                                .draggableHandle(
+                                    enabled = !isReorderDisabled,
+                                    interactionSource = interactionSource,
+                                    onDragStarted = {
+                                        hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
                                     },
-                                    onClick = {
-                                        if (!selectQueueItems) {
-                                            if (isPlayingThisMediaItem) {
-                                                if (shouldBePlaying) {
-                                                    binderPlayer.pause()
-                                                } else {
-                                                    binderPlayer.play()
-                                                }
-                                            } else {
-                                                binderPlayer.seekToDefaultPosition(window.firstPeriodIndex)
-                                                binderPlayer.prepare()
-                                                binderPlayer.playWhenReady = true
-                                            }
-                                        } else checkedState.value = !checkedState.value
+                                    onDragStopped = {
+                                        hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
                                     }
                                 )
-                                .background(color = if (queueType == QueueType.Modern) Color.Transparent else colorPalette().background0),
+                        ) {
+                            if (!isReorderDisabled) {
+                                IconButton(
+                                    icon = R.drawable.reorder,
+                                    color = colorPalette().accent,
+                                    indication = rippleIndication,
+                                    onClick = {},
+                                )
+                            }
+                        }
 
-                        )
+                        SwipeableQueueItem(
+                            mediaItem = window.mediaItem,
+                            onPlayNext = {
+                                binder.player.addNext(
+                                    window.mediaItem,
+                                    context,
+                                    selectedQueue ?: defaultQueue()
+                                )
+                                updateWindowsList = !updateWindowsList
+                            },
+                            onRemoveFromQueue = {
+                                binder.player.removeMediaItem(currentItem.firstPeriodIndex)
+                                SmartMessage(
+                                    "${context.resources.getString(R.string.deleted)} ${currentItem.mediaItem.mediaMetadata.title}",
+                                    type = PopupType.Warning,
+                                    context = context
+                                )
+                                updateWindowsList = !updateWindowsList
+                            },
+                            onEnqueue = {
+                                binder.player.enqueue(window.mediaItem, context, it)
+                                updateWindowsList = !updateWindowsList
+                            }
+                        ) {
+                            SongItem(
+                                song = window.mediaItem,
+                                thumbnailSizePx = thumbnailSizePx,
+                                thumbnailSizeDp = thumbnailSizeDp,
+                                onThumbnailContent = {
+                                    musicBarsTransition.AnimatedVisibility(
+                                        visible = { it == window.firstPeriodIndex },
+                                        enter = fadeIn(tween(800)),
+                                        exit = fadeOut(tween(800)),
+                                    ) {
+                                        Box(
+                                            contentAlignment = Alignment.Center,
+                                            modifier = Modifier
+                                                .background(
+                                                    color = Color.Black.copy(alpha = 0.25f),
+                                                    shape = thumbnailShape()
+                                                )
+                                                .size(Dimensions.thumbnails.song)
+                                        ) {
+                                            NowPlayingSongIndicator(
+                                                window.mediaItem.mediaId,
+                                                binder.player
+                                            )
+                                        }
+                                    }
+                                },
+                                trailingContent = {
+                                    if (selectQueueItems)
+                                        Checkbox(
+                                            checked = checkedState.value,
+                                            onCheckedChange = {
+                                                checkedState.value = it
+                                                if (it) {
+                                                    listMediaItems.add(window.mediaItem)
+                                                    listMediaItemsIndex.add(window.firstPeriodIndex)
+                                                } else {
+                                                    listMediaItems.remove(window.mediaItem)
+                                                    listMediaItemsIndex.remove(window.firstPeriodIndex)
+                                                }
+                                            },
+                                            colors = colors(
+                                                checkedColor = colorPalette().accent,
+                                                uncheckedColor = colorPalette().text
+                                            ),
+                                            modifier = Modifier.scale(0.7f)
+                                        )
+                                    else checkedState.value = false
+                                },
+                                modifier = Modifier
+                                    .combinedClickable(
+                                        onLongClick = {
+                                            menuState.display {
+                                                QueuedMediaItemMenu(
+                                                    navController = navController,
+                                                    mediaItem = window.mediaItem,
+                                                    indexInQueue = if (isPlayingThisMediaItem) null else window.firstPeriodIndex,
+                                                    onDismiss = {
+                                                        menuState.hide()
+                                                        updateWindowsList = !updateWindowsList
+                                                    },
+                                                    onInfo = {},
+                                                    disableScrollingText = disableScrollingText,
+                                                    onBlacklist = {
+                                                        insertOrUpdateBlacklist(window.mediaItem.asSong)
+                                                    }
+                                                )
+                                            }
+                                            hapticFeedback.performHapticFeedback(
+                                                HapticFeedbackType.LongPress
+                                            )
+                                        },
+                                        onClick = {
+                                            if (!selectQueueItems) {
+                                                if (isPlayingThisMediaItem) {
+                                                    if (shouldBePlaying) binderPlayer.pause()
+                                                    else binderPlayer.play()
+                                                } else {
+                                                    binderPlayer.seekToDefaultPosition(window.firstPeriodIndex)
+                                                    binderPlayer.prepare()
+                                                    binderPlayer.playWhenReady = true
+                                                }
+                                            } else checkedState.value = !checkedState.value
+                                        }
+                                    )
+                                    // ── Now playing item: subtle accent tint ──
+                                    .background(
+                                        color = if (isPlayingThisMediaItem)
+                                            colorPalette().accent.copy(alpha = 0.07f)
+                                        else if (queueType == QueueType.Modern) Color.Transparent
+                                        else colorPalette().background0
+                                    ),
+                            )
+                        }
                     }
                 }
             }
-        }
 
-        item {
-            if (binder.isLoadingRadio) {
-                Column(
-                    modifier = Modifier
-                        .shimmer()
-                ) {
-                    repeat(3) { index ->
-                        SongItemPlaceholder(
-                            thumbnailSizeDp = thumbnailSizeDp,
-                            modifier = Modifier
-                                .alpha(1f - index * 0.125f)
-                                .fillMaxWidth()
-                        )
+            item {
+                if (binder.isLoadingRadio) {
+                    Column(modifier = Modifier.shimmer()) {
+                        repeat(3) { index ->
+                            SongItemPlaceholder(
+                                thumbnailSizeDp = thumbnailSizeDp,
+                                modifier = Modifier
+                                    .alpha(1f - index * 0.125f)
+                                    .fillMaxWidth()
+                            )
+                        }
                     }
                 }
             }
-        }
-        item(
-            key = "footer",
-            contentType = 0
-        ) {
-            Spacer(modifier = Modifier.height(Dimensions.bottomSpacer))
-        }
-    }
 
-    LaunchedEffect(Unit) {
-        if (!lazyListState.isScrollInProgress)
-            lazyListState.animateScrollToItem (
-                windows.indexOf(binderPlayer.currentWindow),
-                -300
-            )
-    }
+            item(
+                key = "footer",
+                contentType = 0
+            ) {
+                Spacer(modifier = Modifier.height(Dimensions.bottomSpacer))
+            }
+        }
 
+        LaunchedEffect(Unit) {
+            if (!lazyListState.isScrollInProgress)
+                lazyListState.animateScrollToItem(
+                    windows.indexOf(binderPlayer.currentWindow),
+                    -300
+                )
+        }
+
+        // ─── Bottom action bar ───────────────────────────────────────────────
         val density = LocalDensity.current
         val bottomInset = with(density) { WindowInsets.navigationBars.getBottom(density).toDp() }
         val contentPadding = PaddingValues(bottom = bottomInset)
-        
+
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .align(Alignment.BottomCenter)
+        ) {
+            // Fade-out gradient blending list into the bar
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(28.dp)
+                    .background(
+                        brush = Brush.verticalGradient(
+                            colors = listOf(
+                                Color.Transparent,
+                                colorPalette().background1.copy(alpha = 0.85f),
+                                colorPalette().background1
+                            )
+                        )
+                    )
+            )
+
             Box(
                 modifier = Modifier
                     .clickable(onClick = { onDismiss(queueLoopType) })
                     .background(colorPalette().background1)
                     .fillMaxWidth()
-                    .align(Alignment.BottomCenter)
-                    .height( Dimensions.navigationBarHeight + bottomInset )
+                    .height(Dimensions.navigationBarHeight + bottomInset)
                     .padding(contentPadding)
             ) {
 
+                // MiniPlayer
                 if (!isLandscape)
                     Box(
                         modifier = Modifier
                             .absoluteOffset(0.dp, -65.dp)
                             .align(Alignment.TopCenter)
                     ) {
-
                         UnifiedMiniPlayer(
-                            showPlayer = {
-                                onDismiss(queueLoopType)
-                            },
+                            showPlayer = { onDismiss(queueLoopType) },
                             hidePlayer = {}
                         )
-                        /*
-                        if (binderPlayer.currentMediaItem?.isLocal == true)
-                            LocalMiniPlayer(
-                                showPlayer = {
-                                    onDismiss(queueLoopType)
-                                },
-                                hidePlayer = {}
-                            )
-                        else
-                            OnlineMiniPlayer(
-                                showPlayer = {
-                                    onDismiss(queueLoopType)
-                                },
-                                hidePlayer = { hidePlayer() },
-                                navController = navController,
-                            )
-
-                         */
-
                     }
 
+                // ── Track count pill ────────────────────────────────────────
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.Start,
                     modifier = Modifier
-                        .padding(horizontal = 4.dp)
-                        .padding(bottom = 5.dp)
+                        .padding(horizontal = 12.dp, vertical = 5.dp)
                         .align(Alignment.CenterStart)
-
+                        .background(
+                            color = colorPalette().background2,
+                            shape = RoundedCornerShape(50)
+                        )
+                        .padding(horizontal = 8.dp, vertical = 3.dp)
                 ) {
-
                     BasicText(
-                        text = "${windowsInQueue.filter {
-                                item -> blacklisted.value?.map { it.path }?.contains(item.mediaItem.mediaId) == false
-                                || item.mediaItem.isVideo == !excludeSongsIfAreVideos
-                        }.size} ",
+                        text = "$filteredItemsCount",
                         style = typography().xxs.medium,
                     )
+                    Spacer(modifier = Modifier.width(4.dp))
                     Image(
                         painter = painterResource(R.drawable.musical_notes),
                         contentDescription = null,
                         colorFilter = ColorFilter.tint(colorPalette().textSecondary),
-                        modifier = Modifier
-                            .size(12.dp)
+                        modifier = Modifier.size(10.dp)
                     )
-
                 }
 
-
+                // ── Action icons ────────────────────────────────────────────
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.End,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
                     modifier = Modifier
                         .align(Alignment.CenterEnd)
-                        .padding(horizontal = 4.dp)
-                        .padding(bottom = 5.dp)
-
+                        .padding(horizontal = 8.dp, vertical = 5.dp)
                 ) {
                     IconButton(
                         icon = R.drawable.search_circle,
-                        color = colorPalette().text,
+                        color = if (searching) colorPalette().accent else colorPalette().text,
                         onClick = {
                             searching = !searching
-                            if (searching)
-                                windowsFiltered = windows
+                            if (searching) windowsFiltered = windows
                         },
                         modifier = Modifier
                             .padding(horizontal = 4.dp)
@@ -1022,7 +1044,7 @@ fun Queue(
                     if (showButtonPlayerDiscover) {
                         IconButton(
                             icon = R.drawable.star_brilliant,
-                            color = if (discoverIsEnabled) colorPalette().text else colorPalette().textDisabled,
+                            color = if (discoverIsEnabled) colorPalette().accent else colorPalette().textDisabled,
                             onClick = {},
                             modifier = Modifier
                                 .padding(horizontal = 4.dp)
@@ -1038,15 +1060,9 @@ fun Queue(
                                             context = context
                                         )
                                     }
-
                                 )
                         )
-
-                        Spacer(
-                            modifier = Modifier
-                                .width(12.dp)
-                        )
-
+                        Spacer(modifier = Modifier.width(8.dp))
                     }
 
                     IconButton(
@@ -1058,25 +1074,21 @@ fun Queue(
                             .size(24.dp)
                     )
 
-                    Spacer(
-                        modifier = Modifier
-                            .width(12.dp)
-                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+
                     IconButton(
                         icon = getIconQueueLoopState(queueLoopType),
-                        color = colorPalette().text,
-                        onClick = {
-                            queueLoopType = setQueueLoopState(queueLoopType)
-                        },
+                        color = if (queueLoopType != QueueLoopType.Default)
+                            colorPalette().accent
+                        else
+                            colorPalette().text,
+                        onClick = { queueLoopType = setQueueLoopState(queueLoopType) },
                         modifier = Modifier
                             .padding(horizontal = 4.dp)
                             .size(24.dp)
                     )
 
-                    Spacer(
-                        modifier = Modifier
-                            .width(12.dp)
-                    )
+                    Spacer(modifier = Modifier.width(8.dp))
 
                     IconButton(
                         icon = R.drawable.shuffle,
@@ -1095,16 +1107,13 @@ fun Queue(
                         }
                     )
 
-                    Spacer(
-                        modifier = Modifier
-                            .width(12.dp)
-                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+
                     HeaderIconButton(
                         icon = R.drawable.ellipsis_horizontal,
-                        color = if (windows.isNotEmpty() == true) colorPalette().text else colorPalette().textDisabled,
-                        enabled = windows.isNotEmpty() == true,
-                        modifier = Modifier
-                            .padding(end = 4.dp),
+                        color = if (windows.isNotEmpty()) colorPalette().text else colorPalette().textDisabled,
+                        enabled = windows.isNotEmpty(),
+                        modifier = Modifier.padding(end = 4.dp),
                         onClick = {
                             menuState.display {
                                 PlaylistsItemMenu(
@@ -1112,25 +1121,13 @@ fun Queue(
                                     onDismiss = menuState::hide,
                                     onSelectUnselect = {
                                         selectQueueItems = !selectQueueItems
-                                        if (!selectQueueItems) {
-                                            listMediaItems.clear()
-                                        }
+                                        if (!selectQueueItems) listMediaItems.clear()
                                     },
-                                    /*
-                                    onSelect = { selectQueueItems = true },
-                                    onUncheck = {
-                                        selectQueueItems = false
-                                        listMediaItems.clear()
-                                        listMediaItemsIndex.clear()
-                                    },
-                                     */
                                     onDelete = {
-                                        if (listMediaItemsIndex.isNotEmpty())
-                                        {
+                                        if (listMediaItemsIndex.isNotEmpty()) {
                                             val mediacount = listMediaItemsIndex.size - 1
                                             listMediaItemsIndex.sort()
                                             for (i in mediacount.downTo(0)) {
-                                                //if (i == mediaItemIndex) null else
                                                 binder.player.removeMediaItem(listMediaItemsIndex[i])
                                             }
                                             listMediaItemsIndex.clear()
@@ -1141,8 +1138,7 @@ fun Queue(
                                         }
                                     },
                                     onAddToPlaylist = { playlistPreview ->
-                                        position =
-                                            playlistPreview.songCount.minus(1) ?: 0
+                                        position = playlistPreview.songCount.minus(1) ?: 0
                                         if (position > 0) position++ else position = 0
                                         if (listMediaItems.isEmpty()) {
                                             if (!isYtSyncEnabled() || !playlistPreview.playlist.isYoutubePlaylist) {
@@ -1164,9 +1160,11 @@ fun Queue(
                                                         addToYtPlaylist(
                                                             playlistPreview.playlist.id,
                                                             position,
-                                                            cleanPrefix(id ?: ""),windows
-                                                                .filterNot {it.mediaItem.mediaId.startsWith(LOCAL_KEY_PREFIX)}
-                                                                .map { it.mediaItem })
+                                                            cleanPrefix(id ?: ""),
+                                                            windows
+                                                                .filterNot { it.mediaItem.mediaId.startsWith(LOCAL_KEY_PREFIX) }
+                                                                .map { it.mediaItem }
+                                                        )
                                                     }
                                                 }
                                             }
@@ -1183,7 +1181,6 @@ fun Queue(
                                                             ).default()
                                                         )
                                                     }
-
                                                 }
                                             } else {
                                                 CoroutineScope(Dispatchers.IO).launch {
@@ -1192,7 +1189,8 @@ fun Queue(
                                                             playlistPreview.playlist.id,
                                                             position,
                                                             cleanPrefix(id ?: ""),
-                                                            listMediaItems.filterNot {it.mediaId.startsWith(LOCAL_KEY_PREFIX)})
+                                                            listMediaItems.filterNot { it.mediaId.startsWith(LOCAL_KEY_PREFIX) }
+                                                        )
                                                     }
                                                 }
                                             }
@@ -1201,9 +1199,7 @@ fun Queue(
                                             selectQueueItems = false
                                         }
                                     },
-                                    onExport = {
-                                        isExporting = true
-                                    },
+                                    onExport = { isExporting = true },
                                     onGoToPlaylist = {
                                         navController.navigate("${NavRoutes.localPlaylist.name}/$it")
                                     },
@@ -1213,25 +1209,18 @@ fun Queue(
                         }
                     )
 
+                    Spacer(modifier = Modifier.width(8.dp))
 
-                    //if (showButtonPlayerArrow) {
-                        Spacer(
-                            modifier = Modifier
-                                .width(12.dp)
-                        )
-                        IconButton(
-                            icon = R.drawable.chevron_down,
-                            color = colorPalette().text,
-                            onClick = { onDismiss(queueLoopType) },
-                            modifier = Modifier
-                                .padding(horizontal = 4.dp)
-                                .size(24.dp)
-                        )
-                    //}
-
-
+                    IconButton(
+                        icon = R.drawable.chevron_down,
+                        color = colorPalette().text,
+                        onClick = { onDismiss(queueLoopType) },
+                        modifier = Modifier
+                            .padding(horizontal = 4.dp)
+                            .size(24.dp)
+                    )
                 }
             }
+        }
     }
-
 }
