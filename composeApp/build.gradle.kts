@@ -155,6 +155,7 @@ android {
     buildFeatures {
         buildConfig = true
         compose = true
+        resValues = true
     }
 
     compileSdk = 36
@@ -504,6 +505,7 @@ android {
         }
     }
 
+    /*
     applicationVariants.all {
         val variant = this
         variant.outputs
@@ -517,6 +519,7 @@ android {
                 //println("GRADLE Manifests: ${variant.sourceSets.map { it.manifestFile }}")
             }
     }
+    */
 
 //    sourceSets.all {
 //        kotlin.srcDir("src/$name/kotlin")

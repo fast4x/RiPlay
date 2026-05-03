@@ -135,6 +135,7 @@ extensions.configure<ApplicationExtension> {
     buildFeatures {
         buildConfig = true
         compose = true
+        resValues = true
     }
 
     compileSdk = 36

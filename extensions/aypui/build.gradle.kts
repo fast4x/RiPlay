@@ -12,6 +12,12 @@ android {
 
     namespace = "it.fast4x.androidyoutubeplayer.core.customui"
 
+    sourceSets {
+        all {
+            java.directories.add("src/$name/java")
+        }
+    }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_21
         targetCompatibility = JavaVersion.VERSION_21
@@ -19,9 +25,6 @@ android {
 
 }
 
-sourceSets.all {
-    java.srcDir("src/$name/java")
-}
 
 dependencies {
     implementation(libs.appcompat)

@@ -21,8 +21,10 @@ android {
         }
     }
 
-    sourceSets.all {
-        kotlin.srcDir("src/$name/kotlin")
+    sourceSets {
+        all {
+            kotlin.srcDir("src/$name/kotlin")
+        }
     }
 
     buildFeatures {
