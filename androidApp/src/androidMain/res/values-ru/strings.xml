@@ -1324,4 +1324,5 @@
     <string name="login_switch_account">Switch account</string>
     <string name="login_info_you_can_switch_to_another_account_without_completely_disconnecting">You can switch to another account without completely disconnecting</string>
     <string name="login_info_you_can_quickly_check_which_account_you_are_connected_to">You can quickly check which account you are connected to</string>
+    <string name="only_check_update">Only check update</string>
 </resources>

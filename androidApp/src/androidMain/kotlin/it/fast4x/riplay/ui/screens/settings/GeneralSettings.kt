@@ -177,6 +177,7 @@ import it.fast4x.riplay.ui.components.themed.ConfirmationDialog
 import it.fast4x.riplay.ui.components.themed.SecondaryTextButton
 import it.fast4x.riplay.ui.components.themed.settingsItem
 import it.fast4x.riplay.ui.components.themed.settingsSearchBarItem
+import it.fast4x.riplay.utils.CheckForNewVersion
 import it.fast4x.riplay.utils.LazyListContainer
 import kotlinx.coroutines.flow.distinctUntilChanged
 
@@ -494,18 +495,21 @@ fun GeneralSettings(
                     settingsItem {
                         var checkUpdateNow by remember { mutableStateOf(false) }
                         if (checkUpdateNow) {
-                            UpdateDialog(onClose = { checkUpdateNow = false })
-//                            CheckForNewVersion(
-//                                onDismiss = { checkUpdateNow = false },
-//                                onNoUpdateAvailable = {
-//                                        SmartMessage(
-//                                            context.resources.getString(R.string.info_no_update_available),
-//                                            type = PopupType.Info,
-//                                            context = context
-//                                        )
-//                                },
-//                                onClose = { checkUpdateNow = false }
-//                            )
+                            if (checkUpdateState == CheckUpdateState.Enabled)
+                                UpdateDialog(onClose = { checkUpdateNow = false })
+
+                            if (checkUpdateState == CheckUpdateState.OnlyCheck)
+                                CheckForNewVersion(
+                                    onDismiss = { checkUpdateNow = false },
+                                    onNoUpdateAvailable = {
+                                            SmartMessage(
+                                                context.resources.getString(R.string.info_no_update_available),
+                                                type = PopupType.Info,
+                                                context = context
+                                            )
+                                    },
+                                    onClose = { checkUpdateNow = false }
+                                )
                         }
 
                         EnumValueSelectorSettingsEntry(
@@ -516,6 +520,7 @@ fun GeneralSettings(
                                 when (it) {
                                     CheckUpdateState.Disabled -> stringResource(R.string.vt_disabled)
                                     CheckUpdateState.Enabled -> stringResource(R.string.enabled)
+                                    CheckUpdateState.OnlyCheck -> stringResource(R.string.only_check_update)
                                     //CheckUpdateState.Ask -> stringResource(R.string.ask)
                                 }
 

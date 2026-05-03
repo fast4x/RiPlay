@@ -49,6 +49,7 @@ import kotlinx.coroutines.launch
 import it.fast4x.riplay.ui.components.ScreenContainer
 import it.fast4x.riplay.ui.screens.home.homepages.HomePage
 import it.fast4x.riplay.ui.screens.home.homepages.HomePageExtended
+import it.fast4x.riplay.utils.CheckForNewVersion
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlin.system.exitProcess
 
@@ -257,8 +258,16 @@ fun HomeScreen(
     }
 
 
-    if (BuildConfig.FLAVOR == "full" && showNewversionDialog && checkUpdateState == CheckUpdateState.Enabled) {
-        UpdateDialog(onClose = { showNewversionDialog = false })
+    if (BuildConfig.FLAVOR == "full" && showNewversionDialog) {
+        if (checkUpdateState == CheckUpdateState.Enabled)
+            UpdateDialog(onClose = { showNewversionDialog = false })
+
+        if (checkUpdateState == CheckUpdateState.OnlyCheck)
+            CheckForNewVersion(
+                onDismiss = {},
+                onClose = { showNewversionDialog = false },
+                onNoUpdateAvailable = {}
+            )
     }
 
     /*

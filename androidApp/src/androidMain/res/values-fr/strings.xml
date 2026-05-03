@@ -1325,4 +1325,5 @@ Volume BAS : titre précédent</string>
     <string name="login_switch_account">Changer de compte</string>
     <string name="login_info_you_can_switch_to_another_account_without_completely_disconnecting">Vous pouvez passer à un autre compte sans vous déconnecter complètement</string>
     <string name="login_info_you_can_quickly_check_which_account_you_are_connected_to">Vous pouvez vérifier rapidement à quel compte vous êtes connecté</string>
+    <string name="only_check_update">Only check update</string>
 </resources>
