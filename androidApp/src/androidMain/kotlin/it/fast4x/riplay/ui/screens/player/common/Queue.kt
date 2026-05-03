@@ -521,7 +521,7 @@ fun Queue(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(colorPalette().background1)
+                        .background(colorPalette().background0)
                         .animateContentSize(animationSpec = tween(200))
                 ) {
                     Title2Actions(
@@ -609,7 +609,7 @@ fun Queue(
                         horizontalArrangement = Arrangement.Start,
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier
-                            .background(colorPalette().background1)
+                            .background(colorPalette().background0)
                             .fillMaxWidth()
                     ) {
                         Title(stringResource(R.string.queue_list_of_media))
@@ -621,7 +621,7 @@ fun Queue(
                             horizontalArrangement = Arrangement.spacedBy(10.dp),
                             verticalAlignment = Alignment.Bottom,
                             modifier = Modifier
-                                .background(colorPalette().background1)
+                                .background(colorPalette().background0)
                                 .padding(all = 10.dp)
                                 .fillMaxWidth()
                         ) {
@@ -976,7 +976,7 @@ fun Queue(
             Box(
                 modifier = Modifier
                     .clickable(onClick = { onDismiss(queueLoopType) })
-                    .background(colorPalette().background1)
+                    .background(colorPalette().background0)
                     .fillMaxWidth()
                     .height(Dimensions.navigationBarHeight + bottomInset)
                     .padding(contentPadding)
