@@ -125,7 +125,6 @@ fun AppNavigation(
                     navController.popBackStack()
             },
             containerColor = Color.Transparent,
-            sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
             dragHandle = {
                 Surface(
                     modifier = Modifier.padding(vertical = 0.dp),

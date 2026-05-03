@@ -4150,7 +4150,6 @@ fun UnifiedPlayerNew(
                     modifier = Modifier
                         .fillMaxWidth()
                         .conditional(queueType == QueueType.Modern) { hazeChild(state = hazeState) },
-                    sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
                     dragHandle = {
                         Surface(
                             modifier = Modifier.padding(vertical = 0.dp),
@@ -4182,7 +4181,6 @@ fun UnifiedPlayerNew(
                     modifier = Modifier
                         .fillMaxWidth()
                         .conditional(queueType == QueueType.Modern) { hazeChild(state = hazeState) },
-                    sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
                     dragHandle = {
                         Surface(
                             modifier = Modifier.padding(vertical = 0.dp),

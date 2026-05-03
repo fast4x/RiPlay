@@ -841,7 +841,6 @@ fun ArtistOverview(
             contentColor = colorPalette().background2,
             modifier = Modifier
                 .fillMaxWidth(),
-            sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
             dragHandle = {
                 Surface(
                     modifier = Modifier.padding(vertical = 0.dp),
@@ -869,7 +868,6 @@ fun ArtistOverview(
             contentColor = colorPalette().background2,
             modifier = Modifier
                 .fillMaxWidth(),
-            sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
             dragHandle = {
                 Surface(
                     modifier = Modifier.padding(vertical = 0.dp),

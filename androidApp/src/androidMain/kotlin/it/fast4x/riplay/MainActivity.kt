@@ -1494,9 +1494,6 @@ class MainActivity :
                                     showSheet = menuState.isDisplayed,
                                     onDismissRequest = menuState::hide,
                                     containerColor = Color.Transparent,
-                                    sheetState = rememberModalBottomSheetState(
-                                        skipPartiallyExpanded = true
-                                    ),
                                     dragHandle = {
                                         Surface(
                                             modifier = Modifier.padding(vertical = 0.dp),
@@ -1545,9 +1542,6 @@ class MainActivity :
                                     showSheet = castSheetState.isExpanded,
                                     onDismissRequest = castSheetState::collapseSoft,
                                     containerColor = Color.Transparent,
-                                    sheetState = rememberModalBottomSheetState(
-                                        skipPartiallyExpanded = true
-                                    ),
                                     dragHandle = {
                                         Surface(
                                             modifier = Modifier.padding(vertical = 0.dp),

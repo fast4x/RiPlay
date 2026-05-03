@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.add
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.navigationBars
@@ -21,8 +22,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogWindowProvider
 import androidx.core.view.WindowCompat
 import it.fast4x.riplay.enums.ColorPaletteMode
@@ -36,9 +39,7 @@ fun CustomModalBottomSheet(
     showSheet: Boolean,
     onDismissRequest: () -> Unit,
     modifier: Modifier = Modifier,
-    sheetState: SheetState = rememberModalBottomSheetState(
-        skipPartiallyExpanded = true
-    ),
+    initiallyExpanded: Boolean? = true,
     sheetGestureEnabled: Boolean = true,
     shape: Shape = BottomSheetDefaults.ExpandedShape,
     containerColor: Color = colorPalette().background0,
@@ -50,6 +51,11 @@ fun CustomModalBottomSheet(
     },
     content: @Composable ColumnScope.() -> Unit,
 ) {
+
+    val sheetState = rememberModalBottomSheetState(
+        skipPartiallyExpanded = initiallyExpanded == true
+    )
+
     if (showSheet) {
         ModalBottomSheet(
             onDismissRequest = onDismissRequest,
@@ -67,9 +73,11 @@ fun CustomModalBottomSheet(
             },
         ) {
             SetupSystemBarsForSheet(containerColor)
-
+            val screenHeight = LocalConfiguration.current.screenHeightDp.dp
             Column(
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .defaultMinSize(minHeight = screenHeight * 0.5f)
             ) {
                 content()
             }

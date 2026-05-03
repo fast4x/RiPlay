@@ -154,7 +154,6 @@ fun FastShare(
         contentColor = colorPalette().background0,
         modifier = Modifier
             .fillMaxWidth(),
-        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
         dragHandle = {
             Surface(
                 modifier = Modifier.padding(vertical = 0.dp),
