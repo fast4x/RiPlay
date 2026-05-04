@@ -579,15 +579,15 @@ class PlayerService : Service(),
                         }
                     }
                     //fallback if online player not fire state ended
-                    updateOnlineNearEndTicks()
-//                    if (_currentDuration.value > 0 && preferences.getEnum(queueLoopTypeKey, QueueLoopType.Default) == QueueLoopType.Default) {
-//                        if (_currentSecond.value >= _currentDuration.value - 0.5f) {
-//                            if (_playerState.value.isPlaying) {
-//                                Timber.d("PlayerService Watchdog: End of online track detected by time, forcing playNext()")
-//                                handlePlayNext()
-//                            }
-//                        }
-//                    }
+                    //updateOnlineNearEndTicks() Experimental aternative whatchdog for end time
+                    if (_currentDuration.value > 0 && preferences.getEnum(queueLoopTypeKey, QueueLoopType.Default) == QueueLoopType.Default) {
+                        if (_currentSecond.value >= _currentDuration.value - 0.5f) {
+                            if (_playerState.value.isPlaying) {
+                                Timber.d("PlayerService Watchdog: End of online track detected by time, forcing playNext()")
+                                handlePlayNext()
+                            }
+                        }
+                    }
                     //Timber.d("PlayerService onCreate onlineListenedDurationMs $onlineListenedDurationMs")
 
                     //Workaround to fix volume bug in webview in some devices. Same for youtube music app
