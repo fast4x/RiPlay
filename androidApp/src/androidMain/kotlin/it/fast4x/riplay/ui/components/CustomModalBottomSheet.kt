@@ -49,6 +49,10 @@ fun CustomModalBottomSheet(
     dragHandle: @Composable (() -> Unit)? = {
         BottomSheetDefaults.DragHandle()
     },
+    contentWindowInsets: @Composable () -> WindowInsets = {
+        //WindowInsets.ime.add(WindowInsets.navigationBars)
+        WindowInsets(bottom = 0)
+    },
     content: @Composable ColumnScope.() -> Unit,
 ) {
 
@@ -68,9 +72,7 @@ fun CustomModalBottomSheet(
             tonalElevation = tonalElevation,
             scrimColor = scrimColor,
             dragHandle = dragHandle,
-            contentWindowInsets = {
-                WindowInsets.ime.add(WindowInsets.navigationBars)
-            },
+            contentWindowInsets = contentWindowInsets,
         ) {
             SetupSystemBarsForSheet(containerColor)
             val screenHeight = LocalConfiguration.current.screenHeightDp.dp

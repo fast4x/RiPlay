@@ -37,6 +37,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -249,6 +250,7 @@ import it.fast4x.riplay.ui.screens.player.unified.UnifiedMiniPlayer
 import it.fast4x.riplay.ui.screens.player.unified.UnifiedPlayer
 import it.fast4x.riplay.utils.GlobalSharedData
 import it.fast4x.riplay.utils.WebViewInfo
+import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.utils.getWebViewInfo
 import it.fast4x.riplay.utils.isAtLeastAndroid12
 import it.fast4x.riplay.utils.isManufacturerWithAutostart
@@ -1493,15 +1495,15 @@ class MainActivity :
                                 CustomModalBottomSheet(
                                     showSheet = menuState.isDisplayed,
                                     onDismissRequest = menuState::hide,
-                                    containerColor = Color.Transparent,
+                                    containerColor = colorPalette().background1,
                                     dragHandle = {
                                         Surface(
                                             modifier = Modifier.padding(vertical = 0.dp),
-                                            color = Color.Transparent,
+                                            color = colorPalette().background1,
                                             //shape = thumbnailShape
                                         ) {}
                                     },
-                                    shape = thumbnailRoundness.shape()
+                                    shape = thumbnailRoundness.shape(),
                                 ) {
                                     menuState.content()
                                 }

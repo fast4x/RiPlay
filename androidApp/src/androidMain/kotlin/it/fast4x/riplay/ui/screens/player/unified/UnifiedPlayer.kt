@@ -271,6 +271,7 @@ import it.fast4x.riplay.extensions.preferences.topPaddingKey
 import it.fast4x.riplay.extensions.preferences.transparentBackgroundPlayerActionBarKey
 import it.fast4x.riplay.extensions.preferences.visualizerEnabledKey
 import it.fast4x.riplay.cast.ritune.models.RiTuneRemoteCommand
+import it.fast4x.riplay.extensions.experimental.queue.QueueNew
 import it.fast4x.riplay.ui.components.BottomSheetState
 import it.fast4x.riplay.ui.components.CustomModalBottomSheet
 import it.fast4x.riplay.ui.components.DelayedControls
@@ -4078,8 +4079,7 @@ fun UnifiedPlayer(
             contentColor = if (queueType == QueueType.Modern) Color.Transparent else colorPalette().background2,
             modifier = Modifier
                 .fillMaxWidth()
-                .conditional(queueType == QueueType.Modern) { hazeChild(state = hazeState) },
-            //sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+                .conditional(queueType == QueueType.Modern) { hazeEffect(state = hazeState) },
             dragHandle = {
                 Surface(
                     modifier = Modifier.padding(vertical = 0.dp),
@@ -4087,9 +4087,9 @@ fun UnifiedPlayer(
                     shape = thumbnailShape()
                 ) {}
             },
-            shape = thumbnailRoundness.shape()
+            shape = thumbnailRoundness.shape(),
         ) {
-            Queue(
+            QueueNew (
                 navController = navController,
                 showPlayer = {},
                 hidePlayer = {},
