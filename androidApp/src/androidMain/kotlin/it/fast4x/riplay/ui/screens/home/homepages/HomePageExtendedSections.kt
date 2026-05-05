@@ -175,7 +175,6 @@ fun HomePageExtendedSections(
                                 text = stringResource(R.string.by_most_played_song),
                                 onClick = {
                                     onPlayEventTypeClick(PlayEventsType.MostPlayed)
-                                    //playEventType = PlayEventsType.MostPlayed
                                     menuState.hide()
                                 }
                             )
@@ -184,7 +183,6 @@ fun HomePageExtendedSections(
                                 text = stringResource(R.string.by_last_played_song),
                                 onClick = {
                                     onPlayEventTypeClick(PlayEventsType.LastPlayed)
-                                    //playEventType = PlayEventsType.LastPlayed
                                     menuState.hide()
                                 }
                             )
@@ -193,7 +191,6 @@ fun HomePageExtendedSections(
                                 text = stringResource(R.string.by_casual_played_song),
                                 onClick = {
                                     onPlayEventTypeClick(PlayEventsType.CasualPlayed)
-                                    //playEventType = PlayEventsType.CasualPlayed
                                     menuState.hide()
                                 }
                             )
@@ -202,14 +199,12 @@ fun HomePageExtendedSections(
                 },
                 icon2 = R.drawable.play_now,
                 onClick2 = {
-                    //trending?.let { fastPlay(it.asMediaItem, binder, relatedInit?.songs?.map { it.asMediaItem }) }
                     binder?.stopRadio()
                     trending?.let { binder?.player?.forcePlay(it.asMediaItem) }
                     binder?.player?.addMediaItems(relatedInit?.songs?.map { it.asMediaItem }
                         ?: emptyList())
                 }
 
-                //modifier = Modifier.fillMaxWidth(0.7f)
             )
 
             BasicText(
@@ -239,13 +234,9 @@ fun HomePageExtendedSections(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(totalGridHeight)
-                    //.height(if (relatedInit != null) Dimensions.itemsVerticalPadding * 3 * 9 else Dimensions.itemsVerticalPadding * 9)
-                    //.height((songThumbnailSizeDp + Dimensions.itemsVerticalPadding * 2) * 4)
             ) {
                 trending?.let { song ->
                     item {
-                        //val isLocal by remember { derivedStateOf { song.asMediaItem.isLocal } }
-                        //var forceRecompose by remember { mutableStateOf(false) }
                         SongItem(
                             song = song,
                             thumbnailSizePx = songThumbnailSizePx,
@@ -267,7 +258,6 @@ fun HomePageExtendedSections(
                                                 navController = navController,
                                                 onDismiss = {
                                                     menuState.hide()
-                                                    //forceRecompose = true
                                                 },
                                                 mediaItem = song.asMediaItem,
                                                 onRemoveFromQuickPicks = {
@@ -297,8 +287,6 @@ fun HomePageExtendedSections(
 
                                         binder?.stopRadio()
                                         binder?.player?.forcePlay(mediaItem)
-                                        //binder?.player?.playOnline(mediaItem)
-                                        //fastPlay(mediaItem, binder)
                                         binder?.setupRadio(
                                             NavigationEndpoint.Endpoint.Watch(videoId = mediaItem.mediaId)
                                         )
@@ -339,7 +327,6 @@ fun HomePageExtendedSections(
                                                 navController = navController,
                                                 onDismiss = {
                                                     menuState.hide()
-                                                    //forceRecompose = true
                                                 },
                                                 mediaItem = song.asMediaItem,
                                                 onInfo = {
@@ -364,7 +351,6 @@ fun HomePageExtendedSections(
 
                                         binder?.stopRadio()
                                         binder?.player?.forcePlay(mediaItem)
-                                        //fastPlay(mediaItem, binder)
                                         binder?.setupRadio(
                                             NavigationEndpoint.Endpoint.Watch(videoId = mediaItem.mediaId)
                                         )
@@ -614,8 +600,6 @@ fun MoodAndGenresPart(
             if (page.chips?.isNotEmpty() == true) {
                 Title(
                     title = stringResource(R.string.mood),
-                    //onClick = { navController.navigate(NavRoutes.moodsPage.name) },
-                    //modifier = Modifier.fillMaxWidth(0.7f)
                 )
 
 
@@ -624,12 +608,9 @@ fun MoodAndGenresPart(
                     state = chipsLazyGridState,
                     rows = GridCells.Fixed(4),
                     flingBehavior = ScrollableDefaults.flingBehavior(),
-                    //flingBehavior = rememberSnapFlingBehavior(snapLayoutInfoProvider),
-                    contentPadding = endPaddingValues,
+                    contentPadding = PaddingValues(horizontal = 12.dp),
                     modifier = Modifier
                         .fillMaxWidth()
-                        //.height((thumbnailSizeDp + Dimensions.itemsVerticalPadding * 8) * 8)
-                        //.height(Dimensions.itemsVerticalPadding * 4 * 8)
                         .height((songThumbnailSizeDp + Dimensions.itemsVerticalPadding) * 4)
                 ) {
                     items(
@@ -640,7 +621,6 @@ fun MoodAndGenresPart(
                             chip = it,
                             onClick = { it.endpoint?.browseId?.let { _ -> onChipClick(it) } },
                             modifier = Modifier
-                                //.width(itemWidth)
                                 .padding(4.dp)
                         )
                     }
@@ -664,11 +644,9 @@ fun MoodAndGenresPart(
                         state = moodAngGenresLazyGridState,
                         rows = GridCells.Fixed(4),
                         flingBehavior = ScrollableDefaults.flingBehavior(),
-                        //flingBehavior = rememberSnapFlingBehavior(snapLayoutInfoProvider),
-                        contentPadding = endPaddingValues,
+                        contentPadding = PaddingValues(horizontal = 12.dp),
                         modifier = Modifier
                             .fillMaxWidth()
-                            //.height((thumbnailSizeDp + Dimensions.itemsVerticalPadding * 8) * 8)
                             .height((songThumbnailSizeDp + Dimensions.itemsVerticalPadding) * 4)
                     ) {
                         items(

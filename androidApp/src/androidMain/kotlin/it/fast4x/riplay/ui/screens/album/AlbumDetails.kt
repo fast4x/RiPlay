@@ -239,7 +239,7 @@ fun AlbumDetails(
 
     }
 
-    /*
+
     fun update() {
         if(!isNetworkConnected(context)) {
             return
@@ -292,7 +292,6 @@ fun AlbumDetails(
         }
     }
 
-     */
 
     LaunchedEffect(Unit) {
         Database.albumSongs(browseId).collect {
@@ -482,10 +481,10 @@ fun AlbumDetails(
     LayoutWithAdaptiveThumbnail(
         thumbnailContent = {} //thumbnailContent
     ) {
-//        PullToRefreshBox(
-//            refreshing = refreshing,
-//            onRefresh = { refresh() }
-//        ) {
+        PullToRefreshBox(
+            refreshing = refreshing,
+            onRefresh = { refresh() }
+        ) {
             Box(
                 modifier = Modifier
                     .background(
@@ -1176,12 +1175,13 @@ fun AlbumDetails(
                         item(
                             key = "songsTitle"
                         ) {
-                            BasicText(
-                                text = stringResource(R.string.songs),
-                                style = typography().m.semiBold.align(TextAlign.Start),
-                                modifier = sectionTextModifier
-                                    .fillMaxWidth()
-                            )
+                            Title(title = stringResource(R.string.songs))
+//                            BasicText(
+//                                text = stringResource(R.string.songs),
+//                                style = typography().m.semiBold.align(TextAlign.Start),
+//                                modifier = sectionTextModifier
+//                                    .fillMaxWidth()
+//                            )
                         }
                         itemsIndexed(
                             items = songs,
@@ -1290,14 +1290,15 @@ fun AlbumDetails(
                         }
 
                         item(key = "alternateVersionsTitle") {
-                            BasicText(
-                                text = stringResource(R.string.album_alternative_versions),
-                                style = typography().m.semiBold,
-                                maxLines = 1,
-                                modifier = Modifier
-                                    .padding(all = 16.dp)
-
-                            )
+                            Title(title = stringResource(R.string.album_alternative_versions))
+//                            BasicText(
+//                                text = stringResource(R.string.album_alternative_versions),
+//                                style = typography().m.semiBold,
+//                                maxLines = 1,
+//                                modifier = Modifier
+//                                    .padding(all = 16.dp)
+//
+//                            )
 
                         }
 
@@ -1395,7 +1396,7 @@ fun AlbumDetails(
                     )
 
             }
-        //}
+        }
 
 
     }

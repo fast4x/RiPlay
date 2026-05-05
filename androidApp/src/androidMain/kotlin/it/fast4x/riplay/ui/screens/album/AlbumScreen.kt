@@ -81,6 +81,8 @@ import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.extensions.preferences.thumbnailRoundnessKey
 import it.fast4x.riplay.extensions.preferences.transitionEffectKey
 import it.fast4x.riplay.data.models.SongAlbumMap
+import it.fast4x.riplay.extensions.experimental.album.AlbumDetailsNew
+import it.fast4x.riplay.extensions.experimental.album.AlbumDetailsNew1
 import it.fast4x.riplay.ui.components.PageContainer
 import it.fast4x.riplay.utils.asMediaItem
 import kotlinx.coroutines.CoroutineScope

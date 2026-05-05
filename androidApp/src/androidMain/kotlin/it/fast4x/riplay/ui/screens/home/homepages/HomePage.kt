@@ -10,6 +10,7 @@ import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.ScrollableDefaults
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.asPaddingValues
@@ -120,6 +121,7 @@ import it.fast4x.riplay.utils.asSong
 import it.fast4x.riplay.utils.asVideoMediaItem
 import it.fast4x.riplay.utils.forcePlay
 import it.fast4x.riplay.utils.insertOrUpdateBlacklist
+import it.fast4x.riplay.utils.startFadeAnimator
 import it.fast4x.riplay.utils.typography
 import kotlinx.coroutines.flow.first
 import kotlinx.serialization.ExperimentalSerializationApi
@@ -703,13 +705,16 @@ fun HomePage(
                                 .padding(top = 8.dp, bottom = 4.dp)
                         )
 
-                        BasicText(
-                            text = it.title,
-                            style = typography().l.bold.color(colorPalette().text),
-                            modifier = Modifier
-                                .padding(horizontal = 16.dp)
-                                .padding(vertical = 4.dp)
+                        Title(
+                            title = it.title
                         )
+//                        BasicText(
+//                            text = it.title,
+//                            style = typography().l.bold.color(colorPalette().text),
+//                            modifier = Modifier
+//                                .padding(horizontal = 16.dp)
+//                                .padding(vertical = 4.dp)
+//                        )
                         LazyRow(contentPadding = endPaddingValues) {
                             items(it.items.filter {item -> blacklisted.value?.map { it.path }?.contains(item?.key) == false }) { item ->
                                 when (item) {
@@ -808,7 +813,7 @@ fun HomePage(
                                 rows = GridCells.Fixed(4),
                                 flingBehavior = ScrollableDefaults.flingBehavior(),
                                 //flingBehavior = rememberSnapFlingBehavior(snapLayoutInfoProvider),
-                                contentPadding = endPaddingValues,
+                                contentPadding = PaddingValues(horizontal = 12.dp),
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .height((songThumbnailSizeDp + Dimensions.itemsVerticalPadding) * 4)
@@ -843,7 +848,7 @@ fun HomePage(
                                     state = moodAngGenresLazyGridState,
                                     rows = GridCells.Fixed(4),
                                     flingBehavior = ScrollableDefaults.flingBehavior(),
-                                    contentPadding = endPaddingValues,
+                                    contentPadding = PaddingValues(horizontal = 12.dp),
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .height((songThumbnailSizeDp + Dimensions.itemsVerticalPadding) * 4)
@@ -862,7 +867,6 @@ fun HomePage(
                                                 }
                                             },
                                             modifier = Modifier
-                                                //.width(itemWidth)
                                                 .padding(4.dp)
                                         )
                                     }

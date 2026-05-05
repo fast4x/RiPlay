@@ -26,6 +26,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.calculateEndPadding
@@ -33,6 +34,7 @@ import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
@@ -145,6 +147,8 @@ fun PageContainer(
 
     val modifier: Modifier = Modifier.nestedScroll(nestedScrollConnection)
 
+    val bottomInset = with(density) { WindowInsets.navigationBars.getBottom(density).toDp() }
+
      Scaffold(
         modifier = modifier,
         containerColor = colorPalette().background0,
@@ -251,6 +255,7 @@ fun PageContainer(
             Box(
                 modifier = Modifier
                     .padding(vertical = 5.dp)
+                    .padding(bottom = bottomInset)
                     .align(if (playerPosition == PlayerPosition.Top) Alignment.TopCenter
                     else Alignment.BottomCenter)
             ) {

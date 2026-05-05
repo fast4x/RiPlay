@@ -47,6 +47,7 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalHapticFeedback
@@ -304,6 +305,7 @@ fun Podcast(
                                             1200,
                                             900
                                         ),
+                                        contentScale = ContentScale.Crop,
                                         contentDescription = "loading...",
                                         modifier = Modifier
                                             .fillMaxWidth()
