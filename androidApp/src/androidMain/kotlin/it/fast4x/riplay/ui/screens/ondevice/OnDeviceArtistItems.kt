@@ -174,7 +174,7 @@ fun OnDeviceArtistItems(
                             title = artistName ?: "",
                             modifier = sectionTextModifier,
                             icon = R.drawable.chevron_down,
-                            onClick = onDismiss
+                            onClick = onDismiss,
                         )
                         TitleSection(
                             title = stringResource(id = R.string.songs),
@@ -444,7 +444,7 @@ fun OnDeviceArtistItems(
                                 title = artistName ?: "",
                                 modifier = sectionTextModifier,
                                 icon = R.drawable.chevron_down,
-                                onClick = onDismiss
+                                onClick = onDismiss,
                             )
                             TitleSection(
                                 title = stringResource(R.string.albums),

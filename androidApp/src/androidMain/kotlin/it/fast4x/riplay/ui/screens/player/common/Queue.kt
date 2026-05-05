@@ -612,7 +612,7 @@ fun Queue(
                             .background(colorPalette().background0)
                             .fillMaxWidth()
                     ) {
-                        Title(stringResource(R.string.queue_list_of_media))
+                        Title(stringResource(R.string.queue_list_of_media),)
                     }
 
                     // ── Search bar ─────────────────────────────────────────

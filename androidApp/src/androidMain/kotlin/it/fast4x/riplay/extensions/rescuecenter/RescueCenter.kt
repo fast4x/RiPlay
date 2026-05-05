@@ -146,42 +146,42 @@ fun RescueScreen(
 
             Title(
                 title = stringResource(R.string.export_the_database),
-                icon = R.drawable.rescue,
                 modifier = Modifier.fillMaxWidth()
                     .background(colorPalette().background1),
+                icon = R.drawable.rescue,
                 onClick = {
                     isExporting = true
-                }
+                },
             )
             Spacer( modifier = Modifier.height(20.dp) )
             Title(
                 title = stringResource(R.string.import_the_database),
-                icon = R.drawable.rescue,
                 modifier = Modifier.fillMaxWidth()
                     .background(colorPalette().background1),
+                icon = R.drawable.rescue,
                 onClick = {
                     isImporting = true
-                }
+                },
             )
             Spacer( modifier = Modifier.height(20.dp) )
             Title(
                 title = stringResource(R.string.export_crash_log),
-                icon = R.drawable.rescue,
                 modifier = Modifier.fillMaxWidth()
                     .background(colorPalette().background1),
+                icon = R.drawable.rescue,
                 onClick = {
                     isExportingCrashLog = true
-                }
+                },
             )
             Spacer( modifier = Modifier.height(50.dp) )
             Title(
                 title = stringResource(R.string.click_to_close),
-                icon = R.drawable.close,
                 modifier = Modifier.fillMaxWidth()
                     .background(colorPalette().background1),
+                icon = R.drawable.close,
                 onClick = {
                     exit()
-                }
+                },
             )
 
         }

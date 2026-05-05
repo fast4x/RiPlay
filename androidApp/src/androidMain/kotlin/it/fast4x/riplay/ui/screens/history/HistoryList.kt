@@ -288,7 +288,7 @@ fun LazyListScope.renderHistoryGroup(
     stickyHeader(key = headerTitle) {
         Title(
             title = headerTitle,
-            modifier = modifier
+            modifier = modifier,
         )
     }
     content()

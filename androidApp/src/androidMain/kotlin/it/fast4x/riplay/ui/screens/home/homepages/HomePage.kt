@@ -112,7 +112,6 @@ import it.fast4x.riplay.ui.items.PlaylistItem
 import it.fast4x.riplay.ui.items.SongItem
 import it.fast4x.riplay.ui.items.VideoItem
 import it.fast4x.riplay.ui.styling.bold
-import it.fast4x.riplay.ui.styling.color
 import it.fast4x.riplay.ui.styling.secondary
 import it.fast4x.riplay.ui.styling.semiBold
 import it.fast4x.riplay.utils.HomeDataCache
@@ -121,7 +120,6 @@ import it.fast4x.riplay.utils.asSong
 import it.fast4x.riplay.utils.asVideoMediaItem
 import it.fast4x.riplay.utils.forcePlay
 import it.fast4x.riplay.utils.insertOrUpdateBlacklist
-import it.fast4x.riplay.utils.startFadeAnimator
 import it.fast4x.riplay.utils.typography
 import kotlinx.coroutines.flow.first
 import kotlinx.serialization.ExperimentalSerializationApi
@@ -706,7 +704,7 @@ fun HomePage(
                         )
 
                         Title(
-                            title = it.title
+                            title = it.title,
                         )
 //                        BasicText(
 //                            text = it.title,

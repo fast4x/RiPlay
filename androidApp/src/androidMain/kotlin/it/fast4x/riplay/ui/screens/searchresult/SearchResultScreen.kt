@@ -121,7 +121,7 @@ fun SearchResultScreen(
                 val headerContent: @Composable (textButton: (@Composable () -> Unit)?) -> Unit = {
                     Title(
                         title = stringResource(R.string.search_results_for),
-                        verticalPadding = 4.dp
+                        verticalPadding = 4.dp,
                     )
                     Title(
                         title = query,
@@ -135,7 +135,8 @@ fun SearchResultScreen(
                                     */
                             navController.navigate("searchScreenRoute/${query}")
                         },
-                        verticalPadding = 4.dp
+                        verticalPadding = 4.dp,
+                        mini = true
                     )
 
                     Column(

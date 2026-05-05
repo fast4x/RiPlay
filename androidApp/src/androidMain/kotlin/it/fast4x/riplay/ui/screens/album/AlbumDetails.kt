@@ -6,7 +6,6 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
@@ -61,7 +60,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.media3.common.MediaItem
 import androidx.media3.common.util.UnstableApi
-import androidx.media3.exoplayer.offline.Download
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import dev.rebelonion.translator.Language
@@ -1074,7 +1072,7 @@ fun AlbumDetails(
                                     icon = if (readMore) R.drawable.chevron_up else R.drawable.chevron_down,
                                     onClick = {
                                         readMore = !readMore
-                                    }
+                                    },
                                 )
 
                                 Row(
@@ -1175,7 +1173,7 @@ fun AlbumDetails(
                         item(
                             key = "songsTitle"
                         ) {
-                            Title(title = stringResource(R.string.songs))
+                            Title(title = stringResource(R.string.songs),)
 //                            BasicText(
 //                                text = stringResource(R.string.songs),
 //                                style = typography().m.semiBold.align(TextAlign.Start),
@@ -1290,7 +1288,7 @@ fun AlbumDetails(
                         }
 
                         item(key = "alternateVersionsTitle") {
-                            Title(title = stringResource(R.string.album_alternative_versions))
+                            Title(title = stringResource(R.string.album_alternative_versions),)
 //                            BasicText(
 //                                text = stringResource(R.string.album_alternative_versions),
 //                                style = typography().m.semiBold,

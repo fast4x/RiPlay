@@ -226,7 +226,7 @@ fun SearchOnlineEntity (
             Title(
                 title = stringResource(id = if (filter == Environment.SearchFilter.Video) R.string.videos
                 else R.string.songs),
-                modifier = Modifier.padding(bottom = 12.dp)
+                modifier = Modifier.padding(bottom = 12.dp),
             )
             Column(
                 modifier = Modifier.background(colorPalette().accent.copy(alpha = 0.15f))

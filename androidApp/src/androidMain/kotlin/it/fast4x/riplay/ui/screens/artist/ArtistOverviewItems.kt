@@ -238,7 +238,7 @@ fun ArtistOverviewItems(
                             title = artistName ?: "",
                             modifier = sectionTextModifier,
                             icon = R.drawable.chevron_down,
-                            onClick = onDismiss
+                            onClick = onDismiss,
                         )
                         TitleSection(
                             title = sectionName ?: "",
@@ -572,7 +572,7 @@ fun ArtistOverviewItems(
                                 title = artistName ?: "",
                                 modifier = sectionTextModifier,
                                 icon = R.drawable.chevron_down,
-                                onClick = onDismiss
+                                onClick = onDismiss,
                             )
                             TitleSection(
                                 title = sectionName ?: "",
