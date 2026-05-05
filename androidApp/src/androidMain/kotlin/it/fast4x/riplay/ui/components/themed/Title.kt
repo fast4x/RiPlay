@@ -55,7 +55,6 @@ fun Title(
                     modifier = Modifier
                         .size(22.dp)
                         .clickable {
-                            if (enableClick)
                                 onClick.invoke()
                         }
                 )
