@@ -91,10 +91,6 @@ class PlayerMediaBrowserService : MediaBrowserServiceCompat(),
         var lastSongs = emptyList<Song>()
         var searchedSongs = emptyList<Song>()
     }
-
-    //val context = (this as Context)
-    //private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
-
     private var playlistSongsSortBy: PlaylistSongSortBy = PlaylistSongSortBy.DateAdded
     private var songsSortBy: SongSortBy = SongSortBy.DateAdded
     private var playlistSortBy: PlaylistSortBy = PlaylistSortBy.DateAdded
@@ -367,19 +363,6 @@ class PlayerMediaBrowserService : MediaBrowserServiceCompat(),
                             .toMutableList()
 
                     }
-                    /*
-                    MediaId.SONGS_FAVORITES -> {
-
-                        Database
-                            .songsFavorites(songsSortBy, songSortOrder)
-                            //.favorites()
-                            .first()
-                            .also { lastSongs = it.map { it.song }}
-                            .map { it.song.asBrowserMediaItem }
-                            .toMutableList()
-                    }
-
-                     */
 
                     MediaId.SONGS_TOP -> {
                         val maxTopSongs = preferences.getEnum(MaxTopPlaylistItemsKey,
@@ -396,7 +379,6 @@ class PlayerMediaBrowserService : MediaBrowserServiceCompat(),
                         if (id == "") {
                             Database
                                 .playlistPreviews(playlistSortBy, songSortOrder)
-                                //.playlistPreviewsByNameAsc()
                                 .first()
                                 .fastFilter {
                                     if (showMonthlyPlaylistsAA()) true
@@ -421,9 +403,7 @@ class PlayerMediaBrowserService : MediaBrowserServiceCompat(),
                         } else {
                             Database
                                 .songsPlaylist(id.toLong(), playlistSongsSortBy, songSortOrder)
-                                //.playlistWithSongs(id.toLong())
                                 .first()
-                                //?.songs
                                 .also { lastSongs = it.map { it.song } }
                                 .map { it.song.asBrowserMediaItem }
                                 .toMutableList()
@@ -547,9 +527,7 @@ class PlayerMediaBrowserService : MediaBrowserServiceCompat(),
                                 }
                         } else {
                             val artist = Database.artist(id).first()
-                            //var songs = Database.artistAllSongs(id).first()
                             var songs = emptyList<Song>()
-                            //if (songs.isEmpty()) {
                                 EnvironmentExt.getArtistPage(browseId = id)
                                     .onSuccess { currentArtistPage ->
                                         var moreEndPointBrowseId: String? = null
@@ -592,7 +570,7 @@ class PlayerMediaBrowserService : MediaBrowserServiceCompat(),
                                             }
 
                                     }
-                            //}
+
                             songs
                                 .also { lastSongs = it }
                                 .map { it.asBrowserMediaItem }
@@ -943,7 +921,6 @@ class PlayerMediaBrowserService : MediaBrowserServiceCompat(),
                 )
                 .setTitle(title?.removePrefix())
                 .setSubtitle(authorsText)
-                //.setIconUri(thumbnailUrl?.toUri())
                 .setIconUri(thumbnailUrl?.thumbnail(preferences.getEnum(albumsItemSizeKey,HomeItemSize.BIG).size)?.toUri())
                 .build(),
             MediaItem.FLAG_BROWSABLE
@@ -961,8 +938,6 @@ class PlayerMediaBrowserService : MediaBrowserServiceCompat(),
                     }
                 )
                 .setTitle(name?.removePrefix())
-                //.setSubtitle()
-                //.setIconUri(thumbnailUrl?.toUri())
                 .setIconUri(thumbnailUrl?.thumbnail(preferences.getEnum(artistsItemSizeKey,HomeItemSize.BIG).size)?.toUri())
                 .build(),
             MediaItem.FLAG_BROWSABLE
@@ -998,7 +973,6 @@ class PlayerMediaBrowserService : MediaBrowserServiceCompat(),
         inline get() = MediaItem(
             MediaDescriptionCompat.Builder()
                 .setMediaId(MediaId.FAULT)
-                //.setTitle((this as Context).resources.getString(R.string.songs))
                 .setTitle("Fault")
                 .setIconUri(uriFor(R.drawable.close))
                 .build(),
