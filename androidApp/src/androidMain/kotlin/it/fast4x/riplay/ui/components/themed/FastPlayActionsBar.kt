@@ -1,15 +1,21 @@
 package it.fast4x.riplay.ui.components.themed
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import it.fast4x.riplay.R
 import it.fast4x.riplay.utils.colorPalette
+import it.fast4x.riplay.utils.getRoundnessShape
 import it.fast4x.riplay.utils.globalContext
 
 @Composable
@@ -19,12 +25,17 @@ fun FastPlayActionsBar(
     onShufflePlayClick: (() -> Unit)? = null,
     onSmartRecommendationClick: (() -> Unit)? = null,
     isRecommendationEnabled: Boolean = false,
-    iconSize: Dp = 36.dp
+    iconSize: Dp = 48.dp
 ) {
     Row(
-        modifier = modifier,
+        modifier = modifier
+            .padding(horizontal = 16.dp, vertical = 8.dp)
+            .clip(getRoundnessShape())
+            .background(colorPalette().background1.copy(alpha = .5f))
+            .border(0.5.dp, colorPalette().textDisabled.copy(alpha = .5f), getRoundnessShape())
+            .padding(horizontal = 8.dp, vertical = 6.dp),
         horizontalArrangement = Arrangement.SpaceEvenly,
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         onPlayNowClick?.let { onPlayNowClick ->
             HeaderIconButton(
