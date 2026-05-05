@@ -542,7 +542,8 @@ fun AccountsSettings() {
                 )
                 SettingsEntry(
                     title = musicIdentifierProvider.subtitle,
-                    text = musicIdentifierProvider.website,
+                    titleSecondary = musicIdentifierProvider.website,
+                    text = "",
                     onClick = {
                         uriHandler.openUri(musicIdentifierProvider.website)
                     }

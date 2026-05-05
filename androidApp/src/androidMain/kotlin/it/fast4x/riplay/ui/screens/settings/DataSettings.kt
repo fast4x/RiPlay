@@ -296,7 +296,8 @@ fun DataSettings() {
         SettingsEntry(
             isEnabled = backupUiState is BackupUiState.Idle,
             title = stringResource(R.string.save_to_backup),
-            text = stringResource(R.string.export_the_database),
+            titleSecondary = stringResource(R.string.export_the_database),
+            text = "",
             onClick = {
                 isExporting = true
             }
@@ -313,7 +314,8 @@ fun DataSettings() {
         SettingsEntry(
             isEnabled = backupUiState is BackupUiState.Idle,
             title = stringResource(R.string.restore_from_backup),
-            text = stringResource(R.string.import_the_database),
+            titleSecondary = stringResource(R.string.import_the_database),
+            text = "",
             onClick = {
                 //restoreFromOtherFileExtension = false
                 isImporting = true

@@ -503,7 +503,8 @@ fun TextDialogSettingEntry(
     }
     SettingsEntry(
         title = title,
-        text = text,
+        titleSecondary = text,
+        text = "",
         isEnabled = isEnabled,
         onClick = { showDialog = true },
         trailingContent = { },
@@ -561,7 +562,8 @@ fun ButtonBarSettingEntry(
 ) {
     SettingsEntry(
         title = title,
-        text = text,
+        titleSecondary = text,
+        text = "",
         isEnabled = isEnabled,
         onClick = onClick,
         trailingContent = {
