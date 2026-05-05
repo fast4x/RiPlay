@@ -553,10 +553,11 @@ fun GeneralSettings(
                     isHeader = true
                 ) {
                     SettingsEntryGroupText(title = stringResource(R.string.languages))
-                    SettingsDescription(text = stringResource(R.string.system_language) + ": $systemLocale")
                 }
 
                 settingsItem {
+                    SettingsDescription(text = stringResource(R.string.system_language) + ": $systemLocale")
+
                     if (search.input.isBlank() || stringResource(R.string.app_language).contains(
                             search.input,
                             true

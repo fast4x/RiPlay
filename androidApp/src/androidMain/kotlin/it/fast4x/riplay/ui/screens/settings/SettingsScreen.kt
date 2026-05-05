@@ -42,6 +42,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.ExperimentalTextApi
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -62,6 +63,8 @@ import it.fast4x.riplay.ui.styling.semiBold
 import it.fast4x.riplay.ui.components.ScreenContainer
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.ui.components.themed.IDialog
+import it.fast4x.riplay.ui.components.themed.Title
+import it.fast4x.riplay.utils.getRoundnessShape
 import it.fast4x.riplay.utils.typography
 import kotlinx.coroutines.DelicateCoroutinesApi
 
@@ -247,7 +250,8 @@ fun SwitchSettingEntry(
 ) {
     SettingsEntry(
         title = title,
-        text = text,
+        titleSecondary = text,
+        text = "",
         isEnabled = isEnabled,
         onClick = { onCheckedChange(!isChecked) },
         trailingContent = { Switch(isChecked = isChecked) },
@@ -275,11 +279,11 @@ fun SettingsEntry(
             .fillMaxWidth()
             //.background(colorPalette().background0.copy(if (isEnabled) 0.5f else 0.2f))
     ) {
-        Box(modifier = Modifier
-            .width(4.dp)
-            .height(30.dp)
-            .background(colorPalette().textSecondary)
-        )
+//        Box(modifier = Modifier
+//            .width(4.dp)
+//            .height(30.dp)
+//            .background(colorPalette().textSecondary)
+//        )
 
         Column(
             verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -304,21 +308,38 @@ fun SettingsEntry(
 
             }
 
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween,
-                modifier = Modifier
-                    .fillMaxWidth()
-            ) {
+            if (text.isNotEmpty()) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                ) {
 
-                BasicText(
-                    text = text,
-                    style = typography().xs.semiBold.copy(color = colorPalette().textSecondary),
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.fillMaxWidth(.7f)
-                )
+                    BasicText(
+                        text = text,
+                        style = typography().xs.semiBold.copy(
+                            color = colorPalette().textSecondary,
+                            textAlign = TextAlign.Center
+                        ),
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier
+                            .fillMaxWidth(.95f)
+                            .background(
+                                colorPalette().background2,
+                                getRoundnessShape()
+                            )
+                            .padding(vertical = 4.dp)
+                    )
 
-                Spacer(modifier = Modifier.weight(1f))
+                    Image(
+                        painter = painterResource(R.drawable.chevron_down),
+                        contentDescription = null,
+                        modifier = Modifier.size(20.dp),
+                        colorFilter = ColorFilter.tint(colorPalette().textSecondary),
+                    )
+                    //Spacer(modifier = Modifier.weight(1f))
+                }
             }
 
             if (titleSecondary != null) {
@@ -352,12 +373,12 @@ fun SettingsEntryGroup(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier.padding(all = 12.dp)
     ) {
-        Box(
-            modifier = Modifier
-                .width(4.dp)
-                .height(30.dp)
-                .background(colorPalette().textSecondary)
-        )
+//        Box(
+//            modifier = Modifier
+//                .width(4.dp)
+//                .height(30.dp)
+//                .background(colorPalette().textSecondary)
+//        )
         Box(modifier = Modifier.fillMaxSize()) {
             Column {
                 content()
@@ -419,6 +440,8 @@ fun SettingsEntryGroupText(
     uppercase: Boolean = true,
     modifier: Modifier = Modifier,
 ) {
+    Title(title = title)
+    /*
     BasicText(
         text = if (uppercase) title.uppercase() else title,
         style = typography().xs.semiBold.copy(color),
@@ -426,6 +449,7 @@ fun SettingsEntryGroupText(
             .padding(start = 12.dp)
             //.padding(horizontal = 12.dp)
     )
+     */
 }
 
 @Composable
