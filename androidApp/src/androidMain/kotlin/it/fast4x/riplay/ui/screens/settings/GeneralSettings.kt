@@ -785,15 +785,6 @@ fun GeneralSettings(
                             true
                         )
                     ) {
-//                        SwitchSettingEntry(
-//                            title = stringResource(R.string.close_background_player),
-//                            text = stringResource(R.string.when_app_swipe_out_from_task_manager),
-//                            isChecked = closebackgroundPlayer,
-//                            onCheckedChange = {
-//                                closebackgroundPlayer = it
-//                                //restartService = true // not required
-//                            }
-//                        )
 
                             EnumValueSelectorSettingsEntry(
                                 title = stringResource(R.string.when_app_swipe_out_from_task_manager),
@@ -821,35 +812,7 @@ fun GeneralSettings(
                                 }
                             )
 
-                        /*
-                            EnumValueSelectorSettingsEntry(
-                                title = stringResource(R.string.when_player_is_paused),
-                                selectedValue = closePlayerWhenPausedAfterMinutes,
-                                onValueSelected = {
-                                    closePlayerWhenPausedAfterMinutes = if (it == DurationInMinutes.`0`) DurationInMinutes.`1` else it
-                                },
-                                valueText = {
-                                    when (it) {
-                                        DurationInMinutes.Disabled -> stringResource(R.string.vt_disabled)
-                                        DurationInMinutes.`0` -> "0m"
-                                        DurationInMinutes.`1` -> "1m"
-                                        DurationInMinutes.`3` -> "3m"
-                                        DurationInMinutes.`5` -> "5m"
-                                        DurationInMinutes.`10` -> "10m"
-                                        DurationInMinutes.`15` -> "15m"
-                                        DurationInMinutes.`20` -> "20m"
-                                        DurationInMinutes.`25` -> "25m"
-                                        DurationInMinutes.`30` -> "30m"
-                                        DurationInMinutes.`60` -> "60m"
-                                        DurationInMinutes.`90` -> "90m"
-                                        DurationInMinutes.`120` -> "120m"
-                                        DurationInMinutes.`150` -> "150m"
-                                        DurationInMinutes.`180` -> "180m"
 
-                                    }
-                                }
-                            )
-                            */
                     }
                 }
 
@@ -861,68 +824,6 @@ fun GeneralSettings(
                 }
 
                 settingsItem {
-
-                    // todo maybe not needed
-//                    if (search.input.isBlank() || "Check volume level before playing".contains(search.input,true)) {
-//                        SwitchSettingEntry(
-//                            title = "Check volume level before playing",
-//                            text = "Prevents automatic volume lowering in some devices. Disable if the volume becomes very low.",
-//                            isChecked = checkVolumeLevel,
-//                            onCheckedChange = {
-//                                checkVolumeLevel = it
-//                            }
-//                        )
-//                    }
-
-//        if (search.input.isBlank() || stringResource(R.string.streaming_player_type).contains(search.input,true)) {
-//            EnumValueSelectorSettingsEntry(
-//                title = stringResource(R.string.streaming_player_type),
-//                selectedValue = streamingPlayerType,
-//                onValueSelected = {
-//                    streamingPlayerType = it
-//                },
-//                valueText = {
-//                    it.displayName
-//                }
-//            )
-//        }
-//
-//        if (search.input.isBlank() || stringResource(R.string.audio_quality_format).contains(search.input,true)) {
-//            EnumValueSelectorSettingsEntry(
-//                title = stringResource(R.string.audio_quality_format),
-//                selectedValue = audioQualityFormat,
-//                onValueSelected = {
-//                    audioQualityFormat = it
-//                    restartService = true
-//                },
-//                valueText = {
-//                    when (it) {
-//                        AudioQualityFormat.Auto -> stringResource(R.string.audio_quality_automatic)
-//                        AudioQualityFormat.High -> stringResource(R.string.audio_quality_format_high)
-//                        AudioQualityFormat.Medium -> stringResource(R.string.audio_quality_format_medium)
-//                        AudioQualityFormat.Low -> stringResource(R.string.audio_quality_format_low)
-//                    }
-//                }
-//            )
-//
-//            RestartPlayerService(restartService, onRestart = { restartService = false } )
-//
-//        }
-//
-//        if (search.input.isBlank() || "Pre Cache the whole song at once".contains(search.input,true)) {
-//            SwitchSettingEntry(
-//                title = "Pre Cache the whole song at once",
-//                text = "Songs will be cached in parts if this is disabled",
-//                isChecked = isPreCacheEnabled,
-//                onCheckedChange = {
-//                    isPreCacheEnabled = it
-//                    restartService = true
-//                }
-//            )
-//            RestartPlayerService(restartService, onRestart = { restartService = false } )
-//        }
-//
-//        SettingsGroupSpacer()
 
                     if (search.input.isBlank() || stringResource(R.string.jump_previous).contains(
                             search.input,
@@ -1087,31 +988,6 @@ fun GeneralSettings(
                         )
                         SettingsDescription(text = stringResource(R.string.effect_fade_audio_description))
                     }
-
-                    /*
-            if (filter.isNullOrBlank() || stringResource(R.string.effect_fade_songs).contains(filterCharSequence,true))
-                EnumValueSelectorSettingsEntry(
-                    title = stringResource(R.string.effect_fade_songs),
-                    selectedValue = playbackFadeDuration,
-                    onValueSelected = { playbackFadeDuration = it },
-                    valueText = {
-                        when (it) {
-                            DurationInSeconds.Disabled -> stringResource(R.string.vt_disabled)
-                            DurationInSeconds.`3` -> "3 %s".format(stringResource(R.string.time_seconds))
-                            DurationInSeconds.`4` -> "4 %s".format(stringResource(R.string.time_seconds))
-                            DurationInSeconds.`5` -> "5 %s".format(stringResource(R.string.time_seconds))
-                            DurationInSeconds.`6` -> "6 %s".format(stringResource(R.string.time_seconds))
-                            DurationInSeconds.`7` -> "7 %s".format(stringResource(R.string.time_seconds))
-                            DurationInSeconds.`8` -> "8 %s".format(stringResource(R.string.time_seconds))
-                            DurationInSeconds.`9` -> "9 %s".format(stringResource(R.string.time_seconds))
-                            DurationInSeconds.`10` -> "10 %s".format(stringResource(R.string.time_seconds))
-                            DurationInSeconds.`11` -> "11 %s".format(stringResource(R.string.time_seconds))
-                            DurationInSeconds.`12` -> "12 %s".format(stringResource(R.string.time_seconds))
-                        }
-                    }
-                )
-             */
-
 
 
                     if (search.input.isBlank() || stringResource(R.string.player_keep_minimized).contains(
@@ -1290,7 +1166,6 @@ fun GeneralSettings(
                                 restartActivity = true
                             }
                         )
-                        //ImportantSettingsDescription(text = stringResource(R.string.restarting_rimusic_is_required))
                         RestartActivity(restartActivity, onRestart = { restartActivity = false })
                     }
 
@@ -1372,25 +1247,6 @@ fun GeneralSettings(
                             onCheckedChange = { parentalControlEnabled = it }
                         )
 
-//                    if (search.input.isBlank() || stringResource(R.string.event_volumekeys).contains(
-//                            search.input,
-//                            true
-//                        )
-//                    ) {
-//                        SwitchSettingEntry(
-//                            online = false,
-//                            title = stringResource(R.string.event_volumekeys),
-//                            text = stringResource(R.string.event_volumekeysinfo),
-//                            isChecked = useVolumeKeysToChangeSong,
-//                            onCheckedChange = {
-//                                useVolumeKeysToChangeSong = it
-//                                restartService = true
-//                            }
-//                        )
-//                        RestartPlayerService(restartService, onRestart = { restartService = false })
-//                    }
-
-
                     if (search.input.isBlank() || stringResource(R.string.event_shake).contains(
                             search.input,
                             true
@@ -1460,41 +1316,6 @@ fun GeneralSettings(
                         }
                     }
 
-//        if (search.input.isBlank() || stringResource(R.string.settings_enable_autodownload_song).contains(search.input,true)) {
-//            SwitchSettingEntry(
-//                title = stringResource(R.string.settings_enable_autodownload_song),
-//                text = "",
-//                isChecked = autoDownloadSong,
-//                onCheckedChange = {
-//                    autoDownloadSong = it
-//                }
-//            )
-//            AnimatedVisibility(visible = autoDownloadSong) {
-//                Column(
-//                    modifier = Modifier.padding(start = 12.dp)
-//                ) {
-//                    SwitchSettingEntry(
-//                        title = stringResource(R.string.settings_enable_autodownload_song_when_liked),
-//                        text = "",
-//                        isChecked = autoDownloadSongWhenLiked,
-//                        onCheckedChange = {
-//                            autoDownloadSongWhenLiked = it
-//                        }
-//                    )
-//                    SwitchSettingEntry(
-//                        title = stringResource(R.string.settings_enable_autodownload_song_when_album_bookmarked),
-//                        text = "",
-//                        isChecked = autoDownloadSongWhenAlbumBookmarked,
-//                        onCheckedChange = {
-//                            autoDownloadSongWhenAlbumBookmarked = it
-//                        }
-//                    )
-//                }
-//
-//            }
-//        }
-
-
                     if (search.input.isBlank() || stringResource(R.string.equalizer).contains(
                             search.input,
                             true
@@ -1511,30 +1332,6 @@ fun GeneralSettings(
                             },
                             valueText = { it.textName }
                         )
-
-                        /*
-                        SettingsEntry(
-                            online = false,
-                            title = stringResource(R.string.equalizer),
-                            text = stringResource(R.string.interact_with_the_system_equalizer),
-                            onClick = launchEqualizer
-                            /*
-                    onClick = {
-                        val intent = Intent(AudioEffect.ACTION_DISPLAY_AUDIO_EFFECT_CONTROL_PANEL).apply {
-                            putExtra(AudioEffect.EXTRA_AUDIO_SESSION, binder?.player?.audioSessionId)
-                            putExtra(AudioEffect.EXTRA_PACKAGE_NAME, context.packageName)
-                            putExtra(AudioEffect.EXTRA_CONTENT_TYPE, AudioEffect.CONTENT_TYPE_MUSIC)
-                        }
-
-                        try {
-                            activityResultLauncher.launch(intent)
-                        } catch (e: ActivityNotFoundException) {
-                            SmartMessage(context.resources.getString(R.string.info_not_find_application_audio), type = PopupType.Warning, context = context)
-                        }
-                    }
-                     */
-                        )
-                        */
 
                     }
 

@@ -242,8 +242,5 @@ fun  HomeSettings() {
             }
         }
 
-//        SettingsGroupSpacer(
-//            modifier = Modifier.height(Dimensions.bottomSpacer)
-//        )
     }
 }

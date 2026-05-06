@@ -19,7 +19,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -111,7 +110,7 @@ fun SettingsScreen(
                     when (currentTabIndex) {
                         0 -> GeneralSettings(navController = navController)
                         1 -> UiSettings(navController = navController)
-                        2 -> AppearanceSettings(navController = navController)
+                        2 -> PlayerAppearanceSettings(navController = navController)
                         3 -> HomeSettings()
                         4 -> DataSettings()
                         5 -> AccountsSettings()
@@ -274,10 +273,8 @@ fun SettingsEntry(
         verticalAlignment = Alignment.CenterVertically,
         modifier = modifier
             .clickable(enabled = isEnabled, onClick = onClick)
-            //.alpha(if (isEnabled) .5f else 0.2f)
             .padding(all = 12.dp)
             .fillMaxWidth()
-            //.background(colorPalette().background0.copy(if (isEnabled) 0.5f else 0.2f))
     ) {
 //        Box(modifier = Modifier
 //            .width(4.dp)
@@ -338,7 +335,6 @@ fun SettingsEntry(
                         modifier = Modifier.size(20.dp),
                         colorFilter = ColorFilter.tint(colorPalette().textSecondary),
                     )
-                    //Spacer(modifier = Modifier.weight(1f))
                 }
             }
 
@@ -354,8 +350,6 @@ fun SettingsEntry(
                         style = typography().xxs.secondary,
                         maxLines = 2,
                         overflow = TextOverflow.Ellipsis,
-                        //modifier = Modifier
-                        //    .padding(vertical = 8.dp, horizontal = 24.dp)
                     )
                 }
             }
@@ -414,7 +408,6 @@ fun SettingsDescription(
         else typography().xxs.secondary,
         modifier = modifier
             .padding(start = 12.dp)
-            //.padding(horizontal = 12.dp)
             .padding(bottom = 8.dp)
     )
 }
@@ -473,7 +466,6 @@ fun TextDialogSettingEntry(
     validationType: ValidationType = ValidationType.None,
 ) {
     var showDialog by remember { mutableStateOf(false) }
-    //val context = LocalContext.current
 
     if (showDialog) {
         InputTextDialog(
@@ -483,23 +475,11 @@ fun TextDialogSettingEntry(
             placeholder = title,
             setValue = {
                 onTextSave(it)
-                //context.toast("Preference Saved")
             },
             validationType = validationType,
             setValueRequireNotNull = validationType != ValidationType.None
 
         )
-        /*
-        TextFieldDialog(hintText = title ,
-            onDismiss = { showDialog = false },
-            onDone ={ value ->
-                onTextSave(value)
-                //context.toast("Preference Saved")
-            },
-            //doneText = "Save",
-            initialTextInput = currentText
-        )
-         */
     }
     SettingsEntry(
         title = title,
@@ -623,7 +603,6 @@ fun SliderSettingsEntry(
         text = "$text (${toDisplay(state)})",
         onClick = manualEnterDialog::onShortClick,
         isEnabled = isEnabled,
-        //usePadding = usePadding
     )
 
     Slider(

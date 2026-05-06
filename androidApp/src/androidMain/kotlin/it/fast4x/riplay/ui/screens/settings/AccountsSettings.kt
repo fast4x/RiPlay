@@ -293,25 +293,7 @@ fun AccountsSettings() {
                                 shape = thumbnailRoundness.shape()
                             ) {
                                 YouTubeLogin(onLogin = {})
-                                /*
-                                YouTubeLogin(
-                                    onLogin = { cookieRetrieved ->
-                                        cookie = cookieRetrieved
-                                        if (cookieRetrieved.contains("SAPISID")) {
-                                            isLoggedIn = true
-                                            //loginYouTube = false
-                                            SmartMessage(
-                                                "Login successful",
-                                                type = PopupType.Info,
-                                                context = context
-                                            )
-
-                                        }
-
-                                    }
-                                )
-                                 */
-                            }
+                               }
 
                         }
 

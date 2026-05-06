@@ -35,7 +35,6 @@ import it.fast4x.riplay.utils.typography
 @Composable
 fun About() {
     val uriHandler = LocalUriHandler.current
-    //val context = LocalContext.current
 
     Column(
         modifier = Modifier
@@ -49,14 +48,6 @@ fun About() {
                     1f
             )
             .verticalScroll(rememberScrollState())
-            /*
-            .padding(
-                LocalPlayerAwareWindowInsets.current
-                    .only(WindowInsetsSides.Vertical + WindowInsetsSides.End)
-                    .asPaddingValues()
-            )
-
-             */
     ) {
         HeaderWithIcon(
             title = stringResource(R.string.about),

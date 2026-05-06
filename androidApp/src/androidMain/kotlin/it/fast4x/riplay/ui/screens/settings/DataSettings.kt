@@ -139,33 +139,9 @@ fun DataSettings() {
         )
     }
 
-    var pauseSearchHistory by rememberPreference(pauseSearchHistoryKey, false)
-
-    val queriesCount by remember {
-        Database.queriesCount().distinctUntilChanged()
-    }.collectAsState(initial = 0)
-
-    var cleanCacheOfflineSongs by remember {
-        mutableStateOf(false)
-    }
-
     var cleanCacheImages by remember {
         mutableStateOf(false)
     }
-
-//    if (cleanCacheOfflineSongs) {
-//        ConfirmationDialog(
-//            text = stringResource(R.string.do_you_really_want_to_delete_cache),
-//            onDismiss = {
-//                cleanCacheOfflineSongs = false
-//            },
-//            onConfirm = {
-//                binder?.cache?.keys?.forEach { song ->
-//                    binder.cache.removeResource(song)
-//                }
-//            }
-//        )
-//    }
 
     if (cleanCacheImages) {
         ConfirmationDialog(
@@ -178,18 +154,6 @@ fun DataSettings() {
             }
         )
     }
-
-//    val eventsCount by remember {
-//        Database.eventsCount().distinctUntilChanged()
-//    }.collectAsState(initial = 0)
-//    var clearEvents by remember { mutableStateOf(false) }
-//    if (clearEvents) {
-//        ConfirmationDialog(
-//            text = stringResource(R.string.do_you_really_want_to_delete_all_playback_events),
-//            onDismiss = { clearEvents = false },
-//            onConfirm = { Database.asyncTransaction( Database::clearEvents ) }
-//        )
-//    }
 
     var restartService by rememberSaveable { mutableStateOf(false) }
 
@@ -333,46 +297,6 @@ fun DataSettings() {
             R.string.existing_data_will_be_overwritten,
             context.applicationInfo.nonLocalizedLabel
         ))
-
-//        SettingsGroupSpacer()
-//        SettingsEntryGroupText(title = stringResource(R.string.search_history))
-//
-//        SwitchSettingEntry(
-//            title = stringResource(R.string.pause_search_history),
-//            text = stringResource(R.string.neither_save_new_searched_query),
-//            isChecked = pauseSearchHistory,
-//            onCheckedChange = {
-//                pauseSearchHistory = it
-//                restartService = true
-//            }
-//        )
-//        RestartPlayerService(restartService, onRestart = { restartService = false } )
-//
-//        SettingsEntry(
-//            title = stringResource(R.string.clear_search_history),
-//            text = if (queriesCount > 0) {
-//                "${stringResource(R.string.delete)} " + queriesCount + stringResource(R.string.search_queries)
-//            } else {
-//                stringResource(R.string.history_is_empty)
-//            },
-//            isEnabled = queriesCount > 0,
-//            onClick = { Database.asyncTransaction( Database::clearQueries ) }
-//        )
-
-//        SettingsGroupSpacer()
-//        SettingsEntryGroupText(title = stringResource(R.string.playback_events))
-//
-//        SettingsEntry(
-//            offline = false,
-//            title = stringResource(R.string.reset_playback_events),
-//            text = if (eventsCount > 0) {
-//                stringResource(R.string.delete_playback_events, eventsCount)
-//            } else {
-//                stringResource(R.string.no_playback_events)
-//            },
-//            isEnabled = eventsCount > 0,
-//            onClick = { clearEvents = true }
-//        )
 
         SettingsGroupSpacer(
             modifier = Modifier.height(Dimensions.bottomSpacer)

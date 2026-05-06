@@ -177,7 +177,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 
 @Composable
-fun DefaultAppearanceSettings() {
+fun DefaultPlayerAppearanceSettings() {
     var isShowingThumbnailInLockscreen by rememberPreference(
         isShowingThumbnailInLockscreenKey,
         true
@@ -365,7 +365,7 @@ fun DefaultAppearanceSettings() {
 @ExperimentalAnimationApi
 @UnstableApi
 @Composable
-fun AppearanceSettings(
+fun PlayerAppearanceSettings(
     navController: NavController,
 ) {
 
@@ -2684,7 +2684,7 @@ fun AppearanceSettings(
                         onClick = { resetToDefault = true },
                     )
                     if (resetToDefault) {
-                        DefaultAppearanceSettings()
+                        DefaultPlayerAppearanceSettings()
                         resetToDefault = false
                         navController.popBackStack()
                         SmartMessage(stringResource(R.string.done), context = context)

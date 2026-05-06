@@ -50,68 +50,14 @@ import java.util.Date
 fun MiscSettings() {
     val context = LocalContext.current
     val (colorPalette, _, _) = LocalAppearance.current
-//    var isAndroidAutoEnabled by remember {
-//        val component = ComponentName(context, PlayerServiceModern::class.java)
-//        val disabledFlag = PackageManager.COMPONENT_ENABLED_STATE_DISABLED
-//        val enabledFlag = PackageManager.COMPONENT_ENABLED_STATE_ENABLED
-//
-//        mutableStateOf(
-//            value = context.packageManager.getComponentEnabledSetting(component) == enabledFlag,
-//            policy = object : SnapshotMutationPolicy<Boolean> {
-//                override fun equivalent(a: Boolean, b: Boolean): Boolean {
-//                    context.packageManager.setComponentEnabledSetting(
-//                        component,
-//                        if (b) enabledFlag else disabledFlag,
-//                        PackageManager.DONT_KILL_APP
-//                    )
-//                    return a == b
-//                }
-//            }
-//        )
-//    }
-
-    //var isInvincibilityEnabled by rememberPreference(isInvincibilityEnabledKey, false)
-
-//    var isIgnoringBatteryOptimizations by remember {
-//        mutableStateOf(context.isIgnoringBatteryOptimizations)
-//    }
-//
-//    val activityResultLauncher =
-//        rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-//            isIgnoringBatteryOptimizations = context.isIgnoringBatteryOptimizations
-//        }
-
-//    var isProxyEnabled by rememberPreference(isProxyEnabledKey, false)
-//    var proxyHost by rememberPreference(proxyHostnameKey, "")
-//    var proxyPort by rememberPreference(proxyPortKey, 1080)
-//    var proxyMode by rememberPreference(proxyModeKey, Proxy.Type.HTTP)
-
     var defaultFolder by rememberPreference(defaultFolderKey, "/")
-
-    //var isKeepScreenOnEnabled by rememberPreference(isKeepScreenOnEnabledKey, false)
-
-    //var checkUpdateState by rememberPreference(checkUpdateStateKey, CheckUpdateState.Disabled)
-
     val navigationBarPosition by rememberPreference(
         navigationBarPositionKey,
         NavigationBarPosition.Bottom
     )
 
-    //var showFolders by rememberPreference(showFoldersOnDeviceKey, true)
-
-//    var blackListedPaths by remember {
-//        val file = File(context.filesDir, "Blacklisted_paths.txt")
-//        if (file.exists()) {
-//            mutableStateOf(file.readLines())
-//        } else {
-//            mutableStateOf(emptyList())
-//        }
-//    }
-
-    //var parentalControlEnabled by rememberPreference(parentalControlEnabledKey, false)
     var logDebugEnabled by rememberPreference(logDebugEnabledKey, false)
 
-    //var extraspace by rememberPreference(extraspaceKey, false)
 
     var fileName by remember {
         mutableStateOf("")
@@ -188,15 +134,6 @@ fun MiscSettings() {
                 ) 1f
                 else Dimensions.contentWidthRightBar
             )
-            //.verticalScroll(rememberScrollState())
-        /*
-        .padding(
-            LocalPlayerAwareWindowInsets.current
-                .only(WindowInsetsSides.Vertical + WindowInsetsSides.End)
-                .asPaddingValues()
-        )
-
-         */
     ) {
         LazyColumn(
             state = rememberLazyListState(),
@@ -212,265 +149,6 @@ fun MiscSettings() {
                     onClick = {}
                 )
             }
-
-            /*
-            settingsItem(
-                isHeader = true
-            ) {
-                SettingsEntryGroupText(title = stringResource(R.string.check_update))
-            }
-
-            settingsItem {
-                var checkUpdateNow by remember { mutableStateOf(false) }
-                if (checkUpdateNow)
-                    CheckAvailableNewVersion(
-                        onDismiss = { checkUpdateNow = false },
-                        updateAvailable = {
-                            if (!it)
-                                SmartMessage(
-                                    context.resources.getString(R.string.info_no_update_available),
-                                    type = PopupType.Info,
-                                    context = context
-                                )
-                        }
-                    )
-
-                EnumValueSelectorSettingsEntry(
-                    online = false,
-                    offline = false,
-                    title = stringResource(R.string.enable_check_for_update),
-                    selectedValue = checkUpdateState,
-                    onValueSelected = { checkUpdateState = it },
-                    valueText = {
-                        when (it) {
-                            CheckUpdateState.Disabled -> stringResource(R.string.vt_disabled)
-                            CheckUpdateState.Enabled -> stringResource(R.string.enabled)
-                            CheckUpdateState.Ask -> stringResource(R.string.ask)
-                        }
-
-                    }
-                )
-                SettingsDescription(text = stringResource(R.string.when_enabled_a_new_version_is_checked_and_notified_during_startup))
-                AnimatedVisibility(visible = checkUpdateState != CheckUpdateState.Disabled) {
-                    Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                        SettingsDescription(
-                            text = stringResource(R.string.check_update),
-                            important = true,
-                            modifier = Modifier.weight(1f)
-                        )
-
-                        SecondaryTextButton(
-                            text = stringResource(R.string.info_check_update_now),
-                            onClick = { checkUpdateNow = true },
-                            modifier = Modifier
-                                .weight(1f)
-                                .padding(end = 24.dp)
-                        )
-                    }
-                }
-            }
-
-             */
-
-            /*
-            settingsItem(
-                isHeader = true
-            ) {
-                SettingsGroupSpacer()
-                SettingsEntryGroupText(stringResource(R.string.on_device))
-            }
-
-            settingsItem {
-                StringListValueSelectorSettingsEntry(
-                    online = false,
-                    title = stringResource(R.string.blacklisted_folders),
-                    text = stringResource(R.string.edit_blacklist_for_on_device_songs),
-                    addTitle = stringResource(R.string.add_folder),
-                    addPlaceholder = if (isAtLeastAndroid10) {
-                        "Android/media/com.whatsapp/WhatsApp/Media"
-                    } else {
-                        "/storage/emulated/0/Android/media/com.whatsapp/"
-                    },
-                    conflictTitle = stringResource(R.string.this_folder_already_exists),
-                    removeTitle = stringResource(R.string.are_you_sure_you_want_to_remove_this_folder_from_the_blacklist),
-                    context = LocalContext.current,
-                    list = blackListedPaths,
-                    add = { newPath ->
-                        blackListedPaths = blackListedPaths + newPath
-                        val file = File(context.filesDir, "Blacklisted_paths.txt")
-                        file.writeText(blackListedPaths.joinToString("\n"))
-                    },
-                    remove = { path ->
-                        blackListedPaths = blackListedPaths.filter { it != path }
-                        val file = File(context.filesDir, "Blacklisted_paths.txt")
-                        file.writeText(blackListedPaths.joinToString("\n"))
-                    }
-                )
-
-                SwitchSettingEntry(
-                    online = false,
-                    title = stringResource(R.string.folders),
-                    text = stringResource(R.string.show_folders_in_on_device_page),
-                    isChecked = showFolders,
-                    onCheckedChange = { showFolders = it }
-                )
-                AnimatedVisibility(visible = showFolders) {
-                    TextDialogSettingEntry(
-                        title = stringResource(R.string.folder_that_will_show_when_you_open_on_device_page),
-                        text = defaultFolder,
-                        currentText = defaultFolder,
-                        onTextSave = { defaultFolder = it }
-                    )
-                }
-
-            }
-
-
-
-            settingsItem(
-                isHeader = true
-            ) {
-                SettingsGroupSpacer()
-
-//        SettingsEntryGroupText(title = stringResource(R.string.android_auto))
-//
-//        SettingsDescription(text = stringResource(R.string.enable_unknown_sources))
-//
-//        SwitchSettingEntry(
-//            title = stringResource(R.string.android_auto_1),
-//            text = stringResource(R.string.enable_android_auto_support),
-//            isChecked = isAndroidAutoEnabled,
-//            onCheckedChange = { isAndroidAutoEnabled = it }
-//        )
-//
-//        SettingsGroupSpacer()
-
-                SettingsEntryGroupText(title = stringResource(R.string.androidheadunit))
-            }
-
-            settingsItem {
-                SwitchSettingEntry(
-                    title = stringResource(R.string.extra_space),
-                    text = "",
-                    isChecked = extraspace,
-                    onCheckedChange = { extraspace = it }
-                )
-
-//        SettingsGroupSpacer()
-//
-//        SettingsEntryGroupText(title = stringResource(R.string.service_lifetime))
-//
-//        SwitchSettingEntry(
-//            title = stringResource(R.string.keep_screen_on),
-//            text = stringResource(R.string.prevents_screen_timeout),
-//            isChecked = isKeepScreenOnEnabled,
-//            onCheckedChange = { isKeepScreenOnEnabled = it }
-//        )
-//
-//        ImportantSettingsDescription(text = stringResource(R.string.battery_optimizations_applied))
-//
-//        if (isAtLeastAndroid12) {
-//            SettingsDescription(text = stringResource(R.string.is_android12))
-//        }
-//
-//        val msgNoBatteryOptim = stringResource(R.string.not_find_battery_optimization_settings)
-//
-//        SettingsEntry(
-//            title = stringResource(R.string.ignore_battery_optimizations),
-//            isEnabled = !isIgnoringBatteryOptimizations,
-//            text = if (isIgnoringBatteryOptimizations) {
-//                stringResource(R.string.already_unrestricted)
-//            } else {
-//                stringResource(R.string.disable_background_restrictions)
-//            },
-//            onClick = {
-//                if (!isAtLeastAndroid6) return@SettingsEntry
-//
-//                try {
-//                    activityResultLauncher.launch(
-//                        Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS).apply {
-//                            data = Uri.parse("package:${context.packageName}")
-//                        }
-//                    )
-//                } catch (e: ActivityNotFoundException) {
-//                    try {
-//                        activityResultLauncher.launch(
-//                            Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)
-//                        )
-//                    } catch (e: ActivityNotFoundException) {
-//                        SmartMessage(
-//                            "$msgNoBatteryOptim RiMusic",
-//                            type = PopupType.Info,
-//                            context = context
-//                        )
-//                    }
-//                }
-//            }
-//        )
-
-                /*
-                SwitchSettingEntry(
-                    title = stringResource(R.string.invincible_service),
-                    text = stringResource(R.string.turning_off_battery_optimizations_is_not_enough),
-                    isChecked = isInvincibilityEnabled,
-                    onCheckedChange = { isInvincibilityEnabled = it }
-                )
-                 */
-
-//        SettingsGroupSpacer()
-//
-//        SettingsGroupSpacer()
-//        SettingsEntryGroupText(title = stringResource(R.string.proxy))
-//        SettingsDescription(text = stringResource(R.string.restarting_rimusic_is_required))
-//        SwitchSettingEntry(
-//            title = stringResource(R.string.enable_proxy),
-//            text = "",
-//            isChecked = isProxyEnabled,
-//            onCheckedChange = { isProxyEnabled = it }
-//        )
-//
-//        AnimatedVisibility(visible = isProxyEnabled) {
-//            Column {
-//                EnumValueSelectorSettingsEntry(title = stringResource(R.string.proxy_mode),
-//                    selectedValue = proxyMode,
-//                    onValueSelected = { proxyMode = it },
-//                    valueText = { it.name }
-//                )
-//                TextDialogSettingEntry(
-//                    title = stringResource(R.string.proxy_host),
-//                    text = proxyHost, //stringResource(R.string.set_proxy_hostname),
-//                    currentText = proxyHost,
-//                    onTextSave = { proxyHost = it },
-//                    validationType = ValidationType.Ip
-//                )
-//                TextDialogSettingEntry(
-//                    title = stringResource(R.string.proxy_port),
-//                    text = proxyPort.toString(), //stringResource(R.string.set_proxy_port),
-//                    currentText = proxyPort.toString(),
-//                    onTextSave = { proxyPort = it.toIntOrNull() ?: 1080 })
-//            }
-//        }
-            }
-*/
-
-//            settingsItem(
-//                isHeader = true
-//            ) {
-//                SettingsGroupSpacer()
-//                SettingsEntryGroupText(title = stringResource(R.string.parental_control))
-//            }
-//
-//            settingsItem {
-//                SwitchSettingEntry(
-//                    online = false,
-//                    offline = false,
-//                    title = stringResource(R.string.parental_control),
-//                    text = stringResource(R.string.info_prevent_play_songs_with_age_limitation),
-//                    isChecked = parentalControlEnabled,
-//                    onCheckedChange = { parentalControlEnabled = it }
-//                )
-//            }
-
 
             settingsItem(
                 isHeader = true
@@ -513,39 +191,19 @@ fun MiscSettings() {
                     onClick = {
                         exportCrashlog = false
                         isExporting = true
-
-//                val file = File(context.filesDir.resolve("logs"), "RiMusic_log.txt")
-//                if (file.exists()) {
-//                    text = file.readText()
-//                    text?.let {
-//                        textCopyToClipboard(it, context)
-//                    }
-//                } else
-//                    SmartMessage(noLogAvailable, type = PopupType.Info, context = context)
                     }
                 )
                 ButtonBarSettingEntry(
-                    //isEnabled = logDebugEnabled,
                     title = stringResource(R.string.export_crash_log),
                     text = stringResource(R.string.is_always_enabled),
                     icon = R.drawable.export,
                     onClick = {
                         exportCrashlog = true
                         isExporting = true
-//                val file = File(context.filesDir.resolve("logs"), "RiPlay_crash_log.txt")
-//                if (file.exists()) {
-//                    text = file.readText()
-//                    text?.let {
-//                        textCopyToClipboard(it, context)
-//                    }
-//                } else
-//                    SmartMessage(noLogAvailable, type = PopupType.Info, context = context)
                     }
                 )
             }
         }
-
-        //Spacer(modifier = Modifier.height(Dimensions.bottomSpacer))
 
     }
 }
