@@ -446,6 +446,8 @@ const val disableAudioDRCKey = "disableAudioDRC"
 
 const val castTypeKey = "castType"
 
+const val activeAppearancePresetIdKey = "activeAppearancePresetId"
+
 inline fun <reified T : Enum<T>> SharedPreferences.getEnum(
     key: String,
     defaultValue: T

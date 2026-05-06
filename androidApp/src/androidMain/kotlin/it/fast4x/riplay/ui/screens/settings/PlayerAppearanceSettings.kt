@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.BasicText
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -149,6 +150,7 @@ import it.fast4x.riplay.enums.ColorPaletteName
 import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.enums.SwipeAnimationNoThumbnail
 import it.fast4x.riplay.enums.UiType
+import it.fast4x.riplay.extensions.experimental.appearancepreset.AppearancePresetDialogHost
 import it.fast4x.riplay.utils.getUiType
 import it.fast4x.riplay.utils.typography
 import it.fast4x.riplay.ui.components.themed.Search
@@ -171,6 +173,7 @@ import it.fast4x.riplay.extensions.preferences.thumbnailFadeExKey
 import it.fast4x.riplay.extensions.preferences.thumbnailFadeKey
 import it.fast4x.riplay.extensions.preferences.thumbnailSpacingKey
 import it.fast4x.riplay.extensions.preferences.topPaddingKey
+import it.fast4x.riplay.ui.components.CustomModalBottomSheet
 import it.fast4x.riplay.utils.LazyListContainer
 import it.fast4x.riplay.utils.isAtLeastAndroid13
 import java.text.SimpleDateFormat
@@ -992,8 +995,25 @@ fun PlayerAppearanceSettings(
             //keepPlayerMinimized = false
         }
 
+        CustomModalBottomSheet(
+            showSheet = appearanceChooser,
+            onDismissRequest = { appearanceChooser = false },
+            containerColor = colorPalette().background0,
+            dragHandle = {
+                Surface(
+                    modifier = Modifier.padding(vertical = 0.dp),
+                    color = colorPalette().background0,
+                    //shape = thumbnailShape
+                ) {}
+            },
+            shape = thumbnailRoundness.shape(),
+        ) {
+            AppearancePresetDialogHost(context) { appearanceChooser = false }
+        }
 
+        /*
         if (appearanceChooser) {
+
             AppearancePresetDialog(
                 onDismiss = { appearanceChooser = false },
                 onClick0 = {
@@ -1268,6 +1288,7 @@ fun PlayerAppearanceSettings(
                 }
             )
         }
+         */
 
         val state = rememberLazyListState()
         LazyListContainer(

@@ -13,9 +13,9 @@ import it.fast4x.riplay.enums.PlayerTimelineType
 import it.fast4x.riplay.enums.PlayerType
 import it.fast4x.riplay.enums.ThumbnailRoundness
 import it.fast4x.riplay.enums.ThumbnailType
-import it.fast4x.riplay.extensions.experimental.appearancepreset.models.PlayerSettings
+import it.fast4x.riplay.extensions.experimental.appearancepreset.models.AppearanceSettings
 
-fun PlayerSettings.toShareString(): String =
+fun AppearanceSettings.toShareString(): String =
     buildString {
         append("showTopActionsBar=$showTopActionsBar&")
         append("showThumbnail=$showThumbnail&")
@@ -60,7 +60,7 @@ private inline fun <reified T : Enum<T>> Map<String, String>.enum(
     default: T
 ): T = get(key)?.let { runCatching { enumValueOf<T>(it) }.getOrNull() } ?: default
 
-fun PlayerSettings.Companion.fromShareString(encoded: String): PlayerSettings {
+fun AppearanceSettings.Companion.fromShareString(encoded: String): AppearanceSettings {
     val params = Uri.decode(encoded)
         .split("&")
         .mapNotNull { pair ->
@@ -74,7 +74,7 @@ fun PlayerSettings.Companion.fromShareString(encoded: String): PlayerSettings {
     fun float(key: String, default: Float) =
         params[key]?.toFloatOrNull() ?: default
 
-    return PlayerSettings(
+    return AppearanceSettings(
         showTopActionsBar = bool("showTopActionsBar", true),
         showThumbnail = bool("showThumbnail", true),
         playerBackgroundColors = params.enum(

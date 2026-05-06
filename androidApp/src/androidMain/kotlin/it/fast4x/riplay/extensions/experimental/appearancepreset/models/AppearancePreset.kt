@@ -8,5 +8,5 @@ data class AppearancePreset(
     val author: String? = null,
     val shareUrl: String? = null,
     val source: PresetSource = PresetSource.LOCAL,
-    val settings: PlayerSettings
+    val settings: AppearanceSettings
 )

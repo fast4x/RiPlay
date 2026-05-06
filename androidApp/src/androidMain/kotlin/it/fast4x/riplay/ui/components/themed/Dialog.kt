@@ -1,8 +1,12 @@
 package it.fast4x.riplay.ui.components.themed
 
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.core.EaseInOut
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -144,6 +148,8 @@ import it.fast4x.riplay.data.models.SongAlbumMap
 import it.fast4x.riplay.data.models.SongArtistMap
 import it.fast4x.riplay.data.models.SongPlaylistMap
 import it.fast4x.riplay.data.models.defaultQueue
+import it.fast4x.riplay.extensions.experimental.appearancepreset.models.AppearancePreset
+import it.fast4x.riplay.extensions.experimental.appearancepreset.models.PresetUiState
 import it.fast4x.riplay.extensions.persist.persist
 import it.fast4x.riplay.utils.typography
 import it.fast4x.riplay.ui.items.SongItem
@@ -307,7 +313,9 @@ fun <T> ValueSelectorDialog(
                         text = titleSecondary,
                         style = typography().xxs.semiBold,
                         color = colorPalette().background1,
-                        modifier = Modifier.padding(horizontal = 24.dp).padding(top = 8.dp)
+                        modifier = Modifier
+                            .padding(horizontal = 24.dp)
+                            .padding(top = 8.dp)
                     )
                 }
 
@@ -2198,6 +2206,7 @@ fun BlurParamsDialog(
             }
         }
     }
+
 
 
 

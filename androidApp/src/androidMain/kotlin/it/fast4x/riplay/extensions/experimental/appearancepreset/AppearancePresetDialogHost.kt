@@ -11,7 +11,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import it.fast4x.riplay.extensions.experimental.appearancepreset.models.PresetEvent
+import it.fast4x.riplay.ui.components.themed.AppearancePresetDialog
 import kotlinx.coroutines.launch
+import timber.log.Timber
 
 
 @Composable
@@ -24,6 +26,7 @@ fun AppearancePresetDialogHost(
     )
 
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val activePresetId by viewModel.activePresetId.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
 
@@ -31,6 +34,7 @@ fun AppearancePresetDialogHost(
         viewModel.events.collect { event ->
             when (event) {
                 is PresetEvent.Applied -> {
+                    Timber.d("AppearancePreset Applied  \"${event.presetName}\" ")
                     scope.launch {
                         snackbarHostState.showSnackbar("Preset \"${event.presetName}\" applicato")
                     }
@@ -42,11 +46,12 @@ fun AppearancePresetDialogHost(
         }
     }
 
-//    AppearancePresetDialog(
-//        uiState   = uiState,
-//        onDismiss = onDismiss,
-//        onSelect  = viewModel::applyPreset,
-//        onShare   = viewModel::sharePreset
-//    )
+    AppearancePresetDialog(
+        activePresetId = activePresetId,
+        uiState   = uiState,
+        onDismiss = onDismiss,
+        onSelect  = viewModel::applyPreset,
+        onShare   = viewModel::sharePreset
+    )
 
 }

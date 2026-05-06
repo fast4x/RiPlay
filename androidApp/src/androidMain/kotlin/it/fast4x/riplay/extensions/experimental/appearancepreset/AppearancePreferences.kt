@@ -3,10 +3,10 @@ package it.fast4x.riplay.extensions.experimental.appearancepreset
 import android.content.Context
 import android.content.SharedPreferences
 import androidx.core.content.edit
-import it.fast4x.riplay.enums.IconLikeType
-import it.fast4x.riplay.extensions.experimental.appearancepreset.models.PlayerSettings
+import it.fast4x.riplay.extensions.experimental.appearancepreset.models.AppearanceSettings
 import it.fast4x.riplay.extensions.preferences.actionExpandedKey
 import it.fast4x.riplay.extensions.preferences.actionspacedevenlyKey
+import it.fast4x.riplay.extensions.preferences.activeAppearancePresetIdKey
 import it.fast4x.riplay.extensions.preferences.albumCoverRotationKey
 import it.fast4x.riplay.extensions.preferences.animatedGradientKey
 import it.fast4x.riplay.extensions.preferences.blackgradientKey
@@ -36,6 +36,7 @@ import it.fast4x.riplay.extensions.preferences.playerThumbnailSizeKey
 import it.fast4x.riplay.extensions.preferences.playerTimelineSizeKey
 import it.fast4x.riplay.extensions.preferences.playerTimelineTypeKey
 import it.fast4x.riplay.extensions.preferences.playerTypeKey
+import it.fast4x.riplay.extensions.preferences.preferences
 import it.fast4x.riplay.extensions.preferences.prevNextSongsKey
 import it.fast4x.riplay.extensions.preferences.queueDurationExpandedKey
 import it.fast4x.riplay.extensions.preferences.queueTypeKey
@@ -80,16 +81,33 @@ import it.fast4x.riplay.extensions.preferences.topPaddingKey
 import it.fast4x.riplay.extensions.preferences.transparentBackgroundPlayerActionBarKey
 import it.fast4x.riplay.extensions.preferences.transparentbarKey
 import it.fast4x.riplay.extensions.preferences.visualizerEnabledKey
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.callbackFlow
 
-class PlayerPreferences(context: Context) {
-    private val prefs: SharedPreferences by lazy {
-        context.getSharedPreferences("player_preferences", Context.MODE_PRIVATE)
+class AppearancePreferences(context: Context) {
+    private val prefs = context.preferences
+
+    fun activePresetIdFlow(): Flow<String?> = callbackFlow {
+        trySend(prefs.getString(activeAppearancePresetIdKey, null))
+
+        val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+            if (key == activeAppearancePresetIdKey) {
+                trySend(prefs.getString("activePresetId", null))
+            }
+        }
+
+        prefs.registerOnSharedPreferenceChangeListener(listener)
+        awaitClose { prefs.unregisterOnSharedPreferenceChangeListener(listener) }
     }
 
-    fun applyFrom(settings: PlayerSettings) {
+    fun applyFrom(settings: AppearanceSettings, presetId: String) {
 
-        prefs.edit(commit = true) {
+        prefs.edit {
             with(settings) {
+                putString(activeAppearancePresetIdKey, presetId)
+
+                // PLAYER
                 putBoolean(showTopActionsBarKey,               showTopActionsBar)
                 putBoolean(showthumbnailKey,                   showThumbnail)
                 putString (playerBackgroundColorsKey,          playerBackgroundColors.name)
@@ -167,16 +185,18 @@ class PlayerPreferences(context: Context) {
                 putBoolean(disablePlayerHorizontalSwipeKey, disablePlayerHorizontalSwipe)
                 putBoolean(showLikeButtonBackgroundPlayerKey, showLikeButtonBackgroundPlayer)
 
+                //APP
+
             }
         }
     }
 
     companion object {
-        @Volatile private var instance: PlayerPreferences? = null
+        @Volatile private var instance: AppearancePreferences? = null
 
-        fun getInstance(context: Context): PlayerPreferences =
+        fun getInstance(context: Context): AppearancePreferences =
             instance ?: synchronized(this) {
-                instance ?: PlayerPreferences(context.applicationContext).also { instance = it }
+                instance ?: AppearancePreferences(context.applicationContext).also { instance = it }
             }
     }
 }
