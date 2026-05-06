@@ -1,4 +1,4 @@
-package it.fast4x.riplay.extensions.experimental.playlist
+package it.fast4x.riplay.extensions.experimental.ui.screens.playlist
 
 import android.annotation.SuppressLint
 import androidx.compose.animation.AnimatedVisibility
@@ -38,7 +38,6 @@ import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -136,7 +135,6 @@ import it.fast4x.riplay.ui.screens.settings.isYtSyncEnabled
 import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.ui.styling.align
 import it.fast4x.riplay.ui.styling.color
-import it.fast4x.riplay.ui.styling.favoritesIcon
 import it.fast4x.riplay.ui.styling.medium
 import it.fast4x.riplay.ui.styling.px
 import it.fast4x.riplay.ui.styling.secondary
@@ -151,7 +149,6 @@ import it.fast4x.riplay.utils.asPlaylist
 import it.fast4x.riplay.utils.asSong
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.utils.enqueue
-import it.fast4x.riplay.utils.fadingEdge
 import it.fast4x.riplay.utils.forcePlayAtIndex
 import it.fast4x.riplay.utils.forcePlayFromBeginning
 import it.fast4x.riplay.utils.formatAsDuration
@@ -670,7 +667,7 @@ fun PlaylistSongListNew1(
                                 verticalAlignment = Alignment.Bottom,
                                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp).fillMaxWidth()
                             ) {
-                                val focusRequester = remember { androidx.compose.ui.focus.FocusRequester() }
+                                val focusRequester = remember { FocusRequester() }
                                 val focusManager = LocalFocusManager.current
                                 val keyboardController = LocalSoftwareKeyboardController.current
                                 LaunchedEffect(searching) { focusRequester.requestFocus() }

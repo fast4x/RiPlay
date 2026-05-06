@@ -1,4 +1,4 @@
-package it.fast4x.riplay.extensions.experimental.artist
+package it.fast4x.riplay.extensions.experimental.ui.screens.artist
 
 import android.annotation.SuppressLint
 import androidx.compose.animation.AnimatedVisibility

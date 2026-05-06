@@ -1,4 +1,4 @@
-package it.fast4x.riplay.extensions.experimental
+package it.fast4x.riplay.extensions.experimental.ui.screens.home
 
 
 import android.annotation.SuppressLint
