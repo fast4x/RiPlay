@@ -1003,7 +1003,6 @@ fun PlayerAppearanceSettings(
                 Surface(
                     modifier = Modifier.padding(vertical = 0.dp),
                     color = colorPalette().background0,
-                    //shape = thumbnailShape
                 ) {}
             },
             shape = thumbnailRoundness.shape(),
