@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
+import timber.log.Timber
 import java.net.HttpURLConnection
 import java.net.URL
 
@@ -93,6 +94,7 @@ class AppearancePresetRepositoryImpl(
         emit(presets)
     }.catch { e ->
         // Rete assente o JSON malformato: emette lista vuota, i preset locali restano visibili
+        Timber.d("Appearance remote themes or presets not available ${e.message}")
         emit(emptyList())
     }.flowOn(Dispatchers.IO)
 
