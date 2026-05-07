@@ -5,9 +5,17 @@ import it.fast4x.riplay.R
 import it.fast4x.riplay.extensions.experimental.appearancepreset.models.AppearancePreset
 import it.fast4x.riplay.extensions.experimental.appearancepreset.models.AppearanceSettings
 import it.fast4x.riplay.extensions.experimental.appearancepreset.models.PresetSource
+import it.fast4x.riplay.extensions.experimental.appearancepreset.utils.fromShareString
 import it.fast4x.riplay.extensions.experimental.appearancepreset.utils.toShareString
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.withContext
+import org.json.JSONObject
+import java.net.HttpURLConnection
+import java.net.URL
 
 class AppearancePresetRepositoryImpl(
     private val context: Context
@@ -66,8 +74,53 @@ class AppearancePresetRepositoryImpl(
     )
 
 
-    override fun remotePresets(): Flow<List<AppearancePreset>> =
-        flow { emit(emptyList()) }
+    override fun remotePresets(): Flow<List<AppearancePreset>> = flow {
+        val url = URL("https://fast4x.github.io/RiPlay/themes/index.json")
+        val json = with(withContext(Dispatchers.IO) {
+            url.openConnection()
+        } as HttpURLConnection) {
+            connectTimeout = 5_000
+            readTimeout    = 5_000
+            requestMethod  = "GET"
+            try {
+                inputStream.bufferedReader().readText()
+            } finally {
+                disconnect()
+            }
+        }
+
+        val presets = parseRemotePresets(json)
+        emit(presets)
+    }.catch { e ->
+        // Rete assente o JSON malformato: emette lista vuota, i preset locali restano visibili
+        emit(emptyList())
+    }.flowOn(Dispatchers.IO)
+
+    private fun parseRemotePresets(json: String): List<AppearancePreset> {
+        val root   = JSONObject(json)
+        val array  = root.getJSONArray("themes")
+
+        return buildList {
+            for (i in 0 until array.length()) {
+                val obj = array.getJSONObject(i)
+                runCatching {
+                    add(
+                        AppearancePreset(
+                            id          = obj.getString("id"),
+                            name        = obj.getString("name"),
+                            author      = obj.getString("author"),
+                            imageUrl    = obj.getString("imageUrl"),
+                            source      = PresetSource.REMOTE,
+                            settings    = AppearanceSettings.fromShareString(
+                                obj.getString("shareString")
+                            )
+                        )
+                    )
+                }
+
+            }
+        }
+    }
 
     override suspend fun loadSharedPreset(shareUrl: String): Result<AppearancePreset> =
         runCatching {

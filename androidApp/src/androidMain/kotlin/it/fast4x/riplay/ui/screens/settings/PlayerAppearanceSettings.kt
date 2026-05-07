@@ -150,7 +150,12 @@ import it.fast4x.riplay.enums.ColorPaletteName
 import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.enums.SwipeAnimationNoThumbnail
 import it.fast4x.riplay.enums.UiType
+import it.fast4x.riplay.extensions.experimental.appearancepreset.AppearancePreferences
 import it.fast4x.riplay.extensions.experimental.appearancepreset.AppearancePresetDialogHost
+import it.fast4x.riplay.extensions.experimental.appearancepreset.models.AppearanceSettings
+import it.fast4x.riplay.extensions.experimental.appearancepreset.utils.fromCurrentSettings
+import it.fast4x.riplay.extensions.experimental.appearancepreset.utils.fromShareString
+import it.fast4x.riplay.extensions.experimental.appearancepreset.utils.toShareString
 import it.fast4x.riplay.utils.getUiType
 import it.fast4x.riplay.utils.typography
 import it.fast4x.riplay.ui.components.themed.Search
@@ -176,6 +181,7 @@ import it.fast4x.riplay.extensions.preferences.topPaddingKey
 import it.fast4x.riplay.ui.components.CustomModalBottomSheet
 import it.fast4x.riplay.utils.LazyListContainer
 import it.fast4x.riplay.utils.isAtLeastAndroid13
+import timber.log.Timber
 import java.text.SimpleDateFormat
 import java.util.Date
 
@@ -557,11 +563,15 @@ fun PlayerAppearanceSettings(
     }
     val context = LocalContext.current
     val exportLauncher =
-        rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("text/csv")) { uri ->
+        rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("text/plain")) { uri ->
             if (uri == null) return@rememberLauncherForActivityResult
 
             context.applicationContext.contentResolver.openOutputStream(uri)
                 ?.use { outputStream ->
+                    outputStream.bufferedWriter().use { writer ->
+                        writer.write(AppearanceSettings.fromCurrentSettings(context).toShareString())
+                    }
+                    /*
                     csvWriter().open(outputStream){
                         writeRow("SettingsType", "Name", "Parameter", "Value")
                         writeRow("Appearance", appearanceFilename, "albumCoverRotation", albumCoverRotation)
@@ -648,6 +658,7 @@ fun PlayerAppearanceSettings(
                         writeRow("Appearance", appearanceFilename, "showLikeButtonBackgroundPlayer", showLikeButtonBackgroundPlayer)
                         writeRow("Appearance", appearanceFilename, "visualizerEnabled", visualizerEnabled)
                     }
+                    */
                 }
 
         }
@@ -681,6 +692,8 @@ fun PlayerAppearanceSettings(
         )
     }
 
+    val preferences = remember { AppearancePreferences.getInstance(context) }
+
     val importLauncher =
         rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
             if (uri == null) return@rememberLauncherForActivityResult
@@ -689,6 +702,13 @@ fun PlayerAppearanceSettings(
 
             context.applicationContext.contentResolver.openInputStream(uri)
                 ?.use { inputStream ->
+                    runCatching {
+                        val encoded = inputStream.bufferedReader().readText()
+                        AppearanceSettings.fromShareString(encoded)
+                    }
+                        .onSuccess { settings -> preferences.applyFrom(settings) }
+                        .onFailure { Timber.e("PlayerAppearanceSettings failed to load appearance from file") }
+                    /*
                     csvReader().open(inputStream) {
                         readAllWithHeaderAsSequence().forEachIndexed { index, row: Map<String, String> ->
                             if (row["SettingsType"] == "Appearance") {
@@ -956,6 +976,7 @@ fun PlayerAppearanceSettings(
 
                         }
                     }
+                    */
                 }
         }
 

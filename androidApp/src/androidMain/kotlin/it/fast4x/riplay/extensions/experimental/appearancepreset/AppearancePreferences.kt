@@ -101,7 +101,7 @@ class AppearancePreferences(context: Context) {
         awaitClose { prefs.unregisterOnSharedPreferenceChangeListener(listener) }
     }
 
-    fun applyFrom(settings: AppearanceSettings, presetId: String) {
+    fun applyFrom(settings: AppearanceSettings, presetId: String? = null) {
 
         prefs.edit {
             with(settings) {
