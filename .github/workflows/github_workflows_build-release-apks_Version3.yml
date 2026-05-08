@@ -86,7 +86,7 @@ jobs:
       - name: Collect APK files
         run: |
           mkdir -p release-apks
-          find composeApp -name "*.apk" -path "*/release/*" -exec cp {} release-apks/ \;
+          find androidApp -name "*.apk" -path "*/release/*" -exec cp {} release-apks/ \;
           ls -lah release-apks/
 
       - name: Generate Changelog
