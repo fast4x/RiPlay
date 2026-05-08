@@ -568,10 +568,12 @@ fun PlayerAppearanceSettings(
 
             context.applicationContext.contentResolver.openOutputStream(uri)
                 ?.use { outputStream ->
+                    /* new feature themes repo
                     outputStream.bufferedWriter().use { writer ->
                         writer.write(AppearanceSettings.fromCurrentSettings(context).toShareString())
                     }
-                    /*
+                     */
+
                     csvWriter().open(outputStream){
                         writeRow("SettingsType", "Name", "Parameter", "Value")
                         writeRow("Appearance", appearanceFilename, "albumCoverRotation", albumCoverRotation)
@@ -658,7 +660,7 @@ fun PlayerAppearanceSettings(
                         writeRow("Appearance", appearanceFilename, "showLikeButtonBackgroundPlayer", showLikeButtonBackgroundPlayer)
                         writeRow("Appearance", appearanceFilename, "visualizerEnabled", visualizerEnabled)
                     }
-                    */
+
                 }
 
         }
@@ -702,13 +704,16 @@ fun PlayerAppearanceSettings(
 
             context.applicationContext.contentResolver.openInputStream(uri)
                 ?.use { inputStream ->
+                    /* NEW FEATURE THEMES REPO
                     runCatching {
                         val encoded = inputStream.bufferedReader().readText()
                         AppearanceSettings.fromShareString(encoded)
                     }
                         .onSuccess { settings -> preferences.applyFrom(settings) }
                         .onFailure { Timber.e("PlayerAppearanceSettings failed to load appearance from file") }
-                    /*
+
+                     */
+
                     csvReader().open(inputStream) {
                         readAllWithHeaderAsSequence().forEachIndexed { index, row: Map<String, String> ->
                             if (row["SettingsType"] == "Appearance") {
@@ -976,7 +981,7 @@ fun PlayerAppearanceSettings(
 
                         }
                     }
-                    */
+
                 }
         }
 
@@ -1016,6 +1021,7 @@ fun PlayerAppearanceSettings(
             //keepPlayerMinimized = false
         }
 
+        /* NEW FEATURE THEMES REPO
         CustomModalBottomSheet(
             showSheet = appearanceChooser,
             onDismissRequest = { appearanceChooser = false },
@@ -1030,8 +1036,9 @@ fun PlayerAppearanceSettings(
         ) {
             AppearancePresetDialogHost(context) { appearanceChooser = false }
         }
+         */
 
-        /*
+
         if (appearanceChooser) {
 
             AppearancePresetDialog(
@@ -1308,7 +1315,7 @@ fun PlayerAppearanceSettings(
                 }
             )
         }
-         */
+
 
         val state = rememberLazyListState()
         LazyListContainer(
