@@ -72,7 +72,7 @@ jobs:
           SIGNING_STORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
           SIGNING_STORE_FILE: ${{ runner.temp }}/keystore/RiPlayKeystore.jks
         run: |
-          ./gradlew :composeApp:assembleRelease -PBUILD_VARIANT=
+          ./gradlew :androidApp:assembleFull -PBUILD_VARIANT=
 
       - name: Build Release APK - FOSS Flavor
         env:
