@@ -488,7 +488,7 @@ extensions.configure<ApplicationExtension> {
         onVariants { variant ->
             variant.outputs.forEach { output ->
                 if (output is com.android.build.api.variant.impl.VariantOutputImpl) {
-                    output.outputFileName = "RiPlay-${variant.name}-${variant.outputs.first().versionName.orNull}.apk"
+                    output.outputFileName = "RiPlay-${output.baseName}-${variant.outputs.first().versionName.orNull}.apk"
                 }
             }
         }
