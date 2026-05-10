@@ -2584,18 +2584,22 @@ private var pausedByZeroVolume = false
 
         notificationManager?.run {
 
-            // Migrazione canale player: elimina se importance errata
-            getNotificationChannel(NOTIFICATION_CHANNEL_ID)?.let { channel ->
-                if (channel.importance == NotificationManager.IMPORTANCE_HIGH) {
-                    deleteNotificationChannel(NOTIFICATION_CHANNEL_ID)
+            try {
+                // Migrazione canale player: elimina se importance errata
+                getNotificationChannel(NOTIFICATION_CHANNEL_ID)?.let { channel ->
+                    if (channel.importance == NotificationManager.IMPORTANCE_HIGH) {
+                        deleteNotificationChannel(NOTIFICATION_CHANNEL_ID)
+                    }
                 }
-            }
 
-            // Migrazione canale sleeptimer: elimina se importance errata
-            getNotificationChannel(SLEEPTIMER_NOTIFICATION_CHANNEL_ID)?.let { channel ->
-                if (channel.importance == NotificationManager.IMPORTANCE_HIGH) {
-                    deleteNotificationChannel(SLEEPTIMER_NOTIFICATION_CHANNEL_ID)
+                // Migrazione canale sleeptimer: elimina se importance errata
+                getNotificationChannel(SLEEPTIMER_NOTIFICATION_CHANNEL_ID)?.let { channel ->
+                    if (channel.importance == NotificationManager.IMPORTANCE_HIGH) {
+                        deleteNotificationChannel(SLEEPTIMER_NOTIFICATION_CHANNEL_ID)
+                    }
                 }
+            } catch (e: Exception) {
+                Timber.d("PlayerService createNotificationChannels migrating channels isn't possible, consider remove and install again")
             }
 
             if (getNotificationChannel(NOTIFICATION_CHANNEL_ID) == null) {
