@@ -1750,34 +1750,19 @@ private suspend fun fetchLyricsIfNeeded(
                         onCheckedSimpLrc(false)
                         return@runCatching
                     }
-                    val lyricsData = response.data.firstOrNull()
-                    val lyricsToUpdate = when {
-                        lyricsData?.richSyncLyrics?.isNotEmpty() == true -> Lyrics(
-                            songId = mediaId,
-                            fixed = currentLyrics?.fixed,
-                            synced = currentLyrics?.synced,
-                            lrcSynced = lyricsData.richSyncLyrics
-                        )
+                    val lyricsData = response.data.firstOrNull() ?: return@runCatching
+                    val lyricsToUpdate = Lyrics(
+                        songId = mediaId,
+                        fixed = lyricsData.plainLyric,
+                        synced = lyricsData.syncedLyrics,
+                        lrcSynced = lyricsData.richSyncLyrics
+                    )
 
-                        lyricsData?.syncedLyrics?.isNotEmpty() == true -> Lyrics(
-                            songId = mediaId,
-                            fixed = currentLyrics?.fixed,
-                            synced = lyricsData.syncedLyrics,
-                            lrcSynced = currentLyrics?.lrcSynced
-                        )
-
-                        lyricsData?.plainLyric?.isNotEmpty() == true -> Lyrics(
-                            songId = mediaId,
-                            fixed = lyricsData.plainLyric,
-                            synced = currentLyrics?.synced,
-                            lrcSynced = currentLyrics?.lrcSynced
-                        )
-
-                        else -> null
-                    }
                     CoroutineScope(Dispatchers.IO).launch {
                         Timber.d("fetchLyricsIfNeeded upsert lyricsToUpdate $lyricsToUpdate")
-                        lyricsToUpdate?.let { Database.upsert(it) }
+                        lyricsToUpdate.let {
+                            Database.upsert(it)
+                        }
                     }
                     onCheckedSimpLrc(true)
                 }?.onFailure {
