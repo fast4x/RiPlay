@@ -1988,39 +1988,6 @@ private var pausedByZeroVolume = false
         unifiedMediaSession.setMetadata(metadataBuilder.build())
     }
 
-    /*
-    private fun initializeTelephonyManager(enable: Boolean) {
-        val hasPermission = ContextCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE) == PackageManager.PERMISSION_GRANTED
-        if (enable && (!hasPermission || !preferences.getBoolean(resumeOrPausePlaybackWhenCallKey, false))) return
-
-        telephonyManager = getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
-
-        if (enable) {
-
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                telephonyManager?.registerTelephonyCallback(
-                    ContextCompat.getMainExecutor(this),
-                    telephonyCallback
-                )
-            } else {
-                @Suppress("DEPRECATION")
-                telephonyManager?.listen(phoneStateListener, PhoneStateListener.LISTEN_CALL_STATE)
-            }
-            Timber.d("PlayerService: TelephonyManager registered")
-
-        } else {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                telephonyManager?.unregisterTelephonyCallback(telephonyCallback)
-            } else {
-                @Suppress("DEPRECATION")
-                telephonyManager?.listen(phoneStateListener, PhoneStateListener.LISTEN_NONE)
-            }
-            Timber.w("PlayerService: TelephonyManager unregistered")
-        }
-
-    }
-     */
-
     private fun initializeAudioManager() {
         audioManager = getSystemService(AUDIO_SERVICE) as AudioManager
     }
