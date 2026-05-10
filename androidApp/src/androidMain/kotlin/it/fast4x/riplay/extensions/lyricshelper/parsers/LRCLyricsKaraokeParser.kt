@@ -2,11 +2,12 @@ package it.fast4x.riplay.extensions.lyricshelper.parsers
 
 import it.fast4x.riplay.extensions.lyricshelper.models.LyricLine
 import it.fast4x.riplay.extensions.lyricshelper.models.LyricWord
-import timber.log.Timber
+import it.fast4x.riplay.utils.decodeHtmlAndUnicode
+import it.fast4x.riplay.utils.decodeHtmlEntities
 import java.util.regex.Pattern
 
 
-object SyncLRCLyricsKaraokeParser {
+object LRCLyricsKaraokeParser {
 
     private val lineTimePattern = Pattern.compile("^\\[(\\d{2}):(\\d{2})\\.(\\d{2,3})\\]")
     private val wordPattern = Pattern.compile("<(\\d{2}):(\\d{2})\\.(\\d{2,3})>([^<]*)")
@@ -15,7 +16,7 @@ object SyncLRCLyricsKaraokeParser {
     fun parse(lrcString: String?, isOnline: Boolean = false): List<LyricLine> {
         if (lrcString.isNullOrEmpty()) return emptyList()
 
-        val lines = lrcString.lines()
+        val lines = decodeHtmlEntities( lrcString) .lines()
         val parsedLines = mutableListOf<LyricLine>()
 
         for (i in lines.indices) {

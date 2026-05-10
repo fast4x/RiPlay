@@ -85,6 +85,7 @@ kotlin {
         implementation(projects.lrclib)
         implementation(projects.audiotaginfo)
         implementation(projects.lastfm)
+        implementation(projects.simpmusiclyrics)
 
         implementation(libs.room.ktx)
         implementation(libs.room.runtime)

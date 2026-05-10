@@ -59,7 +59,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.geometry.Offset
@@ -95,7 +94,6 @@ import androidx.compose.ui.unit.sp
 import androidx.media3.common.C
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.util.UnstableApi
-import com.valentinilk.shimmer.shimmer
 import it.fast4x.environment.Environment
 import it.fast4x.environment.models.bodies.NextBody
 import it.fast4x.environment.requests.lyrics
@@ -125,12 +123,10 @@ import it.fast4x.riplay.ui.components.themed.InputTextDialog
 import it.fast4x.riplay.ui.components.themed.Menu
 import it.fast4x.riplay.ui.components.themed.MenuEntry
 import it.fast4x.riplay.ui.components.themed.SmartMessage
-import it.fast4x.riplay.ui.components.themed.TextPlaceholder
 import it.fast4x.riplay.ui.components.themed.TitleSection
 import it.fast4x.riplay.ui.styling.DefaultDarkColorPalette
 import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.ui.styling.PureBlackColorPalette
-import it.fast4x.riplay.ui.styling.onOverlayShimmer
 import it.fast4x.riplay.ui.styling.center
 import it.fast4x.riplay.ui.styling.color
 import it.fast4x.riplay.extensions.preferences.colorPaletteModeKey
@@ -165,7 +161,7 @@ import dev.rebelonion.translator.Translator
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.enums.ColorPaletteName
 import it.fast4x.riplay.extensions.lyricshelper.models.LyricLine
-import it.fast4x.riplay.extensions.lyricshelper.parsers.SyncLRCLyricsKaraokeParser
+import it.fast4x.riplay.extensions.lyricshelper.parsers.LRCLyricsKaraokeParser
 import it.fast4x.riplay.utils.isLocal
 import it.fast4x.riplay.utils.thumbnailShape
 import it.fast4x.riplay.utils.typography
@@ -193,8 +189,6 @@ import kotlin.time.Duration.Companion.seconds
 import androidx.compose.ui.unit.TextUnit
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import it.fast4x.riplay.extensions.lyricshelper.providers.syncLRCfetchLyrics
-import it.fast4x.riplay.extensions.lyricshelper.models.SyncLRCType
 import it.fast4x.riplay.services.playback.PlayerService
 import it.fast4x.riplay.ui.components.themed.Loader
 import it.fast4x.riplay.utils.CustomHttpClient
@@ -202,6 +196,7 @@ import it.fast4x.riplay.utils.PlayerViewModel
 import it.fast4x.riplay.utils.PlayerViewModelFactory
 import it.fast4x.riplay.utils.appContext
 import it.fast4x.riplay.utils.getRoundnessShape
+import it.fast4x.simpmusiclyrics.SimpMusicClient
 
 
 val RainbowColors = listOf(Color.Red, Color.Magenta, Color.Blue, Color.Cyan, Color.Green, Color.Yellow, Color.Red)
@@ -244,8 +239,8 @@ fun Lyrics(
 
     var showlyricsthumbnail by rememberPreference(showlyricsthumbnailKey, false)
     var isShowingSynchronizedLyrics by rememberPreference(isShowingSynchronizedLyricsKey, false)
-    //var isShowingSynchronizedWordByWordLyrics by rememberPreference(isShowingSynchronizedWordByWordLyricsKey, false)
-    val isShowingSynchronizedWordByWordLyrics by remember { mutableStateOf(false) } // removed temporaly word word lyrics suspended by owner
+    var isShowingSynchronizedWordByWordLyrics by rememberPreference(isShowingSynchronizedWordByWordLyricsKey, false)
+    //val isShowingSynchronizedWordByWordLyrics by remember { mutableStateOf(false) } // removed temporaly word word lyrics suspended by owner
 
     val currentLyrics by Database.lyrics(mediaId).collectAsState(initial = null)
 
@@ -324,7 +319,7 @@ fun Lyrics(
     var checkedLyricsLrc by remember(mediaId) { mutableStateOf(false) }
     var checkedLyricsKugou by remember(mediaId) { mutableStateOf(false) }
     var checkedLyricsInnertube by remember(mediaId) { mutableStateOf(false) }
-    var checkedLyricsSyncLrc by remember(mediaId) { mutableStateOf(false) }
+    var checkedLyricsSimpLrc by remember(mediaId) { mutableStateOf(false) }
     var checkLyrics by remember { mutableStateOf(false) }
     var lyricsHighlight by rememberPreference(lyricsHighlightKey, LyricsHighlight.None)
     var lyricsAlignment by rememberPreference(lyricsAlignmentKey, LyricsAlignment.Center)
@@ -397,7 +392,7 @@ fun Lyrics(
         }
     }
 
-    LaunchedEffect(mediaId, isShowingSynchronizedLyrics, isShowingSynchronizedWordByWordLyrics, checkLyrics) {
+    LaunchedEffect(Unit, mediaId, isShowingSynchronizedLyrics, isShowingSynchronizedWordByWordLyrics, checkLyrics) {
         fetchLyricsIfNeeded(
             mediaId = mediaId,
             artistName = artistName,
@@ -412,7 +407,7 @@ fun Lyrics(
             onCheckedLrc = { checkedLyricsLrc = it },
             onCheckedKugou = { checkedLyricsKugou = it },
             onCheckedInnertube = { checkedLyricsInnertube = it },
-            onCheckedSyncLrc = { checkedLyricsSyncLrc = it },
+            onCheckedSimpLrc = { checkedLyricsSimpLrc = it },
             onError = {
                 isError = it
                 //Timber.e("Lyrics fetchLyricsIfNeeded onError $it")
@@ -521,7 +516,7 @@ fun Lyrics(
     }
 
 
-    if (lyricsText.isEmpty() && !checkedLyricsLrc && !checkedLyricsKugou && !checkedLyricsInnertube && !checkedLyricsSyncLrc)
+    if (lyricsText.isEmpty() && !checkedLyricsLrc && !checkedLyricsKugou && !checkedLyricsInnertube && !checkedLyricsSimpLrc)
         checkLyrics = !checkLyrics
 
 
@@ -550,7 +545,7 @@ fun Lyrics(
 
                     val synchronizedLyrics = remember(isShowingSynchronizedLyrics, isShowingSynchronizedWordByWordLyrics, lyricsText) {
                         val sentences = if (!isShowingSynchronizedWordByWordLyrics) LrcLib.Lyrics(lyricsText).sentences.toLyricLine()
-                        else SyncLRCLyricsKaraokeParser
+                        else LRCLyricsKaraokeParser
                             .parse(currentLyrics?.lrcSynced ?: "", isOnline = binder?.player?.currentMediaItem?.isLocal == true)
                         invalidLrc = false
                         SynchronizedLyricsLines(sentences) { positionProvider() }
@@ -762,7 +757,7 @@ fun Lyrics(
                 //Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.shimmer()) { repeat(4) { TextPlaceholder(color = colorPalette().onOverlayShimmer, modifier = Modifier.alpha(1f - it * 0.1f)) } }
                 Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
                     Loader()
-                    if (checkedLyricsLrc || checkedLyricsKugou)
+                    if (checkedLyricsLrc || checkedLyricsKugou || checkedLyricsSimpLrc)
                         Text(
                             text = stringResource(R.string.loading_please_wait),
                             fontStyle = typography().s.fontStyle,
@@ -958,7 +953,7 @@ fun Lyrics(
             ) {
                 Text(
                     text = when {
-                        //isShowingSynchronizedLyrics && isShowingSynchronizedWordByWordLyrics -> stringResource(R.string.lyrics_word_by_word)
+                        isShowingSynchronizedLyrics && isShowingSynchronizedWordByWordLyrics -> stringResource(R.string.lyrics_word_by_word)
                         isShowingSynchronizedLyrics && !isShowingSynchronizedWordByWordLyrics -> stringResource(R.string.lyrics_line_by_line)
                         else -> stringResource(R.string.lyrics_fulltext)
                     },
@@ -971,9 +966,9 @@ fun Lyrics(
                         .align(Alignment.Center)
                         .clickable {
                             when {
-//                                isShowingSynchronizedLyrics && isShowingSynchronizedWordByWordLyrics -> {
-//                                    isShowingSynchronizedWordByWordLyrics = false
-//                                }
+                                isShowingSynchronizedLyrics && isShowingSynchronizedWordByWordLyrics -> {
+                                    isShowingSynchronizedWordByWordLyrics = false
+                                }
 
                                 isShowingSynchronizedLyrics && !isShowingSynchronizedWordByWordLyrics -> {
                                     isShowingSynchronizedLyrics = false
@@ -981,7 +976,7 @@ fun Lyrics(
 
                                 else -> {
                                     isShowingSynchronizedLyrics = true
-                                    //isShowingSynchronizedWordByWordLyrics = true
+                                    isShowingSynchronizedWordByWordLyrics = true
                                 }
                             }
                         }
@@ -1488,7 +1483,7 @@ fun Lyrics(
                                                             },
                                                             onClick = {
                                                                 isShowingSynchronizedLyrics = false
-                                                                //isShowingSynchronizedWordByWordLyrics = false
+                                                                isShowingSynchronizedWordByWordLyrics = false
                                                             }
                                                         )
                                                         MenuEntry(
@@ -1509,16 +1504,16 @@ fun Lyrics(
                                                             },
                                                             onClick = {
                                                                 isShowingSynchronizedLyrics = true
-                                                                //isShowingSynchronizedWordByWordLyrics = false
+                                                                isShowingSynchronizedWordByWordLyrics = false
                                                             }
                                                         )
-                                                        /*
+
                                                         MenuEntry(
                                                             icon = R.drawable.time,
                                                             text = stringResource(R.string.synchronized_karaoke_lyrics),
                                                             secondaryText = stringResource(
                                                                 R.string.provided_by
-                                                            ) + " SyncLRC.tharuk.pro",
+                                                            ) + " SimpMusic Lyrics",
                                                             trailingContent = {
                                                                 if (isShowingSynchronizedWordByWordLyrics)
                                                                     Image(
@@ -1530,11 +1525,12 @@ fun Lyrics(
                                                                     )
                                                             },
                                                             onClick = {
-                                                                //isShowingSynchronizedWordByWordLyrics = true
+                                                                isShowingSynchronizedWordByWordLyrics =
+                                                                    true
                                                                 isShowingSynchronizedLyrics = true
                                                             }
                                                         )
-                                                         */
+
                                                     }
                                                 }
                                             }
@@ -1735,51 +1731,64 @@ private suspend fun fetchLyricsIfNeeded(
     onCheckedLrc: (Boolean) -> Unit,
     onCheckedKugou: (Boolean) -> Unit,
     onCheckedInnertube: (Boolean) -> Unit,
-    onCheckedSyncLrc: (Boolean) -> Unit,
+    onCheckedSimpLrc: (Boolean) -> Unit,
     onError: (Boolean) -> Unit
 ) {
     withContext(Dispatchers.IO) {
-
-        /*
-        if (isShowingSynchronizedWordByWordLyrics && currentLyrics?.lrcSynced == null) {
-            launch(Dispatchers.Main) {
-                syncLRCfetchLyrics(
-                    context = context,
-                    artist = artistName,
-                    title = title,
-                    onSuccess = { syncLRClyrics ->
-                        Timber.d("fetchLyricsIfNeeded success $syncLRClyrics")
-                        if (syncLRClyrics.type != SyncLRCType.KARAOKE)
-                            SmartMessage(
-                                "Lyrics Karaoke not available",
-                                type = PopupType.Warning,
-                                context = context
-                            )
-
-                        val lyricsToUpdate = when (syncLRClyrics.type) {
-                            SyncLRCType.KARAOKE -> Lyrics(songId = mediaId, fixed = currentLyrics?.fixed, synced = currentLyrics?.synced, lrcSynced = syncLRClyrics.lyrics)
-                            SyncLRCType.SYNCED -> Lyrics(songId = mediaId, fixed = currentLyrics?.fixed, synced = syncLRClyrics.lyrics, lrcSynced = currentLyrics?.lrcSynced)
-                            SyncLRCType.PLAIN -> Lyrics(songId = mediaId, fixed = syncLRClyrics.lyrics, synced = currentLyrics?.synced, lrcSynced = currentLyrics?.lrcSynced)
-                            else -> null
-                        }
-                        CoroutineScope(Dispatchers.IO).launch {
-                            Timber.d("fetchLyricsIfNeeded upsert lyricsToUpdate $lyricsToUpdate")
-                            lyricsToUpdate?.let { Database.upsert(it) }
-                        }
-                        onError(false)
-                        onCheckedSyncLrc(true)
-                    },
-                    onError = {
-                        Timber.d("fetchLyricsIfNeeded error $it")
+        //Timber.d("fetchLyricsIfNeeded currentLyrics?.lrcSynced ${currentLyrics?.lrcSynced}")
+        if (isShowingSynchronizedLyrics && isShowingSynchronizedWordByWordLyrics && currentLyrics?.lrcSynced == null) {
+            runCatching {
+                SimpMusicClient.lyrics(mediaId)?.onSuccess { response ->
+                    Timber.d("fetchLyricsIfNeeded success $response")
+                    if (!response.success) {
+                        SmartMessage(
+                            "Lyrics Karaoke not available",
+                            type = PopupType.Warning,
+                            context = context
+                        )
                         onError(true)
+                        onCheckedSimpLrc(false)
+                        return@runCatching
                     }
-                )
+                    val lyricsData = response.data.firstOrNull()
+                    val lyricsToUpdate = when {
+                        lyricsData?.richSyncLyrics?.isNotEmpty() == true -> Lyrics(
+                            songId = mediaId,
+                            fixed = currentLyrics?.fixed,
+                            synced = currentLyrics?.synced,
+                            lrcSynced = lyricsData.richSyncLyrics
+                        )
 
-            }
+                        lyricsData?.syncedLyrics?.isNotEmpty() == true -> Lyrics(
+                            songId = mediaId,
+                            fixed = currentLyrics?.fixed,
+                            synced = lyricsData.syncedLyrics,
+                            lrcSynced = currentLyrics?.lrcSynced
+                        )
+
+                        lyricsData?.plainLyric?.isNotEmpty() == true -> Lyrics(
+                            songId = mediaId,
+                            fixed = lyricsData.plainLyric,
+                            synced = currentLyrics?.synced,
+                            lrcSynced = currentLyrics?.lrcSynced
+                        )
+
+                        else -> null
+                    }
+                    CoroutineScope(Dispatchers.IO).launch {
+                        Timber.d("fetchLyricsIfNeeded upsert lyricsToUpdate $lyricsToUpdate")
+                        lyricsToUpdate?.let { Database.upsert(it) }
+                    }
+                    onCheckedSimpLrc(true)
+                }?.onFailure {
+                    Timber.d("fetchLyricsIfNeeded error $it")
+                    onError(true)
+                }
+            }.onFailure { Timber.e("fetchLyricsIfNeeded Simpmusic get error ${it.stackTraceToString()}") }
+
+            onCheckedSimpLrc(true)
+
         } else if (isShowingSynchronizedLyrics && !isShowingSynchronizedWordByWordLyrics && currentLyrics?.synced == null) {
-            */
-        // removed word by word lyrics fetch for SyncLRCProvider because owner suspended service
-        if (isShowingSynchronizedLyrics && currentLyrics?.synced == null) {
             Timber.d("fetchLyricsIfNeeded inizio ricerca lyrics")
             var duration = withContext(Dispatchers.Main) { durationProvider() }
             while (duration == C.TIME_UNSET) {
@@ -1822,7 +1831,7 @@ private suspend fun fetchLyricsIfNeeded(
 //                    if (playerEnableLyricsPopupMessage)
 //                        SmartMessage(context.resources.getString(R.string.info_lyrics_not_found_on_s_try_on_s).format("LrcLib.net", "KuGou.com"), type = PopupType.Error, durationLong = true, context = context)
                 }
-            }.onFailure { Timber.e("Lyrics get error ${it.stackTraceToString()}") }
+            }.onFailure { Timber.e("fetchLyricsIfNeeded get error ${it.stackTraceToString()}") }
 
             onCheckedLrc(true)
 
@@ -1832,7 +1841,7 @@ private suspend fun fetchLyricsIfNeeded(
                 Environment.lyrics(NextBody(videoId = mediaId))?.onSuccess { fixedLyrics ->
                     Database.upsert(Lyrics(songId = mediaId, fixed = fixedLyrics ?: "", synced = currentLyrics?.synced))
                 }?.onFailure { onError(true) }
-            }.onFailure { Timber.e("Lyrics Innertube error ${it.stackTraceToString()}") }
+            }.onFailure { Timber.e("fetchLyricsIfNeeded Innertube error ${it.stackTraceToString()}") }
             onCheckedInnertube(true)
         }
     }

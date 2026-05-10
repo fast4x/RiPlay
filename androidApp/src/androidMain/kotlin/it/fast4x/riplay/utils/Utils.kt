@@ -192,6 +192,14 @@ fun String.decodeHtmlAndUnicode(): String {
     return result
 }
 
+fun decodeHtmlEntities(text: String): String =
+    text.replace("&quot;", "\"")
+        .replace("&#x27;", "'")
+        .replace("&amp;",  "&")
+        .replace("&lt;",   "<")
+        .replace("&gt;",   ">")
+        .trim()
+
 @Composable
 fun rememberSavableAnimatable(initialValue: Float): Animatable<Float, AnimationVector1D> {
     val animatableSaver = Saver<Animatable<Float, AnimationVector1D>, Float>(

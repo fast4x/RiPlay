@@ -52,6 +52,9 @@ include(":audiotaginfo")
 project(":audiotaginfo").projectDir = file("extensions/audiotaginfo")
 include(":lastfm")
 project(":lastfm").projectDir = file("extensions/lastfm")
+include(":simpmusiclyrics")
+project(":simpmusiclyrics").projectDir = file("extensions/simpmusiclyrics")
+
 
 //Custom android youtube player
 include(":ayp")
