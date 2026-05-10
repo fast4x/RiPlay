@@ -207,6 +207,7 @@ import it.fast4x.riplay.services.helpers.EqualizerHelper
 import it.fast4x.riplay.ui.screens.settings.isYtLoggedIn
 import it.fast4x.riplay.utils.GlobalSharedData
 import it.fast4x.riplay.utils.isAtLeastAndroid11
+import it.fast4x.riplay.utils.isAtLeastAndroid7
 import it.fast4x.riplay.utils.isExplicit
 import it.fast4x.riplay.utils.isLocal
 import it.fast4x.riplay.utils.isPersistentQueueEnabled
@@ -393,27 +394,6 @@ class PlayerService : Service(),
 
     private var unstartedWatchdogJob: Job? = null
 
-    /*
-    private var telephonyManager: TelephonyManager? = null
-    private var wasPlayingBeforeCall = false
-    // Listener per Android 12 e superiori (Nuova API)
-    private val telephonyCallback = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-        object : TelephonyCallback(), TelephonyCallback.CallStateListener {
-            override fun onCallStateChanged(state: Int) {
-                handleCallStateChange(state)
-            }
-        }
-    } else null
-    // Listener per Android 11 e inferiori (Vecchia API, non deprecata per loro)
-    private val phoneStateListener = object : PhoneStateListener() {
-        override fun onCallStateChanged(state: Int, phoneNumber: String?) {
-            handleCallStateChange(state)
-        }
-    }
-
-     */
-    //private var checkVolumeLevel: Boolean = true
-
 
     override fun onBind(intent: Intent?): AndroidBinder {
         return binder
@@ -459,8 +439,6 @@ class PlayerService : Service(),
         initializeMedleyMode()
         initializePlaybackParameters()
         initializeAudioDRCHelper()
-
-        //initializeTelephonyManager(true)
 
         initializeRiTune()
         initializeDiscordPresence()
@@ -695,49 +673,6 @@ class PlayerService : Service(),
         }
 
     }
-
-    /*
-    private fun handleCallStateChange(state: Int) {
-        when (state) {
-            TelephonyManager.CALL_STATE_RINGING, TelephonyManager.CALL_STATE_OFFHOOK -> {
-                // Sta squillando o sei in chiamata
-                Timber.d("PhoneState: Chiamata in corso/Ricevuta -> Pause")
-                wasPlayingBeforeCall = isPlayingNow || player.isPlaying
-                if (wasPlayingBeforeCall) {
-                    pausePlayback()
-                }
-            }
-            TelephonyManager.CALL_STATE_IDLE -> {
-                // Chiamata terminata
-                Timber.d("PhoneState: Chiamata terminata -> Resume")
-                if (wasPlayingBeforeCall) {
-                    // Ritardo per sicurezza
-                    CoroutineScope(Dispatchers.Main).launch {
-                        delay(500) // Ritardo di 500ms
-                        playPlayback()
-                    }
-                }
-                wasPlayingBeforeCall = false
-            }
-        }
-    }
-
-
-    private fun pausePlayback() {
-        if (localMediaItem?.isLocal == true)
-            player.pause()
-        else
-            _internalOnlinePlayer.value?.pause()
-    }
-
-    private fun playPlayback() {
-        if (localMediaItem?.isLocal == true)
-            player.play()
-        else
-            _internalOnlinePlayer.value?.play()
-    }
-
-     */
 
     private fun initializeMedleyMode() {
         serviceScope.launch {
@@ -2911,6 +2846,8 @@ private var pausedByZeroVolume = false
     }
 
     suspend fun setWallpaper(context: Context, bitmap: Bitmap) {
+        if (!isAtLeastAndroid7) return
+
         val enabled = preferences.getBoolean(enableWallpaperKey, false)
         if (!enabled) return
         val wallpaperTarget = preferences.getEnum(wallpaperTypeKey, WallpaperType.Lockscreen)
