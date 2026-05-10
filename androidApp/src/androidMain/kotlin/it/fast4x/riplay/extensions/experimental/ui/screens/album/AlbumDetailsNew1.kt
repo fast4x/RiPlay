@@ -46,12 +46,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
@@ -148,7 +146,6 @@ import it.fast4x.riplay.utils.applyIf
 import it.fast4x.riplay.utils.asMediaItem
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.utils.enqueue
-import it.fast4x.riplay.utils.fadingEdge
 import it.fast4x.riplay.utils.forcePlayAtIndex
 import it.fast4x.riplay.utils.forcePlayFromBeginning
 import it.fast4x.riplay.utils.formatAsTime
@@ -312,7 +309,7 @@ fun AlbumDetailsNew1(
         content = album ?: return)
 
 
-    LayoutWithAdaptiveThumbnail(thumbnailContent = {}) {
+    LayoutWithAdaptiveThumbnail(thumbnailLandscapeContent = {}) {
         Box(
             modifier = Modifier
                 .background(colorPalette().background0)

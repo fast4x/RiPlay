@@ -54,6 +54,7 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalHapticFeedback
@@ -359,7 +360,45 @@ fun PlaylistSongList(
         content = playlistPage?.playlist?.asPlaylist ?: return
     )
 
-    LayoutWithAdaptiveThumbnail(thumbnailContent = thumbnailContent) {
+    LayoutWithAdaptiveThumbnail(
+        thumbnailLandscapeContent = {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth(.4f)
+                    .aspectRatio(1f)
+            ) {
+                AsyncImage(
+                    model = playlistPage?.playlist?.thumbnail?.url?.resize(
+                        1200,
+                        1200
+                    ),
+                    contentDescription = "loading...",
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .align(Alignment.Center)
+                        .fadingEdge(
+                            top = WindowInsets.systemBars
+                                .asPaddingValues()
+                                .calculateTopPadding() + Dimensions.fadeSpacingTop,
+                            bottom = Dimensions.fadeSpacingBottom
+                        )
+                )
+                if (localPlaylist?.isYoutubePlaylist == true) {
+                    Image(
+                        painter = painterResource(R.drawable.internet),
+                        contentDescription = null,
+                        colorFilter = ColorFilter.tint(
+                            Color.Red.copy(0.75f).compositeOver(Color.White)
+                        ),
+                        modifier = Modifier
+                            .size(40.dp)
+                            .offset(5.dp, 5.dp)
+                    )
+                }
+            }
+        }
+    ) {
         Box(
             modifier = Modifier
                 .background(colorPalette().background0)
@@ -402,6 +441,7 @@ fun PlaylistSongList(
                                                 1200
                                             ),
                                             contentDescription = "loading...",
+                                            contentScale = ContentScale.Crop,
                                             modifier = Modifier
                                                 .fillMaxWidth()
                                                 .align(Alignment.Center)
@@ -412,19 +452,19 @@ fun PlaylistSongList(
                                                     bottom = Dimensions.fadeSpacingBottom
                                                 )
                                         )
+                                        if (localPlaylist?.isYoutubePlaylist == true) {
+                                            Image(
+                                                painter = painterResource(R.drawable.internet),
+                                                contentDescription = null,
+                                                colorFilter = ColorFilter.tint(
+                                                    Color.Red.copy(0.75f).compositeOver(Color.White)
+                                                ),
+                                                modifier = Modifier
+                                                    .size(40.dp)
+                                                    .offset(5.dp, 5.dp)
+                                            )
+                                        }
                                     }
-                                if (localPlaylist?.isYoutubePlaylist == true) {
-                                    Image(
-                                        painter = painterResource(R.drawable.internet),
-                                        contentDescription = null,
-                                        colorFilter = ColorFilter.tint(
-                                            Color.Red.copy(0.75f).compositeOver(Color.White)
-                                        ),
-                                        modifier = Modifier
-                                            .size(40.dp)
-                                            .offset(5.dp, 5.dp)
-                                    )
-                                }
 
                                 AutoResizeText(
                                     text = playlistPage?.playlist?.title ?: "",

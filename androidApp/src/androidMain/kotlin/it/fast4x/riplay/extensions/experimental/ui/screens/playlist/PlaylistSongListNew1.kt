@@ -345,7 +345,7 @@ fun PlaylistSongListNew1(
     )
 
 
-    LayoutWithAdaptiveThumbnail(thumbnailContent = thumbnailContent) {
+    LayoutWithAdaptiveThumbnail(thumbnailLandscapeContent = thumbnailContent) {
         Box(
             modifier = Modifier
                 .background(colorPalette().background0)

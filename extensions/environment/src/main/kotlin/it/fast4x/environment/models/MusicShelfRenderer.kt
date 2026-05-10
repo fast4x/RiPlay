@@ -1,5 +1,6 @@
 package it.fast4x.environment.models
 
+import it.fast4x.environment.Environment.getBestQuality
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -88,7 +89,7 @@ data class MusicShelfRenderer(
                 ?.musicThumbnailRenderer
                 ?.thumbnail
                 ?.thumbnails
-                ?.firstOrNull()
+                ?.getBestQuality()
     }
 }
 

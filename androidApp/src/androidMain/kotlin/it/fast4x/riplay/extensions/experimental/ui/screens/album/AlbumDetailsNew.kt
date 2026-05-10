@@ -311,7 +311,7 @@ fun AlbumDetailsNew(
 
     val hasLikableSongs = songs.any { it.likedAt != -1L }
 
-    LayoutWithAdaptiveThumbnail(thumbnailContent = {}) {
+    LayoutWithAdaptiveThumbnail(thumbnailLandscapeContent = {}) {
         Box(
             modifier = Modifier
                 .background(colorPalette().background0)

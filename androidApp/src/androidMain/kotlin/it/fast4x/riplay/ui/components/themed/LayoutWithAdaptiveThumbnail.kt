@@ -34,14 +34,14 @@ import it.fast4x.riplay.utils.thumbnailShape
 
 @Composable
 inline fun LayoutWithAdaptiveThumbnail(
-    thumbnailContent: @Composable () -> Unit,
+    thumbnailLandscapeContent: @Composable () -> Unit,
     content: @Composable () -> Unit
 ) {
     val isLandscape = isLandscape
 
     if (isLandscape) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            thumbnailContent()
+            thumbnailLandscapeContent()
             content()
         }
     } else {

@@ -325,7 +325,7 @@ fun PlaylistSongListNew(
 
     val hasLikableSongs = playlistPage?.songs?.any { it.asMediaItem.mediaId !in dislikedSongs } == true
 
-    LayoutWithAdaptiveThumbnail(thumbnailContent = thumbnailContent) {
+    LayoutWithAdaptiveThumbnail(thumbnailLandscapeContent = thumbnailContent) {
         Box(
             modifier = Modifier
                 .background(colorPalette().background0)

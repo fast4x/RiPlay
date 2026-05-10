@@ -477,7 +477,42 @@ fun AlbumDetails(
 
 
     LayoutWithAdaptiveThumbnail(
-        thumbnailContent = {} //thumbnailContent
+        thumbnailLandscapeContent = {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth(.4f)
+                    .aspectRatio(1f)
+            ) {
+                AsyncImage(
+                    model = album?.thumbnailUrl?.resize(1200, 1200),
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .fadingEdge(
+                            top = WindowInsets.systemBars
+                                .asPaddingValues()
+                                .calculateTopPadding() + Dimensions.fadeSpacingTop,
+                            bottom = Dimensions.fadeSpacingBottom
+                        )
+                )
+                if (album?.isYoutubeAlbum == true) {
+                    Image(
+                        painter = painterResource(R.drawable.internet),
+                        colorFilter = ColorFilter.tint(
+                            Color.Red.copy(0.75f).compositeOver(Color.White)
+                        ),
+                        modifier = Modifier
+                            .size(40.dp)
+                            .padding(all = 5.dp)
+                            .offset(10.dp, 10.dp),
+                        contentDescription = null,
+                        contentScale = ContentScale.Fit
+                    )
+                }
+            }
+
+        }
     ) {
         PullToRefreshBox(
             refreshing = refreshing,

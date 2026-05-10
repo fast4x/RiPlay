@@ -65,6 +65,7 @@ import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import it.fast4x.riplay.extensions.persist.persist
 import it.fast4x.environment.Environment
+import it.fast4x.environment.Environment.getBestQuality
 import it.fast4x.environment.models.NavigationEndpoint
 import it.fast4x.environment.models.bodies.BrowseBody
 import it.fast4x.environment.requests.podcastPage
@@ -107,7 +108,6 @@ import it.fast4x.riplay.utils.enqueue
 import it.fast4x.riplay.utils.fadingEdge
 import it.fast4x.riplay.utils.forcePlayAtIndex
 import it.fast4x.riplay.utils.forcePlayFromBeginning
-import it.fast4x.riplay.utils.formatAsTime
 import it.fast4x.riplay.utils.isLandscape
 import it.fast4x.riplay.ui.styling.medium
 import it.fast4x.riplay.extensions.preferences.rememberPreference
@@ -250,8 +250,6 @@ fun Podcast(
         mutableIntStateOf(0)
     }
 
-    val thumbnailContent = adaptiveThumbnailContent(podcastPage == null, podcastPage?.thumbnail?.firstOrNull()?.url)
-
     val lazyListState = rememberLazyListState()
 
     var showFastShare by remember { mutableStateOf(false) }
@@ -262,7 +260,34 @@ fun Podcast(
         content = podcastPage?.toPlaylist(browseId) ?: return
     )
 
-    LayoutWithAdaptiveThumbnail(thumbnailContent = thumbnailContent) {
+    LayoutWithAdaptiveThumbnail(
+        thumbnailLandscapeContent = {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth(.4f)
+                    .aspectRatio(1f)
+            ) {
+                AsyncImage(
+                    model = podcastPage?.thumbnail?.getBestQuality()
+                        ?.url?.resize(
+                        1200,
+                        1200
+                    ),
+                    contentScale = ContentScale.Crop,
+                    contentDescription = "loading...",
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .align(Alignment.Center)
+                        .fadingEdge(
+                            top = WindowInsets.systemBars
+                                .asPaddingValues()
+                                .calculateTopPadding() + Dimensions.fadeSpacingTop,
+                            bottom = Dimensions.fadeSpacingBottom
+                        )
+                )
+            }
+        }
+    ) {
         Box(
             modifier = Modifier
                 .background(colorPalette().background0)
@@ -301,7 +326,7 @@ fun Podcast(
                             if (podcastPage != null) {
                                 if (!isLandscape)
                                     AsyncImage(
-                                        model = podcastPage?.thumbnail?.firstOrNull()?.url?.resize(
+                                        model = podcastPage?.thumbnail?.getBestQuality()?.url?.resize(
                                             1200,
                                             900
                                         ),
