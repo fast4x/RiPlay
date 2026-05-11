@@ -160,7 +160,7 @@ import dev.rebelonion.translator.Language
 import dev.rebelonion.translator.Translator
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.enums.ColorPaletteName
-import it.fast4x.riplay.extensions.lyricshelper.models.LyricLine
+import it.fast4x.riplay.extensions.lyricshelper.models.LRCLyricLine
 import it.fast4x.riplay.extensions.lyricshelper.parsers.LRCLyricsKaraokeParser
 import it.fast4x.riplay.utils.isLocal
 import it.fast4x.riplay.utils.thumbnailShape
@@ -1912,7 +1912,7 @@ fun getAlignment(lyricsAlignment: LyricsAlignment): Alignment {
  * Esegue il seek del player al timestamp della riga cliccata.
  */
 @androidx.annotation.OptIn(UnstableApi::class)
-fun seekToLyric(binder: PlayerService.Binder?, sentence: LyricLine) {
+fun seekToLyric(binder: PlayerService.Binder?, sentence: LRCLyricLine) {
     val positionMs = sentence.timeMs
     if (binder?.player?.currentMediaItem?.isLocal == true) {
         Timber.d("Seeking local player to $positionMs ms")
@@ -2039,7 +2039,7 @@ fun getRowModifier(
     sizeAnimate: Boolean,
     clickLyricsText: Boolean,
     binder: PlayerService.Binder?,
-    sentence: LyricLine,
+    sentence: LRCLyricLine,
     positionProvider: () -> Long,
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier,
@@ -2099,7 +2099,7 @@ fun getFixedRainbowTextStyle(params: LyricsStyleParams, offset: Float): TextStyl
 
 @Composable
 fun LyricRow(
-    line: LyricLine,
+    line: LRCLyricLine,
     isActive: Boolean,
     progressMs: Long,
     style1: TextStyle,

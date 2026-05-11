@@ -1,18 +1,18 @@
 package it.fast4x.riplay.extensions.lyricshelper.parsers
 
-import it.fast4x.riplay.extensions.lyricshelper.models.LyricLine
-import it.fast4x.riplay.extensions.lyricshelper.models.LyricWord
+import it.fast4x.riplay.extensions.lyricshelper.models.LRCLyricLine
+import it.fast4x.riplay.extensions.lyricshelper.models.LRCLyricWord
 import java.util.regex.Pattern
 
 object LyricsFakeKaraokeParser {
 
     private val lrcPattern = Pattern.compile("\\[(\\d{2}):(\\d{2})\\.(\\d{2,3})\\](.*)")
 
-    fun parse(lrcString: String?): List<LyricLine> {
+    fun parse(lrcString: String?): List<LRCLyricLine> {
         if (lrcString.isNullOrEmpty()) return emptyList()
 
         val lines = lrcString.lines()
-        val parsedLines = mutableListOf<LyricLine>()
+        val parsedLines = mutableListOf<LRCLyricLine>()
 
         for (i in lines.indices) {
             val line = lines[i]
@@ -31,7 +31,7 @@ object LyricsFakeKaraokeParser {
 
                     val words = splitWords(text, duration)
 
-                    parsedLines.add(LyricLine(currentTimeMs, words = words))
+                    parsedLines.add(LRCLyricLine(currentTimeMs, words = words))
                 }
             }
         }
@@ -51,13 +51,13 @@ object LyricsFakeKaraokeParser {
         return Long.MAX_VALUE
     }
 
-    private fun splitWords(text: String, totalDurationMs: Long): List<LyricWord> {
+    private fun splitWords(text: String, totalDurationMs: Long): List<LRCLyricWord> {
 
         val rawWords = text.split("\\s+".toRegex()).filter { it.isNotEmpty() }
 
         if (rawWords.isEmpty()) return emptyList()
 
-        val words = mutableListOf<LyricWord>()
+        val words = mutableListOf<LRCLyricWord>()
 
         val safeDuration = if (totalDurationMs <= 0) rawWords.size * 300L else totalDurationMs
 
@@ -82,7 +82,7 @@ object LyricsFakeKaraokeParser {
                 maxOf(calculatedDuration, minWordDuration)
             }
 
-            words.add(LyricWord(word, currentTime, finalDuration))
+            words.add(LRCLyricWord(word, currentTime, finalDuration))
             currentTime += finalDuration
         }
 

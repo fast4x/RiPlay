@@ -8,6 +8,7 @@ import android.content.ContentUris
 import android.content.Context
 import android.content.pm.PackageManager
 import android.database.ContentObserver
+import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
@@ -36,6 +37,7 @@ import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.data.models.Album
 import it.fast4x.riplay.data.models.Artist
 import it.fast4x.riplay.data.models.Format
+import it.fast4x.riplay.data.models.Lyrics
 import it.fast4x.riplay.data.models.Playlist
 import it.fast4x.riplay.data.models.PlaylistPreview
 import it.fast4x.riplay.data.models.Song
@@ -43,11 +45,15 @@ import it.fast4x.riplay.data.models.SongAlbumMap
 import it.fast4x.riplay.data.models.SongArtistMap
 import it.fast4x.riplay.data.models.SongEntity
 import it.fast4x.riplay.enums.PopupType
+import it.fast4x.riplay.extensions.lyricshelper.parsers.LyricsType
+import it.fast4x.riplay.extensions.lyricshelper.readers.readLyricsFromAudio
 import it.fast4x.riplay.extensions.preferences.preferences
 import it.fast4x.riplay.extensions.preferences.showOnDevicePlaylistKey
 import it.fast4x.riplay.ui.components.themed.SmartMessage
 import it.fast4x.riplay.utils.LOCAL_KEY_PREFIX
+import it.fast4x.riplay.utils.appContext
 import it.fast4x.riplay.utils.isAtLeastAndroid13
+import it.fast4x.riplay.utils.isAtLeastAndroid9
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
@@ -240,6 +246,10 @@ class OnDeviceViewModel(application: Application) : AndroidViewModel(application
                                     val name = cursor.getString(nameIdx).substringBeforeLast(".")
                                     val mediaId = name.substringAfterLast('[', "")
                                         .substringBeforeLast(']', "").takeIf { !it.contains(" ") }
+                                    val uri = Uri.withAppendedPath(
+                                        collection,
+                                        id.toString()
+                                    )
                                     //Timber.i("OnDeviceViewModel name $name mediaId $mediaId")
 
 
@@ -263,6 +273,19 @@ class OnDeviceViewModel(application: Application) : AndroidViewModel(application
                                     } else {
                                         cursor.getString(relativePathIdx).substringBeforeLast("/")
                                     }
+
+
+                                    val songId = "$LOCAL_KEY_PREFIX$id"
+
+                                    // Read internal lyrics
+                                    val lyricsRaw = readLyricsFromAudio(appContext(), uri)
+                                    val lyrics = when (lyricsRaw?.type) {
+                                        LyricsType.PLAIN -> Lyrics(songId, fixed = lyricsRaw.rawContent, synced = null)
+                                        LyricsType.LINE_SYNCED -> Lyrics(songId, fixed = null, synced = lyricsRaw.rawContent)
+                                        LyricsType.WORD_SYNCED -> Lyrics(songId, fixed = null, synced= null, lrcSynced = lyricsRaw.rawContent)
+                                        else -> null
+                                    }
+
                                     val exclude =
                                         blacklist.checkIf(relativePath) || blacklist.checkIf("/$relativePath")
                                                 || blacklist.checkIf(mediaId ?: "")
@@ -272,6 +295,7 @@ class OnDeviceViewModel(application: Application) : AndroidViewModel(application
 
                                     if (!exclude) {
                                         runCatching {
+
                                             val albumUri =
                                                 ContentUris.withAppendedId(albumUriBase, albumId)
                                             val durationText =
@@ -281,7 +305,7 @@ class OnDeviceViewModel(application: Application) : AndroidViewModel(application
                                                     }"
                                                 }
                                             val song = Song(
-                                                id = "$LOCAL_KEY_PREFIX$id",
+                                                id = songId,
                                                 mediaId = mediaId,
                                                 title = trackName ?: name,
                                                 artistsText = artist,
@@ -331,10 +355,12 @@ class OnDeviceViewModel(application: Application) : AndroidViewModel(application
                                                 )
                                             )
 
+                                            lyrics?.let { Database.upsert(it) }
+
                                             audioFiles.add(
                                                 song
                                             )
-                                            Timber.d("OnDeviceViewModel updated and added song ${song.title} and songId ${song.id}")
+                                            Timber.d("OnDeviceViewModel updated and added song ${song.title} and songId ${song.id} lyrics $lyrics")
                                         }.onFailure {
                                             Timber.e("OnDeviceViewModel addSong error ${it.stackTraceToString()}")
                                         }

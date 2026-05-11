@@ -106,6 +106,8 @@ kotlin {
         implementation(libs.fastscroller)
         implementation(libs.fastscroller.material3)
         implementation(libs.fastscroller.indicator)
+
+        implementation (libs.jaudiotagger)
     }
 }
 

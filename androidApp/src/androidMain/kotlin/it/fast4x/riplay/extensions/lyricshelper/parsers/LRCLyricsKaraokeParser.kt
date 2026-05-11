@@ -1,8 +1,7 @@
 package it.fast4x.riplay.extensions.lyricshelper.parsers
 
-import it.fast4x.riplay.extensions.lyricshelper.models.LyricLine
-import it.fast4x.riplay.extensions.lyricshelper.models.LyricWord
-import it.fast4x.riplay.utils.decodeHtmlAndUnicode
+import it.fast4x.riplay.extensions.lyricshelper.models.LRCLyricLine
+import it.fast4x.riplay.extensions.lyricshelper.models.LRCLyricWord
 import it.fast4x.riplay.utils.decodeHtmlEntities
 import java.util.regex.Pattern
 
@@ -13,11 +12,11 @@ object LRCLyricsKaraokeParser {
     private val wordPattern = Pattern.compile("<(\\d{2}):(\\d{2})\\.(\\d{2,3})>([^<]*)")
 
 
-    fun parse(lrcString: String?, isOnline: Boolean = false): List<LyricLine> {
+    fun parse(lrcString: String?, isOnline: Boolean = false): List<LRCLyricLine> {
         if (lrcString.isNullOrEmpty()) return emptyList()
 
         val lines = decodeHtmlEntities( lrcString) .lines()
-        val parsedLines = mutableListOf<LyricLine>()
+        val parsedLines = mutableListOf<LRCLyricLine>()
 
         for (i in lines.indices) {
             val line = lines[i].trim()
@@ -66,7 +65,7 @@ object LRCLyricsKaraokeParser {
                 5000L
             }
 
-            val lyricsWords = mutableListOf<LyricWord>()
+            val lyricsWords = mutableListOf<LRCLyricWord>()
 
             if (isOnline) {
                 // --- LOGICA ONLINE: DURATA PROPORZIONALE ---
@@ -83,7 +82,7 @@ object LRCLyricsKaraokeParser {
                         val wordDuration = (lineDurationMs * raw.text.length) / totalChars
 
                         lyricsWords.add(
-                            LyricWord(
+                            LRCLyricWord(
                                 text = raw.text,
                                 startTimeInTheLineMs = currentTimeOffset,
                                 durationMs = wordDuration
@@ -112,7 +111,7 @@ object LRCLyricsKaraokeParser {
                     if (duration > 0) {
                         val relativeStartTime = current.absoluteTimeMs - lineStartMs
                         lyricsWords.add(
-                            LyricWord(
+                            LRCLyricWord(
                                 text = current.text,
                                 startTimeInTheLineMs = relativeStartTime,
                                 durationMs = duration
@@ -122,7 +121,7 @@ object LRCLyricsKaraokeParser {
                 }
             }
 
-            parsedLines.add(LyricLine(lineStartMs, "", lyricsWords))
+            parsedLines.add(LRCLyricLine(lineStartMs, "", lyricsWords))
         }
         return parsedLines
     }
