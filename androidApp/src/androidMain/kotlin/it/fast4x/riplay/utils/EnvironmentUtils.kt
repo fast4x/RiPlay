@@ -10,6 +10,7 @@ import com.zionhuang.innertube.pages.LibraryPage
 import io.ktor.client.plugins.ClientRequestException
 import io.ktor.http.HttpStatusCode
 import it.fast4x.environment.Environment
+import it.fast4x.environment.Environment.getBestQuality
 import it.fast4x.environment.EnvironmentExt.addToPlaylist
 import it.fast4x.environment.EnvironmentExt.likeVideoOrSong
 import it.fast4x.environment.EnvironmentExt.removelikeVideoOrSong
@@ -80,7 +81,7 @@ val Environment.Podcast.EpisodeItem.asMediaItem: MediaItem
                 .setTitle(title)
                 .setArtist(author.toString())
                 .setAlbumTitle(title)
-                .setArtworkUri(thumbnail.firstOrNull()?.url?.toUri())
+                .setArtworkUri(thumbnail.getBestQuality()?.url?.toUri())
                 .setExtras(
                     bundleOf(
                         //"albumId" to album?.endpoint?.browseId,
