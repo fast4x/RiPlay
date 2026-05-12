@@ -1673,9 +1673,6 @@ private var pausedByZeroVolume = false
         Timber.d("PlayerService onMediaItemTransition mediaItem ${mediaItem.mediaId} reason $reason")
 
         currentQueuePosition = player.currentMediaItemIndex
-        // Update Android auto active item in queue
-        updateActiveQueueItem(player.currentMediaItemIndex)
-
 
         if (parentalControlEnabled && mediaItem.isExplicit) {
             handlePlayNext()
@@ -1733,17 +1730,13 @@ private var pausedByZeroVolume = false
             }
         }
 
-
-//        if (reason == Player.MEDIA_ITEM_TRANSITION_REASON_AUTO || reason == Player.MEDIA_ITEM_TRANSITION_REASON_SEEK) {
-//            updateMediaSessionQueue(player.currentTimeline)
-//        }
-
         maybeRecoverPlaybackError()
         initializeNormalizeVolume()
         maybeProcessRadio(reason)
 
         updateUnifiedNotification()
-
+        // Update Android auto active item in queue
+        updateActiveQueueItem(player.currentMediaItemIndex)
         updateDiscordPresence()
 
         saveQueue()
