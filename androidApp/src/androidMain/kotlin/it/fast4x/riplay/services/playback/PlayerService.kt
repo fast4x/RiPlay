@@ -34,6 +34,7 @@ import android.support.v4.media.MediaDescriptionCompat
 import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
+import android.support.v4.media.session.PlaybackStateCompat.ACTION_SKIP_TO_QUEUE_ITEM
 import android.view.LayoutInflater
 import androidx.annotation.OptIn
 import androidx.compose.runtime.getValue
@@ -1666,8 +1667,8 @@ private var pausedByZeroVolume = false
 
         if (lastOnlineMediaId == newMediaId) {
             Timber.d("PlayerService: Transition ignored, same MediaID ($newMediaId) skipped")
-
             handlePlayNext()
+            return
         }
 
         Timber.d("PlayerService onMediaItemTransition mediaItem ${mediaItem.mediaId} reason $reason")
@@ -1735,8 +1736,7 @@ private var pausedByZeroVolume = false
         maybeProcessRadio(reason)
 
         updateUnifiedNotification()
-        // Update Android auto active item in queue
-        updateActiveQueueItem(player.currentMediaItemIndex)
+
         updateDiscordPresence()
 
         saveQueue()
@@ -1826,40 +1826,7 @@ private var pausedByZeroVolume = false
 
         unifiedMediaSession.setQueue(queueItems)
 
-        unifiedMediaSession.setQueueTitle("Now playing")
-        updateActiveQueueItem(activeIndex)
-    }
-
-    private fun updateActiveQueueItem(activeIndex: Int) {
-        val currentMediaItem = player.currentMediaItem ?: return
-
-        val currentMediaItemDuration = if (!currentMediaItem.isLocal) (_currentDuration.value * 1000).toLong() else player.duration
-        val currentMediaItemPosition = if(!currentMediaItem.isLocal) (_currentSecond.value * 1000).toLong() else player.currentPosition
-
-        unifiedMediaSession.setMetadata(
-            MediaMetadataCompat.Builder()
-                .putString(MediaMetadataCompat.METADATA_KEY_MEDIA_ID, currentMediaItem.mediaId)
-                .putString(MediaMetadataCompat.METADATA_KEY_TITLE,
-                    currentMediaItem.mediaMetadata.title?.toString())
-                .putString(MediaMetadataCompat.METADATA_KEY_ARTIST,
-                    currentMediaItem.mediaMetadata.artist?.toString())
-                .putLong(MediaMetadataCompat.METADATA_KEY_DURATION,
-                    currentMediaItemDuration)
-                .build()
-        )
-
-        // Send to Android Auto active element
-        unifiedMediaSession.setPlaybackState(
-            PlaybackStateCompat.Builder()
-                .setActiveQueueItemId(activeIndex.toLong())
-                .setState(
-                    if (player.isPlaying) PlaybackStateCompat.STATE_PLAYING
-                    else PlaybackStateCompat.STATE_PAUSED,
-                    currentMediaItemPosition,
-                    player.playbackParameters.speed
-                )
-                .build()
-        )
+        unifiedMediaSession.setQueueTitle(resources.getString(R.string.now_playing_title))
     }
 
     private fun maybeRecoverPlaybackError() {
@@ -2073,7 +2040,7 @@ private var pausedByZeroVolume = false
     @ExperimentalCoroutinesApi
     private fun updateUnifiedMediasession() {
 
-        val currentMediaItem = binder.player.currentMediaItem
+        val currentMediaItem = player.currentMediaItem
         val currentMediaItemDuration = if (currentMediaItem?.isLocal == false) (_currentDuration.value * 1000).toLong() else player.duration
         val currentMediaItemPosition = if(player.currentMediaItem?.isLocal == false) (_currentSecond.value * 1000).toLong() else player.currentPosition
 
@@ -2110,7 +2077,8 @@ private var pausedByZeroVolume = false
                     PlaybackStateCompat.ACTION_STOP or
                     PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS or
                     PlaybackStateCompat.ACTION_SKIP_TO_NEXT or
-                    PlaybackStateCompat.ACTION_SEEK_TO
+                    PlaybackStateCompat.ACTION_SEEK_TO or
+                    PlaybackStateCompat.ACTION_SKIP_TO_QUEUE_ITEM
 
         val notificationPlayerFirstIcon = preferences.getEnum(notificationPlayerFirstIconKey, NotificationButtons.Repeat)
         val notificationPlayerSecondIcon = preferences.getEnum(notificationPlayerSecondIconKey, NotificationButtons.Favorites)
@@ -2156,8 +2124,6 @@ private var pausedByZeroVolume = false
                     addCustomAction(secondCustomAction)
                     setActiveQueueItemId(
                         player.currentMediaItemIndex.toLong()
-//                        if (player.currentMediaItemIndex >= 0) player.currentMediaItemIndex.toLong()
-//                        else MediaSessionCompat.QueueItem.UNKNOWN_ID.toLong()
                     )
                     setState(
                         if (_playerState.value.isPlaying)
