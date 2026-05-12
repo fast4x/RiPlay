@@ -2155,8 +2155,9 @@ private var pausedByZeroVolume = false
                     addCustomAction(firstCustomAction)
                     addCustomAction(secondCustomAction)
                     setActiveQueueItemId(
-                        if (player.currentMediaItemIndex >= 0) player.currentMediaItemIndex.toLong()
-                        else MediaSessionCompat.QueueItem.UNKNOWN_ID.toLong()
+                        player.currentMediaItemIndex.toLong()
+//                        if (player.currentMediaItemIndex >= 0) player.currentMediaItemIndex.toLong()
+//                        else MediaSessionCompat.QueueItem.UNKNOWN_ID.toLong()
                     )
                     setState(
                         if (_playerState.value.isPlaying)
