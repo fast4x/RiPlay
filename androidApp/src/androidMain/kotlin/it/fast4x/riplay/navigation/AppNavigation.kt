@@ -18,7 +18,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Surface
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -50,6 +49,7 @@ import it.fast4x.riplay.enums.ThumbnailRoundness
 import it.fast4x.riplay.enums.TransitionEffect
 import it.fast4x.riplay.data.models.Mood
 import it.fast4x.riplay.data.models.SearchQuery
+import it.fast4x.riplay.ui.screens.player.common.Queue
 import it.fast4x.riplay.ui.screens.blacklist.BlacklistScreen
 import it.fast4x.riplay.extensions.listenerlevel.ListenerLevelCharts
 import it.fast4x.riplay.ui.components.CustomModalBottomSheet
@@ -63,7 +63,6 @@ import it.fast4x.riplay.ui.screens.moodandchip.MoodListScreen
 import it.fast4x.riplay.ui.screens.moodandchip.MoodsPageScreen
 import it.fast4x.riplay.ui.screens.newreleases.NewreleasesScreen
 import it.fast4x.riplay.ui.screens.ondevice.OnDeviceArtistScreen
-import it.fast4x.riplay.ui.screens.player.common.Queue
 import it.fast4x.riplay.ui.screens.playlist.PlaylistScreen
 import it.fast4x.riplay.ui.screens.podcast.PodcastScreen
 import it.fast4x.riplay.ui.screens.search.SearchScreen
@@ -82,7 +81,6 @@ import it.fast4x.riplay.extensions.preferences.thumbnailRoundnessKey
 import it.fast4x.riplay.extensions.preferences.transitionEffectKey
 import it.fast4x.riplay.extensions.rewind.RewindListScreen
 import it.fast4x.riplay.extensions.rewind.RewindScreen
-import it.fast4x.riplay.ui.components.themed.SmartMessage
 import it.fast4x.riplay.ui.screens.moodandchip.ChipListScreen
 import it.fast4x.riplay.ui.screens.onboarding.OnboardingScreen
 import it.fast4x.riplay.ui.screens.ondevice.OnDevicePlaylistScreen
@@ -260,7 +258,7 @@ fun AppNavigation(
         composable(route = NavRoutes.queue.name) {
             val showModalBottomSheetPage = rememberSaveable { mutableStateOf(true) }
             modalBottomSheetPage(showSheet = showModalBottomSheetPage.value) {
-                Queue(
+                Queue (
                     navController = navController,
                     showPlayer = {},
                     hidePlayer = {},

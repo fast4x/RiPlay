@@ -271,6 +271,7 @@ import it.fast4x.riplay.extensions.preferences.topPaddingKey
 import it.fast4x.riplay.extensions.preferences.transparentBackgroundPlayerActionBarKey
 import it.fast4x.riplay.extensions.preferences.visualizerEnabledKey
 import it.fast4x.riplay.cast.ritune.models.RiTuneRemoteCommand
+import it.fast4x.riplay.ui.screens.player.common.Queue
 import it.fast4x.riplay.ui.components.BottomSheetState
 import it.fast4x.riplay.ui.components.CustomModalBottomSheet
 import it.fast4x.riplay.ui.components.DelayedControls
@@ -294,7 +295,6 @@ import it.fast4x.riplay.ui.components.themed.Turntable
 import it.fast4x.riplay.ui.components.themed.animateBrushRotation
 import it.fast4x.riplay.ui.screens.player.common.Lyrics
 import it.fast4x.riplay.ui.screens.player.common.NextVisualizer
-import it.fast4x.riplay.ui.screens.player.common.Queue
 import it.fast4x.riplay.ui.screens.player.common.StatsForNerds
 import it.fast4x.riplay.ui.screens.player.unified.UnifiedControls
 import it.fast4x.riplay.ui.screens.settings.isYtSyncEnabled
@@ -4146,7 +4146,7 @@ fun UnifiedPlayerNew(
                     },
                     shape = thumbnailRoundness.shape()
                 ) {
-                    Queue(
+                    Queue (
                         navController = navController,
                         showPlayer = {},
                         hidePlayer = {},
