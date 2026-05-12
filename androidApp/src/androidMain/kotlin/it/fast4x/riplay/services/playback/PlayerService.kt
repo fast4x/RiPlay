@@ -1673,6 +1673,8 @@ private var pausedByZeroVolume = false
         Timber.d("PlayerService onMediaItemTransition mediaItem ${mediaItem.mediaId} reason $reason")
 
         currentQueuePosition = player.currentMediaItemIndex
+        // Update Android auto active item in queue
+        updateActiveQueueItem(player.currentMediaItemIndex)
 
 
         if (parentalControlEnabled && mediaItem.isExplicit) {
@@ -1776,7 +1778,7 @@ private var pausedByZeroVolume = false
 
     override fun onTimelineChanged(timeline: Timeline, reason: Int) {
         if (reason == Player.TIMELINE_CHANGE_REASON_PLAYLIST_CHANGED) {
-            updateMediaSessionQueue(timeline)
+            updateMediaSessionQueue(timeline, player.currentMediaItemIndex)
         }
     }
 
@@ -1813,32 +1815,58 @@ private var pausedByZeroVolume = false
         }
     }
 
-        private fun updateMediaSessionQueue(timeline: Timeline) {
-        if (!this::unifiedMediaSession.isInitialized) return
-
+    private fun updateMediaSessionQueue(timeline: Timeline, activeIndex: Int) {
         val queueItems = mutableListOf<MediaSessionCompat.QueueItem>()
         val window = Timeline.Window()
 
         for (i in 0 until timeline.windowCount) {
             timeline.getWindow(i, window)
-
             val mediaItem = window.mediaItem
-
             val description = MediaDescriptionCompat.Builder()
                 .setMediaId(mediaItem.mediaId)
-                .setTitle(cleanPrefix(mediaItem.mediaMetadata.title.toString()))
+                .setTitle(mediaItem.mediaMetadata.title)
                 .setSubtitle(mediaItem.mediaMetadata.artist)
-
-                .setIconUri(mediaItem.mediaMetadata.artworkUri)
                 .build()
 
-
-            val queueItem = MediaSessionCompat.QueueItem(description, i.toLong())
-            queueItems.add(queueItem)
+            queueItems.add(MediaSessionCompat.QueueItem(description, i.toLong()))
         }
 
         unifiedMediaSession.setQueue(queueItems)
-        unifiedMediaSession.setQueueTitle("Playback Queue")
+
+        unifiedMediaSession.setQueueTitle("Now playing")
+        updateActiveQueueItem(activeIndex)
+    }
+
+    private fun updateActiveQueueItem(activeIndex: Int) {
+        val currentMediaItem = player.currentMediaItem ?: return
+
+        val currentMediaItemDuration = if (!currentMediaItem.isLocal) (_currentDuration.value * 1000).toLong() else player.duration
+        val currentMediaItemPosition = if(!currentMediaItem.isLocal) (_currentSecond.value * 1000).toLong() else player.currentPosition
+
+        unifiedMediaSession.setMetadata(
+            MediaMetadataCompat.Builder()
+                .putString(MediaMetadataCompat.METADATA_KEY_MEDIA_ID, currentMediaItem.mediaId)
+                .putString(MediaMetadataCompat.METADATA_KEY_TITLE,
+                    currentMediaItem.mediaMetadata.title?.toString())
+                .putString(MediaMetadataCompat.METADATA_KEY_ARTIST,
+                    currentMediaItem.mediaMetadata.artist?.toString())
+                .putLong(MediaMetadataCompat.METADATA_KEY_DURATION,
+                    currentMediaItemDuration)
+                .build()
+        )
+
+        // Send to Android Auto active element
+        unifiedMediaSession.setPlaybackState(
+            PlaybackStateCompat.Builder()
+                .setActiveQueueItemId(activeIndex.toLong())
+                .setState(
+                    if (player.isPlaying) PlaybackStateCompat.STATE_PLAYING
+                    else PlaybackStateCompat.STATE_PAUSED,
+                    currentMediaItemPosition,
+                    player.playbackParameters.speed
+                )
+                .build()
+        )
     }
 
     private fun maybeRecoverPlaybackError() {
@@ -3045,7 +3073,9 @@ private var pausedByZeroVolume = false
                 .build()
             notificationManager?.notify(SLEEPTIMER_NOTIFICATION_ID, notification)
 
-            stopForeground(STOP_FOREGROUND_REMOVE)
+            if(isAtLeastAndroid7)
+                stopForeground(STOP_FOREGROUND_REMOVE)
+
             stopSelf()
 
             val activityManager = getSystemService(Context.ACTIVITY_SERVICE) as? ActivityManager
