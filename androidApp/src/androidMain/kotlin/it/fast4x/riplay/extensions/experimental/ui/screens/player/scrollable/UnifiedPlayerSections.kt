@@ -1,4 +1,4 @@
-package it.fast4x.riplay.extensions.experimental.ui.screens.player
+package it.fast4x.riplay.extensions.experimental.ui.screens.player.scrollable
 
 import androidx.annotation.OptIn
 import androidx.compose.animation.animateContentSize

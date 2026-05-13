@@ -1,4 +1,4 @@
-package it.fast4x.riplay.extensions.experimental.ui.screens.player
+package it.fast4x.riplay.extensions.experimental.ui.screens.player.scrollable
 
 
 import android.annotation.SuppressLint
@@ -374,7 +374,7 @@ import kotlin.math.sqrt
 @ExperimentalAnimationApi
 @UnstableApi
 @Composable
-fun UnifiedPlayerNew(
+fun UnifiedPlayerScrollable(
     navController: NavController,
     playFromSecond: Float = 0f,
     onlineCore: @Composable () -> Unit,
