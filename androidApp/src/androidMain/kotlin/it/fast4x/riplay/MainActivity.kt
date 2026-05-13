@@ -242,6 +242,7 @@ import it.fast4x.riplay.extensions.preferences.showSnowfallEffectKey
 import it.fast4x.riplay.cast.ritune.models.toRiTuneDevice
 import it.fast4x.riplay.cast.ritune.RiTuneCastSelector
 import it.fast4x.riplay.enums.CastType
+import it.fast4x.riplay.extensions.experimental.ui.screens.player.classic.UnifiedPlayerNew
 import it.fast4x.riplay.extensions.preferences.castTypeKey
 import it.fast4x.riplay.services.playback.PlayerState
 import it.fast4x.riplay.ui.components.Snowfall
@@ -1467,7 +1468,7 @@ class MainActivity :
                                     contentAlwaysAvailable = true
                                 ) {
                                     navController?.let {
-                                        UnifiedPlayer(
+                                        UnifiedPlayerNew (
                                             navController = it,
                                             onlineCore = {
                                                 binder?.player?.currentMediaItem?.let {
