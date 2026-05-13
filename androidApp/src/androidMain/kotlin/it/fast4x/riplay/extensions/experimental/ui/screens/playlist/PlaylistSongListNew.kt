@@ -91,6 +91,7 @@ import it.fast4x.riplay.R
 import it.fast4x.riplay.commonutils.cleanPrefix
 import it.fast4x.riplay.commonutils.durationTextToMillis
 import it.fast4x.riplay.commonutils.setLikeState
+import it.fast4x.riplay.commonutils.toThumbnail
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.data.Database.Companion.like
 import it.fast4x.riplay.data.models.Playlist
@@ -154,7 +155,6 @@ import it.fast4x.riplay.utils.isLocal
 import it.fast4x.riplay.utils.isNetworkConnected
 import it.fast4x.riplay.utils.languageDestination
 import it.fast4x.riplay.utils.mediaItemSetLiked
-import it.fast4x.riplay.utils.resize
 import it.fast4x.riplay.utils.typography
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -345,7 +345,7 @@ fun PlaylistSongListNew(
                                 if (!isLandscape) {
                                     Box {
                                         AsyncImage(
-                                            model = playlistPage?.playlist?.thumbnail?.url?.resize(1200, 1200),
+                                            model = playlistPage?.playlist?.thumbnail?.url?.toThumbnail(1200),
                                             contentDescription = "loading...",
                                             contentScale = ContentScale.Crop,
                                             modifier = Modifier.fillMaxWidth().align(Alignment.Center).fadingEdge(

@@ -168,7 +168,7 @@ import it.fast4x.riplay.appRunningInBackground
 import it.fast4x.riplay.commonutils.cleanPrefix
 import it.fast4x.riplay.commonutils.durationTextToMillis
 import it.fast4x.riplay.commonutils.setDisLikeState
-import it.fast4x.riplay.commonutils.thumbnail
+import it.fast4x.riplay.commonutils.toThumbnail
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.data.models.Info
 import it.fast4x.riplay.data.models.Song
@@ -887,7 +887,7 @@ fun UnifiedPlayerScrollable(
             try {
                 val bitmap = getBitmapFromUrl(
                     context,
-                    binder.player.currentWindow?.mediaItem?.mediaMetadata?.artworkUri.toString().thumbnail(1200)
+                    binder.player.currentWindow?.mediaItem?.mediaMetadata?.artworkUri.toString().toThumbnail(1200)
                         .toString()
                 )
 
@@ -958,7 +958,7 @@ fun UnifiedPlayerScrollable(
     val painter = rememberAsyncImagePainter(
         model = ImageRequest.Builder(LocalContext.current)
             .data(
-                mediaItem.mediaMetadata.artworkUri.toString().thumbnail(1200)
+                mediaItem.mediaMetadata.artworkUri.toString().toThumbnail(1200)
             )
             .size(1200, 1200)
             .transformations(LandscapeToSquareTransformation(1200))
@@ -1754,7 +1754,7 @@ fun UnifiedPlayerScrollable(
                                                                         binder.player.getMediaItemAt(
                                                                             index
                                                                         ).mediaMetadata.artworkUri.toString()
-                                                                            .thumbnail(
+                                                                            .toThumbnail(
                                                                                 1200
                                                                             )
                                                                     )
@@ -2285,7 +2285,7 @@ fun UnifiedPlayerScrollable(
                                         model = ImageRequest.Builder(LocalContext.current)
                                             .data(
                                                 binder.player.getMediaItemAt(index).mediaMetadata.artworkUri.toString()
-                                                    .thumbnail(
+                                                    .toThumbnail(
                                                         1200
                                                     )
                                             )
@@ -2553,7 +2553,7 @@ fun UnifiedPlayerScrollable(
                                                                         binder.player.getMediaItemAt(
                                                                             index
                                                                         ).mediaMetadata.artworkUri.toString()
-                                                                            .thumbnail(
+                                                                            .toThumbnail(
                                                                                 1200
                                                                             )
                                                                     )
@@ -3017,7 +3017,7 @@ fun UnifiedPlayerScrollable(
                                         model = ImageRequest.Builder(LocalContext.current)
                                             .data(
                                                 binder.player.getMediaItemAt(index).mediaMetadata.artworkUri.toString()
-                                                    .thumbnail(
+                                                    .toThumbnail(
                                                         1200
                                                     )
                                             )
@@ -3495,7 +3495,7 @@ fun UnifiedPlayerScrollable(
                                                     model = ImageRequest.Builder(LocalContext.current)
                                                         .data(
                                                             binder.player.getMediaItemAt(index).mediaMetadata.artworkUri.toString()
-                                                                .thumbnail(
+                                                                .toThumbnail(
                                                                     1200
                                                                 )
                                                         )
@@ -3722,7 +3722,7 @@ fun UnifiedPlayerScrollable(
                                                 model = ImageRequest.Builder(LocalContext.current)
                                                     .data(
                                                         mediaItem.mediaMetadata.artworkUri.toString()
-                                                            .thumbnail(1200)
+                                                            .toThumbnail(1200)
                                                     )
                                                     .size(1200, 1200)
                                                     .transformations(

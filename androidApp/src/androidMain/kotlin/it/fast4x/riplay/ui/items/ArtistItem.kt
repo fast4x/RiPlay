@@ -33,7 +33,7 @@ import it.fast4x.riplay.ui.styling.shimmer
 import it.fast4x.riplay.utils.applyIf
 import it.fast4x.riplay.ui.styling.secondary
 import it.fast4x.riplay.ui.styling.semiBold
-import it.fast4x.riplay.commonutils.thumbnail
+import it.fast4x.riplay.commonutils.toThumbnail
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.utils.thumbnailShape
 import it.fast4x.riplay.utils.typography
@@ -116,7 +116,7 @@ fun ArtistItem(
     ) {
         Box {
             AsyncImage(
-                model = thumbnailUrl?.thumbnail(thumbnailSizePx),
+                model = thumbnailUrl?.toThumbnail(thumbnailSizePx),
                 contentDescription = null,
                 modifier = Modifier
                     //.clip(CircleShape)

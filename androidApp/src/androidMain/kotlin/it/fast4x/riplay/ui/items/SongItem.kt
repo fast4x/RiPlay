@@ -78,7 +78,7 @@ import it.fast4x.riplay.ui.styling.secondary
 import it.fast4x.riplay.ui.styling.semiBold
 import it.fast4x.riplay.utils.forcePlay
 import it.fast4x.riplay.utils.shimmerEffect
-import it.fast4x.riplay.commonutils.thumbnail
+import it.fast4x.riplay.commonutils.toThumbnail
 import it.fast4x.riplay.utils.getRoundnessShape
 import it.fast4x.riplay.utils.isRelated
 import kotlinx.serialization.ExperimentalSerializationApi
@@ -114,7 +114,7 @@ fun SongItem(
     isRecommended: Boolean = false,
 ) {
     SongItem(
-        thumbnailUrl = song.mediaMetadata.artworkUri.toString().thumbnail(thumbnailSizePx)?.toString(),
+        thumbnailUrl = song.mediaMetadata.artworkUri.toString().toThumbnail(thumbnailSizePx)?.toString(),
         thumbnailSizeDp = thumbnailSizeDp,
         onThumbnailContent = onThumbnailContent,
         trailingContent = trailingContent,
@@ -135,7 +135,7 @@ fun SongItem(
     trailingContent: (@Composable () -> Unit)? = null,
 ) {
     SongItem(
-        thumbnailUrl = song.thumbnailUrl?.thumbnail(thumbnailSizePx),
+        thumbnailUrl = song.thumbnailUrl?.toThumbnail(thumbnailSizePx),
         thumbnailSizeDp = thumbnailSizeDp,
         onThumbnailContent = onThumbnailContent,
         trailingContent = trailingContent,

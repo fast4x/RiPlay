@@ -51,7 +51,7 @@ import it.fast4x.riplay.utils.applyIf
 import it.fast4x.riplay.ui.styling.medium
 import it.fast4x.riplay.ui.styling.secondary
 import it.fast4x.riplay.ui.styling.semiBold
-import it.fast4x.riplay.commonutils.thumbnail
+import it.fast4x.riplay.commonutils.toThumbnail
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
@@ -124,7 +124,7 @@ fun PlaylistItem(
     val thumbnails by remember {
         Database.playlistThumbnailUrls(playlist.playlist.id).distinctUntilChanged().map {
             it.map { url ->
-                url.thumbnail(thumbnailSizePx / 2)
+                url.toThumbnail(thumbnailSizePx / 2)
             }
         }
     }.collectAsState(initial = emptyList(), context = Dispatchers.IO)
@@ -261,7 +261,7 @@ fun PlaylistItem(
     PlaylistItem(
         thumbnailContent = {
             AsyncImage(
-                model = thumbnailUrl?.thumbnail(thumbnailSizePx),
+                model = thumbnailUrl?.toThumbnail(thumbnailSizePx),
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.fillMaxSize()

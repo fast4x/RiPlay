@@ -75,7 +75,7 @@ import it.fast4x.riplay.commonutils.MONTHLY_PREFIX
 import it.fast4x.riplay.commonutils.PINNED_PREFIX
 import it.fast4x.riplay.R
 import it.fast4x.riplay.commonutils.YTP_PREFIX
-import it.fast4x.riplay.commonutils.thumbnail
+import it.fast4x.riplay.commonutils.toThumbnail
 import it.fast4x.riplay.utils.appContext
 import it.fast4x.riplay.enums.NavigationBarPosition
 import it.fast4x.riplay.enums.PlaylistSortBy
@@ -667,14 +667,14 @@ fun HomePlaylists(
                                         val thumbnails = songs.map { song -> song.song }
                                             .takeWhile { it.thumbnailUrl?.isNotEmpty() ?: false }
                                             .take(4)
-                                            .map { it.thumbnailUrl.thumbnail(playlistThumbnailSizePx / 2) }
+                                            .map { it.thumbnailUrl.toThumbnail(playlistThumbnailSizePx / 2) }
 
                                         PlaylistItem(
                                             thumbnailContent = {
                                                 if (thumbnails.toSet().size == 1) {
                                                     AsyncImage(
                                                         model = thumbnails.first()
-                                                            .thumbnail(playlistThumbnailSizePx),
+                                                            .toThumbnail(playlistThumbnailSizePx),
                                                         contentDescription = null,
                                                         contentScale = ContentScale.Crop,
                                                     )
@@ -969,14 +969,14 @@ fun HomePlaylists(
                                         val thumbnails = songs.map { song -> song.song }
                                             .takeWhile { it.thumbnailUrl?.isNotEmpty() ?: false }
                                             .take(4)
-                                            .map { it.thumbnailUrl.thumbnail(playlistThumbnailSizePx / 2) }
+                                            .map { it.thumbnailUrl.toThumbnail(playlistThumbnailSizePx / 2) }
 
                                         PlaylistItem(
                                             thumbnailContent = {
                                                 if (thumbnails.toSet().size == 1) {
                                                     AsyncImage(
                                                         model = thumbnails.first()
-                                                            .thumbnail(playlistThumbnailSizePx),
+                                                            .toThumbnail(playlistThumbnailSizePx),
                                                         contentDescription = null,
                                                         contentScale = ContentScale.Crop,
                                                     )

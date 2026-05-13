@@ -1,13 +1,8 @@
 package it.fast4x.riplay.extensions.nextvisualizer
 
 import android.Manifest
-import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.Paint
-import android.net.Uri
-import android.provider.Settings
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.OptIn
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
@@ -16,9 +11,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -37,7 +30,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
@@ -50,6 +42,7 @@ import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.R
+import it.fast4x.riplay.commonutils.toThumbnail
 import it.fast4x.riplay.extensions.nextvisualizer.painters.Painter
 import it.fast4x.riplay.extensions.nextvisualizer.painters.fft.FftBar
 import it.fast4x.riplay.extensions.nextvisualizer.painters.fft.FftCBar
@@ -72,15 +65,11 @@ import it.fast4x.riplay.extensions.nextvisualizer.utils.Preset
 import it.fast4x.riplay.extensions.nextvisualizer.utils.VisualizerHelper
 import it.fast4x.riplay.extensions.nextvisualizer.views.VisualizerView
 import it.fast4x.riplay.ui.components.themed.IconButton
-import it.fast4x.riplay.ui.components.themed.SecondaryTextButton
 import it.fast4x.riplay.utils.DisposableListener
 import it.fast4x.riplay.extensions.preferences.currentVisualizerKey
 import it.fast4x.riplay.utils.currentWindow
 import it.fast4x.riplay.utils.getBitmapFromUrl
-import it.fast4x.riplay.utils.hasPermission
-import it.fast4x.riplay.utils.isCompositionLaunched
 import it.fast4x.riplay.extensions.preferences.rememberPreference
-import it.fast4x.riplay.utils.resize
 import it.fast4x.riplay.ui.styling.semiBold
 import it.fast4x.riplay.extensions.preferences.visualizerEnabledKey
 import kotlinx.coroutines.launch
@@ -88,7 +77,6 @@ import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.enums.ThumbnailRoundness
 import it.fast4x.riplay.extensions.preferences.rememberObservedPreference
 import it.fast4x.riplay.extensions.preferences.thumbnailRoundnessKey
-import it.fast4x.riplay.utils.isLocal
 import it.fast4x.riplay.utils.typography
 import it.fast4x.riplay.ui.components.DelayedControls
 import timber.log.Timber
@@ -315,7 +303,7 @@ fun getVisualizers(): List<Painter> {
                 bitmapCover = getBitmapFromUrl(
                     context,
                     binder?.player?.currentWindow?.mediaItem?.mediaMetadata?.artworkUri.toString()
-                        .resize(1200, 1200)
+                        .toThumbnail(1200).toString()
                 )
             } catch (e: Exception) {
                 Timber.e("Failed to get bitmap in NextVisualizer ${e.stackTraceToString()}")
@@ -342,7 +330,7 @@ fun getVisualizers(): List<Painter> {
                         bitmapCover = getBitmapFromUrl(
                             context,
                             binder.player.currentWindow?.mediaItem?.mediaMetadata?.artworkUri.toString()
-                                .resize(1200, 1200)
+                                .toThumbnail(1200).toString()
                         )
                     } catch (e: Exception) {
                         bitmapCover = logoBitmapCover

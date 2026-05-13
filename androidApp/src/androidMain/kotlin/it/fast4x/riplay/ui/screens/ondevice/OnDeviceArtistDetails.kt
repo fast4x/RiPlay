@@ -28,7 +28,6 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Surface
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -61,6 +60,7 @@ import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.LocalSelectedQueue
 import it.fast4x.riplay.R
 import it.fast4x.riplay.commonutils.cleanPrefix
+import it.fast4x.riplay.commonutils.toThumbnail
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.enums.ArtistItem
 import it.fast4x.riplay.enums.NavRoutes
@@ -94,7 +94,6 @@ import it.fast4x.riplay.utils.isExplicit
 import it.fast4x.riplay.utils.isLandscape
 import it.fast4x.riplay.extensions.preferences.parentalControlEnabledKey
 import it.fast4x.riplay.extensions.preferences.rememberPreference
-import it.fast4x.riplay.utils.resize
 import it.fast4x.riplay.ui.styling.semiBold
 import it.fast4x.riplay.extensions.preferences.thumbnailRoundnessKey
 import it.fast4x.riplay.utils.LazyListContainer
@@ -202,10 +201,7 @@ fun OnDeviceArtistDetails(
                         if (!isLandscape)
                             Box {
                                 AsyncImage(
-                                    model = artist?.thumbnailUrl?.resize(
-                                        1200,
-                                        1200
-                                    ),
+                                    model = artist?.thumbnailUrl?.toThumbnail(1200),
                                     contentDescription = "loading...",
                                     contentScale = ContentScale.FillBounds,
                                     modifier = Modifier

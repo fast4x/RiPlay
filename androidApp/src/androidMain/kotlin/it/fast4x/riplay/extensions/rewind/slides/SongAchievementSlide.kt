@@ -20,6 +20,7 @@ import coil.compose.AsyncImage
 import com.mikepenz.hypnoticcanvas.shaderBackground
 import com.mikepenz.hypnoticcanvas.shaders.Heat
 import it.fast4x.riplay.LocalPlayerServiceBinder
+import it.fast4x.riplay.commonutils.toThumbnail
 import it.fast4x.riplay.extensions.rewind.data.AnimatedContent
 import it.fast4x.riplay.extensions.rewind.data.AnimationType
 import it.fast4x.riplay.extensions.rewind.data.RewindSlide
@@ -28,7 +29,6 @@ import it.fast4x.riplay.extensions.rewind.utils.rewindPauseMedia
 import it.fast4x.riplay.extensions.rewind.utils.rewindPlayMedia
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.utils.getRoundnessShape
-import it.fast4x.riplay.utils.resize
 import kotlinx.coroutines.delay
 
 @OptIn(UnstableApi::class)
@@ -124,7 +124,7 @@ fun SongAchievementSlide(slide: RewindSlide.SongAchievement, isPageActive: Boole
 
                     Box {
                         AsyncImage(
-                            model = slide.albumArtUri.toString().resize(1200, 1200),
+                            model = slide.albumArtUri.toString().toThumbnail( 1200),
                             contentDescription = "loading...",
                             modifier = Modifier
                                 .fillMaxWidth(.7f)

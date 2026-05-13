@@ -1,6 +1,5 @@
 package it.fast4x.riplay.ui.screens.player.unified
 
-import androidx.annotation.OptIn
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateDp
 import androidx.compose.animation.core.animateFloatAsState
@@ -67,7 +66,7 @@ import it.fast4x.riplay.LocalPlayerServiceState
 import it.fast4x.riplay.R
 import it.fast4x.riplay.commonutils.cleanPrefix
 import it.fast4x.riplay.commonutils.setDisLikeState
-import it.fast4x.riplay.commonutils.thumbnail
+import it.fast4x.riplay.commonutils.toThumbnail
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.data.models.Song
 import it.fast4x.riplay.enums.BackgroundProgress
@@ -362,7 +361,7 @@ fun UnifiedMiniPlayer(
                     .height(Dimensions.miniPlayerHeight)
             ) {
                 AsyncImage(
-                    model = mediaItem.mediaMetadata.artworkUri.toString().thumbnail(Dimensions.thumbnails.song.px),
+                    model = mediaItem.mediaMetadata.artworkUri.toString().toThumbnail(Dimensions.thumbnails.song.px),
                     contentDescription = null,
                     contentScale = ContentScale.Crop,
                     modifier = Modifier

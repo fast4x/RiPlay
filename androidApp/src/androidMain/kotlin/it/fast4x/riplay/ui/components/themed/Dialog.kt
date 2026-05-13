@@ -1,12 +1,8 @@
 package it.fast4x.riplay.ui.components.themed
 
-import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.core.EaseInOut
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -116,6 +112,7 @@ import it.fast4x.riplay.extensions.preferences.blurStrengthKey
 import it.fast4x.riplay.ui.styling.bold
 import it.fast4x.riplay.ui.styling.center
 import it.fast4x.riplay.commonutils.cleanPrefix
+import it.fast4x.riplay.commonutils.toThumbnail
 import it.fast4x.riplay.extensions.preferences.VinylSizeKey
 import it.fast4x.riplay.extensions.preferences.colorPaletteModeKey
 import it.fast4x.riplay.utils.drawCircle
@@ -131,7 +128,6 @@ import it.fast4x.riplay.extensions.preferences.playbackPitchKey
 import it.fast4x.riplay.extensions.preferences.playbackSpeedKey
 import it.fast4x.riplay.extensions.preferences.playbackVolumeKey
 import it.fast4x.riplay.extensions.preferences.rememberPreference
-import it.fast4x.riplay.utils.resize
 import it.fast4x.riplay.ui.styling.semiBold
 import it.fast4x.riplay.utils.setDeviceVolume
 import it.fast4x.riplay.extensions.preferences.showCoverThumbnailAnimationKey
@@ -148,8 +144,6 @@ import it.fast4x.riplay.data.models.SongAlbumMap
 import it.fast4x.riplay.data.models.SongArtistMap
 import it.fast4x.riplay.data.models.SongPlaylistMap
 import it.fast4x.riplay.data.models.defaultQueue
-import it.fast4x.riplay.extensions.experimental.appearancepreset.models.AppearancePreset
-import it.fast4x.riplay.extensions.experimental.appearancepreset.models.PresetUiState
 import it.fast4x.riplay.extensions.persist.persist
 import it.fast4x.riplay.utils.typography
 import it.fast4x.riplay.ui.items.SongItem
@@ -709,7 +703,7 @@ fun SelectorArtistsDialog(
                         Box {
                             AsyncImage(
                                 model = ImageRequest.Builder(LocalContext.current)
-                                    .data(artist?.thumbnailUrl?.resize(1200, 1200))
+                                    .data(artist?.thumbnailUrl?.toThumbnail(1200))
                                     .crossfade(true)
                                     .build(),
                                 contentDescription = values[pageIndex].name,

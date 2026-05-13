@@ -17,7 +17,7 @@ import coil.request.ErrorResult
 import coil.request.ImageRequest
 import coil.request.SuccessResult
 import com.google.common.util.concurrent.ListenableFuture
-import it.fast4x.riplay.commonutils.thumbnail
+import it.fast4x.riplay.commonutils.toThumbnail
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.guava.future
@@ -25,8 +25,6 @@ import timber.log.Timber
 import java.util.concurrent.ExecutionException
 import kotlin.toString
 import androidx.core.graphics.createBitmap
-import androidx.core.graphics.scale
-import coil.size.Scale
 import coil.transform.Transformation
 
 suspend fun getBitmapFromUrl(context: Context, url: String): Bitmap {
@@ -62,11 +60,11 @@ class BitmapLoader(
             val result = context.imageLoader.execute(
                 ImageRequest.Builder(context)
                     //.networkCachePolicy(CachePolicy.ENABLED)
-                    .data(uri.toString().thumbnail(bitmapSize))
+                    .data(uri.toString().toThumbnail(bitmapSize))
                     .size(bitmapSize)
                     .bitmapConfig(Bitmap.Config.ARGB_8888)
                     .allowHardware(false)
-                    .diskCacheKey(uri.toString().thumbnail(bitmapSize).toString())
+                    .diskCacheKey(uri.toString().toThumbnail(bitmapSize).toString())
                     .build()
             )
             if (result is ErrorResult) {
@@ -145,7 +143,7 @@ class BitmapProvider(
 
         lastBitmap = null
 
-        val url = uri.toString().thumbnail(bitmapSize)
+        val url = uri.toString().toThumbnail(bitmapSize)
         runCatching {
             lastEnqueued = appContext().imageLoader.enqueue(
                 ImageRequest.Builder(appContext())

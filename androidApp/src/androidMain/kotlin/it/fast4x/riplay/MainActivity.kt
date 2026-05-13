@@ -37,7 +37,6 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -53,7 +52,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.LocalRippleConfiguration
 import androidx.compose.material3.RippleConfiguration
 import androidx.compose.material3.Surface
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
@@ -229,9 +227,8 @@ import it.fast4x.riplay.utils.isPipModeAutoEnabled
 import it.fast4x.riplay.utils.isValidHttpUrl
 import it.fast4x.riplay.utils.isValidIP
 import it.fast4x.riplay.utils.playNext
-import it.fast4x.riplay.utils.resize
 import it.fast4x.riplay.utils.setDefaultPalette
-import it.fast4x.riplay.commonutils.thumbnail
+import it.fast4x.riplay.commonutils.toThumbnail
 import it.fast4x.riplay.extensions.databasebackup.BackupViewModel
 import it.fast4x.riplay.extensions.databasebackup.DatabaseBackupManager
 import it.fast4x.riplay.extensions.htmlreader.shazamSongInfoExtractor
@@ -248,7 +245,6 @@ import it.fast4x.riplay.services.playback.PlayerState
 import it.fast4x.riplay.ui.components.Snowfall
 import it.fast4x.riplay.ui.screens.player.unified.components.core.UnifiedPlayerView
 import it.fast4x.riplay.ui.screens.player.unified.UnifiedMiniPlayer
-import it.fast4x.riplay.ui.screens.player.unified.UnifiedPlayer
 import it.fast4x.riplay.utils.GlobalSharedData
 import it.fast4x.riplay.utils.WebViewInfo
 import it.fast4x.riplay.utils.colorPalette
@@ -1055,7 +1051,7 @@ class MainActivity :
 
                                 if (colorPaletteName == ColorPaletteName.Dynamic) {
                                     val artworkUri =
-                                        (binder?.player?.currentMediaItem?.mediaMetadata?.artworkUri.toString().thumbnail(
+                                        (binder?.player?.currentMediaItem?.mediaMetadata?.artworkUri.toString().toThumbnail(
                                             1200
                                         )
                                             ?: "")
@@ -1175,7 +1171,7 @@ class MainActivity :
                         getEnum(colorPaletteNameKey, ColorPaletteName.Dynamic)
                     if (colorPaletteName == ColorPaletteName.Dynamic) {
                         setDynamicPalette(
-                            (binder?.player?.currentMediaItem?.mediaMetadata?.artworkUri.toString().thumbnail(
+                            (binder?.player?.currentMediaItem?.mediaMetadata?.artworkUri.toString().toThumbnail(
                                 1200
                             )
                                 ?: "")
@@ -1332,7 +1328,7 @@ class MainActivity :
                                         //if (mediaItemIsLocal.value) {
                                             PipModuleCover(
                                                 url = binder?.player?.currentMediaItem?.mediaMetadata?.artworkUri.toString()
-                                                    .resize(1200, 1200)
+                                                    .toThumbnail(1200).toString()
                                             )
 //                                        } else {
 //                                            PipModuleCore(
@@ -1609,7 +1605,7 @@ class MainActivity :
                                 }
 
                                 setDynamicPalette(
-                                    it.mediaMetadata.artworkUri.toString().thumbnail(
+                                    it.mediaMetadata.artworkUri.toString().toThumbnail(
                                         1200
                                     ).toString()
                                 )

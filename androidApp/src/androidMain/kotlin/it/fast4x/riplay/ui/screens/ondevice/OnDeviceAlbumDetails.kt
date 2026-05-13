@@ -100,6 +100,7 @@ import it.fast4x.riplay.ui.styling.color
 import it.fast4x.riplay.utils.applyIf
 import it.fast4x.riplay.extensions.preferences.disableScrollingTextKey
 import it.fast4x.riplay.commonutils.durationTextToMillis
+import it.fast4x.riplay.commonutils.toThumbnail
 import it.fast4x.riplay.utils.enqueue
 import it.fast4x.riplay.utils.fadingEdge
 import it.fast4x.riplay.utils.forcePlayAtIndex
@@ -109,7 +110,6 @@ import it.fast4x.riplay.utils.isLandscape
 import it.fast4x.riplay.ui.styling.medium
 import it.fast4x.riplay.extensions.preferences.parentalControlEnabledKey
 import it.fast4x.riplay.extensions.preferences.rememberPreference
-import it.fast4x.riplay.utils.resize
 import it.fast4x.riplay.ui.styling.semiBold
 import it.fast4x.riplay.extensions.preferences.showFloatingIconKey
 import kotlinx.coroutines.CoroutineScope
@@ -350,7 +350,7 @@ fun OnDeviceAlbumDetails(
                                     if (!isLandscape)
                                         Box {
                                             AsyncImage(
-                                                model = album?.thumbnailUrl?.resize(1200, 1200),
+                                                model = album?.thumbnailUrl?.toThumbnail( 1200),
                                                 contentDescription = "loading...",
                                                 contentScale = ContentScale.FillBounds,
                                                 modifier = Modifier

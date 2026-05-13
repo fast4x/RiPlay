@@ -130,7 +130,7 @@ import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.Date
 import it.fast4x.riplay.commonutils.cleanPrefix
-import it.fast4x.riplay.commonutils.thumbnail
+import it.fast4x.riplay.commonutils.toThumbnail
 import it.fast4x.riplay.data.models.Playlist
 import it.fast4x.riplay.extensions.fastshare.FastShare
 import it.fast4x.riplay.ui.components.themed.NowPlayingSongIndicator
@@ -401,7 +401,7 @@ fun OnDevicePlaylist(
     val thumbnails = playlistSongs.map { it.song }
         .takeWhile { it.thumbnailUrl?.isNotEmpty() ?: false }
         .take(4)
-        .map { it.thumbnailUrl.thumbnail(thumbnailSizePx / 2) }
+        .map { it.thumbnailUrl.toThumbnail(thumbnailSizePx / 2) }
 
     val hapticFeedback = LocalHapticFeedback.current
 
@@ -495,7 +495,7 @@ fun OnDevicePlaylist(
                                     thumbnailContent = {
                                         if (thumbnails.toSet().size == 1) {
                                             AsyncImage(
-                                                model = thumbnails.first().thumbnail(thumbnailSizePx),
+                                                model = thumbnails.first().toThumbnail(thumbnailSizePx),
                                                 contentDescription = null,
                                                 contentScale = ContentScale.Crop,
                                             )

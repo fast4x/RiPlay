@@ -76,6 +76,7 @@ import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.LocalSelectedQueue
 import it.fast4x.riplay.R
 import it.fast4x.riplay.commonutils.cleanPrefix
+import it.fast4x.riplay.commonutils.toThumbnail
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.enums.NavigationBarPosition
@@ -117,7 +118,6 @@ import it.fast4x.riplay.utils.isLandscape
 import it.fast4x.riplay.utils.isNetworkConnected
 import it.fast4x.riplay.extensions.preferences.parentalControlEnabledKey
 import it.fast4x.riplay.extensions.preferences.rememberPreference
-import it.fast4x.riplay.utils.resize
 import it.fast4x.riplay.ui.styling.secondary
 import it.fast4x.riplay.ui.styling.semiBold
 import it.fast4x.riplay.extensions.preferences.showFloatingIconKey
@@ -290,7 +290,7 @@ fun ArtistOverviewNew(
                     if (!isLandscape)
                         Box {
                             AsyncImage(
-                                model = artistPage?.artist?.thumbnail?.url?.resize(1200, 1200),
+                                model = artistPage?.artist?.thumbnail?.url?.toThumbnail(1200),
                                 contentDescription = "loading...",
                                 contentScale = ContentScale.Crop,
                                 modifier = Modifier

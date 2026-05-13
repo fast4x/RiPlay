@@ -93,7 +93,6 @@ import it.fast4x.riplay.ui.components.themed.LayoutWithAdaptiveThumbnail
 import it.fast4x.riplay.ui.components.themed.NonQueuedMediaItemMenu
 import it.fast4x.riplay.ui.components.themed.PlaylistsItemMenu
 import it.fast4x.riplay.ui.components.themed.SmartMessage
-import it.fast4x.riplay.ui.components.themed.adaptiveThumbnailContent
 import it.fast4x.riplay.ui.items.AlbumItemPlaceholder
 import it.fast4x.riplay.ui.items.SongItem
 import it.fast4x.riplay.ui.items.SongItemPlaceholder
@@ -104,6 +103,7 @@ import it.fast4x.riplay.utils.addNext
 import it.fast4x.riplay.utils.asMediaItem
 import it.fast4x.riplay.extensions.preferences.disableScrollingTextKey
 import it.fast4x.riplay.commonutils.durationTextToMillis
+import it.fast4x.riplay.commonutils.toThumbnail
 import it.fast4x.riplay.utils.enqueue
 import it.fast4x.riplay.utils.fadingEdge
 import it.fast4x.riplay.utils.forcePlayAtIndex
@@ -111,7 +111,6 @@ import it.fast4x.riplay.utils.forcePlayFromBeginning
 import it.fast4x.riplay.utils.isLandscape
 import it.fast4x.riplay.ui.styling.medium
 import it.fast4x.riplay.extensions.preferences.rememberPreference
-import it.fast4x.riplay.utils.resize
 import it.fast4x.riplay.ui.styling.secondary
 import it.fast4x.riplay.ui.styling.semiBold
 import it.fast4x.riplay.extensions.preferences.showFloatingIconKey
@@ -269,10 +268,7 @@ fun Podcast(
             ) {
                 AsyncImage(
                     model = podcastPage?.thumbnail?.getBestQuality()
-                        ?.url?.resize(
-                        1200,
-                        1200
-                    ),
+                        ?.url?.toThumbnail(1200),
                     contentScale = ContentScale.Crop,
                     contentDescription = "loading...",
                     modifier = Modifier
@@ -326,10 +322,7 @@ fun Podcast(
                             if (podcastPage != null) {
                                 if (!isLandscape)
                                     AsyncImage(
-                                        model = podcastPage?.thumbnail?.getBestQuality()?.url?.resize(
-                                            1200,
-                                            900
-                                        ),
+                                        model = podcastPage?.thumbnail?.getBestQuality()?.url?.toThumbnail(1200),
                                         contentScale = ContentScale.Crop,
                                         contentDescription = "loading...",
                                         modifier = Modifier

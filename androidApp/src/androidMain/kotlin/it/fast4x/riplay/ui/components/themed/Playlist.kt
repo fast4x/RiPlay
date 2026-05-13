@@ -32,7 +32,7 @@ import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.data.models.PlaylistPreview
 import it.fast4x.riplay.data.models.Song
 import it.fast4x.riplay.ui.items.PlaylistItem
-import it.fast4x.riplay.commonutils.thumbnail
+import it.fast4x.riplay.commonutils.toThumbnail
 import kotlin.text.startsWith
 
 @Composable
@@ -53,14 +53,14 @@ fun Playlist(
     val thumbnails = songs
         .takeWhile { it.thumbnailUrl?.isNotEmpty() ?: false }
         .take(4)
-        .map { it.thumbnailUrl.thumbnail(thumbnailSizePx / 2) }
+        .map { it.thumbnailUrl.toThumbnail(thumbnailSizePx / 2) }
 
 
     PlaylistItem(
         thumbnailContent = {
             if (thumbnailUrl != null) {
                 AsyncImage(
-                    model = thumbnailUrl.thumbnail(thumbnailSizePx),
+                    model = thumbnailUrl.toThumbnail(thumbnailSizePx),
                     contentDescription = null,
                     modifier = Modifier
                         .fillMaxSize(),
@@ -76,7 +76,7 @@ fun Playlist(
                 )
             } else if (thumbnails.toSet().size == 1) {
                 AsyncImage(
-                    model = thumbnails.first().thumbnail(thumbnailSizePx),
+                    model = thumbnails.first().toThumbnail(thumbnailSizePx),
                     contentDescription = null,
                     contentScale = ContentScale.Crop,
                 )

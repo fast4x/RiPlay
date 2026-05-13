@@ -86,6 +86,7 @@ import it.fast4x.riplay.commonutils.EXPLICIT_PREFIX
 import it.fast4x.riplay.commonutils.MODIFIED_PREFIX
 import it.fast4x.riplay.commonutils.cleanPrefix
 import it.fast4x.riplay.commonutils.durationTextToMillis
+import it.fast4x.riplay.commonutils.toThumbnail
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.data.models.Album
 import it.fast4x.riplay.data.models.Info
@@ -154,7 +155,6 @@ import it.fast4x.riplay.utils.isLandscape
 import it.fast4x.riplay.utils.isNetworkConnected
 import it.fast4x.riplay.utils.languageDestination
 import it.fast4x.riplay.utils.mediaItemSetLiked
-import it.fast4x.riplay.utils.resize
 import it.fast4x.riplay.utils.typography
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -379,7 +379,7 @@ fun AlbumDetailsNew1(
                                 if (!isLandscape) {
                                     Box {
                                         AsyncImage(
-                                            model = album?.thumbnailUrl?.resize(1200, 1200),
+                                            model = album?.thumbnailUrl?.toThumbnail(1200),
                                             contentDescription = null,
                                             contentScale = ContentScale.Crop,
                                             modifier = Modifier

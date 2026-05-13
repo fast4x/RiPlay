@@ -57,7 +57,7 @@ fun cleanString(text: String): String {
     return cleanText
 }
 
-fun String?.thumbnail(size: Int): String? {
+fun String?.toThumbnail(size: Int): String? {
     val url = when {
         this?.startsWith("https://lh3.googleusercontent.com") == true ||
         this?.startsWith("https://yt3.googleusercontent.com") == true ||
@@ -69,12 +69,12 @@ fun String?.thumbnail(size: Int): String? {
     //println("String->Thumbnail url modified: $url")
     return url
 }
-fun String?.thumbnail(): String? {
+fun String?.toThumbnail(): String? {
     return this
 }
 
-fun Uri?.thumbnail(size: Int): Uri? {
-    return toString().thumbnail(size)?.toUri()
+fun Uri?.toThumbnail(size: Int): Uri? {
+    return toString().toThumbnail(size)?.toUri()
 }
 
 fun durationToMillis(duration: String): Long {

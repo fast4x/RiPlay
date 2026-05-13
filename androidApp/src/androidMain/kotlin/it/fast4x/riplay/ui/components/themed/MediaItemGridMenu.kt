@@ -80,7 +80,7 @@ import it.fast4x.riplay.extensions.preferences.playlistSortByKey
 import it.fast4x.riplay.extensions.preferences.playlistSortOrderKey
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.ui.styling.semiBold
-import it.fast4x.riplay.commonutils.thumbnail
+import it.fast4x.riplay.commonutils.toThumbnail
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.flowOf
@@ -437,7 +437,7 @@ fun MediaItemGridMenu (
         ) {
             SongItem(
                 mediaItem = mediaItem,
-                thumbnailUrl = mediaItem.mediaMetadata.artworkUri.toString().thumbnail(thumbnailSizePx),
+                thumbnailUrl = mediaItem.mediaMetadata.artworkUri.toString().toThumbnail(thumbnailSizePx),
                 thumbnailSizeDp = thumbnailSizeDp,
                 modifier = Modifier
                     .weight(1f),

@@ -47,7 +47,7 @@ import coil.size.Size
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.R
-import it.fast4x.riplay.commonutils.thumbnail
+import it.fast4x.riplay.commonutils.toThumbnail
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.enums.ThumbnailCoverType
@@ -170,7 +170,7 @@ fun Thumbnail(
 
     val coverPainter = rememberAsyncImagePainter(
         model = ImageRequest.Builder(LocalContext.current)
-            .data(window.mediaItem.mediaMetadata.artworkUri.toString().thumbnail(1200))
+            .data(window.mediaItem.mediaMetadata.artworkUri.toString().toThumbnail(1200))
             .size(Size.ORIGINAL)
             .build(),
         onError = { artImageAvailable = false },

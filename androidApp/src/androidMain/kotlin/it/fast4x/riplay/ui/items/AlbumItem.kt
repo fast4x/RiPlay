@@ -32,7 +32,7 @@ import it.fast4x.riplay.ui.styling.shimmer
 import it.fast4x.riplay.utils.applyIf
 import it.fast4x.riplay.ui.styling.secondary
 import it.fast4x.riplay.ui.styling.semiBold
-import it.fast4x.riplay.commonutils.thumbnail
+import it.fast4x.riplay.commonutils.toThumbnail
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.utils.thumbnailShape
 import it.fast4x.riplay.utils.typography
@@ -121,7 +121,7 @@ fun AlbumItem(
     ) {
         Box {
             AsyncImage(
-                model = thumbnailUrl?.thumbnail(thumbnailSizePx)?.let { it1 -> cleanPrefix(it1) },
+                model = thumbnailUrl?.toThumbnail(thumbnailSizePx)?.let { it1 -> cleanPrefix(it1) },
                 contentDescription = null,
                 //contentScale = ContentScale.Crop,
                 modifier = Modifier
