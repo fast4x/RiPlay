@@ -174,7 +174,7 @@ RiPlay wouldn't be possible without the amazing work of these projects and contr
 - [Ionicons](https://github.com/ionic-team/ionicons) – icons  
 - [FlatIcon.com](https://www.flaticon.com/) – icons & stickers  
 - [Translator](https://github.com/rebelonion/translator) – Translate library for Kotlin/JVM and Java 
-- [KuGou](https://www.kugou.com), [LrcLib](https://lrclib.net), [SyncLRC](https://synclrc.tharuk.pro) – Lyrics providers
+- [KuGou](https://www.kugou.com), [LrcLib](https://lrclib.net), [SimpMusic Lyrics](https://simpmusic.org) – Lyrics providers
 - [HypnoticCanvas](https://mikepenz.github.io/HypnoticCanvas/) – shaders for Compose  
 - [AudioTag.info](https://audiotag.info) – music recognition API
 
