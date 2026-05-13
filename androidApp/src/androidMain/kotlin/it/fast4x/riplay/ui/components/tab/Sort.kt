@@ -162,13 +162,13 @@ open class Sort<T: Enum<T>> protected constructor(
         val animatedArrow by arrowDirection
 
         TabToolBar.Icon(
-            icon,
-            color,
-            sizeDp,
-            isEnabled,
-            this.modifier.graphicsLayer { rotationZ = animatedArrow },
-            this::onShortClick,
-            this::onLongClick
+            icon = icon,
+            tint = color,
+            size = sizeDp,
+            enabled = isEnabled,
+            modifier = this.modifier.graphicsLayer { rotationZ = animatedArrow },
+            onClick = this::onShortClick,
+            onLongClick = this::onLongClick
         )
     }
 }

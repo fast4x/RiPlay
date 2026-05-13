@@ -3,6 +3,7 @@ package it.fast4x.riplay.ui.components.tab.toolbar
 import androidx.compose.runtime.Composable
 import it.fast4x.riplay.R
 import it.fast4x.riplay.ui.components.navigation.header.TabToolBar
+import it.fast4x.riplay.utils.colorPalette
 import kotlin.random.Random
 
 interface Randomizer<T>: Button {
@@ -24,9 +25,9 @@ interface Randomizer<T>: Button {
     override fun ToolBarButton() {
         TabToolBar.Icon(
             iconId = R.drawable.dice,
-            enabled = getItems().isNotEmpty()
-        ) {
-            onClick( nextInt( getItems().size ) )
-        }
+            tint = colorPalette().text,
+            enabled = getItems().isNotEmpty(),
+            onClick = { onClick( nextInt( getItems().size ) ) }
+        )
     }
 }

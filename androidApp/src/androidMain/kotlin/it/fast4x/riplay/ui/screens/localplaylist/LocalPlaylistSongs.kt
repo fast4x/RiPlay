@@ -1197,21 +1197,17 @@ fun LocalPlaylistSongs(
                                 .fillMaxWidth()
                         ) {
                             HeaderIconButton(
-                                onClick = {},
                                 icon = R.drawable.search_circle,
                                 color = colorPalette.text,
-                                modifier = Modifier
-                                    .combinedClickable(
-                                        onClick = {
-                                            searching = !searching
-                                        },
-                                        onLongClick = {
-                                            SmartMessage(
-                                                context.resources.getString(R.string.search),
-                                                context = context
-                                            )
-                                        }
+                                onClick = {
+                                    searching = !searching
+                                },
+                                onLongClick = {
+                                    SmartMessage(
+                                        context.resources.getString(R.string.search),
+                                        context = context
                                     )
+                                }
                             )
 
                             HeaderIconButton(
@@ -1224,28 +1220,24 @@ fun LocalPlaylistSongs(
                                     ) == true
                                 )
                                     colorPalette.text else colorPalette.textDisabled,
-                                onClick = {},
-                                modifier = Modifier
-                                    .combinedClickable(
-                                        onClick = {
-                                            Database.asyncTransaction {
-                                                if (playlistPreview?.playlist?.name?.startsWith(
-                                                        PINNED_PREFIX,
-                                                        0,
-                                                        true
-                                                    ) == true
-                                                )
-                                                    Database.unPinPlaylist(playlistId) else
-                                                    Database.pinPlaylist(playlistId)
-                                            }
-                                        },
-                                        onLongClick = {
-                                            SmartMessage(
-                                                context.resources.getString(R.string.info_pin_unpin_playlist),
-                                                context = context
-                                            )
-                                        }
+                                onClick = {
+                                    Database.asyncTransaction {
+                                        if (playlistPreview?.playlist?.name?.startsWith(
+                                                PINNED_PREFIX,
+                                                0,
+                                                true
+                                            ) == true
+                                        )
+                                            Database.unPinPlaylist(playlistId) else
+                                            Database.pinPlaylist(playlistId)
+                                    }
+                                },
+                                onLongClick = {
+                                    SmartMessage(
+                                        context.resources.getString(R.string.info_pin_unpin_playlist),
+                                        context = context
                                     )
+                                }
                             )
 
                             //if (sortBy == PlaylistSongSortBy.Position && sortOrder == SortOrder.Ascending)
@@ -1253,30 +1245,26 @@ fun LocalPlaylistSongs(
                                 icon = if (isReorderDisabled) R.drawable.locked else R.drawable.unlocked,
                                 enabled = playlistSongs.isNotEmpty(),
                                 color = if (playlistSongs.isNotEmpty() && isReorderDisabled) colorPalette.text else colorPalette.accent,
-                                onClick = {},
-                                modifier = Modifier
-                                    .combinedClickable(
-                                        onClick = {
-                                            //if (sortBy == PlaylistSongSortBy.Position && sortOrder == SortOrder.Ascending) {
-                                            isReorderDisabled = !isReorderDisabled
-                                            if (!isReorderDisabled) {
-                                                sortBy = PlaylistSongSortBy.Position
-                                                sortOrder = SortOrder.Ascending
-                                            }
+                                onClick = {
+                                    //if (sortBy == PlaylistSongSortBy.Position && sortOrder == SortOrder.Ascending) {
+                                    isReorderDisabled = !isReorderDisabled
+                                    if (!isReorderDisabled) {
+                                        sortBy = PlaylistSongSortBy.Position
+                                        sortOrder = SortOrder.Ascending
+                                    }
 //                                            } else {
 //                                                SmartMessage(
 //                                                    context.resources.getString(R.string.info_reorder_is_possible_only_in_ascending_sort),
 //                                                    type = PopupType.Warning, context = context
 //                                                )
 //                                            }
-                                        },
-                                        onLongClick = {
-                                            SmartMessage(
-                                                context.resources.getString(R.string.info_lock_unlock_reorder_songs),
-                                                context = context
-                                            )
-                                        }
+                                },
+                                onLongClick = {
+                                    SmartMessage(
+                                        context.resources.getString(R.string.info_lock_unlock_reorder_songs),
+                                        context = context
                                     )
+                                }
                             )
 
 //                        HeaderIconButton(
@@ -1352,36 +1340,32 @@ fun LocalPlaylistSongs(
                                                 LOCAL_KEY_PREFIX
                                             ))
                                         }) colorPalette.text else colorPalette.textDisabled,
-                                    onClick = {},
-                                    modifier = Modifier
-                                        .combinedClickable(
-                                            onClick = {
-                                                if (!isNetworkConnected(context) && playlistPreview?.playlist?.isYoutubePlaylist == true && (playlistPreview?.playlist?.isEditable == true) && isYtSyncEnabled()) {
-                                                    SmartMessage(
-                                                        context.resources.getString(R.string.no_connection),
-                                                        context = context,
-                                                        type = PopupType.Error
-                                                    )
-                                                } else if (playlistSongs.any {
-                                                        (it.song.thumbnailUrl?.startsWith("https://lh3.googleusercontent.com") == false) && !(it.song.id.startsWith(
-                                                            LOCAL_KEY_PREFIX
-                                                        ))
-                                                    }) {
-                                                    showConfirmMatchAllDialog = true
-                                                } else {
-                                                    SmartMessage(
-                                                        context.resources.getString(R.string.no_videos_found),
-                                                        context = context
-                                                    )
-                                                }
-                                            },
-                                            onLongClick = {
-                                                SmartMessage(
-                                                    context.resources.getString(R.string.get_album_version),
-                                                    context = context
-                                                )
-                                            }
+                                    onClick = {
+                                        if (!isNetworkConnected(context) && playlistPreview?.playlist?.isYoutubePlaylist == true && (playlistPreview?.playlist?.isEditable == true) && isYtSyncEnabled()) {
+                                            SmartMessage(
+                                                context.resources.getString(R.string.no_connection),
+                                                context = context,
+                                                type = PopupType.Error
+                                            )
+                                        } else if (playlistSongs.any {
+                                                (it.song.thumbnailUrl?.startsWith("https://lh3.googleusercontent.com") == false) && !(it.song.id.startsWith(
+                                                    LOCAL_KEY_PREFIX
+                                                ))
+                                            }) {
+                                            showConfirmMatchAllDialog = true
+                                        } else {
+                                            SmartMessage(
+                                                context.resources.getString(R.string.no_videos_found),
+                                                context = context
+                                            )
+                                        }
+                                    },
+                                    onLongClick = {
+                                        SmartMessage(
+                                            context.resources.getString(R.string.get_album_version),
+                                            context = context
                                         )
+                                    }
                                 )
                             }
 
@@ -1390,24 +1374,19 @@ fun LocalPlaylistSongs(
                             HeaderIconButton(
                                 icon = R.drawable.update,
                                 color = colorPalette.text,
-                                onClick = {},
-                                modifier = Modifier
-                                    .combinedClickable(
-                                        onClick = { playlistUpdateDialog = true },
-                                        onLongClick = {
-                                            SmartMessage(
-                                                context.resources.getString(R.string.updating_playlist_message),
-                                                context = context
-                                            )
-                                        }
+                                onClick = { playlistUpdateDialog = true },
+                                onLongClick = {
+                                    SmartMessage(
+                                        context.resources.getString(R.string.updating_playlist_message),
+                                        context = context
                                     )
+                                }
                             )
 
                             if (playlistPreview?.playlist?.browseId != null)
                                 HeaderIconButton(
                                     icon = R.drawable.share_social,
                                     color = colorPalette().text,
-                                    //iconSize = 24.dp,
                                     onClick = {
                                         showFastShare = true
                                     }
@@ -1417,8 +1396,6 @@ fun LocalPlaylistSongs(
                                 icon = R.drawable.ellipsis_horizontal,
                                 color = colorPalette.text, //if (playlistWithSongs?.songs?.isNotEmpty() == true) colorPalette.text else colorPalette.textDisabled,
                                 enabled = true, //playlistWithSongs?.songs?.isNotEmpty() == true,
-                                modifier = Modifier
-                                    .padding(end = 4.dp),
                                 onClick = {
                                     menuState.display {
                                         playlistPreview?.let { playlistPreview ->
@@ -1977,32 +1954,27 @@ fun LocalPlaylistSongs(
                                     .fillMaxWidth()
                             ) {
                                 HeaderIconButton(
-                                    modifier = Modifier
-                                        .padding(horizontal = 5.dp)
-                                        .combinedClickable(
-                                            onClick = {
-                                                nowPlayingItem = -1
-                                                scrollToNowPlaying = false
-                                                playlistSongs
-                                                    .forEachIndexed { index, song ->
-                                                        if (song.asMediaItem.mediaId == binder?.player?.currentMediaItem?.mediaId)
-                                                            nowPlayingItem = index
-                                                    }
-
-                                                if (nowPlayingItem > -1)
-                                                    scrollToNowPlaying = true
-                                            },
-                                            onLongClick = {
-                                                SmartMessage(
-                                                    context.resources.getString(R.string.info_find_the_song_that_is_playing),
-                                                    context = context
-                                                )
-                                            }
-                                        ),
                                     icon = R.drawable.locate,
                                     enabled = playlistSongs.isNotEmpty(),
                                     color = if (playlistSongs.isNotEmpty()) colorPalette.text else colorPalette.textDisabled,
-                                    onClick = {}
+                                    onClick = {
+                                        nowPlayingItem = -1
+                                        scrollToNowPlaying = false
+                                        playlistSongs
+                                            .forEachIndexed { index, song ->
+                                                if (song.asMediaItem.mediaId == binder?.player?.currentMediaItem?.mediaId)
+                                                    nowPlayingItem = index
+                                            }
+
+                                        if (nowPlayingItem > -1)
+                                            scrollToNowPlaying = true
+                                    },
+                                    onLongClick = {
+                                        SmartMessage(
+                                            context.resources.getString(R.string.info_find_the_song_that_is_playing),
+                                            context = context
+                                        )
+                                    }
                                 )
                                 LaunchedEffect(scrollToNowPlaying) {
                                     if (scrollToNowPlaying)

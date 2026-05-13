@@ -497,7 +497,6 @@ fun PlaylistSongList(
                                 HeaderIconButton(
                                     icon = R.drawable.share_social,
                                     color = colorPalette().text,
-                                    iconSize = 24.dp,
                                     modifier = Modifier
                                         .align(Alignment.TopEnd)
                                         .padding(top = 5.dp, end = 5.dp),
@@ -564,7 +563,7 @@ fun PlaylistSongList(
                         contentType = 0
                     ) {
                         Row(
-                            horizontalArrangement = Arrangement.Center,
+                            horizontalArrangement = Arrangement.SpaceAround,
                             verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier
                                 .padding(top = 10.dp)
@@ -581,9 +580,6 @@ fun PlaylistSongList(
                                     onClick = { searching = !searching },
                                     icon = R.drawable.search_circle,
                                     color = colorPalette().text,
-                                    iconSize = 24.dp,
-                                    modifier = Modifier
-                                        .padding(horizontal = 5.dp)
                                 )
 
 
@@ -592,346 +588,311 @@ fun PlaylistSongList(
                                     icon = R.drawable.enqueue,
                                     enabled = playlistPage?.songs?.any { it.asMediaItem.mediaId !in dislikedSongs } == true,
                                     color = if (playlistPage?.songs?.any { it.asMediaItem.mediaId !in dislikedSongs } == true) colorPalette().text else colorPalette().textDisabled,
-                                    onClick = {},
-                                    modifier = Modifier
-                                        .padding(horizontal = 5.dp)
-                                        .combinedClickable(
-                                            onClick = {
-                                                if (playlistPage?.songs?.any { it.asMediaItem.mediaId !in dislikedSongs } == true) {
-                                                    playlistPage?.songs?.filter { it.asMediaItem.mediaId !in dislikedSongs }
-                                                        ?.map(Environment.SongItem::asMediaItem)
-                                                        ?.let { mediaItems ->
-                                                            binder?.player?.enqueue(
-                                                                mediaItems,
-                                                                context
-                                                            )
-                                                        }
-                                                } else {
-                                                    SmartMessage(
-                                                        context.resources.getString(R.string.disliked_this_collection),
-                                                        type = PopupType.Error,
-                                                        context = context
+                                    onClick = {
+                                        if (playlistPage?.songs?.any { it.asMediaItem.mediaId !in dislikedSongs } == true) {
+                                            playlistPage?.songs?.filter { it.asMediaItem.mediaId !in dislikedSongs }
+                                                ?.map(Environment.SongItem::asMediaItem)
+                                                ?.let { mediaItems ->
+                                                    binder?.player?.enqueue(
+                                                        mediaItems,
+                                                        context
                                                     )
                                                 }
-                                            },
-                                            onLongClick = {
-                                                SmartMessage(
-                                                    context.resources.getString(R.string.info_enqueue_songs),
-                                                    context = context
-                                                )
-                                            }
+                                        } else {
+                                            SmartMessage(
+                                                context.resources.getString(R.string.disliked_this_collection),
+                                                type = PopupType.Error,
+                                                context = context
+                                            )
+                                        }
+                                    },
+                                    onLongClick = {
+                                        SmartMessage(
+                                            context.resources.getString(R.string.info_enqueue_songs),
+                                            context = context
                                         )
+                                    }
                                 )
 
                                 HeaderIconButton(
                                     icon = R.drawable.shuffle,
                                     enabled = playlistPage?.songs?.any { it.asMediaItem.mediaId !in dislikedSongs } == true,
                                     color = if (playlistPage?.songs?.any { it.asMediaItem.mediaId !in dislikedSongs } == true) colorPalette().text else colorPalette().textDisabled,
-                                    onClick = {},
-                                    modifier = Modifier
-                                        .padding(horizontal = 5.dp)
-                                        .combinedClickable(
-                                            onClick = {
-                                                if (playlistPage?.songs?.any { it.asMediaItem.mediaId !in dislikedSongs } == true) {
-                                                    binder?.stopRadio()
-                                                    playlistPage?.songs?.filter { it.asMediaItem.mediaId !in dislikedSongs }
-                                                        ?.shuffled()
-                                                        ?.map(Environment.SongItem::asMediaItem)
-                                                        ?.let {
-                                                            binder?.player?.forcePlayFromBeginning(
-                                                                it
-                                                            )
-                                                        }
-                                                } else {
-                                                    SmartMessage(
-                                                        context.resources.getString(R.string.disliked_this_collection),
-                                                        type = PopupType.Error,
-                                                        context = context
+                                    onClick = {
+                                        if (playlistPage?.songs?.any { it.asMediaItem.mediaId !in dislikedSongs } == true) {
+                                            binder?.stopRadio()
+                                            playlistPage?.songs?.filter { it.asMediaItem.mediaId !in dislikedSongs }
+                                                ?.shuffled()
+                                                ?.map(Environment.SongItem::asMediaItem)
+                                                ?.let {
+                                                    binder?.player?.forcePlayFromBeginning(
+                                                        it
                                                     )
                                                 }
-                                            },
-                                            onLongClick = {
-                                                SmartMessage(
-                                                    context.resources.getString(R.string.info_shuffle),
-                                                    context = context
-                                                )
-                                            }
+                                        } else {
+                                            SmartMessage(
+                                                context.resources.getString(R.string.disliked_this_collection),
+                                                type = PopupType.Error,
+                                                context = context
+                                            )
+                                        }
+                                    },
+                                    onLongClick = {
+                                        SmartMessage(
+                                            context.resources.getString(R.string.info_shuffle),
+                                            context = context
                                         )
+                                    }
                                 )
 
                                 HeaderIconButton(
                                     icon = R.drawable.radio,
                                     enabled = playlistPage?.songs?.any { it.asMediaItem.mediaId !in dislikedSongs } == true,
                                     color = if (playlistPage?.songs?.any { it.asMediaItem.mediaId !in dislikedSongs } == true) colorPalette().text else colorPalette().textDisabled,
-                                    onClick = {},
-                                    modifier = Modifier
-                                        .padding(horizontal = 5.dp)
-                                        .combinedClickable(
-                                            onClick = {
-                                                if (binder != null) {
-                                                    if (playlistPage?.songs?.any { it.asMediaItem.mediaId !in dislikedSongs } == true) {
-                                                        binder.stopRadio()
-                                                        binder.playRadio(
-                                                            NavigationEndpoint.Endpoint.Watch(
-                                                                videoId =
-                                                                    if (binder.player.currentMediaItem?.mediaId != null)
-                                                                        binder.player.currentMediaItem?.mediaId
-                                                                    else playlistPage?.songs?.first { it.asMediaItem.mediaId !in dislikedSongs }?.asMediaItem?.mediaId
-                                                            )
-                                                        )
-                                                    } else {
-                                                        SmartMessage(
-                                                            context.resources.getString(R.string.disliked_this_collection),
-                                                            type = PopupType.Error,
-                                                            context = context
-                                                        )
-                                                    }
-                                                }
-                                            },
-                                            onLongClick = {
+                                    onClick = {
+                                        if (binder != null) {
+                                            if (playlistPage?.songs?.any { it.asMediaItem.mediaId !in dislikedSongs } == true) {
+                                                binder.stopRadio()
+                                                binder.playRadio(
+                                                    NavigationEndpoint.Endpoint.Watch(
+                                                        videoId =
+                                                            if (binder.player.currentMediaItem?.mediaId != null)
+                                                                binder.player.currentMediaItem?.mediaId
+                                                            else playlistPage?.songs?.first { it.asMediaItem.mediaId !in dislikedSongs }?.asMediaItem?.mediaId
+                                                    )
+                                                )
+                                            } else {
                                                 SmartMessage(
-                                                    context.resources.getString(R.string.info_start_radio),
+                                                    context.resources.getString(R.string.disliked_this_collection),
+                                                    type = PopupType.Error,
                                                     context = context
                                                 )
                                             }
+                                        }
+                                    },
+                                    onLongClick = {
+                                        SmartMessage(
+                                            context.resources.getString(R.string.info_start_radio),
+                                            context = context
                                         )
+                                    }
                                 )
 
 
                                 HeaderIconButton(
                                     icon = R.drawable.add_in_playlist,
                                     color = colorPalette().text,
-                                    onClick = {},
-                                    modifier = Modifier
-                                        .padding(horizontal = 5.dp)
-                                        .combinedClickable(
-                                            onClick = {
-                                                menuState.display {
-                                                    PlaylistsItemMenu(
-                                                        navController = navController,
-                                                        modifier = Modifier.fillMaxHeight(0.4f),
-                                                        onDismiss = menuState::hide,
-                                                        onImportOnlinePlaylist = {
-                                                            isImportingPlaylist = true
-                                                        },
+                                    onClick = {
+                                        menuState.display {
+                                            PlaylistsItemMenu(
+                                                navController = navController,
+                                                modifier = Modifier.fillMaxHeight(0.4f),
+                                                onDismiss = menuState::hide,
+                                                onImportOnlinePlaylist = {
+                                                    isImportingPlaylist = true
+                                                },
 
-                                                        onAddToPlaylist = { playlistPreview ->
-                                                            position =
-                                                                playlistPreview.songCount.minus(1)
-                                                                    ?: 0
-                                                            if (position > 0) position++ else position =
-                                                                0
+                                                onAddToPlaylist = { playlistPreview ->
+                                                    position =
+                                                        playlistPreview.songCount.minus(1)
+                                                            ?: 0
+                                                    if (position > 0) position++ else position =
+                                                        0
 
-                                                            val playlistSize =
-                                                                playlistPage?.songs?.size ?: 0
+                                                    val playlistSize =
+                                                        playlistPage?.songs?.size ?: 0
 
-                                                            if ((playlistSize + playlistPreview.songCount) > 5000 && playlistPreview.playlist.isYoutubePlaylist && isYtSyncEnabled()) {
-                                                                SmartMessage(
-                                                                    context.resources.getString(
-                                                                        R.string.yt_playlist_limited
-                                                                    ),
-                                                                    context = context,
-                                                                    type = PopupType.Error
-                                                                )
-                                                            } else if (!isYtSyncEnabled() || !playlistPreview.playlist.isYoutubePlaylist) {
-                                                                playlistPage?.songs?.forEachIndexed { index, song ->
-                                                                    runCatching {
-                                                                        coroutineScope.launch(
-                                                                            Dispatchers.IO
-                                                                        ) {
-                                                                            Database.insert(song.asSong)
-                                                                            Database.insert(
-                                                                                SongPlaylistMap(
-                                                                                    songId = song.asMediaItem.mediaId,
-                                                                                    playlistId = playlistPreview.playlist.id,
-                                                                                    position = position + index
-                                                                                ).default()
-                                                                            )
-                                                                        }
-                                                                    }.onFailure {
-                                                                        Timber.e("Failed onAddToPlaylist in PlaylistSongListModern  ${it.stackTraceToString()}")
-                                                                    }
-                                                                }
-                                                            } else {
-                                                                CoroutineScope(Dispatchers.IO).launch {
-                                                                    EnvironmentExt.addPlaylistToPlaylist(
-                                                                        cleanPrefix(
-                                                                            playlistPreview.playlist.browseId
-                                                                                ?: ""
-                                                                        ),
-                                                                        browseId.substringAfter("VL")
-
+                                                    if ((playlistSize + playlistPreview.songCount) > 5000 && playlistPreview.playlist.isYoutubePlaylist && isYtSyncEnabled()) {
+                                                        SmartMessage(
+                                                            context.resources.getString(
+                                                                R.string.yt_playlist_limited
+                                                            ),
+                                                            context = context,
+                                                            type = PopupType.Error
+                                                        )
+                                                    } else if (!isYtSyncEnabled() || !playlistPreview.playlist.isYoutubePlaylist) {
+                                                        playlistPage?.songs?.forEachIndexed { index, song ->
+                                                            runCatching {
+                                                                coroutineScope.launch(
+                                                                    Dispatchers.IO
+                                                                ) {
+                                                                    Database.insert(song.asSong)
+                                                                    Database.insert(
+                                                                        SongPlaylistMap(
+                                                                            songId = song.asMediaItem.mediaId,
+                                                                            playlistId = playlistPreview.playlist.id,
+                                                                            position = position + index
+                                                                        ).default()
                                                                     )
                                                                 }
+                                                            }.onFailure {
+                                                                Timber.e("Failed onAddToPlaylist in PlaylistSongListModern  ${it.stackTraceToString()}")
                                                             }
-                                                            CoroutineScope(Dispatchers.Main).launch {
-                                                                SmartMessage(
-                                                                    context.resources.getString(
-                                                                        R.string.done
-                                                                    ),
-                                                                    type = PopupType.Success,
-                                                                    context = context
-                                                                )
-                                                            }
-                                                        },
-                                                        onGoToPlaylist = {
-                                                            navController.navigate("${NavRoutes.localPlaylist.name}/$it")
-                                                        },
-                                                        disableScrollingText = disableScrollingText
-                                                    )
-                                                }
-                                            },
-                                            onLongClick = {
-                                                SmartMessage(
-                                                    context.resources.getString(R.string.info_add_in_playlist),
-                                                    context = context
-                                                )
-                                            }
+                                                        }
+                                                    } else {
+                                                        CoroutineScope(Dispatchers.IO).launch {
+                                                            EnvironmentExt.addPlaylistToPlaylist(
+                                                                cleanPrefix(
+                                                                    playlistPreview.playlist.browseId
+                                                                        ?: ""
+                                                                ),
+                                                                browseId.substringAfter("VL")
+
+                                                            )
+                                                        }
+                                                    }
+                                                    CoroutineScope(Dispatchers.Main).launch {
+                                                        SmartMessage(
+                                                            context.resources.getString(
+                                                                R.string.done
+                                                            ),
+                                                            type = PopupType.Success,
+                                                            context = context
+                                                        )
+                                                    }
+                                                },
+                                                onGoToPlaylist = {
+                                                    navController.navigate("${NavRoutes.localPlaylist.name}/$it")
+                                                },
+                                                disableScrollingText = disableScrollingText
+                                            )
+                                        }
+                                    },
+                                    onLongClick = {
+                                        SmartMessage(
+                                            context.resources.getString(R.string.info_add_in_playlist),
+                                            context = context
                                         )
+                                    }
                                 )
                                 HeaderIconButton(
                                     icon = R.drawable.heart,
                                     enabled = playlistPage?.songs?.isNotEmpty() == true,
                                     color = colorPalette().text,
-                                    onClick = {},
-                                    modifier = Modifier
-                                        .padding(horizontal = 5.dp)
-                                        .combinedClickable(
-                                            onClick = {
-                                                if (!isNetworkConnected(appContext()) && isYtSyncEnabled()) {
-                                                    SmartMessage(
-                                                        appContext().resources.getString(R.string.no_connection),
-                                                        context = appContext(),
-                                                        type = PopupType.Error
+                                    onClick = {
+                                        if (!isNetworkConnected(appContext()) && isYtSyncEnabled()) {
+                                            SmartMessage(
+                                                appContext().resources.getString(R.string.no_connection),
+                                                context = appContext(),
+                                                type = PopupType.Error
+                                            )
+                                        } else if (!isYtSyncEnabled()) {
+                                            Database.asyncTransaction {
+                                                playlistPage?.songs?.filter {
+                                                    getLikedAt(it.asMediaItem.mediaId) in listOf(
+                                                        -1L,
+                                                        null
                                                     )
-                                                } else if (!isYtSyncEnabled()) {
-                                                    Database.asyncTransaction {
-                                                        playlistPage?.songs?.filter {
-                                                            getLikedAt(it.asMediaItem.mediaId) in listOf(
-                                                                -1L,
-                                                                null
-                                                            )
-                                                        }?.forEachIndexed { _, song ->
-                                                            mediaItemSetLiked(song.asMediaItem)
-                                                        }
-                                                        SmartMessage(
-                                                            context.resources.getString(R.string.done),
-                                                            context = context
-                                                        )
-                                                    }
-                                                } else {
-                                                    showYoutubeLikeConfirmDialog = true
+                                                }?.forEachIndexed { _, song ->
+                                                    mediaItemSetLiked(song.asMediaItem)
                                                 }
-                                            },
-                                            onLongClick = {
                                                 SmartMessage(
-                                                    context.resources.getString(R.string.add_to_favorites),
+                                                    context.resources.getString(R.string.done),
                                                     context = context
                                                 )
                                             }
+                                        } else {
+                                            showYoutubeLikeConfirmDialog = true
+                                        }
+                                    },
+                                    onLongClick = {
+                                        SmartMessage(
+                                            context.resources.getString(R.string.add_to_favorites),
+                                            context = context
                                         )
+                                    }
                                 )
 
                                 HeaderIconButton(
-                                    modifier = Modifier
-                                        .padding(horizontal = 5.dp)
-                                        .combinedClickable(
-                                            onClick = {
-                                                showFastShare = true
-                                                showDirectFastShare = true
-                                            },
-                                            onLongClick = {
-                                                SmartMessage(
-                                                    context.resources.getString(R.string.share_with_external_app),
-                                                    context = context
-                                                )
-                                            }
-                                        ),
                                     icon = R.drawable.get_app,
                                     enabled = playlistPage?.songs?.isNotEmpty() == true,
                                     color = colorPalette().text,
-                                    onClick = {}
+                                    onClick = {
+                                        showFastShare = true
+                                        showDirectFastShare = true
+                                    },
+                                    onLongClick = {
+                                        SmartMessage(
+                                            context.resources.getString(R.string.share_with_external_app),
+                                            context = context
+                                        )
+                                    }
                                 )
 
                                 if (isYtSyncEnabled()) {
                                     HeaderIconButton(
                                         icon = if (localPlaylist?.isYoutubePlaylist == true) R.drawable.bookmark else R.drawable.bookmark_outline,
                                         color = colorPalette().text,
-                                        onClick = {},
-                                        modifier = Modifier
-                                            .padding(horizontal = 5.dp)
-                                            .combinedClickable(
-                                                onClick = {
-                                                    if (isNetworkConnected(context)) {
-                                                        if (localPlaylist?.isYoutubePlaylist == true) {
-                                                            CoroutineScope(Dispatchers.IO).launch {
-                                                                EnvironmentExt.removelikePlaylistOrAlbum(
-                                                                    browseId.substringAfter("VL")
-                                                                )
-                                                            }
-                                                            Database.asyncTransaction {
-                                                                Database.playlistWithBrowseId(
-                                                                    browseId.substringAfter(
-                                                                        "VL"
-                                                                    )
-                                                                )
-                                                                    ?.let { delete(it) }
-                                                            }
-                                                        } else {
-                                                            CoroutineScope(Dispatchers.IO).launch {
-                                                                EnvironmentExt.likePlaylistOrAlbum(
-                                                                    browseId.substringAfter(
-                                                                        "VL"
-                                                                    )
-                                                                )
-                                                            }
-                                                            Database.asyncTransaction {
-                                                                val playlistId = insert(
-                                                                    Playlist(
-                                                                        name = (playlistPage?.playlist?.title
-                                                                            ?: ""),
-                                                                        browseId = browseId.substringAfter(
-                                                                            "VL"
-                                                                        ),
-                                                                        isYoutubePlaylist = true,
-                                                                        isEditable = false
-                                                                    )
-                                                                )
-
-                                                                playlistPage?.songs
-                                                                    ?.map(Environment.SongItem::asMediaItem)
-                                                                    ?.onEach(::insert)
-                                                                    ?.mapIndexed { index, mediaItem ->
-                                                                        SongPlaylistMap(
-                                                                            songId = mediaItem.mediaId,
-                                                                            playlistId = playlistId,
-                                                                            position = index
-                                                                        ).default()
-                                                                    }
-                                                                    ?.onEach { Database.insert(it) }
-                                                                    //?.let(::upsert)
-                                                            }
-                                                        }
-                                                        SmartMessage(
-                                                            context.resources.getString(R.string.done),
-                                                            context = context
-                                                        )
-                                                        saveCheck = !saveCheck
-                                                    } else {
-                                                        SmartMessage(
-                                                            context.resources.getString(R.string.no_connection),
-                                                            context = context,
-                                                            type = PopupType.Error
+                                        onClick = {
+                                            if (isNetworkConnected(context)) {
+                                                if (localPlaylist?.isYoutubePlaylist == true) {
+                                                    CoroutineScope(Dispatchers.IO).launch {
+                                                        EnvironmentExt.removelikePlaylistOrAlbum(
+                                                            browseId.substringAfter("VL")
                                                         )
                                                     }
-                                                },
-                                                onLongClick = {
-                                                    SmartMessage(
-                                                        context.resources.getString(R.string.save_youtube_library),
-                                                        context = context
-                                                    )
+                                                    Database.asyncTransaction {
+                                                        Database.playlistWithBrowseId(
+                                                            browseId.substringAfter(
+                                                                "VL"
+                                                            )
+                                                        )
+                                                            ?.let { delete(it) }
+                                                    }
+                                                } else {
+                                                    CoroutineScope(Dispatchers.IO).launch {
+                                                        EnvironmentExt.likePlaylistOrAlbum(
+                                                            browseId.substringAfter(
+                                                                "VL"
+                                                            )
+                                                        )
+                                                    }
+                                                    Database.asyncTransaction {
+                                                        val playlistId = insert(
+                                                            Playlist(
+                                                                name = (playlistPage?.playlist?.title
+                                                                    ?: ""),
+                                                                browseId = browseId.substringAfter(
+                                                                    "VL"
+                                                                ),
+                                                                isYoutubePlaylist = true,
+                                                                isEditable = false
+                                                            )
+                                                        )
+
+                                                        playlistPage?.songs
+                                                            ?.map(Environment.SongItem::asMediaItem)
+                                                            ?.onEach(::insert)
+                                                            ?.mapIndexed { index, mediaItem ->
+                                                                SongPlaylistMap(
+                                                                    songId = mediaItem.mediaId,
+                                                                    playlistId = playlistId,
+                                                                    position = index
+                                                                ).default()
+                                                            }
+                                                            ?.onEach { Database.insert(it) }
+                                                        //?.let(::upsert)
+                                                    }
                                                 }
+                                                SmartMessage(
+                                                    context.resources.getString(R.string.done),
+                                                    context = context
+                                                )
+                                                saveCheck = !saveCheck
+                                            } else {
+                                                SmartMessage(
+                                                    context.resources.getString(R.string.no_connection),
+                                                    context = context,
+                                                    type = PopupType.Error
+                                                )
+                                            }
+                                        },
+                                        onLongClick = {
+                                            SmartMessage(
+                                                context.resources.getString(R.string.save_youtube_library),
+                                                context = context
                                             )
+                                        }
                                     )
                                 }
 

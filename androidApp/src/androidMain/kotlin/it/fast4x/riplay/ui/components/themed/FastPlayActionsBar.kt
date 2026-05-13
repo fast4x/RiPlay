@@ -41,17 +41,13 @@ fun FastPlayActionsBar(
             HeaderIconButton(
                 icon = R.drawable.play_now,
                 color = colorPalette().text,
-                onClick = {},
-                modifier = Modifier
-                    .combinedClickable(
-                        onClick = onPlayNowClick,
-                        onLongClick = {
-                            SmartMessage(
-                                globalContext().resources.getString(R.string.play_now),
-                                context = globalContext()
-                            )
-                        }
-                    ),
+                onClick = onPlayNowClick,
+                onLongClick = {
+                    SmartMessage(
+                        globalContext().resources.getString(R.string.play_now),
+                        context = globalContext()
+                    )
+                },
                 iconSize = iconSize
             )
         }
@@ -59,17 +55,13 @@ fun FastPlayActionsBar(
             HeaderIconButton(
                 icon = R.drawable.play_shuffle,
                 color = colorPalette().text,
-                onClick = {},
-                modifier = Modifier
-                    .combinedClickable(
-                        onClick = onShufflePlayClick,
-                        onLongClick = {
-                            SmartMessage(
-                                globalContext().resources.getString(R.string.shuffle_play),
-                                context = globalContext()
-                            )
-                        }
-                    ),
+                onClick = onShufflePlayClick,
+                onLongClick = {
+                    SmartMessage(
+                        globalContext().resources.getString(R.string.shuffle_play),
+                        context = globalContext()
+                    )
+                },
                 iconSize = iconSize
             )
         }
@@ -77,17 +69,13 @@ fun FastPlayActionsBar(
             HeaderIconButton(
                 icon = R.drawable.smart_shuffle,
                 color = if (isRecommendationEnabled) colorPalette().text else colorPalette().textDisabled,
-                onClick = {},
-                modifier = Modifier
-                    .combinedClickable(
-                        onClick = onSmartRecommendationClick,
-                        onLongClick = {
-                            SmartMessage(
-                                globalContext().resources.getString(R.string.info_smart_recommendation),
-                                context = globalContext()
-                            )
-                        }
-                    ),
+                onClick = onSmartRecommendationClick,
+                onLongClick = {
+                    SmartMessage(
+                        globalContext().resources.getString(R.string.info_smart_recommendation),
+                        context = globalContext()
+                    )
+                },
                 iconSize = 36.dp
             )
         }

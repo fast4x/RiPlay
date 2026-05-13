@@ -187,7 +187,6 @@ fun adaptiveThumbnailContent(
                             onClick = {
                                 onOtherVersionAvailable()
                             },
-                            modifier = Modifier.size(35.dp)
                         )
                     }
                 }

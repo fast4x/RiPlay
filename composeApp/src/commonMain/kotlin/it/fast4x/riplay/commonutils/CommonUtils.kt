@@ -58,12 +58,16 @@ fun cleanString(text: String): String {
 }
 
 fun String?.thumbnail(size: Int): String? {
-    println("String->Thumbnail: $this")
-    return when {
-        this?.startsWith("https://lh3.googleusercontent.com") == true -> "$this-w$size-h$size"
+    val url = when {
+        this?.startsWith("https://lh3.googleusercontent.com") == true ||
+        this?.startsWith("https://yt3.googleusercontent.com") == true ||
+        this?.startsWith("https://i.ytimg.com") == true -> "$this-w$size-h$size"
         this?.startsWith("https://yt3.ggpht.com") == true -> "$this-w$size-h$size-s$size"
         else -> this
     }
+    println("String->Thumbnail url base: $this url modified: $url")
+    //println("String->Thumbnail url modified: $url")
+    return url
 }
 fun String?.thumbnail(): String? {
     return this

@@ -187,21 +187,17 @@ fun ArtistLibrarySongs(
                             HeaderIconButton(
                                 icon = R.drawable.arrow_up,
                                 color = colorPalette().text,
-                                onClick = {},
+                                onClick = { sortOrder = !sortOrder },
+                                onLongClick = {
+                                    menuState.display {
+                                        sortMenu()
+                                    }
+                                },
                                 modifier = Modifier
-                                    .padding(horizontal = 2.dp)
                                     .graphicsLayer {
                                         rotationZ =
                                             sortOrderIconRotation
                                     }
-                                    .combinedClickable(
-                                        onClick = { sortOrder = !sortOrder },
-                                        onLongClick = {
-                                            menuState.display {
-                                                sortMenu()
-                                            }
-                                        }
-                                    )
                             )
                             Spacer(modifier = Modifier.width(12.dp))
                             Text(

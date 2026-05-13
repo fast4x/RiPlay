@@ -270,99 +270,82 @@ fun OnDeviceArtistDetails(
                             icon = R.drawable.shuffle,
                             enabled = topSongs.any { it.likedAt != -1L },
                             color = if (topSongs.any { it.likedAt != -1L }) colorPalette().text else colorPalette().textDisabled,
-                            onClick = {},
-                            modifier = Modifier
-                                .padding(horizontal = 5.dp)
-                                .combinedClickable(
-                                    onClick = {
-                                        if (topSongs.any { it.likedAt != -1L }) {
-                                            binder?.stopRadio()
-                                            binder?.player?.forcePlayFromBeginning(
-                                                topSongs.filter { it.likedAt != -1L }
-                                                    .shuffled()
-                                                    .map(Song::asMediaItem)
-                                            )
-                                        } else {
-                                            SmartMessage(
-                                                context.resources.getString(R.string.disliked_this_collection),
-                                                type = PopupType.Error,
-                                                context = context
-                                            )
-                                        }
-                                    },
-                                    onLongClick = {
-                                        SmartMessage(
-                                            context.resources.getString(R.string.info_shuffle),
-                                            context = context
-                                        )
-                                    }
+                            onClick = {
+                                if (topSongs.any { it.likedAt != -1L }) {
+                                    binder?.stopRadio()
+                                    binder?.player?.forcePlayFromBeginning(
+                                        topSongs.filter { it.likedAt != -1L }
+                                            .shuffled()
+                                            .map(Song::asMediaItem)
+                                    )
+                                } else {
+                                    SmartMessage(
+                                        context.resources.getString(R.string.disliked_this_collection),
+                                        type = PopupType.Error,
+                                        context = context
+                                    )
+                                }
+                            },
+                            onLongClick = {
+                                SmartMessage(
+                                    context.resources.getString(R.string.info_shuffle),
+                                    context = context
                                 )
+                            }
                         )
 
                         HeaderIconButton(
                             icon = R.drawable.radio,
                             enabled = true,
                             color = if (topSongs.any { it.likedAt != -1L }) colorPalette().text else colorPalette().textDisabled,
-                            onClick = {},
-                            modifier = Modifier
-                                .padding(horizontal = 5.dp)
-                                .combinedClickable(
-                                    onClick = {
-                                        if (topSongs.any { it.likedAt != -1L }) {
-                                            binder?.stopRadio()
-                                            binder?.player?.forcePlayFromBeginning(topSongs.filter { it.likedAt != -1L }
-                                                .map(Song::asMediaItem))
-                                            binder?.setupRadio(
-                                                NavigationEndpoint.Endpoint.Watch(
-                                                    videoId = topSongs.first { it.likedAt != -1L }.id
-                                                )
-                                            )
-                                        } else {
-                                            SmartMessage(
-                                                context.resources.getString(R.string.disliked_this_collection),
-                                                type = PopupType.Error,
-                                                context = context
-                                            )
-                                        }
-                                    },
-                                    onLongClick = {
-                                        SmartMessage(
-                                            context.resources.getString(R.string.info_start_radio),
-                                            context = context
+                            onClick = {
+                                if (topSongs.any { it.likedAt != -1L }) {
+                                    binder?.stopRadio()
+                                    binder?.player?.forcePlayFromBeginning(topSongs.filter { it.likedAt != -1L }
+                                        .map(Song::asMediaItem))
+                                    binder?.setupRadio(
+                                        NavigationEndpoint.Endpoint.Watch(
+                                            videoId = topSongs.first { it.likedAt != -1L }.id
                                         )
-                                    }
+                                    )
+                                } else {
+                                    SmartMessage(
+                                        context.resources.getString(R.string.disliked_this_collection),
+                                        type = PopupType.Error,
+                                        context = context
+                                    )
+                                }
+                            },
+                            onLongClick = {
+                                SmartMessage(
+                                    context.resources.getString(R.string.info_start_radio),
+                                    context = context
                                 )
+                            }
                         )
 
                         HeaderIconButton(
-                            modifier = Modifier
-                                .padding(horizontal = 5.dp)
-                                .combinedClickable(
-                                    onClick = {
-                                        nowPlayingItem = -1
-                                        scrollToNowPlaying = false
-                                        topSongs
-                                            .forEachIndexed { index, song ->
-                                                if (song.asMediaItem.mediaId == binder?.player?.currentMediaItem?.mediaId)
-                                                    nowPlayingItem = index
-                                            }
-
-                                        if (nowPlayingItem > -1)
-                                            scrollToNowPlaying = true
-                                    },
-                                    onLongClick = {
-                                        SmartMessage(
-                                            context.resources.getString(R.string.info_find_the_song_that_is_playing),
-                                            context = context
-                                        )
-                                    }
-                                ),
                             icon = R.drawable.locate,
                             enabled = topSongs.isNotEmpty(),
                             color = if (topSongs.isNotEmpty()) colorPalette().text else colorPalette().textDisabled,
-                            onClick = {}
+                            onClick = {
+                                nowPlayingItem = -1
+                                scrollToNowPlaying = false
+                                topSongs
+                                    .forEachIndexed { index, song ->
+                                        if (song.asMediaItem.mediaId == binder?.player?.currentMediaItem?.mediaId)
+                                            nowPlayingItem = index
+                                    }
 
-
+                                if (nowPlayingItem > -1)
+                                    scrollToNowPlaying = true
+                            },
+                            onLongClick = {
+                                SmartMessage(
+                                    context.resources.getString(R.string.info_find_the_song_that_is_playing),
+                                    context = context
+                                )
+                            }
                         )
 
                     }

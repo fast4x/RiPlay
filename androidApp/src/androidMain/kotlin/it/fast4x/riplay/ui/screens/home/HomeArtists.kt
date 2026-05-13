@@ -348,23 +348,20 @@ fun HomeArtists(
                         HeaderIconButton(
                             icon = R.drawable.arrow_up,
                             color = colorPalette().text,
-                            onClick = {},
+                            onClick = {
+                                // Cliccando la freccia:
+                                // Se espanso -> Inverte ordine (e resetta timer)
+                                // Se chiuso -> Espande il chip
+                                if (isSortExpanded) {
+                                    sortOrder = if (sortOrder == SortOrder.Ascending) SortOrder.Descending else SortOrder.Ascending
+                                } else {
+                                    isSortExpanded = true
+                                }
+                            },
+                            onLongClick = { menuState.display { sortMenu() } },
                             modifier = Modifier
-                                .size(20.dp)
                                 .graphicsLayer { rotationZ = sortOrderIconRotation }
-                                .combinedClickable(
-                                    onClick = {
-                                        // Cliccando la freccia:
-                                        // Se espanso -> Inverte ordine (e resetta timer)
-                                        // Se chiuso -> Espande il chip
-                                        if (isSortExpanded) {
-                                            sortOrder = if (sortOrder == SortOrder.Ascending) SortOrder.Descending else SortOrder.Ascending
-                                        } else {
-                                            isSortExpanded = true
-                                        }
-                                    },
-                                    onLongClick = { menuState.display { sortMenu() } }
-                                )
+
                         )
                     }
                 }

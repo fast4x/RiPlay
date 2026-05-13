@@ -33,22 +33,22 @@ interface Icon: Button {
     override fun ToolBarButton() {
         if( this is Clickable)
             TabToolBar.Icon(
-                icon,
-                color,
-                sizeDp,
-                isEnabled,
-                modifier,
-                this::onShortClick,
-                this::onLongClick
+                icon = icon,
+                tint = color,
+                size = sizeDp,
+                enabled = isEnabled,
+                modifier = modifier,
+                onClick = this::onShortClick,
+                onLongClick = this::onLongClick
             )
         else
             TabToolBar.Icon(
-                icon,
-                color,
-                sizeDp,
-                isEnabled,
-                modifier,
-                this::onShortClick
+                icon = icon,
+                tint = color,
+                size = sizeDp,
+                enabled = isEnabled,
+                modifier = modifier,
+                onClick = this::onShortClick
             )
     }
 }

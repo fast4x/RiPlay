@@ -17,17 +17,29 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import it.fast4x.riplay.ui.components.ActionPillButton
 
 @Composable
 fun HeaderIconButton(
+    modifier: Modifier = Modifier,
     onClick: () -> Unit,
+    onLongClick: (() -> Unit)? = null,
     @DrawableRes icon: Int,
     color: Color,
-    modifier: Modifier = Modifier,
     enabled: Boolean = true,
     indication: Indication? = null,
-    iconSize: Dp? = 20.dp
+    iconSize: Dp? = 22.dp
 ) {
+    ActionPillButton(
+        modifier = modifier, //.padding(end = 5.dp),
+        icon = icon,
+        //iconSize = iconSize,
+        enabled = enabled,
+        tint = color,
+        onClick = onClick,
+        onLongClick = onLongClick
+    )
+    /*
     IconButton(
         icon = icon,
         color = color,
@@ -38,6 +50,8 @@ fun HeaderIconButton(
             .padding(all = 2.dp)
             .size(iconSize ?: 18.dp)
     )
+
+     */
 }
 
 @OptIn(ExperimentalFoundationApi::class)

@@ -361,7 +361,7 @@ fun Podcast(
 
                                 BasicText(
                                     text = podcastPage?.listEpisode?.size.toString()
-                                            + " " + stringResource(R.string.songs),
+                                            + " " + stringResource(R.string.podcast_episodes),
                                             //+ " - " + formatAsTime(totalPlayTimes),
                                     style = typography().xs.medium,
                                     maxLines = 1,
@@ -374,7 +374,6 @@ fun Podcast(
                                 HeaderIconButton(
                                     icon = R.drawable.share_social,
                                     color = colorPalette().text,
-                                    iconSize = 24.dp,
                                     modifier = Modifier
                                         .align(Alignment.TopEnd)
                                         .padding(top = 5.dp, end = 5.dp),
@@ -427,7 +426,7 @@ fun Podcast(
                         contentType = 0
                     ) {
                         Row(
-                            horizontalArrangement = Arrangement.Center,
+                            horizontalArrangement = Arrangement.SpaceAround,
                             verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier
                                 .padding(top = 10.dp)
@@ -444,172 +443,149 @@ fun Podcast(
                                     onClick = { searching = !searching },
                                     icon = R.drawable.search_circle,
                                     color = colorPalette().text,
-                                    iconSize = 24.dp,
-                                    modifier = Modifier
-                                        .padding(horizontal = 5.dp)
                                 )
 
                                 HeaderIconButton(
                                     icon = R.drawable.enqueue,
                                     enabled = podcastPage?.listEpisode?.isNotEmpty() == true,
                                     color = if (podcastPage?.listEpisode?.isNotEmpty() == true) colorPalette().text else colorPalette().textDisabled,
-                                    onClick = {},
-                                    modifier = Modifier
-                                        .padding(horizontal = 5.dp)
-                                        .combinedClickable(
-                                            onClick = {
-                                                podcastPage?.listEpisode?.map(Environment.Podcast.EpisodeItem::asMediaItem)
-                                                    ?.let { mediaItems ->
-                                                        binder?.player?.enqueue(mediaItems, context)
-                                                    }
-                                            },
-                                            onLongClick = {
-                                                SmartMessage(
-                                                    context.resources.getString(R.string.info_enqueue_songs),
-                                                    context = context
-                                                )
+                                    onClick = {
+                                        podcastPage?.listEpisode?.map(Environment.Podcast.EpisodeItem::asMediaItem)
+                                            ?.let { mediaItems ->
+                                                binder?.player?.enqueue(mediaItems, context)
                                             }
+                                    },
+                                    onLongClick = {
+                                        SmartMessage(
+                                            context.resources.getString(R.string.info_enqueue_songs),
+                                            context = context
                                         )
+                                    }
                                 )
 
                                 HeaderIconButton(
                                     icon = R.drawable.shuffle,
                                     enabled = podcastPage?.listEpisode?.isNotEmpty() == true,
                                     color = if (podcastPage?.listEpisode?.isNotEmpty() == true) colorPalette().text else colorPalette().textDisabled,
-                                    onClick = {},
-                                    modifier = Modifier
-                                        .padding(horizontal = 5.dp)
-                                        .combinedClickable(
-                                            onClick = {
-                                                if (podcastPage?.listEpisode?.isNotEmpty() == true) {
-                                                    binder?.stopRadio()
-                                                    podcastPage?.listEpisode?.shuffled()
-                                                        ?.map(Environment.Podcast.EpisodeItem::asMediaItem)
-                                                        ?.let {
-                                                            binder?.player?.forcePlayFromBeginning(
-                                                                it
-                                                            )
-                                                        }
+                                    onClick = {
+                                        if (podcastPage?.listEpisode?.isNotEmpty() == true) {
+                                            binder?.stopRadio()
+                                            podcastPage?.listEpisode?.shuffled()
+                                                ?.map(Environment.Podcast.EpisodeItem::asMediaItem)
+                                                ?.let {
+                                                    binder?.player?.forcePlayFromBeginning(
+                                                        it
+                                                    )
                                                 }
-                                            },
-                                            onLongClick = {
-                                                SmartMessage(
-                                                    context.resources.getString(R.string.info_shuffle),
-                                                    context = context
-                                                )
-                                            }
+                                        }
+                                    },
+                                    onLongClick = {
+                                        SmartMessage(
+                                            context.resources.getString(R.string.info_shuffle),
+                                            context = context
                                         )
+                                    }
                                 )
 
                                 HeaderIconButton(
                                     icon = R.drawable.radio,
                                     enabled = podcastPage?.listEpisode?.isNotEmpty() == true,
                                     color = colorPalette().text,
-                                    onClick = {},
-                                    modifier = Modifier
-                                        .padding(horizontal = 5.dp)
-                                        .combinedClickable(
-                                            onClick = {
-                                                if (binder != null) {
-                                                    binder.stopRadio()
-                                                    binder.playRadio(
-                                                        NavigationEndpoint.Endpoint.Watch(
-                                                            videoId =
-                                                                if (binder.player.currentMediaItem?.mediaId != null)
-                                                                    binder.player.currentMediaItem?.mediaId
-                                                                else podcastPage?.listEpisode?.first()?.asMediaItem?.mediaId
-                                                        )
-                                                    )
-                                                }
-
-                                            },
-                                            onLongClick = {
-                                                SmartMessage(
-                                                    context.resources.getString(R.string.info_start_radio),
-                                                    context = context
+                                    onClick = {
+                                        if (binder != null) {
+                                            binder.stopRadio()
+                                            binder.playRadio(
+                                                NavigationEndpoint.Endpoint.Watch(
+                                                    videoId =
+                                                        if (binder.player.currentMediaItem?.mediaId != null)
+                                                            binder.player.currentMediaItem?.mediaId
+                                                        else podcastPage?.listEpisode?.first()?.asMediaItem?.mediaId
                                                 )
-                                            }
+                                            )
+                                        }
+
+                                    },
+                                    onLongClick = {
+                                        SmartMessage(
+                                            context.resources.getString(R.string.info_start_radio),
+                                            context = context
                                         )
+                                    }
                                 )
 
 
                                 HeaderIconButton(
                                     icon = R.drawable.add_in_playlist,
                                     color = colorPalette().text,
-                                    onClick = {},
-                                    modifier = Modifier
-                                        .padding(horizontal = 5.dp)
-                                        .combinedClickable(
-                                            onClick = {
-                                                menuState.display {
-                                                    PlaylistsItemMenu(
-                                                        navController = navController,
-                                                        modifier = Modifier.fillMaxHeight(0.4f),
-                                                        onDismiss = menuState::hide,
-                                                        onImportOnlinePlaylist = {
-                                                            isImportingPlaylist = true
-                                                        },
+                                    onClick = {
+                                        menuState.display {
+                                            PlaylistsItemMenu(
+                                                navController = navController,
+                                                modifier = Modifier.fillMaxHeight(0.4f),
+                                                onDismiss = menuState::hide,
+                                                onImportOnlinePlaylist = {
+                                                    isImportingPlaylist = true
+                                                },
 
-                                                        //NOT NECESSARY IN ONLINE PLAYLIST USE IMPORT
-                                                        onAddToPlaylist = { playlistPreview ->
-                                                            position =
-                                                                playlistPreview.songCount.minus(1)
-                                                                    ?: 0
-                                                            if (position > 0) position++ else position =
-                                                                0
+                                                //NOT NECESSARY IN ONLINE PLAYLIST USE IMPORT
+                                                onAddToPlaylist = { playlistPreview ->
+                                                    position =
+                                                        playlistPreview.songCount.minus(1)
+                                                            ?: 0
+                                                    if (position > 0) position++ else position =
+                                                        0
 
-                                                            if (!isYtSyncEnabled() || !playlistPreview.playlist.isYoutubePlaylist) {
-                                                                podcastPage?.listEpisode?.forEachIndexed { index, song ->
-                                                                    runCatching {
-                                                                        Database.insert(song.asMediaItem)
-                                                                        Database.insert(
-                                                                            SongPlaylistMap(
-                                                                                songId = song.asMediaItem.mediaId,
-                                                                                playlistId = playlistPreview.playlist.id,
-                                                                                position = position + index
-                                                                            ).default()
-                                                                        )
-                                                                    }.onFailure {
-                                                                        Timber.e("Failed onAddToPlaylist in PlaylistSongListModern  ${it.stackTraceToString()}")
-                                                                    }
-                                                                }
-                                                            } else {
-                                                                CoroutineScope(Dispatchers.IO).launch {
-                                                                    playlistPreview.playlist.browseId?.let { id ->
-                                                                        addToYtPlaylist(
-                                                                            playlistPreview.playlist.id,
-                                                                            position,
-                                                                            id,
-                                                                            podcastPage?.listEpisode?.map { it.asMediaItem }
-                                                                                ?: emptyList())
-                                                                    }
-                                                                }
-                                                            }
-
-                                                            CoroutineScope(Dispatchers.Main).launch {
-                                                                SmartMessage(
-                                                                    context.resources.getString(
-                                                                        R.string.done
-                                                                    ),
-                                                                    type = PopupType.Success,
-                                                                    context = context
+                                                    if (!isYtSyncEnabled() || !playlistPreview.playlist.isYoutubePlaylist) {
+                                                        podcastPage?.listEpisode?.forEachIndexed { index, song ->
+                                                            runCatching {
+                                                                Database.insert(song.asMediaItem)
+                                                                Database.insert(
+                                                                    SongPlaylistMap(
+                                                                        songId = song.asMediaItem.mediaId,
+                                                                        playlistId = playlistPreview.playlist.id,
+                                                                        position = position + index
+                                                                    ).default()
                                                                 )
+                                                            }.onFailure {
+                                                                Timber.e("Failed onAddToPlaylist in PlaylistSongListModern  ${it.stackTraceToString()}")
                                                             }
-                                                        },
-                                                        onGoToPlaylist = {
-                                                            navController.navigate("${NavRoutes.localPlaylist.name}/$it")
-                                                        },
-                                                        disableScrollingText = disableScrollingText
-                                                    )
-                                                }
-                                            },
-                                            onLongClick = {
-                                                SmartMessage(
-                                                    context.resources.getString(R.string.info_add_in_playlist),
-                                                    context = context
-                                                )
-                                            }
+                                                        }
+                                                    } else {
+                                                        CoroutineScope(Dispatchers.IO).launch {
+                                                            playlistPreview.playlist.browseId?.let { id ->
+                                                                addToYtPlaylist(
+                                                                    playlistPreview.playlist.id,
+                                                                    position,
+                                                                    id,
+                                                                    podcastPage?.listEpisode?.map { it.asMediaItem }
+                                                                        ?: emptyList())
+                                                            }
+                                                        }
+                                                    }
+
+                                                    CoroutineScope(Dispatchers.Main).launch {
+                                                        SmartMessage(
+                                                            context.resources.getString(
+                                                                R.string.done
+                                                            ),
+                                                            type = PopupType.Success,
+                                                            context = context
+                                                        )
+                                                    }
+                                                },
+                                                onGoToPlaylist = {
+                                                    navController.navigate("${NavRoutes.localPlaylist.name}/$it")
+                                                },
+                                                disableScrollingText = disableScrollingText
+                                            )
+                                        }
+                                    },
+                                    onLongClick = {
+                                        SmartMessage(
+                                            context.resources.getString(R.string.info_add_in_playlist),
+                                            context = context
                                         )
+                                    }
                                 )
 
 

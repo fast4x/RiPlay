@@ -140,6 +140,7 @@ import it.fast4x.riplay.data.models.defaultQueue
 import it.fast4x.riplay.utils.typography
 import it.fast4x.riplay.ui.components.PullToRefreshBox
 import it.fast4x.riplay.ui.components.themed.FastPlayActionsBar
+import it.fast4x.riplay.ui.components.themed.Loader
 import it.fast4x.riplay.ui.components.themed.LoaderScreen
 import it.fast4x.riplay.ui.components.themed.QueuesDialog
 import it.fast4x.riplay.ui.components.themed.Title
@@ -151,6 +152,7 @@ import it.fast4x.riplay.utils.addToYtPlaylist
 import it.fast4x.riplay.utils.globalContext
 import it.fast4x.riplay.utils.isNetworkConnected
 import it.fast4x.riplay.utils.mediaItemSetLiked
+import it.fast4x.riplay.utils.isPrimaryAction
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.ExperimentalSerializationApi
@@ -603,12 +605,10 @@ fun AlbumDetails(
                                     )
 
                                     HeaderIconButton(
+                                        modifier = Modifier.align(Alignment.TopEnd),
                                         icon = R.drawable.share_social,
                                         color = colorPalette().text,
                                         iconSize = 24.dp,
-                                        modifier = Modifier
-                                            .align(Alignment.TopEnd)
-                                            .padding(top = 5.dp, end = 5.dp),
                                         onClick = {
                                             showFastShare = true
                                         }
@@ -641,19 +641,27 @@ fun AlbumDetails(
                                             .fillMaxWidth()
                                             .aspectRatio(4f / 3)
                                     ) {
-                                        ShimmerHost {
-                                            AlbumItemPlaceholder(
-                                                thumbnailSizeDp = 200.dp,
-                                                alternative = true
-                                            )
-                                            BasicText(
-                                                text = stringResource(R.string.info_wait_it_may_take_a_few_minutes),
-                                                style = typography().xs.medium,
-                                                maxLines = 1,
-                                                modifier = Modifier
+                                        Loader()
+                                        BasicText(
+                                            text = stringResource(R.string.info_wait_it_may_take_a_few_minutes),
+                                            style = typography().xs.medium,
+                                            maxLines = 1,
+                                            modifier = Modifier
 
-                                            )
-                                        }
+                                        )
+//                                        ShimmerHost {
+//                                            AlbumItemPlaceholder(
+//                                                thumbnailSizeDp = 200.dp,
+//                                                alternative = true
+//                                            )
+//                                            BasicText(
+//                                                text = stringResource(R.string.info_wait_it_may_take_a_few_minutes),
+//                                                style = typography().xs.medium,
+//                                                maxLines = 1,
+//                                                modifier = Modifier
+//
+//                                            )
+//                                        }
                                     }
                                 }
                             }
@@ -685,81 +693,78 @@ fun AlbumDetails(
                             contentType = 0
                         ) {
                             Row(
-                                horizontalArrangement = Arrangement.Center,
+                                horizontalArrangement = Arrangement.SpaceAround,
                                 verticalAlignment = Alignment.CenterVertically,
                                 modifier = Modifier
                                     .padding(top = 10.dp)
                                     .fillMaxWidth()
                             ) {
                                 HeaderIconButton(
+                                    modifier = Modifier.isPrimaryAction(),
                                     icon = if (album?.bookmarkedAt == null) {
                                         R.drawable.bookmark_outline
                                     } else {
                                         R.drawable.bookmark
                                     },
                                     color = colorPalette().accent,
-                                    modifier = Modifier
-                                        .padding(horizontal = 25.dp)
-                                        .combinedClickable(
-                                            onClick = {
-                                                if (isYtSyncEnabled() && !isNetworkConnected(
-                                                        context
-                                                    )
-                                                ) {
-                                                    SmartMessage(
-                                                        context.resources.getString(R.string.no_connection),
-                                                        context = context,
-                                                        type = PopupType.Error
-                                                    )
-                                                } else {
-                                                    val bookmarkedAt =
-                                                        if (album?.bookmarkedAt == null) System.currentTimeMillis() else null
+                                    onClick = {
+                                        if (isYtSyncEnabled() && !isNetworkConnected(
+                                                context
+                                            )
+                                        ) {
+                                            SmartMessage(
+                                                context.resources.getString(R.string.no_connection),
+                                                context = context,
+                                                type = PopupType.Error
+                                            )
+                                        } else {
+                                            val bookmarkedAt =
+                                                if (album?.bookmarkedAt == null) System.currentTimeMillis() else null
 
-                                                    Database.asyncTransaction {
-                                                        album
-                                                            ?.copy(bookmarkedAt = bookmarkedAt)
-                                                            ?.let(::update)
-                                                    }
+                                            Database.asyncTransaction {
+                                                album
+                                                    ?.copy(bookmarkedAt = bookmarkedAt)
+                                                    ?.let(::update)
+                                            }
 
 
 
-                                                    if (isYtSyncEnabled())
-                                                        CoroutineScope(Dispatchers.IO).launch {
-                                                            if (bookmarkedAt == null)
-                                                                albumPage?.album?.playlistId.let {
-                                                                    if (it != null) {
-                                                                        EnvironmentExt.removelikePlaylistOrAlbum(
-                                                                            it
-                                                                        )
-                                                                        Database.asyncTransaction {
-                                                                            album?.let { update(it.copy(isYoutubeAlbum = false)) }
-                                                                        }
+                                            if (isYtSyncEnabled())
+                                                CoroutineScope(Dispatchers.IO).launch {
+                                                    if (bookmarkedAt == null)
+                                                        albumPage?.album?.playlistId.let {
+                                                            if (it != null) {
+                                                                EnvironmentExt.removelikePlaylistOrAlbum(
+                                                                    it
+                                                                )
+                                                                Database.asyncTransaction {
+                                                                    album?.let { update(it.copy(isYoutubeAlbum = false)) }
+                                                                }
+                                                            }
+                                                        }
+                                                    else
+                                                        albumPage?.album?.playlistId.let {
+                                                            if (it != null) {
+                                                                EnvironmentExt.likePlaylistOrAlbum(
+                                                                    it
+                                                                )
+                                                                if (album != null) {
+                                                                    Database.asyncTransaction {
+                                                                        album?.let { update(it.copy(isYoutubeAlbum = false)) }
                                                                     }
                                                                 }
-                                                            else
-                                                                albumPage?.album?.playlistId.let {
-                                                                    if (it != null) {
-                                                                        EnvironmentExt.likePlaylistOrAlbum(
-                                                                            it
-                                                                        )
-                                                                        if (album != null) {
-                                                                            Database.asyncTransaction {
-                                                                                album?.let { update(it.copy(isYoutubeAlbum = false)) }
-                                                                            }
-                                                                        }
-                                                                    }
-                                                                }
+                                                            }
                                                         }
                                                 }
-                                            },
-                                            onLongClick = {
-                                                SmartMessage(
-                                                    context.resources.getString(R.string.info_bookmark_album),
-                                                    context = context
-                                                )
-                                            }
-                                        ),
-                                    onClick = {}
+                                        }
+                                    },
+                                    onLongClick = {
+                                        SmartMessage(
+                                            context.resources.getString(R.string.info_bookmark_album),
+                                            context = context
+                                        )
+                                    }
+
                                 )
 
 
@@ -767,123 +772,102 @@ fun AlbumDetails(
                                     icon = R.drawable.shuffle,
                                     enabled = songs.any { it.likedAt != -1L },
                                     color = if (songs.any { it.likedAt != -1L }) colorPalette().text else colorPalette().textDisabled,
-                                    onClick = {},
-                                    modifier = Modifier
-                                        .padding(horizontal = 5.dp)
-                                        .combinedClickable(
-                                            onClick = {
-                                                if (songs.any { it.likedAt != -1L }) {
-                                                    binder?.stopRadio()
-                                                    binder?.player?.forcePlayFromBeginning(
-                                                        songs.filter { it.likedAt != -1L }
-                                                            .shuffled()
-                                                            .map(Song::asMediaItem)
-                                                    )
-                                                } else {
-                                                    SmartMessage(
-                                                        context.resources.getString(R.string.disliked_this_collection),
-                                                        type = PopupType.Error,
-                                                        context = context
-                                                    )
-                                                }
-                                            },
-                                            onLongClick = {
-                                                SmartMessage(
-                                                    context.resources.getString(R.string.info_shuffle),
-                                                    context = context
-                                                )
-                                            }
+                                    onClick = {
+                                        if (songs.any { it.likedAt != -1L }) {
+                                            binder?.stopRadio()
+                                            binder?.player?.forcePlayFromBeginning(
+                                                songs.filter { it.likedAt != -1L }
+                                                    .shuffled()
+                                                    .map(Song::asMediaItem)
+                                            )
+                                        } else {
+                                            SmartMessage(
+                                                context.resources.getString(R.string.disliked_this_collection),
+                                                type = PopupType.Error,
+                                                context = context
+                                            )
+                                        }
+                                    },
+                                    onLongClick = {
+                                        SmartMessage(
+                                            context.resources.getString(R.string.info_shuffle),
+                                            context = context
                                         )
+                                    }
+
                                 )
 
                                 HeaderIconButton(
                                     icon = R.drawable.radio,
                                     enabled = true,
                                     color = if (songs.any { it.likedAt != -1L }) colorPalette().text else colorPalette().textDisabled,
-                                    onClick = {},
-                                    modifier = Modifier
-                                        .padding(horizontal = 5.dp)
-                                        .combinedClickable(
-                                            onClick = {
-                                                if (songs.any { it.likedAt != -1L }) {
-                                                    binder?.stopRadio()
-                                                    binder?.player?.forcePlayFromBeginning(songs.filter { it.likedAt != -1L }
-                                                        .map(Song::asMediaItem))
-                                                    binder?.setupRadio(
-                                                        NavigationEndpoint.Endpoint.Watch(
-                                                            videoId = songs.first { it.likedAt != -1L }.id
-                                                        )
-                                                    )
-                                                } else {
-                                                    SmartMessage(
-                                                        context.resources.getString(R.string.disliked_this_collection),
-                                                        type = PopupType.Error,
-                                                        context = context
-                                                    )
-                                                }
-                                            },
-                                            onLongClick = {
-                                                SmartMessage(
-                                                    context.resources.getString(R.string.info_start_radio),
-                                                    context = context
+                                    onClick = {
+                                        if (songs.any { it.likedAt != -1L }) {
+                                            binder?.stopRadio()
+                                            binder?.player?.forcePlayFromBeginning(songs.filter { it.likedAt != -1L }
+                                                .map(Song::asMediaItem))
+                                            binder?.setupRadio(
+                                                NavigationEndpoint.Endpoint.Watch(
+                                                    videoId = songs.first { it.likedAt != -1L }.id
                                                 )
-                                            }
+                                            )
+                                        } else {
+                                            SmartMessage(
+                                                context.resources.getString(R.string.disliked_this_collection),
+                                                type = PopupType.Error,
+                                                context = context
+                                            )
+                                        }
+                                    },
+                                    onLongClick = {
+                                        SmartMessage(
+                                            context.resources.getString(R.string.info_start_radio),
+                                            context = context
                                         )
+                                    }
                                 )
 
                                 HeaderIconButton(
-                                    modifier = Modifier
-                                        .padding(horizontal = 5.dp)
-                                        .combinedClickable(
-                                            onClick = {
-                                                nowPlayingItem = -1
-                                                scrollToNowPlaying = false
-                                                songs
-                                                    .forEachIndexed { index, song ->
-                                                        if (song.asMediaItem.mediaId == binder?.player?.currentMediaItem?.mediaId)
-                                                            nowPlayingItem = index
-                                                    }
-
-                                                if (nowPlayingItem > -1)
-                                                    scrollToNowPlaying = true
-                                            },
-                                            onLongClick = {
-                                                SmartMessage(
-                                                    context.resources.getString(R.string.info_find_the_song_that_is_playing),
-                                                    context = context
-                                                )
-                                            }
-                                        ),
                                     icon = R.drawable.locate,
                                     enabled = songs.isNotEmpty(),
                                     color = if (songs.isNotEmpty()) colorPalette().text else colorPalette().textDisabled,
-                                    onClick = {}
+                                    onClick = {
+                                        nowPlayingItem = -1
+                                        scrollToNowPlaying = false
+                                        songs
+                                            .forEachIndexed { index, song ->
+                                                if (song.asMediaItem.mediaId == binder?.player?.currentMediaItem?.mediaId)
+                                                    nowPlayingItem = index
+                                            }
+
+                                        if (nowPlayingItem > -1)
+                                            scrollToNowPlaying = true
+                                    },
+                                    onLongClick = {
+                                        SmartMessage(
+                                            context.resources.getString(R.string.info_find_the_song_that_is_playing),
+                                            context = context
+                                        )
+                                    }
                                 )
 
                                 HeaderIconButton(
-                                    modifier = Modifier
-                                        .padding(horizontal = 5.dp)
-                                        .combinedClickable(
-                                            onClick = {
-                                                showFastShare = true
-                                                showDirectFastShare = true
-                                            },
-                                            onLongClick = {
-                                                SmartMessage(
-                                                    context.resources.getString(R.string.share_with_external_app),
-                                                    context = context
-                                                )
-                                            }
-                                        ),
                                     icon = R.drawable.get_app,
                                     enabled = songs.isNotEmpty(),
                                     color = if (songs.isNotEmpty()) colorPalette().text else colorPalette().textDisabled,
-                                    onClick = {}
+                                    onClick = {
+                                        showFastShare = true
+                                        showDirectFastShare = true
+                                    },
+                                    onLongClick = {
+                                        SmartMessage(
+                                            context.resources.getString(R.string.share_with_external_app),
+                                            context = context
+                                        )
+                                    }
                                 )
 
                                 HeaderIconButton(
-                                    modifier = Modifier
-                                        .padding(horizontal = 5.dp),
                                     icon = R.drawable.ellipsis_horizontal,
                                     enabled = songs.isNotEmpty(),
                                     color = if (songs.isNotEmpty()) colorPalette().text else colorPalette().textDisabled,

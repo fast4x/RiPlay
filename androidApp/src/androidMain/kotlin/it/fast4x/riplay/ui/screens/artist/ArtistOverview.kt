@@ -123,6 +123,7 @@ import it.fast4x.riplay.ui.components.themed.LayoutWithAdaptiveThumbnail
 import it.fast4x.riplay.ui.components.themed.LoaderScreen
 import it.fast4x.riplay.utils.forcePlay
 import it.fast4x.riplay.utils.forcePlayFromBeginning
+import it.fast4x.riplay.utils.isPrimaryAction
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -351,7 +352,6 @@ fun ArtistOverview(
                         HeaderIconButton(
                             icon = R.drawable.share_social,
                             color = colorPalette().text,
-                            iconSize = 24.dp,
                             modifier = Modifier
                                 .align(Alignment.TopEnd)
                                 .padding(top = 5.dp, end = 5.dp),
@@ -487,29 +487,25 @@ fun ArtistOverview(
 
                             },
                             alternative = artist?.bookmarkedAt == null,
-                            modifier = Modifier.padding(end = 30.dp)
+                            modifier = Modifier.isPrimaryAction()
                         )
 
                         artistPage?.shuffleEndpoint?.let { endpoint ->
                             HeaderIconButton(
+                                modifier = Modifier.padding(end = 5.dp),
                                 icon = R.drawable.shuffle,
                                 enabled = true,
                                 color = colorPalette().text,
-                                onClick = {},
-                                modifier = Modifier
-                                    .padding(horizontal = 5.dp)
-                                    .combinedClickable(
-                                        onClick = {
-                                            binder?.stopRadio()
-                                            binder?.playRadio(endpoint)
-                                        },
-                                        onLongClick = {
-                                            SmartMessage(
-                                                context.resources.getString(R.string.info_shuffle),
-                                                context = context
-                                            )
-                                        }
+                                onClick = {
+                                    binder?.stopRadio()
+                                    binder?.playRadio(endpoint)
+                                },
+                                onLongClick = {
+                                    SmartMessage(
+                                        context.resources.getString(R.string.info_shuffle),
+                                        context = context
                                     )
+                                },
                             )
                         }
 
@@ -518,21 +514,17 @@ fun ArtistOverview(
                                 icon = R.drawable.radio,
                                 enabled = true,
                                 color = colorPalette().text,
-                                onClick = {},
-                                modifier = Modifier
-                                    .padding(horizontal = 5.dp)
-                                    .combinedClickable(
-                                        onClick = {
-                                            binder?.stopRadio()
-                                            binder?.playRadio(endpoint)
-                                        },
-                                        onLongClick = {
-                                            SmartMessage(
-                                                context.resources.getString(R.string.info_start_radio),
-                                                context = context
-                                            )
-                                        }
+                                onClick = {
+                                    binder?.stopRadio()
+                                    binder?.playRadio(endpoint)
+                                },
+                                onLongClick = {
+                                    SmartMessage(
+                                        context.resources.getString(R.string.info_start_radio),
+                                        context = context
                                     )
+                                },
+
                             )
                         }
 

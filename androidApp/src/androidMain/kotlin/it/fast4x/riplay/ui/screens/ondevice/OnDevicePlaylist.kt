@@ -625,21 +625,17 @@ fun OnDevicePlaylist(
                                 .fillMaxWidth()
                         ) {
                             HeaderIconButton(
-                                onClick = {},
                                 icon = R.drawable.search,
                                 color = colorPalette.text,
-                                modifier = Modifier
-                                    .combinedClickable(
-                                        onClick = {
-                                            searching = !searching
-                                        },
-                                        onLongClick = {
-                                            SmartMessage(
-                                                context.resources.getString(R.string.search),
-                                                context = context
-                                            )
-                                        }
+                                onClick = {
+                                    searching = !searching
+                                },
+                                onLongClick = {
+                                    SmartMessage(
+                                        context.resources.getString(R.string.search),
+                                        context = context
                                     )
+                                }
                             )
 
                             HeaderIconButton(
@@ -958,31 +954,28 @@ fun OnDevicePlaylist(
                             ) {
                                 HeaderIconButton(
                                     modifier = Modifier
-                                        .padding(horizontal = 5.dp)
-                                        .combinedClickable(
-                                            onClick = {
-                                                nowPlayingItem = -1
-                                                scrollToNowPlaying = false
-                                                playlistSongs
-                                                    .forEachIndexed { index, song ->
-                                                        if (song.asMediaItem.mediaId == binder?.player?.currentMediaItem?.mediaId)
-                                                            nowPlayingItem = index
-                                                    }
-
-                                                if (nowPlayingItem > -1)
-                                                    scrollToNowPlaying = true
-                                            },
-                                            onLongClick = {
-                                                SmartMessage(
-                                                    context.resources.getString(R.string.info_find_the_song_that_is_playing),
-                                                    context = context
-                                                )
-                                            }
-                                        ),
+                                        .padding(horizontal = 5.dp),
                                     icon = R.drawable.locate,
                                     enabled = playlistSongs.isNotEmpty(),
                                     color = if (playlistSongs.isNotEmpty()) colorPalette.text else colorPalette.textDisabled,
-                                    onClick = {}
+                                    onClick = {
+                                        nowPlayingItem = -1
+                                        scrollToNowPlaying = false
+                                        playlistSongs
+                                            .forEachIndexed { index, song ->
+                                                if (song.asMediaItem.mediaId == binder?.player?.currentMediaItem?.mediaId)
+                                                    nowPlayingItem = index
+                                            }
+
+                                        if (nowPlayingItem > -1)
+                                            scrollToNowPlaying = true
+                                    },
+                                    onLongClick = {
+                                        SmartMessage(
+                                            context.resources.getString(R.string.info_find_the_song_that_is_playing),
+                                            context = context
+                                        )
+                                    }
                                 )
                                 LaunchedEffect(scrollToNowPlaying) {
                                     if (scrollToNowPlaying)
