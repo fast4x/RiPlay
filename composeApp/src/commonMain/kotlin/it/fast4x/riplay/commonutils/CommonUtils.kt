@@ -61,7 +61,12 @@ fun String?.toThumbnail(size: Int): String? {
     val url = when {
         this?.startsWith("https://lh3.googleusercontent.com") == true ||
         this?.startsWith("https://yt3.googleusercontent.com") == true ||
-        this?.startsWith("https://i.ytimg.com") == true -> "$this-w$size-h$size"
+        (this?.startsWith("https://i.ytimg.com") == true &&
+                (!this.contains("generated_thumbnail") &&
+                        !this.contains("podcasts_artwork") &&
+                        !this.contains("pl_c")
+                )
+        ) -> "$this-w$size-h$size"
         this?.startsWith("https://yt3.ggpht.com") == true -> "$this-w$size-h$size-s$size"
         else -> this
     }
