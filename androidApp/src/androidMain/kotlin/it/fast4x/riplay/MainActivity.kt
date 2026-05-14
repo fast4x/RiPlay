@@ -1821,9 +1821,8 @@ class MainActivity :
         }
         appRunningInBackground = false
 
-        //mediaRouter?.addCallback(mediaRouteSelector, mediaRouterCallback)
-
         Timber.d("MainActivity.onResume $appRunningInBackground")
+
     }
 
     override fun onPause() {
@@ -1876,6 +1875,15 @@ class MainActivity :
         }.onFailure {
             Timber.e("MainActivity.onDestroy removeMonetColorsChangedListener ${it.stackTraceToString()}")
         }
+
+        // Clean cache
+        cacheDir.listFiles()
+            ?.filter { it.name != "coil" }
+            ?.forEach { it.deleteRecursively() }
+
+        filesDir.listFiles()
+            ?.filter { it.name != "coil" }
+            ?.forEach { it.deleteRecursively() }
 
     }
 
