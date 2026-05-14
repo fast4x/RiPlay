@@ -309,15 +309,10 @@ class PlayerMediaBrowserService : MediaBrowserServiceCompat(),
                             .map { it.song.asBrowserMediaItem }
                             .toMutableList()
                             .apply {
-                                if (showAllSongstAA())
-                                    add(0, allBrowserMediaItem)
-                                if (showTopSongstAA())
-                                    add(1, topBrowserMediaItem)
-                                if (shuffleSongsAAEnabled())
-                                    add(2,shuffleBrowserMediaItem)
-                                if (showOnDeviceAA())
-                                    add(3, ondeviceBrowserMediaItem)
-
+                                if (showOnDeviceAA()) add(0,ondeviceBrowserMediaItem)
+                                if (shuffleSongsAAEnabled()) add(0,shuffleBrowserMediaItem)
+                                if (showTopSongstAA()) add(0,topBrowserMediaItem)
+                                if (showAllSongstAA()) add(0,allBrowserMediaItem)
                             }
                         /*
                             Database
@@ -329,13 +324,13 @@ class PlayerMediaBrowserService : MediaBrowserServiceCompat(),
                                 .toMutableList()
                                 .apply {
                                     if (showFavoritesSongsAA())
-                                        add(0, favoritesBrowserMediaItem)
+                                        add(favoritesBrowserMediaItem)
                                     if (showTopSongstAA())
-                                        add(1, topBrowserMediaItem)
+                                        add(topBrowserMediaItem)
                                     if (showOnDeviceAA())
-                                        add(2, ondeviceBrowserMediaItem)
+                                        add(ondeviceBrowserMediaItem)
                                     if (shuffleSongsAAEnabled())
-                                        add(3,shuffleBrowserMediaItem)
+                                        add(shuffleBrowserMediaItem)
                                 }
 
                          */
@@ -389,16 +384,11 @@ class PlayerMediaBrowserService : MediaBrowserServiceCompat(),
                                 .map { it.asCleanMediaItem }
                                 .toMutableList()
                                 .apply {
-                                    if (showInLibraryAA())
-                                        add(0, playlistsInLibraryBrowserMediaItem)
-                                    if (showPodcastAA())
-                                        add(1, playlistsPodcastBrowserMediaItem)
-                                    if (showPinnedAA())
-                                        add(2, playlistsPinnedBrowserMediaItem)
-                                    if (showMonthlyPlaylistsAA())
-                                        add(3, playlistsMonthlyBrowserMediaItem)
-                                    if (showOnDeviceAA())
-                                        add(4, playlistsOnDeviceBrowserMediaItem)
+                                    if (showOnDeviceAA()) add(0,playlistsOnDeviceBrowserMediaItem)
+                                    if (showMonthlyPlaylistsAA()) add(0,playlistsMonthlyBrowserMediaItem)
+                                    if (showPinnedAA()) add(0,playlistsPinnedBrowserMediaItem)
+                                    if (showPodcastAA()) add(0,playlistsPodcastBrowserMediaItem)
+                                    if (showInLibraryAA()) add(0,playlistsInLibraryBrowserMediaItem)
                                 }
                         } else {
                             Database
@@ -520,10 +510,8 @@ class PlayerMediaBrowserService : MediaBrowserServiceCompat(),
                                 .map { it.asBrowserMediaItem(MediaId.ARTISTS_FAVORITES) }
                                 .toMutableList()
                                 .apply {
-                                    if (showInLibraryAA())
-                                        add(0, artistsInLibraryBrowserMediaItem)
-                                    if (showOnDeviceAA())
-                                        add(1, artistsOnDeviceBrowserMediaItem)
+                                    if (showOnDeviceAA()) add(0,artistsOnDeviceBrowserMediaItem)
+                                    if (showInLibraryAA()) add(0,artistsInLibraryBrowserMediaItem)
                                 }
                         } else {
                             val artist = Database.artist(id).first()
@@ -670,10 +658,8 @@ class PlayerMediaBrowserService : MediaBrowserServiceCompat(),
                                 .map { it.asBrowserMediaItem(MediaId.ALBUMS_FAVORITES) }
                                 .toMutableList()
                                 .apply {
-                                    if (showInLibraryAA())
-                                        add(0, albumsInLibraryBrowserMediaItem)
-                                    if (showOnDeviceAA())
-                                        add(1, albumsOnDeviceBrowserMediaItem)
+                                    if (showOnDeviceAA()) add(0,albumsOnDeviceBrowserMediaItem)
+                                    if (showInLibraryAA()) add(0,albumsInLibraryBrowserMediaItem)
                                 }
                         } else {
                             Timber.d("PlayerMediaBrowserService onLoadChildren inside albums SONGS id $id")
