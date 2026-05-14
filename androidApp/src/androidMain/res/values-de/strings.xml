@@ -1326,4 +1326,13 @@ Mach dich bereit, deine unvergesslichsten musikalischen Momente noch einmal zu e
     <string name="login_info_you_can_switch_to_another_account_without_completely_disconnecting">You can switch to another account without completely disconnecting</string>
     <string name="login_info_you_can_quickly_check_which_account_you_are_connected_to">You can quickly check which account you are connected to</string>
     <string name="only_check_update">Only check update</string>
+    <string name="storage_gb_free">%1$s GB free</string>
+    <string name="storage_mb_free">%1$d MB free</string>
+    <string name="storage_almost_full">Storage Almost Full</string>
+    <string name="storage_low_storage">Low Storage</string>
+    <string name="storage_gb_total">%1$s GB total</string>
+    <string name="storage_warning_ignore">Ignore</string>
+    <string name="storage_manage_storage">Manage Storage</string>
+    <string name="storage_your_device_is_running_out_of_storage_the_app_may_not_work_properly">Your device is running out of storage. The app may not work properly.</string>
+    <string name="storage_your_device_is_low_on_storage_consider_freeing_up_some_space_soon">Your device is low on storage. Consider freeing up some space soon.</string>
 </resources>

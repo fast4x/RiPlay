@@ -241,6 +241,7 @@ import it.fast4x.riplay.cast.ritune.RiTuneCastSelector
 import it.fast4x.riplay.enums.CastType
 import it.fast4x.riplay.extensions.experimental.ui.screens.player.classic.UnifiedPlayerNew
 import it.fast4x.riplay.extensions.preferences.castTypeKey
+import it.fast4x.riplay.extensions.storagewarning.StorageWarningChecker
 import it.fast4x.riplay.services.playback.PlayerState
 import it.fast4x.riplay.ui.components.Snowfall
 import it.fast4x.riplay.ui.screens.player.unified.components.core.UnifiedPlayerView
@@ -730,13 +731,7 @@ class MainActivity :
 
         setContent {
 
-            //Update PlayerService parameters
-//            lifecycleScope.launch {
-//                binder?.playerState?.collect { state ->
-//                    playerState = state
-//                    Timber.d("MainActivity.onCreate playerState: $state")
-//                }
-//            }
+            StorageWarningChecker()
 
             val state = binder?.playerState?.collectAsState()
             playerState = state?.value ?: PlayerState()
