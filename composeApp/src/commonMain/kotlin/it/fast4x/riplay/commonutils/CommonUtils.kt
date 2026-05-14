@@ -62,16 +62,16 @@ fun String?.toThumbnail(size: Int): String? {
         this?.startsWith("https://lh3.googleusercontent.com") == true ||
         this?.startsWith("https://yt3.googleusercontent.com") == true ||
         (this?.startsWith("https://i.ytimg.com") == true &&
-                (!this.contains("generated_thumbnail") &&
-                        !this.contains("podcasts_artwork") &&
-                        !this.contains("pl_c")
+                (
+                        !this.contains("/podcasts_artwork/") &&
+                        !this.contains("/pl_c/") &&
+                        !this.contains("/vi/")
                 )
         ) -> "$this-w$size-h$size"
         this?.startsWith("https://yt3.ggpht.com") == true -> "$this-w$size-h$size-s$size"
         else -> this
     }
     println("String->Thumbnail url base: $this url modified: $url")
-    //println("String->Thumbnail url modified: $url")
     return url
 }
 fun String?.toThumbnail(): String? {
