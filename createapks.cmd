@@ -1,2 +1,2 @@
 del androidApp\foss\release\androidApp-foss-release.apks
-"C:\Program Files\Android\Android Studio\jbr\bin\java" -jar ./bundletool.jar build-apks --ks="./APK keystore/keystore.jks" --ks-key-alias=key0 --bundle=./androidApp/foss/release/androidApp-foss-release.aab --output=./androidApp/foss/release/androidApp-foss-release.apks
+"C:\Program Files\Android\Android Studio\jbr\bin\java" -jar ./bundletool.jar build-apks --ks="./androidApp/APK keystore/keystore.jks" --ks-key-alias=key0 --bundle=./androidApp/foss/release/androidApp-foss-release.aab --output=./androidApp/foss/release/androidApp-foss-release.apks
