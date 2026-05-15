@@ -228,8 +228,6 @@ fun HomeAlbums(
 
     //val sync = autoSyncToolbutton(R.string.autosync_albums)
     var justSynced by rememberSaveable { mutableStateOf(false) }
-    //val doSync by rememberPreference(enableSyncKey, false)
-    //var justSynced by rememberSaveable { mutableStateOf(!doAutoSync) }
     val viewType = viewTypeToolbutton(R.string.viewType)
 
     var refreshing by remember { mutableStateOf(false) }

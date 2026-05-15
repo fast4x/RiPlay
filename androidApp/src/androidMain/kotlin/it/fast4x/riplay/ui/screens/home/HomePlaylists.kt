@@ -299,7 +299,6 @@ fun HomePlaylists(
     )
 
     //val sync = autoSyncToolbutton(R.string.autosync)
-    //val doAutoSync by rememberPreference(enableSyncKey, false)
     var justSynced by rememberSaveable { mutableStateOf(false) }
 
     val viewType = viewTypeToolbutton(R.string.viewType)
