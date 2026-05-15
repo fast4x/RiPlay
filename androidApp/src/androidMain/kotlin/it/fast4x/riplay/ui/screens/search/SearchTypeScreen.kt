@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -31,6 +32,9 @@ import it.fast4x.riplay.extensions.persist.PersistMapCleanup
 import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.enums.SearchType
+import it.fast4x.riplay.enums.TransitionEffect
+import it.fast4x.riplay.extensions.preferences.rememberPreference
+import it.fast4x.riplay.extensions.preferences.transitionEffectKey
 import it.fast4x.riplay.ui.components.themed.IconButton
 import it.fast4x.riplay.ui.styling.favoritesIcon
 import it.fast4x.riplay.ui.styling.secondary
@@ -114,11 +118,13 @@ fun SearchTypeScreen(
                     innerTextField()
                 }
             }
+    val transitionEffect by rememberPreference(transitionEffectKey, TransitionEffect.SlideHorizontal)
 
             ScreenContainer(
                 navController,
                 tabIndex,
                 onTabChanged,
+                transitionEffect = transitionEffect,
                 navBarContent = { item ->
                     item(0, stringResource(R.string.online), R.drawable.internet)
                     item(1, stringResource(R.string.library), R.drawable.playlist)

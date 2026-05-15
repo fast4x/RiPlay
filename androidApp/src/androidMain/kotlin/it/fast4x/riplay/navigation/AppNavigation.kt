@@ -103,7 +103,7 @@ fun AppNavigation(
 ) {
     val navController = rememberNavController()
     onNavControllerInit(navController)
-    val transitionEffect by rememberPreference(transitionEffectKey, TransitionEffect.Scale)
+    val transitionEffect by rememberPreference(transitionEffectKey, TransitionEffect.SlideHorizontal)
 
     @Composable
     fun modalBottomSheetPage(
@@ -148,41 +148,93 @@ fun AppNavigation(
         enterTransition = {
             when (transitionEffect) {
                 TransitionEffect.None -> EnterTransition.None
-                TransitionEffect.Expand -> expandIn(animationSpec = tween(350, easing = LinearOutSlowInEasing), expandFrom = Alignment.TopStart)
+                TransitionEffect.Expand -> expandIn(
+                    animationSpec = tween(350, easing = LinearOutSlowInEasing),
+                    expandFrom = Alignment.TopStart
+                )
                 TransitionEffect.Fade -> fadeIn(animationSpec = tween(350))
-                TransitionEffect.Scale -> scaleIn(animationSpec = tween(350))
-                TransitionEffect.SlideVertical -> slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Up)
-                TransitionEffect.SlideHorizontal -> slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Left)
+                TransitionEffect.Scale -> scaleIn(
+                    animationSpec = tween(350, easing = FastOutSlowInEasing),
+                    initialScale = 0.92f
+                ) + fadeIn(animationSpec = tween(350))
+                TransitionEffect.SlideVertical -> slideIntoContainer(
+                    AnimatedContentTransitionScope.SlideDirection.Up,
+                    animationSpec = tween(350, easing = FastOutSlowInEasing)
+                )
+                TransitionEffect.SlideHorizontal -> slideIntoContainer(
+                    AnimatedContentTransitionScope.SlideDirection.Left,
+                    animationSpec = tween(350, easing = FastOutSlowInEasing)
+                ) + fadeIn(animationSpec = tween(350))
             }
         },
         exitTransition = {
             when (transitionEffect) {
                 TransitionEffect.None -> ExitTransition.None
-                TransitionEffect.Expand -> shrinkOut(animationSpec = tween(350, easing = FastOutSlowInEasing),shrinkTowards = Alignment.TopStart)
+                TransitionEffect.Expand -> shrinkOut(
+                    animationSpec = tween(350, easing = FastOutSlowInEasing),
+                    shrinkTowards = Alignment.TopStart
+                )
                 TransitionEffect.Fade -> fadeOut(animationSpec = tween(350))
-                TransitionEffect.Scale -> scaleOut(animationSpec = tween(350))
-                TransitionEffect.SlideVertical -> slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Down)
-                TransitionEffect.SlideHorizontal -> slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Right)
+                TransitionEffect.Scale -> scaleOut(
+                    animationSpec = tween(350, easing = FastOutSlowInEasing),
+                    targetScale = 0.92f
+                ) + fadeOut(animationSpec = tween(350))
+                TransitionEffect.SlideVertical -> slideOutOfContainer(
+                    AnimatedContentTransitionScope.SlideDirection.Down,
+                    animationSpec = tween(350, easing = FastOutSlowInEasing)
+                )
+                TransitionEffect.SlideHorizontal -> slideOutOfContainer(
+                    AnimatedContentTransitionScope.SlideDirection.Left,
+                    animationSpec = tween(350, easing = FastOutSlowInEasing),
+                    targetOffset = { it / 3 }
+                ) + fadeOut(animationSpec = tween(350))
             }
         },
         popEnterTransition = {
             when (transitionEffect) {
                 TransitionEffect.None -> EnterTransition.None
-                TransitionEffect.Expand -> expandIn(animationSpec = tween(350, easing = LinearOutSlowInEasing), expandFrom = Alignment.TopStart)
+                TransitionEffect.Expand -> expandIn(
+                    animationSpec = tween(350, easing = LinearOutSlowInEasing),
+                    expandFrom = Alignment.TopStart
+                )
                 TransitionEffect.Fade -> fadeIn(animationSpec = tween(350))
-                TransitionEffect.Scale -> scaleIn(animationSpec = tween(350))
-                TransitionEffect.SlideVertical -> slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Up)
-                TransitionEffect.SlideHorizontal -> slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Left)
+                TransitionEffect.Scale -> scaleIn(
+                    animationSpec = tween(350, easing = FastOutSlowInEasing),
+                    initialScale = 0.92f
+                ) + fadeIn(animationSpec = tween(350))
+                // Speculare rispetto a exitTransition
+                TransitionEffect.SlideVertical -> slideIntoContainer(
+                    AnimatedContentTransitionScope.SlideDirection.Up,
+                    animationSpec = tween(350, easing = FastOutSlowInEasing)
+                )
+                TransitionEffect.SlideHorizontal -> slideIntoContainer(
+                    AnimatedContentTransitionScope.SlideDirection.Right,
+                    animationSpec = tween(350, easing = FastOutSlowInEasing),
+                    initialOffset = { it / 3 }
+                ) + fadeIn(animationSpec = tween(350))
             }
         },
         popExitTransition = {
             when (transitionEffect) {
                 TransitionEffect.None -> ExitTransition.None
-                TransitionEffect.Expand -> shrinkOut(animationSpec = tween(350, easing = FastOutSlowInEasing),shrinkTowards = Alignment.TopStart)
+                TransitionEffect.Expand -> shrinkOut(
+                    animationSpec = tween(350, easing = FastOutSlowInEasing),
+                    shrinkTowards = Alignment.TopStart
+                )
                 TransitionEffect.Fade -> fadeOut(animationSpec = tween(350))
-                TransitionEffect.Scale -> scaleOut(animationSpec = tween(350))
-                TransitionEffect.SlideVertical -> slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Down)
-                TransitionEffect.SlideHorizontal -> slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Right)
+                TransitionEffect.Scale -> scaleOut(
+                    animationSpec = tween(350, easing = FastOutSlowInEasing),
+                    targetScale = 0.92f
+                ) + fadeOut(animationSpec = tween(350))
+                // Speculare rispetto a enterTransition
+                TransitionEffect.SlideVertical -> slideOutOfContainer(
+                    AnimatedContentTransitionScope.SlideDirection.Down,
+                    animationSpec = tween(350, easing = FastOutSlowInEasing)
+                )
+                TransitionEffect.SlideHorizontal -> slideOutOfContainer(
+                    AnimatedContentTransitionScope.SlideDirection.Right,
+                    animationSpec = tween(350, easing = FastOutSlowInEasing)
+                ) + fadeOut(animationSpec = tween(350))
             }
         }
     ) {

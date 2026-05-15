@@ -48,7 +48,10 @@ import androidx.compose.ui.unit.dp
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import it.fast4x.riplay.R
+import it.fast4x.riplay.enums.TransitionEffect
 import it.fast4x.riplay.enums.ValidationType
+import it.fast4x.riplay.extensions.preferences.rememberPreference
+import it.fast4x.riplay.extensions.preferences.transitionEffectKey
 import it.fast4x.riplay.ui.components.themed.DialogColorPicker
 import it.fast4x.riplay.ui.components.themed.InputTextDialog
 import it.fast4x.riplay.ui.components.themed.Slider
@@ -86,12 +89,14 @@ fun SettingsScreen(
     val (tabIndex, onTabChanged) = rememberSaveable {
         mutableStateOf(0)
     }
+    val transitionEffect by rememberPreference(transitionEffectKey, TransitionEffect.SlideHorizontal)
 
             ScreenContainer(
                 navController,
                 tabIndex,
                 onTabChanged,
                 miniPlayer,
+                transitionEffect = transitionEffect,
                 navBarContent = { item ->
                     item(0, stringResource(R.string.tab_general), R.drawable.app_icon)
                     item(1, stringResource(R.string.ui_tab), R.drawable.ui)

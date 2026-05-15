@@ -48,6 +48,7 @@ import it.fast4x.riplay.data.models.Artist
 import it.fast4x.riplay.data.models.Playlist
 import it.fast4x.riplay.data.models.SongAlbumMap
 import it.fast4x.riplay.data.models.defaultQueue
+import it.fast4x.riplay.enums.TransitionEffect
 import it.fast4x.riplay.ui.components.LocalGlobalSheetState
 import it.fast4x.riplay.ui.components.ScreenContainer
 import it.fast4x.riplay.ui.components.SwipeableAlbumItem
@@ -74,6 +75,7 @@ import it.fast4x.riplay.utils.enqueue
 import it.fast4x.riplay.extensions.preferences.parentalControlEnabledKey
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.extensions.preferences.searchResultScreenTabIndexKey
+import it.fast4x.riplay.extensions.preferences.transitionEffectKey
 import it.fast4x.riplay.utils.typography
 import it.fast4x.riplay.ui.components.themed.Menu
 import it.fast4x.riplay.ui.components.themed.MenuEntry
@@ -197,11 +199,14 @@ fun SearchResultScreen(
 
             val emptyItemsText = stringResource(R.string.no_results_found)
 
+            val transitionEffect by rememberPreference(transitionEffectKey, TransitionEffect.SlideHorizontal)
+
             ScreenContainer(
                 navController,
                 tabIndex,
                 onTabIndexChanges,
                 miniPlayer,
+                transitionEffect = transitionEffect,
                 navBarContent = { item ->
                     item(0, stringResource(R.string.songs), R.drawable.musical_notes)
                     item(1, stringResource(R.string.albums), R.drawable.music_album)

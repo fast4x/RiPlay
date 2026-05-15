@@ -31,6 +31,7 @@ import it.fast4x.riplay.enums.HomeScreenTabs
 import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.data.models.toUiMood
 import it.fast4x.riplay.enums.HomePagetype
+import it.fast4x.riplay.enums.TransitionEffect
 import it.fast4x.riplay.ui.components.themed.SmartMessage
 import it.fast4x.riplay.extensions.preferences.checkUpdateStateKey
 import it.fast4x.riplay.extensions.preferences.enableMusicIdentifierKey
@@ -41,6 +42,7 @@ import it.fast4x.riplay.extensions.preferences.indexNavigationTabKey
 import it.fast4x.riplay.extensions.preferences.preferences
 import it.fast4x.riplay.extensions.preferences.rememberObservedPreference
 import it.fast4x.riplay.extensions.preferences.rememberPreference
+import it.fast4x.riplay.extensions.preferences.transitionEffectKey
 import it.fast4x.riplay.extensions.updater.UpdateDialog
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -97,6 +99,8 @@ fun HomeScreen(
         false
     )
 
+    val transitionEffect by rememberPreference(transitionEffectKey, TransitionEffect.SlideHorizontal)
+
     val homePageType by rememberObservedPreference(homePageTypeKey, HomePagetype.Classic)
 
     if (tabIndex == -2) navController.navigate(NavRoutes.search.name)
@@ -114,6 +118,7 @@ fun HomeScreen(
         tabIndex,
         onTabChanged,
         miniPlayer,
+        transitionEffect = transitionEffect,
         navBarContent = { Item ->
 //            Item(0, if (!isLoggedIn())
 //                stringResource(R.string.quick_picks) else stringResource(R.string.home),

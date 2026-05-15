@@ -16,6 +16,9 @@ import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import it.fast4x.riplay.extensions.persist.PersistMapCleanup
 import it.fast4x.riplay.R
+import it.fast4x.riplay.enums.TransitionEffect
+import it.fast4x.riplay.extensions.preferences.rememberPreference
+import it.fast4x.riplay.extensions.preferences.transitionEffectKey
 import it.fast4x.riplay.ui.components.ScreenContainer
 
 @ExperimentalMaterialApi
@@ -29,6 +32,7 @@ fun NewreleasesScreen(
     navController: NavController,
     miniPlayer: @Composable () -> Unit = {},
 ) {
+    val transitionEffect by rememberPreference(transitionEffectKey, TransitionEffect.SlideHorizontal)
     val saveableStateHolder = rememberSaveableStateHolder()
 
     var tabIndex by rememberSaveable {
@@ -42,6 +46,7 @@ fun NewreleasesScreen(
                 tabIndex,
                 onTabChanged = { tabIndex = it },
                 miniPlayer,
+                transitionEffect = transitionEffect,
                 navBarContent = { item ->
                     item(0, stringResource(R.string.new_albums), R.drawable.music_album)
                 }

@@ -304,7 +304,7 @@ fun DefaultUiSettings() {
     showFloatingIcon = false
     var menuStyle by rememberPreference(menuStyleKey, MenuStyle.List)
     menuStyle = MenuStyle.List
-    var transitionEffect by rememberPreference(transitionEffectKey, TransitionEffect.Scale)
+    var transitionEffect by rememberPreference(transitionEffectKey, TransitionEffect.SlideHorizontal)
     transitionEffect = TransitionEffect.Scale
     var enableCreateMonthlyPlaylists by rememberPreference(enableCreateMonthlyPlaylistsKey, true)
     enableCreateMonthlyPlaylists = true
@@ -565,7 +565,7 @@ fun UiSettings(
     var showDislikedPlaylist by rememberPreference(showDislikedPlaylistKey, false)
     var showFloatingIcon by rememberPreference(showFloatingIconKey, false)
     var menuStyle by rememberPreference(menuStyleKey, MenuStyle.List)
-    var transitionEffect by rememberPreference(transitionEffectKey, TransitionEffect.Scale)
+    var transitionEffect by rememberPreference(transitionEffectKey, TransitionEffect.SlideHorizontal)
     var enableCreateMonthlyPlaylists by rememberPreference(enableCreateMonthlyPlaylistsKey, true)
     var showPinnedPlaylists by rememberPreference(showPinnedPlaylistsKey, true)
     var showMonthlyPlaylists by rememberPreference(showMonthlyPlaylistsKey, true)

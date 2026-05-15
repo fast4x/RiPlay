@@ -18,6 +18,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import it.fast4x.riplay.enums.TransitionEffect
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.ui.components.navigation.nav.AbstractNavigationBar
 import it.fast4x.riplay.ui.components.navigation.nav.HorizontalNavigationBar
@@ -31,6 +32,7 @@ fun SimpleScreenContainer(
     navController: NavController,
     tabIndex: Int = 0,
     onTabChanged: (Int) -> Unit = {},
+    transitionEffect: TransitionEffect = TransitionEffect.SlideHorizontal,
     navBarContent: @Composable (@Composable (Int, String, Int) -> Unit) -> Unit,
     navigationBarVertical: Boolean = false,
     content: @Composable AnimatedVisibilityScope.(Int) -> Unit
@@ -78,7 +80,7 @@ fun SimpleScreenContainer(
                 val topPadding = 0.dp
                 AnimatedContent(
                     targetState = tabIndex,
-                    transitionSpec = transition(),
+                    transitionSpec = transition(transitionEffect),
                     content = content,
                     label = "",
                     modifier = Modifier.fillMaxHeight().padding( top = topPadding )

@@ -4,6 +4,7 @@ import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.ContentTransform
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.VisibilityThreshold
@@ -66,25 +67,31 @@ private fun expand(): ContentTransform {
 private fun none(): ContentTransform = EnterTransition.None togetherWith ExitTransition.None
 
 @Composable
-fun transition(): AnimatedContentTransitionScope<Int>.() -> ContentTransform {
-
-    val transitionEffect by rememberPreference(transitionEffectKey, TransitionEffect.Scale)
+fun transition(transitionEffect: TransitionEffect = TransitionEffect.SlideHorizontal): AnimatedContentTransitionScope<Int>.() -> ContentTransform {
 
     return {
         when( transitionEffect ) {
-            TransitionEffect.Scale -> scale()
-            TransitionEffect.Fade -> fade()
-            TransitionEffect.Expand -> expand()
-            TransitionEffect.None -> none()
-            TransitionEffect.SlideVertical, TransitionEffect.SlideHorizontal -> {
-                val animationSpec = spring(
-                    dampingRatio = 0.9f,
-                    stiffness = Spring.StiffnessLow,
-                    visibilityThreshold = IntOffset.VisibilityThreshold
-                )
-                val slideDirection = slideDirection( transitionEffect, targetState, initialState )
-                slideIntoContainer(slideDirection, animationSpec) togetherWith slideOutOfContainer(slideDirection, animationSpec)
-            }
+            TransitionEffect.None -> EnterTransition.None togetherWith ExitTransition.None
+            TransitionEffect.Fade -> fadeIn(tween(350)) togetherWith fadeOut(tween(350))
+            TransitionEffect.Scale -> scaleIn(tween(350), initialScale = 0.92f) + fadeIn(tween(350)) togetherWith
+                    scaleOut(tween(350), targetScale = 0.92f) + fadeOut(tween(350))
+            TransitionEffect.Expand -> expandIn(tween(350, easing = LinearOutSlowInEasing), Alignment.TopStart) togetherWith
+                    shrinkOut(tween(350, easing = FastOutSlowInEasing), Alignment.TopStart)
+            TransitionEffect.SlideVertical -> slideIntoContainer(
+                AnimatedContentTransitionScope.SlideDirection.Up, tween(350, easing = FastOutSlowInEasing)
+            ) togetherWith slideOutOfContainer(
+                AnimatedContentTransitionScope.SlideDirection.Down, tween(350, easing = FastOutSlowInEasing)
+            )
+            TransitionEffect.SlideHorizontal -> slideIntoContainer(
+                if (targetState > initialState) AnimatedContentTransitionScope.SlideDirection.Left
+                else AnimatedContentTransitionScope.SlideDirection.Right,
+                tween(350, easing = FastOutSlowInEasing)
+            ) togetherWith slideOutOfContainer(
+                if (targetState > initialState) AnimatedContentTransitionScope.SlideDirection.Left
+                else AnimatedContentTransitionScope.SlideDirection.Right,
+                tween(350, easing = FastOutSlowInEasing),
+                targetOffset = { it / 3 }
+            )
         }
     }
 }

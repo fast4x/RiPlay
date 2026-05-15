@@ -79,7 +79,7 @@ fun PageContainer(
     miniPlayer: @Composable () -> Unit = {},
     content: @Composable AnimatedVisibilityScope.(Int) -> Unit
 ) {
-    val transitionEffect by rememberPreference(transitionEffectKey, TransitionEffect.Scale)
+    val transitionEffect by rememberPreference(transitionEffectKey, TransitionEffect.SlideHorizontal)
     val playerPosition by rememberPreference(playerPositionKey, PlayerPosition.Bottom)
 
     var topBarHeightPx by remember { mutableFloatStateOf(0f) }

@@ -37,9 +37,11 @@ import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import it.fast4x.riplay.extensions.persist.PersistMapCleanup
 import it.fast4x.riplay.R
+import it.fast4x.riplay.enums.TransitionEffect
 import it.fast4x.riplay.enums.UiType
 import it.fast4x.riplay.extensions.preferences.enableVoiceInputKey
 import it.fast4x.riplay.extensions.preferences.rememberPreference
+import it.fast4x.riplay.extensions.preferences.transitionEffectKey
 import it.fast4x.riplay.ui.components.themed.IconButton
 import it.fast4x.riplay.ui.styling.favoritesIcon
 import it.fast4x.riplay.ui.styling.secondary
@@ -65,6 +67,7 @@ fun SearchScreen(
     onViewPlaylist: (String) -> Unit,
     onDismiss: (() -> Unit)? = null,
 ) {
+    val transitionEffect by rememberPreference(transitionEffectKey, TransitionEffect.SlideHorizontal)
     val saveableStateHolder = rememberSaveableStateHolder()
 
     val (tabIndex, onTabChanged) = rememberSaveable {
@@ -190,6 +193,7 @@ fun SearchScreen(
         tabIndex,
         onTabChanged,
         miniPlayer,
+        transitionEffect = transitionEffect,
         navBarContent = { item ->
             item(0, stringResource(R.string.online), R.drawable.internet)
             item(1, stringResource(R.string.library), R.drawable.playlist)

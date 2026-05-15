@@ -4,6 +4,7 @@ import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
@@ -15,6 +16,9 @@ import androidx.navigation.NavController
 import it.fast4x.riplay.extensions.persist.PersistMapCleanup
 import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.StatisticsType
+import it.fast4x.riplay.enums.TransitionEffect
+import it.fast4x.riplay.extensions.preferences.rememberPreference
+import it.fast4x.riplay.extensions.preferences.transitionEffectKey
 import it.fast4x.riplay.ui.components.ScreenContainer
 import kotlinx.serialization.ExperimentalSerializationApi
 
@@ -45,6 +49,8 @@ fun StatisticsScreen(
         })
     }
 
+    val transitionEffect by rememberPreference(transitionEffectKey, TransitionEffect.SlideHorizontal)
+
     PersistMapCleanup(tagPrefix = "${statisticsType.name}/")
 
             ScreenContainer(
@@ -52,6 +58,7 @@ fun StatisticsScreen(
                 tabIndex,
                 onTabIndexChanged,
                 miniPlayer,
+                transitionEffect = transitionEffect,
                 navBarContent = { item ->
                     item(0, stringResource(R.string.today), R.drawable.stat_today)
                     item(1, stringResource(R.string._1_week), R.drawable.stat_week)

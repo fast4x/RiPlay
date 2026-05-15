@@ -45,6 +45,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import it.fast4x.riplay.enums.NavigationBarPosition
 import it.fast4x.riplay.enums.PlayerPosition
+import it.fast4x.riplay.enums.TransitionEffect
 import it.fast4x.riplay.enums.UiType
 import it.fast4x.riplay.extensions.preferences.playerPositionKey
 import it.fast4x.riplay.extensions.preferences.rememberPreference
@@ -64,6 +65,7 @@ fun ScreenContainer(
     tabIndex: Int = 0,
     onTabChanged: (Int) -> Unit = {},
     miniPlayer: @Composable (() -> Unit)? = null,
+    transitionEffect: TransitionEffect = TransitionEffect.SlideHorizontal,
     navBarContent: @Composable (@Composable (Int, String, Int) -> Unit) -> Unit,
     content: @Composable AnimatedVisibilityScope.(Int) -> Unit
 ) {
@@ -216,7 +218,7 @@ fun ScreenContainer(
                 val topPadding = if ( UiType.ViMusic.isCurrent() ) 30.dp else 0.dp
                 AnimatedContent(
                     targetState = tabIndex,
-                    transitionSpec = transition(),
+                    transitionSpec = transition(transitionEffect),
                     content = content,
                     label = "",
                     modifier = Modifier.fillMaxHeight().padding( top = topPadding )
