@@ -84,13 +84,13 @@ class MainApplication : Application(), ImageLoaderFactory {
             .memoryCachePolicy(CachePolicy.ENABLED)
             .memoryCache(
                 MemoryCache.Builder(this)
-                    .maxSizePercent(0.1)
+                    .maxSizePercent(0.25)
                     .build()
             )
             .diskCachePolicy(CachePolicy.ENABLED)
             .diskCache(
                 DiskCache.Builder()
-                    .directory(filesDir.resolve("coil"))
+                    .directory(cacheDir.resolve("coil"))
                     .maxSizeBytes(
                         if (coilCacheSize == 0L) CoilDiskCacheMaxSize.`128MB`.bytes
                         else coilCacheSize

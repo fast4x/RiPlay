@@ -70,6 +70,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SnapshotMutationPolicy
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -373,7 +374,7 @@ import kotlin.math.sqrt
 @ExperimentalAnimationApi
 @UnstableApi
 @Composable
-fun UnifiedPlayerNew(
+fun UnifiedPlayerNewX(
     navController: NavController,
     playFromSecond: Float = 0f,
     onlineCore: @Composable () -> Unit,
@@ -407,10 +408,15 @@ fun UnifiedPlayerNew(
     if (binder.player.currentTimeline.windowCount == 0) return
 
     val playerState = LocalPlayerServiceState.current
-    //val shouldBePlaying = playerState.playbackState == PlaybackState.PLAYING
+
+    val mediaItemPolicy = object : SnapshotMutationPolicy<MediaItem?> {
+        override fun equivalent(a: MediaItem?, b: MediaItem?): Boolean {
+            return a?.mediaId == b?.mediaId // ricompone solo se cambia la traccia
+        }
+    }
 
     var nullableMediaItem by remember {
-        mutableStateOf(binder.player.currentMediaItem, neverEqualPolicy())
+        mutableStateOf(binder.player.currentMediaItem, mediaItemPolicy)
     }
 
     var isRotated by rememberSaveable { mutableStateOf(false) }
@@ -547,6 +553,21 @@ fun UnifiedPlayerNew(
     }
 
     val mediaItem = nullableMediaItem ?: return
+
+    val requestLog = remember(mediaItem.mediaId) {
+        Timber.d("CoilDebug Rebuilding request for mediaId: ${mediaItem.mediaId}")
+        ImageRequest.Builder(context)
+            .data(mediaItem.mediaMetadata.artworkUri.toString().toThumbnail(1200))
+            .size(1200, 1200)
+            .transformations(LandscapeToSquareTransformation(1200))
+            .listener(
+                onStart = { Timber.d("CoilDebug Request STARTED: ${it.data}") },
+                onSuccess = { _, result ->
+                    Timber.d("CoilDebugRequest SUCCESS - dataSource: ${result.dataSource}")
+                }
+            )
+            .build()
+    }
 
     val pagerState = rememberPagerState(pageCount = { mediaItems.size })
     val pagerStateFS = rememberPagerState(pageCount = { mediaItems.size })
@@ -951,33 +972,29 @@ fun UnifiedPlayerNew(
         it to (it - 64.dp).px
     }
 
-    val painter = rememberAsyncImagePainter(
-        model = ImageRequest.Builder(LocalContext.current)
+    val blurRadius = if ((isShowingLyrics && !isShowingVisualizer) || !noblur)
+        blurStrength.toInt() else 0
+
+    val request = remember(mediaItem.mediaId, showthumbnail, blurRadius) {
+        ImageRequest.Builder(context)
             .data(
                 mediaItem.mediaMetadata.artworkUri.toString().toThumbnail(1200)
             )
             .size(1200, 1200)
-            .transformations(LandscapeToSquareTransformation(1200))
             .transformations(
                 listOf(
+                    LandscapeToSquareTransformation(1200),
                     if (showthumbnail) {
-                        BlurTransformation(
-                            scale = 0.5f,
-                            radius = blurStrength.toInt(),
-                            //darkenFactor = blurDarkenFactor
-                        )
-
-                    } else
-                        BlurTransformation(
-                            scale = 0.5f,
-                            //radius = blurStrength2.toInt(),
-                            radius = if ((isShowingLyrics && !isShowingVisualizer) || !noblur) blurStrength.toInt() else 0,
-                            //darkenFactor = blurDarkenFactor
-                        )
+                        BlurTransformation(scale = 0.5f, radius = blurStrength.toInt())
+                    } else {
+                        BlurTransformation(scale = 0.5f, radius = blurRadius)
+                    }
                 )
             )
             .build()
-    )
+    }
+
+    val painter = rememberAsyncImagePainter(model = request)
 
 
     var totalPlayTimes = 0L
@@ -1720,19 +1737,18 @@ fun UnifiedPlayerNew(
                                                     modifier = Modifier
                                                         .align(Alignment.CenterVertically)
                                                 ) {
-                                                    AsyncImage(
-                                                        model = ImageRequest.Builder(LocalContext.current)
+                                                    val request = remember(index, binder.player.getMediaItemAt(index).mediaId) {
+                                                        ImageRequest.Builder(context)
                                                             .data(
-                                                                binder.player.getMediaItemAt(index).mediaMetadata.artworkUri.toString().toThumbnail(
-                                                                    1200
-                                                                )
+                                                                binder.player.getMediaItemAt(index).mediaMetadata.artworkUri.toString()
+                                                                    .toThumbnail(1200)
                                                             )
                                                             .size(1200, 1200)
-                                                            .transformations(LandscapeToSquareTransformation(1200)).build(),
-//                                                        model = binder.player.getMediaItemAt(
-//                                                            index
-//                                                            //if (it + 1 <= mediaItems.size - 1) it + 1 else it
-//                                                        ).mediaMetadata.artworkUri.toString().thumbnail(1200),
+                                                            .transformations(LandscapeToSquareTransformation(1200))
+                                                            .build()
+                                                    }
+                                                    AsyncImage(
+                                                        model = request,
                                                         contentDescription = null,
                                                         contentScale = ContentScale.Crop,
                                                         modifier = Modifier
@@ -2286,33 +2302,31 @@ fun UnifiedPlayerNew(
                                 }
                             }
 
-                            AsyncImage(
-                                model = ImageRequest.Builder(LocalContext.current)
+                            val blurRadius = if ((isShowingLyrics && !isShowingVisualizer) || !noblur)
+                                blurStrength.toInt() else 0
+
+                            val request = remember(index, binder.player.getMediaItemAt(index).mediaId, showthumbnail, blurRadius) {
+                                ImageRequest.Builder(context)
                                     .data(
-                                        binder.player.getMediaItemAt(index).mediaMetadata.artworkUri.toString().toThumbnail(
-                                            1200
-                                        )
+                                        binder.player.getMediaItemAt(index).mediaMetadata.artworkUri.toString()
+                                            .toThumbnail(1200)
                                     )
                                     .size(1200, 1200)
                                     .transformations(
                                         listOf(
                                             LandscapeToSquareTransformation(1200),
                                             if (showthumbnail) {
-                                                BlurTransformation(
-                                                    scale = 0.5f,
-                                                    radius = blurStrength.toInt(),
-                                                    //darkenFactor = blurDarkenFactor
-                                                )
-                                            } else
-                                                BlurTransformation(
-                                                    scale = 0.5f,
-                                                    //radius = blurStrength2.toInt(),
-                                                    radius = if ((isShowingLyrics && !isShowingVisualizer) || !noblur) blurStrength.toInt() else 0,
-                                                    //darkenFactor = blurDarkenFactor
-                                                )
+                                                BlurTransformation(scale = 0.5f, radius = blurStrength.toInt())
+                                            } else {
+                                                BlurTransformation(scale = 0.5f, radius = blurRadius)
+                                            }
                                         )
                                     )
-                                    .build(),
+                                    .build()
+                            }
+
+                            AsyncImage(
+                                model = request,
                                 contentDescription = "",
                                 contentScale = if ((albumCoverRotation || (animatedGradient == AnimatedGradient.Random && tempGradient == gradients[14])) && (isShowingLyrics || showthumbnail)) ContentScale.Fit else ContentScale.Crop,
                                 modifier = Modifier
@@ -2549,17 +2563,18 @@ fun UnifiedPlayerNew(
                                             ) { index ->
                                                 if (!(index < binder.player.mediaItemCount && index >= 0)) return@HorizontalPager
 
-                                                val coverPainter = rememberAsyncImagePainter(
-                                                    model = ImageRequest.Builder(LocalContext.current)
+                                                val request = remember(index, binder.player.getMediaItemAt(index).mediaId) {
+                                                    ImageRequest.Builder(context)
                                                         .data(
-                                                            binder.player.getMediaItemAt(index).mediaMetadata.artworkUri.toString().toThumbnail(
-                                                                1200
-                                                            )
+                                                            binder.player.getMediaItemAt(index).mediaMetadata.artworkUri.toString()
+                                                                .toThumbnail(1200)
                                                         )
                                                         .size(1200, 1200)
                                                         .transformations(LandscapeToSquareTransformation(1200))
                                                         .build()
-                                                )
+                                                }
+
+                                                val coverPainter = rememberAsyncImagePainter(model = request)
 
                                                 val coverModifier = Modifier
                                                     .applyIf(!isLandscape) {
@@ -3006,34 +3021,32 @@ fun UnifiedPlayerNew(
                                     }
                                 }
                         ) {
-                            AsyncImage(
-                                model = ImageRequest.Builder(LocalContext.current)
+
+                            val blurRadius = if ((isShowingLyrics && !isShowingVisualizer) || !noblur)
+                                blurStrength.toInt() else 0
+
+                            val request = remember(index, binder.player.getMediaItemAt(index).mediaId, showthumbnail, blurRadius) {
+                                ImageRequest.Builder(context)
                                     .data(
-                                        binder.player.getMediaItemAt(index).mediaMetadata.artworkUri.toString().toThumbnail(
-                                            1200
-                                        )
+                                        binder.player.getMediaItemAt(index).mediaMetadata.artworkUri.toString()
+                                            .toThumbnail(1200)
                                     )
                                     .size(1200, 1200)
-                                    .transformations(LandscapeToSquareTransformation(1200))
                                     .transformations(
                                         listOf(
+                                            LandscapeToSquareTransformation(1200),
                                             if (showthumbnail) {
-                                                BlurTransformation(
-                                                    scale = 0.5f,
-                                                    radius = blurStrength.toInt(),
-                                                    //darkenFactor = blurDarkenFactor
-                                                )
-
-                                            } else
-                                                BlurTransformation(
-                                                    scale = 0.5f,
-                                                    //radius = blurStrength2.toInt(),
-                                                    radius = if ((isShowingLyrics && !isShowingVisualizer) || !noblur) blurStrength.toInt() else 0,
-                                                    //darkenFactor = blurDarkenFactor
-                                                )
+                                                BlurTransformation(scale = 0.5f, radius = blurStrength.toInt())
+                                            } else {
+                                                BlurTransformation(scale = 0.5f, radius = blurRadius)
+                                            }
                                         )
                                     )
-                                    .build(),
+                                    .build()
+                            }
+
+                            AsyncImage(
+                                model = request,
                                 contentDescription = "",
                                 contentScale = if ((albumCoverRotation || (animatedGradient == AnimatedGradient.Random && tempGradient == gradients[14])) && (isShowingLyrics || showthumbnail)) ContentScale.Fit else ContentScale.Crop,
                                 modifier = Modifier
@@ -3472,22 +3485,18 @@ fun UnifiedPlayerNew(
                                     ) { index ->
                                         if (!(index < binder.player.mediaItemCount && index >= 0)) return@VerticalPager
 
-                                            val coverPainter = rememberAsyncImagePainter(
-                                                model = ImageRequest.Builder(LocalContext.current)
-                                                    .data(
-                                                        binder.player.getMediaItemAt(index).mediaMetadata.artworkUri.toString()
-                                                            .toThumbnail(
-                                                                1200
-                                                            )
-                                                    )
-                                                    .size(1200, 1200)
-                                                    .transformations(
-                                                        LandscapeToSquareTransformation(
-                                                            1200
-                                                        )
-                                                    )
-                                                    .build()
-                                            )
+                                        val request = remember(index, binder.player.getMediaItemAt(index).mediaId) {
+                                            ImageRequest.Builder(context)
+                                                .data(
+                                                    binder.player.getMediaItemAt(index).mediaMetadata.artworkUri.toString()
+                                                        .toThumbnail(1200)
+                                                )
+                                                .size(1200, 1200)
+                                                .transformations(LandscapeToSquareTransformation(1200))
+                                                .build()
+                                        }
+
+                                        val coverPainter = rememberAsyncImagePainter(model = request)
 
                                             val coverModifier = Modifier
                                                 .applyIf(!isLandscape) {
@@ -3698,13 +3707,15 @@ fun UnifiedPlayerNew(
                                         if (expandedplayer) carouselSize.size.dp else playerThumbnailSize.padding.dp
                                     )
 
-                                    val coverPainter = rememberAsyncImagePainter(
-                                        model = ImageRequest.Builder(LocalContext.current)
+                                    val request = remember(mediaItem.mediaId) {
+                                        ImageRequest.Builder(context)
                                             .data(mediaItem.mediaMetadata.artworkUri.toString().toThumbnail(1200))
                                             .size(1200, 1200)
                                             .transformations(LandscapeToSquareTransformation(1200))
                                             .build()
-                                    )
+                                    }
+
+                                    val coverPainter = rememberAsyncImagePainter(model = request)
 
                                     val coverModifier = Modifier
                                         .applyIf(!it.fast4x.riplay.utils.isLandscape) {

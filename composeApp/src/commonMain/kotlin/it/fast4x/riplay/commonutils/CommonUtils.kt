@@ -68,12 +68,16 @@ fun String?.toThumbnail(size: Int): String? {
                         !this.contains("/vi/")
                 )
         ) -> "$this-w$size-h$size"
-        this?.startsWith("https://yt3.ggpht.com") == true -> "$this-w$size-h$size-s$size"
+        this?.startsWith("https://yt3.ggpht.com") == true
+                && this.endsWith("-rj") -> "$this-w$size-h$size-s$size"
+        this?.startsWith("https://yt3.ggpht.com") == true
+                && !this.endsWith("-rj") -> "${this.substringBeforeLast("-rj")}-rj-w$size-h$size-s$size"
         else -> this
     }
     println("String->Thumbnail url base: $this url modified: $url")
     return url
 }
+
 fun String?.toThumbnail(): String? {
     return this
 }

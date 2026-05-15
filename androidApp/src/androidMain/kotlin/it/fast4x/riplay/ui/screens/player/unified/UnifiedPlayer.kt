@@ -1,10 +1,12 @@
 package it.fast4x.riplay.ui.screens.player.unified
 
+
 import android.annotation.SuppressLint
 import android.graphics.Bitmap
 import android.graphics.RenderEffect
 import android.graphics.Shader
 import androidx.activity.compose.BackHandler
+import androidx.annotation.OptIn
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.animateContentSize
@@ -69,6 +71,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SnapshotMutationPolicy
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -293,6 +296,7 @@ import it.fast4x.riplay.ui.components.themed.animateBrushRotation
 import it.fast4x.riplay.ui.screens.player.common.Lyrics
 import it.fast4x.riplay.ui.screens.player.common.NextVisualizer
 import it.fast4x.riplay.ui.screens.player.common.StatsForNerds
+import it.fast4x.riplay.ui.screens.player.unified.UnifiedControls
 import it.fast4x.riplay.ui.screens.settings.isYtSyncEnabled
 import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.ui.styling.collapsedPlayerProgressBar
@@ -405,10 +409,15 @@ fun UnifiedPlayer(
     if (binder.player.currentTimeline.windowCount == 0) return
 
     val playerState = LocalPlayerServiceState.current
-    //val shouldBePlaying = playerState.playbackState == PlaybackState.PLAYING
+
+    val mediaItemPolicy = object : SnapshotMutationPolicy<MediaItem?> {
+        override fun equivalent(a: MediaItem?, b: MediaItem?): Boolean {
+            return a?.mediaId == b?.mediaId // ricompone solo se cambia la traccia
+        }
+    }
 
     var nullableMediaItem by remember {
-        mutableStateOf(binder.player.currentMediaItem, neverEqualPolicy())
+        mutableStateOf(binder.player.currentMediaItem, mediaItemPolicy)
     }
 
     var isRotated by rememberSaveable { mutableStateOf(false) }
@@ -545,6 +554,23 @@ fun UnifiedPlayer(
     }
 
     val mediaItem = nullableMediaItem ?: return
+
+    /*
+    val requestLog = remember(mediaItem.mediaId) {
+        Timber.d("CoilDebug Rebuilding request for mediaId: ${mediaItem.mediaId}")
+        ImageRequest.Builder(context)
+            .data(mediaItem.mediaMetadata.artworkUri.toString().toThumbnail(1200))
+            .size(1200, 1200)
+            .transformations(LandscapeToSquareTransformation(1200))
+            .listener(
+                onStart = { Timber.d("CoilDebug Request STARTED: ${it.data}") },
+                onSuccess = { _, result ->
+                    Timber.d("CoilDebugRequest SUCCESS - dataSource: ${result.dataSource}")
+                }
+            )
+            .build()
+    }
+     */
 
     val pagerState = rememberPagerState(pageCount = { mediaItems.size })
     val pagerStateFS = rememberPagerState(pageCount = { mediaItems.size })
@@ -949,33 +975,29 @@ fun UnifiedPlayer(
         it to (it - 64.dp).px
     }
 
-    val painter = rememberAsyncImagePainter(
-        model = ImageRequest.Builder(LocalContext.current)
+    val blurRadius = if ((isShowingLyrics && !isShowingVisualizer) || !noblur)
+        blurStrength.toInt() else 0
+
+    val request = remember(mediaItem.mediaId, showthumbnail, blurRadius) {
+        ImageRequest.Builder(context)
             .data(
                 mediaItem.mediaMetadata.artworkUri.toString().toThumbnail(1200)
             )
             .size(1200, 1200)
-            .transformations(LandscapeToSquareTransformation(1200))
             .transformations(
                 listOf(
+                    LandscapeToSquareTransformation(1200),
                     if (showthumbnail) {
-                        BlurTransformation(
-                            scale = 0.5f,
-                            radius = blurStrength.toInt(),
-                            //darkenFactor = blurDarkenFactor
-                        )
-
-                    } else
-                        BlurTransformation(
-                            scale = 0.5f,
-                            //radius = blurStrength2.toInt(),
-                            radius = if ((isShowingLyrics && !isShowingVisualizer) || !noblur) blurStrength.toInt() else 0,
-                            //darkenFactor = blurDarkenFactor
-                        )
+                        BlurTransformation(scale = 0.5f, radius = blurStrength.toInt())
+                    } else {
+                        BlurTransformation(scale = 0.5f, radius = blurRadius)
+                    }
                 )
             )
             .build()
-    )
+    }
+
+    val painter = rememberAsyncImagePainter(model = request)
 
 
     var totalPlayTimes = 0L
@@ -1386,10 +1408,9 @@ fun UnifiedPlayer(
             onNext = { binder.player.playNext() },
             onPrevious = {
                 if (jumpPrevious == "") jumpPrevious = "0"
-                if(!binder.player.hasPreviousMediaItem() || (jumpPrevious != "0" && positionAndDuration.first > jumpPrevious.toFloat())){
+                if (!binder.player.hasPreviousMediaItem() || (jumpPrevious != "0" && positionAndDuration.first > jumpPrevious.toFloat())) {
                     binder.onlinePlayer?.seekTo(0f)
-                }
-                else binder.player.playPrevious()
+                } else binder.player.playPrevious()
             },
             playerState = playerState,
         )
@@ -1719,19 +1740,18 @@ fun UnifiedPlayer(
                                                     modifier = Modifier
                                                         .align(Alignment.CenterVertically)
                                                 ) {
-                                                    AsyncImage(
-                                                        model = ImageRequest.Builder(LocalContext.current)
+                                                    val request = remember(index, binder.player.getMediaItemAt(index).mediaId) {
+                                                        ImageRequest.Builder(context)
                                                             .data(
-                                                                binder.player.getMediaItemAt(index).mediaMetadata.artworkUri.toString().toThumbnail(
-                                                                    1200
-                                                                )
+                                                                binder.player.getMediaItemAt(index).mediaMetadata.artworkUri.toString()
+                                                                    .toThumbnail(1200)
                                                             )
                                                             .size(1200, 1200)
-                                                            .transformations(LandscapeToSquareTransformation(1200)).build(),
-//                                                        model = binder.player.getMediaItemAt(
-//                                                            index
-//                                                            //if (it + 1 <= mediaItems.size - 1) it + 1 else it
-//                                                        ).mediaMetadata.artworkUri.toString().thumbnail(1200),
+                                                            .transformations(LandscapeToSquareTransformation(1200))
+                                                            .build()
+                                                    }
+                                                    AsyncImage(
+                                                        model = request,
                                                         contentDescription = null,
                                                         contentScale = ContentScale.Crop,
                                                         modifier = Modifier
@@ -2094,17 +2114,17 @@ fun UnifiedPlayer(
                                 )
 
                             //if (showButtonPlayerArrow)
-                                IconButton(
-                                    icon = R.drawable.list,
-                                    color = colorPalette().accent,
-                                    enabled = true,
-                                    onClick = {
-                                        showQueue = true
-                                    },
-                                    modifier = Modifier
-                                        //.padding(end = 12.dp)
-                                        .size(24.dp),
-                                )
+                            IconButton(
+                                icon = R.drawable.list,
+                                color = colorPalette().accent,
+                                enabled = true,
+                                onClick = {
+                                    showQueue = true
+                                },
+                                modifier = Modifier
+                                    //.padding(end = 12.dp)
+                                    .size(24.dp),
+                            )
 
                             if (showButtonPlayerMenu && !isLandscape)
                                 IconButton(
@@ -2198,25 +2218,29 @@ fun UnifiedPlayer(
             SwipeAnimationNoThumbnail.Sliding
         )
 
-        //if ( isLandscape && !mediaItem.isVideo ) {
-        if ( isLandscape ) {
-            Box(
-                modifier = Modifier
-                    .conditional(queueType == QueueType.Modern) {
-                        hazeEffect(
-                            state = hazeState,
-                            style = HazeDefaults.style(
-                                backgroundColor = Color.Transparent,
-                                tint = HazeTint(if (lightTheme) Color.White.copy(0.5f) else Color.Black.copy(0.5f)),
-                                blurRadius = 8.dp
-                            )
-                        )
-                    }
-            ) {
-                //use online player core for landscape mode
-                thumbnailContent( if (!mediaItem.isVideo) Modifier.hide() else Modifier )
 
-                if (!mediaItem.isVideo) {
+        if ( isLandscape ) {
+
+            // START LANDSCAPE SECTION
+
+            //use online player core for landscape mode
+            thumbnailContent( if (!mediaItem.isVideo) Modifier.hide() else Modifier )
+
+            // IS NOT A VIDEO
+            if (!mediaItem.isVideo) {
+                Box(
+                    modifier = Modifier
+                        .conditional(queueType == QueueType.Modern) {
+                            hazeEffect(
+                                state = hazeState,
+                                style = HazeDefaults.style(
+                                    backgroundColor = Color.Transparent,
+                                    tint = HazeTint(if (lightTheme) Color.White.copy(0.5f) else Color.Black.copy(0.5f)),
+                                    blurRadius = 8.dp
+                                )
+                            )
+                        }
+                ) {
 
                     if ((playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor && playerType == PlayerType.Modern && (!showthumbnail || albumCoverRotation)) || (animatedGradient == AnimatedGradient.Random && tempGradient == gradients[14])) {
                         val fling = PagerDefaults.flingBehavior(
@@ -2281,33 +2305,31 @@ fun UnifiedPlayer(
                                 }
                             }
 
-                            AsyncImage(
-                                model = ImageRequest.Builder(LocalContext.current)
+                            val blurRadius = if ((isShowingLyrics && !isShowingVisualizer) || !noblur)
+                                blurStrength.toInt() else 0
+
+                            val request = remember(index, binder.player.getMediaItemAt(index).mediaId, showthumbnail, blurRadius) {
+                                ImageRequest.Builder(context)
                                     .data(
-                                        binder.player.getMediaItemAt(index).mediaMetadata.artworkUri.toString().toThumbnail(
-                                            1200
-                                        )
+                                        binder.player.getMediaItemAt(index).mediaMetadata.artworkUri.toString()
+                                            .toThumbnail(1200)
                                     )
                                     .size(1200, 1200)
                                     .transformations(
                                         listOf(
                                             LandscapeToSquareTransformation(1200),
                                             if (showthumbnail) {
-                                                BlurTransformation(
-                                                    scale = 0.5f,
-                                                    radius = blurStrength.toInt(),
-                                                    //darkenFactor = blurDarkenFactor
-                                                )
-                                            } else
-                                                BlurTransformation(
-                                                    scale = 0.5f,
-                                                    //radius = blurStrength2.toInt(),
-                                                    radius = if ((isShowingLyrics && !isShowingVisualizer) || !noblur) blurStrength.toInt() else 0,
-                                                    //darkenFactor = blurDarkenFactor
-                                                )
+                                                BlurTransformation(scale = 0.5f, radius = blurStrength.toInt())
+                                            } else {
+                                                BlurTransformation(scale = 0.5f, radius = blurRadius)
+                                            }
                                         )
                                     )
-                                    .build(),
+                                    .build()
+                            }
+
+                            AsyncImage(
+                                model = request,
                                 contentDescription = "",
                                 contentScale = if ((albumCoverRotation || (animatedGradient == AnimatedGradient.Random && tempGradient == gradients[14])) && (isShowingLyrics || showthumbnail)) ContentScale.Fit else ContentScale.Crop,
                                 modifier = Modifier
@@ -2387,6 +2409,7 @@ fun UnifiedPlayer(
                             verticalArrangement = Arrangement.Center,
                             modifier = Modifier
                                 .fillMaxHeight()
+                                .fillMaxWidth(.4f)
                                 .animateContentSize()
                             // .border(BorderStroke(1.dp, Color.Blue))
                         ) {
@@ -2472,16 +2495,13 @@ fun UnifiedPlayer(
                                     )
                                 }
                             }
-                        }
-                        Column(
-                            verticalArrangement = Arrangement.Center,
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                        ) {
+
                             if (playerType == PlayerType.Modern) {
                                 BoxWithConstraints(
                                     contentAlignment = Alignment.Center,
                                     modifier = Modifier
-                                        .weight(.5f)
+                                    //.weight(.5f)
+
                                     //.border(BorderStroke(2.dp, Color.Blue))
                                     /*modifier = Modifier
                                    .weight(1f)*/
@@ -2546,17 +2566,18 @@ fun UnifiedPlayer(
                                             ) { index ->
                                                 if (!(index < binder.player.mediaItemCount && index >= 0)) return@HorizontalPager
 
-                                                val coverPainter = rememberAsyncImagePainter(
-                                                    model = ImageRequest.Builder(LocalContext.current)
+                                                val request = remember(index, binder.player.getMediaItemAt(index).mediaId) {
+                                                    ImageRequest.Builder(context)
                                                         .data(
-                                                            binder.player.getMediaItemAt(index).mediaMetadata.artworkUri.toString().toThumbnail(
-                                                                1200
-                                                            )
+                                                            binder.player.getMediaItemAt(index).mediaMetadata.artworkUri.toString()
+                                                                .toThumbnail(1200)
                                                         )
                                                         .size(1200, 1200)
                                                         .transformations(LandscapeToSquareTransformation(1200))
                                                         .build()
-                                                )
+                                                }
+
+                                                val coverPainter = rememberAsyncImagePainter(model = request)
 
                                                 val coverModifier = Modifier
                                                     .applyIf(!isLandscape) {
@@ -2788,6 +2809,14 @@ fun UnifiedPlayer(
                                     }
                                 }
                             }
+
+                        }
+                        Column(
+                            verticalArrangement = Arrangement.Center,
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+
                             if (playerType == PlayerType.Essential || isShowingVisualizer) {
                                 controlsContent(
                                     Modifier
@@ -2833,7 +2862,10 @@ fun UnifiedPlayer(
                                         } else
                                             CoroutineScope(Dispatchers.IO).launch {
                                                 riTuneClient.sendCommand(
-                                                    RiTuneRemoteCommand("play", mediaId = binder.player.getMediaItemAt(index).mediaId)
+                                                    RiTuneRemoteCommand(
+                                                        "play",
+                                                        mediaId = binder.player.getMediaItemAt(index).mediaId
+                                                    )
                                                 )
                                             }
                                     },
@@ -2859,17 +2891,19 @@ fun UnifiedPlayer(
                                         } else
                                             CoroutineScope(Dispatchers.IO).launch {
                                                 riTuneClient.sendCommand(
-                                                    RiTuneRemoteCommand("seek", position = it.div(1000))
+                                                    RiTuneRemoteCommand(
+                                                        "seek",
+                                                        position = it.div(1000)
+                                                    )
                                                 )
                                             }
                                     },
                                     onNext = { binder.player.playNext() },
                                     onPrevious = {
                                         if (jumpPrevious == "") jumpPrevious = "0"
-                                        if(!binder.player.hasPreviousMediaItem() || (jumpPrevious != "0" && positionAndDuration.first > jumpPrevious.toFloat())){
+                                        if (!binder.player.hasPreviousMediaItem() || (jumpPrevious != "0" && positionAndDuration.first > jumpPrevious.toFloat())) {
                                             binder.onlinePlayer?.seekTo(0f)
-                                        }
-                                        else binder.player.playPrevious()
+                                        } else binder.player.playPrevious()
                                     },
                                     playerState = playerState,
                                 )
@@ -2888,9 +2922,11 @@ fun UnifiedPlayer(
                         }
                     }
 
-                    // end marker for landscape mode
                 }
             }
+
+            // END LANDSCAPE SECTION
+
         } else {
             Box(
                 modifier = Modifier
@@ -2988,34 +3024,32 @@ fun UnifiedPlayer(
                                     }
                                 }
                         ) {
-                            AsyncImage(
-                                model = ImageRequest.Builder(LocalContext.current)
+
+                            val blurRadius = if ((isShowingLyrics && !isShowingVisualizer) || !noblur)
+                                blurStrength.toInt() else 0
+
+                            val request = remember(index, binder.player.getMediaItemAt(index).mediaId, showthumbnail, blurRadius) {
+                                ImageRequest.Builder(context)
                                     .data(
-                                        binder.player.getMediaItemAt(index).mediaMetadata.artworkUri.toString().toThumbnail(
-                                            1200
-                                        )
+                                        binder.player.getMediaItemAt(index).mediaMetadata.artworkUri.toString()
+                                            .toThumbnail(1200)
                                     )
                                     .size(1200, 1200)
-                                    .transformations(LandscapeToSquareTransformation(1200))
                                     .transformations(
                                         listOf(
+                                            LandscapeToSquareTransformation(1200),
                                             if (showthumbnail) {
-                                                BlurTransformation(
-                                                    scale = 0.5f,
-                                                    radius = blurStrength.toInt(),
-                                                    //darkenFactor = blurDarkenFactor
-                                                )
-
-                                            } else
-                                                BlurTransformation(
-                                                    scale = 0.5f,
-                                                    //radius = blurStrength2.toInt(),
-                                                    radius = if ((isShowingLyrics && !isShowingVisualizer) || !noblur) blurStrength.toInt() else 0,
-                                                    //darkenFactor = blurDarkenFactor
-                                                )
+                                                BlurTransformation(scale = 0.5f, radius = blurStrength.toInt())
+                                            } else {
+                                                BlurTransformation(scale = 0.5f, radius = blurRadius)
+                                            }
                                         )
                                     )
-                                    .build(),
+                                    .build()
+                            }
+
+                            AsyncImage(
+                                model = request,
                                 contentDescription = "",
                                 contentScale = if ((albumCoverRotation || (animatedGradient == AnimatedGradient.Random && tempGradient == gradients[14])) && (isShowingLyrics || showthumbnail)) ContentScale.Fit else ContentScale.Crop,
                                 modifier = Modifier
@@ -3150,7 +3184,12 @@ fun UnifiedPlayer(
                                                 } else
                                                     CoroutineScope(Dispatchers.IO).launch {
                                                         riTuneClient.sendCommand(
-                                                            RiTuneRemoteCommand("play", mediaId = binder.player.getMediaItemAt(index).mediaId)
+                                                            RiTuneRemoteCommand(
+                                                                "play",
+                                                                mediaId = binder.player.getMediaItemAt(
+                                                                    index
+                                                                ).mediaId
+                                                            )
                                                         )
                                                     }
                                             },
@@ -3176,17 +3215,19 @@ fun UnifiedPlayer(
                                                 } else
                                                     CoroutineScope(Dispatchers.IO).launch {
                                                         riTuneClient.sendCommand(
-                                                            RiTuneRemoteCommand("seek", position = it.div(1000))
+                                                            RiTuneRemoteCommand(
+                                                                "seek",
+                                                                position = it.div(1000)
+                                                            )
                                                         )
                                                     }
                                             },
                                             onNext = { binder.player.playNext() },
                                             onPrevious = {
                                                 if (jumpPrevious == "") jumpPrevious = "0"
-                                                if(!binder.player.hasPreviousMediaItem() || (jumpPrevious != "0" && positionAndDuration.first > jumpPrevious.toFloat())){
+                                                if (!binder.player.hasPreviousMediaItem() || (jumpPrevious != "0" && positionAndDuration.first > jumpPrevious.toFloat())) {
                                                     binder.onlinePlayer?.seekTo(0f)
-                                                }
-                                                else binder.player.playPrevious()
+                                                } else binder.player.playPrevious()
                                             },
                                             playerState = playerState,
                                         )
@@ -3447,125 +3488,102 @@ fun UnifiedPlayer(
                                     ) { index ->
                                         if (!(index < binder.player.mediaItemCount && index >= 0)) return@VerticalPager
 
-                                            val coverPainter = rememberAsyncImagePainter(
-                                                model = ImageRequest.Builder(LocalContext.current)
-                                                    .data(
-                                                        binder.player.getMediaItemAt(index).mediaMetadata.artworkUri.toString()
-                                                            .toThumbnail(
-                                                                1200
-                                                            )
-                                                    )
-                                                    .size(1200, 1200)
-                                                    .transformations(
-                                                        LandscapeToSquareTransformation(
-                                                            1200
+                                        val request = remember(index, binder.player.getMediaItemAt(index).mediaId) {
+                                            ImageRequest.Builder(context)
+                                                .data(
+                                                    binder.player.getMediaItemAt(index).mediaMetadata.artworkUri.toString()
+                                                        .toThumbnail(1200)
+                                                )
+                                                .size(1200, 1200)
+                                                .transformations(LandscapeToSquareTransformation(1200))
+                                                .build()
+                                        }
+
+                                        val coverPainter = rememberAsyncImagePainter(model = request)
+
+                                        val coverModifier = Modifier
+                                            .applyIf(!isLandscape) {
+                                                fillMaxSize()
+                                            }
+                                            .aspectRatio(1f)
+                                            .padding(all = animatePadding)
+                                            .conditional(carousel) {
+                                                graphicsLayer {
+                                                    val pageOffSet =
+                                                        ((pagerState.currentPage - index) + pagerState.currentPageOffsetFraction).absoluteValue
+                                                    alpha = lerp(
+                                                        start = 0.9f,
+                                                        stop = 1f,
+                                                        fraction = 1f - pageOffSet.coerceIn(
+                                                            0f,
+                                                            1f
                                                         )
                                                     )
-                                                    .build()
+                                                    scaleY = lerp(
+                                                        start = 0.9f,
+                                                        stop = 1f,
+                                                        fraction = 1f - pageOffSet.coerceIn(
+                                                            0f,
+                                                            5f
+                                                        )
+                                                    )
+                                                    scaleX = lerp(
+                                                        start = 0.9f,
+                                                        stop = 1f,
+                                                        fraction = 1f - pageOffSet.coerceIn(
+                                                            0f,
+                                                            5f
+                                                        )
+                                                    )
+                                                }
+                                            }
+                                            .conditional(thumbnailType == ThumbnailType.Modern) {
+                                                padding(
+                                                    all = 10.dp
+                                                )
+                                            }
+                                            .conditional(
+                                                thumbnailType == ThumbnailType.Modern
+                                                        && coverThumbnailAnimation != ThumbnailCoverType.AudioCassette
+                                                        && coverThumbnailAnimation != ThumbnailCoverType.AudioCassetteWithCover
+                                            ) {
+                                                doubleShadowDrop(
+                                                    if (showCoverThumbnailAnimation && !binder.player.getMediaItemAt(
+                                                            index
+                                                        ).isVideo
+                                                    ) CircleShape else thumbnailRoundness.shape(),
+                                                    4.dp,
+                                                    8.dp
+                                                )
+                                            }
+                                            .clip(thumbnailRoundness.shape())
+                                            .combinedClickable(
+                                                interactionSource = remember { MutableInteractionSource() },
+                                                indication = null,
+                                                onClick = {
+                                                    if (index == pagerState.settledPage && thumbnailTapEnabled) {
+                                                        if (isShowingVisualizer) isShowingVisualizer =
+                                                            false
+                                                        isShowingLyrics = !isShowingLyrics
+                                                    }
+                                                    if (index != pagerState.settledPage) {
+                                                        binder.player.playAtIndex(index)
+                                                    }
+                                                },
+                                                onLongClick = {
+                                                    if (index == pagerState.settledPage && (expandedplayer || fadingedge))
+                                                        showThumbnailOffsetDialog = true
+                                                }
                                             )
 
-                                            val coverModifier = Modifier
-                                                .applyIf(!isLandscape) {
-                                                    fillMaxSize()
-                                                }
-                                                .aspectRatio(1f)
-                                                .padding(all = animatePadding)
-                                                .conditional(carousel) {
-                                                    graphicsLayer {
-                                                        val pageOffSet =
-                                                            ((pagerState.currentPage - index) + pagerState.currentPageOffsetFraction).absoluteValue
-                                                        alpha = lerp(
-                                                            start = 0.9f,
-                                                            stop = 1f,
-                                                            fraction = 1f - pageOffSet.coerceIn(
-                                                                0f,
-                                                                1f
-                                                            )
-                                                        )
-                                                        scaleY = lerp(
-                                                            start = 0.9f,
-                                                            stop = 1f,
-                                                            fraction = 1f - pageOffSet.coerceIn(
-                                                                0f,
-                                                                5f
-                                                            )
-                                                        )
-                                                        scaleX = lerp(
-                                                            start = 0.9f,
-                                                            stop = 1f,
-                                                            fraction = 1f - pageOffSet.coerceIn(
-                                                                0f,
-                                                                5f
-                                                            )
-                                                        )
-                                                    }
-                                                }
-                                                .conditional(thumbnailType == ThumbnailType.Modern) {
-                                                    padding(
-                                                        all = 10.dp
-                                                    )
-                                                }
-                                                .conditional(
-                                                    thumbnailType == ThumbnailType.Modern
-                                                            && coverThumbnailAnimation != ThumbnailCoverType.AudioCassette
-                                                            && coverThumbnailAnimation != ThumbnailCoverType.AudioCassetteWithCover
-                                                ) {
-                                                    doubleShadowDrop(
-                                                        if (showCoverThumbnailAnimation && !binder.player.getMediaItemAt(
-                                                                index
-                                                            ).isVideo
-                                                        ) CircleShape else thumbnailRoundness.shape(),
-                                                        4.dp,
-                                                        8.dp
-                                                    )
-                                                }
-                                                .clip(thumbnailRoundness.shape())
-                                                .combinedClickable(
-                                                    interactionSource = remember { MutableInteractionSource() },
-                                                    indication = null,
-                                                    onClick = {
-                                                        if (index == pagerState.settledPage && thumbnailTapEnabled) {
-                                                            if (isShowingVisualizer) isShowingVisualizer =
-                                                                false
-                                                            isShowingLyrics = !isShowingLyrics
-                                                        }
-                                                        if (index != pagerState.settledPage) {
-                                                            binder.player.playAtIndex(index)
-                                                        }
-                                                    },
-                                                    onLongClick = {
-                                                        if (index == pagerState.settledPage && (expandedplayer || fadingedge))
-                                                            showThumbnailOffsetDialog = true
-                                                    }
-                                                )
-
-                                            if (!binder.player.getMediaItemAt(index).isVideo) {
-                                                if (showCoverThumbnailAnimation) {
-                                                    when (coverThumbnailAnimation) {
-                                                        ThumbnailCoverType.CD, ThumbnailCoverType.Vinyl, ThumbnailCoverType.CDWithCover -> {
-                                                            RotateThumbnailCoverAnimationModern(
-                                                                painter = coverPainter,
-                                                                isSongPlaying = playerState.isPlaying,
-                                                                modifier = coverModifier
-                                                                    .zIndex(
-                                                                        if (index == pagerState.currentPage) 1f
-                                                                        else if (index == (pagerState.currentPage + 1) || index == (pagerState.currentPage - 1)) 0.85f
-                                                                        else if (index == (pagerState.currentPage + 2) || index == (pagerState.currentPage - 2)) 0.78f
-                                                                        else if (index == (pagerState.currentPage + 3) || index == (pagerState.currentPage - 3)) 0.73f
-                                                                        else if (index == (pagerState.currentPage + 4) || index == (pagerState.currentPage - 4)) 0.68f
-                                                                        else if (index == (pagerState.currentPage + 5) || index == (pagerState.currentPage - 5)) 0.63f
-                                                                        else 0.57f
-                                                                    ),
-                                                                state = pagerState,
-                                                                pageIndex = index,
-                                                                imageCoverSize = imageCoverSize,
-                                                                type = coverThumbnailAnimation
-                                                            )
-                                                        }
-
-                                                        ThumbnailCoverType.AudioCassette, ThumbnailCoverType.AudioCassetteWithCover -> {
-                                                            AudioCassette(
-                                                                modifier = coverModifier
+                                        if (!binder.player.getMediaItemAt(index).isVideo) {
+                                            if (showCoverThumbnailAnimation) {
+                                                when (coverThumbnailAnimation) {
+                                                    ThumbnailCoverType.CD, ThumbnailCoverType.Vinyl, ThumbnailCoverType.CDWithCover -> {
+                                                        RotateThumbnailCoverAnimationModern(
+                                                            painter = coverPainter,
+                                                            isSongPlaying = playerState.isPlaying,
+                                                            modifier = coverModifier
                                                                 .zIndex(
                                                                     if (index == pagerState.currentPage) 1f
                                                                     else if (index == (pagerState.currentPage + 1) || index == (pagerState.currentPage - 1)) 0.85f
@@ -3575,76 +3593,51 @@ fun UnifiedPlayer(
                                                                     else if (index == (pagerState.currentPage + 5) || index == (pagerState.currentPage - 5)) 0.63f
                                                                     else 0.57f
                                                                 ),
-                                                                isPlaying = playerState.isPlaying && (index == pagerState.settledPage),
-                                                                painter = coverPainter,
-                                                                playerState = playerState,
-                                                                withCover = coverThumbnailAnimation == ThumbnailCoverType.AudioCassetteWithCover
-                                                            )
-                                                        }
-                                                        ThumbnailCoverType.Turntable -> {
-                                                            Turntable(
-                                                                modifier = coverModifier
-                                                                    .zIndex(
-                                                                        if (index == pagerState.currentPage) 1f
-                                                                        else if (index == (pagerState.currentPage + 1) || index == (pagerState.currentPage - 1)) 0.85f
-                                                                        else if (index == (pagerState.currentPage + 2) || index == (pagerState.currentPage - 2)) 0.78f
-                                                                        else if (index == (pagerState.currentPage + 3) || index == (pagerState.currentPage - 3)) 0.73f
-                                                                        else if (index == (pagerState.currentPage + 4) || index == (pagerState.currentPage - 4)) 0.68f
-                                                                        else if (index == (pagerState.currentPage + 5) || index == (pagerState.currentPage - 5)) 0.63f
-                                                                        else 0.57f
-                                                                    ),
-                                                                isPlaying = playerState.isPlaying && (index == pagerState.settledPage),
-                                                                painter = coverPainter,
-                                                            )
-                                                        }
+                                                            state = pagerState,
+                                                            pageIndex = index,
+                                                            imageCoverSize = imageCoverSize,
+                                                            type = coverThumbnailAnimation
+                                                        )
                                                     }
-                                                } else
-                                                    Box(
-                                                        modifier = Modifier
-                                                            .zIndex(
-                                                                if (index == pagerState.currentPage) 1f
-                                                                else if (index == (pagerState.currentPage + 1) || index == (pagerState.currentPage - 1)) 0.85f
-                                                                else if (index == (pagerState.currentPage + 2) || index == (pagerState.currentPage - 2)) 0.78f
-                                                                else if (index == (pagerState.currentPage + 3) || index == (pagerState.currentPage - 3)) 0.73f
-                                                                else if (index == (pagerState.currentPage + 4) || index == (pagerState.currentPage - 4)) 0.68f
-                                                                else if (index == (pagerState.currentPage + 5) || index == (pagerState.currentPage - 5)) 0.63f
-                                                                else 0.57f
-                                                            )
-                                                    ) {
 
-                                                        val isVideo =
-                                                            rememberSaveable {
-                                                                binder.player.getMediaItemAt(
-                                                                    index
-                                                                ).isVideo
-                                                            }
-                                                        if (!isVideo)
-                                                            Image(
-                                                                painter = coverPainter,
-                                                                contentDescription = "",
-                                                                contentScale = ContentScale.Fit,
-                                                                modifier = coverModifier
-                                                            )
-
-                                                        if (isDragged && expandedplayer && index == binder.player.currentMediaItemIndex) {
-                                                            Box(
-                                                                modifier = Modifier
-                                                                    .align(Alignment.Center)
-                                                                    .matchParentSize()
-                                                            ) {
-                                                                NowPlayingSongIndicator(
-                                                                    binder.player.getMediaItemAt(
-                                                                        binder.player.currentMediaItemIndex
-                                                                    ).mediaId, binder.player,
-                                                                    Dimensions.thumbnails.album
-                                                                )
-                                                            }
-                                                        }
+                                                    ThumbnailCoverType.AudioCassette, ThumbnailCoverType.AudioCassetteWithCover -> {
+                                                        AudioCassette(
+                                                            modifier = coverModifier
+                                                                .zIndex(
+                                                                    if (index == pagerState.currentPage) 1f
+                                                                    else if (index == (pagerState.currentPage + 1) || index == (pagerState.currentPage - 1)) 0.85f
+                                                                    else if (index == (pagerState.currentPage + 2) || index == (pagerState.currentPage - 2)) 0.78f
+                                                                    else if (index == (pagerState.currentPage + 3) || index == (pagerState.currentPage - 3)) 0.73f
+                                                                    else if (index == (pagerState.currentPage + 4) || index == (pagerState.currentPage - 4)) 0.68f
+                                                                    else if (index == (pagerState.currentPage + 5) || index == (pagerState.currentPage - 5)) 0.63f
+                                                                    else 0.57f
+                                                                ),
+                                                            isPlaying = playerState.isPlaying && (index == pagerState.settledPage),
+                                                            painter = coverPainter,
+                                                            playerState = playerState,
+                                                            withCover = coverThumbnailAnimation == ThumbnailCoverType.AudioCassetteWithCover
+                                                        )
                                                     }
-                                            } else {
-                                                // if isVideo
+                                                    ThumbnailCoverType.Turntable -> {
+                                                        Turntable(
+                                                            modifier = coverModifier
+                                                                .zIndex(
+                                                                    if (index == pagerState.currentPage) 1f
+                                                                    else if (index == (pagerState.currentPage + 1) || index == (pagerState.currentPage - 1)) 0.85f
+                                                                    else if (index == (pagerState.currentPage + 2) || index == (pagerState.currentPage - 2)) 0.78f
+                                                                    else if (index == (pagerState.currentPage + 3) || index == (pagerState.currentPage - 3)) 0.73f
+                                                                    else if (index == (pagerState.currentPage + 4) || index == (pagerState.currentPage - 4)) 0.68f
+                                                                    else if (index == (pagerState.currentPage + 5) || index == (pagerState.currentPage - 5)) 0.63f
+                                                                    else 0.57f
+                                                                ),
+                                                            isPlaying = playerState.isPlaying && (index == pagerState.settledPage),
+                                                            painter = coverPainter,
+                                                        )
+                                                    }
+                                                }
+                                            } else
                                                 Box(
-                                                    modifier = coverModifier
+                                                    modifier = Modifier
                                                         .zIndex(
                                                             if (index == pagerState.currentPage) 1f
                                                             else if (index == (pagerState.currentPage + 1) || index == (pagerState.currentPage - 1)) 0.85f
@@ -3655,16 +3648,60 @@ fun UnifiedPlayer(
                                                             else 0.57f
                                                         )
                                                 ) {
-                                                    Image(
-                                                        painter = coverPainter,
-                                                        contentDescription = "",
-                                                        contentScale = ContentScale.Fit,
-                                                        modifier = Modifier
-                                                            .fillMaxSize(.5f)
-                                                            .align(Alignment.Center)
-                                                    )
+
+                                                    val isVideo =
+                                                        rememberSaveable {
+                                                            binder.player.getMediaItemAt(
+                                                                index
+                                                            ).isVideo
+                                                        }
+                                                    if (!isVideo)
+                                                        Image(
+                                                            painter = coverPainter,
+                                                            contentDescription = "",
+                                                            contentScale = ContentScale.Fit,
+                                                            modifier = coverModifier
+                                                        )
+
+                                                    if (isDragged && expandedplayer && index == binder.player.currentMediaItemIndex) {
+                                                        Box(
+                                                            modifier = Modifier
+                                                                .align(Alignment.Center)
+                                                                .matchParentSize()
+                                                        ) {
+                                                            NowPlayingSongIndicator(
+                                                                binder.player.getMediaItemAt(
+                                                                    binder.player.currentMediaItemIndex
+                                                                ).mediaId, binder.player,
+                                                                Dimensions.thumbnails.album
+                                                            )
+                                                        }
+                                                    }
                                                 }
+                                        } else {
+                                            // if isVideo
+                                            Box(
+                                                modifier = coverModifier
+                                                    .zIndex(
+                                                        if (index == pagerState.currentPage) 1f
+                                                        else if (index == (pagerState.currentPage + 1) || index == (pagerState.currentPage - 1)) 0.85f
+                                                        else if (index == (pagerState.currentPage + 2) || index == (pagerState.currentPage - 2)) 0.78f
+                                                        else if (index == (pagerState.currentPage + 3) || index == (pagerState.currentPage - 3)) 0.73f
+                                                        else if (index == (pagerState.currentPage + 4) || index == (pagerState.currentPage - 4)) 0.68f
+                                                        else if (index == (pagerState.currentPage + 5) || index == (pagerState.currentPage - 5)) 0.63f
+                                                        else 0.57f
+                                                    )
+                                            ) {
+                                                Image(
+                                                    painter = coverPainter,
+                                                    contentDescription = "",
+                                                    contentScale = ContentScale.Fit,
+                                                    modifier = Modifier
+                                                        .fillMaxSize(.5f)
+                                                        .align(Alignment.Center)
+                                                )
                                             }
+                                        }
 
                                     }
 
@@ -3673,13 +3710,15 @@ fun UnifiedPlayer(
                                         if (expandedplayer) carouselSize.size.dp else playerThumbnailSize.padding.dp
                                     )
 
-                                    val coverPainter = rememberAsyncImagePainter(
-                                        model = ImageRequest.Builder(LocalContext.current)
+                                    val request = remember(mediaItem.mediaId) {
+                                        ImageRequest.Builder(context)
                                             .data(mediaItem.mediaMetadata.artworkUri.toString().toThumbnail(1200))
                                             .size(1200, 1200)
                                             .transformations(LandscapeToSquareTransformation(1200))
                                             .build()
-                                    )
+                                    }
+
+                                    val coverPainter = rememberAsyncImagePainter(model = request)
 
                                     val coverModifier = Modifier
                                         .applyIf(!it.fast4x.riplay.utils.isLandscape) {
@@ -4034,17 +4073,19 @@ fun UnifiedPlayer(
                                         } else
                                             CoroutineScope(Dispatchers.IO).launch {
                                                 riTuneClient.sendCommand(
-                                                    RiTuneRemoteCommand("seek", position = it.div(1000))
+                                                    RiTuneRemoteCommand(
+                                                        "seek",
+                                                        position = it.div(1000)
+                                                    )
                                                 )
                                             }
                                     },
                                     onNext = { binder.player.playNext() },
                                     onPrevious = {
                                         if (jumpPrevious == "") jumpPrevious = "0"
-                                        if(!binder.player.hasPreviousMediaItem() || (jumpPrevious != "0" && positionAndDuration.first > jumpPrevious.toFloat())){
+                                        if (!binder.player.hasPreviousMediaItem() || (jumpPrevious != "0" && positionAndDuration.first > jumpPrevious.toFloat())) {
                                             binder.onlinePlayer?.seekTo(0f)
-                                        }
-                                        else binder.player.playPrevious()
+                                        } else binder.player.playPrevious()
                                     },
                                     playerState = playerState,
                                 )
@@ -4131,7 +4172,7 @@ fun UnifiedPlayer(
 }
 
 @Composable
-@androidx.annotation.OptIn(UnstableApi::class)
+@OptIn(UnstableApi::class)
 private fun PagerState.LaunchedEffectScrollToPage(
     index: Int
 ) {

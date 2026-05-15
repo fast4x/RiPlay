@@ -7,9 +7,14 @@ import io.ktor.client.HttpClient
 import io.ktor.client.plugins.UserAgent
 import it.fast4x.environment.utils.ProxyPreferences
 import it.fast4x.environment.utils.getProxy
+import it.fast4x.riplay.BuildConfig
 import it.fast4x.riplay.config.EnvironmentConfig
 import it.fast4x.riplay.enums.NetworkType
+import okhttp3.Cache
 import okhttp3.OkHttpClient
+import okhttp3.logging.HttpLoggingInterceptor
+import java.io.File
+import java.util.concurrent.TimeUnit
 
 
 fun getNetworkType(context: Context): NetworkType {
@@ -71,29 +76,25 @@ fun isNetworkConnected(context: Context): Boolean {
 object CustomHttpClient {
     private val _proxy = ProxyPreferences.preference?.let { getProxy(it) }
 
+    var clientCache: Cache? = Cache(
+        directory = File(appContext().cacheDir, "http_cache"),
+        maxSize = 50L * 1024L * 1024L // 50 MB
+    )
+
     val okHttpClient: OkHttpClient by lazy {
         OkHttpClient.Builder()
+            .cache(clientCache)
+            .connectTimeout(10, TimeUnit.SECONDS)
+            .readTimeout(20, TimeUnit.SECONDS)
+            .writeTimeout(20, TimeUnit.SECONDS)
+            .addInterceptor(HttpLoggingInterceptor().apply {
+                level = if (BuildConfig.DEBUG)
+                    HttpLoggingInterceptor.Level.BASIC  // mai BODY in produzione
+                else
+                    HttpLoggingInterceptor.Level.NONE
+            })
             .proxy(_proxy)
             .build()
     }
 
-    val httpClient: HttpClient by lazy {
-        HttpClient() {
-            install(UserAgent) {
-                agent = EnvironmentConfig.env_WkUFhXtC3G
-            }
-            engine {
-                proxy?.let { _proxy }
-            }
-        }
-    }
 }
-
-//fun okHttpClient() : OkHttpClient =
-//    ProxyPreferences.preference?.let{
-//        OkHttpClient.Builder()
-//            .proxy(
-//                getProxy(it)
-//            )
-//            .build()
-//    } ?: OkHttpClient.Builder().build()

@@ -126,7 +126,10 @@ object Environment {
         engine {
             addInterceptor(
                 HttpLoggingInterceptor().apply {
-                    level = HttpLoggingInterceptor.Level.BODY
+                    //DEBUG
+                    //level = HttpLoggingInterceptor.Level.BODY
+                    //PROD
+                    level = HttpLoggingInterceptor.Level.NONE
                 }
             )
 
@@ -169,7 +172,7 @@ object Environment {
                 followRedirects(true)
                 followSslRedirects(true)
                 retryOnConnectionFailure(true)
-                pingInterval(1, TimeUnit.SECONDS)
+                pingInterval(10, TimeUnit.SECONDS)
             }
 
         }

@@ -239,13 +239,13 @@ import it.fast4x.riplay.extensions.preferences.showSnowfallEffectKey
 import it.fast4x.riplay.cast.ritune.models.toRiTuneDevice
 import it.fast4x.riplay.cast.ritune.RiTuneCastSelector
 import it.fast4x.riplay.enums.CastType
-import it.fast4x.riplay.extensions.experimental.ui.screens.player.classic.UnifiedPlayerNew
 import it.fast4x.riplay.extensions.preferences.castTypeKey
 import it.fast4x.riplay.extensions.storagewarning.StorageWarningChecker
 import it.fast4x.riplay.services.playback.PlayerState
 import it.fast4x.riplay.ui.components.Snowfall
 import it.fast4x.riplay.ui.screens.player.unified.components.core.UnifiedPlayerView
 import it.fast4x.riplay.ui.screens.player.unified.UnifiedMiniPlayer
+import it.fast4x.riplay.ui.screens.player.unified.UnifiedPlayer
 import it.fast4x.riplay.utils.GlobalSharedData
 import it.fast4x.riplay.utils.WebViewInfo
 import it.fast4x.riplay.utils.cleanTempAudioCache
@@ -270,6 +270,7 @@ import java.util.Date
 import java.util.Locale
 import java.util.Objects
 import kotlin.math.sqrt
+import androidx.compose.ui.platform.LocalLocale
 
 
 @UnstableApi
@@ -786,7 +787,7 @@ class MainActivity :
             val lightTheme =
                 colorPaletteMode == ColorPaletteMode.Light || (colorPaletteMode == ColorPaletteMode.System && (!isSystemInDarkTheme()))
 
-            val locale = Locale.getDefault()
+            val locale = LocalLocale.current.platformLocale
             val languageTag = locale.toLanguageTag().replace("-Hant", "")
             val languageApp =
                 globalContext().preferences.getEnum(languageAppKey, getSystemlanguage())
@@ -1461,7 +1462,7 @@ class MainActivity :
                                     contentAlwaysAvailable = true
                                 ) {
                                     navController?.let {
-                                        UnifiedPlayerNew (
+                                        UnifiedPlayer (
                                             navController = it,
                                             onlineCore = {
                                                 binder?.player?.currentMediaItem?.let {
