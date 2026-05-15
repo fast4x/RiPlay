@@ -21,7 +21,32 @@ import it.fast4x.riplay.extensions.preferences.exoPlayerCustomCacheKey
 import it.fast4x.riplay.extensions.preferences.exoPlayerDiskCacheMaxSizeKey
 import it.fast4x.riplay.extensions.preferences.getEnum
 import it.fast4x.riplay.extensions.preferences.preferences
+import timber.log.Timber
 import java.io.File
+
+// Pulisce i file audio temporanei per il caricamento delle lyrics embeddate
+fun cleanTempAudioCache(context: Context) {
+    context.cacheDir
+        .walkTopDown()
+        .filter { it.isFile && it.name.startsWith("audio_") && it.extension == "oga" }
+        .forEach { it.delete() }
+}
+fun logCacheInfo(context: Context) {
+    val cacheDir = context.cacheDir
+    cacheDir.walkTopDown()
+        .filter { it.isFile }
+        .sortedByDescending { it.length() }
+        .take(20) // i 20 file più pesanti
+        .forEach { file ->
+            val sizeKb = file.length() / 1024
+            Timber.d("CacheDebug ${file.name} — $sizeKb KB — path: ${file.path}")
+        }
+
+    val totalMb = cacheDir.walkTopDown()
+        .filter { it.isFile }
+        .sumOf { it.length() } / (1024.0 * 1024.0)
+    Timber.d("CacheDebug Totale cache: %.2f MB".format(totalMb))
+}
 
 object principalCache {
     private val exoPlayerCustomCache = appContext().preferences.getInt(exoPlayerCustomCacheKey, 32) * 1000 * 1000L

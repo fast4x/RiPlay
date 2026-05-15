@@ -48,7 +48,7 @@ kotlin {
         implementation(libs.appcompat)
         implementation(libs.appcompat.resources)
         implementation(libs.support)
-        implementation(libs.media)
+        //implementation(libs.media) migrated to media3-session
         implementation(libs.material)
         implementation(libs.material3)
         implementation(libs.compose.ui.graphics.android)

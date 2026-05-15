@@ -17,39 +17,32 @@ import java.io.FileOutputStream
 
 suspend fun readLyricsFromAudio(context: Context, audioUri: Uri): LyricsRaw? =
     withContext(Dispatchers.IO) {
-        return@withContext try {
-            // JAudioTagger richiede un File fisico
-            val tempFile = copyUriToTempFile(context, audioUri)
+        val tempFile = copyUriToTempFile(context, audioUri)
+        try {
+            // Tentativo 1: JAudioTagger
+            try {
+                val audioFile = AudioFileIO.read(tempFile)
+                val tag = audioFile.tag
+                val rawLyrics = tag?.getFirst(FieldKey.LYRICS)?.takeIf { it.isNotBlank() }
+                val lyrics = rawLyrics?.let { LyricsParser.parse(it) }
+                Timber.d("LyricsReader lyrics $lyrics")
+                return@withContext lyrics
+            } catch (e: Exception) {
+                Timber.e("LyricsReader error ${e.message} try with ogg reader")
+            }
 
-            val audioFile = AudioFileIO.read(tempFile)
-            val tag = audioFile.tag
-            //val header = audioFile.audioHeader
-
-            val rawLyrics = tag?.getFirst(FieldKey.LYRICS)?.takeIf { it.isNotBlank() }
-            val lyrics = rawLyrics?.let { LyricsParser.parse(it) }
-            tempFile.delete()
-
-            Timber.d("LyricsReader lyrics $lyrics")
-
-            lyrics
-
-        } catch (e: Exception) {
-            Timber.e("LyricsReader error ${e.message} try with ogg reader")
-
-             val lyrics = try {
-                val tempFile = copyUriToTempFile(context, audioUri)
+            // Tentativo 2: OGG reader
+            return@withContext try {
                 val rawLyrics = readOggLyrics(tempFile)
                 val lyrics = rawLyrics?.let { LyricsParser.parse(it) }
-                tempFile.delete()
-
+                Timber.d("LyricsReader lyrics from ogg $lyrics")
                 lyrics
-
             } catch (e: Exception) {
                 null
             }
-            Timber.d("LyricsReader lyrics from ogg $lyrics")
 
-            lyrics
+        } finally {
+            tempFile.delete() // pulisce
         }
     }
 

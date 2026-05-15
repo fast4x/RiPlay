@@ -248,6 +248,7 @@ import it.fast4x.riplay.ui.screens.player.unified.components.core.UnifiedPlayerV
 import it.fast4x.riplay.ui.screens.player.unified.UnifiedMiniPlayer
 import it.fast4x.riplay.utils.GlobalSharedData
 import it.fast4x.riplay.utils.WebViewInfo
+import it.fast4x.riplay.utils.cleanTempAudioCache
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.utils.getWebViewInfo
 import it.fast4x.riplay.utils.isAtLeastAndroid12
@@ -542,6 +543,7 @@ class MainActivity :
 
         localMonet.invokeOnReady(this) {
             Timber.d("MainActivity.onCreate Inside localMonet.invokeOnReady")
+            cleanTempAudioCache(this)
 
             startApp()
         }
@@ -1875,15 +1877,6 @@ class MainActivity :
         }.onFailure {
             Timber.e("MainActivity.onDestroy removeMonetColorsChangedListener ${it.stackTraceToString()}")
         }
-
-        // Clean cache
-        cacheDir.listFiles()
-            ?.filter { it.name != "coil" }
-            ?.forEach { it.deleteRecursively() }
-
-        filesDir.listFiles()
-            ?.filter { it.name != "coil" }
-            ?.forEach { it.deleteRecursively() }
 
     }
 

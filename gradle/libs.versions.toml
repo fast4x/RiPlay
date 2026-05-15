@@ -99,7 +99,7 @@ desugaring-nio = {group = "com.android.tools", name = "desugar_jdk_libs_nio", ve
 appcompat = {group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat"}
 appcompat-resources = {group = "androidx.appcompat", name = "appcompat-resources", version.ref = "appcompat"}
 support = {group = "androidx.legacy", name = "legacy-support-v4", version.ref = "support"}
-media = {group = "androidx.media", name = "media", version.ref = "media"}
+#media = {group = "androidx.media", name = "media", version.ref = "media"}
 material = {group = "androidx.compose.material", name = "material", version.ref = "material"}
 material-icon-desktop = {group = "org.jetbrains.compose.material", name = "material-icons-extended-desktop", version.ref = "materialdesktop"}
 material3 = {group = "androidx.compose.material3", name = "material3-android", version.ref = "material3"}

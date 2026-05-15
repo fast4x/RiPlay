@@ -502,7 +502,7 @@ class PlayerService : Service(),
 
 
 
-            val format = Database.format(currentMediaId.toString()).first()
+            val format = Database.format(currentMediaId).first()
             Timber.d("PlayerService onCreate update currentSong $currentMediaId format $format")
             if (format == null) {
                 getOnlineMetadata(currentMediaId)
@@ -586,6 +586,7 @@ class PlayerService : Service(),
     }
 
 
+    @kotlin.OptIn(ExperimentalCoroutinesApi::class)
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         startForeground()
 
@@ -885,6 +886,7 @@ class PlayerService : Service(),
 
     }
 
+    @kotlin.OptIn(ExperimentalCoroutinesApi::class)
     override fun onRepeatModeChanged(repeatMode: Int) {
         val currentState = _playerState.value
         val settings = currentState.settings
@@ -905,6 +907,7 @@ class PlayerService : Service(),
         }
     }
 
+    @kotlin.OptIn(ExperimentalCoroutinesApi::class)
     private fun initializeUnifiedMediaSession() {
 
         unifiedMediaSession = MediaSessionCompat(this, "PlayerService")
@@ -927,6 +930,7 @@ class PlayerService : Service(),
 
     }
 
+    @kotlin.OptIn(ExperimentalCoroutinesApi::class)
     fun recreateOnlinePlayerView() {
         initializeVariables()
         initializeOnlinePlayer()
@@ -1401,6 +1405,7 @@ class PlayerService : Service(),
         }
     }
 
+    @kotlin.OptIn(ExperimentalCoroutinesApi::class)
     override fun onShuffleModeEnabledChanged(shuffleModeEnabled: Boolean) {
         if (shuffleModeEnabled) {
             val shuffledIndices = IntArray(player.mediaItemCount) { it }
@@ -3199,6 +3204,7 @@ private var pausedByZeroVolume = false
         }
     }
 
+    @kotlin.OptIn(FlowPreview::class)
     @ExperimentalCoroutinesApi
     fun initializeUnifiedSessionCallback() {
         Timber.d("PlayerService InitializeUnifiedSessionCallback")
