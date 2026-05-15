@@ -19,7 +19,6 @@ import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Surface
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -40,7 +39,6 @@ import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
 import it.fast4x.environment.Environment
 import it.fast4x.environment.utils.parseCookieString
-import it.fast4x.riplay.BuildConfig
 import it.fast4x.riplay.LocalAudioTagger
 import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.LastFmScrobbleType
@@ -144,7 +142,7 @@ fun AccountsSettings() {
 
         var useYtLoginOnlyForBrowse by rememberPreference(useYtLoginOnlyForBrowseKey, true)
         var isYouTubeLoginEnabled by rememberPreference(enableYouTubeLoginKey, false)
-        var isYouTubeSyncEnabled by rememberPreference(enableYouTubeSyncKey, false)
+        var isSyncEnabled by rememberPreference(enableYouTubeSyncKey, true)
         var loginYouTube by remember { mutableStateOf(false) }
         var visitorData by rememberPreference(key = ytVisitorDataKey, defaultValue = "")
         var dataSyncId by rememberPreference(key = ytDataSyncIdKey, defaultValue = "")
@@ -267,9 +265,9 @@ fun AccountsSettings() {
                                 SwitchSettingEntry(
                                     title = stringResource(R.string.sync_data_with_ytm_account),
                                     text = stringResource(R.string.sync_data_playlists_albums_artists_history_like_etc),
-                                    isChecked = isYouTubeSyncEnabled,
+                                    isChecked = isSyncEnabled,
                                     onCheckedChange = {
-                                        isYouTubeSyncEnabled = it
+                                        isSyncEnabled = it
                                     }
                                 )
                             }
@@ -314,6 +312,87 @@ fun AccountsSettings() {
 
     /****** YOUTUBE LOGIN ******/
 
+        /****** LASTFM ******/
+        var isEnabledLastfm by rememberPreference(isEnabledLastfmKey, false)
+        var lastFmSessionToken by rememberPreference(lastfmSessionTokenKey, "")
+        var loginLastfm by remember { mutableStateOf(false) }
+        var lastfmScrobbleType by rememberPreference(
+            lastfmScrobbleTypeKey,
+            LastFmScrobbleType.Simple
+        )
+
+        SettingsGroupSpacer()
+        SettingsEntryGroupText(title = stringResource(R.string.title_lastfm))
+
+        SwitchSettingEntry(
+            title = stringResource(R.string.enable_lastfm),
+            text = "",
+            isChecked = isEnabledLastfm,
+            onCheckedChange = {
+                isEnabledLastfm = it
+            },
+        )
+
+        AnimatedVisibility(visible = isEnabledLastfm) {
+            Column(
+                modifier = Modifier.padding(start = 12.dp)
+            ) {
+                ButtonBarSettingEntry(
+                    isEnabled = true,
+                    title = if (lastFmSessionToken.isNotEmpty()) stringResource(R.string.lastfm_disconnect) else stringResource(
+                        R.string.lastfm_connect
+                    ),
+                    text = if (lastFmSessionToken.isNotEmpty()) stringResource(R.string.lastfm_connected_to_lastfm_account) else "",
+                    icon = R.drawable.logo_lastfm,
+                    iconColor = colorPalette().text,
+                    onClick = {
+                        if (lastFmSessionToken.isNotEmpty())
+                            lastFmSessionToken = ""
+                        else
+                            loginLastfm = true
+                    }
+                )
+
+                CustomModalBottomSheet(
+                    showSheet = loginLastfm,
+                    onDismissRequest = {
+                        loginLastfm = false
+                    },
+                    containerColor = colorPalette().background0,
+                    contentColor = colorPalette().background0,
+                    modifier = Modifier.fillMaxWidth(),
+                    dragHandle = {
+                        Surface(
+                            modifier = Modifier.padding(vertical = 0.dp),
+                            color = colorPalette().background0,
+                            shape = thumbnailShape()
+                        ) {}
+                    },
+                    shape = thumbnailRoundness.shape()
+                ) {
+                    LastFmAuthScreen(
+                        navController = rememberNavController(),
+                        onAuthSuccess = {
+                            loginLastfm = false
+                            lastFmSessionToken =
+                                context.preferences.getString(lastfmSessionTokenKey, "") ?: ""
+                            Timber.d("LastFmAuthScreen: Authentication complete")
+                        }
+                    )
+                }
+
+                EnumValueSelectorSettingsEntry(
+                    title = stringResource(R.string.lastfm_scrobble_type),
+                    titleSecondary = "",
+                    selectedValue = lastfmScrobbleType,
+                    onValueSelected = { lastfmScrobbleType = it },
+                    valueText = { it.textName },
+                )
+
+            }
+        }
+
+        /****** LASTFM ******/
 
         /****** DISCORD ******/
         var isDiscordPresenceEnabled by rememberPreference(isDiscordPresenceEnabledKey, false)
@@ -415,88 +494,6 @@ fun AccountsSettings() {
 
 
         /****** DISCORD ******/
-
-        /****** LASTFM ******/
-        var isEnabledLastfm by rememberPreference(isEnabledLastfmKey, false)
-        var lastFmSessionToken by rememberPreference(lastfmSessionTokenKey, "")
-        var loginLastfm by remember { mutableStateOf(false) }
-        var lastfmScrobbleType by rememberPreference(
-            lastfmScrobbleTypeKey,
-            LastFmScrobbleType.Simple
-        )
-
-        SettingsGroupSpacer()
-        SettingsEntryGroupText(title = stringResource(R.string.title_lastfm))
-
-        SwitchSettingEntry(
-            title = stringResource(R.string.enable_lastfm),
-            text = "",
-            isChecked = isEnabledLastfm,
-            onCheckedChange = {
-                isEnabledLastfm = it
-            },
-        )
-
-        AnimatedVisibility(visible = isEnabledLastfm) {
-            Column(
-                modifier = Modifier.padding(start = 12.dp)
-            ) {
-                ButtonBarSettingEntry(
-                    isEnabled = true,
-                    title = if (lastFmSessionToken.isNotEmpty()) stringResource(R.string.lastfm_disconnect) else stringResource(
-                        R.string.lastfm_connect
-                    ),
-                    text = if (lastFmSessionToken.isNotEmpty()) stringResource(R.string.lastfm_connected_to_lastfm_account) else "",
-                    icon = R.drawable.logo_lastfm,
-                    iconColor = colorPalette().text,
-                    onClick = {
-                        if (lastFmSessionToken.isNotEmpty())
-                            lastFmSessionToken = ""
-                        else
-                            loginLastfm = true
-                    }
-                )
-
-                CustomModalBottomSheet(
-                    showSheet = loginLastfm,
-                    onDismissRequest = {
-                        loginLastfm = false
-                    },
-                    containerColor = colorPalette().background0,
-                    contentColor = colorPalette().background0,
-                    modifier = Modifier.fillMaxWidth(),
-                    dragHandle = {
-                        Surface(
-                            modifier = Modifier.padding(vertical = 0.dp),
-                            color = colorPalette().background0,
-                            shape = thumbnailShape()
-                        ) {}
-                    },
-                    shape = thumbnailRoundness.shape()
-                ) {
-                    LastFmAuthScreen(
-                        navController = rememberNavController(),
-                        onAuthSuccess = {
-                            loginLastfm = false
-                            lastFmSessionToken =
-                                context.preferences.getString(lastfmSessionTokenKey, "") ?: ""
-                            Timber.d("LastFmAuthScreen: Authentication complete")
-                        }
-                    )
-                }
-
-                EnumValueSelectorSettingsEntry(
-                    title = stringResource(R.string.lastfm_scrobble_type),
-                    titleSecondary = "",
-                    selectedValue = lastfmScrobbleType,
-                    onValueSelected = { lastfmScrobbleType = it },
-                    valueText = { it.textName },
-                )
-
-            }
-        }
-
-        /****** LASTFM ******/
 
         /**** MUSIC IDENTIFIER ******/
         SettingsGroupSpacer()
@@ -603,7 +600,7 @@ fun isYtLoginEnabled(): Boolean {
 }
 
 fun isYtSyncEnabled(): Boolean {
-    val isSyncEnabled = appContext().preferences.getBoolean(enableYouTubeSyncKey, false)
+    val isSyncEnabled = appContext().preferences.getBoolean(enableYouTubeSyncKey, true)
     return isSyncEnabled && isYtLoggedIn() && isYtLoginEnabled()
 }
 

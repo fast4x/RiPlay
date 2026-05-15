@@ -15,12 +15,12 @@ import it.fast4x.riplay.data.Database.Companion.getArtistsList
 import it.fast4x.riplay.data.Database.Companion.update
 import it.fast4x.riplay.R
 import it.fast4x.riplay.commonutils.YTP_PREFIX
-import it.fast4x.riplay.extensions.preferences.autosyncKey
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.data.models.Album
 import it.fast4x.riplay.data.models.Artist
 import it.fast4x.riplay.data.models.Playlist
 import it.fast4x.riplay.data.models.SongPlaylistMap
+import it.fast4x.riplay.extensions.preferences.enableYouTubeSyncKey
 import it.fast4x.riplay.ui.components.tab.toolbar.Descriptive
 import it.fast4x.riplay.ui.components.tab.toolbar.DynamicColor
 import it.fast4x.riplay.ui.components.tab.toolbar.MenuIcon
@@ -177,7 +177,7 @@ fun ytmPrivatePlaylistSync(playlist: Playlist, playlistId: Long) {
 }
 
 suspend fun importYTMSubscribedChannels(): Boolean {
-    println("importYTMSubscribedChannels isYouTubeSyncEnabled() = ${isYtSyncEnabled()} and isAutoSyncEnabled() = ${isAutoSyncEnabled()}")
+    println("importYTMSubscribedChannels isYouTubeSyncEnabled() = ${isYtSyncEnabled()}}")
     if (isYtSyncEnabled()) {
 
         SmartMessage(
@@ -236,7 +236,7 @@ suspend fun importYTMSubscribedChannels(): Boolean {
 }
 
 suspend fun importYTMLikedAlbums(): Boolean {
-    println("importYTMLikedAlbums isYouTubeSyncEnabled() = ${isYtSyncEnabled()} and isAutoSyncEnabled() = ${isAutoSyncEnabled()}")
+    println("importYTMLikedAlbums isYouTubeSyncEnabled() = ${isYtSyncEnabled()}}")
     if (isYtSyncEnabled()) {
 
         SmartMessage(
@@ -323,7 +323,7 @@ suspend fun removeYTSongFromPlaylist(
 @Composable
 fun autoSyncToolbutton(messageId: Int): MenuIcon = object : MenuIcon, DynamicColor, Descriptive {
 
-    override var isFirstColor: Boolean by rememberPreference(autosyncKey, false)
+    override var isFirstColor: Boolean by rememberPreference(enableYouTubeSyncKey, true)
     override val iconId: Int = R.drawable.sync
     override val messageId: Int = messageId
     override val menuIconTitle: String

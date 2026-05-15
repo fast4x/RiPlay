@@ -122,8 +122,6 @@ import it.fast4x.riplay.ui.components.tab.toolbar.SongsShuffle
 import it.fast4x.riplay.ui.screens.settings.isYtSyncEnabled
 import it.fast4x.riplay.utils.importYTMPrivatePlaylists
 import it.fast4x.riplay.extensions.preferences.Preference.HOME_LIBRARY_ITEM_SIZE
-import it.fast4x.riplay.utils.autoSyncToolbutton
-import it.fast4x.riplay.extensions.preferences.autosyncKey
 import it.fast4x.riplay.data.models.defaultQueue
 import it.fast4x.riplay.enums.BlacklistType
 import it.fast4x.riplay.enums.SortOrder
@@ -299,10 +297,10 @@ fun HomePlaylists(
             }
         }
     )
-    val sync = autoSyncToolbutton(R.string.autosync)
 
-    val doAutoSync by rememberPreference(autosyncKey, false)
-    var justSynced by rememberSaveable { mutableStateOf(!doAutoSync) }
+    //val sync = autoSyncToolbutton(R.string.autosync)
+    //val doAutoSync by rememberPreference(enableSyncKey, false)
+    var justSynced by rememberSaveable { mutableStateOf(false) }
 
     val viewType = viewTypeToolbutton(R.string.viewType)
 
@@ -327,7 +325,7 @@ fun HomePlaylists(
         }
     }
 
-    LaunchedEffect(justSynced, doAutoSync) {
+    LaunchedEffect(Unit,justSynced) {
         if ((!justSynced) && importYTMPrivatePlaylists())
             justSynced = true
     }
@@ -522,7 +520,7 @@ fun HomePlaylists(
 
                 // 3. Toolbar
                 val buttons = mutableListOf(
-                    sync, search, shuffle, newPlaylistDialog, importPlaylistDialog, itemSize, viewType
+                    search, shuffle, newPlaylistDialog, importPlaylistDialog, itemSize, viewType
                 ).apply {
                     if (playlistType == PlaylistType.OnDevicePlaylist)
                         add(toggleOndeviceFolderName)

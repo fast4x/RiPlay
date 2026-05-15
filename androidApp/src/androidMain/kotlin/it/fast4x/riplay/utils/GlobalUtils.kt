@@ -14,7 +14,6 @@ import it.fast4x.riplay.enums.UiType
 import it.fast4x.riplay.enums.ViewType
 import it.fast4x.riplay.ui.styling.LocalAppearance
 import it.fast4x.riplay.extensions.preferences.UiTypeKey
-import it.fast4x.riplay.extensions.preferences.autosyncKey
 import it.fast4x.riplay.extensions.preferences.bassboostEnabledKey
 import it.fast4x.riplay.extensions.preferences.colorPaletteModeKey
 import it.fast4x.riplay.extensions.preferences.dnsOverHttpsTypeKey
@@ -82,7 +81,6 @@ fun getRoundnessShape() = appContext().preferences.getEnum(thumbnailRoundnessKey
 
 fun ytAccountName() = appContext().preferences.getString(ytAccountNameKey, "")
 fun ytAccountThumbnail() = appContext().preferences.getString(ytAccountThumbnailKey, "")
-fun isAutoSyncEnabled() = appContext().preferences.getBoolean(autosyncKey, false)
 fun isHandleAudioFocusEnabled() = appContext().preferences.getBoolean(handleAudioFocusEnabledKey, true)
 fun isBassBoostEnabled() = appContext().preferences.getBoolean(bassboostEnabledKey, false)
 fun isParentalControlEnabled() = appContext().preferences.getBoolean(parentalControlEnabledKey, false)

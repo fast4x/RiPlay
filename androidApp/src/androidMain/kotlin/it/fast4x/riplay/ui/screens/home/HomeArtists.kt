@@ -97,8 +97,6 @@ import it.fast4x.riplay.ui.components.tab.TabHeader
 import it.fast4x.riplay.ui.components.tab.toolbar.Randomizer
 import it.fast4x.riplay.ui.components.tab.toolbar.SongsShuffle
 import it.fast4x.riplay.extensions.preferences.Preference.HOME_ARTIST_ITEM_SIZE
-import it.fast4x.riplay.utils.autoSyncToolbutton
-import it.fast4x.riplay.extensions.preferences.autosyncKey
 import it.fast4x.riplay.ui.components.LocalGlobalSheetState
 import it.fast4x.riplay.ui.components.themed.ArtistsItemMenu
 import it.fast4x.riplay.ui.components.themed.EnumsMenu
@@ -217,9 +215,9 @@ fun HomeArtists(
     }
 
     // Sync Logic
-    val sync = autoSyncToolbutton(R.string.autosync_channels)
-    val doAutoSync by rememberPreference(autosyncKey, false)
-    var justSynced by rememberSaveable { mutableStateOf(!doAutoSync) }
+    //val sync = autoSyncToolbutton(R.string.autosync_channels)
+    //val doAutoSync by rememberPreference(enableSyncKey, false)
+    var justSynced by rememberSaveable { mutableStateOf(false) }
     val viewType = viewTypeToolbutton(R.string.viewType)
 
     // Pull to Refresh
@@ -236,7 +234,7 @@ fun HomeArtists(
         }
     }
 
-    LaunchedEffect(justSynced, doAutoSync) {
+    LaunchedEffect(Unit, justSynced) {
         if (!justSynced && importYTMSubscribedChannels())
             justSynced = true
     }
@@ -367,7 +365,7 @@ fun HomeArtists(
                 }
 
                 // 3. Toolbar delle azioni (Sync, Random, Shuffle, etc.)
-                TabToolBar.Buttons(sync, search, randomizer, shuffle, itemSize, viewType)
+                TabToolBar.Buttons(search, randomizer, shuffle, itemSize, viewType)
 
                 // 4. Search Bar
                 search.SearchBar(this)

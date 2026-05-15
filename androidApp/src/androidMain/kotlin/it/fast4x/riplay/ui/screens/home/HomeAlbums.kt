@@ -112,8 +112,6 @@ import it.fast4x.riplay.utils.thumbnailShape
 import it.fast4x.riplay.ui.components.PullToRefreshBox
 import it.fast4x.riplay.ui.screens.settings.isYtSyncEnabled
 import it.fast4x.riplay.utils.addToYtPlaylist
-import it.fast4x.riplay.utils.autoSyncToolbutton
-import it.fast4x.riplay.extensions.preferences.autosyncKey
 import it.fast4x.riplay.ui.components.themed.EnumsMenu
 import it.fast4x.riplay.ui.components.themed.HeaderIconButton
 import it.fast4x.riplay.utils.LazyListContainer
@@ -228,9 +226,10 @@ fun HomeAlbums(
         }
     }
 
-    val sync = autoSyncToolbutton(R.string.autosync_albums)
-    val doAutoSync by rememberPreference(autosyncKey, false)
-    var justSynced by rememberSaveable { mutableStateOf(!doAutoSync) }
+    //val sync = autoSyncToolbutton(R.string.autosync_albums)
+    var justSynced by rememberSaveable { mutableStateOf(false) }
+    //val doSync by rememberPreference(enableSyncKey, false)
+    //var justSynced by rememberSaveable { mutableStateOf(!doAutoSync) }
     val viewType = viewTypeToolbutton(R.string.viewType)
 
     var refreshing by remember { mutableStateOf(false) }
@@ -246,7 +245,7 @@ fun HomeAlbums(
         }
     }
 
-    LaunchedEffect(justSynced, doAutoSync) {
+    LaunchedEffect(Unit, justSynced) {
         if (!justSynced && importYTMLikedAlbums())
             justSynced = true
     }
@@ -382,7 +381,7 @@ fun HomeAlbums(
                 }
 
                 // 3. Toolbar
-                TabToolBar.Buttons(sync, search, randomizer, shuffle, itemSize, viewType)
+                TabToolBar.Buttons(search, randomizer, shuffle, itemSize, viewType)
 
                 // 4. Search Bar
                 search.SearchBar(this)
