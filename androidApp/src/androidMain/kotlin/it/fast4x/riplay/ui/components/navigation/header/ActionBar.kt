@@ -54,6 +54,7 @@ import it.fast4x.riplay.cast.CastButton
 import it.fast4x.riplay.cast.CastHelper
 import it.fast4x.riplay.enums.CastType
 import it.fast4x.riplay.extensions.preferences.castTypeKey
+import it.fast4x.riplay.extensions.preferences.showListenerLevelsKey
 import it.fast4x.riplay.utils.GlobalSharedData
 import it.fast4x.riplay.utils.getRoundnessShape
 import it.fast4x.riplay.utils.typography
@@ -72,6 +73,7 @@ private fun HamburgerMenu(
     val equalizerType by rememberObservedPreference(equalizerTypeKey, EqualizerType.Internal)
     val internalEqualizer = LocalPlayerServiceBinder.current?.equalizer
     val launchSystemEqualizer by rememberSystemEqualizerLauncher(audioSessionId = {0})
+    val showListenerLevels by rememberPreference(showListenerLevelsKey, true)
 
     DropdownMenu(
         expanded = expanded,
@@ -147,12 +149,13 @@ private fun HamburgerMenu(
                 )
 
 
-                ModernMenuItem(
-                    index = 5,
-                    iconRes = R.drawable.trophy,
-                    textRes = R.string.listener_levels,
-                    onClick = { onItemClick(NavRoutes.listenerLevel) }
-                )
+                if (showListenerLevels)
+                    ModernMenuItem(
+                        index = 5,
+                        iconRes = R.drawable.trophy,
+                        textRes = R.string.listener_levels,
+                        onClick = { onItemClick(NavRoutes.listenerLevel) }
+                    )
 
 
                 ModernMenuItem(

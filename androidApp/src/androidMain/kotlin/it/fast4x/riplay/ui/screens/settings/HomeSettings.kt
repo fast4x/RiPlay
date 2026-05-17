@@ -54,7 +54,7 @@ import it.fast4x.riplay.utils.LazyListContainer
 @UnstableApi
 @Composable
 fun  HomeSettings() {
-    var showListenerLevels by rememberPreference(showListenerLevelsKey, true)
+    //var showListenerLevels by rememberPreference(showListenerLevelsKey, true)
     var showTips by rememberPreference(showTipsKey, true)
     var showRelatedAlbums by rememberPreference(showRelatedAlbumsKey, true)
     var showSimilarArtists by rememberPreference(showSimilarArtistsKey, true)
@@ -120,6 +120,7 @@ fun  HomeSettings() {
                             }
                         )
 
+                        /*
                         SwitchSettingEntry(
                             title = "${stringResource(R.string.show)} ${stringResource(R.string.listener_levels)}",
                             text = stringResource(R.string.disable_if_you_do_not_want_to_see) + " " + stringResource(
@@ -130,6 +131,7 @@ fun  HomeSettings() {
                                 showListenerLevels = it
                             }
                         )
+                         */
 
                         SwitchSettingEntry(
                             title = "${stringResource(R.string.show)} ${stringResource(R.string.quick_picks)}",

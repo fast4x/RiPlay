@@ -201,6 +201,7 @@ import it.fast4x.riplay.ui.components.themed.settingsSearchBarItem
 import it.fast4x.riplay.extensions.preferences.customColorKey
 import it.fast4x.riplay.extensions.preferences.isEnabledFullscreenKey
 import it.fast4x.riplay.extensions.preferences.showDislikedPlaylistKey
+import it.fast4x.riplay.extensions.preferences.showListenerLevelsKey
 import it.fast4x.riplay.extensions.preferences.showSnowfallEffectKey
 import it.fast4x.riplay.extensions.preferences.usePlaceholderInImageLoaderKey
 import it.fast4x.riplay.utils.LazyListContainer
@@ -710,6 +711,8 @@ fun UiSettings(
     var isEnabledFullscreen by rememberPreference(isEnabledFullscreenKey, false)
 
     var isSnowEffectEnabled by rememberPreference(showSnowfallEffectKey, false)
+
+    var showListenerLevels by rememberPreference(showListenerLevelsKey, true)
 
     Column(
         modifier = Modifier
@@ -1678,6 +1681,25 @@ fun UiSettings(
 
             }
 
+            settingsItem(
+                isHeader = true
+            ) {
+                SettingsGroupSpacer()
+                SettingsEntryGroupText(stringResource(R.string.listener_levels))
+            }
+
+            settingsItem {
+                SwitchSettingEntry(
+                    title = "${stringResource(R.string.show)} ${stringResource(R.string.listener_levels)}",
+                    text = stringResource(R.string.disable_if_you_do_not_want_to_see) + " " + stringResource(
+                        R.string.listener_levels
+                    ),
+                    isChecked = showListenerLevels,
+                    onCheckedChange = {
+                        showListenerLevels = it
+                    }
+                )
+            }
 
             settingsItem(
                 isHeader = true
