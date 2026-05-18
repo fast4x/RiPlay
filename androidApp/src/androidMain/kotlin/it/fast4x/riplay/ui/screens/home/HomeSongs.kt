@@ -708,7 +708,9 @@ fun HomeSongs(
                                 if (nowPlayingItem > -1) scrollToNowPlaying = true
                             },
                             onLongClick = { SmartMessage(context.resources.getString(R.string.info_find_the_song_that_is_playing), context = context) },
-                            icon = R.drawable.locate, enabled = items.isNotEmpty(), color = colorPalette().text
+                            icon = R.drawable.locate,
+                            //enabled = items.isNotEmpty(),
+                            color = colorPalette().text
                         )
                         LaunchedEffect(scrollToNowPlaying) { if (scrollToNowPlaying) lazyListState.scrollToItem(nowPlayingItem, 1); scrollToNowPlaying = false }
 
@@ -762,7 +764,7 @@ fun HomeSongs(
 
                         HeaderIconButton(
                             icon = R.drawable.shuffle,
-                            enabled = items.any { it.song.likedAt != -1L },
+                            //enabled = items.any { it.song.likedAt != -1L },
                             color = if (items.any { it.song.likedAt != -1L }) colorPalette().text else colorPalette().textDisabled,
                             onClick = {
                                 if (builtInPlaylist == BuiltInPlaylist.OnDevice) items = filteredSongs
