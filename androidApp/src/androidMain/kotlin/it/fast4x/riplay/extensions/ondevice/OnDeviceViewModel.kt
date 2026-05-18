@@ -243,7 +243,7 @@ class OnDeviceViewModel(application: Application) : AndroidViewModel(application
                                     //val uri = Uri.withAppendedPath(collection, idIdx.toString())
 
                                     val id = cursor.getLong(idIdx)
-                                    val name = cursor.getString(nameIdx).substringBeforeLast(".")
+                                    val name = cursor.getString(nameIdx)?.substringBeforeLast(".")?: "Unknown"
                                     val mediaId = name.substringAfterLast('[', "")
                                         .substringBeforeLast(']', "").takeIf { !it.contains(" ") }
                                     val uri = Uri.withAppendedPath(
@@ -269,22 +269,31 @@ class OnDeviceViewModel(application: Application) : AndroidViewModel(application
                                     val dateModified = cursor.getLong(dateModifiedIdx)
 
                                     val relativePath = if (isAtLeastAndroid10) {
-                                        cursor.getString(relativePathIdx)
+                                        cursor.getString(relativePathIdx) ?: ""
                                     } else {
-                                        cursor.getString(relativePathIdx).substringBeforeLast("/")
+                                        cursor.getString(relativePathIdx)?.substringBeforeLast("/") ?: ""
                                     }
 
 
                                     val songId = "$LOCAL_KEY_PREFIX$id"
 
+                                    /*
+                                    // todo check if effectively works in all devices
                                     // Read internal lyrics
                                     val lyricsRaw = readLyricsFromAudio(appContext(), uri)
-                                    val lyrics = when (lyricsRaw?.type) {
-                                        LyricsType.PLAIN -> Lyrics(songId, fixed = lyricsRaw.rawContent, synced = null)
-                                        LyricsType.LINE_SYNCED -> Lyrics(songId, fixed = null, synced = lyricsRaw.rawContent)
-                                        LyricsType.WORD_SYNCED -> Lyrics(songId, fixed = null, synced= null, lrcSynced = lyricsRaw.rawContent)
-                                        else -> null
+                                    val lyrics = try {
+                                        when (lyricsRaw?.type) {
+                                            LyricsType.PLAIN -> Lyrics(songId, fixed = lyricsRaw.rawContent, synced = null)
+                                            LyricsType.LINE_SYNCED -> Lyrics(songId, fixed = null, synced = lyricsRaw.rawContent)
+                                            LyricsType.WORD_SYNCED -> Lyrics(songId, fixed = null, synced= null, lrcSynced = lyricsRaw.rawContent)
+                                            else -> null
+                                        }
+                                    } catch (e: Exception) {
+                                        Timber.e("Error parsing lyrics type for $uri")
+                                        null
                                     }
+                                     */
+
 
                                     val exclude =
                                         blacklist.checkIf(relativePath) || blacklist.checkIf("/$relativePath")
@@ -355,12 +364,12 @@ class OnDeviceViewModel(application: Application) : AndroidViewModel(application
                                                 )
                                             )
 
-                                            lyrics?.let { Database.upsert(it) }
+                                            //lyrics?.let { Database.upsert(it) }
 
                                             audioFiles.add(
                                                 song
                                             )
-                                            Timber.d("OnDeviceViewModel updated and added song ${song.title} and songId ${song.id} lyrics $lyrics")
+                                            Timber.d("OnDeviceViewModel updated and added song ${song.title} and songId ${song.id}")
                                         }.onFailure {
                                             Timber.e("OnDeviceViewModel addSong error ${it.stackTraceToString()}")
                                         }
