@@ -170,7 +170,7 @@ import it.fast4x.riplay.utils.isKeepScreenOnEnabled
 import it.fast4x.riplay.utils.isOfficialContent
 import it.fast4x.riplay.utils.isSkipMediaOnErrorEnabled
 import it.fast4x.riplay.utils.isUserGeneratedContent
-import it.fast4x.riplay.utils.principalCache
+import it.fast4x.riplay.utils.PrincipalCache
 import it.fast4x.riplay.utils.seamlessQueue
 import it.fast4x.riplay.commonutils.setLikeState
 import it.fast4x.riplay.data.models.Format
@@ -195,7 +195,9 @@ import it.fast4x.riplay.cast.ritune.models.RiTunePlayerState
 import it.fast4x.riplay.cast.ritune.models.RiTuneRemoteCommand
 import it.fast4x.riplay.data.models.QueuedMediaItem
 import it.fast4x.riplay.data.models.defaultQueueId
+import it.fast4x.riplay.enums.AudioQualityFormat
 import it.fast4x.riplay.enums.CastType
+import it.fast4x.riplay.extensions.preferences.audioQualityFormatKey
 import it.fast4x.riplay.extensions.preferences.castTypeKey
 import it.fast4x.riplay.extensions.preferences.stateDurationKey
 import it.fast4x.riplay.extensions.preferences.stateMediaIdKey
@@ -260,7 +262,7 @@ class PlayerService : Service(),
     private val serviceScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
     private lateinit var unifiedMediaSession: MediaSessionCompat
     val cache: SimpleCache by lazy {
-        principalCache.getInstance(this)
+        PrincipalCache.getInstance(this)
     }
     lateinit var player: ExoPlayer
     private lateinit var audioVolumeObserver: AudioVolumeObserver
@@ -391,6 +393,8 @@ class PlayerService : Service(),
 //    }
 
     private var unstartedWatchdogJob: Job? = null
+
+    lateinit var audioQualityFormat: AudioQualityFormat
 
 
     override fun onBind(intent: Intent?): AndroidBinder {
@@ -635,7 +639,7 @@ class PlayerService : Service(),
             .inflate(R.layout.youtube_player, null, false) as YouTubePlayerView
 
         currentMediaItemState.value = player.currentMediaItem
-
+        audioQualityFormat = preferences.getEnum(audioQualityFormatKey, AudioQualityFormat.Auto)
         //isclosebackgroundPlayerEnabled = preferences.getBoolean(closebackgroundPlayerKey, false)
         closeServiceAfterMinutes =
             preferences.getEnum(closePlayerServiceAfterMinutesKey, DurationInMinutes.Disabled)
@@ -2629,7 +2633,7 @@ private var pausedByZeroVolume = false
         DefaultExtractorsFactory()
     )
 
-    fun createLocalCacheDataSource(): CacheDataSource.Factory =
+    fun createCacheDataSource(): CacheDataSource.Factory =
         CacheDataSource
             .Factory()
             .setCache(cache)

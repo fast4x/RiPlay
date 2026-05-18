@@ -23,6 +23,7 @@ import it.fast4x.riplay.extensions.preferences.usePlaceholderInImageLoaderKey
 import it.fast4x.riplay.commonutils.initializeEnvironment
 import it.fast4x.riplay.extensions.crashreporter.CrashReporter
 import it.fast4x.riplay.services.playback.PlayerService
+import it.fast4x.riplay.utils.InitializeEnvironment
 import timber.log.Timber
 import java.io.File
 
@@ -114,6 +115,7 @@ object Dependencies {
     internal fun init(application: MainApplication) {
         this.application = application
         DatabaseInitializer()
-        initializeEnvironment() // multiplatform initialization
+        InitializeEnvironment( this.application ) // android initialization
+        //initializeEnvironment() // multiplatform initialization
     }
 }

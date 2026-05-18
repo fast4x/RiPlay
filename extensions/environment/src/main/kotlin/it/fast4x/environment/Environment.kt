@@ -1,7 +1,7 @@
 package it.fast4x.environment
 
-import com.zionhuang.innertube.pages.LibraryContinuationPage
-import com.zionhuang.innertube.pages.LibraryPage
+import it.fast4x.environment.requests.LibraryContinuationPage
+import it.fast4x.environment.requests.LibraryPage
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.engine.okhttp.OkHttp
@@ -10,6 +10,7 @@ import io.ktor.client.plugins.compression.ContentEncoding
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.defaultRequest
 import io.ktor.client.request.HttpRequestBuilder
+import io.ktor.client.request.accept
 import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.request.headers
@@ -101,6 +102,14 @@ object Environment {
     val _XsHo8IdebO = EnvironmentPreferences.preference?.p36 ?: ""
     val _1Vv31MecRl = EnvironmentPreferences.preference?.p0 ?: ""
 
+    val _umx3sFb2yf = EnvironmentPreferences.preference?.p39 ?: ""
+    val _Aj104iDVho = EnvironmentPreferences.preference?.p17 ?: ""
+    val _0WL1AVN5v3 = EnvironmentPreferences.preference?.p42 ?: ""
+    val _p4N2lun1CR = EnvironmentPreferences.preference?.p43 ?: ""
+    val _FNIXTCyeZC = EnvironmentPreferences.preference?.p40 ?: ""
+    val _YfkInZQChm = EnvironmentPreferences.preference?.p16 ?: ""
+    val _rjH3trYO7G = EnvironmentPreferences.preference?.p41 ?: ""
+    val _0y2BrSeuzt = EnvironmentPreferences.preference?.p15 ?: ""
 
     private fun buildClient() = HttpClient(OkHttp) {
 

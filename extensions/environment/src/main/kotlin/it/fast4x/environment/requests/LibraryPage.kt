@@ -1,4 +1,4 @@
-package com.zionhuang.innertube.pages
+package it.fast4x.environment.requests
 
 import it.fast4x.environment.Environment
 import it.fast4x.environment.Environment.getBestQuality

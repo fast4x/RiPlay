@@ -48,7 +48,7 @@ fun logCacheInfo(context: Context) {
     Timber.d("CacheDebug Totale cache: %.2f MB".format(totalMb))
 }
 
-object principalCache {
+object PrincipalCache {
     private val exoPlayerCustomCache = appContext().preferences.getInt(exoPlayerCustomCacheKey, 32) * 1000 * 1000L
     private var principalCache: SimpleCache? = null
     private var databaseProvider: StandaloneDatabaseProvider? = null

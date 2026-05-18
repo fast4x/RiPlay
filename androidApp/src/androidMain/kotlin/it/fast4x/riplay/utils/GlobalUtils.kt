@@ -47,6 +47,7 @@ import it.fast4x.riplay.extensions.preferences.viewTypeKey
 import it.fast4x.riplay.extensions.preferences.ytAccountNameKey
 import it.fast4x.riplay.extensions.preferences.ytAccountThumbnailKey
 import it.fast4x.riplay.cast.ritune.models.RiTuneDevice
+import it.fast4x.riplay.extensions.preferences.isConnectionMeteredEnabledKey
 
 @Composable
 fun typography() = LocalAppearance.current.typography
@@ -91,6 +92,10 @@ fun isSkipMediaOnErrorEnabled() = appContext().preferences.getBoolean(skipMediaO
 fun isKeepScreenOnEnabled() = appContext().preferences.getBoolean(isKeepScreenOnEnabledKey, false)
 fun isEnabledLastFm() = appContext().preferences.getBoolean(isEnabledLastfmKey, false)
         && getlastFmSessionKey()?.isNotEmpty() == true
+
+fun isConnectionMetered() = appContext().isConnectionMetered()
+fun isConnectionMeteredEnabled() = appContext().preferences.getBoolean(isConnectionMeteredEnabledKey, true)
+
 
 
 fun shuffleSongsAAEnabled() = appContext().preferences.getBoolean(showShuffleSongsAAKey, true)
