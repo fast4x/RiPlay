@@ -26,7 +26,7 @@ RiPlay is a powerful, open-source music player designed for music lovers who wan
 
 **RiPlay respects your privacy and operates transparently:**
 - 🛡️ **No data collection** – Your data stays on your device
-- 🚫 **No download or caching online content**
+<!-- - 🚫 **No download or caching online content** -->
 - 🛡️ **For playing online content** – it uses the YouTube Player library as a wrapper around the official [IFrame Player API](https://developers.google.com/youtube/iframe_api_reference) inside a WebView
 
 ---
