@@ -11,6 +11,7 @@ plugins {
     alias(libs.plugins.kotlin.ksp)
     alias(libs.plugins.room)
     alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.chaquopy)
 }
 
 kotlin {
@@ -381,6 +382,20 @@ extensions.configure<ApplicationExtension> {
         resValue("string", "RiPlay_LASTFM_SECRET", propertyOrEmpty("RiPlay_LASTFM_SECRET"))
         resValue("string", "RiPlay_DISCORD_APPLICATION_ID", propertyOrEmpty("RiPlay_DISCORD_APPLICATION_ID"))
 
+
+        ndk {
+            abiFilters += listOf("arm64-v8a", "x86_64")
+        }
+
+    }
+
+    chaquopy {
+        defaultConfig {
+            version = "3.13"
+            pip {
+                install("yt-dlp")
+            }
+        }
     }
 
     packaging {
@@ -466,7 +481,7 @@ extensions.configure<ApplicationExtension> {
 //    }
     productFlavors {
         create("foss") {
-            minSdk = 23
+            minSdk = 24
             dimension = "version"
             //manifestPlaceholders["appName"] = "RiPlay"
             //buildConfigField("String", "BUILD_VARIANT", "\"foss\"")

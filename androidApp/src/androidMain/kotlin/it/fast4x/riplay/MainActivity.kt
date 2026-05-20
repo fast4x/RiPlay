@@ -271,6 +271,8 @@ import java.util.Locale
 import java.util.Objects
 import kotlin.math.sqrt
 import androidx.compose.ui.platform.LocalLocale
+import com.chaquo.python.Python
+import com.chaquo.python.android.AndroidPlatform
 
 
 @UnstableApi
@@ -468,6 +470,23 @@ class MainActivity :
         }
     }
 
+    private fun testChaquopy() {
+        if (!Python.isStarted()) {
+            Python.start(AndroidPlatform(this))
+        }
+
+        val py = Python.getInstance()
+
+        // Test 1: Python funziona?
+        val sys = py.getModule("sys")
+        Timber.d("Chaquopy Python version: ${sys["version"]}")
+
+        // Test 2: yt-dlp è installato?
+        val ytdlp = py.getModule("yt_dlp")
+        Timber.d("Chaquopy yt-dlp version: ${ytdlp["version"]?.get("__version__")}")
+
+    }
+
     override fun onStart() {
         super.onStart()
 
@@ -579,6 +598,10 @@ class MainActivity :
         //checkAndRequestStandardPermissions()
 
         //mediaRouter = MediaRouter.getInstance(this)
+
+        lifecycleScope.launch(Dispatchers.IO) {
+            testChaquopy()
+        }
 
     }
 

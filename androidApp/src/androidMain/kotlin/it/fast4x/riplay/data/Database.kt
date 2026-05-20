@@ -66,6 +66,7 @@ import it.fast4x.riplay.data.models.SongEntity
 import it.fast4x.riplay.data.models.SongPlaylistMap
 import it.fast4x.riplay.data.models.SongWithContentLength
 import it.fast4x.riplay.data.models.SortedSongPlaylistMap
+import it.fast4x.riplay.extensions.experimental.musicvalt.MusicVaultState
 import it.fast4x.riplay.extensions.rewind.data.AlbumMostListened
 import it.fast4x.riplay.extensions.rewind.data.AlbumsListenedCount
 import it.fast4x.riplay.extensions.rewind.data.ArtistMostListened
@@ -2866,6 +2867,31 @@ interface Database {
     @Query("SELECT * FROM Queues WHERE id = :id")
     fun getQueue(id: Long): Queues?
 
+    // MUSICVAULT
+    @Query("UPDATE Song SET musicVaultState = :state WHERE id = :id")
+    fun updateMusicVaultState(id: String, state: MusicVaultState)
+
+    @Query("UPDATE Song SET musicVaultState = :state, musicVaultFileName = :fileName WHERE id = :id")
+    fun updateMusicVaultState(id: String, state: MusicVaultState, fileName: String)
+
+    @Query("""
+    UPDATE Song 
+    SET musicVaultState = :state, 
+        musicVaultFileName = :fileName,
+        musicVaultThumbnailFileName = :thumbnailFileName
+    WHERE id = :id
+""")
+    suspend fun updateMusicVaultCompleted(
+        id: String,
+        state: MusicVaultState = MusicVaultState.COMPLETED,
+        fileName: String,
+        thumbnailFileName: String
+    )
+
+    @Query("SELECT * FROM Song WHERE musicVaultState = 'COMPLETED'")
+    fun musicVaultSongs(): Flow<List<Song>>
+
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insert(blacklist: Blacklist)
 
@@ -3151,7 +3177,7 @@ interface Database {
     views = [
         SortedSongPlaylistMap::class
     ],
-    version = 43,
+    version = 44,
     exportSchema = true,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
@@ -3218,6 +3244,7 @@ abstract class DatabaseInitializer protected constructor() : RoomDatabase() {
                 From31To32Migration(),
                 From38To39Migration(),
                 From40To41Migration(),
+                From43To44Migration()
             )
             .build()
 
@@ -3460,6 +3487,27 @@ abstract class DatabaseInitializer protected constructor() : RoomDatabase() {
         }
     }
 
+    class From43To44Migration : Migration(43, 44) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            try {
+                db.execSQL("ALTER TABLE Song ADD COLUMN musicVaultState TEXT NOT NULL DEFAULT 'NONE'")
+            } catch (e: Exception) {
+                println("Database From43To44Migration error ${e.stackTraceToString()}")
+            }
+            try {
+                db.execSQL("ALTER TABLE Song ADD COLUMN musicVaultFileName TEXT")
+            } catch (e: Exception) {
+                println("Database From43To44Migration error ${e.stackTraceToString()}")
+            }
+            try {
+                db.execSQL("ALTER TABLE Song ADD COLUMN musicVaultThumbnailFileName TEXT")
+            } catch (e: Exception) {
+                println("Database From43To44Migration error ${e.stackTraceToString()}")
+            }
+
+        }
+    }
+
 }
 
 
@@ -3508,4 +3556,14 @@ object Converters {
             bytes
         }
     }
+
+    @TypeConverter
+    @JvmStatic
+    fun fromMusicVaultState(state: MusicVaultState): String = state.name
+
+    @TypeConverter
+    @JvmStatic
+    fun toMusicVaultState(value: String): MusicVaultState =
+        MusicVaultState.valueOf(value)
+
 }

@@ -12,6 +12,7 @@ import it.fast4x.riplay.commonutils.durationTextToMillis
 import it.fast4x.riplay.commonutils.setDisLikeState
 import it.fast4x.riplay.commonutils.setLikeState
 import it.fast4x.riplay.enums.LinkType
+import it.fast4x.riplay.extensions.experimental.musicvalt.MusicVaultState
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -31,6 +32,11 @@ data class Song(
     @ColumnInfo(defaultValue = "0")
     val isPodcast: Int = 0,
     val folder: String? = null,
+
+    // --- MusicVault ---
+    val musicVaultState: MusicVaultState = MusicVaultState.NONE,
+    val musicVaultFileName: String? = null,
+    val musicVaultThumbnailFileName: String? = null,
 ) {
 
     fun shareUrlByType(typeOfUrl: LinkType): String? {

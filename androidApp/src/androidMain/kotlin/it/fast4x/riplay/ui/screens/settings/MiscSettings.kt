@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.ActivityNotFoundException
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
@@ -27,6 +28,7 @@ import androidx.media3.common.util.UnstableApi
 import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.NavigationBarPosition
 import it.fast4x.riplay.enums.PopupType
+import it.fast4x.riplay.extensions.experimental.musicvalt.MusicVaultFolderSetting
 import it.fast4x.riplay.ui.components.themed.HeaderWithIcon
 import it.fast4x.riplay.ui.components.themed.InputTextDialog
 import it.fast4x.riplay.ui.components.themed.SmartMessage
@@ -35,7 +37,9 @@ import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.ui.styling.LocalAppearance
 import it.fast4x.riplay.extensions.preferences.defaultFolderKey
 import it.fast4x.riplay.extensions.preferences.logDebugEnabledKey
+import it.fast4x.riplay.extensions.preferences.musicVaultEnabledKey
 import it.fast4x.riplay.extensions.preferences.navigationBarPositionKey
+import it.fast4x.riplay.extensions.preferences.preferences
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import java.io.File
 import java.io.FileInputStream
@@ -57,7 +61,7 @@ fun MiscSettings() {
     )
 
     var logDebugEnabled by rememberPreference(logDebugEnabledKey, false)
-
+    var musicVaultEnabled by rememberPreference(musicVaultEnabledKey, false)
 
     var fileName by remember {
         mutableStateOf("")
@@ -149,6 +153,27 @@ fun MiscSettings() {
                     onClick = {}
                 )
             }
+
+            settingsItem(
+                isHeader = true
+            ) {
+                SettingsGroupSpacer()
+                SettingsEntryGroupText(title = "Music Vault")
+            }
+            settingsItem {
+                SwitchSettingEntry(
+                    title = "Enable Music Vault",
+                    text = "",
+                    isChecked = musicVaultEnabled,
+                    onCheckedChange = { musicVaultEnabled = it }
+                )
+                AnimatedVisibility(
+                    visible = musicVaultEnabled
+                ) {
+                    MusicVaultFolderSetting()
+                }
+            }
+
 
             settingsItem(
                 isHeader = true

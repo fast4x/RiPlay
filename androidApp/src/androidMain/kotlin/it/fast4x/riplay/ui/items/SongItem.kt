@@ -4,6 +4,7 @@ import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
+import androidx.compose.foundation.border
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -79,6 +80,8 @@ import it.fast4x.riplay.ui.styling.semiBold
 import it.fast4x.riplay.utils.forcePlay
 import it.fast4x.riplay.utils.shimmerEffect
 import it.fast4x.riplay.commonutils.toThumbnail
+import it.fast4x.riplay.extensions.experimental.musicvalt.MusicVaultButton
+import it.fast4x.riplay.utils.asSong
 import it.fast4x.riplay.utils.getRoundnessShape
 import it.fast4x.riplay.utils.isRelated
 import kotlinx.serialization.ExperimentalSerializationApi
@@ -230,7 +233,7 @@ fun SongItem(
             .applyIf(isNowPlaying == true) {
                 background(colorPalette.favoritesOverlay)
             }
-
+            .border(2.dp,Color.Red)
     ) {
         Box(
             modifier = Modifier
@@ -515,6 +518,7 @@ fun SongItem(
 
                 Spacer(modifier = Modifier.padding(horizontal = 4.dp))
 
+                /*
                 var localSong by remember {
                     mutableStateOf<Song?>(null)
                 }
@@ -535,6 +539,9 @@ fun SongItem(
                         modifier = Modifier
                             .size(20.dp)
                     )
+                 */
+
+                MusicVaultButton(mediaItem.asSong)
 
             }
         }

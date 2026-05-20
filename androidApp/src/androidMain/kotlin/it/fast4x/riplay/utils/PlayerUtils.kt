@@ -27,6 +27,7 @@ import it.fast4x.riplay.data.models.Song
 import it.fast4x.riplay.data.models.defaultQueueId
 import it.fast4x.riplay.enums.DurationInMinutes
 import it.fast4x.riplay.enums.PopupType
+import it.fast4x.riplay.extensions.experimental.musicvalt.MusicVaultState
 import it.fast4x.riplay.extensions.preferences.excludeSongIfIsVideoKey
 import it.fast4x.riplay.extensions.preferences.excludeSongsWithDurationLimitKey
 import it.fast4x.riplay.extensions.preferences.getEnum
@@ -51,15 +52,36 @@ import java.util.ArrayDeque
 
 
 const val LOCAL_KEY_PREFIX = "local:"
+const val MUSIC_VAULT_KEY_PREFIX = "musicvault:"
 
-@get:OptIn(UnstableApi::class)
-val DataSpec.isLocal get() = key?.startsWith(LOCAL_KEY_PREFIX) == true
+val DataSpec.isLocal
+    @OptIn(UnstableApi::class)
+    get() = key?.startsWith(LOCAL_KEY_PREFIX) == true
+        || key?.startsWith(MUSIC_VAULT_KEY_PREFIX) == true
+
+val DataSpec.isMusicVault
+    @OptIn(UnstableApi::class)
+    get() = key?.startsWith(MUSIC_VAULT_KEY_PREFIX) == true
+
 @get:OptIn(UnstableApi::class)
 val DataSpec.isLocalUri get() = uri.toString().startsWith("content://")
 
+@get:OptIn(UnstableApi::class)
 val MediaItem.isLocal get() = mediaId.startsWith(LOCAL_KEY_PREFIX)
+        || mediaMetadata.extras?.getString("musicVaultState") == MusicVaultState.COMPLETED.name
+@get:OptIn(UnstableApi::class)
+val MediaItem.isMusicVault get() =
+    mediaMetadata.extras?.getString("musicVaultState") == MusicVaultState.COMPLETED.name
+
 val Song.isLocal get() = id.startsWith(LOCAL_KEY_PREFIX)
+        || musicVaultState == MusicVaultState.COMPLETED
+
+val Song.isMusicVault get() = musicVaultState == MusicVaultState.COMPLETED
+
 val String.isLocal get() = this.startsWith(LOCAL_KEY_PREFIX)
+        || this.startsWith(MUSIC_VAULT_KEY_PREFIX)
+
+val String.isMusicVault get() = this.startsWith(MUSIC_VAULT_KEY_PREFIX)
 
 //var GlobalVolume: Float = 0.5f
 

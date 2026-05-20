@@ -78,7 +78,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.neverEqualPolicy
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -272,6 +271,7 @@ import it.fast4x.riplay.extensions.preferences.topPaddingKey
 import it.fast4x.riplay.extensions.preferences.transparentBackgroundPlayerActionBarKey
 import it.fast4x.riplay.extensions.preferences.visualizerEnabledKey
 import it.fast4x.riplay.cast.ritune.models.RiTuneRemoteCommand
+import it.fast4x.riplay.extensions.experimental.musicvalt.MusicVaultButton
 import it.fast4x.riplay.ui.screens.player.common.Queue
 import it.fast4x.riplay.ui.components.BottomSheetState
 import it.fast4x.riplay.ui.components.CustomModalBottomSheet
@@ -296,7 +296,6 @@ import it.fast4x.riplay.ui.components.themed.animateBrushRotation
 import it.fast4x.riplay.ui.screens.player.common.Lyrics
 import it.fast4x.riplay.ui.screens.player.common.NextVisualizer
 import it.fast4x.riplay.ui.screens.player.common.StatsForNerds
-import it.fast4x.riplay.ui.screens.player.unified.UnifiedControls
 import it.fast4x.riplay.ui.screens.settings.isYtSyncEnabled
 import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.ui.styling.collapsedPlayerProgressBar
@@ -347,6 +346,7 @@ import it.fast4x.riplay.utils.seamlessPlay
 import it.fast4x.riplay.utils.setQueueLoopState
 import it.fast4x.riplay.utils.shuffleQueue
 import it.fast4x.riplay.utils.thumbnailShape
+import it.fast4x.riplay.utils.origin
 import it.fast4x.riplay.utils.typography
 import it.fast4x.riplay.utils.verticalfadingEdge2
 import kotlinx.coroutines.CoroutineScope
@@ -1883,6 +1883,9 @@ fun UnifiedPlayer(
                                 .requiredHeight(32.dp)
                                 .fillMaxWidth()
                         ) {
+
+                            MusicVaultButton(mediaItem.asSong)
+
                             if (showButtonPlayerVideo)
                                 IconButton(
                                     icon = R.drawable.left_and_right_arrows,
@@ -3320,9 +3323,7 @@ fun UnifiedPlayer(
                                         }
                                 )
                                 Text(
-                                    if (mediaItem.isLocal)
-                                        stringResource(R.string.local_now_playing_title)
-                                    else stringResource(R.string.online_now_playing_title),
+                                    mediaItem.origin,
                                     color = colorPalette().text,
                                     style = typography().xxs,
                                 )

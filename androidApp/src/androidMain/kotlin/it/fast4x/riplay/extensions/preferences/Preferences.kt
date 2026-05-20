@@ -448,6 +448,9 @@ const val castTypeKey = "castType"
 
 const val activeAppearancePresetIdKey = "activeAppearancePresetId"
 
+const val musicVaultPathKey = "musicVaultPath"
+const val musicVaultEnabledKey = "musicVaultEnabled"
+
 inline fun <reified T : Enum<T>> SharedPreferences.getEnum(
     key: String,
     defaultValue: T

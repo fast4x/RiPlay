@@ -7,11 +7,13 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.DataSource
 import androidx.media3.datasource.ResolvingDataSource
 import it.fast4x.riplay.data.Database
+import it.fast4x.riplay.extensions.experimental.musicvalt.MusicVaultState
 import it.fast4x.riplay.utils.LOCAL_KEY_PREFIX
 import it.fast4x.riplay.utils.asSong
 import it.fast4x.riplay.utils.isAtLeastAndroid10
 import it.fast4x.riplay.utils.isLocal
 import it.fast4x.riplay.utils.isLocalUri
+import it.fast4x.riplay.utils.isMusicVault
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
@@ -38,11 +40,15 @@ internal fun PlayerService.createLocalDataSourceFactory(): DataSource.Factory {
 
 
         when {
+            dataSpec.isMusicVault -> {
+                Timber.d("createLocalDataSourceFactory MusicVault: ${dataSpec.uri}")
+                return@Factory dataSpec
+            }
             dataSpec.isLocal && dataSpec.isLocalUri -> {
                 Timber.d("createLocalDataSourceFactory dataSpec.isLocalUri: YES")
                 return@Factory dataSpec
             }
-            dataSpec.isLocal && !dataSpec.isLocalUri-> {
+            dataSpec.isLocal && !dataSpec.isLocalUri -> {
                 val contentUriBase =
                     if (isAtLeastAndroid10) MediaStore.Audio.Media.getContentUri(MediaStore.VOLUME_EXTERNAL)
                     else MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
