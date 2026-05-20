@@ -97,7 +97,7 @@ fun UnifiedControls(
     }
 
 
-    var playerTimelineSize by rememberPreference(
+    var playerTimelineSize by rememberObservedPreference(
         playerTimelineSizeKey,
         PlayerTimelineSize.Biggest
     )
