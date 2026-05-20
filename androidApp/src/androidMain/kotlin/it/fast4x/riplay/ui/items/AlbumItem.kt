@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -33,6 +34,7 @@ import it.fast4x.riplay.utils.applyIf
 import it.fast4x.riplay.ui.styling.secondary
 import it.fast4x.riplay.ui.styling.semiBold
 import it.fast4x.riplay.commonutils.toThumbnail
+import it.fast4x.riplay.ui.styling.youtubeItemTintColor
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.utils.thumbnailShape
 import it.fast4x.riplay.utils.typography
@@ -86,7 +88,7 @@ fun AlbumItem(
         title = album.info?.name,
         authors = album.authors?.joinToString(", ") { it.name ?: "" },
         year = album.year,
-        yearCentered = yearCentered,
+        yearCentered = yearCentered == true,
         thumbnailSizePx = thumbnailSizePx,
         thumbnailSizeDp = thumbnailSizeDp,
         alternative = alternative,
@@ -96,6 +98,107 @@ fun AlbumItem(
     )
 }
 
+
+@Composable
+fun AlbumItem(
+    thumbnailUrl: String?,
+    title: String?,
+    authors: String?,
+    year: String?,
+    yearCentered: Boolean = true,
+    thumbnailSizePx: Int,
+    thumbnailSizeDp: Dp,
+    modifier: Modifier = Modifier,
+    homePage: Boolean = false,
+    iconSize: Dp = 0.dp,
+    alternative: Boolean = false,
+    showAuthors: Boolean = false,
+    disableScrollingText: Boolean,
+    isYoutubeAlbum: Boolean = false
+) {
+    val thumbnailModel = remember(thumbnailUrl, thumbnailSizePx) {
+        thumbnailUrl?.toThumbnail(thumbnailSizePx)?.let { cleanPrefix(it) }
+    }
+
+    val cleanTitle = remember(title) { cleanPrefix(title ?: "") }
+    val cleanAuthors = remember(authors) { authors?.let { cleanPrefix(it) } }
+
+    val thumbnailShape = thumbnailShape()
+
+    val textAlignment = remember(yearCentered) {
+        if (yearCentered) Alignment.CenterHorizontally else Alignment.Start
+    }
+
+    val youtubeIconSize = remember(homePage, iconSize) {
+        if (homePage) 0.3 * iconSize else 40.dp
+    }
+
+    ItemContainer(
+        alternative = alternative,
+        thumbnailSizeDp = thumbnailSizeDp,
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = modifier
+    ) {
+        Box {
+            AsyncImage(
+                model = thumbnailModel,
+                contentDescription = null,
+                modifier = Modifier
+                    .clip(thumbnailShape)
+                    .requiredSize(thumbnailSizeDp)
+            )
+            if (isYoutubeAlbum) {
+                Image(
+                    painter = painterResource(R.drawable.internet),
+                    colorFilter = ColorFilter.tint(youtubeItemTintColor),
+                    modifier = Modifier
+                        .size(youtubeIconSize)
+                        .padding(all = 5.dp),
+                    contentDescription = "Background Image",
+                    contentScale = ContentScale.Fit
+                )
+            }
+        }
+
+        ItemInfoContainer {
+            BasicText(
+                text = cleanTitle,
+                style = typography().xs.semiBold,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier
+                    .applyIf(!disableScrollingText) { basicMarquee(iterations = Int.MAX_VALUE) }
+                    .align(textAlignment)
+            )
+
+            if (!alternative || showAuthors) {
+                cleanAuthors?.let {
+                    BasicText(
+                        text = it,
+                        style = typography().xs.semiBold.secondary,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier
+                            .applyIf(!disableScrollingText) { basicMarquee(iterations = Int.MAX_VALUE) }
+                            .align(textAlignment)
+                    )
+                }
+            }
+
+            BasicText(
+                text = year ?: "",
+                style = typography().xxs.semiBold.secondary,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier
+                    .padding(top = 4.dp)
+                    .align(textAlignment)
+            )
+        }
+    }
+}
+
+/*
 @Composable
 fun AlbumItem(
     thumbnailUrl: String?,
@@ -180,6 +283,8 @@ fun AlbumItem(
         }
     }
 }
+
+ */
 
 @Composable
 fun AlbumItemPlaceholder(

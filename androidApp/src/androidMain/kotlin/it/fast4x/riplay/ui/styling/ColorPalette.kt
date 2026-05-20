@@ -5,6 +5,7 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.SaverScope
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.graphics.toArgb
 import androidx.core.graphics.ColorUtils
 import androidx.palette.graphics.Palette
@@ -13,6 +14,7 @@ import it.fast4x.riplay.enums.ColorPaletteName
 import it.fast4x.riplay.styling.Hsl
 import it.fast4x.riplay.styling.hsl
 
+val youtubeItemTintColor = Color.Red.copy(0.75f).compositeOver(Color.White)
 
 @Immutable
 data class ColorPalette(

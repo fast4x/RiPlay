@@ -119,6 +119,7 @@ import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.enums.NavigationBarPosition
 import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.data.models.defaultQueue
+import it.fast4x.riplay.ui.components.themed.Loader
 import it.fast4x.riplay.utils.typography
 import it.fast4x.riplay.ui.components.themed.QueuesDialog
 import it.fast4x.riplay.ui.screens.settings.isYtSyncEnabled
@@ -834,17 +835,18 @@ fun OnDeviceAlbumDetails(
 
                         if (songs.isEmpty()) {
                             item(key = "loading") {
-                                ShimmerHost(
-                                    modifier = Modifier
-                                        .fillParentMaxSize()
-                                ) {
-                                    repeat(1) {
-                                        AlbumItemPlaceholder(thumbnailSizeDp = Dimensions.thumbnails.album)
-                                    }
-                                    repeat(4) {
-                                        SongItemPlaceholder(thumbnailSizeDp = Dimensions.thumbnails.song)
-                                    }
-                                }
+                                Loader()
+//                                ShimmerHost(
+//                                    modifier = Modifier
+//                                        .fillParentMaxSize()
+//                                ) {
+//                                    repeat(1) {
+//                                        AlbumItemPlaceholder(thumbnailSizeDp = Dimensions.thumbnails.album)
+//                                    }
+//                                    repeat(4) {
+//                                        SongItemPlaceholder(thumbnailSizeDp = Dimensions.thumbnails.song)
+//                                    }
+//                                }
                             }
                         }
 

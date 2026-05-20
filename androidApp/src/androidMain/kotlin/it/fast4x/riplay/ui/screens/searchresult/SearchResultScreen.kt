@@ -76,6 +76,7 @@ import it.fast4x.riplay.extensions.preferences.parentalControlEnabledKey
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.extensions.preferences.searchResultScreenTabIndexKey
 import it.fast4x.riplay.extensions.preferences.transitionEffectKey
+import it.fast4x.riplay.ui.components.themed.Loader
 import it.fast4x.riplay.utils.typography
 import it.fast4x.riplay.ui.components.themed.Menu
 import it.fast4x.riplay.ui.components.themed.MenuEntry
@@ -303,7 +304,8 @@ fun SearchResultScreen(
                                     }
                                 },
                                 itemPlaceholderContent = {
-                                    SongItemPlaceholder(thumbnailSizeDp = thumbnailSizeDp)
+                                    Loader()
+                                    //SongItemPlaceholder(thumbnailSizeDp = thumbnailSizeDp)
                                 },
                                 filterContentType = filterContentType
                             )

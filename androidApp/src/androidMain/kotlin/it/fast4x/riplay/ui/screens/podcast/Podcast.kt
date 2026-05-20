@@ -122,6 +122,7 @@ import kotlinx.coroutines.withContext
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.extensions.fastshare.FastShare
 import it.fast4x.riplay.data.models.defaultQueue
+import it.fast4x.riplay.ui.components.themed.Loader
 import it.fast4x.riplay.ui.components.themed.LoaderScreen
 import it.fast4x.riplay.utils.typography
 import it.fast4x.riplay.ui.screens.settings.isYtSyncEnabled
@@ -778,14 +779,15 @@ fun Podcast(
 
                     if (podcastPage == null) {
                         item(key = "loading") {
-                            ShimmerHost(
-                                modifier = Modifier
-                                    .fillParentMaxSize()
-                            ) {
-                                repeat(4) {
-                                    SongItemPlaceholder(thumbnailSizeDp = songThumbnailSizeDp)
-                                }
-                            }
+                            Loader()
+//                            ShimmerHost(
+//                                modifier = Modifier
+//                                    .fillParentMaxSize()
+//                            ) {
+//                                repeat(4) {
+//                                    SongItemPlaceholder(thumbnailSizeDp = songThumbnailSizeDp)
+//                                }
+//                            }
                         }
                     }
                 }

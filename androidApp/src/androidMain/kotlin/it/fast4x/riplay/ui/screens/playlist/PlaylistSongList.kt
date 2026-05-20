@@ -114,6 +114,7 @@ import it.fast4x.riplay.ui.components.themed.HeaderIconButton
 import it.fast4x.riplay.ui.components.themed.IconButton
 import it.fast4x.riplay.ui.components.themed.InputTextDialog
 import it.fast4x.riplay.ui.components.themed.LayoutWithAdaptiveThumbnail
+import it.fast4x.riplay.ui.components.themed.Loader
 import it.fast4x.riplay.ui.components.themed.LoaderScreen
 import it.fast4x.riplay.ui.components.themed.NonQueuedMediaItemMenu
 import it.fast4x.riplay.ui.components.themed.PlaylistsItemMenu
@@ -1202,14 +1203,15 @@ fun PlaylistSongList(
 
                     if (playlistPage == null) {
                         item(key = "loading") {
-                            ShimmerHost(
-                                modifier = Modifier
-                                    .fillParentMaxSize()
-                            ) {
-                                repeat(4) {
-                                    SongItemPlaceholder(thumbnailSizeDp = songThumbnailSizeDp)
-                                }
-                            }
+                            Loader()
+//                            ShimmerHost(
+//                                modifier = Modifier
+//                                    .fillParentMaxSize()
+//                            ) {
+//                                repeat(4) {
+//                                    SongItemPlaceholder(thumbnailSizeDp = songThumbnailSizeDp)
+//                                }
+//                            }
                         }
                     }
                 }

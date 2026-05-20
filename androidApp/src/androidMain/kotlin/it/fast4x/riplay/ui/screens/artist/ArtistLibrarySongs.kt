@@ -57,6 +57,7 @@ import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.extensions.preferences.songSortByKey
 import it.fast4x.riplay.extensions.preferences.songSortOrderKey
 import it.fast4x.riplay.ui.components.themed.HeaderIconButton
+import it.fast4x.riplay.ui.components.themed.Loader
 import it.fast4x.riplay.ui.components.themed.SortMenu
 import it.fast4x.riplay.ui.components.themed.Title
 import it.fast4x.riplay.ui.components.themed.TitleSection
@@ -248,11 +249,12 @@ fun ArtistLibrarySongs(
                             )
                         }
                     } ?: item(key = "loading") {
-                        ShimmerHost {
-                            repeat(4) {
-                                SongItemPlaceholder(thumbnailSizeDp = Dimensions.thumbnails.song)
-                            }
-                        }
+                            Loader()
+//                        ShimmerHost {
+//                            repeat(4) {
+//                                SongItemPlaceholder(thumbnailSizeDp = Dimensions.thumbnails.song)
+//                            }
+//                        }
                     }
                 }
             }

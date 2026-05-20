@@ -134,6 +134,7 @@ import it.fast4x.riplay.ui.components.themed.ConfirmationDialog
 import it.fast4x.riplay.ui.components.themed.EditQueueDialog
 import it.fast4x.riplay.ui.components.themed.IconButton
 import it.fast4x.riplay.ui.components.themed.InputTextDialog
+import it.fast4x.riplay.ui.components.themed.Loader
 import it.fast4x.riplay.ui.components.themed.NowPlayingSongIndicator
 import it.fast4x.riplay.ui.components.themed.PlaylistsItemMenu
 import it.fast4x.riplay.ui.components.themed.QueueItemMenu
@@ -876,14 +877,15 @@ fun Queue(
 
             item {
                 if (binder.isLoadingRadio) {
-                    Column(modifier = Modifier.shimmer()) {
-                        repeat(3) { index ->
-                            SongItemPlaceholder(
-                                thumbnailSizeDp = thumbnailSizeDp,
-                                modifier = Modifier.alpha(1f - index * 0.125f).fillMaxWidth()
-                            )
-                        }
-                    }
+                    Loader()
+//                    Column(modifier = Modifier.shimmer()) {
+//                        repeat(3) { index ->
+//                            SongItemPlaceholder(
+//                                thumbnailSizeDp = thumbnailSizeDp,
+//                                modifier = Modifier.alpha(1f - index * 0.125f).fillMaxWidth()
+//                            )
+//                        }
+//                    }
                 }
             }
 

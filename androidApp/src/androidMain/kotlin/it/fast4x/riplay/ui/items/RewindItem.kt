@@ -54,6 +54,86 @@ fun RewindItem(
     showName: Boolean = true,
     disableScrollingText: Boolean,
 ) {
+    val colorPalette = colorPalette()
+    val thumbnailShape = thumbnailShape()
+
+    val localIconSize = remember(homePage, iconSize) {
+        if (homePage) 0.2 * iconSize else 30.dp
+    }
+
+    val accentFilter = remember(colorPalette.accent) {
+        ColorFilter.tint(colorPalette.accent)
+    }
+
+    val iconOverlayModifier = remember(localIconSize, colorPalette.text) {
+        Modifier
+            .padding(all = 5.dp)
+            .background(colorPalette.text, CircleShape)
+            .size(localIconSize)
+            .padding(all = 5.dp)
+    }
+
+    val cleanName = remember(name) { name?.let { cleanPrefix(it) } }
+
+    val infoAlignment = remember(alternative) {
+        if (alternative) Alignment.CenterHorizontally else Alignment.Start
+    }
+
+    ItemContainer(
+        alternative = alternative,
+        thumbnailSizeDp = thumbnailSizeDp,
+        modifier = modifier
+    ) {
+        Box(
+            modifier = Modifier
+                .clip(thumbnailShape)
+                .background(color = colorPalette.background4)
+                .requiredSize(thumbnailSizeDp)
+        ) {
+            thumbnailContent()
+
+            if (name != null) {
+                Image(
+                    painter = painterResource(R.drawable.stat_year),
+                    colorFilter = accentFilter,
+                    contentDescription = null,
+                    contentScale = ContentScale.Fit,
+                    modifier = iconOverlayModifier
+                )
+            }
+        }
+
+        ItemInfoContainer(
+            horizontalAlignment = infoAlignment,
+            modifier = Modifier.fillMaxSize()
+        ) {
+            if (showName && cleanName != null) {
+                BasicText(
+                    text = cleanName,
+                    style = typography().xs.semiBold,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier
+                        .applyIf(!disableScrollingText) { basicMarquee(iterations = Int.MAX_VALUE) }
+                )
+            }
+        }
+    }
+}
+
+/*
+@Composable
+fun RewindItem(
+    thumbnailContent: @Composable BoxScope.() -> Unit,
+    name: String?,
+    thumbnailSizeDp: Dp,
+    modifier: Modifier = Modifier,
+    homePage: Boolean = false,
+    iconSize: Dp = 0.dp,
+    alternative: Boolean = false,
+    showName: Boolean = true,
+    disableScrollingText: Boolean,
+) {
     val localIconSize = remember { if (homePage) 0.2*iconSize else 30.dp }
     ItemContainer(
         alternative = alternative,
@@ -104,3 +184,5 @@ fun RewindItem(
         }
     }
 }
+
+ */

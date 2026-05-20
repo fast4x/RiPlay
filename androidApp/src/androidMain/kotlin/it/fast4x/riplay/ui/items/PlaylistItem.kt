@@ -52,6 +52,7 @@ import it.fast4x.riplay.ui.styling.medium
 import it.fast4x.riplay.ui.styling.secondary
 import it.fast4x.riplay.ui.styling.semiBold
 import it.fast4x.riplay.commonutils.toThumbnail
+import it.fast4x.riplay.ui.styling.youtubeItemTintColor
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
@@ -60,6 +61,16 @@ import it.fast4x.riplay.utils.getRoundnessShape
 import it.fast4x.riplay.utils.thumbnailShape
 import it.fast4x.riplay.utils.typography
 import timber.log.Timber
+
+private val quadrantAlignments = listOf(
+    Alignment.TopStart,
+    Alignment.TopEnd,
+    Alignment.BottomStart,
+    Alignment.BottomEnd
+)
+
+private const val LIKED_MUSIC_THUMBNAIL_URL =
+    "https://www.gstatic.com/youtube/media/ytm/images/pbg/liked-music-@1200.png"
 
 @Composable
 fun PlaylistItem(
@@ -102,6 +113,120 @@ fun PlaylistItem(
     )
 }
 
+@Composable
+fun PlaylistItem(
+    playlist: PlaylistPreview,
+    thumbnailSizePx: Int,
+    thumbnailSizeDp: Dp,
+    modifier: Modifier = Modifier,
+    homepage: Boolean = false,
+    iconSize: Dp = 0.dp,
+    alternative: Boolean = false,
+    showName: Boolean = true,
+    disableScrollingText: Boolean,
+    isYoutubePlaylist: Boolean,
+    isEditable: Boolean,
+) {
+    val context = LocalContext.current
+
+    val thumbnailName = remember(playlist.playlist.id) {
+        "thumbnail/playlist_${playlist.playlist.id}"
+    }
+
+    val playlistThumbnailUrl = remember(thumbnailName) {
+        checkFileExists(context, thumbnailName)
+    }
+
+    val thumbnails by remember(playlist.playlist.id) {
+        Database.playlistThumbnailUrls(playlist.playlist.id)
+            .distinctUntilChanged()
+            .map { urls -> urls.map { it.toThumbnail(thumbnailSizePx / 2) } }
+    }.collectAsState(initial = emptyList(), context = Dispatchers.IO)
+
+    // Calcolato fuori dal thumbnailContent per evitare ricalcoli dentro la lambda
+    val halfThumbnailSizeDp = remember(thumbnailSizeDp) { thumbnailSizeDp / 2 }
+
+    val isSingleThumbnail = remember(thumbnails) {
+        thumbnails.isNotEmpty() && thumbnails.all { it == thumbnails.first() }
+    }
+
+    // Costruttore ImageRequest condiviso per evitare duplicazioni
+    val buildImageRequest: (String?) -> ImageRequest = remember(context) {
+        { data ->
+            ImageRequest.Builder(context)
+                .data(data)
+                .setHeader("User-Agent", "Mozilla/5.0")
+                .build()
+        }
+    }
+
+    PlaylistItem(
+        browseId = playlist.playlist.browseId,
+        thumbnailContent = {
+            when {
+                playlistThumbnailUrl != null -> {
+                    AsyncImage(
+                        model = playlistThumbnailUrl,
+                        contentDescription = null,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                }
+                playlist.playlist.browseId == "LM" -> {
+                    AsyncImage(
+                        model = LIKED_MUSIC_THUMBNAIL_URL,
+                        contentDescription = null,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                }
+                isSingleThumbnail -> {
+                    AsyncImage(
+                        model = buildImageRequest(thumbnails.first()),
+                        onError = { error ->
+                            Timber.e("Failed AsyncImage in PlaylistItem ${error.result.throwable.stackTraceToString()}")
+                        },
+                        contentDescription = null,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                }
+                else -> {
+                    Box(modifier = Modifier.fillMaxSize()) {
+                        thumbnails.take(4).forEachIndexed { index, thumbnail ->
+                            AsyncImage(
+                                model = buildImageRequest(thumbnail),
+                                onError = { error ->
+                                    Timber.e("Failed AsyncImage 1 in PlaylistItem ${error.result.throwable.stackTraceToString()}")
+                                },
+                                contentDescription = null,
+                                contentScale = ContentScale.Crop,
+                                modifier = Modifier
+                                    .align(quadrantAlignments[index])
+                                    .size(halfThumbnailSizeDp)
+                            )
+                        }
+                    }
+                }
+            }
+        },
+        songCount = playlist.songCount,
+        name = playlist.playlist.name,
+        channelName = null,
+        thumbnailSizeDp = thumbnailSizeDp,
+        modifier = modifier,
+        alternative = alternative,
+        homePage = homepage,
+        iconSize = iconSize,
+        showName = showName,
+        disableScrollingText = disableScrollingText,
+        isYoutubePlaylist = isYoutubePlaylist,
+        isEditable = isEditable,
+        isPodcast = playlist.playlist.isPodcast
+    )
+}
+
+/*
 @Composable
 fun PlaylistItem(
     playlist: PlaylistPreview,
@@ -214,6 +339,8 @@ fun PlaylistItem(
     )
 }
 
+ */
+
 @Composable
 fun PlaylistItem(
     playlist: Environment.PlaylistItem,
@@ -281,6 +408,177 @@ fun PlaylistItem(
     )
 }
 
+@Composable
+fun PlaylistItem(
+    browseId: String? = null,
+    thumbnailContent: @Composable BoxScope.() -> Unit,
+    songCount: Int?,
+    name: String?,
+    channelName: String?,
+    thumbnailSizeDp: Dp,
+    modifier: Modifier = Modifier,
+    homePage: Boolean = false,
+    iconSize: Dp = 0.dp,
+    alternative: Boolean = false,
+    showName: Boolean = true,
+    showSongsCount: Boolean = true,
+    disableScrollingText: Boolean,
+    isYoutubePlaylist: Boolean = false,
+    isEditable: Boolean = false,
+    isPodcast: Boolean = false
+) {
+    val colorPalette = colorPalette()
+    val thumbnailShape = thumbnailShape()
+
+    val localIconSize = remember(homePage, iconSize) {
+        if (homePage) 0.2 * iconSize else 30.dp
+    }
+
+    // ColorFilter memoizzati
+    val accentFilter = remember(colorPalette.accent) {
+        ColorFilter.tint(colorPalette.accent)
+    }
+    val textDisabledFilter = remember(colorPalette.textDisabled) {
+        ColorFilter.tint(colorPalette.textDisabled)
+    }
+    val youtubeTintFilter = remember {
+        ColorFilter.tint(youtubeItemTintColor)
+    }
+
+    // Modifier comune per le icone overlay
+    val iconOverlayModifier = remember(localIconSize, colorPalette.text) {
+        Modifier
+            .padding(all = 5.dp)
+            .background(colorPalette.text, CircleShape)
+            .size(localIconSize)
+            .padding(all = 5.dp)
+    }
+
+    // Prefissi memoizzati
+    val isPinned = remember(name) { name?.startsWith(PINNED_PREFIX, 0, true) == true }
+    val isMonthly = remember(name) { name?.startsWith(MONTHLY_PREFIX, 0, true) == true }
+    val isPiped  = remember(name) { name?.startsWith(PIPED_PREFIX, 0, true) == true }
+
+    val showInternetIcon = remember(browseId, isPiped, isYoutubePlaylist) {
+        (browseId?.isNotEmpty() == true && !isPiped) || isYoutubePlaylist
+    }
+
+    val cleanName = remember(name) { name?.let { cleanPrefix(it) } }
+    val songCountText = remember(songCount) { songCount?.toString() }
+
+    val infoAlignment = remember(alternative, channelName) {
+        if (alternative && channelName == null) Alignment.CenterHorizontally else Alignment.Start
+    }
+
+    ItemContainer(
+        alternative = alternative,
+        thumbnailSizeDp = thumbnailSizeDp,
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = modifier
+    ) {
+        Box(
+            modifier = Modifier
+                .clip(thumbnailShape)
+                .background(color = colorPalette.background4)
+                .requiredSize(thumbnailSizeDp)
+        ) {
+            thumbnailContent()
+
+            if (isPinned) {
+                Image(
+                    painter = painterResource(R.drawable.pin),
+                    colorFilter = accentFilter,
+                    contentDescription = null,
+                    contentScale = ContentScale.Fit,
+                    modifier = iconOverlayModifier
+                )
+            }
+
+            if (isMonthly) {
+                Image(
+                    painter = painterResource(R.drawable.stat_month),
+                    colorFilter = accentFilter,
+                    contentDescription = null,
+                    contentScale = ContentScale.Fit,
+                    modifier = iconOverlayModifier
+                )
+            }
+
+            if (showInternetIcon) {
+                Image(
+                    painter = painterResource(R.drawable.internet),
+                    colorFilter = if (isYoutubePlaylist) youtubeTintFilter else textDisabledFilter,
+                    contentDescription = null,
+                    contentScale = ContentScale.Fit,
+                    modifier = iconOverlayModifier
+                )
+            }
+
+            if (isPodcast) {
+                Image(
+                    painter = painterResource(R.drawable.podcast),
+                    colorFilter = if (isYoutubePlaylist) youtubeTintFilter else textDisabledFilter,
+                    contentDescription = null,
+                    contentScale = ContentScale.Fit,
+                    modifier = iconOverlayModifier.then(Modifier.align(Alignment.TopEnd))
+                )
+            }
+
+            if (isYoutubePlaylist && !isEditable) {
+                Image(
+                    painter = painterResource(R.drawable.locked),
+                    colorFilter = textDisabledFilter,
+                    contentDescription = null,
+                    contentScale = ContentScale.Fit,
+                    modifier = iconOverlayModifier.then(Modifier.align(Alignment.BottomStart))
+                )
+            }
+
+            if (showSongsCount && songCountText != null) {
+                BasicText(
+                    text = songCountText,
+                    style = typography().xxs.medium.color(colorPalette.onOverlay),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier
+                        .padding(all = 4.dp)
+                        .background(color = colorPalette.overlay, shape = getRoundnessShape())
+                        .padding(horizontal = 6.dp, vertical = 6.dp)
+                        .align(Alignment.BottomEnd)
+                )
+            }
+        }
+
+        ItemInfoContainer(
+            horizontalAlignment = infoAlignment,
+            modifier = Modifier.fillMaxSize()
+        ) {
+            if (showName && cleanName != null) {
+                BasicText(
+                    text = cleanName,
+                    style = typography().xs.semiBold,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier
+                        .applyIf(!disableScrollingText) { basicMarquee(iterations = Int.MAX_VALUE) }
+                )
+            }
+
+            channelName?.let {
+                BasicText(
+                    text = it,
+                    style = typography().xs.semiBold.secondary,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier
+                        .applyIf(!disableScrollingText) { basicMarquee(iterations = Int.MAX_VALUE) }
+                )
+            }
+        }
+    }
+}
+
+/*
 @Composable
 fun PlaylistItem(
     browseId: String? = null,
@@ -454,6 +752,8 @@ fun PlaylistItem(
         }
     }
 }
+
+ */
 
 @Composable
 fun PlaylistItemPlaceholder(

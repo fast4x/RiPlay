@@ -24,10 +24,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.media3.common.util.UnstableApi
-
 import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.NavigationBarPosition
 import it.fast4x.riplay.enums.PopupType
+import it.fast4x.riplay.extensions.experimental.musicvalt.MusicVaultDisclaimerDialog
 import it.fast4x.riplay.extensions.experimental.musicvalt.MusicVaultFolderSetting
 import it.fast4x.riplay.ui.components.themed.HeaderWithIcon
 import it.fast4x.riplay.ui.components.themed.InputTextDialog
@@ -37,9 +37,9 @@ import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.ui.styling.LocalAppearance
 import it.fast4x.riplay.extensions.preferences.defaultFolderKey
 import it.fast4x.riplay.extensions.preferences.logDebugEnabledKey
+import it.fast4x.riplay.extensions.preferences.musicVaultDisclaimerAcceptedKey
 import it.fast4x.riplay.extensions.preferences.musicVaultEnabledKey
 import it.fast4x.riplay.extensions.preferences.navigationBarPositionKey
-import it.fast4x.riplay.extensions.preferences.preferences
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import java.io.File
 import java.io.FileInputStream
@@ -61,7 +61,6 @@ fun MiscSettings() {
     )
 
     var logDebugEnabled by rememberPreference(logDebugEnabledKey, false)
-    var musicVaultEnabled by rememberPreference(musicVaultEnabledKey, false)
 
     var fileName by remember {
         mutableStateOf("")
@@ -125,6 +124,9 @@ fun MiscSettings() {
         )
     }
 
+    var musicVaultEnabled by rememberPreference(musicVaultEnabledKey, false)
+    var disclaimerAccepted by rememberPreference(musicVaultDisclaimerAcceptedKey, false)
+    var showDisclaimer by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
@@ -162,13 +164,36 @@ fun MiscSettings() {
             }
             settingsItem {
                 SwitchSettingEntry(
-                    title = "Enable Music Vault",
-                    text = "",
+                    title = "Enable Personal Audio Saving",
+                    text = "Save songs from YouTube for personal offline listening.",
                     isChecked = musicVaultEnabled,
-                    onCheckedChange = { musicVaultEnabled = it }
+                    onCheckedChange = {
+                        if (it) {
+                            if (disclaimerAccepted) musicVaultEnabled = true
+                            else showDisclaimer = true
+                        } else {
+                            musicVaultEnabled = false
+                            disclaimerAccepted = false
+                        }
+                    }
                 )
+
+                // Disclaimer dialog
+                if (showDisclaimer) {
+                    MusicVaultDisclaimerDialog(
+                        onAccept = {
+                            disclaimerAccepted = true
+                            musicVaultEnabled = true
+                            showDisclaimer = false
+                        },
+                        onDecline = {
+                            showDisclaimer = false
+                        }
+                    )
+                }
+
                 AnimatedVisibility(
-                    visible = musicVaultEnabled
+                    visible = musicVaultEnabled && disclaimerAccepted
                 ) {
                     MusicVaultFolderSetting()
                 }

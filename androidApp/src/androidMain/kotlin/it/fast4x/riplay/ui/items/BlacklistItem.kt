@@ -46,7 +46,151 @@ import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.utils.thumbnailShape
 import it.fast4x.riplay.utils.typography
 
+@Composable
+fun BlacklistItem(
+    modifier: Modifier = Modifier,
+    thumbnailContent: @Composable (BoxScope.() -> Unit) = {},
+    trailingContent: (@Composable () -> Unit)? = null,
+    blacklistedItem: Blacklist,
+    enabled: Boolean = true,
+    onEnable: () -> Unit = {},
+    onRemove: () -> Unit = {},
+    onClick: () -> Unit = {}
+) {
+    val disableScrollingText by rememberPreference(disableScrollingTextKey, false)
+    val colorPalette = colorPalette()
 
+    var blacklistedEntity: Any? by remember { mutableStateOf(null) }
+
+    // Chiave corretta: si rilancia se path o type cambiano
+    LaunchedEffect(blacklistedItem.path, blacklistedItem.type) {
+        when (blacklistedItem.type) {
+            BlacklistType.Song.name,
+            BlacklistType.Video.name -> Database.song(blacklistedItem.path).collect { blacklistedEntity = it }
+            BlacklistType.Artist.name -> Database.artist(blacklistedItem.path).collect { blacklistedEntity = it }
+            BlacklistType.Album.name  -> Database.album(blacklistedItem.path).collect { blacklistedEntity = it }
+        }
+    }
+
+    // Costante, nessuno stato necessario
+    val thumbnailSizeDp = Dimensions.thumbnails.song
+
+    val thumbnailUrl = remember(blacklistedEntity) {
+        when (blacklistedEntity) {
+            is Song   -> (blacklistedEntity as Song).thumbnailUrl
+            is Album  -> (blacklistedEntity as Album).thumbnailUrl
+            is Artist -> (blacklistedEntity as Artist).thumbnailUrl
+            else      -> ""
+        }
+    }
+
+    val cleanName = remember(blacklistedItem.name) {
+        cleanPrefix(blacklistedItem.name ?: "")
+    }
+
+    val textColor = remember(enabled) {
+        if (enabled) colorPalette.text else colorPalette.textDisabled
+    }
+
+    val iconTint = remember(enabled) {
+        ColorFilter.tint(if (enabled) colorPalette.text else colorPalette.textDisabled)
+    }
+
+    val thumbnailShape = thumbnailShape()
+
+    val folderOrPlaylistIcon = remember(blacklistedItem.type) {
+        if (blacklistedItem.type == BlacklistType.Folder.name) R.drawable.folder
+        else R.drawable.music_library
+    }
+
+    val eyeIcon = remember(enabled) {
+        if (enabled) R.drawable.eye else R.drawable.eye_off
+    }
+
+    ItemContainer(
+        alternative = false,
+        thumbnailSizeDp = thumbnailSizeDp,
+        modifier = modifier
+            .clip(RoundedCornerShape(10.dp))
+            .clickable(onClick = onClick),
+    ) {
+        Box(modifier = Modifier.size(thumbnailSizeDp)) {
+            thumbnailContent()
+            when (blacklistedItem.type) {
+                BlacklistType.Folder.name,
+                BlacklistType.Playlist.name -> {
+                    Image(
+                        painter = painterResource(folderOrPlaylistIcon),
+                        contentDescription = null,
+                        colorFilter = iconTint,
+                        modifier = Modifier
+                            .clip(thumbnailShape)
+                            .fillMaxSize(.7f)
+                            .align(Alignment.Center)
+                    )
+                }
+                else -> {
+                    AsyncImage(
+                        model = thumbnailUrl,
+                        contentDescription = null,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier
+                            .clip(thumbnailShape)
+                            .fillMaxSize()
+                    )
+                }
+            }
+        }
+
+        ItemInfoContainer {
+            trailingContent?.invoke()
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                BasicText(
+                    text = cleanName,
+                    style = typography().xs.semiBold.copy(color = textColor),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier
+                        .weight(1f)
+                        .applyIf(!disableScrollingText) { basicMarquee(iterations = Int.MAX_VALUE) }
+                )
+
+                Image(
+                    painter = painterResource(eyeIcon),
+                    contentDescription = null,
+                    colorFilter = iconTint,
+                    modifier = Modifier
+                        .size(24.dp)
+                        .clickable(onClick = onEnable)
+                )
+                Spacer(modifier = Modifier.width(12.dp))
+                Image(
+                    painter = painterResource(R.drawable.trash),
+                    contentDescription = null,
+                    colorFilter = ColorFilter.tint(colorPalette.red),
+                    modifier = Modifier
+                        .size(24.dp)
+                        .clickable(onClick = onRemove)
+                )
+            }
+
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                BasicText(
+                    text = blacklistedItem.path,
+                    style = typography().xxxs.semiBold.copy(color = textColor),
+                    maxLines = 1,
+                    overflow = TextOverflow.Clip,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f)
+                        .applyIf(!disableScrollingText) { basicMarquee(iterations = Int.MAX_VALUE) }
+                )
+            }
+        }
+    }
+}
+
+/*
 @Composable
 fun BlacklistItem(
     modifier: Modifier = Modifier,
@@ -177,3 +321,5 @@ fun BlacklistItem(
         }
     }
 }
+
+ */

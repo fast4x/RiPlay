@@ -31,6 +31,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -42,6 +43,7 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import it.fast4x.environment.Environment
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.LocalPlayerServiceBinder
@@ -160,6 +162,62 @@ fun SongItem(
     mediaItem: MediaItem,
 ) {
     val binder = LocalPlayerServiceBinder.current
+    val player = remember(binder) { binder?.player }
+    val context = LocalContext.current
+
+    val shape = thumbnailShape()
+
+    val imageRequest = remember(thumbnailUrl) {
+        ImageRequest.Builder(context)
+            .data(thumbnailUrl)
+            .crossfade(true)
+            .build()
+    }
+
+    val thumbnailContent: @Composable BoxScope.() -> Unit = remember(
+        imageRequest, shape, onThumbnailContent, player, mediaItem.mediaId
+    ) {
+        {
+            AsyncImage(
+                model = imageRequest,
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .clip(shape)
+                    .fillMaxSize()
+            )
+            onThumbnailContent?.invoke(this)
+            NowPlayingSongIndicator(
+                mediaId = mediaItem.mediaId,
+                player = player
+            )
+        }
+    }
+
+    SongItem(
+        thumbnailSizeDp = thumbnailSizeDp,
+        thumbnailContent = thumbnailContent,
+        modifier = modifier,
+        trailingContent = trailingContent,
+        isRecommended = isRecommended,
+        mediaItem = mediaItem,
+    )
+}
+
+/*
+@OptIn(ExperimentalSerializationApi::class)
+@UnstableApi
+@Composable
+fun SongItem(
+    thumbnailUrl: String?,
+    thumbnailSizeDp: Dp,
+    modifier: Modifier = Modifier,
+    onThumbnailContent: (@Composable BoxScope.() -> Unit)? = null,
+    trailingContent: (@Composable () -> Unit)? = null,
+    isRecommended: Boolean = false,
+    mediaItem: MediaItem,
+) {
+    val binder = LocalPlayerServiceBinder.current
 
     SongItem(
         thumbnailSizeDp = thumbnailSizeDp,
@@ -188,6 +246,216 @@ fun SongItem(
     )
 }
 
+ */
+
+private val noOp: () -> Unit = {}
+
+@OptIn(ExperimentalFoundationApi::class, ExperimentalTextApi::class, ExperimentalAnimationApi::class)
+@UnstableApi
+@ExperimentalSerializationApi
+@Composable
+fun SongItem(
+    thumbnailContent: @Composable BoxScope.() -> Unit,
+    thumbnailSizeDp: Dp,
+    modifier: Modifier = Modifier,
+    trailingContent: @Composable (() -> Unit)? = null,
+    isRecommended: Boolean = false,
+    mediaItem: MediaItem,
+) {
+    val title = remember(mediaItem) { mediaItem.mediaMetadata.title.toString() }
+    val authors = remember(mediaItem) { mediaItem.mediaMetadata.artist.toString() }
+    val duration = remember(mediaItem) { mediaItem.mediaMetadata.extras?.getString("durationText") }
+
+    val playlistindicator by rememberPreference(playlistindicatorKey, false)
+    val colorPaletteName by rememberPreference(colorPaletteNameKey, ColorPaletteName.Dynamic)
+
+    val songPlaylist by if (playlistindicator)
+        Database.songUsedInPlaylistsAsFlow(mediaItem.mediaId).collectAsState(initial = 0)
+    else
+        remember { mutableIntStateOf(0) }
+
+    val binder = LocalPlayerServiceBinder.current
+    val isNowPlaying = binder?.player?.isNowPlaying(mediaItem.mediaId)
+    val disableScrollingText by rememberPreference(disableScrollingTextKey, false)
+
+    val context = LocalContext.current
+    val colorPalette = LocalAppearance.current.colorPalette
+
+    // Stato "liked" con chiave stabile
+    var likedAt by remember(mediaItem.mediaId) { mutableStateOf<Long?>(null) }
+    LaunchedEffect(mediaItem.mediaId) {
+        Database.likedAt(mediaItem.mediaId).collect { likedAt = it }
+    }
+
+    // Stato e navigazione condivisi (non duplicati nei branch)
+    val menuState = LocalGlobalSheetState.current
+    val navController = rememberNavController()
+
+    // Callback per aprire il menu playlist, stabile tramite remember
+    val onPlaylistIconClick = remember(mediaItem, binder, menuState, navController) {
+        {
+            menuState.display {
+                if (binder != null) {
+                    AddToPlaylistPlayerMenu(
+                        navController = navController,
+                        onDismiss = { menuState.hide() },
+                        mediaItem = mediaItem,
+                        binder = binder,
+                        onClosePlayer = noOp,
+                    )
+                }
+            }
+        }
+    }
+
+    val onPlaylistIconLongClick = remember(context) {
+        {
+            SmartMessage(
+                context.resources.getString(R.string.playlistindicatorinfo2),
+                context = context
+            )
+        }
+    }
+
+    ItemContainer(
+        alternative = false,
+        thumbnailSizeDp = thumbnailSizeDp,
+        modifier = modifier
+            .padding(end = 8.dp)
+            .clip(getRoundnessShape())
+            .applyIf(isNowPlaying == true) {
+                background(colorPalette.favoritesOverlay)
+            }
+    ) {
+        Box(modifier = Modifier.size(thumbnailSizeDp)) {
+            thumbnailContent()
+
+            if (likedAt != null)
+                HeaderIconButton(
+                    onClick = noOp,
+                    icon = getLikeState(mediaItem.mediaId),
+                    color = colorPalette().favoritesIcon,
+                    iconSize = 12.dp,
+                    modifier = Modifier
+                        .align(Alignment.BottomStart)
+                        .absoluteOffset(-8.dp, 0.dp)
+                )
+
+            if (mediaItem.isVideo)
+                HeaderIconButton(
+                    onClick = noOp,
+                    icon = R.drawable.video,
+                    color = colorPalette().favoritesIcon,
+                    iconSize = 12.dp,
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .absoluteOffset(8.dp, 0.dp)
+                )
+        }
+
+        ItemInfoContainer {
+            // Riga titolo
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                if (isRecommended)
+                    IconButton(
+                        icon = R.drawable.smart_shuffle,
+                        color = colorPalette.accent,
+                        enabled = true,
+                        onClick = noOp,
+                        modifier = Modifier.size(18.dp)
+                    )
+
+                if (mediaItem.isRelated)
+                    IconButton(
+                        icon = R.drawable.circle_arrow,
+                        color = colorPalette.accent,
+                        enabled = true,
+                        onClick = noOp,
+                        modifier = Modifier.size(14.dp)
+                    )
+
+                if (playlistindicator && songPlaylist > 0) {
+                    val playlistIconColor = remember(colorPaletteName) {
+                        if (colorPaletteName == ColorPaletteName.PureBlack) Color.Black
+                        else colorPalette.text
+                    }
+                    IconButton(
+                        icon = R.drawable.add_in_playlist,
+                        color = playlistIconColor,
+                        enabled = true,
+                        onClick = noOp,
+                        modifier = Modifier
+                            .size(14.dp)
+                            .background(colorPalette().accent, CircleShape)
+                            .padding(all = 3.dp)
+                            .combinedClickable(
+                                onClick = onPlaylistIconClick,
+                                onLongClick = onPlaylistIconLongClick
+                            )
+                    )
+                    Spacer(modifier = Modifier.padding(horizontal = 3.dp))
+                }
+
+                if (mediaItem.isExplicit)
+                    IconButton(
+                        icon = R.drawable.explicit,
+                        color = colorPalette.text,
+                        enabled = true,
+                        onClick = noOp,
+                        modifier = Modifier.size(18.dp)
+                    )
+
+                BasicText(
+                    text = cleanPrefix(title),
+                    style = typography().xs.semiBold,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier
+                        .weight(1f)
+                        .applyIf(!disableScrollingText) { basicMarquee(iterations = Int.MAX_VALUE) }
+                )
+
+                trailingContent?.invoke()
+            }
+
+            // Riga autore + durata + MusicVaultButton
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                BasicText(
+                    text = authors,
+                    style = typography().xs.semiBold.secondary,
+                    maxLines = 1,
+                    overflow = TextOverflow.Clip,
+                    modifier = Modifier
+                        .weight(1f)
+                        .applyIf(!disableScrollingText) { basicMarquee(iterations = Int.MAX_VALUE) }
+                )
+
+                duration?.let {
+                    BasicText(
+                        text = it,
+                        style = typography().xxs.secondary.medium,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.padding(top = 4.dp)
+                    )
+                }
+
+                Spacer(modifier = Modifier.padding(horizontal = 4.dp))
+
+                // MusicVaultButton isolato: non partecipa al layout della Row
+                Box(
+                    modifier = Modifier
+                        .size(20.dp)
+                        .clipToBounds()
+                ) {
+                    MusicVaultButton(mediaItem.asSong)
+                }
+            }
+        }
+    }
+}
+
+/*
 @OptIn(ExperimentalFoundationApi::class, ExperimentalTextApi::class,
     ExperimentalAnimationApi::class
 )
@@ -546,6 +814,8 @@ fun SongItem(
         }
     }
 }
+
+ */
 
 
 @Composable

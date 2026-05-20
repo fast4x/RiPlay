@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -29,6 +30,94 @@ import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.ui.styling.semiBold
 import it.fast4x.riplay.utils.getRoundnessShape
 
+@Composable
+fun QueueItem(
+    title: String,
+    isSelected: Boolean,
+    acceptSong: Boolean,
+    acceptVideo: Boolean,
+    acceptPodcast: Boolean,
+    onClick: () -> Unit,
+    onLongClick: () -> Unit,
+) {
+    val colorPalette = LocalAppearance.current.colorPalette
+    val disableScrollingText by rememberPreference(disableScrollingTextKey, false)
+    val thumbnailSizeDp = Dimensions.thumbnails.song
+    val roundnessShape = getRoundnessShape()
+
+    // Colori memoizzati per i tre flag
+    val songColor  = remember(acceptSong,  colorPalette.text, colorPalette.textDisabled) {
+        if (acceptSong)    colorPalette.text else colorPalette.textDisabled
+    }
+    val videoColor = remember(acceptVideo, colorPalette.text, colorPalette.textDisabled) {
+        if (acceptVideo)   colorPalette.text else colorPalette.textDisabled
+    }
+    val podcastColor = remember(acceptPodcast, colorPalette.text, colorPalette.textDisabled) {
+        if (acceptPodcast) colorPalette.text else colorPalette.textDisabled
+    }
+
+    val smallIconModifier = Modifier.size(15.dp)
+
+    ItemContainer(
+        alternative = false,
+        thumbnailSizeDp = thumbnailSizeDp,
+        modifier = Modifier
+            .padding(end = 8.dp)
+            .clip(roundnessShape)
+            .applyIf(isSelected) { background(colorPalette.favoritesOverlay) }
+            .combinedClickable(
+                onClick = onClick,
+                onLongClick = onLongClick
+            )
+    ) {
+        ItemInfoContainer {
+            BasicText(
+                text = title,
+                style = typography().xs.semiBold,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier
+                    .applyIf(!disableScrollingText) { basicMarquee(iterations = Int.MAX_VALUE) }
+                    .weight(1f)
+            )
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(5.dp)
+            ) {
+                IconButton(
+                    onClick = {},
+                    icon = R.drawable.musical_notes,
+                    color = songColor,
+                    modifier = smallIconModifier
+                )
+                IconButton(
+                    onClick = {},
+                    icon = R.drawable.video,
+                    color = videoColor,
+                    modifier = smallIconModifier
+                )
+                IconButton(
+                    onClick = {},
+                    icon = R.drawable.podcast,
+                    color = podcastColor,
+                    modifier = smallIconModifier
+                )
+
+                Spacer(modifier = Modifier.weight(1f))
+
+                IconButton(
+                    onClick = {},
+                    icon = R.drawable.reorder,
+                    color = colorPalette.text,
+                    modifier = Modifier.size(20.dp)
+                )
+            }
+        }
+    }
+}
+
+/*
 @Composable
 fun QueueItem(
     title: String,
@@ -116,3 +205,5 @@ fun QueueItem(
         }
     }
 }
+
+ */

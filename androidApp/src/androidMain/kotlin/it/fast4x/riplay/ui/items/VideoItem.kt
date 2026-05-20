@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -52,6 +53,97 @@ fun VideoItem(
     )
 }
 
+@Composable
+fun VideoItem(
+    thumbnailUrl: String?,
+    duration: String?,
+    title: String?,
+    uploader: String?,
+    views: String?,
+    thumbnailHeightDp: Dp,
+    thumbnailWidthDp: Dp,
+    modifier: Modifier = Modifier,
+    disableScrollingText: Boolean
+) {
+    val colorPalette = colorPalette()
+    val thumbnailShape = thumbnailShape()
+    val roundnessShape = getRoundnessShape()
+
+    val cleanTitle    = remember(title)    { title    ?: "" }
+    val cleanUploader = remember(uploader) { uploader ?: "" }
+
+    val thumbnailModifier = remember(thumbnailShape, thumbnailWidthDp, thumbnailHeightDp) {
+        Modifier
+            .clip(thumbnailShape)
+            .size(width = thumbnailWidthDp, height = thumbnailHeightDp)
+    }
+
+    val durationBadgeModifier = remember(roundnessShape) {
+        Modifier
+            .padding(all = 4.dp)
+            .background(color = colorPalette.overlay, shape = roundnessShape)
+            .padding(horizontal = 4.dp, vertical = 2.dp)
+    }
+
+    ItemContainer(
+        alternative = false,
+        thumbnailSizeDp = 0.dp,
+        modifier = modifier
+    ) {
+        Box {
+            AsyncImage(
+                model = thumbnailUrl,
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                modifier = thumbnailModifier
+            )
+
+            duration?.let {
+                BasicText(
+                    text = it,
+                    style = typography().xxs.medium.color(colorPalette.onOverlay),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = durationBadgeModifier.align(Alignment.BottomEnd)
+                )
+            }
+        }
+
+        ItemInfoContainer {
+            BasicText(
+                text = cleanTitle,
+                style = typography().xs.semiBold,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier
+                    .applyIf(!disableScrollingText) { basicMarquee(iterations = Int.MAX_VALUE) }
+            )
+
+            BasicText(
+                text = cleanUploader,
+                style = typography().xs.semiBold.secondary,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier
+                    .applyIf(!disableScrollingText) { basicMarquee(iterations = Int.MAX_VALUE) }
+            )
+
+            views?.let {
+                BasicText(
+                    text = it,
+                    style = typography().xxs.medium.secondary,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier
+                        .padding(top = 4.dp)
+                        .applyIf(!disableScrollingText) { basicMarquee(iterations = Int.MAX_VALUE) }
+                )
+            }
+        }
+    }
+}
+
+/*
 @Composable
 fun VideoItem(
     thumbnailUrl: String?,
@@ -130,6 +222,7 @@ fun VideoItem(
         }
     }
 }
+*/
 
 @Composable
 fun VideoItemPlaceholder(

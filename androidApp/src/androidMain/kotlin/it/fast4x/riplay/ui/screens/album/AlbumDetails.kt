@@ -615,7 +615,10 @@ fun AlbumDetails(
                                     )
 
                                     FastPlayActionsBar(
-                                        modifier = Modifier.fillMaxWidth(.5f).align(Alignment.BottomCenter).padding(bottom = 50.dp),
+                                        modifier = Modifier
+                                            .fillMaxWidth(.5f)
+                                            .align(Alignment.BottomCenter)
+                                            .padding(bottom = 50.dp),
                                         onPlayNowClick = {
                                             binder?.stopRadio()
                                             binder?.player?.forcePlayFromBeginning(
@@ -1369,19 +1372,22 @@ fun AlbumDetails(
                         }
 
                         if (songs.isEmpty()) {
-                            item(key = "loading") {
-                                ShimmerHost(
-                                    modifier = Modifier
-                                        .fillParentMaxSize()
-                                ) {
-                                    repeat(1) {
-                                        AlbumItemPlaceholder(thumbnailSizeDp = Dimensions.thumbnails.album)
-                                    }
-                                    repeat(4) {
-                                        SongItemPlaceholder(thumbnailSizeDp = Dimensions.thumbnails.song)
-                                    }
-                                }
+                            item {
+                                Loader()
                             }
+//                            item(key = "loading") {
+//                                ShimmerHost(
+//                                    modifier = Modifier
+//                                        .fillParentMaxSize()
+//                                ) {
+//                                    repeat(1) {
+//                                        AlbumItemPlaceholder(thumbnailSizeDp = Dimensions.thumbnails.album)
+//                                    }
+//                                    repeat(4) {
+//                                        SongItemPlaceholder(thumbnailSizeDp = Dimensions.thumbnails.song)
+//                                    }
+//                                }
+//                            }
                         }
 
                     }

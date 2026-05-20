@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -34,6 +35,7 @@ import it.fast4x.riplay.utils.applyIf
 import it.fast4x.riplay.ui.styling.secondary
 import it.fast4x.riplay.ui.styling.semiBold
 import it.fast4x.riplay.commonutils.toThumbnail
+import it.fast4x.riplay.ui.styling.youtubeItemTintColor
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.utils.thumbnailShape
 import it.fast4x.riplay.utils.typography
@@ -92,6 +94,98 @@ fun ArtistItem(
     )
 }
 
+@Composable
+fun ArtistItem(
+    thumbnailUrl: String?,
+    name: String?,
+    subscribersCount: String?,
+    thumbnailSizePx: Int,
+    thumbnailSizeDp: Dp,
+    modifier: Modifier = Modifier,
+    homePage: Boolean = false,
+    iconSize: Dp = 0.dp,
+    alternative: Boolean = false,
+    showName: Boolean = true,
+    disableScrollingText: Boolean,
+    isYoutubeArtist: Boolean = false,
+    smallThumbnail: Boolean = false
+) {
+    val thumbnailModel = remember(thumbnailUrl, thumbnailSizePx) {
+        thumbnailUrl?.toThumbnail(thumbnailSizePx)
+    }
+
+    val cleanName = remember(name) { cleanPrefix(name ?: "") }
+
+    val thumbnailShape = thumbnailShape()
+
+    val youtubeIconSize = remember(smallThumbnail, homePage, iconSize) {
+        when {
+            smallThumbnail -> 30.dp
+            homePage       -> 0.3 * iconSize
+            else           -> 40.dp
+        }
+    }
+
+    val infoAlignment = remember(alternative) {
+        if (alternative) Alignment.CenterHorizontally else Alignment.Start
+    }
+
+    ItemContainer(
+        alternative = alternative,
+        thumbnailSizeDp = thumbnailSizeDp,
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = modifier
+    ) {
+        Box {
+            AsyncImage(
+                model = thumbnailModel,
+                contentDescription = null,
+                modifier = Modifier
+                    .clip(thumbnailShape)
+                    .requiredSize(thumbnailSizeDp)
+            )
+            if (isYoutubeArtist) {
+                Image(
+                    painter = painterResource(R.drawable.internet),
+                    colorFilter = ColorFilter.tint(youtubeItemTintColor),
+                    modifier = Modifier
+                        .size(youtubeIconSize)
+                        .padding(all = 5.dp),
+                    contentDescription = "Background Image",
+                    contentScale = ContentScale.Fit
+                )
+            }
+        }
+
+        if (showName)
+            ItemInfoContainer(
+                horizontalAlignment = infoAlignment
+            ) {
+                BasicText(
+                    text = cleanName,
+                    style = typography().xs.semiBold,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier
+                        .applyIf(!disableScrollingText) { basicMarquee(iterations = Int.MAX_VALUE) }
+                )
+
+                subscribersCount?.let {
+                    BasicText(
+                        text = it,
+                        style = typography().xxs.semiBold.secondary,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier
+                            .padding(top = 4.dp)
+                            .applyIf(!disableScrollingText) { basicMarquee(iterations = Int.MAX_VALUE) }
+                    )
+                }
+            }
+    }
+}
+
+/*
 @Composable
 fun ArtistItem(
     thumbnailUrl: String?,
@@ -165,6 +259,8 @@ fun ArtistItem(
         }
     }
 }
+
+ */
 
 @Composable
 fun ArtistItemPlaceholder(
