@@ -450,6 +450,7 @@ const val activeAppearancePresetIdKey = "activeAppearancePresetId"
 
 const val musicVaultPathKey = "musicVaultPath"
 const val musicVaultEnabledKey = "musicVaultEnabled"
+const val musicVaultDisclaimerAcceptedKey = "musicVaultDisclaimerAccepted"
 
 inline fun <reified T : Enum<T>> SharedPreferences.getEnum(
     key: String,
