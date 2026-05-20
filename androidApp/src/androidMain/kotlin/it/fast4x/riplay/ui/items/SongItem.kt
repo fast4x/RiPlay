@@ -233,7 +233,6 @@ fun SongItem(
             .applyIf(isNowPlaying == true) {
                 background(colorPalette.favoritesOverlay)
             }
-            .border(2.dp,Color.Red)
     ) {
         Box(
             modifier = Modifier
