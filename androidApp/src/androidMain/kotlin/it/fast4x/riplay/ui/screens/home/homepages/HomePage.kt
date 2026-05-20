@@ -624,22 +624,32 @@ fun HomePage(
 
                 discoverPage?.let { page ->
 
-                    val newReleaseAlbumsFiltered = mutableListOf<Environment.AlbumItem>()
-                    val preferredNames = preferitesArtists.map { it.name }.toSet()
+                    if (showNewAlbumsArtists) {
+                        val newReleaseAlbumsFiltered = remember { mutableListOf<Environment.AlbumItem>() }
+                        val preferredNames = remember { preferitesArtists.map { it.name }.toSet() }
 
-                    page.newReleaseAlbums.forEach { album ->
-                        val apiAuthorsNames = album.authors?.map { it.name } ?: emptyList()
+                        LaunchedEffect(Unit, preferredNames) {
+                            page.newReleaseAlbums.forEach { album ->
+                                val apiAuthorsNames = album.authors?.map { it.name } ?: emptyList()
+                                Timber.d("HomePage newReleaseAlbums Author ${album.title} $apiAuthorsNames")
+                                val match = apiAuthorsNames.any { apiName ->
 
-                        val match = apiAuthorsNames.any { apiName ->
-
-                            preferredNames.any { dbName ->
-                                apiName?.contains(dbName.toString(), ignoreCase = true) == true
+                                    preferredNames.any { dbName ->
+                                        apiName?.contains(
+                                            dbName.toString(),
+                                            ignoreCase = true
+                                        ) == true
+                                    }
+                                }
+                                if (match) newReleaseAlbumsFiltered.add(album)
                             }
-                        }
-                        if (match) newReleaseAlbumsFiltered.add(album)
-                    }
 
-                    if (showNewAlbumsArtists)
+                            Timber.d("HomePage newReleaseAlbums preferredNames $preferredNames")
+                            Timber.d("HomePage newReleaseAlbums newReleaseAlbumsFiltered $newReleaseAlbumsFiltered")
+                        }
+
+
+
                         if (newReleaseAlbumsFiltered.isNotEmpty() && preferitesArtists.isNotEmpty()) {
 
                             BasicText(
@@ -666,6 +676,7 @@ fun HomePage(
                             }
 
                         }
+                    }
 
                     if (showNewAlbums) {
                         Title(
