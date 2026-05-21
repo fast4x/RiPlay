@@ -80,7 +80,7 @@ private class YouTubePlayerImpl(
         it.toString()
       }
     }
-    mainThread.post { loadUrl("javascript:$function(${stringArgs.joinToString(",")})") }
+    mainThread.post { evaluateJavascript("$function(${stringArgs.joinToString(",")})", null) }
   }
 }
 
